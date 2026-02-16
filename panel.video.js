@@ -195,155 +195,178 @@
     } catch {}
   }
 
-  /* =======================
-     DB hydrate (/api/jobs/list?app=video)
-     ======================= */
+/* =======================
+   DB hydrate (/api/jobs/list?app=video)
+   ======================= */
 
-  function dbStateToStatus(s) {
-    const v = String(s || "").toUpperCase();
-    if (v === "COMPLETED") return "Hazır";
-    if (v === "FAILED") return "Hata";
-    if (v === "RUNNING") return "İşleniyor";
+function dbStateToStatus(s) {
+  const v = String(s || "").trim().toUpperCase();
+
+  // ✅ READY/COMPLETED/DONE varyasyonları
+  if (v === "READY" || v === "DONE" || v === "COMPLETED" || v === "SUCCEEDED" || v === "SUCCESS") {
+    return "Hazır";
+  }
+
+  // ✅ ERROR/FAILED varyasyonları
+  if (v === "FAILED" || v === "ERROR" || v === "FAIL" || v === "CANCELED" || v === "CANCELLED") {
+    return "Hata";
+  }
+
+  // ✅ Queue + processing varyasyonları
+  if (
+    v === "RUNNING" ||
+    v === "PROCESSING" ||
+    v === "IN_PROGRESS" ||
+    v === "PENDING" ||
+    v === "QUEUED" ||
+    v === "IN_QUEUE" ||
+    v === "IN QUEUE" ||
+    v === "STARTING"
+  ) {
     return "İşleniyor";
   }
 
-  function pickVideoUrlFromOutputs(outputs) {
-    if (!Array.isArray(outputs)) return "";
-    const v = outputs.find((o) => o && (o.type === "video" || o.kind === "video") && (o.url || o.archive_url));
-    if (!v) return "";
-    return String(v.archive_url || v.archiveUrl || v.url || "").trim();
+  return "İşleniyor";
+}
+
+function pickVideoUrlFromOutputs(outputs) {
+  if (!Array.isArray(outputs)) return "";
+  const v = outputs.find((o) => o && (o.type === "video" || o.kind === "video") && (o.url || o.archive_url));
+  if (!v) return "";
+  return String(v.archive_url || v.archiveUrl || v.url || "").trim();
+}
+
+function mapDbItemToPanelItem(r) {
+  const job_id = String(r.job_id || r.id || "");
+  const meta = r.meta || {};
+  const outputs = r.outputs || [];
+
+  const archive_url =
+    String(r.archive_url || r.archiveUrl || meta.archive_url || "").trim() ||
+    ""; // (ileride DB'ye archive_url kolonuyla koyarsan burası direkt çalışır)
+
+  const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
+  const providerUrl =
+    String(meta?.video?.url || meta?.runway?.video?.url || "").trim();
+
+  const url = String(urlFromOutputs || providerUrl || "").trim();
+
+  const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
+
+  const status = legacyBroken
+    ? "İşleniyor"
+    : (r.state ? dbStateToStatus(r.state) : dbStateToStatus(r.status));
+
+  const title =
+    meta?.title ||
+    meta?.prompt ||
+    r.prompt ||
+    "Video";
+
+  const item = {
+    id: job_id || uid(),
+    job_id: job_id || "",
+    title,
+    status,
+    url: url || "",
+    archive_url: archive_url || "",
+    createdAt: (r.created_at ? new Date(r.created_at).getTime() : Date.now()),
+    meta: {
+      ...(meta || {}),
+      mode: meta?.mode || "",
+      prompt: meta?.prompt || r.prompt || "",
+      app: "video",
+    },
+  };
+
+  // Yeni (çıktı varsa playback ver):
+  const pb = getPlaybackUrl(item);
+  const hasOutput = !!pb;
+
+  // COMPLETED yazıp URL yoksa "Hazır" deme (kartı kaybetme/yanlış badge verme)
+  if (!legacyBroken) {
+    const st = String(r.state || r.status || "").toUpperCase();
+    const mapped = (st === "FAILED" || st === "ERROR") ? "Hata"
+                 : (st === "COMPLETED" || st === "DONE" || st === "READY") ? "Hazır"
+                 : "İşleniyor";
+    item.status = (mapped === "Hazır" && !hasOutput) ? "İşleniyor" : mapped;
   }
 
-  function mapDbItemToPanelItem(r) {
-    const job_id = String(r.job_id || r.id || "");
-    const meta = r.meta || {};
-    const outputs = r.outputs || [];
+  item.playbackUrl = (!legacyBroken && hasOutput) ? pb : "";
+  return item;
+}
 
-    const archive_url =
-      String(r.archive_url || r.archiveUrl || meta.archive_url || "").trim() ||
-      ""; // (ileride DB'ye archive_url kolonuyla koyarsan burası direkt çalışır)
+function mergeByJobId(existing, incoming) {
+  const map = new Map();
 
-    const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
-    const providerUrl =
-      String(meta?.video?.url || meta?.runway?.video?.url || "").trim();
-
-    const url = String(urlFromOutputs || providerUrl || "").trim();
-
-    const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
-
-    const status = legacyBroken
-      ? "İşleniyor"
-      : (r.state ? dbStateToStatus(r.state) : dbStateToStatus(r.status));
-
-    const title =
-      meta?.title ||
-      meta?.prompt ||
-      r.prompt ||
-      "Video";
-
-    const item = {
-      id: job_id || uid(),
-      job_id: job_id || "",
-      title,
-      status,
-      url: url || "",
-      archive_url: archive_url || "",
-      createdAt: (r.created_at ? new Date(r.created_at).getTime() : Date.now()),
-      meta: {
-        ...(meta || {}),
-        mode: meta?.mode || "",
-        prompt: meta?.prompt || r.prompt || "",
-        app: "video",
-      },
-    };
-
-       // ESki:
-    // item.playbackUrl = (!legacyBroken && isReady(item)) ? getPlaybackUrl(item) : "";
-
-    // Yeni (çıktı varsa playback ver):
-    const pb = getPlaybackUrl(item);
-    const hasOutput = !!pb;
-
-    // COMPLETED yazıp URL yoksa "Hazır" deme (kartı kaybetme/yanlış badge verme)
-    if (!legacyBroken) {
-      const st = String(r.state || r.status || "").toUpperCase();
-      const mapped = (st === "FAILED") ? "Hata" : (st === "COMPLETED") ? "Hazır" : "İşleniyor";
-      item.status = (mapped === "Hazır" && !hasOutput) ? "İşleniyor" : mapped;
-    }
-
-    item.playbackUrl = (!legacyBroken && hasOutput) ? pb : "";
-    return item;
+  // existing first (LS hızlı UI)
+  for (const it of (existing || [])) {
+    const key = String(it.job_id || it.id || "");
+    map.set(key || uid(), it);
   }
 
-  function mergeByJobId(existing, incoming) {
-    const map = new Map();
+  // incoming overwrites where same job_id (DB truth)
+  for (const it of (incoming || [])) {
+    const key = String(it.job_id || it.id || "");
+    if (!key) continue;
 
-    // existing first (LS hızlı UI)
-    for (const it of (existing || [])) {
-      const key = String(it.job_id || it.id || "");
-      map.set(key || uid(), it);
+    const prev = map.get(key);
+    if (!prev) {
+      map.set(key, it);
+      continue;
     }
 
-    // incoming overwrites where same job_id (DB truth)
-    for (const it of (incoming || [])) {
-      const key = String(it.job_id || it.id || "");
-      if (!key) continue;
-
-      const prev = map.get(key);
-      if (!prev) {
-        map.set(key, it);
-        continue;
-      }
-
-      // merge: DB status/url wins; keep local title if DB missing
-      map.set(key, {
-        ...prev,
-        ...it,
-        title: it.title || prev.title,
-        meta: { ...(prev.meta || {}), ...(it.meta || {}) },
-      });
-    }
-
-    const arr = Array.from(map.values());
-    arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-    return arr.slice(0, MAX_ITEMS);
+    // merge: DB status/url wins; keep local title if DB missing
+    map.set(key, {
+      ...prev,
+      ...it,
+      title: it.title || prev.title,
+      meta: { ...(prev.meta || {}), ...(it.meta || {}) },
+    });
   }
 
-  async function hydrateFromDB(host) {
-    try {
-      const r = await fetch("/api/jobs/list?app=video", { method: "GET" });
-      const text = await r.text().catch(() => "");
-      let j = null;
-      try { j = text ? JSON.parse(text) : null; } catch { j = null; }
+  const arr = Array.from(map.values());
+  arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
+  return arr.slice(0, MAX_ITEMS);
+}
 
-      if (!r.ok || !j || !j.ok) {
-        console.warn("[video.panel] hydrate failed", r.status, j || text);
-        return;
-      }
+async function hydrateFromDB(host) {
+  try {
+    const r = await fetch("/api/jobs/list?app=video", { method: "GET" });
+    const text = await r.text().catch(() => "");
+    let j = null;
+    try { j = text ? JSON.parse(text) : null; } catch { j = null; }
 
-      const incoming = (j.items || [])
-        .map(mapDbItemToPanelItem)
-        .filter((x) => x && (x.job_id || x.id));
-      // DEBUG
-console.table(incoming.map(x => ({
-  job_id: x.job_id,
-  status: x.status,
-  url: (x.url || "").slice(0, 40),
-  archive: (x.archive_url || "").slice(0, 40),
-  playback: (x.playbackUrl || "").slice(0, 60),
-})));
-
-// sonra normal akış
-state.items = mergeByJobId(state.items, incoming);
-
-      saveItems();
-      render(host);
-
-      console.log("[video.panel] hydrated from DB:", incoming.length);
-    } catch (e) {
-      console.warn("[video.panel] hydrate exception", e);
+    if (!r.ok || !j || !j.ok) {
+      console.warn("[video.panel] hydrate failed", r.status, j || text);
+      return;
     }
+
+    const incoming = (j.items || [])
+      .map(mapDbItemToPanelItem)
+      .filter((x) => x && (x.job_id || x.id));
+
+    // DEBUG
+    console.table(incoming.map(x => ({
+      job_id: x.job_id,
+      status: x.status,
+      url: (x.url || "").slice(0, 40),
+      archive: (x.archive_url || "").slice(0, 40),
+      playback: (x.playbackUrl || "").slice(0, 60),
+    })));
+
+    // sonra normal akış
+    state.items = mergeByJobId(state.items, incoming);
+
+    saveItems();
+    render(host);
+
+    console.log("[video.panel] hydrated from DB:", incoming.length);
+  } catch (e) {
+    console.warn("[video.panel] hydrate exception", e);
   }
+}
+
 
   /* =======================
      Fullscreen helper
