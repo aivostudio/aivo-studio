@@ -4,7 +4,12 @@ export const config = {
 };
 
 import { neon } from "@neondatabase/serverless";
-import { requireAuth } from "../_lib/auth.js";
+import kvMod from "../_kv.js";
+
+const kv = kvMod?.default || kvMod || {};
+const kvGetJson = kv.kvGetJson;
+
+const COOKIE_KV = "aivo_sess";
 
 function normalizeApp(x) {
   return String(x || "").trim().toLowerCase();
@@ -18,13 +23,90 @@ function mapState(statusRaw) {
   return "PENDING";
 }
 
-function safeHeaderLen(v) {
-  if (!v) return 0;
-  try {
-    return String(v).length;
-  } catch {
-    return 0;
+function cleanToken(raw) {
+  if (!raw) return null;
+  let t = String(raw).trim();
+
+  if (
+    (t.startsWith('"') && t.endsWith('"')) ||
+    (t.startsWith("'") && t.endsWith("'"))
+  ) {
+    t = t.slice(1, -1).trim();
   }
+
+  if (/^bearer\s+/i.test(t)) {
+    t = t.replace(/^bearer\s+/i, "").trim();
+  }
+
+  if (t.startsWith("s:")) {
+    t = t.slice(2);
+  }
+
+  return t || null;
+}
+
+function parseCookiesFromReq(req) {
+  // 1) Next/Vercel style: req.cookies (object)
+  if (req?.cookies && typeof req.cookies === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(req.cookies)) {
+      if (v == null) continue;
+      out[String(k)] = String(v);
+    }
+    return out;
+  }
+
+  // 2) Node style: req.headers.cookie or req.headers["cookie"]
+  const header =
+    req?.headers?.cookie ||
+    (req?.headers && req.headers["cookie"]) ||
+    "";
+
+  const out = {};
+  String(header)
+    .split(";")
+    .forEach((part) => {
+      const i = part.indexOf("=");
+      if (i === -1) return;
+      const k = part.slice(0, i).trim();
+      const v = part.slice(i + 1).trim();
+      if (!k) return;
+      try {
+        out[k] = decodeURIComponent(v);
+      } catch {
+        out[k] = v;
+      }
+    });
+  return out;
+}
+
+function getDbConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    null
+  );
+}
+
+async function getOrCreateUserIdByEmail(sql, email) {
+  if (!email) return null;
+
+  const rows = await sql`
+    select id
+    from users
+    where email = ${email}
+    limit 1
+  `;
+  if (rows?.[0]?.id) return rows[0].id;
+
+  const inserted = await sql`
+    insert into users (email, created_at)
+    values (${email}, now())
+    returning id
+  `;
+  return inserted?.[0]?.id || null;
 }
 
 export default async function handler(req, res) {
@@ -40,54 +122,48 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_app" });
     }
 
-    const conn =
-      process.env.POSTGRES_URL_NON_POOLING ||
-      process.env.DATABASE_URL ||
-      process.env.POSTGRES_URL ||
-      process.env.DATABASE_URL_UNPOOLED;
-
+    const conn = getDbConn();
     if (!conn) {
-      return res.status(500).json({
-        ok: false,
-        error: "missing_db_env",
-      });
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
 
-    // --- COOKIE VISIBILITY (SAFE DEBUG) ---
-    const headersObj = req?.headers || {};
-    const headerCookieA = headersObj?.cookie || "";
-    const headerCookieB = headersObj?.["cookie"] || "";
-    const hasHeadersGet = typeof headersObj?.get === "function";
-    const headerCookieC = hasHeadersGet ? headersObj.get("cookie") || "" : "";
+    const sql = neon(conn);
 
-    const cookieDebug = {
-      has_req_cookies_object: Boolean(req?.cookies && typeof req.cookies === "object"),
-      req_cookie_keys: req?.cookies && typeof req.cookies === "object" ? Object.keys(req.cookies).slice(0, 20) : [],
-      has_headers_cookie_prop: Boolean(headersObj?.cookie),
-      headers_cookie_len: safeHeaderLen(headerCookieA),
-      has_headers_bracket_cookie: Boolean(headersObj?.["cookie"]),
-      headers_bracket_cookie_len: safeHeaderLen(headerCookieB),
-      has_headers_get: hasHeadersGet,
-      headers_get_cookie_len: safeHeaderLen(headerCookieC),
-      header_keys_sample: Object.keys(headersObj || {}).slice(0, 30),
-      host: headersObj?.host || null,
-      origin: headersObj?.origin || null,
-      referer: headersObj?.referer || null,
-    };
+    // --- AUTH (KV session cookie like /api/auth/me) ---
+    const cookies = parseCookiesFromReq(req);
+    const sid = cleanToken(cookies[COOKIE_KV]);
+    const sid_present = Boolean(sid);
 
-    // AUTH
-    const auth = await requireAuth(req);
-    const user_id = auth?.user_id || null;
+    let sess = null;
+    let email = null;
+    let user_id = null;
+
+    if (sid_present) {
+      if (typeof kvGetJson === "function") {
+        sess = await kvGetJson(`sess:${sid}`).catch(() => null);
+        email = sess?.email || null;
+      }
+      if (email) {
+        user_id = await getOrCreateUserIdByEmail(sql, email);
+      }
+    }
 
     // DEBUG MODE
     if (String(req.query.debug || "") === "1") {
       return res.status(200).json({
         ok: true,
         debug: true,
-        conn_present: Boolean(conn),
-        cookie_debug: cookieDebug,
-        auth_object: auth,
-        user_id,
+        conn_present: true,
+        kv_available: typeof kvGetJson === "function",
+        cookie_debug: {
+          has_req_cookies_object: Boolean(req?.cookies && typeof req.cookies === "object"),
+          header_cookie_len: String(req?.headers?.cookie || req?.headers?.["cookie"] || "").length,
+          cookie_keys: Object.keys(cookies || {}),
+        },
+        sid_present,
+        sess_present: Boolean(sess && typeof sess === "object"),
+        email: email || null,
+        user_id: user_id || null,
       });
     }
 
@@ -97,8 +173,6 @@ export default async function handler(req, res) {
         error: "unauthorized",
       });
     }
-
-    const sql = neon(conn);
 
     const rows = await sql`
       select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
@@ -134,6 +208,7 @@ export default async function handler(req, res) {
       ok: false,
       error: "list_failed",
       message: String(e?.message || e),
+      stack: String(e?.stack || ""),
     });
   }
 }
