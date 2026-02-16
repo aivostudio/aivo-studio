@@ -38,15 +38,33 @@ export default async function handler(req, res) {
       process.env.DATABASE_URL_UNPOOLED;
 
     if (!conn) {
-      return res.status(500).json({ ok: false, error: "missing_db_env" });
+      return res.status(500).json({
+        ok: false,
+        error: "missing_db_env",
+      });
     }
 
-    // ✅ AUTH (SAFE)
+    // AUTH
     const auth = await requireAuth(req);
     const user_id = auth?.user_id || null;
 
+    // DEBUG MODE
+    if (String(req.query.debug || "") === "1") {
+      return res.status(200).json({
+        ok: true,
+        debug: true,
+        conn_present: Boolean(conn),
+        auth_object: auth,
+        user_id,
+      });
+    }
+
     if (!user_id) {
-      return res.status(401).json({ ok: false, error: "unauthorized" });
+      return res.status(401).json({
+        ok: false,
+        error: "unauthorized",
+        auth_object: auth || null,
+      });
     }
 
     const sql = neon(conn);
@@ -85,6 +103,7 @@ export default async function handler(req, res) {
       ok: false,
       error: "list_failed",
       message: String(e?.message || e),
+      stack: String(e?.stack || ""),
     });
   }
 }
