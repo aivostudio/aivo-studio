@@ -497,12 +497,12 @@ function attachEvents(host) {
   const grid = findGrid(host);
   if (!grid) return () => {};
 
-  const onClick = async (e) => {
+  const onClick = (e) => {
     const card = e.target.closest(".vpCard");
     if (!card) return;
 
     const id = card.getAttribute("data-id");
-    const it = state.items.find((x) => String(x.id) === String(id));
+    const it = state.items.find(x => String(x.id) === String(id));
     if (!it) return;
 
     const btn = e.target.closest("[data-act]");
@@ -514,55 +514,17 @@ function attachEvents(host) {
       const act = btn.getAttribute("data-act");
 
       if (act === "fs") { goFullscreen(card); return; }
-      if (act === "download") { downloadUrl(bestShareUrl(it)); return; }
-      if (act === "share") { shareUrl(bestShareUrl(it)); return; }
+      if (act === "download") downloadUrl(bestShareUrl(it));
+      if (act === "share") shareUrl(bestShareUrl(it));
 
       if (act === "delete") {
-        // ✅ SADECE DB job_id kullan
-        const jobId = String(it.job_id || "").trim();
-        if (!jobId) {
-          window.toast?.error?.("Bu kayıt DB job'u değil.");
-          return;
-        }
-
-        try {
-          const resp = await fetch("/api/jobs/delete", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-            },
-            body: JSON.stringify({
-              job_id: jobId,
-              app: "video"
-            }),
-          });
-
-          const j = await resp.json().catch(() => ({}));
-
-          if (!resp.ok || j.ok !== true) {
-            console.warn("[video.panel] delete failed:", resp.status, j);
-            window.toast?.error?.("Silinemedi (auth/DB).");
-            return;
-          }
-
-          // ✅ UI'dan kaldır (job_id bazlı)
-          state.items = state.items.filter(
-            (x) => String(x.job_id || "") !== jobId
-          );
-
-          saveItems();
-          render(host);
-
-          window.toast?.success?.("Silindi ✅");
-        } catch (err) {
-          console.warn("[video.panel] delete exception", err);
-          window.toast?.error?.("Silme hatası.");
-        }
-        return;
+        // ✅ SADECE UI + LS delete (çalışan versiyon)
+        state.items = state.items.filter(
+          x => String(x.id) !== String(id)
+        );
+        saveItems();
+        render(host);
       }
-
       return;
     }
 
