@@ -1,211 +1,168 @@
-// panel.video.js
-// RightPanel Video (v2) — Safari-safe (no endless proxy spam)
-// - Only renders <video> when item is READY
-// - Stores proxyUrl (same-origin) to avoid cross-origin/range issues
-// - PPE bridge updates items to READY
-// - Pending card on job_created
-// - Storage version bump + auto-migrate/clean legacy broken urls
-
 (function () {
   if (!window.RightPanel) return;
 
-  const STORAGE_KEY = "aivo.v2.video.items.v2"; // ✅ version bump
-  const LEGACY_KEYS = ["aivo.v2.video.items"];  // old key(s)
-  const MAX_ITEMS = 50;
-
+  const STORAGE_KEY = "aivo.v2.video.items";
   const state = { items: [] };
 
-  /* =======================
-     Utils
-     ======================= */
-
-  function uid() {
-    return "v_" + Math.random().toString(36).slice(2, 10);
-  }
-
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c]));
-  }
-
-  function isReady(item) {
-    const st = String(item?.status || item?.state || "").toLowerCase();
-    return (
-      st === "hazır" ||
-      st === "ready" ||
-      st === "completed" ||
-      st === "succeeded"
-    );
-  }
-
-  function isProcessing(item) {
-    const st = String(item?.status || item?.state || "").toLowerCase();
-    return (
-      st === "işleniyor" ||
-      st === "processing" ||
-      st === "in_progress" ||
-      st === "in queue" ||
-      st === "in_queue" ||
-      st === "queued" ||
-      st === "pending"
-    );
-  }
-
-  function isError(item) {
-    const st = String(item?.status || item?.state || "").toLowerCase();
-    return st === "error" || st === "failed" || st === "fail";
-  }
-
-  function normalizeBadge(item) {
-    if (isReady(item)) return "Hazır";
-    if (isError(item)) return "Hata";
-    return "İşleniyor";
-  }
-
-  function formatKind(item) {
-    const k = (item?.meta?.mode || item?.meta?.kind || item?.kind || "").toString().toLowerCase();
-    if (k.includes("image")) return "Image→Video";
-    if (k.includes("text")) return "Text→Video";
-    return "Video";
-  }
-
-  // Title split: "Text video: xxx" -> type + name
-  function splitTitle(raw) {
-    const s = String(raw ?? "").trim();
-    const m = s.match(/^([^:]{2,24})\s*:\s*(.+)$/);
-
-    let type = m ? m[1].trim() : "";
-    let name = m ? m[2].trim() : s;
-
-    const t = type.toLowerCase();
-    if (t.includes("text") && t.includes("video")) type = "Text video";
-    else if (t.includes("image") && t.includes("video")) type = "Image video";
-    else if (t === "video") type = "Video";
-    else if (!type) type = "Video";
-
-    if (!name) name = "Video";
-
-    return { type, name };
-  }
-
-  function renderTitle(raw) {
-    const p = splitTitle(raw);
-    return `<span class="vpType">${esc(p.type)}</span><span class="vpName">${esc(p.name)}</span>`;
-  }
-
-  function findGrid(host) {
-    return host.querySelector("[data-video-grid]");
-  }
-
-  // Always use same-origin proxy for video playback
-  function toProxyUrl(url) {
-    const u = String(url || "").trim();
-    if (!u) return "";
-    // if it's already proxy
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    return "/api/media/proxy?url=" + encodeURIComponent(u);
-  }
-
-  // Detect legacy broken R2 pattern: https://media.aivo.tr/outputs/video/<uuid>.mp4 (missing job folder)
-  function looksLikeLegacyBrokenR2(url) {
-    const u = String(url || "");
-    return /https?:\/\/media\.aivo\.tr\/outputs\/video\/[0-9a-f-]{36}\.mp4/i.test(u);
-  }
-
-  /* =======================
-     Storage (load / migrate / save)
-     ======================= */
-
-  function safeParse(json) {
-    try { return JSON.parse(json); } catch { return null; }
-  }
-
-  function loadItems() {
-    // 1) new key
-    const rawNew = localStorage.getItem(STORAGE_KEY);
-    const arrNew = rawNew ? safeParse(rawNew) : null;
-    if (Array.isArray(arrNew)) return sanitizeItems(arrNew);
-
-    // 2) legacy keys -> migrate once
-    for (const k of LEGACY_KEYS) {
-      const raw = localStorage.getItem(k);
-      const arr = raw ? safeParse(raw) : null;
-      if (Array.isArray(arr) && arr.length) {
-        const cleaned = sanitizeItems(arr);
-        // write into new key
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
-        // optionally delete legacy
-        try { localStorage.removeItem(k); } catch {}
-        return cleaned;
-      }
-    }
-
+/* =======================
+   Persist helpers
+   ======================= */
+function loadItems() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
     return [];
   }
+}
 
-  function sanitizeItems(items) {
-    const out = [];
+function saveItems() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 50)));
+  } catch {}
+}
 
-    for (const it0 of (items || [])) {
-      const it = it0 || {};
-      const id = String(it.id || it.job_id || uid());
-      const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
+function uid() {
+  return "v_" + Math.random().toString(36).slice(2, 10);
+}
 
-      // Keep original url but also create proxyUrl
-      const url = String(it.url || it.video_url || "").trim();
-      const proxyUrl = url ? toProxyUrl(url) : "";
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
 
-      // If we detect legacy broken R2 url: keep item but force NOT-READY so it doesn't spam proxy
-      const legacyBroken = looksLikeLegacyBrokenR2(url);
+// Title'ı "tip + metin" diye ayır: "Text>Video: xxx" => { type:"Text video", name:"xxx" }
+function splitTitle(raw) {
+  const s = String(raw ?? "").trim();
 
-      const status =
-        legacyBroken ? "İşleniyor" :
-        (it.status || it.state || (url ? "Hazır" : "İşleniyor"));
+  // "Text>Video: ..." veya "Image>Video: ..." veya "Video: ..." gibi
+  const m = s.match(/^([^:]{2,24})\s*:\s*(.+)$/);
+  let type = m ? m[1].trim() : "";
+  let name = m ? m[2].trim() : s;
 
-      const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
+  // Tip normalize (UI dili)
+  const t = type.toLowerCase();
+  if (t.includes("text") && t.includes("video")) type = "Text video";
+  else if (t.includes("image") && t.includes("video")) type = "Image video";
+  else if (t === "video") type = "Video";
+  else if (!type) type = "Video";
 
-      out.push({
-        id,
-        job_id,
-        title,
-        status,
-        url,       // raw (for download/share)
-        proxyUrl,  // always same-origin for <video src>
-        createdAt: it.createdAt || it.created_at || Date.now(),
-        meta: {
-          ...(it.meta || {}),
-          mode: it.meta?.mode || it.mode || it.kind || "",
-          prompt: it.meta?.prompt || it.prompt || it.text || "",
-          app: it.meta?.app || "video",
-        },
-      });
-    }
+  // Çok kısa/boşsa
+  if (!name) name = "Video";
 
-    // newest first
-    out.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-    return out.slice(0, MAX_ITEMS);
-  }
+  return { type, name };
+}
 
-  function saveItems() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, MAX_ITEMS)));
-    } catch {}
-  }
+function renderTitle(raw) {
+  const p = splitTitle(raw);
+  return `<span class="vpType">${esc(p.type)}</span><span class="vpName">${esc(p.name)}</span>`;
+}
+
+function findGrid(host) {
+  return host.querySelector("[data-video-grid]");
+}
+
+/* =========================
+   panel.video.js (render tarafı)
+   - COMPLETED değilse <video> yerine skeleton bas
+   - badge "İşleniyor" / "Hazır" kalsın
+========================= */
+
+// 1) yardımcılar (dosyanın üstüne veya render fonksiyonunun içine ekleyebilirsin)
+function isReady(item){
+  return item && (item.state === "COMPLETED" || item.state === "READY" || item.status === "COMPLETED");
+}
+
+function esc(s){
+  return (s ?? "").toString()
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function formatKind(item){
+  // örn: Text→Video / Image→Video
+  const k = (item?.meta?.mode || item?.meta?.kind || item?.kind || "").toString().toLowerCase();
+  if (k.includes("image")) return "Image→Video";
+  if (k.includes("text")) return "Text→Video";
+  return "Video";
+}
+
+// 2) Kart HTML’inde thumb bölümünü değiştir
+// Mevcut: <video class="vpVideo" ... src="..."></video>
+// Yeni: ready ise video, değilse skeleton
+
+function renderThumb(item){
+  const ready = isReady(item);
+  const badge = ready ? (item.badge || "Hazır") : (item.badge || "İşleniyor");
+
+  return `
+    <div class="vpThumb ${ready ? "" : "is-loading"}">
+      <div class="vpBadge">${esc(badge)}</div>
+
+      ${ready ? `
+        <video class="vpVideo" preload="metadata" playsinline controls src="${esc(item.url)}"></video>
+      ` : `
+        <div class="vpSkel" aria-label="İşleniyor">
+          <div class="vpSkelShimmer"></div>
+          <div class="vpSkelPlay">
+            <div class="vpSkelPlayRing"></div>
+            <div class="vpSkelPlayTri"></div>
+          </div>
+        </div>
+      `}
+
+      <button class="vpExpand" type="button" title="Büyüt">⤢</button>
+    </div>
+  `;
+}
+
+// 3) Metin alanını daha düzenli bas (title + subtitle)
+// (prompt vs varsa alt satıra)
+function renderText(item){
+  const title = formatKind(item);
+  const sub = item?.meta?.title || item?.meta?.prompt || item?.prompt || item?.text || "";
+  return `
+    <div class="vpText">
+      <div class="vpTitle" title="${esc(title)}">${esc(title)}</div>
+      <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+    </div>
+  `;
+}
+
+// 4) Aksiyonlar: ready değilse disable (ya da gizle)
+// Burada disable örneği:
+function renderActions(item){
+  const ready = isReady(item);
+  return `
+    <div class="vpActions ${ready ? "" : "is-disabled"}">
+      <a class="vpIconBtn" ${ready ? `href="${esc(item.url)}" download` : ""} title="İndir" ${ready ? "" : 'aria-disabled="true" tabindex="-1"'}>↓</a>
+      <button class="vpIconBtn" type="button" title="Paylaş" ${ready ? "" : "disabled"}>↗</button>
+      <button class="vpIconBtn danger" type="button" title="Sil">🗑</button>
+    </div>
+  `;
+}
+
+// 5) renderItem içinde bu 3 parçayı kullan
+function renderItem(item){
+  return `
+    <div class="vpCard" data-id="${esc(item.id || "")}">
+      ${renderThumb(item)}
+      ${renderText(item)}
+      ${renderActions(item)}
+    </div>
+  `;
+}
 
   /* =======================
      Fullscreen helper
      ======================= */
-
   function goFullscreen(card) {
     const video = card?.querySelector("video");
     if (!video) return;
 
-    // Standard Fullscreen
+    // 1) Standard Fullscreen API (desktop + most browsers)
     try {
       if (video.requestFullscreen) {
         video.requestFullscreen().catch?.(() => {});
@@ -213,7 +170,7 @@
       }
     } catch {}
 
-    // iOS Safari video fullscreen
+    // 2) iOS Safari (video element fullscreen)
     try {
       if (video.webkitEnterFullscreen) {
         video.webkitEnterFullscreen();
@@ -221,7 +178,7 @@
       }
     } catch {}
 
-    // Last resort: fullscreen the card
+    // 3) Last resort: fullscreen the card container
     try {
       if (card.requestFullscreen) {
         card.requestFullscreen().catch?.(() => {});
@@ -231,82 +188,8 @@
   }
 
   /* =======================
-     Render building blocks
+     Render
      ======================= */
-
-  function renderSkeleton(badge) {
-    return `
-      <div class="vpSkel" aria-label="İşleniyor">
-        <div class="vpBadge">${esc(badge)}</div>
-        <div class="vpSkelShimmer"></div>
-        <div class="vpSkelPlay">
-          <div class="vpSkelPlayRing"></div>
-          <div class="vpSkelPlayTri"></div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderThumb(it) {
-    const badge = normalizeBadge(it);
-
-    // ✅ SAFETY: only render <video> if READY
-    if (!isReady(it) || !it.proxyUrl) {
-      return `
-        <div class="vpThumb is-loading">
-          ${renderSkeleton(badge)}
-          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-        </div>
-      `;
-    }
-
-    return `
-      <div class="vpThumb">
-        <div class="vpBadge">${esc(badge)}</div>
-
-        <video
-          class="vpVideo"
-          preload="metadata"
-          playsinline
-          controls
-          src="${esc(it.proxyUrl)}"
-        ></video>
-
-        <div class="vpPlay">
-          <span class="vpPlayIcon">▶</span>
-        </div>
-
-        <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-      </div>
-    `;
-  }
-
-  function renderMeta(it) {
-    const kind = formatKind(it);
-    const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
-    return `
-      <div class="vpMeta">
-        <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
-        <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
-
-        <div class="vpActions ${isReady(it) ? "" : "is-disabled"}">
-          <button class="vpIconBtn" data-act="download" ${isReady(it) ? "" : "disabled"} title="İndir">⬇</button>
-          <button class="vpIconBtn" data-act="share" ${isReady(it) ? "" : "disabled"} title="Paylaş">⤴</button>
-          <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderCard(it) {
-    return `
-      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
-        ${renderThumb(it)}
-        ${renderMeta(it)}
-      </div>
-    `;
-  }
-
   function render(host) {
     const grid = findGrid(host);
     if (!grid) return;
@@ -316,19 +199,60 @@
       return;
     }
 
-    grid.innerHTML = state.items.map(renderCard).join("");
+    grid.innerHTML = state.items.map(it => `
+      <div class="vpCard" data-id="${it.id}" role="button" tabindex="0">
+        <div class="vpThumb">
+          <div class="vpBadge">${esc(it.status)}</div>
+
+        ${it.url && it.url.trim() !== "" ? `
+  <video
+    class="vpVideo"
+   src="${esc('/api/media/proxy?url=' + encodeURIComponent(it.url))}"
+
+    preload="metadata"
+    playsinline
+  ></video>
+
+  <div class="vpPlay">
+ <span class="vpPlayIcon">▶</span>
+
+
+  </div>
+` : `
+  <div class="vpSkel" aria-label="İşleniyor">
+    <div class="vpSkelShimmer"></div>
+    <div class="vpSkelPlay">
+      <div class="vpSkelPlayRing"></div>
+      <div class="vpSkelPlayTri"></div>
+    </div>
+  </div>
+`}
+
+
+          <!-- Fullscreen tool -->
+          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+        </div>
+
+        <div class="vpMeta">
+                   <div class="vpTitle">${renderTitle(it.title)}</div>
+
+
+          <div class="vpActions">
+            <button class="vpIconBtn" data-act="download">⬇</button>
+            <button class="vpIconBtn" data-act="share">⤴</button>
+            <button class="vpIconBtn vpDanger" data-act="delete">🗑</button>
+          </div>
+        </div>
+      </div>
+    `).join("");
   }
 
   /* =======================
-     Actions (download/share/delete + play toggle)
+     Actions
      ======================= */
-
   function download(url) {
-    const u = String(url || "").trim();
-    if (!u) return;
-
     const a = document.createElement("a");
-    a.href = u;
+    a.href = url;
     a.download = "";
     a.rel = "noopener";
     document.body.appendChild(a);
@@ -337,13 +261,10 @@
   }
 
   function share(url) {
-    const u = String(url || "").trim();
-    if (!u) return;
-
     if (navigator.share) {
-      navigator.share({ url: u }).catch(() => {});
+      navigator.share({ url }).catch(() => {});
     } else {
-      navigator.clipboard?.writeText(u).catch(() => {});
+      navigator.clipboard?.writeText(url).catch(() => {});
     }
   }
 
@@ -356,8 +277,8 @@
       if (!card) return;
 
       const id = card.getAttribute("data-id");
-      const it = state.items.find(x => String(x.id) === String(id));
-      if (!it) return;
+      const item = state.items.find(x => x.id === id);
+      if (!item) return;
 
       const btn = e.target.closest("[data-act]");
       const video = card.querySelector("video");
@@ -365,6 +286,7 @@
 
       if (btn) {
         e.stopPropagation();
+
         const act = btn.getAttribute("data-act");
 
         if (act === "fs") {
@@ -372,25 +294,24 @@
           return;
         }
 
-        if (act === "download") download(it.url);
-        if (act === "share") share(it.url);
+        if (act === "download") download(item.url);
+        if (act === "share") share(item.url);
         if (act === "delete") {
-          state.items = state.items.filter(x => String(x.id) !== String(id));
+          state.items = state.items.filter(x => x.id !== id);
           saveItems();
           render(host);
         }
         return;
       }
 
-      // click on card toggles play/pause if video exists & ready
-      if (!video || !isReady(it)) return;
+      if (!video) return;
 
       if (video.paused) {
         video.play().catch(() => {});
-        if (overlay) overlay.style.display = "none";
+        overlay.style.display = "none";
       } else {
         video.pause();
-        if (overlay) overlay.style.display = "";
+        overlay.style.display = "";
       }
     };
 
@@ -399,9 +320,8 @@
   }
 
   /* =======================
-     PPE bridge (Runway outputs)
+     PPE bridge (Runway)
      ======================= */
-
   function attachPPE(host) {
     if (!window.PPE) return () => {};
 
@@ -423,38 +343,33 @@
 
       const jid = job_id != null ? String(job_id) : null;
 
-      // match: job_id or id
-      const existing = jid
-        ? state.items.find(x => String(x.job_id || "") === jid || String(x.id || "") === jid)
-        : null;
+      // 1) job_id ile eşleşen pending kart
+     const existing = jid
+  ? state.items.find(x => x.job_id === jid || x.id === jid)
+  : null;
 
-      // fallback: newest processing card with no url
-      const fallbackProcessing = !existing
-        ? state.items.find(x => !String(x.url || "").trim() && isProcessing(x))
-        : null;
+// jid olsa bile eşleşme yoksa: en yeni "İşleniyor" kartı hedefle
+const fallbackProcessing = !existing
+  ? state.items.find(x => !x.url && (x.status === "İşleniyor" || x.status === "processing"))
+  : null;
 
-      const target = existing || fallbackProcessing;
+const target = existing || fallbackProcessing;
 
-      const title = out?.meta?.title || out?.meta?.prompt || out?.meta?.text || (target?.title || "Video");
 
       if (target) {
         target.url = out.url;
-        target.proxyUrl = toProxyUrl(out.url);
         target.status = "Hazır";
-        target.title = title;
+        target.title = out?.meta?.title || out?.meta?.prompt || target.title || "Video";
         if (!target.job_id && jid) target.job_id = jid;
-        if (!target.id && jid) target.id = jid;
-        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
+        if (target.id == null && jid) target.id = jid;
       } else {
+        // fallback (eski kayıtlar / dıştan gelen kayıtlar için)
         state.items.unshift({
-          id: jid || uid(),
-          job_id: jid || "",
+          id: uid(),
+          job_id: jid,
           url: out.url,
-          proxyUrl: toProxyUrl(out.url),
           status: "Hazır",
-          title,
-          createdAt: Date.now(),
-          meta: { ...(out.meta || {}), app: "video" },
+          title: out?.meta?.title || out?.meta?.prompt || "Video"
         });
       }
 
@@ -464,14 +379,13 @@
 
     return () => {
       active = false;
-      PPE.onOutput = prev || null;
+      if (PPE.onOutput === arguments.callee) PPE.onOutput = prev || null;
     };
   }
 
   /* =======================
      Job created bridge (pending card)
      ======================= */
-
   function attachJobCreated(host) {
     const onJob = (e) => {
       const d = e?.detail || {};
@@ -479,27 +393,27 @@
 
       const job_id = String(d.job_id);
 
-      const exists = state.items.some(x => String(x.job_id || "") === job_id || String(x.id || "") === job_id);
+      // Zaten varsa tekrar ekleme
+      const exists = state.items.some(x => x.job_id === job_id || x.id === job_id);
       if (exists) return;
 
       const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
-      const prompt = (d.prompt && String(d.prompt).trim()) ? String(d.prompt).trim() : "";
-      const title = prompt ? `${modeLabel}: ${prompt}` : modeLabel;
+      const title = (d.prompt && String(d.prompt).trim())
+        ? `${modeLabel}: ${String(d.prompt).trim()}`
+        : modeLabel;
 
       state.items.unshift({
         id: job_id,
-        job_id,
-        url: "",          // not ready
-        proxyUrl: "",     // not ready
+        job_id: job_id,
+        url: "", // processing
         status: "İşleniyor",
         title,
         createdAt: d.createdAt || Date.now(),
         meta: {
-          mode: d.mode || "",
-          prompt: prompt,
-          image_url: d.image_url || "",
-          app: "video",
-        },
+          mode: d.mode,
+          prompt: d.prompt || "",
+          image_url: d.image_url || ""
+        }
       });
 
       saveItems();
@@ -513,13 +427,12 @@
   /* =======================
      Panel register
      ======================= */
-
   window.RightPanel.register("video", {
     getHeader() {
       return {
         title: "Videolarım",
         meta: "",
-        searchPlaceholder: "Videolarda ara...",
+        searchPlaceholder: "Videolarda ara..."
       };
     },
 
@@ -544,6 +457,6 @@
         try { offPPE(); } catch {}
         try { offJobs(); } catch {}
       };
-    },
+    }
   });
 })();
