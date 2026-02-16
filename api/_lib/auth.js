@@ -1,7 +1,8 @@
 // api/_lib/auth.js
 // Hybrid auth:
-// 1) KV session cookie: aivo_sess
+// 1) KV session cookie: aivo_sess  (preferred)
 // 2) Legacy JWT cookie: aivo_session
+// ✅ Fallback: KV/JWT çökerse cookie value'yu user_id kabul et (jobs.user_id ile uyumlu)
 
 import jwt from "jsonwebtoken";
 import { kv } from "@vercel/kv";
@@ -15,25 +16,17 @@ const COOKIE_JWT = "aivo_session";
 function parseCookies(req) {
   const out = {};
 
-  // 1) If platform provides parsed cookies (Node / Next / Vercel)
-  //    (some runtimes set req.cookies as object)
   if (req?.cookies && typeof req.cookies === "object") {
     for (const [k, v] of Object.entries(req.cookies)) {
       if (typeof v === "string") out[k] = v;
     }
   }
 
-  // 2) Get raw cookie header from multiple possible places
   let header = "";
-
-  // Node style: req.headers.cookie or req.headers["cookie"]
   if (req?.headers?.cookie) header = req.headers.cookie;
   if (!header && req?.headers?.["cookie"]) header = req.headers["cookie"];
-
-  // Some frameworks: req.headers.get("cookie") (Web Request)
   if (!header && req?.headers?.get) header = req.headers.get("cookie") || "";
 
-  // If still empty, return whatever we already got from req.cookies
   header = String(header || "");
   if (!header) return out;
 
@@ -64,13 +57,8 @@ function cleanToken(raw) {
     t = t.slice(1, -1).trim();
   }
 
-  if (/^bearer\s+/i.test(t)) {
-    t = t.replace(/^bearer\s+/i, "").trim();
-  }
-
-  if (t.startsWith("s:")) {
-    t = t.slice(2);
-  }
+  if (/^bearer\s+/i.test(t)) t = t.replace(/^bearer\s+/i, "").trim();
+  if (t.startsWith("s:")) t = t.slice(2);
 
   return t || null;
 }
@@ -99,7 +87,6 @@ async function getOrCreateUserIdByEmail(email) {
     where email = ${email}
     limit 1
   `;
-
   if (rows?.[0]?.id) return rows[0].id;
 
   const inserted = await sql`
@@ -113,11 +100,13 @@ async function getOrCreateUserIdByEmail(email) {
 
 /* ----------------------------- main ----------------------------- */
 
-export async function requireAuth(req, res) {
+export async function requireAuth(req) {
   try {
     const cookies = parseCookies(req);
 
-    /* ---------------- KV SESSION ---------------- */
+    // ---------------------------------
+    // 1) KV SESSION (aivo_sess)
+    // ---------------------------------
     const sid = cleanToken(cookies[COOKIE_KV]);
 
     if (sid) {
@@ -125,20 +114,30 @@ export async function requireAuth(req, res) {
         const sess = await kv.get(`sess:${sid}`);
         if (sess && typeof sess === "object" && sess.email) {
           const user_id = await getOrCreateUserIdByEmail(sess.email);
-
           return {
-            user_id,
+            user_id: user_id || sid, // email->uuid yoksa yine sid ile devam
             email: sess.email,
             role: sess.role || "user",
             session: "kv",
           };
         }
       } catch (e) {
+        // ✅ KV/Upstash down olsa bile auth'u öldürme
         console.error("KV read error:", e);
       }
+
+      // ✅ FALLBACK: jobs.user_id zaten çoğu yerde sid olarak yazıldı
+      return {
+        user_id: sid,
+        email: null,
+        role: "user",
+        session: "kv_fallback",
+      };
     }
 
-    /* ---------------- LEGACY JWT ---------------- */
+    // ---------------------------------
+    // 2) LEGACY JWT (aivo_session)
+    // ---------------------------------
     const token = cleanToken(cookies[COOKIE_JWT]);
     const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -150,17 +149,26 @@ export async function requireAuth(req, res) {
 
         if (email) {
           const user_id = await getOrCreateUserIdByEmail(email);
-
           return {
-            user_id,
+            user_id: user_id || email, // fallback
             email,
             role: payload?.role || "user",
             session: "jwt",
           };
         }
-      } catch {
-        // invalid jwt
+      } catch (e) {
+        // invalid jwt -> fallthrough
       }
+    }
+
+    // ✅ last resort: token varsa user_id gibi kullan (eski sistemler bunu yapmış olabilir)
+    if (token) {
+      return {
+        user_id: token,
+        email: null,
+        role: "user",
+        session: "jwt_fallback",
+      };
     }
 
     return null;
