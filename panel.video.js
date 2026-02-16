@@ -463,81 +463,112 @@ state.items = mergeByJobId(state.items, incoming);
     grid.innerHTML = state.items.map(renderCard).join("");
   }
 
-  /* =======================
-     Actions
-     ======================= */
+/* =======================
+   Actions
+   ======================= */
 
-  function downloadUrl(u) {
-    const url = String(u || "").trim();
-    if (!url) return;
+function downloadUrl(u) {
+  const url = String(u || "").trim();
+  if (!url) return;
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function shareUrl(u) {
+  const url = String(u || "").trim();
+  if (!url) return;
+
+  if (navigator.share) {
+    navigator.share({ url }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(url).catch(() => {});
   }
+}
 
-  function shareUrl(u) {
-    const url = String(u || "").trim();
-    if (!url) return;
+function attachEvents(host) {
+  const grid = findGrid(host);
+  if (!grid) return () => {};
 
-    if (navigator.share) {
-      navigator.share({ url }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(url).catch(() => {});
-    }
-  }
+  // ✅ async: delete API için await kullanacağız
+  const onClick = async (e) => {
+    const card = e.target.closest(".vpCard");
+    if (!card) return;
 
-  function attachEvents(host) {
-    const grid = findGrid(host);
-    if (!grid) return () => {};
+    const id = card.getAttribute("data-id");
+    const it = state.items.find((x) => String(x.id) === String(id));
+    if (!it) return;
 
-    const onClick = (e) => {
-      const card = e.target.closest(".vpCard");
-      if (!card) return;
+    const btn = e.target.closest("[data-act]");
+    const video = card.querySelector("video");
+    const overlay = card.querySelector(".vpPlay");
 
-      const id = card.getAttribute("data-id");
-      const it = state.items.find(x => String(x.id) === String(id));
-      if (!it) return;
+    if (btn) {
+      e.stopPropagation();
+      const act = btn.getAttribute("data-act");
 
-      const btn = e.target.closest("[data-act]");
-      const video = card.querySelector("video");
-      const overlay = card.querySelector(".vpPlay");
+      if (act === "fs") { goFullscreen(card); return; }
+      if (act === "download") { downloadUrl(bestShareUrl(it)); return; }
+      if (act === "share") { shareUrl(bestShareUrl(it)); return; }
 
-      if (btn) {
-        e.stopPropagation();
-        const act = btn.getAttribute("data-act");
+      if (act === "delete") {
+        // ✅ Backend soft delete + UI remove (DB hydrate geri getirmesin)
+        const jobId = String(it.job_id || it.id || "").trim();
+        if (!jobId) return;
 
-        if (act === "fs") { goFullscreen(card); return; }
-        if (act === "download") downloadUrl(bestShareUrl(it));
-        if (act === "share") shareUrl(bestShareUrl(it));
+        try {
+          const resp = await fetch("/api/jobs/delete", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ job_id: jobId, app: "video" }),
+          });
 
-        if (act === "delete") {
-          // ✅ UI/LS delete (backend delete'yi sonraki adımda bağlarız)
-          state.items = state.items.filter(x => String(x.id) !== String(id));
+          const j = await resp.json().catch(() => ({}));
+
+          if (!resp.ok || !j || j.ok !== true) {
+            console.warn("[video.panel] delete failed:", resp.status, j);
+            window.toast?.error?.("Silinemedi (auth/DB).");
+            return;
+          }
+
+          // UI remove
+          state.items = state.items.filter(
+            (x) => String(x.job_id || x.id || "") !== jobId
+          );
           saveItems();
           render(host);
+
+          window.toast?.success?.("Silindi ✅");
+        } catch (err) {
+          console.warn("[video.panel] delete exception", err);
+          window.toast?.error?.("Silme hatası.");
         }
         return;
       }
 
-      if (!video || !isReady(it)) return;
+      return;
+    }
 
-      if (video.paused) {
-        video.play().catch(() => {});
-        if (overlay) overlay.style.display = "none";
-      } else {
-        video.pause();
-        if (overlay) overlay.style.display = "";
-      }
-    };
+    if (!video || !isReady(it)) return;
 
-    grid.addEventListener("click", onClick);
-    return () => grid.removeEventListener("click", onClick);
-  }
+    if (video.paused) {
+      video.play().catch(() => {});
+      if (overlay) overlay.style.display = "none";
+    } else {
+      video.pause();
+      if (overlay) overlay.style.display = "";
+    }
+  };
+
+  grid.addEventListener("click", onClick);
+  return () => grid.removeEventListener("click", onClick);
+}
 
   /* =======================
      PPE bridge (Runway outputs)
