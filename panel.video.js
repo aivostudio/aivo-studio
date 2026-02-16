@@ -1,10 +1,7 @@
 // panel.video.js
 // RightPanel Video (v2) — Safari-safe (no endless proxy spam)
-// ✅ FIX: Proxy is NOT default anymore.
-// - Prefer archive_url (our stable storage) for playback
-// - If url is https:// => play directly (no proxy)
-// - Only use /api/media/proxy for http:// (mixed content) or explicit cases
-// - Still only renders <video> when item is READY
+// - Only renders <video> when item is READY
+// - Stores proxyUrl (same-origin) to avoid cross-origin/range issues
 // - PPE bridge updates items to READY
 // - Pending card on job_created
 // - Storage version bump + auto-migrate/clean legacy broken urls
@@ -12,8 +9,8 @@
 (function () {
   if (!window.RightPanel) return;
 
-  const STORAGE_KEY = "aivo.v2.video.items.v3"; // ✅ version bump (proxy behavior changed)
-  const LEGACY_KEYS = ["aivo.v2.video.items.v2", "aivo.v2.video.items"];
+  const STORAGE_KEY = "aivo.v2.video.items.v2"; // ✅ version bump
+  const LEGACY_KEYS = ["aivo.v2.video.items"];  // old key(s)
   const MAX_ITEMS = 50;
 
   const state = { items: [] };
@@ -105,46 +102,19 @@
     return host.querySelector("[data-video-grid]");
   }
 
+  // Always use same-origin proxy for video playback
+  function toProxyUrl(url) {
+    const u = String(url || "").trim();
+    if (!u) return "";
+    // if it's already proxy
+    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
+    return "/api/media/proxy?url=" + encodeURIComponent(u);
+  }
+
   // Detect legacy broken R2 pattern: https://media.aivo.tr/outputs/video/<uuid>.mp4 (missing job folder)
   function looksLikeLegacyBrokenR2(url) {
     const u = String(url || "");
     return /https?:\/\/media\.aivo\.tr\/outputs\/video\/[0-9a-f-]{36}\.mp4/i.test(u);
-  }
-
-  // ✅ Proxy ONLY when needed (http://). https:// plays direct.
-  function toMaybeProxyUrl(url) {
-    const u = String(url || "").trim();
-    if (!u) return "";
-    // already proxied
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-
-    // mixed content (http) => must proxy/upgrade
-    if (u.startsWith("http://")) {
-      return "/api/media/proxy?url=" + encodeURIComponent(u);
-    }
-
-    // https (or relative) => DO NOT proxy
-    return u;
-  }
-
-  // ✅ Playback URL selection
-  // - Prefer archive_url (stable)
-  // - else prefer direct https url
-  // - proxy only for http
-  function getPlaybackUrl(it) {
-    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
-    if (a) return toMaybeProxyUrl(a); // should be https, but safe
-    const u = String(it?.url || it?.video_url || "").trim();
-    if (!u) return "";
-    return toMaybeProxyUrl(u);
-  }
-
-  function bestShareUrl(it) {
-    // For share/download, prefer archive (stable) then raw url.
-    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
-    if (a) return a;
-    const u = String(it?.url || "").trim();
-    return u;
   }
 
   /* =======================
@@ -167,7 +137,9 @@
       const arr = raw ? safeParse(raw) : null;
       if (Array.isArray(arr) && arr.length) {
         const cleaned = sanitizeItems(arr);
+        // write into new key
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
+        // optionally delete legacy
         try { localStorage.removeItem(k); } catch {}
         return cleaned;
       }
@@ -184,30 +156,26 @@
       const id = String(it.id || it.job_id || uid());
       const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
 
+      // Keep original url but also create proxyUrl
       const url = String(it.url || it.video_url || "").trim();
-      const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || "").trim();
+      const proxyUrl = url ? toProxyUrl(url) : "";
 
-      // If we detect legacy broken R2 url: keep item but force NOT-READY so it doesn't try to play/spam
-      const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
+      // If we detect legacy broken R2 url: keep item but force NOT-READY so it doesn't spam proxy
+      const legacyBroken = looksLikeLegacyBrokenR2(url);
 
       const status =
         legacyBroken ? "İşleniyor" :
-        (it.status || it.state || ((archive_url || url) ? "Hazır" : "İşleniyor"));
+        (it.status || it.state || (url ? "Hazır" : "İşleniyor"));
 
       const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
-
-      const playbackUrl = (!legacyBroken && (archive_url || url))
-        ? getPlaybackUrl({ archive_url, url })
-        : "";
 
       out.push({
         id,
         job_id,
         title,
         status,
-        url,           // raw (provider) for reference
-        archive_url,   // stable (if exists)
-        playbackUrl,   // ✅ used by <video src>
+        url,       // raw (for download/share)
+        proxyUrl,  // always same-origin for <video src>
         createdAt: it.createdAt || it.created_at || Date.now(),
         meta: {
           ...(it.meta || {}),
@@ -218,6 +186,7 @@
       });
     }
 
+    // newest first
     out.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
     return out.slice(0, MAX_ITEMS);
   }
@@ -236,6 +205,7 @@
     const video = card?.querySelector("video");
     if (!video) return;
 
+    // Standard Fullscreen
     try {
       if (video.requestFullscreen) {
         video.requestFullscreen().catch?.(() => {});
@@ -243,6 +213,7 @@
       }
     } catch {}
 
+    // iOS Safari video fullscreen
     try {
       if (video.webkitEnterFullscreen) {
         video.webkitEnterFullscreen();
@@ -250,6 +221,7 @@
       }
     } catch {}
 
+    // Last resort: fullscreen the card
     try {
       if (card.requestFullscreen) {
         card.requestFullscreen().catch?.(() => {});
@@ -278,8 +250,8 @@
   function renderThumb(it) {
     const badge = normalizeBadge(it);
 
-    // ✅ only render <video> if READY and we have a playbackUrl
-    if (!isReady(it) || !it.playbackUrl) {
+    // ✅ SAFETY: only render <video> if READY
+    if (!isReady(it) || !it.proxyUrl) {
       return `
         <div class="vpThumb is-loading">
           ${renderSkeleton(badge)}
@@ -297,7 +269,7 @@
           preload="metadata"
           playsinline
           controls
-          src="${esc(it.playbackUrl)}"
+          src="${esc(it.proxyUrl)}"
         ></video>
 
         <div class="vpPlay">
@@ -351,12 +323,12 @@
      Actions (download/share/delete + play toggle)
      ======================= */
 
-  function downloadUrl(u) {
-    const url = String(u || "").trim();
-    if (!url) return;
+  function download(url) {
+    const u = String(url || "").trim();
+    if (!u) return;
 
     const a = document.createElement("a");
-    a.href = url;
+    a.href = u;
     a.download = "";
     a.rel = "noopener";
     document.body.appendChild(a);
@@ -364,14 +336,14 @@
     a.remove();
   }
 
-  function shareUrl(u) {
-    const url = String(u || "").trim();
-    if (!url) return;
+  function share(url) {
+    const u = String(url || "").trim();
+    if (!u) return;
 
     if (navigator.share) {
-      navigator.share({ url }).catch(() => {});
+      navigator.share({ url: u }).catch(() => {});
     } else {
-      navigator.clipboard?.writeText(url).catch(() => {});
+      navigator.clipboard?.writeText(u).catch(() => {});
     }
   }
 
@@ -400,8 +372,8 @@
           return;
         }
 
-        if (act === "download") downloadUrl(bestShareUrl(it));
-        if (act === "share") shareUrl(bestShareUrl(it));
+        if (act === "download") download(it.url);
+        if (act === "share") share(it.url);
         if (act === "delete") {
           state.items = state.items.filter(x => String(x.id) !== String(id));
           saveItems();
@@ -440,11 +412,7 @@
       try { prev && prev(job, out); } catch {}
       if (!active) return;
 
-      if (!out || out.type !== "video") return;
-
-      const url = String(out.url || "").trim();
-      const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || "").trim();
-      if (!url && !archive_url) return;
+      if (!out || out.type !== "video" || !out.url) return;
 
       const job_id =
         job?.job_id ||
@@ -462,48 +430,32 @@
 
       // fallback: newest processing card with no url
       const fallbackProcessing = !existing
-        ? state.items.find(x => !String(x.url || "").trim() && !String(x.archive_url || "").trim() && isProcessing(x))
+        ? state.items.find(x => !String(x.url || "").trim() && isProcessing(x))
         : null;
 
       const target = existing || fallbackProcessing;
 
-      const title =
-        out?.meta?.title ||
-        out?.meta?.prompt ||
-        out?.meta?.text ||
-        (target?.title || "Video");
-
-      const nextUrl = archive_url || url;
-      const legacyBroken = looksLikeLegacyBrokenR2(nextUrl);
+      const title = out?.meta?.title || out?.meta?.prompt || out?.meta?.text || (target?.title || "Video");
 
       if (target) {
-        if (url) target.url = url;
-        if (archive_url) target.archive_url = archive_url;
-
-        target.status = legacyBroken ? "İşleniyor" : "Hazır";
+        target.url = out.url;
+        target.proxyUrl = toProxyUrl(out.url);
+        target.status = "Hazır";
         target.title = title;
-
         if (!target.job_id && jid) target.job_id = jid;
         if (!target.id && jid) target.id = jid;
-
         target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
-
-        target.playbackUrl = (!legacyBroken && isReady(target))
-          ? getPlaybackUrl(target)
-          : "";
       } else {
-        const item = {
+        state.items.unshift({
           id: jid || uid(),
           job_id: jid || "",
-          url: url || "",
-          archive_url: archive_url || "",
-          status: legacyBroken ? "İşleniyor" : "Hazır",
+          url: out.url,
+          proxyUrl: toProxyUrl(out.url),
+          status: "Hazır",
           title,
           createdAt: Date.now(),
           meta: { ...(out.meta || {}), app: "video" },
-        };
-        item.playbackUrl = (!legacyBroken && isReady(item)) ? getPlaybackUrl(item) : "";
-        state.items.unshift(item);
+        });
       }
 
       saveItems();
@@ -538,8 +490,7 @@
         id: job_id,
         job_id,
         url: "",          // not ready
-        archive_url: "",  // not ready
-        playbackUrl: "",  // not ready
+        proxyUrl: "",     // not ready
         status: "İşleniyor",
         title,
         createdAt: d.createdAt || Date.now(),
