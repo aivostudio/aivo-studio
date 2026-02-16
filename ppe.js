@@ -6,11 +6,11 @@
 
     // Bulamazsa oluşturur
     ensureTargets() {
-      let video = document.getElementById("mainVideo");
+      // ❌ mainVideo tamamen kaldırıldı
       let audio = document.getElementById("mainAudio");
       let image = document.getElementById("mainImage");
 
-      if (!video || !audio || !image) {
+      if (!audio || !image) {
         const host =
           document.getElementById("rightPanelHost") ||
           document.body;
@@ -22,19 +22,18 @@
           box.style.padding = "12px";
           box.innerHTML = `
             <div style="display:flex;flex-direction:column;gap:10px">
-              <video id="mainVideo" controls playsinline style="width:100%;display:none"></video>
               <audio id="mainAudio" controls style="width:100%;display:none"></audio>
               <img id="mainImage" alt="" style="width:100%;border-radius:12px;display:none" />
             </div>
           `;
           host.appendChild(box);
         }
-        video = document.getElementById("mainVideo");
+
         audio = document.getElementById("mainAudio");
         image = document.getElementById("mainImage");
       }
 
-      return { video, audio, image };
+      return { audio, image };
     },
 
     // Output seçimi: ilk geçerli url + type
@@ -53,7 +52,6 @@
 
     // Görünürlük yönetimi
     showOnly(targets, which) {
-      targets.video.style.display = which === "video" ? "" : "none";
       targets.audio.style.display = which === "audio" ? "" : "none";
       targets.image.style.display = which === "image" ? "" : "none";
     },
@@ -65,13 +63,10 @@
       const out = this.pickOutput(job.outputs);
       if (!out) return { ok: false, reason: "no_output" };
 
+      // ❌ video target yok artık
       const targets = this.ensureTargets();
 
-      if (out.type === "video") {
-        this.showOnly(targets, "video");
-        targets.video.src = out.url;
-        targets.video.load?.();
-      } else if (out.type === "audio") {
+      if (out.type === "audio") {
         this.showOnly(targets, "audio");
         targets.audio.src = out.url;
         targets.audio.load?.();
@@ -79,7 +74,8 @@
         this.showOnly(targets, "image");
         targets.image.src = out.url;
       } else {
-        return { ok: false, reason: "unknown_type", type: out.type };
+        // ❌ video artık PPE tarafından basılmıyor
+        return { ok: false, reason: "unsupported_type", type: out.type };
       }
 
       try {
