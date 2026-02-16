@@ -54,43 +54,74 @@ export default async function handler(req, res) {
       mode = "text",            // "text" | "image"
       image_url = null,
 
-      // ✅ Runway docs: Gen-4.5 model id = "gen4.5"
-      model = "gen4.5",
+    // ✅ Runway docs: Gen-4.5 model id = "gen4.5"
+const {
+  prompt,
+  mode = "text",
+  image_url = null,
+  model = "gen4.5",
 
-      seconds: _seconds = 8,
-      duration = undefined,
+  seconds: _seconds = 8,
+  duration = undefined,
 
-      aspect_ratio: _aspect_ratio = "16:9",
-      ratio = undefined,
+  aspect_ratio: _aspect_ratio = "16:9",
+  ratio = undefined,
 
-      resolution = undefined,
-      audio = undefined,
-    } = req.body || {};
+  // UI gönderirse parse et ama Gen-4.5 payload'a EKLEME
+  resolution = undefined,
+  audio = undefined,
+} = req.body || {};
 
-    if (!prompt && mode === "text") {
-      return res.status(400).json({ ok: false, error: "missing_prompt" });
-    }
-    if (mode === "image" && !image_url) {
-      return res.status(400).json({ ok: false, error: "missing_image_url" });
-    }
+// -------------------------------
+// Validation
+// -------------------------------
+if (!prompt && mode !== "image") {
+  return res.status(400).json({ ok: false, error: "missing_prompt" });
+}
+if (mode === "image" && !image_url) {
+  return res.status(400).json({ ok: false, error: "missing_image_url" });
+}
 
-    const secondsRaw =
-      (typeof duration === "number" && Number.isFinite(duration)) ? duration : _seconds;
+// -------------------------------
+// Normalize inputs
+// -------------------------------
+const secondsRaw =
+  (typeof duration === "number" && Number.isFinite(duration)) ? duration : _seconds;
 
-    const aspect_ratio =
-      (typeof ratio === "string" && ratio) ? ratio : _aspect_ratio;
+const aspect_ratio =
+  (typeof ratio === "string" && ratio) ? ratio : _aspect_ratio;
 
-    const seconds = normalizeDuration(secondsRaw);
-    const runwayRatio = normalizeRatio(aspect_ratio);
+const seconds = normalizeDuration(secondsRaw);     // 5/8/10 clamp
+const runwayRatio = normalizeRatio(aspect_ratio);  // "1280:720" vs
 
-    const resolutionNum =
-      (typeof resolution === "number" && Number.isFinite(resolution)) ? resolution : undefined;
+// (Gen-4.5 için kullanılmayacak ama debug için saklayabilirsin)
+const resolutionNum =
+  (typeof resolution === "number" && Number.isFinite(resolution)) ? resolution : undefined;
 
-    const audioBool =
-      (typeof audio === "boolean") ? audio : undefined;
+const audioBool =
+  (typeof audio === "boolean") ? audio : undefined;
 
-    // ✅ Gen-4.5 için text-to-video da image_to_video endpoint’i (promptImage olmadan)
-    const endpoint = "https://api.dev.runwayml.com/v1/image_to_video";
+// -------------------------------
+// Build Runway payload (Gen-4.5)
+// ❗️resolution/audio burada YOK
+// -------------------------------
+const runwayPayload = {
+  model,               // "gen4.5"
+  promptText: prompt || "",
+  duration: seconds,   // 5/8/10
+  ratio: runwayRatio,  // "1280:720" etc
+};
+
+if (mode === "image") {
+  runwayPayload.promptImage = image_url; // ✅ image_to_video için zorunlu
+}
+
+   // ✅ Gen-4.5: mode'a göre doğru endpoint
+const endpoint =
+  mode === "image"
+    ? "https://api.dev.runwayml.com/v1/image_to_video"
+    : "https://api.dev.runwayml.com/v1/text_to_video";
+
 
     const runwayPayload = {
       model,                 // "gen4.5"
