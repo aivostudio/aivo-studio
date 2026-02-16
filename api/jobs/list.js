@@ -2,7 +2,9 @@
 export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
-import { requireAuth } from "../_lib/auth.js";
+import authModule from "../_lib/auth.js";
+const { requireAuth } = authModule;
+
 
 function firstQueryValue(v) {
   // app=video&app=cover gibi durumlarda array gelebilir
