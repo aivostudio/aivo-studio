@@ -465,7 +465,6 @@ function render(host) {
 
   grid.innerHTML = state.items.map(renderCard).join("");
 }
-
 /* =======================
    Actions
    ======================= */
@@ -498,7 +497,6 @@ function attachEvents(host) {
   const grid = findGrid(host);
   if (!grid) return () => {};
 
-  // ✅ async: delete API için await kullanacağız
   const onClick = async (e) => {
     const card = e.target.closest(".vpCard");
     if (!card) return;
@@ -520,9 +518,12 @@ function attachEvents(host) {
       if (act === "share") { shareUrl(bestShareUrl(it)); return; }
 
       if (act === "delete") {
-        // ✅ Backend soft delete + UI remove (DB hydrate geri getirmesin)
-        const jobId = String(it.job_id || it.id || "").trim();
-        if (!jobId) return;
+        // ✅ SADECE DB job_id kullan
+        const jobId = String(it.job_id || "").trim();
+        if (!jobId) {
+          window.toast?.error?.("Bu kayıt DB job'u değil.");
+          return;
+        }
 
         try {
           const resp = await fetch("/api/jobs/delete", {
@@ -532,22 +533,24 @@ function attachEvents(host) {
               "Content-Type": "application/json",
               "Accept": "application/json",
             },
-            body: JSON.stringify({ job_id: jobId, app: "video" }),
+            body: JSON.stringify({
+              job_id: jobId,
+              app: "video"
+            }),
           });
 
           const j = await resp.json().catch(() => ({}));
 
-          if (!resp.ok || !j || j.ok !== true) {
+          if (!resp.ok || j.ok !== true) {
             console.warn("[video.panel] delete failed:", resp.status, j);
             window.toast?.error?.("Silinemedi (auth/DB).");
             return;
           }
 
-          // UI remove (job_id öncelikli, fallback id)
-          state.items = state.items.filter((x) => {
-            const k = String(x.job_id || x.id || "").trim();
-            return k !== jobId;
-          });
+          // ✅ UI'dan kaldır (job_id bazlı)
+          state.items = state.items.filter(
+            (x) => String(x.job_id || "") !== jobId
+          );
 
           saveItems();
           render(host);
