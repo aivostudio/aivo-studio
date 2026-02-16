@@ -213,7 +213,7 @@
     // Safari’de cookie bazen boş geliyor, hydrate’a girmeyelim
     if (!hasAuthCookie()) {
       console.warn("[BOOT] hydrate skipped (no cookie)");
-      return;
+  
     }
 
     const url = `/api/jobs/list?app=${encodeURIComponent(key)}`;
