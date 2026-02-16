@@ -8,12 +8,40 @@ function extractUserId(req) {
   return match ? match[1] : null;
 }
 
+// Gen-4.5 duration seçenekleri (Runway UI: 5/8/10)
+function normalizeDuration(seconds) {
+  const n = Number(seconds);
+  if (!Number.isFinite(n)) return 8;
+
+  // desteklenen: 5, 8, 10
+  if (n <= 5) return 5;
+  if (n <= 8) return 8;
+  return 10;
+}
+
+function normalizeRatio(aspect_ratio) {
+  const ratioMap = {
+    "16:9": "1280:720",
+    "9:16": "720:1280",
+    "4:3": "1104:832",
+    "1:1": "960:960",
+    "3:4": "832:1104",
+  };
+  return ratioMap[aspect_ratio] || ratioMap["16:9"];
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  let db_debug = { tried: false, hasConn: false, inserted: false, updated: false, error: null };
+  let db_debug = {
+    tried: false,
+    hasConn: false,
+    inserted: false,
+    updated: false,
+    error: null,
+  };
 
   try {
     const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
@@ -23,11 +51,11 @@ export default async function handler(req, res) {
 
     const {
       prompt,
-      mode = "text",
+      mode = "text",            // "text" | "image"
       image_url = null,
 
-      // ✅ FIX: Default model artık Gen-4.5
-      model = "runway/gen-4.5",
+      // ✅ Runway docs: Gen-4.5 model id = "gen4.5"
+      model = "gen4.5",
 
       seconds: _seconds = 8,
       duration = undefined,
@@ -39,60 +67,42 @@ export default async function handler(req, res) {
       audio = undefined,
     } = req.body || {};
 
-    // ===============================
-    // Duration normalize (Runway UI: 5 / 8 / 10)
-    // ===============================
-    let seconds =
-      (typeof duration === "number" && Number.isFinite(duration) ? duration : _seconds);
-
-    const allowedDurations = [5, 8, 10];
-
-    // Eğer 4 gibi unsupported gelirse en yakın değere yuvarla
-    if (!allowedDurations.includes(seconds)) {
-      seconds = allowedDurations.reduce((prev, curr) =>
-        Math.abs(curr - seconds) < Math.abs(prev - seconds) ? curr : prev
-      );
+    if (!prompt && mode === "text") {
+      return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
-
-    const aspect_ratio =
-      (typeof ratio === "string" && ratio ? ratio : _aspect_ratio);
-
-    const resolutionNum =
-      (typeof resolution === "number" && Number.isFinite(resolution) ? resolution : undefined);
-
-    const audioBool =
-      (typeof audio === "boolean" ? audio : undefined);
-
-    if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
-
     if (mode === "image" && !image_url) {
       return res.status(400).json({ ok: false, error: "missing_image_url" });
     }
 
-    const ratioMap = {
-      "16:9": "1280:720",
-      "9:16": "720:1280",
-      "4:3": "1104:832",
-      "1:1": "960:960",
-      "3:4": "832:1104",
-    };
+    const secondsRaw =
+      (typeof duration === "number" && Number.isFinite(duration)) ? duration : _seconds;
+
+    const aspect_ratio =
+      (typeof ratio === "string" && ratio) ? ratio : _aspect_ratio;
+
+    const seconds = normalizeDuration(secondsRaw);
+    const runwayRatio = normalizeRatio(aspect_ratio);
+
+    const resolutionNum =
+      (typeof resolution === "number" && Number.isFinite(resolution)) ? resolution : undefined;
+
+    const audioBool =
+      (typeof audio === "boolean") ? audio : undefined;
+
+    // ✅ Gen-4.5 için text-to-video da image_to_video endpoint’i (promptImage olmadan)
+    const endpoint = "https://api.dev.runwayml.com/v1/image_to_video";
 
     const runwayPayload = {
-      model,
-      promptText: prompt,
-      duration: seconds,
-      ratio: ratioMap[aspect_ratio] || ratioMap["16:9"],
+      model,                 // "gen4.5"
+      promptText: prompt || "",
+      duration: seconds,     // 5/8/10
+      ratio: runwayRatio,
     };
+
+    if (mode === "image") runwayPayload.promptImage = image_url;
 
     if (typeof resolutionNum === "number") runwayPayload.resolution = resolutionNum;
     if (typeof audioBool === "boolean") runwayPayload.audio = audioBool;
-
-    const endpoint =
-      mode === "image"
-        ? "https://api.dev.runwayml.com/v1/image_to_video"
-        : "https://api.dev.runwayml.com/v1/text_to_video";
-
-    if (mode === "image") runwayPayload.promptImage = image_url;
 
     // ===============================
     // DB Connect
@@ -106,22 +116,16 @@ export default async function handler(req, res) {
     db_debug.hasConn = !!conn;
 
     if (!conn) {
-      return res.status(500).json({
-        ok: false,
-        error: "missing_db_env",
-        db_debug,
-      });
+      return res.status(500).json({ ok: false, error: "missing_db_env", db_debug });
     }
 
     const sql = neon(conn);
-
     const user_id = extractUserId(req) || "anonymous";
+    const job_id = crypto.randomUUID();
 
     // ===============================
-    // 1) önce DB job aç
+    // 1) önce DB job aç (✅ enum uyumlu)
     // ===============================
-    let job_id = crypto.randomUUID();
-
     try {
       db_debug.tried = true;
 
@@ -129,38 +133,44 @@ export default async function handler(req, res) {
         insert into jobs (
           id,
           user_id,
-          app,
-          provider,
-          request_id,
+          type,
           status,
-          prompt,
+          created_at,
+          app,
           meta,
           outputs,
           error,
-          created_at,
-          updated_at
+          updated_at,
+          request_id,
+          prompt,
+          provider
         )
         values (
           ${job_id},
           ${user_id},
           ${"video"},
-          ${"runway"},
-          ${null},
-          ${"processing"},
-          ${prompt},
+          ${"queued"},
+          now(),
+          ${"video"},
           ${JSON.stringify({
             mode,
             model,
-            seconds, // ✅ clamp edilmiş hali DB’ye yazılıyor
+            seconds,
             aspect_ratio,
             resolution: resolutionNum ?? null,
             audio: audioBool ?? null,
             image_url: image_url ?? null,
-          })},
-          ${JSON.stringify([])},
+            runway: {
+              endpoint,
+              payload: runwayPayload,
+            },
+          })}::jsonb,
+          ${JSON.stringify([])}::jsonb,
           ${null},
-          now(),
-          now()
+          now()::timestamp,
+          ${null},
+          ${prompt || ""},
+          ${"runway"}
         )
       `;
 
@@ -183,6 +193,14 @@ export default async function handler(req, res) {
     let r, data;
 
     try {
+      // queued -> processing
+      await sql`
+        update jobs
+        set status = ${"processing"},
+            updated_at = now()::timestamp
+        where id = ${job_id}
+      `;
+
       r = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -195,14 +213,13 @@ export default async function handler(req, res) {
 
       data = await r.json().catch(() => ({}));
     } catch (e) {
-      // Runway unreachable
       const errText = String(e?.message || e);
 
       await sql`
         update jobs
-        set status = ${"failed"},
+        set status = ${"error"},
             error = ${errText},
-            updated_at = now()
+            updated_at = now()::timestamp
         where id = ${job_id}
       `;
 
@@ -215,7 +232,7 @@ export default async function handler(req, res) {
     }
 
     // ===============================
-    // 3) Eğer response.ok değilse -> job failed
+    // 3) Runway error -> DB error
     // ===============================
     if (!r.ok) {
       const errText =
@@ -226,14 +243,14 @@ export default async function handler(req, res) {
       try {
         await sql`
           update jobs
-          set status = ${"failed"},
+          set status = ${"error"},
               error = ${errText},
-              meta = meta || ${JSON.stringify({
+              meta = (coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
                 runway_status: r.status,
                 runway_response: data,
                 runway_endpoint: endpoint,
-              })},
-              updated_at = now()
+              })}::jsonb),
+              updated_at = now()::timestamp
           where id = ${job_id}
         `;
 
@@ -253,20 +270,20 @@ export default async function handler(req, res) {
     }
 
     // ===============================
-    // 4) Sadece 200 ise task_id kaydet
+    // 4) Task id kaydet
     // ===============================
     const request_id = data?.id || data?.task_id || data?.request_id;
 
     if (!request_id) {
       await sql`
         update jobs
-        set status = ${"failed"},
+        set status = ${"error"},
             error = ${"runway_missing_request_id"},
-            meta = meta || ${JSON.stringify({
+            meta = (coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
               runway_response: data,
               runway_endpoint: endpoint,
-            })},
-            updated_at = now()
+            })}::jsonb),
+            updated_at = now()::timestamp
         where id = ${job_id}
       `;
 
@@ -278,16 +295,14 @@ export default async function handler(req, res) {
       });
     }
 
-    // DB’ye request_id yaz
     try {
       await sql`
         update jobs
         set request_id = ${String(request_id)},
-            status = ${"running"},
-            updated_at = now()
+            status = ${"processing"},
+            updated_at = now()::timestamp
         where id = ${job_id}
       `;
-
       db_debug.updated = true;
     } catch (e) {
       console.error("DB update request_id failed:", e);
@@ -302,7 +317,6 @@ export default async function handler(req, res) {
       raw: data,
       db_debug,
     });
-
   } catch (e) {
     return res.status(500).json({
       ok: false,
