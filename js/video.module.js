@@ -1,13 +1,22 @@
 console.log("[video.module] loaded ✅", new Date().toISOString());
 
-// video.module.js — FULL BLOCK (create + poll + PPE.apply)
-
 (function () {
-  if (window.__AIVO_VIDEO_MODULE__) return;
-  window.__AIVO_VIDEO_MODULE__ = true;
+  // ===============================
+  // Global guard (tek kez)
+  // ===============================
+  if (window.__AIVO_VIDEO_MODULE_V2__) return;
+  window.__AIVO_VIDEO_MODULE_V2__ = true;
+
+  const ROOT_SEL = 'section[data-module="video"]';
+  const POLL_MS = 2000;
+  const POLL_MAX = 120; // 4 dk
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
+  }
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
   function emitVideoJobCreated(meta) {
@@ -28,12 +37,14 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     if (!Number.isFinite(num)) return 8;
     if (allowed.includes(num)) return num;
 
-    // En yakın değeri seç
     return allowed.reduce((prev, curr) =>
       Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev
     );
   }
 
+  // ===============================
+  // Robust JSON POST (500'lerde text dönebilir)
+  // ===============================
   async function postJSON(url, payload) {
     const r = await fetch(url, {
       method: "POST",
@@ -41,67 +52,123 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       body: JSON.stringify(payload),
     });
 
-    const j = await r.json().catch(() => null);
+    const text = await r.text().catch(() => "");
+    let j = null;
+    try {
+      j = text ? JSON.parse(text) : null;
+    } catch (_) {
+      j = null;
+    }
 
-    if (!r.ok || !j) throw j?.error || `create_failed_${r.status}`;
+    if (!r.ok) {
+      const err =
+        (j && (j.error || j.message)) ||
+        (text ? text.slice(0, 180) : "") ||
+        `request_failed_${r.status}`;
+      throw err;
+    }
+
+    if (!j) throw "bad_json_response";
     return j;
   }
 
+  // ===============================
+  // Poll job -> PPE.apply (video only)
+  // ===============================
+  function isReadyStatus(s) {
+    const v = String(s || "").toLowerCase();
+    return v === "ready" || v === "done" || v === "completed" || v === "success";
+  }
+
+  function pickVideoOutputs(outputs) {
+    if (!Array.isArray(outputs)) return [];
+    return outputs.filter((o) => {
+      if (!o) return false;
+      if (o.type && o.type !== "video") return false;
+      const app = o.meta?.app || o.app || o.module;
+      return !app || app === "video"; // app yoksa da kabul (geriye uyumluluk)
+    });
+  }
+
   async function pollJob(job_id) {
-    for (let i = 0; i < 120; i++) {
-      await new Promise((r) => setTimeout(r, 2000));
+    for (let i = 0; i < POLL_MAX; i++) {
+      await sleep(POLL_MS);
 
       const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
-      const j = await r.json().catch(() => null);
+      const text = await r.text().catch(() => "");
+      let j = null;
+      try { j = text ? JSON.parse(text) : null; } catch (_) { j = null; }
 
       if (!j || !j.ok) continue;
 
-      // ✅ ready + done kabul et
-      const isReady = (j.status === "ready" || j.status === "done");
+      const ready = isReadyStatus(j.status);
+      const outs = pickVideoOutputs(j.outputs);
 
-      if (isReady && Array.isArray(j.outputs) && j.outputs.length) {
-        window.PPE?.apply({
+      if (ready && outs.length) {
+        window.PPE?.apply?.({
           state: "COMPLETED",
-          outputs: j.outputs,
+          outputs: outs.map((o) => ({
+            ...o,
+            meta: { ...(o.meta || {}), app: "video" },
+          })),
         });
         return;
+      }
+
+      // backend error ise erken kır
+      if (String(j.status || "").toLowerCase() === "error") {
+        throw j.error || "video_job_error";
       }
     }
 
     throw "video_poll_timeout";
   }
 
-  async function createText() {
-    const prompt = (qs("#videoPrompt")?.value || "").trim();
-    if (!prompt) return alert("Lütfen video açıklaması yaz.");
+  // ===============================
+  // Collect UI values safely (root-aware)
+  // ===============================
+  function getRoot() {
+    return document.querySelector(ROOT_SEL) || document;
+  }
 
-    const durationRaw = Number(qs("#videoDuration")?.value || 8);
+  function buildCommonPayload(root) {
+    const durationRaw = Number(qs("#videoDuration", root)?.value || 8);
     const duration = clampDuration(durationRaw);
 
-    const payload = {
+    return {
       app: "video",
+      model: "gen4.5",
+      duration,
+      ratio: qs("#videoRatio", root)?.value || "16:9",
+      resolution: Number(qs("#videoResolution", root)?.value || 720),
+      audio: !!qs("#audioEnabled", root)?.checked,
+    };
+  }
+
+  async function createText() {
+    const root = getRoot();
+
+    const prompt = (qs("#videoPrompt", root)?.value || "").trim();
+    if (!prompt) {
+      alert("Lütfen video açıklaması yaz.");
+      return;
+    }
+
+    const payload = {
+      ...buildCommonPayload(root),
       mode: "text",
       prompt,
-
-      // ✅ model sabitle (backend override edebilir)
-      model: "gen4.5",
-
-      // ✅ clamp edilmiş duration
-      duration,
-
-      resolution: Number(qs("#videoResolution")?.value || 720),
-      ratio: qs("#videoRatio")?.value || "16:9",
-      audio: !!qs("#audioEnabled")?.checked,
     };
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
-    job.app = "video";
 
+    // jobs store
+    job.app = "video";
     window.AIVO_JOBS?.upsert?.(job);
-    console.log("[video] created(text)", job);
 
     const job_id = job.job_id || job.id;
+    console.log("[video] created(text)", { job_id, job });
 
     emitVideoJobCreated({
       app: "video",
@@ -120,26 +187,20 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   }
 
   async function createImage() {
-    const file = qs("#videoImageInput")?.files?.[0];
-    if (!file) return alert("Lütfen bir resim seç.");
+    const root = getRoot();
 
-    const durationRaw = Number(qs("#videoDuration")?.value || 8);
-    const duration = clampDuration(durationRaw);
+    const file = qs("#videoImageInput", root)?.files?.[0];
+    if (!file) {
+      alert("Lütfen bir resim seç.");
+      return;
+    }
+
+    const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
 
     const payload = {
-      app: "video",
+      ...buildCommonPayload(root),
       mode: "image",
-      prompt: (qs("#videoImagePrompt")?.value || "").trim(),
-
-      // ✅ model sabitle
-      model: "gen4.5",
-
-      // ✅ clamp edilmiş duration
-      duration,
-
-      resolution: Number(qs("#videoResolution")?.value || 720),
-      ratio: qs("#videoRatio")?.value || "16:9",
-      audio: !!qs("#audioEnabled")?.checked,
+      prompt,
     };
 
     console.log("[video] file selected:", file.name);
@@ -151,31 +212,25 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       prefix: "files/tmp/",
     });
 
-    console.log("[video] presign ok:", presign);
-
     const up = await fetch(presign.upload_url, {
       method: "PUT",
       headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
       body: file,
     });
 
-    if (!up.ok) {
-      throw "r2_upload_failed_" + up.status;
-    }
+    if (!up.ok) throw "r2_upload_failed_" + up.status;
 
-    console.log("[video] uploaded to R2:", presign.public_url);
-
-    // payload'a image_url ekle
     payload.image_url = presign.public_url;
+    console.log("[video] uploaded to R2:", payload.image_url);
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
-    job.app = "video";
 
+    job.app = "video";
     window.AIVO_JOBS?.upsert?.(job);
-    console.log("[video] created(image)", job);
 
     const job_id = job.job_id || job.id;
+    console.log("[video] created(image)", { job_id, job });
 
     emitVideoJobCreated({
       app: "video",
@@ -194,75 +249,62 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     pollJob(job_id).catch(console.error);
   }
 
+  // ===============================
+  // Buttons (event delegation)
+  // ===============================
+  function withLoading(btn, fn) {
+    if (!btn) return;
+    btn.disabled = true;
+    const prev = btn.textContent;
+    btn.textContent = "Üretiliyor...";
+    btn.classList.add("is-loading");
+
+    return Promise.resolve()
+      .then(fn)
+      .catch((err) => {
+        console.error(err);
+        alert(String(err));
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = prev;
+        btn.classList.remove("is-loading");
+      });
+  }
+
   document.addEventListener(
     "click",
     (e) => {
-      if (e.target.closest("#videoGenerateTextBtn")) {
+      const tBtn = e.target.closest("#videoGenerateTextBtn");
+      if (tBtn) {
         e.preventDefault();
-
-        const btn = e.target.closest("#videoGenerateTextBtn");
-        btn.disabled = true;
-        const prev = btn.textContent;
-        btn.textContent = "Üretiliyor...";
-        btn.classList.add("is-loading");
-
-        createText()
-          .catch((err) => {
-            console.error(err);
-            alert(String(err));
-          })
-          .finally(() => {
-            btn.disabled = false;
-            btn.textContent = prev;
-            btn.classList.remove("is-loading");
-          });
-
-        return;
+        return withLoading(tBtn, createText);
       }
 
-      if (e.target.closest("#videoGenerateImageBtn")) {
+      const iBtn = e.target.closest("#videoGenerateImageBtn");
+      if (iBtn) {
         e.preventDefault();
-
-        const btn = e.target.closest("#videoGenerateImageBtn");
-        btn.disabled = true;
-        const prev = btn.textContent;
-        btn.textContent = "Üretiliyor...";
-        btn.classList.add("is-loading");
-
-        createImage()
-          .catch((err) => {
-            console.error(err);
-            alert(String(err));
-          })
-          .finally(() => {
-            btn.disabled = false;
-            btn.textContent = prev;
-            btn.classList.remove("is-loading");
-          });
-
-        return;
+        return withLoading(iBtn, createImage);
       }
     },
     true
   );
 
-  // --- PROMPT CHAR COUNT (0/1000) ---
-  function bindPromptCounter() {
-    const promptEl = qs("#videoPrompt");
+  // ===============================
+  // Prompt char count (bind once)
+  // ===============================
+  function bindPromptCounter(root) {
+    const promptEl = qs("#videoPrompt", root);
     if (!promptEl || promptEl.__countBound) return;
 
-    // Sayacı bul: önce data/ID varsa onu kullan, yoksa "0 / 1000" yazan elemanı yakala
     const counterEl =
-      qs("#videoPromptCount") ||
-      qs('[data-role="videoPromptCount"]') ||
-      Array.from(document.querySelectorAll("*")).find((el) =>
+      qs("#videoPromptCount", root) ||
+      qs('[data-role="videoPromptCount"]', root) ||
+      Array.from(root.querySelectorAll("*")).find((el) =>
         (el.textContent || "").trim() === "0 / 1000"
       );
 
-    if (!counterEl) {
-      console.warn("[video.prompt] counter not found (0/1000). Add #videoPromptCount id.");
-      return;
-    }
+    if (!counterEl) return;
 
     promptEl.__countBound = true;
 
@@ -276,38 +318,18 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     update();
   }
 
-  // İlk yüklemede + router/mount sonrası kaçırmamak için
-  bindPromptCounter();
-  new MutationObserver(() => bindPromptCounter()).observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-
-  console.log("[VIDEO] module READY (create + poll + PPE)");
-})();
-
-(function VIDEO_TABS_FIX() {
-  const ROOT_SEL = 'section[data-module="video"]';
-
-  function bind() {
-    const root = document.querySelector(ROOT_SEL);
+  // ===============================
+  // Tabs + Image upload UX (bind once per root)
+  // ===============================
+  function bindTabs(root) {
     if (!root || root.__videoTabsBound) return;
 
     const tabText = root.querySelector('[data-video-tab="text"]');
     const tabImage = root.querySelector('[data-video-tab="image"]');
-
     const viewText = root.querySelector('[data-video-subview="text"]');
     const viewImage = root.querySelector('[data-video-subview="image"]');
 
-    if (!tabText || !tabImage || !viewText || !viewImage) {
-      console.warn("[video.tabs] missing", {
-        tabText: !!tabText,
-        tabImage: !!tabImage,
-        viewText: !!viewText,
-        viewImage: !!viewImage,
-      });
-      return;
-    }
+    if (!tabText || !tabImage || !viewText || !viewImage) return;
 
     root.__videoTabsBound = true;
 
@@ -326,8 +348,9 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         if (!f) return;
 
         if (fb) fb.style.display = "block";
-        if (name) name.textContent = `Seçildi: ${f.name} (${(f.size/1024/1024).toFixed(2)}MB)`;
+        if (name) name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`;
 
+        // Fake progress (sadece UI)
         let p = 0;
         if (bar) bar.style.width = "0%";
         if (pct) pct.textContent = "0%";
@@ -349,7 +372,7 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       viewText.classList.toggle("is-active", isText);
       viewImage.classList.toggle("is-active", !isText);
 
-      // display garantisi (CSS bozulsa bile)
+      // CSS bozulsa bile garanti
       viewText.style.display = isText ? "" : "none";
       viewImage.style.display = !isText ? "" : "none";
 
@@ -359,29 +382,31 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       console.log("[video.tabs] mode =", mode);
     }
 
-    tabText.addEventListener("click", (e) => {
-      e.preventDefault();
-      setMode("text");
-    });
-    tabImage.addEventListener("click", (e) => {
-      e.preventDefault();
-      setMode("image");
-    });
+    tabText.addEventListener("click", (e) => { e.preventDefault(); setMode("text"); });
+    tabImage.addEventListener("click", (e) => { e.preventDefault(); setMode("image"); });
 
     setMode(root.dataset.videoMode || "text");
+    bindImageUploadUX();
     console.log("[video.tabs] bound ✅");
   }
 
-  // router geç basarsa diye
-  let tries = 0;
-  const t = setInterval(() => {
-    tries++;
-    bind();
-    if (tries > 30) clearInterval(t);
-  }, 200);
+  // ===============================
+  // Single observer: root geldiğinde bind et, sonra hafif çalışsın
+  // ===============================
+  function tryBindAll() {
+    const root = document.querySelector(ROOT_SEL);
+    if (!root) return;
 
-  new MutationObserver(() => bind()).observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
+    bindTabs(root);
+    bindPromptCounter(root);
+  }
+
+  // İlk çalıştır
+  tryBindAll();
+
+  // Router/mount sonrası için tek observer
+  const obs = new MutationObserver(() => tryBindAll());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+
+  console.log("[VIDEO] module READY (create + poll + PPE) ✅");
 })();
