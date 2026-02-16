@@ -257,7 +257,21 @@
       },
     };
 
-    item.playbackUrl = (!legacyBroken && isReady(item)) ? getPlaybackUrl(item) : "";
+       // ESki:
+    // item.playbackUrl = (!legacyBroken && isReady(item)) ? getPlaybackUrl(item) : "";
+
+    // Yeni (çıktı varsa playback ver):
+    const pb = getPlaybackUrl(item);
+    const hasOutput = !!pb;
+
+    // COMPLETED yazıp URL yoksa "Hazır" deme (kartı kaybetme/yanlış badge verme)
+    if (!legacyBroken) {
+      const st = String(r.state || r.status || "").toUpperCase();
+      const mapped = (st === "FAILED") ? "Hata" : (st === "COMPLETED") ? "Hazır" : "İşleniyor";
+      item.status = (mapped === "Hazır" && !hasOutput) ? "İşleniyor" : mapped;
+    }
+
+    item.playbackUrl = (!legacyBroken && hasOutput) ? pb : "";
     return item;
   }
 
