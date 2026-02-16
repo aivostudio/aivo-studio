@@ -25,13 +25,7 @@ export default async function handler(req, res) {
     if (!conn) return res.status(500).json({ ok: false, error: "missing_db_env" });
 
     // AUTH
-    let auth = null;
-    try {
-      auth = await requireAuth(req);
-    } catch (e) {
-      return res.status(401).json({ ok: false, error: "unauthorized", message: String(e?.message || e) });
-    }
-
+    const auth = await requireAuth(req);
     const user_id = auth?.user_id ? String(auth.user_id) : null;
     const email = auth?.email ? String(auth.email) : null;
     const legacy_user_id = email ? `${email}:jobs` : null;
@@ -49,14 +43,15 @@ export default async function handler(req, res) {
 
     const sql = neon(conn);
 
-    // ✅ Soft delete: deleted_at set
-    // Güvenlik: sadece kendi job’unu silebilsin (user_id/email/legacy match)
+    // ✅ SOFT DELETE (kalıcı): deleted_at set
+    // ✅ sadece kendi job'unu silebilir (user_id/email/legacy match)
     const rows = await sql`
       update jobs
       set deleted_at = now()::timestamp,
           updated_at = now()::timestamp
       where id = ${job_id}
         and app = ${app}
+        and deleted_at is null
         and (
           user_id::text = ${user_id || ""}
           or user_id::text = ${email || ""}
@@ -76,24 +71,11 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, job_id, app, deleted: true });
   } catch (e) {
-    const msg = String(e?.message || e);
-
-    // deleted_at kolonu yoksa burada yakalanır
-    if (msg.toLowerCase().includes("deleted_at")) {
-      return res.status(500).json({
-        ok: false,
-        error: "missing_deleted_at_column",
-        message:
-          "jobs tablosunda deleted_at kolonu yok. Soft delete için eklenmeli: ALTER TABLE jobs ADD COLUMN deleted_at timestamp;",
-        raw: msg,
-      });
-    }
-
     console.error("jobs/delete failed:", e);
     return res.status(500).json({
       ok: false,
       error: "delete_failed",
-      message: msg,
+      message: String(e?.message || e),
       stack: String(e?.stack || ""),
     });
   }
