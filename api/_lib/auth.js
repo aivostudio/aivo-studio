@@ -6,11 +6,27 @@ import { neon } from "@neondatabase/serverless";
 const COOKIE_KV = "aivo_sess";
 const COOKIE_JWT = "aivo_session";
 
-/* ---------------- helpers ---------------- */
+/* ----------------------------- helpers ----------------------------- */
 
 function parseCookies(req) {
   const out = {};
-  const header = String(req?.headers?.cookie || "");
+
+  // 1) Next/Vercel bazı ortamlarda req.cookies verir
+  if (req?.cookies && typeof req.cookies === "object") {
+    for (const [k, v] of Object.entries(req.cookies)) {
+      if (typeof v === "string" && v) out[k] = v;
+    }
+  }
+
+  // 2) Header cookie (object headers veya Headers instance)
+  let header = "";
+  if (req?.headers?.cookie) header = req.headers.cookie;
+  if (!header && req?.headers?.["cookie"]) header = req.headers["cookie"];
+  if (!header && typeof req?.headers?.get === "function") {
+    header = req.headers.get("cookie") || "";
+  }
+
+  header = String(header || "");
   if (!header) return out;
 
   header.split(";").forEach((part) => {
@@ -18,16 +34,31 @@ function parseCookies(req) {
     if (i === -1) return;
     const k = part.slice(0, i).trim();
     const v = part.slice(i + 1).trim();
-    out[k] = decodeURIComponent(v);
+    if (!k) return;
+    try {
+      out[k] = decodeURIComponent(v);
+    } catch {
+      out[k] = v;
+    }
   });
+
   return out;
 }
 
 function cleanToken(raw) {
   if (!raw) return null;
   let t = String(raw).trim();
+
+  if (
+    (t.startsWith('"') && t.endsWith('"')) ||
+    (t.startsWith("'") && t.endsWith("'"))
+  ) {
+    t = t.slice(1, -1).trim();
+  }
+
+  if (/^bearer\s+/i.test(t)) t = t.replace(/^bearer\s+/i, "").trim();
   if (t.startsWith("s:")) t = t.slice(2);
-  if (/^bearer\s+/i.test(t)) t = t.replace(/^bearer\s+/i, "");
+
   return t || null;
 }
 
@@ -100,11 +131,11 @@ export async function requireAuth(req) {
   try {
     const cookies = parseCookies(req);
 
-    // 1️⃣ KV session
+    // 1) KV session cookie (aivo_sess)
     const sid = cleanToken(cookies[COOKIE_KV]);
 
     if (sid) {
-      // A) sid zaten DB'de varsa direkt resolve
+      // A) sid -> user_id mapping varsa direkt dön
       const mapped = await getUserIdBySid(sid);
       if (mapped) {
         return {
@@ -114,7 +145,7 @@ export async function requireAuth(req) {
         };
       }
 
-      // B) KV email varsa gerçek user’a bağla
+      // B) KV'den email resolve edebiliyorsak gerçek user'a bağla
       try {
         const sess = await kv.get(`sess:${sid}`);
         if (sess?.email) {
@@ -125,12 +156,15 @@ export async function requireAuth(req) {
           return {
             user_id: String(user_id),
             email,
+            role: sess.role || "user",
             session: "kv_email",
           };
         }
-      } catch {}
+      } catch {
+        // KV down olsa bile devam
+      }
 
-      // C) Email yok → anon deterministic email üret
+      // C) Email yoksa deterministic anon email üret (users.email NOT NULL uyumlu)
       const anonEmail = `anon+${sid}@aivo.local`;
       const anonId = await getOrCreateUserByEmail(anonEmail);
       if (anonId) await linkSid(sid, anonId);
@@ -138,11 +172,12 @@ export async function requireAuth(req) {
       return {
         user_id: String(anonId),
         email: anonEmail,
+        role: "user",
         session: "sid_anon",
       };
     }
 
-    // 2️⃣ JWT legacy
+    // 2) Legacy JWT cookie (aivo_session)
     const token = cleanToken(cookies[COOKIE_JWT]);
     if (token && process.env.JWT_SECRET) {
       try {
@@ -151,16 +186,18 @@ export async function requireAuth(req) {
           payload?.email || payload?.sub || payload?.user?.email || null;
 
         if (email) {
-          const user_id = await getOrCreateUserByEmail(
-            String(email).toLowerCase()
-          );
+          const e = String(email).toLowerCase();
+          const user_id = await getOrCreateUserByEmail(e);
           return {
             user_id: String(user_id),
-            email,
+            email: e,
+            role: payload?.role || "user",
             session: "jwt",
           };
         }
-      } catch {}
+      } catch {
+        // invalid jwt -> fallthrough
+      }
     }
 
     return null;
