@@ -56,7 +56,10 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
       if (!j || !j.ok) continue;
 
-      if (j.status === "ready" && Array.isArray(j.outputs) && j.outputs.length) {
+      // ✅ ready + done kabul et
+      const isReady = (j.status === "ready" || j.status === "done");
+
+      if (isReady && Array.isArray(j.outputs) && j.outputs.length) {
         window.PPE?.apply({
           state: "COMPLETED",
           outputs: j.outputs,
@@ -79,6 +82,9 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       app: "video",
       mode: "text",
       prompt,
+
+      // ✅ model sabitle (backend override edebilir)
+      model: "gen4.5",
 
       // ✅ clamp edilmiş duration
       duration,
@@ -103,6 +109,7 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       createdAt: Date.now(),
       mode: "text",
       prompt,
+      model: payload.model,
       ratio: payload.ratio,
       duration: payload.duration,
       resolution: payload.resolution,
@@ -123,6 +130,9 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       app: "video",
       mode: "image",
       prompt: (qs("#videoImagePrompt")?.value || "").trim(),
+
+      // ✅ model sabitle
+      model: "gen4.5",
 
       // ✅ clamp edilmiş duration
       duration,
@@ -172,6 +182,7 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       job_id,
       createdAt: Date.now(),
       mode: "image",
+      model: payload.model,
       prompt: payload.prompt || "",
       image_url: payload.image_url,
       ratio: payload.ratio,
