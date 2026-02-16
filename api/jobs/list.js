@@ -100,14 +100,15 @@ export default async function handler(req, res) {
   const ids = [user_id, email, legacy_user_id].filter(Boolean);
 
   try {
-    const rows = await sql`
-      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-      from jobs
-      where app = ${app}
-        and user_id::text = any(${ids}::text[])
-      order by created_at desc
-      limit 50
-    `;
+  const rows = await sql`
+  select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+  from jobs
+  where app = ${app}
+    and deleted_at is null
+    and user_id::text = any(${ids}::text[])
+  order by created_at desc
+  limit 50
+`;
 
     return res.status(200).json({
       ok: true,
