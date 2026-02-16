@@ -148,7 +148,7 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(500).json({
+      return res.status(500).json({
       ok: false,
       error: "list_failed",
       message: String(e?.message || e),
@@ -156,3 +156,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+export default handler;
