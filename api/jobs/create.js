@@ -1,130 +1,155 @@
 // api/jobs/create.js
-const { Pool } = require("pg");
-const { getRedis } = require("../_kv");
+export const config = { runtime: "nodejs" };
 
-// Postgres bağlantısı
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+import { neon } from "@neondatabase/serverless";
+import { requireAuth } from "../_lib/auth.js";
+import { getRedis } from "../_kv.js"; // sende "../_kv" idi; path ES module ise .js gerekebilir
 
-// Session'dan email alma
-async function getEmailFromSession(req) {
+function firstQueryValue(v) {
+  if (Array.isArray(v)) return v[0];
+  return v;
+}
+
+function normalizeApp(x) {
+  return String(firstQueryValue(x) || "").trim().toLowerCase();
+}
+
+function safeJson(x, fallback) {
   try {
-    const proto = req.headers["x-forwarded-proto"] || "https";
-    const host = req.headers.host;
-    const origin = `${proto}://${host}`;
-
-    const r = await fetch(`${origin}/api/auth/me`, {
-      method: "GET",
-      headers: {
-        cookie: req.headers.cookie || "",
-      },
-    });
-
-    if (!r.ok) return null;
-
-    const me = await r.json().catch(() => ({}));
-    const email = (me?.email || me?.user?.email || "").trim().toLowerCase();
-    return email || null;
-  } catch (e) {
-    return null;
+    if (x === undefined) return fallback;
+    return x;
+  } catch {
+    return fallback;
   }
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  const client = await pool.connect();
+  res.setHeader("Cache-Control", "no-store");
+
+  const conn =
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!conn) {
+    return res.status(500).json({ ok: false, error: "missing_db_env" });
+  }
+
+  // AUTH
+  let auth = null;
+  try {
+    auth = await requireAuth(req);
+  } catch (e) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: String(e?.message || e),
+    });
+  }
+
+  const user_id = auth?.user_id ? String(auth.user_id) : null;
+  if (!user_id) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: "missing_user_id",
+      auth: auth || null,
+    });
+  }
+
+  const body = req.body || {};
+
+  // app/type
+  const app = normalizeApp(body.app || body.type);
+  const allowed = new Set(["hook", "social", "music", "video", "cover", "atmo"]);
+  if (!app || !allowed.has(app)) {
+    return res.status(400).json({ ok: false, error: "type_invalid" });
+  }
+
+  const provider = String(body.provider || "unknown").trim();
+  const prompt = body.prompt ? String(body.prompt) : null;
+
+  // meta: params + provider/prompt (sende pattern buydu)
+  const params = safeJson(body.params, {}) || {};
+  const meta = {
+    ...(typeof params === "object" && params ? params : {}),
+    provider,
+    prompt,
+  };
+
+  // Idempotency (email değil user_id)
+  const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
+  const redis = getRedis?.();
+  if (idemKey && redis) {
+    const idemRedisKey = `idem:${user_id}:${app}:${idemKey}`;
+    const existing = await redis.get(idemRedisKey);
+    if (existing) {
+      return res.status(200).json({ ok: true, job_id: existing, reused: true });
+    }
+  }
+
+  const sql = neon(conn);
 
   try {
-    const body = req.body || {};
-    const redis = getRedis();
+    // jobs tablon: id(uuid), user_id(text), type(text), status(enum), created_at, app, meta(jsonb),
+    // outputs(jsonb), error(text), updated_at, request_id(text), prompt(text), provider(text), deleted_at
+    //
+    // status default varsa yazmadan bırakmak en iyisi.
+    // Eğer default YOKSA ve insert patlıyorsa, aşağıdaki satırı aç:
+    // const status = "queued";
 
-    // 1) email
-    let email = String(body.email || "").trim().toLowerCase();
-    if (!email) email = await getEmailFromSession(req);
-    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
-
-    // 2) type/app (biz bunu DB'de "tip" olarak yazacağız)
-    const app = String(body.type || "").trim();
-
-    const allowed = new Set(["hook", "social", "music", "video", "cover", "atmo"]);
-    if (!allowed.has(app)) {
-      return res.status(400).json({ ok: false, error: "type_invalid" });
-    }
-
-    // 3) provider (DB kolonunda yoksa meta içine koyacağız)
-    const provider = String(body.provider || "unknown").trim();
-
-    // 4) prompt + params/meta
-    const prompt = body.prompt ? String(body.prompt) : null;
-    const params = body.params || {};
-    const meta = { ...(params || {}), provider, prompt };
-
-    // 5) idempotency (Redis ile)
-    const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
-    if (idemKey) {
-      const idemRedisKey = `idem:${email}:${app}:${idemKey}`;
-      const existing = await redis.get(idemRedisKey);
-      if (existing) {
-        return res.status(200).json({ ok: true, job_id: existing, reused: true });
-      }
-    }
-
-    // 6) Kullanıcı UUID resolve (email -> kullanicilar.ID)
-    // NOT: users tablosunda email kolonu "email" varsayımıyla.
-    // Eğer sende farklı isimse (örn. "E-posta"), burada düzeltiriz.
-  const u = await client.query(
-  'SELECT "ID" AS id FROM public."kullanicilar" WHERE lower(email) = $1 LIMIT 1',
-  [email]
-);
-
-
-
-    if (!u.rows || !u.rows.length) {
-      return res.status(400).json({ ok: false, error: "user_not_found" });
-    }
-
-    const userId = u.rows[0].id;
-
-    // 7) DB INSERT (Türkçe kolon isimleriyle)
-    // - "durum" alanını hiç yazmıyoruz -> DB default'u ('sıraya alınmış'::iş_durumu) devreye girer
-    // - provider/prompt kolonları olmadığı için meta içine koyduk
-    const q = `
-      INSERT INTO jobs
-        ("Kullanıcı kimliği", "tip", "uygulama", "meta")
-      VALUES
-        ($1, $2, $3, $4)
-      RETURNING "ID"
+    const rows = await sql`
+      insert into jobs (user_id, app, type, provider, prompt, meta, outputs, error, request_id, created_at, updated_at)
+      values (
+        ${user_id},
+        ${app},
+        ${app},
+        ${provider},
+        ${prompt},
+        ${meta},
+        ${[]},
+        ${null},
+        ${null},
+        now(),
+        now()
+      )
+      returning id
     `;
 
-    const { rows } = await client.query(q, [
-      userId, // uuid
-      app,    // tip
-      app,    // uygulama (şimdilik aynı)
-      meta,   // jsonb
-    ]);
-
-    const job_id = rows[0]?.ID;
-
+    const job_id = rows?.[0]?.id ? String(rows[0].id) : null;
     if (!job_id) {
       return res.status(500).json({ ok: false, error: "insert_failed" });
     }
 
-    // 8) idem kaydet
-    if (idemKey) {
-      const idemRedisKey = `idem:${email}:${app}:${idemKey}`;
+    // idem kaydet
+    if (idemKey && redis) {
+      const idemRedisKey = `idem:${user_id}:${app}:${idemKey}`;
       await redis.set(idemRedisKey, job_id);
     }
 
-    return res.status(200).json({ ok: true, job_id });
+    return res.status(200).json({
+      ok: true,
+      job_id,
+      app,
+      user_id,
+      email: auth?.email || null,
+      session: auth?.session || null,
+    });
   } catch (err) {
     console.error("jobs/create error:", err);
-    return res.status(500).json({ ok: false, error: "server_error" });
-  } finally {
-    client.release();
+
+    // Eğer burada "status cannot be null" gibi bir hata görürsen:
+    // jobs tablosunda status default yok demektir.
+    // O zaman insert'e status ekleyeceğiz (queued/processing vs).
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      message: String(err?.message || err),
+    });
   }
-};
+}
