@@ -11,17 +11,32 @@ const COOKIE_KV = "aivo_sess";
 const COOKIE_JWT = "aivo_session";
 
 /* ----------------------------- helpers ----------------------------- */
+
 function parseCookies(req) {
+  const out = {};
+
+  // 1) If platform provides parsed cookies (Node / Next / Vercel)
+  //    (some runtimes set req.cookies as object)
+  if (req?.cookies && typeof req.cookies === "object") {
+    for (const [k, v] of Object.entries(req.cookies)) {
+      if (typeof v === "string") out[k] = v;
+    }
+  }
+
+  // 2) Get raw cookie header from multiple possible places
   let header = "";
 
-  // Node style variants
+  // Node style: req.headers.cookie or req.headers["cookie"]
   if (req?.headers?.cookie) header = req.headers.cookie;
   if (!header && req?.headers?.["cookie"]) header = req.headers["cookie"];
 
-  // Web Request style
+  // Some frameworks: req.headers.get("cookie") (Web Request)
   if (!header && req?.headers?.get) header = req.headers.get("cookie") || "";
 
-  const out = {};
+  // If still empty, return whatever we already got from req.cookies
+  header = String(header || "");
+  if (!header) return out;
+
   header.split(";").forEach((part) => {
     const i = part.indexOf("=");
     if (i === -1) return;
@@ -37,7 +52,6 @@ function parseCookies(req) {
 
   return out;
 }
-
 
 function cleanToken(raw) {
   if (!raw) return null;
@@ -99,7 +113,7 @@ async function getOrCreateUserIdByEmail(email) {
 
 /* ----------------------------- main ----------------------------- */
 
-export async function requireAuth(req) {
+export async function requireAuth(req, res) {
   try {
     const cookies = parseCookies(req);
 
