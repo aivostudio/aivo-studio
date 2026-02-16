@@ -1,7 +1,10 @@
-import { neon } from "@neondatabase/serverless";
+// ✅ CJS (Vercel serverless default)
+// (ESM import kullanma → "Cannot use import statement outside a module" çökmesini bitirir)
+const { neon } = require("@neondatabase/serverless");
+const { randomUUID } = require("crypto");
 
 function extractUserId(req) {
-  const cookie = req.headers.cookie || "";
+  const cookie = req.headers?.cookie || "";
   const match =
     cookie.match(/aivo_session=([^;]+)/) ||
     cookie.match(/aivo_sess=([^;]+)/);
@@ -12,8 +15,6 @@ function extractUserId(req) {
 function normalizeDuration(seconds) {
   const n = Number(seconds);
   if (!Number.isFinite(n)) return 8;
-
-  // desteklenen: 5, 8, 10
   if (n <= 5) return 5;
   if (n <= 8) return 8;
   return 10;
@@ -30,12 +31,12 @@ function normalizeRatio(aspect_ratio) {
   return ratioMap[aspect_ratio] || ratioMap["16:9"];
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  let db_debug = {
+  const db_debug = {
     tried: false,
     hasConn: false,
     inserted: false,
@@ -46,94 +47,79 @@ export default async function handler(req, res) {
   try {
     const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
     if (!RUNWAYML_API_SECRET) {
-      return res.status(500).json({ ok: false, error: "missing_env_RUNWAYML_API_SECRET" });
+      return res
+        .status(500)
+        .json({ ok: false, error: "missing_env_RUNWAYML_API_SECRET" });
     }
 
-    const {
-      prompt,
-      mode = "text",            // "text" | "image"
-      image_url = null,
+    // -------------------------------
+    // ✅ Single destructure (tek sefer)
+    // -------------------------------
+    const body = req.body || {};
+    const prompt = body.prompt;
+    const mode = body.mode || "text"; // "text" | "image"
+    const image_url = body.image_url ?? null;
 
-    // ✅ Runway docs: Gen-4.5 model id = "gen4.5"
-const {
-  prompt,
-  mode = "text",
-  image_url = null,
-  model = "gen4.5",
+    const model = body.model || "gen4.5";
 
-  seconds: _seconds = 8,
-  duration = undefined,
+    const _seconds = typeof body.seconds === "number" ? body.seconds : 8;
+    const duration = typeof body.duration === "number" ? body.duration : undefined;
 
-  aspect_ratio: _aspect_ratio = "16:9",
-  ratio = undefined,
+    const _aspect_ratio = typeof body.aspect_ratio === "string" ? body.aspect_ratio : "16:9";
+    const ratio = typeof body.ratio === "string" ? body.ratio : undefined;
 
-  // UI gönderirse parse et ama Gen-4.5 payload'a EKLEME
-  resolution = undefined,
-  audio = undefined,
-} = req.body || {};
+    // UI gönderirse al ama Gen-4.5 payload'a koyma
+    const resolution =
+      typeof body.resolution === "number" && Number.isFinite(body.resolution)
+        ? body.resolution
+        : undefined;
 
-// -------------------------------
-// Validation
-// -------------------------------
-if (!prompt && mode !== "image") {
-  return res.status(400).json({ ok: false, error: "missing_prompt" });
-}
-if (mode === "image" && !image_url) {
-  return res.status(400).json({ ok: false, error: "missing_image_url" });
-}
+    const audio =
+      typeof body.audio === "boolean"
+        ? body.audio
+        : undefined;
 
-// -------------------------------
-// Normalize inputs
-// -------------------------------
-const secondsRaw =
-  (typeof duration === "number" && Number.isFinite(duration)) ? duration : _seconds;
+    // -------------------------------
+    // Validation
+    // -------------------------------
+    if (!prompt && mode !== "image") {
+      return res.status(400).json({ ok: false, error: "missing_prompt" });
+    }
+    if (mode === "image" && !image_url) {
+      return res.status(400).json({ ok: false, error: "missing_image_url" });
+    }
 
-const aspect_ratio =
-  (typeof ratio === "string" && ratio) ? ratio : _aspect_ratio;
+    // -------------------------------
+    // Normalize
+    // -------------------------------
+    const secondsRaw =
+      (typeof duration === "number" && Number.isFinite(duration)) ? duration : _seconds;
 
-const seconds = normalizeDuration(secondsRaw);     // 5/8/10 clamp
-const runwayRatio = normalizeRatio(aspect_ratio);  // "1280:720" vs
+    const aspect_ratio =
+      (typeof ratio === "string" && ratio) ? ratio : _aspect_ratio;
 
-// (Gen-4.5 için kullanılmayacak ama debug için saklayabilirsin)
-const resolutionNum =
-  (typeof resolution === "number" && Number.isFinite(resolution)) ? resolution : undefined;
+    const seconds = normalizeDuration(secondsRaw);
+    const runwayRatio = normalizeRatio(aspect_ratio);
 
-const audioBool =
-  (typeof audio === "boolean") ? audio : undefined;
-
-// -------------------------------
-// Build Runway payload (Gen-4.5)
-// ❗️resolution/audio burada YOK
-// -------------------------------
-const runwayPayload = {
-  model,               // "gen4.5"
-  promptText: prompt || "",
-  duration: seconds,   // 5/8/10
-  ratio: runwayRatio,  // "1280:720" etc
-};
-
-if (mode === "image") {
-  runwayPayload.promptImage = image_url; // ✅ image_to_video için zorunlu
-}
-
-   // ✅ Gen-4.5: mode'a göre doğru endpoint
-const endpoint =
-  mode === "image"
-    ? "https://api.dev.runwayml.com/v1/image_to_video"
-    : "https://api.dev.runwayml.com/v1/text_to_video";
-
-
+    // -------------------------------
+    // ✅ Gen-4.5 payload (resolution/audio YOK)
+    // -------------------------------
     const runwayPayload = {
-      model,                 // "gen4.5"
+      model,               // "gen4.5"
       promptText: prompt || "",
-      duration: seconds,     // 5/8/10
-      ratio: runwayRatio,
+      duration: seconds,   // 5/8/10
+      ratio: runwayRatio,  // "1280:720" etc
     };
 
-    if (mode === "image") runwayPayload.promptImage = image_url;
+    if (mode === "image") {
+      runwayPayload.promptImage = image_url; // image_to_video için zorunlu
+    }
 
-    if (typeof resolutionNum === "number") runwayPayload.resolution = resolutionNum;
-    if (typeof audioBool === "boolean") runwayPayload.audio = audioBool;
+    // ✅ mode'a göre doğru endpoint
+    const endpoint =
+      mode === "image"
+        ? "https://api.dev.runwayml.com/v1/image_to_video"
+        : "https://api.dev.runwayml.com/v1/text_to_video";
 
     // ===============================
     // DB Connect
@@ -145,17 +131,16 @@ const endpoint =
       process.env.DATABASE_URL_UNPOOLED;
 
     db_debug.hasConn = !!conn;
-
     if (!conn) {
       return res.status(500).json({ ok: false, error: "missing_db_env", db_debug });
     }
 
     const sql = neon(conn);
     const user_id = extractUserId(req) || "anonymous";
-    const job_id = crypto.randomUUID();
+    const job_id = randomUUID();
 
     // ===============================
-    // 1) önce DB job aç (✅ enum uyumlu)
+    // 1) DB job aç
     // ===============================
     try {
       db_debug.tried = true;
@@ -188,8 +173,9 @@ const endpoint =
             model,
             seconds,
             aspect_ratio,
-            resolution: resolutionNum ?? null,
-            audio: audioBool ?? null,
+            // ✅ sadece meta’da sakla (Gen-4.5 payload'a ekleme)
+            resolution: resolution ?? null,
+            audio: audio ?? null,
             image_url: image_url ?? null,
             runway: {
               endpoint,
@@ -221,10 +207,10 @@ const endpoint =
     // ===============================
     // 2) Runway create
     // ===============================
-    let r, data;
+    let r;
+    let data = {};
 
     try {
-      // queued -> processing
       await sql`
         update jobs
         set status = ${"processing"},
@@ -284,7 +270,6 @@ const endpoint =
               updated_at = now()::timestamp
           where id = ${job_id}
         `;
-
         db_debug.updated = true;
       } catch (e) {
         console.error("DB update failed:", e);
@@ -353,7 +338,8 @@ const endpoint =
       ok: false,
       error: "server_error",
       message: String(e?.message || e),
+      stack: e?.stack,
       db_debug,
     });
   }
-}
+};
