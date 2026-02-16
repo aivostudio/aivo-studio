@@ -1,208 +1,156 @@
-// api/_lib/auth.js
-import jwt from "jsonwebtoken";
-import { kv } from "@vercel/kv";
+// /api/jobs/list.js
+export const config = { runtime: "nodejs" };
+
 import { neon } from "@neondatabase/serverless";
+import { requireAuth } from "../_lib/auth.js";
 
-const COOKIE_KV = "aivo_sess";
-const COOKIE_JWT = "aivo_session";
-
-/* ----------------------------- helpers ----------------------------- */
-
-function parseCookies(req) {
-  const out = {};
-
-  // 1) Next/Vercel bazı ortamlarda req.cookies verir
-  if (req?.cookies && typeof req.cookies === "object") {
-    for (const [k, v] of Object.entries(req.cookies)) {
-      if (typeof v === "string" && v) out[k] = v;
-    }
-  }
-
-  // 2) Header cookie (object headers veya Headers instance)
-  let header = "";
-  if (req?.headers?.cookie) header = req.headers.cookie;
-  if (!header && req?.headers?.["cookie"]) header = req.headers["cookie"];
-  if (!header && typeof req?.headers?.get === "function") {
-    header = req.headers.get("cookie") || "";
-  }
-
-  header = String(header || "");
-  if (!header) return out;
-
-  header.split(";").forEach((part) => {
-    const i = part.indexOf("=");
-    if (i === -1) return;
-    const k = part.slice(0, i).trim();
-    const v = part.slice(i + 1).trim();
-    if (!k) return;
-    try {
-      out[k] = decodeURIComponent(v);
-    } catch {
-      out[k] = v;
-    }
-  });
-
-  return out;
+function firstQueryValue(v) {
+  if (Array.isArray(v)) return v[0];
+  return v;
 }
 
-function cleanToken(raw) {
-  if (!raw) return null;
-  let t = String(raw).trim();
-
-  if (
-    (t.startsWith('"') && t.endsWith('"')) ||
-    (t.startsWith("'") && t.endsWith("'"))
-  ) {
-    t = t.slice(1, -1).trim();
-  }
-
-  if (/^bearer\s+/i.test(t)) t = t.replace(/^bearer\s+/i, "").trim();
-  if (t.startsWith("s:")) t = t.slice(2);
-
-  return t || null;
+function normalizeApp(x) {
+  return String(firstQueryValue(x) || "").trim().toLowerCase();
 }
 
-function getDbConn() {
+function mapState(statusRaw) {
+  const s = String(statusRaw || "").toLowerCase();
+  if (["completed", "ready", "succeeded", "done"].includes(s)) return "COMPLETED";
+  if (["failed", "error", "canceled", "cancelled"].includes(s)) return "FAILED";
+  if (["running", "processing", "in_progress"].includes(s)) return "RUNNING";
+  return "PENDING";
+}
+
+function isAuthError(e) {
+  const msg = String(e?.message || e || "");
   return (
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.DATABASE_URL_UNPOOLED ||
-    null
+    msg.includes("unauthorized") ||
+    msg.includes("Unauthorized") ||
+    msg.includes("AUTH") ||
+    msg.includes("missing_session")
   );
 }
 
-/* ---------------- DB helpers ---------------- */
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  }
 
-async function getOrCreateUserByEmail(email) {
-  const conn = getDbConn();
-  if (!conn) return null;
-  const sql = neon(conn);
+  res.setHeader("Cache-Control", "no-store");
 
-  const existing = await sql`
-    select id from users
-    where lower(email) = lower(${email})
-    limit 1
-  `;
-  if (existing?.[0]?.id) return existing[0].id;
+  const app = normalizeApp(req.query?.app);
+  if (!app) {
+    return res.status(400).json({ ok: false, error: "missing_app" });
+  }
 
-  const inserted = await sql`
-    insert into users (email, created_at)
-    values (${email}, now())
-    returning id
-  `;
-  return inserted?.[0]?.id || null;
-}
+  const conn =
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
 
-async function getUserIdBySid(sid) {
-  const conn = getDbConn();
-  if (!conn) return null;
-  const sql = neon(conn);
+  if (!conn) {
+    return res.status(500).json({ ok: false, error: "missing_db_env" });
+  }
 
-  const r = await sql`
-    select user_id
-    from user_sessions
-    where sid = ${sid}
-      and revoked_at is null
-    limit 1
-  `;
-  return r?.[0]?.user_id || null;
-}
-
-async function linkSid(sid, user_id) {
-  const conn = getDbConn();
-  if (!conn) return;
-  const sql = neon(conn);
-
-  await sql`
-    insert into user_sessions (sid, user_id, created_at, last_seen_at)
-    values (${sid}, ${user_id}, now(), now())
-    on conflict (sid)
-    do update set
-      user_id = excluded.user_id,
-      last_seen_at = now(),
-      revoked_at = null
-  `;
-}
-
-/* ---------------- MAIN ---------------- */
-
-export async function requireAuth(req) {
+  // -----------------------------
+  // AUTH (always resolve before debug)
+  // -----------------------------
+  let auth = null;
   try {
-    const cookies = parseCookies(req);
-
-    // 1) KV session cookie (aivo_sess)
-    const sid = cleanToken(cookies[COOKIE_KV]);
-
-    if (sid) {
-      // A) sid -> user_id mapping varsa direkt dön
-      const mapped = await getUserIdBySid(sid);
-      if (mapped) {
-        return {
-          user_id: String(mapped),
-          email: null,
-          session: "sid_db",
-        };
-      }
-
-      // B) KV'den email resolve edebiliyorsak gerçek user'a bağla
-      try {
-        const sess = await kv.get(`sess:${sid}`);
-        if (sess?.email) {
-          const email = String(sess.email).toLowerCase();
-          const user_id = await getOrCreateUserByEmail(email);
-          if (user_id) await linkSid(sid, user_id);
-
-          return {
-            user_id: String(user_id),
-            email,
-            role: sess.role || "user",
-            session: "kv_email",
-          };
-        }
-      } catch {
-        // KV down olsa bile devam
-      }
-
-      // C) Email yoksa deterministic anon email üret (users.email NOT NULL uyumlu)
-      const anonEmail = `anon+${sid}@aivo.local`;
-      const anonId = await getOrCreateUserByEmail(anonEmail);
-      if (anonId) await linkSid(sid, anonId);
-
-      return {
-        user_id: String(anonId),
-        email: anonEmail,
-        role: "user",
-        session: "sid_anon",
-      };
-    }
-
-    // 2) Legacy JWT cookie (aivo_session)
-    const token = cleanToken(cookies[COOKIE_JWT]);
-    if (token && process.env.JWT_SECRET) {
-      try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        const email =
-          payload?.email || payload?.sub || payload?.user?.email || null;
-
-        if (email) {
-          const e = String(email).toLowerCase();
-          const user_id = await getOrCreateUserByEmail(e);
-          return {
-            user_id: String(user_id),
-            email: e,
-            role: payload?.role || "user",
-            session: "jwt",
-          };
-        }
-      } catch {
-        // invalid jwt -> fallthrough
-      }
-    }
-
-    return null;
+    auth = await requireAuth(req);
   } catch (e) {
-    console.error("requireAuth fatal:", e);
-    return null;
+    console.warn("[jobs/list] auth failed:", e);
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: String(e?.message || e),
+    });
+  }
+
+  const user_id = auth?.user_id ? String(auth.user_id) : null;
+  const email = auth?.email ? String(auth.email) : null;
+
+  // legacy: eski KV düzeni (bazı eski endpoint’ler jobs.user_id’ye bunu yazmış olabilir)
+  const legacy_user_id = email ? `${email}:jobs` : null;
+
+  // -----------------------------
+  // DEBUG (after auth)
+  // -----------------------------
+  if (String(firstQueryValue(req.query?.debug) || "") === "1") {
+    return res.status(200).json({
+      ok: true,
+      debug: true,
+      conn_present: true,
+      auth_object: auth || null,
+      user_id,
+      email,
+      legacy_user_id,
+      app,
+    });
+  }
+
+  if (!user_id && !email) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      auth_object: auth || null,
+    });
+  }
+
+  const sql = neon(conn);
+
+  // sadece dolu olanları OR havuzuna sok
+  const ids = [user_id, email, legacy_user_id].filter(Boolean);
+
+  try {
+    const rows = await sql`
+      select
+        id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+      from jobs
+      where app = ${app}
+        and deleted_at is null
+        and user_id::text = any(${ids}::text[])
+      order by created_at desc
+      limit 50
+    `;
+
+    return res.status(200).json({
+      ok: true,
+      app,
+      auth: true,
+      user_id: user_id || null,
+      email: email || null,
+      items: (rows || []).map((r) => ({
+        job_id: r.id,
+        user_id: r.user_id,
+        app: r.app,
+        status: r.status,
+        state: mapState(r.status),
+        prompt: r.prompt || null,
+        meta: r.meta || null,
+        outputs: r.outputs || [],
+        error: r.error || null,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      })),
+    });
+  } catch (e) {
+    console.error("[jobs/list] list_failed:", e);
+
+    if (isAuthError(e)) {
+      return res.status(401).json({
+        ok: false,
+        error: "unauthorized",
+        message: String(e?.message || e),
+      });
+    }
+
+    return res.status(500).json({
+      ok: false,
+      error: "list_failed",
+      message: String(e?.message || e),
+      stack: String(e?.stack || ""),
+    });
   }
 }
