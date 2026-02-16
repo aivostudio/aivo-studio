@@ -525,7 +525,10 @@ function attachEvents(host) {
           const resp = await fetch("/api/jobs/delete", {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
             body: JSON.stringify({ job_id: jobId, app: "video" }),
           });
 
@@ -537,10 +540,12 @@ function attachEvents(host) {
             return;
           }
 
-          // UI remove
-          state.items = state.items.filter(
-            (x) => String(x.job_id || x.id || "") !== jobId
-          );
+          // UI remove (job_id öncelikli, fallback id)
+          state.items = state.items.filter((x) => {
+            const k = String(x.job_id || x.id || "").trim();
+            return k !== jobId;
+          });
+
           saveItems();
           render(host);
 
