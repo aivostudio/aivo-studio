@@ -50,12 +50,16 @@ export default async function handler(req, res) {
 
     // DEBUG MODE
     if (String(req.query.debug || "") === "1") {
+      const cookieHeader =
+        req?.headers?.cookie || req?.headers?.["cookie"] || "";
+
       return res.status(200).json({
         ok: true,
         debug: true,
         conn_present: Boolean(conn),
         auth_object: auth,
         user_id,
+        cookie_header: cookieHeader ? String(cookieHeader).slice(0, 200) : null,
       });
     }
 
