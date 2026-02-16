@@ -375,93 +375,96 @@ state.items = mergeByJobId(state.items, incoming);
     } catch {}
   }
 
-  /* =======================
-     Render
-     ======================= */
+/* =======================
+   Render
+   ======================= */
 
-  function renderSkeleton(badge) {
-    return `
-      <div class="vpSkel" aria-label="İşleniyor">
-        <div class="vpBadge">${esc(badge)}</div>
-        <div class="vpSkelShimmer"></div>
-        <div class="vpSkelPlay">
-          <div class="vpSkelPlayRing"></div>
-          <div class="vpSkelPlayTri"></div>
-        </div>
+function renderSkeleton(badge) {
+  return `
+    <div class="vpSkel" aria-label="İşleniyor">
+      <div class="vpBadge">${esc(badge)}</div>
+      <div class="vpSkelShimmer"></div>
+      <div class="vpSkelPlay">
+        <div class="vpSkelPlayRing"></div>
+        <div class="vpSkelPlayTri"></div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
-  function renderThumb(it) {
-    const badge = normalizeBadge(it);
+function renderThumb(it) {
+  const badge = normalizeBadge(it);
 
-    if (!isReady(it) || !it.playbackUrl) {
-      return `
-        <div class="vpThumb is-loading">
-          ${renderSkeleton(badge)}
-          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-        </div>
-      `;
-    }
-
+  if (!isReady(it) || !it.playbackUrl) {
     return `
-      <div class="vpThumb">
-        <div class="vpBadge">${esc(badge)}</div>
-
-        <video
-          class="vpVideo"
-          preload="metadata"
-          playsinline
-          controls
-          src="${esc(it.playbackUrl)}"
-        ></video>
-
-        <div class="vpPlay">
-          <span class="vpPlayIcon">▶</span>
-        </div>
-
+      <div class="vpThumb is-loading">
+        ${renderSkeleton(badge)}
         <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
       </div>
     `;
   }
 
-  function renderMeta(it) {
-    const kind = formatKind(it);
-    const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
-    return `
-      <div class="vpMeta">
-        <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
-        <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+  return `
+    <div class="vpThumb">
+      <div class="vpBadge">${esc(badge)}</div>
 
-        <div class="vpActions ${isReady(it) ? "" : "is-disabled"}">
-          <button class="vpIconBtn" data-act="download" ${isReady(it) ? "" : "disabled"} title="İndir">⬇</button>
-          <button class="vpIconBtn" data-act="share" ${isReady(it) ? "" : "disabled"} title="Paylaş">⤴</button>
-          <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
-        </div>
+      <video
+        class="vpVideo"
+        preload="metadata"
+        playsinline
+        controls
+        src="${esc(it.playbackUrl)}"
+      ></video>
+
+      <div class="vpPlay">
+        <span class="vpPlayIcon">▶</span>
       </div>
-    `;
-  }
 
-  function renderCard(it) {
-    return `
-      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
-        ${renderThumb(it)}
-        ${renderMeta(it)}
+      <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+    </div>
+  `;
+}
+
+function renderMeta(it) {
+  const kind = formatKind(it);
+  const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
+  const ready = isReady(it);
+
+  return `
+    <div class="vpMeta">
+      <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
+      <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+
+      <!-- ✅ wrapper artık disabled değil; delete her zaman clickable -->
+      <div class="vpActions">
+        <button class="vpIconBtn" data-act="download" ${ready ? "" : "disabled"} title="İndir">⬇</button>
+        <button class="vpIconBtn" data-act="share" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
+        <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
       </div>
-    `;
+    </div>
+  `;
+}
+
+function renderCard(it) {
+  return `
+    <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
+      ${renderThumb(it)}
+      ${renderMeta(it)}
+    </div>
+  `;
+}
+
+function render(host) {
+  const grid = findGrid(host);
+  if (!grid) return;
+
+  if (!state.items.length) {
+    grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
+    return;
   }
 
-  function render(host) {
-    const grid = findGrid(host);
-    if (!grid) return;
-
-    if (!state.items.length) {
-      grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
-      return;
-    }
-
-    grid.innerHTML = state.items.map(renderCard).join("");
-  }
+  grid.innerHTML = state.items.map(renderCard).join("");
+}
 
 /* =======================
    Actions
