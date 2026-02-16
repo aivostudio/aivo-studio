@@ -11,19 +11,15 @@ const COOKIE_KV = "aivo_sess";
 const COOKIE_JWT = "aivo_session";
 
 /* ----------------------------- helpers ----------------------------- */
-
 function parseCookies(req) {
   let header = "";
 
-  // Node style (req.headers.cookie)
-  if (req?.headers?.cookie) {
-    header = req.headers.cookie;
-  }
+  // Node style variants
+  if (req?.headers?.cookie) header = req.headers.cookie;
+  if (!header && req?.headers?.["cookie"]) header = req.headers["cookie"];
 
-  // Web Request style (req.headers.get("cookie"))
-  if (!header && req?.headers?.get) {
-    header = req.headers.get("cookie") || "";
-  }
+  // Web Request style
+  if (!header && req?.headers?.get) header = req.headers.get("cookie") || "";
 
   const out = {};
   header.split(";").forEach((part) => {
@@ -41,6 +37,7 @@ function parseCookies(req) {
 
   return out;
 }
+
 
 function cleanToken(raw) {
   if (!raw) return null;
