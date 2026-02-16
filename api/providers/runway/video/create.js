@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  let db_debug = { tried: false, hasConn: false, inserted: false, error: null };
+  let db_debug = { tried: false, hasConn: false, inserted: false, updated: false, error: null };
 
   try {
     const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
@@ -76,105 +76,208 @@ export default async function handler(req, res) {
 
     if (mode === "image") runwayPayload.promptImage = image_url;
 
-    const r = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RUNWAYML_API_SECRET}`,
-        "Content-Type": "application/json",
-        "X-Runway-Version": "2024-11-06",
-      },
-      body: JSON.stringify(runwayPayload),
-    });
+    // ===============================
+    // DB Connect
+    // ===============================
+    const conn =
+      process.env.POSTGRES_URL_NON_POOLING ||
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.DATABASE_URL_UNPOOLED;
 
-    const data = await r.json().catch(() => ({}));
+    db_debug.hasConn = !!conn;
+
+    if (!conn) {
+      return res.status(500).json({
+        ok: false,
+        error: "missing_db_env",
+        db_debug,
+      });
+    }
+
+    const sql = neon(conn);
+
+    const user_id = extractUserId(req) || "anonymous";
+
+    // ===============================
+    // 1) önce DB job aç
+    // ===============================
+    let job_id = crypto.randomUUID();
+
+    try {
+      db_debug.tried = true;
+
+      await sql`
+        insert into jobs (
+          id,
+          user_id,
+          app,
+          provider,
+          request_id,
+          status,
+          prompt,
+          meta,
+          outputs,
+          error,
+          created_at,
+          updated_at
+        )
+        values (
+          ${job_id},
+          ${user_id},
+          ${"video"},
+          ${"runway"},
+          ${null},
+          ${"processing"},
+          ${prompt},
+          ${JSON.stringify({
+            mode,
+            model,
+            seconds,
+            aspect_ratio,
+            resolution: resolutionNum ?? null,
+            audio: audioBool ?? null,
+            image_url: image_url ?? null,
+          })},
+          ${JSON.stringify([])},
+          ${null},
+          now(),
+          now()
+        )
+      `;
+
+      db_debug.inserted = true;
+    } catch (e) {
+      db_debug.error = String(e?.message || e);
+      console.error("DB insert failed:", e);
+
+      return res.status(500).json({
+        ok: false,
+        error: "db_insert_failed",
+        message: db_debug.error,
+        db_debug,
+      });
+    }
+
+    // ===============================
+    // 2) Runway create
+    // ===============================
+    let r, data;
+
+    try {
+      r = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RUNWAYML_API_SECRET}`,
+          "Content-Type": "application/json",
+          "X-Runway-Version": "2024-11-06",
+        },
+        body: JSON.stringify(runwayPayload),
+      });
+
+      data = await r.json().catch(() => ({}));
+    } catch (e) {
+      // Runway unreachable
+      const errText = String(e?.message || e);
+
+      await sql`
+        update jobs
+        set status = ${"failed"},
+            error = ${errText},
+            updated_at = now()
+        where id = ${job_id}
+      `;
+
+      return res.status(500).json({
+        ok: false,
+        error: "runway_network_error",
+        message: errText,
+        db_debug,
+      });
+    }
+
+    // ===============================
+    // 3) Eğer response.ok değilse -> job failed
+    // ===============================
     if (!r.ok) {
+      const errText =
+        (data && (data.error || data.message)) ||
+        JSON.stringify(data) ||
+        "runway_create_failed";
+
+      try {
+        await sql`
+          update jobs
+          set status = ${"failed"},
+              error = ${errText},
+              meta = meta || ${JSON.stringify({
+                runway_status: r.status,
+                runway_response: data,
+                runway_endpoint: endpoint,
+              })},
+              updated_at = now()
+          where id = ${job_id}
+        `;
+
+        db_debug.updated = true;
+      } catch (e) {
+        console.error("DB update failed:", e);
+      }
+
       return res.status(r.status).json({
         ok: false,
         error: "runway_create_failed",
         details: data,
         sent: runwayPayload,
         endpoint,
+        db_debug,
       });
     }
 
-    const request_id = data.id || data.task_id || data.request_id;
+    // ===============================
+    // 4) Sadece 200 ise task_id kaydet
+    // ===============================
+    const request_id = data?.id || data?.task_id || data?.request_id;
+
     if (!request_id) {
+      await sql`
+        update jobs
+        set status = ${"failed"},
+            error = ${"runway_missing_request_id"},
+            meta = meta || ${JSON.stringify({
+              runway_response: data,
+              runway_endpoint: endpoint,
+            })},
+            updated_at = now()
+        where id = ${job_id}
+      `;
+
       return res.status(500).json({
         ok: false,
         error: "runway_missing_request_id",
         raw: data,
+        db_debug,
       });
     }
 
-    // ===============================
-    // DB Persist (FIXED user_id)
-    // ===============================
+    // DB’ye request_id yaz
     try {
-      db_debug.tried = true;
+      await sql`
+        update jobs
+        set request_id = ${String(request_id)},
+            status = ${"running"},
+            updated_at = now()
+        where id = ${job_id}
+      `;
 
-      const conn =
-        process.env.POSTGRES_URL_NON_POOLING ||
-        process.env.DATABASE_URL ||
-        process.env.POSTGRES_URL ||
-        process.env.DATABASE_URL_UNPOOLED;
-
-      db_debug.hasConn = !!conn;
-
-      if (conn) {
-        const sql = neon(conn);
-
-        const user_id = extractUserId(req) || "anonymous";
-
-        await sql`
-          insert into jobs (
-            id,
-            user_id,
-            app,
-            provider,
-            request_id,
-            status,
-            prompt,
-            meta,
-            outputs,
-            error,
-            created_at,
-            updated_at
-          )
-          values (
-            ${String(request_id)}::uuid,
-            ${user_id},
-            ${"video"},
-            ${"runway"},
-            ${String(request_id)},
-            ${"running"},
-            ${prompt},
-            ${JSON.stringify({
-              mode,
-              model,
-              seconds,
-              aspect_ratio,
-              resolution: resolutionNum ?? null,
-              audio: audioBool ?? null,
-              image_url: image_url ?? null,
-            })},
-            ${JSON.stringify([])},
-            ${null},
-            now(),
-            now()
-          )
-          on conflict (id) do nothing
-        `;
-
-        db_debug.inserted = true;
-      }
+      db_debug.updated = true;
     } catch (e) {
-      db_debug.error = String(e?.message || e);
-      console.error("DB insert failed:", e);
+      console.error("DB update request_id failed:", e);
     }
 
     return res.status(200).json({
       ok: true,
-      job_id: request_id,
+      job_id,
       request_id,
       status: "IN_QUEUE",
       outputs: [],
