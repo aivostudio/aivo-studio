@@ -1,4 +1,4 @@
-// api/jobs/status.js
+// /api/jobs/status.js
 // CommonJS
 
 const { neon } = require("@neondatabase/serverless");
@@ -21,35 +21,56 @@ function isUuidLike(id) {
 }
 
 /**
- * ✅ DB enum job_status sadece: queued | processing | done | error
- * Provider status’larını DB’ye yazmadan önce buraya normalize et.
+ * DB ENUM: queued | processing | done | error
+ * Provider statusları bunlara map’lenmeli.
  */
-function normalizeJobStatus(input) {
-  const s = String(input || "").trim().toLowerCase();
+function toDbStatus(providerStatus) {
+  const st = String(providerStatus || "").toUpperCase();
 
-  // provider "ready/completed/succeeded" vb
-  if (s === "completed" || s === "complete" || s === "ready" || s === "succeeded" || s === "success")
+  // done
+  if (
+    st === "SUCCEEDED" ||
+    st === "COMPLETED" ||
+    st === "COMPLETE" ||
+    st === "READY" ||
+    st === "DONE"
+  )
     return "done";
 
-  // provider "processing/in_progress" vb
-  if (s === "processing" || s === "in_progress" || s === "running" || s === "started")
+  // processing
+  if (
+    st === "IN_PROGRESS" ||
+    st === "PROCESSING" ||
+    st === "RUNNING" ||
+    st === "STARTED"
+  )
     return "processing";
 
-  // provider "queued/in_queue" vb
-  if (s === "queued" || s === "in_queue" || s === "pending")
-    return "queued";
+  // queued
+  if (st === "IN_QUEUE" || st === "QUEUED" || st === "PENDING") return "queued";
 
-  // provider "failed/error/canceled" vb
-  if (s === "failed" || s === "error" || s === "canceled" || s === "cancelled")
+  // error
+  if (
+    st === "FAILED" ||
+    st === "ERROR" ||
+    st === "CANCELED" ||
+    st === "CANCELLED"
+  )
     return "error";
 
-  // DB enum’e uymayan her şeyi güvenli default’a çek
-  return "processing";
+  return null; // bilinmiyor -> DB’ye dokunma
+}
+
+function toApiStatus(dbStatus) {
+  const s = String(dbStatus || "").toLowerCase();
+  if (s === "done") return "ready";
+  if (s === "error") return "error";
+  return "processing"; // queued/processing/unknown
 }
 
 async function fetchRunwayTask(taskId) {
   const key = process.env.RUNWAYML_API_SECRET;
-  if (!key) return { ok: false };
+  if (!key) return { ok: false, error: "missing_env:RUNWAYML_API_SECRET" };
 
   const r = await fetch(
     `https://api.dev.runwayml.com/v1/tasks/${encodeURIComponent(taskId)}`,
@@ -61,7 +82,11 @@ async function fetchRunwayTask(taskId) {
     }
   );
 
-  if (!r.ok) return { ok: false };
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    return { ok: false, error: `runway_http_${r.status}`, body: t };
+  }
+
   const j = await r.json().catch(() => null);
   return { ok: true, task: j };
 }
@@ -74,8 +99,10 @@ async function copyToR2({ url, key, contentType }) {
 
   if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
   if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+  if (!process.env.R2_ACCESS_KEY_ID)
+    throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_SECRET_ACCESS_KEY)
+    throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
 
   const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
@@ -91,7 +118,8 @@ async function copyToR2({ url, key, contentType }) {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`copy_fetch_failed:${r.status}`);
 
-  const ct = contentType || r.headers.get("content-type") || "application/octet-stream";
+  const ct =
+    contentType || r.headers.get("content-type") || "application/octet-stream";
   const buf = Buffer.from(await r.arrayBuffer());
 
   await r2.send(
@@ -116,10 +144,8 @@ function needsPersist(url) {
   if (u.includes("media.aivo.tr/outputs/")) return false;
   if (u.includes("media.aivo.tr/outputs")) return false;
 
-  // signed/provider url ise persist edilecek
-  if (u.startsWith("http://") || u.startsWith("https://")) return true;
-
-  return false;
+  // provider signed url / dış url -> persist et
+  return u.startsWith("http://") || u.startsWith("https://");
 }
 
 function pickRunwayVideoUrl(task) {
@@ -195,10 +221,6 @@ module.exports = async (req, res) => {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
 
-    // ✅ Bizim DB kolonumuz enum: job_status (queued/processing/done/error)
-    // Bazı eski kayıtlar "status" kolonu da taşıyabilir. Güvenli oku:
-    job.job_status = job.job_status || job.status || "processing";
-
     const provider = String(job.provider || "").toLowerCase();
     const requestId = job.request_id || job.meta?.request_id || null;
 
@@ -207,39 +229,61 @@ module.exports = async (req, res) => {
       const rr = await fetchRunwayTask(requestId);
 
       if (rr.ok) {
-        const stRaw = String(rr.task?.status || rr.task?.state || "").toUpperCase();
+        const stRaw = String(rr.task?.status || rr.task?.state || "");
+        const dbSt = toDbStatus(stRaw);
 
-        // Runway output url
+        // output url (formatlar değişebilir)
         const rawUrl = pickRunwayVideoUrl(rr.task);
 
-        // provider -> DB enum normalize
-        const mapped =
-          (stRaw === "SUCCEEDED" || stRaw === "COMPLETED") ? "done"
-          : (stRaw === "FAILED" || stRaw === "ERROR" || stRaw === "CANCELED" || stRaw === "CANCELLED") ? "error"
-          : (stRaw === "IN_QUEUE" || stRaw === "QUEUED") ? "queued"
-          : (stRaw === "IN_PROGRESS" || stRaw === "PROCESSING" || stRaw === "RUNNING") ? "processing"
-          : "processing";
+        // meta patch (her zaman faydalı)
+        const patchMeta = {
+          runway: {
+            status: String(stRaw || "").toUpperCase(),
+            task_id: requestId,
+            updated_at: new Date().toISOString(),
+          },
+        };
 
-        // ✅ DONE + output varsa DB’ye yaz
-        if (mapped === "done" && rawUrl) {
+        // DONE: outputs varsa yaz
+        if (dbSt === "done" && rawUrl) {
           const outputs = [
-            { type: "video", url: rawUrl, meta: { app: "video", provider: "runway" } },
+            {
+              type: "video",
+              url: rawUrl,
+              meta: { app: "video", provider: "runway" },
+            },
           ];
 
           await sql`
             update jobs
-            set job_status = ${normalizeJobStatus(mapped)}::job_status,
+            set status = 'done',
                 outputs = ${JSON.stringify(outputs)}::jsonb,
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                 updated_at = now()
             where id = ${job_id}
           `;
 
-          job.job_status = "done";
+          job.status = "done";
           job.outputs = outputs;
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
         }
-
-        // ✅ ERROR
-        else if (mapped === "error") {
+        // DONE ama url yoksa sadece status/meta güncelle (en azından stuck kalmasın)
+        else if (dbSt === "done" && !rawUrl) {
+          await sql`
+            update jobs
+            set status = 'done',
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                  ...patchMeta,
+                  runway: { ...patchMeta.runway, note: "done_but_no_output_url" },
+                })}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+          job.status = "done";
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+        }
+        // ERROR
+        else if (dbSt === "error") {
           const failureMessage =
             rr.task?.failure ||
             rr.task?.error ||
@@ -254,46 +298,46 @@ module.exports = async (req, res) => {
             rr.task?.code ||
             null;
 
-          const patchMeta = {
+          const patchMeta2 = {
             runway: {
-              status: stRaw,
+              ...patchMeta.runway,
               failure: failureMessage,
-              failureCode: failureCode,
-              task_id: requestId,
-              updated_at: new Date().toISOString(),
+              failureCode,
             },
           };
 
           await sql`
             update jobs
-            set job_status = 'error'::job_status,
+            set status = 'error',
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta2)}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+
+          job.status = "error";
+          job.meta = { ...(job.meta || {}), ...(patchMeta2 || {}) };
+        }
+        // QUEUED / PROCESSING: DB enum’a uygun şekilde güncelle (opsiyonel ama iyi)
+        else if (dbSt === "queued" || dbSt === "processing") {
+          await sql`
+            update jobs
+            set status = ${dbSt},
                 meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                 updated_at = now()
             where id = ${job_id}
           `;
-
-          job.job_status = "error";
+          job.status = dbSt;
           job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
         }
-
-        // ✅ queued / processing ise DB enum’e uygun şekilde yaz (istersen bunu kapatabilirsin)
-        else {
-          await sql`
-            update jobs
-            set job_status = ${normalizeJobStatus(mapped)}::job_status,
-                updated_at = now()
-            where id = ${job_id}
-          `;
-          job.job_status = normalizeJobStatus(mapped);
-        }
+        // else: bilinmeyen -> dokunma
       }
     }
 
     // --- PERSIST-TO-R2 (PROVIDER BAĞIMSIZ) ---
     let outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
-    // ✅ sadece DONE iken persist
-    if (job.job_status === "done") {
+    // ✅ DB enum'a göre: done -> persist
+    if (String(job.status).toLowerCase() === "done") {
       let changed = false;
       const newOutputs = [];
 
@@ -357,10 +401,12 @@ module.exports = async (req, res) => {
               app,
               persisted: true,
               persisted_at: new Date().toISOString(),
+              source_url: rawUrl,
             },
           });
         } catch (e) {
           console.error("persist_to_r2_failed", e);
+          // persist başarısızsa eski url ile devam et
           newOutputs.push(o);
         }
       }
@@ -390,26 +436,22 @@ module.exports = async (req, res) => {
       outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
 
     const failureReason =
-      job?.meta?.runway?.failure ||
-      job?.meta?.failure ||
-      null;
-
-    // ✅ UI mapping:
-    // queued/processing/done/error -> processing/ready/error
-    const uiStatus =
-      job.job_status === "done" ? "ready" :
-      job.job_status === "error" ? "error" :
-      "processing";
+      job?.meta?.runway?.failure || job?.meta?.failure || null;
 
     return res.status(200).json({
       ok: true,
       job_id,
-      status: uiStatus,
-      error_reason: job.job_status === "error" ? (failureReason || "provider_failed") : null,
+      status: toApiStatus(job.status),
+      error_reason:
+        String(job.status).toLowerCase() === "error"
+          ? failureReason || "provider_failed"
+          : null,
       video: outVideo ? { url: outVideo.url } : null,
       audio: outAudio ? { url: outAudio.url } : null,
       image: outImage ? { url: outImage.url } : null,
       outputs: outputs || [],
+      // debug (istersen kaldır)
+      db_status: job.status,
     });
   } catch (err) {
     console.error("jobs/status server_error:", err);
