@@ -10,7 +10,6 @@ const kvSetJson = kv.kvSetJson;
 function json(res, status, data) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
   res.end(JSON.stringify(data));
 }
 
@@ -50,16 +49,13 @@ export default async function handler(req, res) {
       return json(res, 400, { ok: false, error: "bad_request" });
     }
 
-    // USER READ (fallback)
+    // ✅ USER READ (user: + users: fallback)
     const u1 = await kvGetJson(`user:${email}`).catch(() => null);
     const u2 = await kvGetJson(`users:${email}`).catch(() => null);
-
     const user =
-      u1 && typeof u1 === "object"
+      (u1 && typeof u1 === "object")
         ? u1
-        : u2 && typeof u2 === "object"
-        ? u2
-        : null;
+        : ((u2 && typeof u2 === "object") ? u2 : null);
 
     if (!user) {
       return json(res, 401, { ok: false, error: "user_not_found" });
@@ -83,24 +79,23 @@ export default async function handler(req, res) {
       return json(res, 401, { ok: false, error: "invalid_credentials" });
     }
 
-    // SESSION
+    // ✅ SESSION
     const sid = crypto.randomBytes(24).toString("hex");
-
     await kvSetJson(
       `sess:${sid}`,
       { email, createdAt: Date.now() },
       { ex: 60 * 60 * 24 * 7 } // 7 gün
     );
 
-    const maxAge = 60 * 60 * 24 * 7;
+   const maxAge = 60 * 60 * 24 * 7;
 
-    // 🔥 Safari FIX:
-    // SameSite=None + Secure şart (Safari cross-site / iframe / fetch case’lerinde cookie düşürür)
-    // Domain=.aivo.tr ile tüm subdomainler kapsanır
-    res.setHeader("Set-Cookie", [
-      `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; Secure; SameSite=None; Max-Age=${maxAge}`,
-      `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; Secure; SameSite=None; Max-Age=${maxAge}`, // legacy
-    ]);
+res.setHeader("Set-Cookie", [
+  `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
+  `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy destek
+]);
+
+
+
 
     return json(res, 200, {
       ok: true,
