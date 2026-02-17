@@ -27,7 +27,8 @@ function pickBestVideoUrl(job){
     if(!x) return false;
     const t = String(x.type || x.kind || "").toLowerCase();
     const mt = x.meta && x.meta.type ? String(x.meta.type).toLowerCase() : "";
-    return (t === "video" || mt === "video") && (x.archive_url || x.url);
+const status = String(job.status || job.state || "").toUpperCase();
+
   });
 
   const best = hit || outs.find(x => x && (x.archive_url || x.url)) || outs[0];
