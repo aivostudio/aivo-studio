@@ -206,42 +206,25 @@
       </label>
     </div>
 
-   <!-- CTA -->
-<div class="atmPersCta">
+    <!-- CTA -->
+    <div class="atmPersCta">
+      <button class="btn btn-primary atmCtaBtn" type="button" data-atm-generate data-atm-mode="basic">
+        Atmosfer Video Oluştur
+      </button>
+    </div>
 
-  <button class="btn btn-primary atmCtaBtn" type="button" data-atm-generate data-atm-mode="basic">
-    Atmosfer Video Oluştur
-  </button>
-
-  <div class="atmCtaMeta">
-    🔁 Kusursuz loop • 🎬 MP4 çıktı • 📺 YouTube & Spotify Canvas uyumlu
   </div>
-
-</div>
-
 </div>
 
 <style>
- /* Personalization 3'lü grid + CTA */
-#atmPersonalCard .atmPersGrid{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap:14px;
-  align-items:start;
-}
-
-#atmPersonalCard .atmPersCol{ 
-  min-width:0; 
-}
-
-/* CTA meta info (buton üstü mini satır) */
-#atmPersonalCard .atmCtaMeta{
-  font-size:12px;
-  opacity:.7;
-  margin-bottom:8px;
-  text-align:center;
-}
-
+  /* Personalization 3'lü grid + CTA */
+  #atmPersonalCard .atmPersGrid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:14px;
+    align-items:start;
+  }
+  #atmPersonalCard .atmPersCol{ min-width:0; }
 
   /* 2'li küçük satırlar (pos/size, audio mode/trim) */
   #atmPersonalCard .atmRow2{
@@ -319,6 +302,15 @@
   })();
 </script>
 
+
+<!-- (5) OUTPUT INFO -->
+<div class="card">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
+    <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
+    <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
+    <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
+  </div>
+</div>
 
 </div>
 <!-- /BASIC MODE -->
