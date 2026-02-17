@@ -92,3 +92,21 @@ function atmSuperBindSceneUI() {
 
 // sayfa açılışında çağır
 atmSuperBindSceneUI();
+// ATMOSPHERE — MODE SWITCH (basic/pro)
+(() => {
+  const shell = document.querySelector('.mode-shell[data-mode-shell="atmosphere"]');
+  if (!shell) return;
+
+  const tabs = [...shell.querySelectorAll('.mode-tab[data-mode]')];
+  const panels = [...shell.querySelectorAll('.mode-panel[data-mode-panel]')];
+
+  const setMode = (mode) => {
+    tabs.forEach(t => t.classList.toggle('is-active', t.dataset.mode === mode));
+    panels.forEach(p => p.classList.toggle('is-active', p.dataset.modePanel === mode));
+  };
+
+  tabs.forEach(t => t.addEventListener('click', () => setMode(t.dataset.mode)));
+
+  // default
+  setMode((tabs.find(t => t.classList.contains('is-active'))?.dataset.mode) || 'basic');
+})();
