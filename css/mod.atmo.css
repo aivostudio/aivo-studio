@@ -621,14 +621,20 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   padding: 6px 10px !important;
   font-size: 13px !important;
 }
-/* Süper mod: Işık • Export • Duygu başlığını ortaya al */
-#atmProMoodExport .card-title {
+/* Işık • Export • Duygu başlığı ortala */
+#atmProMoodExport .card-header{
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
   text-align: center !important;
-  width: 100%;
-  display: block;
 }
-#atmProMoodExport .card-subtitle {
-  text-align: center !important;
+
+#atmProMoodExport .card-title{
   width: 100%;
-  display: block;
+  text-align: center !important;
+}
+
+#atmProMoodExport .card-subtitle{
+  width: 100%;
+  text-align: center !important;
 }
