@@ -1,23 +1,17 @@
 // panel.video.js
-// RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
-// FIX: list response key variations + robust outputs parsing + output->READY override
+// RightPanel Video (v2) — DB source-of-truth ONLY (/api/jobs/list?app=video)
+// NO LocalStorage, NO placeholders, NO PPE/job_created cards
+// Goal: DOM cards === DB items (no ghost "işleniyor" cards)
 
 (function () {
   if (!window.RightPanel) return;
 
-  const STORAGE_KEY = "aivo.v2.video.items.v3";
-  const LEGACY_KEYS = ["aivo.v2.video.items.v2", "aivo.v2.video.items"];
   const MAX_ITEMS = 50;
-
   const state = { items: [] };
 
   /* =======================
      Utils
      ======================= */
-
-  function uid() {
-    return "v_" + Math.random().toString(36).slice(2, 10);
-  }
 
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -37,17 +31,11 @@
       .replace(/\s+/g, " ");
   }
 
-  // ✅ status/db_status önce, state sonra (çünkü done + PENDING gibi durumlar var)
+  // status/db_status önce, state sonra (done + PENDING gibi durumlar var)
   function getStatusText(item) {
     const primary = norm(item?.status || item?.db_status);
     const secondary = norm(item?.state);
     return primary || secondary || "";
-  }
-
-  function looksLikeLegacyBrokenR2(url) {
-    // 🔥 Geçici fix:
-    // media.aivo.tr linklerini artık "legacy broken" saymıyoruz.
-    return false;
   }
 
   function toMaybeProxyUrl(url) {
@@ -61,7 +49,7 @@
   function getPlaybackUrl(it) {
     const a = String(it?.archive_url || it?.archiveUrl || "").trim();
     if (a) return toMaybeProxyUrl(a);
-    const u = String(it?.url || it?.video_url || it?.videoUrl || "").trim();
+    const u = String(it?.url || it?.video_url || it?.videoUrl || it?.video?.url || "").trim();
     if (!u) return "";
     return toMaybeProxyUrl(u);
   }
@@ -69,24 +57,51 @@
   function bestShareUrl(it) {
     const a = String(it?.archive_url || it?.archiveUrl || "").trim();
     if (a) return a;
-    const u = String(it?.url || it?.video_url || it?.videoUrl || "").trim();
+    const u = String(it?.url || it?.video_url || it?.videoUrl || it?.video?.url || "").trim();
     return u;
   }
 
-  // ✅ output var mı? (UI item + DB row shape)
+  function pickVideoUrlFromOutputs(outputs) {
+    if (!Array.isArray(outputs)) return "";
+
+    const pickUrl = (o) => {
+      if (!o) return "";
+      const u =
+        o.archive_url || o.archiveUrl || o.archiveURL ||
+        (o.meta && (o.meta.archive_url || o.meta.archiveUrl || o.meta.archiveURL)) ||
+        o.url || o.video_url || o.videoUrl ||
+        (o.meta && (o.meta.url || o.meta.video_url || o.meta.videoUrl));
+      return String(u || "").trim();
+    };
+
+    const isVideo = (o) => {
+      if (!o) return false;
+      const t = String(o.type || o.kind || "").toLowerCase();
+      const mt = String(o.meta?.type || o.meta?.kind || "").toLowerCase();
+      // type boş gelse bile url varsa kabul edeceğiz; ama video öncelikli
+      return t === "video" || mt === "video";
+    };
+
+    const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
+    if (hit) return pickUrl(hit);
+
+    const any = outputs.find((o) => pickUrl(o));
+    return any ? pickUrl(any) : "";
+  }
+
+  // output var mı?
   function hasOutput(item) {
     // playbackUrl varsa hazır demektir
     if (String(item?.playbackUrl || "").trim()) return true;
 
-    // top-level url/archive_url
+    // top-level
     if (String(item?.archive_url || item?.archiveUrl || "").trim()) return true;
-    if (String(item?.url || item?.video_url || item?.videoUrl || "").trim()) return true;
+    if (String(item?.url || item?.video_url || item?.videoUrl || item?.video?.url || "").trim()) return true;
 
-    // DB list shape: outputs[] içinde video url
+    // outputs[]
     const outs = item?.outputs;
     if (Array.isArray(outs)) {
       return outs.some((o) => {
-        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
         const u = String(
           o?.archive_url ||
           o?.archiveUrl ||
@@ -100,20 +115,29 @@
           o?.meta?.videoUrl ||
           ""
         ).trim();
-        // type bazen boş gelebilir; url varsa kabul
-        return (t === "video" || t === "") && !!u;
+        return !!u;
       });
     }
-
     return false;
   }
 
+  function isError(item) {
+    const st = getStatusText(item);
+    return (
+      st === "hata" ||
+      st === "error" ||
+      st === "failed" ||
+      st === "fail" ||
+      st === "canceled" ||
+      st === "cancelled"
+    );
+  }
+
   function isReady(item) {
-    // ✅ ALTIN KURAL: output varsa her durumda READY
+    // ALTIN KURAL: output varsa READY
     if (hasOutput(item)) return true;
 
     const st = getStatusText(item);
-
     return (
       st === "hazır" ||
       st === "ready" ||
@@ -122,38 +146,7 @@
       st === "complete" ||
       st === "succeeded" ||
       st === "success" ||
-      st === "suceeded" // typo safety
-    );
-  }
-
-  function isProcessing(item) {
-    // ready ise processing değildir
-    if (isReady(item)) return false;
-
-    const st = getStatusText(item);
-
-    return (
-      st === "işleniyor" ||
-      st === "processing" ||
-      st === "running" ||
-      st === "pending" ||
-      st === "queued" ||
-      st === "in queue" ||
-      st === "in progress" ||
-      st === "started"
-    );
-  }
-
-  function isError(item) {
-    const st = getStatusText(item);
-
-    return (
-      st === "hata" ||
-      st === "error" ||
-      st === "failed" ||
-      st === "fail" ||
-      st === "canceled" ||
-      st === "cancelled"
+      st === "suceeded"
     );
   }
 
@@ -175,128 +168,35 @@
   }
 
   /* =======================
-     Storage (load / migrate / save)
-     ======================= */
-
-  function safeParse(json) {
-    try { return JSON.parse(json); } catch { return null; }
-  }
-
-  function sanitizeItems(items) {
-    const out = [];
-
-    for (const it0 of (items || [])) {
-      const it = it0 || {};
-      const id = String(it.id || it.job_id || uid());
-      const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
-
-      const url = String(it.url || it.video_url || it.videoUrl || "").trim();
-      const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || it.meta?.archiveUrl || "").trim();
-
-      const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
-
-      // ✅ hazır/işleniyor kararında output’u öncele
-      const readyByOutput = !!(!legacyBroken && (archive_url || url));
-
-      const status =
-        legacyBroken ? "İşleniyor" :
-        (readyByOutput ? "Hazır" : (it.status || it.state || it.db_status || "İşleniyor"));
-
-      const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
-
-      const pb = (!legacyBroken && readyByOutput)
-        ? getPlaybackUrl({ archive_url, url })
-        : "";
-
-      out.push({
-        id,
-        job_id,
-        title,
-        status,
-        url,
-        archive_url,
-        playbackUrl: pb || "",
-        createdAt: it.createdAt || it.created_at || Date.now(),
-        meta: {
-          ...(it.meta || {}),
-          mode: it.meta?.mode || it.mode || it.kind || "",
-          prompt: it.meta?.prompt || it.prompt || it.text || "",
-          app: it.meta?.app || "video",
-        },
-      });
-    }
-
-    out.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-    return out.slice(0, MAX_ITEMS);
-  }
-
-  function loadItems() {
-    const rawNew = localStorage.getItem(STORAGE_KEY);
-    const arrNew = rawNew ? safeParse(rawNew) : null;
-    if (Array.isArray(arrNew)) return sanitizeItems(arrNew);
-
-    for (const k of LEGACY_KEYS) {
-      const raw = localStorage.getItem(k);
-      const arr = raw ? safeParse(raw) : null;
-      if (Array.isArray(arr) && arr.length) {
-        const cleaned = sanitizeItems(arr);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
-        try { localStorage.removeItem(k); } catch {}
-        return cleaned;
-      }
-    }
-    return [];
-  }
-
-  function saveItems() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, MAX_ITEMS)));
-    } catch {}
-  }
-
-  /* =======================
      DB hydrate (/api/jobs/list?app=video)
      ======================= */
 
-  function pickVideoUrlFromOutputs(outputs) {
-    if (!Array.isArray(outputs)) return "";
-
-    const pickUrl = (o) => {
-      if (!o) return "";
-      const u =
-        o.archive_url || o.archiveUrl || o.archiveURL ||
-        (o.meta && (o.meta.archive_url || o.meta.archiveUrl || o.meta.archiveURL)) ||
-        o.url || o.video_url || o.videoUrl ||
-        (o.meta && (o.meta.url || o.meta.video_url || o.meta.videoUrl));
-      return String(u || "").trim();
-    };
-
-    const isVideo = (o) => {
-      if (!o) return false;
-      const t = String(o.type || o.kind || "").toLowerCase();
-      const mt = String(o.meta?.type || o.meta?.kind || "").toLowerCase();
-      return t === "video" || mt === "video";
-    };
-
-    const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
-    if (hit) return pickUrl(hit);
-
-    const any = outputs.find((o) => pickUrl(o));
-    return any ? pickUrl(any) : "";
+  function extractListItems(j) {
+    if (!j) return [];
+    if (Array.isArray(j.items)) return j.items;
+    if (Array.isArray(j.jobs)) return j.jobs;
+    if (Array.isArray(j.rows)) return j.rows;
+    if (Array.isArray(j.data)) return j.data;
+    if (Array.isArray(j.results)) return j.results;
+    if (Array.isArray(j.items?.rows)) return j.items.rows;
+    return [];
   }
 
   function mapDbItemToPanelItem(r) {
     const job_id = String(r?.job_id || r?.id || "").trim();
     const meta = r?.meta || {};
-    const outputs = r?.outputs || [];
+    const outputs = Array.isArray(r?.outputs) ? r.outputs : [];
 
+    // archive_url önce
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
 
+    // url: outputs -> video.url -> meta provider
     const urlFromOutputs =
       pickVideoUrlFromOutputs(outputs) ||
       r?.video?.url ||
       r?.video_url ||
+      r?.videoUrl ||
       "";
 
     const providerUrl =
@@ -317,104 +217,38 @@
       r?.prompt ||
       "Video";
 
+    const createdAt =
+      r?.created_at ? new Date(r.created_at).getTime()
+      : (r?.createdAt ? new Date(r.createdAt).getTime() : Date.now());
+
     const item = {
-      id: job_id || uid(),
-      job_id: job_id || "",
+      id: job_id,            // ✅ tek anahtar
+      job_id: job_id,        // ✅ tek anahtar
       title,
-      status: "İşleniyor",
-      url: url || "",
-      archive_url: archive_url || "",
-      createdAt: (r?.created_at ? new Date(r.created_at).getTime() : (r?.createdAt ? new Date(r.createdAt).getTime() : Date.now())),
+      status: r?.status || r?.db_status || r?.state || "İşleniyor",
+      url,
+      archive_url,
+      createdAt,
       meta: {
         ...(meta || {}),
         mode: meta?.mode || "",
         prompt: meta?.prompt || r?.prompt || "",
         app: "video",
       },
-      // DB row’un outputs’unu da taşıyalım ki hasOutput anlayabilsin
-      outputs: Array.isArray(outputs) ? outputs : [],
-      // DB’den gelen state/status/db_status’ı da taşı (debug/logic için)
+      outputs,
       state: r?.state,
       db_status: r?.db_status,
+      video: r?.video,
     };
 
-    const legacyBroken = looksLikeLegacyBrokenR2(item.archive_url || item.url);
+    item.playbackUrl = getPlaybackUrl(item) || "";
 
-    // ✅ hasOutput (gerçek output'a bağlı)
-    const hasOut = !legacyBroken && hasOutput(item);
-
-    const rawState = String(r?.state || "").toUpperCase();
-    const rawDbStatus = norm(r?.db_status);
-    const rawStatus = norm(r?.status);
-
-    const isFailed =
-      rawState === "FAILED" ||
-      rawState === "ERROR" ||
-      rawDbStatus === "error" ||
-      rawDbStatus === "failed" ||
-      rawStatus === "error" ||
-      rawStatus === "failed";
-
-    if (legacyBroken) {
-      item.status = "İşleniyor";
-    } else if (isFailed) {
-      item.status = "Hata";
-    } else if (hasOut) {
-      item.status = "Hazır";
-    } else {
-      // fallback mapping
-      if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
-      else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
-      else item.status = "İşleniyor";
-    }
-
-    // playbackUrl sadece gerçek pb varsa setle
-    const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
-    item.playbackUrl = pb || "";
+    // badge/status normalize (UI için)
+    if (isError(item)) item.status = "Hata";
+    else if (isReady(item)) item.status = "Hazır";
+    else item.status = "İşleniyor";
 
     return item;
-  }
-
-  function mergeByJobId(existing, incoming) {
-    const map = new Map();
-
-    for (const it of (existing || [])) {
-      const key = String(it.job_id || it.id || "");
-      map.set(key || uid(), it);
-    }
-
-    for (const it of (incoming || [])) {
-      const key = String(it.job_id || it.id || "");
-      if (!key) continue;
-
-      const prev = map.get(key);
-      if (!prev) {
-        map.set(key, it);
-        continue;
-      }
-
-      map.set(key, {
-        ...prev,
-        ...it,
-        title: it.title || prev.title,
-        meta: { ...(prev.meta || {}), ...(it.meta || {}) },
-      });
-    }
-
-    const arr = Array.from(map.values());
-    arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-    return arr.slice(0, MAX_ITEMS);
-  }
-
-  function extractListItems(j) {
-    if (!j) return [];
-    if (Array.isArray(j.items)) return j.items;
-    if (Array.isArray(j.jobs)) return j.jobs;
-    if (Array.isArray(j.rows)) return j.rows;
-    if (Array.isArray(j.data)) return j.data;
-    if (Array.isArray(j.results)) return j.results;
-    if (Array.isArray(j.items?.rows)) return j.items.rows;
-    return [];
   }
 
   async function hydrateFromDB(host) {
@@ -433,11 +267,13 @@
 
       const incoming = (rows || [])
         .map(mapDbItemToPanelItem)
-        .filter((x) => x && (x.job_id || x.id));
+        .filter((x) => x && String(x.job_id || "").trim());
 
-      state.items = mergeByJobId(state.items, incoming);
+      // ✅ TEK SOURCE OF TRUTH: DB
+      state.items = incoming
+        .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+        .slice(0, MAX_ITEMS);
 
-      saveItems();
       render(host);
     } catch (e) {
       console.warn("[video.panel] hydrate exception", e);
@@ -544,8 +380,9 @@
   }
 
   function renderCard(it) {
+    const key = String(it.job_id || it.id || "").trim(); // ✅ job_id
     return `
-      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
+      <div class="vpCard" data-id="${esc(key)}" role="button" tabindex="0">
         ${renderThumb(it)}
         ${renderMeta(it)}
       </div>
@@ -601,7 +438,7 @@
       if (!card) return;
 
       const id = card.getAttribute("data-id");
-      const it = state.items.find(x => String(x.id) === String(id));
+      const it = state.items.find(x => String(x.job_id || x.id || "") === String(id));
       if (!it) return;
 
       const btn = e.target.closest("[data-act]");
@@ -613,13 +450,14 @@
         const act = btn.getAttribute("data-act");
 
         if (act === "fs") { goFullscreen(card); return; }
-        if (act === "download") downloadUrl(bestShareUrl(it));
-        if (act === "share") shareUrl(bestShareUrl(it));
+        if (act === "download") { downloadUrl(bestShareUrl(it)); return; }
+        if (act === "share") { shareUrl(bestShareUrl(it)); return; }
 
         if (act === "delete") {
-          state.items = state.items.filter(x => String(x.id) !== String(id));
-          saveItems();
+          // Şimdilik UI'den kaldırır (backend delete ayrı bağlanacak)
+          state.items = state.items.filter(x => String(x.job_id || x.id || "") !== String(id));
           render(host);
+          return;
         }
         return;
       }
@@ -640,136 +478,6 @@
   }
 
   /* =======================
-     PPE bridge (Runway outputs)
-     ======================= */
-
-  function attachPPE(host) {
-    if (!window.PPE) return () => {};
-
-    const prev = PPE.onOutput;
-    let active = true;
-
-    PPE.onOutput = (job, out) => {
-      try { prev && prev(job, out); } catch {}
-      if (!active) return;
-
-      if (!out || String(out.type || "").toLowerCase() !== "video") return;
-
-      const url = String(out.url || "").trim();
-      const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || out.meta?.archiveUrl || "").trim();
-      if (!url && !archive_url) return;
-
-      const job_id =
-        job?.job_id ||
-        job?.id ||
-        out?.meta?.job_id ||
-        out?.meta?.id ||
-        null;
-
-      const jid = job_id != null ? String(job_id) : null;
-
-      const existing = jid
-        ? state.items.find(x => String(x.job_id || "") === jid || String(x.id || "") === jid)
-        : null;
-
-      const fallbackProcessing = !existing
-        ? state.items.find(x => !String(x.url || "").trim() && !String(x.archive_url || "").trim() && isProcessing(x))
-        : null;
-
-      const target = existing || fallbackProcessing;
-
-      const title =
-        out?.meta?.title ||
-        out?.meta?.prompt ||
-        out?.meta?.text ||
-        (target?.title || "Video");
-
-      const nextUrl = archive_url || url;
-      const legacyBroken = looksLikeLegacyBrokenR2(nextUrl);
-
-      if (target) {
-        if (url) target.url = url;
-        if (archive_url) target.archive_url = archive_url;
-
-        // ✅ output varsa READY
-        target.status = legacyBroken ? "İşleniyor" : "Hazır";
-        target.title = title;
-
-        if (!target.job_id && jid) target.job_id = jid;
-        if (!target.id && jid) target.id = jid;
-
-        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
-        const pb = (!legacyBroken) ? getPlaybackUrl(target) : "";
-        target.playbackUrl = pb || "";
-      } else {
-        const item = {
-          id: jid || uid(),
-          job_id: jid || "",
-          url: url || "",
-          archive_url: archive_url || "",
-          status: legacyBroken ? "İşleniyor" : "Hazır",
-          title,
-          createdAt: Date.now(),
-          meta: { ...(out.meta || {}), app: "video" },
-        };
-        const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
-        item.playbackUrl = pb || "";
-        state.items.unshift(item);
-      }
-
-      saveItems();
-      render(host);
-    };
-
-    return () => {
-      active = false;
-      PPE.onOutput = prev || null;
-    };
-  }
-
-  /* =======================
-     Job created bridge (pending card)
-     ======================= */
-
-  function attachJobCreated(host) {
-    const onJob = (e) => {
-      const d = e?.detail || {};
-      if (d.app !== "video" || !d.job_id) return;
-
-      const job_id = String(d.job_id);
-      const exists = state.items.some(x => String(x.job_id || "") === job_id || String(x.id || "") === job_id);
-      if (exists) return;
-
-      const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
-      const prompt = (d.prompt && String(d.prompt).trim()) ? String(d.prompt).trim() : "";
-      const title = prompt ? `${modeLabel}: ${prompt}` : modeLabel;
-
-      state.items.unshift({
-        id: job_id,
-        job_id,
-        url: "",
-        archive_url: "",
-        playbackUrl: "",
-        status: "İşleniyor",
-        title,
-        createdAt: d.createdAt || Date.now(),
-        meta: {
-          mode: d.mode || "",
-          prompt: prompt,
-          image_url: d.image_url || "",
-          app: "video",
-        },
-      });
-
-      saveItems();
-      render(host);
-    };
-
-    window.addEventListener("aivo:video:job_created", onJob);
-    return () => window.removeEventListener("aivo:video:job_created", onJob);
-  }
-
-  /* =======================
      Panel register
      ======================= */
 
@@ -787,25 +495,17 @@
         </div>
       `;
 
-      // 1) instant UI from LS
-      state.items = loadItems();
-      render(host);
-
-      // 2) hydrate from DB (source of truth)
+      // ✅ İlk render DB hydrate ile
       hydrateFromDB(host);
 
-      // 3) periodic hydrate
+      // ✅ Periyodik hydrate
       const t = setInterval(() => hydrateFromDB(host), 15000);
 
       const offEvents = attachEvents(host);
-      const offPPE = attachPPE(host);
-      const offJobs = attachJobCreated(host);
 
       return () => {
         try { clearInterval(t); } catch {}
         try { offEvents(); } catch {}
-        try { offPPE(); } catch {}
-        try { offJobs(); } catch {}
       };
     },
   });
