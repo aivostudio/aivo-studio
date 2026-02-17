@@ -438,3 +438,24 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
 .atmBigCtaBtn--pro{
   background:linear-gradient(90deg, rgba(140,90,255,.95), rgba(255,110,210,.95));
 }
+/* LUT inline row (yükseklik fix) */
+.atmLutRow{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.atmLutLabel{
+  font-weight:600;
+  font-size:13px;
+  opacity:.8;
+  white-space:nowrap;
+}
+
+.atmLutSelect{
+  width:220px;
+  max-width:55%;
+  border-radius:12px;
+}
