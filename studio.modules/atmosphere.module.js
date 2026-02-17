@@ -116,38 +116,63 @@ document.addEventListener("click", function (e) {
 });
 // ===============================
 // ATMOSPHERE — Generate CTA (delegated, router-safe)
+// Amaç: Router/re-render olsa bile generate butonu çalışsın
 // ===============================
 (() => {
+  // ✅ Bind guard: bu block sadece 1 kere kurulsun
   if (window.__ATM_GEN_BIND__) return;
   window.__ATM_GEN_BIND__ = true;
 
+  // --------------------------------
+  // Helper: querySelector (tek eleman)
+  // --------------------------------
   const qs = (sel, root = document) => root.querySelector(sel);
+
+  // --------------------------------
+  // Helper: querySelectorAll (liste)
+  // --------------------------------
   const qsa = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+  // --------------------------------
+  // BASIC Payload Reader
+  // Amaç: Basit mod state'ini DOM'dan güvenle oku
+  // Not: EFFECTS source-of-truth = checkbox (.atm-check)
+  // --------------------------------
   function readBasicPayload(panel) {
+    // Scene (single select)
     const scenesRoot = qs("#atmScenes", panel);
     const sceneBtn = scenesRoot ? qs(".smpack-choice.is-active", scenesRoot) : null;
     const scene = sceneBtn?.dataset?.atmScene || null;
 
+    // ✅ Effects (multi select) — CHECKBOX SOURCE OF TRUTH
+    // UI pill is-active kalsa bile payload burada kesin doğru olur
     const effectsRoot = qs("#atmEffects", panel);
     const effects = effectsRoot
-      ? qsa(".atm-pill.is-active, .smpack-pill.is-active", effectsRoot).map(b => b.dataset.atmEff).filter(Boolean)
+      ? qsa('input.atm-check[type="checkbox"]:checked', effectsRoot)
+          .map((c) => (c.value || "").trim())
+          .filter(Boolean)
       : [];
 
+    // Kamera / Süre
     const camera = qs("#atmCamera", panel)?.value || "kenburns_soft";
     const duration = qs("#atmDuration", panel)?.value || "8";
 
+    // Kendi görseli (opsiyonel)
     const imgFile = qs("#atmImageFile", panel)?.files?.[0] || null;
 
     return { mode: "basic", scene, effects, camera, duration, imgFile };
   }
 
+  // --------------------------------
+  // PRO Payload Reader
+  // Amaç: Süper mod state'ini DOM'dan güvenle oku
+  // --------------------------------
   function readProPayload(panel) {
     const prompt = (qs("#atmSuperPrompt", panel)?.value || "").trim();
 
-    // mood pills
-    const moodBtns = qsa('[data-atm-mood].is-active', panel);
-    const mood = moodBtns[0]?.dataset?.atmMood || null;
+    // Mood (single select)
+    const moodBtn = qs('[data-atm-mood].is-active', panel);
+    const mood = moodBtn?.dataset?.atmMood || null;
 
     const format = qs("#atmProFormat", panel)?.value || "mp4";
 
@@ -157,21 +182,30 @@ document.addEventListener("click", function (e) {
     return { mode: "pro", prompt, mood, format, refImage, refAudio };
   }
 
+  // --------------------------------
+  // Generate Click Handler
+  // Amaç: Butona basılınca doğru panel/mode/payload'u okuyup işlemek
+  // Şimdilik: payload log (sonraki adım: create → poll → PPE.apply)
+  // --------------------------------
   async function onGenerateClick(btn) {
+    // Atmosphere panel scope
     const panel = btn.closest('.main-panel[data-module="atmosphere"]');
     if (!panel) return;
 
     const mode = btn.dataset.atmMode || "basic";
 
-    // TODO: burayı senin mevcut create akışına bağlayacağız.
-    // Şimdilik payload'u konsola basıyorum ki doğru okuyor mu görelim:
     const payload = mode === "pro" ? readProPayload(panel) : readBasicPayload(panel);
     console.log("[ATM] generate payload =", payload);
 
-    // Eğer sende mevcut bir create fonksiyonu varsa burada çağır:
-    // window.ATM_CREATE?.(payload) gibi...
+    // TODO (sonraki adım):
+    // burada /api/jobs/create → poll /api/jobs/status → PPE.apply zinciri
+    // örn: await window.ATM_CREATE?.(payload)
   }
 
+  // --------------------------------
+  // Delegated Click Binder
+  // Amaç: DOM yenilense bile [data-atm-generate] tıklamasını yakala
+  // --------------------------------
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-atm-generate]");
     if (!btn) return;
