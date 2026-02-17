@@ -29,29 +29,58 @@
     }[c]));
   }
 
-  function isReady(item) {
-    const st = String(item?.status || item?.state || "").toLowerCase();
-    return st === "hazır" || st === "ready" || st === "completed" || st === "succeeded";
-  }
+ function isReady(item) {
+  const st = String(
+    item?.status ||
+    item?.state ||
+    item?.db_status ||
+    ""
+  ).toLowerCase();
 
-  function isProcessing(item) {
-    const st = String(item?.status || item?.state || "").toLowerCase();
-    return (
-      st === "işleniyor" ||
-      st === "processing" ||
-      st === "in_progress" ||
-      st === "in queue" ||
-      st === "in_queue" ||
-      st === "queued" ||
-      st === "pending" ||
-      st === "running"
-    );
-  }
+  return (
+    st === "hazır" ||
+    st === "ready" ||
+    st === "completed" ||
+    st === "succeeded" ||
+    st === "done"
+  );
+}
 
-  function isError(item) {
-    const st = String(item?.status || item?.state || "").toLowerCase();
-    return st === "error" || st === "failed" || st === "fail" || st === "hata";
-  }
+function isProcessing(item) {
+  const st = String(
+    item?.status ||
+    item?.state ||
+    item?.db_status ||
+    ""
+  ).toLowerCase();
+
+  return (
+    st === "işleniyor" ||
+    st === "processing" ||
+    st === "in_progress" ||
+    st === "in queue" ||
+    st === "in_queue" ||
+    st === "queued" ||
+    st === "pending" ||
+    st === "running"
+  );
+}
+
+function isError(item) {
+  const st = String(
+    item?.status ||
+    item?.state ||
+    item?.db_status ||
+    ""
+  ).toLowerCase();
+
+  return (
+    st === "error" ||
+    st === "failed" ||
+    st === "fail" ||
+    st === "hata"
+  );
+}
 
   function normalizeBadge(item) {
     if (isReady(item)) return "Hazır";
