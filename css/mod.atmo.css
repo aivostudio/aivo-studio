@@ -1,3 +1,272 @@
 /* ===============================
-   MODULE: ATMOSPHERE
-   =============================== */
+   MODULE: ATMOSPHERE (V2)
+   Scope: only Atmosphere module
+================================= */
+
+#moduleHost section[data-module="atmosphere"],
+#moduleHost section[data-module="atmo"],
+section.main-panel[data-module="atmosphere"]{
+  /* page spacing */
+  padding: 0;
+}
+
+/* Root wrapper */
+#moduleHost section[data-module="atmosphere"] .atmo-view,
+#moduleHost section[data-module="atmo"] .atmo-view,
+section.main-panel[data-module="atmosphere"] .atmo-view{
+  display: block;
+}
+
+/* Header */
+#moduleHost section[data-module="atmosphere"] .panel-header,
+#moduleHost section[data-module="atmo"] .panel-header,
+section.main-panel[data-module="atmosphere"] .panel-header{
+  margin-bottom: 12px;
+}
+
+#moduleHost section[data-module="atmosphere"] .page-head__box,
+#moduleHost section[data-module="atmo"] .page-head__box,
+section.main-panel[data-module="atmosphere"] .page-head__box{
+  border-radius: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(120, 90, 255, .22);
+  background: linear-gradient(180deg, rgba(55, 34, 120, .55), rgba(18, 14, 40, .55));
+  box-shadow: 0 10px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+#moduleHost section[data-module="atmosphere"] .page-head__title,
+#moduleHost section[data-module="atmo"] .page-head__title,
+section.main-panel[data-module="atmosphere"] .page-head__title{
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.15;
+  letter-spacing: .2px;
+}
+
+#moduleHost section[data-module="atmosphere"] .page-head__sub,
+#moduleHost section[data-module="atmo"] .page-head__sub,
+section.main-panel[data-module="atmosphere"] .page-head__sub{
+  margin: 6px 0 0;
+  opacity: .8;
+  font-size: 12.5px;
+}
+
+/* Mode shell */
+#moduleHost section[data-module="atmosphere"] .mode-shell,
+#moduleHost section[data-module="atmo"] .mode-shell,
+section.main-panel[data-module="atmosphere"] .mode-shell{
+  margin-top: 10px;
+}
+
+/* Switch */
+#moduleHost section[data-module="atmosphere"] .mode-switch,
+#moduleHost section[data-module="atmo"] .mode-switch,
+section.main-panel[data-module="atmosphere"] .mode-switch{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(120, 90, 255, .18);
+  background: rgba(10, 10, 18, .35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  margin-bottom: 12px;
+}
+
+#moduleHost section[data-module="atmosphere"] .mode-tab,
+#moduleHost section[data-module="atmo"] .mode-tab,
+section.main-panel[data-module="atmosphere"] .mode-tab{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.82);
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#moduleHost section[data-module="atmosphere"] .mode-tab.is-active,
+#moduleHost section[data-module="atmo"] .mode-tab.is-active,
+section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
+  border-color: rgba(140, 110, 255, .55);
+  background: linear-gradient(180deg, rgba(130, 95, 255, .38), rgba(60, 35, 130, .26));
+  box-shadow: 0 10px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Panels */
+#moduleHost section[data-module="atmosphere"] .mode-panel,
+#moduleHost section[data-module="atmo"] .mode-panel,
+section.main-panel[data-module="atmosphere"] .mode-panel{
+  display: none;
+}
+
+#moduleHost section[data-module="atmosphere"] .mode-panel.is-active,
+#moduleHost section[data-module="atmo"] .mode-panel.is-active,
+section.main-panel[data-module="atmosphere"] .mode-panel.is-active{
+  display: block;
+}
+
+/* Cards */
+#moduleHost section[data-module="atmosphere"] .card,
+#moduleHost section[data-module="atmo"] .card,
+section.main-panel[data-module="atmosphere"] .card{
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(120, 90, 255, .16);
+  background: rgba(13, 16, 36, .92);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+  margin-top: 12px;
+}
+
+#moduleHost section[data-module="atmosphere"] .card-header,
+#moduleHost section[data-module="atmo"] .card-header,
+section.main-panel[data-module="atmosphere"] .card-header{
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+#moduleHost section[data-module="atmosphere"] .card-title,
+#moduleHost section[data-module="atmo"] .card-title,
+section.main-panel[data-module="atmosphere"] .card-title{
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0;
+}
+
+#moduleHost section[data-module="atmosphere"] .card-subtitle,
+#moduleHost section[data-module="atmo"] .card-subtitle,
+section.main-panel[data-module="atmosphere"] .card-subtitle{
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: .78;
+}
+
+/* Scene grid */
+#moduleHost section[data-module="atmosphere"] .smpack-grid--themes,
+#moduleHost section[data-module="atmo"] .smpack-grid--themes,
+section.main-panel[data-module="atmosphere"] .smpack-grid--themes{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1200px){
+  #moduleHost section[data-module="atmosphere"] .smpack-grid--themes,
+  #moduleHost section[data-module="atmo"] .smpack-grid--themes,
+  section.main-panel[data-module="atmosphere"] .smpack-grid--themes{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+#moduleHost section[data-module="atmosphere"] .smpack-choice,
+#moduleHost section[data-module="atmo"] .smpack-choice,
+section.main-panel[data-module="atmosphere"] .smpack-choice{
+  border-radius: 14px;
+  padding: 12px 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.86);
+  cursor: pointer;
+  text-align: left;
+}
+
+#moduleHost section[data-module="atmosphere"] .smpack-choice.is-active,
+#moduleHost section[data-module="atmo"] .smpack-choice.is-active,
+section.main-panel[data-module="atmosphere"] .smpack-choice.is-active{
+  border-color: rgba(140, 110, 255, .55);
+  background: linear-gradient(180deg, rgba(130, 95, 255, .26), rgba(60, 35, 130, .16));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Pills row */
+#moduleHost section[data-module="atmosphere"] .smpack-row,
+#moduleHost section[data-module="atmo"] .smpack-row,
+section.main-panel[data-module="atmosphere"] .smpack-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#moduleHost section[data-module="atmosphere"] .smpack-pill,
+#moduleHost section[data-module="atmo"] .smpack-pill,
+section.main-panel[data-module="atmosphere"] .smpack-pill{
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.86);
+  cursor: pointer;
+  font-size: 12.5px;
+  line-height: 1;
+}
+
+#moduleHost section[data-module="atmosphere"] .smpack-pill.is-active,
+#moduleHost section[data-module="atmo"] .smpack-pill.is-active,
+section.main-panel[data-module="atmosphere"] .smpack-pill.is-active{
+  border-color: rgba(140, 110, 255, .55);
+  background: rgba(130, 95, 255, .22);
+}
+
+/* Inputs */
+#moduleHost section[data-module="atmosphere"] label,
+#moduleHost section[data-module="atmo"] label,
+section.main-panel[data-module="atmosphere"] label{
+  display: block;
+  font-size: 12px;
+  opacity: .82;
+  margin-bottom: 6px;
+}
+
+#moduleHost section[data-module="atmosphere"] select,
+#moduleHost section[data-module="atmo"] select,
+#moduleHost section[data-module="atmosphere"] textarea,
+#moduleHost section[data-module="atmo"] textarea,
+section.main-panel[data-module="atmosphere"] select,
+section.main-panel[data-module="atmosphere"] textarea{
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.88);
+  padding: 10px 12px;
+  outline: none;
+}
+
+#moduleHost section[data-module="atmosphere"] textarea,
+#moduleHost section[data-module="atmo"] textarea,
+section.main-panel[data-module="atmosphere"] textarea{
+  resize: vertical;
+  min-height: 96px;
+}
+
+/* CTA card */
+#moduleHost section[data-module="atmosphere"] .smpack-card--cta,
+#moduleHost section[data-module="atmo"] .smpack-card--cta,
+section.main-panel[data-module="atmosphere"] .smpack-card--cta{
+  padding: 14px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+#moduleHost section[data-module="atmosphere"] .btn.btn-primary,
+#moduleHost section[data-module="atmo"] .btn.btn-primary,
+section.main-panel[data-module="atmosphere"] .btn.btn-primary{
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(140, 110, 255, .55);
+  background: linear-gradient(180deg, rgba(140, 110, 255, .58), rgba(85, 55, 190, .38));
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#moduleHost section[data-module="atmosphere"] .btn.btn-primary:hover,
+#moduleHost section[data-module="atmo"] .btn.btn-primary:hover,
+section.main-panel[data-module="atmosphere"] .btn.btn-primary:hover{
+  filter: brightness(1.05);
+}
