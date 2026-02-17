@@ -341,9 +341,9 @@
         style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
       ></textarea>
 
-      <!-- single counter -->
-      <div style="display:flex;justify-content:flex-end;gap:6px;font-size:12px;opacity:.7;margin-top:6px;">
-        <span id="atmSuperPromptCount">0</span><span>/ 1000</span>
+      <!-- TEK SAYAC -->
+      <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
+        <span id="atmSuperPromptCount">0</span> / 1000
       </div>
     </div>
   </div>
@@ -351,21 +351,23 @@
 </div>
 
 <script>
-  (function () {
-    const el = document.getElementById("atmSuperPrompt");
-    const out = document.getElementById("atmSuperPromptCount");
-    if (!el || !out) return;
+  const atmSuperPrompt = document.getElementById("atmSuperPrompt");
+  const atmSuperPromptCount = document.getElementById("atmSuperPromptCount");
 
-    const update = () => {
-      const n = el.value.length || 0;
-      out.textContent = String(n);
-      out.style.color = n > 900 ? "#ff6b6b" : "rgba(255,255,255,.7)";
+  if (atmSuperPrompt && atmSuperPromptCount) {
+    const updateCount = () => {
+      const length = atmSuperPrompt.value.length;
+      atmSuperPromptCount.textContent = length;
+
+      atmSuperPromptCount.style.color =
+        length > 900 ? "#ff6b6b" : "rgba(255,255,255,.7)";
     };
 
-    update();
-    el.addEventListener("input", update);
-  })();
+    updateCount();
+    atmSuperPrompt.addEventListener("input", updateCount);
+  }
 </script>
+
 
 
 
