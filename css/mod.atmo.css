@@ -508,80 +508,91 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
   border-radius:12px;
 }
 /* =========================
-   SUPER MOD — SIKIŞTIRMA PACK
+   ATM SUPER — FORCE COMPACT
+   (selector garanti tutsun)
    ========================= */
 
-/* (A) Işık·Export·Duygu kartını sıkıştır + sağ kolonu daralt */
-section.main-panel[data-module="atmosphere"] #atmProMoodExport > div[style*="display:grid"]{
-  grid-template-columns: 1.35fr .65fr !important; /* sağ taraf daha dar */
+/* 1) Işık·Export·Duygu: inline grid div'i direkt yakala */
+#atmProMoodExport > div[style*="display:grid"][style*="grid-template-columns"]{
+  grid-template-columns: 1.35fr .65fr !important; /* sağ kolon dar */
   gap: 10px 14px !important;
   align-items: start !important;
 }
 
-section.main-panel[data-module="atmosphere"] #atmProMoodExport .card-header{
-  padding-bottom: 4px !important;
+/* Kart içi dikey boşlukları sıkıştır */
+#atmProMoodExport.card{
+  padding-bottom: 10px !important;
+}
+#atmProMoodExport .card-header{
+  padding-bottom: 6px !important;
+}
+#atmProMoodExport .card-title{
+  line-height: 1.1 !important;
 }
 
-section.main-panel[data-module="atmosphere"] #atmProMoodExport .smpack-pill{
+/* Pill’leri küçült (yükseklik kazan) */
+#atmProMoodExport .smpack-row{ gap: 8px !important; }
+#atmProMoodExport .smpack-pill{
   padding: 6px 12px !important;
   font-size: 13px !important;
   line-height: 1.1 !important;
 }
 
-section.main-panel[data-module="atmosphere"] #atmProMoodExport label{
+/* Export alanındaki label + select’leri kompakt yap */
+#atmProMoodExport label{
   gap: 8px !important;
   margin-bottom: 6px !important;
   font-size: 13px !important;
 }
-
-section.main-panel[data-module="atmosphere"] #atmProMoodExport select{
+#atmProMoodExport select{
   width: 100% !important;
-  height: 40px !important;
+  height: 38px !important;
   font-size: 14px !important;
 }
 
-/* (B) Detay Efektler: 3 kolon (daha az yükseklik) + daha sık gap */
-section.main-panel[data-module="atmosphere"] #atmProDetails > div[style*="display:grid"]{
+/* 2) Detay Efektler: inline grid’i yakala ve 3 kolon yap */
+#atmProDetails > div[style*="display:grid"][style*="grid-template-columns"]{
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 6px 12px !important;
   align-items: start !important;
 }
 
-section.main-panel[data-module="atmosphere"] #atmProDetails label{
+/* Label satırlarını kısalt */
+#atmProDetails label{
   gap: 8px !important;
   font-size: 13px !important;
   line-height: 1.15 !important;
-  white-space: nowrap !important; /* satır kırılmasını azaltır */
+  white-space: nowrap !important;
 }
-
-/* checkbox biraz daha küçük, satırlar daha kısa */
-section.main-panel[data-module="atmosphere"] #atmProDetails input[type="checkbox"]{
+#atmProDetails input[type="checkbox"]{
   transform: scale(.92) !important;
   transform-origin: left center !important;
 }
 
-/* (C) LUT satırı: başlık + select tek satır, daha kısa */
-section.main-panel[data-module="atmosphere"] #atmProDetails .atmLutRow{
+/* 3) LUT satırı tek satır: label + select */
+#atmProDetails .atmLutRow{
   display: grid !important;
   grid-template-columns: 170px 1fr !important;
   gap: 10px !important;
   align-items: center !important;
   margin-top: 10px !important;
 }
-
-section.main-panel[data-module="atmosphere"] #atmProDetails .atmLutLabel{
+#atmProDetails .atmLutLabel{
   font-weight: 600 !important;
   font-size: 13px !important;
   opacity: .8 !important;
 }
-
-section.main-panel[data-module="atmosphere"] #atmProDetails .atmLutSelect{
+#atmProDetails .atmLutSelect{
   width: 100% !important;
-  height: 40px !important;
+  height: 38px !important;
   font-size: 14px !important;
 }
 
-/* (D) CTA kartı üst boşluğu biraz azalt */
-section.main-panel[data-module="atmosphere"] .smpack-card--cta{
+/* 4) En kritik: CTA’yı sticky yap -> alta sarkma “bitiyor” */
+.smpack-card--cta{
+  position: sticky !important;
+  bottom: 12px !important;
+  z-index: 5 !important;
   margin-top: 10px !important;
+  backdrop-filter: blur(10px) !important;
 }
