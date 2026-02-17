@@ -621,15 +621,3 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   padding: 6px 10px !important;
   font-size: 13px !important;
 }
-/* IŞIK ve DUYGU pill düzeni */
-#atmProMoodExport .smpack-row {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-#atmProMoodExport .smpack-pill {
-  width: 100%;
-  justify-content: center;
-  text-align: center;
-}
