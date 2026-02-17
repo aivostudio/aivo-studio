@@ -1,12 +1,32 @@
-// panel.video.js — RightPanel Video (v2) | DBJobs source-of-truth
-// - outputs-first pickBestVideoUrl(job)
-// - delete: backend (/api/jobs/delete) + rehydrate pattern
-// - render + video üretim akışına dokunmaz (sadece list/poll/render)
+
+// panel.video.js
+// RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
+// FIX(critical): playbackUrl was NOT derived from outputs[].url (Safari/DB-only path => cards stayed "loading")
+// + FIX: state text typo ("İşlen:iyor" -> "İşleniyor")
+// + UX: Safari-friendly video attrs (muted + webkit-playsinline)
 
 (function () {
+  if (!window.RightPanel) return;
+
+  const STORAGE_KEY = "aivo.v2.video.items.v3";
+  const LEGACY_KEYS = ["aivo.v2.video.items.v2", "aivo.v2.video.items"];
+  const MAX_ITEMS = 50;
+
+  // status polling
+  const STATUS_POLL_EVERY_MS = 4000;
+  const STATUS_POLL_BATCH = 3;
+  const STATUS_POLL_TIMEOUT_MS = 15000;
+
+  const state = { items: [] };
+
   /* =======================
-     Helpers
+     Utils
      ======================= */
+
+  function uid() {
+    return "v_" + Math.random().toString(36).slice(2, 10);
+  }
+
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -17,24 +37,42 @@
     }[c]));
   }
 
-  function fmtTime(ts) {
-    try {
-      const d = new Date(ts);
-      if (isNaN(+d)) return "";
-      const pad = (n) => String(n).padStart(2, "0");
-      return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    } catch {
-      return "";
-    }
+  function norm(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replaceAll("_", " ")
+      .replace(/\s+/g, " ");
   }
 
-  // ✅ outputs-first (senin istediğin mantık)
-  function pickBestVideoUrl(job) {
-    if (!job) return "";
+  // ✅ status/db_status önce, state sonra
+  function getStatusText(item) {
+    const primary = norm(item?.status || item?.db_status);
+    const secondary = norm(item?.state);
+    return primary || secondary || "";
+  }
 
-    // 1) outputs[] içinde video url (archive_url dahil) varsa onu seç
-    const outs = Array.isArray(job.outputs) ? job.outputs : [];
-    const pickFromOut = (o) => {
+  function looksLikeLegacyBrokenR2(url) {
+    // şimdilik kapalı
+    return false;
+  }
+
+  function toMaybeProxyUrl(url) {
+    const u = String(url || "").trim();
+    if (!u) return "";
+    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
+    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
+    return u;
+  }
+
+  /* =======================
+     Outputs URL picking (CRITICAL)
+     ======================= */
+
+  function pickVideoUrlFromOutputs(outputs) {
+    if (!Array.isArray(outputs)) return "";
+
+    const pickUrl = (o) => {
       if (!o) return "";
       const u =
         o.archive_url || o.archiveUrl || o.archiveURL ||
@@ -43,207 +81,475 @@
         (o.meta && (o.meta.url || o.meta.video_url || o.meta.videoUrl));
       return String(u || "").trim();
     };
-    const isVideoOut = (o) => {
-      const t = String(o?.type || o?.kind || "").toLowerCase();
-      const mt = String(o?.meta?.type || o?.meta?.kind || "").toLowerCase();
+
+    const isVideo = (o) => {
+      if (!o) return false;
+      const t = String(o.type || o.kind || "").toLowerCase();
+      const mt = String(o.meta?.type || o.meta?.kind || "").toLowerCase();
       return t === "video" || mt === "video";
     };
 
-    const hit = outs.find((o) => isVideoOut(o) && pickFromOut(o));
-    if (hit) return pickFromOut(hit);
+    const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
+    if (hit) return pickUrl(hit);
 
-    const any = outs.find((o) => pickFromOut(o));
-    if (any) return pickFromOut(any);
-
-    // 2) fallback: job/meta içi olası video url alanları
-    const u =
-      job.archive_url || job.archiveUrl ||
-      job.url || job.video_url || job.videoUrl ||
-      job.video?.url ||
-      job.meta?.video?.url ||
-      job.meta?.runway?.video?.url ||
-      job.meta?.provider?.video?.url ||
-      job.meta?.output?.url ||
-      job.meta?.result?.url;
-
-    return String(u || "").trim();
+    const any = outputs.find((o) => pickUrl(o));
+    return any ? pickUrl(any) : "";
   }
 
-  function acceptVideoOutput(o) {
-    if (!o) return false;
-    const t = String(o.type || "").toLowerCase();
-    if (t === "video") return true;
-    const mt = o.meta && o.meta.type ? String(o.meta.type).toLowerCase() : "";
-    return mt === "video";
+  // ✅ unified "best url" extractor (top-level + outputs fallback)
+  function pickBestUrl(it) {
+    if (!it) return "";
+    const a = String(it.archive_url || it.archiveUrl || "").trim();
+    if (a) return a;
+    const u = String(it.url || it.video_url || it.videoUrl || "").trim();
+    if (u) return u;
+
+    const outs = it.outputs;
+    const uo = pickVideoUrlFromOutputs(outs);
+    if (uo) return uo;
+
+    return "";
   }
 
-  function ensureDBJobs() {
-    if (!window.DBJobs || typeof window.DBJobs.create !== "function") {
-      console.warn("[panel.video] DBJobs missing. panel.dbjobs.js, panel.video.js'den önce yüklenmeli.");
-      return null;
+  function getPlaybackUrl(it) {
+    const best = pickBestUrl(it);
+    if (!best) return "";
+    return toMaybeProxyUrl(best);
+  }
+
+  function bestShareUrl(it) {
+    // share/download should prefer public-ish url; still ok to return archive_url first
+    return String(pickBestUrl(it) || "").trim();
+  }
+
+  // ✅ output var mı?
+  function hasOutput(item) {
+    if (String(item?.playbackUrl || "").trim()) return true;
+
+    if (String(item?.archive_url || item?.archiveUrl || "").trim()) return true;
+    if (String(item?.url || item?.video_url || item?.videoUrl || "").trim()) return true;
+
+    const outs = item?.outputs;
+    if (Array.isArray(outs)) {
+      return outs.some((o) => {
+        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
+        const u = String(
+          o?.archive_url ||
+          o?.archiveUrl ||
+          o?.meta?.archive_url ||
+          o?.meta?.archiveUrl ||
+          o?.url ||
+          o?.video_url ||
+          o?.videoUrl ||
+          o?.meta?.url ||
+          o?.meta?.video_url ||
+          o?.meta?.videoUrl ||
+          ""
+        ).trim();
+        return (t === "video" || t === "") && !!u;
+      });
     }
-    return window.DBJobs;
+
+    return false;
   }
 
-  function ensureRightPanel() {
-    if (!window.RightPanel || typeof window.RightPanel.register !== "function") {
-      console.warn("[panel.video] RightPanel missing. panel.manager.js önce gelmeli.");
-      return false;
-    }
-    return true;
+  function isReady(item) {
+    if (hasOutput(item)) return true;
+    const st = getStatusText(item);
+    return (
+      st === "hazır" ||
+      st === "ready" ||
+      st === "done" ||
+      st === "completed" ||
+      st === "complete" ||
+      st === "succeeded" ||
+      st === "success" ||
+      st === "suceeded"
+    );
   }
 
-  /* =======================
-     UI Render (CSS: mod.video.panel.css)
-     Expects: vpGrid/vpCard/vpThumb/vpVideo/vpActions/vpIconBtn
-     ======================= */
-
-  function renderEmpty(host) {
-    host.innerHTML = `
-      <div class="videoSide">
-        <div class="videoSideCard">
-          <div class="vpEmpty">Henüz video yok.</div>
-        </div>
-      </div>
-    `;
+  function isProcessing(item) {
+    if (isReady(item)) return false;
+    const st = getStatusText(item);
+    return (
+      st === "işleniyor" ||
+      st === "processing" ||
+      st === "running" ||
+      st === "pending" ||
+      st === "queued" ||
+      st === "in queue" ||
+      st === "in progress" ||
+      st === "started"
+    );
   }
 
-  function renderLoading(host) {
-    host.innerHTML = `
-      <div class="videoSide">
-        <div class="videoSideCard">
-          <div class="vpEmpty">Yükleniyor…</div>
-        </div>
-      </div>
-    `;
+  function isError(item) {
+    const st = getStatusText(item);
+    return (
+      st === "hata" ||
+      st === "error" ||
+      st === "failed" ||
+      st === "fail" ||
+      st === "canceled" ||
+      st === "cancelled"
+    );
   }
 
-  function normalizeBadge(job) {
-    const st = String(job?.status || "").toUpperCase();
-    if (["DONE", "READY", "COMPLETED", "SUCCEEDED", "SUCCESS"].includes(st)) return "Hazır";
-    if (["ERROR", "FAILED", "CANCELED", "CANCELLED"].includes(st)) return "Hata";
+  function normalizeBadge(item) {
+    if (isReady(item)) return "Hazır";
+    if (isError(item)) return "Hata";
     return "İşleniyor";
   }
 
-  function formatKind(job) {
-    const m =
-      String(job?.meta?.mode || job?.meta?.kind || job?.mode || job?.kind || "").toLowerCase();
-    if (m.includes("image")) return "Image→Video";
-    if (m.includes("text")) return "Text→Video";
+  function formatKind(item) {
+    const k = (item?.meta?.mode || item?.meta?.kind || item?.kind || "").toString().toLowerCase();
+    if (k.includes("image")) return "Image→Video";
+    if (k.includes("text")) return "Text→Video";
     return "Video";
   }
 
-  function renderCard(job) {
-    const id = String(job?.job_id || job?.id || "");
-    const url = pickBestVideoUrl(job);
-    const badge = normalizeBadge(job);
-
-    const created = job?.created_at || job?.createdAt || job?.updated_at || job?.updatedAt || "";
-    const whenTxt = created ? fmtTime(created) : "";
-
-    const provider = String(job?.provider || job?.meta?.provider || job?.meta?.engine || "video");
-    const kind = formatKind(job);
-    const sub = String(job?.prompt || job?.meta?.prompt || job?.meta?.title || job?.title || "").trim();
-
-    const isReady = badge === "Hazır" && !!url;
-
-    return `
-      <div class="vpCard" data-job-id="${esc(id)}" role="button" tabindex="0">
-        <div class="vpThumb ${isReady ? "" : "is-loading"}">
-          <div class="vpBadge">${esc(badge)}</div>
-
-          ${
-            isReady
-              ? `
-                <video
-                  class="vpVideo"
-                  preload="metadata"
-                  playsinline
-                  controls
-                  data-user-gesture="0"
-                  src="${esc(url)}"
-                ></video>
-                <div class="vpPlay"><span class="vpPlayIcon">▶</span></div>
-              `
-              : `
-                <div class="vpSkel" aria-label="İşleniyor">
-                  <div class="vpSkelShimmer"></div>
-                </div>
-              `
-          }
-
-          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-        </div>
-
-        <div class="vpMeta">
-          <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
-          <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
-          <div class="vpSub" style="opacity:.75" title="${esc(provider)}">
-            ${esc(provider)} ${whenTxt ? "• " + esc(whenTxt) : ""}
-          </div>
-
-          <div class="vpActions">
-            <button class="vpIconBtn" data-act="download" ${url ? "" : "disabled"} title="İndir">⬇</button>
-            <button class="vpIconBtn" data-act="share" ${url ? "" : "disabled"} title="Paylaş">⤴</button>
-            <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderList(host, items) {
-    host.innerHTML = `
-      <div class="videoSide">
-        <div class="videoSideCard">
-          <div class="vpGrid" data-video-grid>
-            ${(items || []).map(renderCard).join("")}
-          </div>
-        </div>
-      </div>
-    `;
+  function findGrid(host) {
+    return host.querySelector("[data-video-grid]");
   }
 
   /* =======================
-     Actions
+     Storage (load / migrate / save)
      ======================= */
 
-  function downloadUrl(url) {
-    const u = String(url || "").trim();
-    if (!u) return;
-    const a = document.createElement("a");
-    a.href = u;
-    a.download = "";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  function safeParse(json) {
+    try { return JSON.parse(json); } catch { return null; }
   }
 
-  function shareUrl(url) {
-    const u = String(url || "").trim();
-    if (!u) return;
-    if (navigator.share) {
-      navigator.share({ url: u }).catch(() => {});
+  function sanitizeItems(items) {
+    const out = [];
+
+    for (const it0 of (items || [])) {
+      const it = it0 || {};
+      const id = String(it.id || it.job_id || uid());
+      const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
+
+      // ✅ if top-level missing, derive from outputs
+      const outs0 = Array.isArray(it.outputs) ? it.outputs : (Array.isArray(it0?.outputs) ? it0.outputs : []);
+      const fromOut = pickVideoUrlFromOutputs(outs0);
+
+      const url = String(it.url || it.video_url || it.videoUrl || fromOut || "").trim();
+      const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || it.meta?.archiveUrl || "").trim();
+
+      const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
+      const readyByOutput = !!(!legacyBroken && (archive_url || url));
+
+      const status =
+        legacyBroken ? "İşleniyor" :
+        (readyByOutput ? "Hazır" : (it.status || it.state || it.db_status || "İşleniyor"));
+
+      const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
+
+      const pb = (!legacyBroken && (archive_url || url || fromOut))
+        ? getPlaybackUrl({ ...it, archive_url, url, outputs: outs0 })
+        : "";
+
+      out.push({
+        id,
+        job_id,
+        title,
+        status,
+        url,
+        archive_url,
+        playbackUrl: pb || "",
+        createdAt: it.createdAt || it.created_at || Date.now(),
+        meta: {
+          ...(it.meta || {}),
+          mode: it.meta?.mode || it.mode || it.kind || "",
+          prompt: it.meta?.prompt || it.prompt || it.text || "",
+          app: it.meta?.app || "video",
+        },
+        outputs: outs0,
+        state: it.state,
+        db_status: it.db_status,
+      });
+    }
+
+    out.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
+    return out.slice(0, MAX_ITEMS);
+  }
+
+  function loadItems() {
+    const rawNew = localStorage.getItem(STORAGE_KEY);
+    const arrNew = rawNew ? safeParse(rawNew) : null;
+    if (Array.isArray(arrNew)) return sanitizeItems(arrNew);
+
+    for (const k of LEGACY_KEYS) {
+      const raw = localStorage.getItem(k);
+      const arr = raw ? safeParse(raw) : null;
+      if (Array.isArray(arr) && arr.length) {
+        const cleaned = sanitizeItems(arr);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
+        try { localStorage.removeItem(k); } catch {}
+        return cleaned;
+      }
+    }
+    return [];
+  }
+
+  function saveItems() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, MAX_ITEMS)));
+    } catch {}
+  }
+
+  /* =======================
+     DB hydrate (/api/jobs/list?app=video)
+     ======================= */
+
+  function mapDbItemToPanelItem(r) {
+    const job_id = String(r?.job_id || r?.id || "").trim();
+    const meta = r?.meta || {};
+    const outputs = Array.isArray(r?.outputs) ? r.outputs : [];
+
+    const archive_url =
+      String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
+
+    const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
+    const providerUrl =
+      String(
+        meta?.video?.url ||
+        meta?.runway?.video?.url ||
+        meta?.provider?.video?.url ||
+        meta?.output?.url ||
+        meta?.result?.url ||
+        ""
+      ).trim();
+
+    // ✅ if output exists, it MUST be used
+    const url = String(urlFromOutputs || r?.video?.url || r?.video_url || providerUrl || "").trim();
+
+    const title =
+      meta?.title ||
+      meta?.prompt ||
+      r?.prompt ||
+      "Video";
+
+    const item = {
+      id: job_id || uid(),
+      job_id: job_id || "",
+      title,
+      status: "İşleniyor",
+      url: url || "",
+      archive_url: archive_url || "",
+      createdAt: (r?.created_at ? new Date(r.created_at).getTime() : (r?.createdAt ? new Date(r.createdAt).getTime() : Date.now())),
+      meta: {
+        ...(meta || {}),
+        mode: meta?.mode || "",
+        prompt: meta?.prompt || r?.prompt || "",
+        app: "video",
+      },
+      outputs,
+      state: r?.state,
+      db_status: r?.db_status,
+    };
+
+    const legacyBroken = looksLikeLegacyBrokenR2(item.archive_url || item.url);
+    const hasOut = !legacyBroken && hasOutput(item);
+
+    const rawState = String(r?.state || "").toUpperCase();
+    const rawDbStatus = norm(r?.db_status);
+    const rawStatus = norm(r?.status);
+
+    const isFailed =
+      rawState === "FAILED" ||
+      rawState === "ERROR" ||
+      rawDbStatus === "error" ||
+      rawDbStatus === "failed" ||
+      rawStatus === "error" ||
+      rawStatus === "failed";
+
+    if (legacyBroken) {
+      item.status = "İşleniyor";
+    } else if (isFailed) {
+      item.status = "Hata";
+    } else if (hasOut) {
+      item.status = "Hazır";
     } else {
-      navigator.clipboard?.writeText(u).catch(() => {});
+      if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
+      else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
+      else item.status = "İşleniyor"; // ✅ typo fix
+    }
+
+    const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
+    item.playbackUrl = pb || "";
+
+    return item;
+  }
+
+  function mergeByJobId(existing, incoming) {
+    const map = new Map();
+
+    for (const it of (existing || [])) {
+      const key = String(it.job_id || it.id || "");
+      map.set(key || uid(), it);
+    }
+
+    for (const it of (incoming || [])) {
+      const key = String(it.job_id || it.id || "");
+      if (!key) continue;
+
+      const prev = map.get(key);
+      if (!prev) {
+        map.set(key, it);
+        continue;
+      }
+
+      map.set(key, {
+        ...prev,
+        ...it,
+        title: it.title || prev.title,
+        meta: { ...(prev.meta || {}), ...(it.meta || {}) },
+        // ✅ keep outputs + recompute playbackUrl if missing
+        outputs: Array.isArray(it.outputs) && it.outputs.length ? it.outputs : (prev.outputs || []),
+        playbackUrl: String(it.playbackUrl || prev.playbackUrl || "").trim() || getPlaybackUrl(it) || getPlaybackUrl(prev) || "",
+      });
+    }
+
+    const arr = Array.from(map.values());
+    arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
+    return arr.slice(0, MAX_ITEMS);
+  }
+
+  function extractListItems(j) {
+    if (!j) return [];
+    if (Array.isArray(j.items)) return j.items;
+    if (Array.isArray(j.jobs)) return j.jobs;
+    if (Array.isArray(j.rows)) return j.rows;
+    if (Array.isArray(j.data)) return j.data;
+    if (Array.isArray(j.results)) return j.results;
+    if (Array.isArray(j.items?.rows)) return j.items.rows;
+    return [];
+  }
+
+  async function hydrateFromDB(host) {
+    try {
+      const r = await fetch("/api/jobs/list?app=video", {
+        method: "GET",
+        credentials: "include",
+        headers: { "accept": "application/json" },
+      });
+
+      const j = await r.json().catch(() => null);
+
+      if (!r.ok || !j || !j.ok) {
+        console.warn("[video.panel] hydrate failed", r.status, j);
+        return;
+      }
+
+      const rows = extractListItems(j);
+
+      const incoming = (rows || [])
+        .map(mapDbItemToPanelItem)
+        .filter((x) => x && (x.job_id || x.id));
+
+      state.items = mergeByJobId(state.items, incoming);
+
+      saveItems();
+      render(host);
+
+      pollPendingStatuses(host).catch(() => {});
+    } catch (e) {
+      console.warn("[video.panel] hydrate exception", e);
     }
   }
 
-  async function backendDelete(jobId) {
-    const job_id = String(jobId || "").trim();
-    if (!job_id) return;
+  /* =======================
+     Status poll
+     ======================= */
 
-    // ✅ backend POST + app zorunlu (missing_app fix)
-    await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json", "accept": "application/json" },
-      body: JSON.stringify({ job_id, app: "video" }),
-    })
-      .then((r) => r.json().catch(() => null))
-      .catch(() => null);
+  function pickStatusVideoUrl(j) {
+    if (!j) return "";
+    const u1 = j?.video?.url;
+    if (u1) return String(u1).trim();
+
+    const outs = j?.outputs;
+    const uo = pickVideoUrlFromOutputs(outs);
+    if (uo) return String(uo).trim();
+
+    return "";
   }
+
+  async function fetchStatus(job_id) {
+    const jid = String(job_id || "").trim();
+    if (!jid) return null;
+
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort("timeout"), STATUS_POLL_TIMEOUT_MS);
+
+    try {
+      const r = await fetch("/api/jobs/status?job_id=" + encodeURIComponent(jid), {
+        method: "GET",
+        credentials: "include",
+        headers: { "accept": "application/json" },
+        signal: ctrl.signal,
+      });
+
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !j.ok) return null;
+      return j;
+    } catch {
+      return null;
+    } finally {
+      try { clearTimeout(t); } catch {}
+    }
+  }
+
+  async function pollPendingStatuses(host) {
+    const pending = state.items
+      .filter(it => it && (it.job_id || it.id))
+      .filter(it => !isReady(it) || !String(it.playbackUrl || "").trim())
+      .filter(it => !isError(it))
+      .slice(0, STATUS_POLL_BATCH);
+
+    if (!pending.length) return;
+
+    for (const it of pending) {
+      const jid = String(it.job_id || it.id || "").trim();
+      if (!jid) continue;
+
+      const s = await fetchStatus(jid);
+      if (!s) continue;
+
+      const st = norm(s.status);
+      const ready = st === "ready" || st === "done" || st === "completed";
+      const url = pickStatusVideoUrl(s);
+      const hasUrl = !!String(url || "").trim();
+
+      const err = st === "error" || st === "failed";
+      if (err) {
+        it.status = "Hata";
+        saveItems();
+        render(host);
+        continue;
+      }
+
+      if (ready || hasUrl) {
+        if (hasUrl) it.url = url;
+
+        if (Array.isArray(s.outputs)) it.outputs = s.outputs;
+
+        it.db_status = s.db_status || it.db_status;
+        it.state = s.state || it.state;
+        it.status = "Hazır";
+
+        const legacyBroken = looksLikeLegacyBrokenR2(it.archive_url || it.url);
+        const pb = (!legacyBroken) ? getPlaybackUrl(it) : "";
+        it.playbackUrl = pb || "";
+
+        saveItems();
+        render(host);
+      }
+    }
+  }
+
+  /* =======================
+     Fullscreen helper
+     ======================= */
 
   function goFullscreen(card) {
     const video = card?.querySelector("video");
@@ -271,11 +577,137 @@
     } catch {}
   }
 
-  function attachEvents(host, getJobById, onDelete) {
-    const grid = host.querySelector("[data-video-grid]");
+  /* =======================
+     Render
+     ======================= */
+
+  function renderSkeleton(badge) {
+    return `
+      <div class="vpSkel" aria-label="İşleniyor">
+        <div class="vpBadge">${esc(badge)}</div>
+        <div class="vpSkelShimmer"></div>
+        <div class="vpSkelPlay">
+          <div class="vpSkelPlayRing"></div>
+          <div class="vpSkelPlayTri"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderThumb(it) {
+    const badge = normalizeBadge(it);
+
+    // ✅ If ready but playbackUrl missing, try compute from outputs on the fly
+    if (!it.playbackUrl) {
+      const pb2 = getPlaybackUrl(it);
+      if (pb2) it.playbackUrl = pb2;
+    }
+
+    if (!isReady(it) || !it.playbackUrl) {
+      return `
+        <div class="vpThumb is-loading">
+          ${renderSkeleton(badge)}
+          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="vpThumb">
+        <div class="vpBadge">${esc(badge)}</div>
+
+        <video
+          class="vpVideo"
+          preload="metadata"
+          playsinline
+          webkit-playsinline
+          muted
+          controls
+          data-user-gesture="0"
+          src="${esc(it.playbackUrl)}"
+        ></video>
+
+        <div class="vpPlay">
+          <span class="vpPlayIcon">▶</span>
+        </div>
+
+        <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+      </div>
+    `;
+  }
+
+  function renderMeta(it) {
+    const kind = formatKind(it);
+    const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
+    const ready = isReady(it);
+
+    return `
+      <div class="vpMeta">
+        <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
+        <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+
+        <div class="vpActions">
+          <button class="vpIconBtn" data-act="download" ${ready ? "" : "disabled"} title="İndir">⬇</button>
+          <button class="vpIconBtn" data-act="share" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
+          <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCard(it) {
+    return `
+      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
+        ${renderThumb(it)}
+        ${renderMeta(it)}
+      </div>
+    `;
+  }
+
+  function render(host) {
+    const grid = findGrid(host);
+    if (!grid) return;
+
+    if (!state.items.length) {
+      grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
+      return;
+    }
+
+    grid.innerHTML = state.items.map(renderCard).join("");
+  }
+
+  /* =======================
+     Actions + events
+     ======================= */
+
+  function downloadUrl(u) {
+    const url = String(u || "").trim();
+    if (!url) return;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function shareUrl(u) {
+    const url = String(u || "").trim();
+    if (!url) return;
+
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).catch(() => {});
+    }
+  }
+
+  function attachEvents(host) {
+    const grid = findGrid(host);
     if (!grid) return () => {};
 
-    // no-autoplay guard (edge-case)
     const onPlayCapture = (e) => {
       const v = e.target;
       if (!(v instanceof HTMLVideoElement)) return;
@@ -286,16 +718,16 @@
     };
     grid.addEventListener("play", onPlayCapture, true);
 
-    const onClick = async (e) => {
+    const onClick = (e) => {
       const card = e.target.closest(".vpCard");
       if (!card) return;
 
-      const jobId = card.getAttribute("data-job-id") || "";
-      const job = getJobById(jobId);
-      const url = pickBestVideoUrl(job);
+      const id = card.getAttribute("data-id");
+      const it = state.items.find(x => String(x.id) === String(id));
+      if (!it) return;
 
       const btn = e.target.closest("[data-act]");
-      const video = card.querySelector("video.vpVideo");
+      const video = card.querySelector("video");
       const overlay = card.querySelector(".vpPlay");
 
       if (btn) {
@@ -303,31 +735,28 @@
         const act = btn.getAttribute("data-act");
 
         if (act === "fs") { goFullscreen(card); return; }
-        if (act === "download") { if (url) downloadUrl(url); return; }
-        if (act === "share") { if (url) shareUrl(url); return; }
+        if (act === "download") downloadUrl(bestShareUrl(it));
+        if (act === "share") shareUrl(bestShareUrl(it));
 
         if (act === "delete") {
-          const ok = confirm("Bu videoyu silmek istiyor musun?");
-          if (!ok) return;
-          await onDelete(jobId);
+          state.items = state.items.filter(x => String(x.id) !== String(id));
+          saveItems();
+          render(host);
         }
         return;
       }
 
-      // card click toggles play/pause (ready ise)
-      if (!video || !url) return;
+      if (!video || !isReady(it)) return;
 
-      try {
-        if (video.paused) {
-          video.setAttribute("data-user-gesture", "1");
-          await video.play().catch(() => {});
-          if (overlay) overlay.style.display = "none";
-        } else {
-          video.pause();
-          video.setAttribute("data-user-gesture", "0");
-          if (overlay) overlay.style.display = "";
-        }
-      } catch {}
+      if (video.paused) {
+        video.setAttribute("data-user-gesture", "1");
+        video.play().catch(() => {});
+        if (overlay) overlay.style.display = "none";
+      } else {
+        video.pause();
+        video.setAttribute("data-user-gesture", "0");
+        if (overlay) overlay.style.display = "";
+      }
     };
 
     grid.addEventListener("click", onClick);
@@ -339,102 +768,183 @@
   }
 
   /* =======================
-     RightPanel impl (DBJobs)
+     PPE bridge
      ======================= */
 
-  if (!ensureRightPanel()) return;
+  function attachPPE(host) {
+    if (!window.PPE) return () => {};
 
-  const impl = {
-    getHeader() {
-      return { title: "Videolarım", meta: "DB source-of-truth", searchPlaceholder: "Videolarda ara..." };
-    },
+    const prev = PPE.onOutput;
+    let active = true;
 
-    mount(host, payload, ctx) {
-      const DB = ensureDBJobs();
-      if (!DB) {
-        host.innerHTML = `<div class="vpEmpty">DBJobs missing</div>`;
-        return () => {};
+    PPE.onOutput = (job, out) => {
+      try { prev && prev(job, out); } catch {}
+      if (!active) return;
+
+      if (!out || String(out.type || "").toLowerCase() !== "video") return;
+
+      const url = String(out.url || "").trim();
+      const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || out.meta?.archiveUrl || "").trim();
+      if (!url && !archive_url) return;
+
+      const job_id =
+        job?.job_id ||
+        job?.id ||
+        out?.meta?.job_id ||
+        out?.meta?.id ||
+        null;
+
+      const jid = job_id != null ? String(job_id) : null;
+
+      const existing = jid
+        ? state.items.find(x => String(x.job_id || "") === jid || String(x.id || "") === jid)
+        : null;
+
+      const fallbackProcessing = !existing
+        ? state.items.find(x => !String(x.url || "").trim() && !String(x.archive_url || "").trim() && isProcessing(x))
+        : null;
+
+      const target = existing || fallbackProcessing;
+
+      const title =
+        out?.meta?.title ||
+        out?.meta?.prompt ||
+        out?.meta?.text ||
+        (target?.title || "Video");
+
+      const nextUrl = archive_url || url;
+      const legacyBroken = looksLikeLegacyBrokenR2(nextUrl);
+
+      if (target) {
+        if (url) target.url = url;
+        if (archive_url) target.archive_url = archive_url;
+
+        target.status = legacyBroken ? "İşleniyor" : "Hazır";
+        target.title = title;
+
+        if (!target.job_id && jid) target.job_id = jid;
+        if (!target.id && jid) target.id = jid;
+
+        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
+
+        const pb = (!legacyBroken) ? getPlaybackUrl(target) : "";
+        target.playbackUrl = pb || "";
+      } else {
+        const item = {
+          id: jid || uid(),
+          job_id: jid || "",
+          url: url || "",
+          archive_url: archive_url || "",
+          status: legacyBroken ? "İşleniyor" : "Hazır",
+          title,
+          createdAt: Date.now(),
+          meta: { ...(out.meta || {}), app: "video" },
+          outputs: [],
+        };
+        const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
+        item.playbackUrl = pb || "";
+        state.items.unshift(item);
       }
 
-      const state = {
-        all: [],
-        view: [],
-        query: (ctx && ctx.getQuery) ? String(ctx.getQuery() || "") : ""
-      };
+      saveItems();
+      render(host);
+    };
 
-      function applySearch(q) {
-        const qq = String(q || "").trim().toLowerCase();
-        state.query = qq;
+    return () => {
+      active = false;
+      PPE.onOutput = prev || null;
+    };
+  }
 
-        if (!qq) {
-          state.view = state.all.slice();
-        } else {
-          state.view = state.all.filter((job) => {
-            const id = String(job?.job_id || job?.id || "").toLowerCase();
-            const st = String(job?.status || "").toLowerCase();
-            const pr = String(job?.provider || job?.meta?.provider || "").toLowerCase();
-            const p  = String(job?.prompt || job?.meta?.prompt || "").toLowerCase();
-            return id.includes(qq) || st.includes(qq) || pr.includes(qq) || p.includes(qq);
-          });
-        }
+  /* =======================
+     Job created bridge
+     ======================= */
 
-        if (!state.view.length) renderEmpty(host);
-        else renderList(host, state.view);
+  function attachJobCreated(host) {
+    const onJob = (e) => {
+      const d = e?.detail || {};
+      if (d.app !== "video" || !d.job_id) return;
 
-        // events her render sonrası tazelenecek
-        if (offEvents) { try { offEvents(); } catch {} }
-        offEvents = attachEvents(
-          host,
-          (id) => state.all.find((x) => String(x?.job_id || x?.id || "") === String(id)),
-          async (id) => {
-            // ✅ delete pattern: optimistic remove → backend → rehydrate
-            ctrl.remove(id);
-            await backendDelete(id);
-            ctrl.hydrate(true);
-          }
-        );
-      }
+      const job_id = String(d.job_id);
+      const exists = state.items.some(x => String(x.job_id || "") === job_id || String(x.id || "") === job_id);
+      if (exists) return;
 
-      renderLoading(host);
+      const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
+      const prompt = (d.prompt && String(d.prompt).trim()) ? String(d.prompt).trim() : "";
+      const title = prompt ? `${modeLabel}: ${prompt}` : modeLabel;
 
-      let offEvents = null;
-
-      const ctrl = DB.create({
-        app: "video",
-        acceptOutput: acceptVideoOutput,
-        pollIntervalMs: 4000,
-        hydrateEveryMs: 15000,
-        debug: false,
-        onChange: (items) => {
-          state.all = Array.isArray(items) ? items.slice() : [];
-
-          // header meta counts
-          const up = (x) => String(x || "").toUpperCase();
-          const done = state.all.filter((j) => ["DONE","READY","COMPLETED","SUCCEEDED","SUCCESS"].includes(up(j.status))).length;
-          const proc = state.all.filter((j) => ["PROCESSING","RUNNING","PENDING","QUEUED"].includes(up(j.status))).length;
-          const err  = state.all.filter((j) => ["ERROR","FAILED","CANCELED","CANCELLED"].includes(up(j.status))).length;
-
-          if (ctx && typeof ctx.setHeader === "function") {
-            ctx.setHeader({ title: "Videolarım", meta: `${done} hazır • ${proc} işleniyor • ${err} hata` });
-          }
-
-          applySearch(state.query);
-        }
+      state.items.unshift({
+        id: job_id,
+        job_id,
+        url: "",
+        archive_url: "",
+        playbackUrl: "",
+        status: "İşleniyor",
+        title,
+        createdAt: d.createdAt || Date.now(),
+        meta: {
+          mode: d.mode || "",
+          prompt: prompt,
+          image_url: d.image_url || "",
+          app: "video",
+        },
+        outputs: [],
+        state: "PENDING",
+        db_status: "pending",
       });
 
-      ctrl.start();
+      saveItems();
+      render(host);
 
-      // manager search hook
-      impl.onSearch = (q) => applySearch(q);
+      pollPendingStatuses(host).catch(() => {});
+    };
 
-      return function unmount() {
-        try { offEvents && offEvents(); } catch {}
-        try { ctrl.destroy(); } catch {}
-      };
+    window.addEventListener("aivo:video:job_created", onJob);
+    return () => window.removeEventListener("aivo:video:job_created", onJob);
+  }
+
+  /* =======================
+     Panel register
+     ======================= */
+
+  window.RightPanel.register("video", {
+    getHeader() {
+      return { title: "Videolarım", meta: "", searchPlaceholder: "Videolarda ara..." };
     },
 
-    onSearch(q) { /* wired in mount */ }
-  };
+    mount(host) {
+      host.innerHTML = `
+        <div class="videoSide">
+          <div class="videoSideCard">
+            <div class="vpGrid" data-video-grid></div>
+          </div>
+        </div>
+      `;
 
-  window.RightPanel.register("video", impl);
+      // 1) instant UI from LS
+      state.items = loadItems();
+      render(host);
+
+      // 2) hydrate from DB (source of truth)
+      hydrateFromDB(host);
+
+      // 3) periodic hydrate (list)
+      const tList = setInterval(() => hydrateFromDB(host), 15000);
+
+      // 4) fast status poll for pending items
+      const tStatus = setInterval(() => pollPendingStatuses(host).catch(() => {}), STATUS_POLL_EVERY_MS);
+
+      const offEvents = attachEvents(host);
+      const offPPE = attachPPE(host);
+      const offJobs = attachJobCreated(host);
+
+      return () => {
+        try { clearInterval(tList); } catch {}
+        try { clearInterval(tStatus); } catch {}
+        try { offEvents(); } catch {}
+        try { offPPE(); } catch {}
+        try { offJobs(); } catch {}
+      };
+    },
+  });
 })();
