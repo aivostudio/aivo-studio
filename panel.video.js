@@ -246,7 +246,12 @@ function isError(item) {
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
 
-    const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
+   const urlFromOutputs =
+  pickVideoUrlFromOutputs(outputs) ||
+  r?.video?.url ||
+  r?.video_url ||
+  "";
+
 
     // provider URLs sometimes nested
     const providerUrl =
@@ -287,7 +292,8 @@ function isError(item) {
 
     // playback
     const pb = legacyBroken ? "" : getPlaybackUrl(item);
-    const hasOutput = !!pb;
+ const hasOutput = !!(archive_url || url);
+
 
     const rawState = String(r?.state || r?.status || r?.db_status || "").toUpperCase();
     const rawDbStatus = String(r?.db_status || "").toLowerCase();
