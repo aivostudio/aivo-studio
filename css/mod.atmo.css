@@ -392,3 +392,24 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
     padding: 14px;
   }
 }
+/* PRO CTA sadeleştirme */
+
+.atmPersCta--pro{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.atmProMiniInfo{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.4px;
+  opacity:.65;
+  text-align:center;
+  padding:6px 0;
+}
+
+/* PRO buton biraz daha güçlü his */
+.atmBigCtaBtn--pro{
+  background:linear-gradient(90deg, rgba(140,90,255,.95), rgba(255,110,210,.95));
+}
