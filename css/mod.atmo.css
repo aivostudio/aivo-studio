@@ -507,46 +507,32 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
   height:42px;            /* kritik: dev select'i küçültür */
   border-radius:12px;
 }
-/* IŞIK · EXPORT · DUYGU SIKLAŞTIRMA */
-
-#atmProMoodExport{
-  padding:16px 18px; /* eski 18-20 ise düşür */
+/* ✅ KANIT + ZORLA UYGULA (eğer bunu görmüyorsan CSS dosyan yüklenmiyor / cache) */
+section.main-panel[data-module="atmosphere"] #atmProMoodExport{
+  outline: 3px solid rgba(255,0,0,.85) !important;
+  outline-offset: 6px !important;
 }
 
-/* Grid gap küçült */
-#atmProMoodExport > div{
-  gap:12px !important;
+/* ✅ SIKLAŞTIRMAYI DA ZORLA */
+section.main-panel[data-module="atmosphere"] #atmProMoodExport .card-header{
+  padding-bottom: 4px !important;
 }
 
-/* Pills küçült */
-#atmProMoodExport .smpack-pill{
-  padding:6px 12px;
-  font-size:13px;
+section.main-panel[data-module="atmosphere"] #atmProMoodExport > div[style*="display:grid"]{
+  gap: 12px !important;
+  grid-template-columns: 1.2fr .8fr !important;
 }
 
-/* Başlık alt boşluk azalt */
-#atmProMoodExport .card-header{
-  padding-bottom:4px;
+section.main-panel[data-module="atmosphere"] #atmProMoodExport .smpack-pill{
+  padding: 6px 12px !important;
+  font-size: 13px !important;
 }
 
-/* Export select yükseklik düşür */
-#atmProMoodExport select{
-  height:42px;
-  font-size:14px;
+section.main-panel[data-module="atmosphere"] #atmProMoodExport select{
+  height: 42px !important;
+  font-size: 14px !important;
 }
 
-/* Export label satır aralığı azalt */
-#atmProMoodExport label{
-  margin-bottom:6px !important;
-}
-
-/* Loop seam fix satırı sık */
-#atmProMoodExport input[type="checkbox"]{
-  transform:scale(.95);
-}
-
-/* Alt açıklama daha kompakt */
-#atmProMoodExport div[style*="shader"]{
-  margin-top:6px !important;
-  font-size:11px;
+section.main-panel[data-module="atmosphere"] #atmProMoodExport label{
+  margin-bottom: 6px !important;
 }
