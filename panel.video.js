@@ -1,5 +1,6 @@
 // panel.video.js
-// RightPanel Video (v2) — with DB hydrate (/api/jobs/list?app=video)
+// RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
+// FIX: list response key variations + robust outputs parsing + output->READY override
 
 (function () {
   if (!window.RightPanel) return;
@@ -49,7 +50,7 @@
 
   function isError(item) {
     const st = String(item?.status || item?.state || "").toLowerCase();
-    return st === "error" || st === "failed" || st === "fail";
+    return st === "error" || st === "failed" || st === "fail" || st === "hata";
   }
 
   function normalizeBadge(item) {
@@ -65,34 +66,13 @@
     return "Video";
   }
 
-  function splitTitle(raw) {
-    const s = String(raw ?? "").trim();
-    const m = s.match(/^([^:]{2,24})\s*:\s*(.+)$/);
-
-    let type = m ? m[1].trim() : "";
-    let name = m ? m[2].trim() : s;
-
-    const t = type.toLowerCase();
-    if (t.includes("text") && t.includes("video")) type = "Text video";
-    else if (t.includes("image") && t.includes("video")) type = "Image video";
-    else if (t === "video") type = "Video";
-    else if (!type) type = "Video";
-
-    if (!name) name = "Video";
-    return { type, name };
-  }
-
-  function renderTitle(raw) {
-    const p = splitTitle(raw);
-    return `<span class="vpType">${esc(p.type)}</span><span class="vpName">${esc(p.name)}</span>`;
-  }
-
   function findGrid(host) {
     return host.querySelector("[data-video-grid]");
   }
 
   function looksLikeLegacyBrokenR2(url) {
     const u = String(url || "");
+    // old broken pattern (keep, but not too aggressive)
     return /https?:\/\/media\.aivo\.tr\/outputs\/video\/[0-9a-f-]{36}\.mp4/i.test(u);
   }
 
@@ -125,24 +105,6 @@
 
   function safeParse(json) {
     try { return JSON.parse(json); } catch { return null; }
-  }
-
-  function loadItems() {
-    const rawNew = localStorage.getItem(STORAGE_KEY);
-    const arrNew = rawNew ? safeParse(rawNew) : null;
-    if (Array.isArray(arrNew)) return sanitizeItems(arrNew);
-
-    for (const k of LEGACY_KEYS) {
-      const raw = localStorage.getItem(k);
-      const arr = raw ? safeParse(raw) : null;
-      if (Array.isArray(arr) && arr.length) {
-        const cleaned = sanitizeItems(arr);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
-        try { localStorage.removeItem(k); } catch {}
-        return cleaned;
-      }
-    }
-    return [];
   }
 
   function sanitizeItems(items) {
@@ -189,184 +151,214 @@
     return out.slice(0, MAX_ITEMS);
   }
 
+  function loadItems() {
+    const rawNew = localStorage.getItem(STORAGE_KEY);
+    const arrNew = rawNew ? safeParse(rawNew) : null;
+    if (Array.isArray(arrNew)) return sanitizeItems(arrNew);
+
+    for (const k of LEGACY_KEYS) {
+      const raw = localStorage.getItem(k);
+      const arr = raw ? safeParse(raw) : null;
+      if (Array.isArray(arr) && arr.length) {
+        const cleaned = sanitizeItems(arr);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
+        try { localStorage.removeItem(k); } catch {}
+        return cleaned;
+      }
+    }
+    return [];
+  }
+
   function saveItems() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, MAX_ITEMS)));
     } catch {}
   }
 
-/* =======================
-   DB hydrate (/api/jobs/list?app=video)
-   ======================= */
+  /* =======================
+     DB hydrate (/api/jobs/list?app=video)
+     ======================= */
 
-function dbStateToStatus(s) {
-  const v = String(s || "").toUpperCase();
-  if (v === "FAILED" || v === "ERROR") return "Hata";
-  if (v === "COMPLETED" || v === "DONE" || v === "READY") return "Hazır";
-  if (v === "RUNNING" || v === "PROCESSING") return "İşleniyor";
-  return "İşleniyor";
-}
+  function pickVideoUrlFromOutputs(outputs) {
+    if (!Array.isArray(outputs)) return "";
 
-function pickVideoUrlFromOutputs(outputs) {
-  if (!Array.isArray(outputs)) return "";
-  const v = outputs.find(
-    (o) =>
-      o &&
-      (o.type === "video" || o.kind === "video") &&
-      (o.archive_url || o.archiveUrl || o.url)
-  );
-  if (!v) return "";
-  return String(v.archive_url || v.archiveUrl || v.url || "").trim();
-}
+    const pickUrl = (o) => {
+      if (!o) return "";
+      const u =
+        o.archive_url || o.archiveUrl || o.archiveURL ||
+        (o.meta && (o.meta.archive_url || o.meta.archiveUrl || o.meta.archiveURL)) ||
+        o.url || o.video_url || o.videoUrl ||
+        (o.meta && (o.meta.url || o.meta.video_url || o.meta.videoUrl));
+      return String(u || "").trim();
+    };
 
-function mapDbItemToPanelItem(r) {
-  const job_id = String(r?.job_id || r?.id || "").trim();
-  const meta = r?.meta || {};
-  const outputs = r?.outputs || [];
+    const isVideo = (o) => {
+      if (!o) return false;
+      const t = String(o.type || o.kind || "").toLowerCase();
+      const mt = String(o.meta?.type || o.meta?.kind || "").toLowerCase();
+      return t === "video" || mt === "video";
+    };
 
-  // 1) URL kaynakları
-  const archive_url =
-    String(r?.archive_url || r?.archiveUrl || meta?.archive_url || "").trim() || "";
+    const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
+    if (hit) return pickUrl(hit);
 
-  const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
-
-  // bazı eski kayıtlar meta içinde farklı yerde olabiliyor
-  const providerUrl =
-    String(
-      meta?.video?.url ||
-      meta?.runway?.video?.url ||
-      meta?.provider?.video?.url ||
-      ""
-    ).trim();
-
-  const url = String(urlFromOutputs || providerUrl || "").trim();
-
-  // 2) legacy broken (eski media.aivo path pattern)
-  const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
-
-  // 3) base item
-  const title =
-    meta?.title ||
-    meta?.prompt ||
-    r?.prompt ||
-    "Video";
-
-  const item = {
-    id: job_id || uid(),
-    job_id: job_id || "",
-    title,
-    status: "İşleniyor",
-    url: url || "",
-    archive_url: archive_url || "",
-    createdAt: (r?.created_at ? new Date(r.created_at).getTime() : Date.now()),
-    meta: {
-      ...(meta || {}),
-      mode: meta?.mode || "",
-      prompt: meta?.prompt || r?.prompt || "",
-      app: "video",
-    },
-  };
-
-  // 4) playback hesabı (URL/ARCHIVE varsa çıkar)
-  const pb = legacyBroken ? "" : getPlaybackUrl(item);
-  const hasOutput = !!pb;
-
-  // 5) STATUS kararı:
-  //    - FAILED/ERROR -> Hata
-  //    - output varsa -> Hazır (state PENDING olsa bile)
-  //    - legacyBroken -> İşleniyor
-  //    - aksi -> state/status map
-  const rawState = String(r?.state || r?.status || r?.db_status || "").toUpperCase();
-  const rawDbStatus = String(r?.db_status || "").toLowerCase(); // bazen "done"/"error" geliyor
-  const isFailed = rawState === "FAILED" || rawState === "ERROR" || rawDbStatus === "error";
-
-  if (legacyBroken) {
-    item.status = "İşleniyor";
-  } else if (isFailed) {
-    item.status = "Hata";
-  } else if (hasOutput) {
-    item.status = "Hazır";
-  } else {
-    // state yoksa db_status("done"/"processing") fallback
-    if (rawDbStatus === "done") item.status = "İşleniyor"; // output yoksa done’a güvenme
-    else item.status = dbStateToStatus(rawState);
+    // fallback: any output that has a url
+    const any = outputs.find((o) => pickUrl(o));
+    return any ? pickUrl(any) : "";
   }
 
-  item.playbackUrl = hasOutput ? pb : "";
-  return item;
-}
+  function mapDbItemToPanelItem(r) {
+    const job_id = String(r?.job_id || r?.id || "").trim();
+    const meta = r?.meta || {};
+    const outputs = r?.outputs || [];
 
-function mergeByJobId(existing, incoming) {
-  const map = new Map();
+    // possible top-level archive_url (optional)
+    const archive_url =
+      String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
 
-  // existing first (LS hızlı UI)
-  for (const it of (existing || [])) {
-    const key = String(it.job_id || it.id || "");
-    map.set(key || uid(), it);
-  }
+    const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
 
-  // incoming overwrites where same job_id (DB truth)
-  for (const it of (incoming || [])) {
-    const key = String(it.job_id || it.id || "");
-    if (!key) continue;
+    // provider URLs sometimes nested
+    const providerUrl =
+      String(
+        meta?.video?.url ||
+        meta?.runway?.video?.url ||
+        meta?.provider?.video?.url ||
+        meta?.output?.url ||
+        meta?.result?.url ||
+        ""
+      ).trim();
 
-    const prev = map.get(key);
-    if (!prev) {
-      map.set(key, it);
-      continue;
+    const url = String(urlFromOutputs || providerUrl || "").trim();
+
+    const title =
+      meta?.title ||
+      meta?.prompt ||
+      r?.prompt ||
+      "Video";
+
+    const item = {
+      id: job_id || uid(),
+      job_id: job_id || "",
+      title,
+      status: "İşleniyor",
+      url: url || "",
+      archive_url: archive_url || "",
+      createdAt: (r?.created_at ? new Date(r.created_at).getTime() : (r?.createdAt ? new Date(r.createdAt).getTime() : Date.now())),
+      meta: {
+        ...(meta || {}),
+        mode: meta?.mode || "",
+        prompt: meta?.prompt || r?.prompt || "",
+        app: "video",
+      },
+    };
+
+    const legacyBroken = looksLikeLegacyBrokenR2(item.archive_url || item.url);
+
+    // playback
+    const pb = legacyBroken ? "" : getPlaybackUrl(item);
+    const hasOutput = !!pb;
+
+    const rawState = String(r?.state || r?.status || r?.db_status || "").toUpperCase();
+    const rawDbStatus = String(r?.db_status || "").toLowerCase();
+    const isFailed = rawState === "FAILED" || rawState === "ERROR" || rawDbStatus === "error" || rawDbStatus === "failed";
+
+    // ✅ RULE: output varsa her durumda READY
+    if (legacyBroken) {
+      item.status = "İşleniyor";
+    } else if (isFailed) {
+      item.status = "Hata";
+    } else if (hasOutput) {
+      item.status = "Hazır";
+    } else {
+      // fallback state mapping
+      if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
+      else if (rawState === "RUNNING" || rawState === "PROCESSING") item.status = "İşleniyor";
+      else item.status = "İşleniyor";
     }
 
-    // merge: DB status/url wins; keep local title if DB missing
-    map.set(key, {
-      ...prev,
-      ...it,
-      title: it.title || prev.title,
-      meta: { ...(prev.meta || {}), ...(it.meta || {}) },
-    });
+    item.playbackUrl = hasOutput ? pb : "";
+    return item;
   }
 
-  const arr = Array.from(map.values());
-  arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-  return arr.slice(0, MAX_ITEMS);
-}
+  function mergeByJobId(existing, incoming) {
+    const map = new Map();
 
-async function hydrateFromDB(host) {
-  try {
-    const r = await fetch("/api/jobs/list?app=video", { method: "GET" });
-    const text = await r.text().catch(() => "");
-    let j = null;
-    try { j = text ? JSON.parse(text) : null; } catch { j = null; }
-
-    if (!r.ok || !j || !j.ok) {
-      console.warn("[video.panel] hydrate failed", r.status, j || text);
-      return;
+    // existing first (LS fast UI)
+    for (const it of (existing || [])) {
+      const key = String(it.job_id || it.id || "");
+      map.set(key || uid(), it);
     }
 
-    const incoming = (j.items || [])
-      .map(mapDbItemToPanelItem)
-      .filter((x) => x && (x.job_id || x.id));
+    // DB overwrites
+    for (const it of (incoming || [])) {
+      const key = String(it.job_id || it.id || "");
+      if (!key) continue;
 
-    // DEBUG (kalsın)
-    console.table(incoming.map(x => ({
-      job_id: x.job_id,
-      status: x.status,
-      url: (x.url || "").slice(0, 50),
-      archive: (x.archive_url || "").slice(0, 50),
-      playback: (x.playbackUrl || "").slice(0, 80),
-    })));
+      const prev = map.get(key);
+      if (!prev) {
+        map.set(key, it);
+        continue;
+      }
 
-    state.items = mergeByJobId(state.items, incoming);
+      map.set(key, {
+        ...prev,
+        ...it,
+        title: it.title || prev.title,
+        meta: { ...(prev.meta || {}), ...(it.meta || {}) },
+      });
+    }
 
-    saveItems();
-    render(host);
-
-    console.log("[video.panel] hydrated from DB:", incoming.length);
-  } catch (e) {
-    console.warn("[video.panel] hydrate exception", e);
+    const arr = Array.from(map.values());
+    arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
+    return arr.slice(0, MAX_ITEMS);
   }
-}
 
+  function extractListItems(j) {
+    // supports many backend shapes:
+    // {ok:true, items:[...]} OR {ok:true, jobs:[...]} OR {ok:true, rows:[...]} OR {ok:true, data:[...]}
+    if (!j) return [];
+    if (Array.isArray(j.items)) return j.items;
+    if (Array.isArray(j.jobs)) return j.jobs;
+    if (Array.isArray(j.rows)) return j.rows;
+    if (Array.isArray(j.data)) return j.data;
+    if (Array.isArray(j.results)) return j.results;
+    // sometimes list returns {ok:true, items:{rows:[...]}}
+    if (Array.isArray(j.items?.rows)) return j.items.rows;
+    return [];
+  }
 
+  async function hydrateFromDB(host) {
+    try {
+      const r = await fetch("/api/jobs/list?app=video", { method: "GET" });
+      const text = await r.text().catch(() => "");
+      let j = null;
+      try { j = text ? JSON.parse(text) : null; } catch { j = null; }
+
+      if (!r.ok || !j || !j.ok) {
+        console.warn("[video.panel] hydrate failed", r.status, j || text);
+        return;
+      }
+
+      const rows = extractListItems(j);
+
+      const incoming = (rows || [])
+        .map(mapDbItemToPanelItem)
+        .filter((x) => x && (x.job_id || x.id));
+
+      state.items = mergeByJobId(state.items, incoming);
+
+      saveItems();
+      render(host);
+
+      // debug (optional)
+      // console.table(incoming.map(x => ({ job_id:x.job_id, status:x.status, playback:!!x.playbackUrl })));
+
+      // console.log("[video.panel] hydrated from DB:", incoming.length);
+    } catch (e) {
+      console.warn("[video.panel] hydrate exception", e);
+    }
+  }
 
   /* =======================
      Fullscreen helper
@@ -398,173 +390,171 @@ async function hydrateFromDB(host) {
     } catch {}
   }
 
-/* =======================
-   Render
-   ======================= */
+  /* =======================
+     Render
+     ======================= */
 
-function renderSkeleton(badge) {
-  return `
-    <div class="vpSkel" aria-label="İşleniyor">
-      <div class="vpBadge">${esc(badge)}</div>
-      <div class="vpSkelShimmer"></div>
-      <div class="vpSkelPlay">
-        <div class="vpSkelPlayRing"></div>
-        <div class="vpSkelPlayTri"></div>
-      </div>
-    </div>
-  `;
-}
-
-function renderThumb(it) {
-  const badge = normalizeBadge(it);
-
-  if (!isReady(it) || !it.playbackUrl) {
+  function renderSkeleton(badge) {
     return `
-      <div class="vpThumb is-loading">
-        ${renderSkeleton(badge)}
+      <div class="vpSkel" aria-label="İşleniyor">
+        <div class="vpBadge">${esc(badge)}</div>
+        <div class="vpSkelShimmer"></div>
+        <div class="vpSkelPlay">
+          <div class="vpSkelPlayRing"></div>
+          <div class="vpSkelPlayTri"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderThumb(it) {
+    const badge = normalizeBadge(it);
+
+    if (!isReady(it) || !it.playbackUrl) {
+      return `
+        <div class="vpThumb is-loading">
+          ${renderSkeleton(badge)}
+          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="vpThumb">
+        <div class="vpBadge">${esc(badge)}</div>
+
+        <video
+          class="vpVideo"
+          preload="metadata"
+          playsinline
+          controls
+          src="${esc(it.playbackUrl)}"
+        ></video>
+
+        <div class="vpPlay">
+          <span class="vpPlayIcon">▶</span>
+        </div>
+
         <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
       </div>
     `;
   }
 
-  return `
-    <div class="vpThumb">
-      <div class="vpBadge">${esc(badge)}</div>
+  function renderMeta(it) {
+    const kind = formatKind(it);
+    const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
+    const ready = isReady(it);
 
-      <video
-        class="vpVideo"
-        preload="metadata"
-        playsinline
-        controls
-        src="${esc(it.playbackUrl)}"
-      ></video>
+    return `
+      <div class="vpMeta">
+        <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
+        <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
 
-      <div class="vpPlay">
-        <span class="vpPlayIcon">▶</span>
+        <div class="vpActions">
+          <button class="vpIconBtn" data-act="download" ${ready ? "" : "disabled"} title="İndir">⬇</button>
+          <button class="vpIconBtn" data-act="share" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
+          <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
+        </div>
       </div>
-
-      <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-    </div>
-  `;
-}
-
-function renderMeta(it) {
-  const kind = formatKind(it);
-  const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
-  const ready = isReady(it);
-
-  return `
-    <div class="vpMeta">
-      <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
-      <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
-
-      <!-- ✅ wrapper artık disabled değil; delete her zaman clickable -->
-      <div class="vpActions">
-        <button class="vpIconBtn" data-act="download" ${ready ? "" : "disabled"} title="İndir">⬇</button>
-        <button class="vpIconBtn" data-act="share" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
-        <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
-      </div>
-    </div>
-  `;
-}
-
-function renderCard(it) {
-  return `
-    <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
-      ${renderThumb(it)}
-      ${renderMeta(it)}
-    </div>
-  `;
-}
-
-function render(host) {
-  const grid = findGrid(host);
-  if (!grid) return;
-
-  if (!state.items.length) {
-    grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
-    return;
+    `;
   }
 
-  grid.innerHTML = state.items.map(renderCard).join("");
-}
-/* =======================
-   Actions
-   ======================= */
-
-function downloadUrl(u) {
-  const url = String(u || "").trim();
-  if (!url) return;
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "";
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-function shareUrl(u) {
-  const url = String(u || "").trim();
-  if (!url) return;
-
-  if (navigator.share) {
-    navigator.share({ url }).catch(() => {});
-  } else {
-    navigator.clipboard?.writeText(url).catch(() => {});
+  function renderCard(it) {
+    return `
+      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
+        ${renderThumb(it)}
+        ${renderMeta(it)}
+      </div>
+    `;
   }
-}
 
-function attachEvents(host) {
-  const grid = findGrid(host);
-  if (!grid) return () => {};
+  function render(host) {
+    const grid = findGrid(host);
+    if (!grid) return;
 
-  const onClick = (e) => {
-    const card = e.target.closest(".vpCard");
-    if (!card) return;
-
-    const id = card.getAttribute("data-id");
-    const it = state.items.find(x => String(x.id) === String(id));
-    if (!it) return;
-
-    const btn = e.target.closest("[data-act]");
-    const video = card.querySelector("video");
-    const overlay = card.querySelector(".vpPlay");
-
-    if (btn) {
-      e.stopPropagation();
-      const act = btn.getAttribute("data-act");
-
-      if (act === "fs") { goFullscreen(card); return; }
-      if (act === "download") downloadUrl(bestShareUrl(it));
-      if (act === "share") shareUrl(bestShareUrl(it));
-
-      if (act === "delete") {
-        // ✅ SADECE UI + LS delete (çalışan versiyon)
-        state.items = state.items.filter(
-          x => String(x.id) !== String(id)
-        );
-        saveItems();
-        render(host);
-      }
+    if (!state.items.length) {
+      grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
       return;
     }
 
-    if (!video || !isReady(it)) return;
+    grid.innerHTML = state.items.map(renderCard).join("");
+  }
 
-    if (video.paused) {
-      video.play().catch(() => {});
-      if (overlay) overlay.style.display = "none";
+  /* =======================
+     Actions
+     ======================= */
+
+  function downloadUrl(u) {
+    const url = String(u || "").trim();
+    if (!url) return;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function shareUrl(u) {
+    const url = String(u || "").trim();
+    if (!url) return;
+
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
     } else {
-      video.pause();
-      if (overlay) overlay.style.display = "";
+      navigator.clipboard?.writeText(url).catch(() => {});
     }
-  };
+  }
 
-  grid.addEventListener("click", onClick);
-  return () => grid.removeEventListener("click", onClick);
-}
+  function attachEvents(host) {
+    const grid = findGrid(host);
+    if (!grid) return () => {};
+
+    const onClick = (e) => {
+      const card = e.target.closest(".vpCard");
+      if (!card) return;
+
+      const id = card.getAttribute("data-id");
+      const it = state.items.find(x => String(x.id) === String(id));
+      if (!it) return;
+
+      const btn = e.target.closest("[data-act]");
+      const video = card.querySelector("video");
+      const overlay = card.querySelector(".vpPlay");
+
+      if (btn) {
+        e.stopPropagation();
+        const act = btn.getAttribute("data-act");
+
+        if (act === "fs") { goFullscreen(card); return; }
+        if (act === "download") downloadUrl(bestShareUrl(it));
+        if (act === "share") shareUrl(bestShareUrl(it));
+
+        if (act === "delete") {
+          // şimdilik UI + LS delete (backend delete sonra eklenecek)
+          state.items = state.items.filter(x => String(x.id) !== String(id));
+          saveItems();
+          render(host);
+        }
+        return;
+      }
+
+      if (!video || !isReady(it)) return;
+
+      if (video.paused) {
+        video.play().catch(() => {});
+        if (overlay) overlay.style.display = "none";
+      } else {
+        video.pause();
+        if (overlay) overlay.style.display = "";
+      }
+    };
+
+    grid.addEventListener("click", onClick);
+    return () => grid.removeEventListener("click", onClick);
+  }
 
   /* =======================
      PPE bridge (Runway outputs)
@@ -580,10 +570,10 @@ function attachEvents(host) {
       try { prev && prev(job, out); } catch {}
       if (!active) return;
 
-      if (!out || out.type !== "video") return;
+      if (!out || String(out.type || "").toLowerCase() !== "video") return;
 
       const url = String(out.url || "").trim();
-      const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || "").trim();
+      const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || out.meta?.archiveUrl || "").trim();
       if (!url && !archive_url) return;
 
       const job_id =
@@ -718,8 +708,8 @@ function attachEvents(host) {
       // 2) hydrate from DB (source of truth)
       hydrateFromDB(host);
 
-      // 3) optional periodic hydrate (keeps Safari/Chrome in sync)
-      const t = setInterval(() => hydrateFromDB(host), 30000);
+      // 3) periodic hydrate
+      const t = setInterval(() => hydrateFromDB(host), 15000);
 
       const offEvents = attachEvents(host);
       const offPPE = attachPPE(host);
