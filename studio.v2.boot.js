@@ -108,14 +108,44 @@
   }
 
   // ------------------------------------------------------------
-  // SAFE FETCH (credentials include)
+  // SAFER TIMING (Safari) - waitFor helpers
   // ------------------------------------------------------------
+  function waitFor(fn, timeoutMs = 2500, intervalMs = 50) {
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      const tick = () => {
+        let ok = false;
+        try { ok = !!fn(); } catch {}
+        if (ok) return resolve(true);
+        if (Date.now() - t0 >= timeoutMs) return resolve(false);
+        setTimeout(tick, intervalMs);
+      };
+      tick();
+    });
+  }
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+  // ------------------------------------------------------------
+  // FIX: SAFARI COOKIE ISSUE (credentials include)
+  // ------------------------------------------------------------
+  function hasAuthCookie() {
+    try {
+      const c = String(document.cookie || "");
+      return c.includes("aivo_sess=") || c.includes("aivo_session=");
+    } catch {
+      return false;
+    }
+  }
+
   async function safeFetchJson(url) {
     try {
       const r = await fetch(url, {
         cache: "no-store",
         credentials: "include",
-        headers: { Accept: "application/json" },
+        headers: { "Accept": "application/json" },
       });
 
       const j = await r.json().catch(() => ({}));
@@ -151,40 +181,23 @@
     return "file";
   }
 
-  // ✅ NEW: canonicalize type/app (lowercase)
-  function canonType(t, url) {
-    const raw = String(t || "").trim();
-    const g = guessTypeFromUrl(url);
-    const k = (raw || g || "file").toLowerCase();
-
-    // küçük alias seti (gerekirse büyütürüz)
-    if (k === "mp4" || k === "movie") return "video";
-    if (k === "jpg" || k === "jpeg" || k === "png" || k === "webp") return "image";
-    if (k === "mp3" || k === "wav") return "audio";
-    return k;
-  }
-
   function normalizeOutputs(appKey, job) {
     const outs = Array.isArray(job.outputs) ? job.outputs : (safeJson(job.outputs) || []);
     const outArr = Array.isArray(outs) ? outs : [];
-    const appLower = normalizeAppKey(appKey);
 
     return outArr
       .map((o, i) => {
         if (!o) return null;
 
         if (typeof o === "string") {
-          const type = canonType(null, o);
-          return { type, url: o, index: i, meta: { app: appLower } };
+          return { type: guessTypeFromUrl(o), url: o, index: i, meta: { app: appKey } };
         }
 
         const url = o.url || o.src || o.href || o.video_url || o.image_url;
         if (!url) return null;
 
-        const type = canonType(o.type, url);
-
-        const meta = Object.assign({}, o.meta || {});
-        meta.app = normalizeAppKey(meta.app || appLower); // ✅ force lowercase app
+        const type = o.type || guessTypeFromUrl(url);
+        const meta = Object.assign({}, o.meta || {}, { app: (o?.meta?.app || appKey) });
 
         return {
           type,
@@ -213,18 +226,24 @@
   async function hydrateJobsFromDB(appKey) {
     const key = normalizeAppKey(appKey);
 
+    // Safari’de cookie bazen JS’te boş görünüyor; ama request yine 200 olabiliyor.
+    // Burada sadece warn yapıyoruz, return etmiyoruz.
+    if (!hasAuthCookie()) {
+      console.warn("[BOOT] hydrate: cookie not visible (Safari ITP?)");
+    }
+
     const url = `/api/jobs/list?app=${encodeURIComponent(key)}`;
     const resp = await safeFetchJson(url);
 
     if (!resp.ok || !resp.json || resp.json.ok !== true) {
       console.warn("[BOOT] hydrate list failed:", resp.status, resp.json);
-      return;
+      return { ok: false, items: 0, applied: 0 };
     }
 
     const items = Array.isArray(resp.json.items) ? resp.json.items : [];
     if (!items.length) {
       console.log("[BOOT] hydrate: empty", key);
-      return;
+      return { ok: true, items: 0, applied: 0 };
     }
 
     let applied = 0;
@@ -235,12 +254,12 @@
       if (__hydratedJobIds.has(jobId)) continue;
 
       __hydratedJobIds.add(jobId);
-
       ppeApplyCompleted(key, it);
       applied++;
     }
 
     console.log(`[BOOT] hydrate OK: app=${key} items=${items.length} applied=${applied}`);
+    return { ok: true, items: items.length, applied };
   }
 
   function getCurrentRouteKey() {
@@ -248,9 +267,24 @@
     return normalizeAppKey(h || "music");
   }
 
-  function scheduleHydrateForRoute() {
+  // 핵: Safari timing için PPE + kısa gecikme + retry
+  async function scheduleHydrateForRoute() {
     const routeKey = getCurrentRouteKey();
-    setTimeout(() => hydrateJobsFromDB(routeKey), 250);
+
+    // 1) PPE hazır olana kadar bekle (Safari’de bazen geç)
+    await waitFor(() => window.PPE && typeof window.PPE.apply === "function", 4000);
+
+    // 2) route değişiminde mount/render zinciri otursun diye minicik nefes
+    await sleep(180);
+
+    // 3) ilk hydrate
+    await hydrateJobsFromDB(routeKey);
+
+    // 4) video panel gibi late-subscriber durumları için 2. pass (Safari fix)
+    //    Bu pass sadece "applied" daha önce 0 kalmışsa bile eventleri yeniden üretmek için değil,
+    //    panelin PPE’den state okuyup render etmesi için zaman kazandırır.
+    await sleep(900);
+    await hydrateJobsFromDB(routeKey);
   }
 
   window.addEventListener("DOMContentLoaded", () => {
