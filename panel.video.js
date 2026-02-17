@@ -29,61 +29,133 @@
     }[c]));
   }
 
-function getStatusText(item) {
-  return String(
-    item?.status ||
-    item?.state ||
-    item?.db_status ||
-    ""
-  ).trim().toLowerCase();
-}
+  function norm(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replaceAll("_", " ")
+      .replace(/\s+/g, " ");
+  }
 
-function isReady(item) {
-  const st = getStatusText(item);
+  // ✅ status/db_status önce, state sonra (çünkü done + PENDING gibi durumlar var)
+  function getStatusText(item) {
+    const primary = norm(item?.status || item?.db_status);
+    const secondary = norm(item?.state);
+    return primary || secondary || "";
+  }
 
-  return (
-    st === "hazır" ||
-    st === "ready" ||
-    st === "done" ||
-    st === "completed" ||
-    st === "succeeded" ||
-    st === "success" ||
-    st === "suceeded" ||   // typo safety
-    st === "completed" ||
-    st === "complete"
-  );
-}
+  function looksLikeLegacyBrokenR2(url) {
+    // 🔥 Geçici fix:
+    // media.aivo.tr linklerini artık "legacy broken" saymıyoruz.
+    return false;
+  }
 
-function isProcessing(item) {
-  const st = getStatusText(item);
+  function toMaybeProxyUrl(url) {
+    const u = String(url || "").trim();
+    if (!u) return "";
+    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
+    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
+    return u;
+  }
 
-  return (
-    st === "işleniyor" ||
-    st === "processing" ||
-    st === "running" ||
-    st === "pending" ||
-    st === "queued" ||
-    st === "in_queue" ||
-    st === "in queue" ||
-    st === "in_progress" ||
-    st === "in progress" ||
-    st === "started"
-  );
-}
+  function getPlaybackUrl(it) {
+    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
+    if (a) return toMaybeProxyUrl(a);
+    const u = String(it?.url || it?.video_url || it?.videoUrl || "").trim();
+    if (!u) return "";
+    return toMaybeProxyUrl(u);
+  }
 
-function isError(item) {
-  const st = getStatusText(item);
+  function bestShareUrl(it) {
+    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
+    if (a) return a;
+    const u = String(it?.url || it?.video_url || it?.videoUrl || "").trim();
+    return u;
+  }
 
-  return (
-    st === "hata" ||
-    st === "error" ||
-    st === "failed" ||
-    st === "fail" ||
-    st === "canceled" ||
-    st === "cancelled"
-  );
-}
+  // ✅ output var mı? (UI item + DB row shape)
+  function hasOutput(item) {
+    // playbackUrl varsa hazır demektir
+    if (String(item?.playbackUrl || "").trim()) return true;
 
+    // top-level url/archive_url
+    if (String(item?.archive_url || item?.archiveUrl || "").trim()) return true;
+    if (String(item?.url || item?.video_url || item?.videoUrl || "").trim()) return true;
+
+    // DB list shape: outputs[] içinde video url
+    const outs = item?.outputs;
+    if (Array.isArray(outs)) {
+      return outs.some((o) => {
+        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
+        const u = String(
+          o?.archive_url ||
+          o?.archiveUrl ||
+          o?.meta?.archive_url ||
+          o?.meta?.archiveUrl ||
+          o?.url ||
+          o?.video_url ||
+          o?.videoUrl ||
+          o?.meta?.url ||
+          o?.meta?.video_url ||
+          o?.meta?.videoUrl ||
+          ""
+        ).trim();
+        // type bazen boş gelebilir; url varsa kabul
+        return (t === "video" || t === "") && !!u;
+      });
+    }
+
+    return false;
+  }
+
+  function isReady(item) {
+    // ✅ ALTIN KURAL: output varsa her durumda READY
+    if (hasOutput(item)) return true;
+
+    const st = getStatusText(item);
+
+    return (
+      st === "hazır" ||
+      st === "ready" ||
+      st === "done" ||
+      st === "completed" ||
+      st === "complete" ||
+      st === "succeeded" ||
+      st === "success" ||
+      st === "suceeded" // typo safety
+    );
+  }
+
+  function isProcessing(item) {
+    // ready ise processing değildir
+    if (isReady(item)) return false;
+
+    const st = getStatusText(item);
+
+    return (
+      st === "işleniyor" ||
+      st === "processing" ||
+      st === "running" ||
+      st === "pending" ||
+      st === "queued" ||
+      st === "in queue" ||
+      st === "in progress" ||
+      st === "started"
+    );
+  }
+
+  function isError(item) {
+    const st = getStatusText(item);
+
+    return (
+      st === "hata" ||
+      st === "error" ||
+      st === "failed" ||
+      st === "fail" ||
+      st === "canceled" ||
+      st === "cancelled"
+    );
+  }
 
   function normalizeBadge(item) {
     if (isReady(item)) return "Hazır";
@@ -102,36 +174,6 @@ function isError(item) {
     return host.querySelector("[data-video-grid]");
   }
 
-  function looksLikeLegacyBrokenR2(url) {
-  // 🔥 Geçici fix:
-  // media.aivo.tr linklerini artık "legacy broken" saymıyoruz.
-  return false;
-}
-
-
-  function toMaybeProxyUrl(url) {
-    const u = String(url || "").trim();
-    if (!u) return "";
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
-    return u;
-  }
-
-  function getPlaybackUrl(it) {
-    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
-    if (a) return toMaybeProxyUrl(a);
-    const u = String(it?.url || it?.video_url || "").trim();
-    if (!u) return "";
-    return toMaybeProxyUrl(u);
-  }
-
-  function bestShareUrl(it) {
-    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
-    if (a) return a;
-    const u = String(it?.url || "").trim();
-    return u;
-  }
-
   /* =======================
      Storage (load / migrate / save)
      ======================= */
@@ -148,17 +190,21 @@ function isError(item) {
       const id = String(it.id || it.job_id || uid());
       const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
 
-      const url = String(it.url || it.video_url || "").trim();
-      const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || "").trim();
+      const url = String(it.url || it.video_url || it.videoUrl || "").trim();
+      const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || it.meta?.archiveUrl || "").trim();
 
       const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
 
+      // ✅ hazır/işleniyor kararında output’u öncele
+      const readyByOutput = !!(!legacyBroken && (archive_url || url));
+
       const status =
         legacyBroken ? "İşleniyor" :
-        (it.status || it.state || ((archive_url || url) ? "Hazır" : "İşleniyor"));
+        (readyByOutput ? "Hazır" : (it.status || it.state || it.db_status || "İşleniyor"));
 
       const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
-      const playbackUrl = (!legacyBroken && (archive_url || url))
+
+      const pb = (!legacyBroken && readyByOutput)
         ? getPlaybackUrl({ archive_url, url })
         : "";
 
@@ -169,7 +215,7 @@ function isError(item) {
         status,
         url,
         archive_url,
-        playbackUrl,
+        playbackUrl: pb || "",
         createdAt: it.createdAt || it.created_at || Date.now(),
         meta: {
           ...(it.meta || {}),
@@ -235,7 +281,6 @@ function isError(item) {
     const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
     if (hit) return pickUrl(hit);
 
-    // fallback: any output that has a url
     const any = outputs.find((o) => pickUrl(o));
     return any ? pickUrl(any) : "";
   }
@@ -245,18 +290,15 @@ function isError(item) {
     const meta = r?.meta || {};
     const outputs = r?.outputs || [];
 
-    // possible top-level archive_url (optional)
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
 
-   const urlFromOutputs =
-  pickVideoUrlFromOutputs(outputs) ||
-  r?.video?.url ||
-  r?.video_url ||
-  "";
+    const urlFromOutputs =
+      pickVideoUrlFromOutputs(outputs) ||
+      r?.video?.url ||
+      r?.video_url ||
+      "";
 
-
-    // provider URLs sometimes nested
     const providerUrl =
       String(
         meta?.video?.url ||
@@ -289,47 +331,58 @@ function isError(item) {
         prompt: meta?.prompt || r?.prompt || "",
         app: "video",
       },
+      // DB row’un outputs’unu da taşıyalım ki hasOutput anlayabilsin
+      outputs: Array.isArray(outputs) ? outputs : [],
+      // DB’den gelen state/status/db_status’ı da taşı (debug/logic için)
+      state: r?.state,
+      db_status: r?.db_status,
     };
 
     const legacyBroken = looksLikeLegacyBrokenR2(item.archive_url || item.url);
 
-    // playback
-    const pb = legacyBroken ? "" : getPlaybackUrl(item);
- const hasOutput = !!(archive_url || url);
+    // ✅ hasOutput (gerçek output'a bağlı)
+    const hasOut = !legacyBroken && hasOutput(item);
 
+    const rawState = String(r?.state || "").toUpperCase();
+    const rawDbStatus = norm(r?.db_status);
+    const rawStatus = norm(r?.status);
 
-    const rawState = String(r?.state || r?.status || r?.db_status || "").toUpperCase();
-    const rawDbStatus = String(r?.db_status || "").toLowerCase();
-    const isFailed = rawState === "FAILED" || rawState === "ERROR" || rawDbStatus === "error" || rawDbStatus === "failed";
+    const isFailed =
+      rawState === "FAILED" ||
+      rawState === "ERROR" ||
+      rawDbStatus === "error" ||
+      rawDbStatus === "failed" ||
+      rawStatus === "error" ||
+      rawStatus === "failed";
 
-    // ✅ RULE: output varsa her durumda READY
     if (legacyBroken) {
       item.status = "İşleniyor";
     } else if (isFailed) {
       item.status = "Hata";
-    } else if (hasOutput) {
+    } else if (hasOut) {
       item.status = "Hazır";
     } else {
-      // fallback state mapping
+      // fallback mapping
       if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
-      else if (rawState === "RUNNING" || rawState === "PROCESSING") item.status = "İşleniyor";
+      else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
       else item.status = "İşleniyor";
     }
 
-    item.playbackUrl = hasOutput ? pb : "";
+    // playbackUrl sadece gerçek pb varsa setle
+    const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
+    item.playbackUrl = pb || "";
+
     return item;
   }
 
   function mergeByJobId(existing, incoming) {
     const map = new Map();
 
-    // existing first (LS fast UI)
     for (const it of (existing || [])) {
       const key = String(it.job_id || it.id || "");
       map.set(key || uid(), it);
     }
 
-    // DB overwrites
     for (const it of (incoming || [])) {
       const key = String(it.job_id || it.id || "");
       if (!key) continue;
@@ -354,15 +407,12 @@ function isError(item) {
   }
 
   function extractListItems(j) {
-    // supports many backend shapes:
-    // {ok:true, items:[...]} OR {ok:true, jobs:[...]} OR {ok:true, rows:[...]} OR {ok:true, data:[...]}
     if (!j) return [];
     if (Array.isArray(j.items)) return j.items;
     if (Array.isArray(j.jobs)) return j.jobs;
     if (Array.isArray(j.rows)) return j.rows;
     if (Array.isArray(j.data)) return j.data;
     if (Array.isArray(j.results)) return j.results;
-    // sometimes list returns {ok:true, items:{rows:[...]}}
     if (Array.isArray(j.items?.rows)) return j.items.rows;
     return [];
   }
@@ -389,11 +439,6 @@ function isError(item) {
 
       saveItems();
       render(host);
-
-      // debug (optional)
-      // console.table(incoming.map(x => ({ job_id:x.job_id, status:x.status, playback:!!x.playbackUrl })));
-
-      // console.log("[video.panel] hydrated from DB:", incoming.length);
     } catch (e) {
       console.warn("[video.panel] hydrate exception", e);
     }
@@ -572,7 +617,6 @@ function isError(item) {
         if (act === "share") shareUrl(bestShareUrl(it));
 
         if (act === "delete") {
-          // şimdilik UI + LS delete (backend delete sonra eklenecek)
           state.items = state.items.filter(x => String(x.id) !== String(id));
           saveItems();
           render(host);
@@ -647,6 +691,7 @@ function isError(item) {
         if (url) target.url = url;
         if (archive_url) target.archive_url = archive_url;
 
+        // ✅ output varsa READY
         target.status = legacyBroken ? "İşleniyor" : "Hazır";
         target.title = title;
 
@@ -654,7 +699,8 @@ function isError(item) {
         if (!target.id && jid) target.id = jid;
 
         target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
-        target.playbackUrl = (!legacyBroken && isReady(target)) ? getPlaybackUrl(target) : "";
+        const pb = (!legacyBroken) ? getPlaybackUrl(target) : "";
+        target.playbackUrl = pb || "";
       } else {
         const item = {
           id: jid || uid(),
@@ -666,7 +712,8 @@ function isError(item) {
           createdAt: Date.now(),
           meta: { ...(out.meta || {}), app: "video" },
         };
-        item.playbackUrl = (!legacyBroken && isReady(item)) ? getPlaybackUrl(item) : "";
+        const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
+        item.playbackUrl = pb || "";
         state.items.unshift(item);
       }
 
