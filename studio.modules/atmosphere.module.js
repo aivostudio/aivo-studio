@@ -114,3 +114,68 @@ document.addEventListener("click", function (e) {
     p.classList.toggle('is-active', p.dataset.modePanel === mode);
   });
 });
+// ===============================
+// ATMOSPHERE — Generate CTA (delegated, router-safe)
+// ===============================
+(() => {
+  if (window.__ATM_GEN_BIND__) return;
+  window.__ATM_GEN_BIND__ = true;
+
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+  function readBasicPayload(panel) {
+    const scenesRoot = qs("#atmScenes", panel);
+    const sceneBtn = scenesRoot ? qs(".smpack-choice.is-active", scenesRoot) : null;
+    const scene = sceneBtn?.dataset?.atmScene || null;
+
+    const effectsRoot = qs("#atmEffects", panel);
+    const effects = effectsRoot
+      ? qsa(".atm-pill.is-active, .smpack-pill.is-active", effectsRoot).map(b => b.dataset.atmEff).filter(Boolean)
+      : [];
+
+    const camera = qs("#atmCamera", panel)?.value || "kenburns_soft";
+    const duration = qs("#atmDuration", panel)?.value || "8";
+
+    const imgFile = qs("#atmImageFile", panel)?.files?.[0] || null;
+
+    return { mode: "basic", scene, effects, camera, duration, imgFile };
+  }
+
+  function readProPayload(panel) {
+    const prompt = (qs("#atmSuperPrompt", panel)?.value || "").trim();
+
+    // mood pills
+    const moodBtns = qsa('[data-atm-mood].is-active', panel);
+    const mood = moodBtns[0]?.dataset?.atmMood || null;
+
+    const format = qs("#atmProFormat", panel)?.value || "mp4";
+
+    const refImage = qs("#atmSceneImageInput", panel)?.files?.[0] || null;
+    const refAudio = qs("#atmSceneAudioInput", panel)?.files?.[0] || null;
+
+    return { mode: "pro", prompt, mood, format, refImage, refAudio };
+  }
+
+  async function onGenerateClick(btn) {
+    const panel = btn.closest('.main-panel[data-module="atmosphere"]');
+    if (!panel) return;
+
+    const mode = btn.dataset.atmMode || "basic";
+
+    // TODO: burayı senin mevcut create akışına bağlayacağız.
+    // Şimdilik payload'u konsola basıyorum ki doğru okuyor mu görelim:
+    const payload = mode === "pro" ? readProPayload(panel) : readBasicPayload(panel);
+    console.log("[ATM] generate payload =", payload);
+
+    // Eğer sende mevcut bir create fonksiyonu varsa burada çağır:
+    // window.ATM_CREATE?.(payload) gibi...
+  }
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-atm-generate]");
+    if (!btn) return;
+    onGenerateClick(btn);
+  });
+
+})();
