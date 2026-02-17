@@ -88,7 +88,9 @@
     const g = window.toast;
     if (g && typeof g === "object") {
       const wrap = (fn, type) => (msg) => {
-        try { fn(msg); } catch {}
+        try {
+          fn(msg);
+        } catch {}
         pushToast(type, msg);
       };
 
@@ -108,24 +110,15 @@
   }
 
   // ------------------------------------------------------------
-  // FIX: SAFARI COOKIE ISSUE (credentials include)
+  // SAFE FETCH (credentials include)
   // ------------------------------------------------------------
-  function hasAuthCookie() {
-    try {
-      const c = String(document.cookie || "");
-      return c.includes("aivo_sess=") || c.includes("aivo_session=");
-    } catch {
-      return false;
-    }
-  }
-
   async function safeFetchJson(url) {
     try {
       const r = await fetch(url, {
         cache: "no-store",
-        credentials: "include", // ✅ SAFARI FIX
+        credentials: "include",
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
         },
       });
 
@@ -151,7 +144,11 @@
   }
 
   function safeJson(v) {
-    try { return JSON.parse(v); } catch { return null; }
+    try {
+      return JSON.parse(v);
+    } catch {
+      return null;
+    }
   }
 
   function guessTypeFromUrl(url) {
@@ -163,7 +160,7 @@
   }
 
   function normalizeOutputs(appKey, job) {
-    const outs = Array.isArray(job.outputs) ? job.outputs : (safeJson(job.outputs) || []);
+    const outs = Array.isArray(job.outputs) ? job.outputs : safeJson(job.outputs) || [];
     const outArr = Array.isArray(outs) ? outs : [];
 
     return outArr
@@ -178,12 +175,12 @@
         if (!url) return null;
 
         const type = o.type || guessTypeFromUrl(url);
-        const meta = Object.assign({}, o.meta || {}, { app: (o?.meta?.app || appKey) });
+        const meta = Object.assign({}, o.meta || {}, { app: o?.meta?.app || appKey });
 
         return {
           type,
           url,
-          index: (typeof o.index === "number" ? o.index : i),
+          index: typeof o.index === "number" ? o.index : i,
           thumb: o.thumb || o.thumbnail || null,
           meta,
         };
@@ -210,14 +207,7 @@
   async function hydrateJobsFromDB(appKey) {
     const key = normalizeAppKey(appKey);
 
-    // Safari’de cookie bazen boş geliyor, hydrate’a girmeyelim
-    if (!hasAuthCookie()) {
-      console.warn("[BOOT] hydrate skipped (no cookie)");
-  
-    }
-
     const url = `/api/jobs/list?app=${encodeURIComponent(key)}`;
-
     const resp = await safeFetchJson(url);
 
     if (!resp.ok || !resp.json || resp.json.ok !== true) {
