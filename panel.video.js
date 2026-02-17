@@ -1,7 +1,8 @@
 // panel.video.js
 // RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
-// + FIX: list/state drift → pending items poll /api/jobs/status?job_id=...
-// + FIX: no-autoplay guard (ready olunca kendi kendine başlamasın)
+// FIX(critical): playbackUrl was NOT derived from outputs[].url (Safari/DB-only path => cards stayed "loading")
+// + FIX: state text typo ("İşlen:iyor" -> "İşleniyor")
+// + UX: Safari-friendly video attrs (muted + webkit-playsinline)
 
 (function () {
   if (!window.RightPanel) return;
@@ -12,7 +13,7 @@
 
   // status polling
   const STATUS_POLL_EVERY_MS = 4000;
-  const STATUS_POLL_BATCH = 3; // her tur max kaç job status çekelim (spam olmasın)
+  const STATUS_POLL_BATCH = 3;
   const STATUS_POLL_TIMEOUT_MS = 15000;
 
   const state = { items: [] };
@@ -63,19 +64,61 @@
     return u;
   }
 
+  /* =======================
+     Outputs URL picking (CRITICAL)
+     ======================= */
+
+  function pickVideoUrlFromOutputs(outputs) {
+    if (!Array.isArray(outputs)) return "";
+
+    const pickUrl = (o) => {
+      if (!o) return "";
+      const u =
+        o.archive_url || o.archiveUrl || o.archiveURL ||
+        (o.meta && (o.meta.archive_url || o.meta.archiveUrl || o.meta.archiveURL)) ||
+        o.url || o.video_url || o.videoUrl ||
+        (o.meta && (o.meta.url || o.meta.video_url || o.meta.videoUrl));
+      return String(u || "").trim();
+    };
+
+    const isVideo = (o) => {
+      if (!o) return false;
+      const t = String(o.type || o.kind || "").toLowerCase();
+      const mt = String(o.meta?.type || o.meta?.kind || "").toLowerCase();
+      return t === "video" || mt === "video";
+    };
+
+    const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
+    if (hit) return pickUrl(hit);
+
+    const any = outputs.find((o) => pickUrl(o));
+    return any ? pickUrl(any) : "";
+  }
+
+  // ✅ unified "best url" extractor (top-level + outputs fallback)
+  function pickBestUrl(it) {
+    if (!it) return "";
+    const a = String(it.archive_url || it.archiveUrl || "").trim();
+    if (a) return a;
+    const u = String(it.url || it.video_url || it.videoUrl || "").trim();
+    if (u) return u;
+
+    const outs = it.outputs;
+    const uo = pickVideoUrlFromOutputs(outs);
+    if (uo) return uo;
+
+    return "";
+  }
+
   function getPlaybackUrl(it) {
-    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
-    if (a) return toMaybeProxyUrl(a);
-    const u = String(it?.url || it?.video_url || it?.videoUrl || "").trim();
-    if (!u) return "";
-    return toMaybeProxyUrl(u);
+    const best = pickBestUrl(it);
+    if (!best) return "";
+    return toMaybeProxyUrl(best);
   }
 
   function bestShareUrl(it) {
-    const a = String(it?.archive_url || it?.archiveUrl || "").trim();
-    if (a) return a;
-    const u = String(it?.url || it?.video_url || it?.videoUrl || "").trim();
-    return u;
+    // share/download should prefer public-ish url; still ok to return archive_url first
+    return String(pickBestUrl(it) || "").trim();
   }
 
   // ✅ output var mı?
@@ -184,7 +227,11 @@
       const id = String(it.id || it.job_id || uid());
       const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
 
-      const url = String(it.url || it.video_url || it.videoUrl || "").trim();
+      // ✅ if top-level missing, derive from outputs
+      const outs0 = Array.isArray(it.outputs) ? it.outputs : (Array.isArray(it0?.outputs) ? it0.outputs : []);
+      const fromOut = pickVideoUrlFromOutputs(outs0);
+
+      const url = String(it.url || it.video_url || it.videoUrl || fromOut || "").trim();
       const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || it.meta?.archiveUrl || "").trim();
 
       const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
@@ -196,8 +243,8 @@
 
       const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
 
-      const pb = (!legacyBroken && readyByOutput)
-        ? getPlaybackUrl({ archive_url, url })
+      const pb = (!legacyBroken && (archive_url || url || fromOut))
+        ? getPlaybackUrl({ ...it, archive_url, url, outputs: outs0 })
         : "";
 
       out.push({
@@ -215,8 +262,7 @@
           prompt: it.meta?.prompt || it.prompt || it.text || "",
           app: it.meta?.app || "video",
         },
-        // keep optional fields if they exist
-        outputs: Array.isArray(it.outputs) ? it.outputs : (Array.isArray(it0?.outputs) ? it0.outputs : []),
+        outputs: outs0,
         state: it.state,
         db_status: it.db_status,
       });
@@ -254,47 +300,15 @@
      DB hydrate (/api/jobs/list?app=video)
      ======================= */
 
-  function pickVideoUrlFromOutputs(outputs) {
-    if (!Array.isArray(outputs)) return "";
-
-    const pickUrl = (o) => {
-      if (!o) return "";
-      const u =
-        o.archive_url || o.archiveUrl || o.archiveURL ||
-        (o.meta && (o.meta.archive_url || o.meta.archiveUrl || o.meta.archiveURL)) ||
-        o.url || o.video_url || o.videoUrl ||
-        (o.meta && (o.meta.url || o.meta.video_url || o.meta.videoUrl));
-      return String(u || "").trim();
-    };
-
-    const isVideo = (o) => {
-      if (!o) return false;
-      const t = String(o.type || o.kind || "").toLowerCase();
-      const mt = String(o.meta?.type || o.meta?.kind || "").toLowerCase();
-      return t === "video" || mt === "video";
-    };
-
-    const hit = outputs.find((o) => isVideo(o) && pickUrl(o));
-    if (hit) return pickUrl(hit);
-
-    const any = outputs.find((o) => pickUrl(o));
-    return any ? pickUrl(any) : "";
-  }
-
   function mapDbItemToPanelItem(r) {
     const job_id = String(r?.job_id || r?.id || "").trim();
     const meta = r?.meta || {};
-    const outputs = r?.outputs || [];
+    const outputs = Array.isArray(r?.outputs) ? r.outputs : [];
 
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
 
-    const urlFromOutputs =
-      pickVideoUrlFromOutputs(outputs) ||
-      r?.video?.url ||
-      r?.video_url ||
-      "";
-
+    const urlFromOutputs = pickVideoUrlFromOutputs(outputs);
     const providerUrl =
       String(
         meta?.video?.url ||
@@ -305,7 +319,8 @@
         ""
       ).trim();
 
-    const url = String(urlFromOutputs || providerUrl || "").trim();
+    // ✅ if output exists, it MUST be used
+    const url = String(urlFromOutputs || r?.video?.url || r?.video_url || providerUrl || "").trim();
 
     const title =
       meta?.title ||
@@ -327,7 +342,7 @@
         prompt: meta?.prompt || r?.prompt || "",
         app: "video",
       },
-      outputs: Array.isArray(outputs) ? outputs : [],
+      outputs,
       state: r?.state,
       db_status: r?.db_status,
     };
@@ -354,10 +369,9 @@
     } else if (hasOut) {
       item.status = "Hazır";
     } else {
-      // list endpoint bazen "done" yazıp state'i PENDING bırakabiliyor → poll ile düzelteceğiz
       if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
       else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
-      else item.status = "İşlen:iyor";
+      else item.status = "İşleniyor"; // ✅ typo fix
     }
 
     const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
@@ -389,6 +403,9 @@
         ...it,
         title: it.title || prev.title,
         meta: { ...(prev.meta || {}), ...(it.meta || {}) },
+        // ✅ keep outputs + recompute playbackUrl if missing
+        outputs: Array.isArray(it.outputs) && it.outputs.length ? it.outputs : (prev.outputs || []),
+        playbackUrl: String(it.playbackUrl || prev.playbackUrl || "").trim() || getPlaybackUrl(it) || getPlaybackUrl(prev) || "",
       });
     }
 
@@ -434,7 +451,6 @@
       saveItems();
       render(host);
 
-      // list/state drift varsa hemen status poll ile düzelt
       pollPendingStatuses(host).catch(() => {});
     } catch (e) {
       console.warn("[video.panel] hydrate exception", e);
@@ -442,7 +458,7 @@
   }
 
   /* =======================
-     Status poll (fix: list shows PENDING while status is READY)
+     Status poll
      ======================= */
 
   function pickStatusVideoUrl(j) {
@@ -450,20 +466,9 @@
     const u1 = j?.video?.url;
     if (u1) return String(u1).trim();
 
-    // outputs
     const outs = j?.outputs;
-    if (Array.isArray(outs)) {
-      const hit = outs.find(o => String(o?.type || "").toLowerCase() === "video" && (o?.url || o?.video_url || o?.videoUrl || o?.meta?.url));
-      if (hit) {
-        const u = hit.url || hit.video_url || hit.videoUrl || hit.meta?.url || hit.meta?.video_url || hit.meta?.videoUrl;
-        if (u) return String(u).trim();
-      }
-      const any = outs.find(o => (o?.url || o?.video_url || o?.videoUrl || o?.meta?.url));
-      if (any) {
-        const u = any.url || any.video_url || any.videoUrl || any.meta?.url || any.meta?.video_url || any.meta?.videoUrl;
-        if (u) return String(u).trim();
-      }
-    }
+    const uo = pickVideoUrlFromOutputs(outs);
+    if (uo) return String(uo).trim();
 
     return "";
   }
@@ -494,7 +499,6 @@
   }
 
   async function pollPendingStatuses(host) {
-    // sadece henüz READY olmayan / playbackUrl olmayanları poll edelim
     const pending = state.items
       .filter(it => it && (it.job_id || it.id))
       .filter(it => !isReady(it) || !String(it.playbackUrl || "").trim())
@@ -510,12 +514,12 @@
       const s = await fetchStatus(jid);
       if (!s) continue;
 
-      const ready = norm(s.status) === "ready" || norm(s.status) === "done" || norm(s.status) === "completed";
+      const st = norm(s.status);
+      const ready = st === "ready" || st === "done" || st === "completed";
       const url = pickStatusVideoUrl(s);
       const hasUrl = !!String(url || "").trim();
 
-      // hata?
-      const err = norm(s.status) === "error" || norm(s.status) === "failed";
+      const err = st === "error" || st === "failed";
       if (err) {
         it.status = "Hata";
         saveItems();
@@ -524,10 +528,8 @@
       }
 
       if (ready || hasUrl) {
-        // url/status endpoint doğru → kartı Hazır yap
         if (hasUrl) it.url = url;
 
-        // status endpoint outputs döndürüyorsa saklayalım
         if (Array.isArray(s.outputs)) it.outputs = s.outputs;
 
         it.db_status = s.db_status || it.db_status;
@@ -594,6 +596,12 @@
   function renderThumb(it) {
     const badge = normalizeBadge(it);
 
+    // ✅ If ready but playbackUrl missing, try compute from outputs on the fly
+    if (!it.playbackUrl) {
+      const pb2 = getPlaybackUrl(it);
+      if (pb2) it.playbackUrl = pb2;
+    }
+
     if (!isReady(it) || !it.playbackUrl) {
       return `
         <div class="vpThumb is-loading">
@@ -603,7 +611,6 @@
       `;
     }
 
-    // NOTE: autoplay yok + user-gesture guard aşağıda (attachEvents)
     return `
       <div class="vpThumb">
         <div class="vpBadge">${esc(badge)}</div>
@@ -612,6 +619,8 @@
           class="vpVideo"
           preload="metadata"
           playsinline
+          webkit-playsinline
+          muted
           controls
           data-user-gesture="0"
           src="${esc(it.playbackUrl)}"
@@ -667,7 +676,7 @@
   }
 
   /* =======================
-     Actions
+     Actions + events
      ======================= */
 
   function downloadUrl(u) {
@@ -698,8 +707,6 @@
     const grid = findGrid(host);
     if (!grid) return () => {};
 
-    // ✅ No-autoplay guard:
-    // src set ile otomatik play olursa (bazı tarayıcı edge-case), user-gesture yoksa anında pause ederiz.
     const onPlayCapture = (e) => {
       const v = e.target;
       if (!(v instanceof HTMLVideoElement)) return;
@@ -760,7 +767,7 @@
   }
 
   /* =======================
-     PPE bridge (Runway outputs)
+     PPE bridge
      ======================= */
 
   function attachPPE(host) {
@@ -818,7 +825,7 @@
         if (!target.id && jid) target.id = jid;
 
         target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
-        target.outputs = Array.isArray(out?.meta?.outputs) ? out.meta.outputs : (target.outputs || target.meta?.outputs || target.outputs);
+
         const pb = (!legacyBroken) ? getPlaybackUrl(target) : "";
         target.playbackUrl = pb || "";
       } else {
@@ -849,7 +856,7 @@
   }
 
   /* =======================
-     Job created bridge (pending card)
+     Job created bridge
      ======================= */
 
   function attachJobCreated(host) {
@@ -888,7 +895,6 @@
       saveItems();
       render(host);
 
-      // hemen status poll ile yakala (list gecikse bile)
       pollPendingStatuses(host).catch(() => {});
     };
 
@@ -924,7 +930,7 @@
       // 3) periodic hydrate (list)
       const tList = setInterval(() => hydrateFromDB(host), 15000);
 
-      // 4) fast status poll for pending items (fix stuck “İşleniyor”)
+      // 4) fast status poll for pending items
       const tStatus = setInterval(() => pollPendingStatuses(host).catch(() => {}), STATUS_POLL_EVERY_MS);
 
       const offEvents = attachEvents(host);
