@@ -27,8 +27,7 @@ function pickBestVideoUrl(job){
     if(!x) return false;
     const t = String(x.type || x.kind || "").toLowerCase();
     const mt = x.meta && x.meta.type ? String(x.meta.type).toLowerCase() : "";
-const status = String(job.status || job.state || "").toUpperCase();
-
+    return (t === "video" || mt === "video") && (x.archive_url || x.url);
   });
 
   const best = hit || outs.find(x => x && (x.archive_url || x.url)) || outs[0];
@@ -73,53 +72,26 @@ const status = String(job.status || job.state || "").toUpperCase();
     `;
   }
 
-function renderList(root, items, handlers){
-  // CSS: mod.video.panel.css (vpGrid/vpCard/vpVideo/vpActions/vpIconBtn)
-  // Items newest first expected
-  const cards = (items || []).map(job => {
-    const id = job.job_id || job.id || "";
+  function renderList(root, items, handlers){
+    // CSS: mod.video.panel.css (vpGrid/vpCard/vpVideo/vpActions/vpIconBtn)
+    // Items newest first expected
+    const cards = (items || []).map(job => {
+      const id = job.job_id || job.id || "";
+      const status = String(job.status || "").toUpperCase(); // DBJobs normalizes to upper
+      const when = job.created_at || job.updated_at || "";
+      const whenTxt = when ? fmtTime(when) : "";
+      const provider = (job.provider || (job.meta && job.meta.provider) || "").toString();
+      const url = pickBestVideoUrl(job);
 
-    // ✅ status: job.status yoksa job.state’e düş
-    const status = String(job.status || job.state || "").toUpperCase();
+      const isDone = (status === "DONE" || status === "READY" || status === "COMPLETED");
+      const isProcessing = (status === "PROCESSING" || status === "RUNNING" || status === "PENDING");
+      const isError = (status === "ERROR" || status === "FAILED");
 
-    const when = job.created_at || job.updated_at || "";
-    const whenTxt = when ? fmtTime(when) : "";
-    const provider = (job.provider || (job.meta && job.meta.provider) || "").toString();
-
-    // ✅ outputs’ta URL var mı? varsa DONE kabul et
-    const hasAnyUrl =
-      Array.isArray(job.outputs) &&
-      job.outputs.some(o => o && (o.archive_url || o.url));
-
-    // ✅ URL/outputs varsa DONE say (state PENDING bile olsa)
-    const isDone = hasAnyUrl || (status === "DONE" || status === "READY" || status === "COMPLETED");
-
-    const isProcessing = (status === "PROCESSING" || status === "RUNNING" || status === "PENDING");
-    const isError = (status === "ERROR" || status === "FAILED");
-
-    const badge =
-      isDone ? "DONE" :
-      isProcessing ? "PROCESSING" :
-      isError ? "ERROR" :
-      status || "UNKNOWN";
-
-    // ✅ URL seçimi (DONE true olunca video tag basılacak)
-    const url = pickBestVideoUrl(job);
-
-    // ... buradan sonrası aynı (videoTag / card template / actions)
-    // const videoTag = ...
-    // return `...`
-  }).join("");
-
-  root.innerHTML = `
-    <div class="vpGrid">
-      ${cards || ""}
-    </div>
-  `;
-
-  // actions ... (aynı)
-}
-
+      const badge =
+        isDone ? "DONE" :
+        isProcessing ? "PROCESSING" :
+        isError ? "ERROR" :
+        status || "UNKNOWN";
 
       // If done but url missing, still show card (debug)
       const videoTag = (url && isDone)
