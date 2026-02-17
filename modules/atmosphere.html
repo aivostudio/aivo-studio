@@ -1,7 +1,6 @@
 <section class="main-panel" data-module="atmosphere">
 
-  <!-- ================= ATMOSPHERE MODULE (REVİZE: eski içerik eksikleri eklendi) ================= -->
-
+  <!-- ================= ATMOSPHERE MODULE (REVİZE) ================= -->
   <div class="atmo-view is-active" data-atmo-view="root">
 
     <!-- HEADER -->
@@ -32,7 +31,7 @@
       <!-- ================= BASIC MODE ================= -->
       <div class="mode-panel is-active" data-mode-panel="basic" role="tabpanel">
 
-        <!-- SCENE -->
+        <!-- (1) SCENE -->
         <div class="card">
           <div class="card-header">
             <div>
@@ -46,14 +45,17 @@
               <div class="smpack-choice__title">Kış Kafe</div>
               <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
             </button>
+
             <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
               <div class="smpack-choice__title">Dağ Evi</div>
               <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
             </button>
+
             <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
               <div class="smpack-choice__title">Göl Kenarı</div>
               <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
             </button>
+
             <button class="smpack-choice" type="button" data-atm-scene="city_night">
               <div class="smpack-choice__title">Şehir Gecesi</div>
               <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
@@ -69,7 +71,7 @@
           </div>
         </div>
 
-        <!-- EFFECTS -->
+        <!-- (2) EFFECTS (unlimited) -->
         <div class="card" id="atmCard">
           <div class="card-header">
             <div>
@@ -80,13 +82,14 @@
 
           <div class="smpack-row" id="atmEffects"
                data-atm-max="999"
+               data-atm-bound="0"
                data-selected=""
                role="group" aria-label="Atmosfer Seçimleri">
 
             <button class="smpack-pill atm-pill" type="button" data-atm-eff="snow" aria-pressed="false">❄️ Kar</button>
             <button class="smpack-pill atm-pill" type="button" data-atm-eff="rain" aria-pressed="false">🌧️ Yağmur</button>
             <button class="smpack-pill atm-pill" type="button" data-atm-eff="leaf" aria-pressed="false">🍃 Yaprak</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="fog" aria-pressed="false">🌫️ Sis</button>
+            <button class="smpack-pill atm-pill" type="button" data-atm-eff="fog"  aria-pressed="false">🌫️ Sis</button>
             <button class="smpack-pill atm-pill" type="button" data-atm-eff="light" aria-pressed="false">✨ Işık</button>
             <button class="smpack-pill atm-pill" type="button" data-atm-eff="fire" aria-pressed="false">🔥 Ateş</button>
             <button class="smpack-pill atm-pill" type="button" data-atm-eff="wind" aria-pressed="false">🌬️ Rüzgar</button>
@@ -99,7 +102,7 @@
                style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
         </div>
 
-        <!-- CAMERA + DURATION -->
+        <!-- (3) CAMERA + DURATION -->
         <div class="card">
           <div class="form-row">
             <div class="form-label">Kamera</div>
@@ -120,7 +123,7 @@
           </div>
         </div>
 
-        <!-- PERSONALIZATION (opsiyonel) -->
+        <!-- (4) PERSONALIZATION (Logo + Audio) -->
         <div class="card">
           <div class="card-header">
             <div>
@@ -130,7 +133,6 @@
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <!-- Logo -->
             <div>
               <div class="form-label">Logo</div>
               <label class="btn" style="cursor:pointer;">
@@ -156,7 +158,6 @@
               </div>
             </div>
 
-            <!-- Audio/Jingle -->
             <div>
               <div class="form-label">Müzik / Jingle</div>
               <label class="btn" style="cursor:pointer;">
@@ -183,7 +184,7 @@
           </div>
         </div>
 
-        <!-- OUTPUT INFO -->
+        <!-- (5) OUTPUT INFO -->
         <div class="card">
           <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
             <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
@@ -192,10 +193,10 @@
           </div>
         </div>
 
-        <!-- CTA -->
-        <div class="card smpack-card--cta">
-          <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
-            Atmosfer Video Oluştur (20 Kredi)
+        <!-- (6) CTA BASIC -->
+        <div class="card smpack-card smpack-card--cta">
+          <button class="btn btn-primary" type="button" data-atm-generate data-atm-mode="basic">
+            Atmosfer Video Oluştur
           </button>
         </div>
 
@@ -205,7 +206,7 @@
       <!-- ================= SUPER MODE ================= -->
       <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
-        <!-- PROMPT + REFERENCES -->
+        <!-- (1) SUPER PROMPT + REFERENCES -->
         <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
           <div class="card-header" style="padding-bottom:8px;">
             <div style="color:#fff;font-weight:600;font-size:14px;">
@@ -228,13 +229,13 @@
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
             <label for="atmSceneImageInput" class="btn" style="cursor:pointer;">
-              <input type="file" id="atmSceneImageInput" accept="image/*" hidden>
               🖼️ Referans Görsel
+              <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
             </label>
 
             <label for="atmSceneAudioInput" class="btn" style="cursor:pointer;">
-              <input type="file" id="atmSceneAudioInput" accept="audio/*" hidden>
               🎵 Müzik / Jingle
+              <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
             </label>
           </div>
 
@@ -244,13 +245,11 @@
                 Zorunlu: Base frame
               </span>
             </div>
-            <div>
-              <span id="atmSuperCount">0</span> / 1000
-            </div>
+            <div><span id="atmSuperCount">0</span> / 1000</div>
           </div>
         </div>
 
-        <!-- LIGHT · EXPORT · MOOD -->
+        <!-- (2) LIGHT · EXPORT · MOOD -->
         <div class="card" id="atmProMoodExport" style="margin-top:14px;">
           <div class="card-header">
             <div>
@@ -261,7 +260,6 @@
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
 
-            <!-- LEFT: LIGHT + MOOD -->
             <div>
               <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
               <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
@@ -282,22 +280,21 @@
               </div>
             </div>
 
-            <!-- RIGHT: EXPORT -->
             <div>
               <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
 
               <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
                 🎞️ FPS
-                <select id="atmProFps" class="input">
-                  <option value="24">24 FPS</option>
+                <select id="atmProFps">
+                  <option value="24" selected>24 FPS</option>
                   <option value="30">30 FPS</option>
                 </select>
               </label>
 
               <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
                 📁 Format
-                <select id="atmProFormat" class="input">
-                  <option value="mp4">MP4</option>
+                <select id="atmProFormat">
+                  <option value="mp4" selected>MP4</option>
                   <option value="webm">WebM</option>
                 </select>
               </label>
@@ -307,13 +304,15 @@
                 🔁 Loop Seam Fix
               </label>
 
-              <div style="margin-top:10px;font-size:12px;opacity:.6;">shader / ffmpeg post-process</div>
+              <div style="margin-top:10px;font-size:12px;opacity:.6;">
+                shader / ffmpeg post-process
+              </div>
             </div>
 
           </div>
         </div>
 
-        <!-- DETAILS -->
+        <!-- (3) DETAIL EFFECTS + LUT -->
         <div class="card" id="atmProDetails" style="margin-top:14px;">
           <div class="card-header">
             <div>
@@ -334,8 +333,8 @@
 
           <div style="margin-top:12px;">
             <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">🎨 Color Grade / LUT</div>
-            <select id="atmProLut" class="input" style="width:100%;">
-              <option value="">Kapalı</option>
+            <select id="atmProLut" style="width:100%;">
+              <option value="" selected>Kapalı</option>
               <option value="warm">Sıcak</option>
               <option value="cold">Soğuk</option>
               <option value="cinematic">Sinematik</option>
@@ -344,10 +343,10 @@
           </div>
         </div>
 
-        <!-- CTA -->
-        <div class="card smpack-card--cta" style="margin-top:14px;">
-          <button class="btn btn-primary" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro">
-            Süper Atmosfer Video Oluştur (30 Kredi)
+        <!-- (4) CTA PRO -->
+        <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+          <button class="btn btn-primary" type="button" data-atm-generate data-atm-mode="pro">
+            Süper Atmosfer Video Oluştur
           </button>
         </div>
 
