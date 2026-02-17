@@ -206,28 +206,34 @@
       </label>
     </div>
 
-<!-- (4) CTA PRO -->
+<!-- CTA (BASIC) -->
 <div class="atmPersCta">
 
   <div class="atmCreditBox">
     <div class="atmCreditLeft">
-      <div class="atmCreditTitle">AIVO Atmosfer Motoru (Süper Mod)</div>
+      <div class="atmCreditTitle">AIVO Atmosfer Motoru</div>
       <div class="atmCreditDesc">
-        30 kredi ile 1 süper atmosfer video üretilir. Daha sinematik, daha güçlü sonuç.
+        20 kredi ile 1 atmosfer video üretilir.
       </div>
     </div>
 
     <div class="atmCreditRight">
-      <div class="atmCreditLabel">Gerekli Kredi:</div>
-      <div class="atmCreditValue">30</div>
+      <div class="atmCreditLabel">Gerekli Kredi</div>
+      <div class="atmCreditValue">20</div>
     </div>
   </div>
 
-  <button class="atmBigCtaBtn" type="button" data-atm-generate data-atm-mode="pro">
-    🎬 Süper Atmosfer Video Oluştur (30 Kredi)
+  <button class="atmBigCtaBtn"
+          type="button"
+          data-atm-generate
+          data-atm-mode="basic">
+    🎬 Atmosfer Video Oluştur (20 Kredi)
   </button>
 
 </div>
+
+</div>
+
 
 
 
@@ -287,9 +293,17 @@
     line-height:1.35;
   }
 
+  /* CTA wrapper (CreditBox + Button beraber düzgün dursun) */
+  #atmPersonalCard .atmPersCta{
+    grid-column: 1 / -1;
+    margin-top:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
   /* Credit Box */
   #atmPersonalCard .atmCreditBox{
-    margin-top:12px;
     border-radius:18px;
     padding:14px 16px;
     border:1px dashed rgba(255,255,255,.18);
@@ -297,7 +311,7 @@
     display:flex;
     justify-content:space-between;
     gap:16px;
-    align-items:flex-start;
+    align-items:center; /* <- flex-start yerine center (butonu aşağı itmiyor) */
   }
 
   #atmPersonalCard .atmCreditTitle{
@@ -317,6 +331,7 @@
   #atmPersonalCard .atmCreditRight{
     text-align:right;
     min-width:140px;
+    flex:0 0 auto;
   }
 
   #atmPersonalCard .atmCreditLabel{
@@ -326,17 +341,17 @@
 
   #atmPersonalCard .atmCreditValue{
     margin-top:2px;
-    font-size:16px;
-    font-weight:800;
+    font-size:20px;      /* <- 16 çok küçük kalıyordu */
+    font-weight:900;
     color:#fff;
+    line-height:1;
   }
 
   /* BIG CTA BUTTON */
   #atmPersonalCard .atmBigCtaBtn{
-    margin-top:14px;
     width:100%;
     border:none;
-    border-radius:22px;
+    border-radius:999px; /* <- daha “cover” tarzı */
     padding:16px 18px;
     font-weight:800;
     font-size:15px;
@@ -356,16 +371,6 @@
     transform:translateY(0px) scale(.99);
   }
 
-  .atmBigCtaBtn--pro{
-    background:linear-gradient(90deg, rgba(90,180,255,.95), rgba(255,120,200,.95));
-  }
-
-  /* CTA kart içinde */
-  #atmPersonalCard .atmPersCta{
-    grid-column: 1 / -1;
-    margin-top:14px;
-  }
-
   /* Responsive */
   @media (max-width: 980px){
     #atmPersonalCard .atmPersGrid{ 
@@ -379,9 +384,11 @@
 
     #atmPersonalCard .atmCreditRight{
       text-align:left;
+      min-width:0;
     }
   }
 </style>
+
 
 
 <script>
