@@ -333,17 +333,35 @@
     </div>
 
     <div style="margin-top:8px;">
-     <textarea
+   <textarea
   id="atmSuperPrompt"
   rows="4"
   maxlength="1000"
-  placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
-  style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
+  placeholder="Örn: Gece neon şehir..."
+  style="..."
 ></textarea>
 
-<div style="text-align:right;font-size:12px;opacity:.6;margin-top:6px;">
+<div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
   <span id="atmSuperPromptCount">0</span> / 1000
 </div>
+
+<script>
+  const atmSuperPrompt = document.getElementById("atmSuperPrompt");
+  const atmSuperPromptCount = document.getElementById("atmSuperPromptCount");
+
+  if (atmSuperPrompt && atmSuperPromptCount) {
+    const updateCount = () => {
+      const length = atmSuperPrompt.value.length;
+      atmSuperPromptCount.textContent = length;
+      atmSuperPromptCount.style.color =
+        length > 900 ? "#ff6b6b" : "rgba(255,255,255,.7)";
+    };
+
+    updateCount();
+    atmSuperPrompt.addEventListener("input", updateCount);
+  }
+</script>
+
 
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
