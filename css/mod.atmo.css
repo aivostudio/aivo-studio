@@ -596,39 +596,116 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
   margin-top: 10px !important;
   backdrop-filter: blur(10px) !important;
 }
-/* =========================
-   ATM — BOTH MODES COMPACT
-   ========================= */
+/* ===============================
+   ATMOSPHERE: BASIC + PRO COMPACT
+   (tek sayfaya sığdırma + kolon daraltma)
+   =============================== */
 
-/* Mood/Export kartı: hem basic hem pro için aynı iç-grid’i yakala */
-.mode-panel .card[id*="MoodExport"] > div[style*="display:grid"][style*="grid-template-columns"],
-.mode-panel #atmProMoodExport > div[style*="display:grid"][style*="grid-template-columns"]{
-  grid-template-columns: 1.35fr .65fr !important;
-  gap: 10px 14px !important;
-  align-items: start !important;
+/* sayfa genel sıkıştırma */
+section.main-panel[data-module="atmosphere"] .mode-panel .card{
+  margin-top: 10px !important;
 }
-
-/* Detay kartı: hem basic hem pro */
-.mode-panel .card[id*="Details"] > div[style*="display:grid"][style*="grid-template-columns"],
-.mode-panel #atmProDetails > div[style*="display:grid"][style*="grid-template-columns"]{
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 6px 12px !important;
+section.main-panel[data-module="atmosphere"] .mode-panel .card-header{
+  padding-bottom: 6px !important;
 }
-
-/* Ortak: pill + label kompakt */
-.mode-panel .smpack-pill{
-  padding: 6px 12px !important;
+section.main-panel[data-module="atmosphere"] .mode-panel .card-title{
   font-size: 13px !important;
-  line-height: 1.1 !important;
 }
-.mode-panel .card label{
+section.main-panel[data-module="atmosphere"] .mode-panel .card-subtitle{
+  font-size: 11px !important;
+  opacity: .65 !important;
+}
+
+/* pro prompt textarea biraz kısalsın */
+section.main-panel[data-module="atmosphere"] textarea#atmSuperPrompt{
+  min-height: 92px !important;
+  max-height: 120px !important;
+  padding: 10px 12px !important;
   font-size: 13px !important;
+}
+
+/* pill’ler (ışık/duygu) daha kompakt */
+section.main-panel[data-module="atmosphere"] .smpack-pill{
+  padding: 6px 10px !important;
+  font-size: 12.5px !important;
+  line-height: 1 !important;
+}
+section.main-panel[data-module="atmosphere"] .smpack-row{
+  gap: 8px !important;
+}
+
+/* ===== PRO: Işık·Export·Duygu kartında sağ kolon (Export) daralsın ===== */
+#atmProMoodExport > div[style*="grid-template-columns"]{
+  /* sol alan geniş, sağ alan sabit/dar */
+  grid-template-columns: 1fr 300px !important;
+  gap: 14px !important;
+}
+
+/* export label+select’ler daha sıkı */
+#atmProMoodExport label{
   margin-bottom: 6px !important;
+  gap: 8px !important;
+  font-size: 12.5px !important;
+}
+#atmProMoodExport select{
+  height: 36px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+}
+#atmProMoodExport input[type="checkbox"]{
+  transform: scale(.95);
 }
 
-/* CTA sticky: iki mod için de */
-.mode-panel .smpack-card--cta{
-  position: sticky !important;
-  bottom: 12px !important;
-  z-index: 5 !important;
+/* ===== PRO: Detay Efektler 2-2 daha kompakt görünüm ===== */
+#atmProDetails > div[style*="grid-template-columns"]{
+  grid-template-columns: 1fr 1fr !important;
+  gap: 6px 18px !important; /* satır/kolon aralığı */
+}
+#atmProDetails label{
+  font-size: 12.5px !important;
+  gap: 8px !important;
+}
+#atmProDetails input[type="checkbox"]{
+  transform: scale(.95);
+}
+
+/* LUT satırı: label + select yan yana kalsın ve select küçülsün */
+#atmProDetails .atmLutRow{
+  display: grid !important;
+  grid-template-columns: 160px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+  margin-top: 10px !important;
+}
+#atmProDetails .atmLutLabel{
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  opacity: .85 !important;
+}
+#atmProDetails .atmLutSelect,
+#atmProDetails select#atmProLut{
+  height: 36px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+}
+
+/* CTA butonları: hem basic hem pro aynı yükseklik */
+section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
+  height: 56px !important;
+  border-radius: 999px !important;
+}
+
+/* ===== BASIC: kişiselleştirme kartı sıkışsın (basit modda da etki etsin) ===== */
+#atmPersonalCard{
+  padding-bottom: 10px !important;
+}
+#atmPersonalCard .atmPersGrid{
+  gap: 10px !important;
+}
+#atmPersonalCard select,
+#atmPersonalCard input[type="text"],
+#atmPersonalCard input[type="number"]{
+  height: 36px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
 }
