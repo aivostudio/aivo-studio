@@ -5,9 +5,7 @@ import { neon } from "@neondatabase/serverless";
 import authModule from "../_lib/auth.js";
 const { requireAuth } = authModule;
 
-
 function firstQueryValue(v) {
-  // app=video&app=cover gibi durumlarda array gelebilir
   if (Array.isArray(v)) return v[0];
   return v;
 }
@@ -22,17 +20,6 @@ function mapState(statusRaw) {
   if (["failed", "error", "canceled", "cancelled"].includes(s)) return "FAILED";
   if (["running", "processing", "in_progress"].includes(s)) return "RUNNING";
   return "PENDING";
-}
-
-function isAuthError(e) {
-  const msg = String(e?.message || e || "");
-  // requireAuth içinde bunları fırlatıyorsan 401'e çevirelim
-  return (
-    msg.includes("unauthorized") ||
-    msg.includes("Unauthorized") ||
-    msg.includes("AUTH") ||
-    msg.includes("missing_session")
-  );
 }
 
 export default async function handler(req, res) {
@@ -57,12 +44,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_db_env" });
   }
 
-  // AUTH (401'e normalize)
-  let auth = null;
+  let auth;
   try {
     auth = await requireAuth(req);
   } catch (e) {
-    console.warn("[jobs/list] auth failed:", e);
     return res.status(401).json({
       ok: false,
       error: "unauthorized",
@@ -70,58 +55,57 @@ export default async function handler(req, res) {
     });
   }
 
-  const user_id = auth?.user_id ? String(auth.user_id) : null;
   const email = auth?.email ? String(auth.email) : null;
-  const legacy_user_id = email ? `${email}:jobs` : null;
 
-  // DEBUG MODE
-  if (String(firstQueryValue(req.query?.debug) || "") === "1") {
-    return res.status(200).json({
-      ok: true,
-      debug: true,
-      conn_present: Boolean(conn),
-      auth_object: auth || null,
-      user_id,
-      email,
-      legacy_user_id,
-      app,
-    });
-  }
-
-  if (!user_id && !email) {
+  if (!email) {
     return res.status(401).json({
       ok: false,
       error: "unauthorized",
-      auth_object: auth || null,
+      message: "missing_email",
     });
   }
 
   const sql = neon(conn);
 
-  // ✅ sadece dolu olan kimlikleri OR'a sok
-  const ids = [user_id, email, legacy_user_id].filter(Boolean);
-
   try {
- const rows = await sql`
-  select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-  from jobs
-  where app = ${app}
-    and deleted_at is null
-    and user_id::text = any(${ids}::text[])
-  order by created_at desc
-  limit 50
-`;
+    // 🔥 CANONICAL USER RESOLVE
+    const userRow = await sql`
+      select id
+      from users
+      where email = ${email}
+      limit 1
+    `;
 
+    if (!userRow.length) {
+      return res.status(401).json({
+        ok: false,
+        error: "user_not_found",
+        email,
+      });
+    }
+
+    const user_uuid = String(userRow[0].id);
+
+    // 🔥 JOBS UUID QUERY
+    const rows = await sql`
+      select id, user_uuid, app, status, prompt, meta, outputs, error, created_at, updated_at
+      from jobs
+      where app = ${app}
+        and deleted_at is null
+        and user_uuid = ${user_uuid}::uuid
+      order by created_at desc
+      limit 50
+    `;
 
     return res.status(200).json({
       ok: true,
       app,
       auth: true,
-      user_id: user_id || null,
-      email: email || null,
+      user_uuid,
+      email,
       items: rows.map((r) => ({
         job_id: r.id,
-        user_id: r.user_id,
+        user_uuid: r.user_uuid,
         app: r.app,
         status: r.status,
         state: mapState(r.status),
@@ -134,22 +118,11 @@ export default async function handler(req, res) {
       })),
     });
   } catch (e) {
-    console.error("jobs/list list_failed:", e);
-
-    // auth ile ilgili bir hata burada patlarsa da 401
-    if (isAuthError(e)) {
-      return res.status(401).json({
-        ok: false,
-        error: "unauthorized",
-        message: String(e?.message || e),
-      });
-    }
-
+    console.error("jobs/list failed:", e);
     return res.status(500).json({
       ok: false,
       error: "list_failed",
       message: String(e?.message || e),
-      stack: String(e?.stack || ""),
     });
   }
 }
