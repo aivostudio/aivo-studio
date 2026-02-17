@@ -28,48 +28,41 @@
         </button>
       </div>
 
-      <!-- ================= BASIC MODE ================= -->
-      <div class="mode-panel is-active" data-mode-panel="basic" role="tabpanel">
+    <!-- ================= BASIC MODE ================= -->
+<div class="mode-panel is-active" data-mode-panel="basic" role="tabpanel">
 
-        <!-- (1) SCENE -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Arka Mekan</div>
-              <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
-            </div>
-          </div>
+  <!-- (1) SCENE -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Arka Mekan</div>
+        <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
+      </div>
+    </div>
 
-          <div class="smpack-grid smpack-grid--themes" id="atmScenes">
-            <button class="smpack-choice is-active" type="button" data-atm-scene="winter_cafe">
-              <div class="smpack-choice__title">Kış Kafe</div>
-              <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
-            </button>
+    <div class="smpack-grid smpack-grid--themes" id="atmScenes">
+      <button class="smpack-choice is-active" type="button" data-atm-scene="winter_cafe">
+        <div class="smpack-choice__title">Kış Kafe</div>
+        <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
+      </button>
 
-            <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
-              <div class="smpack-choice__title">Dağ Evi</div>
-              <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
-            </button>
+      <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
+        <div class="smpack-choice__title">Dağ Evi</div>
+        <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
+      </button>
 
-            <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
-              <div class="smpack-choice__title">Göl Kenarı</div>
-              <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
-            </button>
+      <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
+        <div class="smpack-choice__title">Göl Kenarı</div>
+        <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
+      </button>
 
-            <button class="smpack-choice" type="button" data-atm-scene="city_night">
-              <div class="smpack-choice__title">Şehir Gecesi</div>
-              <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
-            </button>
-          </div>
+      <button class="smpack-choice" type="button" data-atm-scene="city_night">
+        <div class="smpack-choice__title">Şehir Gecesi</div>
+        <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
+      </button>
+    </div>
 
-          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <label class="btn" style="cursor:pointer;">
-              <input type="file" id="atmImageFile" accept="image/*" hidden>
-              Kendi görselini yükle
-            </label>
-            <div style="opacity:.8;font-size:13px;">Yüklenen görsel sahne seçimini override eder.</div>
-          </div>
-        </div>
+  </div>
 
         <!-- (2) EFFECTS (unlimited) -->
         <div class="card" id="atmCard">
@@ -123,7 +116,7 @@
           </div>
         </div>
 
-<!-- (4) PERSONALIZATION (Image + Logo + Audio) + CTA INSIDE -->
+<!-- (4) PERSONALIZATION (Image + Logo + Audio) + CTA INSIDE (REVİZE) -->
 <div class="card" id="atmPersonalCard">
   <div class="card-header">
     <div>
@@ -213,7 +206,7 @@
       </label>
     </div>
 
-    <!-- CTA (buton burada, opaklık bloğunun hizasında "kart içinde") -->
+    <!-- CTA -->
     <div class="atmPersCta">
       <button class="btn btn-primary atmCtaBtn" type="button" data-atm-generate data-atm-mode="basic">
         Atmosfer Video Oluştur
@@ -231,9 +224,7 @@
     gap:14px;
     align-items:start;
   }
-  #atmPersonalCard .atmPersCol{
-    min-width:0;
-  }
+  #atmPersonalCard .atmPersCol{ min-width:0; }
 
   /* 2'li küçük satırlar (pos/size, audio mode/trim) */
   #atmPersonalCard .atmRow2{
@@ -243,9 +234,7 @@
     margin-top:10px;
   }
 
-  #atmPersonalCard .atmOpacityRow{
-    margin-top:10px;
-  }
+  #atmPersonalCard .atmOpacityRow{ margin-top:10px; }
 
   #atmPersonalCard .atmCheckRow{
     display:flex;
@@ -256,9 +245,7 @@
   }
 
   /* Dosya meta */
-  #atmPersonalCard .atmFileMeta{
-    margin-top:10px;
-  }
+  #atmPersonalCard .atmFileMeta{ margin-top:10px; }
   #atmPersonalCard .atmFileName{
     font-size:12px;
     opacity:.9;
@@ -273,7 +260,7 @@
     line-height:1.35;
   }
 
-  /* CTA kart içinde: altta ama kartın içinde, sayfaya sarkmayı keser */
+  /* CTA kart içinde */
   #atmPersonalCard .atmPersCta{
     grid-column: 1 / -1;
     margin-top:2px;
@@ -288,9 +275,7 @@
 
   /* Responsive: dar ekranda 3->1 */
   @media (max-width: 980px){
-    #atmPersonalCard .atmPersGrid{
-      grid-template-columns: 1fr;
-    }
+    #atmPersonalCard .atmPersGrid{ grid-template-columns: 1fr; }
   }
 </style>
 
@@ -318,25 +303,18 @@
 </script>
 
 
+<!-- (5) OUTPUT INFO -->
+<div class="card">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
+    <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
+    <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
+    <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
+  </div>
+</div>
 
-        <!-- (5) OUTPUT INFO -->
-        <div class="card">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
-            <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
-            <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
-            <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
-          </div>
-        </div>
+</div>
+<!-- /BASIC MODE -->
 
-        <!-- (6) CTA BASIC -->
-        <div class="card smpack-card smpack-card--cta">
-          <button class="btn btn-primary" type="button" data-atm-generate data-atm-mode="basic">
-            Atmosfer Video Oluştur
-          </button>
-        </div>
-
-      </div>
-      <!-- /BASIC MODE -->
 
       <!-- ================= SUPER MODE ================= -->
       <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
