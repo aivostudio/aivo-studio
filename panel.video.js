@@ -29,58 +29,61 @@
     }[c]));
   }
 
- function isReady(item) {
-  const st = String(
+function getStatusText(item) {
+  return String(
     item?.status ||
     item?.state ||
     item?.db_status ||
     ""
-  ).toLowerCase();
+  ).trim().toLowerCase();
+}
+
+function isReady(item) {
+  const st = getStatusText(item);
 
   return (
     st === "hazır" ||
     st === "ready" ||
+    st === "done" ||
     st === "completed" ||
     st === "succeeded" ||
-    st === "done"
+    st === "success" ||
+    st === "suceeded" ||   // typo safety
+    st === "completed" ||
+    st === "complete"
   );
 }
 
 function isProcessing(item) {
-  const st = String(
-    item?.status ||
-    item?.state ||
-    item?.db_status ||
-    ""
-  ).toLowerCase();
+  const st = getStatusText(item);
 
   return (
     st === "işleniyor" ||
     st === "processing" ||
-    st === "in_progress" ||
-    st === "in queue" ||
-    st === "in_queue" ||
-    st === "queued" ||
+    st === "running" ||
     st === "pending" ||
-    st === "running"
+    st === "queued" ||
+    st === "in_queue" ||
+    st === "in queue" ||
+    st === "in_progress" ||
+    st === "in progress" ||
+    st === "started"
   );
 }
 
 function isError(item) {
-  const st = String(
-    item?.status ||
-    item?.state ||
-    item?.db_status ||
-    ""
-  ).toLowerCase();
+  const st = getStatusText(item);
 
   return (
+    st === "hata" ||
     st === "error" ||
     st === "failed" ||
     st === "fail" ||
-    st === "hata"
+    st === "canceled" ||
+    st === "cancelled"
   );
 }
+
 
   function normalizeBadge(item) {
     if (isReady(item)) return "Hazır";
