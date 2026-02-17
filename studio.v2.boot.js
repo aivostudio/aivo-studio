@@ -88,9 +88,7 @@
     const g = window.toast;
     if (g && typeof g === "object") {
       const wrap = (fn, type) => (msg) => {
-        try {
-          fn(msg);
-        } catch {}
+        try { fn(msg); } catch {}
         pushToast(type, msg);
       };
 
@@ -117,9 +115,7 @@
       const r = await fetch(url, {
         cache: "no-store",
         credentials: "include",
-        headers: {
-          Accept: "application/json",
-        },
+        headers: { Accept: "application/json" },
       });
 
       const j = await r.json().catch(() => ({}));
@@ -144,11 +140,7 @@
   }
 
   function safeJson(v) {
-    try {
-      return JSON.parse(v);
-    } catch {
-      return null;
-    }
+    try { return JSON.parse(v); } catch { return null; }
   }
 
   function guessTypeFromUrl(url) {
@@ -159,28 +151,45 @@
     return "file";
   }
 
+  // ✅ NEW: canonicalize type/app (lowercase)
+  function canonType(t, url) {
+    const raw = String(t || "").trim();
+    const g = guessTypeFromUrl(url);
+    const k = (raw || g || "file").toLowerCase();
+
+    // küçük alias seti (gerekirse büyütürüz)
+    if (k === "mp4" || k === "movie") return "video";
+    if (k === "jpg" || k === "jpeg" || k === "png" || k === "webp") return "image";
+    if (k === "mp3" || k === "wav") return "audio";
+    return k;
+  }
+
   function normalizeOutputs(appKey, job) {
-    const outs = Array.isArray(job.outputs) ? job.outputs : safeJson(job.outputs) || [];
+    const outs = Array.isArray(job.outputs) ? job.outputs : (safeJson(job.outputs) || []);
     const outArr = Array.isArray(outs) ? outs : [];
+    const appLower = normalizeAppKey(appKey);
 
     return outArr
       .map((o, i) => {
         if (!o) return null;
 
         if (typeof o === "string") {
-          return { type: guessTypeFromUrl(o), url: o, index: i, meta: { app: appKey } };
+          const type = canonType(null, o);
+          return { type, url: o, index: i, meta: { app: appLower } };
         }
 
         const url = o.url || o.src || o.href || o.video_url || o.image_url;
         if (!url) return null;
 
-        const type = o.type || guessTypeFromUrl(url);
-        const meta = Object.assign({}, o.meta || {}, { app: o?.meta?.app || appKey });
+        const type = canonType(o.type, url);
+
+        const meta = Object.assign({}, o.meta || {});
+        meta.app = normalizeAppKey(meta.app || appLower); // ✅ force lowercase app
 
         return {
           type,
           url,
-          index: typeof o.index === "number" ? o.index : i,
+          index: (typeof o.index === "number" ? o.index : i),
           thumb: o.thumb || o.thumbnail || null,
           meta,
         };
@@ -198,10 +207,7 @@
     const outputs = normalizeOutputs(appKey, job);
     if (!outputs.length) return;
 
-    PPE.apply({
-      state: "COMPLETED",
-      outputs,
-    });
+    PPE.apply({ state: "COMPLETED", outputs });
   }
 
   async function hydrateJobsFromDB(appKey) {
