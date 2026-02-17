@@ -385,15 +385,23 @@
     return [];
   }
 
-  async function hydrateFromDB(host) {
-    try {
-      const r = await fetch("/api/jobs/list?app=video", { method: "GET", credentials: "include" });
-      const j = await r.json().catch(() => null);
+ async function hydrateFromDB(host) {
+  try {
+    const r = await fetch("/api/jobs/list?app=video", {
+      method: "GET",
+      credentials: "include",
+      headers: { "accept": "application/json" },
+    });
 
-      if (!r.ok || !j || !j.ok) {
-        console.warn("[video.panel] hydrate failed", r.status, j);
-        return;
-      }
+    const text = await r.text().catch(() => "");
+    let j = null;
+    try { j = text ? JSON.parse(text) : null; } catch { j = null; }
+
+    if (!r.ok || !j || !j.ok) {
+      console.warn("[video.panel] hydrate failed", r.status, j || text);
+      return;
+    }
+
 
       const rows = extractListItems(j);
 
