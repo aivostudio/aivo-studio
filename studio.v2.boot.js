@@ -108,38 +108,8 @@
   }
 
   // ------------------------------------------------------------
-  // SAFER TIMING (Safari) - waitFor helpers
+  // SAFER FETCH (Safari ITP: document.cookie boş görünebilir ama request cookie gider)
   // ------------------------------------------------------------
-  function waitFor(fn, timeoutMs = 2500, intervalMs = 50) {
-    return new Promise((resolve) => {
-      const t0 = Date.now();
-      const tick = () => {
-        let ok = false;
-        try { ok = !!fn(); } catch {}
-        if (ok) return resolve(true);
-        if (Date.now() - t0 >= timeoutMs) return resolve(false);
-        setTimeout(tick, intervalMs);
-      };
-      tick();
-    });
-  }
-
-  function sleep(ms) {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-
-  // ------------------------------------------------------------
-  // FIX: SAFARI COOKIE ISSUE (credentials include)
-  // ------------------------------------------------------------
-  function hasAuthCookie() {
-    try {
-      const c = String(document.cookie || "");
-      return c.includes("aivo_sess=") || c.includes("aivo_session=");
-    } catch {
-      return false;
-    }
-  }
-
   async function safeFetchJson(url) {
     try {
       const r = await fetch(url, {
@@ -225,25 +195,25 @@
 
   async function hydrateJobsFromDB(appKey) {
     const key = normalizeAppKey(appKey);
-
-    // Safari’de cookie bazen JS’te boş görünüyor; ama request yine 200 olabiliyor.
-    // Burada sadece warn yapıyoruz, return etmiyoruz.
-    if (!hasAuthCookie()) {
-      console.warn("[BOOT] hydrate: cookie not visible (Safari ITP?)");
-    }
-
     const url = `/api/jobs/list?app=${encodeURIComponent(key)}`;
+
     const resp = await safeFetchJson(url);
+
+    // ✅ AUTH/COOKIE kararını document.cookie değil RESPONSE söylesin
+    if (resp.status === 401 || resp.status === 403 || resp.json?.auth === false) {
+      console.warn("[BOOT] hydrate skipped (unauthorized)", key, resp.status);
+      return;
+    }
 
     if (!resp.ok || !resp.json || resp.json.ok !== true) {
       console.warn("[BOOT] hydrate list failed:", resp.status, resp.json);
-      return { ok: false, items: 0, applied: 0 };
+      return;
     }
 
     const items = Array.isArray(resp.json.items) ? resp.json.items : [];
     if (!items.length) {
       console.log("[BOOT] hydrate: empty", key);
-      return { ok: true, items: 0, applied: 0 };
+      return;
     }
 
     let applied = 0;
@@ -259,7 +229,6 @@
     }
 
     console.log(`[BOOT] hydrate OK: app=${key} items=${items.length} applied=${applied}`);
-    return { ok: true, items: items.length, applied };
   }
 
   function getCurrentRouteKey() {
@@ -267,24 +236,9 @@
     return normalizeAppKey(h || "music");
   }
 
-  // 핵: Safari timing için PPE + kısa gecikme + retry
-  async function scheduleHydrateForRoute() {
+  function scheduleHydrateForRoute() {
     const routeKey = getCurrentRouteKey();
-
-    // 1) PPE hazır olana kadar bekle (Safari’de bazen geç)
-    await waitFor(() => window.PPE && typeof window.PPE.apply === "function", 4000);
-
-    // 2) route değişiminde mount/render zinciri otursun diye minicik nefes
-    await sleep(180);
-
-    // 3) ilk hydrate
-    await hydrateJobsFromDB(routeKey);
-
-    // 4) video panel gibi late-subscriber durumları için 2. pass (Safari fix)
-    //    Bu pass sadece "applied" daha önce 0 kalmışsa bile eventleri yeniden üretmek için değil,
-    //    panelin PPE’den state okuyup render etmesi için zaman kazandırır.
-    await sleep(900);
-    await hydrateJobsFromDB(routeKey);
+    setTimeout(() => hydrateJobsFromDB(routeKey), 250);
   }
 
   window.addEventListener("DOMContentLoaded", () => {
