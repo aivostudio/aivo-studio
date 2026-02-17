@@ -507,3 +507,46 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
   height:42px;            /* kritik: dev select'i küçültür */
   border-radius:12px;
 }
+/* IŞIK · EXPORT · DUYGU SIKLAŞTIRMA */
+
+#atmProMoodExport{
+  padding:16px 18px; /* eski 18-20 ise düşür */
+}
+
+/* Grid gap küçült */
+#atmProMoodExport > div{
+  gap:12px !important;
+}
+
+/* Pills küçült */
+#atmProMoodExport .smpack-pill{
+  padding:6px 12px;
+  font-size:13px;
+}
+
+/* Başlık alt boşluk azalt */
+#atmProMoodExport .card-header{
+  padding-bottom:4px;
+}
+
+/* Export select yükseklik düşür */
+#atmProMoodExport select{
+  height:42px;
+  font-size:14px;
+}
+
+/* Export label satır aralığı azalt */
+#atmProMoodExport label{
+  margin-bottom:6px !important;
+}
+
+/* Loop seam fix satırı sık */
+#atmProMoodExport input[type="checkbox"]{
+  transform:scale(.95);
+}
+
+/* Alt açıklama daha kompakt */
+#atmProMoodExport div[style*="shader"]{
+  margin-top:6px !important;
+  font-size:11px;
+}
