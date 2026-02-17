@@ -71,10 +71,11 @@
   }
 
   function looksLikeLegacyBrokenR2(url) {
-    const u = String(url || "");
-    // old broken pattern (keep, but not too aggressive)
-    return /https?:\/\/media\.aivo\.tr\/outputs\/video\/[0-9a-f-]{36}\.mp4/i.test(u);
-  }
+  // 🔥 Geçici fix:
+  // media.aivo.tr linklerini artık "legacy broken" saymıyoruz.
+  return false;
+}
+
 
   function toMaybeProxyUrl(url) {
     const u = String(url || "").trim();
