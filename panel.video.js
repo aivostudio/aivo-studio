@@ -18,12 +18,24 @@
     }catch(e){ return ""; }
   }
 
-  function pickBestVideoUrl(job){
-    // DBJobs normalize already prefers archive_url via o.url, but keep this safe.
-    const outs = (job && job.outputs) || [];
-    const o = outs.find(x => (x && String(x.type||"").toLowerCase()==="video" && x.url)) || outs[0];
-    return (o && o.url) ? String(o.url) : "";
-  }
+function pickBestVideoUrl(job){
+  const outs = (job && job.outputs) || [];
+  if(!Array.isArray(outs) || !outs.length) return "";
+
+  // 1) direkt type=video araması
+  const hit = outs.find(x => {
+    if(!x) return false;
+    const t = String(x.type || x.kind || "").toLowerCase();
+    const mt = x.meta && x.meta.type ? String(x.meta.type).toLowerCase() : "";
+    return (t === "video" || mt === "video") && (x.archive_url || x.url);
+  });
+
+  const best = hit || outs.find(x => x && (x.archive_url || x.url)) || outs[0];
+  if(!best) return "";
+
+  return String(best.archive_url || best.url || "").trim();
+}
+
 
   function acceptVideoOutput(o){
     if(!o) return false;
