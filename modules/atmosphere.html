@@ -123,66 +123,74 @@
           </div>
         </div>
 
-        <!-- (4) PERSONALIZATION (Logo + Audio) -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-              <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
-            </div>
-          </div>
+      <!-- 4) KİŞİSELLEŞTİRME (opsiyonel) — SADECE LOGO + AUDIO -->
+<div class="card" id="atmPersonalizeCard">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Kişiselleştirme (opsiyonel)</div>
+      <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
+    </div>
+  </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <div>
-              <div class="form-label">Logo</div>
-              <label class="btn" style="cursor:pointer;">
-                <input type="file" id="atmLogoFile" accept="image/*" hidden>
-                Logo Yükle
-              </label>
+  <div class="atmo-personalize-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <!-- LOGO -->
+    <div class="atmo-personalize-col">
+      <div class="form-label">Logo</div>
 
-              <div style="display:flex;gap:10px;margin-top:10px;">
-                <select id="atmLogoPos" class="input">
-                  <option value="bl">Sol Alt</option>
-                  <option value="br" selected>Sağ Alt</option>
-                  <option value="center_small">Ortada (küçük)</option>
-                </select>
-                <select id="atmLogoSize" class="input">
-                  <option value="sm" selected>Küçük</option>
-                  <option value="md">Orta</option>
-                </select>
-              </div>
+      <label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:46px;">
+        <input type="file" id="atmLogoFile" accept="image/*" hidden>
+        Logo Yükle
+      </label>
 
-              <div style="margin-top:10px;">
-                <div class="form-label">Opaklık</div>
-                <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
-              </div>
-            </div>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <select id="atmLogoPos" class="input" style="width:100%;">
+          <option value="bl">Sol Alt</option>
+          <option value="br" selected>Sağ Alt</option>
+          <option value="center_small">Ortada (küçük)</option>
+        </select>
 
-            <div>
-              <div class="form-label">Müzik / Jingle</div>
-              <label class="btn" style="cursor:pointer;">
-                <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-                Audio Yükle
-              </label>
+        <select id="atmLogoSize" class="input" style="width:100%;">
+          <option value="sm" selected>Küçük</option>
+          <option value="md">Orta</option>
+        </select>
+      </div>
 
-              <div style="display:flex;gap:10px;margin-top:10px;">
-                <select id="atmAudioMode" class="input">
-                  <option value="none" selected>Ses yok</option>
-                  <option value="embed">MP4 içine ekle</option>
-                </select>
-                <select id="atmAudioTrim" class="input">
-                  <option value="loop_to_fit" selected>Loop ile uydur</option>
-                  <option value="trim">Kırp</option>
-                </select>
-              </div>
+      <div style="margin-top:10px;">
+        <div class="form-label">Opaklık</div>
+        <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+      </div>
+    </div>
 
-              <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
-                <input type="checkbox" id="atmSilentCopy" checked>
-                Spotify Canvas için sessiz kopya üret
-              </label>
-            </div>
-          </div>
-        </div>
+    <!-- AUDIO -->
+    <div class="atmo-personalize-col">
+      <div class="form-label">Müzik / Jingle</div>
+
+      <label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:46px;">
+        <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+        Audio Yükle
+      </label>
+
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <select id="atmAudioMode" class="input" style="width:100%;">
+          <option value="none" selected>Ses yok</option>
+          <option value="embed">MP4 içine ekle</option>
+        </select>
+
+        <select id="atmAudioTrim" class="input" style="width:100%;">
+          <option value="loop_to_fit" selected>Loop ile uydur</option>
+          <option value="trim">Kırp</option>
+        </select>
+      </div>
+
+      <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
+        <input type="checkbox" id="atmSilentCopy" checked>
+        Spotify Canvas için sessiz kopya üret
+      </label>
+    </div>
+  </div>
+</div>
+<!-- /KİŞİSELLEŞTİRME -->
+
 
         <!-- (5) OUTPUT INFO -->
         <div class="card">
