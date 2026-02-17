@@ -459,3 +459,27 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
   max-width:55%;
   border-radius:12px;
 }
+/* PRO Detay Efektler: 2 kolon (2-2 yan yana) */
+#atmProDetails .atmProFxGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px 18px;
+  align-items:start;
+  margin-top:6px;
+}
+
+/* Grid item */
+#atmProDetails .atmFxItem{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:auto;          /* önemli: 100% override'ını kırar */
+  min-width:0;
+  font-size:14px;
+  opacity:.92;
+}
+
+/* Checkbox boyutu (opsiyonel) */
+#atmProDetails .atmFxItem input[type="checkbox"]{
+  transform: translateY(1px);
+}
