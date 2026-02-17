@@ -1,4 +1,4 @@
-// /api/jobs/delete.js
+// /api/jobs/list.js
 export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
@@ -9,7 +9,7 @@ function normalizeApp(x) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
+  if (req.method !== "GET") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
@@ -22,7 +22,9 @@ export default async function handler(req, res) {
       process.env.POSTGRES_URL ||
       process.env.DATABASE_URL_UNPOOLED;
 
-    if (!conn) return res.status(500).json({ ok: false, error: "missing_db_env" });
+    if (!conn) {
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
+    }
 
     // AUTH
     const auth = await requireAuth(req);
@@ -34,49 +36,43 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
     }
 
-    const body = req.body || {};
-    const job_id = String(body.job_id || body.id || "").trim();
-    const app = normalizeApp(body.app);
-
-    if (!job_id) return res.status(400).json({ ok: false, error: "missing_job_id" });
-    if (!app) return res.status(400).json({ ok: false, error: "missing_app" });
+    const app = normalizeApp(req.query.app);
+    if (!app) {
+      return res.status(400).json({ ok: false, error: "missing_app" });
+    }
 
     const sql = neon(conn);
 
-    // ✅ SOFT DELETE (kalıcı): deleted_at set
-    // ✅ sadece kendi job'unu silebilir (user_id/email/legacy match)
+    // ✅ SOFT DELETE FILTER EKLENDİ
     const rows = await sql`
-      update jobs
-      set deleted_at = now()::timestamp,
-          updated_at = now()::timestamp
-      where id = ${job_id}
-        and app = ${app}
+      select *
+      from jobs
+      where app = ${app}
         and deleted_at is null
         and (
           user_id::text = ${user_id || ""}
           or user_id::text = ${email || ""}
           or user_id::text = ${legacy_user_id || ""}
         )
-      returning id
+      order by created_at desc
+      limit 100
     `;
 
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({
-        ok: false,
-        error: "not_found_or_forbidden",
-        job_id,
-        app,
-      });
-    }
+    return res.status(200).json({
+      ok: true,
+      app,
+      auth: true,
+      user_uuid: user_id,
+      email,
+      items: rows || [],
+    });
 
-    return res.status(200).json({ ok: true, job_id, app, deleted: true });
   } catch (e) {
-    console.error("jobs/delete failed:", e);
+    console.error("jobs/list failed:", e);
     return res.status(500).json({
       ok: false,
-      error: "delete_failed",
+      error: "list_failed",
       message: String(e?.message || e),
-      stack: String(e?.stack || ""),
     });
   }
 }
