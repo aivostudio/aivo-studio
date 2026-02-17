@@ -123,73 +123,200 @@
           </div>
         </div>
 
-      <!-- 4) KİŞİSELLEŞTİRME (opsiyonel) — SADECE LOGO + AUDIO -->
-<div class="card" id="atmPersonalizeCard">
+<!-- (4) PERSONALIZATION (Image + Logo + Audio) + CTA INSIDE -->
+<div class="card" id="atmPersonalCard">
   <div class="card-header">
     <div>
       <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-      <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
+      <div class="card-subtitle">Görsel / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
     </div>
   </div>
 
-  <div class="atmo-personalize-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-    <!-- LOGO -->
-    <div class="atmo-personalize-col">
-      <div class="form-label">Logo</div>
+  <!-- 3'lü grid: Görsel (sahne override) + Logo + Audio -->
+  <div class="atmPersGrid">
 
-      <label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:46px;">
-        <input type="file" id="atmLogoFile" accept="image/*" hidden>
-        Logo Yükle
+    <!-- 1) Görsel (Sahne override) -->
+    <div class="atmPersCol">
+      <div class="form-label">Görsel (Sahne override)</div>
+
+      <label class="btn atmFileBtn" style="cursor:pointer;">
+        <input type="file" id="atmImageFile" accept="image/*" hidden>
+        🖼️ Görsel Seç
       </label>
 
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <select id="atmLogoPos" class="input" style="width:100%;">
+      <div class="atmFileMeta">
+        <div class="atmFileName" id="atmImageFileName">Dosya seçilmedi</div>
+        <div class="atmFileHint">Seçilen görsel, yukarıdaki sahne seçimini override eder.</div>
+      </div>
+    </div>
+
+    <!-- 2) Logo -->
+    <div class="atmPersCol">
+      <div class="form-label">Logo</div>
+
+      <label class="btn atmFileBtn" style="cursor:pointer;">
+        <input type="file" id="atmLogoFile" accept="image/*" hidden>
+        🏷️ Logo Seç
+      </label>
+
+      <div class="atmFileMeta">
+        <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+      </div>
+
+      <div class="atmRow2">
+        <select id="atmLogoPos" class="input">
           <option value="bl">Sol Alt</option>
           <option value="br" selected>Sağ Alt</option>
           <option value="center_small">Ortada (küçük)</option>
         </select>
 
-        <select id="atmLogoSize" class="input" style="width:100%;">
+        <select id="atmLogoSize" class="input">
           <option value="sm" selected>Küçük</option>
           <option value="md">Orta</option>
         </select>
       </div>
 
-      <div style="margin-top:10px;">
+      <div class="atmOpacityRow">
         <div class="form-label">Opaklık</div>
         <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
       </div>
     </div>
 
-    <!-- AUDIO -->
-    <div class="atmo-personalize-col">
+    <!-- 3) Audio -->
+    <div class="atmPersCol">
       <div class="form-label">Müzik / Jingle</div>
 
-      <label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:46px;">
+      <label class="btn atmFileBtn" style="cursor:pointer;">
         <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-        Audio Yükle
+        🎵 Audio Seç
       </label>
 
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <select id="atmAudioMode" class="input" style="width:100%;">
+      <div class="atmFileMeta">
+        <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
+      </div>
+
+      <div class="atmRow2">
+        <select id="atmAudioMode" class="input">
           <option value="none" selected>Ses yok</option>
           <option value="embed">MP4 içine ekle</option>
         </select>
 
-        <select id="atmAudioTrim" class="input" style="width:100%;">
+        <select id="atmAudioTrim" class="input">
           <option value="loop_to_fit" selected>Loop ile uydur</option>
           <option value="trim">Kırp</option>
         </select>
       </div>
 
-      <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
+      <label class="atmCheckRow">
         <input type="checkbox" id="atmSilentCopy" checked>
         Spotify Canvas için sessiz kopya üret
       </label>
     </div>
+
+    <!-- CTA (buton burada, opaklık bloğunun hizasında "kart içinde") -->
+    <div class="atmPersCta">
+      <button class="btn btn-primary atmCtaBtn" type="button" data-atm-generate data-atm-mode="basic">
+        Atmosfer Video Oluştur
+      </button>
+    </div>
+
   </div>
 </div>
-<!-- /KİŞİSELLEŞTİRME -->
+
+<style>
+  /* Personalization 3'lü grid + CTA */
+  #atmPersonalCard .atmPersGrid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:14px;
+    align-items:start;
+  }
+  #atmPersonalCard .atmPersCol{
+    min-width:0;
+  }
+
+  /* 2'li küçük satırlar (pos/size, audio mode/trim) */
+  #atmPersonalCard .atmRow2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+  }
+
+  #atmPersonalCard .atmOpacityRow{
+    margin-top:10px;
+  }
+
+  #atmPersonalCard .atmCheckRow{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:12px;
+    opacity:.9;
+  }
+
+  /* Dosya meta */
+  #atmPersonalCard .atmFileMeta{
+    margin-top:10px;
+  }
+  #atmPersonalCard .atmFileName{
+    font-size:12px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #atmPersonalCard .atmFileHint{
+    margin-top:4px;
+    font-size:12px;
+    opacity:.65;
+    line-height:1.35;
+  }
+
+  /* CTA kart içinde: altta ama kartın içinde, sayfaya sarkmayı keser */
+  #atmPersonalCard .atmPersCta{
+    grid-column: 1 / -1;
+    margin-top:2px;
+    padding-top:6px;
+  }
+  #atmPersonalCard .atmCtaBtn{
+    width:100%;
+    border-radius:16px;
+    padding:14px 16px;
+    font-weight:700;
+  }
+
+  /* Responsive: dar ekranda 3->1 */
+  @media (max-width: 980px){
+    #atmPersonalCard .atmPersGrid{
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // Seçilen dosya adını göster (preview text)
+  (() => {
+    const bindName = (inputId, labelId) => {
+      const input = document.getElementById(inputId);
+      const label = document.getElementById(labelId);
+      if (!input || !label) return;
+
+      const show = () => {
+        const f = input.files && input.files[0];
+        label.textContent = f ? f.name : "Dosya seçilmedi";
+      };
+
+      input.addEventListener("change", show);
+      show();
+    };
+
+    bindName("atmImageFile", "atmImageFileName");
+    bindName("atmLogoFile", "atmLogoFileName");
+    bindName("atmAudioFile", "atmAudioFileName");
+  })();
+</script>
+
 
 
         <!-- (5) OUTPUT INFO -->
