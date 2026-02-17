@@ -1,5 +1,4 @@
 // /api/_lib/auth.js
-
 const jwt = require("jsonwebtoken");
 const { kv } = require("@vercel/kv");
 const { neon } = require("@neondatabase/serverless");
@@ -41,8 +40,10 @@ function getDbConn() {
 
 async function getOrCreateUserIdByEmail(email) {
   if (!email) return null;
+
   const conn = getDbConn();
-  if (!conn) return null;
+  if (!conn) throw new Error("missing_db_env");
+
   const sql = neon(conn);
 
   const rows = await sql`
@@ -62,55 +63,74 @@ async function getOrCreateUserIdByEmail(email) {
 async function requireAuth(req) {
   const cookies = parseCookies(req);
 
-  // KV session
+  // ==========================
+  // 1) KV SESSION FLOW
+  // ==========================
   const sid = cleanToken(cookies[COOKIE_KV]);
   if (sid) {
+    let sess = null;
+
     try {
-      const sess = await kv.get(`sess:${sid}`);
-      if (sess?.email) {
-        const user_id = await getOrCreateUserIdByEmail(sess.email);
-        return {
-          user_id: user_id || sid,
-          email: sess.email,
-          role: sess.role || "user",
-          session: "kv",
-        };
-      }
+      sess = await kv.get(`sess:${sid}`);
     } catch (e) {
-      console.error("KV read error:", e);
+      console.error("[auth] KV read error:", e);
+      throw new Error("kv_not_available");
     }
 
+    if (!sess || typeof sess !== "object") {
+      throw new Error("invalid_session");
+    }
+
+    const email = sess.email ? String(sess.email) : null;
+    if (!email) {
+      throw new Error("missing_email");
+    }
+
+    const user_id = await getOrCreateUserIdByEmail(email);
+
     return {
-      user_id: sid,
-      email: null,
-      role: "user",
-      session: "kv_fallback",
+      user_id,
+      email,
+      role: sess.role || "user",
+      verified: typeof sess.verified === "boolean" ? sess.verified : true,
+      session: "kv",
     };
   }
 
-  // JWT
+  // ==========================
+  // 2) JWT LEGACY FLOW
+  // ==========================
   const token = cleanToken(cookies[COOKIE_JWT]);
   const JWT_SECRET = process.env.JWT_SECRET;
 
   if (token && JWT_SECRET) {
     try {
       const payload = jwt.verify(token, JWT_SECRET);
+
       const email =
         payload?.email || payload?.sub || payload?.user?.email || null;
 
-      if (email) {
-        const user_id = await getOrCreateUserIdByEmail(email);
-        return {
-          user_id: user_id || email,
-          email,
-          role: payload?.role || "user",
-          session: "jwt",
-        };
-      }
-    } catch (e) {}
+      if (!email) throw new Error("missing_email");
+
+      const user_id = await getOrCreateUserIdByEmail(email);
+
+      return {
+        user_id,
+        email,
+        role: payload?.role || "user",
+        verified:
+          typeof payload?.verified === "boolean" ? payload.verified : true,
+        session: "jwt",
+      };
+    } catch (e) {
+      throw new Error("invalid_session");
+    }
   }
 
-  return null;
+  // ==========================
+  // 3) NO SESSION
+  // ==========================
+  throw new Error("missing_session");
 }
 
 module.exports = { requireAuth };
