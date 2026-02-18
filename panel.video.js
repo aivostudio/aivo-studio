@@ -1,10 +1,9 @@
-// /js/panel.video.js
-// RightPanel Video (v3) — DB source-of-truth hydrate (/api/jobs/list?app=video)
-// REVISION: Replace per-card <video> with a SINGLE fixed player (like atmo)
-// - Cards keep the same visual structure/effects (vpThumb/vpBadge/vpPlay/vpFsBtn)
-// - Play now loads into a fixed player viewport (with aspect clamp)
-// - Fullscreen acts on the fixed player
-// - Keep DB hydrate + status poll + PPE bridge + job_created bridge
+
+// panel.video.js
+// RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
+// FIX(critical): playbackUrl was NOT derived from outputs[].url (Safari/DB-only path => cards stayed "loading")
+// + FIX: state text typo ("İşlen:iyor" -> "İşleniyor")
+// + UX: Safari-friendly video attrs (muted + webkit-playsinline)
 
 (function () {
   if (!window.RightPanel) return;
@@ -18,14 +17,7 @@
   const STATUS_POLL_BATCH = 3;
   const STATUS_POLL_TIMEOUT_MS = 15000;
 
-  const state = {
-    items: [],
-    // fixed player state
-    selectedId: "",
-    selectedUrl: "",
-    selectedMeta: "",
-    selectedIsPortrait: false,
-  };
+  const state = { items: [] };
 
   /* =======================
      Utils
@@ -71,21 +63,6 @@
     if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
     if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
     return u;
-  }
-
-  function fmtDT(ts) {
-    try {
-      const d = new Date(ts || Date.now());
-      if (Number.isNaN(+d)) return "";
-      const dd = String(d.getDate()).padStart(2, "0");
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const yy = d.getFullYear();
-      const hh = String(d.getHours()).padStart(2, "0");
-      const mi = String(d.getMinutes()).padStart(2, "0");
-      return `${dd}.${mm}.${yy} ${hh}:${mi}`;
-    } catch {
-      return "";
-    }
   }
 
   /* =======================
@@ -233,15 +210,6 @@
 
   function findGrid(host) {
     return host.querySelector("[data-video-grid]");
-  }
-
-  function guessPortrait(it) {
-    const ar = String(it?.meta?.aspect_ratio || it?.meta?.ratio || it?.meta?.ar || "").toLowerCase().trim();
-    if (ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3")) return true;
-    // fallback: if user picked "portrait" in meta
-    const k = String(it?.meta?.orientation || it?.meta?.layout || "").toLowerCase();
-    if (k.includes("portrait") || k.includes("vertical") || k.includes("dikey")) return true;
-    return false;
   }
 
   /* =======================
@@ -404,7 +372,7 @@
     } else {
       if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
       else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
-      else item.status = "İşleniyor";
+      else item.status = "İşleniyor"; // ✅ typo fix
     }
 
     const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
@@ -483,15 +451,6 @@
 
       saveItems();
       render(host);
-
-      // if no selection yet, auto-select first ready
-      if (!state.selectedUrl) {
-        const first = state.items.find((it) => isReady(it) && getPlaybackUrl(it));
-        if (first) {
-          const pb = getPlaybackUrl(first);
-          if (pb) setMain(host, first.id, pb, buildMetaLine(first), guessPortrait(first));
-        }
-      }
 
       pollPendingStatuses(host).catch(() => {});
     } catch (e) {
@@ -584,135 +543,16 @@
 
         saveItems();
         render(host);
-
-        // if selected item becomes ready and selected url missing, refresh player
-        if (String(state.selectedId) === String(it.id) && it.playbackUrl) {
-          setMain(host, it.id, it.playbackUrl, buildMetaLine(it), guessPortrait(it));
-        }
       }
     }
   }
 
   /* =======================
-     Fixed player + fullscreen
+     Fullscreen helper
      ======================= */
 
-  function ensureStylesOnce() {
-    if (document.getElementById("vpFixedPlayerStyles")) return;
-
-    const css = `
-      .vpPlayerShell{
-        padding:10px;
-        border-radius:16px;
-        background:rgba(255,255,255,0.04);
-        border:1px solid rgba(255,255,255,0.06);
-        margin-bottom:12px;
-      }
-      .vpPlayerTop{
-        display:flex;align-items:center;justify-content:space-between;gap:10px;
-        margin-bottom:10px;
-      }
-      .vpPlayerMeta{
-        font-size:12px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-        min-width:0;flex:1;
-      }
-      .vpPlayerBtns{display:flex;gap:8px;align-items:center;}
-      .vpPlayerBtn{
-        width:34px;height:34px;border-radius:999px;
-        border:1px solid rgba(255,255,255,0.10);
-        background:rgba(0,0,0,.25);color:#fff;cursor:pointer;
-        display:inline-flex;align-items:center;justify-content:center;
-      }
-      .vpPlayerBox{
-        position:relative;border-radius:14px;overflow:hidden;
-        background:#000;border:1px solid rgba(255,255,255,0.08);
-      }
-      .vpPlayerBox:before{content:"";display:block;padding-top:56.25%;} /* 16:9 */
-      .vpPlayerBox.isPortrait:before{padding-top:140%;} /* clamp for 9:16 */
-      .vpPlayerVideo{
-        position:absolute;inset:0;width:100%;height:100%;
-        object-fit:contain;
-        background:#000;
-      }
-      .vpPlayerHint{
-        font-size:12px;opacity:.78;padding:10px 12px;
-      }
-      .vpPlayerClose{display:none;}
-      .vpPlayerShell.hasSel .vpPlayerClose{display:inline-flex;}
-    `;
-
-    const style = document.createElement("style");
-    style.id = "vpFixedPlayerStyles";
-    style.textContent = css;
-    document.head.appendChild(style);
-  }
-
-  function getPlayerNodes(host) {
-    return {
-      shell: host.querySelector("[data-vp-player-shell]"),
-      meta: host.querySelector("[data-vp-player-meta]"),
-      close: host.querySelector("[data-vp-player-close]"),
-      fs: host.querySelector("[data-vp-player-fs]"),
-      box: host.querySelector("[data-vp-player-box]"),
-      hint: host.querySelector("[data-vp-player-hint]"),
-      video: host.querySelector("[data-vp-player-video]"),
-    };
-  }
-
-  function clearPlayer(host) {
-    const n = getPlayerNodes(host);
-    state.selectedId = "";
-    state.selectedUrl = "";
-    state.selectedMeta = "";
-    state.selectedIsPortrait = false;
-
-    if (n.shell) n.shell.classList.remove("hasSel");
-    if (n.box) n.box.classList.remove("isPortrait");
-    if (n.meta) n.meta.textContent = "Bir karttan ▶ seçip oynat.";
-    if (n.video) {
-      try { n.video.pause?.(); } catch {}
-      n.video.removeAttribute("src");
-      try { n.video.load?.(); } catch {}
-      n.video.style.display = "none";
-    }
-    if (n.hint) n.hint.style.display = "block";
-  }
-
-  function setMain(host, id, url, metaText, isPortrait) {
-    const n = getPlayerNodes(host);
-    const u = String(url || "").trim();
-
-    state.selectedId = String(id || "");
-    state.selectedUrl = u;
-    state.selectedMeta = String(metaText || "");
-    state.selectedIsPortrait = !!isPortrait;
-
-    if (!u) {
-      clearPlayer(host);
-      return;
-    }
-
-    if (n.shell) n.shell.classList.add("hasSel");
-    if (n.hint) n.hint.style.display = "none";
-    if (n.video) n.video.style.display = "block";
-
-    if (n.meta) n.meta.textContent = state.selectedMeta || "Seçili video";
-    if (n.box) n.box.classList.toggle("isPortrait", !!state.selectedIsPortrait);
-
-    if (n.video) {
-      const cur = String(n.video.currentSrc || n.video.src || "").trim();
-      if (cur !== u) {
-        n.video.src = u;
-        try { n.video.load?.(); } catch {}
-      }
-      // autoplay try (safe)
-      try { n.video.play?.().catch(() => {}); } catch {}
-    }
-  }
-
-  function goFullscreenForFixedPlayer(host) {
-    const n = getPlayerNodes(host);
-    const video = n.video;
+  function goFullscreen(card) {
+    const video = card?.querySelector("video");
     if (!video) return;
 
     try {
@@ -730,8 +570,8 @@
     } catch {}
 
     try {
-      if (n.box?.requestFullscreen) {
-        n.box.requestFullscreen().catch?.(() => {});
+      if (card.requestFullscreen) {
+        card.requestFullscreen().catch?.(() => {});
         return;
       }
     } catch {}
@@ -754,19 +594,16 @@
     `;
   }
 
-  // IMPORTANT: keep existing thumb classes/effects; remove card-video element
   function renderThumb(it) {
     const badge = normalizeBadge(it);
 
-    // ✅ compute playbackUrl if missing
+    // ✅ If ready but playbackUrl missing, try compute from outputs on the fly
     if (!it.playbackUrl) {
       const pb2 = getPlaybackUrl(it);
       if (pb2) it.playbackUrl = pb2;
     }
 
-    const ready = isReady(it) && !!String(it.playbackUrl || "").trim();
-
-    if (!ready) {
+    if (!isReady(it) || !it.playbackUrl) {
       return `
         <div class="vpThumb is-loading">
           ${renderSkeleton(badge)}
@@ -775,13 +612,25 @@
       `;
     }
 
-    // No <video> here anymore — just overlay (poster-like)
     return `
       <div class="vpThumb">
         <div class="vpBadge">${esc(badge)}</div>
+
+        <video
+          class="vpVideo"
+          preload="metadata"
+          playsinline
+          webkit-playsinline
+          muted
+          controls
+          data-user-gesture="0"
+          src="${esc(it.playbackUrl)}"
+        ></video>
+
         <div class="vpPlay">
           <span class="vpPlayIcon">▶</span>
         </div>
+
         <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
       </div>
     `;
@@ -807,9 +656,8 @@
   }
 
   function renderCard(it) {
-    const active = (String(state.selectedId) && String(it.id) === String(state.selectedId)) ? " is-active" : "";
     return `
-      <div class="vpCard${active}" data-id="${esc(it.id)}" role="button" tabindex="0">
+      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
         ${renderThumb(it)}
         ${renderMeta(it)}
       </div>
@@ -822,23 +670,10 @@
 
     if (!state.items.length) {
       grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
-      clearPlayer(host);
       return;
     }
 
     grid.innerHTML = state.items.map(renderCard).join("");
-
-    // keep selection highlight in sync (if selected item deleted etc.)
-    if (state.selectedId) {
-      const exists = state.items.some((x) => String(x.id) === String(state.selectedId));
-      if (!exists) clearPlayer(host);
-    }
-  }
-
-  function buildMetaLine(it) {
-    const kind = formatKind(it);
-    const dt = fmtDT(it?.createdAt || it?.created_at || Date.now());
-    return `${kind}${dt ? " • " + dt : ""}`;
   }
 
   /* =======================
@@ -873,22 +708,15 @@
     const grid = findGrid(host);
     if (!grid) return () => {};
 
-    const n = getPlayerNodes(host);
-
-    const onTopClick = (e) => {
-      const btn = e.target.closest?.("[data-vp-act]");
-      if (!btn) return;
-      const act = btn.getAttribute("data-vp-act");
-      if (act === "close") { clearPlayer(host); return; }
-      if (act === "fs") { goFullscreenForFixedPlayer(host); return; }
-      if (act === "toggle") {
-        const v = getPlayerNodes(host).video;
-        if (!v || !state.selectedUrl) return;
-        try { v.paused ? v.play?.() : v.pause?.(); } catch {}
-        return;
+    const onPlayCapture = (e) => {
+      const v = e.target;
+      if (!(v instanceof HTMLVideoElement)) return;
+      const g = String(v.getAttribute("data-user-gesture") || "0");
+      if (g !== "1") {
+        try { v.pause(); } catch {}
       }
     };
-    n.shell?.addEventListener("click", onTopClick);
+    grid.addEventListener("play", onPlayCapture, true);
 
     const onClick = (e) => {
       const card = e.target.closest(".vpCard");
@@ -899,47 +727,43 @@
       if (!it) return;
 
       const btn = e.target.closest("[data-act]");
+      const video = card.querySelector("video");
+      const overlay = card.querySelector(".vpPlay");
 
       if (btn) {
         e.stopPropagation();
         const act = btn.getAttribute("data-act");
 
-        if (act === "fs") {
-          // if fixed player already has selection, fullscreen it; else select then fullscreen
-          if (isReady(it) && getPlaybackUrl(it)) {
-            const pb = getPlaybackUrl(it);
-            setMain(host, it.id, pb, buildMetaLine(it), guessPortrait(it));
-            goFullscreenForFixedPlayer(host);
-          }
-          return;
-        }
-
+        if (act === "fs") { goFullscreen(card); return; }
         if (act === "download") downloadUrl(bestShareUrl(it));
         if (act === "share") shareUrl(bestShareUrl(it));
 
         if (act === "delete") {
-          // UI delete only (backend delete handled elsewhere if exists)
-          const wasSelected = String(state.selectedId) === String(it.id);
           state.items = state.items.filter(x => String(x.id) !== String(id));
           saveItems();
           render(host);
-          if (wasSelected) clearPlayer(host);
         }
         return;
       }
 
-      // normal click => play in fixed player
-      const pb = getPlaybackUrl(it);
-      if (!isReady(it) || !pb) return;
+      if (!video || !isReady(it)) return;
 
-      setMain(host, it.id, pb, buildMetaLine(it), guessPortrait(it));
+      if (video.paused) {
+        video.setAttribute("data-user-gesture", "1");
+        video.play().catch(() => {});
+        if (overlay) overlay.style.display = "none";
+      } else {
+        video.pause();
+        video.setAttribute("data-user-gesture", "0");
+        if (overlay) overlay.style.display = "";
+      }
     };
 
     grid.addEventListener("click", onClick);
 
     return () => {
-      try { n.shell?.removeEventListener("click", onTopClick); } catch {}
-      try { grid.removeEventListener("click", onClick); } catch {}
+      grid.removeEventListener("click", onClick);
+      grid.removeEventListener("play", onPlayCapture, true);
     };
   }
 
@@ -1024,19 +848,6 @@
 
       saveItems();
       render(host);
-
-      // If nothing selected, auto-select new ready output
-      const pick = state.items.find((it) => isReady(it) && getPlaybackUrl(it));
-      if (pick && !state.selectedUrl) {
-        const pb = getPlaybackUrl(pick);
-        if (pb) setMain(host, pick.id, pb, buildMetaLine(pick), guessPortrait(pick));
-      }
-
-      // If selected matches, refresh player
-      if (jid && String(state.selectedId) === String(jid)) {
-        const it2 = state.items.find(x => String(x.id) === String(jid));
-        if (it2 && it2.playbackUrl) setMain(host, it2.id, it2.playbackUrl, buildMetaLine(it2), guessPortrait(it2));
-      }
     };
 
     return () => {
@@ -1102,71 +913,17 @@
     },
 
     mount(host) {
-      ensureStylesOnce();
-
       host.innerHTML = `
         <div class="videoSide">
           <div class="videoSideCard">
-
-            <!-- FIXED PLAYER -->
-            <div class="vpPlayerShell" data-vp-player-shell>
-              <div class="vpPlayerTop">
-                <div class="vpPlayerMeta" data-vp-player-meta>Bir karttan ▶ seçip oynat.</div>
-                <div class="vpPlayerBtns">
-                  <button class="vpPlayerBtn" type="button" data-vp-act="toggle" title="Oynat/Duraklat" aria-label="Oynat/Duraklat">▶</button>
-                  <button class="vpPlayerBtn" type="button" data-vp-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-                  <button class="vpPlayerBtn vpPlayerClose" type="button" data-vp-act="close" title="Kapat" aria-label="Kapat" data-vp-player-close>✕</button>
-                </div>
-              </div>
-
-              <div class="vpPlayerBox" data-vp-player-box>
-                <div class="vpPlayerHint" data-vp-player-hint>Henüz seçili video yok.</div>
-                <video
-                  class="vpPlayerVideo"
-                  data-vp-player-video
-                  playsinline
-                  webkit-playsinline
-                  preload="metadata"
-                  controls
-                  muted
-                  style="display:none;"
-                ></video>
-              </div>
-            </div>
-
-            <!-- GRID -->
             <div class="vpGrid" data-video-grid></div>
-
           </div>
         </div>
       `;
 
-      // close button node marker
-      // (used in getPlayerNodes)
-      const n = getPlayerNodes(host);
-      if (n.close) n.close.classList.add("vpPlayerClose");
-
       // 1) instant UI from LS
       state.items = loadItems();
       render(host);
-
-      // if LS has a ready item and no selection, select first
-      if (!state.selectedUrl) {
-        const first = state.items.find((it) => isReady(it) && getPlaybackUrl(it));
-        if (first) {
-          const pb = getPlaybackUrl(first);
-          if (pb) setMain(host, first.id, pb, buildMetaLine(first), guessPortrait(first));
-        } else {
-          clearPlayer(host);
-        }
-      }
-
-      // wire top buttons
-      const shell = host.querySelector("[data-vp-player-shell]");
-      const closeBtn = host.querySelector("[data-vp-act='close']");
-      if (shell && closeBtn) closeBtn.style.display = "none"; // will be shown by .hasSel
-      // make close btn appear via css (.hasSel)
-      if (closeBtn) closeBtn.classList.add("vpPlayerClose");
 
       // 2) hydrate from DB (source of truth)
       hydrateFromDB(host);
@@ -1187,7 +944,6 @@
         try { offEvents(); } catch {}
         try { offPPE(); } catch {}
         try { offJobs(); } catch {}
-        try { clearPlayer(host); } catch {}
       };
     },
   });
