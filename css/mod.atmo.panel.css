@@ -1,0 +1,5 @@
+/* ATMO Player: devasa olmasın */
+.atmoPlayerBox:before{ padding-top: 42% !important; }      /* 16:9 yerine daha kısa */
+.atmoPlayerBox{ max-height: 220px; }                        /* paneli şişirme */
+.atmoPlayerVideo{ object-fit: contain; }                    /* letterbox güvenli */
+.atmoPlayerHint{ padding: 8px 10px !important; }            /* biraz sıkı */
