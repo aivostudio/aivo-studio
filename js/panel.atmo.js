@@ -81,32 +81,28 @@
       selectedTitle: "",
     };
 
-    // --- UI (CSS: /css/mod.atmo.panel.css) ---
-    host.innerHTML = `
-      <div class="atmoPanel">
+  // --- UI (CSS: /css/mod.atmo.panel.css) ---
+host.innerHTML = `
+  <div class="atmoPanel">
 
-        <div class="atmoPanelHeader">
-          <div class="atmoPanelTitleRow">
-            <div class="atmoPanelTitle">Atmosfer Video</div>
-            <div class="atmoPanelStatus" data-el="status">Hazır</div>
-          </div>
+    <div class="atmoPanelHeader">
+      <input
+        class="atmoPanelSearch"
+        data-el="search"
+        placeholder="Videolarda ara..."
+      />
+    </div>
 
-          <input
-            class="atmoPanelSearch"
-            data-el="search"
-            placeholder="Videolarda ara..."
-          />
-        </div>
+    <div class="atmoPlayerCard">
 
-        <div class="atmoPlayerCard">
+      <div class="atmoPlayerHint" data-el="hint">
+        Bir karttan ▶ seçip oynat.
+      </div>
 
-          <div class="atmoPlayerHint" data-el="hint">
-            Bir karttan ▶ seçip oynat.
-          </div>
+      <div class="atmoPlayerViewport" data-el="viewport">
+        <!-- VIDEO MOUNT (boşken DOM’da video YOK) -->
+        <div class="atmoPlayerMount" data-el="playerMount"></div>
 
-          <div class="atmoPlayerViewport" data-el="viewport">
-            <!-- VIDEO MOUNT (boşken DOM’da video YOK) -->
-            <div class="atmoPlayerMount" data-el="playerMount"></div>
 
             <!-- PLACEHOLDER / POSTER -->
             <div class="atmoPoster is-empty" data-el="poster">
