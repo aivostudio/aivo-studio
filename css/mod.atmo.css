@@ -638,24 +638,29 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
-/* TEST: vuruyor mu? */
+/* CTA kartı: net box modeli */
 section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta{
-  outline: 3px solid hotpink !important;
-  padding: 18px !important;
-  overflow: visible !important;
+  outline: none !important;          /* test bitti */
+  padding: 14px !important;          /* 18 -> 14 (daha “oturur”) */
+  overflow: hidden !important;
 }
 
-section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta > div.atmPersCta{
+/* wrapper tam genişlik + ortalama */
+section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta > .atmPersCta{
   width: 100% !important;
-  padding: 0 !important;
   margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
 }
 
+/* buton tam genişlik ve tam ortalı */
 section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta button.atmBigCtaBtn{
   width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
   box-sizing: border-box !important;
   margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
