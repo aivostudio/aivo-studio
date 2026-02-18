@@ -1,9 +1,9 @@
-
 // panel.video.js
 // RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
-// FIX(critical): playbackUrl was NOT derived from outputs[].url (Safari/DB-only path => cards stayed "loading")
-// + FIX: state text typo ("İşlen:iyor" -> "İşleniyor")
-// + UX: Safari-friendly video attrs (muted + webkit-playsinline)
+// ✅ CRITICAL FIX: Video panel must ONLY accept app=video (DB + PPE + LocalStorage)
+// ✅ FIX: playbackUrl derived from outputs[].url (Safari/DB-only path)
+// ✅ FIX: status text typo ("İşlen:iyor" -> "İşleniyor")
+// ✅ UX: Safari-friendly video attrs (muted + webkit-playsinline)
 
 (function () {
   if (!window.RightPanel) return;
@@ -43,6 +43,10 @@
       .toLowerCase()
       .replaceAll("_", " ")
       .replace(/\s+/g, " ");
+  }
+
+  function normApp(v) {
+    return String(v || "").trim().toLowerCase();
   }
 
   // ✅ status/db_status önce, state sonra
@@ -225,6 +229,11 @@
 
     for (const it0 of (items || [])) {
       const it = it0 || {};
+
+      // ✅ HARD FILTER: If app is known and not video, SKIP
+      const app0 = normApp(it?.meta?.app || it?.app || it0?.meta?.app || it0?.app || "");
+      if (app0 && app0 !== "video") continue;
+
       const id = String(it.id || it.job_id || uid());
       const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
 
@@ -261,7 +270,8 @@
           ...(it.meta || {}),
           mode: it.meta?.mode || it.mode || it.kind || "",
           prompt: it.meta?.prompt || it.prompt || it.text || "",
-          app: it.meta?.app || "video",
+          // ✅ DO NOT default to "video" if unknown; keep empty so it doesn't poison other panels
+          app: it.meta?.app || it.app || "",
         },
         outputs: outs0,
         state: it.state,
@@ -306,6 +316,10 @@
     const meta = r?.meta || {};
     const outputs = Array.isArray(r?.outputs) ? r.outputs : [];
 
+    // ✅ HARD FILTER: accept ONLY app=video rows
+    const metaApp = normApp(meta?.app || r?.app || "");
+    if (metaApp && metaApp !== "video") return null;
+
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
 
@@ -341,7 +355,7 @@
         ...(meta || {}),
         mode: meta?.mode || "",
         prompt: meta?.prompt || r?.prompt || "",
-        app: "video",
+        app: metaApp || "video",
       },
       outputs,
       state: r?.state,
@@ -372,7 +386,7 @@
     } else {
       if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
       else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
-      else item.status = "İşleniyor"; // ✅ typo fix
+      else item.status = "İşleniyor";
     }
 
     const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
@@ -390,6 +404,7 @@
     }
 
     for (const it of (incoming || [])) {
+      if (!it) continue;
       const key = String(it.job_id || it.id || "");
       if (!key) continue;
 
@@ -404,7 +419,6 @@
         ...it,
         title: it.title || prev.title,
         meta: { ...(prev.meta || {}), ...(it.meta || {}) },
-        // ✅ keep outputs + recompute playbackUrl if missing
         outputs: Array.isArray(it.outputs) && it.outputs.length ? it.outputs : (prev.outputs || []),
         playbackUrl: String(it.playbackUrl || prev.playbackUrl || "").trim() || getPlaybackUrl(it) || getPlaybackUrl(prev) || "",
       });
@@ -768,7 +782,7 @@
   }
 
   /* =======================
-     PPE bridge
+     PPE bridge (CRITICAL: only accept app=video)
      ======================= */
 
   function attachPPE(host) {
@@ -782,6 +796,17 @@
       if (!active) return;
 
       if (!out || String(out.type || "").toLowerCase() !== "video") return;
+
+      const outApp = normApp(
+        out?.meta?.app ||
+        job?.app ||
+        job?.meta?.app ||
+        job?.meta_app ||
+        ""
+      );
+
+      // ✅ HARD FILTER: video panel accepts ONLY video app outputs
+      if (outApp && outApp !== "video") return;
 
       const url = String(out.url || "").trim();
       const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || out.meta?.archiveUrl || "").trim();
@@ -825,7 +850,7 @@
         if (!target.job_id && jid) target.job_id = jid;
         if (!target.id && jid) target.id = jid;
 
-        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
+        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: outApp || "video" };
 
         const pb = (!legacyBroken) ? getPlaybackUrl(target) : "";
         target.playbackUrl = pb || "";
@@ -838,7 +863,7 @@
           status: legacyBroken ? "İşleniyor" : "Hazır",
           title,
           createdAt: Date.now(),
-          meta: { ...(out.meta || {}), app: "video" },
+          meta: { ...(out.meta || {}), app: outApp || "video" },
           outputs: [],
         };
         const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
@@ -857,13 +882,13 @@
   }
 
   /* =======================
-     Job created bridge
+     Job created bridge (accept only app=video)
      ======================= */
 
   function attachJobCreated(host) {
     const onJob = (e) => {
       const d = e?.detail || {};
-      if (d.app !== "video" || !d.job_id) return;
+      if (normApp(d.app) !== "video" || !d.job_id) return;
 
       const job_id = String(d.job_id);
       const exists = state.items.some(x => String(x.job_id || "") === job_id || String(x.id || "") === job_id);
@@ -921,7 +946,7 @@
         </div>
       `;
 
-      // 1) instant UI from LS
+      // 1) instant UI from LS (but sanitized to accept only video app)
       state.items = loadItems();
       render(host);
 
