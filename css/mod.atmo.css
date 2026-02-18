@@ -638,29 +638,3 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
-/* CTA kartı: net box modeli */
-section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta{
-  outline: none !important;          /* test bitti */
-  padding: 14px !important;          /* 18 -> 14 (daha “oturur”) */
-  overflow: hidden !important;
-}
-
-/* wrapper tam genişlik + ortalama */
-section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta > .atmPersCta{
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-}
-
-/* buton tam genişlik ve tam ortalı */
-section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta button.atmBigCtaBtn{
-  width: 100% !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
