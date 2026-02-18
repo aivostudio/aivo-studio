@@ -229,3 +229,6 @@
   .atmoGrid{ grid-template-columns: 1fr; }
   .atmoPlayerViewport{ max-height: 200px; }
 }
+.atmoPoster { z-index: 5; pointer-events: auto; }
+.atmoPosterPlay { pointer-events: auto; cursor: pointer; }
+.atmoPlayerMount { z-index: 1; }
