@@ -1,18 +1,20 @@
 // panel.video.js
-// RightPanel Video (v2) — DB source-of-truth hydrate (/api/jobs/list?app=video)
-// ✅ CRITICAL FIX: Video panel must ONLY accept app=video (DB + PPE + LocalStorage)
-// ✅ FIX: playbackUrl derived from outputs[].url (Safari/DB-only path)
-// ✅ FIX: status text typo ("İşlen:iyor" -> "İşleniyor")
-// ✅ UX: Safari-friendly video attrs (muted + webkit-playsinline)
+// RightPanel Video (v2) — STRICT app filtering (video only)
+// Fix: Atmo outputs leaking into Video panel via PPE bridge
+// Fix: Hydrate from DB must ignore non-video rows even if endpoint returns mixed data
+// UX: Safari-friendly attrs (muted + webkit-playsinline)
 
 (function () {
   if (!window.RightPanel) return;
 
-  const STORAGE_KEY = "aivo.v2.video.items.v3";
-  const LEGACY_KEYS = ["aivo.v2.video.items.v2", "aivo.v2.video.items"];
+  const STORAGE_KEY = "aivo.v2.video.items.v4";
+  const LEGACY_KEYS = [
+    "aivo.v2.video.items.v3",
+    "aivo.v2.video.items.v2",
+    "aivo.v2.video.items",
+  ];
   const MAX_ITEMS = 50;
 
-  // status polling
   const STATUS_POLL_EVERY_MS = 4000;
   const STATUS_POLL_BATCH = 3;
   const STATUS_POLL_TIMEOUT_MS = 15000;
@@ -45,20 +47,9 @@
       .replace(/\s+/g, " ");
   }
 
-  function normApp(v) {
-    return String(v || "").trim().toLowerCase();
-  }
-
-  // ✅ status/db_status önce, state sonra
-  function getStatusText(item) {
-    const primary = norm(item?.status || item?.db_status);
-    const secondary = norm(item?.state);
-    return primary || secondary || "";
-  }
-
-  function looksLikeLegacyBrokenR2(url) {
-    // şimdilik kapalı
-    return false;
+  function isVideoApp(x) {
+    // accept only "video" (strict)
+    return norm(x) === "video";
   }
 
   function toMaybeProxyUrl(url) {
@@ -70,7 +61,7 @@
   }
 
   /* =======================
-     Outputs URL picking (CRITICAL)
+     Outputs URL picking
      ======================= */
 
   function pickVideoUrlFromOutputs(outputs) {
@@ -100,18 +91,14 @@
     return any ? pickUrl(any) : "";
   }
 
-  // ✅ unified "best url" extractor (top-level + outputs fallback)
   function pickBestUrl(it) {
     if (!it) return "";
     const a = String(it.archive_url || it.archiveUrl || "").trim();
     if (a) return a;
     const u = String(it.url || it.video_url || it.videoUrl || "").trim();
     if (u) return u;
-
-    const outs = it.outputs;
-    const uo = pickVideoUrlFromOutputs(outs);
+    const uo = pickVideoUrlFromOutputs(it.outputs);
     if (uo) return uo;
-
     return "";
   }
 
@@ -122,14 +109,11 @@
   }
 
   function bestShareUrl(it) {
-    // share/download should prefer public-ish url; still ok to return archive_url first
     return String(pickBestUrl(it) || "").trim();
   }
 
-  // ✅ output var mı?
   function hasOutput(item) {
     if (String(item?.playbackUrl || "").trim()) return true;
-
     if (String(item?.archive_url || item?.archiveUrl || "").trim()) return true;
     if (String(item?.url || item?.video_url || item?.videoUrl || "").trim()) return true;
 
@@ -153,8 +137,13 @@
         return (t === "video" || t === "") && !!u;
       });
     }
-
     return false;
+  }
+
+  function getStatusText(item) {
+    const primary = norm(item?.status || item?.db_status);
+    const secondary = norm(item?.state);
+    return primary || secondary || "";
   }
 
   function isReady(item) {
@@ -217,7 +206,7 @@
   }
 
   /* =======================
-     Storage (load / migrate / save)
+     Storage
      ======================= */
 
   function safeParse(json) {
@@ -230,32 +219,29 @@
     for (const it0 of (items || [])) {
       const it = it0 || {};
 
-      // ✅ HARD FILTER: If app is known and not video, SKIP
-      const app0 = normApp(it?.meta?.app || it?.app || it0?.meta?.app || it0?.app || "");
-      if (app0 && app0 !== "video") continue;
+      // STRICT: keep only video app items
+      const appGuess =
+        it?.meta?.app ||
+        it?.app ||
+        it0?.meta?.app ||
+        it0?.app ||
+        "";
+      if (!isVideoApp(appGuess)) continue;
 
       const id = String(it.id || it.job_id || uid());
       const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
 
-      // ✅ if top-level missing, derive from outputs
       const outs0 = Array.isArray(it.outputs) ? it.outputs : (Array.isArray(it0?.outputs) ? it0.outputs : []);
       const fromOut = pickVideoUrlFromOutputs(outs0);
 
       const url = String(it.url || it.video_url || it.videoUrl || fromOut || "").trim();
       const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || it.meta?.archiveUrl || "").trim();
 
-      const legacyBroken = looksLikeLegacyBrokenR2(archive_url || url);
-      const readyByOutput = !!(!legacyBroken && (archive_url || url));
-
-      const status =
-        legacyBroken ? "İşleniyor" :
-        (readyByOutput ? "Hazır" : (it.status || it.state || it.db_status || "İşleniyor"));
+      const readyByOutput = !!(archive_url || url);
+      const status = readyByOutput ? "Hazır" : (it.status || it.state || it.db_status || "İşleniyor");
 
       const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
-
-      const pb = (!legacyBroken && (archive_url || url || fromOut))
-        ? getPlaybackUrl({ ...it, archive_url, url, outputs: outs0 })
-        : "";
+      const pb = (archive_url || url) ? getPlaybackUrl({ ...it, archive_url, url, outputs: outs0 }) : "";
 
       out.push({
         id,
@@ -270,12 +256,12 @@
           ...(it.meta || {}),
           mode: it.meta?.mode || it.mode || it.kind || "",
           prompt: it.meta?.prompt || it.prompt || it.text || "",
-          // ✅ DO NOT default to "video" if unknown; keep empty so it doesn't poison other panels
-          app: it.meta?.app || it.app || "",
+          app: "video",
         },
         outputs: outs0,
         state: it.state,
         db_status: it.db_status,
+        app: "video",
       });
     }
 
@@ -308,17 +294,26 @@
   }
 
   /* =======================
-     DB hydrate (/api/jobs/list?app=video)
+     DB hydrate
      ======================= */
+
+  function extractListItems(j) {
+    if (!j) return [];
+    if (Array.isArray(j.items)) return j.items;
+    if (Array.isArray(j.jobs)) return j.jobs;
+    if (Array.isArray(j.rows)) return j.rows;
+    if (Array.isArray(j.data)) return j.data;
+    if (Array.isArray(j.results)) return j.results;
+    return [];
+  }
 
   function mapDbItemToPanelItem(r) {
     const job_id = String(r?.job_id || r?.id || "").trim();
     const meta = r?.meta || {};
     const outputs = Array.isArray(r?.outputs) ? r.outputs : [];
 
-    // ✅ HARD FILTER: accept ONLY app=video rows
-    const metaApp = normApp(meta?.app || r?.app || "");
-    if (metaApp && metaApp !== "video") return null;
+    const appGuess = String(r?.app || meta?.app || "").trim();
+    if (!isVideoApp(appGuess)) return null; // STRICT
 
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
@@ -334,7 +329,6 @@
         ""
       ).trim();
 
-    // ✅ if output exists, it MUST be used
     const url = String(urlFromOutputs || r?.video?.url || r?.video_url || providerUrl || "").trim();
 
     const title =
@@ -350,20 +344,18 @@
       status: "İşleniyor",
       url: url || "",
       archive_url: archive_url || "",
-      createdAt: (r?.created_at ? new Date(r.created_at).getTime() : (r?.createdAt ? new Date(r.createdAt).getTime() : Date.now())),
+      createdAt: (r?.created_at ? new Date(r.created_at).getTime() : Date.now()),
       meta: {
         ...(meta || {}),
         mode: meta?.mode || "",
         prompt: meta?.prompt || r?.prompt || "",
-        app: metaApp || "video",
+        app: "video",
       },
       outputs,
       state: r?.state,
       db_status: r?.db_status,
+      app: "video",
     };
-
-    const legacyBroken = looksLikeLegacyBrokenR2(item.archive_url || item.url);
-    const hasOut = !legacyBroken && hasOutput(item);
 
     const rawState = String(r?.state || "").toUpperCase();
     const rawDbStatus = norm(r?.db_status);
@@ -377,20 +369,12 @@
       rawStatus === "error" ||
       rawStatus === "failed";
 
-    if (legacyBroken) {
-      item.status = "İşleniyor";
-    } else if (isFailed) {
-      item.status = "Hata";
-    } else if (hasOut) {
-      item.status = "Hazır";
-    } else {
-      if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
-      else if (rawState === "RUNNING" || rawState === "PROCESSING" || rawState === "PENDING") item.status = "İşleniyor";
-      else item.status = "İşleniyor";
-    }
+    if (isFailed) item.status = "Hata";
+    else if (hasOutput(item)) item.status = "Hazır";
+    else if (rawState === "COMPLETED" || rawState === "DONE" || rawState === "READY") item.status = "Hazır";
+    else item.status = "İşleniyor";
 
-    const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
-    item.playbackUrl = pb || "";
+    item.playbackUrl = getPlaybackUrl(item) || "";
 
     return item;
   }
@@ -400,7 +384,8 @@
 
     for (const it of (existing || [])) {
       const key = String(it.job_id || it.id || "");
-      map.set(key || uid(), it);
+      if (!key) continue;
+      map.set(key, it);
     }
 
     for (const it of (incoming || [])) {
@@ -421,23 +406,13 @@
         meta: { ...(prev.meta || {}), ...(it.meta || {}) },
         outputs: Array.isArray(it.outputs) && it.outputs.length ? it.outputs : (prev.outputs || []),
         playbackUrl: String(it.playbackUrl || prev.playbackUrl || "").trim() || getPlaybackUrl(it) || getPlaybackUrl(prev) || "",
+        app: "video",
       });
     }
 
     const arr = Array.from(map.values());
     arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
     return arr.slice(0, MAX_ITEMS);
-  }
-
-  function extractListItems(j) {
-    if (!j) return [];
-    if (Array.isArray(j.items)) return j.items;
-    if (Array.isArray(j.jobs)) return j.jobs;
-    if (Array.isArray(j.rows)) return j.rows;
-    if (Array.isArray(j.data)) return j.data;
-    if (Array.isArray(j.results)) return j.results;
-    if (Array.isArray(j.items?.rows)) return j.items.rows;
-    return [];
   }
 
   async function hydrateFromDB(host) {
@@ -459,7 +434,7 @@
 
       const incoming = (rows || [])
         .map(mapDbItemToPanelItem)
-        .filter((x) => x && (x.job_id || x.id));
+        .filter(Boolean);
 
       state.items = mergeByJobId(state.items, incoming);
 
@@ -480,11 +455,8 @@
     if (!j) return "";
     const u1 = j?.video?.url;
     if (u1) return String(u1).trim();
-
-    const outs = j?.outputs;
-    const uo = pickVideoUrlFromOutputs(outs);
+    const uo = pickVideoUrlFromOutputs(j?.outputs);
     if (uo) return String(uo).trim();
-
     return "";
   }
 
@@ -505,6 +477,11 @@
 
       const j = await r.json().catch(() => null);
       if (!r.ok || !j || !j.ok) return null;
+
+      // STRICT: status payload might include meta.app; ignore if not video
+      const appGuess = String(j?.app || j?.meta?.app || "").trim();
+      if (appGuess && !isVideoApp(appGuess)) return null;
+
       return j;
     } catch {
       return null;
@@ -544,51 +521,17 @@
 
       if (ready || hasUrl) {
         if (hasUrl) it.url = url;
-
         if (Array.isArray(s.outputs)) it.outputs = s.outputs;
 
         it.db_status = s.db_status || it.db_status;
         it.state = s.state || it.state;
         it.status = "Hazır";
-
-        const legacyBroken = looksLikeLegacyBrokenR2(it.archive_url || it.url);
-        const pb = (!legacyBroken) ? getPlaybackUrl(it) : "";
-        it.playbackUrl = pb || "";
+        it.playbackUrl = getPlaybackUrl(it) || "";
 
         saveItems();
         render(host);
       }
     }
-  }
-
-  /* =======================
-     Fullscreen helper
-     ======================= */
-
-  function goFullscreen(card) {
-    const video = card?.querySelector("video");
-    if (!video) return;
-
-    try {
-      if (video.requestFullscreen) {
-        video.requestFullscreen().catch?.(() => {});
-        return;
-      }
-    } catch {}
-
-    try {
-      if (video.webkitEnterFullscreen) {
-        video.webkitEnterFullscreen();
-        return;
-      }
-    } catch {}
-
-    try {
-      if (card.requestFullscreen) {
-        card.requestFullscreen().catch?.(() => {});
-        return;
-      }
-    } catch {}
   }
 
   /* =======================
@@ -611,7 +554,6 @@
   function renderThumb(it) {
     const badge = normalizeBadge(it);
 
-    // ✅ If ready but playbackUrl missing, try compute from outputs on the fly
     if (!it.playbackUrl) {
       const pb2 = getPlaybackUrl(it);
       if (pb2) it.playbackUrl = pb2;
@@ -718,6 +660,32 @@
     }
   }
 
+  function goFullscreen(card) {
+    const video = card?.querySelector("video");
+    if (!video) return;
+
+    try {
+      if (video.requestFullscreen) {
+        video.requestFullscreen().catch?.(() => {});
+        return;
+      }
+    } catch {}
+
+    try {
+      if (video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+        return;
+      }
+    } catch {}
+
+    try {
+      if (card.requestFullscreen) {
+        card.requestFullscreen().catch?.(() => {});
+        return;
+      }
+    } catch {}
+  }
+
   function attachEvents(host) {
     const grid = findGrid(host);
     if (!grid) return () => {};
@@ -782,7 +750,7 @@
   }
 
   /* =======================
-     PPE bridge (CRITICAL: only accept app=video)
+     PPE bridge (STRICT)
      ======================= */
 
   function attachPPE(host) {
@@ -797,16 +765,15 @@
 
       if (!out || String(out.type || "").toLowerCase() !== "video") return;
 
-      const outApp = normApp(
-        out?.meta?.app ||
-        job?.app ||
-        job?.meta?.app ||
-        job?.meta_app ||
-        ""
-      );
-
-      // ✅ HARD FILTER: video panel accepts ONLY video app outputs
-      if (outApp && outApp !== "video") return;
+      // STRICT: accept only meta.app === "video" OR job.app === "video"
+      const outApp = String(out?.meta?.app || "").trim();
+      const jobApp = String(job?.app || job?.meta?.app || "").trim();
+      if ((outApp && !isVideoApp(outApp)) || (jobApp && !isVideoApp(jobApp))) {
+        // if either explicitly says non-video, ignore
+        return;
+      }
+      // if both missing, also ignore (prevents accidental leaks)
+      if (!isVideoApp(outApp) && !isVideoApp(jobApp)) return;
 
       const url = String(out.url || "").trim();
       const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || out.meta?.archiveUrl || "").trim();
@@ -837,37 +804,33 @@
         out?.meta?.text ||
         (target?.title || "Video");
 
-      const nextUrl = archive_url || url;
-      const legacyBroken = looksLikeLegacyBrokenR2(nextUrl);
-
       if (target) {
         if (url) target.url = url;
         if (archive_url) target.archive_url = archive_url;
 
-        target.status = legacyBroken ? "İşleniyor" : "Hazır";
+        target.status = "Hazır";
         target.title = title;
 
         if (!target.job_id && jid) target.job_id = jid;
         if (!target.id && jid) target.id = jid;
 
-        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: outApp || "video" };
-
-        const pb = (!legacyBroken) ? getPlaybackUrl(target) : "";
-        target.playbackUrl = pb || "";
+        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
+        target.app = "video";
+        target.playbackUrl = getPlaybackUrl(target) || "";
       } else {
         const item = {
           id: jid || uid(),
           job_id: jid || "",
           url: url || "",
           archive_url: archive_url || "",
-          status: legacyBroken ? "İşleniyor" : "Hazır",
+          status: "Hazır",
           title,
           createdAt: Date.now(),
-          meta: { ...(out.meta || {}), app: outApp || "video" },
+          meta: { ...(out.meta || {}), app: "video" },
           outputs: [],
+          app: "video",
         };
-        const pb = (!legacyBroken) ? getPlaybackUrl(item) : "";
-        item.playbackUrl = pb || "";
+        item.playbackUrl = getPlaybackUrl(item) || "";
         state.items.unshift(item);
       }
 
@@ -882,13 +845,13 @@
   }
 
   /* =======================
-     Job created bridge (accept only app=video)
+     Job created bridge (video only)
      ======================= */
 
   function attachJobCreated(host) {
     const onJob = (e) => {
       const d = e?.detail || {};
-      if (normApp(d.app) !== "video" || !d.job_id) return;
+      if (!isVideoApp(d.app) || !d.job_id) return;
 
       const job_id = String(d.job_id);
       const exists = state.items.some(x => String(x.job_id || "") === job_id || String(x.id || "") === job_id);
@@ -916,6 +879,7 @@
         outputs: [],
         state: "PENDING",
         db_status: "pending",
+        app: "video",
       });
 
       saveItems();
@@ -946,7 +910,7 @@
         </div>
       `;
 
-      // 1) instant UI from LS (but sanitized to accept only video app)
+      // 1) instant UI from LS
       state.items = loadItems();
       render(host);
 
