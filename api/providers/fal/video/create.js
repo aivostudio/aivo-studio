@@ -1,13 +1,25 @@
+// /pages/api/providers/fal/video/create.js
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    // Süper Mod default: 8 sn
-    const { prompt, duration = 8, aspect_ratio = "9:16" } = req.body || {};
+    const {
+      prompt,
+      duration = 5,
+      aspect_ratio = "9:16",
+      // Kling v3 Pro defaults:
+      generate_audio = true,
+      shot_type = "customize",
+      negative_prompt = "blur, distort, and low quality",
+      cfg_scale = 0.5,
+      // optional advanced:
+      multi_prompt = null,
+      voice_ids = null,
+    } = req.body || {};
 
-    if (!prompt) {
+    if (!prompt && !multi_prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
@@ -15,13 +27,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    // ✅ Kling 3.0 PRO Text-to-Video (Süper Mod)
-    const falUrl =
-      "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
+    // ✅ Kling v3 Pro Text-to-Video (queue submit)
+    // Docs endpoint id: "fal-ai/kling-video/v3/pro/text-to-video"
+    const falUrl = "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
 
-    // ✅ Timeout (queue create hızlı olmalı)
+    // ✅ Timeout (queue submit hızlı olmalı)
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30000); // 30 saniye
+    const t = setTimeout(() => ctrl.abort(), 30000); // 30s
 
     let r;
     try {
@@ -32,10 +44,15 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prompt,
+          // Kling v3: prompt OR multi_prompt
+          ...(multi_prompt ? { multi_prompt } : { prompt }),
           duration,
           aspect_ratio,
-          generate_audio: true, // ✅ Süper Mod default WOW
+          generate_audio,
+          shot_type,
+          negative_prompt,
+          cfg_scale,
+          ...(Array.isArray(voice_ids) ? { voice_ids } : {}),
         }),
         signal: ctrl.signal,
       });
@@ -51,7 +68,6 @@ export default async function handler(req, res) {
 
     clearTimeout(t);
 
-    // fal bazen JSON dönmezse diye güvenli parse
     const text = await r.text();
     let data = null;
     try {
@@ -70,25 +86,16 @@ export default async function handler(req, res) {
       });
     }
 
-    // Queue response'tan request_id yakala
+    // Queue response’tan request_id yakala
     const request_id =
       data?.request_id || data?.requestId || data?.id || data?._id || null;
-
-    if (!request_id) {
-      return res.status(500).json({
-        ok: false,
-        provider: "fal",
-        error: "missing_request_id",
-        fal_response: data,
-      });
-    }
 
     return res.status(200).json({
       ok: true,
       provider: "fal",
       model: "fal-ai/kling-video/v3/pro/text-to-video",
       request_id,
-      status: data?.status || "queued",
+      status: data?.status || "IN_QUEUE",
       raw: data,
     });
   } catch (err) {
