@@ -48,7 +48,6 @@
 
   function bestVideoFromJob(job) {
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-    // prefer archive_url normalized by DBJobs
     const vid = outs.find((o) => (o?.type || "").toLowerCase() === "video") || outs[0];
     return vid?.archive_url || vid?.url || vid?.raw_url || "";
   }
@@ -63,7 +62,6 @@
         .toLowerCase()
         .trim();
 
-    // atmo çıktısı ya meta.app=atmo olur ya da boş gelir; boş gelene izin veriyoruz
     if (!app) return true;
     return app.includes("atmo");
   }
@@ -72,7 +70,6 @@
     let destroyed = false;
     let timer = null;
 
-    // panel state
     const state = {
       items: [],
       q: "",
@@ -81,22 +78,9 @@
       selectedTitle: "",
     };
 
-    // --- UI (CSS: /css/mod.atmo.panel.css) ---
+    // ✅ PANEL HEADER YOK — sadece içerik (manager header tek kaynak)
     host.innerHTML = `
-      <div class="atmoPanel">
-
-        <div class="atmoPanelHeader">
-          <div class="atmoPanelTitleRow">
-            <div class="atmoPanelTitle">Atmosfer Video</div>
-            <div class="atmoPanelStatus" data-el="status">Hazır</div>
-          </div>
-
-          <input
-            class="atmoPanelSearch"
-            data-el="search"
-            placeholder="Videolarda ara..."
-          />
-        </div>
+      <div class="atmoPanel atmoPanel--noHeader">
 
         <div class="atmoPlayerCard">
 
@@ -105,10 +89,8 @@
           </div>
 
           <div class="atmoPlayerViewport" data-el="viewport">
-            <!-- VIDEO MOUNT (boşken DOM’da video YOK) -->
             <div class="atmoPlayerMount" data-el="playerMount"></div>
 
-            <!-- PLACEHOLDER / POSTER -->
             <div class="atmoPoster is-empty" data-el="poster">
               <div class="atmoPosterInner">
                 <div class="atmoPosterPlay" data-el="posterPlay" title="Oynat">▶</div>
@@ -130,8 +112,10 @@
       </div>
     `;
 
-    const $status = host.querySelector('[data-el="status"]');
-    const $search = host.querySelector('[data-el="search"]');
+    // ❌ panel içi status/search yok
+    const $status = null;
+    const $search = null;
+
     const $hint = host.querySelector('[data-el="hint"]');
     const $subhint = host.querySelector('[data-el="subhint"]');
     const $grid = host.querySelector('[data-el="grid"]');
@@ -141,7 +125,16 @@
     const $posterPlay = host.querySelector('[data-el="posterPlay"]');
     const $empty = host.querySelector('[data-el="empty"]');
 
-    const setStatus = (t) => { if ($status) $status.textContent = t; };
+    // ✅ status artık manager meta'da (istersek setHeader ile güncelleriz)
+    const setStatus = (t) => {
+      try {
+        if (window.RightPanel && typeof window.RightPanel.setHeader === "function") {
+          window.RightPanel.setHeader({ meta: String(t || "") });
+        }
+      } catch {}
+      // panel içinde status yok
+      if ($status) $status.textContent = t;
+    };
 
     function teardownPlayer() {
       if (!$playerMount) return;
@@ -163,19 +156,16 @@
     function ensurePlayer(url) {
       if (!$playerMount) return null;
 
-      // her seferinde sıfırdan kurmak Safari/iOS için daha stabil
       teardownPlayer();
 
       const v = document.createElement("video");
       v.className = "atmoPlayer";
       v.playsInline = true;
       v.preload = "metadata";
-      v.controls = true; // URL geldikten sonra aç
+      v.controls = true;
       v.setAttribute("playsinline", "");
       v.setAttribute("preload", "metadata");
       v.setAttribute("controls", "");
-
-      // src set
       v.src = url;
 
       $playerMount.appendChild(v);
@@ -201,7 +191,6 @@
       if ($empty) $empty.textContent = "";
       showPoster(false);
 
-      // aynı url zaten seçiliyse player’ı tekrar kurma (göz kırpma önle)
       const current = getPlayerEl();
       const currentSrc = current ? safeStr(current.currentSrc || current.src) : "";
       if (current && currentSrc && currentSrc === url) return;
@@ -209,18 +198,15 @@
       ensurePlayer(url);
     }
 
-    // Poster click -> mevcut seçili varsa play/pause
     if ($posterPlay) {
       $posterPlay.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!state.selectedUrl) return;
+
         const v = getPlayerEl();
         if (v) {
-          try {
-            if (v.paused) v.play?.();
-            else v.pause?.();
-          } catch {}
+          try { v.paused ? v.play?.() : v.pause?.(); } catch {}
         } else {
           setMain(state.selectedUrl, { job_id: state.selectedJobId, title: state.selectedTitle });
           const v2 = getPlayerEl();
@@ -238,7 +224,6 @@
     }
 
     function cardTitle(job) {
-      // küçük, net: "Atmosfer • dd.mm.yyyy hh:mm"
       const ts = formatTs(job?.created_at || job?.updated_at);
       return ts ? `Atmosfer • ${ts}` : "Atmosfer";
     }
@@ -248,7 +233,6 @@
 
       const items = (state.items || []).filter(isMatch);
 
-      // hints
       if ($subhint) $subhint.textContent = items.length ? "" : "Henüz atmo üretim yok.";
       if ($hint) $hint.style.display = items.length ? "block" : "none";
 
@@ -256,7 +240,6 @@
 
       if (!items.length) {
         $grid.innerHTML = "";
-        // seçili varsa koru; yoksa poster kalsın
         setMain(state.selectedUrl);
         return;
       }
@@ -299,7 +282,6 @@
 
       $grid.innerHTML = html;
 
-      // click binding (delegate)
       $grid.onclick = async (e) => {
         const card = e.target.closest(".atmoCard");
         if (!card) return;
@@ -330,60 +312,42 @@
           }
           if (act === "delete") {
             if (!jobId) return;
-            // optimistik kaldır; backend varsa DBJobs.deleteJob halleder
             if (db) await db.deleteJob(jobId);
             else {
               state.items = (state.items || []).filter((x) => x.job_id !== jobId);
               render();
             }
-            // seçili silindiyse player’ı kapat
             if (state.selectedJobId === jobId) setMain("");
             return;
           }
         }
 
-        // normal click -> select
         if (url) setMain(url, { job_id: jobId, title: "Atmosfer" });
-
-        // kullanıcı nereden basarsa bassın, hero hazır olsun
-        // (autoplay yok; poster play ile başlatır)
       };
     }
 
-    // search
-    if ($search) {
-      $search.addEventListener("input", () => {
-        state.q = safeStr($search.value);
-        render();
-      });
-    }
+    // --- DB controller (single source of truth) ---
+    const db = (window.DBJobs && typeof window.DBJobs.create === "function")
+      ? window.DBJobs.create({
+          app: APP_KEY,
+          debug: false,
+          pollIntervalMs: 4000,
+          hydrateEveryMs: 15000,
+          acceptOutput: acceptAtmoOutput,
+          onChange(items) {
+            state.items = items || [];
+            render();
 
-  // --- DB controller (single source of truth) ---
-const db = (window.DBJobs && typeof window.DBJobs.create === "function")
-  ? window.DBJobs.create({
-      app: APP_KEY,
-      debug: false,
-      pollIntervalMs: 4000,
-      hydrateEveryMs: 15000,
-      acceptOutput: acceptAtmoOutput,
-      onChange(items) {
-        state.items = items || [];
-        render();
-
-        // ✅ seçili yoksa: ilk bulunan videoyu otomatik seç
-        if (!state.selectedUrl) {
-          const first = (state.items || []).find((j) => bestVideoFromJob(j));
-          const url = first ? bestVideoFromJob(first) : "";
-          if (url) {
-            setMain(url, { job_id: first.job_id || "", title: "Atmosfer" });
+            if (!state.selectedUrl) {
+              const first = (state.items || []).find((j) => bestVideoFromJob(j));
+              const url = first ? bestVideoFromJob(first) : "";
+              if (url) setMain(url, { job_id: first.job_id || "", title: "Atmosfer" });
+            }
           }
-        }
-      }
-    })
-  : null;
+        })
+      : null;
 
-if (db) db.start();
-
+    if (db) db.start();
 
     // --- AIVO_JOBS.upsert hook (anlık job yakalama; DB gelene kadar) ---
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
@@ -407,11 +371,9 @@ if (db) db.start();
 
           if (!key.includes("atmo")) return;
 
-          // DB gelene kadar "processing" hissi
           setStatus("İşleniyor…");
           if ($subhint) $subhint.textContent = "Üretim devam ediyor…";
 
-          // fal request id ile status poll (legacy bridge)
           const rid =
             safeStr(job.request_id) ||
             safeStr(job.requestId) ||
@@ -420,7 +382,6 @@ if (db) db.start();
 
           if (!rid || rid === "TEST") return;
 
-          // minimal: tek current status poll
           if (timer) clearInterval(timer);
           timer = setInterval(() => pollFalOnce(rid), 2000);
           pollFalOnce(rid);
@@ -460,10 +421,8 @@ if (db) db.start();
         setStatus("Tamamlandı");
         if ($subhint) $subhint.textContent = "";
 
-        // main player’a yükle (admin için net)
         setMain(url, { title: "Atmosfer", job_id: "" });
 
-        // PPE bridge
         try {
           if (window.PPE && typeof window.PPE.apply === "function") {
             window.PPE.apply({
@@ -473,10 +432,8 @@ if (db) db.start();
           }
         } catch {}
 
-        // DB hydrate ile listeyi de güncelle
         try { db && db.hydrate(true); } catch {}
 
-        // stop polling
         if (timer) clearInterval(timer);
         timer = null;
         return;
@@ -485,7 +442,6 @@ if (db) db.start();
       setStatus("İşleniyor…");
     }
 
-    // initial
     setStatus("Hazır");
     setMain("");
 
@@ -501,23 +457,22 @@ if (db) db.start();
     return { destroy };
   }
 
- window.RightPanel.register(APP_KEY, {
-  header: {
-    title: "Atmosfer Video",
-    meta: "Hazır",
-    searchEnabled: false,     // ✅ manager search'ü kapatır (atmo / Ara... gider)
-    resetSearch: true
-  },
+  window.RightPanel.register(APP_KEY, {
+    header: {
+      title: "Atmosfer Video",
+      meta: "Hazır",
+      searchEnabled: false,   // ✅ üstteki "Ara..." kalkar
+      resetSearch: true
+    },
 
-  mount(host) {
-    const panel = createAtmosPanel(host);
-    host.__ATMO_PANEL__ = panel;
-  },
+    mount(host) {
+      const panel = createAtmosPanel(host);
+      host.__ATMO_PANEL__ = panel;
+    },
 
-  destroy(host) {
-    try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
-    host.__ATMO_PANEL__ = null;
-  },
-});
-
+    destroy(host) {
+      try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
+      host.__ATMO_PANEL__ = null;
+    },
+  });
 })();
