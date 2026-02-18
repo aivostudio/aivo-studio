@@ -358,22 +358,32 @@
       });
     }
 
-    // --- DB controller (single source of truth) ---
-    const db = (window.DBJobs && typeof window.DBJobs.create === "function")
-      ? window.DBJobs.create({
-          app: APP_KEY,
-          debug: false,
-          pollIntervalMs: 4000,
-          hydrateEveryMs: 15000,
-          acceptOutput: acceptAtmoOutput,
-          onChange(items) {
-            state.items = items || [];
-            render();
-          }
-        })
-      : null;
+  // --- DB controller (single source of truth) ---
+const db = (window.DBJobs && typeof window.DBJobs.create === "function")
+  ? window.DBJobs.create({
+      app: APP_KEY,
+      debug: false,
+      pollIntervalMs: 4000,
+      hydrateEveryMs: 15000,
+      acceptOutput: acceptAtmoOutput,
+      onChange(items) {
+        state.items = items || [];
+        render();
 
-    if (db) db.start();
+        // ✅ seçili yoksa: ilk bulunan videoyu otomatik seç
+        if (!state.selectedUrl) {
+          const first = (state.items || []).find((j) => bestVideoFromJob(j));
+          const url = first ? bestVideoFromJob(first) : "";
+          if (url) {
+            setMain(url, { job_id: first.job_id || "", title: "Atmosfer" });
+          }
+        }
+      }
+    })
+  : null;
+
+if (db) db.start();
+
 
     // --- AIVO_JOBS.upsert hook (anlık job yakalama; DB gelene kadar) ---
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
