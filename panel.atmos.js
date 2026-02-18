@@ -190,7 +190,8 @@
 
     <div class="atmoHero">
       <div class="atmoHeroInner">
-        <video class="atmoHeroVideo rpAtmoVideo" controls playsinline preload="metadata" style="display:none"></video>
+       <video class="atmoHeroVideo rpAtmoVideo" playsinline preload="metadata" style="display:none"></video>
+
 
         <div class="atmoHeroOverlay rpAtmoOverlay">
           <div class="atmoPlayPill">▶︎ Oynatmak için bir video seç</div>
