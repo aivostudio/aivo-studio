@@ -65,7 +65,14 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     const prompt = body.prompt ? String(body.prompt) : null;
-    const meta = body.meta || null;
+    const metaIn = body.meta || null;
+
+    // ✅ meta'yı güvenli normalize et + atmo kimliğini garanti yaz
+    const metaSafe = {
+      ...(metaIn && typeof metaIn === "object" ? metaIn : {}),
+      app: "atmo",
+      kind: "atmo_video",
+    };
 
     // 🔥 canonical job insert
     const rows = await sql`
@@ -84,11 +91,11 @@ export default async function handler(req, res) {
       values (
         ${email},
         ${user_uuid}::uuid,
-        'video',
+        'atmo',
         'atmo',
         'queued',
         ${prompt},
-        ${meta},
+        ${metaSafe},
         '[]'::jsonb,
         now(),
         now()
@@ -113,4 +120,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
