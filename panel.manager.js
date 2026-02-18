@@ -50,26 +50,25 @@
     catch(e){ console.warn("[RightPanel] error", e); return null; }
   }
 
-  function ensureShell(host){
-    if(shell && shell.isConnected && contentEl) return;
+ function ensureShell(host){
+  if(shell && shell.isConnected && contentEl) return;
 
-    host.innerHTML = `
-      <div class="rpShell" data-rp="1">
-        <div class="rpHeader">
-          <div class="rpHeaderTop">
-            <div class="rpTitle">Panel</div>
-            <div class="rpMeta"></div>
-          </div>
-          <div class="rpHeaderBottom">
-            <input class="rpSearch" type="search" placeholder="Ara..." autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="rpBody">
-          <div class="rpContent"></div>
+  host.innerHTML = `
+    <div class="rpShell" data-rp="1">
+      <div class="rpHeader">
+        <div class="rpHeaderTop">
+          <div class="rpTitle">Panel</div>
+          <div class="rpMeta"></div>
         </div>
       </div>
-    `;
+
+      <div class="rpBody">
+        <div class="rpContent"></div>
+      </div>
+    </div>
+  `;
+}
+
 
     shell    = host.querySelector(".rpShell");
     headerEl = host.querySelector(".rpHeader");
