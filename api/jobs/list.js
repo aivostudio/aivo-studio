@@ -11,14 +11,18 @@ function firstQueryValue(v) {
 }
 
 function normalizeApp(x) {
-  return String(firstQueryValue(x) || "").trim().toLowerCase();
+  return String(firstQueryValue(x) || "")
+    .trim()
+    .toLowerCase();
 }
 
 function mapState(statusRaw) {
   const s = String(statusRaw || "").toLowerCase();
-  if (["completed", "ready", "succeeded"].includes(s)) return "COMPLETED";
+
+  if (["completed", "ready", "succeeded", "done"].includes(s)) return "COMPLETED";
   if (["failed", "error", "canceled", "cancelled"].includes(s)) return "FAILED";
   if (["running", "processing", "in_progress"].includes(s)) return "RUNNING";
+
   return "PENDING";
 }
 
@@ -86,13 +90,18 @@ export default async function handler(req, res) {
 
     const user_uuid = String(userRow[0].id);
 
-    // 🔥 JOBS UUID QUERY
+    // 🔥 BACKWARD COMPAT QUERY
+    // Some old jobs may have only user_id=email
+    // New jobs should always have user_uuid filled
     const rows = await sql`
-      select id, user_uuid, app, status, prompt, meta, outputs, error, created_at, updated_at
+      select id, user_id, user_uuid, app, type, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
       where app = ${app}
         and deleted_at is null
-        and user_uuid = ${user_uuid}::uuid
+        and (
+          user_uuid = ${user_uuid}::uuid
+          OR user_id = ${email}
+        )
       order by created_at desc
       limit 50
     `;
@@ -103,15 +112,18 @@ export default async function handler(req, res) {
       auth: true,
       user_uuid,
       email,
+      count: rows.length,
       items: rows.map((r) => ({
         job_id: r.id,
-        user_uuid: r.user_uuid,
+        user_id: r.user_id || null,
+        user_uuid: r.user_uuid || null,
         app: r.app,
+        type: r.type || r.app || null,
         status: r.status,
         state: mapState(r.status),
         prompt: r.prompt || null,
         meta: r.meta || null,
-        outputs: r.outputs || [],
+        outputs: Array.isArray(r.outputs) ? r.outputs : [],
         error: r.error || null,
         created_at: r.created_at,
         updated_at: r.updated_at,
