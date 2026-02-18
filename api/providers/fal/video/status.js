@@ -1,3 +1,6 @@
+// ===============================================
+// /api/providers/fal/video/status.js  (FIXED)
+// ===============================================
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -13,27 +16,28 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
 
-    // ✅ PRO endpoint — create ile aynı olmalı
-    const ENDPOINT = "fal-ai/kling-video/v3/pro/text-to-video";
+    // Default: Kling v3 PRO Text-to-Video
+    // Not: İstersen query ile override edebilirsin: ?endpoint=fal-ai/kling-video/v3/pro/text-to-video
+    const endpoint =
+      (req.query?.endpoint || "fal-ai/kling-video/v3/pro/text-to-video")
+        .toString()
+        .replace(/^\/+/, ""); // güvenlik
 
-    // 1️⃣ Queue status kontrol
-    const statusUrl = `https://queue.fal.run/${ENDPOINT}/requests/${encodeURIComponent(
-      request_id
-    )}/status`;
+    const base = `https://queue.fal.run/${endpoint}`;
+
+    // ✅ Doğru queue status URL (model bazlı)
+    const statusUrl = `${base}/requests/${encodeURIComponent(request_id)}/status`;
 
     const statusRes = await fetch(statusUrl, {
       method: "GET",
-      headers: {
-        Authorization: `Key ${process.env.FAL_KEY}`,
-      },
+      headers: { Authorization: `Key ${process.env.FAL_KEY}` },
     });
 
     const statusText = await statusRes.text();
-
     let statusData = null;
     try {
       statusData = statusText ? JSON.parse(statusText) : null;
-    } catch (e) {
+    } catch (_) {
       statusData = { _non_json: statusText };
     }
 
@@ -43,61 +47,55 @@ export default async function handler(req, res) {
         provider: "fal",
         error: "fal_status_error",
         fal_status: statusRes.status,
+        endpoint,
         fal_response: statusData,
       });
     }
 
-    const status = statusData?.status || null;
+    const status =
+      statusData?.status ||
+      statusData?.data?.status ||
+      statusData?.request?.status ||
+      null;
 
+    // Completed olunca result'ı çek
     let video_url = null;
-    let responseData = null;
+    let resultData = null;
 
-    // 2️⃣ Eğer tamamlandıysa sonucu çek
     if (status === "COMPLETED") {
-      const responseUrl = `https://queue.fal.run/${ENDPOINT}/requests/${encodeURIComponent(
-        request_id
-      )}`;
+      const resultUrl = `${base}/requests/${encodeURIComponent(request_id)}`;
 
-      const responseRes = await fetch(responseUrl, {
+      const resultRes = await fetch(resultUrl, {
         method: "GET",
-        headers: {
-          Authorization: `Key ${process.env.FAL_KEY}`,
-        },
+        headers: { Authorization: `Key ${process.env.FAL_KEY}` },
       });
 
-      const responseText = await responseRes.text();
-
+      const resultText = await resultRes.text();
       try {
-        responseData = responseText ? JSON.parse(responseText) : null;
-      } catch (e) {
-        responseData = { _non_json: responseText };
+        resultData = resultText ? JSON.parse(resultText) : null;
+      } catch (_) {
+        resultData = { _non_json: resultText };
       }
 
-      if (!responseRes.ok) {
-        return res.status(500).json({
-          ok: false,
-          provider: "fal",
-          error: "fal_result_error",
-          fal_status: responseRes.status,
-          fal_response: responseData,
-        });
-      }
-
-      // ✅ PRO output schema
+      // Fal result şeması genelde: { data: { video: { url } } } veya { video: { url } } varyasyonları
       video_url =
-        responseData?.response?.video?.url ||
-        responseData?.video?.url ||
+        resultData?.data?.video?.url ||
+        resultData?.video?.url ||
+        resultData?.response?.video?.url ||
+        resultData?.response?.output?.video?.url ||
+        resultData?.response?.output?.url ||
         null;
     }
 
     return res.status(200).json({
       ok: true,
       provider: "fal",
+      endpoint,
       request_id,
       status,
       video_url,
       raw_status: statusData,
-      raw_response: responseData,
+      raw_result: resultData,
     });
   } catch (err) {
     return res.status(500).json({
@@ -107,3 +105,40 @@ export default async function handler(req, res) {
     });
   }
 }
+
+// ===============================================
+// CONSOLE TEST (create -> poll status)
+// Not: Create tarafı 403 "Exhausted balance" ise request_id gelmez.
+// ===============================================
+//
+// fetch("/api/providers/fal/video/create?app=atmo", {
+//   method: "POST",
+//   headers: { "Content-Type": "application/json" },
+//   body: JSON.stringify({
+//     prompt: "Snow falling outside a cozy old cafe at night, warm neon lights inside, cinematic.",
+//     duration: 8,
+//     aspect_ratio: "9:16",
+//   }),
+// })
+//   .then((r) => r.json())
+//   .then((j) => {
+//     console.log("CREATE:", j);
+//     const rid = j.request_id;
+//     if (!rid) throw new Error("missing request_id from create (check fal balance / 403)");
+
+//     const tick = async () => {
+//       const s = await fetch(
+//         `/api/providers/fal/video/status?app=atmo&request_id=${encodeURIComponent(rid)}`
+//       ).then((r) => r.json());
+
+//       console.log("STATUS:", s.status, s.video_url || "");
+
+//       if (s.status === "COMPLETED") return console.log("DONE URL:", s.video_url);
+//       if (s.status === "FAILED" || s.status === "CANCELLED") return console.log("FAILED:", s);
+
+//       setTimeout(tick, 5000);
+//     };
+
+//     tick();
+//   })
+//   .catch((e) => console.error("TEST ERROR:", e));
