@@ -638,6 +638,12 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
-section.main-panel[data-module="atmo"] {
-  padding-bottom: 32px;
+section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
+  box-sizing: border-box;
+  height: 56px !important;
+  padding: 0 20px !important;   /* kritik: 18px dikey padding’i öldürüyoruz */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
