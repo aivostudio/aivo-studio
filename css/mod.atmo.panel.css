@@ -1,5 +1,231 @@
-/* ATMO Player: devasa olmasın */
-.atmoPlayerBox:before{ padding-top: 42% !important; }      /* 16:9 yerine daha kısa */
-.atmoPlayerBox{ max-height: 220px; }                        /* paneli şişirme */
-.atmoPlayerVideo{ object-fit: contain; }                    /* letterbox güvenli */
-.atmoPlayerHint{ padding: 8px 10px !important; }            /* biraz sıkı */
+/* /css/mod.atmo.panel.css */
+
+.atmoPanel{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.atmoPanelHeader{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:10px 10px 0;
+}
+
+.atmoPanelTitleRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.atmoPanelTitle{
+  font-weight:700;
+  font-size:14px;
+  opacity:.95;
+}
+
+.atmoPanelStatus{
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.atmoPanelSearch{
+  width:100%;
+  height:36px;
+  border-radius:12px;
+  padding:0 12px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  outline:none;
+}
+.atmoPanelSearch::placeholder{ color:rgba(255,255,255,.45); }
+
+/* HERO CARD */
+.atmoPlayerCard{
+  padding:10px;
+  border-radius:16px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.atmoPlayerHint{
+  font-size:12px;
+  opacity:.7;
+  margin-bottom:8px;
+}
+
+/* viewport clamp: asla paneli şişirmesin */
+.atmoPlayerViewport{
+  position:relative;
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.08);
+
+  /* kritik: sabit ratio + max-height */
+  aspect-ratio: 16 / 9;
+  max-height: 220px;
+  width: 100%;
+  display:block;
+}
+
+/* video mount fills the viewport */
+.atmoPlayerMount,
+.atmoPlayerMount video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+/* atmo için contain daha güvenli (letterbox) */
+.atmoPlayer{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:rgba(0,0,0,.55);
+}
+
+/* poster overlay */
+.atmoPoster{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.15));
+}
+
+.atmoPosterInner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  text-align:center;
+  padding:14px;
+}
+
+.atmoPosterPlay{
+  width:56px;
+  height:56px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  font-size:18px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  cursor:pointer;
+}
+
+.atmoPosterText{
+  font-size:12px;
+  color:rgba(255,255,255,.78);
+}
+
+/* grid */
+.atmoGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  padding:0 10px 10px;
+}
+
+/* cards */
+.atmoCard{
+  border-radius:16px;
+  overflow:hidden;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;
+}
+
+.atmoCard.is-active{
+  border-color: rgba(180,120,255,.55);
+  box-shadow: 0 0 0 2px rgba(180,120,255,.15) inset;
+}
+
+.atmoCardMedia{
+  position:relative;
+  height:86px;
+  background:rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.atmoBadge{
+  position:absolute;
+  top:8px;
+  left:8px;
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.atmoPlayBtn{
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+}
+
+.atmoCardBody{
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.atmoCardTitle{
+  font-size:12px;
+  font-weight:700;
+  opacity:.9;
+}
+
+.atmoCardPrompt{
+  font-size:11px;
+  opacity:.7;
+  line-height:1.25;
+  max-height:2.6em;
+  overflow:hidden;
+}
+
+.atmoCardActions{
+  display:flex;
+  gap:8px;
+}
+
+.atmoIconBtn{
+  width:34px;
+  height:30px;
+  border-radius:10px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.85);
+  cursor:pointer;
+}
+
+.atmoIconBtn:hover{
+  background:rgba(255,255,255,.10);
+}
+
+.atmoDanger{
+  border-color: rgba(255,120,120,.25);
+}
+
+/* mobile */
+@media (max-width: 520px){
+  .atmoGrid{ grid-template-columns: 1fr; }
+  .atmoPlayerViewport{ max-height: 200px; }
+}
