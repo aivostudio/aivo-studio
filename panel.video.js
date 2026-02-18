@@ -534,103 +534,175 @@
     }
   }
 
-  /* =======================
-     Render
-     ======================= */
+/* =======================
+   Render
+   ======================= */
 
-  function renderSkeleton(badge) {
-    return `
-      <div class="vpSkel" aria-label="İşleniyor">
-        <div class="vpBadge">${esc(badge)}</div>
-        <div class="vpSkelShimmer"></div>
-        <div class="vpSkelPlay">
-          <div class="vpSkelPlayRing"></div>
-          <div class="vpSkelPlayTri"></div>
-        </div>
+function renderSkeleton(badge) {
+  return `
+    <div class="vpSkel" aria-label="İşleniyor">
+      <div class="vpBadge">${esc(badge)}</div>
+      <div class="vpSkelShimmer"></div>
+      <div class="vpSkelPlay">
+        <div class="vpSkelPlayRing"></div>
+        <div class="vpSkelPlayTri"></div>
       </div>
-    `;
+    </div>
+  `;
+}
+
+function renderThumb(it) {
+  const badge = normalizeBadge(it);
+
+  if (!it.playbackUrl) {
+    const pb2 = getPlaybackUrl(it);
+    if (pb2) it.playbackUrl = pb2;
   }
 
-  function renderThumb(it) {
-    const badge = normalizeBadge(it);
-
-    if (!it.playbackUrl) {
-      const pb2 = getPlaybackUrl(it);
-      if (pb2) it.playbackUrl = pb2;
-    }
-
-    if (!isReady(it) || !it.playbackUrl) {
-      return `
-        <div class="vpThumb is-loading">
-          ${renderSkeleton(badge)}
-          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-        </div>
-      `;
-    }
-
+  if (!isReady(it) || !it.playbackUrl) {
     return `
-      <div class="vpThumb">
-        <div class="vpBadge">${esc(badge)}</div>
-
-        <video
-          class="vpVideo"
-          preload="metadata"
-          playsinline
-          webkit-playsinline
-          muted
-          controls
-          data-user-gesture="0"
-          src="${esc(it.playbackUrl)}"
-        ></video>
-
-        <div class="vpPlay">
-          <span class="vpPlayIcon">▶</span>
-        </div>
-
+      <div class="vpThumb is-loading">
+        ${renderSkeleton(badge)}
         <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
       </div>
     `;
   }
 
-  function renderMeta(it) {
-    const kind = formatKind(it);
-    const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
-    const ready = isReady(it);
+  return `
+    <div class="vpThumb">
+      <div class="vpBadge">${esc(badge)}</div>
 
-    return `
-      <div class="vpMeta">
-        <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
-        <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+      <video
+        class="vpVideo"
+        preload="metadata"
+        playsinline
+        webkit-playsinline
+        muted
+        controls
+        data-user-gesture="0"
+        src="${esc(it.playbackUrl)}"
+      ></video>
 
-        <div class="vpActions">
-          <button class="vpIconBtn" data-act="download" ${ready ? "" : "disabled"} title="İndir">⬇</button>
-          <button class="vpIconBtn" data-act="share" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
-          <button class="vpIconBtn vpDanger" data-act="delete" title="Sil">🗑</button>
-        </div>
+      <div class="vpPlay">
+        <span class="vpPlayIcon">▶</span>
       </div>
-    `;
+
+      <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+    </div>
+  `;
+}
+
+function renderMeta(it) {
+  const kind = formatKind(it);
+  const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
+  const ready = isReady(it);
+
+  // ✅ id’yi butonlara da basıyoruz (event handler işi kolaylaşsın)
+  return `
+    <div class="vpMeta">
+      <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
+      <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+
+      <div class="vpActions">
+        <button class="vpIconBtn" data-act="download" data-id="${esc(it.id)}" ${ready ? "" : "disabled"} title="İndir">⬇</button>
+        <button class="vpIconBtn" data-act="share" data-id="${esc(it.id)}" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
+        <button class="vpIconBtn vpDanger" data-act="delete" data-id="${esc(it.id)}" title="Sil">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCard(it) {
+  return `
+    <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
+      ${renderThumb(it)}
+      ${renderMeta(it)}
+    </div>
+  `;
+}
+
+function render(host) {
+  const grid = findGrid(host);
+  if (!grid) return;
+
+  if (!state.items.length) {
+    grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
+    return;
   }
 
-  function renderCard(it) {
-    return `
-      <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
-        ${renderThumb(it)}
-        ${renderMeta(it)}
-      </div>
-    `;
-  }
+  grid.innerHTML = state.items.map(renderCard).join("");
+}
 
-  function render(host) {
-    const grid = findGrid(host);
-    if (!grid) return;
+/* =======================
+   Actions (ADD/REPLACE)
+   ======================= */
 
-    if (!state.items.length) {
-      grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
-      return;
+// ✅ Bu handler, “Sil”i backend’e bağlar.
+// Not: Aşağıdaki `db` değişkeni senin panelde DBJobs.create(...) ile oluşturduğun controller olmalı.
+// (ör: const db = DBJobs.create({ app:"video", ... });)
+function bindActions(host) {
+  if (!host || host.__vpActionsBound) return;
+  host.__vpActionsBound = true;
+
+  host.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+
+    const act = btn.dataset.act;
+    const card = btn.closest(".vpCard");
+    const id = (btn.dataset.id || (card && card.dataset.id) || "").trim();
+    if (!id) return;
+
+    // buton tıklaması kart click’ine karışmasın
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      if (act === "delete") {
+        // ✅ DB’den kalıcı sil
+        btn.disabled = true;
+        const ok = await db.deleteJob(id); // <-- burada artık /api/jobs/delete çağrısı olacak
+        if (!ok) {
+          // delete başarısızsa geri hydrate et ki kart geri gelsin
+          try { await db.hydrate(true); } catch {}
+          toast?.error?.("Silinemedi (backend).");
+        }
+        return;
+      }
+
+      if (act === "download") {
+        const it = state.items.find(x => String(x.id) === String(id));
+        const url = it?.playbackUrl || it?.url || getPlaybackUrl(it);
+        if (url) window.open(url, "_blank");
+        return;
+      }
+
+      if (act === "share") {
+        const it = state.items.find(x => String(x.id) === String(id));
+        const url = it?.playbackUrl || it?.url || getPlaybackUrl(it);
+        if (!url) return;
+
+        if (navigator.share) {
+          await navigator.share({ title: "AIVO Video", url });
+        } else {
+          await navigator.clipboard.writeText(url);
+          toast?.success?.("Link kopyalandı.");
+        }
+        return;
+      }
+
+      if (act === "fs") {
+        // mevcut fullscreen davranışın varsa burada bırak / çağır
+        // (bu kısım sende zaten varsa dokunma)
+        return;
+      }
+    } catch (err) {
+      try { await db.hydrate(true); } catch {}
+      toast?.error?.("İşlem sırasında hata oluştu.");
     }
+  });
+}
 
-    grid.innerHTML = state.items.map(renderCard).join("");
-  }
 
   /* =======================
      Actions + events
