@@ -1,4 +1,4 @@
-// /api/providers/fal/video/status.js
+// /pages/api/providers/fal/video/status.js
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -9,40 +9,35 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    const { request_id, endpoint_id, app } = req.query || {};
+    const { request_id, app, endpoint_id } = req.query || {};
     if (!request_id) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
 
-    // Default: Atmosfer Video için "en iyi" olarak Kling v3 PRO Text-to-Video
-    // İstersen çağrıda endpoint_id=... gönderip override edebilirsin.
-    const defaultEndpointId = "fal-ai/kling-video/v3/pro/text-to-video";
+    // ✅ IMPORTANT: Status URL must match the SAME queue endpoint used at create time.
+    // Prefer explicit endpoint_id from query (recommended).
+    // Fallback mapping by app (safe default for atmo = Kling v3 Pro text-to-video).
+    const endpoint =
+      (typeof endpoint_id === "string" && endpoint_id.trim()) ||
+      (app === "atmo"
+        ? "fal-ai/kling-video/v3/pro/text-to-video"
+        : "fal-ai/kling-video/v3/pro/text-to-video");
 
-    // app bazlı default seçmek istersen:
-    // - atmo => pro text-to-video (wow)
-    // - başka yerlerde istersen standard’a düşebilirsin
-    const chosenEndpointId =
-      endpoint_id ||
-      (app === "atmo" ? defaultEndpointId : defaultEndpointId);
+    const base = `https://queue.fal.run/${endpoint}/requests/${encodeURIComponent(
+      request_id
+    )}`;
 
-    const encEndpoint = encodeURIComponent(chosenEndpointId);
-    const encRid = encodeURIComponent(request_id);
-
-    // Queue status endpoint (OpenAPI: /{endpoint_id}/requests/{request_id}/status)
-    const statusUrl = `https://queue.fal.run/${encEndpoint}/requests/${encRid}/status?logs=0`;
-
-    const statusRes = await fetch(statusUrl, {
+    // 1) status
+    const statusRes = await fetch(`${base}/status`, {
       method: "GET",
-      headers: {
-        Authorization: `Key ${process.env.FAL_KEY}`,
-      },
+      headers: { Authorization: `Key ${process.env.FAL_KEY}` },
     });
 
     const statusText = await statusRes.text();
     let statusData = null;
     try {
       statusData = statusText ? JSON.parse(statusText) : null;
-    } catch (e) {
+    } catch {
       statusData = { _non_json: statusText };
     }
 
@@ -52,37 +47,31 @@ export default async function handler(req, res) {
         provider: "fal",
         error: "fal_status_error",
         fal_status: statusRes.status,
-        endpoint_id: chosenEndpointId,
-        request_id,
+        endpoint,
         fal_response: statusData,
       });
     }
 
     const status = statusData?.status || null;
 
-    // COMPLETED olunca sonucu çek
+    // 2) if completed, fetch full response for output url
     let video_url = null;
     let responseData = null;
 
     if (status === "COMPLETED") {
-      // Queue result endpoint (OpenAPI: /{endpoint_id}/requests/{request_id})
-      const responseUrl = `https://queue.fal.run/${encEndpoint}/requests/${encRid}`;
-
-      const responseRes = await fetch(responseUrl, {
+      const responseRes = await fetch(base, {
         method: "GET",
-        headers: {
-          Authorization: `Key ${process.env.FAL_KEY}`,
-        },
+        headers: { Authorization: `Key ${process.env.FAL_KEY}` },
       });
 
       const responseText = await responseRes.text();
       try {
         responseData = responseText ? JSON.parse(responseText) : null;
-      } catch (e) {
+      } catch {
         responseData = { _non_json: responseText };
       }
 
-      // Kling çıktıları farklı şemalarda gelebiliyor: olabildiğince toleranslı al
+      // Kling outputs vary by schema; try common paths
       video_url =
         responseData?.response?.video?.url ||
         responseData?.response?.output?.video?.url ||
@@ -96,7 +85,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       provider: "fal",
-      endpoint_id: chosenEndpointId,
+      endpoint,
       request_id,
       status,
       video_url,
