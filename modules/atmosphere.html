@@ -347,40 +347,7 @@
       </div>
     </div>
 
-   <script>
-  (function () {
-    function bindSuperPromptCounter() {
-      const el = document.getElementById("atmSuperPrompt");
-     const out = document.getElementById("atmSuperPromptCount");
-
-      if (!el || !out) return false;
-
-      // tekrar bağlanmayı engelle
-      if (el.dataset.counterBound === "1") return true;
-      el.dataset.counterBound = "1";
-
-      const update = () => {
-        const n = el.value.length || 0;
-        out.textContent = String(n);
-        out.style.color = (n > 900) ? "#ff6b6b" : "rgba(255,255,255,.7)";
-      };
-
-      update();
-      el.addEventListener("input", update);
-      return true;
-    }
-
-    // hemen dene
-    if (bindSuperPromptCounter()) return;
-
-    // panel sonradan basılıyorsa diye kısa süre retry
-    let tries = 0;
-    const t = setInterval(() => {
-      tries++;
-      if (bindSuperPromptCounter() || tries > 40) clearInterval(t); // ~2 sn
-    }, 50);
-  })();
-</script>
+ 
 
 
     <!-- burada devam ediyorsun: Referans Görsel / Müzik-Jingle vs -->
