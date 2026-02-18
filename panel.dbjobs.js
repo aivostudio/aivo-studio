@@ -5,6 +5,7 @@
   // - poll only PROCESSING jobs: /api/jobs/status?job_id=...
   // - normalize outputs + prefer archive_url
   // - optional delete hook (if endpoint exists)
+  // - STRICT app filtering so VIDEO/ATMO/SOCIAL/HOOK outputs never mix
 
   function safeJsonParse(s){
     try { return JSON.parse(s); } catch(e){ return null; }
@@ -18,6 +19,104 @@
     if(!u) return "";
     return String(u || "").trim();
   }
+
+  function normKey(x){
+    return String(x || "").trim().toLowerCase();
+  }
+
+  // --- APP FILTER STANDARD ----------------------------------------------------
+  // IMPORTANT: Social + Hook can produce video outputs too.
+  // To prevent mixing in Video panel, we enforce:
+  // - Job must match target app (job.app OR job.meta.app)
+  // - Output must match target app if output.meta.app exists
+  // - Optionally restrict output types per panel (video panel only wants type="video", etc.)
+
+  const APP_ALIASES = {
+    // core
+    video: ["video"],
+    atmo: ["atmo", "atmos", "atmosphere", "atmosfer"],
+    cover: ["cover", "kapak"],
+    music: ["music", "müzik"],
+    recording: ["recording", "ses", "voice", "kayıt"],
+    dashboard: ["dashboard"],
+
+    // important: these may ALSO emit video outputs
+    social: ["social", "socialpack", "sm-pack", "smpack", "sm_pack", "sosyal"],
+    hook: ["hook", "viral-hook", "viral_hook", "viralhook"]
+  };
+
+  function resolveAppAliases(appKey){
+    const k = normKey(appKey);
+    const list = APP_ALIASES[k] || [k];
+    // normalize + uniq
+    const set = {};
+    list.forEach(x => { const nx = normKey(x); if(nx) set[nx] = 1; });
+    return Object.keys(set);
+  }
+
+  function pickJobApp(job){
+    if(!job) return "";
+    return normKey(
+      job.app ||
+      job.app_key ||
+      job.appKey ||
+      (job.meta && job.meta.app) ||
+      ""
+    );
+  }
+
+  function pickOutApp(out){
+    if(!out) return "";
+    const m = out.meta;
+    if(m && typeof m === "object" && m.app) return normKey(m.app);
+    return "";
+  }
+
+  function makeAppFilters(appKey, opts){
+    opts = opts || {};
+    const aliases = resolveAppAliases(appKey);
+    const aliasSet = new Set(aliases);
+
+    // If set, a panel can restrict outputs by type(s).
+    // Example:
+    // - Video panel: ["video"]
+    // - Atmo panel:  ["video"] (since outputs are video, but meta.app must be atmo)
+    // - Social panel: ["image","video"] etc (still meta.app keeps them separated)
+    const allowedTypes = Array.isArray(opts.allowedTypes) ? opts.allowedTypes.map(normKey) : null;
+    const allowedTypeSet = allowedTypes ? new Set(allowedTypes) : null;
+
+    function matchesAlias(x){
+      const k = normKey(x);
+      if(!k) return false;
+      return aliasSet.has(k);
+    }
+
+    function acceptJob(job){
+      const jobApp = pickJobApp(job);
+      // If backend list is correct, this will always pass — but we keep it strict to prevent UI mixing.
+      return matchesAlias(jobApp);
+    }
+
+    // Signature: (output, job) => boolean
+    function acceptOutput(out, job){
+      out = out || {};
+      const t = normKey(out.type || (out.meta && out.meta.type) || "unknown");
+      if(allowedTypeSet && !allowedTypeSet.has(t)) return false;
+
+      const outApp = pickOutApp(out);
+      if(outApp){
+        // if meta.app exists, it must match the panel app
+        return matchesAlias(outApp);
+      }
+
+      // if output.meta.app missing, fallback to the job app (still strict)
+      const jobApp = pickJobApp(job);
+      return matchesAlias(jobApp);
+    }
+
+    return { acceptJob, acceptOutput, aliases };
+  }
+  // ---------------------------------------------------------------------------
 
   function normalizeOutputs(job){
     // backend may return outputs as stringified json or object
@@ -165,7 +264,7 @@
     opts = opts || {};
 
     const state = {
-      app: String(opts.app || ""),
+      app: String(opts.app || ""), // backend list key
       items: [],
       isHydrated: false,
       lastHydrateAt: 0,
@@ -173,7 +272,13 @@
       destroyed: false,
       inFlight: new Set(),
       onChange: (typeof opts.onChange === "function") ? opts.onChange : null,
+
+      // NEW:
+      // - acceptJob(job) => boolean   (strict: app isolation)
+      // - acceptOutput(out, job) => boolean
+      acceptJob: (typeof opts.acceptJob === "function") ? opts.acceptJob : null,
       acceptOutput: (typeof opts.acceptOutput === "function") ? opts.acceptOutput : null,
+
       debug: !!opts.debug,
       pollIntervalMs: Math.max(2000, Number(opts.pollIntervalMs || 4000)),
       hydrateEveryMs: Math.max(5000, Number(opts.hydrateEveryMs || 15000))
@@ -192,6 +297,9 @@
     function upsert(job){
       const jobId = job && job.job_id;
       if(!jobId) return;
+
+      // strict app isolation on any inbound upsert too
+      if(state.acceptJob && !state.acceptJob(job)) return;
 
       const idx = state.items.findIndex(x => x.job_id === jobId);
       if(idx >= 0){
@@ -222,11 +330,21 @@
       try{
         const list = await fetchList(state.app);
 
-        // optional output filtering (panel-specific)
+        // 1) strict job filter (prevents cross-app list/render bugs)
         let final = list;
+        if(state.acceptJob){
+          final = final.filter(state.acceptJob);
+        }
+
+        // 2) strict outputs filter (prevents video/social/hook mixing)
         if(state.acceptOutput){
-          final = list.map(job => {
-            const outs = (job.outputs || []).filter(state.acceptOutput);
+          final = final.map(job => {
+            const outs = (job.outputs || []).filter(o => {
+              // support legacy acceptOutput(o) signature too
+              try {
+                return (state.acceptOutput.length >= 2) ? state.acceptOutput(o, job) : state.acceptOutput(o);
+              } catch(e) { return false; }
+            });
             return { ...job, outputs: outs };
           });
         }
@@ -264,9 +382,19 @@
         try{
           const fresh = await fetchStatus(jobId);
 
+          // strict job app gate (protect against status returning mixed meta)
+          if(state.acceptJob && !state.acceptJob(fresh)){
+            state.inFlight.delete(jobId);
+            continue;
+          }
+
           // optional output filtering again
           if(state.acceptOutput){
-            fresh.outputs = (fresh.outputs || []).filter(state.acceptOutput);
+            fresh.outputs = (fresh.outputs || []).filter(o => {
+              try {
+                return (state.acceptOutput.length >= 2) ? state.acceptOutput(o, fresh) : state.acceptOutput(o);
+              } catch(e) { return false; }
+            });
           }
 
           upsert(fresh);
@@ -322,7 +450,22 @@
   window.DBJobs = {
     create: createController,
     normalizeJobRow,
-    normalizeOutputs
+    normalizeOutputs,
+
+    // NEW: shared filter helper
+    makeAppFilters
+  };
+
+  // Handy presets you can reuse in panels (optional):
+  // - Video panel should only accept VIDEO app + type=video outputs
+  // - Atmo panel accepts ATMO app + type=video outputs
+  // - Social/Hook can accept video outputs too, but meta.app keeps them separate
+  window.DBJobsFilters = {
+    video: function(){ return makeAppFilters("video", { allowedTypes: ["video"] }); },
+    atmo: function(){ return makeAppFilters("atmo",  { allowedTypes: ["video"] }); },
+    cover:function(){ return makeAppFilters("cover", { allowedTypes: ["image"] }); },
+    social:function(){ return makeAppFilters("social", { allowedTypes: ["image","video"] }); },
+    hook: function(){ return makeAppFilters("hook",  { allowedTypes: ["video"] }); }
   };
 
 })();
