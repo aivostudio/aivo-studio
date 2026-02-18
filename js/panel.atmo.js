@@ -50,7 +50,7 @@
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
     // prefer archive_url normalized by DBJobs
     const vid = outs.find((o) => (o?.type || "").toLowerCase() === "video") || outs[0];
-    return vid?.url || vid?.archive_url || vid?.raw_url || "";
+    return vid?.archive_url || vid?.url || vid?.raw_url || "";
   }
 
   function acceptAtmoOutput(o) {
@@ -81,94 +81,152 @@
       selectedTitle: "",
     };
 
-   // --- UI (CSS: /css/mod.atmo.panel.css) ---
-host.innerHTML = `
-  <div class="atmoPanel">
+    // --- UI (CSS: /css/mod.atmo.panel.css) ---
+    host.innerHTML = `
+      <div class="atmoPanel">
 
-    <div class="atmoPanelHeader">
-      <div class="atmoPanelTitleRow">
-        <div class="atmoPanelTitle">Atmosfer Video</div>
-        <div class="atmoPanelStatus" data-el="status">Hazır</div>
-      </div>
-
-      <input
-        class="atmoPanelSearch"
-        data-el="search"
-        placeholder="Videolarda ara..."
-      />
-    </div>
-
-    <div class="atmoPlayerCard">
-
-      <div class="atmoPlayerHint" data-el="hint">
-        Bir karttan ▶ seçip oynat.
-      </div>
-
-      <div class="atmoPlayerViewport" data-el="viewport">
-
-        <!-- VIDEO MOUNT (boşken DOM’da video YOK) -->
-        <div class="atmoPlayerMount" data-el="playerMount"></div>
-
-        <!-- PLACEHOLDER / POSTER -->
-        <div class="atmoPoster is-empty" data-el="poster">
-          <div class="atmoPosterInner">
-            <div class="atmoPosterPlay" title="Oynat">▶</div>
-            <div class="atmoPosterText" data-el="empty">
-              Henüz seçili video yok.
-            </div>
+        <div class="atmoPanelHeader">
+          <div class="atmoPanelTitleRow">
+            <div class="atmoPanelTitle">Atmosfer Video</div>
+            <div class="atmoPanelStatus" data-el="status">Hazır</div>
           </div>
+
+          <input
+            class="atmoPanelSearch"
+            data-el="search"
+            placeholder="Videolarda ara..."
+          />
         </div>
 
+        <div class="atmoPlayerCard">
+
+          <div class="atmoPlayerHint" data-el="hint">
+            Bir karttan ▶ seçip oynat.
+          </div>
+
+          <div class="atmoPlayerViewport" data-el="viewport">
+            <!-- VIDEO MOUNT (boşken DOM’da video YOK) -->
+            <div class="atmoPlayerMount" data-el="playerMount"></div>
+
+            <!-- PLACEHOLDER / POSTER -->
+            <div class="atmoPoster is-empty" data-el="poster">
+              <div class="atmoPosterInner">
+                <div class="atmoPosterPlay" data-el="posterPlay" title="Oynat">▶</div>
+                <div class="atmoPosterText" data-el="empty">
+                  Henüz seçili video yok.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="atmoSubHint" data-el="subhint">
+            Henüz atmo üretim yok.
+          </div>
+
+        </div>
+
+        <div class="atmoGrid" data-el="grid"></div>
+
       </div>
-
-      <div class="atmoSubHint" data-el="subhint">
-        Henüz atmo üretim yok.
-      </div>
-
-    </div>
-
-    <div class="atmoGrid" data-el="grid"></div>
-
-  </div>
-`;
-
+    `;
 
     const $status = host.querySelector('[data-el="status"]');
     const $search = host.querySelector('[data-el="search"]');
     const $hint = host.querySelector('[data-el="hint"]');
     const $subhint = host.querySelector('[data-el="subhint"]');
     const $grid = host.querySelector('[data-el="grid"]');
-    const $player = host.querySelector('[data-el="player"]');
+
+    const $playerMount = host.querySelector('[data-el="playerMount"]');
+    const $poster = host.querySelector('[data-el="poster"]');
+    const $posterPlay = host.querySelector('[data-el="posterPlay"]');
     const $empty = host.querySelector('[data-el="empty"]');
 
     const setStatus = (t) => { if ($status) $status.textContent = t; };
 
+    function teardownPlayer() {
+      if (!$playerMount) return;
+      $playerMount.innerHTML = "";
+    }
+
+    function getPlayerEl() {
+      if (!$playerMount) return null;
+      return $playerMount.querySelector("video");
+    }
+
+    function showPoster(show) {
+      if (!$poster) return;
+      $poster.style.display = show ? "grid" : "none";
+      if (show) $poster.classList.add("is-empty");
+      else $poster.classList.remove("is-empty");
+    }
+
+    function ensurePlayer(url) {
+      if (!$playerMount) return null;
+
+      // her seferinde sıfırdan kurmak Safari/iOS için daha stabil
+      teardownPlayer();
+
+      const v = document.createElement("video");
+      v.className = "atmoPlayer";
+      v.playsInline = true;
+      v.preload = "metadata";
+      v.controls = true; // URL geldikten sonra aç
+      v.setAttribute("playsinline", "");
+      v.setAttribute("preload", "metadata");
+      v.setAttribute("controls", "");
+
+      // src set
+      v.src = url;
+
+      $playerMount.appendChild(v);
+      try { v.load?.(); } catch {}
+      return v;
+    }
+
     function setMain(url, meta) {
       url = safeStr(url);
-      if (!$player) return;
+
+      state.selectedJobId = meta?.job_id || "";
+      state.selectedTitle = meta?.title || "";
 
       if (!url) {
         state.selectedUrl = "";
-        state.selectedJobId = "";
-        state.selectedTitle = "";
-        if ($empty) $empty.style.display = "flex";
-        $player.removeAttribute("src");
-        try { $player.load?.(); } catch {}
+        if ($empty) $empty.textContent = "Henüz seçili video yok.";
+        showPoster(true);
+        teardownPlayer();
         return;
       }
 
       state.selectedUrl = url;
-      state.selectedJobId = meta?.job_id || "";
-      state.selectedTitle = meta?.title || "";
+      if ($empty) $empty.textContent = "";
+      showPoster(false);
 
-      if ($empty) $empty.style.display = "none";
+      // aynı url zaten seçiliyse player’ı tekrar kurma (göz kırpma önle)
+      const current = getPlayerEl();
+      const currentSrc = current ? safeStr(current.currentSrc || current.src) : "";
+      if (current && currentSrc && currentSrc === url) return;
 
-      if ($player.src !== url) {
-        $player.src = url;
-        try { $player.load?.(); } catch {}
-      }
+      ensurePlayer(url);
+    }
 
-      // autoplay is optional; keep admin-safe: play only if user clicks
+    // Poster click -> mevcut seçili varsa play/pause
+    if ($posterPlay) {
+      $posterPlay.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!state.selectedUrl) return;
+        const v = getPlayerEl();
+        if (v) {
+          try {
+            if (v.paused) v.play?.();
+            else v.pause?.();
+          } catch {}
+        } else {
+          setMain(state.selectedUrl, { job_id: state.selectedJobId, title: state.selectedTitle });
+          const v2 = getPlayerEl();
+          try { v2 && v2.play?.(); } catch {}
+        }
+      });
     }
 
     function isMatch(job) {
@@ -198,14 +256,20 @@ host.innerHTML = `
 
       if (!items.length) {
         $grid.innerHTML = "";
-        setMain(state.selectedUrl); // keep selection
+        // seçili varsa koru; yoksa poster kalsın
+        setMain(state.selectedUrl);
         return;
       }
 
       const html = items.slice(0, 12).map((job) => {
         const url = bestVideoFromJob(job);
         const st = String(job?.state || job?.status || "").toUpperCase();
-        const done = st.includes("COMPLETE") || st.includes("READY") || st.includes("DONE") || st.includes("SUCCEEDED") || st.includes("COMPLETED");
+        const done =
+          st.includes("COMPLETE") ||
+          st.includes("READY") ||
+          st.includes("DONE") ||
+          st.includes("SUCCEEDED") ||
+          st.includes("COMPLETED");
         const badge = done ? "Hazır" : (st.includes("FAIL") ? "Hata" : "İşleniyor");
 
         const active = (url && state.selectedUrl && url === state.selectedUrl) ? " is-active" : "";
@@ -280,6 +344,9 @@ host.innerHTML = `
 
         // normal click -> select
         if (url) setMain(url, { job_id: jobId, title: "Atmosfer" });
+
+        // kullanıcı nereden basarsa bassın, hero hazır olsun
+        // (autoplay yok; poster play ile başlatır)
       };
     }
 
@@ -302,9 +369,6 @@ host.innerHTML = `
           onChange(items) {
             state.items = items || [];
             render();
-
-            // seçili video yoksa, en yenisini seçme (admin confusion olmasın)
-            // (istersen bunu true yapabiliriz)
           }
         })
       : null;
@@ -420,6 +484,7 @@ host.innerHTML = `
       if (timer) clearInterval(timer);
       timer = null;
       try { db && db.destroy(); } catch {}
+      teardownPlayer();
       host.innerHTML = "";
     }
 
