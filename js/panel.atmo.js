@@ -130,8 +130,7 @@
       </div>
     `;
 
- const setStatus = (t) => {};
-
+    const $status = host.querySelector('[data-el="status"]');
     const $search = host.querySelector('[data-el="search"]');
     const $hint = host.querySelector('[data-el="hint"]');
     const $subhint = host.querySelector('[data-el="subhint"]');
