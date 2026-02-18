@@ -4,7 +4,8 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const { prompt, duration = 5, aspect_ratio = "9:16" } = req.body || {};
+    // Süper Mod default: 8 sn
+    const { prompt, duration = 8, aspect_ratio = "9:16" } = req.body || {};
 
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
@@ -14,9 +15,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    // ✅ Queue endpoint (async) — hemen request_id döner
+    // ✅ Kling 3.0 PRO Text-to-Video (Süper Mod)
     const falUrl =
-      "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video";
+      "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
 
     // ✅ Timeout (queue create hızlı olmalı)
     const ctrl = new AbortController();
@@ -30,7 +31,12 @@ export default async function handler(req, res) {
           Authorization: `Key ${process.env.FAL_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt, duration, aspect_ratio }),
+        body: JSON.stringify({
+          prompt,
+          duration,
+          aspect_ratio,
+          generate_audio: true, // ✅ Süper Mod default WOW
+        }),
         signal: ctrl.signal,
       });
     } catch (e) {
@@ -68,10 +74,19 @@ export default async function handler(req, res) {
     const request_id =
       data?.request_id || data?.requestId || data?.id || data?._id || null;
 
+    if (!request_id) {
+      return res.status(500).json({
+        ok: false,
+        provider: "fal",
+        error: "missing_request_id",
+        fal_response: data,
+      });
+    }
+
     return res.status(200).json({
       ok: true,
       provider: "fal",
-      model: "kling",
+      model: "fal-ai/kling-video/v3/pro/text-to-video",
       request_id,
       status: data?.status || "queued",
       raw: data,
