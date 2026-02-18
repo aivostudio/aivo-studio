@@ -1,4 +1,4 @@
-// /api/providers/fal/video/status.js  (CJS + endpoint encode FIX)
+// /api/providers/fal/video/status.js  (CJS + endpoint encode + POST FIX)
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -19,19 +19,18 @@ module.exports = async function handler(req, res) {
       return res.end(JSON.stringify({ ok: false, error: "missing_request_id" }));
     }
 
-    // default model (istersen query ile override)
     const endpoint = String(
       q.endpoint || "fal-ai/kling-video/v3/pro/text-to-video"
     ).replace(/^\/+/, "");
 
-    // IMPORTANT: endpoint_id path param slash içeriyor => encode et
     const endpointEnc = encodeURIComponent(endpoint);
     const base = `https://queue.fal.run/${endpointEnc}`;
 
     const statusUrl = `${base}/requests/${encodeURIComponent(request_id)}/status`;
 
+    // ✅ FAL QUEUE: status endpoint POST istiyor (allow: OPTIONS, POST)
     const statusRes = await fetch(statusUrl, {
-      method: "GET",
+      method: "POST",
       headers: { Authorization: `Key ${FAL_KEY}` },
     });
 
@@ -71,8 +70,9 @@ module.exports = async function handler(req, res) {
     if (status === "COMPLETED") {
       const resultUrl = `${base}/requests/${encodeURIComponent(request_id)}`;
 
+      // ✅ Bazı modellerde result da POST çalışıyor; en güvenlisi POST
       const resultRes = await fetch(resultUrl, {
-        method: "GET",
+        method: "POST",
         headers: { Authorization: `Key ${FAL_KEY}` },
       });
 
