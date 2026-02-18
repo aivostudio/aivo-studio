@@ -1,40 +1,38 @@
-// ===============================================
-// /api/providers/fal/video/status.js  (CJS FIX)
-// Works in Vercel /api serverless (CommonJS)
-// ===============================================
-module.exports = async (req, res) => {
+// /api/providers/fal/video/status.js  (CJS + endpoint encode FIX)
+module.exports = async function handler(req, res) {
   try {
     if (req.method !== "GET") {
       res.statusCode = 405;
-      return res.json({ ok: false, error: "method_not_allowed" });
+      return res.end(JSON.stringify({ ok: false, error: "method_not_allowed" }));
     }
 
-    if (!process.env.FAL_KEY) {
+    const FAL_KEY = process.env.FAL_KEY;
+    if (!FAL_KEY) {
       res.statusCode = 500;
-      return res.json({ ok: false, error: "missing_fal_key" });
+      return res.end(JSON.stringify({ ok: false, error: "missing_fal_key" }));
     }
 
-    const request_id = (req.query?.request_id || "").toString().trim();
+    const q = req.query || {};
+    const request_id = q.request_id || q.requestId || q.id;
     if (!request_id) {
       res.statusCode = 400;
-      return res.json({ ok: false, error: "missing_request_id" });
+      return res.end(JSON.stringify({ ok: false, error: "missing_request_id" }));
     }
 
-    // 🔁 Basit/Süper motor seçimi:
-    // - Süper: fal-ai/kling-video/v3/pro/text-to-video
-    // - Basit: (senin seçeceğin) "Kling 3.0 Standard Text-to-Video" endpoint id'si
-    // Not: endpoint'i create tarafında da aynen dönüp, burada query ile geçebilirsin.
-    const endpoint = (req.query?.endpoint || "fal-ai/kling-video/v3/pro/text-to-video")
-      .toString()
-      .replace(/^\/+/, "")
-      .trim();
+    // default model (istersen query ile override)
+    const endpoint = String(
+      q.endpoint || "fal-ai/kling-video/v3/pro/text-to-video"
+    ).replace(/^\/+/, "");
 
-    const base = `https://queue.fal.run/${endpoint}`;
+    // IMPORTANT: endpoint_id path param slash içeriyor => encode et
+    const endpointEnc = encodeURIComponent(endpoint);
+    const base = `https://queue.fal.run/${endpointEnc}`;
+
     const statusUrl = `${base}/requests/${encodeURIComponent(request_id)}/status`;
 
     const statusRes = await fetch(statusUrl, {
       method: "GET",
-      headers: { Authorization: `Key ${process.env.FAL_KEY}` },
+      headers: { Authorization: `Key ${FAL_KEY}` },
     });
 
     const statusText = await statusRes.text();
@@ -47,15 +45,18 @@ module.exports = async (req, res) => {
 
     if (!statusRes.ok) {
       res.statusCode = 500;
-      return res.json({
-        ok: false,
-        provider: "fal",
-        error: "fal_status_error",
-        fal_status: statusRes.status,
-        endpoint,
-        request_id,
-        raw_status: statusData,
-      });
+      return res.end(
+        JSON.stringify({
+          ok: false,
+          provider: "fal",
+          error: "fal_status_error",
+          fal_status: statusRes.status,
+          endpoint,
+          request_id,
+          raw_status: statusData,
+          debug_url: statusUrl,
+        })
+      );
     }
 
     const status =
@@ -64,7 +65,6 @@ module.exports = async (req, res) => {
       statusData?.request?.status ||
       null;
 
-    // COMPLETED olunca result'ı çek
     let video_url = null;
     let resultData = null;
 
@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
 
       const resultRes = await fetch(resultUrl, {
         method: "GET",
-        headers: { Authorization: `Key ${process.env.FAL_KEY}` },
+        headers: { Authorization: `Key ${FAL_KEY}` },
       });
 
       const resultText = await resultRes.text();
@@ -92,23 +92,28 @@ module.exports = async (req, res) => {
         null;
     }
 
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.statusCode = 200;
-    return res.json({
-      ok: true,
-      provider: "fal",
-      endpoint,
-      request_id,
-      status,
-      video_url,
-      raw_status: statusData,
-      raw_result: resultData,
-    });
+    return res.end(
+      JSON.stringify({
+        ok: true,
+        provider: "fal",
+        endpoint,
+        request_id,
+        status,
+        video_url,
+        raw_status: statusData,
+        raw_result: resultData,
+      })
+    );
   } catch (err) {
     res.statusCode = 500;
-    return res.json({
-      ok: false,
-      error: "server_error",
-      message: err?.message || "unknown_error",
-    });
+    return res.end(
+      JSON.stringify({
+        ok: false,
+        error: "server_error",
+        message: err?.message || "unknown_error",
+      })
+    );
   }
 };
