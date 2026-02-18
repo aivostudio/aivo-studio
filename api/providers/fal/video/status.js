@@ -1,158 +1,35 @@
-// =======================================================
-// /pages/api/providers/fal/video/create.js
-// =======================================================
-export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
-    }
-
-    const app = (req.query?.app || "atmo").toString();
-
-    const {
-      prompt,
-      duration = 5,
-      aspect_ratio = "9:16",
-      // Kling v3 Pro defaults:
-      generate_audio = true,
-      shot_type = "customize",
-      negative_prompt = "blur, distort, and low quality",
-      cfg_scale = 0.5,
-      // optional advanced:
-      multi_prompt = null,
-      voice_ids = null,
-    } = req.body || {};
-
-    if (!prompt && !multi_prompt) {
-      return res.status(400).json({ ok: false, error: "missing_prompt" });
-    }
-
-    if (!process.env.FAL_KEY) {
-      return res.status(500).json({ ok: false, error: "missing_fal_key" });
-    }
-
-    // ✅ Kling v3 Pro Text-to-Video (queue submit)
-    const falUrl = "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
-
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30000);
-
-    let r;
-    try {
-      r = await fetch(falUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Key ${process.env.FAL_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...(multi_prompt ? { multi_prompt } : { prompt }),
-          duration,
-          aspect_ratio,
-          generate_audio,
-          shot_type,
-          negative_prompt,
-          cfg_scale,
-          ...(Array.isArray(voice_ids) ? { voice_ids } : {}),
-        }),
-        signal: ctrl.signal,
-      });
-    } catch (e) {
-      clearTimeout(t);
-      return res.status(504).json({
-        ok: false,
-        provider: "fal",
-        error: "fal_timeout_or_network_error",
-        message: e?.message || "unknown_fetch_error",
-      });
-    }
-
-    clearTimeout(t);
-
-    const text = await r.text();
-    let data = null;
-    try {
-      data = text ? JSON.parse(text) : null;
-    } catch (_) {
-      data = { _non_json: text };
-    }
-
-    if (!r.ok) {
-      return res.status(500).json({
-        ok: false,
-        provider: "fal",
-        error: "fal_error",
-        fal_status: r.status,
-        fal_response: data,
-      });
-    }
-
-    const request_id =
-      data?.request_id || data?.requestId || data?.id || data?._id || null;
-
-    // --- DB upsert (opsiyonel): fail olursa request_id yine dönecek ---
-    let internal_job_id = null;
-    if (request_id) {
-      try {
-        // burada senin mevcut DB upsert kodun var (değiştirmiyorum)
-        // row = await ...
-        // internal_job_id = row?.rows?.[0]?.id || null;
-
-        internal_job_id = row?.rows?.[0]?.id || null;
-      } catch (dbErr) {
-        // DB yazamazsak bile Fal request_id’i döndür (ama UI list boş kalır)
-        console.error("[fal.video.create] DB upsert failed:", dbErr?.message || dbErr);
-      }
-    }
-
-    return res.status(200).json({
-      ok: true,
-      provider: "fal",
-      app,
-      model: "fal-ai/kling-video/v3/pro/text-to-video",
-      request_id,
-      internal_job_id,
-      status: data?.status || "IN_QUEUE",
-      raw: data,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      ok: false,
-      error: "server_error",
-      message: err?.message || "unknown_error",
-    });
-  }
-}
-
-
-// =======================================================
-// /pages/api/providers/fal/video/status.js   (405 FIX)
-// =======================================================
-export default async function handler(req, res) {
+// ===============================================
+// /api/providers/fal/video/status.js  (CJS FIX)
+// Works in Vercel /api serverless (CommonJS)
+// ===============================================
+module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+      res.statusCode = 405;
+      return res.json({ ok: false, error: "method_not_allowed" });
     }
 
     if (!process.env.FAL_KEY) {
-      return res.status(500).json({ ok: false, error: "missing_fal_key" });
+      res.statusCode = 500;
+      return res.json({ ok: false, error: "missing_fal_key" });
     }
 
-    const { request_id } = req.query || {};
+    const request_id = (req.query?.request_id || "").toString().trim();
     if (!request_id) {
-      return res.status(400).json({ ok: false, error: "missing_request_id" });
+      res.statusCode = 400;
+      return res.json({ ok: false, error: "missing_request_id" });
     }
 
-    // endpoint override destekli
-    const endpoint =
-      (req.query?.endpoint || "fal-ai/kling-video/v3/pro/text-to-video")
-        .toString()
-        .replace(/^\/+/, "");
+    // 🔁 Basit/Süper motor seçimi:
+    // - Süper: fal-ai/kling-video/v3/pro/text-to-video
+    // - Basit: (senin seçeceğin) "Kling 3.0 Standard Text-to-Video" endpoint id'si
+    // Not: endpoint'i create tarafında da aynen dönüp, burada query ile geçebilirsin.
+    const endpoint = (req.query?.endpoint || "fal-ai/kling-video/v3/pro/text-to-video")
+      .toString()
+      .replace(/^\/+/, "")
+      .trim();
 
-    // ✅ 405 FIX: endpoint_id'yi encode et (queue API route'ları için güvenli)
-    const endpointEnc = encodeURIComponent(endpoint);
-    const base = `https://queue.fal.run/${endpointEnc}`;
-
+    const base = `https://queue.fal.run/${endpoint}`;
     const statusUrl = `${base}/requests/${encodeURIComponent(request_id)}/status`;
 
     const statusRes = await fetch(statusUrl, {
@@ -169,7 +46,8 @@ export default async function handler(req, res) {
     }
 
     if (!statusRes.ok) {
-      return res.status(500).json({
+      res.statusCode = 500;
+      return res.json({
         ok: false,
         provider: "fal",
         error: "fal_status_error",
@@ -186,6 +64,7 @@ export default async function handler(req, res) {
       statusData?.request?.status ||
       null;
 
+    // COMPLETED olunca result'ı çek
     let video_url = null;
     let resultData = null;
 
@@ -213,7 +92,8 @@ export default async function handler(req, res) {
         null;
     }
 
-    return res.status(200).json({
+    res.statusCode = 200;
+    return res.json({
       ok: true,
       provider: "fal",
       endpoint,
@@ -224,10 +104,11 @@ export default async function handler(req, res) {
       raw_result: resultData,
     });
   } catch (err) {
-    return res.status(500).json({
+    res.statusCode = 500;
+    return res.json({
       ok: false,
       error: "server_error",
       message: err?.message || "unknown_error",
     });
   }
-}
+};
