@@ -501,14 +501,23 @@ if (db) db.start();
     return { destroy };
   }
 
-  window.RightPanel.register(APP_KEY, {
-    mount(host) {
-      const panel = createAtmosPanel(host);
-      host.__ATMO_PANEL__ = panel;
-    },
-    destroy(host) {
-      try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
-      host.__ATMO_PANEL__ = null;
-    },
-  });
+ window.RightPanel.register(APP_KEY, {
+  header: {
+    title: "Atmosfer Video",
+    meta: "Hazır",
+    searchEnabled: false,     // ✅ manager search'ü kapatır (atmo / Ara... gider)
+    resetSearch: true
+  },
+
+  mount(host) {
+    const panel = createAtmosPanel(host);
+    host.__ATMO_PANEL__ = panel;
+  },
+
+  destroy(host) {
+    try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
+    host.__ATMO_PANEL__ = null;
+  },
+});
+
 })();
