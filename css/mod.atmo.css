@@ -644,3 +644,15 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   opacity: .6;
   margin-top: 6px;
 }
+/* ATMOS CTA CARD FIX */
+.smPack-card--cta {
+  padding: 20px 24px 24px 24px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.smPack-card--cta .atmBigCtaBtn {
+  width: 100%;
+  max-width: 680px;
+}
