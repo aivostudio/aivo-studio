@@ -158,28 +158,50 @@ export default async function handler(req, res) {
             returning id
           `;
 
-        internal_job_id = row?.rows?.[0]?.id || null;
-      } catch (dbErr) {
-        // DB yazamazsak bile Fal request_id’i döndür (ama UI list boş kalır)
-        console.error("[fal.video.create] DB upsert failed:", dbErr?.message || dbErr);
-      }
-    }
+     let internal_job_id = null;
 
-    return res.status(200).json({
-      ok: true,
-      provider: "fal",
-      app,
-      model: "fal-ai/kling-video/v3/pro/text-to-video",
-      request_id,
-      internal_job_id,
-      status: data?.status || "IN_QUEUE",
-      raw: data,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      ok: false,
-      error: "server_error",
-      message: err?.message || "unknown_error",
-    });
+if (request_id) {
+  try {
+    const row = await db.query(
+      `
+      insert into jobs (provider, provider_job_id, app, state, status, input_json, created_at, updated_at, user_email, user_uuid)
+      values ($1, $2, $3, $4, $5, $6, now(), now(), $7, $8)
+      on conflict (provider, provider_job_id)
+      do update set
+        state = excluded.state,
+        status = excluded.status,
+        input_json = excluded.input_json,
+        updated_at = excluded.updated_at,
+        user_email = coalesce(excluded.user_email, jobs.user_email),
+        user_uuid = coalesce(excluded.user_uuid, jobs.user_uuid)
+      returning id
+      `,
+      [
+        "fal",
+        request_id,
+        app,
+        "processing",
+        "processing",
+        JSON.stringify(req.body || {}),
+        userEmail || null,
+        userUUID || null,
+      ]
+    );
+
+    internal_job_id = row?.rows?.[0]?.id || null;
+  } catch (dbErr) {
+    // DB yazamazsak bile Fal request_id’i döndür (ama UI list boş kalır)
+    console.error("[fal.video.create] DB upsert failed:", dbErr?.message || dbErr);
   }
 }
+
+return res.status(200).json({
+  ok: true,
+  provider: "fal",
+  app,
+  model: "fal-ai/kling-video/v3/pro/text-to-video",
+  request_id,
+  internal_job_id,
+  status: data?.status || "IN_QUEUE",
+  raw: data,
+});
