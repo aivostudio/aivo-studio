@@ -1,4 +1,7 @@
-// atmosphere.panel.js (DB source-of-truth + cover-style cards + single fixed player)
+// atmosphere.panel.js (DB source-of-truth + cover-style cards + per-card mini video player)
+// - ÜSTTEKİ BÜYÜK PLAYER KALKTI ✅
+// - Her kartın içinde mini mp4 <video controls> ✅
+// - 9:16 clamp -> panel bozulmaz ✅
 (function () {
   if (!window.RightPanel) return;
   if (!window.DBJobs) {
@@ -20,6 +23,14 @@
     }
   };
 
+  const mapBadge = (job) => {
+    const st = String(job?.status || job?.state || "").toUpperCase();
+    if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
+    if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
+    if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
+    return { text: st || "Hazır", kind: "mid" };
+  };
+
   const pickBestVideoOutput = (job) => {
     const outs = (job && job.outputs) || [];
     if (!outs.length) return null;
@@ -27,21 +38,13 @@
     // prefer video outputs
     const videos = outs.filter((o) => String(o.type || "").toLowerCase() === "video");
     const best = (videos[0] || outs[0]) || null;
-
     if (!best) return null;
 
-    const url = best.url || best.archive_url || best.raw_url || "";
+    // prefer archive_url (kalıcı) > url > raw_url
+    const url = best.archive_url || best.url || best.raw_url || "";
     if (!url) return null;
 
     return { ...best, url };
-  };
-
-  const stateLabel = (job) => {
-    const st = String(job?.status || job?.state || "").toUpperCase();
-    if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
-    if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
-    if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
-    return { text: st || "Hazır", kind: "mid" };
   };
 
   function ensureStyles() {
@@ -52,36 +55,12 @@
       .atmoTitle{font-weight:900;font-size:14px;}
       .atmoStatus{font-size:12px;opacity:.7;}
 
-      .atmoPlayerShell{
-        padding:12px;border-radius:16px;
-        background:rgba(255,255,255,0.04);
-        border:1px solid rgba(255,255,255,0.06);
-      }
-      .atmoPlayerTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
-      .atmoPlayerMeta{font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-      .atmoPlayerClose{
-        width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,0.10);
-        background:rgba(0,0,0,.25);color:#fff;cursor:pointer;
-      }
-      .atmoPlayerBox{
-        position:relative;border-radius:14px;overflow:hidden;
-        background:#000;border:1px solid rgba(255,255,255,0.08);
-      }
-      /* aspect clamp -> panel bozulmasın (9:16) */
-      .atmoPlayerBox:before{content:"";display:block;padding-top:56.25%;} /* 16:9 default */
-      .atmoPlayerBox.isPortrait:before{padding-top:140%;} /* dikey clamp */
-      .atmoPlayerVideo{
-        position:absolute;inset:0;width:100%;height:100%;
-        object-fit:contain; /* güvenli letterbox */
-        background:#000;
-      }
-      .atmoPlayerHint{font-size:12px;opacity:.7;}
-
       .atmoGrid{
         display:grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap:12px;
       }
+
       .atmoCard{
         position:relative;
         border-radius:18px;
@@ -89,6 +68,7 @@
         border:1px solid rgba(255,255,255,0.07);
         overflow:hidden;
       }
+
       .atmoThumb{
         position:relative;
         border-radius:16px;
@@ -97,15 +77,26 @@
         background:#000;
         border:1px solid rgba(255,255,255,0.08);
       }
-      .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
-      .atmoThumbImg, .atmoThumbVideo{
+
+      /* clamp: kart içi video asla paneli büyütmez */
+      .atmoThumb:before{content:"";display:block;padding-top:56.25%;} /* 16:9 box */
+      .atmoThumb.isPortrait:before{padding-top:140%;} /* 9:16 clamp */
+
+      .atmoThumbVideo{
         position:absolute;inset:0;width:100%;height:100%;
         object-fit:cover;
         background:#000;
       }
 
+      .atmoThumbPlaceholder{
+        position:absolute;inset:0;
+        display:flex;align-items:center;justify-content:center;
+        font-size:12px;opacity:.75;
+        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
+      }
+
       .atmoPill{
-        position:absolute;left:14px;top:14px;
+        position:absolute;left:14px;top:14px;z-index:3;
         padding:6px 10px;border-radius:999px;
         font-size:12px;font-weight:700;
         background:rgba(0,0,0,.35);
@@ -116,36 +107,23 @@
       .atmoPill.mid{border-color:rgba(255,255,255,.10);}
       .atmoPill.bad{border-color:rgba(255,120,120,.25);}
 
-      .atmoPlay{
-        position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-      }
-      .atmoPlayBtn{
-        width:58px;height:58px;border-radius:999px;
-        background:rgba(0,0,0,.35);
-        border:1px solid rgba(255,255,255,0.15);
-        backdrop-filter: blur(10px);
-        cursor:pointer;
-        display:flex;align-items:center;justify-content:center;
-        transition:transform .12s ease, filter .12s ease;
-      }
-      .atmoPlayBtn:hover{transform:translateY(-1px);filter:brightness(1.06);}
-      .atmoPlayBtn:active{transform:translateY(0px) scale(.98);}
-      .atmoPlayBtn svg{width:22px;height:22px;fill:#fff;opacity:.95;margin-left:2px;}
-
       .atmoFooter{
         padding:10px 12px 12px 12px;
         display:flex;flex-direction:column;gap:8px;
       }
+
       .atmoMetaLine{
         font-size:12px;opacity:.8;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
       }
+
       .atmoActions{
         display:flex;gap:8px;
         padding:10px;border-radius:14px;
         background:rgba(0,0,0,.20);
         border:1px solid rgba(255,255,255,0.06);
       }
+
       .atmoIconBtn{
         flex:1;
         height:38px;
@@ -157,6 +135,7 @@
         display:flex;align-items:center;justify-content:center;
         font-weight:700;font-size:12px;
       }
+      .atmoIconBtn[disabled]{opacity:.45;cursor:not-allowed;}
       .atmoIconBtn.danger{
         border-color:rgba(255,120,120,0.20);
         background:rgba(255,120,120,0.08);
@@ -184,70 +163,14 @@
           <div class="atmoStatus">Hazır</div>
         </div>
 
-        <div class="atmoPlayerShell">
-          <div class="atmoPlayerTop">
-            <div class="atmoPlayerMeta">Bir karttan ▶️ seçip oynat.</div>
-            <button class="atmoPlayerClose" type="button" title="Kapat" style="display:none;">✕</button>
-          </div>
-
-          <div class="atmoPlayerBox" data-player-box>
-            <div class="atmoPlayerHint" style="padding:10px 12px;opacity:.75;">
-              Henüz seçili video yok.
-            </div>
-            <video class="atmoPlayerVideo" playsinline controls style="display:none;"></video>
-          </div>
-        </div>
-
         <div class="atmoGrid" data-grid></div>
       </div>
     `;
 
     const elStatus = host.querySelector(".atmoStatus");
     const elGrid = host.querySelector('[data-grid]');
-    const elPlayerBox = host.querySelector('[data-player-box]');
-    const elPlayerMeta = host.querySelector(".atmoPlayerMeta");
-    const elPlayerClose = host.querySelector(".atmoPlayerClose");
-    const elPlayerVideo = host.querySelector(".atmoPlayerVideo");
-    const elPlayerHint = host.querySelector(".atmoPlayerHint");
 
     const setStatus = (t) => { if (elStatus) elStatus.textContent = t; };
-
-    function setPlayer(url, metaText, isPortrait) {
-      if (!elPlayerVideo) return;
-      if (elPlayerHint) elPlayerHint.style.display = "none";
-
-      elPlayerVideo.style.display = "block";
-      if (elPlayerClose) elPlayerClose.style.display = "inline-flex";
-
-      if (elPlayerMeta) elPlayerMeta.textContent = metaText || "Seçili video";
-
-      if (elPlayerBox) {
-        elPlayerBox.classList.toggle("isPortrait", !!isPortrait);
-      }
-
-      if (elPlayerVideo.src !== url) {
-        elPlayerVideo.src = url;
-        elPlayerVideo.load?.();
-      }
-
-      // autoplay try
-      elPlayerVideo.play?.().catch(() => {});
-    }
-
-    function clearPlayer() {
-      if (!elPlayerVideo) return;
-      try { elPlayerVideo.pause?.(); } catch {}
-      elPlayerVideo.removeAttribute("src");
-      elPlayerVideo.load?.();
-
-      elPlayerVideo.style.display = "none";
-      if (elPlayerHint) elPlayerHint.style.display = "block";
-      if (elPlayerClose) elPlayerClose.style.display = "none";
-      if (elPlayerMeta) elPlayerMeta.textContent = "Bir karttan ▶️ seçip oynat.";
-      if (elPlayerBox) elPlayerBox.classList.remove("isPortrait");
-    }
-
-    elPlayerClose?.addEventListener("click", clearPlayer);
 
     // --- DB controller
     const controller = window.DBJobs.create({
@@ -256,7 +179,6 @@
       pollIntervalMs: 4000,
       hydrateEveryMs: 15000,
       acceptOutput: (o) => {
-        // only video outputs, and only atmo/app match if meta has it
         if (!o) return false;
         const t = String(o.type || "").toLowerCase();
         if (t && t !== "video") return false;
@@ -276,7 +198,7 @@
       // status summary
       const hasProcessing = (items || []).some(j => {
         const st = String(j.status || "").toUpperCase();
-        return (st === "PROCESSING" || st === "RUNNING" || st === "PENDING");
+        return (st === "PROCESSING" || st === "RUNNING" || st === "PENDING" || st === "QUEUED");
       });
       setStatus(hasProcessing ? "İşleniyor…" : "Hazır");
 
@@ -286,31 +208,28 @@
       }
 
       elGrid.innerHTML = items.map((job) => {
-        const badge = stateLabel(job);
+        const badge = mapBadge(job);
         const out = pickBestVideoOutput(job);
         const url = out?.url || "";
         const dt = fmtDT(job.created_at || job.updated_at);
         const engine = (job.provider || job.meta?.provider || "Atmos").toString();
         const metaLine = `${engine}${dt ? " • " + dt : ""}`;
 
-        // thumb: video poster yoksa sadece gradient/black olur.
-        // (İstersen sonra backend "thumb_url" üretir, burada kullanırız.)
-        const thumbHtml = `
-          <div class="atmoThumb">
-            <div class="atmoPill ${badge.kind}">${badge.text}</div>
-            <div class="atmoPlay">
-              <button class="atmoPlayBtn" type="button" data-act="play" data-job="${job.job_id}">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-              </button>
-            </div>
-          </div>
-        `;
+        const ratio = String(job.meta?.aspect_ratio || job.meta?.ratio || out?.meta?.aspect_ratio || "");
+        const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
 
-        const disabled = url ? "" : `disabled data-no-url="1"`;
+        const disabled = url ? "" : `disabled`;
+
+        const thumbInner = url
+          ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${url}"></video>`
+          : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
         return `
-          <div class="atmoCard" data-job="${job.job_id}" data-url="${encodeURIComponent(url)}">
-            ${thumbHtml}
+          <div class="atmoCard" data-job="${job.job_id}">
+            <div class="atmoThumb ${isPortrait ? "isPortrait" : ""}">
+              <div class="atmoPill ${badge.kind}">${badge.text}</div>
+              ${thumbInner}
+            </div>
 
             <div class="atmoFooter">
               <div class="atmoMetaLine">${metaLine}</div>
@@ -333,29 +252,6 @@
 
       const out = pickBestVideoOutput(job);
       const url = out?.url || "";
-      const isPortrait = (() => {
-        const ar = String(job.meta?.aspect_ratio || job.meta?.ratio || out?.meta?.aspect_ratio || "");
-        // kaba tespit: 9:16, 4:5, etc.
-        return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
-      })();
-
-      const metaText = `${(job.provider || job.meta?.provider || "Atmos")} • ${fmtDT(job.created_at || job.updated_at)}`;
-
-      if (act === "play") {
-        if (!url) return;
-        setPlayer(url, metaText, isPortrait);
-
-        // PPE bridge (global outputs)
-        try {
-          if (window.PPE && typeof window.PPE.apply === "function") {
-            window.PPE.apply({
-              outputs: [{ type: "video", url, src: url, meta: { app: "atmo" } }],
-              meta: { app: "atmo", job_id: jobId }
-            });
-          }
-        } catch {}
-        return;
-      }
 
       if (act === "download") {
         if (!url) return;
@@ -383,18 +279,8 @@
       }
 
       if (act === "delete") {
-        // optimistic
         const ok = await controller.deleteJob(jobId);
-        // eğer seçili player bu job ise kapat
-        try {
-          const src = elPlayerVideo?.getAttribute("src") || "";
-          if (src && url && src === url) clearPlayer();
-        } catch {}
-        if (!ok) {
-          // endpoint yoksa bile UI temizlenmiş olur; sonra hydrate geri getirebilir.
-          // o yüzden hydrate(true) yapıp DB gerçeğini yenile.
-          controller.hydrate(true);
-        }
+        if (!ok) controller.hydrate(true);
         return;
       }
     }
@@ -416,7 +302,6 @@
     function destroy() {
       destroyed = true;
       controller.destroy();
-      clearPlayer();
       host.innerHTML = "";
     }
 
