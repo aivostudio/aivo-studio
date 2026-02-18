@@ -638,19 +638,24 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
-/* ATM CTA: kartın iç padding'i kesin olsun */
-section.main-panel[data-module="atmosphere"] .smpack-card--cta{
+/* TEST: vuruyor mu? */
+section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta{
+  outline: 3px solid hotpink !important;
   padding: 18px !important;
   overflow: visible !important;
 }
 
-/* wrapper genişliği tam olsun */
-section.main-panel[data-module="atmosphere"] .smpack-card--cta .atmPersCta{
+section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta > div.atmPersCta{
   width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-/* buton kartın içini doldursun */
-section.main-panel[data-module="atmosphere"] .smpack-card--cta .atmBigCtaBtn{
+section.main-panel[data-module="atmosphere"] div.card.smpack-card.smpack-card--cta button.atmBigCtaBtn{
   width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
   margin: 0 !important;
 }
