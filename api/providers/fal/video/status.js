@@ -13,7 +13,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
 
-    const statusUrl = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(
+    // ✅ Model path ile birebir aynı olmalı (create.js ile eşleşsin)
+    const baseModel = "fal-ai/kling-video/v3/pro/text-to-video";
+
+    // ✅ Status endpoint
+    const statusUrl = `https://queue.fal.run/${baseModel}/requests/${encodeURIComponent(
       request_id
     )}/status`;
 
@@ -50,7 +54,7 @@ export default async function handler(req, res) {
     let responseData = null;
 
     if (status === "COMPLETED") {
-      const responseUrl = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(
+      const responseUrl = `https://queue.fal.run/${baseModel}/requests/${encodeURIComponent(
         request_id
       )}`;
 
@@ -80,6 +84,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       provider: "fal",
+      model: baseModel,
       request_id,
       status,
       video_url,
