@@ -638,3 +638,7 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
+/* Atmos module alt boşluk fix */
+section.main-panel[data-module="atmosphere"] {
+  padding-bottom: 32px;
+}
