@@ -343,21 +343,11 @@
 
       <!-- TEK SAYAC (SUPER PROMPT) -->
       <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
-       <span id="atmSuperPromptCount">0</span> / 1000
+        <span id="atmSuperPromptCount">0</span> / 1000
       </div>
     </div>
 
- 
-
-
-    <!-- burada devam ediyorsun: Referans Görsel / Müzik-Jingle vs -->
-  </div>
-
-</div>
-
-
-
-
+    <!-- REFERENCES -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
       <label for="atmSceneImageInput" class="btn" style="cursor:pointer;">
         🖼️ Referans Görsel
@@ -372,12 +362,12 @@
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
       <div>
-      <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
-  Zorunlu: Base frame
-</span>
-</div>
-</div>
-</div>
+        <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
+          Zorunlu: Base frame
+        </span>
+      </div>
+    </div>
+  </div><!-- /#atmSuperPromptCard -->
 
   <!-- (2) LIGHT · EXPORT · MOOD -->
   <div class="card" id="atmProMoodExport" style="margin-top:14px;">
@@ -451,7 +441,6 @@
       </div>
     </div>
 
-    <!-- 3 kolon: 2 satır (yükseklik düşer) -->
     <div class="atmProFxGrid">
       <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
       <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
@@ -462,7 +451,6 @@
       <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
     </div>
 
-    <!-- LUT inline -->
     <div class="atmLutRow">
       <div class="atmLutLabel">🎨 Color Grade / LUT</div>
       <select id="atmProLut" class="atmLutSelect">
@@ -475,20 +463,16 @@
     </div>
   </div>
 
- <!-- (4) CTA PRO -->
-<div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
-
-  <div class="atmPersCta atmPersCta--pro">
-
-    <button class="atmBigCtaBtn atmBigCtaBtn--pro"
-            type="button"
-            data-atm-generate
-            data-atm-mode="pro">
-      🎬 Süper Atmosfer Video Oluştur (30 Kredi)
-    </button>
-
+  <!-- (4) CTA PRO -->
+  <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+    <div class="atmPersCta atmPersCta--pro">
+      <button class="atmBigCtaBtn atmBigCtaBtn--pro"
+              type="button"
+              data-atm-generate
+              data-atm-mode="pro">
+        🎬 Süper Atmosfer Video Oluştur (30 Kredi)
+      </button>
+    </div>
   </div>
-
-</div>
 
 </div><!-- /mode-panel pro -->
