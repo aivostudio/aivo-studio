@@ -1,5 +1,96 @@
-/* ATMO Player: devasa olmasın */
-.atmoPlayerBox:before{ padding-top: 42% !important; }      /* 16:9 yerine daha kısa */
-.atmoPlayerBox{ max-height: 220px; }                        /* paneli şişirme */
-.atmoPlayerVideo{ object-fit: contain; }                    /* letterbox güvenli */
-.atmoPlayerHint{ padding: 8px 10px !important; }            /* biraz sıkı */
+/* /css/mod.atmo.panel.css */
+
+.atmoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.atmoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.atmoTitle {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.atmoStatus {
+  font-size: 12px;
+  opacity: .7;
+}
+
+.atmoSub {
+  opacity: .75;
+  font-size: 13px;
+}
+
+.atmoHero {
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 12px;
+}
+
+.atmoHeroInner {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+
+  /* 🔒 sabit viewport */
+  aspect-ratio: 16 / 9;
+  max-height: 220px;
+}
+
+.atmoHeroInner::before{
+  content:"";
+  display:block;
+  padding-top: 56.25%; /* 16:9 fallback */
+}
+
+.atmoHeroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  /* 9:16 gelirse letterbox */
+  object-fit: contain;
+  background: #000;
+}
+
+.atmoHeroOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.atmoHeroHint {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-size: 12px;
+  opacity: .7;
+}
+
+.atmoPlayPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(10px);
+  font-weight: 700;
+  opacity: .9;
+}
