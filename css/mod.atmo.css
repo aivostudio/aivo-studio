@@ -638,13 +638,19 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
-/* Atmosphere: en alttaki CTA kesilmesin */
-section.main-panel[data-module="atmosphere"]{
-  padding-bottom: 28px !important;
+/* ATM CTA: kartın iç padding'i kesin olsun */
+section.main-panel[data-module="atmosphere"] .smpack-card--cta{
+  padding: 18px !important;
+  overflow: visible !important;
 }
 
-/* Bazı shell'lerde içerik kırpılıyor: güvenli aç */
-section.main-panel[data-module="atmosphere"] .glassCard,
-section.main-panel[data-module="atmosphere"] .atmo-view{
-  overflow: visible !important;
+/* wrapper genişliği tam olsun */
+section.main-panel[data-module="atmosphere"] .smpack-card--cta .atmPersCta{
+  width: 100% !important;
+}
+
+/* buton kartın içini doldursun */
+section.main-panel[data-module="atmosphere"] .smpack-card--cta .atmBigCtaBtn{
+  width: 100% !important;
+  margin: 0 !important;
 }
