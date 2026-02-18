@@ -2,7 +2,8 @@ export const config = { runtime: "nodejs" };
 
 // /pages/api/providers/fal/video/create.js
 import { neon } from "@neondatabase/serverless";
-import authModule from "../../_lib/auth.js"; // dikkat: path gerekirse düzelt
+import authModule from "../../../_lib/auth.js";
+ // dikkat: path gerekirse düzelt
 const { requireAuth } = authModule;
 
 function pickConn() {
