@@ -1,3 +1,4 @@
+// /api/providers/fal/video/status.js
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -8,18 +9,27 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    const { request_id } = req.query || {};
+    const { request_id, endpoint_id, app } = req.query || {};
     if (!request_id) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
 
-    // ✅ Model path ile birebir aynı olmalı (create.js ile eşleşsin)
-    const baseModel = "fal-ai/kling-video/v3/pro/text-to-video";
+    // Default: Atmosfer Video için "en iyi" olarak Kling v3 PRO Text-to-Video
+    // İstersen çağrıda endpoint_id=... gönderip override edebilirsin.
+    const defaultEndpointId = "fal-ai/kling-video/v3/pro/text-to-video";
 
-    // ✅ Status endpoint
-    const statusUrl = `https://queue.fal.run/${baseModel}/requests/${encodeURIComponent(
-      request_id
-    )}/status`;
+    // app bazlı default seçmek istersen:
+    // - atmo => pro text-to-video (wow)
+    // - başka yerlerde istersen standard’a düşebilirsin
+    const chosenEndpointId =
+      endpoint_id ||
+      (app === "atmo" ? defaultEndpointId : defaultEndpointId);
+
+    const encEndpoint = encodeURIComponent(chosenEndpointId);
+    const encRid = encodeURIComponent(request_id);
+
+    // Queue status endpoint (OpenAPI: /{endpoint_id}/requests/{request_id}/status)
+    const statusUrl = `https://queue.fal.run/${encEndpoint}/requests/${encRid}/status?logs=0`;
 
     const statusRes = await fetch(statusUrl, {
       method: "GET",
@@ -29,7 +39,6 @@ export default async function handler(req, res) {
     });
 
     const statusText = await statusRes.text();
-
     let statusData = null;
     try {
       statusData = statusText ? JSON.parse(statusText) : null;
@@ -43,20 +52,21 @@ export default async function handler(req, res) {
         provider: "fal",
         error: "fal_status_error",
         fal_status: statusRes.status,
+        endpoint_id: chosenEndpointId,
+        request_id,
         fal_response: statusData,
       });
     }
 
     const status = statusData?.status || null;
 
-    // Eğer completed ise response endpointinden output al
+    // COMPLETED olunca sonucu çek
     let video_url = null;
     let responseData = null;
 
     if (status === "COMPLETED") {
-      const responseUrl = `https://queue.fal.run/${baseModel}/requests/${encodeURIComponent(
-        request_id
-      )}`;
+      // Queue result endpoint (OpenAPI: /{endpoint_id}/requests/{request_id})
+      const responseUrl = `https://queue.fal.run/${encEndpoint}/requests/${encRid}`;
 
       const responseRes = await fetch(responseUrl, {
         method: "GET",
@@ -66,25 +76,27 @@ export default async function handler(req, res) {
       });
 
       const responseText = await responseRes.text();
-
       try {
         responseData = responseText ? JSON.parse(responseText) : null;
       } catch (e) {
         responseData = { _non_json: responseText };
       }
 
+      // Kling çıktıları farklı şemalarda gelebiliyor: olabildiğince toleranslı al
       video_url =
         responseData?.response?.video?.url ||
         responseData?.response?.output?.video?.url ||
         responseData?.response?.output?.url ||
         responseData?.video?.url ||
+        responseData?.output?.video?.url ||
+        responseData?.output?.url ||
         null;
     }
 
     return res.status(200).json({
       ok: true,
       provider: "fal",
-      model: baseModel,
+      endpoint_id: chosenEndpointId,
       request_id,
       status,
       video_url,
