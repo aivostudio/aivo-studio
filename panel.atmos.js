@@ -177,36 +177,30 @@
 
     let destroyed = false;
 
-   host.innerHTML = `
-  <div class="atmoPanel">
-    <div class="atmoHeader">
-      <div class="atmoTitle">Atmosfer Video</div>
-      <div class="atmoStatus rpAtmoStatus">Hazır</div>
-    </div>
-
-    <div class="atmoSub">
-      Atmosfer üretince burada takip edeceğim.
-    </div>
-
-    <div class="atmoHero">
-      <div class="atmoHeroInner">
-       <video class="atmoHeroVideo rpAtmoVideo" playsinline preload="metadata" style="display:none"></video>
-
-
-        <div class="atmoHeroOverlay rpAtmoOverlay">
-          <div class="atmoPlayPill">▶︎ Oynatmak için bir video seç</div>
+    host.innerHTML = `
+      <div class="atmoWrap">
+        <div class="atmoHdr">
+          <div class="atmoTitle">Atmosfer Video</div>
+          <div class="atmoStatus">Hazır</div>
         </div>
 
-        <div class="atmoHeroHint rpAtmoHint">Henüz seçili video yok.</div>
+        <div class="atmoPlayerShell">
+          <div class="atmoPlayerTop">
+            <div class="atmoPlayerMeta">Bir karttan ▶️ seçip oynat.</div>
+            <button class="atmoPlayerClose" type="button" title="Kapat" style="display:none;">✕</button>
+          </div>
+
+          <div class="atmoPlayerBox" data-player-box>
+            <div class="atmoPlayerHint" style="padding:10px 12px;opacity:.75;">
+              Henüz seçili video yok.
+            </div>
+            <video class="atmoPlayerVideo" playsinline controls style="display:none;"></video>
+          </div>
+        </div>
+
+        <div class="atmoGrid" data-grid></div>
       </div>
-    </div>
-
-    <div style="font-size:12px;opacity:.65;">
-      Henüz atmos üretim yok.
-    </div>
-  </div>
-`;
-
+    `;
 
     const elStatus = host.querySelector(".atmoStatus");
     const elGrid = host.querySelector('[data-grid]');
