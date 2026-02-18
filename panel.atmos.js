@@ -2,12 +2,49 @@
 // - ÜSTTEKİ BÜYÜK PLAYER KALKTI ✅
 // - Her kartın içinde mini mp4 <video controls> ✅
 // - 9:16 clamp -> panel bozulmaz ✅
+// - STRICT FILTER: sadece atmo işleri + atmo output'ları ✅
+// - proxy/http guard + safer render ✅
+
 (function () {
   if (!window.RightPanel) return;
   if (!window.DBJobs) {
     console.warn("[ATMO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
     return;
   }
+
+  /* =======================
+     Utils
+     ======================= */
+
+  const norm = (s) =>
+    String(s || "")
+      .trim()
+      .toLowerCase()
+      .replaceAll("_", " ")
+      .replace(/\s+/g, " ");
+
+  const esc = (s) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[c]));
+
+  const isAtmoApp = (x) => {
+    const a = norm(x);
+    // "atmo", "atmos", "atmosfer" varyantlarına tolerans
+    return a === "atmo" || a.includes("atmo");
+  };
+
+  const toMaybeProxyUrl = (url) => {
+    const u = String(url || "").trim();
+    if (!u) return "";
+    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
+    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
+    return u;
+  };
 
   const fmtDT = (d) => {
     try {
@@ -23,25 +60,71 @@
     }
   };
 
+  // job için güvenli app tespiti
+  const getJobApp = (job) =>
+    String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
+
+  // output için güvenli app tespiti
+  const getOutApp = (o) =>
+    String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "").trim();
+
+  const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
+
   const mapBadge = (job) => {
-    const st = String(job?.status || job?.state || "").toUpperCase();
+    // db_status/status/state kombinasyonu
+    const a = norm(job?.db_status);
+    const b = norm(job?.status);
+    const c = norm(job?.state);
+
+    const st = (a || b || c || "").toUpperCase();
+
     if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
     if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
     if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
-    return { text: st || "Hazır", kind: "mid" };
+
+    // fallback
+    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
   const pickBestVideoOutput = (job) => {
     const outs = (job && job.outputs) || [];
-    if (!outs.length) return null;
+    if (!Array.isArray(outs) || !outs.length) return null;
 
-    // prefer video outputs
-    const videos = outs.filter((o) => String(o.type || "").toLowerCase() === "video");
-    const best = (videos[0] || outs[0]) || null;
+    // STRICT: atmo olmayan output'u ignore et (meta.app varsa)
+    const outsFiltered = outs.filter((o) => {
+      const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+      if (t && t !== "video") return false;
+
+      const oa = getOutApp(o);
+      if (oa && !isAtmoApp(oa)) return false;
+
+      return true;
+    });
+
+    const pool = outsFiltered.length ? outsFiltered : outs;
+
+    // video outputs öncelik
+    const videos = pool.filter((o) => norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video");
+    const best = (videos[0] || pool[0]) || null;
     if (!best) return null;
 
-    // prefer archive_url (kalıcı) > url > raw_url
-    const url = best.archive_url || best.url || best.raw_url || "";
+    // prefer archive_url (kalıcı) > url > raw_url > meta.url
+    const raw =
+      best.archive_url ||
+      best.archiveUrl ||
+      best.url ||
+      best.video_url ||
+      best.videoUrl ||
+      best.raw_url ||
+      best.rawUrl ||
+      best.meta?.archive_url ||
+      best.meta?.archiveUrl ||
+      best.meta?.url ||
+      best.meta?.video_url ||
+      best.meta?.videoUrl ||
+      "";
+
+    const url = toMaybeProxyUrl(raw);
     if (!url) return null;
 
     return { ...best, url };
@@ -162,7 +245,6 @@
           <div class="atmoTitle">Atmosfer Video</div>
           <div class="atmoStatus">Hazır</div>
         </div>
-
         <div class="atmoGrid" data-grid></div>
       </div>
     `;
@@ -178,17 +260,34 @@
       debug: false,
       pollIntervalMs: 4000,
       hydrateEveryMs: 15000,
-      acceptOutput: (o) => {
-        if (!o) return false;
-        const t = String(o.type || "").toLowerCase();
-        if (t && t !== "video") return false;
-        const app = String(o.meta?.app || "").toLowerCase();
-        if (app && !app.includes("atmo")) return false;
+
+      // STRICT: yalnız atmo video çıktıları
+      acceptJob: (job) => {
+        if (!job) return false;
+        const ja = getJobApp(job);
+        if (ja && !isAtmoApp(ja)) return false;
         return true;
       },
+
+      acceptOutput: (o) => {
+        if (!o) return false;
+
+        // type: video (ya da boş → bazı backendlere tolerans)
+        const t = norm(o.type || o.kind || o.meta?.type || o.meta?.kind);
+        if (t && t !== "video") return false;
+
+        // meta.app varsa atmo olmalı
+        const oa = getOutApp(o);
+        if (oa && !isAtmoApp(oa)) return false;
+
+        return true;
+      },
+
       onChange: (items) => {
         if (destroyed) return;
-        render(items || []);
+        // STRICT: güvenlik için burada da filtrele
+        const safeItems = (items || []).filter(isJobAtmo);
+        render(safeItems);
       }
     });
 
@@ -197,8 +296,8 @@
 
       // status summary
       const hasProcessing = (items || []).some(j => {
-        const st = String(j.status || "").toUpperCase();
-        return (st === "PROCESSING" || st === "RUNNING" || st === "PENDING" || st === "QUEUED");
+        const st = norm(j.db_status || j.status || j.state).toUpperCase();
+        return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
       });
       setStatus(hasProcessing ? "İşleniyor…" : "Hazır");
 
@@ -212,32 +311,43 @@
         const out = pickBestVideoOutput(job);
         const url = out?.url || "";
         const dt = fmtDT(job.created_at || job.updated_at);
+
         const engine = (job.provider || job.meta?.provider || "Atmos").toString();
         const metaLine = `${engine}${dt ? " • " + dt : ""}`;
 
-        const ratio = String(job.meta?.aspect_ratio || job.meta?.ratio || out?.meta?.aspect_ratio || "");
-        const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
+        const ratio = String(
+          job.meta?.aspect_ratio ||
+          job.meta?.ratio ||
+          out?.meta?.aspect_ratio ||
+          out?.meta?.ratio ||
+          ""
+        );
+
+        const isPortrait =
+          ratio.includes("9:16") ||
+          ratio.includes("4:5") ||
+          ratio.includes("2:3");
 
         const disabled = url ? "" : `disabled`;
 
         const thumbInner = url
-          ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${url}"></video>`
+          ? `<video class="atmoThumbVideo" playsinline webkit-playsinline preload="metadata" controls muted src="${esc(url)}"></video>`
           : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
         return `
-          <div class="atmoCard" data-job="${job.job_id}">
+          <div class="atmoCard" data-job="${esc(job.job_id)}">
             <div class="atmoThumb ${isPortrait ? "isPortrait" : ""}">
-              <div class="atmoPill ${badge.kind}">${badge.text}</div>
+              <div class="atmoPill ${badge.kind}">${esc(badge.text)}</div>
               ${thumbInner}
             </div>
 
             <div class="atmoFooter">
-              <div class="atmoMetaLine">${metaLine}</div>
+              <div class="atmoMetaLine">${esc(metaLine)}</div>
 
               <div class="atmoActions">
-                <button class="atmoIconBtn" type="button" data-act="download" data-job="${job.job_id}" ${disabled}>İndir</button>
-                <button class="atmoIconBtn" type="button" data-act="share" data-job="${job.job_id}" ${disabled}>Paylaş</button>
-                <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${job.job_id}">Sil</button>
+                <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(job.job_id)}" ${disabled}>İndir</button>
+                <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(job.job_id)}" ${disabled}>Paylaş</button>
+                <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(job.job_id)}">Sil</button>
               </div>
             </div>
           </div>
@@ -247,8 +357,11 @@
 
     async function handleAction(act, jobId) {
       const items = controller.state.items || [];
-      const job = items.find(x => x.job_id === jobId);
+      const job = items.find(x => String(x.job_id) === String(jobId));
       if (!job) return;
+
+      // STRICT: safety net
+      if (!isJobAtmo(job)) return;
 
       const out = pickBestVideoOutput(job);
       const url = out?.url || "";
@@ -301,7 +414,7 @@
 
     function destroy() {
       destroyed = true;
-      controller.destroy();
+      try { controller.destroy(); } catch {}
       host.innerHTML = "";
     }
 
