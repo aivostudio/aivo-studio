@@ -98,6 +98,7 @@ window.AIVO_APP = window.AIVO_APP || {};
    ✅ ATM_CREATE HOOK (SINGLE SOURCE) — studio.services.js (bottom)
    - Atmosfer Üret butonundan gelen payload'ı normalize eder
    - Duration FORCE YOK ✅ (UI seçimi aynen gider)
+   - Aspect Ratio: 16:9 / 1:1 / 9:16 (default 16:9)
    - /api/jobs/create-atmo çağırır
    - job_id gelince "aivo:atmo:job_created" event fırlatır (Video hissi)
    - PPE.apply / AIVO_JOBS.upsert ile kart basmaz (dupe biter)
@@ -116,6 +117,21 @@ window.AIVO_APP = window.AIVO_APP || {};
   const nowISO = () => new Date().toISOString();
 
   const ALLOWED_DURS = new Set(["4", "6", "8", "10", "12", "15"]);
+  const ALLOWED_RATIOS = new Set(["16:9", "1:1", "9:16"]);
+
+  const normalizeRatio = (raw) => {
+    const r = String(raw || "").trim();
+    if (ALLOWED_RATIOS.has(r)) return r;
+
+    // toleranslı girişler (16x9, 16/9, 169 vs)
+    const n = r.replaceAll(" ", "").replaceAll("/", ":").replaceAll("x", ":").toLowerCase();
+    if (n === "16:9" || n === "169") return "16:9";
+    if (n === "1:1" || n === "11") return "1:1";
+    if (n === "9:16" || n === "916") return "9:16";
+
+    // ürün default
+    return "16:9";
+  };
 
   const normalizePayload = (p) => {
     const payload = { ...(p || {}) };
@@ -128,6 +144,13 @@ window.AIVO_APP = window.AIVO_APP || {};
     const dur = String(rawDur || "").trim();
     payload.duration = ALLOWED_DURS.has(dur) ? dur : "8";
 
+    // ✅ aspect_ratio: UI seçimi veya default 16:9
+    // (UI tarafında sonradan ekleyeceğiz: payload.aspect_ratio gelecek)
+    payload.aspect_ratio = normalizeRatio(payload.aspect_ratio || payload.ratio || payload.aspect || "");
+
+    // bazı wrapper’lar ratio bekliyor, ikisini de koyuyoruz
+    payload.ratio = payload.aspect_ratio;
+
     // defaults
     payload.format = payload.format || "mp4";
     payload.fps = payload.fps || "24";
@@ -138,11 +161,12 @@ window.AIVO_APP = window.AIVO_APP || {};
       delete payload.seamFix;
     }
 
-    // tiny normalization
+    // normalize prompt
     if (payload.text && !payload.prompt) {
       payload.prompt = String(payload.text || "");
       delete payload.text;
     }
+    payload.prompt = String(payload.prompt || "").trim();
 
     return payload;
   };
@@ -160,6 +184,10 @@ window.AIVO_APP = window.AIVO_APP || {};
             duration: payload.duration || "8",
             fps: payload.fps || "24",
             format: payload.format || "mp4",
+            aspect_ratio: payload.aspect_ratio || "16:9",
+            ratio: payload.aspect_ratio || "16:9",
+
+            // ekstra debug/meta
             prompt: payload.prompt || "",
             scene: payload.scene || "",
             effects: Array.isArray(payload.effects) ? payload.effects.slice() : [],
