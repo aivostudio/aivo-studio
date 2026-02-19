@@ -1,296 +1,526 @@
 /* ============================================================================
-   atmosphere.module.js — GENERATE PATCH (Cover/Video pattern)
-   - Adds real "press + Üretiliyor..." behavior
-   - Calls Fal create endpoint (app=atmo), then polls status (app=atmo)
-   - On READY/COMPLETED extracts mp4 URL and PPE.apply() -> RightPanel item shows
-   - Fixes super prompt counter id mismatch
+   atmosphere.module.js — V2 (FULL, clean)
+   - Fix: Mode switch uses CAPTURE + stopPropagation to avoid global click blockers
+   - Basic: scene select, effects multi-select, camera/duration, personalization (image/logo/audio)
+   - Pro: prompt + refs, light/mood single-select, export + details + LUT
+   - Generate: builds payload and calls your hook if present (ATM_CREATE / atmoGenerate / ATMOSPHERE_CREATE)
    ============================================================================ */
 
 (() => {
-  // ---------- helpers ----------
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const safeJson = async (res) => {
-    try { return await res.json(); } catch { return null; }
+  // ------------------------------------------------------------
+  // 0) Guard + tiny helpers
+  // ------------------------------------------------------------
+  if (window.__ATM_V2_BIND__) return;
+  window.__ATM_V2_BIND__ = true;
+
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const closestWithin = (el, sel, root) => {
+    const found = el?.closest?.(sel);
+    return found && root && root.contains(found) ? found : null;
   };
 
-  function setBtnLoading(btn, loading, labelWhenLoading = "Üretiliyor...") {
+  const setActive = (btn, on) => {
     if (!btn) return;
-    if (!btn.__origHTML) btn.__origHTML = btn.innerHTML;
+    btn.classList.toggle("is-active", !!on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
 
-    if (loading) {
-      btn.disabled = true;
-      btn.classList.add("is-loading");
-      btn.setAttribute("aria-busy", "true");
-      btn.innerHTML = labelWhenLoading;
-    } else {
-      btn.disabled = false;
-      btn.classList.remove("is-loading");
-      btn.removeAttribute("aria-busy");
-      btn.innerHTML = btn.__origHTML || btn.innerHTML;
+  const singleSelectIn = (root, selector, keepBtn) => {
+    qsa(selector, root).forEach((b) => {
+      if (b !== keepBtn) setActive(b, false);
+    });
+    setActive(keepBtn, true);
+  };
+
+  // ------------------------------------------------------------
+  // 1) Scope finder (works inside studio module host)
+  // ------------------------------------------------------------
+  function getAtmoPanelRoot() {
+    return (
+      qs('.main-panel[data-module="atmosphere"]') ||
+      qs('.mode-shell[data-mode-shell="atmosphere"]') ||
+      qs("#atmRoot") ||
+      null
+    );
+  }
+
+  // ------------------------------------------------------------
+  // 2) State (single source of truth)
+  // ------------------------------------------------------------
+  const state = (window.__ATM_V2__ = window.__ATM_V2__ || {
+    mode: "basic",
+
+    // basic
+    scene: "winter_cafe",
+    effects: [],
+    camera: "kenburns_soft",
+    duration: "8",
+    imageFile: null,
+
+    // personalization (basic)
+    logoFile: null,
+    logoPos: "br",
+    logoSize: "sm",
+    logoOpacity: 0.9,
+    audioFile: null,
+    audioMode: "none",
+    audioTrim: "loop_to_fit",
+    silentCopy: true,
+
+    // pro
+    prompt: "",
+    refImageFile: null,
+    refAudioFile: null,
+    light: null, // warm/cool/golden/neon/moon
+    mood: null,  // romantic/cinematic/cozy/mysterious/lofi
+    fps: "24",
+    format: "mp4",
+    seamFix: false,
+
+    // pro details
+    details: {
+      grain: false,
+      glow: false,
+      vignette: false,
+      sharpen: false,
+      motionBlur: false,
+      dust: false,
+      lut: ""
     }
-  }
-
-  function pickVideoUrl(obj) {
-    if (!obj) return null;
-
-    // Common shapes (best-effort)
-    const candidates = [
-      obj?.video?.url,
-      obj?.output?.video?.url,
-      obj?.output?.url,
-      obj?.result?.video?.url,
-      obj?.result?.url,
-      obj?.data?.video?.url,
-      obj?.data?.output?.url,
-      obj?.outputs?.find?.((x) => x?.type === "video")?.url,
-      obj?.output?.find?.((x) => x?.type === "video")?.url,
-      obj?.images?.[0]?.url, // sometimes misnamed but includes video url in some providers
-    ].filter(Boolean);
-
-    const url = candidates.find((u) => typeof u === "string" && u.startsWith("http"));
-    return url || null;
-  }
-
-  function isDoneStatus(s) {
-    const v = String(s || "").toLowerCase();
-    return v === "completed" || v === "succeeded" || v === "success" || v === "ready" || v === "done";
-  }
-  function isFailStatus(s) {
-    const v = String(s || "").toLowerCase();
-    return v === "failed" || v === "error" || v === "canceled" || v === "cancelled";
-  }
-
-  // ---------- endpoints (adjust only here if needed) ----------
-  const FAL_CREATE_URL = "/api/providers/fal/predictions/create?app=atmo";
-  const FAL_STATUS_URL = "/api/providers/fal/predictions/status?app=atmo";
-
-  async function falCreate(payload) {
-    // If any File exists, send multipart. Otherwise JSON.
-    const hasFile =
-      payload?.image_file instanceof File ||
-      payload?.logo_file instanceof File ||
-      payload?.audio_file instanceof File ||
-      payload?.ref_image_file instanceof File ||
-      payload?.ref_audio_file instanceof File;
-
-    let res, data;
-
-    if (hasFile) {
-      const fd = new FormData();
-      fd.append("payload", JSON.stringify(payload));
-
-      // attach files under stable keys (backend should read these)
-      if (payload.image_file) fd.append("image_file", payload.image_file);
-      if (payload.logo_file) fd.append("logo_file", payload.logo_file);
-      if (payload.audio_file) fd.append("audio_file", payload.audio_file);
-      if (payload.ref_image_file) fd.append("ref_image_file", payload.ref_image_file);
-      if (payload.ref_audio_file) fd.append("ref_audio_file", payload.ref_audio_file);
-
-      res = await fetch(FAL_CREATE_URL, { method: "POST", body: fd, credentials: "include" });
-      data = await safeJson(res);
-    } else {
-      res = await fetch(FAL_CREATE_URL, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include"
-      });
-      data = await safeJson(res);
-    }
-
-    if (!res.ok || !data) {
-      const msg = data?.error || data?.message || `create_failed_${res.status}`;
-      throw new Error(msg);
-    }
-
-    // normalize request id
-    const requestId =
-      data?.request_id ||
-      data?.requestId ||
-      data?.id ||
-      data?.prediction_id ||
-      data?.predictionId ||
-      data?.data?.request_id ||
-      null;
-
-    return { raw: data, requestId };
-  }
-
-  async function falPoll(requestId, { timeoutMs = 4 * 60 * 1000, intervalMs = 1800 } = {}) {
-    const t0 = Date.now();
-
-    while (Date.now() - t0 < timeoutMs) {
-      const url = `${FAL_STATUS_URL}&request_id=${encodeURIComponent(requestId)}`;
-      const res = await fetch(url, { credentials: "include" });
-      const data = await safeJson(res);
-
-      if (!res.ok || !data) {
-        // transient: keep polling a bit
-        await sleep(intervalMs);
-        continue;
-      }
-
-      const status =
-        data?.status ||
-        data?.state ||
-        data?.data?.status ||
-        data?.data?.state ||
-        null;
-
-      if (isFailStatus(status)) {
-        const msg = data?.error || data?.message || "failed";
-        throw new Error(msg);
-      }
-
-      if (isDoneStatus(status)) {
-        const urlOut = pickVideoUrl(data);
-        if (!urlOut) {
-          // done but no url -> treat as error (don’t spend credits without output)
-          throw new Error("completed_but_no_video_url");
-        }
-        return { raw: data, status, videoUrl: urlOut };
-      }
-
-      await sleep(intervalMs);
-    }
-
-    throw new Error("timeout_waiting_video");
-  }
-
-  // ---------- patch counter id mismatch ----------
-  document.addEventListener("input", (e) => {
-    const ta = e.target?.closest?.("#atmSuperPrompt");
-    if (!ta) return;
-    const root = ta.closest?.('.main-panel[data-module="atmosphere"]') || document;
-    const counter = root.querySelector("#atmSuperPromptCount"); // ✅ correct id
-    if (counter) counter.textContent = String((ta.value || "").length);
   });
 
-  // ---------- integrate with your existing builder/state (expects buildBasicPayload/buildProPayload) ----------
-  // If you already have these functions in your module, we’ll reuse them.
-  // Otherwise we read from window.__ATM_V2__ like in your patch.
-  function buildPayloadFromExisting(mode) {
-    // Prefer existing functions if present
-    if (typeof window.buildBasicPayload === "function" && typeof window.buildProPayload === "function") {
-      return mode === "pro" ? window.buildProPayload() : window.buildBasicPayload();
+  // ------------------------------------------------------------
+  // 3) Sync helpers (hidden legacy inputs etc.)
+  // ------------------------------------------------------------
+  function syncLegacyEffectsInput(root) {
+    const wrap = qs("#atmEffects", root);
+    if (!wrap) return;
+
+    const hidden = qs("#atmEffectsValue", root);
+    if (hidden) hidden.value = (state.effects || []).join(",");
+
+    wrap.dataset.selected = (state.effects || []).join(",");
+  }
+
+  function readInitialFromDOM(root) {
+    // Basic scene
+    const activeScene = qs("#atmScenes .smpack-choice.is-active", root);
+    if (activeScene?.dataset?.atmScene) state.scene = activeScene.dataset.atmScene;
+
+    // Basic effects
+    const effBtns = qsa("#atmEffects [data-atm-eff].is-active", root);
+    const eff = effBtns.map((b) => b.dataset.atmEff).filter(Boolean);
+    if (eff.length) state.effects = eff;
+
+    // Basic selects
+    const cam = qs("#atmCamera", root)?.value;
+    const dur = qs("#atmDuration", root)?.value;
+    if (cam) state.camera = cam;
+    if (dur) state.duration = dur;
+
+    // Personalization
+    const pos = qs("#atmLogoPos", root)?.value;
+    const size = qs("#atmLogoSize", root)?.value;
+    const op = qs("#atmLogoOpacity", root)?.value;
+    const am = qs("#atmAudioMode", root)?.value;
+    const at = qs("#atmAudioTrim", root)?.value;
+    const sc = qs("#atmSilentCopy", root)?.checked;
+
+    if (pos) state.logoPos = pos;
+    if (size) state.logoSize = size;
+    if (op) state.logoOpacity = parseFloat(op) || state.logoOpacity;
+    if (am) state.audioMode = am;
+    if (at) state.audioTrim = at;
+    if (typeof sc === "boolean") state.silentCopy = sc;
+
+    // Pro prompt
+    const p = qs("#atmSuperPrompt", root)?.value;
+    if (typeof p === "string") state.prompt = p.trim();
+
+    // Pro export
+    const fps = qs("#atmProFps", root)?.value;
+    const fmt = qs("#atmProFormat", root)?.value;
+    const seam = qs("#atmProSeamFix", root)?.checked;
+
+    if (fps) state.fps = fps;
+    if (fmt) state.format = fmt;
+    if (typeof seam === "boolean") state.seamFix = seam;
+
+    // Pro duration (optional)
+    const pd = qs("#atmProDuration", root)?.value;
+    if (pd) state.proDuration = pd;
+
+    // Pro light/mood pills
+    const light = qs('[data-atm-light].is-active', root)?.dataset?.atmLight;
+    const mood = qs('[data-atm-mood].is-active', root)?.dataset?.atmMood;
+    if (light) state.light = light;
+    if (mood) state.mood = mood;
+
+    // Pro details
+    const d = state.details || (state.details = {});
+    const bool = (id) => !!qs(id, root)?.checked;
+    d.grain = bool("#atmProGrain");
+    d.glow = bool("#atmProGlow");
+    d.vignette = bool("#atmProVignette");
+    d.sharpen = bool("#atmProSharpen");
+    d.motionBlur = bool("#atmProMotionBlur");
+    d.dust = bool("#atmProDust");
+    d.lut = qs("#atmProLut", root)?.value || d.lut || "";
+
+    syncLegacyEffectsInput(root);
+  }
+
+  // ------------------------------------------------------------
+  // 4) Mode switch — CAPTURE (prevents other handlers from blocking)
+  // ------------------------------------------------------------
+  document.addEventListener(
+    "click",
+    (e) => {
+      const root = getAtmoPanelRoot();
+      if (!root) return;
+
+      const tab = closestWithin(e.target, '.mode-tab[data-mode]', root);
+      if (!tab) return;
+
+      const shell = tab.closest('.mode-shell[data-mode-shell="atmosphere"]');
+      if (!shell) return;
+
+      // critical: avoid global click blockers
+      e.preventDefault();
+      e.stopPropagation();
+
+      const mode = tab.dataset.mode || "basic";
+      state.mode = mode;
+
+      qsa('.mode-tab[data-mode]', shell).forEach((t) => {
+        const on = t.dataset.mode === mode;
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+
+      qsa('.mode-panel[data-mode-panel]', shell).forEach((p) => {
+        const on = p.dataset.modePanel === mode;
+        p.classList.toggle("is-active", on);
+        // extra guarantee in case CSS relies on display
+        p.style.display = on ? "" : "none";
+      });
+
+      console.log("[ATM] mode switch ->", mode);
+    },
+    true
+  );
+
+  // ------------------------------------------------------------
+  // 5) Basic: Scene select (delegated)
+  // ------------------------------------------------------------
+  document.addEventListener("click", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const btn = closestWithin(e.target, "#atmScenes .smpack-choice[data-atm-scene]", root);
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const scenes = qs("#atmScenes", root);
+    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+
+    state.scene = btn.dataset.atmScene || state.scene;
+  });
+
+  // ------------------------------------------------------------
+  // 6) Basic: Effects multi-select (delegated) + hidden input sync
+  // ------------------------------------------------------------
+  document.addEventListener("click", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const btn = closestWithin(e.target, '#atmEffects [data-atm-eff]', root);
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const eff = btn.dataset.atmEff;
+    if (!eff) return;
+
+    const on = !btn.classList.contains("is-active");
+    setActive(btn, on);
+
+    const set = new Set(state.effects || []);
+    if (on) set.add(eff);
+    else set.delete(eff);
+
+    state.effects = Array.from(set);
+    syncLegacyEffectsInput(root);
+  });
+
+  // ------------------------------------------------------------
+  // 7) Basic: Camera / Duration change
+  // ------------------------------------------------------------
+  document.addEventListener("change", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const cam = closestWithin(e.target, "#atmCamera", root);
+    if (cam) state.camera = cam.value || state.camera;
+
+    const dur = closestWithin(e.target, "#atmDuration", root);
+    if (dur) state.duration = dur.value || state.duration;
+  });
+
+  // ------------------------------------------------------------
+  // 8) Files: Basic image / logo / audio + Pro refs
+  // ------------------------------------------------------------
+  document.addEventListener("change", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const file = e.target?.files?.[0] || null;
+
+    if (closestWithin(e.target, "#atmImageFile", root)) state.imageFile = file;
+    if (closestWithin(e.target, "#atmLogoFile", root)) state.logoFile = file;
+    if (closestWithin(e.target, "#atmAudioFile", root)) state.audioFile = file;
+
+    if (closestWithin(e.target, "#atmSceneImageInput", root)) state.refImageFile = file;
+    if (closestWithin(e.target, "#atmSceneAudioInput", root)) state.refAudioFile = file;
+  });
+
+  // ------------------------------------------------------------
+  // 9) Basic personalization controls
+  // ------------------------------------------------------------
+  document.addEventListener("change", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const pos = closestWithin(e.target, "#atmLogoPos", root);
+    if (pos) state.logoPos = pos.value || state.logoPos;
+
+    const size = closestWithin(e.target, "#atmLogoSize", root);
+    if (size) state.logoSize = size.value || state.logoSize;
+
+    const opacity = closestWithin(e.target, "#atmLogoOpacity", root);
+    if (opacity) state.logoOpacity = parseFloat(opacity.value) || state.logoOpacity;
+
+    const am = closestWithin(e.target, "#atmAudioMode", root);
+    if (am) state.audioMode = am.value || state.audioMode;
+
+    const at = closestWithin(e.target, "#atmAudioTrim", root);
+    if (at) state.audioTrim = at.value || state.audioTrim;
+
+    const sc = closestWithin(e.target, "#atmSilentCopy", root);
+    if (sc) state.silentCopy = !!sc.checked;
+  });
+
+  // ------------------------------------------------------------
+  // 10) Pro: Prompt input + character counter
+  // (supports both ids: atmSuperPromptCount (your HTML) and atmSuperCount (older))
+  // ------------------------------------------------------------
+  document.addEventListener("input", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const ta = closestWithin(e.target, "#atmSuperPrompt", root);
+    if (!ta) return;
+
+    state.prompt = (ta.value || "").trim();
+
+    const counter =
+      qs("#atmSuperPromptCount", root) ||
+      qs("#atmSuperCount", root);
+
+    if (counter) counter.textContent = String(state.prompt.length);
+  });
+
+  // ------------------------------------------------------------
+  // 11) Pro: Light + Mood (single select) — CAPTURE
+  // ------------------------------------------------------------
+  document.addEventListener(
+    "click",
+    (e) => {
+      const root = getAtmoPanelRoot();
+      if (!root) return;
+
+      const lightBtn = closestWithin(e.target, 'button.smpack-pill[data-atm-light]', root);
+      if (lightBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const panel = lightBtn.closest('[data-mode-panel="pro"]') || root;
+        singleSelectIn(panel, 'button.smpack-pill[data-atm-light]', lightBtn);
+        state.light = lightBtn.dataset.atmLight || state.light;
+        return;
+      }
+
+      const moodBtn = closestWithin(e.target, 'button.smpack-pill[data-atm-mood]', root);
+      if (moodBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const panel = moodBtn.closest('[data-mode-panel="pro"]') || root;
+        singleSelectIn(panel, 'button.smpack-pill[data-atm-mood]', moodBtn);
+        state.mood = moodBtn.dataset.atmMood || state.mood;
+        return;
+      }
+    },
+    true
+  );
+
+  // ------------------------------------------------------------
+  // 12) Pro: Export + Details + LUT (+ Pro Duration if exists)
+  // ------------------------------------------------------------
+  document.addEventListener("change", (e) => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const fps = closestWithin(e.target, "#atmProFps", root);
+    if (fps) state.fps = fps.value || state.fps;
+
+    const fmt = closestWithin(e.target, "#atmProFormat", root);
+    if (fmt) state.format = fmt.value || state.format;
+
+    const seam = closestWithin(e.target, "#atmProSeamFix", root);
+    if (seam) state.seamFix = !!seam.checked;
+
+    const pd = closestWithin(e.target, "#atmProDuration", root);
+    if (pd) state.proDuration = pd.value;
+
+    state.details = state.details || {};
+    const d = state.details;
+
+    const map = [
+      ["#atmProGrain", "grain"],
+      ["#atmProGlow", "glow"],
+      ["#atmProVignette", "vignette"],
+      ["#atmProSharpen", "sharpen"],
+      ["#atmProMotionBlur", "motionBlur"],
+      ["#atmProDust", "dust"]
+    ];
+
+    for (const [id, key] of map) {
+      const el = closestWithin(e.target, id, root);
+      if (el) d[key] = !!el.checked;
     }
 
-    // Fallback: minimal from state you created (window.__ATM_V2__)
-    const s = window.__ATM_V2__ || {};
-    if (mode === "pro") {
-      return {
-        app: "atmo",
-        mode: "pro",
-        prompt: s.prompt || "",
-        light: s.light || null,
-        mood: s.mood || null,
-        ref_image_file: s.refImageFile || null,
-        ref_audio_file: s.refAudioFile || null,
-        fps: s.fps || "24",
-        format: s.format || "mp4",
-        seam_fix: !!s.seamFix,
-        details: { ...(s.details || {}) }
-      };
-    }
+    const lut = closestWithin(e.target, "#atmProLut", root);
+    if (lut) d.lut = lut.value || "";
+  });
+
+  // ------------------------------------------------------------
+  // 13) Payload builders
+  // ------------------------------------------------------------
+  function buildBasicPayload() {
     return {
       app: "atmo",
       mode: "basic",
-      scene: s.scene || null,
-      effects: (s.effects || []).slice(),
-      camera: s.camera || "kenburns_soft",
-      duration: s.duration || "8",
-      image_file: s.imageFile || null,
-      logo_file: s.logoFile || null,
-      logo_pos: s.logoPos || "br",
-      logo_size: s.logoSize || "sm",
-      logo_opacity: s.logoOpacity ?? 0.9,
-      audio_file: s.audioFile || null,
-      audio_mode: s.audioMode || "none",
-      audio_trim: s.audioTrim || "loop_to_fit",
-      silent_copy: !!s.silentCopy
+      scene: state.scene || null,
+      effects: (state.effects || []).slice(),
+      camera: state.camera || "kenburns_soft",
+      duration: state.duration || "8",
+
+      image_file: state.imageFile || null,
+
+      logo_file: state.logoFile || null,
+      logo_pos: state.logoPos || "br",
+      logo_size: state.logoSize || "sm",
+      logo_opacity: state.logoOpacity ?? 0.9,
+
+      audio_file: state.audioFile || null,
+      audio_mode: state.audioMode || "none",
+      audio_trim: state.audioTrim || "loop_to_fit",
+      silent_copy: !!state.silentCopy
     };
   }
 
-  async function generateAtmo(btn) {
-    const mode = btn?.dataset?.atmMode || btn?.getAttribute?.("data-atm-mode") || "basic";
-    const payload = buildPayloadFromExisting(mode);
+  function buildProPayload() {
+    return {
+      app: "atmo",
+      mode: "pro",
+      prompt: state.prompt || "",
+      light: state.light || null,
+      mood: state.mood || null,
 
-    console.debug("[ATM] generate payload =", payload);
+      ref_image_file: state.refImageFile || null,
+      ref_audio_file: state.refAudioFile || null,
 
-    // UX: press feel like cover/video
-    setBtnLoading(btn, true, "Üretiliyor...");
-    await sleep(250); // tiny “pressed” feel
+      fps: state.fps || "24",
+      format: state.format || "mp4",
+      duration: state.proDuration || undefined,
+      seam_fix: !!state.seamFix,
 
-    // 1) create
-    const { requestId, raw: createRaw } = await falCreate(payload);
-    if (!requestId) {
-      console.warn("[ATM] create response =", createRaw);
-      throw new Error("missing_request_id");
-    }
-
-    // Optional: announce processing to UI if you have PPE + panel supports “PROCESSING”
-    if (window.PPE?.apply) {
-      try {
-        window.PPE.apply({
-          state: "PROCESSING",
-          outputs: [
-            {
-              type: "video",
-              url: null,
-              // meta helps the panel filter
-              meta: { app: "atmo", mode, request_id: requestId }
-            }
-          ]
-        });
-      } catch {}
-    }
-
-    // 2) poll
-    const done = await falPoll(requestId);
-
-    // 3) apply to RightPanel
-    if (window.PPE?.apply) {
-      window.PPE.apply({
-        state: "COMPLETED",
-        outputs: [
-          {
-            type: "video",
-            url: done.videoUrl,
-            meta: { app: "atmo", mode, request_id: requestId }
-          }
-        ]
-      });
-    } else {
-      console.log("[ATM] video ready =", done.videoUrl);
-    }
-
-    return done;
+      details: { ...(state.details || {}) }
+    };
   }
 
-  // ---------- bind (delegated) ----------
-  document.addEventListener("click", async (e) => {
-    const btn = e.target?.closest?.("[data-atm-generate]");
-    if (!btn) return;
+  // ------------------------------------------------------------
+  // 14) Generate (delegated) — CAPTURE
+  // ------------------------------------------------------------
+  async function onGenerate(btn) {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
 
-    // keep router-safe: only inside atmosphere panel
-    const panel = btn.closest?.('.main-panel[data-module="atmosphere"]');
-    if (!panel) return;
+    const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
+    state.mode = mode;
 
-    e.preventDefault();
-    e.stopPropagation();
+    const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
 
-    try {
-      await generateAtmo(btn);
-      // keep the “cover/video feel”: show it busy a bit longer
-      await sleep(900);
-      setBtnLoading(btn, false);
-    } catch (err) {
-      console.error("[ATM] generate failed:", err);
-      setBtnLoading(btn, false);
+    const hook =
+      window.ATM_CREATE ||
+      window.atmoGenerate ||
+      window.ATMOSPHERE_CREATE ||
+      null;
 
-      // if you have toast helper, use it
-      if (window.toast?.error) window.toast.error("Atmosfer üretim başarısız: " + (err?.message || "error"));
-      else if (window.Toast?.error) window.Toast.error("Atmosfer üretim başarısız");
+    if (typeof hook === "function") {
+      console.log("[ATM] generate -> hook()", { mode, payload });
+      return hook(payload);
     }
-  }, true);
+
+    console.log("[ATM] generate payload =", payload);
+  }
+
+  document.addEventListener(
+    "click",
+    (e) => {
+      const root = getAtmoPanelRoot();
+      if (!root) return;
+
+      const btn = closestWithin(e.target, "[data-atm-generate]", root);
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      onGenerate(btn);
+    },
+    true
+  );
+
+  // ------------------------------------------------------------
+  // 15) Init sync (best effort)
+  // ------------------------------------------------------------
+  const init = () => {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+    readInitialFromDOM(root);
+    syncLegacyEffectsInput(root);
+
+    // ensure panels display matches current state.mode
+    const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
+    if (shell) {
+      const mode = state.mode || "basic";
+      qsa('.mode-panel[data-mode-panel]', shell).forEach((p) => {
+        const on = p.dataset.modePanel === mode;
+        p.classList.toggle("is-active", on);
+        p.style.display = on ? "" : "none";
+      });
+      qsa('.mode-tab[data-mode]', shell).forEach((t) => {
+        const on = t.dataset.mode === mode;
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+    }
+  };
+
+  init();
+  setTimeout(init, 300);
+  setTimeout(init, 1200);
 })();
