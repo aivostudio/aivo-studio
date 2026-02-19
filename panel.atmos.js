@@ -1,9 +1,8 @@
-// atmosphere.panel.js (DB source-of-truth + cover-style cards + per-card mini video player)
-// - ÜSTTEKİ BÜYÜK PLAYER KALKTI ✅
-// - Her kartın içinde mini mp4 <video controls> ✅
-// - 9:16 clamp -> panel bozulmaz ✅
-// - STRICT FILTER: sadece atmo işleri + atmo output'ları ✅
-// - proxy/http guard + safer render ✅
+// atmosphere.panel.js (DB source-of-truth + cover-style cards + optimistic “video hissi”)
+// - Kart anında gelir (aivo:atmo:job_created)
+// - Mor shimmer “hazırlanıyor”
+// - Ready olunca shimmer gider, video görünür
+// - Dedupe: job_id tek kart (2 video sorunu biter)
 
 (function () {
   if (!window.RightPanel) return;
@@ -34,7 +33,6 @@
 
   const isAtmoApp = (x) => {
     const a = norm(x);
-    // "atmo", "atmos", "atmosfer" varyantlarına tolerans
     return a === "atmo" || a.includes("atmo");
   };
 
@@ -60,29 +58,23 @@
     }
   };
 
-  // job için güvenli app tespiti
   const getJobApp = (job) =>
     String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
 
-  // output için güvenli app tespiti
   const getOutApp = (o) =>
     String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "").trim();
 
   const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
 
   const mapBadge = (job) => {
-    // db_status/status/state kombinasyonu
     const a = norm(job?.db_status);
     const b = norm(job?.status);
     const c = norm(job?.state);
-
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
     if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
     if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
-
-    // fallback
     return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
@@ -90,7 +82,6 @@
     const outs = (job && job.outputs) || [];
     if (!Array.isArray(outs) || !outs.length) return null;
 
-    // STRICT: atmo olmayan output'u ignore et (meta.app varsa)
     const outsFiltered = outs.filter((o) => {
       const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
       if (t && t !== "video") return false;
@@ -102,13 +93,10 @@
     });
 
     const pool = outsFiltered.length ? outsFiltered : outs;
-
-    // video outputs öncelik
     const videos = pool.filter((o) => norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video");
     const best = (videos[0] || pool[0]) || null;
     if (!best) return null;
 
-    // prefer archive_url (kalıcı) > url > raw_url > meta.url
     const raw =
       best.archive_url ||
       best.archiveUrl ||
@@ -167,21 +155,13 @@
 
       .atmoThumbVideo{
         position:absolute;inset:0;width:100%;height:100%;
-        object-fit:cover;
-        background:#000;
-      }
-
-      .atmoThumbPlaceholder{
-        position:absolute;inset:0;
-        display:flex;align-items:center;justify-content:center;
-        font-size:12px;opacity:.75;
-        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
+        object-fit:cover;background:#000;
       }
 
       .atmoPill{
         position:absolute;left:14px;top:14px;z-index:3;
         padding:6px 10px;border-radius:999px;
-        font-size:12px;font-weight:700;
+        font-size:12px;font-weight:800;
         background:rgba(0,0,0,.35);
         border:1px solid rgba(255,255,255,0.10);
         backdrop-filter: blur(10px);
@@ -189,6 +169,36 @@
       .atmoPill.ok{border-color:rgba(120,255,190,.22);}
       .atmoPill.mid{border-color:rgba(255,255,255,.10);}
       .atmoPill.bad{border-color:rgba(255,120,120,.25);}
+
+      /* 🔥 Mor shimmer skeleton */
+      .atmoSkel{
+        position:absolute;inset:0;
+        display:flex;align-items:center;justify-content:center;
+        background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));
+        overflow:hidden;
+      }
+      .atmoSkel:before{
+        content:"";
+        position:absolute;inset:-40%;
+        background:linear-gradient(90deg,
+          rgba(255,255,255,0.00),
+          rgba(220,170,255,0.14),
+          rgba(255,255,255,0.00)
+        );
+        transform:rotate(18deg);
+        animation: atmoShimmer 1.4s linear infinite;
+      }
+      @keyframes atmoShimmer{
+        0%{transform:translateX(-30%) rotate(18deg);}
+        100%{transform:translateX(30%) rotate(18deg);}
+      }
+      .atmoSkelLabel{
+        position:relative;z-index:2;
+        font-size:12px;font-weight:800;
+        padding:8px 12px;border-radius:999px;
+        background:rgba(0,0,0,.35);
+        border:1px solid rgba(255,255,255,.10);
+      }
 
       .atmoFooter{
         padding:10px 12px 12px 12px;
@@ -208,15 +218,12 @@
       }
 
       .atmoIconBtn{
-        flex:1;
-        height:38px;
-        border-radius:12px;
+        flex:1;height:38px;border-radius:12px;
         border:1px solid rgba(255,255,255,0.10);
         background:rgba(255,255,255,0.04);
-        color:#fff;
-        cursor:pointer;
+        color:#fff;cursor:pointer;
         display:flex;align-items:center;justify-content:center;
-        font-weight:700;font-size:12px;
+        font-weight:800;font-size:12px;
       }
       .atmoIconBtn[disabled]{opacity:.45;cursor:not-allowed;}
       .atmoIconBtn.danger{
@@ -238,6 +245,9 @@
     ensureStyles();
 
     let destroyed = false;
+
+    // Optimistic overlay store (job_id -> job-like object)
+    const optimistic = new Map(); // key: job_id
 
     host.innerHTML = `
       <div class="atmoWrap">
@@ -261,7 +271,6 @@
       pollIntervalMs: 4000,
       hydrateEveryMs: 15000,
 
-      // STRICT: yalnız atmo video çıktıları
       acceptJob: (job) => {
         if (!job) return false;
         const ja = getJobApp(job);
@@ -271,35 +280,59 @@
 
       acceptOutput: (o) => {
         if (!o) return false;
-
-        // type: video (ya da boş → bazı backendlere tolerans)
         const t = norm(o.type || o.kind || o.meta?.type || o.meta?.kind);
         if (t && t !== "video") return false;
-
-        // meta.app varsa atmo olmalı
         const oa = getOutApp(o);
         if (oa && !isAtmoApp(oa)) return false;
-
         return true;
       },
 
       onChange: (items) => {
         if (destroyed) return;
-        // STRICT: güvenlik için burada da filtrele
+
         const safeItems = (items || []).filter(isJobAtmo);
-        render(safeItems);
+
+        // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
+        // Rule:
+        // - DB’de job varsa: optimistic’i drop/replace
+        // - DB’de yoksa: optimistic’i göster
+        const byId = new Map();
+
+        // 1) DB items first (truth)
+        for (const j of safeItems) {
+          const id = String(j?.job_id || "").trim();
+          if (!id) continue;
+          byId.set(id, j);
+          if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
+        }
+
+        // 2) Remaining optimistic
+        for (const [id, j] of optimistic.entries()) {
+          if (!byId.has(id)) byId.set(id, j);
+        }
+
+        // newest first (created_at / createdAt)
+        const merged = Array.from(byId.values()).sort((a, b) => {
+          const ta = new Date(a?.created_at || a?.createdAt || a?.updated_at || Date.now()).getTime();
+          const tb = new Date(b?.created_at || b?.createdAt || b?.updated_at || Date.now()).getTime();
+          return tb - ta;
+        });
+
+        render(merged);
       }
     });
+
+    function hasProcessing(items) {
+      return (items || []).some(j => {
+        const st = norm(j.db_status || j.status || j.state).toUpperCase();
+        return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
+      });
+    }
 
     function render(items) {
       if (!elGrid) return;
 
-      // status summary
-      const hasProcessing = (items || []).some(j => {
-        const st = norm(j.db_status || j.status || j.state).toUpperCase();
-        return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
-      });
-      setStatus(hasProcessing ? "İşleniyor…" : "Hazır");
+      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
 
       if (!items.length) {
         elGrid.innerHTML = `<div style="opacity:.7;font-size:12px;padding:4px 2px;">Henüz atmos üretim yok.</div>`;
@@ -310,10 +343,14 @@
         const badge = mapBadge(job);
         const out = pickBestVideoOutput(job);
         const url = out?.url || "";
-        const dt = fmtDT(job.created_at || job.updated_at);
 
+        const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
         const engine = (job.provider || job.meta?.provider || "Atmos").toString();
-        const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+
+        // meta line: engine + duration + dt
+        const dur = String(job.meta?.duration || job.duration || "").trim();
+        const durText = dur ? `${dur}sn` : "";
+        const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
 
         const ratio = String(
           job.meta?.aspect_ratio ||
@@ -323,16 +360,12 @@
           ""
         );
 
-        const isPortrait =
-          ratio.includes("9:16") ||
-          ratio.includes("4:5") ||
-          ratio.includes("2:3");
-
+        const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
         const disabled = url ? "" : `disabled`;
 
         const thumbInner = url
           ? `<video class="atmoThumbVideo" playsinline webkit-playsinline preload="metadata" controls muted src="${esc(url)}"></video>`
-          : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
+          : `<div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>`;
 
         return `
           <div class="atmoCard" data-job="${esc(job.job_id)}">
@@ -358,12 +391,14 @@
     async function handleAction(act, jobId) {
       const items = controller.state.items || [];
       const job = items.find(x => String(x.job_id) === String(jobId));
-      if (!job) return;
 
-      // STRICT: safety net
-      if (!isJobAtmo(job)) return;
+      // DB’de yoksa optimistic olabilir
+      const job2 = job || optimistic.get(String(jobId));
 
-      const out = pickBestVideoOutput(job);
+      if (!job2) return;
+      if (!isJobAtmo(job2)) return;
+
+      const out = pickBestVideoOutput(job2);
       const url = out?.url || "";
 
       if (act === "download") {
@@ -385,13 +420,15 @@
             await navigator.share({ title: "Atmosfer Video", url });
           } else {
             await navigator.clipboard.writeText(url);
-            console.log("[ATMO] link kopyalandı:", url);
           }
         } catch {}
         return;
       }
 
       if (act === "delete") {
+        // optimistic varsa kaldır
+        optimistic.delete(String(jobId));
+        // DB delete
         const ok = await controller.deleteJob(jobId);
         if (!ok) controller.hydrate(true);
         return;
@@ -410,11 +447,75 @@
       handleAction(act, jobId);
     });
 
+    // ✅ Optimistic job_created listener (Video hissi)
+    const onJobCreated = (e) => {
+      const d = e?.detail || {};
+      if (!d.job_id) return;
+      if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
+
+      const job_id = String(d.job_id).trim();
+      if (!job_id) return;
+
+      // Dedupe: zaten DB state’te varsa ekleme
+      const existsDb = (controller.state.items || []).some(j => String(j?.job_id) === job_id);
+      if (existsDb) return;
+
+      // Dedupe: optimistic varsa update et
+      if (optimistic.has(job_id)) return;
+
+      const meta = d.meta || {};
+      const createdAt = d.createdAt || Date.now();
+
+      // job-like object (DB’ye benzeyen shape)
+      optimistic.set(job_id, {
+        job_id,
+        app: "atmo",
+        provider: meta.provider || "Atmos",
+        createdAt,
+        created_at: createdAt,
+        db_status: "processing",
+        status: "processing",
+        state: "PROCESSING",
+        meta: {
+          ...(meta || {}),
+          app: "atmo",
+          duration: meta.duration || "",
+          prompt: meta.prompt || "",
+        },
+        outputs: []
+      });
+
+      // render now (overlay görünür)
+      controller.hydrate(false); // hızlı tetik: onChange merge eder
+      // ekstra: tek başına merge çağırmak için onChange’i manuel tetikleyelim
+      try {
+        const safeDb = (controller.state.items || []).filter(isJobAtmo);
+        const byId = new Map();
+        for (const j of safeDb) {
+          const id = String(j?.job_id || "").trim();
+          if (!id) continue;
+          byId.set(id, j);
+        }
+        if (!byId.has(job_id)) byId.set(job_id, optimistic.get(job_id));
+        const merged = Array.from(byId.values()).sort((a, b) => {
+          const ta = new Date(a?.created_at || a?.createdAt || Date.now()).getTime();
+          const tb = new Date(b?.created_at || b?.createdAt || Date.now()).getTime();
+          return tb - ta;
+        });
+        render(merged);
+        setStatus("İşleniyor…");
+      } catch {}
+    };
+
+    window.addEventListener("aivo:atmo:job_created", onJobCreated);
+
     controller.start();
 
     function destroy() {
       destroyed = true;
       try { controller.destroy(); } catch {}
+      try { window.removeEventListener("aivo:atmo:job_created", onJobCreated); } catch {}
+      optimistic.clear();
       host.innerHTML = "";
     }
 
