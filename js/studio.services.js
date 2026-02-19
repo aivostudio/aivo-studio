@@ -69,7 +69,6 @@ window.AIVO_APP = window.AIVO_APP || {};
     // 1) Credit consume (tek otorite)
     const cr = await consumeCredits(cost, { promptLen: p.length });
     if (!cr.ok) {
-      // yetersiz kredi ise yönlendir (istersen kaldır)
       window.toast?.error?.("Yetersiz kredi.");
       const to = encodeURIComponent(location.pathname + location.search + location.hash);
       location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
@@ -94,11 +93,12 @@ window.AIVO_APP = window.AIVO_APP || {};
     return { ok: true, job_id, credits: cr.credits ?? null };
   };
 })();
+
 /* ============================================================================
    ATM_CREATE HOOK (SINGLE SOURCE) — paste into studio.services.js (bottom)
    Purpose:
-   - Make Atmosfer "Üret" button actually call backend
-   - Force duration = 4s (cheap test)
+   - Atmosfer "Üret" button -> backend create
+   - duration FORCE KALKTI ✅ (UI ne seçtiyse o gider)
    - Create job via /api/jobs/create-atmo
    - Optional: upsert to AIVO_JOBS + PPE.apply processing placeholder
    ============================================================================ */
@@ -109,7 +109,8 @@ window.AIVO_APP = window.AIVO_APP || {};
 
   const safeJson = async (res) => {
     const txt = await res.text().catch(() => "");
-    try { return JSON.parse(txt || "{}"); } catch { return { ok:false, error:"bad_json", raw: txt }; }
+    try { return JSON.parse(txt || "{}"); }
+    catch { return { ok:false, error:"bad_json", raw: txt }; }
   };
 
   const nowISO = () => new Date().toISOString();
@@ -121,17 +122,37 @@ window.AIVO_APP = window.AIVO_APP || {};
     // Always enforce app
     payload.app = "atmo";
 
-    // FORCE cheap test: 4 seconds
-    // module sends duration as string ("8") in basic, and maybe proDuration in pro
-    if (payload.mode === "pro") {
-      payload.duration = "4";
+    // ---- duration: UI seçimini KORU ----
+    // basic: atmDuration -> payload.duration
+    // pro: atmProDuration -> payload.duration
+    const rawDur = payload.duration ?? payload.proDuration ?? null;
+    const dur = String(rawDur || "").trim();
+
+    // UI’daki seçeneklerle uyumlu whitelist
+    const ALLOWED = new Set(["4", "6", "8", "10", "12", "15"]);
+
+    if (ALLOWED.has(dur)) {
+      payload.duration = dur;
     } else {
-      payload.duration = "4";
+      // fallback: pro/basic için 8 sn
+      payload.duration = "8";
     }
 
     // Defensive defaults
     payload.format = payload.format || "mp4";
     payload.fps = payload.fps || "24";
+
+    // normalize seam_fix (module seamFix gönderebilir)
+    if (payload.seamFix != null && payload.seam_fix == null) {
+      payload.seam_fix = !!payload.seamFix;
+      delete payload.seamFix;
+    }
+
+    // normalize prompt (bazı yerde text gelebilir)
+    if (payload.text && !payload.prompt) {
+      payload.prompt = String(payload.text || "");
+      delete payload.text;
+    }
 
     return payload;
   };
@@ -149,9 +170,11 @@ window.AIVO_APP = window.AIVO_APP || {};
         meta: {
           app: "atmo",
           mode: payload.mode || "basic",
-          duration: payload.duration || "4",
+          duration: payload.duration || "8",
           fps: payload.fps || "24",
           format: payload.format || "mp4",
+          light: payload.light || "",
+          mood: payload.mood || ""
         }
       });
     } catch (e) {
@@ -180,19 +203,19 @@ window.AIVO_APP = window.AIVO_APP || {};
 
     console.log("[ATM_CREATE] -> create-atmo", payload);
 
-    // If backend supports file upload for image/logo/audio, it should accept multipart.
-    // For now (cheap test), we send JSON only.
-    // NOTE: If you later want file uploads, we’ll switch this to FormData in one go.
-    const res = await fetch("/api/jobs/create-atmo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).catch((e) => {
+    // NOTE: Şimdilik JSON. (Dosya upload istersen FormData’ya tek hamlede geçeriz.)
+    let res = null;
+    try {
+      res = await fetch("/api/jobs/create-atmo", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
       console.error("[ATM_CREATE] fetch failed:", e);
-      return null;
-    });
-
-    if (!res) return { ok:false, error:"network_error" };
+      return { ok:false, error:"network_error" };
+    }
 
     const data = await safeJson(res);
     if (!res.ok || data?.ok === false) {
@@ -200,16 +223,12 @@ window.AIVO_APP = window.AIVO_APP || {};
       return { ok:false, status:res.status, ...data };
     }
 
-    // Expecting { ok:true, job_id:"..." } (or similar)
     const job_id = data.job_id || data.id || data.jobId;
     console.log("[ATM_CREATE] created job_id =", job_id, data);
 
     if (job_id) {
       upsertJob(job_id, payload);
       applyProcessingCard(job_id, payload);
-
-      // Optional: If your right panel is mounted, keep it on atmo.
-      // (Doesn't break anything if RightPanel isn't ready.)
       window.RightPanel?.force?.("atmo", {});
     }
 
