@@ -2,17 +2,13 @@
 // RightPanel Video (v2) — STRICT app filtering (video only)
 // Fix: Atmo outputs leaking into Video panel via PPE bridge
 // Fix: Hydrate from DB must ignore non-video rows even if endpoint returns mixed data
+// Fix: DELETE must hit backend (/api/jobs/delete) and must not “come back”
 // UX: Safari-friendly attrs (muted + webkit-playsinline)
 
 (function () {
   if (!window.RightPanel) return;
 
-  const STORAGE_KEY = "aivo.v2.video.items.v4";
-  const LEGACY_KEYS = [
-    "aivo.v2.video.items.v3",
-    "aivo.v2.video.items.v2",
-    "aivo.v2.video.items",
-  ];
+  // ⛔️ DB tek kaynak (LocalStorage yok)
   const MAX_ITEMS = 50;
 
   const STATUS_POLL_EVERY_MS = 4000;
@@ -20,6 +16,9 @@
   const STATUS_POLL_TIMEOUT_MS = 15000;
 
   const state = { items: [] };
+
+  // “Silindi ama interval hydrate/poll ile geri geldi” sorununa karşı tombstone
+  const deletedIds = new Set(); // string(job_id)
 
   /* =======================
      Utils
@@ -48,7 +47,6 @@
   }
 
   function isVideoApp(x) {
-    // accept only "video" (strict)
     return norm(x) === "video";
   }
 
@@ -58,6 +56,10 @@
     if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
     if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
     return u;
+  }
+
+  function idOf(it) {
+    return String(it?.job_id || it?.id || "").trim();
   }
 
   /* =======================
@@ -206,94 +208,6 @@
   }
 
   /* =======================
-     Storage
-     ======================= */
-
-  function safeParse(json) {
-    try { return JSON.parse(json); } catch { return null; }
-  }
-
-  function sanitizeItems(items) {
-    const out = [];
-
-    for (const it0 of (items || [])) {
-      const it = it0 || {};
-
-      // STRICT: keep only video app items
-      const appGuess =
-        it?.meta?.app ||
-        it?.app ||
-        it0?.meta?.app ||
-        it0?.app ||
-        "";
-      if (!isVideoApp(appGuess)) continue;
-
-      const id = String(it.id || it.job_id || uid());
-      const job_id = it.job_id != null ? String(it.job_id) : (it.id ? String(it.id) : "");
-
-      const outs0 = Array.isArray(it.outputs) ? it.outputs : (Array.isArray(it0?.outputs) ? it0.outputs : []);
-      const fromOut = pickVideoUrlFromOutputs(outs0);
-
-      const url = String(it.url || it.video_url || it.videoUrl || fromOut || "").trim();
-      const archive_url = String(it.archive_url || it.archiveUrl || it.meta?.archive_url || it.meta?.archiveUrl || "").trim();
-
-      const readyByOutput = !!(archive_url || url);
-      const status = readyByOutput ? "Hazır" : (it.status || it.state || it.db_status || "İşleniyor");
-
-      const title = it.title || it.meta?.title || it.meta?.prompt || it.prompt || it.text || "Video";
-      const pb = (archive_url || url) ? getPlaybackUrl({ ...it, archive_url, url, outputs: outs0 }) : "";
-
-      out.push({
-        id,
-        job_id,
-        title,
-        status,
-        url,
-        archive_url,
-        playbackUrl: pb || "",
-        createdAt: it.createdAt || it.created_at || Date.now(),
-        meta: {
-          ...(it.meta || {}),
-          mode: it.meta?.mode || it.mode || it.kind || "",
-          prompt: it.meta?.prompt || it.prompt || it.text || "",
-          app: "video",
-        },
-        outputs: outs0,
-        state: it.state,
-        db_status: it.db_status,
-        app: "video",
-      });
-    }
-
-    out.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-    return out.slice(0, MAX_ITEMS);
-  }
-
-  function loadItems() {
-    const rawNew = localStorage.getItem(STORAGE_KEY);
-    const arrNew = rawNew ? safeParse(rawNew) : null;
-    if (Array.isArray(arrNew)) return sanitizeItems(arrNew);
-
-    for (const k of LEGACY_KEYS) {
-      const raw = localStorage.getItem(k);
-      const arr = raw ? safeParse(raw) : null;
-      if (Array.isArray(arr) && arr.length) {
-        const cleaned = sanitizeItems(arr);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned.slice(0, MAX_ITEMS))); } catch {}
-        try { localStorage.removeItem(k); } catch {}
-        return cleaned;
-      }
-    }
-    return [];
-  }
-
- function saveItems() {
-  // ❌ Artık localStorage kullanmıyoruz.
-  // Source of truth = backend (/api/jobs/list)
-  return;
-}
-
-  /* =======================
      DB hydrate
      ======================= */
 
@@ -314,6 +228,9 @@
 
     const appGuess = String(r?.app || meta?.app || "").trim();
     if (!isVideoApp(appGuess)) return null; // STRICT
+
+    // tombstone
+    if (job_id && deletedIds.has(String(job_id))) return null;
 
     const archive_url =
       String(r?.archive_url || r?.archiveUrl || meta?.archive_url || meta?.archiveUrl || "").trim() || "";
@@ -379,42 +296,6 @@
     return item;
   }
 
-  function mergeByJobId(existing, incoming) {
-    const map = new Map();
-
-    for (const it of (existing || [])) {
-      const key = String(it.job_id || it.id || "");
-      if (!key) continue;
-      map.set(key, it);
-    }
-
-    for (const it of (incoming || [])) {
-      if (!it) continue;
-      const key = String(it.job_id || it.id || "");
-      if (!key) continue;
-
-      const prev = map.get(key);
-      if (!prev) {
-        map.set(key, it);
-        continue;
-      }
-
-      map.set(key, {
-        ...prev,
-        ...it,
-        title: it.title || prev.title,
-        meta: { ...(prev.meta || {}), ...(it.meta || {}) },
-        outputs: Array.isArray(it.outputs) && it.outputs.length ? it.outputs : (prev.outputs || []),
-        playbackUrl: String(it.playbackUrl || prev.playbackUrl || "").trim() || getPlaybackUrl(it) || getPlaybackUrl(prev) || "",
-        app: "video",
-      });
-    }
-
-    const arr = Array.from(map.values());
-    arr.sort((a, b) => (Number(b.createdAt || 0) - Number(a.createdAt || 0)));
-    return arr.slice(0, MAX_ITEMS);
-  }
-
   async function hydrateFromDB(host) {
     try {
       const r = await fetch("/api/jobs/list?app=video", {
@@ -430,25 +311,22 @@
         return;
       }
 
-    const rows = extractListItems(j);
+      const rows = extractListItems(j);
 
-// DB = tek gerçek kaynak (source-of-truth)
-const incoming = (rows || [])
-  .map(mapDbItemToPanelItem)
-  .filter(Boolean);
+      // DB = tek gerçek kaynak (source-of-truth), merge YOK
+      const incoming = (rows || [])
+        .map(mapDbItemToPanelItem)
+        .filter(Boolean)
+        .slice(0, MAX_ITEMS);
 
-// ✅ merge YOK: DB ne döndürdüyse o
-state.items = incoming;
+      state.items = incoming;
 
-// ✅ DB hydrate sırasında localStorage'a yazma (geri gelme kökü buydu)
-render(host);
-
-pollPendingStatuses(host).catch(() => {});
-} catch (e) {
-  console.warn("[video.panel] hydrate exception", e);
-}
-}
-
+      render(host);
+      pollPendingStatuses(host).catch(() => {});
+    } catch (e) {
+      console.warn("[video.panel] hydrate exception", e);
+    }
+  }
 
   /* =======================
      Status poll
@@ -467,6 +345,9 @@ pollPendingStatuses(host).catch(() => {});
     const jid = String(job_id || "").trim();
     if (!jid) return null;
 
+    // tombstone
+    if (deletedIds.has(jid)) return null;
+
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort("timeout"), STATUS_POLL_TIMEOUT_MS);
 
@@ -481,7 +362,7 @@ pollPendingStatuses(host).catch(() => {});
       const j = await r.json().catch(() => null);
       if (!r.ok || !j || !j.ok) return null;
 
-      // STRICT: status payload might include meta.app; ignore if not video
+      // STRICT
       const appGuess = String(j?.app || j?.meta?.app || "").trim();
       if (appGuess && !isVideoApp(appGuess)) return null;
 
@@ -496,6 +377,10 @@ pollPendingStatuses(host).catch(() => {});
   async function pollPendingStatuses(host) {
     const pending = state.items
       .filter(it => it && (it.job_id || it.id))
+      .filter(it => {
+        const jid = String(it.job_id || it.id || "").trim();
+        return jid && !deletedIds.has(jid);
+      })
       .filter(it => !isReady(it) || !String(it.playbackUrl || "").trim())
       .filter(it => !isError(it))
       .slice(0, STATUS_POLL_BATCH);
@@ -505,6 +390,7 @@ pollPendingStatuses(host).catch(() => {});
     for (const it of pending) {
       const jid = String(it.job_id || it.id || "").trim();
       if (!jid) continue;
+      if (deletedIds.has(jid)) continue;
 
       const s = await fetchStatus(jid);
       if (!s) continue;
@@ -517,7 +403,6 @@ pollPendingStatuses(host).catch(() => {});
       const err = st === "error" || st === "failed";
       if (err) {
         it.status = "Hata";
-        saveItems();
         render(host);
         continue;
       }
@@ -531,211 +416,140 @@ pollPendingStatuses(host).catch(() => {});
         it.status = "Hazır";
         it.playbackUrl = getPlaybackUrl(it) || "";
 
-        saveItems();
         render(host);
       }
     }
   }
 
-/* =======================
-   Render
-   ======================= */
+  /* =======================
+     Render
+     ======================= */
 
-function renderSkeleton(badge) {
-  return `
-    <div class="vpSkel" aria-label="İşleniyor">
-      <div class="vpBadge">${esc(badge)}</div>
-      <div class="vpSkelShimmer"></div>
-      <div class="vpSkelPlay">
-        <div class="vpSkelPlayRing"></div>
-        <div class="vpSkelPlayTri"></div>
-      </div>
-    </div>
-  `;
-}
-
-function renderThumb(it) {
-  const badge = normalizeBadge(it);
-
-  if (!it.playbackUrl) {
-    const pb2 = getPlaybackUrl(it);
-    if (pb2) it.playbackUrl = pb2;
-  }
-
-  if (!isReady(it) || !it.playbackUrl) {
+  function renderSkeleton(badge) {
     return `
-      <div class="vpThumb is-loading">
-        ${renderSkeleton(badge)}
-        <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+      <div class="vpSkel" aria-label="İşleniyor">
+        <div class="vpBadge">${esc(badge)}</div>
+        <div class="vpSkelShimmer"></div>
+        <div class="vpSkelPlay">
+          <div class="vpSkelPlayRing"></div>
+          <div class="vpSkelPlayTri"></div>
+        </div>
       </div>
     `;
   }
 
-  return `
-    <div class="vpThumb">
-      <div class="vpBadge">${esc(badge)}</div>
+  function renderThumb(it) {
+    const badge = normalizeBadge(it);
 
-      <video
-        class="vpVideo"
-        preload="metadata"
-        playsinline
-        webkit-playsinline
-        muted
-        controls
-        data-user-gesture="0"
-        src="${esc(it.playbackUrl)}"
-      ></video>
+    if (!it.playbackUrl) {
+      const pb2 = getPlaybackUrl(it);
+      if (pb2) it.playbackUrl = pb2;
+    }
 
-      <div class="vpPlay">
-        <span class="vpPlayIcon">▶</span>
+    if (!isReady(it) || !it.playbackUrl) {
+      return `
+        <div class="vpThumb is-loading">
+          ${renderSkeleton(badge)}
+          <button class="vpFsBtn" data-act="fs" data-id="${esc(idOf(it))}" title="Büyüt" aria-label="Büyüt">⛶</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="vpThumb">
+        <div class="vpBadge">${esc(badge)}</div>
+
+        <video
+          class="vpVideo"
+          preload="metadata"
+          playsinline
+          webkit-playsinline
+          muted
+          controls
+          data-user-gesture="0"
+          src="${esc(it.playbackUrl)}"
+        ></video>
+
+        <div class="vpPlay">
+          <span class="vpPlayIcon">▶</span>
+        </div>
+
+        <button class="vpFsBtn" data-act="fs" data-id="${esc(idOf(it))}" title="Büyüt" aria-label="Büyüt">⛶</button>
       </div>
-
-      <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
-    </div>
-  `;
-}
-
-function renderMeta(it) {
-  const kind = formatKind(it);
-  const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
-  const ready = isReady(it);
-
-  // ✅ id’yi butonlara da basıyoruz (event handler işi kolaylaşsın)
-  return `
-    <div class="vpMeta">
-      <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
-      <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
-
-      <div class="vpActions">
-        <button class="vpIconBtn" data-act="download" data-id="${esc(it.id)}" ${ready ? "" : "disabled"} title="İndir">⬇</button>
-        <button class="vpIconBtn" data-act="share" data-id="${esc(it.id)}" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
-        <button class="vpIconBtn vpDanger" data-act="delete" data-id="${esc(it.id)}" title="Sil">🗑</button>
-      </div>
-    </div>
-  `;
-}
-
-function renderCard(it) {
-  return `
-    <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
-      ${renderThumb(it)}
-      ${renderMeta(it)}
-    </div>
-  `;
-}
-
-function render(host) {
-  const grid = findGrid(host);
-  if (!grid) return;
-
-  if (!state.items.length) {
-    grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
-    return;
+    `;
   }
 
-  grid.innerHTML = state.items.map(renderCard).join("");
-}
-/* =======================
-   Actions (ADD/REPLACE)
-   ======================= */
+  function renderMeta(it) {
+    const kind = formatKind(it);
+    const sub = it?.meta?.prompt || it?.meta?.title || it?.title || "";
+    const ready = isReady(it);
+    const jid = idOf(it);
 
-// ✅ Bu handler, “Sil”i backend’e bağlar.
-// Not: `db` panel scope’unda olmalı (DBJobs.create(...) ile).
-function bindActions(host) {
-  if (!host || host.__vpActionsBound) return;
-  host.__vpActionsBound = true;
+    return `
+      <div class="vpMeta">
+        <div class="vpTitle" title="${esc(kind)}">${esc(kind)}</div>
+        <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
 
-  host.addEventListener("click", async (e) => {
-    const btn = e.target.closest("[data-act]");
-    if (!btn) return;
+        <div class="vpActions">
+          <button class="vpIconBtn" data-act="download" data-id="${esc(jid)}" ${ready ? "" : "disabled"} title="İndir">⬇</button>
+          <button class="vpIconBtn" data-act="share" data-id="${esc(jid)}" ${ready ? "" : "disabled"} title="Paylaş">⤴</button>
+          <button class="vpIconBtn vpDanger" data-act="delete" data-id="${esc(jid)}" title="Sil">🗑</button>
+        </div>
+      </div>
+    `;
+  }
 
-    const act = btn.dataset.act;
-    const card = btn.closest(".vpCard");
-    const id = (btn.dataset.id || (card && card.dataset.id) || "").trim();
-    if (!id) return;
+  function renderCard(it) {
+    const jid = idOf(it) || uid();
+    return `
+      <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
+        ${renderThumb(it)}
+        ${renderMeta(it)}
+      </div>
+    `;
+  }
 
-    // buton tıklaması kart click’ine karışmasın
-    e.preventDefault();
-    e.stopPropagation();
+  function render(host) {
+    const grid = findGrid(host);
+    if (!grid) return;
 
-    try {
-      if (act === "delete") {
-        // ✅ DB’den kalıcı sil
-        btn.disabled = true;
+    // tombstone filtre
+    const items = (state.items || []).filter(it => {
+      const jid = idOf(it);
+      return jid && !deletedIds.has(jid);
+    });
 
-        if (!window.db && typeof db === "undefined") {
-          // db yoksa: hiçbir şey yapma, ama UI da silme (debug için)
-          toast?.error?.("db controller yok (DBJobs.create çalışmamış).");
-          btn.disabled = false;
-          return;
-        }
-
-        const controller = (typeof db !== "undefined") ? db : window.db;
-
-        const ok = await controller.deleteJob(id); // <-- /api/jobs/delete
-        if (!ok) {
-          // delete başarısızsa geri hydrate et ki kart geri gelsin
-          try { await controller.hydrate(true); } catch {}
-          toast?.error?.("Silinemedi (backend).");
-          btn.disabled = false;
-        }
-
-        return;
-      }
-
-      if (act === "download") {
-        const it = state.items.find(x => String(x.id) === String(id));
-        const url = it?.playbackUrl || it?.url || getPlaybackUrl(it);
-        if (url) window.open(url, "_blank");
-        return;
-      }
-
-      if (act === "share") {
-        const it = state.items.find(x => String(x.id) === String(id));
-        const url = it?.playbackUrl || it?.url || getPlaybackUrl(it);
-        if (!url) return;
-
-        if (navigator.share) {
-          await navigator.share({ title: "AIVO Video", url });
-        } else {
-          await navigator.clipboard.writeText(url);
-          toast?.success?.("Link kopyalandı.");
-        }
-        return;
-      }
-
-      if (act === "fs") {
-        // mevcut fullscreen davranışın varsa burada bırak / çağır
-        // (bu kısım sende zaten varsa dokunma)
-        return;
-      }
-    } catch (err) {
-      try {
-        const controller = (typeof db !== "undefined") ? db : window.db;
-        await controller?.hydrate?.(true);
-      } catch {}
-      toast?.error?.("İşlem sırasında hata oluştu.");
-      try { btn.disabled = false; } catch {}
+    if (!items.length) {
+      grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
+      return;
     }
-  });
-}
 
-/* =======================
-   Hook: init/mount içine EKLE
-   ======================= */
-
-// Panel mount / init fonksiyonunda render’dan sonra çağır:
-/// bindActions(host);
-
+    grid.innerHTML = items.map(renderCard).join("");
+  }
 
   /* =======================
-     Actions + events
+     Actions (tek kaynak)
      ======================= */
+
+  async function apiDeleteJob(job_id) {
+    const jid = String(job_id || "").trim();
+    if (!jid) return { ok: false, error: "missing_job_id" };
+
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json", "accept": "application/json" },
+      body: JSON.stringify({ job_id: jid }),
+    });
+
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !j.ok) return { ok: false, error: j?.error || ("http_" + r.status), data: j };
+    return { ok: true, data: j };
+  }
 
   function downloadUrl(u) {
     const url = String(u || "").trim();
     if (!url) return;
-
     const a = document.createElement("a");
     a.href = url;
     a.download = "";
@@ -753,6 +567,7 @@ function bindActions(host) {
       navigator.share({ url }).catch(() => {});
     } else {
       navigator.clipboard?.writeText(url).catch(() => {});
+      toast?.success?.("Link kopyalandı.");
     }
   }
 
@@ -782,6 +597,86 @@ function bindActions(host) {
     } catch {}
   }
 
+  function bindActions(host) {
+    if (!host || host.__vpActionsBound) return;
+    host.__vpActionsBound = true;
+
+    host.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+
+      const act = btn.dataset.act;
+      const card = btn.closest(".vpCard");
+      const id = String(btn.dataset.id || card?.dataset?.id || "").trim();
+      if (!id) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // tombstone: UI’da aynı anda iki kez işlem olmasın
+      if (act === "delete" && deletedIds.has(id)) return;
+
+      const it = state.items.find(x => String(idOf(x)) === id);
+
+      try {
+        if (act === "delete") {
+          btn.disabled = true;
+
+          // 1) UI’dan anında kaldır + tombstone
+          deletedIds.add(id);
+          state.items = state.items.filter(x => String(idOf(x)) !== id);
+          render(host);
+
+          // 2) backend delete (NET’te görünmesi gereken çağrı)
+          const resp = await apiDeleteJob(id);
+
+          if (!resp.ok) {
+            // başarısızsa tombstone’u kaldırıp yeniden hydrate et
+            deletedIds.delete(id);
+            toast?.error?.("Silinemedi (backend): " + String(resp.error || "error"));
+            await hydrateFromDB(host);
+            btn.disabled = false;
+            return;
+          }
+
+          toast?.success?.("Silindi.");
+          // 3) DB’den taze liste
+          await hydrateFromDB(host);
+          return;
+        }
+
+        if (act === "download") {
+          if (!it) return;
+          const u = it.playbackUrl || it.url || getPlaybackUrl(it);
+          if (u) downloadUrl(u);
+          return;
+        }
+
+        if (act === "share") {
+          if (!it) return;
+          const u = it.playbackUrl || it.url || getPlaybackUrl(it);
+          if (u) shareUrl(u);
+          return;
+        }
+
+        if (act === "fs") {
+          if (card) goFullscreen(card);
+          return;
+        }
+      } catch (err) {
+        // hata olursa güvenli: tombstone temizle + hydrate
+        deletedIds.delete(id);
+        try { await hydrateFromDB(host); } catch {}
+        toast?.error?.("İşlem sırasında hata oluştu.");
+        try { btn.disabled = false; } catch {}
+      }
+    });
+  }
+
+  /* =======================
+     Card play/pause (buttons handled by bindActions)
+     ======================= */
+
   function attachEvents(host) {
     const grid = findGrid(host);
     if (!grid) return () => {};
@@ -797,32 +692,20 @@ function bindActions(host) {
     grid.addEventListener("play", onPlayCapture, true);
 
     const onClick = (e) => {
+      // Buton işleri bindActions’ta — burada buton tıklamasını hiç ele alma
+      if (e.target.closest("[data-act]")) return;
+
       const card = e.target.closest(".vpCard");
       if (!card) return;
 
-      const id = card.getAttribute("data-id");
-      const it = state.items.find(x => String(x.id) === String(id));
+      const id = String(card.getAttribute("data-id") || "").trim();
+      if (!id || deletedIds.has(id)) return;
+
+      const it = state.items.find(x => String(idOf(x)) === id);
       if (!it) return;
 
-      const btn = e.target.closest("[data-act]");
       const video = card.querySelector("video");
       const overlay = card.querySelector(".vpPlay");
-
-      if (btn) {
-        e.stopPropagation();
-        const act = btn.getAttribute("data-act");
-
-        if (act === "fs") { goFullscreen(card); return; }
-        if (act === "download") downloadUrl(bestShareUrl(it));
-        if (act === "share") shareUrl(bestShareUrl(it));
-
-        if (act === "delete") {
-          state.items = state.items.filter(x => String(x.id) !== String(id));
-          saveItems();
-          render(host);
-        }
-        return;
-      }
 
       if (!video || !isReady(it)) return;
 
@@ -846,7 +729,7 @@ function bindActions(host) {
   }
 
   /* =======================
-     PPE bridge (STRICT)
+     PPE bridge (STRICT + tombstone)
      ======================= */
 
   function attachPPE(host) {
@@ -861,14 +744,9 @@ function bindActions(host) {
 
       if (!out || String(out.type || "").toLowerCase() !== "video") return;
 
-      // STRICT: accept only meta.app === "video" OR job.app === "video"
       const outApp = String(out?.meta?.app || "").trim();
       const jobApp = String(job?.app || job?.meta?.app || "").trim();
-      if ((outApp && !isVideoApp(outApp)) || (jobApp && !isVideoApp(jobApp))) {
-        // if either explicitly says non-video, ignore
-        return;
-      }
-      // if both missing, also ignore (prevents accidental leaks)
+      if ((outApp && !isVideoApp(outApp)) || (jobApp && !isVideoApp(jobApp))) return;
       if (!isVideoApp(outApp) && !isVideoApp(jobApp)) return;
 
       const url = String(out.url || "").trim();
@@ -882,41 +760,34 @@ function bindActions(host) {
         out?.meta?.id ||
         null;
 
-      const jid = job_id != null ? String(job_id) : null;
+      const jid = job_id != null ? String(job_id).trim() : "";
+      if (!jid) return;
 
-      const existing = jid
-        ? state.items.find(x => String(x.job_id || "") === jid || String(x.id || "") === jid)
-        : null;
+      // tombstone: silindiyse asla geri basma
+      if (deletedIds.has(jid)) return;
 
-      const fallbackProcessing = !existing
-        ? state.items.find(x => !String(x.url || "").trim() && !String(x.archive_url || "").trim() && isProcessing(x))
-        : null;
-
-      const target = existing || fallbackProcessing;
+      const existing = state.items.find(x => String(idOf(x)) === jid);
 
       const title =
         out?.meta?.title ||
         out?.meta?.prompt ||
         out?.meta?.text ||
-        (target?.title || "Video");
+        (existing?.title || "Video");
 
-      if (target) {
-        if (url) target.url = url;
-        if (archive_url) target.archive_url = archive_url;
+      if (existing) {
+        if (url) existing.url = url;
+        if (archive_url) existing.archive_url = archive_url;
+        if (Array.isArray(out?.meta?.outputs)) existing.outputs = out.meta.outputs;
 
-        target.status = "Hazır";
-        target.title = title;
-
-        if (!target.job_id && jid) target.job_id = jid;
-        if (!target.id && jid) target.id = jid;
-
-        target.meta = { ...(target.meta || {}), ...(out.meta || {}), app: "video" };
-        target.app = "video";
-        target.playbackUrl = getPlaybackUrl(target) || "";
+        existing.status = "Hazır";
+        existing.title = title;
+        existing.meta = { ...(existing.meta || {}), ...(out.meta || {}), app: "video" };
+        existing.app = "video";
+        existing.playbackUrl = getPlaybackUrl(existing) || "";
       } else {
         const item = {
-          id: jid || uid(),
-          job_id: jid || "",
+          id: jid,
+          job_id: jid,
           url: url || "",
           archive_url: archive_url || "",
           status: "Hazır",
@@ -928,9 +799,9 @@ function bindActions(host) {
         };
         item.playbackUrl = getPlaybackUrl(item) || "";
         state.items.unshift(item);
+        state.items = state.items.slice(0, MAX_ITEMS);
       }
 
-      saveItems();
       render(host);
     };
 
@@ -941,7 +812,7 @@ function bindActions(host) {
   }
 
   /* =======================
-     Job created bridge (video only)
+     Job created bridge (video only + tombstone)
      ======================= */
 
   function attachJobCreated(host) {
@@ -949,8 +820,13 @@ function bindActions(host) {
       const d = e?.detail || {};
       if (!isVideoApp(d.app) || !d.job_id) return;
 
-      const job_id = String(d.job_id);
-      const exists = state.items.some(x => String(x.job_id || "") === job_id || String(x.id || "") === job_id);
+      const job_id = String(d.job_id).trim();
+      if (!job_id) return;
+
+      // tombstone: silindiyse geri ekleme
+      if (deletedIds.has(job_id)) return;
+
+      const exists = state.items.some(x => String(idOf(x)) === job_id);
       if (exists) return;
 
       const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
@@ -978,9 +854,8 @@ function bindActions(host) {
         app: "video",
       });
 
-      saveItems();
+      state.items = state.items.slice(0, MAX_ITEMS);
       render(host);
-
       pollPendingStatuses(host).catch(() => {});
     };
 
@@ -1006,18 +881,20 @@ function bindActions(host) {
         </div>
       `;
 
-      // 1) instant UI from LS
-      // 1) instant UI from LS  ❌ KAPATILDI (DB tek kaynak)
+      // ✅ Tek kaynak: DB. İlk render boş.
       state.items = [];
       render(host);
 
-      // 2) hydrate from DB (source of truth)
+      // ✅ Actions (download/share/fs/delete) tek yerde
+      bindActions(host);
+
+      // ✅ DB hydrate
       hydrateFromDB(host);
 
-      // 3) periodic hydrate (list)
+      // ✅ periodic hydrate (list)
       const tList = setInterval(() => hydrateFromDB(host), 15000);
 
-      // 4) fast status poll for pending items
+      // ✅ fast status poll for pending items
       const tStatus = setInterval(() => pollPendingStatuses(host).catch(() => {}), STATUS_POLL_EVERY_MS);
 
       const offEvents = attachEvents(host);
@@ -1031,7 +908,6 @@ function bindActions(host) {
         try { offPPE(); } catch {}
         try { offJobs(); } catch {}
       };
-
     },
   });
 })();
