@@ -95,12 +95,12 @@ window.AIVO_APP = window.AIVO_APP || {};
 })();
 
 /* ============================================================================
-   ATM_CREATE HOOK (SINGLE SOURCE) — paste into studio.services.js (bottom)
-   Purpose:
-   - Atmosfer "Üret" button -> backend create
-   - duration FORCE KALKTI ✅ (UI ne seçtiyse o gider)
-   - Create job via /api/jobs/create-atmo
-   - Optional: upsert to AIVO_JOBS + PPE.apply processing placeholder
+   ✅ ATM_CREATE HOOK (SINGLE SOURCE) — studio.services.js (bottom)
+   - Atmosfer Üret butonundan gelen payload'ı normalize eder
+   - Duration FORCE YOK ✅ (UI seçimi aynen gider)
+   - /api/jobs/create-atmo çağırır
+   - job_id gelince "aivo:atmo:job_created" event fırlatır (Video hissi)
+   - PPE.apply / AIVO_JOBS.upsert ile kart basmaz (dupe biter)
    ============================================================================ */
 
 (() => {
@@ -115,40 +115,30 @@ window.AIVO_APP = window.AIVO_APP || {};
 
   const nowISO = () => new Date().toISOString();
 
-  // Normalize payload coming from atmosphere.module.js
+  const ALLOWED_DURS = new Set(["4", "6", "8", "10", "12", "15"]);
+
   const normalizePayload = (p) => {
     const payload = { ...(p || {}) };
 
-    // Always enforce app
     payload.app = "atmo";
+    payload.mode = payload.mode || "basic";
 
-    // ---- duration: UI seçimini KORU ----
-    // basic: atmDuration -> payload.duration
-    // pro: atmProDuration -> payload.duration
+    // duration: UI ne verdiyse o (whitelist + fallback)
     const rawDur = payload.duration ?? payload.proDuration ?? null;
     const dur = String(rawDur || "").trim();
+    payload.duration = ALLOWED_DURS.has(dur) ? dur : "8";
 
-    // UI’daki seçeneklerle uyumlu whitelist
-    const ALLOWED = new Set(["4", "6", "8", "10", "12", "15"]);
-
-    if (ALLOWED.has(dur)) {
-      payload.duration = dur;
-    } else {
-      // fallback: pro/basic için 8 sn
-      payload.duration = "8";
-    }
-
-    // Defensive defaults
+    // defaults
     payload.format = payload.format || "mp4";
     payload.fps = payload.fps || "24";
 
-    // normalize seam_fix (module seamFix gönderebilir)
+    // seamFix -> seam_fix
     if (payload.seamFix != null && payload.seam_fix == null) {
       payload.seam_fix = !!payload.seamFix;
       delete payload.seamFix;
     }
 
-    // normalize prompt (bazı yerde text gelebilir)
+    // tiny normalization
     if (payload.text && !payload.prompt) {
       payload.prompt = String(payload.text || "");
       delete payload.text;
@@ -157,53 +147,36 @@ window.AIVO_APP = window.AIVO_APP || {};
     return payload;
   };
 
-  // (Optional) best-effort: show something instantly in UI while backend works
-  const applyProcessingCard = (job_id, payload) => {
+  const dispatchJobCreated = (job_id, payload) => {
     try {
-      if (!window.PPE?.apply) return;
-      window.PPE.apply({
-        state: "PROCESSING",
-        job_id,
-        app: "atmo",
-        createdAt: nowISO(),
-        outputs: [],
-        meta: {
+      window.dispatchEvent(new CustomEvent("aivo:atmo:job_created", {
+        detail: {
+          job_id: String(job_id),
           app: "atmo",
-          mode: payload.mode || "basic",
-          duration: payload.duration || "8",
-          fps: payload.fps || "24",
-          format: payload.format || "mp4",
-          light: payload.light || "",
-          mood: payload.mood || ""
+          createdAt: nowISO(),
+          meta: {
+            app: "atmo",
+            mode: payload.mode || "basic",
+            duration: payload.duration || "8",
+            fps: payload.fps || "24",
+            format: payload.format || "mp4",
+            prompt: payload.prompt || "",
+            scene: payload.scene || "",
+            effects: Array.isArray(payload.effects) ? payload.effects.slice() : [],
+            camera: payload.camera || ""
+          }
         }
-      });
+      }));
     } catch (e) {
-      console.warn("[ATM_CREATE] PPE.apply failed:", e);
+      console.warn("[ATM_CREATE] job_created event fail:", e);
     }
   };
 
-  const upsertJob = (job_id, payload) => {
-    try {
-      const job = {
-        job_id,
-        app: "atmo",
-        status: "processing",
-        createdAt: nowISO(),
-        meta: { app: "atmo", ...(payload || {}) }
-      };
-      window.AIVO_JOBS?.upsert?.(job);
-    } catch (e) {
-      console.warn("[ATM_CREATE] AIVO_JOBS.upsert failed:", e);
-    }
-  };
-
-  // MAIN HOOK: atmosphere.module.js will call this
   window.ATM_CREATE = async function ATM_CREATE(inPayload) {
     const payload = normalizePayload(inPayload);
 
     console.log("[ATM_CREATE] -> create-atmo", payload);
 
-    // NOTE: Şimdilik JSON. (Dosya upload istersen FormData’ya tek hamlede geçeriz.)
     let res = null;
     try {
       res = await fetch("/api/jobs/create-atmo", {
@@ -227,8 +200,10 @@ window.AIVO_APP = window.AIVO_APP || {};
     console.log("[ATM_CREATE] created job_id =", job_id, data);
 
     if (job_id) {
-      upsertJob(job_id, payload);
-      applyProcessingCard(job_id, payload);
+      // ✅ Video hissi: kartı anında çıkar
+      dispatchJobCreated(job_id, payload);
+
+      // ✅ Paneli atmo'ya çekmek istersen
       window.RightPanel?.force?.("atmo", {});
     }
 
