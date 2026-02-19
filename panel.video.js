@@ -430,22 +430,25 @@
         return;
       }
 
-      const rows = extractListItems(j);
+    const rows = extractListItems(j);
 
-      const incoming = (rows || [])
-        .map(mapDbItemToPanelItem)
-        .filter(Boolean);
+// DB = tek gerçek kaynak (source-of-truth)
+const incoming = (rows || [])
+  .map(mapDbItemToPanelItem)
+  .filter(Boolean);
 
-      state.items = mergeByJobId(state.items, incoming);
+// ✅ merge YOK: DB ne döndürdüyse o
+state.items = incoming;
 
-      saveItems();
-      render(host);
+// ✅ DB hydrate sırasında localStorage'a yazma (geri gelme kökü buydu)
+render(host);
 
-      pollPendingStatuses(host).catch(() => {});
-    } catch (e) {
-      console.warn("[video.panel] hydrate exception", e);
-    }
-  }
+pollPendingStatuses(host).catch(() => {});
+} catch (e) {
+  console.warn("[video.panel] hydrate exception", e);
+}
+}
+
 
   /* =======================
      Status poll
