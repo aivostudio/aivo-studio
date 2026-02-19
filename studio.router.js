@@ -31,11 +31,9 @@ window.ensureModuleCSS = function(routeKey){
   window.__AIVO_ROUTER_BOOTED__ = true;
 
   // ✅ RightPanel: routeKey -> panelKey
-  // music route -> music panel (player kartları burada)
-  // recording route -> recording panel (konsolda register edilmiş olan)
   const RIGHT_PANEL_KEY = {
-    music: "music",            // ✅ FIX: audio DEĞİL
-    recording: "recording",    // ✅ FIX: audio DEĞİL (konsolda "recording" var)
+    music: "music",
+    recording: "recording",
     video: "video",
     cover: "cover",
     atmo: "atmo",
@@ -80,6 +78,28 @@ window.ensureModuleCSS = function(routeKey){
     settings: "settings.html",
   };
 
+  // -------------------------------
+  // URL HELPERS
+  // -------------------------------
+  function parseQueryRouteKey() {
+    const sp = new URLSearchParams(location.search || "");
+    const p = (sp.get("page") || "").trim();
+    if (!p) return null;
+
+    // alias support
+    if (p === "atmosphere") return "atmo";
+    if (p === "atm") return "atmo";
+
+    return p;
+  }
+
+  function hasHashKey() {
+    return (location.hash || "").replace(/^#/, "").trim().length > 0;
+  }
+
+  // -------------------------------
+  // HASH ROUTING
+  // -------------------------------
   function parseHash() {
     const raw = (location.hash || "").replace(/^#/, "").trim();
     if (!raw) return { key: "music", params: {} };
@@ -93,6 +113,14 @@ window.ensureModuleCSS = function(routeKey){
   function setHash(key) {
     if (!ROUTES.has(key)) key = "music";
     location.hash = `#${key}`;
+  }
+
+  // ✅ First-load normalization:
+  // If no hash, but ?page=... exists, convert to hash (source of truth)
+  function normalizeInitialRoute() {
+    if (hasHashKey()) return; // hash wins
+    const qp = parseQueryRouteKey();
+    if (qp && ROUTES.has(qp)) setHash(qp);
   }
 
   function setActiveNav(key) {
@@ -138,19 +166,18 @@ window.ensureModuleCSS = function(routeKey){
     const cur = parseHash();
     if (cur.key !== key) {
       setHash(key);
-      return; // tek akış: hashchange tekrar go() çağırır
+      return; // single flow: hashchange will call go()
     }
 
     setActiveNav(key);
 
-    // ✅ CSS: route bazlı
+    // ✅ CSS: route-based
     window.ensureModuleCSS?.(key);
 
     // ✅ Module inject
     await loadModuleIntoHost(key);
 
-    // ✅ Right panel: routeKey yerine mapped panelKey
-    // fallback: music (host'u boşaltıp placeholder basma ihtimalini azaltır)
+    // ✅ Right panel: mapped panelKey
     const panelKey = RIGHT_PANEL_KEY[key] || "music";
     window.RightPanel?.force?.(panelKey, {});
   }
@@ -172,6 +199,10 @@ window.ensureModuleCSS = function(routeKey){
   window.addEventListener("hashchange", onHashChange);
   window.addEventListener("DOMContentLoaded", () => {
     (document.getElementById("leftMenu") || document).addEventListener("click", onNavClick);
+
+    // ✅ NEW: allow ?page=atmo / ?page=atmosphere
+    normalizeInitialRoute();
+
     onHashChange();
   });
 })();
