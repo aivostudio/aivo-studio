@@ -1007,7 +1007,8 @@ function bindActions(host) {
       `;
 
       // 1) instant UI from LS
-      state.items = loadItems();
+      // 1) instant UI from LS  ❌ KAPATILDI (DB tek kaynak)
+      state.items = [];
       render(host);
 
       // 2) hydrate from DB (source of truth)
@@ -1030,6 +1031,7 @@ function bindActions(host) {
         try { offPPE(); } catch {}
         try { offJobs(); } catch {}
       };
+
     },
   });
 })();
