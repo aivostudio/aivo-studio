@@ -638,36 +638,38 @@ section.main-panel[data-module="atmosphere"] .atmBigCtaBtn{
   width: 100%;
   text-align: center !important;
 }
-/* ===== MODE SWITCH PREMIUM ===== */
+/* ===== MODE SWITCH FIX (GRID OVERRIDE) ===== */
 
-.mode-switch{
-  display:flex;
-  gap:8px;
-  background:rgba(255,255,255,0.04);
-  padding:6px;
-  border-radius:999px;
+section.main-panel[data-module="atmosphere"] .mode-switch{
+  display:flex !important;
+  gap:8px !important;
+  background:rgba(255,255,255,0.04) !important;
+  padding:6px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(255,255,255,0.06) !important;
 }
 
-.mode-tab{
-  flex:1;
-  border:none;
-  background:transparent;
-  color:rgba(255,255,255,0.65);
-  font-weight:600;
-  padding:14px 0;
-  border-radius:999px;
-  cursor:pointer;
-  transition:all .25s ease;
+section.main-panel[data-module="atmosphere"] .mode-tab{
+  flex:1 !important;
+  border:none !important;
+  background:transparent !important;
+  color:rgba(255,255,255,0.65) !important;
+  font-weight:700 !important;
+  padding:14px 0 !important;
+  border-radius:999px !important;
+  cursor:pointer !important;
+  transition:all .25s ease !important;
+  text-align:center !important;
 }
 
-.mode-tab:hover{
-  color:#fff;
+section.main-panel[data-module="atmosphere"] .mode-tab:hover{
+  color:#fff !important;
 }
 
-.mode-tab.is-active{
-  color:#fff;
-  background:linear-gradient(90deg, #7b5cff, #ff6ec7);
+section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
+  color:#fff !important;
+  background:linear-gradient(90deg, #7b5cff, #ff6ec7) !important;
   box-shadow:
     0 6px 18px rgba(123,92,255,.35),
-    0 0 0 1px rgba(255,255,255,.08) inset;
+    0 0 0 1px rgba(255,255,255,.08) inset !important;
 }
