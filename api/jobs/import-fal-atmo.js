@@ -1,4 +1,4 @@
-import { query } from "../../lib/db.js";
+import { neon } from "@neondatabase/serverless";
 
 export default async function handler(req, res) {
   try {
@@ -10,6 +10,12 @@ export default async function handler(req, res) {
     if (!Array.isArray(request_ids) || !request_ids.length) {
       return res.status(400).json({ ok: false, error: "missing_request_ids" });
     }
+
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({ ok: false, error: "missing_DATABASE_URL" });
+    }
+
+    const sql = neon(process.env.DATABASE_URL);
 
     const host = req.headers.host;
     const proto = req.headers["x-forwarded-proto"] || "https";
@@ -49,9 +55,8 @@ export default async function handler(req, res) {
           continue;
         }
 
-        // DB insert (tam completed job)
-        await query(
-          `
+        // DB insert
+        await sql`
           INSERT INTO jobs (
             job_id,
             user_id,
@@ -64,34 +69,29 @@ export default async function handler(req, res) {
           )
           VALUES (
             gen_random_uuid(),
-            $1,
+            ${"harunerkezen@gmail.com"},
             'atmo',
             'atmo',
             'COMPLETED',
-            $2,
-            $3,
-            NOW()
-          )
-        `,
-          [
-            "harunerkezen@gmail.com",
-            JSON.stringify([
+            ${JSON.stringify([
               {
                 type: "video",
                 url: videoUrl,
                 meta: { app: "atmo" },
               },
-            ]),
-            JSON.stringify({
+            ])},
+            ${JSON.stringify({
               provider: "fal",
               provider_request_id: request_id,
-            }),
-          ]
-        );
+            })},
+            NOW()
+          )
+        `;
 
         results.push({ request_id, imported: true });
+
       } catch (innerErr) {
-        console.error("Import error for:", request_id, innerErr);
+        console.error("Import error:", innerErr);
         results.push({
           request_id,
           imported: false,
@@ -101,6 +101,7 @@ export default async function handler(req, res) {
     }
 
     return res.json({ ok: true, results });
+
   } catch (err) {
     console.error("IMPORT FAL ATMO ERROR:", err);
     return res.status(500).json({ ok: false, error: "server_error" });
