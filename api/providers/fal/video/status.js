@@ -1,11 +1,14 @@
-// /api/providers/fal/video/status.js
-// FINAL FIXED VERSION (Atmosfer only)
-// - Fal endpoint rotate destekli
-// - GET + POST otomatik seçer
-// - Yeni status_url gelirse return eder (UI chain takip edebilir)
-// - PPE uyumlu outputs üretir
+// /pages/api/providers/fal/video/status.js
+// FINAL + SAFE (Atmosfer / Kling Video)
+// ✅ Endpoint tahmini YOK
+// ✅ status_url sadece okuma (GET) / yeni job yaratmaz
+// ✅ 404 => FAILED (poll durur)
+// ✅ PPE uyumlu outputs üretir
+// ✅ job_id verilirse DB'den status_url resolve eder (opsiyonel)
 
-const { neon } = require("@neondatabase/serverless");
+export const config = { runtime: "nodejs" };
+
+import { neon } from "@neondatabase/serverless";
 
 function pick(obj, paths) {
   for (const p of paths) {
@@ -54,12 +57,10 @@ function extractVideoUrl(falJson) {
       "data.output.video.url",
       "result.video.url",
       "result.output.video.url",
-      "response.video.url",
-      "response.output.video.url",
-      "response.output.url",
+      "output.video.url.url", // bazı varyantlar
     ]) ||
     (Array.isArray(falJson?.outputs)
-      ? falJson.outputs.find(x => x?.url)?.url || null
+      ? falJson.outputs.find((x) => x?.url)?.url || null
       : null) ||
     null
   );
@@ -80,6 +81,11 @@ async function resolveStatusUrlFromDB(job_id) {
 
   const sql = neon(conn);
 
+  // job_id uuid değilse DB'ye hiç gitme (senin "invalid uuid" hatasını bitirir)
+  const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!UUID_RE.test(String(job_id || ""))) return null;
+
   const rows = await sql`
     select meta
     from jobs
@@ -89,7 +95,7 @@ async function resolveStatusUrlFromDB(job_id) {
 
   if (!rows.length) return null;
 
-  const meta = rows[0].meta || {};
+  const meta = rows[0]?.meta || {};
 
   return (
     pick(meta, [
@@ -99,63 +105,15 @@ async function resolveStatusUrlFromDB(job_id) {
       "provider_response.response_url",
       "status_url",
       "response_url",
+      "fal.status_url",
+      "fal.response_url",
+      "raw.status_url",
+      "raw.response_url",
     ]) || null
   );
 }
 
-async function updateStatusUrlInDB(job_id, newStatusUrl) {
-  const conn = pickConn();
-  if (!conn) return;
-
-  const sql = neon(conn);
-
-  // meta.provider_response.raw.status_url overwrite
-  await sql`
-    update jobs
-    set meta = jsonb_set(
-      coalesce(meta, '{}'::jsonb),
-      '{provider_response,raw,status_url}',
-      ${JSON.stringify(newStatusUrl)}::jsonb,
-      true
-    ),
-    updated_at = now()
-    where id = ${job_id}::uuid
-  `;
-}
-
-async function fetchFal(status_url, falKey) {
-  const headers = {
-    Authorization: `Key ${falKey}`,
-    Accept: "application/json",
-  };
-
-  // Fal bazı endpointlerde POST ister, bazıları GET.
-  // Kural:
-  // - /status ile bitiyorsa POST
-  // - değilse GET
-  const isStatusEndpoint = status_url.endsWith("/status");
-
-  const r = await fetch(status_url, {
-    method: isStatusEndpoint ? "POST" : "GET",
-    headers: {
-      ...headers,
-      ...(isStatusEndpoint ? { "Content-Type": "application/json" } : {}),
-    },
-    ...(isStatusEndpoint ? { body: "{}" } : {}),
-  });
-
-  const text = await r.text().catch(() => "");
-  let data;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = { raw: text };
-  }
-
-  return { r, data };
-}
-
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   try {
     res.setHeader("Cache-Control", "no-store");
 
@@ -164,14 +122,19 @@ module.exports = async function handler(req, res) {
 
     const app = String(q.app || b.app || "atmo");
 
+    // status_url sadece buradan gelir: query/body/DB
     let status_url = String(
-      q.status_url || b.status_url || q.response_url || b.response_url || ""
+      q.status_url ||
+        b.status_url ||
+        q.response_url ||
+        b.response_url ||
+        ""
     ).trim();
 
     const job_id = String(q.job_id || b.job_id || "").trim();
 
     if (!status_url && job_id) {
-      status_url = await resolveStatusUrlFromDB(job_id);
+      status_url = (await resolveStatusUrlFromDB(job_id)) || "";
     }
 
     if (!status_url) {
@@ -182,6 +145,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // Fal key (server-side)
     const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY;
     if (!FAL_KEY) {
       return res.status(500).json({
@@ -190,10 +154,24 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // === 1) Fal fetch ===
-    const { r, data: fal } = await fetchFal(status_url, FAL_KEY);
+    // ✅ KRİTİK: GET ile oku. POST YOK.
+    const r = await fetch(status_url, {
+      method: "GET",
+      headers: {
+        Authorization: `Key ${FAL_KEY}`,
+        Accept: "application/json",
+      },
+    });
 
-    // 404 => job artık yok, poll durmalı
+    const text = await r.text().catch(() => "");
+    let fal;
+    try {
+      fal = text ? JSON.parse(text) : {};
+    } catch {
+      fal = { raw: text };
+    }
+
+    // ✅ 404 => poll bitir (yanlış url / expired / vs)
     if (r.status === 404) {
       return res.status(200).json({
         ok: true,
@@ -208,6 +186,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // ✅ diğer provider hataları
     if (!r.ok) {
       return res.status(200).json({
         ok: false,
@@ -219,23 +198,6 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // === 2) Fal rotate status_url support ===
-    const rotated_status_url =
-      pick(fal, ["status_url", "data.status_url", "response.status_url"]) || null;
-
-    if (rotated_status_url && typeof rotated_status_url === "string") {
-      const cleaned = rotated_status_url.trim();
-      if (cleaned && cleaned !== status_url) {
-        status_url = cleaned;
-
-        // DB update (çok kritik)
-        if (job_id) {
-          await updateStatusUrlInDB(job_id, status_url);
-        }
-      }
-    }
-
-    // === 3) video_url extract ===
     const video_url = extractVideoUrl(fal);
 
     const rawStatus =
@@ -254,10 +216,9 @@ module.exports = async function handler(req, res) {
       status,
       video_url,
       outputs,
-      status_url,
       fal,
+      status_url,
     });
-
   } catch (e) {
     return res.status(500).json({
       ok: false,
@@ -265,4 +226,4 @@ module.exports = async function handler(req, res) {
       message: e?.message || String(e),
     });
   }
-};
+}
