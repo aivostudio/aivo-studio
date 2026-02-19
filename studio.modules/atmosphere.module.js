@@ -1,8 +1,13 @@
 /* ============================================================================
-   atmosphere.module.js — V2 (FULL, clean)
+   atmosphere.module.js — V2 (FULL, clean) — REVIZED (Aspect Ratio added)
    - Fix: Mode switch uses CAPTURE + stopPropagation to avoid global click blockers
    - Basic: scene select, effects multi-select, camera/duration, personalization (image/logo/audio)
    - Pro: prompt + refs, light/mood single-select, export + details + LUT
+   - NEW: Aspect Ratio selector (16:9 / 1:1 / 9:16)
+       - State: state.aspect_ratio (default 16:9)
+       - Persist: localStorage "aivo.atmo.aspect_ratio"
+       - UI: buttons/pills with [data-atm-aspect="16:9|1:1|9:16"] inside [data-atm-aspect-wrap]
+       - Payload: payload.aspect_ratio is sent for BOTH basic + pro
    - Generate: builds payload and calls your hook if present (ATM_CREATE / atmoGenerate / ATMOSPHERE_CREATE)
    ============================================================================ */
 
@@ -35,6 +40,46 @@
   };
 
   // ------------------------------------------------------------
+  // Aspect Ratio (persist + UI sync)
+  // - Expects UI: [data-atm-aspect-wrap] containing buttons with [data-atm-aspect="16:9|1:1|9:16"]
+  // ------------------------------------------------------------
+  const ATM_ASPECT_KEY = "aivo.atmo.aspect_ratio";
+  const isValidAspect = (v) => v === "16:9" || v === "1:1" || v === "9:16";
+
+  function loadAspect() {
+    try {
+      const v = localStorage.getItem(ATM_ASPECT_KEY);
+      return isValidAspect(v) ? v : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function saveAspect(v) {
+    if (!isValidAspect(v)) return;
+    try {
+      localStorage.setItem(ATM_ASPECT_KEY, v);
+    } catch (_) {}
+  }
+
+  function syncAspectUI(root) {
+    const wrap = qs("[data-atm-aspect-wrap]", root) || root;
+    const btns = qsa("[data-atm-aspect]", wrap);
+    if (!btns.length) return;
+
+    const cur = isValidAspect(state.aspect_ratio) ? state.aspect_ratio : "16:9";
+    btns.forEach((b) => {
+      const on = b.dataset.atmAspect === cur;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    // Optional legacy hidden input (safe no-op if not present)
+    const hidden = qs("#atmAspectValue", root);
+    if (hidden) hidden.value = cur;
+  }
+
+  // ------------------------------------------------------------
   // 1) Scope finder (works inside studio module host)
   // ------------------------------------------------------------
   function getAtmoPanelRoot() {
@@ -51,6 +96,9 @@
   // ------------------------------------------------------------
   const state = (window.__ATM_V2__ = window.__ATM_V2__ || {
     mode: "basic",
+
+    // NEW: aspect ratio (default 16:9)
+    aspect_ratio: "16:9",
 
     // basic
     scene: "winter_cafe",
@@ -208,6 +256,33 @@
       });
 
       console.log("[ATM] mode switch ->", mode);
+    },
+    true
+  );
+
+  // ------------------------------------------------------------
+  // NEW) Aspect Ratio selector (delegated) — CAPTURE
+  // ------------------------------------------------------------
+  document.addEventListener(
+    "click",
+    (e) => {
+      const root = getAtmoPanelRoot();
+      if (!root) return;
+
+      const btn = closestWithin(e.target, "[data-atm-aspect]", root);
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const v = btn.dataset.atmAspect;
+      if (!isValidAspect(v)) return;
+
+      state.aspect_ratio = v;
+      saveAspect(v);
+      syncAspectUI(root);
+
+      console.log("[ATM] aspect_ratio ->", v);
     },
     true
   );
@@ -413,6 +488,10 @@
     return {
       app: "atmo",
       mode: "basic",
+
+      // NEW: aspect ratio
+      aspect_ratio: state.aspect_ratio || "16:9",
+
       scene: state.scene || null,
       effects: (state.effects || []).slice(),
       camera: state.camera || "kenburns_soft",
@@ -436,6 +515,10 @@
     return {
       app: "atmo",
       mode: "pro",
+
+      // NEW: aspect ratio
+      aspect_ratio: state.aspect_ratio || "16:9",
+
       prompt: state.prompt || "",
       light: state.light || null,
       mood: state.mood || null,
@@ -500,8 +583,17 @@
   const init = () => {
     const root = getAtmoPanelRoot();
     if (!root) return;
+
+    // NEW: load persisted aspect ratio (default to 16:9)
+    const savedAspect = loadAspect();
+    if (savedAspect) state.aspect_ratio = savedAspect;
+    else state.aspect_ratio = isValidAspect(state.aspect_ratio) ? state.aspect_ratio : "16:9";
+
     readInitialFromDOM(root);
     syncLegacyEffectsInput(root);
+
+    // NEW: sync aspect UI
+    syncAspectUI(root);
 
     // ensure panels display matches current state.mode
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
