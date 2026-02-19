@@ -1,10 +1,11 @@
 // /pages/api/providers/fal/video/status.js
 // FINAL + SAFE (Atmosfer / Kling Video)
 // ✅ Endpoint tahmini YOK
-// ✅ status_url sadece okuma (GET) / yeni job yaratmaz
+// ✅ status_url sadece okuma / yeni job yaratmaz
 // ✅ 404 => FAILED (poll durur)
 // ✅ PPE uyumlu outputs üretir
 // ✅ job_id verilirse DB'den status_url resolve eder (opsiyonel)
+// ✅ KRİTİK FIX: GET dene → 405 ise POST fallback (Fal status_url method mismatch fix)
 
 export const config = { runtime: "nodejs" };
 
@@ -81,7 +82,7 @@ async function resolveStatusUrlFromDB(job_id) {
 
   const sql = neon(conn);
 
-  // job_id uuid değilse DB'ye hiç gitme (senin "invalid uuid" hatasını bitirir)
+  // job_id uuid değilse DB'ye hiç gitme (invalid uuid hatasını bitirir)
   const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!UUID_RE.test(String(job_id || ""))) return null;
@@ -111,6 +112,39 @@ async function resolveStatusUrlFromDB(job_id) {
       "raw.response_url",
     ]) || null
   );
+}
+
+async function readJsonSafe(resp) {
+  const text = await resp.text().catch(() => "");
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return { raw: text };
+  }
+}
+
+// ✅ GET dene → 405 ise POST fallback
+async function fetchFalStatus(status_url, falKey) {
+  const baseHeaders = {
+    Authorization: `Key ${falKey}`,
+    Accept: "application/json",
+  };
+
+  // 1) GET
+  let r = await fetch(status_url, { method: "GET", headers: baseHeaders });
+  if (r.status !== 405) return r;
+
+  // 2) 405 ise POST fallback (body "{}")
+  r = await fetch(status_url, {
+    method: "POST",
+    headers: {
+      ...baseHeaders,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+  });
+
+  return r;
 }
 
 export default async function handler(req, res) {
@@ -154,22 +188,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ KRİTİK: GET ile oku. POST YOK.
-    const r = await fetch(status_url, {
-      method: "GET",
-      headers: {
-        Authorization: `Key ${FAL_KEY}`,
-        Accept: "application/json",
-      },
-    });
-
-    const text = await r.text().catch(() => "");
-    let fal;
-    try {
-      fal = text ? JSON.parse(text) : {};
-    } catch {
-      fal = { raw: text };
-    }
+    const r = await fetchFalStatus(status_url, FAL_KEY);
+    const fal = await readJsonSafe(r);
 
     // ✅ 404 => poll bitir (yanlış url / expired / vs)
     if (r.status === 404) {
@@ -181,6 +201,18 @@ export default async function handler(req, res) {
         video_url: null,
         outputs: [],
         error: "fal_status_not_found",
+        status_url,
+        fal,
+      });
+    }
+
+    // ✅ Auth hatalarını net ayır
+    if (r.status === 401 || r.status === 403) {
+      return res.status(200).json({
+        ok: false,
+        provider: "fal",
+        error: "fal_auth_error",
+        fal_status: r.status,
         status_url,
         fal,
       });
@@ -218,6 +250,8 @@ export default async function handler(req, res) {
       outputs,
       fal,
       status_url,
+      // Debug için: hangi methodla geçtiğini anlamak istersen
+      fal_http: { status: r.status },
     });
   } catch (e) {
     return res.status(500).json({
