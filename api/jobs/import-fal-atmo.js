@@ -1,5 +1,4 @@
-import { query } from "../../lib/db.js"; // senin db helper neyse onu kullan
-import fetch from "node-fetch";
+import { query } from "../../lib/db.js";
 
 export default async function handler(req, res) {
   try {
@@ -12,73 +11,96 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_request_ids" });
     }
 
+    const host = req.headers.host;
+    const proto = req.headers["x-forwarded-proto"] || "https";
+    const base = `${proto}://${host}`;
+
     const results = [];
 
     for (const request_id of request_ids) {
-      // 1️⃣ Fal status çek
-      const r = await fetch(
-        `${process.env.BASE_URL}/api/providers/fal/video/status?request_id=${request_id}&app=atmo`
-      );
+      try {
+        // Fal status çek
+        const statusRes = await fetch(
+          `${base}/api/providers/fal/video/status?request_id=${request_id}&app=atmo`
+        );
 
-      const j = await r.json();
+        const statusJson = await statusRes.json();
 
-      if (!j?.ok || j?.status !== "COMPLETED") {
-        results.push({ request_id, imported: false, reason: "not_completed" });
-        continue;
+        if (!statusJson?.ok || statusJson?.status !== "COMPLETED") {
+          results.push({
+            request_id,
+            imported: false,
+            reason: "not_completed",
+          });
+          continue;
+        }
+
+        const videoUrl =
+          statusJson?.video?.url ||
+          statusJson?.outputs?.[0]?.url ||
+          null;
+
+        if (!videoUrl) {
+          results.push({
+            request_id,
+            imported: false,
+            reason: "no_url",
+          });
+          continue;
+        }
+
+        // DB insert (tam completed job)
+        await query(
+          `
+          INSERT INTO jobs (
+            job_id,
+            user_id,
+            app,
+            type,
+            status,
+            outputs,
+            meta,
+            created_at
+          )
+          VALUES (
+            gen_random_uuid(),
+            $1,
+            'atmo',
+            'atmo',
+            'COMPLETED',
+            $2,
+            $3,
+            NOW()
+          )
+        `,
+          [
+            "harunerkezen@gmail.com",
+            JSON.stringify([
+              {
+                type: "video",
+                url: videoUrl,
+                meta: { app: "atmo" },
+              },
+            ]),
+            JSON.stringify({
+              provider: "fal",
+              provider_request_id: request_id,
+            }),
+          ]
+        );
+
+        results.push({ request_id, imported: true });
+      } catch (innerErr) {
+        console.error("Import error for:", request_id, innerErr);
+        results.push({
+          request_id,
+          imported: false,
+          reason: "exception",
+        });
       }
-
-      const videoUrl =
-        j?.video?.url ||
-        j?.outputs?.[0]?.url ||
-        null;
-
-      if (!videoUrl) {
-        results.push({ request_id, imported: false, reason: "no_url" });
-        continue;
-      }
-
-      // 2️⃣ DB insert
-      await query(`
-        INSERT INTO jobs (
-          job_id,
-          user_id,
-          app,
-          type,
-          status,
-          outputs,
-          meta,
-          created_at
-        )
-        VALUES (
-          gen_random_uuid(),
-          $1,
-          'atmo',
-          'atmo',
-          'COMPLETED',
-          $2,
-          $3,
-          NOW()
-        )
-      `, [
-        req.user?.email || "harunerkezen@gmail.com",
-        JSON.stringify([
-          {
-            type: "video",
-            url: videoUrl,
-            meta: { app: "atmo" }
-          }
-        ]),
-        JSON.stringify({
-          provider: "fal",
-          provider_request_id: request_id
-        })
-      ]);
-
-      results.push({ request_id, imported: true });
     }
 
     return res.json({ ok: true, results });
-
   } catch (err) {
     console.error("IMPORT FAL ATMO ERROR:", err);
     return res.status(500).json({ ok: false, error: "server_error" });
