@@ -1,5 +1,9 @@
-// /api/jobs/status.js
+// /pages/api/jobs/status.js
 // CommonJS
+// ✅ FAL (ATMO) poll FIX: providers/fal/video/status endpoint’ine request_id değil,
+//    job_id (veya status_url) ile gidiyoruz.
+// ✅ Böylece provider endpoint DB’den status_url resolve edip (veya doğrudan status_url ile)
+//    GET→405 ise POST fallback ile Fal status’ü okuyup normalize ediyor.
 
 const { neon } = require("@neondatabase/serverless");
 
@@ -18,7 +22,9 @@ function pickUrl(x) {
 }
 
 function isUuidLike(id) {
-  return /^[0-9a-f-]{36}$/i.test(String(id || ""));
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    String(id || "")
+  );
 }
 
 function getConn() {
@@ -67,7 +73,12 @@ function toDbStatus(providerStatus) {
   }
 
   // queued
-  if (st === "IN_QUEUE" || st === "QUEUED" || st === "PENDING" || st === "SUBMITTED") {
+  if (
+    st === "IN_QUEUE" ||
+    st === "QUEUED" ||
+    st === "PENDING" ||
+    st === "SUBMITTED"
+  ) {
     return "queued";
   }
 
@@ -139,7 +150,10 @@ function pickRunwayVideoUrl(task) {
     if (u && String(u).startsWith("http")) return u;
   }
 
-  if (task?.output?.video_url && String(task.output.video_url).startsWith("http")) {
+  if (
+    task?.output?.video_url &&
+    String(task.output.video_url).startsWith("http")
+  ) {
     return task.output.video_url;
   }
 
@@ -159,60 +173,13 @@ function pickRequestIdFromJob(job) {
   );
 }
 
-function pickFalVideoUrl(payload) {
-  if (!payload) return null;
-
-  // yaygın alanlar
-  const direct =
-    payload.video?.url ||
-    payload.video_url ||
-    payload.output_url ||
-    payload.url ||
-    payload?.data?.video?.url ||
-    payload?.data?.video_url ||
-    null;
-
-  if (direct && String(direct).startsWith("http")) return direct;
-
-  // outputs array
-  const outs = payload.outputs || payload.output || payload.result || payload.data?.outputs || null;
-  if (Array.isArray(outs)) {
-    const hit = outs.find((o) => {
-      const u = pickUrl(o);
-      return u && String(u).startsWith("http");
-    });
-    if (hit) return pickUrl(hit);
-  }
-
-  // fal bazı modellerde `response` altında dönebiliyor
-  const resp = payload.response || payload.data?.response || null;
-  if (resp) {
-    const u =
-      resp.video?.url ||
-      resp.video_url ||
-      resp.output_url ||
-      resp.url ||
-      null;
-    if (u && String(u).startsWith("http")) return u;
-
-    const outs2 = resp.outputs || resp.output || resp.result || null;
-    if (Array.isArray(outs2)) {
-      const hit2 = outs2.find((o) => {
-        const uu = pickUrl(o);
-        return uu && String(uu).startsWith("http");
-      });
-      if (hit2) return pickUrl(hit2);
-    }
-  }
-
-  return null;
-}
-
 function pickFalStatus(payload) {
-  // fal: IN_QUEUE / IN_PROGRESS / COMPLETED / FAILED vb.
+  // provider endpoint'in normalize ettiği alanlar + fal raw fallback
   return (
-    payload.status ||
-    payload.state ||
+    payload?.status ||
+    payload?.fal?.status ||
+    payload?.fal_status ||
+    payload?.state ||
     payload?.data?.status ||
     payload?.data?.state ||
     payload?.response?.status ||
@@ -221,12 +188,41 @@ function pickFalStatus(payload) {
   );
 }
 
-async function fetchFalAtmoStatus(req, requestId) {
-  // ✅ sadece internal endpoint (deploy ettiğin: /api/providers/fal/video/status.js)
+// jobs.row.meta içinden status_url yakalamak için (varsa direkt gönderelim)
+function pickFalStatusUrlFromJob(job) {
+  const meta = job?.meta || {};
+  const pr = meta?.provider_response || {};
+  const raw = pr?.raw || meta?.raw || {};
+
+  return (
+    pr?.status_url ||
+    pr?.response_url ||
+    raw?.status_url ||
+    raw?.response_url ||
+    meta?.status_url ||
+    meta?.response_url ||
+    meta?.fal?.status_url ||
+    meta?.fal?.response_url ||
+    null
+  );
+}
+
+async function fetchFalAtmoStatus(req, { job_id, status_url }) {
+  // ✅ sadece internal endpoint: /api/providers/fal/video/status
   const baseUrl = getBaseUrl(req);
-  const url = `${baseUrl}/api/providers/fal/video/status?app=atmo&request_id=${encodeURIComponent(
-    requestId
-  )}`;
+
+  const qs = new URLSearchParams();
+  qs.set("app", "atmo");
+
+  // Öncelik: status_url varsa direkt gönder (DB resolve’a bile ihtiyaç kalmaz)
+  if (status_url && String(status_url).trim()) {
+    qs.set("status_url", String(status_url).trim());
+  } else {
+    // Yoksa provider endpoint job_id ile DB’den resolve eder
+    qs.set("job_id", String(job_id || "").trim());
+  }
+
+  const url = `${baseUrl}/api/providers/fal/video/status?${qs.toString()}`;
 
   const r = await fetch(url, {
     method: "GET",
@@ -251,6 +247,19 @@ async function fetchFalAtmoStatus(req, requestId) {
   return { ok: true, body: json };
 }
 
+function pickFalVideoUrl(body) {
+  // provider endpoint: video_url + outputs döndürüyor (PPE uyumlu)
+  const direct = body?.video_url || body?.video?.url || null;
+  if (direct && String(direct).startsWith("http")) return direct;
+
+  const outs = Array.isArray(body?.outputs) ? body.outputs : [];
+  const hit = outs.find((o) => {
+    const u = pickUrl(o);
+    return u && String(u).startsWith("http");
+  });
+  return hit ? pickUrl(hit) : null;
+}
+
 // ---------- R2 PERSIST ----------
 async function copyToR2({ url, key, contentType }) {
   const publicBase =
@@ -260,8 +269,10 @@ async function copyToR2({ url, key, contentType }) {
 
   if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
   if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+  if (!process.env.R2_ACCESS_KEY_ID)
+    throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_SECRET_ACCESS_KEY)
+    throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
 
   const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
@@ -277,7 +288,8 @@ async function copyToR2({ url, key, contentType }) {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`copy_fetch_failed:${r.status}`);
 
-  const ct = contentType || r.headers.get("content-type") || "application/octet-stream";
+  const ct =
+    contentType || r.headers.get("content-type") || "application/octet-stream";
   const buf = Buffer.from(await r.arrayBuffer());
 
   await r2.send(
@@ -320,6 +332,14 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "job_id_required" });
     }
 
+    if (!isUuidLike(job_id)) {
+      return res.status(400).json({
+        ok: false,
+        error: "job_id_invalid",
+        hint: "job_id must be uuid",
+      });
+    }
+
     // --- DB bağlantı ---
     const conn = getConn();
     if (!conn) {
@@ -336,7 +356,7 @@ module.exports = async (req, res) => {
     // --- DB’den job çek ---
     const rows = await sql`
       select * from jobs
-      where id = ${job_id}
+      where id = ${job_id}::uuid
       limit 1
     `;
 
@@ -351,15 +371,13 @@ module.exports = async (req, res) => {
     // app/type tespiti (sadece karar için)
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
 
-    // request_id tespiti
+    // request_id tespiti (runway & debug amaçlı)
     const requestId = pickRequestIdFromJob(job);
 
     // =========================
     // 1) FAL POLL (ONLY ATMO)
     // =========================
-    // ✅ diğer bölümler patlamasın diye sadece:
-    // provider=fal ve appKey=atmo ise burada poll ediyoruz.
-    if (provider === "fal" && appKey === "atmo" && requestId) {
+    if (provider === "fal" && appKey === "atmo") {
       const current = String(job.status || "").toLowerCase();
       const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
@@ -368,7 +386,12 @@ module.exports = async (req, res) => {
         current !== "done" && current !== "error" ? true : outputsNow.length === 0;
 
       if (shouldPoll) {
-        const fr = await fetchFalAtmoStatus(req, requestId);
+        const statusUrl = pickFalStatusUrlFromJob(job);
+
+        const fr = await fetchFalAtmoStatus(req, {
+          job_id,
+          status_url: statusUrl,
+        });
 
         if (fr.ok) {
           const body = fr.body || {};
@@ -379,12 +402,12 @@ module.exports = async (req, res) => {
           const patchMeta = {
             fal: {
               status: String(stRaw || "").toUpperCase(),
-              request_id: requestId,
+              request_id: requestId || null,
+              status_url: statusUrl || body?.status_url || null,
               updated_at: new Date().toISOString(),
             },
           };
 
-          // ✅ COMPLETED ise video url yakala
           if (dbSt === "done") {
             const videoUrl = pickFalVideoUrl(body);
 
@@ -403,14 +426,13 @@ module.exports = async (req, res) => {
                     outputs = ${JSON.stringify(outputs)}::jsonb,
                     meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                     updated_at = now()
-                where id = ${job_id}
+                where id = ${job_id}::uuid
               `;
 
               job.status = "done";
               job.outputs = outputs;
               job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
             } else {
-              // done ama url yok -> en azından done’a çek + not düş
               await sql`
                 update jobs
                 set status = 'done',
@@ -419,7 +441,7 @@ module.exports = async (req, res) => {
                       fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
                     })}::jsonb,
                     updated_at = now()
-                where id = ${job_id}
+                where id = ${job_id}::uuid
               `;
               job.status = "done";
               job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
@@ -430,7 +452,7 @@ module.exports = async (req, res) => {
               set status = 'error',
                   meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                   updated_at = now()
-              where id = ${job_id}
+              where id = ${job_id}::uuid
             `;
             job.status = "error";
             job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
@@ -440,15 +462,15 @@ module.exports = async (req, res) => {
               set status = ${dbSt},
                   meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                   updated_at = now()
-              where id = ${job_id}
+              where id = ${job_id}::uuid
             `;
             job.status = dbSt;
             job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
           }
           // bilinmiyor -> dokunma
         } else {
-          // Fal status okunamadıysa DB'ye dokunmuyoruz, sadece devam
-          // (istersen burada meta’ya fail note basabiliriz ama şimdilik sessiz)
+          // Fal status okunamadıysa DB'ye dokunmuyoruz.
+          // İstersen burada job.meta’ya fail note basılabilir; şimdilik sessiz.
         }
       }
     }
@@ -489,7 +511,7 @@ module.exports = async (req, res) => {
                 outputs = ${JSON.stringify(outputs)}::jsonb,
                 meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                 updated_at = now()
-            where id = ${job_id}
+            where id = ${job_id}::uuid
           `;
 
           job.status = "done";
@@ -504,7 +526,7 @@ module.exports = async (req, res) => {
                   runway: { ...patchMeta.runway, note: "done_but_no_output_url" },
                 })}::jsonb,
                 updated_at = now()
-            where id = ${job_id}
+            where id = ${job_id}::uuid
           `;
           job.status = "done";
           job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
@@ -536,7 +558,7 @@ module.exports = async (req, res) => {
             set status = 'error',
                 meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta2)}::jsonb,
                 updated_at = now()
-            where id = ${job_id}
+            where id = ${job_id}::uuid
           `;
 
           job.status = "error";
@@ -547,7 +569,7 @@ module.exports = async (req, res) => {
             set status = ${dbSt},
                 meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                 updated_at = now()
-            where id = ${job_id}
+            where id = ${job_id}::uuid
           `;
           job.status = dbSt;
           job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
@@ -640,7 +662,7 @@ module.exports = async (req, res) => {
           update jobs
           set outputs = ${JSON.stringify(outputs)}::jsonb,
               updated_at = now()
-          where id = ${job_id}
+          where id = ${job_id}::uuid
         `;
 
         job.outputs = outputs;
