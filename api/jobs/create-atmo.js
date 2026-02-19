@@ -55,7 +55,9 @@ export default async function handler(req, res) {
 
   const email = auth?.email ? String(auth.email) : null;
   if (!email) {
-    return res.status(401).json({ ok: false, error: "unauthorized", message: "missing_email" });
+    return res
+      .status(401)
+      .json({ ok: false, error: "unauthorized", message: "missing_email" });
   }
 
   const sql = neon(conn);
@@ -123,20 +125,23 @@ export default async function handler(req, res) {
     // Burada body’yi pass-through yapıyoruz: duration/camera/scene vs ne gönderiyorsan aynen gider.
     const baseUrl = getBaseUrl(req);
 
-    const falCreateResp = await fetch(`${baseUrl}/api/providers/fal/video/create?app=atmo`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        // cookie forward: auth gerektiriyorsa iç endpoint de aynı session’ı görsün
-        cookie: req.headers.cookie || "",
-      },
-      body: JSON.stringify({
-        ...body,
-        // job ile ilişkilendirme için (istersen create endpoint bunu loglayabilir)
-        job_id,
-        app: "atmo",
-      }),
-    });
+    const falCreateResp = await fetch(
+      `${baseUrl}/api/providers/fal/video/create?app=atmo`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          // cookie forward: auth gerektiriyorsa iç endpoint de aynı session’ı görsün
+          cookie: req.headers.cookie || "",
+        },
+        body: JSON.stringify({
+          ...body,
+          // job ile ilişkilendirme için (istersen create endpoint bunu loglayabilir)
+          job_id,
+          app: "atmo",
+        }),
+      }
+    );
 
     const falText = await falCreateResp.text();
     let falJson = null;
@@ -171,7 +176,7 @@ export default async function handler(req, res) {
 
     const request_id = pickRequestId(falJson);
 
-    // 3) request_id’yi job meta’ya yaz + status running
+    // 3) request_id’yi job meta’ya yaz + status processing
     const metaWithReq = {
       ...(metaSafe || {}),
       provider_request_id: request_id,
@@ -180,7 +185,7 @@ export default async function handler(req, res) {
 
     await sql`
       update jobs
-      set status = 'running',
+      set status = 'processing',
           meta = ${metaWithReq}::jsonb,
           updated_at = now()
       where id = ${job_id}::uuid
@@ -192,7 +197,7 @@ export default async function handler(req, res) {
       job_id,
       user_uuid: inserted[0].user_uuid,
       app: inserted[0].app,
-      status: "running",
+      status: "processing",
       request_id,
       created_at: inserted[0].created_at,
     });
