@@ -632,14 +632,12 @@ function render(host) {
 
   grid.innerHTML = state.items.map(renderCard).join("");
 }
-
 /* =======================
    Actions (ADD/REPLACE)
    ======================= */
 
 // ✅ Bu handler, “Sil”i backend’e bağlar.
-// Not: Aşağıdaki `db` değişkeni senin panelde DBJobs.create(...) ile oluşturduğun controller olmalı.
-// (ör: const db = DBJobs.create({ app:"video", ... });)
+// Not: `db` panel scope’unda olmalı (DBJobs.create(...) ile).
 function bindActions(host) {
   if (!host || host.__vpActionsBound) return;
   host.__vpActionsBound = true;
@@ -661,12 +659,24 @@ function bindActions(host) {
       if (act === "delete") {
         // ✅ DB’den kalıcı sil
         btn.disabled = true;
-        const ok = await db.deleteJob(id); // <-- burada artık /api/jobs/delete çağrısı olacak
+
+        if (!window.db && typeof db === "undefined") {
+          // db yoksa: hiçbir şey yapma, ama UI da silme (debug için)
+          toast?.error?.("db controller yok (DBJobs.create çalışmamış).");
+          btn.disabled = false;
+          return;
+        }
+
+        const controller = (typeof db !== "undefined") ? db : window.db;
+
+        const ok = await controller.deleteJob(id); // <-- /api/jobs/delete
         if (!ok) {
           // delete başarısızsa geri hydrate et ki kart geri gelsin
-          try { await db.hydrate(true); } catch {}
+          try { await controller.hydrate(true); } catch {}
           toast?.error?.("Silinemedi (backend).");
+          btn.disabled = false;
         }
+
         return;
       }
 
@@ -697,11 +707,22 @@ function bindActions(host) {
         return;
       }
     } catch (err) {
-      try { await db.hydrate(true); } catch {}
+      try {
+        const controller = (typeof db !== "undefined") ? db : window.db;
+        await controller?.hydrate?.(true);
+      } catch {}
       toast?.error?.("İşlem sırasında hata oluştu.");
+      try { btn.disabled = false; } catch {}
     }
   });
 }
+
+/* =======================
+   Hook: init/mount içine EKLE
+   ======================= */
+
+// Panel mount / init fonksiyonunda render’dan sonra çağır:
+/// bindActions(host);
 
 
   /* =======================
