@@ -134,11 +134,15 @@ module.exports = async function handler(req, res) {
       Authorization: `Key ${FAL_KEY}`,
       Accept: "application/json",
     };
+const r = await fetch(status_url, {
+  method: "POST",
+  headers: {
+    ...headers,
+    "Content-Type": "application/json",
+  },
+  body: "{}",
+});
 
-    const r = await fetch(status_url, {
-      method: "GET",
-      headers,
-    });
 
     const text = await r.text().catch(() => "");
     let fal;
