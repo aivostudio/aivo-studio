@@ -1,16 +1,17 @@
 // /pages/api/providers/fal/video/status.js
-// FINAL + SAFE (Atmosfer / Kling Video)
-// ✅ Endpoint tahmini YOK
-// ✅ status_url sadece okuma / yeni job yaratmaz
-// ✅ 404 => FAILED (poll durur)
-// ✅ PPE uyumlu outputs üretir
+// FINAL v3 (Atmosfer / Kling Video)
+// ✅ Endpoint tahmini YOK (status_url ana kaynak)
 // ✅ job_id verilirse DB'den status_url resolve eder (opsiyonel)
-// ✅ KRİTİK FIX: GET dene → 405 ise POST fallback (Fal status_url method mismatch fix)
+// ✅ Fal status endpoint (status_url) -> state okur
+// ✅ COMPLETED ise Kling'in "requests/<id>" endpoint'inden video.url çeker (asıl çıktı burada)
+// ✅ PPE uyumlu outputs üretir
+// ✅ 404 => FAILED (poll durur)
 
 export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
 
+// ---------- utils ----------
 function pick(obj, paths) {
   for (const p of paths) {
     const parts = p.split(".");
@@ -48,23 +49,50 @@ function normalizeStatus(rawStatus, videoUrl) {
   return "UNKNOWN";
 }
 
-function extractVideoUrl(falJson) {
-  return (
-    pick(falJson, [
+function extractVideoUrl(anyJson) {
+  if (!anyJson) return null;
+
+  // en sık görülen alanlar
+  const direct =
+    pick(anyJson, [
       "video.url",
+      "video_url",
       "output.video.url",
       "output.url",
       "data.video.url",
       "data.output.video.url",
       "result.video.url",
       "result.output.video.url",
-      "output.video.url.url", // bazı varyantlar
-    ]) ||
-    (Array.isArray(falJson?.outputs)
-      ? falJson.outputs.find((x) => x?.url)?.url || null
-      : null) ||
-    null
-  );
+      "response.video.url",
+      "response.output.video.url",
+    ]) || null;
+
+  if (direct && String(direct).startsWith("http")) return direct;
+
+  // outputs array fallback
+  if (Array.isArray(anyJson.outputs)) {
+    const hit = anyJson.outputs.find((x) => x?.url && String(x.url).startsWith("http"));
+    if (hit) return hit.url;
+  }
+
+  return null;
+}
+
+// Kling için: status_url -> request_id çıkar -> /requests/<id> endpoint'i
+function requestUrlFromStatusUrl(statusUrl) {
+  if (!statusUrl) return null;
+
+  // örnek: https://queue.fal.run/fal-ai/kling-video/requests/<RID>/status
+  // hedef: https://queue.fal.run/fal-ai/kling-video/requests/<RID>
+  const s = String(statusUrl);
+
+  // /status kırp
+  const base = s.replace(/\/status\/?$/i, "");
+
+  // eğer zaten /requests/<id> ise base yeterli
+  if (base.includes("/requests/")) return base;
+
+  return base;
 }
 
 function pickConn() {
@@ -82,7 +110,7 @@ async function resolveStatusUrlFromDB(job_id) {
 
   const sql = neon(conn);
 
-  // job_id uuid değilse DB'ye hiç gitme (invalid uuid hatasını bitirir)
+  // job_id uuid değilse DB'ye hiç gitme
   const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!UUID_RE.test(String(job_id || ""))) return null;
@@ -114,49 +142,16 @@ async function resolveStatusUrlFromDB(job_id) {
   );
 }
 
-async function readJsonSafe(resp) {
-  const text = await resp.text().catch(() => "");
-  try {
-    return text ? JSON.parse(text) : {};
-  } catch {
-    return { raw: text };
-  }
-}
-
-// ✅ GET dene → 405 ise POST fallback
-async function fetchFalStatus(status_url, falKey) {
-  const baseHeaders = {
-    Authorization: `Key ${falKey}`,
-    Accept: "application/json",
-  };
-
-  // 1) GET
-  let r = await fetch(status_url, { method: "GET", headers: baseHeaders });
-  if (r.status !== 405) return r;
-
-  // 2) 405 ise POST fallback (body "{}")
-  r = await fetch(status_url, {
-    method: "POST",
-    headers: {
-      ...baseHeaders,
-      "Content-Type": "application/json",
-    },
-    body: "{}",
-  });
-
-  return r;
-}
-
+// ---------- main ----------
 export default async function handler(req, res) {
   try {
     res.setHeader("Cache-Control", "no-store");
 
     const q = req.query || {};
     const b = req.body || {};
-
     const app = String(q.app || b.app || "atmo");
 
-    // status_url sadece buradan gelir: query/body/DB
+    // status_url: query/body/DB
     let status_url = String(
       q.status_url ||
         b.status_url ||
@@ -182,16 +177,27 @@ export default async function handler(req, res) {
     // Fal key (server-side)
     const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY;
     if (!FAL_KEY) {
-      return res.status(500).json({
-        ok: false,
-        error: "missing_fal_key",
-      });
+      return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    const r = await fetchFalStatus(status_url, FAL_KEY);
-    const fal = await readJsonSafe(r);
+    // 1) status_url'den state oku (GET)
+    const r = await fetch(status_url, {
+      method: "GET",
+      headers: {
+        Authorization: `Key ${FAL_KEY}`,
+        Accept: "application/json",
+      },
+    });
 
-    // ✅ 404 => poll bitir (yanlış url / expired / vs)
+    const text = await r.text().catch(() => "");
+    let fal;
+    try {
+      fal = text ? JSON.parse(text) : {};
+    } catch {
+      fal = { raw: text };
+    }
+
+    // 404 => poll durdur
     if (r.status === 404) {
       return res.status(200).json({
         ok: true,
@@ -206,19 +212,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ Auth hatalarını net ayır
-    if (r.status === 401 || r.status === 403) {
-      return res.status(200).json({
-        ok: false,
-        provider: "fal",
-        error: "fal_auth_error",
-        fal_status: r.status,
-        status_url,
-        fal,
-      });
-    }
-
-    // ✅ diğer provider hataları
     if (!r.ok) {
       return res.status(200).json({
         ok: false,
@@ -230,10 +223,46 @@ export default async function handler(req, res) {
       });
     }
 
-    const video_url = extractVideoUrl(fal);
-
     const rawStatus =
       pick(fal, ["status", "data.status", "result.status", "state"]) || null;
+
+    // 2) Eğer status COMPLETED ise Kling request endpoint'inden output çek
+    let video_url = extractVideoUrl(fal);
+
+    const stUpper = String(rawStatus || "").toUpperCase();
+    if (!video_url && ["COMPLETED", "COMPLETE", "SUCCEEDED", "READY", "DONE"].includes(stUpper)) {
+      const reqUrl = requestUrlFromStatusUrl(status_url);
+
+      if (reqUrl) {
+        const rr = await fetch(reqUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Key ${FAL_KEY}`,
+            Accept: "application/json",
+          },
+        });
+
+        const t2 = await rr.text().catch(() => "");
+        let j2;
+        try {
+          j2 = t2 ? JSON.parse(t2) : {};
+        } catch {
+          j2 = { raw: t2 };
+        }
+
+        // Kling output genelde burada: { video: { url: ... } }
+        const u2 = extractVideoUrl(j2);
+        if (u2) video_url = u2;
+
+        // debug için
+        fal = {
+          ...fal,
+          resolved_from: reqUrl,
+          resolved_http_status: rr.status,
+          resolved_payload: j2,
+        };
+      }
+    }
 
     const status = normalizeStatus(rawStatus, video_url);
 
@@ -246,12 +275,10 @@ export default async function handler(req, res) {
       provider: "fal",
       app,
       status,
-      video_url,
+      video_url: video_url || null,
       outputs,
       fal,
       status_url,
-      // Debug için: hangi methodla geçtiğini anlamak istersen
-      fal_http: { status: r.status },
     });
   } catch (e) {
     return res.status(500).json({
