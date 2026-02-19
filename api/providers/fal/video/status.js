@@ -1,13 +1,12 @@
-// /api/providers/fal/video/status.js  (CommonJS)
-// ✅ FIX (Atmosfer odaklı, diğer modüllere dokunmaz):
-// 1) "status endpoint" KURMAYIZ. Varsa direkt status_url/response_url kullanırız (create response’tan).
-// 2) status_url yoksa: (opsiyonel) job_id ile DB’den meta.provider_response.raw.status_url çekmeye çalışırız.
-// 3) Fal status call: önce GET deneriz; 405/404 gibi durumda POST fallback deneriz.
-// 4) Normalize output: status + video_url + outputs[] (PPE/import ready)
+// /api/providers/fal/video/status.js
+// CLEAN + SAFE VERSION (Atmosfer only)
+// - Endpoint tahmini YOK
+// - 404 => FAILED (poll durur)
+// - Sadece status_url kullanır
+// - PPE uyumlu outputs üretir
 
 const { neon } = require("@neondatabase/serverless");
 
-// küçük helper
 function pick(obj, paths) {
   for (const p of paths) {
     const parts = p.split(".");
@@ -30,23 +29,22 @@ function normalizeStatus(rawStatus, videoUrl) {
 
   if (videoUrl) return "COMPLETED";
 
-  if (st === "COMPLETED" || st === "COMPLETE" || st === "SUCCEEDED" || st === "READY" || st === "DONE")
+  if (["COMPLETED", "COMPLETE", "SUCCEEDED", "READY", "DONE"].includes(st))
     return "COMPLETED";
 
-  if (st === "IN_PROGRESS" || st === "PROCESSING" || st === "RUNNING" || st === "STARTED")
+  if (["IN_PROGRESS", "PROCESSING", "RUNNING", "STARTED"].includes(st))
     return "RUNNING";
 
-  if (st === "IN_QUEUE" || st === "QUEUED" || st === "PENDING")
+  if (["IN_QUEUE", "QUEUED", "PENDING"].includes(st))
     return "IN_QUEUE";
 
-  if (st === "FAILED" || st === "ERROR" || st === "CANCELED" || st === "CANCELLED")
+  if (["FAILED", "ERROR", "CANCELED", "CANCELLED"].includes(st))
     return "FAILED";
 
   return "UNKNOWN";
 }
 
 function extractVideoUrl(falJson) {
-  // Fal cevapları farklı şekillerde gelebiliyor; en yaygın alanları tarıyoruz
   return (
     pick(falJson, [
       "video.url",
@@ -57,36 +55,11 @@ function extractVideoUrl(falJson) {
       "result.video.url",
       "result.output.video.url",
     ]) ||
-    (Array.isArray(falJson?.outputs) ? (falJson.outputs.find(x => x?.url)?.url || null) : null) ||
+    (Array.isArray(falJson?.outputs)
+      ? falJson.outputs.find(x => x?.url)?.url || null
+      : null) ||
     null
   );
-}
-
-async function fetchFalStatus({ url, falKey }) {
-  // status_url zaten FULL URL olacak: https://queue.fal.run/.../status
-  // endpoint'i asla encode etmiyoruz.
-  const headers = {
-    Authorization: `Key ${falKey}`,
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  };
-
-  // 1) GET dene
-  let r = await fetch(url, { method: "GET", headers });
-  let text = await r.text().catch(() => "");
-  let data;
-  try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-  if (r.ok) return { ok: true, method: "GET", http_status: r.status, url, data };
-
-  // 2) Bazı queue endpoint’leri POST isteyebiliyor -> fallback
-  // (GET 405/404/400 vs geldiyse POST’la dene)
-  const r2 = await fetch(url, { method: "POST", headers, body: "{}" });
-  const text2 = await r2.text().catch(() => "");
-  let data2;
-  try { data2 = JSON.parse(text2); } catch { data2 = { raw: text2 }; }
-
-  return { ok: r2.ok, method: "POST", http_status: r2.status, url, data: data2, first_try: { method: "GET", http_status: r.status, data } };
 }
 
 async function resolveStatusUrlFromDB(job_id) {
@@ -96,21 +69,22 @@ async function resolveStatusUrlFromDB(job_id) {
     process.env.POSTGRES_URL ||
     process.env.DATABASE_URL_UNPOOLED;
 
-  if (!conn) return { ok: false, error: "missing_db_env" };
+  if (!conn) return null;
 
   const sql = neon(conn);
 
   const rows = await sql`
-    select id, app, meta
+    select meta
     from jobs
     where id = ${job_id}::uuid
     limit 1
   `;
 
-  if (!rows.length) return { ok: false, error: "job_not_found" };
+  if (!rows.length) return null;
 
   const meta = rows[0].meta || {};
-  const status_url =
+
+  return (
     pick(meta, [
       "provider_response.raw.status_url",
       "provider_response.status_url",
@@ -118,144 +92,88 @@ async function resolveStatusUrlFromDB(job_id) {
       "provider_response.response_url",
       "status_url",
       "response_url",
-    ]) || null;
-
-  return { ok: true, status_url, meta, app: rows[0].app || null };
+    ]) || null
+  );
 }
 
 module.exports = async function handler(req, res) {
   try {
     res.setHeader("Cache-Control", "no-store");
 
-    // GET/POST ikisini de kabul edelim (panel bazen POST atabiliyor)
     const q = req.query || {};
     const b = req.body || {};
 
-    const app = String(q.app || b.app || "").trim() || "atmo";
+    const app = String(q.app || b.app || "atmo");
 
-    // 1) Öncelik: direkt full status_url gelmişse onu kullan
-    let status_url = String(q.status_url || b.status_url || q.response_url || b.response_url || "").trim();
+    let status_url =
+      String(q.status_url || b.status_url || q.response_url || b.response_url || "").trim();
 
-    // 2) status_url yoksa: job_id ile DB’den çekmeyi dene
     const job_id = String(q.job_id || b.job_id || "").trim();
-    let dbInfo = null;
 
     if (!status_url && job_id) {
-      dbInfo = await resolveStatusUrlFromDB(job_id);
-      if (dbInfo.ok && dbInfo.status_url) {
-        status_url = String(dbInfo.status_url).trim();
-      }
+      status_url = await resolveStatusUrlFromDB(job_id);
     }
 
-    // 3) Hala yoksa: request_id verilmiş mi?
-    // NOT: Bu fallback’i “en son” bırakıyoruz çünkü endpoint KURMAK burada en riskli şey.
-    const request_id = String(q.request_id || b.request_id || "").trim();
-
-    if (!status_url && !request_id) {
+    if (!status_url) {
       return res.status(400).json({
         ok: false,
-        error: "missing_status_url_or_request_id",
-        hint: "Send status_url (recommended) or provide job_id (DB lookup) or request_id (fallback).",
-        app,
+        error: "missing_status_url",
+        hint: "status_url must be provided (from create response or DB)",
       });
     }
 
     const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY;
     if (!FAL_KEY) {
-      return res.status(500).json({ ok: false, error: "missing_fal_key" });
+      return res.status(500).json({
+        ok: false,
+        error: "missing_fal_key",
+      });
     }
 
-    const attempts = [];
+    const headers = {
+      Authorization: `Key ${FAL_KEY}`,
+      Accept: "application/json",
+    };
 
-    // 4) Eğer status_url hala yoksa (fallback): endpoint üret (riskli)
-    // Senin yaşadığın 404’lerin ana sebebi buydu; o yüzden sadece mecbur kalırsak çalıştırıyoruz.
-    if (!status_url && request_id) {
-      const candidates = [
-        // bazı projelerde bu path tutuyor olabilir
-        `https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video/requests/${encodeURIComponent(request_id)}/status`,
-        `https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video/requests/${encodeURIComponent(request_id)}/status`,
-        // bazı hesaplarda "v3/pro/text-to-video" yerine farklı route olabiliyor; en genel fallback:
-        `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(request_id)}/status`,
-      ];
+    const r = await fetch(status_url, {
+      method: "GET",
+      headers,
+    });
 
-      // sırayla dene: ilk OK olanı seç
-      let best = null;
-      for (const u of candidates) {
-        const r = await fetchFalStatus({ url: u, falKey: FAL_KEY });
-        attempts.push({ url: u, ok: r.ok, http_status: r.http_status, method: r.method });
-        if (r.ok) {
-          status_url = u;
-          best = r;
-          break;
-        }
-        best = r;
-      }
+    const text = await r.text().catch(() => "");
+    let fal;
+    try { fal = JSON.parse(text); } catch { fal = { raw: text }; }
 
-      if (!best || !best.ok) {
-        return res.status(200).json({
-          ok: false,
-          provider: "fal",
-          error: "fal_status_error",
-          app,
-          request_id,
-          status_url: null,
-          attempts,
-        });
-      }
-
-      // best zaten var; aşağıda tekrar fetch yapmayalım
-      const fal = best.data || {};
-      const video_url = extractVideoUrl(fal);
-      const statusRaw =
-        pick(fal, ["status", "data.status", "result.status", "state"]) || null;
-
-      const status = normalizeStatus(statusRaw, video_url);
-
-      const outputs = video_url
-        ? [{ type: "video", url: video_url, meta: { app } }]
-        : [];
-
+    // ✅ 404 => poll bitir
+    if (r.status === 404) {
       return res.status(200).json({
         ok: true,
         provider: "fal",
         app,
-        request_id,
+        status: "FAILED",
+        video_url: null,
+        outputs: [],
+        error: "fal_status_not_found",
         status_url,
-        status,
-        video_url,
-        outputs,
-        fal,
-        attempts,
-        db: dbInfo && dbInfo.ok ? { ok: true } : undefined,
       });
     }
 
-    // 5) status_url üzerinden fetch (asıl doğru yol)
-    const rr = await fetchFalStatus({ url: status_url, falKey: FAL_KEY });
-    attempts.push({ url: status_url, ok: rr.ok, http_status: rr.http_status, method: rr.method });
-
-    if (!rr.ok) {
+    if (!r.ok) {
       return res.status(200).json({
         ok: false,
         provider: "fal",
         error: "fal_status_error",
-        app,
-        request_id: request_id || null,
+        fal_status: r.status,
         status_url,
-        fal_status: rr.http_status,
-        attempts,
-        // debug için minimal
-        raw_status: rr.data && rr.data.raw ? rr.data.raw : undefined,
       });
     }
 
-    const fal = rr.data || {};
     const video_url = extractVideoUrl(fal);
 
-    const statusRaw =
+    const rawStatus =
       pick(fal, ["status", "data.status", "result.status", "state"]) || null;
 
-    const status = normalizeStatus(statusRaw, video_url);
+    const status = normalizeStatus(rawStatus, video_url);
 
     const outputs = video_url
       ? [{ type: "video", url: video_url, meta: { app } }]
@@ -265,15 +183,13 @@ module.exports = async function handler(req, res) {
       ok: true,
       provider: "fal",
       app,
-      request_id: request_id || null,
-      status_url,
-      status,     // ✅ panel/jobs/status import için kritik
+      status,
       video_url,
-      outputs,    // ✅ PPE için hazır
-      fal,        // raw (debug)
-      attempts,
-      db: dbInfo && dbInfo.ok ? { ok: true, app: dbInfo.app || null } : undefined,
+      outputs,
+      fal,
+      status_url,
     });
+
   } catch (e) {
     return res.status(500).json({
       ok: false,
