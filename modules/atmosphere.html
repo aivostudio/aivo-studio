@@ -28,41 +28,40 @@
         </button>
       </div>
 
-    <!-- ================= BASIC MODE ================= -->
-<div class="mode-panel is-active" data-mode-panel="basic" role="tabpanel">
+      <!-- ================= BASIC MODE ================= -->
+      <div class="mode-panel is-active" data-mode-panel="basic" role="tabpanel">
 
-  <!-- (1) SCENE -->
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Arka Mekan</div>
-        <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
-      </div>
-    </div>
+        <!-- (1) SCENE -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Arka Mekan</div>
+              <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
+            </div>
+          </div>
 
-    <div class="smpack-grid smpack-grid--themes" id="atmScenes">
-      <button class="smpack-choice is-active" type="button" data-atm-scene="winter_cafe">
-        <div class="smpack-choice__title">Kış Kafe</div>
-        <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
-      </button>
+          <div class="smpack-grid smpack-grid--themes" id="atmScenes">
+            <button class="smpack-choice is-active" type="button" data-atm-scene="winter_cafe">
+              <div class="smpack-choice__title">Kış Kafe</div>
+              <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
+            </button>
 
-      <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
-        <div class="smpack-choice__title">Dağ Evi</div>
-        <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
-      </button>
+            <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
+              <div class="smpack-choice__title">Dağ Evi</div>
+              <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
+            </button>
 
-      <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
-        <div class="smpack-choice__title">Göl Kenarı</div>
-        <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
-      </button>
+            <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
+              <div class="smpack-choice__title">Göl Kenarı</div>
+              <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
+            </button>
 
-      <button class="smpack-choice" type="button" data-atm-scene="city_night">
-        <div class="smpack-choice__title">Şehir Gecesi</div>
-        <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
-      </button>
-    </div>
-
-  </div>
+            <button class="smpack-choice" type="button" data-atm-scene="city_night">
+              <div class="smpack-choice__title">Şehir Gecesi</div>
+              <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
+            </button>
+          </div>
+        </div>
 
         <!-- (2) EFFECTS (unlimited) -->
         <div class="card" id="atmCard">
@@ -118,376 +117,481 @@
           </div>
         </div>
 
-<!-- (4) PERSONALIZATION (Image + Logo + Audio) + CTA INSIDE (REVİZE) -->
-<div class="card" id="atmPersonalCard">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-      <div class="card-subtitle">Görsel / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
-    </div>
-  </div>
+        <!-- (4) PERSONALIZATION (Image + Logo + Audio) + CTA INSIDE (REVİZE) -->
+        <div class="card" id="atmPersonalCard">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Kişiselleştirme (opsiyonel)</div>
+              <div class="card-subtitle">Görsel / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
+            </div>
+          </div>
 
-  <!-- 3'lü grid: Görsel (sahne override) + Logo + Audio -->
-  <div class="atmPersGrid">
+          <!-- 3'lü grid: Görsel (sahne override) + Logo + Audio -->
+          <div class="atmPersGrid">
 
-    <!-- 1) Görsel (Sahne override) -->
-    <div class="atmPersCol">
-      <div class="form-label">Görsel (Sahne override)</div>
+            <!-- 1) Görsel (Sahne override) -->
+            <div class="atmPersCol">
+              <div class="form-label">Görsel (Sahne override)</div>
 
-      <label class="btn atmFileBtn" style="cursor:pointer;">
-        <input type="file" id="atmImageFile" accept="image/*" hidden>
-        🖼️ Görsel Seç
-      </label>
+              <label class="btn atmFileBtn" style="cursor:pointer;">
+                <input type="file" id="atmImageFile" accept="image/*" hidden>
+                🖼️ Görsel Seç
+              </label>
 
-      <div class="atmFileMeta">
-        <div class="atmFileName" id="atmImageFileName">Dosya seçilmedi</div>
-        <div class="atmFileHint">Seçilen görsel, yukarıdaki sahne seçimini override eder.</div>
-      </div>
-    </div>
+              <div class="atmFileMeta">
+                <div class="atmFileName" id="atmImageFileName">Dosya seçilmedi</div>
+                <div class="atmFileHint">Seçilen görsel, yukarıdaki sahne seçimini override eder.</div>
+              </div>
+            </div>
 
-    <!-- 2) Logo -->
-    <div class="atmPersCol">
-      <div class="form-label">Logo</div>
+            <!-- 2) Logo -->
+            <div class="atmPersCol">
+              <div class="form-label">Logo</div>
 
-      <label class="btn atmFileBtn" style="cursor:pointer;">
-        <input type="file" id="atmLogoFile" accept="image/*" hidden>
-        🏷️ Logo Seç
-      </label>
+              <label class="btn atmFileBtn" style="cursor:pointer;">
+                <input type="file" id="atmLogoFile" accept="image/*" hidden>
+                🏷️ Logo Seç
+              </label>
 
-      <div class="atmFileMeta">
-        <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
-      </div>
+              <div class="atmFileMeta">
+                <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+              </div>
 
-      <div class="atmRow2">
-        <select id="atmLogoPos" class="input">
-          <option value="bl">Sol Alt</option>
-          <option value="br" selected>Sağ Alt</option>
-          <option value="center_small">Ortada (küçük)</option>
-        </select>
+              <div class="atmRow2">
+                <select id="atmLogoPos" class="input">
+                  <option value="bl">Sol Alt</option>
+                  <option value="br" selected>Sağ Alt</option>
+                  <option value="center_small">Ortada (küçük)</option>
+                </select>
 
-        <select id="atmLogoSize" class="input">
-          <option value="sm" selected>Küçük</option>
-          <option value="md">Orta</option>
-        </select>
-      </div>
+                <select id="atmLogoSize" class="input">
+                  <option value="sm" selected>Küçük</option>
+                  <option value="md">Orta</option>
+                </select>
+              </div>
 
-      <div class="atmOpacityRow">
-        <div class="form-label">Opaklık</div>
-        <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
-      </div>
-    </div>
+              <div class="atmOpacityRow">
+                <div class="form-label">Opaklık</div>
+                <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+              </div>
+            </div>
 
-    <!-- 3) Audio -->
-    <div class="atmPersCol">
-      <div class="form-label">Müzik / Jingle</div>
+            <!-- 3) Audio -->
+            <div class="atmPersCol">
+              <div class="form-label">Müzik / Jingle</div>
 
-      <label class="btn atmFileBtn" style="cursor:pointer;">
-        <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-        🎵 Audio Seç
-      </label>
+              <label class="btn atmFileBtn" style="cursor:pointer;">
+                <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+                🎵 Audio Seç
+              </label>
 
-      <div class="atmFileMeta">
-        <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
-      </div>
+              <div class="atmFileMeta">
+                <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
+              </div>
 
-      <div class="atmRow2">
-        <select id="atmAudioMode" class="input">
-          <option value="none" selected>Ses yok</option>
-          <option value="embed">MP4 içine ekle</option>
-        </select>
+              <div class="atmRow2">
+                <select id="atmAudioMode" class="input">
+                  <option value="none" selected>Ses yok</option>
+                  <option value="embed">MP4 içine ekle</option>
+                </select>
 
-        <select id="atmAudioTrim" class="input">
-          <option value="loop_to_fit" selected>Loop ile uydur</option>
-          <option value="trim">Kırp</option>
-        </select>
-      </div>
+                <select id="atmAudioTrim" class="input">
+                  <option value="loop_to_fit" selected>Loop ile uydur</option>
+                  <option value="trim">Kırp</option>
+                </select>
+              </div>
 
-      <label class="atmCheckRow">
-        <input type="checkbox" id="atmSilentCopy" checked>
-        Spotify Canvas için sessiz kopya üret
-      </label>
-    </div>
+              <label class="atmCheckRow">
+                <input type="checkbox" id="atmSilentCopy" checked>
+                Spotify Canvas için sessiz kopya üret
+              </label>
+            </div>
 
-<!-- CTA (BASIC) -->
-<div class="atmPersCta">
-  <button class="atmBigCtaBtn"
-          type="button"
-          data-atm-generate
-          data-atm-mode="basic">
-    🎬 Atmosfer Video Oluştur (20 Kredi)
-  </button>
-</div>
+            <!-- CTA (BASIC) -->
+            <div class="atmPersCta">
+              <button class="atmBigCtaBtn"
+                      type="button"
+                      data-atm-generate
+                      data-atm-mode="basic">
+                🎬 Atmosfer Video Oluştur (20 Kredi)
+              </button>
+            </div>
 
-</div><!-- /.atmPersGrid -->
+          </div><!-- /.atmPersGrid -->
+        </div><!-- /#atmPersonalCard.card -->
 
-</div><!-- /#atmPersonalCard.card -->
+        <style>
+          /* Personalization 3'lü grid */
+          #atmPersonalCard .atmPersGrid{
+            display:grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap:14px;
+            align-items:start;
+          }
+          #atmPersonalCard .atmPersCol{ min-width:0; }
 
-<style>
-  /* Personalization 3'lü grid */
-  #atmPersonalCard .atmPersGrid{
-    display:grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap:14px;
-    align-items:start;
-  }
-  #atmPersonalCard .atmPersCol{ min-width:0; }
+          #atmPersonalCard .atmRow2{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:10px;
+            margin-top:10px;
+          }
+          #atmPersonalCard .atmOpacityRow{ margin-top:10px; }
 
-  #atmPersonalCard .atmRow2{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-    margin-top:10px;
-  }
-  #atmPersonalCard .atmOpacityRow{ margin-top:10px; }
+          #atmPersonalCard .atmCheckRow{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            margin-top:12px;
+            opacity:.9;
+          }
 
-  #atmPersonalCard .atmCheckRow{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    margin-top:12px;
-    opacity:.9;
-  }
+          #atmPersonalCard .atmFileMeta{ margin-top:10px; }
+          #atmPersonalCard .atmFileName{
+            font-size:12px;
+            opacity:.9;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+          }
+          #atmPersonalCard .atmFileHint{
+            margin-top:4px;
+            font-size:12px;
+            opacity:.65;
+            line-height:1.35;
+          }
 
-  #atmPersonalCard .atmFileMeta{ margin-top:10px; }
-  #atmPersonalCard .atmFileName{
-    font-size:12px;
-    opacity:.9;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  #atmPersonalCard .atmFileHint{
-    margin-top:4px;
-    font-size:12px;
-    opacity:.65;
-    line-height:1.35;
-  }
+          /* CTA wrapper (sadece buton) */
+          #atmPersonalCard .atmPersCta{
+            grid-column: 1 / -1;
+            margin-top:16px;
+          }
 
-  /* CTA wrapper (sadece buton) */
-  #atmPersonalCard .atmPersCta{
-    grid-column: 1 / -1;
-    margin-top:16px;
-  }
+          #atmPersonalCard .atmBigCtaBtn{
+            width:100%;
+            border:none;
+            border-radius:999px;
+            padding:18px 20px;
+            font-weight:800;
+            font-size:16px;
+            cursor:pointer;
+            color:#fff;
+            background:linear-gradient(90deg, rgba(120,80,255,.95), rgba(255,110,190,.95));
+            box-shadow:0 18px 50px rgba(0,0,0,.45);
+            transition:transform .15s ease, filter .15s ease;
+          }
+          #atmPersonalCard .atmBigCtaBtn:hover{
+            transform:translateY(-1px);
+            filter:brightness(1.06);
+          }
+          #atmPersonalCard .atmBigCtaBtn:active{
+            transform:translateY(0px) scale(.99);
+          }
 
-  #atmPersonalCard .atmBigCtaBtn{
-    width:100%;
-    border:none;
-    border-radius:999px;
-    padding:18px 20px;
-    font-weight:800;
-    font-size:16px;
-    cursor:pointer;
-    color:#fff;
-    background:linear-gradient(90deg, rgba(120,80,255,.95), rgba(255,110,190,.95));
-    box-shadow:0 18px 50px rgba(0,0,0,.45);
-    transition:transform .15s ease, filter .15s ease;
-  }
-  #atmPersonalCard .atmBigCtaBtn:hover{
-    transform:translateY(-1px);
-    filter:brightness(1.06);
-  }
-  #atmPersonalCard .atmBigCtaBtn:active{
-    transform:translateY(0px) scale(.99);
-  }
+          @media (max-width: 980px){
+            #atmPersonalCard .atmPersGrid{ grid-template-columns: 1fr; }
+          }
+        </style>
 
-  @media (max-width: 980px){
-    #atmPersonalCard .atmPersGrid{ grid-template-columns: 1fr; }
-  }
-</style>
+        <script>
+          (() => {
+            const bindName = (inputId, labelId) => {
+              const input = document.getElementById(inputId);
+              const label = document.getElementById(labelId);
+              if (!input || !label) return;
+
+              const show = () => {
+                const f = input.files && input.files[0];
+                label.textContent = f ? f.name : "Dosya seçilmedi";
+              };
+
+              input.addEventListener("change", show);
+              show();
+            };
+
+            bindName("atmImageFile", "atmImageFileName");
+            bindName("atmLogoFile", "atmLogoFileName");
+            bindName("atmAudioFile", "atmAudioFileName");
+          })();
+        </script>
+
+      </div><!-- /MODE PANEL basic -->
+
+      <!-- ================= SUPER MODE ================= -->
+      <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
+
+        <!-- (1) SUPER PROMPT + REFERENCES -->
+        <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
+          <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
+            <div style="color:#fff;font-weight:600;font-size:14px;">
+              Sahne + kamera + atmosferi tek prompt’ta anlat
+            </div>
+            <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
+              Referanslar yön verir, birebir kopyalanmaz.
+            </div>
+          </div>
+
+          <div style="margin-top:8px;">
+            <textarea
+              id="atmSuperPrompt"
+              rows="4"
+              maxlength="1000"
+              placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
+              style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
+            ></textarea>
+
+            <!-- TEK SAYAC (SUPER PROMPT) -->
+            <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
+              <span id="atmSuperPromptCount">0</span> / 1000
+            </div>
+          </div>
+
+          <!-- REFERENCES -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+            <label for="atmSceneImageInput" class="btn" style="cursor:pointer;">
+              🖼️ Referans Görsel
+              <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
+            </label>
+
+            <label for="atmSceneAudioInput" class="btn" style="cursor:pointer;">
+              🎵 Müzik / Jingle
+              <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
+            </label>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
+            <div>
+              <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
+                Zorunlu: Base frame
+              </span>
+            </div>
+          </div>
+        </div><!-- /#atmSuperPromptCard -->
+
+        <!-- (2) LIGHT · EXPORT · MOOD -->
+        <div class="card" id="atmProMoodExport" style="margin-top:14px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Işık · Export · Duygu</div>
+              <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+
+            <div>
+              <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
+              <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+                <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+                <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+                <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+                <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+                <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+              </div>
+
+              <div style="font-weight:600;font-size:13px;opacity:.85;margin:12px 0 8px;">🎭 Duygu</div>
+              <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+                <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+                <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+                <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+                <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+                <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
+
+              <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                🎞️ FPS
+                <select id="atmProFps">
+                  <option value="24" selected>24 FPS</option>
+                  <option value="30">30 FPS</option>
+                </select>
+              </label>
+
+              <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                📁 Format
+                <select id="atmProFormat">
+                  <option value="mp4" selected>MP4</option>
+                  <option value="webm">WebM</option>
+                </select>
+              </label>
+
+              <!-- ✅ SUPER MODE DURATION -->
+              <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                ⏱️ Süre
+                <select id="atmProDuration">
+                  <option value="4">4 sn</option>
+                  <option value="6">6 sn</option>
+                  <option value="8" selected>8 sn</option>
+                  <option value="10">10 sn</option>
+                  <option value="12">12 sn</option>
+                  <option value="15">15 sn</option>
+                </select>
+              </label>
+
+              <label style="display:flex;gap:10px;align-items:center;">
+                <input type="checkbox" id="atmProSeamFix">
+                🔁 Loop Seam Fix
+              </label>
+
+              <div style="margin-top:10px;font-size:12px;opacity:.6;">
+                shader / ffmpeg post-process
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- (3) DETAIL EFFECTS + LUT -->
+        <div class="card" id="atmProDetails" style="margin-top:14px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Detay Efektler</div>
+              <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+            </div>
+          </div>
+
+          <div class="atmProFxGrid">
+            <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
+
+            <label class="atmFxItem"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+          </div>
+
+          <div class="atmLutRow">
+            <div class="atmLutLabel">🎨 Color Grade / LUT</div>
+            <select id="atmProLut" class="atmLutSelect">
+              <option value="" selected>Kapalı</option>
+              <option value="warm">Sıcak</option>
+              <option value="cold">Soğuk</option>
+              <option value="cinematic">Sinematik</option>
+              <option value="lofi">Lo-fi</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- (4) CTA PRO -->
+        <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+          <div class="atmPersCta atmPersCta--pro">
+            <button class="atmBigCtaBtn atmBigCtaBtn--pro"
+                    type="button"
+                    data-atm-generate
+                    data-atm-mode="pro">
+              🎬 Süper Atmosfer Video Oluştur (30 Kredi)
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /mode-panel pro -->
+
+    </div><!-- /mode-shell -->
+
+  </div><!-- /atmo-view -->
+
+</section>
 
 <script>
-  (() => {
-    const bindName = (inputId, labelId) => {
-      const input = document.getElementById(inputId);
-      const label = document.getElementById(labelId);
-      if (!input || !label) return;
+/* ================= ATMOSPHERE GENERATE SYSTEM ================= */
+(() => {
 
-      const show = () => {
-        const f = input.files && input.files[0];
-        label.textContent = f ? f.name : "Dosya seçilmedi";
-      };
+  const MIN_VISUAL_LOCK = 3000; // 3 saniye basılı kalma hissi
+  let isGenerating = false;
 
-      input.addEventListener("change", show);
-      show();
-    };
+  function setLoadingState(btn, loading) {
+    if (!btn) return;
 
-    bindName("atmImageFile", "atmImageFileName");
-    bindName("atmLogoFile", "atmLogoFileName");
-    bindName("atmAudioFile", "atmAudioFileName");
-  })();
+    if (loading) {
+      btn.dataset.originalText = btn.innerHTML;
+      btn.innerHTML = "Üretiliyor...";
+      btn.disabled = true;
+      btn.style.opacity = "0.9";
+      btn.style.filter = "brightness(1.05)";
+    } else {
+      btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
+      btn.disabled = false;
+      btn.style.opacity = "";
+      btn.style.filter = "";
+    }
+  }
+
+  async function handleAtmosGenerate(e) {
+    const btn = e.currentTarget;
+    if (isGenerating) return;
+
+    isGenerating = true;
+    const startTime = Date.now();
+
+    setLoadingState(btn, true);
+
+    const mode = btn.dataset.atmMode; // basic | pro
+
+    try {
+
+      /* ================= PAYLOAD ================= */
+
+      let payload = { mode };
+
+      if (mode === "basic") {
+        payload.scene = document.querySelector("#atmScenes .is-active")?.dataset.atmScene || "winter_cafe";
+
+        payload.effects = Array.from(document.querySelectorAll("#atmEffects .atm-pill[aria-pressed='true']"))
+          .map(b => b.dataset.atmEff);
+
+        payload.camera = document.getElementById("atmCamera")?.value;
+        payload.duration = document.getElementById("atmDuration")?.value;
+      }
+
+      if (mode === "pro") {
+        payload.prompt = document.getElementById("atmSuperPrompt")?.value || "";
+        payload.fps = document.getElementById("atmProFps")?.value;
+        payload.format = document.getElementById("atmProFormat")?.value;
+        payload.duration = document.getElementById("atmProDuration")?.value;
+        payload.seamFix = document.getElementById("atmProSeamFix")?.checked;
+        payload.lut = document.getElementById("atmProLut")?.value;
+      }
+
+      /* ================= API CALL ================= */
+      /* BURAYI KENDİ ENDPOINT'İNLE DEĞİŞTİR */
+
+      const res = await fetch("/api/atmosphere/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error("Atmosphere create failed");
+      }
+
+      const data = await res.json();
+      console.log("ATM CREATE OK:", data);
+
+      // burada job_id varsa poll başlatabilirsin
+      // örn: startAtmosPoll(data.job_id);
+
+    } catch (err) {
+      console.error("ATMOS ERROR:", err);
+    }
+
+    /* ================= MIN 3sn LOCK ================= */
+    const elapsed = Date.now() - startTime;
+    const wait = Math.max(0, MIN_VISUAL_LOCK - elapsed);
+
+    setTimeout(() => {
+      setLoadingState(btn, false);
+      isGenerating = false;
+    }, wait);
+  }
+
+  /* ================= BIND BOTH BUTTONS ================= */
+  document.querySelectorAll("[data-atm-generate]").forEach(btn => {
+    btn.addEventListener("click", handleAtmosGenerate);
+  });
+
+})();
 </script>
-
-</div><!-- /MODE PANEL basic -->
-
-
-<!-- ================= SUPER MODE ================= -->
-<div class="mode-panel" data-mode-panel="pro" role="tabpanel">
-
-  <!-- (1) SUPER PROMPT + REFERENCES -->
-  <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
-    <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
-      <div style="color:#fff;font-weight:600;font-size:14px;">
-        Sahne + kamera + atmosferi tek prompt’ta anlat
-      </div>
-      <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
-        Referanslar yön verir, birebir kopyalanmaz.
-      </div>
-    </div>
-
-    <div style="margin-top:8px;">
-      <textarea
-        id="atmSuperPrompt"
-        rows="4"
-        maxlength="1000"
-        placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
-        style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
-      ></textarea>
-
-      <!-- TEK SAYAC (SUPER PROMPT) -->
-      <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
-        <span id="atmSuperPromptCount">0</span> / 1000
-      </div>
-    </div>
-
-    <!-- REFERENCES -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
-      <label for="atmSceneImageInput" class="btn" style="cursor:pointer;">
-        🖼️ Referans Görsel
-        <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
-      </label>
-
-      <label for="atmSceneAudioInput" class="btn" style="cursor:pointer;">
-        🎵 Müzik / Jingle
-        <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
-      </label>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
-      <div>
-        <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
-          Zorunlu: Base frame
-        </span>
-      </div>
-    </div>
-  </div><!-- /#atmSuperPromptCard -->
-
-  <!-- (2) LIGHT · EXPORT · MOOD -->
-  <div class="card" id="atmProMoodExport" style="margin-top:14px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Işık · Export · Duygu</div>
-        <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
-
-      <div>
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
-        <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-          <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-          <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
-          <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
-          <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
-        </div>
-
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin:12px 0 8px;">🎭 Duygu</div>
-        <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
-          <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
-          <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
-        </div>
-      </div>
-
-      <div>
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
-
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          🎞️ FPS
-          <select id="atmProFps">
-            <option value="24" selected>24 FPS</option>
-            <option value="30">30 FPS</option>
-          </select>
-        </label>
-
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          📁 Format
-          <select id="atmProFormat">
-            <option value="mp4" selected>MP4</option>
-            <option value="webm">WebM</option>
-          </select>
-        </label>
-
-        <!-- ✅ SUPER MODE DURATION -->
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          ⏱️ Süre
-          <select id="atmProDuration">
-            <option value="4">4 sn</option>
-            <option value="6">6 sn</option>
-            <option value="8" selected>8 sn</option>
-            <option value="10">10 sn</option>
-            <option value="12">12 sn</option>
-            <option value="15">15 sn</option>
-          </select>
-        </label>
-
-        <label style="display:flex;gap:10px;align-items:center;">
-          <input type="checkbox" id="atmProSeamFix">
-          🔁 Loop Seam Fix
-        </label>
-
-        <div style="margin-top:10px;font-size:12px;opacity:.6;">
-          shader / ffmpeg post-process
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- (3) DETAIL EFFECTS + LUT -->
-  <div class="card" id="atmProDetails" style="margin-top:14px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Detay Efektler</div>
-        <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
-      </div>
-    </div>
-
-    <div class="atmProFxGrid">
-      <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
-
-      <label class="atmFxItem"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
-    </div>
-
-    <div class="atmLutRow">
-      <div class="atmLutLabel">🎨 Color Grade / LUT</div>
-      <select id="atmProLut" class="atmLutSelect">
-        <option value="" selected>Kapalı</option>
-        <option value="warm">Sıcak</option>
-        <option value="cold">Soğuk</option>
-        <option value="cinematic">Sinematik</option>
-        <option value="lofi">Lo-fi</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- (4) CTA PRO -->
-  <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
-    <div class="atmPersCta atmPersCta--pro">
-      <button class="atmBigCtaBtn atmBigCtaBtn--pro"
-              type="button"
-              data-atm-generate
-              data-atm-mode="pro">
-        🎬 Süper Atmosfer Video Oluştur (30 Kredi)
-      </button>
-    </div>
-  </div>
-
-</div><!-- /mode-panel pro -->
