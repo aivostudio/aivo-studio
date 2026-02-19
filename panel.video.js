@@ -287,11 +287,11 @@
     return [];
   }
 
-  function saveItems() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, MAX_ITEMS)));
-    } catch {}
-  }
+ function saveItems() {
+  // ❌ Artık localStorage kullanmıyoruz.
+  // Source of truth = backend (/api/jobs/list)
+  return;
+}
 
   /* =======================
      DB hydrate
