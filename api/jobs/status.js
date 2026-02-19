@@ -20,6 +20,13 @@ function isUuidLike(id) {
   return /^[0-9a-f-]{36}$/i.test(String(id || ""));
 }
 
+// küçük helper: bu deployment’da aynı host üzerinden iç endpoint çağırmak için
+function getBaseUrl(req) {
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
+}
+
 /**
  * DB ENUM: queued | processing | done | error
  * Provider statusları bunlara map’lenmeli.
@@ -91,6 +98,53 @@ async function fetchRunwayTask(taskId) {
   return { ok: true, task: j };
 }
 
+// ✅ SADE ATMOSFER: Fal status poll (sadece app/type=atmo için kullanacağız)
+async function fetchFalAtmoStatus(req, requestId) {
+  try {
+    const baseUrl = getBaseUrl(req);
+
+    // iç endpoint: /api/providers/fal/video/status?app=atmo&request_id=...
+    const url = `${baseUrl}/api/providers/fal/video/status?app=atmo&request_id=${encodeURIComponent(
+      String(requestId)
+    )}`;
+
+    const r = await fetch(url, {
+      method: "GET",
+      headers: {
+        cookie: req.headers.cookie || "",
+      },
+    });
+
+    const t = await r.text().catch(() => "");
+    let j = null;
+    try {
+      j = JSON.parse(t);
+    } catch {
+      j = { raw: t };
+    }
+
+    if (!r.ok || j?.ok === false) {
+      return { ok: false, error: `fal_status_http_${r.status}`, body: j };
+    }
+
+    return { ok: true, status: j };
+  } catch (e) {
+    return { ok: false, error: "fal_status_fetch_failed", message: String(e?.message || e) };
+  }
+}
+
+function needsPersist(url) {
+  if (!url) return false;
+  const u = String(url);
+
+  // zaten kalıcıysa dokunma
+  if (u.includes("media.aivo.tr/outputs/")) return false;
+  if (u.includes("media.aivo.tr/outputs")) return false;
+
+  // provider signed url / dış url -> persist et
+  return u.startsWith("http://") || u.startsWith("https://");
+}
+
 async function copyToR2({ url, key, contentType }) {
   const publicBase =
     process.env.R2_PUBLIC_BASE_URL ||
@@ -136,18 +190,6 @@ async function copyToR2({ url, key, contentType }) {
   return `${base}/${key}`;
 }
 
-function needsPersist(url) {
-  if (!url) return false;
-  const u = String(url);
-
-  // zaten kalıcıysa dokunma
-  if (u.includes("media.aivo.tr/outputs/")) return false;
-  if (u.includes("media.aivo.tr/outputs")) return false;
-
-  // provider signed url / dış url -> persist et
-  return u.startsWith("http://") || u.startsWith("https://");
-}
-
 function pickRunwayVideoUrl(task) {
   if (!task) return null;
 
@@ -173,6 +215,59 @@ function pickRunwayVideoUrl(task) {
 
   if (task?.output?.video_url && String(task.output.video_url).startsWith("http"))
     return task.output.video_url;
+
+  return null;
+}
+
+// ✅ SADE ATMOSFER: Fal status -> video url çıkarma (çok toleranslı)
+function pickFalVideoUrl(payload) {
+  if (!payload) return null;
+
+  // bazı endpointler direkt url döndürür
+  if (typeof payload === "string" && payload.startsWith("http")) return payload;
+
+  // yaygın alanlar
+  const direct =
+    payload.video_url ||
+    payload.url ||
+    payload.output_url ||
+    payload.download_url ||
+    payload.signed_url ||
+    payload?.data?.video_url ||
+    payload?.data?.url ||
+    payload?.result?.video_url ||
+    payload?.result?.url ||
+    null;
+
+  if (direct && String(direct).startsWith("http")) return direct;
+
+  // array outputs / assets
+  const arr =
+    payload.outputs ||
+    payload.output ||
+    payload.assets ||
+    payload?.data?.outputs ||
+    payload?.data?.assets ||
+    payload?.result?.outputs ||
+    payload?.result?.assets ||
+    null;
+
+  if (Array.isArray(arr)) {
+    const hit = arr.find((x) => {
+      const u =
+        (typeof x === "string" && x) ||
+        x?.url ||
+        x?.src ||
+        x?.video_url ||
+        x?.download_url ||
+        x?.signed_url ||
+        null;
+      return u && String(u).startsWith("http");
+    });
+    if (!hit) return null;
+    if (typeof hit === "string") return hit;
+    return hit.url || hit.src || hit.video_url || hit.download_url || hit.signed_url || null;
+  }
 
   return null;
 }
@@ -221,8 +316,19 @@ module.exports = async (req, res) => {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
 
-    const provider = String(job.provider || "").toLowerCase();
-    const requestId = job.request_id || job.meta?.request_id || null;
+    const app = String(job.app || job.type || "").toLowerCase();
+
+    // provider bazen column’da yok; meta’dan da yakala (mevcut modülleri bozmadan)
+    const provider = String(job.provider || job.meta?.provider || "").toLowerCase();
+
+    // requestId: column öncelikli ama atmo create akışında meta içine yazılmış olabilir
+    const requestId =
+      job.request_id ||
+      job.meta?.request_id ||
+      job.meta?.provider_request_id ||
+      job.meta?.provider_response?.raw?.request_id ||
+      job.meta?.provider_response?.request_id ||
+      null;
 
     // --- Runway poll (varsa) ---
     if (provider === "runway" && requestId && isUuidLike(requestId)) {
@@ -333,6 +439,116 @@ module.exports = async (req, res) => {
       }
     }
 
+    // ✅ SADE ATMOSFER FIX: sadece atmo + fal için status poll yap ve outputs’i doldur
+    if (app === "atmo" && provider === "fal" && requestId) {
+      const fr = await fetchFalAtmoStatus(req, requestId);
+
+      if (fr.ok) {
+        // endpoint farklı shape döndürebilir, yine de status’u yakala
+        const stRaw =
+          fr.status?.status ||
+          fr.status?.state ||
+          fr.status?.data?.status ||
+          fr.status?.data?.state ||
+          fr.status?.raw?.status ||
+          fr.status?.raw?.state ||
+          null;
+
+        const dbSt = toDbStatus(stRaw);
+
+        const videoUrl = pickFalVideoUrl(fr.status);
+
+        const patchMeta = {
+          fal: {
+            status: String(stRaw || "").toUpperCase(),
+            request_id: String(requestId),
+            updated_at: new Date().toISOString(),
+          },
+        };
+
+        // done + url -> outputs yaz
+        if (dbSt === "done" && videoUrl) {
+          const outputs = [
+            {
+              type: "video",
+              url: videoUrl,
+              meta: { app: "atmo", provider: "fal" },
+            },
+          ];
+
+          await sql`
+            update jobs
+            set status = 'done',
+                outputs = ${JSON.stringify(outputs)}::jsonb,
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+
+          job.status = "done";
+          job.outputs = outputs;
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+        }
+        // done ama url yok -> done yaz (UI stuck olmasın), meta’ya not düş
+        else if (dbSt === "done" && !videoUrl) {
+          await sql`
+            update jobs
+            set status = 'done',
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                  ...patchMeta,
+                  fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
+                })}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+
+          job.status = "done";
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+        }
+        // error -> error yaz
+        else if (dbSt === "error") {
+          const reason =
+            fr.status?.error ||
+            fr.status?.message ||
+            fr.status?.data?.error ||
+            fr.status?.data?.message ||
+            null;
+
+          await sql`
+            update jobs
+            set status = 'error',
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                  ...patchMeta,
+                  fal: { ...patchMeta.fal, failure: reason || "fal_failed" },
+                })}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+
+          job.status = "error";
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+        }
+        // queued / processing -> status güncelle (bu önemli: "IN_QUEUE" DB’de de görünsün)
+        else if (dbSt === "queued" || dbSt === "processing") {
+          await sql`
+            update jobs
+            set status = ${dbSt},
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+
+          job.status = dbSt;
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+        }
+        // bilinmeyen -> dokunma, ama meta patch’i DB’ye yazmak istemiyorsan burada bırakıyoruz
+      } else {
+        // fal status fetch patladıysa diğer modüller etkilenmesin diye DB’ye dokunmuyoruz
+        // sadece meta’ya küçük bir debug eklemek istersen açabilirsin:
+        // await sql`update jobs set meta = coalesce(meta,'{}'::jsonb) || ${JSON.stringify({ fal: { status_poll_error: fr.error } })}::jsonb, updated_at=now() where id=${job_id}`;
+      }
+    }
+
     // --- PERSIST-TO-R2 (PROVIDER BAĞIMSIZ) ---
     let outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
@@ -357,7 +573,7 @@ module.exports = async (req, res) => {
 
         const type = String(o.type || "").toLowerCase();
 
-        const app =
+        const appKey =
           o.meta?.app ||
           job.app ||
           (type === "video" ? "video" : type === "audio" ? "music" : "cover");
@@ -373,7 +589,7 @@ module.exports = async (req, res) => {
             ? "jpg"
             : "bin";
 
-        const key = `outputs/${app}/${job_id}/${output_id}.${ext}`;
+        const key = `outputs/${appKey}/${job_id}/${output_id}.${ext}`;
 
         try {
           const finalUrl = await copyToR2({
@@ -398,7 +614,7 @@ module.exports = async (req, res) => {
             output_id,
             meta: {
               ...(o.meta || {}),
-              app,
+              app: appKey,
               persisted: true,
               persisted_at: new Date().toISOString(),
               source_url: rawUrl,
@@ -436,7 +652,7 @@ module.exports = async (req, res) => {
       outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
 
     const failureReason =
-      job?.meta?.runway?.failure || job?.meta?.failure || null;
+      job?.meta?.runway?.failure || job?.meta?.failure || job?.meta?.fal?.failure || null;
 
     return res.status(200).json({
       ok: true,
