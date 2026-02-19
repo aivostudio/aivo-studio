@@ -104,7 +104,16 @@
               <option value="pan_soft">Hafif Pan</option>
               <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
             </select>
-          </div>
+          </div
+            <!-- ✅ Aspect Ratio (BASIC) -->
+<div class="form-row" style="margin-bottom:12px;">
+  <div class="form-label">Oran</div>
+  <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
+    <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
+    <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
+    <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
+  </div>
+</div>
 
           <div class="form-row" style="margin-top:12px;">
             <div class="form-label">Süre</div>
@@ -401,6 +410,15 @@
 
             <div>
               <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
+              <!-- ✅ Aspect Ratio (PRO) -->
+<label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+  📐 Oran
+  <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
+    <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
+    <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
+    <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
+  </div>
+</label>
 
               <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
                 🎞️ FPS
