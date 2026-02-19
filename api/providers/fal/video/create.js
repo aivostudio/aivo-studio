@@ -3,7 +3,6 @@ export const config = { runtime: "nodejs" };
 // /pages/api/providers/fal/video/create.js
 import { neon } from "@neondatabase/serverless";
 import authModule from "../../../_lib/auth.js";
- // dikkat: path gerekirse düzelt
 const { requireAuth } = authModule;
 
 function pickConn() {
@@ -23,8 +22,46 @@ function isMock(req) {
 }
 
 function safeJson(req) {
-  // Vercel pages/api zaten req.body parse eder; yine de guard
   return req.body && typeof req.body === "object" ? req.body : {};
+}
+
+function pick(obj, paths) {
+  for (const p of paths) {
+    const parts = p.split(".");
+    let cur = obj;
+    let ok = true;
+    for (const k of parts) {
+      if (!cur || typeof cur !== "object" || !(k in cur)) {
+        ok = false;
+        break;
+      }
+      cur = cur[k];
+    }
+    if (ok && cur != null) return cur;
+  }
+  return null;
+}
+
+function extractFalStatusUrl(data) {
+  // Fal farklı şekillerde döndürebiliyor; olabildiğince geniş tarıyoruz.
+  const direct =
+    pick(data, [
+      "status_url",
+      "statusUrl",
+      "response_url",
+      "responseUrl",
+      "urls.status",
+      "urls.response",
+      "links.status",
+      "links.response",
+      "data.status_url",
+      "data.response_url",
+      "result.status_url",
+      "result.response_url",
+    ]) || null;
+
+  if (typeof direct === "string" && direct.trim()) return direct.trim();
+  return null;
 }
 
 export default async function handler(req, res) {
@@ -48,7 +85,9 @@ export default async function handler(req, res) {
 
   const email = auth?.email ? String(auth.email) : null;
   if (!email) {
-    return res.status(401).json({ ok: false, error: "unauthorized", message: "missing_email" });
+    return res
+      .status(401)
+      .json({ ok: false, error: "unauthorized", message: "missing_email" });
   }
 
   // ---- DB ----
@@ -99,11 +138,8 @@ export default async function handler(req, res) {
     const mock_request_id = `mock_atmo_${Date.now()}`;
     const now = new Date().toISOString();
 
-    // Fake output video: repo’daki hero video
     const mock_video_url = "https://aivo.tr/media/hero-video.mp4";
 
-    // jobs tablon senin list.js çıktına göre: job_id, app, status, state, type, meta, outputs...
-    // Burada minimum uyumlu insert yapıyoruz.
     const rows = await sql`
       insert into jobs (
         user_id,
@@ -131,9 +167,7 @@ export default async function handler(req, res) {
           provider: "mock",
           request_id: mock_request_id,
         })}::jsonb,
-        ${JSON.stringify([
-          { type: "video", url: mock_video_url, meta: { app } },
-        ])}::jsonb,
+        ${JSON.stringify([{ type: "video", url: mock_video_url, meta: { app } }])}::jsonb,
         ${now},
         ${now}
       )
@@ -155,10 +189,13 @@ export default async function handler(req, res) {
   // =========================================================
   // ✅ REAL MODE: Fal kredi varsa çalışır
   // =========================================================
-  if (!process.env.FAL_KEY) {
+  const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY;
+  if (!FAL_KEY) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
+  // ⚠️ Not: Bu endpoint senin mevcut seçimin.
+  // Asıl kritik fix: response’tan status_url yakalayıp DB’ye yazıyoruz.
   const falUrl = "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
 
   const ctrl = new AbortController();
@@ -169,8 +206,9 @@ export default async function handler(req, res) {
     r = await fetch(falUrl, {
       method: "POST",
       headers: {
-        Authorization: `Key ${process.env.FAL_KEY}`,
+        Authorization: `Key ${FAL_KEY}`,
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
         ...(multi_prompt ? { multi_prompt } : { prompt }),
@@ -192,11 +230,11 @@ export default async function handler(req, res) {
       error: "fal_timeout_or_network_error",
       message: e?.message || "unknown_fetch_error",
     });
+  } finally {
+    clearTimeout(t);
   }
 
-  clearTimeout(t);
-
-  const text = await r.text();
+  const text = await r.text().catch(() => "");
   let data = null;
   try {
     data = text ? JSON.parse(text) : null;
@@ -205,7 +243,6 @@ export default async function handler(req, res) {
   }
 
   if (!r.ok) {
-    // provider status’u yansıt (403 vb)
     return res.status(r.status).json({
       ok: false,
       provider: "fal",
@@ -215,11 +252,38 @@ export default async function handler(req, res) {
     });
   }
 
+  // ✅ request_id normalize
   const request_id =
     data?.request_id || data?.requestId || data?.id || data?._id || null;
 
-  // REAL MODE DB insert: queued/pending job
+  // ✅ status_url / response_url yakala (kritik)
+  const status_url = extractFalStatusUrl(data);
+
+  // DB insert: queued/pending job
   const now = new Date().toISOString();
+
+  const metaObj = {
+    ...(meta && typeof meta === "object" ? meta : {}),
+    app,
+    kind: "atmo_video",
+    provider: "fal",
+    request_id,
+    // ✅ En kritik kısım: provider response’ı olduğu gibi sakla + status_url'yi ayrıca koy
+    provider_response: {
+      status_url: status_url || null,
+      response_url: status_url || null,
+      raw: {
+        ...(data && typeof data === "object" ? data : { raw_text: text }),
+        status_url: status_url || data?.status_url || data?.statusUrl || null,
+        response_url:
+          status_url ||
+          data?.response_url ||
+          data?.responseUrl ||
+          null,
+      },
+    },
+  };
+
   const rows = await sql`
     insert into jobs (
       user_id,
@@ -240,13 +304,7 @@ export default async function handler(req, res) {
       ${app},
       ${"queued"},
       ${prompt || null},
-      ${JSON.stringify({
-        ...(meta && typeof meta === "object" ? meta : {}),
-        app,
-        kind: "atmo_video",
-        provider: "fal",
-        request_id,
-      })}::jsonb,
+      ${JSON.stringify(metaObj)}::jsonb,
       ${"[]"}::jsonb,
       ${now},
       ${now}
@@ -259,6 +317,7 @@ export default async function handler(req, res) {
     provider: "fal",
     app,
     request_id,
+    status_url: status_url || null, // ✅ debug için
     job_id: rows?.[0]?.id || null,
     raw: data,
   });
