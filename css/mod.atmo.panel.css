@@ -232,3 +232,58 @@
 .atmoPoster { z-index: 5; pointer-events: auto; }
 .atmoPosterPlay { pointer-events: auto; cursor: pointer; }
 .atmoPlayerMount { z-index: 1; }
+/* =========================================
+   ATMOS – PROCESSING SHIMMER (SAFE BLOCK)
+   En alta ekle
+========================================= */
+
+/* Container loading state */
+.atmoCardMedia.is-loading,
+.atmoPlayerViewport.is-loading{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer overlay */
+.atmoCardMedia.is-loading::after,
+.atmoPlayerViewport.is-loading::after{
+  content:"";
+  position:absolute;
+  inset:-40% -60%;
+  background: linear-gradient(
+    90deg,
+    rgba(120, 60, 255, 0) 0%,
+    rgba(160, 70, 255, 0.18) 30%,
+    rgba(255, 90, 200, 0.38) 50%,
+    rgba(160, 70, 255, 0.18) 70%,
+    rgba(120, 60, 255, 0) 100%
+  );
+  transform: rotate(10deg);
+  animation: atmoShimmer 1.6s cubic-bezier(.4,0,.2,1) infinite;
+  z-index: 3;
+  pointer-events: none;
+  opacity:.85;
+}
+
+/* Soft dark overlay under shimmer */
+.atmoCardMedia.is-loading::before,
+.atmoPlayerViewport.is-loading::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:2;
+}
+
+/* Hide play button while loading */
+.atmoCardMedia.is-loading .atmoPlayBtn,
+.atmoPlayerViewport.is-loading .atmoPoster{
+  opacity:0;
+  pointer-events:none;
+}
+
+/* Animation */
+@keyframes atmoShimmer{
+  0%   { transform: translateX(-25%) rotate(10deg); }
+  100% { transform: translateX(25%)  rotate(10deg); }
+}
