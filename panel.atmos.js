@@ -291,7 +291,7 @@
         if (destroyed) return;
 
         const safeItems = (items || []).filter(isJobAtmo);
-      // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
+         // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
       // Rule:
       // - DB’de job varsa: optimistic’i drop/replace
       // - DB’de yoksa: optimistic’i göster
@@ -324,6 +324,13 @@
           if (Number.isFinite(n)) return n;
         }
 
+        // Safari NaN fix for "YYYY-MM-DD HH:mm:ss"
+        if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
+          const iso = s.replace(" ", "T") + "Z";
+          const tIso = Date.parse(iso);
+          if (Number.isFinite(tIso)) return tIso;
+        }
+
         const t = Date.parse(s);
         return Number.isFinite(t) ? t : 0;
       };
@@ -349,6 +356,120 @@
         });
       }
 
+      // ✅ NO-RELOAD DOM render (keyed) — videoları yeniden yaratmaz
+      const __cardCache = (window.__ATMO_CARD_CACHE__ = window.__ATMO_CARD_CACHE__ || new Map()); // job_id -> el
+
+      function ensureCardEl(job) {
+        const id = String(job?.job_id || "").trim();
+        if (!id) return null;
+
+        let el = __cardCache.get(id);
+        if (el && el.isConnected) return el;
+
+        el = document.createElement("div");
+        el.className = "atmoCard";
+        el.setAttribute("data-job", id);
+
+        // once-only skeleton structure
+        el.innerHTML = `
+          <div class="atmoThumb">
+            <div class="atmoPill mid">İşleniyor</div>
+            <div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>
+          </div>
+
+          <div class="atmoFooter">
+            <div class="atmoMetaLine"></div>
+
+            <div class="atmoActions">
+              <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+              <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+              <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+            </div>
+          </div>
+        `;
+
+        __cardCache.set(id, el);
+        return el;
+      }
+
+      function patchCard(el, job) {
+        if (!el || !job) return;
+
+        const badge = mapBadge(job);
+        const out = pickBestVideoOutput(job);
+        const url = out?.url || "";
+
+        const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
+        const engine = (job.provider || job.meta?.provider || "Atmos").toString();
+
+        // meta line: engine + duration + dt
+        const dur = String(job.meta?.duration || job.duration || "").trim();
+        const durText = dur ? `${dur}sn` : "";
+        const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
+
+        const ratio = String(
+          job.meta?.aspect_ratio ||
+          job.meta?.ratio ||
+          out?.meta?.aspect_ratio ||
+          out?.meta?.ratio ||
+          ""
+        );
+
+        const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
+        const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
+        const can = !!(ready && url);
+
+        const thumb = el.querySelector(".atmoThumb");
+        if (thumb) thumb.classList.toggle("isPortrait", !!isPortrait);
+
+        const pill = el.querySelector(".atmoPill");
+        if (pill) {
+          pill.textContent = badge.text;
+          pill.classList.remove("ok", "mid", "bad");
+          pill.classList.add(badge.kind);
+        }
+
+        const metaEl = el.querySelector(".atmoMetaLine");
+        if (metaEl) metaEl.textContent = metaLine;
+
+        const dl = el.querySelector('[data-act="download"]');
+        const sh = el.querySelector('[data-act="share"]');
+        if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
+        if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
+
+        const skel = el.querySelector(".atmoSkel");
+        let vid = el.querySelector("video.atmoThumbVideo");
+
+        if (can) {
+          if (skel) skel.style.display = "none";
+
+          if (!vid) {
+            vid = document.createElement("video");
+            vid.className = "atmoThumbVideo";
+            vid.setAttribute("playsinline", "");
+            vid.setAttribute("webkit-playsinline", "");
+            vid.setAttribute("preload", "metadata");
+            vid.setAttribute("controls", "");
+            vid.muted = true;
+            thumb?.appendChild(vid);
+          }
+
+          const prev = vid.getAttribute("data-src") || "";
+          if (prev !== url) {
+            vid.setAttribute("data-src", url);
+            vid.src = url; // sadece bu kart reload eder, diğerleri etmez
+          }
+          vid.style.display = "";
+        } else {
+          if (skel) skel.style.display = "";
+          if (vid) {
+            // KALDIRMA: kaldırırsan yeniden yaratılır ve reload artar
+            vid.pause?.();
+            vid.style.display = "none";
+          }
+        }
+      }
+
       function render(items) {
         if (!elGrid) return;
 
@@ -359,54 +480,21 @@
           return;
         }
 
-        elGrid.innerHTML = items.map((job) => {
-          const badge = mapBadge(job);
-          const out = pickBestVideoOutput(job);
-          const url = out?.url || "";
+        // ✅ Keyed reorder: node move (appendChild) => video reload YOK
+        const frag = document.createDocumentFragment();
 
-          const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
-          const engine = (job.provider || job.meta?.provider || "Atmos").toString();
+        for (const job of items) {
+          const id = String(job?.job_id || "").trim();
+          if (!id) continue;
 
-          // meta line: engine + duration + dt
-          const dur = String(job.meta?.duration || job.duration || "").trim();
-          const durText = dur ? `${dur}sn` : "";
-          const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
+          const card = ensureCardEl(job);
+          patchCard(card, job);
+          frag.appendChild(card);
+        }
 
-          const ratio = String(
-            job.meta?.aspect_ratio ||
-            job.meta?.ratio ||
-            out?.meta?.aspect_ratio ||
-            out?.meta?.ratio ||
-            ""
-          );
-
-        const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
-        const disabled = url ? "" : `disabled`;
-
-       const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
-const thumbInner = (ready && url)
-  ? `<video class="atmoThumbVideo" playsinline webkit-playsinline preload="metadata" controls muted src="${esc(url)}"></video>`
-  : `<div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>`;
-        return `
-          <div class="atmoCard" data-job="${esc(job.job_id)}">
-            <div class="atmoThumb ${isPortrait ? "isPortrait" : ""}">
-              <div class="atmoPill ${badge.kind}">${esc(badge.text)}</div>
-              ${thumbInner}
-            </div>
-
-            <div class="atmoFooter">
-              <div class="atmoMetaLine">${esc(metaLine)}</div>
-
-              <div class="atmoActions">
-                <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(job.job_id)}" ${disabled}>İndir</button>
-                <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(job.job_id)}" ${disabled}>Paylaş</button>
-                <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(job.job_id)}">Sil</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
+        while (elGrid.firstChild) elGrid.removeChild(elGrid.firstChild);
+        elGrid.appendChild(frag);
+      }
 
     async function handleAction(act, jobId) {
       const items = controller.state.items || [];
