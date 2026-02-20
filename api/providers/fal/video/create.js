@@ -256,7 +256,7 @@ export default async function handler(req, res) {
         Accept: "application/json",
       },
       body: JSON.stringify({
-        ...(multi_prompt ? { multi_prompt } : { prompt }),
+       ...(multi_prompt ? { multi_prompt } : { prompt: promptSafe }),
         duration,
         aspect_ratio,
         generate_audio,
