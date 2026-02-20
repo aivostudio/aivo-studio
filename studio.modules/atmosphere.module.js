@@ -1,9 +1,10 @@
 /* ============================================================================
-   atmosphere.module.js — V2 (FULL, clean) + ASPECT
+   atmosphere.module.js — V2 (FULL, clean) + ASPECT + GENERATE LOADING (3–5s)
    - Fix: Mode switch uses CAPTURE + stopPropagation to avoid global click blockers
    - Basic: scene select, effects multi-select, camera/duration, aspect, personalization (image/logo/audio)
    - Pro: prompt + refs, light/mood single-select, export + details + LUT + aspect
    - Generate: builds payload and calls your hook if present (ATM_CREATE / atmoGenerate / ATMOSPHERE_CREATE)
+   - ✅ NEW: “Video Üret” butonuna 3–5sn basılı/aktif hissi + loading state
    ============================================================================ */
 
 (() => {
@@ -36,6 +37,97 @@
   };
 
   const pickFirst = (...arr) => arr.find(Boolean) || null;
+
+  // ------------------------------------------------------------
+  // ✅ 0.5) Generate loading helpers (3–5s “basılı” hissi)
+  // ------------------------------------------------------------
+  const GEN_MIN_MS = 3000;   // en az 3s
+  const GEN_MAX_MS = 5000;   // en fazla 5s (hissettir, ama kitlenme yok)
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+  function waitForAtmoJobCreated(timeoutMs) {
+    return new Promise((resolve) => {
+      let done = false;
+
+      const t = setTimeout(() => {
+        if (done) return;
+        done = true;
+        try { window.removeEventListener("aivo:atmo:job_created", onEvt); } catch {}
+        resolve(null);
+      }, Math.max(0, Number(timeoutMs) || 0));
+
+      const onEvt = (e) => {
+        if (done) return;
+        done = true;
+        try { clearTimeout(t); } catch {}
+        try { window.removeEventListener("aivo:atmo:job_created", onEvt); } catch {}
+        resolve(e?.detail || null);
+      };
+
+      window.addEventListener("aivo:atmo:job_created", onEvt);
+    });
+  }
+
+  async function withGenerateLoading(btn, run, root) {
+    if (!btn) return;
+    if (btn.__atmBusy) return; // double click guard
+    btn.__atmBusy = true;
+
+    const r = root || getAtmoPanelRoot() || document.body;
+
+    // UI state
+    btn.disabled = true;
+    btn.classList.add("is-loading");
+    btn.setAttribute("aria-busy", "true");
+    if (r) r.dataset.atmBusy = "1";
+
+    // “basılı” hissi için (varsa CSS’in kullanacağı class)
+    btn.classList.add("is-pressed");
+
+    // Text swap (güvenli: textContent yoksa dokunma)
+    const prevText = typeof btn.textContent === "string" ? btn.textContent : "";
+    if (prevText) btn.textContent = "Üretiliyor…";
+
+    const startedAt = Date.now();
+
+    try {
+      // hook çağrısı (create)
+      const res = await Promise.resolve().then(run);
+
+      // event’i bekle (panelin “optimistic kart” basması için)
+      // ama sonsuza kadar değil — GEN_MAX_MS içinde kapatacağız
+      const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
+      const evt = await waitForAtmoJobCreated(remainingForEvent);
+
+      // min süreyi garanti et
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
+
+      return { ok: true, res, evt };
+    } catch (err) {
+      console.error("[ATM] generate error:", err);
+      try { window.toast?.error?.(String(err?.message || err || "generate_error")); } catch {}
+      return { ok: false, error: err };
+    } finally {
+      // max süreyi aşmadan kapanış: eğer işlem GEN_MAX_MS’den uzun sürdüyse burada zaten kapanır.
+      try {
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.classList.remove("is-pressed");
+        btn.removeAttribute("aria-busy");
+        if (prevText) btn.textContent = prevText;
+      } catch {}
+
+      try {
+        if (r && r.dataset) delete r.dataset.atmBusy;
+      } catch {}
+
+      btn.__atmBusy = false;
+    }
+  }
 
   // ------------------------------------------------------------
   // 1) Scope finder (works inside studio module host)
@@ -119,7 +211,6 @@
       const btns = qsa("[data-atm-aspect]", wrap);
       if (!btns.length) return;
 
-      // if UI already has active, we keep it unless state.aspect is set
       const want = state.aspect || "16:9";
       let keep = btns.find((b) => (b.dataset.atmAspect || b.getAttribute("data-atm-aspect")) === want);
       if (!keep) keep = btns[0];
@@ -247,7 +338,6 @@
       qsa('.mode-panel[data-mode-panel]', shell).forEach((p) => {
         const on = p.dataset.modePanel === mode;
         p.classList.toggle("is-active", on);
-        // extra guarantee in case CSS relies on display
         p.style.display = on ? "" : "none";
       });
 
@@ -316,13 +406,11 @@
       const btn = closestWithin(e.target, "[data-atm-aspect]", root);
       if (!btn) return;
 
-      // critical: avoid global click blockers & label weirdness
       e.preventDefault();
       e.stopPropagation();
 
       const wrap = btn.closest("[data-atm-aspect-wrap]") || root;
 
-      // single select inside this wrap
       qsa("[data-atm-aspect]", wrap).forEach((b) => {
         const on = b === btn;
         b.classList.toggle("is-active", on);
@@ -332,7 +420,6 @@
       const val = btn.dataset.atmAspect || btn.getAttribute("data-atm-aspect");
       if (val) state.aspect = val;
 
-      // optional: mirror into other panel too (keep UX consistent)
       const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
       if (shell) syncAspectUI(root, shell);
 
@@ -400,7 +487,6 @@
 
   // ------------------------------------------------------------
   // 10) Pro: Prompt input + character counter
-  // (supports both ids: atmSuperPromptCount (your HTML) and atmSuperCount (older))
   // ------------------------------------------------------------
   document.addEventListener("input", (e) => {
     const root = getAtmoPanelRoot();
@@ -498,8 +584,6 @@
     return {
       app: "atmo",
       mode: "basic",
-
-      // ✅ aspect
       aspect: state.aspect || "16:9",
 
       scene: state.scene || null,
@@ -525,8 +609,6 @@
     return {
       app: "atmo",
       mode: "pro",
-
-      // ✅ aspect
       aspect: state.aspect || "16:9",
 
       prompt: state.prompt || "",
@@ -546,7 +628,7 @@
   }
 
   // ------------------------------------------------------------
-  // 14) Generate (delegated) — CAPTURE
+  // 14) Generate (delegated) — CAPTURE  ✅ loading burada
   // ------------------------------------------------------------
   async function onGenerate(btn) {
     const root = getAtmoPanelRoot();
@@ -565,7 +647,17 @@
 
     if (typeof hook === "function") {
       console.log("[ATM] generate -> hook()", { mode, payload });
-      return hook(payload);
+
+      // ✅ 3–5s basılı/aktif hissi + event bekleme
+      return withGenerateLoading(
+        btn,
+        async () => {
+          // hook job create yapıp aivo:atmo:job_created emit etmeli
+          // (panel optimistic kartı bununla basıyor)
+          return await hook(payload);
+        },
+        root
+      );
     }
 
     console.log("[ATM] generate payload =", payload);
@@ -579,6 +671,13 @@
 
       const btn = closestWithin(e.target, "[data-atm-generate]", root);
       if (!btn) return;
+
+      // root busy ise ikinci kez tetikleme
+      if (root.dataset?.atmBusy === "1") {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
 
       e.preventDefault();
       e.stopPropagation();
@@ -597,7 +696,6 @@
     readInitialFromDOM(root);
     syncLegacyEffectsInput(root);
 
-    // ensure panels display matches current state.mode
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
     if (shell) {
       const mode = state.mode || "basic";
@@ -614,7 +712,6 @@
         t.setAttribute("aria-selected", on ? "true" : "false");
       });
 
-      // ✅ sync aspect buttons on both panels
       syncAspectUI(root, shell);
     }
   };
