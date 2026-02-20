@@ -287,3 +287,15 @@
   0%   { transform: translateX(-25%) rotate(10deg); }
   100% { transform: translateX(25%)  rotate(10deg); }
 }
+/* --- ATMO: "fal • tarih" meta satırını kaldır, sadece prompt kalsın --- */
+.atmoMetaLine{
+  display: none !important;
+}
+
+/* meta gidince boşlukları toparla (opsiyonel ama iyi durur) */
+.atmoCardBody{
+  padding-top: 8px;
+}
+.atmoCardActions{
+  margin-top: 8px;
+}
