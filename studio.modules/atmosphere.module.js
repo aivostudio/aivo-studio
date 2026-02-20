@@ -317,7 +317,7 @@
   // body: { app:"atmo", kind:"image|logo|audio", filename, contentType }
   // resp: { ok:true, uploadUrl, publicUrl, key }   (publicUrl can be R2 public or your CDN)
   async function presignR2({ app, kind, filename, contentType }) {
-    const res = await fetch("/api/r2/presign", {
+    const res = await fetch("/api/r2/presign-put", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
