@@ -363,10 +363,10 @@
         const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
         const disabled = url ? "" : `disabled`;
 
-        const thumbInner = url
-          ? `<video class="atmoThumbVideo" playsinline webkit-playsinline preload="metadata" controls muted src="${esc(url)}"></video>`
-          : `<div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>`;
-
+       const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
+const thumbInner = (ready && url)
+  ? `<video class="atmoThumbVideo" playsinline webkit-playsinline preload="metadata" controls muted src="${esc(url)}"></video>`
+  : `<div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>`;
         return `
           <div class="atmoCard" data-job="${esc(job.job_id)}">
             <div class="atmoThumb ${isPortrait ? "isPortrait" : ""}">
