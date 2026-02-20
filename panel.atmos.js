@@ -435,7 +435,7 @@ if (thumb) {
         }
 
         const metaEl = el.querySelector(".atmoMetaLine");
-        if (metaEl) metaEl.textContent = metaLine;
+    if (metaEl) metaEl.textContent = job.meta?.prompt || "";
 
         const dl = el.querySelector('[data-act="download"]');
         const sh = el.querySelector('[data-act="share"]');
