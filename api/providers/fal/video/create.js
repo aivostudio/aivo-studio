@@ -208,7 +208,6 @@ export default async function handler(req, res) {
       outputs,
     });
   }
-
   // =========================================================
   // ✅ REAL MODE (Fal)
   // =========================================================
@@ -217,7 +216,17 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
-  const falUrl = "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
+  // ✅ MODE'A GÖRE MOTOR SEÇİMİ (Basit = standard, Süper = pro)
+  const mode = String(
+    body?.mode ||
+    body?.meta?.mode ||
+    ""
+  ).toLowerCase();
+
+  const falUrl =
+    mode === "basic"
+      ? "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video"
+      : "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
@@ -272,7 +281,6 @@ export default async function handler(req, res) {
       fal_response: data,
     });
   }
-
   const request_id =
     data?.request_id || data?.requestId || data?.id || data?._id || null;
 
