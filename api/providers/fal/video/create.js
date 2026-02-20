@@ -43,7 +43,6 @@ function pick(obj, paths) {
 }
 
 function extractFalStatusUrl(data) {
-  // Fal farklı şekillerde döndürebiliyor; olabildiğince geniş tarıyoruz.
   const direct =
     pick(data, [
       "status_url",
@@ -71,7 +70,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  // ---- AUTH (canonical email) ----
+  // ---- AUTH ----
   let auth;
   try {
     auth = await requireAuth(req);
@@ -99,12 +98,16 @@ export default async function handler(req, res) {
 
   // ---- INPUT ----
   const body = safeJson(req);
+
+  // 🔑 Eğer create-atmo iç çağrısıysa job_id gelir; yeni job açmak YASAK.
+  const incomingJobId = body.job_id ? String(body.job_id) : null;
+
   const {
     app = "atmo",
     prompt,
-    duration = 5,
-    aspect_ratio = "9:16",
-    generate_audio = true,
+    duration = 10,
+    aspect_ratio = "16:9",
+    generate_audio = false, // ✅ default maliyetsiz: ses yok
     shot_type = "customize",
     negative_prompt = "blur, distort, and low quality",
     cfg_scale = 0.5,
@@ -129,49 +132,69 @@ export default async function handler(req, res) {
   }
   const user_uuid = String(userRow[0].id);
 
+  // =========================================================
+  // ✅ MOCK MODE (kredisiz test)
+  // - job_id geldiyse UPDATE eder, yeni insert etmez
+  // =========================================================
   const MOCK = isMock(req);
-
-  // =========================================================
-  // ✅ MOCK MODE: kredi yokken uçtan uca UI zinciri test
-  // =========================================================
   if (MOCK) {
     const mock_request_id = `mock_atmo_${Date.now()}`;
     const now = new Date().toISOString();
-
     const mock_video_url = "https://aivo.tr/media/hero-video.mp4";
 
+    const outputs = [{ type: "video", url: mock_video_url, meta: { app } }];
+
+    const metaObj = {
+      ...(meta && typeof meta === "object" ? meta : {}),
+      app,
+      kind: "atmo_video",
+      provider: "mock",
+      request_id: mock_request_id,
+      provider_response: { mock: true },
+    };
+
+    // ✅ Eğer job_id geldiyse: update
+    if (incomingJobId) {
+      await sql`
+        update jobs
+        set status = 'done',
+            meta = ${JSON.stringify(metaObj)}::jsonb,
+            outputs = ${JSON.stringify(outputs)}::jsonb,
+            updated_at = now()
+        where id = ${incomingJobId}::uuid
+          and user_uuid = ${user_uuid}::uuid
+      `;
+
+      return res.status(200).json({
+        ok: true,
+        mock: true,
+        provider: "mock",
+        app,
+        request_id: mock_request_id,
+        job_id: incomingJobId,
+        status: "COMPLETED",
+        outputs,
+      });
+    }
+
+    // (dışarıdan doğrudan test çağrısı için fallback: insert)
     const rows = await sql`
       insert into jobs (
-        user_id,
-        user_uuid,
-        type,
-        app,
-        status,
-        prompt,
-        meta,
-        outputs,
-        created_at,
-        updated_at
+        user_id, user_uuid, type, app, status, prompt, meta, outputs, created_at, updated_at
       )
       values (
         ${email},
         ${user_uuid}::uuid,
-        ${app},              -- type
-        ${app},              -- app
-        ${"done"},           -- status
+        ${app},
+        ${app},
+        ${"done"},
         ${prompt || null},
-        ${JSON.stringify({
-          ...(meta && typeof meta === "object" ? meta : {}),
-          app,
-          kind: "atmo_video",
-          provider: "mock",
-          request_id: mock_request_id,
-        })}::jsonb,
-        ${JSON.stringify([{ type: "video", url: mock_video_url, meta: { app } }])}::jsonb,
+        ${JSON.stringify(metaObj)}::jsonb,
+        ${JSON.stringify(outputs)}::jsonb,
         ${now},
         ${now}
       )
-      returning id, user_uuid, app, status, created_at
+      returning id
     `;
 
     return res.status(200).json({
@@ -182,20 +205,18 @@ export default async function handler(req, res) {
       request_id: mock_request_id,
       job_id: rows?.[0]?.id || null,
       status: "COMPLETED",
-      outputs: [{ type: "video", url: mock_video_url, meta: { app } }],
+      outputs,
     });
   }
 
   // =========================================================
-  // ✅ REAL MODE: Fal kredi varsa çalışır
+  // ✅ REAL MODE (Fal)
   // =========================================================
   const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY;
   if (!FAL_KEY) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
-  // ⚠️ Not: Bu endpoint senin mevcut seçimin.
-  // Asıl kritik fix: response’tan status_url yakalayıp DB’ye yazıyoruz.
   const falUrl = "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
 
   const ctrl = new AbortController();
@@ -252,15 +273,10 @@ export default async function handler(req, res) {
     });
   }
 
-  // ✅ request_id normalize
   const request_id =
     data?.request_id || data?.requestId || data?.id || data?._id || null;
 
-  // ✅ status_url / response_url yakala (kritik)
   const status_url = extractFalStatusUrl(data);
-
-  // DB insert: queued/pending job
-  const now = new Date().toISOString();
 
   const metaObj = {
     ...(meta && typeof meta === "object" ? meta : {}),
@@ -268,7 +284,6 @@ export default async function handler(req, res) {
     kind: "atmo_video",
     provider: "fal",
     request_id,
-    // ✅ En kritik kısım: provider response’ı olduğu gibi sakla + status_url'yi ayrıca koy
     provider_response: {
       status_url: status_url || null,
       response_url: status_url || null,
@@ -284,18 +299,34 @@ export default async function handler(req, res) {
     },
   };
 
+  // ✅ KRİTİK: job_id geldiyse INSERT YOK, UPDATE VAR
+  if (incomingJobId) {
+    await sql`
+      update jobs
+      set status = 'processing',
+          meta = ${JSON.stringify(metaObj)}::jsonb,
+          updated_at = now()
+      where id = ${incomingJobId}::uuid
+        and user_uuid = ${user_uuid}::uuid
+    `;
+
+    return res.status(200).json({
+      ok: true,
+      provider: "fal",
+      app,
+      request_id,
+      status_url: status_url || null,
+      job_id: incomingJobId,
+      raw: data,
+      updated: true,
+    });
+  }
+
+  // (dışarıdan direkt çağrı için fallback: insert)
+  const now = new Date().toISOString();
   const rows = await sql`
     insert into jobs (
-      user_id,
-      user_uuid,
-      type,
-      app,
-      status,
-      prompt,
-      meta,
-      outputs,
-      created_at,
-      updated_at
+      user_id, user_uuid, type, app, status, prompt, meta, outputs, created_at, updated_at
     )
     values (
       ${email},
@@ -309,7 +340,7 @@ export default async function handler(req, res) {
       ${now},
       ${now}
     )
-    returning id, user_uuid, app, status, created_at
+    returning id
   `;
 
   return res.status(200).json({
@@ -317,8 +348,9 @@ export default async function handler(req, res) {
     provider: "fal",
     app,
     request_id,
-    status_url: status_url || null, // ✅ debug için
+    status_url: status_url || null,
     job_id: rows?.[0]?.id || null,
     raw: data,
+    inserted: true,
   });
 }
