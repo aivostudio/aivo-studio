@@ -116,8 +116,24 @@ export default async function handler(req, res) {
     meta = null,
   } = body;
 
-  if (!prompt && !multi_prompt) {
-    return res.status(400).json({ ok: false, error: "missing_prompt" });
+  // ✅ BASIC MODE için structured seçimlerden prompt üret
+  let promptSafe = prompt;
+
+  if (!promptSafe && !multi_prompt) {
+    const parts = [];
+
+    if (body.scene) parts.push(`Scene: ${body.scene}.`);
+    if (Array.isArray(body.effects) && body.effects.length)
+      parts.push(`Effects: ${body.effects.join(", ")}.`);
+    if (body.camera) parts.push(`Camera: ${body.camera}.`);
+    if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
+    if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
+
+    if (!parts.length) {
+      return res.status(400).json({ ok: false, error: "missing_prompt" });
+    }
+
+    promptSafe = parts.join(" ") + " Seamless loop. Cinematic. No text.";
   }
 
   // ---- canonical user_uuid resolve ----
@@ -131,7 +147,6 @@ export default async function handler(req, res) {
     return res.status(401).json({ ok: false, error: "user_not_found", email });
   }
   const user_uuid = String(userRow[0].id);
-
   // =========================================================
   // ✅ MOCK MODE (kredisiz test)
   // - job_id geldiyse UPDATE eder, yeni insert etmez
