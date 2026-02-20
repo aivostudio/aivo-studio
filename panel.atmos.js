@@ -419,13 +419,8 @@
         const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
         const can = !!(ready && url);
 
-      const thumb = el.querySelector(".atmoThumb");
-if (thumb) {
-  thumb.classList.toggle("isPortrait", !!isPortrait);
-
-  // ✅ BURAYA: loading class (processing/ready kontrolü)
-  thumb.classList.toggle("is-loading", !can); // can = ready + url varsa true
-}
+        const thumb = el.querySelector(".atmoThumb");
+        if (thumb) thumb.classList.toggle("isPortrait", !!isPortrait);
 
         const pill = el.querySelector(".atmoPill");
         if (pill) {
@@ -475,72 +470,91 @@ if (thumb) {
         }
       }
 
- function render(items) {
-  if (!elGrid) return;
+      function render(items) {
+        if (!elGrid) return;
 
-  setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+        setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
 
-  const list = Array.isArray(items) ? items : [];
+        if (!items.length) {
+          elGrid.innerHTML = `<div style="opacity:.7;font-size:12px;padding:4px 2px;">Henüz atmos üretim yok.</div>`;
+          return;
+        }
 
-  // ✅ Empty state: innerHTML kullanma (video reset riskini azaltır)
-  const EMPTY_ID = "atmoEmptyState";
-  let emptyEl = elGrid.querySelector(`#${EMPTY_ID}`);
+        // ✅ Keyed reorder: node move (appendChild) => video reload YOK
+        const frag = document.createDocumentFragment();
 
-  if (!list.length) {
-    // gridde kart varsa kaldır, sadece empty kalsın
-    for (const ch of Array.from(elGrid.children)) {
-      if (ch.id !== EMPTY_ID) elGrid.removeChild(ch);
+        for (const job of items) {
+          const id = String(job?.job_id || "").trim();
+          if (!id) continue;
+
+          const card = ensureCardEl(job);
+          patchCard(card, job);
+          frag.appendChild(card);
+        }
+
+        while (elGrid.firstChild) elGrid.removeChild(elGrid.firstChild);
+        elGrid.appendChild(frag);
+      }
+
+    async function handleAction(act, jobId) {
+      const items = controller.state.items || [];
+      const job = items.find(x => String(x.job_id) === String(jobId));
+
+      // DB’de yoksa optimistic olabilir
+      const job2 = job || optimistic.get(String(jobId));
+
+      if (!job2) return;
+      if (!isJobAtmo(job2)) return;
+
+      const out = pickBestVideoOutput(job2);
+      const url = out?.url || "";
+
+      if (act === "download") {
+        if (!url) return;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `atmo-${jobId}.mp4`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
+
+      if (act === "share") {
+        if (!url) return;
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: "Atmosfer Video", url });
+          } else {
+            await navigator.clipboard.writeText(url);
+          }
+        } catch {}
+        return;
+      }
+
+      if (act === "delete") {
+        // optimistic varsa kaldır
+        optimistic.delete(String(jobId));
+        // DB delete
+        const ok = await controller.deleteJob(jobId);
+        if (!ok) controller.hydrate(true);
+        return;
+      }
     }
-    if (!emptyEl) {
-      emptyEl = document.createElement("div");
-      emptyEl.id = EMPTY_ID;
-      emptyEl.style.opacity = ".7";
-      emptyEl.style.fontSize = "12px";
-      emptyEl.style.padding = "4px 2px";
-      emptyEl.textContent = "Henüz atmos üretim yok.";
-      elGrid.appendChild(emptyEl);
-    }
-    return;
-  } else {
-    if (emptyEl) emptyEl.remove();
-  }
 
-  // ✅ Keyed reorder: full wipe YOK, sadece node move
-  const wanted = new Set();
+    elGrid?.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.("[data-act]");
+      if (!btn) return;
 
-  // anchor: "şu an buraya insertBefore yap" pointer'ı
-  let anchor = elGrid.firstChild;
+      const act = btn.getAttribute("data-act");
+      const jobId = btn.getAttribute("data-job");
+      if (!act || !jobId) return;
 
-  for (const job of list) {
-    const id = String(job?.job_id || "").trim();
-    if (!id) continue;
-    wanted.add(id);
+      if (btn.hasAttribute("disabled")) return;
+      handleAction(act, jobId);
+    });
 
-    const card = ensureCardEl(job);
-    patchCard(card, job);
-
-    // DOM'da değilse ekle
-    if (!card.isConnected) {
-      elGrid.insertBefore(card, anchor);
-      continue;
-    }
-
-    // yanlış yerdeyse move et
-    if (card !== anchor) {
-      elGrid.insertBefore(card, anchor);
-    } else {
-      // doğru yerdeyse anchor ilerlet
-      anchor = anchor?.nextSibling || null;
-    }
-  }
-
-  // ✅ artık listede olmayan kartları DOM'dan kaldır (cache kalabilir)
-  for (const ch of Array.from(elGrid.children)) {
-    if (ch.id === EMPTY_ID) continue;
-    const jid = ch.getAttribute?.("data-job");
-    if (jid && !wanted.has(jid)) elGrid.removeChild(ch);
-  }
-}
     // ✅ Optimistic job_created listener (Video hissi)
     const onJobCreated = (e) => {
       const d = e?.detail || {};
