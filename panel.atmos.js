@@ -291,72 +291,94 @@
         if (destroyed) return;
 
         const safeItems = (items || []).filter(isJobAtmo);
-
       // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
-// Rule:
-// - DB’de job varsa: optimistic’i drop/replace
-// - DB’de yoksa: optimistic’i göster
-const byId = new Map();
+      // Rule:
+      // - DB’de job varsa: optimistic’i drop/replace
+      // - DB’de yoksa: optimistic’i göster
+      const byId = new Map();
 
-// 1) DB items first (truth)
-for (const j of safeItems) {
-  const id = String(j?.job_id || "").trim();
-  if (!id) continue;
-  byId.set(id, j);
-  if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
-}
-
-// 2) Remaining optimistic
-for (const [id, j] of optimistic.entries()) {
-  if (!byId.has(id)) byId.set(id, j);
-}
-
-// ✅ newest first (updated_at > created_at > createdAt) + NaN safe
-const merged = Array.from(byId.values()).sort((a, b) => {
-  const ta = Date.parse(a?.updated_at || a?.created_at) || Number(a?.createdAt) || 0;
-  const tb = Date.parse(b?.updated_at || b?.created_at) || Number(b?.createdAt) || 0;
-  return tb - ta;
-});
-
-render(merged);
-
-    function hasProcessing(items) {
-      return (items || []).some(j => {
-        const st = norm(j.db_status || j.status || j.state).toUpperCase();
-        return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
-      });
-    }
-
-    function render(items) {
-      if (!elGrid) return;
-
-      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
-
-      if (!items.length) {
-        elGrid.innerHTML = `<div style="opacity:.7;font-size:12px;padding:4px 2px;">Henüz atmos üretim yok.</div>`;
-        return;
+      // 1) DB items first (truth)
+      for (const j of safeItems) {
+        const id = String(j?.job_id || "").trim();
+        if (!id) continue;
+        byId.set(id, j);
+        if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
       }
 
-      elGrid.innerHTML = items.map((job) => {
-        const badge = mapBadge(job);
-        const out = pickBestVideoOutput(job);
-        const url = out?.url || "";
+      // 2) Remaining optimistic
+      for (const [id, j] of optimistic.entries()) {
+        if (!byId.has(id)) byId.set(id, j);
+      }
 
-        const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
-        const engine = (job.provider || job.meta?.provider || "Atmos").toString();
+      // ✅ newest first (updated_at > created_at > createdAt) — ms-safe + stable tie-break
+      const toMs = (v) => {
+        if (v == null) return 0;
 
-        // meta line: engine + duration + dt
-        const dur = String(job.meta?.duration || job.duration || "").trim();
-        const durText = dur ? `${dur}sn` : "";
-        const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
+        if (typeof v === "number" && Number.isFinite(v)) return v;
 
-        const ratio = String(
-          job.meta?.aspect_ratio ||
-          job.meta?.ratio ||
-          out?.meta?.aspect_ratio ||
-          out?.meta?.ratio ||
-          ""
-        );
+        const s = String(v).trim();
+
+        // numeric ms / seconds-ish string
+        if (/^\d{10,13}$/.test(s)) {
+          const n = Number(s);
+          if (Number.isFinite(n)) return n;
+        }
+
+        const t = Date.parse(s);
+        return Number.isFinite(t) ? t : 0;
+      };
+
+      const merged = Array.from(byId.values()).sort((a, b) => {
+        const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+        const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+
+        if (tb !== ta) return tb - ta;
+
+        // stable: aynı timestamp’te zıplamasın
+        const ia = String(a?.job_id || a?.id || "");
+        const ib = String(b?.job_id || b?.id || "");
+        return ib.localeCompare(ia);
+      });
+
+      render(merged);
+
+      function hasProcessing(items) {
+        return (items || []).some(j => {
+          const st = norm(j.db_status || j.status || j.state).toUpperCase();
+          return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
+        });
+      }
+
+      function render(items) {
+        if (!elGrid) return;
+
+        setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+
+        if (!items.length) {
+          elGrid.innerHTML = `<div style="opacity:.7;font-size:12px;padding:4px 2px;">Henüz atmos üretim yok.</div>`;
+          return;
+        }
+
+        elGrid.innerHTML = items.map((job) => {
+          const badge = mapBadge(job);
+          const out = pickBestVideoOutput(job);
+          const url = out?.url || "";
+
+          const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
+          const engine = (job.provider || job.meta?.provider || "Atmos").toString();
+
+          // meta line: engine + duration + dt
+          const dur = String(job.meta?.duration || job.duration || "").trim();
+          const durText = dur ? `${dur}sn` : "";
+          const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
+
+          const ratio = String(
+            job.meta?.aspect_ratio ||
+            job.meta?.ratio ||
+            out?.meta?.aspect_ratio ||
+            out?.meta?.ratio ||
+            ""
+          );
 
         const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
         const disabled = url ? "" : `disabled`;
