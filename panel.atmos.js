@@ -580,7 +580,7 @@ if (thumb) {
       });
 
       // render now (overlay görünür)
-      controller.hydrate(false); // hızlı tetik: onChange merge eder
+     // controller.hydrate(false); // hızlı tetik: onChange merge eder
       // ekstra: tek başına merge çağırmak için onChange’i manuel tetikleyelim
       try {
         const safeDb = (controller.state.items || []).filter(isJobAtmo);
