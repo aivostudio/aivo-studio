@@ -10,6 +10,15 @@ function safeName(name = "upload") {
     .slice(0, 120);
 }
 
+function safePrefix(p) {
+  const s = String(p || "uploads/tmp/");
+  // sadece basit folder path: a-zA-Z0-9/_- ve mutlaka "/" ile bitsin
+  const cleaned = s.replace(/[^a-zA-Z0-9/_-]+/g, "");
+  const withSlash = cleaned.endsWith("/") ? cleaned : cleaned + "/";
+  // çok kısa/boş kalırsa fallback
+  return withSlash.length >= 3 ? withSlash : "uploads/tmp/";
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -21,9 +30,41 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_filename_or_contentType" });
     }
 
-    // sadece image kabul (güvenlik)
-    if (!String(contentType).startsWith("image/")) {
-      return res.status(400).json({ ok: false, error: "invalid_contentType" });
+    const ct = String(contentType).toLowerCase();
+
+    // ✅ allowlist (güvenlik)
+    const ALLOWED_IMAGE = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/avif",
+    ]);
+
+    const ALLOWED_AUDIO = new Set([
+      "audio/mpeg", // mp3 çoğunlukla bunu verir
+      "audio/mp3",
+      "audio/wav",
+      "audio/x-wav",
+      "audio/ogg",
+      "audio/webm",
+      "audio/mp4",
+      "audio/aac",
+      "audio/flac",
+      "audio/x-m4a",
+    ]);
+
+    const isAllowed = ALLOWED_IMAGE.has(ct) || ALLOWED_AUDIO.has(ct);
+
+    if (!isAllowed) {
+      return res.status(400).json({
+        ok: false,
+        error: "invalid_contentType",
+        allowed: {
+          image: Array.from(ALLOWED_IMAGE),
+          audio: Array.from(ALLOWED_AUDIO),
+        },
+      });
     }
 
     const accountId = process.env.R2_ACCOUNT_ID;
@@ -44,15 +85,15 @@ export default async function handler(req, res) {
     });
 
     // uploads/tmp/ altında tutuyoruz (lifecycle 3 gün)
-    const basePrefix = (prefix && String(prefix)) || "uploads/tmp/";
+    const basePrefix = safePrefix(prefix || "uploads/tmp/");
     const id = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex");
     const key = `${basePrefix}${Date.now()}-${id}-${safeName(filename)}`;
 
     const cmd = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      ContentType: contentType,
-      // İstersen: CacheControl: "public, max-age=31536000, immutable",
+      ContentType: ct,
+      // CacheControl: "public, max-age=31536000, immutable",
     });
 
     // 10 dk geçerli upload linki
@@ -64,7 +105,7 @@ export default async function handler(req, res) {
       key,
       upload_url,
       public_url,
-      required_headers: { "Content-Type": contentType },
+      required_headers: { "Content-Type": ct },
     });
   } catch (err) {
     console.error("presign-put error:", err);
