@@ -1,13 +1,8 @@
 /* ============================================================================
-   atmosphere.module.js — V2 (FULL, clean) — REVIZED (Aspect Ratio added)
+   atmosphere.module.js — V2 (FULL, clean) + ASPECT
    - Fix: Mode switch uses CAPTURE + stopPropagation to avoid global click blockers
-   - Basic: scene select, effects multi-select, camera/duration, personalization (image/logo/audio)
-   - Pro: prompt + refs, light/mood single-select, export + details + LUT
-   - NEW: Aspect Ratio selector (16:9 / 1:1 / 9:16)
-       - State: state.aspect_ratio (default 16:9)
-       - Persist: localStorage "aivo.atmo.aspect_ratio"
-       - UI: buttons/pills with [data-atm-aspect="16:9|1:1|9:16"] inside [data-atm-aspect-wrap]
-       - Payload: payload.aspect_ratio is sent for BOTH basic + pro
+   - Basic: scene select, effects multi-select, camera/duration, aspect, personalization (image/logo/audio)
+   - Pro: prompt + refs, light/mood single-select, export + details + LUT + aspect
    - Generate: builds payload and calls your hook if present (ATM_CREATE / atmoGenerate / ATMOSPHERE_CREATE)
    ============================================================================ */
 
@@ -29,6 +24,7 @@
   const setActive = (btn, on) => {
     if (!btn) return;
     btn.classList.toggle("is-active", !!on);
+    // some pills use aria-pressed, some use aria-selected — keep both safe
     btn.setAttribute("aria-pressed", on ? "true" : "false");
   };
 
@@ -39,45 +35,7 @@
     setActive(keepBtn, true);
   };
 
-  // ------------------------------------------------------------
-  // Aspect Ratio (persist + UI sync)
-  // - Expects UI: [data-atm-aspect-wrap] containing buttons with [data-atm-aspect="16:9|1:1|9:16"]
-  // ------------------------------------------------------------
-  const ATM_ASPECT_KEY = "aivo.atmo.aspect_ratio";
-  const isValidAspect = (v) => v === "16:9" || v === "1:1" || v === "9:16";
-
-  function loadAspect() {
-    try {
-      const v = localStorage.getItem(ATM_ASPECT_KEY);
-      return isValidAspect(v) ? v : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function saveAspect(v) {
-    if (!isValidAspect(v)) return;
-    try {
-      localStorage.setItem(ATM_ASPECT_KEY, v);
-    } catch (_) {}
-  }
-
-  function syncAspectUI(root) {
-    const wrap = qs("[data-atm-aspect-wrap]", root) || root;
-    const btns = qsa("[data-atm-aspect]", wrap);
-    if (!btns.length) return;
-
-    const cur = isValidAspect(state.aspect_ratio) ? state.aspect_ratio : "16:9";
-    btns.forEach((b) => {
-      const on = b.dataset.atmAspect === cur;
-      b.classList.toggle("is-active", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-
-    // Optional legacy hidden input (safe no-op if not present)
-    const hidden = qs("#atmAspectValue", root);
-    if (hidden) hidden.value = cur;
-  }
+  const pickFirst = (...arr) => arr.find(Boolean) || null;
 
   // ------------------------------------------------------------
   // 1) Scope finder (works inside studio module host)
@@ -97,8 +55,8 @@
   const state = (window.__ATM_V2__ = window.__ATM_V2__ || {
     mode: "basic",
 
-    // NEW: aspect ratio (default 16:9)
-    aspect_ratio: "16:9",
+    // ✅ new: aspect ratio
+    aspect: "16:9", // "16:9" | "1:1" | "9:16"
 
     // basic
     scene: "winter_cafe",
@@ -152,6 +110,28 @@
     wrap.dataset.selected = (state.effects || []).join(",");
   }
 
+  function syncAspectUI(root, scopeEl) {
+    const scope = scopeEl || root;
+    const wraps = qsa("[data-atm-aspect-wrap]", scope);
+    if (!wraps.length) return;
+
+    wraps.forEach((wrap) => {
+      const btns = qsa("[data-atm-aspect]", wrap);
+      if (!btns.length) return;
+
+      // if UI already has active, we keep it unless state.aspect is set
+      const want = state.aspect || "16:9";
+      let keep = btns.find((b) => (b.dataset.atmAspect || b.getAttribute("data-atm-aspect")) === want);
+      if (!keep) keep = btns[0];
+
+      btns.forEach((b) => {
+        const on = b === keep;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    });
+  }
+
   function readInitialFromDOM(root) {
     // Basic scene
     const activeScene = qs("#atmScenes .smpack-choice.is-active", root);
@@ -167,6 +147,21 @@
     const dur = qs("#atmDuration", root)?.value;
     if (cam) state.camera = cam;
     if (dur) state.duration = dur;
+
+    // ✅ Aspect (prefer active inside currently visible panel)
+    const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
+    const basicPanel = shell ? qs('.mode-panel[data-mode-panel="basic"]', shell) : null;
+    const proPanel = shell ? qs('.mode-panel[data-mode-panel="pro"]', shell) : null;
+    const activePanel = shell
+      ? (qs('.mode-panel[data-mode-panel].is-active', shell) || basicPanel || proPanel)
+      : root;
+
+    const aspectActive =
+      qs('[data-atm-aspect-wrap] [data-atm-aspect].is-active', activePanel) ||
+      qs('[data-atm-aspect-wrap] [data-atm-aspect].is-active', root);
+
+    const aspectVal = aspectActive?.dataset?.atmAspect || aspectActive?.getAttribute?.("data-atm-aspect");
+    if (aspectVal) state.aspect = aspectVal;
 
     // Personalization
     const pos = qs("#atmLogoPos", root)?.value;
@@ -218,6 +213,7 @@
     d.lut = qs("#atmProLut", root)?.value || d.lut || "";
 
     syncLegacyEffectsInput(root);
+    syncAspectUI(root, root);
   }
 
   // ------------------------------------------------------------
@@ -255,34 +251,10 @@
         p.style.display = on ? "" : "none";
       });
 
+      // ✅ keep aspect selection consistent across panels
+      syncAspectUI(root, shell);
+
       console.log("[ATM] mode switch ->", mode);
-    },
-    true
-  );
-
-  // ------------------------------------------------------------
-  // NEW) Aspect Ratio selector (delegated) — CAPTURE
-  // ------------------------------------------------------------
-  document.addEventListener(
-    "click",
-    (e) => {
-      const root = getAtmoPanelRoot();
-      if (!root) return;
-
-      const btn = closestWithin(e.target, "[data-atm-aspect]", root);
-      if (!btn) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const v = btn.dataset.atmAspect;
-      if (!isValidAspect(v)) return;
-
-      state.aspect_ratio = v;
-      saveAspect(v);
-      syncAspectUI(root);
-
-      console.log("[ATM] aspect_ratio ->", v);
     },
     true
   );
@@ -331,6 +303,43 @@
     state.effects = Array.from(set);
     syncLegacyEffectsInput(root);
   });
+
+  // ------------------------------------------------------------
+  // ✅ 6.5) Aspect ratio (Basic + Pro) — CAPTURE
+  // ------------------------------------------------------------
+  document.addEventListener(
+    "click",
+    (e) => {
+      const root = getAtmoPanelRoot();
+      if (!root) return;
+
+      const btn = closestWithin(e.target, "[data-atm-aspect]", root);
+      if (!btn) return;
+
+      // critical: avoid global click blockers & label weirdness
+      e.preventDefault();
+      e.stopPropagation();
+
+      const wrap = btn.closest("[data-atm-aspect-wrap]") || root;
+
+      // single select inside this wrap
+      qsa("[data-atm-aspect]", wrap).forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+
+      const val = btn.dataset.atmAspect || btn.getAttribute("data-atm-aspect");
+      if (val) state.aspect = val;
+
+      // optional: mirror into other panel too (keep UX consistent)
+      const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
+      if (shell) syncAspectUI(root, shell);
+
+      console.log("[ATM] aspect ->", state.aspect);
+    },
+    true
+  );
 
   // ------------------------------------------------------------
   // 7) Basic: Camera / Duration change
@@ -402,9 +411,10 @@
 
     state.prompt = (ta.value || "").trim();
 
-    const counter =
-      qs("#atmSuperPromptCount", root) ||
-      qs("#atmSuperCount", root);
+    const counter = pickFirst(
+      qs("#atmSuperPromptCount", root),
+      qs("#atmSuperCount", root)
+    );
 
     if (counter) counter.textContent = String(state.prompt.length);
   });
@@ -489,8 +499,8 @@
       app: "atmo",
       mode: "basic",
 
-      // NEW: aspect ratio
-      aspect_ratio: state.aspect_ratio || "16:9",
+      // ✅ aspect
+      aspect: state.aspect || "16:9",
 
       scene: state.scene || null,
       effects: (state.effects || []).slice(),
@@ -516,8 +526,8 @@
       app: "atmo",
       mode: "pro",
 
-      // NEW: aspect ratio
-      aspect_ratio: state.aspect_ratio || "16:9",
+      // ✅ aspect
+      aspect: state.aspect || "16:9",
 
       prompt: state.prompt || "",
       light: state.light || null,
@@ -584,35 +594,33 @@
     const root = getAtmoPanelRoot();
     if (!root) return;
 
-    // NEW: load persisted aspect ratio (default to 16:9)
-    const savedAspect = loadAspect();
-    if (savedAspect) state.aspect_ratio = savedAspect;
-    else state.aspect_ratio = isValidAspect(state.aspect_ratio) ? state.aspect_ratio : "16:9";
-
     readInitialFromDOM(root);
     syncLegacyEffectsInput(root);
-
-    // NEW: sync aspect UI
-    syncAspectUI(root);
 
     // ensure panels display matches current state.mode
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
     if (shell) {
       const mode = state.mode || "basic";
+
       qsa('.mode-panel[data-mode-panel]', shell).forEach((p) => {
         const on = p.dataset.modePanel === mode;
         p.classList.toggle("is-active", on);
         p.style.display = on ? "" : "none";
       });
+
       qsa('.mode-tab[data-mode]', shell).forEach((t) => {
         const on = t.dataset.mode === mode;
         t.classList.toggle("is-active", on);
         t.setAttribute("aria-selected", on ? "true" : "false");
       });
+
+      // ✅ sync aspect buttons on both panels
+      syncAspectUI(root, shell);
     }
   };
 
   init();
-  setTimeout(init, 300);
-  setTimeout(init, 1200);
+  setTimeout(init, 200);
+  setTimeout(init, 800);
+  setTimeout(init, 1600);
 })();
