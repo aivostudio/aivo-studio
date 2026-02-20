@@ -292,35 +292,33 @@
 
         const safeItems = (items || []).filter(isJobAtmo);
 
-        // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
-        // Rule:
-        // - DB’de job varsa: optimistic’i drop/replace
-        // - DB’de yoksa: optimistic’i göster
-        const byId = new Map();
+      // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
+// Rule:
+// - DB’de job varsa: optimistic’i drop/replace
+// - DB’de yoksa: optimistic’i göster
+const byId = new Map();
 
-        // 1) DB items first (truth)
-        for (const j of safeItems) {
-          const id = String(j?.job_id || "").trim();
-          if (!id) continue;
-          byId.set(id, j);
-          if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
-        }
+// 1) DB items first (truth)
+for (const j of safeItems) {
+  const id = String(j?.job_id || "").trim();
+  if (!id) continue;
+  byId.set(id, j);
+  if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
+}
 
-        // 2) Remaining optimistic
-        for (const [id, j] of optimistic.entries()) {
-          if (!byId.has(id)) byId.set(id, j);
-        }
+// 2) Remaining optimistic
+for (const [id, j] of optimistic.entries()) {
+  if (!byId.has(id)) byId.set(id, j);
+}
 
-        // newest first (created_at / createdAt)
-        const merged = Array.from(byId.values()).sort((a, b) => {
-          const ta = new Date(a?.created_at || a?.createdAt || a?.updated_at || Date.now()).getTime();
-          const tb = new Date(b?.created_at || b?.createdAt || b?.updated_at || Date.now()).getTime();
-          return tb - ta;
-        });
+// ✅ newest first (updated_at > created_at > createdAt) + NaN safe
+const merged = Array.from(byId.values()).sort((a, b) => {
+  const ta = Date.parse(a?.updated_at || a?.created_at) || Number(a?.createdAt) || 0;
+  const tb = Date.parse(b?.updated_at || b?.created_at) || Number(b?.createdAt) || 0;
+  return tb - ta;
+});
 
-        render(merged);
-      }
-    });
+render(merged);
 
     function hasProcessing(items) {
       return (items || []).some(j => {
