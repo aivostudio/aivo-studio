@@ -419,8 +419,13 @@
         const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
         const can = !!(ready && url);
 
-        const thumb = el.querySelector(".atmoThumb");
-        if (thumb) thumb.classList.toggle("isPortrait", !!isPortrait);
+      const thumb = el.querySelector(".atmoThumb");
+if (thumb) {
+  thumb.classList.toggle("isPortrait", !!isPortrait);
+
+  // ✅ BURAYA: loading class (processing/ready kontrolü)
+  thumb.classList.toggle("is-loading", !can); // can = ready + url varsa true
+}
 
         const pill = el.querySelector(".atmoPill");
         if (pill) {
