@@ -93,7 +93,6 @@ window.AIVO_APP = window.AIVO_APP || {};
     return { ok: true, job_id, credits: cr.credits ?? null };
   };
 })();
-
 /* ============================================================================
    ✅ ATM_CREATE HOOK (SINGLE SOURCE) — studio.services.js (bottom)
    - Atmosfer Üret butonundan gelen payload'ı normalize eder
@@ -102,6 +101,7 @@ window.AIVO_APP = window.AIVO_APP || {};
    - /api/jobs/create-atmo çağırır
    - job_id gelince "aivo:atmo:job_created" event fırlatır (Video hissi)
    - PPE.apply / AIVO_JOBS.upsert ile kart basmaz (dupe biter)
+   - ✅ FIX: double click / double fire -> inflight lock (2 video biter)
    ============================================================================ */
 
 (() => {
@@ -145,7 +145,6 @@ window.AIVO_APP = window.AIVO_APP || {};
     payload.duration = ALLOWED_DURS.has(dur) ? dur : "8";
 
     // ✅ aspect_ratio: UI seçimi veya default 16:9
-    // (UI tarafında sonradan ekleyeceğiz: payload.aspect_ratio gelecek)
     payload.aspect_ratio = normalizeRatio(payload.aspect_ratio || payload.ratio || payload.aspect || "");
 
     // bazı wrapper’lar ratio bekliyor, ikisini de koyuyoruz
@@ -201,41 +200,53 @@ window.AIVO_APP = window.AIVO_APP || {};
   };
 
   window.ATM_CREATE = async function ATM_CREATE(inPayload) {
-    const payload = normalizePayload(inPayload);
+    // ✅ anti-double-submit lock
+    if (window.__ATM_CREATE_INFLIGHT__) {
+      console.warn("[ATM_CREATE] blocked (inflight)");
+      return { ok:false, error:"inflight" };
+    }
+    window.__ATM_CREATE_INFLIGHT__ = true;
 
-    console.log("[ATM_CREATE] -> create-atmo", payload);
-
-    let res = null;
     try {
-      res = await fetch("/api/jobs/create-atmo", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (e) {
-      console.error("[ATM_CREATE] fetch failed:", e);
-      return { ok:false, error:"network_error" };
+      const payload = normalizePayload(inPayload);
+
+      console.log("[ATM_CREATE] -> create-atmo", payload);
+
+      let res = null;
+      try {
+        res = await fetch("/api/jobs/create-atmo", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {
+        console.error("[ATM_CREATE] fetch failed:", e);
+        return { ok:false, error:"network_error" };
+      }
+
+      const data = await safeJson(res);
+      if (!res.ok || data?.ok === false) {
+        console.error("[ATM_CREATE] create-atmo failed:", res.status, data);
+        return { ok:false, status:res.status, ...data };
+      }
+
+      const job_id = data.job_id || data.id || data.jobId;
+      console.log("[ATM_CREATE] created job_id =", job_id, data);
+
+      if (job_id) {
+        // ✅ Video hissi: kartı anında çıkar
+        dispatchJobCreated(job_id, payload);
+
+        // ✅ Paneli atmo'ya çekmek istersen
+        window.RightPanel?.force?.("atmo", {});
+      }
+
+      return { ok:true, job_id, raw:data };
+    } finally {
+      // küçük debounce: event loop içinde ikinci tık gelmesin
+      setTimeout(() => { window.__ATM_CREATE_INFLIGHT__ = false; }, 800);
     }
-
-    const data = await safeJson(res);
-    if (!res.ok || data?.ok === false) {
-      console.error("[ATM_CREATE] create-atmo failed:", res.status, data);
-      return { ok:false, status:res.status, ...data };
-    }
-
-    const job_id = data.job_id || data.id || data.jobId;
-    console.log("[ATM_CREATE] created job_id =", job_id, data);
-
-    if (job_id) {
-      // ✅ Video hissi: kartı anında çıkar
-      dispatchJobCreated(job_id, payload);
-
-      // ✅ Paneli atmo'ya çekmek istersen
-      window.RightPanel?.force?.("atmo", {});
-    }
-
-    return { ok:true, job_id, raw:data };
   };
 
   console.log("[ATM_CREATE] bound ✅");
