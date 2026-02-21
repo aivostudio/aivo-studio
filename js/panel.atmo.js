@@ -445,6 +445,9 @@
 
           const overlayVideoUrl = normalizeVideoUrlForOverlay(url);
 
+          console.log("OVERLAY INPUT VIDEO URL:", overlayVideoUrl);
+console.log("OVERLAY INPUT LOGO URL:", logoUrl);
+
           if (logoUrl && logoUrl.startsWith("http") && overlayVideoUrl && overlayVideoUrl.startsWith("http")) {
             const res = await fetch("/api/atmo/overlay-logo", {
               method: "POST",
