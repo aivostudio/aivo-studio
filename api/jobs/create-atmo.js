@@ -83,18 +83,24 @@ export default async function handler(req, res) {
     const metaIn = body.meta || null;
 
     // meta garanti: atmo kimliği
-    // ✅ MUX için gerekli alanları da meta'ya kaydediyoruz (status.js bunlardan okuyacak)
+    // ✅ status.js / overlay otomasyonu için gerekli alanları meta'ya kaydediyoruz
     const metaSafe = {
       ...(metaIn && typeof metaIn === "object" ? metaIn : {}),
       app: "atmo",
       kind: "atmo_video",
       provider: "fal",
 
+      // --- logo overlay inputs (kritik) ---
+      logo_url: body.logo_url ?? null, // https://media.aivo.tr/uploads/tmp/...png
+      logo_pos: body.logo_pos ?? null, // "br" | "bl" | "tr" | "tl"
+      logo_size: body.logo_size ?? null, // "sm" | "md" | "lg" (UI ne gönderiyorsa)
+      logo_opacity: body.logo_opacity ?? null, // 0..1
+
       // --- audio embed pipeline inputs (kritik) ---
-      audio_mode: body.audio_mode ?? null,     // "embed" | "none" | ...
-      audio_url: body.audio_url ?? null,       // https://media.aivo.tr/uploads/tmp/..mp3
-      audio_trim: body.audio_trim ?? null,     // { start, end } veya null
-      silent_copy: body.silent_copy ?? null,   // true/false
+      audio_mode: body.audio_mode ?? null, // "embed" | "none" | ...
+      audio_url: body.audio_url ?? null, // https://media.aivo.tr/uploads/tmp/..mp3
+      audio_trim: body.audio_trim ?? null, // { start, end } veya null
+      silent_copy: body.silent_copy ?? null, // true/false
     };
 
     // 1) önce job row insert (queued)
