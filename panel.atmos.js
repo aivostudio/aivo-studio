@@ -596,7 +596,7 @@ if (thumb) {
           const tb = new Date(b?.created_at || b?.createdAt || Date.now()).getTime();
           return tb - ta;
         });
-     // ============================
+// ============================
 // ✅ AUTO LOGO OVERLAY (READY -> /api/atmo/overlay-logo)
 // Yer: onChange içinde, render(merged); satırının HEMEN ÜSTÜ
 // ============================
@@ -612,14 +612,8 @@ window.__ATMO_LOGO_PUBLIC_URL__ =
   "";
 
 const isReady = (job) => {
-  const st = String(job?.db_status || job?.status || job?.state || "")
-    .toUpperCase();
-  return (
-    st.includes("READY") ||
-    st.includes("DONE") ||
-    st.includes("COMPLET") ||
-    st.includes("SUCC")
-  );
+  const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
+  return st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC");
 };
 
 const hasLogoOverlayOutput = (job) => {
@@ -641,10 +635,10 @@ const maybeOverlayOne = async (job) => {
   const out = pickBestVideoOutput(job);
   const videoUrl = String(out?.url || "").trim();
   if (!videoUrl) return;
+  if (!videoUrl.startsWith("http") && !videoUrl.startsWith("/")) return;
 
   const key = `${jobId}::logo`;
   if (window.__ATMO_OVERLAY_DONE__.has(key)) return;
-
   window.__ATMO_OVERLAY_DONE__.add(key);
 
   const r = await fetch("/api/atmo/overlay-logo", {
@@ -682,7 +676,7 @@ const maybeOverlayOne = async (job) => {
   optimistic.set(jobId, next);
 };
 
-// 🔥 ÖNEMLİ: async loop
+// 🔥 ÖNEMLİ: async loop (overlay'leri tetikle)
 for (const job of merged) {
   try {
     await maybeOverlayOne(job);
@@ -691,4 +685,10 @@ for (const job of merged) {
   }
 }
 
-render(merged);
+// ✅ overlay sonucu optimistic'e yazıldıysa merged list'i onunla güncelle (render bunu görsün)
+const merged2 = merged.map((j) => {
+  const id = String(j?.job_id || "").trim();
+  return id && optimistic.has(id) ? optimistic.get(id) : j;
+});
+
+render(merged2);
