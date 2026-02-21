@@ -7,10 +7,8 @@
 const { neon } = require("@neondatabase/serverless");
 const fs = require("node:fs");
 
-// ⚠️ BU PATH'İ PROJENE GÖRE DÜZELT:
-// - Eğer dosyan media/muxMp4WithAudio.js ise ona göre yaz.
-// - Senin örneğin TS idi: src/server/media/muxMp4WithAudio.ts (build/compile durumuna göre .js gerekir)
-const { muxMp4WithAudio } = require("../_lib/mux-mp4-with-audio");// <-- AYARLA
+// ✅ doğru path (pages/api/jobs/status.js -> pages/api/_lib/mux-mp4-with-audio.js)
+const { muxMp4WithAudio } = require("../_lib/mux-mp4-with-audio");
 
 // ---------- helpers ----------
 function pickUrl(x) {
@@ -302,7 +300,6 @@ async function copyToR2({ url, key, contentType }) {
 }
 
 // ---------- R2 UPLOAD (LOCAL FILE -> R2) ----------
-// mux sonucu local dosyayı R2'ye atmak için.
 async function uploadFileToR2({ filePath, key, contentType }) {
   const publicBase =
     process.env.R2_PUBLIC_BASE_URL ||
@@ -404,138 +401,161 @@ module.exports = async (req, res) => {
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
     const requestId = pickRequestIdFromJob(job);
 
-  // =========================
-// 1) FAL POLL (ONLY ATMO)
-// =========================
-if (provider === "fal" && appKey === "atmo") {
-  const current = String(job.status || "").toLowerCase();
-  const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
+    // =========================
+    // 1) FAL POLL (ONLY ATMO)
+    // =========================
+    if (provider === "fal" && appKey === "atmo") {
+      const current = String(job.status || "").toLowerCase();
+      const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
-  const shouldPoll =
-    current !== "done" && current !== "error" ? true : outputsNow.length === 0;
+      const shouldPoll =
+        current !== "done" && current !== "error" ? true : outputsNow.length === 0;
 
-  if (shouldPoll) {
-    const statusUrl = pickFalStatusUrlFromJob(job);
+      if (shouldPoll) {
+        const statusUrl = pickFalStatusUrlFromJob(job);
 
-    const fr = await fetchFalAtmoStatus(req, {
-      job_id,
-      status_url: statusUrl,
-    });
+        const fr = await fetchFalAtmoStatus(req, {
+          job_id,
+          status_url: statusUrl,
+        });
 
-    if (fr.ok) {
-      const body = fr.body || {};
-      const stRaw = pickFalStatus(body);
-      const dbSt = toDbStatus(stRaw);
+        if (fr.ok) {
+          const body = fr.body || {};
+          const stRaw = pickFalStatus(body);
+          const dbSt = toDbStatus(stRaw);
 
-      const patchMeta = {
-        fal: {
-          status: String(stRaw || "").toUpperCase(),
-          request_id: requestId || null,
-          status_url: statusUrl || body?.status_url || null,
-          updated_at: new Date().toISOString(),
-        },
-      };
+          const patchMeta = {
+            fal: {
+              status: String(stRaw || "").toUpperCase(),
+              request_id: requestId || null,
+              status_url: statusUrl || body?.status_url || null,
+              updated_at: new Date().toISOString(),
+            },
+          };
 
-      if (dbSt === "done") {
-        let videoUrl = pickFalVideoUrl(body);
+          if (dbSt === "done") {
+            let videoUrl = pickFalVideoUrl(body);
 
-        // ✅ MP4 içine audio embed (mux) + R2 upload
-        // Not: create-atmo meta’ya audio_mode/audio_url yazıyorsa çalışır.
-        const audioMode = job?.meta?.audio_mode || null;
-        const audioUrl = job?.meta?.audio_url || null;
-        const silentCopy = Boolean(job?.meta?.silent_copy);
+            // ✅ MP4 içine audio embed (mux) + R2 upload
+            const audioMode = job?.meta?.audio_mode || null;
+            const audioUrl = job?.meta?.audio_url || null;
+            const silentCopy = Boolean(job?.meta?.silent_copy);
 
-     // daha önce mux edilmişse tekrar yapma
-const alreadyMuxed = job?.meta?.muxed_url || null;
-if (alreadyMuxed) {
-  videoUrl = alreadyMuxed;
-} else if (videoUrl && audioMode === "embed" && audioUrl && !silentCopy) {
-  let tmpDir = null;
-  let muxRes = null;
+            // daha önce mux edilmişse tekrar yapma
+            const alreadyMuxed = job?.meta?.muxed_url || null;
+            if (alreadyMuxed) {
+              videoUrl = alreadyMuxed;
+            } else if (videoUrl && audioMode === "embed" && audioUrl && !silentCopy) {
+              let tmpDir = null;
+              let muxRes = null;
 
-  try {
-    muxRes = await muxMp4WithAudio(videoUrl, audioUrl);
-    const outMp4 = muxRes?.outMp4Path || muxRes?.outMp4; // helper farklı isim döndürürse diye
-    tmpDir = muxRes?.tmpDir || null;
+              try {
+                muxRes = await muxMp4WithAudio(videoUrl, audioUrl);
+                const outMp4 = muxRes?.outMp4Path || muxRes?.outMp4;
+                tmpDir = muxRes?.tmpDir || null;
 
-    if (outMp4) {
-      const output_id = `fal-${requestId || job_id}-with-audio`;
-      const key = `outputs/atmo/${job_id}/${output_id}.mp4`;
+                if (outMp4) {
+                  const output_id = `fal-${requestId || job_id}-with-audio`;
+                  const key = `outputs/atmo/${job_id}/${output_id}.mp4`;
 
-      const muxedPublicUrl = await uploadFileToR2({
-        filePath: outMp4,
-        key,
-        contentType: "video/mp4",
-      });
+                  const muxedPublicUrl = await uploadFileToR2({
+                    filePath: outMp4,
+                    key,
+                    contentType: "video/mp4",
+                  });
 
-      videoUrl = muxedPublicUrl;
+                  videoUrl = muxedPublicUrl;
 
-      patchMeta.audio = {
-        embedded: true,
-        audio_mode: audioMode,
-        audio_url: audioUrl,
-        muxed_at: new Date().toISOString(),
-      };
+                  patchMeta.audio = {
+                    embedded: true,
+                    audio_mode: audioMode,
+                    audio_url: audioUrl,
+                    muxed_at: new Date().toISOString(),
+                  };
 
-      // guard (bir daha mux yapmasın)
-      patchMeta.muxed_url = muxedPublicUrl;
-      patchMeta.muxed_key = key;
+                  // guard (bir daha mux yapmasın)
+                  patchMeta.muxed_url = muxedPublicUrl;
+                  patchMeta.muxed_key = key;
+                }
+              } catch (e) {
+                console.error("atmo_mux_failed", e);
+                patchMeta.audio = {
+                  ...(patchMeta.audio || {}),
+                  embedded: false,
+                  mux_error: String(e?.message || e),
+                };
+              } finally {
+                // best-effort cleanup (önce helper cleanup)
+                try {
+                  if (typeof muxRes?.cleanup === "function") await muxRes.cleanup();
+                } catch {}
+                // fallback temp cleanup
+                try {
+                  if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
+                } catch {}
+              }
+            }
+
+            if (videoUrl) {
+              const outputs = [
+                {
+                  type: "video",
+                  url: videoUrl,
+                  meta: { app: "atmo", provider: "fal" },
+                },
+              ];
+
+              await sql`
+                update jobs
+                set status = 'done',
+                    outputs = ${JSON.stringify(outputs)}::jsonb,
+                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                    updated_at = now()
+                where id = ${job_id}::uuid
+              `;
+
+              job.status = "done";
+              job.outputs = outputs;
+              job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+            } else {
+              await sql`
+                update jobs
+                set status = 'done',
+                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                      ...patchMeta,
+                      fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
+                    })}::jsonb,
+                    updated_at = now()
+                where id = ${job_id}::uuid
+              `;
+              job.status = "done";
+              job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+            }
+          } else if (dbSt === "error") {
+            await sql`
+              update jobs
+              set status = 'error',
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+            job.status = "error";
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          } else if (dbSt === "queued" || dbSt === "processing") {
+            await sql`
+              update jobs
+              set status = ${dbSt},
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+            job.status = dbSt;
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          }
+        }
+      }
     }
-  } catch (e) {
-    console.error("atmo_mux_failed", e);
-    patchMeta.audio = {
-      ...(patchMeta.audio || {}),
-      embedded: false,
-      mux_error: String(e?.message || e),
-    };
-  } finally {
-    // best-effort cleanup (önce helper cleanup)
-    try {
-      if (typeof muxRes?.cleanup === "function") await muxRes.cleanup();
-    } catch {}
 
-    // fallback temp cleanup
-    try {
-      if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
-    } catch {}
-  }
-}
-
-if (videoUrl) {
-  const outputs = [
-    {
-      type: "video",
-      url: videoUrl,
-      meta: { app: "atmo", provider: "fal" },
-    },
-  ];
-
-  await sql`
-    update jobs
-    set status = 'done',
-        outputs = ${JSON.stringify(outputs)}::jsonb,
-        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-        updated_at = now()
-    where id = ${job_id}::uuid
-  `;
-
-  job.status = "done";
-  job.outputs = outputs;
-  job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-} else {
-  await sql`
-    update jobs
-    set status = 'done',
-        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
-          ...patchMeta,
-          fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
-        })}::jsonb,
-        updated_at = now()
-    where id = ${job_id}::uuid
-  `;
-  job.status = "done";
-  job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-}
     // =========================
     // 2) RUNWAY POLL (as-is)
     // =========================
