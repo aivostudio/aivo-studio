@@ -833,7 +833,7 @@ try {
       });
 
       // 2) persist to DB so /api/jobs/list sees it and we don't re-overlay
-      const conn = getConn?.();
+   const conn = (typeof getConn === "function") ? getConn() : null;
       if (conn) {
         await conn.query(
           `
