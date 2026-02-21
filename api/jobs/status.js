@@ -3,12 +3,19 @@
 // ✅ FAL (ATMO) poll FIX: providers/fal/video/status endpoint’ine request_id değil,
 //    job_id (veya status_url) ile gidiyoruz.
 // ✅ DONE anında (opsiyonel) MP4 içine audio embed (mux) yapıp R2'ye upload ediyoruz.
+// ✅ DONE olduktan sonra (ATMO) AUTO LOGO OVERLAY çağırıp outputs'a logo_overlay ekliyoruz.
 
 const { neon } = require("@neondatabase/serverless");
 const fs = require("node:fs");
 
-// ✅ doğru path (pages/api/jobs/status.js -> pages/api/_lib/mux-mp4-with-audio.js)
-const { muxMp4WithAudio } = require("../_lib/mux-mp4-with-audio");
+// mux helper (dosya yoksa prod'u patlatmasın)
+let muxMp4WithAudio = null;
+try {
+  // ✅ doğru path (pages/api/jobs/status.js -> pages/api/_lib/mux-mp4-with-audio.js)
+  ({ muxMp4WithAudio } = require("../_lib/mux-mp4-with-audio"));
+} catch (e) {
+  console.warn("muxMp4WithAudio not loaded:", e?.message || e);
+}
 
 // ---------- helpers ----------
 function pickUrl(x) {
@@ -353,7 +360,14 @@ function needsPersist(url) {
 
 // ---------- MAIN ----------
 module.exports = async (req, res) => {
+  const DEBUG = String(req?.query?.debug || "") === "1";
+
   try {
+    // ping healthcheck (job_id istemez)
+    if (String(req.query.ping || "") === "1") {
+      return res.status(200).json({ ok: true, alive: true, ts: Date.now() });
+    }
+
     if (req.method !== "GET") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
@@ -401,270 +415,276 @@ module.exports = async (req, res) => {
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
     const requestId = pickRequestIdFromJob(job);
 
-   // =========================
-// 1) FAL POLL (ONLY ATMO)
-// =========================
-if (provider === "fal" && appKey === "atmo") {
-  const current = String(job.status || "").toLowerCase();
-  const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
+    // =========================
+    // 1) FAL POLL (ONLY ATMO)
+    // =========================
+    if (provider === "fal" && appKey === "atmo") {
+      const current = String(job.status || "").toLowerCase();
+      const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
-  const shouldPoll =
-    current !== "done" && current !== "error" ? true : outputsNow.length === 0;
+      const shouldPoll =
+        current !== "done" && current !== "error" ? true : outputsNow.length === 0;
 
-  if (shouldPoll) {
-    const statusUrl = pickFalStatusUrlFromJob(job);
+      if (shouldPoll) {
+        const statusUrl = pickFalStatusUrlFromJob(job);
 
-    const fr = await fetchFalAtmoStatus(req, {
-      job_id,
-      status_url: statusUrl,
-    });
+        const fr = await fetchFalAtmoStatus(req, {
+          job_id,
+          status_url: statusUrl,
+        });
 
-    if (fr.ok) {
-      const body = fr.body || {};
-      const stRaw = pickFalStatus(body);
-      const dbSt = toDbStatus(stRaw);
+        if (fr.ok) {
+          const body = fr.body || {};
+          const stRaw = pickFalStatus(body);
+          const dbSt = toDbStatus(stRaw);
 
-      const patchMeta = {
-        fal: {
-          status: String(stRaw || "").toUpperCase(),
-          request_id: requestId || null,
-          status_url: statusUrl || body?.status_url || null,
-          updated_at: new Date().toISOString(),
-        },
-      };
+          const patchMeta = {
+            fal: {
+              status: String(stRaw || "").toUpperCase(),
+              request_id: requestId || null,
+              status_url: statusUrl || body?.status_url || null,
+              updated_at: new Date().toISOString(),
+            },
+          };
 
-      if (dbSt === "done") {
-        let videoUrl = pickFalVideoUrl(body);
+          if (dbSt === "done") {
+            let videoUrl = pickFalVideoUrl(body);
 
-        // 🔥 Provider output id’yi body’den çek (deterministik kimlik)
-        const providerOutputId =
-          body?.outputs?.[0]?.id ||
-          body?.outputs?.[0]?.output_id ||
-          requestId ||
-          job_id;
+            const providerOutputId =
+              body?.outputs?.[0]?.id ||
+              body?.outputs?.[0]?.output_id ||
+              requestId ||
+              job_id;
 
-        // ✅ MP4 içine audio embed (mux) + R2 upload
-        const audioMode = job?.meta?.audio_mode || null;
-        const audioUrl = job?.meta?.audio_url || null;
-        const silentCopy = Boolean(job?.meta?.silent_copy);
+            // ✅ MP4 içine audio embed (mux) + R2 upload (opsiyonel)
+            const audioMode = job?.meta?.audio_mode || null;
+            const audioUrl = job?.meta?.audio_url || null;
+            const silentCopy = Boolean(job?.meta?.silent_copy);
 
-        // daha önce mux edilmişse tekrar yapma
-        const alreadyMuxed = job?.meta?.muxed_url || null;
-        if (alreadyMuxed) {
-          videoUrl = alreadyMuxed;
-        } else if (videoUrl && audioMode === "embed" && audioUrl && !silentCopy) {
-          let tmpDir = null;
-          let muxRes = null;
+            const alreadyMuxed = job?.meta?.muxed_url || null;
+            if (alreadyMuxed) {
+              videoUrl = alreadyMuxed;
+            } else if (
+              muxMp4WithAudio &&
+              videoUrl &&
+              audioMode === "embed" &&
+              audioUrl &&
+              !silentCopy
+            ) {
+              let tmpDir = null;
+              let muxRes = null;
 
-          try {
-            muxRes = await muxMp4WithAudio(videoUrl, audioUrl);
-            const outMp4 = muxRes?.outMp4Path || muxRes?.outMp4;
-            tmpDir = muxRes?.tmpDir || null;
+              try {
+                muxRes = await muxMp4WithAudio(videoUrl, audioUrl);
+                const outMp4 = muxRes?.outMp4Path || muxRes?.outMp4;
+                tmpDir = muxRes?.tmpDir || null;
 
-            if (outMp4) {
-              const output_id = `${providerOutputId}-with-audio`;
-              const key = `outputs/atmo/${job_id}/${output_id}.mp4`;
+                if (outMp4) {
+                  const output_id = `${providerOutputId}-with-audio`;
+                  const key = `outputs/atmo/${job_id}/${output_id}.mp4`;
 
-              const muxedPublicUrl = await uploadFileToR2({
-                filePath: outMp4,
-                key,
-                contentType: "video/mp4",
-              });
+                  const muxedPublicUrl = await uploadFileToR2({
+                    filePath: outMp4,
+                    key,
+                    contentType: "video/mp4",
+                  });
 
-              videoUrl = muxedPublicUrl;
+                  videoUrl = muxedPublicUrl;
 
-              patchMeta.audio = {
-                embedded: true,
-                audio_mode: audioMode,
-                audio_url: audioUrl,
-                muxed_at: new Date().toISOString(),
-              };
+                  patchMeta.audio = {
+                    embedded: true,
+                    audio_mode: audioMode,
+                    audio_url: audioUrl,
+                    muxed_at: new Date().toISOString(),
+                  };
 
-              // guard (bir daha mux yapmasın)
-              patchMeta.muxed_url = muxedPublicUrl;
-              patchMeta.muxed_key = key;
+                  patchMeta.muxed_url = muxedPublicUrl;
+                  patchMeta.muxed_key = key;
+                }
+              } catch (e) {
+                console.error("atmo_mux_failed", e);
+                patchMeta.audio = {
+                  ...(patchMeta.audio || {}),
+                  embedded: false,
+                  mux_error: String(e?.message || e),
+                };
+              } finally {
+                try {
+                  if (typeof muxRes?.cleanup === "function") await muxRes.cleanup();
+                } catch {}
+                try {
+                  if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
+                } catch {}
+              }
             }
-          } catch (e) {
-            console.error("atmo_mux_failed", e);
-            patchMeta.audio = {
-              ...(patchMeta.audio || {}),
-              embedded: false,
-              mux_error: String(e?.message || e),
-            };
-          } finally {
-            try {
-              if (typeof muxRes?.cleanup === "function") await muxRes.cleanup();
-            } catch {}
-            try {
-              if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
-            } catch {}
+
+            if (videoUrl) {
+              const outs = [
+                {
+                  type: "video",
+                  url: videoUrl,
+                  output_id: providerOutputId,
+                  meta: { app: "atmo", provider: "fal" },
+                },
+              ];
+
+              await sql`
+                update jobs
+                set status = 'done',
+                    outputs = ${JSON.stringify(outs)}::jsonb,
+                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                    updated_at = now()
+                where id = ${job_id}::uuid
+              `;
+
+              job.status = "done";
+              job.outputs = outs;
+              job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+            } else {
+              await sql`
+                update jobs
+                set status = 'done',
+                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                      ...patchMeta,
+                      fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
+                    })}::jsonb,
+                    updated_at = now()
+                where id = ${job_id}::uuid
+              `;
+              job.status = "done";
+              job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+            }
+          } else if (dbSt === "error") {
+            await sql`
+              update jobs
+              set status = 'error',
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+            job.status = "error";
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          } else if (dbSt === "queued" || dbSt === "processing") {
+            await sql`
+              update jobs
+              set status = ${dbSt},
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+            job.status = dbSt;
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
           }
         }
-
-        if (videoUrl) {
-          const outputs = [
-            {
-              type: "video",
-              url: videoUrl,
-              output_id: providerOutputId, // ✅ kritik düzeltme
-              meta: { app: "atmo", provider: "fal" },
-            },
-          ];
-
-          await sql`
-            update jobs
-            set status = 'done',
-                outputs = ${JSON.stringify(outputs)}::jsonb,
-                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-                updated_at = now()
-            where id = ${job_id}::uuid
-          `;
-
-          job.status = "done";
-          job.outputs = outputs;
-          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-        } else {
-          await sql`
-            update jobs
-            set status = 'done',
-                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
-                  ...patchMeta,
-                  fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
-                })}::jsonb,
-                updated_at = now()
-            where id = ${job_id}::uuid
-          `;
-          job.status = "done";
-          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-        }
-      } else if (dbSt === "error") {
-        await sql`
-          update jobs
-          set status = 'error',
-              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-              updated_at = now()
-          where id = ${job_id}::uuid
-        `;
-        job.status = "error";
-        job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-      } else if (dbSt === "queued" || dbSt === "processing") {
-        await sql`
-          update jobs
-          set status = ${dbSt},
-              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-              updated_at = now()
-          where id = ${job_id}::uuid
-        `;
-        job.status = dbSt;
-        job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
       }
     }
-  }
-}
 
     // =========================
     // 2) RUNWAY POLL (as-is)
     // =========================
-    if (provider === "runway" && requestId && isUuidLike(requestId)) {
-      const rr = await fetchRunwayTask(requestId);
+    if (provider === "runway" && requestId) {
+      // runway task id her zaman uuid olmayabiliyor; ama sen uuid kullanıyorsan bu guard kalsın:
+      if (isUuidLike(requestId)) {
+        const rr = await fetchRunwayTask(requestId);
 
-      if (rr.ok) {
-        const stRaw = String(rr.task?.status || rr.task?.state || "");
-        const dbSt = toDbStatus(stRaw);
+        if (rr.ok) {
+          const stRaw = String(rr.task?.status || rr.task?.state || "");
+          const dbSt = toDbStatus(stRaw);
 
-        const rawUrl = pickRunwayVideoUrl(rr.task);
+          const rawUrl = pickRunwayVideoUrl(rr.task);
 
-        const patchMeta = {
-          runway: {
-            status: String(stRaw || "").toUpperCase(),
-            task_id: requestId,
-            updated_at: new Date().toISOString(),
-          },
-        };
-
-        if (dbSt === "done" && rawUrl) {
-          const outputs = [
-            {
-              type: "video",
-              url: rawUrl,
-              meta: { app: "video", provider: "runway" },
-            },
-          ];
-
-          await sql`
-            update jobs
-            set status = 'done',
-                outputs = ${JSON.stringify(outputs)}::jsonb,
-                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-                updated_at = now()
-            where id = ${job_id}::uuid
-          `;
-
-          job.status = "done";
-          job.outputs = outputs;
-          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-        } else if (dbSt === "done" && !rawUrl) {
-          await sql`
-            update jobs
-            set status = 'done',
-                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
-                  ...patchMeta,
-                  runway: { ...patchMeta.runway, note: "done_but_no_output_url" },
-                })}::jsonb,
-                updated_at = now()
-            where id = ${job_id}::uuid
-          `;
-          job.status = "done";
-          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-        } else if (dbSt === "error") {
-          const failureMessage =
-            rr.task?.failure ||
-            rr.task?.error ||
-            rr.task?.failureMessage ||
-            rr.task?.failure_message ||
-            rr.task?.message ||
-            null;
-
-          const failureCode =
-            rr.task?.failureCode ||
-            rr.task?.failure_code ||
-            rr.task?.code ||
-            null;
-
-          const patchMeta2 = {
+          const patchMeta = {
             runway: {
-              ...patchMeta.runway,
-              failure: failureMessage,
-              failureCode,
+              status: String(stRaw || "").toUpperCase(),
+              task_id: requestId,
+              updated_at: new Date().toISOString(),
             },
           };
 
-          await sql`
-            update jobs
-            set status = 'error',
-                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta2)}::jsonb,
-                updated_at = now()
-            where id = ${job_id}::uuid
-          `;
+          if (dbSt === "done" && rawUrl) {
+            const outs = [
+              {
+                type: "video",
+                url: rawUrl,
+                meta: { app: "video", provider: "runway" },
+              },
+            ];
 
-          job.status = "error";
-          job.meta = { ...(job.meta || {}), ...(patchMeta2 || {}) };
-        } else if (dbSt === "queued" || dbSt === "processing") {
-          await sql`
-            update jobs
-            set status = ${dbSt},
-                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-                updated_at = now()
-            where id = ${job_id}::uuid
-          `;
-          job.status = dbSt;
-          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+            await sql`
+              update jobs
+              set status = 'done',
+                  outputs = ${JSON.stringify(outs)}::jsonb,
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+
+            job.status = "done";
+            job.outputs = outs;
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          } else if (dbSt === "done" && !rawUrl) {
+            await sql`
+              update jobs
+              set status = 'done',
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                    ...patchMeta,
+                    runway: { ...patchMeta.runway, note: "done_but_no_output_url" },
+                  })}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+            job.status = "done";
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          } else if (dbSt === "error") {
+            const failureMessage =
+              rr.task?.failure ||
+              rr.task?.error ||
+              rr.task?.failureMessage ||
+              rr.task?.failure_message ||
+              rr.task?.message ||
+              null;
+
+            const failureCode =
+              rr.task?.failureCode ||
+              rr.task?.failure_code ||
+              rr.task?.code ||
+              null;
+
+            const patchMeta2 = {
+              runway: {
+                ...patchMeta.runway,
+                failure: failureMessage,
+                failureCode,
+              },
+            };
+
+            await sql`
+              update jobs
+              set status = 'error',
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta2)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+
+            job.status = "error";
+            job.meta = { ...(job.meta || {}), ...(patchMeta2 || {}) };
+          } else if (dbSt === "queued" || dbSt === "processing") {
+            await sql`
+              update jobs
+              set status = ${dbSt},
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+            job.status = dbSt;
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          }
         }
       }
     }
 
     // =========================
-    // 3) PERSIST-TO-R2 (REMOTE URL -> R2) (as-is)
+    // 3) PERSIST-TO-R2 (REMOTE URL -> R2)
     // =========================
     let outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
@@ -755,132 +775,146 @@ if (provider === "fal" && appKey === "atmo") {
       }
     }
 
-// =========================
-// 4) RESPONSE NORMALIZE
-// =========================
-const DEBUG = String(req?.query?.debug || "") === "1";
+    // =========================
+    // 4) AUTO LOGO OVERLAY (ATMO) (DONE sonrası)
+    // =========================
+    try {
+      const isAtmo = job?.app === "atmo" || job?.meta?.app === "atmo";
+      const isDone = String(job?.status || "").toLowerCase() === "done";
 
-const outVideo =
-  outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
+      const logoUrl = job?.meta?.logo_url;
 
-const outAudio =
-  outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
+      const baseVideoUrl =
+        (outputs.find((x) => String(x?.type).toLowerCase() === "video") || null)
+          ?.url ||
+        job?.video_url ||
+        null;
 
-const outImage =
-  outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
+      const alreadyHasOverlay =
+        Array.isArray(outputs) &&
+        outputs.some(
+          (o) =>
+            String(o?.type).toLowerCase() === "video" &&
+            (o?.meta?.variant === "logo_overlay" ||
+              String(o?.url || "").includes("logo-overlay-"))
+        );
 
-const failureReason =
-  job?.meta?.runway?.failure ||
-  job?.meta?.fal?.failure ||
-  job?.meta?.failure ||
-  null;
+      // meta guard (DB'de zaten işaretlendiyse hiç deneme)
+      const alreadyDoneFlag = Boolean(job?.meta?.logo_overlay_done);
 
-// =========================
-// AUTO LOGO OVERLAY (ATMO)
-// =========================
-try {
-  const isAtmo = job?.app === "atmo" || job?.meta?.app === "atmo";
-  const isDone = String(job?.status || "").toLowerCase() === "done";
+      if (
+        isAtmo &&
+        isDone &&
+        logoUrl &&
+        baseVideoUrl &&
+        !alreadyHasOverlay &&
+        !alreadyDoneFlag
+      ) {
+        const resp = await fetch(
+          `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              app: "atmo",
+              job_id,
+              video_url: baseVideoUrl,
+              logo_url: logoUrl,
+              logo_pos: job?.meta?.logo_pos || "br",
+              logo_size: job?.meta?.logo_size || "sm",
+              logo_opacity:
+                typeof job?.meta?.logo_opacity === "number"
+                  ? job.meta.logo_opacity
+                  : 0.85,
+            }),
+          }
+        );
 
-  const logoUrl = job?.meta?.logo_url;
+        const data = await resp.json().catch(() => null);
 
-  const baseVideoUrl =
-    (outputs.find((x) => String(x?.type).toLowerCase() === "video") || null)?.url ||
-    job?.video_url ||
-    null;
+        if (data?.ok && data?.url) {
+          outputs.unshift({
+            type: "video",
+            url: data.url,
+            meta: { app: "atmo", variant: "logo_overlay" },
+          });
 
-  const alreadyHasOverlay =
-    Array.isArray(outputs) &&
-    outputs.some(
-      (o) =>
-        String(o?.type).toLowerCase() === "video" &&
-        (o?.meta?.variant === "logo_overlay" ||
-          String(o?.url || "").includes("logo-overlay-"))
-    );
+          await sql`
+            update jobs
+            set
+              outputs = ${JSON.stringify(outputs)}::jsonb,
+              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                logo_overlay_done: true,
+                logo_overlay_url: data.url,
+              })}::jsonb,
+              updated_at = now()
+            where id = ${job_id}::uuid
+          `;
 
-  if (isAtmo && isDone && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
-    const resp = await fetch(
-      `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          app: "atmo",
-          job_id,
-          video_url: baseVideoUrl,
-          logo_url: logoUrl,
-          logo_pos: job?.meta?.logo_pos || "br",
-          logo_size: job?.meta?.logo_size || "sm",
-          logo_opacity:
-            typeof job?.meta?.logo_opacity === "number"
-              ? job.meta.logo_opacity
-              : 0.85,
-        }),
-      }
-    );
-
-    const data = await resp.json().catch(() => null);
-
-    if (data?.ok && data?.url) {
-      // 1) response outputs'a ekle (en başa)
-      outputs.unshift({
-        type: "video",
-        url: data.url,
-        meta: { app: "atmo", variant: "logo_overlay" },
-      });
-
-      // 2) DB'ye yaz (Neon sql tag ile)
-      await sql`
-        update jobs
-        set
-          outputs = ${JSON.stringify(outputs)}::jsonb,
-          meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+          job.outputs = outputs;
+          job.meta = {
+            ...(job.meta || {}),
             logo_overlay_done: true,
             logo_overlay_url: data.url,
-          })}::jsonb,
-          updated_at = now()
-        where id = ${job_id}::uuid
-      `;
-
-      // 3) bu request'in response'unda da güncel görünsün
-      job.outputs = outputs;
-      job.meta = {
-        ...(job.meta || {}),
-        logo_overlay_done: true,
-        logo_overlay_url: data.url,
-      };
+          };
+        } else {
+          // denedi ama başarısız olduysa, infinite retry olmasın diye flag basma:
+          // burada flag basmıyoruz (istersen basarız)
+        }
+      }
+    } catch (e) {
+      console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
     }
+
+    // =========================
+    // 5) RESPONSE NORMALIZE (tek sefer)
+    // =========================
+    const outVideo =
+      outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
+
+    const outAudio =
+      outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
+
+    const outImage =
+      outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
+
+    const failureReason =
+      job?.meta?.runway?.failure ||
+      job?.meta?.fal?.failure ||
+      job?.meta?.failure ||
+      null;
+
+    return res.status(200).json({
+      ok: true,
+      job_id,
+      status: toApiStatus(job.status),
+      error_reason:
+        String(job.status).toLowerCase() === "error"
+          ? failureReason || "provider_failed"
+          : null,
+      video: outVideo ? { url: outVideo.url } : null,
+      audio: outAudio ? { url: outAudio.url } : null,
+      image: outImage ? { url: outImage.url } : null,
+      outputs: outputs || [],
+      db_status: job.status,
+      ...(DEBUG
+        ? {
+            debug: {
+              provider,
+              appKey,
+              requestId,
+              has_logo_url: Boolean(job?.meta?.logo_url),
+              logo_overlay_done: Boolean(job?.meta?.logo_overlay_done),
+            },
+          }
+        : {}),
+    });
+  } catch (e) {
+    console.error("jobs/status fatal:", e);
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      message: String(e?.message || e),
+    });
   }
-} catch (e) {
-  console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
-}
-
-// =========================
-// RE-PICK OUTPUTS (overlay eklenmiş olabilir)
-// =========================
-const outVideo =
-  outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
-
-const outAudio =
-  outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
-
-const outImage =
-  outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
-
-// =========================
-// RETURN
-// =========================
-return res.status(200).json({
-  ok: true,
-  job_id,
-  status: toApiStatus(job.status),
-  error_reason:
-    String(job.status).toLowerCase() === "error"
-      ? failureReason || "provider_failed"
-      : null,
-  video: outVideo ? { url: outVideo.url } : null,
-  audio: outAudio ? { url: outAudio.url } : null,
-  image: outImage ? { url: outImage.url } : null,
-  outputs: outputs || [],
-  db_status: job.status,
-});
+};
