@@ -773,80 +773,104 @@ if (provider === "fal" && appKey === "atmo") {
       job?.meta?.failure ||
       null;
 
-    // =========================
-    // AUTO LOGO OVERLAY (ATMO)
-    // =========================
-    try {
-      const isAtmo =
-        job?.app === "atmo" ||
-        job?.meta?.app === "atmo";
+  // =========================
+// AUTO LOGO OVERLAY (ATMO)
+// =========================
+try {
+  const isAtmo =
+    job?.app === "atmo" ||
+    job?.meta?.app === "atmo";
 
-      const isReady = ["ready", "completed"].includes(
-        String(job?.status || "").toLowerCase()
-      );
+  const isReady = ["ready", "completed"].includes(
+    String(job?.status || "").toLowerCase()
+  );
 
-      const logoUrl = job?.meta?.logo_url;
+  const logoUrl = job?.meta?.logo_url;
 
-      const baseVideoUrl =
-        outVideo?.url ||
-        job?.video_url ||
-        null;
+  const baseVideoUrl =
+    outVideo?.url ||
+    job?.video_url ||
+    null;
 
-      const alreadyHasOverlay =
-        Array.isArray(outputs) &&
-        outputs.some(
-          (o) =>
-            o?.type === "video" &&
-            (o?.meta?.variant === "logo_overlay" ||
-              String(o?.url || "").includes("logo-overlay-"))
-        );
+  const alreadyHasOverlay =
+    Array.isArray(outputs) &&
+    outputs.some(
+      (o) =>
+        o?.type === "video" &&
+        (o?.meta?.variant === "logo_overlay" ||
+          String(o?.url || "").includes("logo-overlay-"))
+    );
 
-      if (isAtmo && isReady && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
-        const resp = await fetch(
-          `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              app: "atmo",
-              job_id,
-              video_url: baseVideoUrl,
-              logo_url: logoUrl,
-              logo_pos: job?.meta?.logo_pos || "br",
-              logo_size: job?.meta?.logo_size || "sm",
-              logo_opacity:
-                typeof job?.meta?.logo_opacity === "number"
-                  ? job.meta.logo_opacity
-                  : 0.85,
-            }),
-          }
-        );
-
-        const data = await resp.json().catch(() => null);
-
-        if (data?.ok && data?.url) {
-          outputs.unshift({
-            type: "video",
-            url: data.url,
-            meta: { app: "atmo", variant: "logo_overlay" },
-          });
-        }
+  if (isAtmo && isReady && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
+    const resp = await fetch(
+      `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          app: "atmo",
+          job_id,
+          video_url: baseVideoUrl,
+          logo_url: logoUrl,
+          logo_pos: job?.meta?.logo_pos || "br",
+          logo_size: job?.meta?.logo_size || "sm",
+          logo_opacity:
+            typeof job?.meta?.logo_opacity === "number"
+              ? job.meta.logo_opacity
+              : 0.85,
+        }),
       }
-    } catch (e) {
-      console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
-    }
+    );
 
-    return res.status(200).json({
-      ok: true,
-      job_id,
-      status: toApiStatus(job.status),
-      error_reason:
-        String(job.status).toLowerCase() === "error"
-          ? failureReason || "provider_failed"
-          : null,
-      video: outVideo ? { url: outVideo.url } : null,
-      audio: outAudio ? { url: outAudio.url } : null,
-      image: outImage ? { url: outImage.url } : null,
-      outputs: outputs || [],
-      db_status: job.status, // debug
-    });
+    const data = await resp.json().catch(() => null);
+
+    if (data?.ok && data?.url) {
+      // 1) add overlay output to response
+      outputs.unshift({
+        type: "video",
+        url: data.url,
+        meta: { app: "atmo", variant: "logo_overlay" },
+      });
+
+      // 2) persist to DB so /api/jobs/list sees it and we don't re-overlay
+      const conn = getConn?.();
+      if (conn) {
+        await conn.query(
+          `
+          UPDATE jobs
+          SET
+            outputs = $2::jsonb,
+            meta = COALESCE(meta, '{}'::jsonb) || $3::jsonb,
+            updated_at = NOW()
+          WHERE id = $1
+          `,
+          [
+            job_id,
+            JSON.stringify(outputs || []),
+            JSON.stringify({
+              logo_overlay_done: true,
+              logo_overlay_url: data.url,
+            }),
+          ]
+        );
+      }
+    }
+  }
+} catch (e) {
+  console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
+}
+
+return res.status(200).json({
+  ok: true,
+  job_id,
+  status: toApiStatus(job.status),
+  error_reason:
+    String(job.status).toLowerCase() === "error"
+      ? failureReason || "provider_failed"
+      : null,
+  video: outVideo ? { url: outVideo.url } : null,
+  audio: outAudio ? { url: outAudio.url } : null,
+  image: outImage ? { url: outImage.url } : null,
+  outputs: outputs || [],
+  db_status: job.status, // debug
+});
