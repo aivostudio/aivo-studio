@@ -612,8 +612,14 @@ window.__ATMO_LOGO_PUBLIC_URL__ =
   "";
 
 const isReady = (job) => {
-  const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
-  return st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC");
+  const st = String(job?.db_status || job?.status || job?.state || "")
+    .toUpperCase();
+  return (
+    st.includes("READY") ||
+    st.includes("DONE") ||
+    st.includes("COMPLET") ||
+    st.includes("SUCC")
+  );
 };
 
 const hasLogoOverlayOutput = (job) => {
@@ -664,11 +670,7 @@ const maybeOverlayOne = async (job) => {
   const next = {
     ...job,
     outputs: [
-      {
-        type: "video",
-        url: j.url,
-        meta: { app: "atmo", overlay: "logo" },
-      },
+      { type: "video", url: j.url, meta: { app: "atmo", overlay: "logo" } },
       ...(Array.isArray(job.outputs) ? job.outputs : []),
     ],
   };
@@ -686,9 +688,9 @@ for (const job of merged) {
 }
 
 // ✅ overlay sonucu optimistic'e yazıldıysa merged list'i onunla güncelle (render bunu görsün)
-const merged2 = merged.map((j) => {
-  const id = String(j?.job_id || "").trim();
-  return id && optimistic.has(id) ? optimistic.get(id) : j;
+const merged2 = merged.map((jj) => {
+  const id = String(jj?.job_id || "").trim();
+  return id && optimistic.has(id) ? optimistic.get(id) : jj;
 });
 
 render(merged2);
