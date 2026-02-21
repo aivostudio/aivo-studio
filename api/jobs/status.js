@@ -834,28 +834,17 @@ try {
         meta: { app: "atmo", variant: "logo_overlay" },
       });
 
-      // 2) persist to DB so /api/jobs/list sees it and we don't re-overlay
-      const conn = (typeof getConn === "function") ? getConn() : null;
-      if (conn) {
-        await conn.query(
-          `
-          UPDATE jobs
-          SET
-            outputs = $2::jsonb,
-            meta = COALESCE(meta, '{}'::jsonb) || $3::jsonb,
-            updated_at = NOW()
-          WHERE id = $1
-          `,
-          [
-            job_id,
-            JSON.stringify(outputs || []),
-            JSON.stringify({
-              logo_overlay_done: true,
-              logo_overlay_url: data.url,
-            }),
-          ]
-        );
-      }
+     await sql`
+  update jobs
+  set
+    outputs = ${JSON.stringify(outputs)}::jsonb,
+    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+      logo_overlay_done: true,
+      logo_overlay_url: data.url,
+    })}::jsonb,
+    updated_at = now()
+  where id = ${job_id}::uuid
+`;
     }
   }
 } catch (e) {
