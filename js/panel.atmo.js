@@ -389,7 +389,7 @@
       };
     }
 
-    async function pollFalOnce(rid, promptMaybe) {
+     async function pollFalOnce(rid, promptMaybe) {
       if (destroyed) return;
       rid = safeStr(rid);
       if (!rid) return;
@@ -411,33 +411,68 @@
       }
 
       if (st.includes("complete") || st.includes("success") || st === "succeeded") {
-        const url = pickVideoUrl(data);
-        // === AUTO LOGO OVERLAY (FAL complete anında) ===
-try {
-  const logoUrl = String(
-    window.__ATMO_LOGO_PUBLIC_URL__ ||
-    window.__ATMO_STATE__?.logo_public_url ||
-    ""
-  ).trim();
+        let url = pickVideoUrl(data);
 
-  if (logoUrl && logoUrl.startsWith("http")) {
-    await fetch("/api/atmo/overlay-logo", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        app: "atmo",
-        request_id: rid,
-        video_url: url,
-        logo_url: logoUrl,
-        logo_pos: "br",
-        logo_size: "sm",
-        logo_opacity: 0.85
-      })
-    });
-  }
-} catch (e) {
-  console.warn("[ATMO overlay] error:", e);
-}
+        // ✅ URL normalize: overlay endpoint absolute URL ister (relative/proxy yüzünden parse fail oluyordu)
+        const normalizeVideoUrlForOverlay = (u) => {
+          u = safeStr(u);
+          if (!u) return "";
+          // /api/media/proxy?url=<ENCODED_HTTP_URL> ise gerçek url'i çıkar
+          if (u.includes("/api/media/proxy?url=")) {
+            try {
+              const i = u.indexOf("/api/media/proxy?url=");
+              const sub = u.slice(i);
+              const qs = sub.split("?")[1] || "";
+              const p = new URLSearchParams(qs);
+              const inner = p.get("url");
+              if (inner) return decodeURIComponent(inner);
+            } catch {}
+          }
+          // relative ise absolute yap
+          if (u.startsWith("/")) {
+            try { return new URL(u, window.location.origin).toString(); } catch {}
+          }
+          return u;
+        };
+
+        // === AUTO LOGO OVERLAY (FAL complete anında) ===
+        try {
+          const logoUrl = String(
+            window.__ATMO_LOGO_PUBLIC_URL__ ||
+            window.__ATMO_STATE__?.logo_public_url ||
+            ""
+          ).trim();
+
+          const overlayVideoUrl = normalizeVideoUrlForOverlay(url);
+
+          if (logoUrl && logoUrl.startsWith("http") && overlayVideoUrl && overlayVideoUrl.startsWith("http")) {
+            const res = await fetch("/api/atmo/overlay-logo", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                app: "atmo",
+                request_id: rid,
+                video_url: overlayVideoUrl,
+                logo_url: logoUrl,
+                logo_pos: "br",
+                logo_size: "sm",
+                logo_opacity: 0.85
+              })
+            });
+
+            let j = null;
+            try { j = await res.json(); } catch {}
+
+            // ✅ overlay başarıyla döndüyse, bundan sonra her yerde overlay url'i kullan
+            if (j?.ok && j?.url) {
+              url = j.url;
+            }
+          }
+        } catch (e) {
+          console.warn("[ATMO overlay] error:", e);
+        }
+
         if (!url) {
           setHeaderMeta("Tamamlandı (url yok)");
           return;
