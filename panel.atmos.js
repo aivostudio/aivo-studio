@@ -419,6 +419,7 @@
 
       onChange: async (items) => {
         if (destroyed) return;
+        console.debug("[ATMO DEBUG] onChange items:", items);
 
         const safeItems = (items || []).filter(isJobAtmo);
         // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
