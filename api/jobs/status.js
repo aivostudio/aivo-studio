@@ -802,50 +802,48 @@ try {
         (o?.meta?.variant === "logo_overlay" ||
           String(o?.url || "").includes("logo-overlay-"))
     );
-
-  if (isAtmo && isReady && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
-    const resp = await fetch(
-      `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          app: "atmo",
-          job_id,
-          video_url: baseVideoUrl,
-          logo_url: logoUrl,
-          logo_pos: job?.meta?.logo_pos || "br",
-          logo_size: job?.meta?.logo_size || "sm",
-          logo_opacity:
-            typeof job?.meta?.logo_opacity === "number"
-              ? job.meta.logo_opacity
-              : 0.85,
-        }),
-      }
-    );
-
-    const data = await resp.json().catch(() => null);
-
-    if (data?.ok && data?.url) {
-      // 1) add overlay output to response
-      outputs.unshift({
-        type: "video",
-        url: data.url,
-        meta: { app: "atmo", variant: "logo_overlay" },
-      });
-
-     await sql`
-  update jobs
-  set
-    outputs = ${JSON.stringify(outputs)}::jsonb,
-    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
-      logo_overlay_done: true,
-      logo_overlay_url: data.url,
-    })}::jsonb,
-    updated_at = now()
-  where id = ${job_id}::uuid
-`;
+if (isAtmo && isReady && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
+  const resp = await fetch(
+    `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "atmo",
+        job_id,
+        video_url: baseVideoUrl,
+        logo_url: logoUrl,
+        logo_pos: job?.meta?.logo_pos || "br",
+        logo_size: job?.meta?.logo_size || "sm",
+        logo_opacity:
+          typeof job?.meta?.logo_opacity === "number"
+            ? job.meta.logo_opacity
+            : 0.85,
+      }),
     }
+  );
+
+  const data = await resp.json().catch(() => null);
+
+  if (data?.ok && data?.url) {
+    // 1) add overlay output to response
+    outputs.unshift({
+      type: "video",
+      url: data.url,
+      meta: { app: "atmo", variant: "logo_overlay" },
+    });
+    // 2) persist to DB (Neon doğru kullanım)
+    await sql`
+      update jobs
+      set
+        outputs = ${JSON.stringify(outputs)}::jsonb,
+        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+          logo_overlay_done: true,
+          logo_overlay_url: data.url,
+        })}::jsonb,
+        updated_at = now()
+      where id = ${job_id}::uuid
+    `;
   }
 } catch (e) {
   console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
@@ -863,5 +861,5 @@ return res.status(200).json({
   audio: outAudio ? { url: outAudio.url } : null,
   image: outImage ? { url: outImage.url } : null,
   outputs: outputs || [],
-  db_status: job.status, // debug
+  db_status: job.status,
 });
