@@ -779,17 +779,13 @@ const failureReason =
 // AUTO LOGO OVERLAY (ATMO)
 // =========================
 try {
-  const isAtmo =
-    job?.app === "atmo" ||
-    job?.meta?.app === "atmo";
-
-  const isReady =
-    String(job?.status || "").toLowerCase() === "done";
+  const isAtmo = job?.app === "atmo" || job?.meta?.app === "atmo";
+  const isDone = String(job?.status || "").toLowerCase() === "done";
 
   const logoUrl = job?.meta?.logo_url;
 
   const baseVideoUrl =
-    outVideo?.url ||
+    (outputs.find((x) => String(x?.type).toLowerCase() === "video") || null)?.url ||
     job?.video_url ||
     null;
 
@@ -797,12 +793,12 @@ try {
     Array.isArray(outputs) &&
     outputs.some(
       (o) =>
-        o?.type === "video" &&
+        String(o?.type).toLowerCase() === "video" &&
         (o?.meta?.variant === "logo_overlay" ||
           String(o?.url || "").includes("logo-overlay-"))
     );
 
-  if (isAtmo && isReady && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
+  if (isAtmo && isDone && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
     const resp = await fetch(
       `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
       {
@@ -826,12 +822,14 @@ try {
     const data = await resp.json().catch(() => null);
 
     if (data?.ok && data?.url) {
+      // 1) response outputs'a ekle (en başa)
       outputs.unshift({
         type: "video",
         url: data.url,
         meta: { app: "atmo", variant: "logo_overlay" },
       });
 
+      // 2) DB'ye yaz (Neon sql tag ile)
       await sql`
         update jobs
         set
@@ -843,8 +841,46 @@ try {
           updated_at = now()
         where id = ${job_id}::uuid
       `;
+
+      // 3) bu request'in response'unda da güncel görünsün
+      job.outputs = outputs;
+      job.meta = {
+        ...(job.meta || {}),
+        logo_overlay_done: true,
+        logo_overlay_url: data.url,
+      };
     }
   }
 } catch (e) {
   console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
 }
+
+// =========================
+// RE-PICK OUTPUTS (overlay eklenmiş olabilir)
+// =========================
+const outVideo =
+  outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
+
+const outAudio =
+  outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
+
+const outImage =
+  outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
+
+// =========================
+// RETURN
+// =========================
+return res.status(200).json({
+  ok: true,
+  job_id,
+  status: toApiStatus(job.status),
+  error_reason:
+    String(job.status).toLowerCase() === "error"
+      ? failureReason || "provider_failed"
+      : null,
+  video: outVideo ? { url: outVideo.url } : null,
+  audio: outAudio ? { url: outAudio.url } : null,
+  image: outImage ? { url: outImage.url } : null,
+  outputs: outputs || [],
+  db_status: job.status,
+});
