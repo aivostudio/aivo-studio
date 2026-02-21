@@ -596,123 +596,99 @@ if (thumb) {
           const tb = new Date(b?.created_at || b?.createdAt || Date.now()).getTime();
           return tb - ta;
         });
-             // ============================
-      // ✅ AUTO LOGO OVERLAY (READY -> /api/atmo/overlay-logo)
-      // Yer: onChange içinde, render(merged); satırının HEMEN ÜSTÜ
-      // ============================
+     // ============================
+// ✅ AUTO LOGO OVERLAY (READY -> /api/atmo/overlay-logo)
+// Yer: onChange içinde, render(merged); satırının HEMEN ÜSTÜ
+// ============================
 
-      window.__ATMO_OVERLAY_DONE__ = window.__ATMO_OVERLAY_DONE__ || new Set();
-      window.__ATMO_LOGO_PUBLIC_URL__ =
-        window.__ATMO_LOGO_PUBLIC_URL__ ||
-        window.__ATMO_STATE__?.logo_public_url ||
-        window.__ATMO_STATE__?.logo_url ||
-        window.__ATMO_STATE__?.logoUrl ||
-        "";
+window.__ATMO_OVERLAY_DONE__ = window.__ATMO_OVERLAY_DONE__ || new Set();
 
-      const isReady = (job) => {
-        const st = norm(job?.db_status || job?.status || job?.state).toUpperCase();
-        return st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC");
-      };
+window.__ATMO_LOGO_PUBLIC_URL__ =
+  window.__ATMO_LOGO_PUBLIC_URL__ ||
+  window.__ATM_V2__?.uploads?.logo?.url ||
+  window.__ATMO_STATE__?.logo_public_url ||
+  window.__ATMO_STATE__?.logo_url ||
+  window.__ATMO_STATE__?.logoUrl ||
+  "";
 
-      const hasLogoOverlayOutput = (job) => {
-        const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-        return outs.some((o) => norm(o?.meta?.overlay) === "logo");
-      };
+const isReady = (job) => {
+  const st = String(job?.db_status || job?.status || job?.state || "")
+    .toUpperCase();
+  return (
+    st.includes("READY") ||
+    st.includes("DONE") ||
+    st.includes("COMPLET") ||
+    st.includes("SUCC")
+  );
+};
 
-      const maybeOverlayOne = async (job) => {
-        const jobId = String(job?.job_id || "").trim();
-        if (!jobId) return;
+const hasLogoOverlayOutput = (job) => {
+  const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+  return outs.some((o) => o?.meta?.overlay === "logo");
+};
 
-        if (!isReady(job)) return;
+const maybeOverlayOne = async (job) => {
+  const jobId = String(job?.job_id || "").trim();
+  if (!jobId) return;
 
-        const logoUrl = String(window.__ATMO_LOGO_PUBLIC_URL__ || "").trim();
-        if (!logoUrl || !logoUrl.startsWith("http")) return;
+  if (!isReady(job)) return;
 
-        if (hasLogoOverlayOutput(job)) return;
+  const logoUrl = String(window.__ATMO_LOGO_PUBLIC_URL__ || "").trim();
+  if (!logoUrl || !logoUrl.startsWith("http")) return;
 
-        const out = pickBestVideoOutput(job);
-        const videoUrl = String(out?.url || "").trim();
-        if (!videoUrl || !videoUrl.startsWith("http") && !videoUrl.startsWith("/")) return;
+  if (hasLogoOverlayOutput(job)) return;
 
-        const key = `${jobId}::logo`;
-        if (window.__ATMO_OVERLAY_DONE__.has(key)) return;
-        window.__ATMO_OVERLAY_DONE__.add(key);
+  const out = pickBestVideoOutput(job);
+  const videoUrl = String(out?.url || "").trim();
+  if (!videoUrl) return;
 
-        const r = await fetch("/api/atmo/overlay-logo", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            app: "atmo",
-            job_id: jobId,
-            video_url: videoUrl,
-            logo_url: logoUrl,
-            logo_pos: "br",
-            logo_size: "sm",
-            logo_opacity: 0.85,
-          }),
-        });
+  const key = `${jobId}::logo`;
+  if (window.__ATMO_OVERLAY_DONE__.has(key)) return;
 
-        const j = await r.json();
-        if (!j?.ok || !j?.url) {
-          console.warn("[ATMO][overlay] failed", j);
-          return;
-        }
+  window.__ATMO_OVERLAY_DONE__.add(key);
 
-        // ✅ sonucu aynı job'ın outputs'una "en başa" ekle (pickBestVideoOutput bunu alır)
-        const next = {
-          ...job,
-          outputs: [
-            {
-              type: "video",
-              url: j.url,
-              meta: { app: "atmo", overlay: "logo" },
-            },
-            ...(Array.isArray(job.outputs) ? job.outputs : []),
-          ],
-        };
+  const r = await fetch("/api/atmo/overlay-logo", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      app: "atmo",
+      job_id: jobId,
+      video_url: videoUrl,
+      logo_url: logoUrl,
+      logo_pos: "br",
+      logo_size: "sm",
+      logo_opacity: 0.85,
+    }),
+  });
 
-        // ✅ DB gelene kadar optimistic map’te göster
-        optimistic.set(jobId, next);
-
-        // ✅ UI’yı anında güncelle
-        render(Array.from(byId.values()).map((jj) => {
-          const id = String(jj?.job_id || "").trim();
-          return id === jobId ? next : jj;
-        }));
-      };
-
-      // Sadece ekranda görünen merged list üzerinden dene (spam yok)
-      for (const job of merged) {
-        try { maybeOverlayOne(job); } catch {}
-      }
-        render(merged);
-        setStatus("İşleniyor…");
-      } catch {}
-    };
-
-    window.addEventListener("aivo:atmo:job_created", onJobCreated);
-
-    controller.start();
-
-    function destroy() {
-      destroyed = true;
-      try { controller.destroy(); } catch {}
-      try { window.removeEventListener("aivo:atmo:job_created", onJobCreated); } catch {}
-      optimistic.clear();
-      host.innerHTML = "";
-    }
-
-    return { destroy };
+  const j = await r.json();
+  if (!j?.ok || !j?.url) {
+    console.warn("[ATMO][overlay] failed", j);
+    return;
   }
 
-  window.RightPanel.register("atmo", {
-    mount(host) {
-      const panel = createAtmosPanel(host);
-      host.__ATMO_PANEL__ = panel;
-    },
-    destroy(host) {
-      try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
-      host.__ATMO_PANEL__ = null;
-    }
-  });
-})();
+  const next = {
+    ...job,
+    outputs: [
+      {
+        type: "video",
+        url: j.url,
+        meta: { app: "atmo", overlay: "logo" },
+      },
+      ...(Array.isArray(job.outputs) ? job.outputs : []),
+    ],
+  };
+
+  optimistic.set(jobId, next);
+};
+
+// 🔥 ÖNEMLİ: async loop
+for (const job of merged) {
+  try {
+    await maybeOverlayOne(job);
+  } catch (e) {
+    console.warn("[ATMO] overlay error:", e);
+  }
+}
+
+render(merged);
