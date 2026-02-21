@@ -755,25 +755,27 @@ if (provider === "fal" && appKey === "atmo") {
       }
     }
 
-      // =========================
-    // 4) RESPONSE NORMALIZE
-    // =========================
-    const outVideo =
-      outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
+// =========================
+// 4) RESPONSE NORMALIZE
+// =========================
+const DEBUG = String(req?.query?.debug || "") === "1";
 
-    const outAudio =
-      outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
+const outVideo =
+  outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
 
-    const outImage =
-      outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
+const outAudio =
+  outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
 
-    const failureReason =
-      job?.meta?.runway?.failure ||
-      job?.meta?.fal?.failure ||
-      job?.meta?.failure ||
-      null;
+const outImage =
+  outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
 
-  // =========================
+const failureReason =
+  job?.meta?.runway?.failure ||
+  job?.meta?.fal?.failure ||
+  job?.meta?.failure ||
+  null;
+
+// =========================
 // AUTO LOGO OVERLAY (ATMO)
 // =========================
 try {
@@ -833,7 +835,7 @@ try {
       });
 
       // 2) persist to DB so /api/jobs/list sees it and we don't re-overlay
-   const conn = (typeof getConn === "function") ? getConn() : null;
+      const conn = (typeof getConn === "function") ? getConn() : null;
       if (conn) {
         await conn.query(
           `
