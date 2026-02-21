@@ -755,7 +755,7 @@ if (provider === "fal" && appKey === "atmo") {
       }
     }
 
-    // =========================
+      // =========================
     // 4) RESPONSE NORMALIZE
     // =========================
     const outVideo =
@@ -773,6 +773,69 @@ if (provider === "fal" && appKey === "atmo") {
       job?.meta?.failure ||
       null;
 
+    // =========================
+    // AUTO LOGO OVERLAY (ATMO)
+    // =========================
+    try {
+      const isAtmo =
+        job?.app === "atmo" ||
+        job?.meta?.app === "atmo";
+
+      const isReady = ["ready", "completed"].includes(
+        String(job?.status || "").toLowerCase()
+      );
+
+      const logoUrl = job?.meta?.logo_url;
+
+      const baseVideoUrl =
+        outVideo?.url ||
+        job?.video_url ||
+        null;
+
+      const alreadyHasOverlay =
+        Array.isArray(outputs) &&
+        outputs.some(
+          (o) =>
+            o?.type === "video" &&
+            (o?.meta?.variant === "logo_overlay" ||
+              String(o?.url || "").includes("logo-overlay-"))
+        );
+
+      if (isAtmo && isReady && logoUrl && baseVideoUrl && !alreadyHasOverlay) {
+        const resp = await fetch(
+          `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              app: "atmo",
+              job_id,
+              video_url: baseVideoUrl,
+              logo_url: logoUrl,
+              logo_pos: job?.meta?.logo_pos || "br",
+              logo_size: job?.meta?.logo_size || "sm",
+              logo_opacity:
+                typeof job?.meta?.logo_opacity === "number"
+                  ? job.meta.logo_opacity
+                  : 0.85,
+            }),
+          }
+        );
+
+        const data = await resp.json().catch(() => null);
+
+        if (data?.ok && data?.url) {
+          outputs.unshift({
+            type: "video",
+            url: data.url,
+            meta: { app: "atmo", variant: "logo_overlay" },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
+    }
+
     return res.status(200).json({
       ok: true,
       job_id,
@@ -787,15 +850,3 @@ if (provider === "fal" && appKey === "atmo") {
       outputs: outputs || [],
       db_status: job.status, // debug
     });
-  } catch (err) {
-    console.error("jobs/status server_error:", err);
-
-    return res.status(500).json({
-      ok: false,
-      error: "server_error",
-      message: String(err?.message || err),
-      stack: String(err?.stack || ""),
-      has_db_env: Boolean(getConn()),
-    });
-  }
-};
