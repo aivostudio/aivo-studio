@@ -959,4 +959,30 @@ async function handleUpload(root, kind, file) {
   setTimeout(init, 200);
   setTimeout(init, 800);
   setTimeout(init, 1600);
+   // ------------------------------------------------------------
+// ATMOS — PPE bridge (FINAL)
+// ------------------------------------------------------------
+if (window.PPE) {
+  window.PPE.onOutput = function(job) {
+    if (!job) return;
+
+    const logoUrl =
+      job.logo_url ||
+      job.logoUrl ||
+      job.meta?.logo_url ||
+      window.__ATMO_LOGO_PUBLIC_URL__ ||
+      "";
+
+    if (!logoUrl) return;
+
+    const targets = document.querySelectorAll("[data-atmo-logo-target]");
+    targets.forEach((el) => {
+      el.src = logoUrl;
+    });
+
+    console.log("[ATMO] Logo applied via PPE:", logoUrl);
+  };
+
+  console.log("[ATMO] PPE.onOutput bound");
+}
 })();
