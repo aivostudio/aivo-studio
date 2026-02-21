@@ -2,10 +2,15 @@
 // CommonJS
 // ✅ FAL (ATMO) poll FIX: providers/fal/video/status endpoint’ine request_id değil,
 //    job_id (veya status_url) ile gidiyoruz.
-// ✅ Böylece provider endpoint DB’den status_url resolve edip (veya doğrudan status_url ile)
-//    GET→405 ise POST fallback ile Fal status’ü okuyup normalize ediyor.
+// ✅ DONE anında (opsiyonel) MP4 içine audio embed (mux) yapıp R2'ye upload ediyoruz.
 
 const { neon } = require("@neondatabase/serverless");
+const fs = require("node:fs");
+
+// ⚠️ BU PATH'İ PROJENE GÖRE DÜZELT:
+// - Eğer dosyan media/muxMp4WithAudio.js ise ona göre yaz.
+// - Senin örneğin TS idi: src/server/media/muxMp4WithAudio.ts (build/compile durumuna göre .js gerekir)
+const { muxMp4WithAudio } = require("../../../src/server/media/muxMp4WithAudio"); // <-- AYARLA
 
 // ---------- helpers ----------
 function pickUrl(x) {
@@ -162,7 +167,6 @@ function pickRunwayVideoUrl(task) {
 
 // ---------- FAL (ATMOSFER ONLY) ----------
 function pickRequestIdFromJob(job) {
-  // create-atmo yazdığın formatlarda request_id meta’da olabiliyor
   return (
     job?.request_id ||
     job?.meta?.request_id ||
@@ -174,7 +178,6 @@ function pickRequestIdFromJob(job) {
 }
 
 function pickFalStatus(payload) {
-  // provider endpoint'in normalize ettiği alanlar + fal raw fallback
   return (
     payload?.status ||
     payload?.fal?.status ||
@@ -188,7 +191,6 @@ function pickFalStatus(payload) {
   );
 }
 
-// jobs.row.meta içinden status_url yakalamak için (varsa direkt gönderelim)
 function pickFalStatusUrlFromJob(job) {
   const meta = job?.meta || {};
   const pr = meta?.provider_response || {};
@@ -208,17 +210,14 @@ function pickFalStatusUrlFromJob(job) {
 }
 
 async function fetchFalAtmoStatus(req, { job_id, status_url }) {
-  // ✅ sadece internal endpoint: /api/providers/fal/video/status
   const baseUrl = getBaseUrl(req);
 
   const qs = new URLSearchParams();
   qs.set("app", "atmo");
 
-  // Öncelik: status_url varsa direkt gönder (DB resolve’a bile ihtiyaç kalmaz)
   if (status_url && String(status_url).trim()) {
     qs.set("status_url", String(status_url).trim());
   } else {
-    // Yoksa provider endpoint job_id ile DB’den resolve eder
     qs.set("job_id", String(job_id || "").trim());
   }
 
@@ -226,10 +225,7 @@ async function fetchFalAtmoStatus(req, { job_id, status_url }) {
 
   const r = await fetch(url, {
     method: "GET",
-    headers: {
-      // auth gerekiyorsa cookie forward
-      cookie: req.headers.cookie || "",
-    },
+    headers: { cookie: req.headers.cookie || "" },
   });
 
   const text = await r.text().catch(() => "");
@@ -248,7 +244,6 @@ async function fetchFalAtmoStatus(req, { job_id, status_url }) {
 }
 
 function pickFalVideoUrl(body) {
-  // provider endpoint: video_url + outputs döndürüyor (PPE uyumlu)
   const direct = body?.video_url || body?.video?.url || null;
   if (direct && String(direct).startsWith("http")) return direct;
 
@@ -260,7 +255,7 @@ function pickFalVideoUrl(body) {
   return hit ? pickUrl(hit) : null;
 }
 
-// ---------- R2 PERSIST ----------
+// ---------- R2 PERSIST (REMOTE URL -> R2) ----------
 async function copyToR2({ url, key, contentType }) {
   const publicBase =
     process.env.R2_PUBLIC_BASE_URL ||
@@ -306,6 +301,48 @@ async function copyToR2({ url, key, contentType }) {
   return `${base}/${key}`;
 }
 
+// ---------- R2 UPLOAD (LOCAL FILE -> R2) ----------
+// mux sonucu local dosyayı R2'ye atmak için.
+async function uploadFileToR2({ filePath, key, contentType }) {
+  const publicBase =
+    process.env.R2_PUBLIC_BASE_URL ||
+    process.env.R2_PUBLIC_BASE ||
+    "https://media.aivo.tr";
+
+  if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
+  if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
+  if (!process.env.R2_ACCESS_KEY_ID)
+    throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_SECRET_ACCESS_KEY)
+    throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+
+  const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+  const r2 = new S3Client({
+    region: "auto",
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+  });
+
+  const bodyStream = fs.createReadStream(filePath);
+
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: key,
+      Body: bodyStream,
+      ContentType: contentType || "application/octet-stream",
+      CacheControl: "public, max-age=31536000, immutable",
+    })
+  );
+
+  const base = String(publicBase).replace(/\/$/, "");
+  return `${base}/${key}`;
+}
+
 function needsPersist(url) {
   if (!url) return false;
   const u = String(url);
@@ -314,7 +351,6 @@ function needsPersist(url) {
   if (u.includes("media.aivo.tr/outputs/")) return false;
   if (u.includes("media.aivo.tr/outputs")) return false;
 
-  // provider signed url / dış url -> persist et
   return u.startsWith("http://") || u.startsWith("https://");
 }
 
@@ -340,7 +376,6 @@ module.exports = async (req, res) => {
       });
     }
 
-    // --- DB bağlantı ---
     const conn = getConn();
     if (!conn) {
       return res.status(500).json({
@@ -353,7 +388,6 @@ module.exports = async (req, res) => {
 
     const sql = neon(conn);
 
-    // --- DB’den job çek ---
     const rows = await sql`
       select * from jobs
       where id = ${job_id}::uuid
@@ -367,11 +401,7 @@ module.exports = async (req, res) => {
     }
 
     const provider = String(job.provider || job.meta?.provider || "").toLowerCase();
-
-    // app/type tespiti (sadece karar için)
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
-
-    // request_id tespiti (runway & debug amaçlı)
     const requestId = pickRequestIdFromJob(job);
 
     // =========================
@@ -381,7 +411,6 @@ module.exports = async (req, res) => {
       const current = String(job.status || "").toLowerCase();
       const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
-      // done/error ise tekrar poll şart değil (ama çıktı yoksa 1 kez daha deneyebiliriz)
       const shouldPoll =
         current !== "done" && current !== "error" ? true : outputsNow.length === 0;
 
@@ -398,7 +427,6 @@ module.exports = async (req, res) => {
           const stRaw = pickFalStatus(body);
           const dbSt = toDbStatus(stRaw);
 
-          // meta patch (debug için)
           const patchMeta = {
             fal: {
               status: String(stRaw || "").toUpperCase(),
@@ -409,7 +437,56 @@ module.exports = async (req, res) => {
           };
 
           if (dbSt === "done") {
-            const videoUrl = pickFalVideoUrl(body);
+            let videoUrl = pickFalVideoUrl(body);
+
+            // ✅ MP4 içine audio embed (mux) + R2 upload
+            // Not: create-atmo meta’ya audio_mode/audio_url yazıyorsa çalışır.
+            const audioMode = job?.meta?.audio_mode || null;
+            const audioUrl = job?.meta?.audio_url || null;
+            const silentCopy = Boolean(job?.meta?.silent_copy);
+
+            if (videoUrl && audioMode === "embed" && audioUrl && !silentCopy) {
+              let tmpDir = null;
+              try {
+                const r = await muxMp4WithAudio(videoUrl, audioUrl);
+                const outMp4 = r?.outMp4;
+                tmpDir = r?.tmpDir || null;
+
+                if (outMp4) {
+                  const output_id = `${requestId || "fal"}-with-audio`;
+                  const key = `outputs/atmo/${job_id}/${output_id}.mp4`;
+
+                  const muxedPublicUrl = await uploadFileToR2({
+                    filePath: outMp4,
+                    key,
+                    contentType: "video/mp4",
+                  });
+
+                  videoUrl = muxedPublicUrl;
+
+                  patchMeta.audio = {
+                    embedded: true,
+                    audio_mode: audioMode,
+                    audio_url: audioUrl,
+                    muxed_at: new Date().toISOString(),
+                  };
+                }
+              } catch (e) {
+                console.error("atmo_mux_failed", e);
+                patchMeta.audio = {
+                  ...(patchMeta.audio || {}),
+                  embedded: false,
+                  mux_error: String(e?.message || e),
+                };
+              } finally {
+                // best-effort temp cleanup
+                try {
+                  if (tmpDir) {
+                    fs.rmSync(tmpDir, { recursive: true, force: true });
+                  }
+                } catch {}
+              }
+            }
 
             if (videoUrl) {
               const outputs = [
@@ -467,10 +544,6 @@ module.exports = async (req, res) => {
             job.status = dbSt;
             job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
           }
-          // bilinmiyor -> dokunma
-        } else {
-          // Fal status okunamadıysa DB'ye dokunmuyoruz.
-          // İstersen burada job.meta’ya fail note basılabilir; şimdilik sessiz.
         }
       }
     }
@@ -485,7 +558,6 @@ module.exports = async (req, res) => {
         const stRaw = String(rr.task?.status || rr.task?.state || "");
         const dbSt = toDbStatus(stRaw);
 
-        // output url
         const rawUrl = pickRunwayVideoUrl(rr.task);
 
         const patchMeta = {
@@ -578,7 +650,7 @@ module.exports = async (req, res) => {
     }
 
     // =========================
-    // 3) PERSIST-TO-R2 (as-is)
+    // 3) PERSIST-TO-R2 (REMOTE URL -> R2) (as-is)
     // =========================
     let outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
