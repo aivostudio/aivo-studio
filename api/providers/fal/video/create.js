@@ -300,7 +300,7 @@ export default async function handler(req, res) {
 
   const status_url = extractFalStatusUrl(data);
 
-  // ✅ ATMOS: MP3 embed meta'yı zorla yaz (mux tetiklensin)
+   // ✅ ATMOS: MP3 embed meta'yı zorla yaz (mux tetiklensin)
   const audio_url_raw =
     pick(body, ["audio_url", "audioUrl", "audio.url"]) ||
     pick(meta, ["audio_url", "audioUrl", "audio.url"]) ||
@@ -315,11 +315,11 @@ export default async function handler(req, res) {
     pick(body, ["silent_copy", "silentCopy"]) ||
     pick(meta, ["silent_copy", "silentCopy"]) ||
     null;
-const audio_url = audio_url_raw ? String(audio_url_raw) : null;
 
-// 🔒 UI ne gönderirse göndersin, audio_url varsa embed zorunlu
-const audio_mode = audio_url ? "embed" : null;
-const silent_copy = audio_url ? false : null;
+  // ✅ audio_url varsa embed'i zorla
+  const audio_url = audio_url_raw ? String(audio_url_raw).trim() : null;
+  const audio_mode = audio_url ? "embed" : null;
+  const silent_copy = audio_url ? false : null;
 
   const metaObj = {
     ...(meta && typeof meta === "object" ? meta : {}),
