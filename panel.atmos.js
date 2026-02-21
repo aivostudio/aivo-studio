@@ -296,7 +296,7 @@
     };
 
     const maybeOverlayOne = async (job) => {
-      const jobId = String(job?.job_id || "").trim();
+     const jobId = String(job?.job_id || job?.id || "").trim();
       if (!jobId) return false;
 
       if (!isReady(job)) return false;
