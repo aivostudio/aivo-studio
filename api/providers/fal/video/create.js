@@ -147,6 +147,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ ok: false, error: "user_not_found", email });
   }
   const user_uuid = String(userRow[0].id);
+
   // =========================================================
   // ✅ MOCK MODE (kredisiz test)
   // - job_id geldiyse UPDATE eder, yeni insert etmez
@@ -223,6 +224,7 @@ export default async function handler(req, res) {
       outputs,
     });
   }
+
   // =========================================================
   // ✅ REAL MODE (Fal)
   // =========================================================
@@ -232,11 +234,7 @@ export default async function handler(req, res) {
   }
 
   // ✅ MODE'A GÖRE MOTOR SEÇİMİ (Basit = standard, Süper = pro)
-  const mode = String(
-    body?.mode ||
-    body?.meta?.mode ||
-    ""
-  ).toLowerCase();
+  const mode = String(body?.mode || body?.meta?.mode || "").toLowerCase();
 
   const falUrl =
     mode === "basic"
@@ -256,7 +254,7 @@ export default async function handler(req, res) {
         Accept: "application/json",
       },
       body: JSON.stringify({
-       ...(multi_prompt ? { multi_prompt } : { prompt: promptSafe }),
+        ...(multi_prompt ? { multi_prompt } : { prompt: promptSafe }),
         duration,
         aspect_ratio,
         generate_audio,
@@ -296,10 +294,32 @@ export default async function handler(req, res) {
       fal_response: data,
     });
   }
+
   const request_id =
     data?.request_id || data?.requestId || data?.id || data?._id || null;
 
   const status_url = extractFalStatusUrl(data);
+
+  // ✅ ATMOS: MP3 embed meta'yı zorla yaz (mux tetiklensin)
+  const audio_url_raw =
+    pick(body, ["audio_url", "audioUrl", "audio.url"]) ||
+    pick(meta, ["audio_url", "audioUrl", "audio.url"]) ||
+    null;
+
+  const audio_mode_raw =
+    pick(body, ["audio_mode", "audioMode"]) ||
+    pick(meta, ["audio_mode", "audioMode"]) ||
+    null;
+
+  const silent_copy_raw =
+    pick(body, ["silent_copy", "silentCopy"]) ||
+    pick(meta, ["silent_copy", "silentCopy"]) ||
+    null;
+
+  const audio_url = audio_url_raw ? String(audio_url_raw) : null;
+  const audio_mode = audio_url ? String(audio_mode_raw || "embed") : null;
+  const silent_copy =
+    audio_url ? (silent_copy_raw == null ? false : Boolean(silent_copy_raw)) : null;
 
   const metaObj = {
     ...(meta && typeof meta === "object" ? meta : {}),
@@ -307,6 +327,16 @@ export default async function handler(req, res) {
     kind: "atmo_video",
     provider: "fal",
     request_id,
+
+    // ✅ mux koşulları (status.js mux bloğu için)
+    ...(audio_url
+      ? {
+          audio_mode, // "embed"
+          audio_url, // R2 public url
+          silent_copy, // false
+        }
+      : {}),
+
     provider_response: {
       status_url: status_url || null,
       response_url: status_url || null,
@@ -314,10 +344,7 @@ export default async function handler(req, res) {
         ...(data && typeof data === "object" ? data : { raw_text: text }),
         status_url: status_url || data?.status_url || data?.statusUrl || null,
         response_url:
-          status_url ||
-          data?.response_url ||
-          data?.responseUrl ||
-          null,
+          status_url || data?.response_url || data?.responseUrl || null,
       },
     },
   };
