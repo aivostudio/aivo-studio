@@ -10,7 +10,7 @@ const fs = require("node:fs");
 // ⚠️ BU PATH'İ PROJENE GÖRE DÜZELT:
 // - Eğer dosyan media/muxMp4WithAudio.js ise ona göre yaz.
 // - Senin örneğin TS idi: src/server/media/muxMp4WithAudio.ts (build/compile durumuna göre .js gerekir)
-const { muxMp4WithAudio } = require("../../../src/server/media/muxMp4WithAudio"); // <-- AYARLA
+const { muxMp4WithAudio } = require("../_lib/mux-mp4-with-audio");// <-- AYARLA
 
 // ---------- helpers ----------
 function pickUrl(x) {
