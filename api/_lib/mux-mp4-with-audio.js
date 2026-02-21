@@ -1,23 +1,65 @@
 // api/_lib/mux-mp4-with-audio.js
 'use strict';
 
-const fs = require('fs');
-const fsp = require('fs/promises');
-const path = require('path');
-const os = require('os');
-const { execFile } = require('child_process');
-const { Readable } = require('stream');
-const ffmpegPath = require('ffmpeg-static');
+const fs = require('node:fs');
+const fsp = require('node:fs/promises');
+const path = require('node:path');
+const os = require('node:os');
+const { execFile } = require('node:child_process');
+const { Readable } = require('node:stream');
+
+/**
+ * Lazy-load ffmpeg-static so the whole API function doesn't crash at import time
+ * if dependency is missing in a deploy.
+ */
+function getFfmpegPath() {
+  try {
+    // eslint-disable-next-line global-require
+    const p = require('ffmpeg-static');
+    if (!p || typeof p !== 'string') return null;
+    return p;
+  } catch (_) {
+    return null;
+  }
+}
+
+function isWebReadableStream(x) {
+  return x && typeof x.getReader === 'function';
+}
+
+function toNodeReadable(body) {
+  if (!body) return null;
+
+  // Node 18+ fetch => Web ReadableStream
+  if (isWebReadableStream(body)) {
+    if (typeof Readable.fromWeb === 'function') return Readable.fromWeb(body);
+    return null;
+  }
+
+  // node-fetch or other => Node stream
+  if (typeof body.pipe === 'function') return body;
+
+  return null;
+}
 
 async function downloadToFile(url, outPath, opts = {}) {
-  const timeoutMs = typeof opts.timeoutMs === 'number' ? opts.timeoutMs : 120000;
+  const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : 180000;
 
-  // Node 18+ fetch var; yoksa fallback
-  const fetchFn = global.fetch || require('node-fetch');
+  // Prefer Node18 native fetch; fallback to node-fetch only if present.
+  const fetchFn =
+    typeof global.fetch === 'function'
+      ? global.fetch
+      : (() => {
+          try {
+            // eslint-disable-next-line global-require
+            return require('node-fetch');
+          } catch (e) {
+            throw new Error('fetch_missing: Node fetch unavailable and node-fetch not installed');
+          }
+        })();
 
-  // AbortController Node18'de var; node-fetch de destekler
   const ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  const t = ac ? setTimeout(() => ac.abort(), timeoutMs) : null;
+  const timer = ac ? setTimeout(() => ac.abort(), timeoutMs) : null;
 
   let res;
   try {
@@ -25,42 +67,47 @@ async function downloadToFile(url, outPath, opts = {}) {
   } catch (e) {
     throw new Error(`download_fetch_failed: ${url} ${String(e?.message || e)}`);
   } finally {
-    if (t) clearTimeout(t);
+    if (timer) clearTimeout(timer);
   }
 
   if (!res || !res.ok) {
     const text = res && res.text ? await res.text().catch(() => '') : '';
-    throw new Error(`download_failed: ${url} status=${res && res.status} ${text?.slice(0, 200) || ''}`);
+    throw new Error(
+      `download_failed: ${url} status=${res && res.status} ${String(text || '').slice(0, 200)}`
+    );
   }
 
-  // ✅ Vercel/Node: fetch body çoğu zaman Web ReadableStream -> Node stream'e çevir
-  const body = res.body;
-  const nodeStream =
-    body && typeof body.getReader === 'function'
-      ? Readable.fromWeb(body)
-      : body;
-
+  const nodeStream = toNodeReadable(res.body);
   if (!nodeStream || typeof nodeStream.pipe !== 'function') {
     throw new Error(`download_stream_invalid: ${url} (no pipe)`);
   }
 
+  await fsp.mkdir(path.dirname(outPath), { recursive: true }).catch(() => {});
+
   await new Promise((resolve, reject) => {
     const file = fs.createWriteStream(outPath);
-    nodeStream.pipe(file);
-    nodeStream.on('error', reject);
+
+    const onErr = (err) => {
+      try { file.destroy(); } catch (_) {}
+      reject(err);
+    };
+
+    file.on('error', onErr);
+    nodeStream.on('error', onErr);
+
     file.on('finish', resolve);
-    file.on('error', reject);
+    nodeStream.pipe(file);
   });
 
   return outPath;
 }
 
-function runFfmpeg(args) {
+function runFfmpeg(ffmpegPath, args) {
   return new Promise((resolve, reject) => {
     execFile(
       ffmpegPath,
       args,
-      { windowsHide: true, maxBuffer: 1024 * 1024 * 10 },
+      { windowsHide: true, maxBuffer: 1024 * 1024 * 20 },
       (err, stdout, stderr) => {
         if (err) {
           const msg = (stderr || stdout || '').toString().slice(0, 2000);
@@ -78,7 +125,8 @@ function runFfmpeg(args) {
  * Returns: { outMp4Path, tmpDir, cleanup() }
  */
 async function muxMp4WithAudio(videoUrl, audioUrl) {
-  if (!ffmpegPath) throw new Error('ffmpeg_static_missing');
+  const ffmpegPath = getFfmpegPath();
+  if (!ffmpegPath) throw new Error('ffmpeg_static_missing: add ffmpeg-static to dependencies');
   if (!videoUrl) throw new Error('missing_videoUrl');
   if (!audioUrl) throw new Error('missing_audioUrl');
 
@@ -87,30 +135,36 @@ async function muxMp4WithAudio(videoUrl, audioUrl) {
   const inAudio = path.join(tmpDir, 'in.audio');
   const outMp4Path = path.join(tmpDir, 'out.mp4');
 
-  await downloadToFile(videoUrl, inVideo, { timeoutMs: 180000 });
-  await downloadToFile(audioUrl, inAudio, { timeoutMs: 180000 });
+  try {
+    await downloadToFile(videoUrl, inVideo, { timeoutMs: 240000 });
+    await downloadToFile(audioUrl, inAudio, { timeoutMs: 240000 });
 
-  // -c:v copy => video stream aynen
-  // -c:a aac  => audio AAC'e
-  // -shortest => kısa olan bittiğinde bitir
-  // +faststart => mp4 hızlı başlasın
-  await runFfmpeg([
-    '-y',
-    '-i', inVideo,
-    '-i', inAudio,
-    '-c:v', 'copy',
-    '-c:a', 'aac',
-    '-b:a', '192k',
-    '-shortest',
-    '-movflags', '+faststart',
-    outMp4Path,
-  ]);
+    // -c:v copy => video stream aynen
+    // -c:a aac  => audio AAC'e
+    // -shortest => kısa olan bittiğinde bitir
+    // +faststart => mp4 hızlı başlasın
+    await runFfmpeg(ffmpegPath, [
+      '-y',
+      '-i', inVideo,
+      '-i', inAudio,
+      '-c:v', 'copy',
+      '-c:a', 'aac',
+      '-b:a', '192k',
+      '-shortest',
+      '-movflags', '+faststart',
+      outMp4Path,
+    ]);
 
-  async function cleanup() {
+    async function cleanup() {
+      try { await fsp.rm(tmpDir, { recursive: true, force: true }); } catch (_) {}
+    }
+
+    return { outMp4Path, tmpDir, cleanup };
+  } catch (e) {
+    // best-effort cleanup on failure too
     try { await fsp.rm(tmpDir, { recursive: true, force: true }); } catch (_) {}
+    throw e;
   }
-
-  return { outMp4Path, tmpDir, cleanup };
 }
 
 module.exports = { muxMp4WithAudio };
