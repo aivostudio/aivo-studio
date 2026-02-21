@@ -34,13 +34,9 @@ function run(cmd, args) {
 
 async function download(url, dest) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error("download_failed");
-  const file = fs.createWriteStream(dest);
-  await new Promise((resolve, reject) => {
-    res.body.pipe(file);
-    res.body.on("error", reject);
-    file.on("finish", resolve);
-  });
+  if (!res.ok) throw new Error(`download_failed:${res.status}`);
+  const ab = await res.arrayBuffer();
+  fs.writeFileSync(dest, Buffer.from(ab));
 }
 
 export default async function handler(req, res) {
