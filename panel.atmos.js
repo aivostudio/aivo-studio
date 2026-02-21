@@ -645,7 +645,6 @@ const maybeOverlayOne = async (job) => {
 
   const key = `${jobId}::logo`;
   if (window.__ATMO_OVERLAY_DONE__.has(key)) return;
-  window.__ATMO_OVERLAY_DONE__.add(key);
 
   const r = await fetch("/api/atmo/overlay-logo", {
     method: "POST",
@@ -661,11 +660,22 @@ const maybeOverlayOne = async (job) => {
     }),
   });
 
-  const j = await r.json();
+  let j = null;
+  try {
+    j = await r.json();
+  } catch (e) {
+    console.warn("[ATMO][overlay] bad json", e);
+  }
+
   if (!j?.ok || !j?.url) {
     console.warn("[ATMO][overlay] failed", j);
+    // ✅ fail olursa kilitleme yok (yeniden denesin)
+    window.__ATMO_OVERLAY_DONE__.delete(key);
     return;
   }
+
+  // ✅ SADECE başarıdan sonra kilitle (1 kez)
+  window.__ATMO_OVERLAY_DONE__.add(key);
 
   const next = {
     ...job,
