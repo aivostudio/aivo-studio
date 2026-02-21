@@ -315,11 +315,11 @@ export default async function handler(req, res) {
     pick(body, ["silent_copy", "silentCopy"]) ||
     pick(meta, ["silent_copy", "silentCopy"]) ||
     null;
+const audio_url = audio_url_raw ? String(audio_url_raw) : null;
 
-  const audio_url = audio_url_raw ? String(audio_url_raw) : null;
-  const audio_mode = audio_url ? String(audio_mode_raw || "embed") : null;
-  const silent_copy =
-    audio_url ? (silent_copy_raw == null ? false : Boolean(silent_copy_raw)) : null;
+// 🔒 UI ne gönderirse göndersin, audio_url varsa embed zorunlu
+const audio_mode = audio_url ? "embed" : null;
+const silent_copy = audio_url ? false : null;
 
   const metaObj = {
     ...(meta && typeof meta === "object" ? meta : {}),
