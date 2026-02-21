@@ -12,6 +12,7 @@ const POS = {
   bl: "24:H-h-24",
   tr: "W-w-24:24",
   tl: "24:24",
+  c: "(W-w)/2:(H-h)/2",
 };
 
 const SIZE = {
@@ -73,9 +74,10 @@ export default async function handler(req, res) {
     const sizeRatio = SIZE[logo_size] || SIZE.sm;
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
 
+    // 🔥 ÖNEMLİ: overlay çıktısını [v] olarak etiketliyoruz
     const filter = `
       [1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg];
-      [0:v][lg]overlay=${pos}:format=auto
+      [0:v][lg]overlay=${pos}:format=auto[v]
     `.replace(/\s+/g, "");
 
     await run(ffmpegPath, [
@@ -83,7 +85,7 @@ export default async function handler(req, res) {
       "-i", inputVideo,
       "-i", inputLogo,
       "-filter_complex", filter,
-      "-map", "0:v",
+      "-map", "[v]",        // 🔥 Artık filtrelenmiş videoyu map ediyoruz
       "-map", "0:a?",
       "-c:v", "libx264",
       "-preset", "veryfast",
@@ -95,7 +97,8 @@ export default async function handler(req, res) {
 
     const buffer = fs.readFileSync(outputVideo);
 
-    const key = `outputs/${app}/${id}/logo-overlay.mp4`;
+    // 🔥 Cache sorununu da kalıcı çözüyoruz (unique isim)
+    const key = `outputs/${app}/${id}/logo-overlay-${Date.now()}.mp4`;
 
     const publicUrl = await putObject({
       key,
@@ -103,7 +106,6 @@ export default async function handler(req, res) {
       contentType: "video/mp4",
     });
 
-    // cleanup
     [inputVideo, inputLogo, outputVideo].forEach((f) => {
       try { fs.unlinkSync(f); } catch {}
     });
