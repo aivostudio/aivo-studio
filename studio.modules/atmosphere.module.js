@@ -310,28 +310,30 @@
       else b.removeAttribute("title");
     });
   }
+// ---- R2 presign + upload (expects your backend)
+// Backend contract (recommended):
+// POST /api/r2/presign-put
+// body: { app:"atmo", kind:"image|logo|audio", filename, contentType }
+// resp: { ok:true, uploadUrl, publicUrl, key }   (publicUrl can be R2 public or your CDN)
+async function presignR2({ app, kind, filename, contentType }) {
+  const res = await fetch("/api/r2/presign-put", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: app || "atmo",
+      kind,
+      filename,
+      contentType
+    })
+  });
 
-  // ---- R2 presign + upload (expects your backend)
-  // Backend contract (recommended):
-  // POST /api/r2/presign
-  // body: { app:"atmo", kind:"image|logo|audio", filename, contentType }
-  // resp: { ok:true, uploadUrl, publicUrl, key }   (publicUrl can be R2 public or your CDN)
-  async function presignR2({ app, kind, filename, contentType }) {
-    const res = await fetch("/api/r2/presign-put", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app: app || "atmo",
-        kind,
-        filename,
-        contentType
-      })
-    });
-     if (!res.ok) throw new Error("presign_failed");
+  if (!res.ok) throw new Error("presign_failed");
   const data = await res.json();
   if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
+
   const uploadUrl = data.uploadUrl || data.upload_url;
   const publicUrl = data.publicUrl || data.public_url || data.url;
+
   if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
   return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
 }
@@ -364,8 +366,8 @@ async function handleUpload(root, kind, file) {
   if (!file) {
     setUploadUI(r, kind, { status: "empty", url: "", name: "" });
 
-    // ✅ LOGO global cleanup (panel otomasyonu için)
-    if (kind === "logo") {
+    // ✅ LOGO global cleanup (logo kaldırıldıysa)
+    if ((state?.uploads?.logo?.status || "") === "empty" || kind === "logo") {
       try { delete window.__ATMO_LOGO_PUBLIC_URL__; } catch {}
       try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
     }
@@ -384,9 +386,10 @@ async function handleUpload(root, kind, file) {
       name: out.name || file.name || ""
     });
 
-    // ✅ LOGO public_url -> global (panel.atmo.js otomasyonu buradan okuyacak)
-    if (kind === "logo" && out?.url) {
-      window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
+    // ✅ LOGO public_url -> global (kind mismatch olursa bile çalışsın)
+    const logoUrl = state?.uploads?.logo?.url || out?.url || "";
+    if (logoUrl) {
+      window.__ATMO_LOGO_PUBLIC_URL__ = logoUrl;
     }
 
     return out;
