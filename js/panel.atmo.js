@@ -412,6 +412,32 @@
 
       if (st.includes("complete") || st.includes("success") || st === "succeeded") {
         const url = pickVideoUrl(data);
+        // === AUTO LOGO OVERLAY (FAL complete anında) ===
+try {
+  const logoUrl = String(
+    window.__ATMO_LOGO_PUBLIC_URL__ ||
+    window.__ATMO_STATE__?.logo_public_url ||
+    ""
+  ).trim();
+
+  if (logoUrl && logoUrl.startsWith("http")) {
+    await fetch("/api/atmo/overlay-logo", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        app: "atmo",
+        request_id: rid,
+        video_url: url,
+        logo_url: logoUrl,
+        logo_pos: "br",
+        logo_size: "sm",
+        logo_opacity: 0.85
+      })
+    });
+  }
+} catch (e) {
+  console.warn("[ATMO overlay] error:", e);
+}
         if (!url) {
           setHeaderMeta("Tamamlandı (url yok)");
           return;
