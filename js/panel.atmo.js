@@ -389,163 +389,194 @@
       };
     }
 
-     async function pollFalOnce(rid, promptMaybe) {
-      if (destroyed) return;
-      rid = safeStr(rid);
-      if (!rid) return;
+    async function pollFalOnce(rid, promptMaybe) {
+  if (destroyed) return;
+  rid = safeStr(rid);
+  if (!rid) return;
 
-      let data;
-      try {
-        const r = await fetch(STATUS_URL(rid), { credentials: "include" });
-        data = await r.json();
-      } catch {
-        setHeaderMeta("Bağlantı sorunu");
-        return;
-      }
-
-      const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
-
-      if (st.includes("fail") || st === "error") {
-        setHeaderMeta("Hata");
-        return;
-      }
-
-      if (st.includes("complete") || st.includes("success") || st === "succeeded") {
-        let url = pickVideoUrl(data);
-
-        // ✅ URL normalize: overlay endpoint absolute URL ister (relative/proxy yüzünden parse fail oluyordu)
-        const normalizeVideoUrlForOverlay = (u) => {
-          u = safeStr(u);
-          if (!u) return "";
-          // /api/media/proxy?url=<ENCODED_HTTP_URL> ise gerçek url'i çıkar
-          if (u.includes("/api/media/proxy?url=")) {
-            try {
-              const i = u.indexOf("/api/media/proxy?url=");
-              const sub = u.slice(i);
-              const qs = sub.split("?")[1] || "";
-              const p = new URLSearchParams(qs);
-              const inner = p.get("url");
-              if (inner) return decodeURIComponent(inner);
-            } catch {}
-          }
-          // relative ise absolute yap
-          if (u.startsWith("/")) {
-            try { return new URL(u, window.location.origin).toString(); } catch {}
-          }
-          return u;
-        };
-
-        // === AUTO LOGO OVERLAY (FAL complete anında) ===
-        try {
-          const logoUrl = String(
-            window.__ATMO_LOGO_PUBLIC_URL__ ||
-            window.__ATMO_STATE__?.logo_public_url ||
-            ""
-          ).trim();
-
-          const overlayVideoUrl = normalizeVideoUrlForOverlay(url);
-
-          if (logoUrl && logoUrl.startsWith("http") && overlayVideoUrl && overlayVideoUrl.startsWith("http")) {
-            const res = await fetch("/api/atmo/overlay-logo", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({
-                app: "atmo",
-                request_id: rid,
-                video_url: overlayVideoUrl,
-                logo_url: logoUrl,
-                logo_pos: "br",
-                logo_size: "sm",
-                logo_opacity: 0.85
-              })
-            });
-
-            let j = null;
-            try { j = await res.json(); } catch {}
-
-            // ✅ overlay başarıyla döndüyse, bundan sonra her yerde overlay url'i kullan
-            if (j?.ok && j?.url) {
-              url = j.url;
-            }
-          }
-        } catch (e) {
-          console.warn("[ATMO overlay] error:", e);
-        }
-
-        if (!url) {
-          setHeaderMeta("Tamamlandı (url yok)");
-          return;
-        }
-
-        setHeaderMeta("Tamamlandı");
-
-        // geçici göster (DB’ye düşene kadar)
-        const tempId = `tmp_${rid}`;
-        state.ephemerals = [
-          {
-            job_id: tempId,
-            url,
-            status: "PROCESSING",
-            created_at: Date.now(),
-            prompt: promptMaybe || "",
-            meta: { app: APP_KEY, request_id: rid, aspect_ratio: safeStr(data?.aspect_ratio || "") }
-          },
-          ...(state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== tempId),
-        ];
-        render();
-
-        // PPE bridge
-        try {
-          if (window.PPE && typeof window.PPE.apply === "function") {
-            window.PPE.apply({
-              outputs: [{ type: "video", url, src: url, meta: { app: APP_KEY } }],
-              meta: { app: APP_KEY, request_id: rid },
-            });
-          }
-        } catch {}
-
-        // DB’den yenile
-        try { db && db.hydrate(true); } catch {}
-
-        if (timer) clearInterval(timer);
-        timer = null;
-        return;
-      }
-
-      setHeaderMeta("İşleniyor…");
-    }
-
-    setHeaderMeta("Hazır");
-    render();
-
-    function destroy() {
-      destroyed = true;
-      if (timer) clearInterval(timer);
-      timer = null;
-      try { db && db.destroy(); } catch {}
-      host.innerHTML = "";
-    }
-
-    return { destroy };
+  let data;
+  try {
+    const r = await fetch(STATUS_URL(rid), { credentials: "include" });
+    data = await r.json();
+  } catch {
+    setHeaderMeta("Bağlantı sorunu");
+    return;
   }
 
-  window.RightPanel.register(APP_KEY, {
-    header: {
-      title: "Atmosfer Video",
-      meta: "Hazır",
-      searchEnabled: false, // ✅ üstteki Ara... kalkar (manager destekliyorsa)
-      resetSearch: true
-    },
+  const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
 
-    mount(host) {
-      const panel = createAtmosPanel(host);
-      host.__ATMO_PANEL__ = panel;
-    },
+  if (st.includes("fail") || st === "error") {
+    setHeaderMeta("Hata");
+    return;
+  }
 
-    destroy(host) {
-      try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
-      host.__ATMO_PANEL__ = null;
-    },
-  });
-})();
+  if (st.includes("complete") || st.includes("success") || st === "succeeded") {
+    let url = pickVideoUrl(data);
+
+    // ✅ URL normalize: overlay endpoint absolute URL ister (relative/proxy yüzünden parse fail oluyordu)
+    const normalizeVideoUrlForOverlay = (u) => {
+      u = safeStr(u);
+      if (!u) return "";
+      // /api/media/proxy?url=<ENCODED_HTTP_URL> ise gerçek url'i çıkar
+      if (u.includes("/api/media/proxy?url=")) {
+        try {
+          const i = u.indexOf("/api/media/proxy?url=");
+          const sub = u.slice(i);
+          const qs = sub.split("?")[1] || "";
+          const p = new URLSearchParams(qs);
+          const inner = p.get("url");
+          if (inner) return decodeURIComponent(inner);
+        } catch {}
+      }
+      // relative ise absolute yap
+      if (u.startsWith("/")) {
+        try { return new URL(u, window.location.origin).toString(); } catch {}
+      }
+      return u;
+    };
+
+    // ✅ request_id -> job_id cache (overlay artık job_id istiyor)
+    window.__ATMO_RID_TO_JOBID__ = window.__ATMO_RID_TO_JOBID__ || new Map();
+
+    const resolveJobIdFromRid = async (rid) => {
+      try {
+        if (window.__ATMO_RID_TO_JOBID__.has(rid)) return window.__ATMO_RID_TO_JOBID__.get(rid);
+
+        // 1) DB state içinden yakala (en hızlı)
+        const stItems = (window.DBJobs?.state?.items || []);
+        for (const j of stItems) {
+          const jid = safeStr(j?.job_id || j?.id);
+          const jr  =
+            safeStr(j?.provider_job_id) ||
+            safeStr(j?.request_id) ||
+            safeStr(j?.meta?.request_id) ||
+            safeStr(j?.meta?.provider_job_id);
+
+          if (jid && jr && jr === rid) {
+            window.__ATMO_RID_TO_JOBID__.set(rid, jid);
+            return jid;
+          }
+        }
+
+        // 2) list endpoint’ten bul (fallback)
+        const list = await fetch(`/api/jobs/list?app=atmo`, { credentials: "include" }).then(r => r.json());
+        const items = Array.isArray(list?.items) ? list.items : [];
+
+        for (const j of items) {
+          const jid = safeStr(j?.job_id || j?.id);
+          const jr  =
+            safeStr(j?.provider_job_id) ||
+            safeStr(j?.request_id) ||
+            safeStr(j?.meta?.request_id) ||
+            safeStr(j?.meta?.provider_job_id);
+
+          if (jid && jr && jr === rid) {
+            window.__ATMO_RID_TO_JOBID__.set(rid, jid);
+            return jid;
+          }
+        }
+      } catch {}
+
+      return "";
+    };
+
+    // === AUTO LOGO OVERLAY (FAL complete anında) ===
+    try {
+      const logoUrl = String(
+        window.__ATMO_LOGO_PUBLIC_URL__ ||
+        window.__ATMO_STATE__?.logo_public_url ||
+        ""
+      ).trim();
+
+      const overlayVideoUrl = normalizeVideoUrlForOverlay(url);
+      const jobId = await resolveJobIdFromRid(rid);
+
+      if (
+        logoUrl && logoUrl.startsWith("http") &&
+        overlayVideoUrl && overlayVideoUrl.startsWith("http") &&
+        jobId
+      ) {
+        const res = await fetch("/api/atmo/overlay-logo", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            app: "atmo",
+            job_id: jobId,          // ✅ kritik: job_id
+            video_url: overlayVideoUrl,
+            logo_url: logoUrl,
+            logo_pos: "br",
+            logo_size: "sm",
+            logo_opacity: 0.85
+          })
+        });
+
+        let j = null;
+        try { j = await res.json(); } catch {}
+
+        // ✅ overlay başarıyla döndüyse, panel/PPE’de overlay url’i kullan
+        if (j?.ok && j?.url) {
+          url = j.url;
+        } else {
+          console.warn("[ATMO overlay] failed:", j);
+        }
+      }
+    } catch (e) {
+      console.warn("[ATMO overlay] error:", e);
+    }
+
+    if (!url) {
+      setHeaderMeta("Tamamlandı (url yok)");
+      return;
+    }
+
+    setHeaderMeta("Tamamlandı");
+
+    // geçici göster (DB’ye düşene kadar)
+    const tempId = `tmp_${rid}`;
+    state.ephemerals = [
+      {
+        job_id: tempId,
+        url,
+        status: "PROCESSING",
+        created_at: Date.now(),
+        prompt: promptMaybe || "",
+        meta: { app: APP_KEY, request_id: rid, aspect_ratio: safeStr(data?.aspect_ratio || "") }
+      },
+      ...(state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== tempId),
+    ];
+    render();
+
+    // PPE bridge
+    try {
+      if (window.PPE && typeof window.PPE.apply === "function") {
+        window.PPE.apply({
+          outputs: [{ type: "video", url, src: url, meta: { app: APP_KEY } }],
+          meta: { app: APP_KEY, request_id: rid },
+        });
+      }
+    } catch {}
+
+    // DB’den yenile (overlay output DB’ye yazıldıysa burada düşer)
+    try { db && db.hydrate(true); } catch {}
+
+    if (timer) clearInterval(timer);
+    timer = null;
+    return;
+  }
+
+  setHeaderMeta("İşleniyor…");
+}
+
+setHeaderMeta("Hazır");
+render();
+
+function destroy() {
+  destroyed = true;
+  if (timer) clearInterval(timer);
+  timer = null;
+  try { db && db.destroy(); } catch {}
+  host.innerHTML = "";
+}
+
+return { destroy };
