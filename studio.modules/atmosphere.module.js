@@ -327,58 +327,76 @@
         contentType
       })
     });
-    if (!res.ok) throw new Error("presign_failed");
-    const data = await res.json();
-    if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
-    const uploadUrl = data.uploadUrl || data.upload_url;
-    const publicUrl = data.publicUrl || data.public_url || data.url;
-    if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
-    return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
-  }
+     if (!res.ok) throw new Error("presign_failed");
+  const data = await res.json();
+  if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
+  const uploadUrl = data.uploadUrl || data.upload_url;
+  const publicUrl = data.publicUrl || data.public_url || data.url;
+  if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
+  return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
+}
 
-  async function uploadToR2(file, { app = "atmo", kind }) {
-    if (!file) throw new Error("missing_file");
-    const contentType = file.type || "application/octet-stream";
-    const filename = file.name || `${kind || "file"}-${Date.now()}`;
+async function uploadToR2(file, { app = "atmo", kind }) {
+  if (!file) throw new Error("missing_file");
+  const contentType = file.type || "application/octet-stream";
+  const filename = file.name || `${kind || "file"}-${Date.now()}`;
 
-    const { uploadUrl, publicUrl } = await presignR2({
-      app,
-      kind,
-      filename,
-      contentType
-    });
+  const { uploadUrl, publicUrl } = await presignR2({
+    app,
+    kind,
+    filename,
+    contentType
+  });
 
-    const put = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": contentType },
-      body: file
-    });
-    if (!put.ok) throw new Error("r2_put_failed");
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: file
+  });
+  if (!put.ok) throw new Error("r2_put_failed");
 
-    return { url: publicUrl, name: filename };
-  }
+  return { url: publicUrl, name: filename };
+}
 
-  async function handleUpload(root, kind, file) {
-    const r = root || getAtmoPanelRoot() || document;
-    if (!file) {
-      setUploadUI(r, kind, { status: "empty", url: "", name: "" });
-      return;
+async function handleUpload(root, kind, file) {
+  const r = root || getAtmoPanelRoot() || document;
+
+  if (!file) {
+    setUploadUI(r, kind, { status: "empty", url: "", name: "" });
+
+    // ✅ LOGO global cleanup (panel otomasyonu için)
+    if (kind === "logo") {
+      try { delete window.__ATMO_LOGO_PUBLIC_URL__; } catch {}
+      try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
     }
 
-    setUploadUI(r, kind, { status: "uploading", url: "", name: file.name || "" });
-
-    try {
-      const out = await uploadToR2(file, { app: "atmo", kind });
-      setUploadUI(r, kind, { status: "ready", url: out.url, name: out.name || file.name || "" });
-      return out;
-    } catch (e) {
-      console.error("[ATM][R2] upload error:", kind, e);
-      setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
-      try { window.toast?.error?.("Yükleme hatası"); } catch {}
-      return null;
-    }
+    return;
   }
 
+  setUploadUI(r, kind, { status: "uploading", url: "", name: file.name || "" });
+
+  try {
+    const out = await uploadToR2(file, { app: "atmo", kind });
+
+    setUploadUI(r, kind, {
+      status: "ready",
+      url: out.url,
+      name: out.name || file.name || ""
+    });
+
+    // ✅ LOGO public_url -> global (panel.atmo.js otomasyonu buradan okuyacak)
+    if (kind === "logo" && out?.url) {
+      window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
+    }
+
+    return out;
+  } catch (e) {
+    console.error("[ATM][R2] upload error:", kind, e);
+    setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
+    try { window.toast?.error?.("Yükleme hatası"); } catch {}
+    return null;
+  }
+}
   // ------------------------------------------------------------
   // 3) Sync helpers (hidden legacy inputs etc.)
   // ------------------------------------------------------------
