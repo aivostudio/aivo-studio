@@ -596,6 +596,95 @@ if (thumb) {
           const tb = new Date(b?.created_at || b?.createdAt || Date.now()).getTime();
           return tb - ta;
         });
+             // ============================
+      // ✅ AUTO LOGO OVERLAY (READY -> /api/atmo/overlay-logo)
+      // Yer: onChange içinde, render(merged); satırının HEMEN ÜSTÜ
+      // ============================
+
+      window.__ATMO_OVERLAY_DONE__ = window.__ATMO_OVERLAY_DONE__ || new Set();
+      window.__ATMO_LOGO_PUBLIC_URL__ =
+        window.__ATMO_LOGO_PUBLIC_URL__ ||
+        window.__ATMO_STATE__?.logo_public_url ||
+        window.__ATMO_STATE__?.logo_url ||
+        window.__ATMO_STATE__?.logoUrl ||
+        "";
+
+      const isReady = (job) => {
+        const st = norm(job?.db_status || job?.status || job?.state).toUpperCase();
+        return st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC");
+      };
+
+      const hasLogoOverlayOutput = (job) => {
+        const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+        return outs.some((o) => norm(o?.meta?.overlay) === "logo");
+      };
+
+      const maybeOverlayOne = async (job) => {
+        const jobId = String(job?.job_id || "").trim();
+        if (!jobId) return;
+
+        if (!isReady(job)) return;
+
+        const logoUrl = String(window.__ATMO_LOGO_PUBLIC_URL__ || "").trim();
+        if (!logoUrl || !logoUrl.startsWith("http")) return;
+
+        if (hasLogoOverlayOutput(job)) return;
+
+        const out = pickBestVideoOutput(job);
+        const videoUrl = String(out?.url || "").trim();
+        if (!videoUrl || !videoUrl.startsWith("http") && !videoUrl.startsWith("/")) return;
+
+        const key = `${jobId}::logo`;
+        if (window.__ATMO_OVERLAY_DONE__.has(key)) return;
+        window.__ATMO_OVERLAY_DONE__.add(key);
+
+        const r = await fetch("/api/atmo/overlay-logo", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            app: "atmo",
+            job_id: jobId,
+            video_url: videoUrl,
+            logo_url: logoUrl,
+            logo_pos: "br",
+            logo_size: "sm",
+            logo_opacity: 0.85,
+          }),
+        });
+
+        const j = await r.json();
+        if (!j?.ok || !j?.url) {
+          console.warn("[ATMO][overlay] failed", j);
+          return;
+        }
+
+        // ✅ sonucu aynı job'ın outputs'una "en başa" ekle (pickBestVideoOutput bunu alır)
+        const next = {
+          ...job,
+          outputs: [
+            {
+              type: "video",
+              url: j.url,
+              meta: { app: "atmo", overlay: "logo" },
+            },
+            ...(Array.isArray(job.outputs) ? job.outputs : []),
+          ],
+        };
+
+        // ✅ DB gelene kadar optimistic map’te göster
+        optimistic.set(jobId, next);
+
+        // ✅ UI’yı anında güncelle
+        render(Array.from(byId.values()).map((jj) => {
+          const id = String(jj?.job_id || "").trim();
+          return id === jobId ? next : jj;
+        }));
+      };
+
+      // Sadece ekranda görünen merged list üzerinden dene (spam yok)
+      for (const job of merged) {
+        try { maybeOverlayOne(job); } catch {}
+      }
         render(merged);
         setStatus("İşleniyor…");
       } catch {}
