@@ -638,10 +638,19 @@ const maybeOverlayOne = async (job) => {
 
   if (hasLogoOverlayOutput(job)) return;
 
-  const out = pickBestVideoOutput(job);
-  const videoUrl = String(out?.url || "").trim();
-  if (!videoUrl) return;
-  if (!videoUrl.startsWith("http") && !videoUrl.startsWith("/")) return;
+ const out = pickBestVideoOutput(job);
+
+const videoUrl = String(
+  out?.url ||
+  job?.video_url ||
+  job?.videoUrl ||
+  job?.video?.url ||
+  job?.result?.video_url ||
+  ""
+).trim();
+
+if (!videoUrl) return;
+if (!videoUrl.startsWith("http") && !videoUrl.startsWith("/")) return;
 
   const key = `${jobId}::logo`;
   if (window.__ATMO_OVERLAY_DONE__.has(key)) return;
