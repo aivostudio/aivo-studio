@@ -778,12 +778,6 @@ const failureReason =
 // =========================
 // AUTO LOGO OVERLAY (ATMO)
 // =========================
-
-// DEBUG PING (must be inside handler where req/res exist)
-if (String(req?.query?.ping || "") === "1") {
-  return res.status(200).json({ ok: true, ping: true, ts: Date.now() });
-}
-
 try {
   const isAtmo =
     job?.app === "atmo" ||
