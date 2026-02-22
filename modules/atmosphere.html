@@ -320,27 +320,52 @@
           }
         </style>
 
-        <script>
-          (() => {
-            const bindName = (inputId, labelId) => {
-              const input = document.getElementById(inputId);
-              const label = document.getElementById(labelId);
-              if (!input || !label) return;
+      <script>
+  (() => {
+    const bindName = (inputId, labelId) => {
+      const input = document.getElementById(inputId);
+      const label = document.getElementById(labelId);
+      if (!input || !label) return;
 
-              const show = () => {
-                const f = input.files && input.files[0];
-                label.textContent = f ? f.name : "Dosya seçilmedi";
-              };
+      const show = () => {
+        const f = input.files && input.files[0];
+        label.textContent = f ? f.name : "Dosya seçilmedi";
+      };
 
-              input.addEventListener("change", show);
-              show();
-            };
+      input.addEventListener("change", show);
+      show();
+    };
 
-            bindName("atmLogoFile", "atmLogoFileName");
-            bindName("atmAudioFile", "atmAudioFileName");
-          })();
-        </script>
+    // ✅ Dosya adları
+    bindName("atmLogoFile", "atmLogoFileName");
+    bindName("atmAudioFile", "atmAudioFileName");
 
+    // ✅ Thumbnail: logo seçilince 44x44 kutuya bas
+    const logoInput = document.getElementById("atmLogoFile");
+    const thumbImg = document.querySelector('#atmPersonalCard img[data-atmo-logo-target]');
+    const thumbSlot = document.querySelector('#atmPersonalCard .atmLogoThumb');
+
+    const updateThumb = () => {
+      if (!logoInput || !thumbImg || !thumbSlot) return;
+
+      const f = logoInput.files && logoInput.files[0];
+      if (!f) {
+        thumbSlot.style.display = "flex";
+        thumbImg.removeAttribute("src");
+        return;
+      }
+
+      const url = URL.createObjectURL(f);
+      thumbSlot.style.display = "flex";
+      thumbImg.src = url;
+    };
+
+    if (logoInput) {
+      logoInput.addEventListener("change", updateThumb);
+      updateThumb();
+    }
+  })();
+</script>
       </div><!-- /MODE PANEL basic -->
       <!-- ================= SUPER MODE ================= -->
       <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
