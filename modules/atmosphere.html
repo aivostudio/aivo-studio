@@ -371,7 +371,7 @@
       </div>
     </div>
 
-    <!-- ✅ PRO: Logo + Audio (Basic upload hattına bağlı) -->
+    <!-- ✅ PRO: Logo + Audio (Basit Mod’daki upload mantığıyla) -->
     <div class="atmProRefs">
 
       <!-- üst satır: Logo başlığı + pozisyon -->
@@ -382,37 +382,38 @@
           <option value="tr">Sağ Üst</option>
           <option value="bl">Sol Alt</option>
           <option value="br" selected>Sağ Alt</option>
+          <option value="center_small">Ortada (küçük)</option>
         </select>
       </div>
 
       <!-- butonlar -->
       <div class="atmProRefsBtns">
         <label class="btn atmFileBtn" style="cursor:pointer;">
-          <!-- ✅ HOOK: JS bunu yakalayıp presign-put çalıştıracak -->
-          <input type="file" id="atmProLogoFile" accept="image/*" hidden data-atm-upload="logo">
+          <input type="file" id="atmProLogoFile" accept="image/*" hidden>
           🖼️ Logo Seç
         </label>
 
         <label class="btn atmFileBtn" style="cursor:pointer;">
-          <!-- ✅ HOOK: JS bunu yakalayıp presign-put çalıştıracak -->
-          <input type="file" id="atmProAudioFile" accept="audio/*" hidden data-atm-upload="audio">
+          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
           🎵 Audio Seç
         </label>
       </div>
 
-      <!-- ✅ meta satırı: dosya adları + logo thumb (kompakt, sabit yükseklik) -->
+      <!-- ✅ meta (thumbnail yok) -->
       <div class="atmProRefsMeta">
-        <div>
-          <div class="atmFileName" data-atm-upload-name="logo">Dosya seçilmedi</div>
+        <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
+        <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
+      </div>
 
-          <!-- ✅ thumb: PPE / upload preview buraya basabilir -->
-          <div class="atmLogoThumb--pro" aria-hidden="true">
-            <img data-atmo-logo-target data-atm-upload-preview="logo" alt="" style="display:block;">
-          </div>
+      <!-- ✅ küçük durum etiketi -->
+      <div class="atmProRefsBottom">
+        <div id="atmProLogoStatus"
+             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+          Hazır ✓
         </div>
-
-        <div>
-          <div class="atmFileName" data-atm-upload-name="audio">Dosya seçilmedi</div>
+        <div id="atmProAudioStatus"
+             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+          Hazır ✓
         </div>
       </div>
 
@@ -463,30 +464,19 @@
       text-overflow:ellipsis;
     }
 
+    #atmSuperPromptCard .atmProRefsBottom{
+      display:flex;
+      gap:12px;
+      margin-top:12px;
+      align-items:center;
+      justify-content:flex-start;
+    }
+
     #atmSuperPromptCard .atmProSelect{
       width:100%;
       min-width:0;
     }
 
-    /* Thumbnail (Basic ile aynı his) */
-    #atmSuperPromptCard .atmLogoThumb--pro{
-      width:44px;
-      height:44px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.22);
-      overflow:hidden;
-      margin-top:10px;
-    }
-    #atmSuperPromptCard .atmLogoThumb--pro img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-      opacity:.95;
-    }
-
-    /* küçük ekranda tek kolon */
     @media (max-width: 980px){
       #atmSuperPromptCard .atmProRefsBtns,
       #atmSuperPromptCard .atmProRefsMeta{
@@ -496,8 +486,191 @@
         flex-direction:column;
         align-items:stretch;
       }
+      #atmSuperPromptCard .atmProRefsBottom{
+        flex-direction:column;
+        align-items:flex-start;
+      }
     }
   </style>
+
+  <script>
+    (() => {
+      const qs = (s, r=document) => r.querySelector(s);
+
+      // state garanti
+      window.__ATM_V2__ = window.__ATM_V2__ || {};
+      window.__ATM_V2__.uploads = window.__ATM_V2__.uploads || {
+        image: { status: "empty", url: "", name: "" },
+        logo:  { status: "empty", url: "", name: "" },
+        audio: { status: "empty", url: "", name: "" }
+      };
+
+      const uploads = window.__ATM_V2__.uploads;
+
+      const setStatus = (el, status) => {
+        if (!el) return;
+        if (status === "ready") {
+          el.style.display = "";
+          el.textContent = "Hazır ✓";
+          el.style.border = "1px solid rgba(120,255,190,.22)";
+          el.style.background = "rgba(120,255,190,.08)";
+        } else if (status === "uploading") {
+          el.style.display = "";
+          el.textContent = "Yükleniyor…";
+          el.style.border = "1px solid rgba(255,255,255,.14)";
+          el.style.background = "rgba(255,255,255,.06)";
+        } else if (status === "error") {
+          el.style.display = "";
+          el.textContent = "Hata";
+          el.style.border = "1px solid rgba(255,120,120,.25)";
+          el.style.background = "rgba(255,120,120,.10)";
+        } else {
+          el.style.display = "none";
+        }
+      };
+
+      async function presignR2({ app, kind, filename, contentType }) {
+        const res = await fetch("/api/r2/presign-put", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            app: app || "atmo",
+            kind,
+            filename,
+            contentType
+          })
+        });
+
+        if (!res.ok) throw new Error("presign_failed");
+        const data = await res.json();
+        if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
+
+        const uploadUrl = data.uploadUrl || data.upload_url;
+        const publicUrl = data.publicUrl || data.public_url || data.url;
+
+        if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
+        return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
+      }
+
+      async function uploadToR2(file, { app="atmo", kind }) {
+        const contentType = file.type || "application/octet-stream";
+        const filename = file.name || `${kind}-${Date.now()}`;
+
+        const { uploadUrl, publicUrl } = await presignR2({
+          app,
+          kind,
+          filename,
+          contentType
+        });
+
+        const put = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": contentType },
+          body: file
+        });
+
+        if (!put.ok) throw new Error("r2_put_failed");
+        return { url: publicUrl, name: filename };
+      }
+
+      // UI refs
+      const logoInput  = qs("#atmProLogoFile");
+      const audioInput = qs("#atmProAudioFile");
+
+      const logoName   = qs("#atmProLogoFileName");
+      const audioName  = qs("#atmProAudioFileName");
+
+      const logoStatus = qs("#atmProLogoStatus");
+      const audioStatus= qs("#atmProAudioStatus");
+
+      // Pos -> global state’e yaz (payload senin buildProPayload içinde state.logoPos’a bakıyorsa)
+      const posSel = qs("#atmProLogoPos");
+      if (posSel) {
+        posSel.addEventListener("change", () => {
+          try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+        });
+        try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+      }
+
+      async function onLogoChange() {
+        const f = logoInput && logoInput.files && logoInput.files[0];
+        if (!f) {
+          if (logoName) logoName.textContent = "Dosya seçilmedi";
+          uploads.logo = { status:"empty", url:"", name:"" };
+          setStatus(logoStatus, "empty");
+          try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+          return;
+        }
+
+        if (logoName) logoName.textContent = "Yükleniyor…";
+        uploads.logo = { status:"uploading", url:"", name: f.name || "" };
+        setStatus(logoStatus, "uploading");
+
+        try {
+          const out = await uploadToR2(f, { app:"atmo", kind:"logo" });
+          uploads.logo = { status:"ready", url: out.url, name: out.name || f.name || "" };
+          if (logoName) logoName.textContent = uploads.logo.name;
+          setStatus(logoStatus, "ready");
+
+          // global logo url (overlay/pipeline için)
+          window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
+
+        } catch (e) {
+          console.error("[ATM][PRO] logo upload error:", e);
+          uploads.logo = { status:"error", url:"", name: f.name || "" };
+          if (logoName) logoName.textContent = "Yükleme hatası";
+          setStatus(logoStatus, "error");
+          try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
+        }
+      }
+
+      async function onAudioChange() {
+        const f = audioInput && audioInput.files && audioInput.files[0];
+        if (!f) {
+          if (audioName) audioName.textContent = "Dosya seçilmedi";
+          uploads.audio = { status:"empty", url:"", name:"" };
+          setStatus(audioStatus, "empty");
+          return;
+        }
+
+        if (audioName) audioName.textContent = "Yükleniyor…";
+        uploads.audio = { status:"uploading", url:"", name: f.name || "" };
+        setStatus(audioStatus, "uploading");
+
+        try {
+          const out = await uploadToR2(f, { app:"atmo", kind:"audio" });
+          uploads.audio = { status:"ready", url: out.url, name: out.name || f.name || "" };
+          if (audioName) audioName.textContent = uploads.audio.name;
+          setStatus(audioStatus, "ready");
+        } catch (e) {
+          console.error("[ATM][PRO] audio upload error:", e);
+          uploads.audio = { status:"error", url:"", name: f.name || "" };
+          if (audioName) audioName.textContent = "Yükleme hatası";
+          setStatus(audioStatus, "error");
+          try { window.toast?.error?.("Audio yükleme hatası"); } catch {}
+        }
+      }
+
+      if (logoInput) {
+        logoInput.addEventListener("change", onLogoChange);
+      }
+      if (audioInput) {
+        audioInput.addEventListener("change", onAudioChange);
+      }
+
+      // İlk render: state’ten doldur (sayfa refresh’te)
+      try {
+        if (uploads.logo?.status === "ready" && uploads.logo?.name && logoName) {
+          logoName.textContent = uploads.logo.name;
+          setStatus(logoStatus, "ready");
+        }
+        if (uploads.audio?.status === "ready" && uploads.audio?.name && audioName) {
+          audioName.textContent = uploads.audio.name;
+          setStatus(audioStatus, "ready");
+        }
+      } catch {}
+    })();
+  </script>
 
   <!-- (2) LIGHT · EXPORT · MOOD -->
   <div class="card" id="atmProMoodExport" style="margin-top:14px;">
