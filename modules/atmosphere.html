@@ -386,18 +386,40 @@
         </select>
       </div>
 
-      <!-- butonlar -->
-      <div class="atmProRefsBtns">
-        <label class="btn atmFileBtn" style="cursor:pointer;">
-          <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-          🖼️ Logo Seç
-        </label>
+     <!-- butonlar -->
+<div class="atmProRefsBtns">
 
-        <label class="btn atmFileBtn" style="cursor:pointer;">
-          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-          🎵 Audio Seç
-        </label>
+  <!-- LOGO -->
+  <div>
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+      🖼️ Logo Seç
+    </label>
+
+    <!-- ✅ Dosya adı -->
+    <div class="atmFileMeta">
+      <div class="atmFileName" id="atmProLogoFileName">
+        Dosya seçilmedi
       </div>
+    </div>
+  </div>
+
+  <!-- AUDIO -->
+  <div>
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+      🎵 Audio Seç
+    </label>
+
+    <!-- ✅ Dosya adı -->
+    <div class="atmFileMeta">
+      <div class="atmFileName" id="atmProAudioFileName">
+        Dosya seçilmedi
+      </div>
+    </div>
+  </div>
+
+</div>
 
       <!-- ✅ meta (thumbnail yok) -->
       <div class="atmProRefsMeta">
