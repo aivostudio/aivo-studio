@@ -394,3 +394,11 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* === EXTRA SAĞ BOŞLUK / DİKEY ÇİZGİYİ KALDIR === */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after{
+  display: none !important;
+  content: none !important;
+}
