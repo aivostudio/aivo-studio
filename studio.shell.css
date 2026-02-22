@@ -346,31 +346,3 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* ==========================================
-   ATMOSFER: global stroke’u sadece burada sustur
-   sonra içeriye kendi frame’ini çiz
-   ========================================== */
-
-/* 1) Atmosfer moduleHost subtree’sinde tüm stroke çizgilerini kapat */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]{
-  --stroke-w: 0px !important;  /* 🔥 kritik: “duvar çizgisi” kaynağı bu */
-}
-
-/* 2) Atmosfer’in kendi paneline içten frame çiz */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
-  > section.main-panel[data-module="atmosphere"]{
-  position: relative;
-  border-radius: var(--card-radius);
-  padding: 18px; /* frame içerde kalsın */
-}
-
-/* 3) İç frame (Atmosfer’in içine giren çizgi) */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
-  > section.main-panel[data-module="atmosphere"]::before{
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1.5px solid rgba(255,255,255,.07); /* istersen .09 yaparız */
-  pointer-events: none;
-}
