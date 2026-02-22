@@ -117,7 +117,7 @@
           </div>
         </div>
 
-        <!-- (4) PERSONALIZATION (Aspect + Logo + Audio) + CTA INSIDE (REVİZE) -->
+        <!-- (4) PERSONALIZATION (Aspect + Opacity + SilentCopy + Logo + Audio) + CTA INSIDE (REVİZE) -->
         <div class="card" id="atmPersonalCard">
           <div class="card-header">
             <div>
@@ -126,10 +126,10 @@
             </div>
           </div>
 
-          <!-- 3'lü grid: Oran + Logo + Audio -->
+          <!-- 3'lü grid: Oran(+opaklık+sessiz) + Logo + Audio -->
           <div class="atmPersGrid">
 
-            <!-- 1) Oran -->
+            <!-- 1) Oran + Opaklık + Spotify sessiz -->
             <div class="atmPersCol">
               <div class="form-label">Oran</div>
               <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
@@ -137,6 +137,16 @@
                 <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
                 <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
               </div>
+
+              <div class="atmOpacityRow">
+                <div class="form-label">Opaklık</div>
+                <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+              </div>
+
+              <label class="atmCheckRow">
+                <input type="checkbox" id="atmSilentCopy" checked>
+                Spotify Canvas için sessiz kopya üret
+              </label>
             </div>
 
             <!-- 2) Logo -->
@@ -171,11 +181,6 @@
                   <option value="md">Orta</option>
                 </select>
               </div>
-
-              <div class="atmOpacityRow">
-                <div class="form-label">Opaklık</div>
-                <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
-              </div>
             </div>
 
             <!-- 3) Audio -->
@@ -202,11 +207,6 @@
                   <option value="trim">Kırp</option>
                 </select>
               </div>
-
-              <label class="atmCheckRow">
-                <input type="checkbox" id="atmSilentCopy" checked>
-                Spotify Canvas için sessiz kopya üret
-              </label>
             </div>
 
             <!-- CTA (BASIC) -->
@@ -238,7 +238,7 @@
             gap:10px;
             margin-top:10px;
           }
-          #atmPersonalCard .atmOpacityRow{ margin-top:10px; }
+          #atmPersonalCard .atmOpacityRow{ margin-top:12px; }
 
           #atmPersonalCard .atmCheckRow{
             display:flex;
@@ -255,12 +255,6 @@
             white-space:nowrap;
             overflow:hidden;
             text-overflow:ellipsis;
-          }
-          #atmPersonalCard .atmFileHint{
-            margin-top:4px;
-            font-size:12px;
-            opacity:.65;
-            line-height:1.35;
           }
 
           /* CTA wrapper (sadece buton) */
@@ -317,7 +311,6 @@
         </script>
 
       </div><!-- /MODE PANEL basic -->
-
       <!-- ================= SUPER MODE ================= -->
       <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
