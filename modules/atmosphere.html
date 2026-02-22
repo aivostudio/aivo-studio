@@ -153,34 +153,39 @@
             <div class="atmPersCol">
               <div class="form-label">Logo</div>
 
-             <!-- ✅ Buton aynı satır -->
-<div class="atmLogoTop">
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmLogoFile" accept="image/*" hidden>
-    🏷️ Logo Seç
-  </label>
-</div>
+              <!-- ✅ Buton + Thumbnail aynı satır -->
+              <div class="atmLogoTop">
+                <label class="btn atmFileBtn" style="cursor:pointer;">
+                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
+                  🏷️ Logo Seç
+                </label>
 
-<!-- ✅ Dosya adı tek satır / ellipsis -->
-<div class="atmFileMeta">
-  <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
-</div>
+                <!-- ✅ Thumbnail slot: SABİT, asla alta itmez -->
+                <div class="atmLogoThumb" aria-hidden="true">
+                  <img data-atmo-logo-target alt="" />
+                </div>
+              </div>
 
-<div class="atmRow2">
-  <select id="atmLogoPos" class="input">
-    <option value="tl">Sol Üst</option>
-    <option value="tr">Sağ Üst</option>
-    <option value="bl">Sol Alt</option>
-    <option value="br" selected>Sağ Alt</option>
-    <option value="center_small">Ortada (küçük)</option>
-  </select>
+              <!-- ✅ Dosya adı tek satır / ellipsis -->
+              <div class="atmFileMeta">
+                <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+              </div>
 
-  <select id="atmLogoSize" class="input">
-    <option value="sm" selected>Küçük</option>
-    <option value="md">Orta</option>
-  </select>
-</div>
-</div>
+              <div class="atmRow2">
+                <select id="atmLogoPos" class="input">
+                  <option value="tl">Sol Üst</option>
+                  <option value="tr">Sağ Üst</option>
+                  <option value="bl">Sol Alt</option>
+                  <option value="br" selected>Sağ Alt</option>
+                  <option value="center_small">Ortada (küçük)</option>
+                </select>
+
+                <select id="atmLogoSize" class="input">
+                  <option value="sm" selected>Küçük</option>
+                  <option value="md">Orta</option>
+                </select>
+              </div>
+            </div>
 
             <!-- 3) Audio -->
             <div class="atmPersCol">
@@ -337,363 +342,186 @@
         </script>
 
       </div><!-- /MODE PANEL basic -->
-<!-- ================= SUPER MODE ================= -->
-<div class="mode-panel" data-mode-panel="pro" role="tabpanel">
+      <!-- ================= SUPER MODE ================= -->
+      <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
-  <!-- (1) SUPER PROMPT (SADE) -->
-  <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
-    <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
-      <div style="color:#fff;font-weight:600;font-size:14px;">
-        Sahne + kamera + atmosferi tek prompt’ta anlat
-      </div>
-      <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
-        Referanslar yön verir, birebir kopyalanmaz.
-      </div>
-    </div>
+        <!-- (1) SUPER PROMPT + REFERENCES -->
+        <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
+          <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
+            <div style="color:#fff;font-weight:600;font-size:14px;">
+              Sahne + kamera + atmosferi tek prompt’ta anlat
+            </div>
+            <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
+              Referanslar yön verir, birebir kopyalanmaz.
+            </div>
+          </div>
 
-    <div style="margin-top:8px;">
-      <textarea
-        id="atmSuperPrompt"
-        rows="3"
-        maxlength="1000"
-        placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
-        style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
-      ></textarea>
+          <div style="margin-top:8px;">
+            <textarea
+              id="atmSuperPrompt"
+              rows="4"
+              maxlength="1000"
+              placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
+              style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
+            ></textarea>
 
-      <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
-        <span id="atmSuperPromptCount">0</span> / 1000
-      </div>
-    </div>
+            <!-- TEK SAYAC (SUPER PROMPT) -->
+            <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
+              <span id="atmSuperPromptCount">0</span> / 1000
+            </div>
+          </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
-      <div>
-        <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
-          Zorunlu: Base frame
-        </span>
-      </div>
-    </div>
-  </div><!-- /#atmSuperPromptCard -->
+          <!-- REFERENCES -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+            <label for="atmSceneImageInput" class="btn" style="cursor:pointer;">
+              🖼️ Referans Görsel
+              <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
+            </label>
 
-  <!-- (1.5) PRO MEDIA BAR (TEK SATIR, ULTRA KOMPAKT) -->
-  <div class="card atmProMediaBar" id="atmProMediaBarCard" style="margin-top:12px;">
-    <div class="atmProMediaRow">
+            <label for="atmSceneAudioInput" class="btn" style="cursor:pointer;">
+              🎵 Müzik / Jingle
+              <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
+            </label>
+          </div>
 
-      <!-- Logo -->
-      <div class="atmProMediaItem">
-        <label class="smpack-pill atmMiniPill" style="cursor:pointer;">
-          <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-          🏷️ Logo Seç
-        </label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
+            <div>
+              <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
+                Zorunlu: Base frame
+              </span>
+            </div>
+          </div>
+        </div><!-- /#atmSuperPromptCard -->
 
-        <select id="atmProLogoPos" class="input atmMiniSelect">
-          <option value="br" selected>Sağ Alt</option>
-          <option value="tl">Sol Üst</option>
-          <option value="tr">Sağ Üst</option>
-          <option value="bl">Sol Alt</option>
-          <option value="center_small">Ortada</option>
-        </select>
-      </div>
+        <!-- (2) LIGHT · EXPORT · MOOD -->
+        <div class="card" id="atmProMoodExport" style="margin-top:14px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Işık · Export · Duygu</div>
+              <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
+            </div>
+          </div>
 
-      <!-- Audio -->
-      <div class="atmProMediaItem">
-        <label class="smpack-pill atmMiniPill" style="cursor:pointer;">
-          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-          🎵 Audio Seç
-        </label>
-      </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
 
-    </div>
+            <div>
+              <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
+              <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+                <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+                <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+                <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+                <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+                <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+              </div>
 
-    <style>
-      /* MEDIA BAR: tek satır, az padding */
-      #atmProMediaBarCard.atmProMediaBar{ padding:12px 14px; }
-      #atmProMediaBarCard .atmProMediaRow{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        flex-wrap:wrap;
-      }
-      #atmProMediaBarCard .atmProMediaItem{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        min-width:0;
-      }
-      #atmProMediaBarCard .atmMiniPill{
-        padding:8px 10px;
-        font-size:12px;
-        font-weight:800;
-        border-radius:999px;
-        border:1px solid rgba(255,255,255,.10);
-        background:rgba(255,255,255,.06);
-        white-space:nowrap;
-      }
-      #atmProMediaBarCard .atmMiniSelect{
-        height:34px;
-        padding:6px 10px;
-        font-size:12px;
-        border-radius:12px;
-        background:rgba(0,0,0,.22);
-        border:1px solid rgba(255,255,255,.10);
-        color:#fff;
-        min-width:140px;
-      }
+              <div style="font-weight:600;font-size:13px;opacity:.85;margin:12px 0 8px;">🎭 Duygu</div>
+              <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+                <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+                <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+                <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+                <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+                <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+              </div>
+            </div>
 
-      @media (max-width: 980px){
-        #atmProMediaBarCard .atmProMediaRow{ justify-content:flex-start; }
-        #atmProMediaBarCard .atmMiniSelect{ min-width:0; width:160px; }
-      }
-    </style>
+            <div>
+              <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
+              <!-- ✅ Aspect Ratio (PRO) -->
+<label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+  📐 Oran
+  <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
+    <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
+    <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
+    <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
+  </div>
+</label>
 
-    <script>
-      (() => {
-        const inputLogo = document.getElementById("atmProLogoFile");
-        const inputAudio = document.getElementById("atmProAudioFile");
-        if (inputLogo) inputLogo.addEventListener("change", () => console.debug("[PRO] logo selected"));
-        if (inputAudio) inputAudio.addEventListener("change", () => console.debug("[PRO] audio selected"));
-      })();
-    </script>
-  </div><!-- /#atmProMediaBarCard -->
+              <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                🎞️ FPS
+                <select id="atmProFps">
+                  <option value="24" selected>24 FPS</option>
+                  <option value="30">30 FPS</option>
+                </select>
+              </label>
 
-  <!-- (2) LIGHT · EXPORT · MOOD (ULTRA KOMPAKT: nowrap + yatay scroll) -->
-  <div class="card" id="atmProMoodExport" style="margin-top:12px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Işık · Export · Duygu</div>
-        <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
-      </div>
-    </div>
+              <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                📁 Format
+                <select id="atmProFormat">
+                  <option value="mp4" selected>MP4</option>
+                  <option value="webm">WebM</option>
+                </select>
+              </label>
 
-    <div class="atmProTwoCol">
+              <!-- ✅ SUPER MODE DURATION -->
+              <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                ⏱️ Süre
+                <select id="atmProDuration">
+                  <option value="4">4 sn</option>
+                  <option value="6">6 sn</option>
+                  <option value="8" selected>8 sn</option>
+                  <option value="10">10 sn</option>
+                  <option value="12">12 sn</option>
+                  <option value="15">15 sn</option>
+                </select>
+              </label>
 
-      <div>
-        <div class="atmProGroupTitle">💡 Işık</div>
-        <div class="smpack-row atmCompactRow">
-          <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-          <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-          <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
-          <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
-          <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
-        </div>
+              <label style="display:flex;gap:10px;align-items:center;">
+                <input type="checkbox" id="atmProSeamFix">
+                🔁 Loop Seam Fix
+              </label>
 
-        <div class="atmProGroupTitle" style="margin-top:10px;">🎭 Duygu</div>
-        <div class="smpack-row atmCompactRow">
-          <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
-          <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
-          <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
-        </div>
-      </div>
+              <div style="margin-top:10px;font-size:12px;opacity:.6;">
+                shader / ffmpeg post-process
+              </div>
+            </div>
 
-      <div>
-        <div class="atmProGroupTitle">📦 Export</div>
-
-        <!-- Oran pills -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <div style="font-weight:700;font-size:12px;opacity:.85;min-width:44px;">Oran</div>
-          <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
-            <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
-            <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
-            <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
           </div>
         </div>
 
-        <!-- Mini selects tek satır -->
-        <div class="atmProMiniLine">
-          <label class="atmMiniLabel">FPS</label>
-          <select id="atmProFps" class="atmMiniSelect2">
-            <option value="24" selected>24</option>
-            <option value="30">30</option>
-          </select>
+        <!-- (3) DETAIL EFFECTS + LUT -->
+        <div class="card" id="atmProDetails" style="margin-top:14px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Detay Efektler</div>
+              <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+            </div>
+          </div>
 
-          <label class="atmMiniLabel">Format</label>
-          <select id="atmProFormat" class="atmMiniSelect2">
-            <option value="mp4" selected>MP4</option>
-            <option value="webm">WebM</option>
-          </select>
+          <div class="atmProFxGrid">
+            <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
 
-          <label class="atmMiniLabel">Süre</label>
-          <select id="atmProDuration" class="atmMiniSelect2">
-            <option value="4">4</option>
-            <option value="6">6</option>
-            <option value="8" selected>8</option>
-            <option value="10">10</option>
-            <option value="12">12</option>
-            <option value="15">15</option>
-          </select>
+            <label class="atmFxItem"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
+            <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+          </div>
+
+          <div class="atmLutRow">
+            <div class="atmLutLabel">🎨 Color Grade / LUT</div>
+            <select id="atmProLut" class="atmLutSelect">
+              <option value="" selected>Kapalı</option>
+              <option value="warm">Sıcak</option>
+              <option value="cold">Soğuk</option>
+              <option value="cinematic">Sinematik</option>
+              <option value="lofi">Lo-fi</option>
+            </select>
+          </div>
         </div>
 
-        <label class="atmMiniCheck">
-          <input type="checkbox" id="atmProSeamFix">
-          🔁 Seam Fix
-        </label>
-      </div>
+        <!-- (4) CTA PRO -->
+        <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+          <div class="atmPersCta atmPersCta--pro">
+            <button class="atmBigCtaBtn atmBigCtaBtn--pro"
+                    type="button"
+                    data-atm-generate
+                    data-atm-mode="pro">
+              🎬 Süper Atmosfer Video Oluştur (30 Kredi)
+            </button>
+          </div>
+        </div>
 
-    </div>
-
-    <style>
-      #atmProMoodExport .atmProTwoCol{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:14px;
-        align-items:start;
-      }
-      #atmProMoodExport .atmProGroupTitle{
-        font-weight:800;
-        font-size:12px;
-        opacity:.85;
-        margin-bottom:8px;
-      }
-
-      /* ✅ Işık/Duygu: tek satırda kalsın (wrap yok) + yatay scroll */
-      #atmProMoodExport .atmCompactRow{
-        gap:6px !important;
-        flex-wrap:nowrap !important;
-        overflow-x:auto !important;
-        overflow-y:hidden !important;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom:6px;              /* scrollbar/overscroll nefes */
-        scrollbar-width: thin;
-      }
-      #atmProMoodExport .atmCompactRow::-webkit-scrollbar{ height:6px; }
-      #atmProMoodExport .atmCompactRow::-webkit-scrollbar-thumb{
-        background:rgba(255,255,255,.14);
-        border-radius:999px;
-      }
-
-      /* pill daha küçük + tek satır */
-      #atmProMoodExport .atmCompactRow .smpack-pill{
-        padding:6px 10px !important;
-        font-size:12px !important;
-        line-height:1 !important;
-        white-space:nowrap !important;
-        flex:0 0 auto !important;
-      }
-
-      /* Mini export line */
-      #atmProMoodExport .atmProMiniLine{
-        display:flex;
-        align-items:center;
-        gap:8px;
-        flex-wrap:wrap;
-        margin-top:6px;
-      }
-      #atmProMoodExport .atmMiniLabel{
-        font-size:12px;
-        opacity:.8;
-        font-weight:700;
-        margin-left:2px;
-      }
-      #atmProMoodExport .atmMiniSelect2{
-        height:34px;
-        padding:6px 10px;
-        font-size:12px;
-        border-radius:12px;
-        background:rgba(0,0,0,.22);
-        border:1px solid rgba(255,255,255,.10);
-        color:#fff;
-        min-width:86px;
-      }
-      #atmProMoodExport .atmMiniCheck{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-top:10px;
-        font-size:12px;
-        opacity:.85;
-        font-weight:700;
-      }
-
-      @media (max-width: 980px){
-        #atmProMoodExport .atmProTwoCol{ grid-template-columns:1fr; }
-      }
-    </style>
-  </div>
-
-  <!-- (3) DETAIL EFFECTS + LUT (MINI CHIP) -->
-  <div class="card" id="atmProDetails" style="margin-top:12px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Detay Efektler</div>
-        <div class="card-subtitle">Az ama premium.</div>
-      </div>
-    </div>
-
-    <div class="atmFxChips">
-      <label class="atmFxChip"><input type="checkbox" id="atmProGrain">🎞️ Grain</label>
-      <label class="atmFxChip"><input type="checkbox" id="atmProGlow">✨ Glow</label>
-      <label class="atmFxChip"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
-      <label class="atmFxChip"><input type="checkbox" id="atmProSharpen">🔍 Sharpen</label>
-      <label class="atmFxChip"><input type="checkbox" id="atmProMotionBlur">🌀 Blur</label>
-      <label class="atmFxChip"><input type="checkbox" id="atmProDust">📽️ Dust</label>
-    </div>
-
-    <div class="atmLutMiniRow">
-      <div class="atmLutMiniLabel">🎨 LUT</div>
-      <select id="atmProLut" class="atmMiniSelect2">
-        <option value="" selected>Kapalı</option>
-        <option value="warm">Sıcak</option>
-        <option value="cold">Soğuk</option>
-        <option value="cinematic">Sinematik</option>
-        <option value="lofi">Lo-fi</option>
-      </select>
-    </div>
-
-    <style>
-      #atmProDetails .atmFxChips{
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-        margin-top:6px;
-      }
-      #atmProDetails .atmFxChip{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        padding:8px 10px;
-        border-radius:999px;
-        border:1px solid rgba(255,255,255,.10);
-        background:rgba(255,255,255,.06);
-        font-size:12px;
-        font-weight:800;
-        opacity:.92;
-        user-select:none;
-      }
-      #atmProDetails .atmFxChip input{
-        transform:scale(.95);
-        margin:0;
-      }
-
-      #atmProDetails .atmLutMiniRow{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        margin-top:12px;
-      }
-      #atmProDetails .atmLutMiniLabel{
-        font-weight:800;
-        font-size:12px;
-        opacity:.85;
-      }
-    </style>
-  </div>
-
-  <!-- (4) CTA PRO -->
-  <div class="card smpack-card smpack-card--cta" style="margin-top:12px;">
-    <div class="atmPersCta atmPersCta--pro">
-      <button class="atmBigCtaBtn atmBigCtaBtn--pro"
-              type="button"
-              data-atm-generate
-              data-atm-mode="pro">
-        🎬 Süper Atmosfer Video Oluştur (30 Kredi)
-      </button>
-    </div>
-  </div>
-
-</div><!-- /mode-panel pro -->
+      </div><!-- /mode-panel pro -->
 
     </div><!-- /mode-shell -->
 
