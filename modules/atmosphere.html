@@ -153,39 +153,34 @@
             <div class="atmPersCol">
               <div class="form-label">Logo</div>
 
-              <!-- ✅ Buton + Thumbnail aynı satır -->
-              <div class="atmLogoTop">
-                <label class="btn atmFileBtn" style="cursor:pointer;">
-                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
-                  🏷️ Logo Seç
-                </label>
+             <!-- ✅ Buton aynı satır -->
+<div class="atmLogoTop">
+  <label class="btn atmFileBtn" style="cursor:pointer;">
+    <input type="file" id="atmLogoFile" accept="image/*" hidden>
+    🏷️ Logo Seç
+  </label>
+</div>
 
-                <!-- ✅ Thumbnail slot: SABİT, asla alta itmez -->
-                <div class="atmLogoThumb" aria-hidden="true">
-                  <img data-atmo-logo-target alt="" />
-                </div>
-              </div>
+<!-- ✅ Dosya adı tek satır / ellipsis -->
+<div class="atmFileMeta">
+  <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+</div>
 
-              <!-- ✅ Dosya adı tek satır / ellipsis -->
-              <div class="atmFileMeta">
-                <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
-              </div>
+<div class="atmRow2">
+  <select id="atmLogoPos" class="input">
+    <option value="tl">Sol Üst</option>
+    <option value="tr">Sağ Üst</option>
+    <option value="bl">Sol Alt</option>
+    <option value="br" selected>Sağ Alt</option>
+    <option value="center_small">Ortada (küçük)</option>
+  </select>
 
-              <div class="atmRow2">
-                <select id="atmLogoPos" class="input">
-                  <option value="tl">Sol Üst</option>
-                  <option value="tr">Sağ Üst</option>
-                  <option value="bl">Sol Alt</option>
-                  <option value="br" selected>Sağ Alt</option>
-                  <option value="center_small">Ortada (küçük)</option>
-                </select>
-
-                <select id="atmLogoSize" class="input">
-                  <option value="sm" selected>Küçük</option>
-                  <option value="md">Orta</option>
-                </select>
-              </div>
-            </div>
+  <select id="atmLogoSize" class="input">
+    <option value="sm" selected>Küçük</option>
+    <option value="md">Orta</option>
+  </select>
+</div>
+</div>
 
             <!-- 3) Audio -->
             <div class="atmPersCol">
