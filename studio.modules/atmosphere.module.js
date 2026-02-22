@@ -957,7 +957,7 @@ function buildProPayload() {
     audio_url: state.uploads?.audio?.url || "",
     audio_mode: state.audioMode || "none",
     audio_trim: state.audioTrim || "loop_to_fit",
-    silent_copy: !!state.silentCopy,
+   silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
 
     details: { ...(state.details || {}) }
   };
