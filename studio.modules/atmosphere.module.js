@@ -907,16 +907,13 @@ function buildBasicPayload() {
     camera: state.camera || "kenburns_soft",
     duration: state.duration || "8",
 
-    // ✅ R2 url (scene override)
     image_url: state.uploads?.image?.url || "",
 
-    // ✅ R2 url
     logo_url: state.uploads?.logo?.url || "",
     logo_pos: state.logoPos || "br",
     logo_size: state.logoSize || "sm",
     logo_opacity: state.logoOpacity ?? 0.9,
 
-    // ✅ R2 url
     audio_url: state.uploads?.audio?.url || "",
     audio_mode: state.audioMode || "none",
     audio_trim: state.audioTrim || "loop_to_fit",
