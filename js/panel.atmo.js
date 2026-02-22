@@ -15,7 +15,9 @@
 
   // FAL atmo video status endpoint (app param şart)
   const STATUS_URL = (rid) =>
-    `/api/providers/fal/video/status?request_id=${encodeURIComponent(rid)}&app=${APP_KEY}`;
+    `/api/providers/fal/video/status?request_id=${encodeURIComponent(
+      rid
+    )}&app=${APP_KEY}`;
 
   function pickVideoUrl(data) {
     return (
@@ -46,10 +48,52 @@
     }
   }
 
+  // ✅ FINAL video seçimi: meta.final_video_url > outputs.is_final > variant önceliği > fallback
   function bestVideoFromJob(job) {
+    const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-    const vid = outs.find((o) => (o?.type || "").toLowerCase() === "video") || outs[0];
-    return vid?.archive_url || vid?.url || vid?.raw_url || "";
+
+    const pickUrl = (o) =>
+      safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
+
+    // 1) DB tek kaynak
+    if (safeStr(meta?.final_video_url)) return safeStr(meta.final_video_url);
+
+    // helpers
+    const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
+    const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
+
+    // 2) outputs içinde final işaretli
+    const fin = outs.find((o) => isVideo(o) && o?.meta?.is_final === true);
+    if (fin) {
+      const u = pickUrl(fin);
+      if (u) return u;
+    }
+
+    // 3) logo_overlay
+    const ov = outs.find((o) => isVideo(o) && variant(o) === "logo_overlay");
+    if (ov) {
+      const u = pickUrl(ov);
+      if (u) return u;
+    }
+
+    // 4) mux
+    const mx = outs.find((o) => isVideo(o) && variant(o) === "mux");
+    if (mx) {
+      const u = pickUrl(mx);
+      if (u) return u;
+    }
+
+    // 5) provider
+    const pv = outs.find((o) => isVideo(o) && variant(o) === "provider");
+    if (pv) {
+      const u = pickUrl(pv);
+      if (u) return u;
+    }
+
+    // 6) fallback ilk video / ilk output
+    const vid = outs.find((o) => isVideo(o)) || outs[0];
+    return pickUrl(vid);
   }
 
   function acceptAtmoOutput(o) {
@@ -57,10 +101,11 @@
     const t = String(o.type || "").toLowerCase();
     if (t && t !== "video") return false;
 
-    const app =
-      String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "")
-        .toLowerCase()
-        .trim();
+    const app = String(
+      o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || ""
+    )
+      .toLowerCase()
+      .trim();
 
     if (!app) return true;
     return app.includes("atmo");
@@ -172,9 +217,22 @@
 
   function badgeFor(job) {
     const st = String(job?.status || job?.state || "").toUpperCase();
-    if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
-    if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
-    if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
+    if (st.includes("FAIL") || st.includes("ERROR"))
+      return { text: "Hata", kind: "bad" };
+    if (
+      st.includes("READY") ||
+      st.includes("DONE") ||
+      st.includes("COMPLET") ||
+      st.includes("SUCC")
+    )
+      return { text: "Hazır", kind: "ok" };
+    if (
+      st.includes("RUN") ||
+      st.includes("PROC") ||
+      st.includes("PEND") ||
+      st.includes("QUEUE")
+    )
+      return { text: "İşleniyor", kind: "mid" };
     return { text: st || "Hazır", kind: "mid" };
   }
 
@@ -200,14 +258,19 @@
 
     const setHeaderMeta = (t) => {
       try {
-        if (window.RightPanel && typeof window.RightPanel.setHeader === "function") {
+        if (
+          window.RightPanel &&
+          typeof window.RightPanel.setHeader === "function"
+        ) {
           window.RightPanel.setHeader({ meta: String(t || "") });
         }
       } catch {}
     };
 
     function isPortrait(job, out) {
-      const ar = String(job?.meta?.aspect_ratio || job?.meta?.ratio || out?.meta?.aspect_ratio || "");
+      const ar = String(
+        job?.meta?.aspect_ratio || job?.meta?.ratio || out?.meta?.aspect_ratio || ""
+      );
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
 
@@ -215,7 +278,9 @@
       // DB items + ephemerals (DB’de zaten varsa eklemeyelim)
       const dbItems = Array.isArray(state.items) ? state.items : [];
       const have = new Set(dbItems.map((x) => String(x.job_id || "")));
-      const eps = (state.ephemerals || []).filter((e) => e && !have.has(String(e.job_id || "")));
+      const eps = (state.ephemerals || []).filter(
+        (e) => e && !have.has(String(e.job_id || ""))
+      );
       return [...eps, ...dbItems];
     }
 
@@ -226,7 +291,12 @@
 
       const hasProcessing = items.some((j) => {
         const st = String(j.status || "").toUpperCase();
-        return st.includes("PROC") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE");
+        return (
+          st.includes("PROC") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        );
       });
       setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
@@ -235,30 +305,36 @@
         return;
       }
 
-      $grid.innerHTML = items.slice(0, 30).map((job) => {
-        const badge = badgeFor(job);
+      $grid.innerHTML = items
+        .slice(0, 30)
+        .map((job) => {
+          const badge = badgeFor(job);
 
-        // ephemeral ise: job.url var; db ise: outputs’tan çek
-        const outUrl = safeStr(job.url) || bestVideoFromJob(job);
-        const hasUrl = !!outUrl;
+          // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
+          const outUrl = safeStr(job.url) || bestVideoFromJob(job);
+          const hasUrl = !!outUrl;
 
-        const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
-        const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-        const metaLine = `${engine}${dt ? " • " + dt : ""}`;
-        const promptLine = safeStr(job?.prompt || "");
+          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+          const promptLine = safeStr(job?.prompt || "");
 
-        // kart içi video clamp
-        const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
-        const portrait = isPortrait(job, dummyOut);
+          // kart içi video clamp
+          const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
+          const portrait = isPortrait(job, dummyOut);
 
-        const thumbInner = hasUrl
-          ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(outUrl)}"></video>`
-          : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
+          const thumbInner = hasUrl
+            ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(
+                outUrl
+              )}"></video>`
+            : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
-        const disabled = hasUrl ? "" : "disabled";
+          const disabled = hasUrl ? "" : "disabled";
 
-        return `
-          <div class="atmoCard" data-job="${esc(job.job_id || "")}" data-url="${esc(outUrl)}">
+          return `
+          <div class="atmoCard" data-job="${esc(
+            job.job_id || ""
+          )}" data-url="${esc(outUrl)}">
             <div class="atmoThumb ${portrait ? "isPortrait" : ""}">
               <div class="atmoPill ${badge.kind}">${esc(badge.text)}</div>
               ${thumbInner}
@@ -276,7 +352,8 @@
             </div>
           </div>
         `;
-      }).join("");
+        })
+        .join("");
     }
 
     async function handleAction(cardEl, act) {
@@ -308,14 +385,18 @@
         if (!jobId) return;
 
         // önce ephemerals’tan sil
-        state.ephemerals = (state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== jobId);
+        state.ephemerals = (state.ephemerals || []).filter(
+          (x) => safeStr(x?.job_id) !== jobId
+        );
 
         // DB varsa DBJobs delete dene
         if (db && typeof db.deleteJob === "function") {
           const ok = await db.deleteJob(jobId);
           if (!ok) db.hydrate(true);
         } else {
-          state.items = (state.items || []).filter((x) => safeStr(x?.job_id) !== jobId);
+          state.items = (state.items || []).filter(
+            (x) => safeStr(x?.job_id) !== jobId
+          );
         }
 
         render();
@@ -334,19 +415,20 @@
     });
 
     // --- DB controller ---
-    const db = (window.DBJobs && typeof window.DBJobs.create === "function")
-      ? window.DBJobs.create({
-          app: APP_KEY,
-          debug: false,
-          pollIntervalMs: 4000,
-          hydrateEveryMs: 15000,
-          acceptOutput: acceptAtmoOutput,
-          onChange(items) {
-            state.items = items || [];
-            render();
-          }
-        })
-      : null;
+    const db =
+      window.DBJobs && typeof window.DBJobs.create === "function"
+        ? window.DBJobs.create({
+            app: APP_KEY,
+            debug: false,
+            pollIntervalMs: 4000,
+            hydrateEveryMs: 15000,
+            acceptOutput: acceptAtmoOutput,
+            onChange(items) {
+              state.items = items || [];
+              render();
+            },
+          })
+        : null;
 
     if (db) db.start();
 
@@ -357,7 +439,9 @@
       window.__AIVO_ATMO_UPSERT_HOOKED__ = true;
 
       window.AIVO_JOBS.upsert = function (job) {
-        try { originalUpsert.call(this, job); } catch {}
+        try {
+          originalUpsert.call(this, job);
+        } catch {}
 
         try {
           if (!job) return;
@@ -383,13 +467,16 @@
           if (!rid || rid === "TEST") return;
 
           if (timer) clearInterval(timer);
-          timer = setInterval(() => pollFalOnce(rid, safeStr(job.prompt || "")), 2000);
+          timer = setInterval(
+            () => pollFalOnce(rid, safeStr(job.prompt || "")),
+            2000
+          );
           pollFalOnce(rid, safeStr(job.prompt || ""));
         } catch {}
       };
     }
 
-     async function pollFalOnce(rid, promptMaybe) {
+    async function pollFalOnce(rid, promptMaybe) {
       if (destroyed) return;
       rid = safeStr(rid);
       if (!rid) return;
@@ -413,68 +500,8 @@
       if (st.includes("complete") || st.includes("success") || st === "succeeded") {
         let url = pickVideoUrl(data);
 
-        // ✅ URL normalize: overlay endpoint absolute URL ister (relative/proxy yüzünden parse fail oluyordu)
-        const normalizeVideoUrlForOverlay = (u) => {
-          u = safeStr(u);
-          if (!u) return "";
-          // /api/media/proxy?url=<ENCODED_HTTP_URL> ise gerçek url'i çıkar
-          if (u.includes("/api/media/proxy?url=")) {
-            try {
-              const i = u.indexOf("/api/media/proxy?url=");
-              const sub = u.slice(i);
-              const qs = sub.split("?")[1] || "";
-              const p = new URLSearchParams(qs);
-              const inner = p.get("url");
-              if (inner) return decodeURIComponent(inner);
-            } catch {}
-          }
-          // relative ise absolute yap
-          if (u.startsWith("/")) {
-            try { return new URL(u, window.location.origin).toString(); } catch {}
-          }
-          return u;
-        };
-
-        // === AUTO LOGO OVERLAY (FAL complete anında) ===
-        try {
-          const logoUrl = String(
-            window.__ATMO_LOGO_PUBLIC_URL__ ||
-            window.__ATMO_STATE__?.logo_public_url ||
-            ""
-          ).trim();
-
-          const overlayVideoUrl = normalizeVideoUrlForOverlay(url);
-
-          console.log("OVERLAY INPUT VIDEO URL:", overlayVideoUrl);
-console.log("OVERLAY INPUT LOGO URL:", logoUrl);
-
-          if (logoUrl && logoUrl.startsWith("http") && overlayVideoUrl && overlayVideoUrl.startsWith("http")) {
-            const res = await fetch("/api/atmo/overlay-logo", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({
-                app: "atmo",
-                request_id: rid,
-                video_url: overlayVideoUrl,
-                logo_url: logoUrl,
-                logo_pos: "br",
-                logo_size: "sm",
-                logo_opacity: 0.85
-              })
-            });
-
-            let j = null;
-            try { j = await res.json(); } catch {}
-
-            // ✅ overlay başarıyla döndüyse, bundan sonra her yerde overlay url'i kullan
-            if (j?.ok && j?.url) {
-              url = j.url;
-            }
-          }
-        } catch (e) {
-          console.warn("[ATMO overlay] error:", e);
-        }
+        // ✅ NOT: Overlay artık backend'de deterministik yapılıyor (/api/jobs/status).
+        // Burada client-side overlay çağırmıyoruz. Sadece video url’i PPE + geçici karta basıyoruz.
 
         if (!url) {
           setHeaderMeta("Tamamlandı (url yok)");
@@ -489,10 +516,14 @@ console.log("OVERLAY INPUT LOGO URL:", logoUrl);
           {
             job_id: tempId,
             url,
-            status: "PROCESSING",
+            status: "DONE",
             created_at: Date.now(),
             prompt: promptMaybe || "",
-            meta: { app: APP_KEY, request_id: rid, aspect_ratio: safeStr(data?.aspect_ratio || "") }
+            meta: {
+              app: APP_KEY,
+              request_id: rid,
+              aspect_ratio: safeStr(data?.aspect_ratio || ""),
+            },
           },
           ...(state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== tempId),
         ];
@@ -509,7 +540,9 @@ console.log("OVERLAY INPUT LOGO URL:", logoUrl);
         } catch {}
 
         // DB’den yenile
-        try { db && db.hydrate(true); } catch {}
+        try {
+          db && db.hydrate(true);
+        } catch {}
 
         if (timer) clearInterval(timer);
         timer = null;
@@ -526,7 +559,9 @@ console.log("OVERLAY INPUT LOGO URL:", logoUrl);
       destroyed = true;
       if (timer) clearInterval(timer);
       timer = null;
-      try { db && db.destroy(); } catch {}
+      try {
+        db && db.destroy();
+      } catch {}
       host.innerHTML = "";
     }
 
@@ -538,7 +573,7 @@ console.log("OVERLAY INPUT LOGO URL:", logoUrl);
       title: "Atmosfer Video",
       meta: "Hazır",
       searchEnabled: false, // ✅ üstteki Ara... kalkar (manager destekliyorsa)
-      resetSearch: true
+      resetSearch: true,
     },
 
     mount(host) {
@@ -547,7 +582,9 @@ console.log("OVERLAY INPUT LOGO URL:", logoUrl);
     },
 
     destroy(host) {
-      try { host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy(); } catch {}
+      try {
+        host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy();
+      } catch {}
       host.__ATMO_PANEL__ = null;
     },
   });
