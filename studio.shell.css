@@ -40,7 +40,11 @@ html, body {
 
 #moduleHost {
   flex: 1 1 auto;
-  overflow: hidden;
+
+  /* ✅ REVİZE: içerik uzayınca page uzatmasın, orta kolon scroll alsın */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 #rightPanelHost {
