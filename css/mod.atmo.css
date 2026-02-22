@@ -673,3 +673,13 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
     0 6px 18px rgba(123,92,255,.35),
     0 0 0 1px rgba(255,255,255,.08) inset !important;
 }
+/* ✅ Eski/büyük logo preview’u öldür (runtime inject olsa da) */
+#atmPersonalCard #atmLogoPreview{
+  display:none !important;
+  visibility:hidden !important;
+  width:0 !important;
+  height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+}
