@@ -34,7 +34,6 @@ function run(cmd, args) {
 }
 
 async function download(url, dest) {
-  // Node fetch: res.body is web stream; pipe() yok → arrayBuffer ile indiriyoruz
   const res = await fetch(url);
   if (!res.ok) throw new Error(`download_failed:${res.status}`);
   const ab = await res.arrayBuffer();
@@ -75,12 +74,14 @@ export default async function handler(req, res) {
     const sizeRatio = SIZE[logo_size] || SIZE.sm;
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
 
-    // overlay çıktısını [v] olarak etiketliyoruz ve onu map ediyoruz
+    // ✅ overlay çıktısını [v] olarak etiketliyoruz ve onu map ediyoruz
     const filter = `
       [1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg];
       [0:v][lg]overlay=${pos}:format=auto[v]
     `.replace(/\s+/g, "");
 
+    // ✅ KRİTİK: audio'yu yeniden encode ETME → olduğu gibi taşı (copy)
+    // ✅ audio yoksa patlamasın → 0:a:0?
     await run(ffmpegPath, [
       "-y",
       "-i",
@@ -92,15 +93,18 @@ export default async function handler(req, res) {
       "-map",
       "[v]",
       "-map",
-      "0:a?",
+      "0:a:0?",
       "-c:v",
       "libx264",
       "-preset",
       "veryfast",
       "-crf",
       "20",
+      "-pix_fmt",
+      "yuv420p",
       "-c:a",
-      "aac",
+      "copy",
+      "-shortest",
       "-movflags",
       "+faststart",
       outputVideo,
@@ -108,7 +112,6 @@ export default async function handler(req, res) {
 
     const buffer = fs.readFileSync(outputVideo);
 
-    // cache/overwrite sorununu önlemek için her seferinde unique key
     const key = `outputs/${app}/${id}/logo-overlay-${Date.now()}.mp4`;
 
     const publicUrl = await putObject({
@@ -117,7 +120,6 @@ export default async function handler(req, res) {
       contentType: "video/mp4",
     });
 
-    // cleanup
     [inputVideo, inputLogo, outputVideo].forEach((f) => {
       try {
         fs.unlinkSync(f);
