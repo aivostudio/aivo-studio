@@ -370,28 +370,94 @@
               <span id="atmSuperPromptCount">0</span> / 1000
             </div>
           </div>
+<!-- (1) SUPER PROMPT + PERSONALIZATION (BASIC MODE UI TRANSFER) -->
+<div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
 
-          <!-- REFERENCES -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
-            <label for="atmSceneImageInput" class="btn" style="cursor:pointer;">
-              🖼️ Logo
-              <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
-            </label>
+  <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
+    <div style="color:#fff;font-weight:600;font-size:14px;">
+      Sahne + kamera + atmosferi tek prompt’ta anlat
+    </div>
+    <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
+      Referanslar yön verir, birebir kopyalanmaz.
+    </div>
+  </div>
 
-            <label for="atmSceneAudioInput" class="btn" style="cursor:pointer;">
-              🎵 Müzik / Jingle
-              <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
-            </label>
-          </div>
+  <div style="margin-top:8px;">
+    <textarea
+      id="atmSuperPrompt"
+      rows="4"
+      maxlength="1000"
+      placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
+      style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
+    ></textarea>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
-            <div>
-              <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
-             
-              </span>
-            </div>
-          </div>
-        </div><!-- /#atmSuperPromptCard -->
+    <!-- TEK SAYAC (SUPER PROMPT) -->
+    <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
+      <span id="atmSuperPromptCount">0</span> / 1000
+    </div>
+  </div>
+
+  <!-- ✅ PERSONALIZATION (BASIC MODE UI SAME LOOK) -->
+  <div class="atmPersGrid" style="margin-top:12px;">
+
+    <!-- Logo -->
+    <div class="atmPersCol">
+      <div class="form-label">Logo</div>
+
+      <label class="btn atmFileBtn" style="cursor:pointer;">
+        <input type="file" id="atmSceneImageInput" accept="image/*" hidden>
+        🖼️ Logo Seç
+      </label>
+
+      <!-- ✅ Dosya adı tek satır / ellipsis -->
+      <div class="atmFileMeta">
+        <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+      </div>
+
+      <div class="atmRow2">
+        <select id="atmLogoPos" class="input">
+          <option value="tl">Sol Üst</option>
+          <option value="tr">Sağ Üst</option>
+          <option value="bl">Sol Alt</option>
+          <option value="br" selected>Sağ Alt</option>
+        </select>
+
+        <select id="atmLogoSize" class="input">
+          <option value="sm" selected>Küçük</option>
+          <option value="md">Orta</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Audio -->
+    <div class="atmPersCol">
+      <div class="form-label">Müzik / Jingle</div>
+
+      <label class="btn atmFileBtn" style="cursor:pointer;">
+        <input type="file" id="atmSceneAudioInput" accept="audio/*" hidden>
+        🎵 Audio Seç
+      </label>
+
+      <div class="atmFileMeta">
+        <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
+      </div>
+
+      <div class="atmRow2">
+        <select id="atmAudioMode" class="input">
+          <option value="none" selected>Ses yok</option>
+          <option value="embed">MP4 içine ekle</option>
+        </select>
+
+        <select id="atmAudioTrim" class="input">
+          <option value="loop_to_fit" selected>Loop ile uydur</option>
+          <option value="trim">Kırp</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /#atmSuperPromptCard -->
 
         <!-- (2) LIGHT · EXPORT · MOOD -->
         <div class="card" id="atmProMoodExport" style="margin-top:14px;">
