@@ -182,102 +182,134 @@
     }
   });
 
-// ------------------------------------------------------------
-// ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
-// ------------------------------------------------------------
+  // ------------------------------------------------------------
+  // ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
+  // ------------------------------------------------------------
+  state.uploads = state.uploads || {
+    image: { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
+    logo:  { status: "empty", url: "", name: "" },
+    audio: { status: "empty", url: "", name: "" }
+  };
 
-function ensureAtmUploadUI(root, kind) {
-  const r = root || getAtmoPanelRoot() || document;
-
-  // ✅ BASIC + PRO support
-  const inputId =
-    kind === "image" ? "#atmImageFile" :
-    kind === "logo"  ? "#atmLogoFile, #atmProLogoFile" :
-    kind === "audio" ? "#atmAudioFile, #atmProAudioFile" :
-    "";
-
-  const inputEl = inputId ? r.querySelector(inputId) : null;
-  const col = inputEl?.closest?.(".atmPersCol, .atmProRefs") || null;
-  if (!col) return;
-
-  const prevId = `atm${kind[0].toUpperCase() + kind.slice(1)}Preview`;
-  const badgeId = `atm${kind[0].toUpperCase() + kind.slice(1)}Badge`;
-
-  if ((kind === "image" || kind === "logo") && !col.querySelector(`#${prevId}`)) {
-    const img = document.createElement("img");
-    img.id = prevId;
-    img.style.display = "none";
-    img.style.width = "64px";
-    img.style.height = "64px";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "12px";
-    img.style.marginTop = "10px";
-    img.style.border = "1px solid rgba(255,255,255,0.12)";
-    col.appendChild(img);
+  function isUploadingAny() {
+    const u = state.uploads || {};
+    return Object.values(u).some((x) => x?.status === "uploading");
   }
 
-  if (!col.querySelector(`#${badgeId}`)) {
-    const b = document.createElement("div");
-    b.id = badgeId;
-    b.textContent = "Hazır ✓";
-    b.style.display = "none";
-    b.style.marginTop = "8px";
-    b.style.fontSize = "12px";
-    b.style.fontWeight = "800";
-    b.style.padding = "6px 10px";
-    b.style.borderRadius = "999px";
-    b.style.width = "fit-content";
-    b.style.border = "1px solid rgba(120,255,190,.22)";
-    b.style.background = "rgba(120,255,190,.08)";
-    col.appendChild(b);
-  }
-}
+  function ensureAtmUploadUI(root, kind) {
+    const r = root || getAtmoPanelRoot() || document;
+    const inputId =
+      kind === "image" ? "#atmImageFile" :
+      kind === "logo"  ? "#atmLogoFile"  :
+      kind === "audio" ? "#atmAudioFile" :
+      "";
 
-function setUploadUI(root, kind, patch) {
-  const r = root || getAtmoPanelRoot() || document;
-  ensureAtmUploadUI(r, kind);
+    const col = inputId ? qs(inputId, r)?.closest?.(".atmPersCol") : null;
+    if (!col) return;
 
-  const st = state.uploads[kind] || { status: "empty", url: "", name: "" };
-  const next = { ...st, ...(patch || {}) };
-  state.uploads[kind] = next;
+    const prevId = `atm${kind[0].toUpperCase() + kind.slice(1)}Preview`;
+    const badgeId = `atm${kind[0].toUpperCase() + kind.slice(1)}Badge`;
 
-  const cap = kind[0].toUpperCase() + kind.slice(1);
-  const badgeId = `atm${cap}Badge`;
-  const prevId = `atm${cap}Preview`;
+    // Preview (image/logo only)
+    if ((kind === "image" || kind === "logo") && !qs(`#${prevId}`, col)) {
+      const img = document.createElement("img");
+      img.id = prevId;
+      img.alt = kind + " preview";
+      img.style.display = "none";
+      img.style.width = "64px";
+      img.style.height = "64px";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "12px";
+      img.style.marginTop = "10px";
+      img.style.border = "1px solid rgba(255,255,255,0.12)";
+      col.appendChild(img);
+    }
 
-  // ✅ BASIC + PRO filename id support
-  const inputId =
-    kind === "image" ? ["atmImageFileName"] :
-    kind === "logo"  ? ["atmLogoFileName", "atmProLogoFileName"] :
-    kind === "audio" ? ["atmAudioFileName", "atmProAudioFileName"] :
-    [];
-
-  inputId.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    if (next.status === "uploading") el.textContent = "Yükleniyor…";
-    else if (next.status === "ready") el.textContent = next.name || "Hazır ✓";
-    else if (next.status === "error") el.textContent = "Yükleme hatası";
-    else el.textContent = next.name || "Dosya seçilmedi";
-  });
-
-  const badgeEl = r.querySelector(`#${badgeId}`);
-  const prevEl = r.querySelector(`#${prevId}`);
-
-  if (badgeEl) {
-    badgeEl.style.display = next.status === "ready" ? "" : "none";
-  }
-
-  if (prevEl && (kind === "image" || kind === "logo")) {
-    if (next.status === "ready" && next.url) {
-      prevEl.src = next.url;
-      prevEl.style.display = "";
-    } else {
-      prevEl.style.display = "none";
+    // Badge
+    if (!qs(`#${badgeId}`, col)) {
+      const b = document.createElement("div");
+      b.id = badgeId;
+      b.textContent = "Hazır ✓";
+      b.style.display = "none";
+      b.style.marginTop = "8px";
+      b.style.fontSize = "12px";
+      b.style.fontWeight = "800";
+      b.style.padding = "6px 10px";
+      b.style.borderRadius = "999px";
+      b.style.width = "fit-content";
+      b.style.border = "1px solid rgba(120,255,190,.22)";
+      b.style.background = "rgba(120,255,190,.08)";
+      col.appendChild(b);
     }
   }
-}
+
+  function setUploadUI(root, kind, patch) {
+    const r = root || getAtmoPanelRoot() || document;
+    ensureAtmUploadUI(r, kind);
+
+    const st = state.uploads[kind] || { status: "empty", url: "", name: "" };
+    const next = { ...st, ...(patch || {}) };
+    state.uploads[kind] = next;
+
+    const cap = kind[0].toUpperCase() + kind.slice(1);
+    const badgeId = `atm${cap}Badge`;
+    const prevId = `atm${cap}Preview`;
+
+    const inputId =
+      kind === "image" ? "atmImageFileName" :
+      kind === "logo"  ? "atmLogoFileName" :
+      kind === "audio" ? "atmAudioFileName" :
+      "";
+
+    const nameEl = inputId ? document.getElementById(inputId) : null;
+    const badgeEl = qs(`#${badgeId}`, r);
+    const prevEl = qs(`#${prevId}`, r);
+
+    // Name label
+    if (nameEl) {
+      if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
+      else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
+      else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
+      else nameEl.textContent = next.name || "Dosya seçilmedi";
+    }
+
+    // Badge
+    if (badgeEl) {
+      badgeEl.style.display = next.status === "ready" ? "" : "none";
+      if (next.status === "uploading") badgeEl.style.display = "none";
+      if (next.status === "error") {
+        badgeEl.style.display = "";
+        badgeEl.textContent = "Hata";
+        badgeEl.style.border = "1px solid rgba(255,120,120,.25)";
+        badgeEl.style.background = "rgba(255,120,120,.10)";
+      } else {
+        badgeEl.textContent = "Hazır ✓";
+        badgeEl.style.border = "1px solid rgba(120,255,190,.22)";
+        badgeEl.style.background = "rgba(120,255,190,.08)";
+      }
+    }
+
+    // Preview (image/logo)
+    if (prevEl && (kind === "image" || kind === "logo")) {
+      if (next.status === "ready" && next.url) {
+        prevEl.src = next.url;
+        prevEl.style.display = "";
+      } else {
+        prevEl.style.display = "none";
+      }
+    }
+
+    // Generate buttons lock while uploading
+    const genBtns = qsa('[data-atm-generate]', r);
+    const uploading = isUploadingAny();
+    genBtns.forEach((b) => {
+      if (!b) return;
+      b.toggleAttribute?.("disabled", uploading);
+      b.classList.toggle?.("is-uploading", uploading);
+      if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
+      else b.removeAttribute("title");
+    });
+  }
 // ---- R2 presign + upload (expects your backend)
 // Backend contract (recommended):
 // POST /api/r2/presign-put
