@@ -346,3 +346,35 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* ============================
+   ATMOSFER: stroke’u içeri al
+   ============================ */
+
+/* 1) Atmosfer’de dış container stroke/glow’u kapat (duvar çizgisi buradan geliyor) */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]{
+  border: none !important;
+}
+
+/* Eğer çizgi/glow pseudo-element’ten geliyorsa onu da kapat */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]::after{
+  display: none !important;
+}
+
+/* 2) Stroke’u içerideki asıl sayfaya uygula (scroll içeriğiyle birlikte uzar) */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
+  > section.main-panel[data-module="atmosphere"]{
+  position: relative;
+  border-radius: var(--card-radius);
+  padding: 18px; /* çizgi içerde dursun diye */
+}
+
+/* 3) İç stroke (duvar çizgisi artık Atmosfer’in içinde) */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
+  > section.main-panel[data-module="atmosphere"]::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--stroke-w) solid rgba(255,255,255,.07);
+  pointer-events: none;
+}
