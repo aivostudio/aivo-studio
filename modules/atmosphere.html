@@ -346,13 +346,13 @@
 <!-- ================= SUPER MODE ================= -->
 <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
-  <!-- (1) SUPER PROMPT + (LOGO + AUDIO) -->
   <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
+
     <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
       <div style="color:#fff;font-weight:600;font-size:14px;">
         Sahne + kamera + atmosferi tek prompt’ta anlat
       </div>
-      <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
+      <div style="opacity:.7;font-size:12px;text-align:right;">
         Referanslar yön verir, birebir kopyalanmaz.
       </div>
     </div>
@@ -371,10 +371,9 @@
       </div>
     </div>
 
-    <!-- ✅ PRO: Logo + Audio (Basit Mod’daki upload mantığıyla) -->
-    <div class="atmProRefs">
+    <!-- PRO Upload Alanı -->
+    <div class="atmProRefs" style="margin-top:16px;">
 
-      <!-- üst satır: Logo başlığı + pozisyon -->
       <div class="atmProRefsHead">
         <div class="atmProRefsTitle">Logo</div>
         <select id="atmProLogoPos" class="input atmProSelect">
@@ -386,61 +385,39 @@
         </select>
       </div>
 
-     <!-- butonlar -->
-<div class="atmProRefsBtns">
+      <div class="atmProRefsBtns">
 
-  <!-- LOGO -->
-  <div>
-    <label class="btn atmFileBtn" style="cursor:pointer;">
-      <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-      🖼️ Logo Seç
-    </label>
+        <!-- LOGO -->
+        <div>
+          <label class="btn atmFileBtn" style="cursor:pointer;">
+            <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+            🖼️ Logo Seç
+          </label>
 
-    <!-- ✅ Dosya adı -->
-    <div class="atmFileMeta">
-      <div class="atmFileName" id="atmProLogoFileName">
-        Dosya seçilmedi
+          <div class="atmFileName" id="atmProLogoFileName" style="margin-top:8px;font-size:13px;">
+            Dosya seçilmedi
+          </div>
+        </div>
+
+        <!-- AUDIO -->
+        <div>
+          <label class="btn atmFileBtn" style="cursor:pointer;">
+            <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+            🎵 Audio Seç
+          </label>
+
+          <div class="atmFileName" id="atmProAudioFileName" style="margin-top:8px;font-size:13px;">
+            Dosya seçilmedi
+          </div>
+        </div>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- AUDIO -->
-  <div>
-    <label class="btn atmFileBtn" style="cursor:pointer;">
-      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-      🎵 Audio Seç
-    </label>
-
-    <!-- ✅ Dosya adı -->
-    <div class="atmFileMeta">
-      <div class="atmFileName" id="atmProAudioFileName">
-        Dosya seçilmedi
-      </div>
-    </div>
-  </div>
-
-</div>
-
-      <!-- ✅ meta (thumbnail yok) -->
-      <div class="atmProRefsMeta">
-        <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
-        <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
-      </div>
-
-      <!-- ✅ küçük durum etiketi -->
-      <div class="atmProRefsBottom">
-        <div id="atmProLogoStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-          Hazır ✓
-        </div>
-        <div id="atmProAudioStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-          Hazır ✓
-        </div>
-      </div>
-
-    </div>
-  </div><!-- /#atmSuperPromptCard -->
+</div>>
 
   <style>
     /* PRO refs box (tamamen card içinde, kompakt) */
