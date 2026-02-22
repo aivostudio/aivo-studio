@@ -182,90 +182,103 @@
     }
   });
 
-  // ------------------------------------------------------------
-  // ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
-  // ------------------------------------------------------------
-  state.uploads = state.uploads || {
-    image: { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
-    logo:  { status: "empty", url: "", name: "" },
-    audio: { status: "empty", url: "", name: "" }
-  };
+// ------------------------------------------------------------
+// ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
+// ------------------------------------------------------------
+state.uploads = state.uploads || {
+  image: { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
+  logo:  { status: "empty", url: "", name: "" },
+  audio: { status: "empty", url: "", name: "" }
+};
 
-  function isUploadingAny() {
-    const u = state.uploads || {};
-    return Object.values(u).some((x) => x?.status === "uploading");
+function isUploadingAny() {
+  const u = state.uploads || {};
+  return Object.values(u).some((x) => x?.status === "uploading");
+}
+
+function ensureAtmUploadUI(root, kind) {
+  const r = root || getAtmoPanelRoot() || document;
+  const inputId =
+    kind === "image" ? "#atmImageFile" :
+    kind === "logo"  ? "#atmLogoFile"  :
+    kind === "audio" ? "#atmAudioFile" :
+    "";
+
+  const col = inputId ? qs(inputId, r)?.closest?.(".atmPersCol") : null;
+  if (!col) return;
+
+  const prevId = `atm${kind[0].toUpperCase() + kind.slice(1)}Preview`;
+  const badgeId = `atm${kind[0].toUpperCase() + kind.slice(1)}Badge`;
+
+  // Preview (image/logo only)
+  if ((kind === "image" || kind === "logo") && !qs(`#${prevId}`, col)) {
+    const img = document.createElement("img");
+    img.id = prevId;
+    img.alt = kind + " preview";
+    img.style.display = "none";
+    img.style.width = "64px";
+    img.style.height = "64px";
+    img.style.objectFit = "cover";
+    img.style.borderRadius = "12px";
+    img.style.marginTop = "10px";
+    img.style.border = "1px solid rgba(255,255,255,0.12)";
+    col.appendChild(img);
   }
 
-  function ensureAtmUploadUI(root, kind) {
-    const r = root || getAtmoPanelRoot() || document;
-    const inputId =
-      kind === "image" ? "#atmImageFile" :
-      kind === "logo"  ? "#atmLogoFile"  :
-      kind === "audio" ? "#atmAudioFile" :
-      "";
-
-    const col = inputId ? qs(inputId, r)?.closest?.(".atmPersCol") : null;
-    if (!col) return;
-
-    const prevId = `atm${kind[0].toUpperCase() + kind.slice(1)}Preview`;
-    const badgeId = `atm${kind[0].toUpperCase() + kind.slice(1)}Badge`;
-
-    // Preview (image/logo only)
-    if ((kind === "image" || kind === "logo") && !qs(`#${prevId}`, col)) {
-      const img = document.createElement("img");
-      img.id = prevId;
-      img.alt = kind + " preview";
-      img.style.display = "none";
-      img.style.width = "64px";
-      img.style.height = "64px";
-      img.style.objectFit = "cover";
-      img.style.borderRadius = "12px";
-      img.style.marginTop = "10px";
-      img.style.border = "1px solid rgba(255,255,255,0.12)";
-      col.appendChild(img);
-    }
-
-    // Badge
-    if (!qs(`#${badgeId}`, col)) {
-      const b = document.createElement("div");
-      b.id = badgeId;
-      b.textContent = "Hazır ✓";
-      b.style.display = "none";
-      b.style.marginTop = "8px";
-      b.style.fontSize = "12px";
-      b.style.fontWeight = "800";
-      b.style.padding = "6px 10px";
-      b.style.borderRadius = "999px";
-      b.style.width = "fit-content";
-      b.style.border = "1px solid rgba(120,255,190,.22)";
-      b.style.background = "rgba(120,255,190,.08)";
-      col.appendChild(b);
-    }
+  // Badge
+  if (!qs(`#${badgeId}`, col)) {
+    const b = document.createElement("div");
+    b.id = badgeId;
+    b.textContent = "Hazır ✓";
+    b.style.display = "none";
+    b.style.marginTop = "8px";
+    b.style.fontSize = "12px";
+    b.style.fontWeight = "800";
+    b.style.padding = "6px 10px";
+    b.style.borderRadius = "999px";
+    b.style.width = "fit-content";
+    b.style.border = "1px solid rgba(120,255,190,.22)";
+    b.style.background = "rgba(120,255,190,.08)";
+    col.appendChild(b);
   }
+}
 
-  function setUploadUI(root, kind, patch) {
-    const r = root || getAtmoPanelRoot() || document;
-    ensureAtmUploadUI(r, kind);
+function setUploadUI(root, kind, patch) {
+  const r = root || getAtmoPanelRoot() || document;
 
-    const st = state.uploads[kind] || { status: "empty", url: "", name: "" };
-    const next = { ...st, ...(patch || {}) };
-    state.uploads[kind] = next;
+  // ✅ PRO tespiti (Basic'i bozma)
+  const isPro =
+    (r?.dataset?.modePanel === "pro") ||
+    !!(r?.closest?.('[data-mode-panel="pro"]'));
 
-    const cap = kind[0].toUpperCase() + kind.slice(1);
-    const badgeId = `atm${cap}Badge`;
-    const prevId = `atm${cap}Preview`;
+  // ✅ Basic davranış aynen: UI elemanlarını ensure et
+  // ✅ Pro’da preview/badge istemiyoruz: ensureAtmUploadUI çağırmıyoruz
+  if (!isPro) ensureAtmUploadUI(r, kind);
 
-    const inputId =
-      kind === "image" ? "atmImageFileName" :
-      kind === "logo"  ? "atmLogoFileName" :
-      kind === "audio" ? "atmAudioFileName" :
+  const st = state.uploads[kind] || { status: "empty", url: "", name: "" };
+  const next = { ...st, ...(patch || {}) };
+  state.uploads[kind] = next;
+
+  // ------------------------------------------------------------
+  // ✅ PRO UI bağları (Süper Mod)
+  //   Logo:  #atmProLogoFileName + #atmProLogoStatus
+  //   Audio: #atmProAudioFileName + #atmProAudioStatus
+  // ------------------------------------------------------------
+  if (isPro) {
+    const proNameId =
+      kind === "logo"  ? "atmProLogoFileName" :
+      kind === "audio" ? "atmProAudioFileName" :
+      ""; // pro’da image yok
+
+    const proStatusId =
+      kind === "logo"  ? "atmProLogoStatus" :
+      kind === "audio" ? "atmProAudioStatus" :
       "";
 
-    const nameEl = inputId ? document.getElementById(inputId) : null;
-    const badgeEl = qs(`#${badgeId}`, r);
-    const prevEl = qs(`#${prevId}`, r);
+    const nameEl = proNameId ? document.getElementById(proNameId) : null;
+    const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
 
-    // Name label
+    // Name label (PRO)
     if (nameEl) {
       if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
       else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
@@ -273,33 +286,13 @@
       else nameEl.textContent = next.name || "Dosya seçilmedi";
     }
 
-    // Badge
-    if (badgeEl) {
-      badgeEl.style.display = next.status === "ready" ? "" : "none";
-      if (next.status === "uploading") badgeEl.style.display = "none";
-      if (next.status === "error") {
-        badgeEl.style.display = "";
-        badgeEl.textContent = "Hata";
-        badgeEl.style.border = "1px solid rgba(255,120,120,.25)";
-        badgeEl.style.background = "rgba(255,120,120,.10)";
-      } else {
-        badgeEl.textContent = "Hazır ✓";
-        badgeEl.style.border = "1px solid rgba(120,255,190,.22)";
-        badgeEl.style.background = "rgba(120,255,190,.08)";
-      }
+    // Hazır etiketi (PRO) — sadece ready’de göster
+    if (statusEl) {
+      if (next.status === "ready") statusEl.style.display = "";
+      else statusEl.style.display = "none";
     }
 
-    // Preview (image/logo)
-    if (prevEl && (kind === "image" || kind === "logo")) {
-      if (next.status === "ready" && next.url) {
-        prevEl.src = next.url;
-        prevEl.style.display = "";
-      } else {
-        prevEl.style.display = "none";
-      }
-    }
-
-    // Generate buttons lock while uploading
+    // Generate buttons lock while uploading (PRO içinde de çalışsın)
     const genBtns = qsa('[data-atm-generate]', r);
     const uploading = isUploadingAny();
     genBtns.forEach((b) => {
@@ -309,7 +302,72 @@
       if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
       else b.removeAttribute("title");
     });
+
+    return; // ✅ PRO işi bitti, Basic kısmına düşme
   }
+
+  // ------------------------------------------------------------
+  // ✅ BASIC UI (aynen senin eski mantık)
+  // ------------------------------------------------------------
+  const cap = kind[0].toUpperCase() + kind.slice(1);
+  const badgeId = `atm${cap}Badge`;
+  const prevId = `atm${cap}Preview`;
+
+  const inputId =
+    kind === "image" ? "atmImageFileName" :
+    kind === "logo"  ? "atmLogoFileName" :
+    kind === "audio" ? "atmAudioFileName" :
+    "";
+
+  const nameEl = inputId ? document.getElementById(inputId) : null;
+  const badgeEl = qs(`#${badgeId}`, r);
+  const prevEl = qs(`#${prevId}`, r);
+
+  // Name label
+  if (nameEl) {
+    if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
+    else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
+    else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
+    else nameEl.textContent = next.name || "Dosya seçilmedi";
+  }
+
+  // Badge
+  if (badgeEl) {
+    badgeEl.style.display = next.status === "ready" ? "" : "none";
+    if (next.status === "uploading") badgeEl.style.display = "none";
+    if (next.status === "error") {
+      badgeEl.style.display = "";
+      badgeEl.textContent = "Hata";
+      badgeEl.style.border = "1px solid rgba(255,120,120,.25)";
+      badgeEl.style.background = "rgba(255,120,120,.10)";
+    } else {
+      badgeEl.textContent = "Hazır ✓";
+      badgeEl.style.border = "1px solid rgba(120,255,190,.22)";
+      badgeEl.style.background = "rgba(120,255,190,.08)";
+    }
+  }
+
+  // Preview (image/logo)
+  if (prevEl && (kind === "image" || kind === "logo")) {
+    if (next.status === "ready" && next.url) {
+      prevEl.src = next.url;
+      prevEl.style.display = "";
+    } else {
+      prevEl.style.display = "none";
+    }
+  }
+
+  // Generate buttons lock while uploading
+  const genBtns = qsa('[data-atm-generate]', r);
+  const uploading = isUploadingAny();
+  genBtns.forEach((b) => {
+    if (!b) return;
+    b.toggleAttribute?.("disabled", uploading);
+    b.classList.toggle?.("is-uploading", uploading);
+    if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
+    else b.removeAttribute("title");
+  });
+}
 // ---- R2 presign + upload (expects your backend)
 // Backend contract (recommended):
 // POST /api/r2/presign-put
