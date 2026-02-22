@@ -146,16 +146,22 @@ html, body {
   }
 }
 /* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
-#mainWorkspace,
-#twoPanelWrap {
-  height: 100%;
+
+/* ✅ Zincirin başlangıcı: kesin viewport yüksekliği */
+#mainWorkspace{
+  height: calc(100vh - var(--aivo-topbar-h, 0px)) !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  overflow: hidden;
+}
+
+/* ✅ İki panel wrapper gerçek yüksekliği alsın */
+#twoPanelWrap{
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   align-items: stretch;
-}
-
-/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
-#twoPanelWrap {
   gap: 18px;
 }
 
@@ -164,7 +170,7 @@ html, body {
 section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;     /* parent yüksekliğini alsın */
+  flex: 1 1 auto;
   min-height: 0;
 }
 
@@ -172,7 +178,7 @@ section.outputsCard.studioOutputs {
 #rightPanelHost {
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;       /* 100% yerine daha güvenli */
+  height: auto;
 }
 
 /* Footer yazısı tabana yapışsın (varsa) */
