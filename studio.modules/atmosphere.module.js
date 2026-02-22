@@ -648,7 +648,6 @@ async function handleUpload(root, kind, file) {
     const dur = closestWithin(e.target, "#atmDuration", root);
     if (dur) state.duration = dur.value || state.duration;
   });
-
   // ------------------------------------------------------------
   // 8) Files: Basic image / logo / audio + Pro refs
   //    ✅ R2 upload for basic image/logo/audio
@@ -678,11 +677,23 @@ async function handleUpload(root, kind, file) {
       return;
     }
 
+    // ✅ PRO files (R2) — Süper Mod input'ları da aynı upload hattını kullanır
+    if (closestWithin(e.target, "#atmProLogoFile", root)) {
+      state.logoFile = file;                 // aynı state’i kullanıyoruz
+      await handleUpload(root, "logo", file); // uploads.logo.url dolar
+      return;
+    }
+
+    if (closestWithin(e.target, "#atmProAudioFile", root)) {
+      state.audioFile = file;
+      await handleUpload(root, "audio", file); // uploads.audio.url dolar
+      return;
+    }
+
     // PRO refs (şimdilik file olarak kalsın; istersen sonra R2’ye alırız)
     if (closestWithin(e.target, "#atmSceneImageInput", root)) state.refImageFile = file;
     if (closestWithin(e.target, "#atmSceneAudioInput", root)) state.refAudioFile = file;
   });
-
   // ------------------------------------------------------------
   // 9) Basic personalization controls
   // ------------------------------------------------------------
