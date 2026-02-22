@@ -5,6 +5,8 @@
 // ✅ DONE anında (opsiyonel) MP4 içine audio embed (mux) yapıp R2'ye upload ediyoruz.
 // ✅ DONE olduktan sonra (ATMO) AUTO LOGO OVERLAY çağırıp outputs'a logo_overlay ekliyoruz.
 // ✅ AUTO OVERLAY internal çağrıda cookie forward + same-host baseUrl kullanır (auth kırılmasın)
+// ✅ FINAL deterministik: provider -> mux (varsa) -> overlay (varsa) ve DB meta.final_video_url tek kaynak
+// ✅ outputs overwrite yok: her zaman merge + variant bazlı upsert
 
 const { neon } = require("@neondatabase/serverless");
 const fs = require("node:fs");
@@ -112,6 +114,162 @@ function toApiStatus(dbStatus) {
   if (s === "done") return "ready";
   if (s === "error") return "error";
   return "processing"; // queued/processing/unknown
+}
+
+// ---------- OUTPUT MERGE + FINAL ----------
+function normType(t) {
+  const s = String(t || "").toLowerCase().trim();
+  return s || "file";
+}
+
+function normVariant(o) {
+  const v = o?.meta?.variant;
+  const s = String(v || "").toLowerCase().trim();
+  return s || "";
+}
+
+function outputKey(o) {
+  const type = normType(o?.type);
+  const variant = normVariant(o);
+  // variant varsa: type+variant tekil olsun
+  if (variant) return `${type}:v:${variant}`;
+
+  // yoksa output_id varsa: type+output_id
+  const oid = o?.output_id || o?.id || null;
+  if (oid) return `${type}:id:${String(oid)}`;
+
+  // yoksa url'e düş
+  const u = pickUrl(o);
+  if (u) return `${type}:u:${String(u)}`;
+
+  return `${type}:idx:unknown`;
+}
+
+function mergeOutputs(existing, incoming) {
+  const out = Array.isArray(existing) ? existing.slice() : [];
+  const map = new Map();
+
+  for (let i = 0; i < out.length; i++) {
+    const k = outputKey(out[i]);
+    // ilk görüleni baz al (daha eski)
+    if (!map.has(k)) map.set(k, i);
+  }
+
+  const inc = Array.isArray(incoming) ? incoming : [];
+  for (let j = 0; j < inc.length; j++) {
+    const item = inc[j];
+    if (!item || !normType(item.type)) continue;
+
+    const k = outputKey(item);
+    if (map.has(k)) {
+      const idx = map.get(k);
+      out[idx] = { ...(out[idx] || {}), ...(item || {}) };
+    } else {
+      out.unshift(item); // yeni item üstte
+      // map indeksleri kayar; yeniden kurmak yerine basitçe ekledikten sonra en son normalize edeceğiz
+      // (final seçimi zaten meta ile yapılacak)
+    }
+  }
+
+  return out;
+}
+
+function removeFinalFlags(outputs) {
+  const arr = Array.isArray(outputs) ? outputs.slice() : [];
+  for (let i = 0; i < arr.length; i++) {
+    const o = arr[i] || {};
+    if (o?.meta?.is_final) {
+      arr[i] = {
+        ...o,
+        meta: { ...(o.meta || {}), is_final: false },
+      };
+    }
+    if (String(o?.meta?.variant || "").toLowerCase() === "final") {
+      // final pseudo item kullanmayacağız; gerçek final video item'ı işaretleyeceğiz
+      arr[i] = {
+        ...o,
+        meta: { ...(o.meta || {}), variant: o.meta.source_variant || o.meta.variant },
+      };
+    }
+  }
+  return arr;
+}
+
+function upsertFinalOutput(outputs, finalUrl, metaExtra) {
+  if (!finalUrl) return outputs;
+
+  let arr = Array.isArray(outputs) ? outputs.slice() : [];
+  arr = removeFinalFlags(arr);
+
+  const finalMeta = {
+    app: "atmo",
+    ...(metaExtra || {}),
+    is_final: true,
+  };
+
+  // Öncelik: aynı url'i taşıyan video item varsa onu final işaretle
+  let idx = arr.findIndex(
+    (o) =>
+      normType(o?.type) === "video" &&
+      String(pickUrl(o) || "") === String(finalUrl)
+  );
+
+  // Yoksa: source_variant (logo_overlay/mux/provider) ile eşleşeni final yap
+  if (idx < 0 && metaExtra?.source_variant) {
+    const sv = String(metaExtra.source_variant).toLowerCase();
+    idx = arr.findIndex(
+      (o) => normType(o?.type) === "video" && normVariant(o) === sv
+    );
+  }
+
+  // Yoksa: ilk video'yu final yap
+  if (idx < 0) {
+    idx = arr.findIndex((o) => normType(o?.type) === "video");
+  }
+
+  if (idx >= 0) {
+    const o = arr[idx] || {};
+    arr[idx] = {
+      ...o,
+      type: "video",
+      url: finalUrl,
+      meta: { ...(o.meta || {}), ...finalMeta },
+    };
+    return arr;
+  }
+
+  // hiç video yoksa ekle
+  arr.unshift({
+    type: "video",
+    url: finalUrl,
+    meta: finalMeta,
+  });
+
+  return arr;
+}
+
+function pickFinalVideoUrl({ providerUrl, muxUrl, overlayUrl }) {
+  if (overlayUrl) return { url: overlayUrl, variant: "logo_overlay" };
+  if (muxUrl) return { url: muxUrl, variant: "mux" };
+  if (providerUrl) return { url: providerUrl, variant: "provider" };
+  return { url: null, variant: null };
+}
+
+function pickVideoByVariant(outputs, variant) {
+  const v = String(variant || "").toLowerCase();
+  const arr = Array.isArray(outputs) ? outputs : [];
+  const hit = arr.find(
+    (o) => normType(o?.type) === "video" && normVariant(o) === v
+  );
+  return hit ? pickUrl(hit) : null;
+}
+
+function pickFinalFromOutputs(outputs) {
+  const arr = Array.isArray(outputs) ? outputs : [];
+  const hit = arr.find(
+    (o) => normType(o?.type) === "video" && o?.meta?.is_final === true
+  );
+  return hit ? pickUrl(hit) : null;
 }
 
 // ---------- RUNWAY ----------
@@ -449,7 +607,8 @@ module.exports = async (req, res) => {
           };
 
           if (dbSt === "done") {
-            let videoUrl = pickFalVideoUrl(body);
+            // ---- Provider base video ----
+            const providerVideoUrl = pickFalVideoUrl(body);
 
             const providerOutputId =
               body?.outputs?.[0]?.id ||
@@ -457,26 +616,20 @@ module.exports = async (req, res) => {
               requestId ||
               job_id;
 
-            // ✅ MP4 içine audio embed (mux) + R2 upload (opsiyonel)
+            // ---- Mux (opsiyonel) ----
             const audioMode = job?.meta?.audio_mode || null;
             const audioUrl = job?.meta?.audio_url || null;
             const silentCopy = Boolean(job?.meta?.silent_copy);
 
-            const alreadyMuxed = job?.meta?.muxed_url || null;
-            if (alreadyMuxed) {
-              videoUrl = alreadyMuxed;
-            } else if (
-              muxMp4WithAudio &&
-              videoUrl &&
-              audioMode === "embed" &&
-              audioUrl &&
-              !silentCopy
-            ) {
+            let muxedUrl = job?.meta?.muxed_url || null;
+
+            // Eğer zaten muxed_url varsa onu kullan
+            if (!muxedUrl && muxMp4WithAudio && providerVideoUrl && audioMode === "embed" && audioUrl && !silentCopy) {
               let tmpDir = null;
               let muxRes = null;
 
               try {
-                muxRes = await muxMp4WithAudio(videoUrl, audioUrl);
+                muxRes = await muxMp4WithAudio(providerVideoUrl, audioUrl);
                 const outMp4 = muxRes?.outMp4Path || muxRes?.outMp4;
                 tmpDir = muxRes?.tmpDir || null;
 
@@ -484,13 +637,11 @@ module.exports = async (req, res) => {
                   const output_id = `${providerOutputId}-with-audio`;
                   const key = `outputs/atmo/${job_id}/${output_id}.mp4`;
 
-                  const muxedPublicUrl = await uploadFileToR2({
+                  muxedUrl = await uploadFileToR2({
                     filePath: outMp4,
                     key,
                     contentType: "video/mp4",
                   });
-
-                  videoUrl = muxedPublicUrl;
 
                   patchMeta.audio = {
                     embedded: true,
@@ -499,8 +650,9 @@ module.exports = async (req, res) => {
                     muxed_at: new Date().toISOString(),
                   };
 
-                  patchMeta.muxed_url = muxedPublicUrl;
+                  patchMeta.muxed_url = muxedUrl;
                   patchMeta.muxed_key = key;
+                  patchMeta.mux_done = true;
                 }
               } catch (e) {
                 console.error("atmo_mux_failed", e);
@@ -509,6 +661,7 @@ module.exports = async (req, res) => {
                   embedded: false,
                   mux_error: String(e?.message || e),
                 };
+                patchMeta.mux_done = false;
               } finally {
                 try {
                   if (typeof muxRes?.cleanup === "function") await muxRes.cleanup();
@@ -519,42 +672,70 @@ module.exports = async (req, res) => {
               }
             }
 
-            if (videoUrl) {
-              const outs = [
+            // ---- outputs MERGE (NO OVERWRITE) ----
+            const existingOutputs = Array.isArray(job.outputs) ? job.outputs : [];
+            let merged = existingOutputs;
+
+            if (providerVideoUrl) {
+              merged = mergeOutputs(merged, [
                 {
                   type: "video",
-                  url: videoUrl,
+                  url: providerVideoUrl,
                   output_id: providerOutputId,
-                  meta: { app: "atmo", provider: "fal" },
+                  meta: { app: "atmo", provider: "fal", variant: "provider" },
                 },
-              ];
-
-              await sql`
-                update jobs
-                set status = 'done',
-                    outputs = ${JSON.stringify(outs)}::jsonb,
-                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-                    updated_at = now()
-                where id = ${job_id}::uuid
-              `;
-
-              job.status = "done";
-              job.outputs = outs;
-              job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-            } else {
-              await sql`
-                update jobs
-                set status = 'done',
-                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
-                      ...patchMeta,
-                      fal: { ...patchMeta.fal, note: "done_but_no_video_url" },
-                    })}::jsonb,
-                    updated_at = now()
-                where id = ${job_id}::uuid
-              `;
-              job.status = "done";
-              job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+              ]);
             }
+
+            if (muxedUrl) {
+              merged = mergeOutputs(merged, [
+                {
+                  type: "video",
+                  url: muxedUrl,
+                  output_id: `${providerOutputId}-with-audio`,
+                  meta: { app: "atmo", provider: "fal", variant: "mux" },
+                },
+              ]);
+            }
+
+            // overlay varsa (daha önce yazılmış olabilir) onu da final seçimine dahil et
+            const overlayUrlExisting =
+              job?.meta?.logo_overlay_url ||
+              pickVideoByVariant(merged, "logo_overlay") ||
+              null;
+
+            // ---- FINAL seçimi (tek kural) ----
+            const picked = pickFinalVideoUrl({
+              providerUrl: providerVideoUrl,
+              muxUrl: muxedUrl,
+              overlayUrl: overlayUrlExisting,
+            });
+
+            const finalUrl = picked.url;
+            const finalVariant = picked.variant;
+
+            if (finalUrl) {
+              merged = upsertFinalOutput(merged, finalUrl, {
+                source_variant: finalVariant,
+              });
+
+              patchMeta.final_video_url = finalUrl;
+              patchMeta.final_variant = finalVariant;
+            }
+
+            // DB update
+            await sql`
+              update jobs
+              set status = 'done',
+                  outputs = ${JSON.stringify(merged)}::jsonb,
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                  updated_at = now()
+              where id = ${job_id}::uuid
+            `;
+
+            job.status = "done";
+            job.outputs = merged;
+            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
           } else if (dbSt === "error") {
             await sql`
               update jobs
@@ -785,18 +966,25 @@ module.exports = async (req, res) => {
 
       const logoUrl = job?.meta?.logo_url || null;
 
-      const baseVideoUrl =
-        (outputs.find((x) => String(x?.type).toLowerCase() === "video") || null)
-          ?.url ||
-        job?.video_url ||
-        null;
+      // ✅ Overlay her zaman "en güncel video" üstüne basılacak:
+      // 1) muxed_url
+      // 2) final_video_url
+      // 3) provider variant
+      // 4) ilk video fallback
+      const muxedUrlNow = job?.meta?.muxed_url || pickVideoByVariant(outputs, "mux") || null;
+      const finalUrlNow = job?.meta?.final_video_url || pickFinalFromOutputs(outputs) || null;
+      const providerUrlNow = pickVideoByVariant(outputs, "provider") || null;
+      const firstVideoUrl =
+        (outputs.find((x) => normType(x?.type) === "video") || null)?.url || null;
+
+      const baseVideoUrl = muxedUrlNow || finalUrlNow || providerUrlNow || firstVideoUrl || null;
 
       const alreadyHasOverlay =
         Array.isArray(outputs) &&
         outputs.some(
           (o) =>
-            String(o?.type).toLowerCase() === "video" &&
-            (o?.meta?.variant === "logo_overlay" ||
+            normType(o?.type) === "video" &&
+            (normVariant(o) === "logo_overlay" ||
               String(o?.url || "").includes("logo-overlay-"))
         );
 
@@ -837,31 +1025,42 @@ module.exports = async (req, res) => {
         const data = await resp.json().catch(() => null);
 
         if (data?.ok && data?.url) {
-          // ✅ outputs'a overlay video ekle
-          outputs.unshift({
+          // ✅ outputs'a overlay video ekle (merge + variant)
+          const overlayItem = {
             type: "video",
             url: data.url,
             meta: { app: "atmo", variant: "logo_overlay" },
+          };
+
+          let merged = mergeOutputs(outputs, [overlayItem]);
+
+          // ✅ overlay bittiği an final kesin overlay olmalı
+          merged = upsertFinalOutput(merged, data.url, {
+            source_variant: "logo_overlay",
           });
+
+          const patchMeta = {
+            logo_overlay_done: true,
+            logo_overlay_url: data.url,
+            final_video_url: data.url,
+            final_variant: "logo_overlay",
+          };
 
           await sql`
             update jobs
             set
-              outputs = ${JSON.stringify(outputs)}::jsonb,
-              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
-                logo_overlay_done: true,
-                logo_overlay_url: data.url,
-              })}::jsonb,
+              outputs = ${JSON.stringify(merged)}::jsonb,
+              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
               updated_at = now()
             where id = ${job_id}::uuid
           `;
 
           // ✅ response memory state
+          outputs = merged;
           job.outputs = outputs;
           job.meta = {
             ...(job.meta || {}),
-            logo_overlay_done: true,
-            logo_overlay_url: data.url,
+            ...patchMeta,
           };
         }
       }
@@ -872,14 +1071,19 @@ module.exports = async (req, res) => {
     // =========================
     // 5) RESPONSE NORMALIZE (tek sefer)
     // =========================
-    const outVideo =
-      outputs.find((x) => String(x?.type).toLowerCase() === "video") || null;
+    const finalMetaUrl = job?.meta?.final_video_url || null;
+    const finalFromOutputs = pickFinalFromOutputs(outputs);
+    const fallbackFirstVideo =
+      outputs.find((x) => normType(x?.type) === "video") || null;
+
+    const outVideoUrl = finalMetaUrl || finalFromOutputs || (fallbackFirstVideo ? pickUrl(fallbackFirstVideo) : null);
+    const outVideo = outVideoUrl ? { url: outVideoUrl } : null;
 
     const outAudio =
-      outputs.find((x) => String(x?.type).toLowerCase() === "audio") || null;
+      outputs.find((x) => normType(x?.type) === "audio") || null;
 
     const outImage =
-      outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
+      outputs.find((x) => normType(x?.type) === "image") || null;
 
     const failureReason =
       job?.meta?.runway?.failure ||
@@ -895,9 +1099,9 @@ module.exports = async (req, res) => {
         String(job.status).toLowerCase() === "error"
           ? failureReason || "provider_failed"
           : null,
-      video: outVideo ? { url: outVideo.url } : null,
-      audio: outAudio ? { url: outAudio.url } : null,
-      image: outImage ? { url: outImage.url } : null,
+      video: outVideo,
+      audio: outAudio ? { url: pickUrl(outAudio) } : null,
+      image: outImage ? { url: pickUrl(outImage) } : null,
       outputs: outputs || [],
       db_status: job.status,
       ...(DEBUG
@@ -907,6 +1111,9 @@ module.exports = async (req, res) => {
               appKey,
               requestId,
               has_logo_url: Boolean(job?.meta?.logo_url),
+              muxed_url: job?.meta?.muxed_url || null,
+              final_video_url: job?.meta?.final_video_url || null,
+              final_variant: job?.meta?.final_variant || null,
               logo_overlay_done: Boolean(job?.meta?.logo_overlay_done),
               logo_overlay_url: job?.meta?.logo_overlay_url || null,
             },
