@@ -366,65 +366,48 @@
       </div>
     </div>
 
-    <!-- MINI PERSONALIZATION (PRO): Logo + Audio (BASIC'ten alındı, pill'e küçültüldü) -->
-    <div class="atmProMiniPers" style="margin-top:12px;">
-      <!-- Logo -->
-      <div class="atmProMiniCol">
-        <div class="atmProMiniHead">Logo</div>
+   <!-- MINI PERSONALIZATION (PRO – SADE) -->
+<div class="atmProMiniPers" style="margin-top:12px;">
 
-        <div class="atmLogoTop">
-          <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
-            <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-            🏷️ Logo Seç
-          </label>
-        </div>
+  <!-- Logo -->
+  <div class="atmProMiniCol">
+    <div class="atmProMiniHead">Logo</div>
 
-        <div class="atmFileMeta">
-          <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
-        </div>
+    <div class="atmLogoInline">
+      <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
+        <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+        🏷️ Logo Seç
+      </label>
 
-        <div class="atmRow2">
-          <select id="atmProLogoPos" class="input">
-            <option value="tl">Sol Üst</option>
-            <option value="tr">Sağ Üst</option>
-            <option value="bl">Sol Alt</option>
-            <option value="br" selected>Sağ Alt</option>
-            <option value="center_small">Ortada (küçük)</option>
-          </select>
-
-          <select id="atmProLogoSize" class="input">
-            <option value="sm" selected>Küçük</option>
-            <option value="md">Orta</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Audio -->
-      <div class="atmProMiniCol">
-        <div class="atmProMiniHead">Müzik / Jingle</div>
-
-        <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
-          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-          🎵 Audio Seç
-        </label>
-
-        <div class="atmFileMeta">
-          <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
-        </div>
-
-        <div class="atmRow2">
-          <select id="atmProAudioMode" class="input">
-            <option value="none" selected>Ses yok</option>
-            <option value="embed">MP4 içine ekle</option>
-          </select>
-
-          <select id="atmProAudioTrim" class="input">
-            <option value="loop_to_fit" selected>Loop ile uydur</option>
-            <option value="trim">Kırp</option>
-          </select>
-        </div>
-      </div>
+      <select id="atmProLogoPos" class="input atmInlineSelect">
+        <option value="tl">Sol Üst</option>
+        <option value="tr">Sağ Üst</option>
+        <option value="bl">Sol Alt</option>
+        <option value="br" selected>Sağ Alt</option>
+        <option value="center_small">Ortada</option>
+      </select>
     </div>
+
+    <div class="atmFileMeta">
+      <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <div class="atmProMiniCol">
+    <div class="atmProMiniHead">Müzik / Jingle</div>
+
+    <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
+      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+      🎵 Audio Seç
+    </label>
+
+    <div class="atmFileMeta">
+      <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
+    </div>
+  </div>
+
+</div>
 
     <!-- Base frame note (aynı dursun) -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
