@@ -346,35 +346,31 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* ============================
-   ATMOSFER: stroke’u içeri al
-   ============================ */
+/* ==========================================
+   ATMOSFER: global stroke’u sadece burada sustur
+   sonra içeriye kendi frame’ini çiz
+   ========================================== */
 
-/* 1) Atmosfer’de dış container stroke/glow’u kapat (duvar çizgisi buradan geliyor) */
+/* 1) Atmosfer moduleHost subtree’sinde tüm stroke çizgilerini kapat */
 section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]{
-  border: none !important;
+  --stroke-w: 0px !important;  /* 🔥 kritik: “duvar çizgisi” kaynağı bu */
 }
 
-/* Eğer çizgi/glow pseudo-element’ten geliyorsa onu da kapat */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]::after{
-  display: none !important;
-}
-
-/* 2) Stroke’u içerideki asıl sayfaya uygula (scroll içeriğiyle birlikte uzar) */
+/* 2) Atmosfer’in kendi paneline içten frame çiz */
 section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
   > section.main-panel[data-module="atmosphere"]{
   position: relative;
   border-radius: var(--card-radius);
-  padding: 18px; /* çizgi içerde dursun diye */
+  padding: 18px; /* frame içerde kalsın */
 }
 
-/* 3) İç stroke (duvar çizgisi artık Atmosfer’in içinde) */
+/* 3) İç frame (Atmosfer’in içine giren çizgi) */
 section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
   > section.main-panel[data-module="atmosphere"]::before{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  border: var(--stroke-w) solid rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.07); /* istersen .09 yaparız */
   pointer-events: none;
 }
