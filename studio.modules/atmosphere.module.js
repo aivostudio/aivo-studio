@@ -774,7 +774,7 @@ async function handleUpload(root, kind, file) {
       return;
     }
   });
-  // ------------------------------------------------------------
+   // ------------------------------------------------------------
   // 9) Basic personalization controls
   // ------------------------------------------------------------
   document.addEventListener("change", (e) => {
@@ -798,6 +798,14 @@ async function handleUpload(root, kind, file) {
 
     const sc = closestWithin(e.target, "#atmSilentCopy", root);
     if (sc) state.silentCopy = !!sc.checked;
+
+    // ✅ PRO: logo position (atmProLogoPos -> state.logoPos)
+    const proPos = closestWithin(e.target, "#atmProLogoPos", root);
+    if (proPos) state.logoPos = proPos.value || state.logoPos;
+
+    // ✅ PRO: audio mode (atmProAudioMode -> state.audioMode)
+    const proAudioMode = closestWithin(e.target, "#atmProAudioMode", root);
+    if (proAudioMode) state.audioMode = proAudioMode.value || state.audioMode;
   });
 
   // ------------------------------------------------------------
