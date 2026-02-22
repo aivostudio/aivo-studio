@@ -371,56 +371,64 @@
       </div>
     </div>
 
-    <!-- ✅ PRO: Logo + Audio (Basit Mod’daki upload mantığıyla) -->
-    <div class="atmProRefs">
+ <!-- ✅ PRO: Logo + Audio (Basit Mod’daki upload mantığıyla) -->
+<div class="atmProRefs">
 
-      <!-- üst satır: Logo başlığı + pozisyon -->
-      <div class="atmProRefsHead">
-        <div class="atmProRefsTitle">Logo</div>
-        <select id="atmProLogoPos" class="input atmProSelect">
-          <option value="tl">Sol Üst</option>
-          <option value="tr">Sağ Üst</option>
-          <option value="bl">Sol Alt</option>
-          <option value="br" selected>Sağ Alt</option>
-          <option value="center_small">Ortada (küçük)</option>
-        </select>
-      </div>
+  <!-- üst satır: Logo başlığı + pozisyon -->
+  <div class="atmProRefsHead">
+    <div class="atmProRefsTitle">Logo</div>
+    <select id="atmProLogoPos" class="input atmProSelect">
+      <option value="tl">Sol Üst</option>
+      <option value="tr">Sağ Üst</option>
+      <option value="bl">Sol Alt</option>
+      <option value="br" selected>Sağ Alt</option>
+      <option value="center_small">Ortada (küçük)</option>
+    </select>
+  </div>
 
-      <!-- butonlar -->
-      <div class="atmProRefsBtns">
-        <label class="btn atmFileBtn" style="cursor:pointer;">
-          <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-          🖼️ Logo Seç
-        </label>
+  <!-- butonlar -->
+  <div class="atmProRefsBtns">
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+      🖼️ Logo Seç
+    </label>
 
-        <label class="btn atmFileBtn" style="cursor:pointer;">
-          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-          🎵 Audio Seç
-        </label>
-      </div>
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+      🎵 Audio Seç
+    </label>
+  </div>
 
-      <!-- ✅ meta (thumbnail yok) -->
-      <div class="atmProRefsMeta">
-        <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
-        <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
-      </div>
+  <!-- ✅ meta (thumbnail yok) -->
+  <div class="atmProRefsMeta">
+    <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
+    <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
+  </div>
 
-      <!-- ✅ küçük durum etiketi -->
-      <div class="atmProRefsBottom">
-        <div id="atmProLogoStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-          Hazır ✓
-        </div>
-        <div id="atmProAudioStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-          Hazır ✓
-        </div>
-      </div>
-
+  <!-- ✅ küçük durum etiketi -->
+  <div class="atmProRefsBottom">
+    <div id="atmProLogoStatus"
+         style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+      Hazır ✓
     </div>
-  </div><!-- /#atmSuperPromptCard -->
+    <div id="atmProAudioStatus"
+         style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+      Hazır ✓
+    </div>
+  </div>
 
-  <style>
+  <!-- ✅ PRO audio mode (Ses yok / MP4 içine ekle) -->
+  <div class="atmRow2">
+    <select id="atmProAudioMode" class="input atmProSelect">
+      <option value="none" selected>Ses yok</option>
+      <option value="embed">MP4 içine ekle</option>
+    </select>
+  </div>
+
+</div>
+</div><!-- /#atmSuperPromptCard -->
+
+<style>
     /* PRO refs box (tamamen card içinde, kompakt) */
     #atmSuperPromptCard .atmProRefs{
       margin-top:12px;
