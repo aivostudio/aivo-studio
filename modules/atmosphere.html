@@ -455,138 +455,150 @@
       })();
     </script>
   </div><!-- /#atmProMediaBarCard -->
-
-  <!-- (2) LIGHT · EXPORT · MOOD (KOMPAKT) -->
-  <div class="card" id="atmProMoodExport" style="margin-top:12px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Işık · Export · Duygu</div>
-        <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
-      </div>
+<!-- (2) LIGHT · EXPORT · MOOD (KOMPAKT) -->
+<div class="card" id="atmProMoodExport" style="margin-top:12px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Işık · Export · Duygu</div>
+      <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
     </div>
-
-    <div class="atmProTwoCol">
-
-      <div>
-        <div class="atmProGroupTitle">💡 Işık</div>
-        <div class="smpack-row atmCompactRow">
-          <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-          <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-          <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
-          <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
-          <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
-        </div>
-
-        <div class="atmProGroupTitle" style="margin-top:10px;">🎭 Duygu</div>
-        <div class="smpack-row atmCompactRow">
-          <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
-          <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
-          <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="atmProGroupTitle">📦 Export</div>
-
-        <!-- Oran pills -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <div style="font-weight:700;font-size:12px;opacity:.85;min-width:44px;">Oran</div>
-          <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
-            <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
-            <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
-            <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
-          </div>
-        </div>
-
-        <!-- Mini selects tek satır -->
-        <div class="atmProMiniLine">
-          <label class="atmMiniLabel">FPS</label>
-          <select id="atmProFps" class="atmMiniSelect2">
-            <option value="24" selected>24</option>
-            <option value="30">30</option>
-          </select>
-
-          <label class="atmMiniLabel">Format</label>
-          <select id="atmProFormat" class="atmMiniSelect2">
-            <option value="mp4" selected>MP4</option>
-            <option value="webm">WebM</option>
-          </select>
-
-          <label class="atmMiniLabel">Süre</label>
-          <select id="atmProDuration" class="atmMiniSelect2">
-            <option value="4">4</option>
-            <option value="6">6</option>
-            <option value="8" selected>8</option>
-            <option value="10">10</option>
-            <option value="12">12</option>
-            <option value="15">15</option>
-          </select>
-        </div>
-
-        <label class="atmMiniCheck">
-          <input type="checkbox" id="atmProSeamFix">
-          🔁 Seam Fix
-        </label>
-      </div>
-
-    </div>
-
-    <style>
-      #atmProMoodExport .atmProTwoCol{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:14px;
-        align-items:start;
-      }
-      #atmProMoodExport .atmProGroupTitle{
-        font-weight:800;
-        font-size:12px;
-        opacity:.85;
-        margin-bottom:8px;
-      }
-      #atmProMoodExport .atmCompactRow{ gap:8px; flex-wrap:wrap; }
-
-      /* Mini export line */
-      #atmProMoodExport .atmProMiniLine{
-        display:flex;
-        align-items:center;
-        gap:8px;
-        flex-wrap:wrap;
-        margin-top:6px;
-      }
-      #atmProMoodExport .atmMiniLabel{
-        font-size:12px;
-        opacity:.8;
-        font-weight:700;
-        margin-left:2px;
-      }
-      #atmProMoodExport .atmMiniSelect2{
-        height:34px;
-        padding:6px 10px;
-        font-size:12px;
-        border-radius:12px;
-        background:rgba(0,0,0,.22);
-        border:1px solid rgba(255,255,255,.10);
-        color:#fff;
-        min-width:86px;
-      }
-      #atmProMoodExport .atmMiniCheck{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-top:10px;
-        font-size:12px;
-        opacity:.85;
-        font-weight:700;
-      }
-
-      @media (max-width: 980px){
-        #atmProMoodExport .atmProTwoCol{ grid-template-columns:1fr; }
-      }
-    </style>
   </div>
+
+  <div class="atmProTwoCol">
+
+    <div>
+      <div class="atmProGroupTitle">💡 Işık</div>
+      <div class="smpack-row atmCompactRow">
+        <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+        <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+        <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+        <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+        <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+      </div>
+
+      <div class="atmProGroupTitle" style="margin-top:10px;">🎭 Duygu</div>
+      <div class="smpack-row atmCompactRow">
+        <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+        <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+        <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+        <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+        <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="atmProGroupTitle">📦 Export</div>
+
+      <!-- Oran pills -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="font-weight:700;font-size:12px;opacity:.85;min-width:44px;">Oran</div>
+        <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
+          <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
+          <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
+          <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
+        </div>
+      </div>
+
+      <!-- Mini selects tek satır -->
+      <div class="atmProMiniLine">
+        <label class="atmMiniLabel">FPS</label>
+        <select id="atmProFps" class="atmMiniSelect2">
+          <option value="24" selected>24</option>
+          <option value="30">30</option>
+        </select>
+
+        <label class="atmMiniLabel">Format</label>
+        <select id="atmProFormat" class="atmMiniSelect2">
+          <option value="mp4" selected>MP4</option>
+          <option value="webm">WebM</option>
+        </select>
+
+        <label class="atmMiniLabel">Süre</label>
+        <select id="atmProDuration" class="atmMiniSelect2">
+          <option value="4">4</option>
+          <option value="6">6</option>
+          <option value="8" selected>8</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="15">15</option>
+        </select>
+      </div>
+
+      <label class="atmMiniCheck">
+        <input type="checkbox" id="atmProSeamFix">
+        🔁 Seam Fix
+      </label>
+    </div>
+
+  </div>
+
+  <style>
+    #atmProMoodExport .atmProTwoCol{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    #atmProMoodExport .atmProGroupTitle{
+      font-weight:800;
+      font-size:12px;
+      opacity:.85;
+      margin-bottom:8px;
+    }
+
+    /* ✅ Işık/Duygu: 2 satır clamp + daha küçük pill */
+    #atmProMoodExport .atmCompactRow{
+      gap:6px !important;
+      flex-wrap:wrap;
+      max-height:74px;     /* ~2 satır */
+      overflow:hidden;
+    }
+    #atmProMoodExport .atmCompactRow .smpack-pill{
+      padding:6px 10px !important;
+      font-size:12px !important;
+      line-height:1 !important;
+    }
+
+    /* Mini export line */
+    #atmProMoodExport .atmProMiniLine{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+    #atmProMoodExport .atmMiniLabel{
+      font-size:12px;
+      opacity:.8;
+      font-weight:700;
+      margin-left:2px;
+    }
+    #atmProMoodExport .atmMiniSelect2{
+      height:34px;
+      padding:6px 10px;
+      font-size:12px;
+      border-radius:12px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+      min-width:86px;
+    }
+    #atmProMoodExport .atmMiniCheck{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      font-size:12px;
+      opacity:.85;
+      font-weight:700;
+    }
+
+    @media (max-width: 980px){
+      #atmProMoodExport .atmProTwoCol{ grid-template-columns:1fr; }
+      #atmProMoodExport .atmCompactRow{ max-height:none; } /* mobilde kırpma istemezsek */
+    }
+  </style>
+</div>
 
   <!-- (3) DETAIL EFFECTS + LUT (MINI CHIP) -->
   <div class="card" id="atmProDetails" style="margin-top:12px;">
