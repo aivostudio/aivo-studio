@@ -892,60 +892,71 @@ async function handleUpload(root, kind, file) {
     if (lut) d.lut = lut.value || "";
   });
 
-  // ------------------------------------------------------------
-  // 13) Payload builders
-  //    ✅ Basic payload: send R2 URL (NOT File)
-  // ------------------------------------------------------------
-  function buildBasicPayload() {
-    return {
-      app: "atmo",
-      mode: "basic",
-      aspect: state.aspect || "16:9",
+// ------------------------------------------------------------
+// 13) Payload builders
+//    ✅ Basic payload: send R2 URL (NOT File)
+// ------------------------------------------------------------
+function buildBasicPayload() {
+  return {
+    app: "atmo",
+    mode: "basic",
+    aspect: state.aspect || "16:9",
 
-      scene: state.scene || null,
-      effects: (state.effects || []).slice(),
-      camera: state.camera || "kenburns_soft",
-      duration: state.duration || "8",
+    scene: state.scene || null,
+    effects: (state.effects || []).slice(),
+    camera: state.camera || "kenburns_soft",
+    duration: state.duration || "8",
 
-      // ✅ R2 url (scene override)
-      image_url: state.uploads?.image?.url || "",
+    // ✅ R2 url (scene override)
+    image_url: state.uploads?.image?.url || "",
 
-      // ✅ R2 url
-      logo_url: state.uploads?.logo?.url || "",
-      logo_pos: state.logoPos || "br",
-      logo_size: state.logoSize || "sm",
-      logo_opacity: state.logoOpacity ?? 0.9,
+    // ✅ R2 url
+    logo_url: state.uploads?.logo?.url || "",
+    logo_pos: state.logoPos || "br",
+    logo_size: state.logoSize || "sm",
+    logo_opacity: state.logoOpacity ?? 0.9,
 
-      // ✅ R2 url
-      audio_url: state.uploads?.audio?.url || "",
-      audio_mode: state.audioMode || "none",
-      audio_trim: state.audioTrim || "loop_to_fit",
-      silent_copy: !!state.silentCopy
-    };
-  }
+    // ✅ R2 url
+    audio_url: state.uploads?.audio?.url || "",
+    audio_mode: state.audioMode || "none",
+    audio_trim: state.audioTrim || "loop_to_fit",
+    silent_copy: !!state.silentCopy
+  };
+}
 
-  function buildProPayload() {
-    return {
-      app: "atmo",
-      mode: "pro",
-      aspect: state.aspect || "16:9",
+function buildProPayload() {
+  return {
+    app: "atmo",
+    mode: "pro",
+    aspect: state.aspect || "16:9",
 
-      prompt: state.prompt || "",
-      light: state.light || null,
-      mood: state.mood || null,
+    prompt: state.prompt || "",
+    light: state.light || null,
+    mood: state.mood || null,
 
-      // (opsiyonel) pro refs — şu an File (istersen sonra R2)
-      ref_image_file: state.refImageFile || null,
-      ref_audio_file: state.refAudioFile || null,
+    // (opsiyonel) pro refs — şu an File (istersen sonra R2)
+    ref_image_file: state.refImageFile || null,
+    ref_audio_file: state.refAudioFile || null,
 
-      fps: state.fps || "24",
-      format: state.format || "mp4",
-      duration: state.proDuration || undefined,
-      seam_fix: !!state.seamFix,
+    fps: state.fps || "24",
+    format: state.format || "mp4",
+    duration: state.proDuration || undefined,
+    seam_fix: !!state.seamFix,
 
-      details: { ...(state.details || {}) }
-    };
-  }
+    // ✅ Pro’da da R2 logo/audio URL’lerini gönder (video bind için şart)
+    logo_url: state.uploads?.logo?.url || "",
+    logo_pos: state.logoPos || "br",
+    logo_size: state.logoSize || "sm",
+    logo_opacity: state.logoOpacity ?? 0.9,
+
+    audio_url: state.uploads?.audio?.url || "",
+    audio_mode: state.audioMode || "none",
+    audio_trim: state.audioTrim || "loop_to_fit",
+    silent_copy: !!state.silentCopy,
+
+    details: { ...(state.details || {}) }
+  };
+}
 
   // ------------------------------------------------------------
   // 14) Generate (delegated) — CAPTURE
