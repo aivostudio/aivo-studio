@@ -343,12 +343,11 @@
 
       </div><!-- /MODE PANEL basic -->
      
-    <!-- ================= SUPER MODE ================= -->
+<!-- ================= SUPER MODE ================= -->
 <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
-  <!-- (1) SUPER PROMPT + (Logo/Audio aynı kart içinde) -->
+  <!-- (1) SUPER PROMPT + (LOGO + AUDIO) -->
   <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
-
     <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
       <div style="color:#fff;font-weight:600;font-size:14px;">
         Sahne + kamera + atmosferi tek prompt’ta anlat
@@ -372,13 +371,13 @@
       </div>
     </div>
 
-    <!-- ✅ PRO: Logo + Audio (Basit Mod ile aynı görüntü) -->
-    <div class="atmProRefWrap">
+    <!-- ✅ PRO: Logo + Audio (Basic ile aynı minimal mantık) -->
+    <div class="atmProRefs">
 
-      <!-- ÜSTTE: Logo konumu (yer kazansın) -->
-      <div class="atmProTopRow">
-        <div class="atmProTopLabel">Logo</div>
-        <select id="atmProLogoPos" class="input">
+      <!-- üst satır: Logo başlığı + pozisyon -->
+      <div class="atmProRefsHead">
+        <div class="atmProRefsTitle">Logo</div>
+        <select id="atmProLogoPos" class="input atmProSelect">
           <option value="tl">Sol Üst</option>
           <option value="tr">Sağ Üst</option>
           <option value="bl">Sol Alt</option>
@@ -386,184 +385,179 @@
         </select>
       </div>
 
-      <!-- ORTA: 2 buton -->
-      <div class="atmProBtnRow">
-        <label class="btn atmFileBtn" style="cursor:pointer; width:100%;">
+      <!-- butonlar -->
+      <div class="atmProRefsBtns">
+        <label class="btn atmFileBtn" style="cursor:pointer;">
           <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-          🏷️ Logo Seç
+          🖼️ Logo Seç
         </label>
 
-        <label class="btn atmFileBtn" style="cursor:pointer; width:100%;">
+        <label class="btn atmFileBtn" style="cursor:pointer;">
           <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
           🎵 Audio Seç
         </label>
       </div>
 
-      <!-- ALT: yazılar (Dosya seçilmedi) -->
-      <div class="atmProMetaRow">
-        <div class="atmFileMeta">
+      <!-- dosya adları (altta) -->
+      <div class="atmProRefsMeta">
+        <div class="atmProMetaLeft">
           <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
+
+          <!-- thumbnail -->
+          <div class="atmLogoThumb atmLogoThumb--pro" aria-hidden="true">
+            <img id="atmProLogoThumb" alt="" />
+          </div>
         </div>
-        <div class="atmFileMeta">
+
+        <div class="atmProMetaRight">
           <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
         </div>
       </div>
 
-      <!-- ✅ küçük thumbnail slot (basit moddaki gibi) -->
-      <div class="atmProThumbRow">
-        <div class="atmLogoThumb" aria-hidden="true">
-          <img id="atmProLogoThumb" alt="" />
-        </div>
-      </div>
-
-      <!-- Audio ayarları (basit moddaki gibi) -->
-      <div class="atmProRow2">
-        <select id="atmProAudioMode" class="input">
+      <!-- alt ayarlar -->
+      <div class="atmProRefsBottom">
+        <select id="atmProAudioMode" class="input atmProSelect">
           <option value="none" selected>Ses yok</option>
           <option value="embed">MP4 içine ekle</option>
         </select>
 
-        <select id="atmProAudioTrim" class="input">
+        <select id="atmProAudioTrim" class="input atmProSelect">
           <option value="loop_to_fit" selected>Loop ile uydur</option>
           <option value="trim">Kırp</option>
         </select>
       </div>
-
     </div>
-
-    <style>
-      /* ✅ Super prompt card içinde: Basit Mod hissi */
-      #atmSuperPromptCard .atmProRefWrap{
-        margin-top:12px;
-        padding:12px;
-        border-radius:16px;
-        border:1px solid rgba(255,255,255,.08);
-        background:rgba(0,0,0,.14);
-      }
-
-      #atmSuperPromptCard .atmProTopRow{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        margin-bottom:10px;
-      }
-      #atmSuperPromptCard .atmProTopLabel{
-        font-weight:700;
-        font-size:13px;
-        opacity:.9;
-        white-space:nowrap;
-      }
-      #atmSuperPromptCard #atmProLogoPos{
-        max-width:220px;
-      }
-
-      #atmSuperPromptCard .atmProBtnRow{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:12px;
-        align-items:center;
-      }
-
-      #atmSuperPromptCard .atmProMetaRow{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:12px;
-        margin-top:10px;
-      }
-
-      #atmSuperPromptCard .atmFileMeta{ margin-top:0; }
-      #atmSuperPromptCard .atmFileName{
-        font-size:12px;
-        opacity:.9;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-
-      /* Thumb: sabit, yer bozmasın */
-      #atmSuperPromptCard .atmProThumbRow{
-        display:flex;
-        justify-content:flex-start;
-        margin-top:10px;
-      }
-      #atmSuperPromptCard .atmLogoThumb{
-        width:44px;
-        height:44px;
-        border-radius:12px;
-        border:1px solid rgba(255,255,255,.12);
-        background:rgba(0,0,0,.22);
-        overflow:hidden;
-        flex:0 0 44px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-      }
-      #atmSuperPromptCard .atmLogoThumb img{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        display:block;
-      }
-
-      #atmSuperPromptCard .atmProRow2{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:10px;
-        margin-top:10px;
-      }
-
-      @media (max-width: 980px){
-        #atmSuperPromptCard .atmProBtnRow,
-        #atmSuperPromptCard .atmProMetaRow,
-        #atmSuperPromptCard .atmProRow2{
-          grid-template-columns: 1fr;
-        }
-        #atmSuperPromptCard #atmProLogoPos{
-          max-width:100%;
-        }
-      }
-    </style>
-
-    <script>
-      (() => {
-        const bindName = (inputId, labelId) => {
-          const input = document.getElementById(inputId);
-          const label = document.getElementById(labelId);
-          if (!input || !label) return;
-
-          const show = () => {
-            const f = input.files && input.files[0];
-            label.textContent = f ? f.name : "Dosya seçilmedi";
-          };
-
-          input.addEventListener("change", show);
-          show();
-        };
-
-        const bindThumb = (inputId, imgId) => {
-          const input = document.getElementById(inputId);
-          const img = document.getElementById(imgId);
-          if (!input || !img) return;
-
-          const show = () => {
-            const f = input.files && input.files[0];
-            if (!f) { img.removeAttribute("src"); return; }
-            img.src = URL.createObjectURL(f);
-          };
-
-          input.addEventListener("change", show);
-          show();
-        };
-
-        bindName("atmProLogoFile",  "atmProLogoFileName");
-        bindName("atmProAudioFile", "atmProAudioFileName");
-        bindThumb("atmProLogoFile", "atmProLogoThumb");
-      })();
-    </script>
-
   </div><!-- /#atmSuperPromptCard -->
 
+  <style>
+    /* PRO refs box (tamamen card içinde, kompakt) */
+    #atmSuperPromptCard .atmProRefs{
+      margin-top:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.14);
+    }
+
+    #atmSuperPromptCard .atmProRefsHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    #atmSuperPromptCard .atmProRefsTitle{
+      font-weight:700;
+      opacity:.92;
+    }
+
+    #atmSuperPromptCard .atmProRefsBtns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    #atmSuperPromptCard .atmProRefsMeta{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+      align-items:start;
+    }
+
+    #atmSuperPromptCard .atmFileName{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    #atmSuperPromptCard .atmProRefsBottom{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    #atmSuperPromptCard .atmProSelect{
+      width:100%;
+      min-width:0;
+    }
+
+    /* Thumbnail (Basic ile aynı his) */
+    #atmSuperPromptCard .atmLogoThumb--pro{
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    #atmSuperPromptCard .atmLogoThumb--pro img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      opacity:.95;
+    }
+
+    /* küçük ekranda tek kolon */
+    @media (max-width: 980px){
+      #atmSuperPromptCard .atmProRefsBtns,
+      #atmSuperPromptCard .atmProRefsMeta,
+      #atmSuperPromptCard .atmProRefsBottom{
+        grid-template-columns:1fr;
+      }
+      #atmSuperPromptCard .atmProRefsHead{
+        flex-direction:column;
+        align-items:stretch;
+      }
+    }
+  </style>
+
+  <script>
+    (() => {
+      // Logo filename + thumb
+      const logoInput = document.getElementById("atmProLogoFile");
+      const logoName  = document.getElementById("atmProLogoFileName");
+      const logoThumb = document.getElementById("atmProLogoThumb");
+
+      if (logoInput && logoName) {
+        const refreshLogo = () => {
+          const f = logoInput.files && logoInput.files[0];
+          logoName.textContent = f ? f.name : "Dosya seçilmedi";
+
+          if (logoThumb) {
+            if (f) {
+              const url = URL.createObjectURL(f);
+              logoThumb.src = url;
+              logoThumb.style.display = "block";
+            } else {
+              logoThumb.removeAttribute("src");
+              logoThumb.style.display = "none";
+            }
+          }
+        };
+        logoInput.addEventListener("change", refreshLogo);
+        refreshLogo();
+      }
+
+      // Audio filename
+      const audioInput = document.getElementById("atmProAudioFile");
+      const audioName  = document.getElementById("atmProAudioFileName");
+
+      if (audioInput && audioName) {
+        const refreshAudio = () => {
+          const f = audioInput.files && audioInput.files[0];
+          audioName.textContent = f ? f.name : "Dosya seçilmedi";
+        };
+        audioInput.addEventListener("change", refreshAudio);
+        refreshAudio();
+      }
+    })();
+  </script>
 
   <!-- (2) LIGHT · EXPORT · MOOD -->
   <div class="card" id="atmProMoodExport" style="margin-top:14px;">
@@ -649,7 +643,6 @@
     </div>
   </div>
 
-
   <!-- (3) DETAIL EFFECTS + LUT -->
   <div class="card" id="atmProDetails" style="margin-top:14px;">
     <div class="card-header">
@@ -680,7 +673,6 @@
       </select>
     </div>
   </div>
-
 
   <!-- (4) CTA PRO -->
   <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
