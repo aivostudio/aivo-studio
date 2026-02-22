@@ -704,3 +704,24 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
 .atmInlineSelect{
   min-width:120px;
 }
+/* ===== SUPER MODE COMPACT FIX ===== */
+
+.mode-panel[data-mode-panel="pro"] .card {
+  padding: 14px !important;
+}
+
+.mode-panel[data-mode-panel="pro"] .smpack-pill {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.mode-panel[data-mode-panel="pro"] select {
+  height: 36px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+.mode-panel[data-mode-panel="pro"] textarea {
+  font-size: 14px;
+}
