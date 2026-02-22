@@ -40,11 +40,7 @@ html, body {
 
 #moduleHost {
   flex: 1 1 auto;
-
-  /* ✅ REVİZE: içerik uzayınca page uzatmasın, orta kolon scroll alsın */
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 
 #rightPanelHost {
@@ -145,7 +141,6 @@ html, body {
     min-width: 0;
   }
 }
-/* === ESKİSİ (SİL / REPLACE) === */
 /* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
 #mainWorkspace,
 #twoPanelWrap {
@@ -178,49 +173,6 @@ section.outputsCard.studioOutputs {
 
 /* Footer yazısı tabana yapışsın (varsa) */
 .studioOutputs .panelFooter {
-  margin-top: auto;
-}
-
-
-
-/* ==== TWO PANEL WRAP: sayfa uzasın (duvar çizgisi içerikle uzasın) ==== */
-#mainWorkspace,
-#twoPanelWrap{
-  height: auto !important;       /* ✅ kritik: 100% KALKSIN */
-  min-height: 0;
-  display: flex;
-  align-items: stretch;
-}
-
-/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
-#twoPanelWrap{
-  gap: 18px;
-  align-items: stretch;
-}
-
-/* Orta kart (#moduleHost) + Sağ kart aynı “en uzun içerik” kadar uzasın */
-#moduleHost,
-#twoPanelWrap .studioOutputs,
-section.outputsCard.studioOutputs{
-  align-self: stretch;
-}
-
-/* Sağ card: kendi içinde kolon + scroll alanı çalışsın */
-#twoPanelWrap .studioOutputs,
-section.outputsCard.studioOutputs{
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* RightPanel host: artık “sayfayı” değil, kendi içini yönet */
-#rightPanelHost{
-  height: auto !important;
-  min-height: 0;
-}
-
-/* Footer yazısı tabana yapışsın (varsa) */
-.studioOutputs .panelFooter{
   margin-top: auto;
 }
 /* ===============================
@@ -393,12 +345,4 @@ section.outputsCard.studioOutputs,
 /* içerik wrapper */
 .rpContent {
   display: block;
-}
-/* === EXTRA SAĞ BOŞLUK / DİKEY ÇİZGİYİ KALDIR === */
-#studioLayout::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after{
-  display: none !important;
-  content: none !important;
 }
