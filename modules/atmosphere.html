@@ -337,10 +337,10 @@
         </script>
 
       </div><!-- /MODE PANEL basic -->
- <!-- ================= SUPER MODE ================= -->
+<!-- ================= SUPER MODE ================= -->
 <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
-  <!-- (1) SUPER PROMPT + (LOGO + AUDIO like BASIC, but mini pills) -->
+  <!-- (1) SUPER PROMPT (SADE) -->
   <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
     <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
       <div style="color:#fff;font-weight:600;font-size:14px;">
@@ -366,50 +366,7 @@
       </div>
     </div>
 
-   <!-- MINI PERSONALIZATION (PRO – SADE) -->
-<div class="atmProMiniPers" style="margin-top:12px;">
-
-  <!-- Logo -->
-  <div class="atmProMiniCol">
-    <div class="atmProMiniHead">Logo</div>
-
-    <div class="atmLogoInline">
-      <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
-        <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-        🏷️ Logo Seç
-      </label>
-
-      <select id="atmProLogoPos" class="input atmInlineSelect">
-        <option value="tl">Sol Üst</option>
-        <option value="tr">Sağ Üst</option>
-        <option value="bl">Sol Alt</option>
-        <option value="br" selected>Sağ Alt</option>
-        <option value="center_small">Ortada</option>
-      </select>
-    </div>
-
-    <div class="atmFileMeta">
-      <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
-    </div>
-  </div>
-
-  <!-- Audio -->
-  <div class="atmProMiniCol">
-    <div class="atmProMiniHead">Müzik / Jingle</div>
-
-    <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
-      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-      🎵 Audio Seç
-    </label>
-
-    <div class="atmFileMeta">
-      <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
-    </div>
-  </div>
-
-</div>
-
-    <!-- Base frame note (aynı dursun) -->
+    <!-- Base frame note (prompt kartında kalsın) -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;opacity:.75;">
       <div>
         <span style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-weight:600;">
@@ -417,26 +374,86 @@
         </span>
       </div>
     </div>
+  </div><!-- /#atmSuperPromptCard -->
 
-    <!-- Mini Pers styles (Süper Mod için) -->
+  <!-- (1.5) PRO MEDIA BAR (İNCE KART: Logo + Audio) -->
+  <div class="card atmProMediaBar" id="atmProMediaBarCard" style="margin-top:14px;">
+
+    <div class="atmProMediaInner">
+
+      <!-- Logo: Logo Seç + Pozisyon (Sağ Alt default) -->
+      <div class="atmMediaItem">
+        <div class="atmMediaTitle">Logo</div>
+
+        <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
+          <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+          🏷️ Logo Seç
+        </label>
+
+        <select id="atmProLogoPos" class="input atmInlineSelect">
+          <option value="br" selected>Sağ Alt</option>
+          <option value="tl">Sol Üst</option>
+          <option value="tr">Sağ Üst</option>
+          <option value="bl">Sol Alt</option>
+          <option value="center_small">Ortada</option>
+        </select>
+
+        <div class="atmFileMeta">
+          <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
+        </div>
+      </div>
+
+      <!-- Audio: sadece Audio Seç -->
+      <div class="atmMediaItem">
+        <div class="atmMediaTitle">Müzik / Jingle</div>
+
+        <label class="smpack-pill atmProMiniPick" style="cursor:pointer;">
+          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+          🎵 Audio Seç
+        </label>
+
+        <div class="atmFileMeta">
+          <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
+        </div>
+      </div>
+
+    </div><!-- /.atmProMediaInner -->
+
+    <!-- MEDIA BAR styles -->
     <style>
-      #atmSuperPromptCard .atmProMiniPers{
+      /* İnce bar kart düzeni */
+      #atmProMediaBarCard.atmProMediaBar{
+        padding:14px 18px;
+      }
+
+      #atmProMediaBarCard .atmProMediaInner{
         display:grid;
         grid-template-columns: 1fr 1fr;
-        gap:12px;
+        gap:14px;
         align-items:start;
       }
-      #atmSuperPromptCard .atmProMiniCol{ min-width:0; }
 
-      #atmSuperPromptCard .atmProMiniHead{
+      #atmProMediaBarCard .atmMediaItem{
+        min-width:0;
+        display:grid;
+        grid-template-columns: auto auto auto;
+        grid-auto-rows: min-content;
+        column-gap:12px;
+        row-gap:8px;
+        align-items:center;
+      }
+
+      /* Başlık küçük kalsın */
+      #atmProMediaBarCard .atmMediaTitle{
+        grid-column: 1 / -1;
         font-weight:700;
         font-size:12px;
         opacity:.9;
-        margin-bottom:8px;
+        margin-bottom:2px;
       }
 
-      /* pill gibi dursun ama btn gibi tıklansın */
-      #atmSuperPromptCard .atmProMiniPick{
+      /* pill gibi (btn) */
+      #atmProMediaBarCard .atmProMiniPick{
         display:inline-flex;
         align-items:center;
         justify-content:center;
@@ -447,10 +464,19 @@
         background:rgba(255,255,255,.06);
         color:#fff;
         font-weight:700;
+        white-space:nowrap;
       }
 
-      #atmSuperPromptCard .atmFileMeta{ margin-top:8px; }
-      #atmSuperPromptCard .atmFileName{
+      #atmProMediaBarCard .atmInlineSelect{
+        min-width:140px;
+      }
+
+      #atmProMediaBarCard .atmFileMeta{
+        grid-column: 1 / -1;
+        margin-top:0;
+      }
+
+      #atmProMediaBarCard .atmFileName{
         font-size:12px;
         opacity:.85;
         white-space:nowrap;
@@ -458,19 +484,14 @@
         text-overflow:ellipsis;
       }
 
-      #atmSuperPromptCard .atmRow2{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:10px;
-        margin-top:10px;
-      }
-
       @media (max-width: 980px){
-        #atmSuperPromptCard .atmProMiniPers{ grid-template-columns: 1fr; }
+        #atmProMediaBarCard .atmProMediaInner{ grid-template-columns: 1fr; }
+        #atmProMediaBarCard .atmMediaItem{ grid-template-columns: auto 1fr; }
+        #atmProMediaBarCard .atmInlineSelect{ width:100%; min-width:0; }
       }
     </style>
 
-    <!-- Pro file-name binder (sadece pro id'leri) -->
+    <!-- Pro file-name binder (media bar id'leri) -->
     <script>
       (() => {
         const bindName = (inputId, labelId) => {
@@ -491,7 +512,8 @@
         bindName("atmProAudioFile", "atmProAudioFileName");
       })();
     </script>
-  </div><!-- /#atmSuperPromptCard -->
+
+  </div><!-- /#atmProMediaBarCard -->
 
   <!-- (2) LIGHT · EXPORT · MOOD -->
   <div class="card" id="atmProMoodExport" style="margin-top:14px;">
