@@ -683,3 +683,24 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
   padding:0 !important;
   border:0 !important;
 }
+.atmProMediaBar{
+  padding:14px 18px;
+}
+
+.atmProMediaInner{
+  display:flex;
+  gap:20px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+
+.atmMediaItem{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.atmInlineSelect{
+  min-width:120px;
+}
