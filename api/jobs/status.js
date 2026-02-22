@@ -4,6 +4,7 @@
 //    job_id (veya status_url) ile gidiyoruz.
 // ✅ DONE anında (opsiyonel) MP4 içine audio embed (mux) yapıp R2'ye upload ediyoruz.
 // ✅ DONE olduktan sonra (ATMO) AUTO LOGO OVERLAY çağırıp outputs'a logo_overlay ekliyoruz.
+// ✅ AUTO OVERLAY internal çağrıda cookie forward + same-host baseUrl kullanır (auth kırılmasın)
 
 const { neon } = require("@neondatabase/serverless");
 const fs = require("node:fs");
@@ -779,10 +780,10 @@ module.exports = async (req, res) => {
     // 4) AUTO LOGO OVERLAY (ATMO) (DONE sonrası)
     // =========================
     try {
-      const isAtmo = job?.app === "atmo" || job?.meta?.app === "atmo";
+      const isAtmo = String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "atmo";
       const isDone = String(job?.status || "").toLowerCase() === "done";
 
-      const logoUrl = job?.meta?.logo_url;
+      const logoUrl = job?.meta?.logo_url || null;
 
       const baseVideoUrl =
         (outputs.find((x) => String(x?.type).toLowerCase() === "video") || null)
@@ -810,29 +811,33 @@ module.exports = async (req, res) => {
         !alreadyHasOverlay &&
         !alreadyDoneFlag
       ) {
-        const resp = await fetch(
-          `${process.env.APP_ORIGIN || "https://aivo.tr"}/api/atmo/overlay-logo`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              app: "atmo",
-              job_id,
-              video_url: baseVideoUrl,
-              logo_url: logoUrl,
-              logo_pos: job?.meta?.logo_pos || "br",
-              logo_size: job?.meta?.logo_size || "sm",
-              logo_opacity:
-                typeof job?.meta?.logo_opacity === "number"
-                  ? job.meta.logo_opacity
-                  : 0.85,
-            }),
-          }
-        );
+        const baseUrl = getBaseUrl(req);
+
+        const resp = await fetch(`${baseUrl}/api/atmo/overlay-logo`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // ✅ auth gereksinimi varsa internal çağrı da aynı session’ı görsün
+            cookie: req.headers.cookie || "",
+          },
+          body: JSON.stringify({
+            app: "atmo",
+            job_id,
+            video_url: baseVideoUrl,
+            logo_url: logoUrl,
+            logo_pos: job?.meta?.logo_pos || "br",
+            logo_size: job?.meta?.logo_size || "sm",
+            logo_opacity:
+              typeof job?.meta?.logo_opacity === "number"
+                ? job.meta.logo_opacity
+                : 0.85,
+          }),
+        });
 
         const data = await resp.json().catch(() => null);
 
         if (data?.ok && data?.url) {
+          // ✅ outputs'a overlay video ekle
           outputs.unshift({
             type: "video",
             url: data.url,
@@ -851,15 +856,13 @@ module.exports = async (req, res) => {
             where id = ${job_id}::uuid
           `;
 
+          // ✅ response memory state
           job.outputs = outputs;
           job.meta = {
             ...(job.meta || {}),
             logo_overlay_done: true,
             logo_overlay_url: data.url,
           };
-        } else {
-          // denedi ama başarısız olduysa, infinite retry olmasın diye flag basma:
-          // burada flag basmıyoruz (istersen basarız)
         }
       }
     } catch (e) {
@@ -905,6 +908,7 @@ module.exports = async (req, res) => {
               requestId,
               has_logo_url: Boolean(job?.meta?.logo_url),
               logo_overlay_done: Boolean(job?.meta?.logo_overlay_done),
+              logo_overlay_url: job?.meta?.logo_overlay_url || null,
             },
           }
         : {}),
