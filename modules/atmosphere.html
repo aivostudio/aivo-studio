@@ -371,7 +371,7 @@
       </div>
     </div>
 
-    <!-- ✅ PRO: Logo + Audio (Basic ile aynı minimal mantık) -->
+    <!-- ✅ PRO: Logo + Audio (Basic upload hattına bağlı) -->
     <div class="atmProRefs">
 
       <!-- üst satır: Logo başlığı + pozisyon -->
@@ -385,21 +385,39 @@
         </select>
       </div>
 
-     <!-- butonlar -->
-<div class="atmProRefsBtns">
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-    🖼️ Logo Seç
-  </label>
+      <!-- butonlar -->
+      <div class="atmProRefsBtns">
+        <label class="btn atmFileBtn" style="cursor:pointer;">
+          <!-- ✅ HOOK: JS bunu yakalayıp presign-put çalıştıracak -->
+          <input type="file" id="atmProLogoFile" accept="image/*" hidden data-atm-upload="logo">
+          🖼️ Logo Seç
+        </label>
 
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-    🎵 Audio Seç
-  </label>
-</div>
+        <label class="btn atmFileBtn" style="cursor:pointer;">
+          <!-- ✅ HOOK: JS bunu yakalayıp presign-put çalıştıracak -->
+          <input type="file" id="atmProAudioFile" accept="audio/*" hidden data-atm-upload="audio">
+          🎵 Audio Seç
+        </label>
+      </div>
 
-</div>
-</div><!-- /#atmSuperPromptCard -->
+      <!-- ✅ meta satırı: dosya adları + logo thumb (kompakt, sabit yükseklik) -->
+      <div class="atmProRefsMeta">
+        <div>
+          <div class="atmFileName" data-atm-upload-name="logo">Dosya seçilmedi</div>
+
+          <!-- ✅ thumb: PPE / upload preview buraya basabilir -->
+          <div class="atmLogoThumb--pro" aria-hidden="true">
+            <img data-atmo-logo-target data-atm-upload-preview="logo" alt="" style="display:block;">
+          </div>
+        </div>
+
+        <div>
+          <div class="atmFileName" data-atm-upload-name="audio">Dosya seçilmedi</div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /#atmSuperPromptCard -->
 
   <style>
     /* PRO refs box (tamamen card içinde, kompakt) */
@@ -445,13 +463,6 @@
       text-overflow:ellipsis;
     }
 
-    #atmSuperPromptCard .atmProRefsBottom{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-top:12px;
-    }
-
     #atmSuperPromptCard .atmProSelect{
       width:100%;
       min-width:0;
@@ -478,8 +489,7 @@
     /* küçük ekranda tek kolon */
     @media (max-width: 980px){
       #atmSuperPromptCard .atmProRefsBtns,
-      #atmSuperPromptCard .atmProRefsMeta,
-      #atmSuperPromptCard .atmProRefsBottom{
+      #atmSuperPromptCard .atmProRefsMeta{
         grid-template-columns:1fr;
       }
       #atmSuperPromptCard .atmProRefsHead{
@@ -488,48 +498,6 @@
       }
     }
   </style>
-
-  <script>
-    (() => {
-      // Logo filename + thumb
-      const logoInput = document.getElementById("atmProLogoFile");
-      const logoName  = document.getElementById("atmProLogoFileName");
-      const logoThumb = document.getElementById("atmProLogoThumb");
-
-      if (logoInput && logoName) {
-        const refreshLogo = () => {
-          const f = logoInput.files && logoInput.files[0];
-          logoName.textContent = f ? f.name : "Dosya seçilmedi";
-
-          if (logoThumb) {
-            if (f) {
-              const url = URL.createObjectURL(f);
-              logoThumb.src = url;
-              logoThumb.style.display = "block";
-            } else {
-              logoThumb.removeAttribute("src");
-              logoThumb.style.display = "none";
-            }
-          }
-        };
-        logoInput.addEventListener("change", refreshLogo);
-        refreshLogo();
-      }
-
-      // Audio filename
-      const audioInput = document.getElementById("atmProAudioFile");
-      const audioName  = document.getElementById("atmProAudioFileName");
-
-      if (audioInput && audioName) {
-        const refreshAudio = () => {
-          const f = audioInput.files && audioInput.files[0];
-          audioName.textContent = f ? f.name : "Dosya seçilmedi";
-        };
-        audioInput.addEventListener("change", refreshAudio);
-        refreshAudio();
-      }
-    })();
-  </script>
 
   <!-- (2) LIGHT · EXPORT · MOOD -->
   <div class="card" id="atmProMoodExport" style="margin-top:14px;">
