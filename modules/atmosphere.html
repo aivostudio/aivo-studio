@@ -153,21 +153,23 @@
             <div class="atmPersCol">
               <div class="form-label">Logo</div>
 
-              <label class="btn atmFileBtn" style="cursor:pointer;">
-                <input type="file" id="atmLogoFile" accept="image/*" hidden>
-                🏷️ Logo Seç
-              </label>
+              <!-- ✅ Buton + Thumbnail aynı satır -->
+              <div class="atmLogoTop">
+                <label class="btn atmFileBtn" style="cursor:pointer;">
+                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
+                  🏷️ Logo Seç
+                </label>
 
+                <!-- ✅ Thumbnail slot: SABİT, asla alta itmez -->
+                <div class="atmLogoThumb" aria-hidden="true">
+                  <img data-atmo-logo-target alt="" />
+                </div>
+              </div>
+
+              <!-- ✅ Dosya adı tek satır / ellipsis -->
               <div class="atmFileMeta">
                 <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
               </div>
-
-              <!-- ✅ Logo target (PPE buraya src basacak) -->
-              <img
-                data-atmo-logo-target
-                alt=""
-                style="display:none;margin-top:10px;max-width:160px;max-height:80px;object-fit:contain;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.20);padding:8px;"
-              />
 
               <div class="atmRow2">
                 <select id="atmLogoPos" class="input">
@@ -257,6 +259,33 @@
             white-space:nowrap;
             overflow:hidden;
             text-overflow:ellipsis;
+          }
+
+          /* ✅ Logo: buton + thumb yan yana */
+          #atmPersonalCard .atmLogoTop{
+            display:flex;
+            align-items:center;
+            gap:10px;
+          }
+
+          /* ✅ Thumbnail slot (sabit boyut, asla alta itmez) */
+          #atmPersonalCard .atmLogoThumb{
+            width:44px;
+            height:44px;
+            border-radius:12px;
+            border:1px solid rgba(255,255,255,.12);
+            background:rgba(0,0,0,.22);
+            overflow:hidden;
+            flex:0 0 44px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+          }
+          #atmPersonalCard .atmLogoThumb img[data-atmo-logo-target]{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:block;
           }
 
           /* CTA wrapper (sadece buton) */
