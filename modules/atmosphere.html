@@ -320,49 +320,58 @@
           }
         </style>
 
-      <script>
-  (() => {
-    const bindName = (inputId, labelId) => {
-      const input = document.getElementById(inputId);
-      const label = document.getElementById(labelId);
-      if (!input || !label) return;
+<script>
+  (function () {
+    function initAtmoLogoThumb() {
+      const logoInput = document.getElementById("atmLogoFile");
+      const nameLabel = document.getElementById("atmLogoFileName");
+      const thumbImg = document.querySelector('#atmPersonalCard img[data-atmo-logo-target]');
+      const thumbSlot = document.querySelector('#atmPersonalCard .atmLogoThumb');
 
-      const show = () => {
-        const f = input.files && input.files[0];
-        label.textContent = f ? f.name : "Dosya seçilmedi";
+      if (!logoInput || !nameLabel || !thumbImg || !thumbSlot) return;
+
+      const setName = () => {
+        const f = logoInput.files && logoInput.files[0];
+        nameLabel.textContent = f ? f.name : "Dosya seçilmedi";
       };
 
-      input.addEventListener("change", show);
-      show();
-    };
+      const setThumb = () => {
+        const f = logoInput.files && logoInput.files[0];
 
-    // ✅ Dosya adları
-    bindName("atmLogoFile", "atmLogoFileName");
-    bindName("atmAudioFile", "atmAudioFileName");
-
-    // ✅ Thumbnail: logo seçilince 44x44 kutuya bas
-    const logoInput = document.getElementById("atmLogoFile");
-    const thumbImg = document.querySelector('#atmPersonalCard img[data-atmo-logo-target]');
-    const thumbSlot = document.querySelector('#atmPersonalCard .atmLogoThumb');
-
-    const updateThumb = () => {
-      if (!logoInput || !thumbImg || !thumbSlot) return;
-
-      const f = logoInput.files && logoInput.files[0];
-      if (!f) {
+        // slot hep görünür, img sadece src varsa görünür
         thumbSlot.style.display = "flex";
-        thumbImg.removeAttribute("src");
-        return;
-      }
 
-      const url = URL.createObjectURL(f);
-      thumbSlot.style.display = "flex";
-      thumbImg.src = url;
-    };
+        if (!f) {
+          thumbImg.removeAttribute("src");
+          thumbImg.style.display = "none";
+          return;
+        }
 
-    if (logoInput) {
-      logoInput.addEventListener("change", updateThumb);
-      updateThumb();
+        const url = URL.createObjectURL(f);
+        thumbImg.style.display = "block";
+        thumbImg.src = url;
+
+        thumbImg.onload = () => {
+          try { URL.revokeObjectURL(url); } catch(e) {}
+        };
+      };
+
+      // ilk durum
+      setName();
+      setThumb();
+
+      // change
+      logoInput.addEventListener("change", () => {
+        setName();
+        setThumb();
+      });
+    }
+
+    // ✅ DOM garantisi
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initAtmoLogoThumb);
+    } else {
+      initAtmoLogoThumb();
     }
   })();
 </script>
