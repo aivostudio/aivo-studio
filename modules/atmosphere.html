@@ -104,16 +104,7 @@
               <option value="pan_soft">Hafif Pan</option>
               <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
             </select>
-         </div>
-<!-- ✅ Aspect Ratio (BASIC) -->
-<div class="form-row" style="margin-bottom:12px;">
-  <div class="form-label">Oran</div>
-  <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
-    <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
-    <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
-    <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
-  </div>
-</div>
+          </div>
 
           <div class="form-row" style="margin-top:12px;">
             <div class="form-label">Süre</div>
@@ -126,71 +117,67 @@
           </div>
         </div>
 
-        <!-- (4) PERSONALIZATION (Image + Logo + Audio) + CTA INSIDE (REVİZE) -->
+        <!-- (4) PERSONALIZATION (Aspect + Logo + Audio) + CTA INSIDE (REVİZE) -->
         <div class="card" id="atmPersonalCard">
           <div class="card-header">
             <div>
               <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-              <div class="card-subtitle">Görsel / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
+              <div class="card-subtitle">Oran / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
             </div>
           </div>
 
-          <!-- 3'lü grid: Görsel (sahne override) + Logo + Audio -->
+          <!-- 3'lü grid: Oran + Logo + Audio -->
           <div class="atmPersGrid">
 
-            <!-- 1) Görsel (Sahne override) -->
+            <!-- 1) Oran -->
             <div class="atmPersCol">
-              <div class="form-label">Görsel (Sahne override)</div>
-
-              <label class="btn atmFileBtn" style="cursor:pointer;">
-                <input type="file" id="atmImageFile" accept="image/*" hidden>
-                🖼️ Görsel Seç
-              </label>
-
-              <div class="atmFileMeta">
-                <div class="atmFileName" id="atmImageFileName">Dosya seçilmedi</div>
-                <div class="atmFileHint">Seçilen görsel, yukarıdaki sahne seçimini override eder.</div>
+              <div class="form-label">Oran</div>
+              <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
+                <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
+                <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
+                <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
               </div>
             </div>
 
-          <!-- 2) Logo -->
-<div class="atmPersCol">
-  <div class="form-label">Logo</div>
+            <!-- 2) Logo -->
+            <div class="atmPersCol">
+              <div class="form-label">Logo</div>
 
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmLogoFile" accept="image/*" hidden>
-    🏷️ Logo Seç
-  </label>
+              <label class="btn atmFileBtn" style="cursor:pointer;">
+                <input type="file" id="atmLogoFile" accept="image/*" hidden>
+                🏷️ Logo Seç
+              </label>
 
-  <div class="atmFileMeta">
-    <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
-  </div>
+              <div class="atmFileMeta">
+                <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+              </div>
 
-  <!-- ✅ Logo preview target (PPE buraya src basacak) -->
-  <img
-    data-atmo-logo-target
-    alt="Logo preview"
-    style="display:block;margin-top:10px;max-width:160px;max-height:80px;object-fit:contain;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.20);padding:8px;"
-  />
+              <!-- ✅ Logo target (PPE buraya src basacak) -->
+              <img
+                data-atmo-logo-target
+                alt=""
+                style="display:none;margin-top:10px;max-width:160px;max-height:80px;object-fit:contain;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.20);padding:8px;"
+              />
 
-  <div class="atmRow2">
-    <select id="atmLogoPos" class="input">
-      <option value="bl">Sol Alt</option>
-      <option value="br" selected>Sağ Alt</option>
-      <option value="center_small">Ortada (küçük)</option>
-    </select>
+              <div class="atmRow2">
+                <select id="atmLogoPos" class="input">
+                  <option value="bl">Sol Alt</option>
+                  <option value="br" selected>Sağ Alt</option>
+                  <option value="center_small">Ortada (küçük)</option>
+                </select>
 
-    <select id="atmLogoSize" class="input">
-      <option value="sm" selected>Küçük</option>
-      <option value="md">Orta</option>
-    </select>
-  </div>
+                <select id="atmLogoSize" class="input">
+                  <option value="sm" selected>Küçük</option>
+                  <option value="md">Orta</option>
+                </select>
+              </div>
 
-  <div class="atmOpacityRow">
-    <div class="form-label">Opaklık</div>
-    <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
-  </div>
-</div>
+              <div class="atmOpacityRow">
+                <div class="form-label">Opaklık</div>
+                <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+              </div>
+            </div>
+
             <!-- 3) Audio -->
             <div class="atmPersCol">
               <div class="form-label">Müzik / Jingle</div>
@@ -324,7 +311,6 @@
               show();
             };
 
-            bindName("atmImageFile", "atmImageFileName");
             bindName("atmLogoFile", "atmLogoFileName");
             bindName("atmAudioFile", "atmAudioFileName");
           })();
