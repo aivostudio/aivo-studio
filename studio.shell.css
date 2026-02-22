@@ -145,23 +145,18 @@ html, body {
     min-width: 0;
   }
 }
+/* === ESKİSİ (SİL / REPLACE) === */
 /* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
-
-/* ✅ Zincirin başlangıcı: kesin viewport yüksekliği */
-#mainWorkspace{
-  height: calc(100vh - var(--aivo-topbar-h, 0px)) !important;
-  min-height: 0 !important;
-  display: flex !important;
-  align-items: stretch !important;
-  overflow: hidden;
-}
-
-/* ✅ İki panel wrapper gerçek yüksekliği alsın */
-#twoPanelWrap{
-  flex: 1 1 auto;
+#mainWorkspace,
+#twoPanelWrap {
+  height: 100%;
   min-height: 0;
   display: flex;
   align-items: stretch;
+}
+
+/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
+#twoPanelWrap {
   gap: 18px;
 }
 
@@ -170,7 +165,7 @@ html, body {
 section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1 1 auto;     /* parent yüksekliğini alsın */
   min-height: 0;
 }
 
@@ -178,11 +173,54 @@ section.outputsCard.studioOutputs {
 #rightPanelHost {
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;
+  height: auto;       /* 100% yerine daha güvenli */
 }
 
 /* Footer yazısı tabana yapışsın (varsa) */
 .studioOutputs .panelFooter {
+  margin-top: auto;
+}
+
+
+
+/* ==== TWO PANEL WRAP: sayfa uzasın (duvar çizgisi içerikle uzasın) ==== */
+#mainWorkspace,
+#twoPanelWrap{
+  height: auto !important;       /* ✅ kritik: 100% KALKSIN */
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
+#twoPanelWrap{
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* Orta kart (#moduleHost) + Sağ kart aynı “en uzun içerik” kadar uzasın */
+#moduleHost,
+#twoPanelWrap .studioOutputs,
+section.outputsCard.studioOutputs{
+  align-self: stretch;
+}
+
+/* Sağ card: kendi içinde kolon + scroll alanı çalışsın */
+#twoPanelWrap .studioOutputs,
+section.outputsCard.studioOutputs{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* RightPanel host: artık “sayfayı” değil, kendi içini yönet */
+#rightPanelHost{
+  height: auto !important;
+  min-height: 0;
+}
+
+/* Footer yazısı tabana yapışsın (varsa) */
+.studioOutputs .panelFooter{
   margin-top: auto;
 }
 /* ===============================
