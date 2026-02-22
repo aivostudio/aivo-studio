@@ -648,7 +648,7 @@ async function handleUpload(root, kind, file) {
     const dur = closestWithin(e.target, "#atmDuration", root);
     if (dur) state.duration = dur.value || state.duration;
   });
-  // ------------------------------------------------------------
+   // ------------------------------------------------------------
   // 8) Files: Basic image / logo / audio + Pro refs
   //    ✅ R2 upload for basic image/logo/audio
   // ------------------------------------------------------------
@@ -661,38 +661,60 @@ async function handleUpload(root, kind, file) {
     // BASIC files (R2)
     if (closestWithin(e.target, "#atmImageFile", root)) {
       state.imageFile = file;
-      await handleUpload(root, "image", file);
+
+      const panel = e.target.closest('[data-mode-panel="basic"]');
+      await handleUpload(panel || root, "image", file);
+
       return;
     }
 
     if (closestWithin(e.target, "#atmLogoFile", root)) {
       state.logoFile = file;
-      await handleUpload(root, "logo", file);
+
+      const panel = e.target.closest('[data-mode-panel="basic"]');
+      await handleUpload(panel || root, "logo", file);
+
       return;
     }
 
     if (closestWithin(e.target, "#atmAudioFile", root)) {
       state.audioFile = file;
-      await handleUpload(root, "audio", file);
+
+      const panel = e.target.closest('[data-mode-panel="basic"]');
+      await handleUpload(panel || root, "audio", file);
+
       return;
     }
 
-    // ✅ PRO files (R2) — Süper Mod input'ları da aynı upload hattını kullanır
+    // ✅ PRO files (R2) — panel scope fix
     if (closestWithin(e.target, "#atmProLogoFile", root)) {
-      state.logoFile = file;                 // aynı state’i kullanıyoruz
-      await handleUpload(root, "logo", file); // uploads.logo.url dolar
+      state.logoFile = file;
+
+      const panel = e.target.closest('[data-mode-panel="pro"]');
+      await handleUpload(panel || root, "logo", file);
+
       return;
     }
 
     if (closestWithin(e.target, "#atmProAudioFile", root)) {
       state.audioFile = file;
-      await handleUpload(root, "audio", file); // uploads.audio.url dolar
+
+      const panel = e.target.closest('[data-mode-panel="pro"]');
+      await handleUpload(panel || root, "audio", file);
+
       return;
     }
 
     // PRO refs (şimdilik file olarak kalsın; istersen sonra R2’ye alırız)
-    if (closestWithin(e.target, "#atmSceneImageInput", root)) state.refImageFile = file;
-    if (closestWithin(e.target, "#atmSceneAudioInput", root)) state.refAudioFile = file;
+    if (closestWithin(e.target, "#atmSceneImageInput", root)) {
+      state.refImageFile = file;
+      return;
+    }
+
+    if (closestWithin(e.target, "#atmSceneAudioInput", root)) {
+      state.refAudioFile = file;
+      return;
+    }
   });
   // ------------------------------------------------------------
   // 9) Basic personalization controls
