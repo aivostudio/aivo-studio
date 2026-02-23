@@ -24,11 +24,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // ✅ Minimal, schema-safe payload:
-    // - prompt always
-    // - lyrics only if provided
-    const payload = { prompt };
-    if (lyrics) payload.lyrics = lyrics;
+    // ✅ TopMediai v3 REQUIRED SCHEMA (FIXED)
+    const payload = {
+      action: "auto",
+      style: prompt,
+      mv: "v3.5",
+      instrumental: 0,
+      gender: "male"
+    };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
@@ -105,30 +108,12 @@ export default async function handler(req, res) {
     }
 
     // ✅ Normalize IDs (support multiple response shapes)
-    //
-    // Seen formats:
-    // A) {
-    //   success: true,
-    //   data: {
-    //     tracks: [{ id, title }, { id, title }],
-    //     taskId: "...",
-    //     status: "processing"
-    //   }
-    // }
-    //
-    // B) {
-    //   status: 200,
-    //   message: "Success",
-    //   data: { ids: ["1334851","1334852"] }
-    // }
-    //
-    // C) ... song_ids / songIds arrays
+
     const tracks = Array.isArray(data?.data?.tracks) ? data.data.tracks : [];
     const trackIds = tracks
       .map((t) => String(t?.id || "").trim())
       .filter(Boolean);
 
-    // NEW: ids array variant
     const idsRaw =
       data?.data?.ids ||
       data?.data?.IDs ||
@@ -140,7 +125,6 @@ export default async function handler(req, res) {
       ? idsRaw.map((x) => String(x || "").trim()).filter(Boolean)
       : [];
 
-    // fallback: some APIs return song_ids
     const songIdsRaw =
       data?.data?.song_ids ||
       data?.data?.songIds ||
@@ -156,7 +140,6 @@ export default async function handler(req, res) {
       trackIds.length ? trackIds : idsList.length ? idsList : songIdsFallback;
 
     if (!provider_song_ids.length) {
-      // This means TopMediai responded but did not give IDs
       return res.status(500).json({
         ok: false,
         error: "topmediai_missing_ids",
@@ -169,7 +152,6 @@ export default async function handler(req, res) {
 
     const provider_job_id = provider_song_ids[0];
 
-    // task id (optional)
     const taskId =
       data?.data?.taskId ||
       data?.data?.task_id ||
