@@ -133,17 +133,14 @@ body{
   align-items: stretch;
   min-width: 0;
 }
-
-/* ===== MOTOR PANEL (SOL) ===== */
 #moduleHost{
-  height: 100%;
-  min-height: 0;
-  overflow: auto;
+  height: auto;          /* 100% değil */
+  min-height: 100%;
+  overflow: visible;     /* scroll buradan kalktı */
 
   border-radius: var(--radius);
   padding: 18px;
 
-  /* senin mor kart hissi */
   background: radial-gradient(1200px 800px at 30% 0%,
     rgba(140,80,255,.35),
     rgba(70,50,140,.25),
@@ -152,7 +149,6 @@ body{
 
   border: 1px solid rgba(255,255,255,.07);
 }
-
 /* ===== OUTPUTS PANEL (SAĞ - DAHA GENİŞ & İÇİ SCROLL) ===== */
 .outputsCard{
   height: 100%;
