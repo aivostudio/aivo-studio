@@ -6,6 +6,7 @@
 // - When status==0 and audio_url exists => data.audio.src set + completed
 
 const { getRedis } = require("../_kv");
+const fetch = globalThis.fetch || require("node-fetch");
 
 function safeJsonParse(s) {
   try { return JSON.parse(s); } catch { return null; }
