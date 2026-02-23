@@ -18,7 +18,11 @@ function safeJson(res, obj, code = 200) {
 }
 
 function safeParseJson(s) {
-  try { return JSON.parse(s); } catch { return null; }
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
 }
 
 function getOrigin(req) {
@@ -42,69 +46,85 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
     const body = req.body || {};
-
     const prompt = String(body.prompt || body.text || "").trim();
 
-    // ✅ internal id bizde kalsın (R2 path /files/play bununla çalışıyor)
+    if (!prompt) {
+      return safeJson(res, { ok: false, error: "missing_prompt" }, 400);
+    }
+
+    // ✅ internal id bizde kalsın (UI + KV mapping için)
     const internal_job_id = `job_${uuidLike()}`;
 
-    // ✅ worker’a gerçek üretimi başlat
-    const workerOrigin =
-      process.env.ARCHIVE_WORKER_ORIGIN ||
-      "https://aivo-archive-worker.aivostudioapp.workers.dev";
+    // ✅ Worker'ı BYPASS: TopMediai create'i direkt Vercel üzerinden çağır
+    const origin = getOrigin(req);
+    const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
-    const workerUrl = `${workerOrigin}/api/music/generate`;
-
-    const wr = await fetch(workerUrl, {
-      method: "POST",
-      headers: { "content-type": "application/json", "accept": "application/json" },
-      body: JSON.stringify({
-        prompt,
-        // ✅ worker tarafında mapping/track için gönderiyoruz
-        internal_job_id,
-      }),
-    });
-
-    const wtext = await wr.text();
-    const wjson = safeParseJson(wtext);
-
-    if (!wr.ok || !wjson || wjson.ok === false) {
-      // internal job'ı UI'ya döndürelim ki tek kart basıp düzgün hata gösterebilsin
-      return safeJson(res, {
-        ok: false,
-        error: "worker_generate_failed",
-        state: "failed",
-        provider_job_id: null,
-        internal_job_id,
-        worker_status: wr.status,
-        sample: wtext.slice(0, 400),
-      }, 200);
+    let pr;
+    try {
+      pr = await fetch(providerCreateUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
+    } catch (e) {
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: "provider_create_fetch_failed",
+          internal_job_id,
+          detail: String(e?.message || e),
+          provider_create_url: providerCreateUrl,
+        },
+        200
+      );
     }
 
-    // ✅ provider_job_id worker’dan gelmeli (en kritik nokta)
-    const provider_job_id = String(
-      wjson.provider_job_id ||
-      wjson.providerJobId ||
-      wjson.job_id ||
-      wjson.id ||
-      ""
-    ).trim();
+    const ptext = await pr.text();
+    const pjson = safeParseJson(ptext);
 
+    if (!pr.ok || !pjson || pjson.ok === false) {
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: "provider_create_failed",
+          internal_job_id,
+          provider_status: pr.status,
+          provider_create_url: providerCreateUrl,
+          sample: String(ptext || "").slice(0, 1000),
+          provider_response: pjson,
+        },
+        200
+      );
+    }
+
+    // ✅ provider_job_id artık Vercel provider endpoint'ten gelmeli
+    const provider_job_id = String(pjson.provider_job_id || pjson.job_id || pjson.id || "").trim();
     if (!provider_job_id) {
-      return safeJson(res, {
-        ok: false,
-        error: "worker_missing_provider_job_id",
-        sample: wjson,
-      }, 200);
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: "provider_missing_provider_job_id",
+          internal_job_id,
+          provider_create_url: providerCreateUrl,
+          provider_response: pjson,
+        },
+        200
+      );
     }
 
-    // ✅ NEW: TopMediai v3 -> 2 song id (worker bunu döndürecek)
+    // ✅ NEW: 2 song id (tracks ids)
     const provider_song_ids_raw =
-      wjson.provider_song_ids ||
-      wjson.providerSongIds ||
-      wjson.song_ids ||
-      wjson.songIds ||
-      wjson?.topmediai?.data?.song_ids ||
+      pjson.provider_song_ids ||
+      pjson.providerSongIds ||
+      pjson.song_ids ||
+      pjson.songIds ||
+      pjson?.topmediai?.data?.song_ids ||
       [];
 
     const provider_song_ids = Array.isArray(provider_song_ids_raw)
@@ -125,7 +145,6 @@ module.exports = async (req, res) => {
         provider_job_id,
         internal_job_id,
         created_at: nowISO(),
-        // ✅ NEW
         provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       })
     );
@@ -137,16 +156,14 @@ module.exports = async (req, res) => {
         ok: true,
         kind: "music",
         provider_job_id,
-        // ✅ NEW
         provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
         internal_job_id,
         state: "queued",
         prompt: prompt || null,
         created_at: nowISO(),
-        // worker debug
-        worker: {
-          origin: workerOrigin,
-          resp: wjson,
+        provider: {
+          create_url: providerCreateUrl,
+          resp: pjson,
         },
       })
     );
@@ -156,7 +173,6 @@ module.exports = async (req, res) => {
       id: internal_job_id,
       kind: "music",
       provider_job_id,
-      // ✅ NEW
       provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       status: "processing",
       state: "queued",
@@ -172,20 +188,21 @@ module.exports = async (req, res) => {
     // 4) outputs index boş başlasın (finalize dolduracak)
     await redis.set(outputsIndexKey, JSON.stringify({ outputs: [] }));
 
-  
-
     return safeJson(res, {
       ok: true,
       state: "queued",
       provider_job_id,
-      // ✅ NEW: UI/worker/debug için dönelim
       provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       internal_job_id,
       keys: { mapKey, jobMetaKey, outputsIndexKey, providerMapKey },
-      worker: { ok: true },
+      provider: { ok: true, create_url: providerCreateUrl },
     });
   } catch (err) {
     console.error("music/generate error:", err);
-    return safeJson(res, { ok: false, error: "server_error", message: String(err?.message || err) }, 500);
+    return safeJson(
+      res,
+      { ok: false, error: "server_error", message: String(err?.message || err) },
+      500
+    );
   }
 };
