@@ -1,6 +1,8 @@
 /* =========================================================
    AIVO Right Panel — Music Panel (PRODUCTION)
    File: /js/panel.music.js
+   - Multi-track (TopMediai v3): internal_job_id ile poll eder
+   - outputs[] içindeki her track’i ayrı kart olarak render eder
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
@@ -12,7 +14,7 @@
 
   let hostEl = null;
   let listEl = null;
-  let jobs   = loadJobs();
+  let jobs   = loadJobs(); // burada artık "track job" listesi tutuyoruz
 
   /* ---------------- utils ---------------- */
   const qs = (s,r=document)=>r.querySelector(s);
@@ -49,16 +51,26 @@
   }
 
   function saveJobs(){
-    try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0,80))); }
+    try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0,50))); }
     catch {}
   }
 
   function upsertJob(job){
-    const id = job?.job_id || job?.id;
+    const id = job?.id || job?.job_id;
     if (!id) return;
-    const i = jobs.findIndex(j => (j.job_id||j.id) === id);
+    const i = jobs.findIndex(j => (j.id||j.job_id) === id);
     if (i >= 0) jobs[i] = { ...jobs[i], ...job };
     else jobs.unshift(job);
+    saveJobs();
+  }
+
+  function removeByPrefix(prefix){
+    const p = String(prefix||"");
+    if (!p) return;
+    jobs = jobs.filter(j => {
+      const id = String(j.id || j.job_id || "");
+      return !(id === p || id.startsWith(p + ":"));
+    });
     saveJobs();
   }
 
@@ -69,68 +81,39 @@
     return "processing";
   }
 
-  function isVersionEntry(j){
-    return typeof j?.parent_job_id === "string" && j.parent_job_id.length > 0;
-  }
-
-  function getParentJob(parentId){
-    return jobs.find(x => (x?.job_id || x?.id) === parentId) || null;
-  }
-
-  function pruneParentIfHasVersions(parentId){
-    // Parent card: sadece processing/error durumunda görünsün.
-    // Eğer ready olduysa ve version kartları varsa, parent'ı listeden düşür (UI'da "tek kart" kalabalığı yapmasın).
-    const parent = getParentJob(parentId);
-    if (!parent) return;
-
-    const hasVersions = jobs.some(j => isVersionEntry(j) && j.parent_job_id === parentId);
-    if (!hasVersions) return;
-
-    const st = String(parent.__ui_state || "").toLowerCase();
-    if (st === "ready") {
-      // parent'ı tamamen silmek yerine "hidden" işaretleyelim (geri debug için).
-      upsertJob({ ...parent, __hidden: true });
-    }
-  }
-
-  /* ---------------- REAL PLAYER CARD ---------------- */
+  /* ---------------- cards ---------------- */
   function renderMusicCard(job){
-    const jobId = job.job_id || job.id;
+    const id = job.id || job.job_id;
     const ready = job.__ui_state === "ready" && job.__audio_src;
 
     if (!ready){
       return `
-<div class="aivo-player-card is-loadingState"
-     data-job-id="${esc(jobId)}">
-
+<div class="aivo-player-card is-loadingState" data-job-id="${esc(id)}">
   <div class="aivo-player-left">
     <div class="aivo-player-spinner"></div>
   </div>
-
   <div class="aivo-player-mid">
     <div class="aivo-player-titleRow">
       <div class="aivo-player-title">${esc(job.title || "Müzik Üretimi")}</div>
       <div class="aivo-player-tags">
-        <span class="aivo-tag is-loading">${esc(job.__ui_state === "error" ? "Hata" : "Hazırlanıyor")}</span>
+        <span class="aivo-tag is-loading">Hazırlanıyor</span>
       </div>
     </div>
     <div class="aivo-player-sub">${esc(job.subtitle || "")}</div>
   </div>
-
   <div class="aivo-player-actions">
-    <button class="aivo-action is-danger" data-action="delete">Sil</button>
+    <button class="aivo-action is-danger" data-action="delete" data-id="${esc(id)}">Sil</button>
   </div>
 </div>`;
     }
 
     return `
 <div class="aivo-player-card is-ready"
-     data-job-id="${esc(jobId)}"
-     data-output-id="${esc(job.output_id || "")}"
-     data-src="${esc(job.__audio_src)}">
-
+     data-job-id="${esc(id)}"
+     data-src="${esc(job.__audio_src)}"
+     data-output-id="${esc(job.output_id || "")}">
   <div class="aivo-player-left">
-    <button class="aivo-player-btn" data-action="toggle-play">▶</button>
+    <button class="aivo-player-btn" data-action="toggle-play" data-id="${esc(id)}">▶</button>
   </div>
 
   <div class="aivo-player-mid">
@@ -141,34 +124,20 @@
       </div>
     </div>
     <div class="aivo-player-sub">${esc(job.subtitle || "")}</div>
+    <audio preload="none" style="display:none" src="${esc(job.__audio_src)}"></audio>
   </div>
 
   <div class="aivo-player-actions">
-    <button class="aivo-action is-blue" data-action="download">İndir</button>
-    <button class="aivo-action is-danger" data-action="delete">Sil</button>
+    <a class="aivo-action is-blue" data-action="download" href="${esc(job.__audio_src)}" download>İndir</a>
+    <button class="aivo-action is-danger" data-action="delete" data-id="${esc(id)}">Sil</button>
   </div>
 </div>`;
   }
 
-  /* ---------------- render ---------------- */
   function render(){
     if (!ensureHost() || !ensureList()) return;
 
-    // Görünen liste:
-    // - Version kartları (jobId::trackId) her zaman görünsün
-    // - Parent kartlar sadece processing/error ise görünsün
-    const visible = jobs
-      .filter(j => (j?.job_id || j?.id))
-      .filter(j => !j.__hidden)
-      .filter(j => {
-        if (isVersionEntry(j)) return true;
-        // parent
-        const st = String(j.__ui_state || "").toLowerCase();
-        return st !== "ready"; // ready parent'ı saklıyoruz (version varsa)
-      })
-      .slice(0, 8);
-
-    if (!visible.length){
+    if (!jobs.length){
       listEl.innerHTML = `
         <div class="aivo-empty">
           <div class="aivo-empty-title">Henüz müzik yok</div>
@@ -176,113 +145,158 @@
       return;
     }
 
-    listEl.innerHTML = visible.map(renderMusicCard).join("");
+    listEl.innerHTML = jobs
+      .filter(j => (j.id || j.job_id))
+      .slice(0,6)
+      .map(renderMusicCard)
+      .join("");
   }
 
-  /* ---------------- polling ---------------- */
-  async function poll(jobId){
+  /* ---------------- playback (no player.js dependency) ---------------- */
+  function stopAll(){
+    if (!listEl) return;
+    listEl.querySelectorAll("audio").forEach(a => {
+      try { a.pause(); a.currentTime = 0; } catch {}
+    });
+    listEl.querySelectorAll('[data-action="toggle-play"]').forEach(btn => { btn.textContent = "▶"; });
+  }
+
+  function togglePlayById(id){
+    const card = listEl?.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(String(id))}"]`);
+    if (!card) return;
+    const audio = card.querySelector("audio");
+    const btn = card.querySelector('[data-action="toggle-play"]');
+    if (!audio || !btn) return;
+
+    // başka bir şey çalıyorsa kapat
+    const isPlaying = !audio.paused && !audio.ended;
+    stopAll();
+
+    if (isPlaying) return; // zaten çalıyordu; stopAll kapattı
+
+    // yeniden play
+    try {
+      const p = audio.play();
+      if (p && typeof p.catch === "function") p.catch(()=>{});
+      btn.textContent = "⏸";
+    } catch {}
+  }
+
+  /* ---------------- polling (MULTI-TRACK via internal_job_id) ---------------- */
+  async function pollInternal(internalJobId, meta){
+    const jid = String(internalJobId || "").trim();
+    if (!jid) return;
+
     try{
-      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, { cache: "no-store" });
+      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jid)}`, {cache:"no-store"});
       const j = await r.json();
 
-      if (!j?.ok){
-        // upstream/redis geçici olabilir, polling devam
-        return setTimeout(()=>poll(jobId), 1500);
+      // ok:false bile olsa processing kabul edip tekrar dene
+      if (!j || (j.ok === false && String(j.error||"") === "missing_provider_song_ids")){
+        return setTimeout(()=>pollInternal(jid, meta),1500);
       }
 
-      const parentId = jobId;
+      const state = uiState(j.status || j.state);
+      const outs = Array.isArray(j.outputs) ? j.outputs : [];
 
-      // Parent job kaydı (durum için)
-      const parentJob = (j.job && typeof j.job === "object") ? j.job : {};
-      parentJob.job_id = parentJob.job_id || parentId;
-      parentJob.__ui_state = uiState(j.status || parentJob.status);
+      if (outs.length){
+        // Aynı internal job’a ait eski track kartlarını temizle (yeniden yazacağız)
+        removeByPrefix(jid);
 
-      // MULTI-VERSION: outputs[] içindeki her audio => ayrı kart
-      if (Array.isArray(j.outputs) && j.outputs.length) {
-        upsertJob({
-          ...parentJob,
-          __audio_src: "",
-          output_id: "",
-        });
-
-        const titleBase = parentJob.title || "Müzik Üretimi";
-        const subtitle  = parentJob.subtitle || "";
-
-        let audioCount = 0;
-
-        for (let idx = 0; idx < j.outputs.length; idx++) {
-          const out = j.outputs[idx];
-          if (!out || out.type !== "audio" || !out.url) continue;
-
-          audioCount++;
-
-          const trackId =
-            String(out?.meta?.trackId || out?.meta?.track_id || out?.id || "").trim() || String(audioCount);
-
-          const versionJobId = `${parentId}::${trackId}`;
+        outs.forEach((o, idx) => {
+          const trackId = o?.meta?.trackId || o?.meta?.track_id || o?.trackId || o?.id || String(idx+1);
+          const url = o?.url || "";
+          const titleBase = (meta?.title || "Müzik Üretimi").trim();
 
           upsertJob({
-            job_id: versionJobId,
-            parent_job_id: parentId,
-            title: `${titleBase} • V${audioCount}`,
-            subtitle,
-            __ui_state: parentJob.__ui_state,
-            __audio_src: out.url,
+            id: `${jid}:${trackId}`,
+            parent_job_id: jid,
             output_id: trackId,
-            __outputs_count: j.outputs.length,
+            title: `${titleBase} • V${idx+1}`,
+            subtitle: meta?.subtitle || "",
+            __ui_state: (state === "ready" ? "ready" : "processing"),
+            __audio_src: url
           });
-        }
-
-        // parent ready ise ve versiyonlar basıldıysa parent'ı gizle
-        pruneParentIfHasVersions(parentId);
+        });
 
         render();
 
-        if (parentJob.__ui_state !== "ready"){
-          setTimeout(()=>poll(parentId), 1500);
+        if (state !== "ready"){
+          setTimeout(()=>pollInternal(jid, meta),1500);
         } else {
           window.toast?.success?.("Müzik hazır 🎵");
         }
-
         return;
       }
 
-      // outputs yoksa: sadece parent processing/error kartı
+      // outputs yoksa processing kartı tut
       upsertJob({
-        ...parentJob,
-        __audio_src: "",
-        output_id: "",
+        id: jid,
+        title: meta?.title || "Müzik Üretimi",
+        subtitle: meta?.subtitle || "",
+        __ui_state: state,
+        __audio_src: ""
       });
-
       render();
 
-      if (parentJob.__ui_state !== "ready"){
-        setTimeout(()=>poll(parentId), 1500);
+      if (state !== "ready"){
+        setTimeout(()=>pollInternal(jid, meta),1500);
       }
 
-    } catch {
-      setTimeout(()=>poll(jobId), 2000);
+    }catch{
+      setTimeout(()=>pollInternal(jid, meta),2000);
     }
   }
 
   /* ---------------- events ---------------- */
   function onJob(e){
-    const job = e?.detail || e;
-    const jobId = job?.job_id;
-    if (!jobId) return;
+    const raw = e?.detail || e || {};
+    // KRİTİK: internal_job_id varsa onu kullan (2 versiyon ancak böyle gelir)
+    const internalId = String(raw.internal_job_id || raw.internalJobId || "").trim();
+    const fallbackId = String(raw.job_id || raw.id || "").trim();
+    const jid = internalId || fallbackId;
+    if (!jid) return;
 
+    // processing placeholder
     upsertJob({
-      job_id: jobId,
-      title: job.title,
-      subtitle: job.subtitle,
+      id: jid,
+      title: raw.title || "Müzik Üretimi",
+      subtitle: raw.subtitle || "",
       __ui_state: "processing",
-      __audio_src: "",
-      output_id: "",
-      __hidden: false,
+      __audio_src: ""
     });
 
     render();
-    poll(jobId);
+    pollInternal(jid, { title: raw.title, subtitle: raw.subtitle });
+  }
+
+  /* ---------------- actions ---------------- */
+  function onClick(ev){
+    const el = ev.target?.closest?.("[data-action]");
+    if (!el) return;
+
+    const act = el.getAttribute("data-action");
+    const id  = el.getAttribute("data-id") || el.closest(".aivo-player-card")?.getAttribute("data-job-id");
+    if (!act || !id) return;
+
+    if (act === "toggle-play"){
+      ev.preventDefault();
+      togglePlayById(id);
+      return;
+    }
+
+    if (act === "delete"){
+      ev.preventDefault();
+      stopAll();
+      const parent = String(id).includes(":") ? String(id).split(":")[0] : String(id);
+      // tek track silinse de listeden kalksın
+      jobs = jobs.filter(j => (j.id||j.job_id) !== id);
+      // parent tek başınaysa onu da kaldır
+      jobs = jobs.filter(j => (j.id||j.job_id) !== parent);
+      saveJobs();
+      render();
+      return;
+    }
   }
 
   /* ---------------- panel integration ---------------- */
@@ -303,29 +317,33 @@
 
     render();
 
-    // sadece parent job id'leri poll et (version id'leri poll edilmez)
-    jobs
-      .filter(j => (j?.job_id || j?.id))
-      .filter(j => !isVersionEntry(j))
-      .filter(j => !String(j.job_id || j.id).includes("::"))
-      .forEach(j => j?.job_id && poll(j.job_id));
+    // Stored jobs: parent_job_id varsa parent poll et; yoksa id parent kabul et
+    const parents = new Set();
+    jobs.forEach(j => {
+      const p = j.parent_job_id || (String(j.id||j.job_id||"").includes(":") ? String(j.id||j.job_id).split(":")[0] : (j.id||j.job_id));
+      if (p) parents.add(String(p));
+    });
+    parents.forEach(pid => pollInternal(pid, { title: "Müzik Üretimi", subtitle: "" }));
 
+    listEl.addEventListener("click", onClick);
     window.addEventListener("aivo:job", onJob);
   }
 
   function destroy(){
+    stopAll();
+    try { listEl?.removeEventListener?.("click", onClick); } catch {}
     window.removeEventListener("aivo:job", onJob);
   }
 
   function register(){
     if (window.RightPanel?.register){
-      window.RightPanel.register(PANEL_KEY, { mount, destroy });
+      window.RightPanel.register(PANEL_KEY,{mount,destroy});
       return true;
     }
     return false;
   }
 
   if (!register()){
-    window.addEventListener("DOMContentLoaded", register, { once: true });
+    window.addEventListener("DOMContentLoaded", register, {once:true});
   }
 })();
