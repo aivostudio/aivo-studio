@@ -587,9 +587,9 @@ async function poll(jobId) {
   const knownReal = existing.__real_job_id || null;
 
   // Her zaman provider_job_id ile çağırıyoruz.
-  async function fetchStatus(id) {
-    const q = encodeURIComponent(String(id).startsWith("job_") ? providerBase : String(id));
-    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+ async function fetchStatus(id) {
+  const q = encodeURIComponent(providerBase); // sadece numeric id
+  const r = await fetch(`/api/music/status?provider_song_ids=${q}`, {
       cache: "no-store",
       credentials: "include",
     });
