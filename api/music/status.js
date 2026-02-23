@@ -1,15 +1,19 @@
 // api/music/status.js
 // Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
-// - Accepts: job_id (internal job_...) OR provider_job_id/song_id
+// - Accepts: job_id (internal job_...) OR provider_job_id/song_id OR ids=id1,id2
 // - If internal, reads Redis jobs/<internal>/job.json to get provider_song_ids
 // - Calls TopMediai: GET /v3/music/tasks?ids=id1,id2
-// - When status==0 and audio_url exists => data.audio.src set + completed
+// - Normalizes MULTI-TRACK output to: outputs[] + backward compat audio.src
 
 const { getRedis } = require("../_kv");
-const fetch = globalThis.fetch || require("node-fetch");
+const fetchFn = globalThis.fetch || require("node-fetch");
 
 function safeJsonParse(s) {
-  try { return JSON.parse(s); } catch { return null; }
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
 }
 
 function uniqStrings(arr) {
@@ -26,7 +30,7 @@ function uniqStrings(arr) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks-2026-02-13");
+  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks-2026-02-23");
 
   try {
     if (req.method !== "GET") {
@@ -35,12 +39,12 @@ module.exports = async (req, res) => {
 
     const raw = String(
       req.query.job_id ||
-      req.query.provider_job_id ||
-      req.query.providerJobId ||
-      req.query.song_id ||
-      req.query.songId ||
-      req.query.ids || // opsiyonel: ids=id1,id2
-      ""
+        req.query.provider_job_id ||
+        req.query.providerJobId ||
+        req.query.song_id ||
+        req.query.songId ||
+        req.query.ids || // opsiyonel: ids=id1,id2
+        ""
     ).trim();
 
     if (!raw) {
@@ -55,7 +59,7 @@ module.exports = async (req, res) => {
     const isInternal = raw.startsWith("job_");
 
     let internal_job_id = isInternal ? raw : null;
-    let provider_job_id = !isInternal ? raw : null; // (legacy) tek id gelirse
+    let provider_job_id = !isInternal ? raw : null; // tek id gelirse
     let provider_song_ids = [];
 
     if (isInternal) {
@@ -123,10 +127,10 @@ module.exports = async (req, res) => {
     const idsParam = provider_song_ids.join(",");
     const url = `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(idsParam)}`;
 
-    const r = await fetch(url, {
+    const r = await fetchFn(url, {
       method: "GET",
       headers: {
-        "accept": "application/json",
+        accept: "application/json",
         "x-api-key": KEY,
       },
     });
@@ -144,79 +148,96 @@ module.exports = async (req, res) => {
         provider_song_ids,
         internal_job_id,
         upstream_status: r.status,
-        upstream_preview: String(text || "").slice(0, 200),
+        upstream_preview: String(text || "").slice(0, 400),
       });
     }
 
- // ---------------------------------------------------------
-// 3) Normalize  (MULTI-TRACK)
-// ---------------------------------------------------------
-const arr = Array.isArray(top?.data)
-  ? top.data
-  : (Array.isArray(top?.data?.data) ? top.data.data : null);
+    // ---------------------------------------------------------
+    // 3) Normalize (MULTI-TRACK)
+    // ---------------------------------------------------------
+    const arr = Array.isArray(top?.data)
+      ? top.data
+      : Array.isArray(top?.data?.data)
+      ? top.data.data
+      : null;
 
-// tasks item shape expected:
-// { status: 0, audio_url: "https://...mp3", song_id: "..." }
+    let anyFail = false;
+    let anyReady = false;
 
-let anyFail = false;
-let anyReady = false;
+    const outputs = [];
 
-const outputs = [];
+    if (Array.isArray(arr) && arr.length) {
+      for (const item of arr) {
+        const st = Number(item?.status);
 
-if (Array.isArray(arr) && arr.length) {
-  for (const item of arr) {
-    const st = Number(item?.status);
+        const trackId = String(item?.song_id || item?.id || "").trim() || null;
+        const urlMp3 =
+          item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
-    const trackId = String(item?.song_id || item?.id || "").trim() || null;
-    const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+        // status==0 => ready (TopMediai’de)
+        const ready = st === 0;
 
-    // status==0 => ready
-    const ready = st === 0;
+        // fail kodları (geniş yakala)
+        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
+          anyFail = true;
+        }
 
-    // fail kodları (geniş yakala)
-    if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
-      anyFail = true;
+        if (ready && urlMp3) {
+          anyReady = true;
+          outputs.push({
+            type: "audio",
+            url: urlMp3,
+            meta: {
+              provider: "topmediai",
+              trackId: trackId || null,
+              status: st,
+            },
+          });
+        }
+      }
     }
 
-    if (ready && urlMp3) {
-      anyReady = true;
-      outputs.push({
-        type: "audio",
-        url: urlMp3,
-        meta: {
-          provider: "topmediai",
-          trackId: trackId || null,
-          status: st,
-        },
-      });
+    const data = {
+      ok: true,
+      provider: "topmediai",
+      provider_job_id,
+      provider_song_ids,
+      internal_job_id: internal_job_id || null,
+      state: "processing",
+      status: "processing",
+      outputs,
+      topmediai: top,
+    };
+
+    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa diye
+    if (outputs.length) {
+      data.audio = {
+        src: outputs[0].url,
+        output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
+      };
     }
+
+    if (anyFail) {
+      data.state = "failed";
+      data.status = "failed";
+    } else if (anyReady) {
+      // en az 1 parça hazırsa completed diyelim (UI “hazır” görsün)
+      data.state = "completed";
+      data.status = "completed";
+    } else {
+      data.state = "processing";
+      data.status = "processing";
+    }
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error("api/music/status error:", err);
+    return res.status(200).json({
+      ok: false,
+      error: "proxy_error",
+      state: "processing",
+      status: "processing",
+      detail: String(err?.message || err),
+    });
   }
-}
-
-const data = {
-  ok: true,
-  provider: "topmediai",
-  provider_job_id,
-  provider_song_ids,
-  internal_job_id: internal_job_id || null,
-  state: "processing",
-  status: "processing",
-  outputs,
-  topmediai: top,
 };
-
-// Backward-compat: eski panel hâlâ data.audio.src arıyorsa diye
-if (outputs.length) {
-  data.audio = { src: outputs[0].url, output_id: outputs[0]?.meta?.trackId || String(provider_job_id) };
-}
-
-if (anyFail) {
-  data.state = "failed";
-  data.status = "failed";
-} else if (anyReady) {
-  data.state = "completed";
-  data.status = "completed";
-} else {
-  data.state = "processing";
-  data.status = "processing";
-}
