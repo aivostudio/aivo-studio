@@ -346,36 +346,31 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* Orta modül kartının duvar pseudo’sunu kapat */
-#moduleHost.glassCard::after{
-  content: none !important;
-}
-/* İçerik uzayan gerçek alan */
-.main-panel[data-module]{
-  position: relative;  /* pseudo için anchor */
+/* ==========================================
+   ATMOSFER: global stroke’u sadece burada sustur
+   sonra içeriye kendi frame’ini çiz
+   ========================================== */
+
+/* 1) Atmosfer moduleHost subtree’sinde tüm stroke çizgilerini kapat */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]{
+  --stroke-w: 0px !important;  /* 🔥 kritik: “duvar çizgisi” kaynağı bu */
 }
 
-/* Duvar artık içerikle beraber uzar */
-.main-panel[data-module]::before{
+/* 2) Atmosfer’in kendi paneline içten frame çiz */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
+  > section.main-panel[data-module="atmosphere"]{
+  position: relative;
+  border-radius: var(--card-radius);
+  padding: 18px; /* frame içerde kalsın */
+}
+
+/* 3) İç frame (Atmosfer’in içine giren çizgi) */
+section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
+  > section.main-panel[data-module="atmosphere"]::before{
   content: "";
   position: absolute;
-  inset: -18px;                 /* duvarın dışa taşan payı */
-  border-radius: 26px;          /* mevcut radius’unla aynı tut */
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid rgba(255,255,255,.07); /* istersen .09 yaparız */
   pointer-events: none;
-  z-index: 0;
-
-  /* Senin mevcut “duvar” görünümün (örnek) */
-  border: 1px solid rgba(255,255,255,.07);
-  background:
-    radial-gradient(1200px 800px at 30% 0%,
-      rgba(140,80,255,.35),
-      rgba(70,50,140,.25),
-      rgba(20,18,40,.35)
-    );
-}
-
-/* İçerik duvarın üstünde kalsın */
-.main-panel[data-module] > *{
-  position: relative;
-  z-index: 1;
 }
