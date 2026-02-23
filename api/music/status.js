@@ -147,75 +147,75 @@ module.exports = async (req, res) => {
       });
     }
 
-    // ---------------------------------------------------------
-    // 3) Normalize
-    // ---------------------------------------------------------
-    const arr = Array.isArray(top?.data) ? top.data : (Array.isArray(top?.data?.data) ? top.data.data : null);
+ // ---------------------------------------------------------
+// 3) Normalize  (MULTI-TRACK)
+// ---------------------------------------------------------
+const arr = Array.isArray(top?.data)
+  ? top.data
+  : (Array.isArray(top?.data?.data) ? top.data.data : null);
 
-    // tasks item shape expected:
-    // { status: 0, audio_url: "https://...mp3", song_id: "..." }
-    let mp3 = null;
-    let outId = null;
+// tasks item shape expected:
+// { status: 0, audio_url: "https://...mp3", song_id: "..." }
 
-    let anyFail = false;
-    let allReady = true;
+let anyFail = false;
+let anyReady = false;
 
-    if (Array.isArray(arr) && arr.length) {
-      for (const item of arr) {
-        const st = Number(item?.status);
-        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+const outputs = [];
 
-        // status==0 => ready (TopMediai support dediği)
-        const ready = st === 0;
-        if (!ready) allReady = false;
+if (Array.isArray(arr) && arr.length) {
+  for (const item of arr) {
+    const st = Number(item?.status);
 
-        // bazı sistemlerde fail kodları olabilir; geniş yakala
-        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
-          anyFail = true;
-        }
+    const trackId = String(item?.song_id || item?.id || "").trim() || null;
+    const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
-        if (!mp3 && ready && urlMp3) {
-          mp3 = urlMp3;
-          outId = item?.song_id || item?.id || provider_job_id;
-        }
-      }
-    } else {
-      allReady = false;
+    // status==0 => ready
+    const ready = st === 0;
+
+    // fail kodları (geniş yakala)
+    if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
+      anyFail = true;
     }
 
-    const data = {
-      ok: true,
-      provider: "topmediai",
-      provider_job_id,
-      provider_song_ids,
-      internal_job_id: internal_job_id || null,
-      state: "processing",
-      status: "processing",
-      topmediai: top,
-    };
-
-    if (anyFail) {
-      data.state = "failed";
-      data.status = "failed";
-    } else if (mp3) {
-      data.audio = { src: mp3, output_id: outId || String(provider_job_id) };
-      data.state = "completed";
-      data.status = "completed";
-    } else {
-      // processing
-      data.state = allReady ? "completed" : "processing";
-      data.status = allReady ? "completed" : "processing";
+    if (ready && urlMp3) {
+      anyReady = true;
+      outputs.push({
+        type: "audio",
+        url: urlMp3,
+        meta: {
+          provider: "topmediai",
+          trackId: trackId || null,
+          status: st,
+        },
+      });
     }
-
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error("api/music/status error:", err);
-    return res.status(200).json({
-      ok: false,
-      error: "proxy_error",
-      state: "processing",
-      status: "processing",
-      detail: String(err?.message || err),
-    });
   }
+}
+
+const data = {
+  ok: true,
+  provider: "topmediai",
+  provider_job_id,
+  provider_song_ids,
+  internal_job_id: internal_job_id || null,
+  state: "processing",
+  status: "processing",
+  outputs,
+  topmediai: top,
 };
+
+// Backward-compat: eski panel hâlâ data.audio.src arıyorsa diye
+if (outputs.length) {
+  data.audio = { src: outputs[0].url, output_id: outputs[0]?.meta?.trackId || String(provider_job_id) };
+}
+
+if (anyFail) {
+  data.state = "failed";
+  data.status = "failed";
+} else if (anyReady) {
+  data.state = "completed";
+  data.status = "completed";
+} else {
+  data.state = "processing";
+  data.status = "processing";
+}
