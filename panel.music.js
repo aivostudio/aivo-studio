@@ -586,23 +586,13 @@ async function poll(jobId) {
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
   const knownReal = existing.__real_job_id || null;
 
- // id'ye göre doğru query ile çağır (job_... ise job_id, değilse provider_job_id)
+  // Her zaman provider_job_id ile çağırıyoruz.
 async function fetchStatus(id) {
-  const sid = String(id || "").trim();
-  if (!sid) return { ok: false, json: null };
-
-  const isInternal = sid.startsWith("job_");
-  const q = encodeURIComponent(sid);
-
-  const url = isInternal
-    ? `/api/music/status?job_id=${q}`
-    : `/api/music/status?provider_job_id=${q}`;
-
-  const r = await fetch(url, {
+  const q = encodeURIComponent(providerBase); // sadece numeric id
+  const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
     cache: "no-store",
     credentials: "include",
   });
-
   let j = null;
   try { j = await r.json(); } catch { j = null; }
   return { ok: r.ok, json: j };
@@ -665,40 +655,32 @@ try {
     job.job_id = providerId;
     job.id = providerId;
 
-   // src/output yakala (orig/rev kartları için outputs[0]/outputs[1] map)
-const isRev = String(providerId).endsWith("::rev1");
-const outIndex = isRev ? 1 : 0;
+    // src/output yakala
+    const src =
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      job?.audio?.src ||
+      job?.result?.audio?.src ||
+      job?.result?.src ||
+      "";
 
-const outs = Array.isArray(j?.outputs) ? j.outputs : [];
-const outPick = outs[outIndex] || outs[0] || null;
+    const outputId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      job?.output_id ||
+      job?.result?.output_id ||
+      "";
 
-const src =
-  outPick?.url ||
-  j?.audio?.src ||
-  j?.audio_src ||
-  j?.result?.audio?.src ||
-  j?.result?.src ||
-  job?.audio?.src ||
-  job?.result?.audio?.src ||
-  job?.result?.src ||
-  "";
+    // playUrl sadece outputId varsa
+    const playUrl = (realJobId && outputId)
+      ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
+      : "";
 
-const outputId =
-  outPick?.meta?.trackId ||
-  j?.audio?.output_id ||
-  j?.output_id ||
-  j?.result?.output_id ||
-  job?.output_id ||
-  job?.result?.output_id ||
-  "";
-
-// playUrl sadece outputId varsa
-const playUrl = (realJobId && outputId)
-  ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
-  : "";
-
-job.__audio_src = src || playUrl || "";
-job.output_id = outputId || job.output_id || "";
+    job.__audio_src = src || playUrl || "";
+    job.output_id = outputId || job.output_id || "";
 
     // state
     let state = uiState(j.state || j.status || job.status);
@@ -935,14 +917,14 @@ function onJob(e){
       // Placeholder kart (anında 2 kart görünsün)
       const tempId = uid(`music_${idx}`);
       window.dispatchEvent(new CustomEvent("aivo:job", { detail: {
-  job_id: realId,
-  id: realId,
-  type: "music",
-  title: `${payload.title} (${idx}/${total})`,
-  subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
-  provider_job_id: resp?.provider_job_id || null,
-  __real_job_id: resp?.internal_job_id || resp?.job_id || null, // <-- en kritik satır
-}}));
+        job_id: tempId,
+        id: tempId,
+        type: "music",
+        title: `${payload.title} (${idx}/${total})`,
+        subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
+        __ui_state: "processing",
+        __audio_src: ""
+      }}));
 
       const resp = await postGenerate(payload);
       const realId = extractJobId(resp);
