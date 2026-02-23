@@ -135,27 +135,15 @@ body{
 }
 
 /* ===== MOTOR PANEL (SOL) ===== */
-/* Scroll sadece container’da kalsın. Duvarı içerik (main-panel) çizecek. */
 #moduleHost{
   height: 100%;
   min-height: 0;
   overflow: auto;
 
-  /* duvar buradan kalkıyor */
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-}
-
-/* Duvar artık içerikle uzayan gerçek panelde */
-#moduleHost > .main-panel[data-module]{
-  position: relative;
-
-  /* dış kart hissi */
   border-radius: var(--radius);
   padding: 18px;
 
+  /* senin mor kart hissi */
   background: radial-gradient(1200px 800px at 30% 0%,
     rgba(140,80,255,.35),
     rgba(70,50,140,.25),
@@ -163,10 +151,8 @@ body{
   );
 
   border: 1px solid rgba(255,255,255,.07);
-
-  /* içerik kısa olursa da boş kalmasın */
-  min-height: 100%;
 }
+
 /* ===== OUTPUTS PANEL (SAĞ - DAHA GENİŞ & İÇİ SCROLL) ===== */
 .outputsCard{
   height: 100%;
