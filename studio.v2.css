@@ -405,3 +405,42 @@ button.primary-btn.aivoBtnPrimary{
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   color:#fff !important;
 }
+/* =========================================================
+   SCROLL OWNERSHIP FIX (2026-02-23)
+   - Sayfa scroll yok (html/body)
+   - Orta panel: #moduleHost scroll
+   - Sağ panel:  .outputsCard scroll
+   ========================================================= */
+
+html, body{
+  height: 100%;
+  overflow: hidden; /* page scroll kapalı */
+}
+
+body{
+  overscroll-behavior: none; /* wheel/trackpad bounce davranışı */
+}
+
+/* Orta panel scroll sahibi */
+#moduleHost{
+  height: calc(100vh - var(--studio-topbar-h, 72px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Sağ panel scroll sahibi */
+.outputsCard{
+  height: calc(100vh - var(--studio-topbar-h, 72px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+
+/* Sağ panel host büyüyüp parent’ı zorlamasın */
+#rightPanelHost{
+  min-height: 0;
+}
