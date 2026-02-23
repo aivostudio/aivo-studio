@@ -564,43 +564,46 @@ if (!src){
   }
 /* ---------------- polling ---------------- */
 
-let pollBusy = false;
-let lastPollAt = 0;
+// ✅ kart/job bazlı throttle + busy (2 kart birbirini bloklamasın)
+const POLL_BUSY = new Set();   // key: providerId (örn: "1334977::orig")
+const POLL_LAST = new Map();   // key: providerId -> timestamp(ms)
 
 async function poll(jobId) {
   if (!alive || !jobId) return;
 
-  // 1) aynı anda üst üste bindirme (spam kesilir)
-  if (pollBusy) return;
-
-  // 2) 1.5sn’den sık vurma (spam kesilir)
-  const now = Date.now();
-  if (now - lastPollAt < 1500) return;
-  lastPollAt = now;
-
-  pollBusy = true;
-
-  const providerId = String(jobId);           // kart id: prov_xxx::orig
+  const providerId = String(jobId);           // kart id: 1334977::orig / 1334977::rev1
   const providerBase = providerId.split("::")[0];
+
+  // 1) aynı karta paralel bindirme (spam kesilir)
+  if (POLL_BUSY.has(providerId)) return;
+
+  // 2) aynı karta 1.5sn’den sık vurma (spam kesilir)
+  const now = Date.now();
+  const last = POLL_LAST.get(providerId) || 0;
+  if (now - last < 1500) return;
+  POLL_LAST.set(providerId, now);
+
+  POLL_BUSY.add(providerId);
 
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
   const knownReal = existing.__real_job_id || null;
 
-  // Her zaman provider_job_id ile çağırıyoruz.
-async function fetchStatus(id) {
-  const q = encodeURIComponent(providerBase); // sadece numeric id
-  const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
-    cache: "no-store",
-    credentials: "include",
-  });
-  let j = null;
-  try { j = await r.json(); } catch { j = null; }
-  return { ok: r.ok, json: j };
-}
+  // Her zaman provider_job_id ile çağırıyoruz (UI kartları base id ile poll eder)
+  async function fetchStatus(id) {
+    const q = encodeURIComponent(providerBase);
+    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+      cache: "no-store",
+      credentials: "include",
+    });
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
+    return { ok: r.ok, json: j };
+  }
 
-try {
-  clearPoll(providerId);
-    // 1) önce (real varsa onu, yoksa providerBase)
+  try {
+    clearPoll(providerId);
+
+    // 1) önce (real varsa onu, yoksa providerBase) — fetchStatus zaten providerBase kullanıyor
     const firstId = knownReal || providerBase;
     let { ok, json: j } = await fetchStatus(firstId);
 
@@ -615,7 +618,7 @@ try {
       return;
     }
 
-    // 2) internal_job_id yakala (senin response’ta var)
+    // 2) internal_job_id yakala (varsa)
     const internalJobId =
       j?.internal_job_id ||
       j?.job?.internal_job_id ||
@@ -694,7 +697,6 @@ try {
     upsertJob(job);
     render();
 
-
     // auto-play sadece ORIGINAL ve ilk kez
     if (
       job.__ui_state === "ready" &&
@@ -716,7 +718,7 @@ try {
   } catch (e) {
     schedulePoll(providerId, 2000);
   } finally {
-    pollBusy = false;
+    POLL_BUSY.delete(providerId);
   }
 }
 
