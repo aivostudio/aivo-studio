@@ -346,34 +346,36 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* ==========================================
-   ATMOSFER: sadece “duvar çizgisi”ni kapat
-   kartların kendi stroke’u kalsın
-   ========================================== */
-
-/* 1) moduleHost’un çizdiği uzun duvar (pseudo) */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]::after{
-  display: none !important;
+/* Orta modül kartının duvar pseudo’sunu kapat */
+#moduleHost.glassCard::after{
+  content: none !important;
+}
+/* İçerik uzayan gerçek alan */
+.main-panel[data-module]{
+  position: relative;  /* pseudo için anchor */
 }
 
-/* 2) bazı sayfalarda duvar hero::after’dan da gelebiliyor */
-body.is-studio-v2 section#moduleHost.glassCard.studioMotor[data-active-module="atmo"] .hero::after{
-  display: none !important;
-}
+/* Duvar artık içerikle beraber uzar */
+.main-panel[data-module]::before{
+  content: "";
+  position: absolute;
+  inset: -18px;                 /* duvarın dışa taşan payı */
+  border-radius: 26px;          /* mevcut radius’unla aynı tut */
+  pointer-events: none;
+  z-index: 0;
 
-/* 3) Atmosfer sayfasının içine “tek” frame çiz (opsiyonel ama güzel durur) */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
-  > section.main-panel[data-module="atmosphere"]{
-  position: relative;
-  border-radius: var(--card-radius);
-}
-
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
-  > section.main-panel[data-module="atmosphere"]::before{
-  content:"";
-  position:absolute;
-  inset: 10px;                 /* içeri girsin */
-  border-radius: 22px;
+  /* Senin mevcut “duvar” görünümün (örnek) */
   border: 1px solid rgba(255,255,255,.07);
-  pointer-events:none;
+  background:
+    radial-gradient(1200px 800px at 30% 0%,
+      rgba(140,80,255,.35),
+      rgba(70,50,140,.25),
+      rgba(20,18,40,.35)
+    );
+}
+
+/* İçerik duvarın üstünde kalsın */
+.main-panel[data-module] > *{
+  position: relative;
+  z-index: 1;
 }
