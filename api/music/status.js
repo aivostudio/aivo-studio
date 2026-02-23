@@ -53,61 +53,106 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
-    // ---------------------------------------------------------
-    // 1) Resolve song ids
-    // ---------------------------------------------------------
-    const isInternal = raw.startsWith("job_");
+   // ---------------------------------------------------------
+// 1) Resolve song ids
+// ---------------------------------------------------------
+const isInternal = raw.startsWith("job_");
 
-    let internal_job_id = isInternal ? raw : null;
-    let provider_job_id = !isInternal ? raw : null; // tek id gelirse
-    let provider_song_ids = [];
+let internal_job_id = isInternal ? raw : null;
+let provider_job_id = !isInternal ? raw : null; // tek id gelirse
+let provider_song_ids = [];
 
-    if (isInternal) {
-      // Redis’ten job meta oku: jobs/<internal>/job.json
-      const jobMetaKey = `jobs/${internal_job_id}/job.json`;
-      const jobText = await redis.get(jobMetaKey);
-      const jobObj = jobText ? safeJsonParse(jobText) : null;
+if (isInternal) {
+  // Redis’ten job meta oku: jobs/<internal>/job.json
+  const jobMetaKey = `jobs/${internal_job_id}/job.json`;
+  const jobText = await redis.get(jobMetaKey);
+  const jobObj = jobText ? safeJsonParse(jobText) : null;
 
-      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+  provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-      const idsRaw =
-        jobObj?.provider_song_ids ||
-        jobObj?.providerSongIds ||
-        jobObj?.song_ids ||
-        jobObj?.songIds ||
+  const idsRaw =
+    jobObj?.provider_song_ids ||
+    jobObj?.providerSongIds ||
+    jobObj?.song_ids ||
+    jobObj?.songIds ||
+    [];
+
+  provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+
+  // fallback: provider_song_ids yoksa provider_job_id’yi song id gibi kullan
+  if (provider_song_ids.length === 0 && provider_job_id) {
+    provider_song_ids = [String(provider_job_id)];
+  }
+} else {
+  // raw virgüllü geldiyse (ids)
+  if (raw.includes(",")) {
+    provider_song_ids = uniqStrings(raw.split(","));
+    provider_job_id = provider_song_ids[0] || provider_job_id;
+  } else {
+    // ✅ NEW: provider_job_id ile gelindiyse önce provider_map'ten internal + song_ids çöz
+    const providerMapKey = `provider_map:${raw}`;
+    const mapText = await redis.get(providerMapKey);
+    const mapObj = mapText ? safeJsonParse(mapText) : null;
+
+    if (mapObj?.internal_job_id) {
+      internal_job_id = String(mapObj.internal_job_id).trim() || null;
+
+      // 1) map'ten song_ids al
+      const mapIdsRaw =
+        mapObj?.provider_song_ids ||
+        mapObj?.providerSongIds ||
+        mapObj?.song_ids ||
+        mapObj?.songIds ||
         [];
 
-      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+      provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
+      provider_job_id =
+        String(mapObj?.provider_job_id || "").trim() || String(raw);
 
-      // fallback: provider_song_ids yoksa provider_job_id’yi song id gibi kullan
+      // 2) job meta varsa, daha canonical olanı merge et
+      if (internal_job_id) {
+        const jobMetaKey = `jobs/${internal_job_id}/job.json`;
+        const jobText = await redis.get(jobMetaKey);
+        const jobObj = jobText ? safeJsonParse(jobText) : null;
+
+        const idsRaw =
+          jobObj?.provider_song_ids ||
+          jobObj?.providerSongIds ||
+          jobObj?.song_ids ||
+          jobObj?.songIds ||
+          [];
+
+        const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+        if (jobIds.length) provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
+
+        provider_job_id =
+          String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+      }
+
+      // 3) fallback
       if (provider_song_ids.length === 0 && provider_job_id) {
         provider_song_ids = [String(provider_job_id)];
       }
     } else {
-      // raw virgüllü geldiyse (ids)
-      if (raw.includes(",")) {
-        provider_song_ids = uniqStrings(raw.split(","));
-        provider_job_id = provider_song_ids[0] || provider_job_id;
-      } else {
-        // tek id: song_id kabul et
-        provider_song_ids = [String(raw)];
-        provider_job_id = String(raw);
-      }
+      // tek id: song_id kabul et (eski davranış)
+      provider_song_ids = [String(raw)];
+      provider_job_id = String(raw);
     }
+  }
+}
 
-    provider_song_ids = uniqStrings(provider_song_ids);
+provider_song_ids = uniqStrings(provider_song_ids);
 
-    if (provider_song_ids.length === 0) {
-      return res.status(200).json({
-        ok: false,
-        error: "missing_provider_song_ids",
-        state: "processing",
-        status: "processing",
-        provider_job_id: provider_job_id || null,
-        internal_job_id: internal_job_id || null,
-      });
-    }
-
+if (provider_song_ids.length === 0) {
+  return res.status(200).json({
+    ok: false,
+    error: "missing_provider_song_ids",
+    state: "processing",
+    status: "processing",
+    provider_job_id: provider_job_id || null,
+    internal_job_id: internal_job_id || null,
+  });
+}
     // ---------------------------------------------------------
     // 2) Call TopMediai v3 tasks
     // ---------------------------------------------------------
