@@ -564,58 +564,72 @@ if (!src){
   }
 /* ---------------- polling ---------------- */
 
-let pollBusy = false;
-let lastPollAt = 0;
+// per-job busy + throttle (global değil)
+if (!window.__AIVO_MUSIC_POLL_BUSY__) window.__AIVO_MUSIC_POLL_BUSY__ = new Set();
+if (!window.__AIVO_MUSIC_POLL_LAST__) window.__AIVO_MUSIC_POLL_LAST__ = new Map();
 
-async function poll(jobId) {
-  if (!alive || !jobId) return;
+const POLL_BUSY = window.__AIVO_MUSIC_POLL_BUSY__;
+const POLL_LAST = window.__AIVO_MUSIC_POLL_LAST__;
 
-  // 1) aynı anda üst üste bindirme (spam kesilir)
-  if (pollBusy) return;
+async function fetchStatusSmart(id) {
+  const sid = String(id || "").trim();
+  if (!sid) return { ok: false, json: null };
 
-  // 2) 1.5sn’den sık vurma (spam kesilir)
-  const now = Date.now();
-  if (now - lastPollAt < 1500) return;
-  lastPollAt = now;
+  // job_... ise job_id ile; numeric/provider ise provider_job_id ile çağır
+  const isInternal = sid.startsWith("job_");
+  const qs = isInternal
+    ? `job_id=${encodeURIComponent(sid)}`
+    : `provider_job_id=${encodeURIComponent(sid)}`;
 
-  pollBusy = true;
-
-  const providerId = String(jobId);           // kart id: prov_xxx::orig
-  const providerBase = providerId.split("::")[0];
-
-  const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
-  const knownReal = existing.__real_job_id || null;
-
-  // Her zaman provider_job_id ile çağırıyoruz.
-async function fetchStatus(id) {
-  const q = encodeURIComponent(providerBase); // sadece numeric id
-  const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+  const r = await fetch(`/api/music/status?${qs}`, {
     cache: "no-store",
     credentials: "include",
   });
+
   let j = null;
   try { j = await r.json(); } catch { j = null; }
   return { ok: r.ok, json: j };
 }
 
-try {
-  clearPoll(providerId);
-    // 1) önce (real varsa onu, yoksa providerBase)
-    const firstId = knownReal || providerBase;
-    let { ok, json: j } = await fetchStatus(firstId);
+async function poll(jobId) {
+  if (!alive || !jobId) return;
+
+  const providerId = String(jobId);          // kart id: "<base>::orig" / "<base>::rev1"
+  const baseId = providerId.split("::")[0];  // "<base>"
+
+  // per-job busy: orig ve rev aynı anda poll edebilsin
+  if (POLL_BUSY.has(providerId)) return;
+
+  // per-job throttle (1.2s)
+  const now = Date.now();
+  const last = POLL_LAST.get(providerId) || 0;
+  if (now - last < 1200) return;
+  POLL_LAST.set(providerId, now);
+
+  POLL_BUSY.add(providerId);
+
+  try {
+    clearPoll(providerId);
+
+    const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
+    const knownReal = existing.__real_job_id || null;
+
+    // 1) önce knownReal varsa onu dene; yoksa baseId
+    let firstId = knownReal || baseId;
+    let { ok, json: j } = await fetchStatusSmart(firstId);
 
     if (!ok || !j) {
       schedulePoll(providerId, 1500);
       return;
     }
 
-    // Backend bazen proxy_error döndürüyor, onu da “retry” say
-    if (j.ok === false && (j.error === "proxy_error" || j.error === "worker_non_json")) {
+    // bazı geçici hatalar -> retry
+    if (j.ok === false && (j.error === "proxy_error" || j.error === "worker_non_json" || j.error === "upstream_non_json")) {
       schedulePoll(providerId, 2000);
       return;
     }
 
-    // 2) internal_job_id yakala (senin response’ta var)
+    // 2) internal_job_id varsa ve audio yoksa -> 2. hop internal ile dene
     const internalJobId =
       j?.internal_job_id ||
       j?.job?.internal_job_id ||
@@ -623,8 +637,7 @@ try {
       j?.result?.internal_job_id ||
       null;
 
-    // İlk response’ta audio yoksa ve internal_job_id varsa -> 2. hop
-    const firstHasAudio = !!(
+    const hasAudio = !!(
       j?.audio?.src ||
       j?.audio_src ||
       j?.result?.audio?.src ||
@@ -632,14 +645,14 @@ try {
       j?.job?.audio?.src
     );
 
-    if (internalJobId && !firstHasAudio) {
-      const second = await fetchStatus(internalJobId);
+    if (internalJobId && !hasAudio) {
+      const second = await fetchStatusSmart(internalJobId);
       if (second.ok && second.json) j = second.json;
     }
 
     const job = j.job || {};
 
-    // “real job id” olarak internal id’yi sakla
+    // real job id sakla (internal'ı tercih et)
     const realJobId =
       j?.internal_job_id ||
       job?.internal_job_id ||
@@ -651,7 +664,7 @@ try {
       upsertJob({ job_id: providerId, id: providerId, __real_job_id: realJobId });
     }
 
-    // kart kimliği sabit
+    // kart kimliği sabit kalsın
     job.job_id = providerId;
     job.id = providerId;
 
@@ -674,15 +687,11 @@ try {
       job?.result?.output_id ||
       "";
 
-    // playUrl sadece outputId varsa
-    const playUrl = (realJobId && outputId)
-      ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
-      : "";
-
-    job.__audio_src = src || playUrl || "";
+    // (sende worker origin var; burada sadece api src varsa onu kullan)
+    job.__audio_src = src || "";
     job.output_id = outputId || job.output_id || "";
 
-    // state
+    // state: src varsa ready
     let state = uiState(j.state || j.status || job.status);
     if (job.__audio_src) state = "ready";
     job.__ui_state = state;
@@ -702,19 +711,6 @@ try {
       });
     }
 
-    // auto-play sadece ORIGINAL ve ilk kez
-    if (
-      job.__ui_state === "ready" &&
-      String(job.job_id || "").endsWith("::orig") &&
-      !job.__auto_played
-    ) {
-      job.__auto_played = true;
-      setTimeout(() => {
-        const card = getCard(job.job_id);
-        if (card) togglePlayFromCard(card);
-      }, 300);
-    }
-
     if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
 
@@ -723,10 +719,9 @@ try {
   } catch (e) {
     schedulePoll(providerId, 2000);
   } finally {
-    pollBusy = false;
+    POLL_BUSY.delete(providerId);
   }
 }
-
 /* ---------------- onJob ---------------- */
 function onJob(e){
   const payload = e?.detail || e || {};
