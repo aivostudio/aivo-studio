@@ -728,22 +728,40 @@ function onJob(e){
   const baseId = payload.job_id || payload.id;
   if (!baseId) return;
 
-  // ✅ Tek job ekle. Kartları outputs[] gelince poll() üretecek.
-  upsertJob({
-    job_id: String(baseId),
-    id: String(baseId),
+  // tek job -> 2 kart
+  const origId = `${baseId}::orig`;
+  const revId  = `${baseId}::rev1`;
+
+  const common = {
     type: payload.type || "music",
-    title: payload.title || "Müzik Üretimi",
     subtitle: payload.subtitle || "",
-    __ui_state: "processing",
-    __audio_src: "",
+    __ui_state: payload.__ui_state || "processing",
+    __audio_src: payload.__audio_src || "",
     __real_job_id: payload.__real_job_id || null,
     provider_job_id: payload.provider_job_id || null,
+  };
+
+  upsertJob({
+    ...common,
+    job_id: origId,
+    id: origId,
+    title: (payload.title || "Müzik Üretimi") + " — Original Version",
+  });
+
+  upsertJob({
+    ...common,
+    job_id: revId,
+    id: revId,
+    title: (payload.title || "Müzik Üretimi") + " — Revize Version",
   });
 
   render();
-  poll(String(baseId));
+
+  // poll başlat
+  poll(origId);
+  poll(revId);
 }
+
 
 /* ---------------- panel integration ---------------- */
 function mount(){
