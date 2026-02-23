@@ -1,7 +1,7 @@
 // api/providers/topmediai/music/create.js
 // TopMediai v3 generate -> returns 2 track ids (song ids) + taskId
 // We normalize:
-// - provider_song_ids: string[]  (from data.tracks[].id OR song_ids)
+// - provider_song_ids: string[]  (from data.data.tracks[].id OR song_ids)
 // - provider_job_id: first song id (so status can call /v3/music/tasks?ids=...)
 // - also return topmediai.taskId for debugging/trace
 
@@ -18,17 +18,27 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     const prompt = String(body.prompt || body?.input?.prompt || body?.text || "").trim();
-    const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
+    const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim(); // kept for debug only (not sent)
 
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // ✅ Minimal, schema-safe payload:
-    // - prompt always
-    // - lyrics only if provided (TopMediai UI has lyrics-to-music mode)
-    const payload = { prompt };
-    if (lyrics) payload.lyrics = lyrics;
+    // ✅ TopMediai V3 Generate Music (AutoGenerateRequest) schema:
+    // action: required, allowed value: "auto"
+    // style: prompt
+    // mv: enum (v3.0/v3.5/v4.0/v4.5/v4.5-plus/v5.0)
+    // instrumental: 0/1
+    // gender: male/female/""
+    //
+    // NOTE: This endpoint does NOT accept {prompt, lyrics}. Lyrics is NOT sent here.
+    const payload = {
+      action: "auto",
+      style: prompt,
+      mv: "v3.5",
+      instrumental: 0,
+      gender: "male",
+    };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
@@ -37,7 +47,9 @@ export default async function handler(req, res) {
     const HARD_TIMEOUT_MS = Number(process.env.TOPMEDIAI_SUBMIT_TIMEOUT_MS || 25000);
 
     const timeout = setTimeout(() => {
-      try { controller.abort("topmediai_submit_timeout"); } catch {}
+      try {
+        controller.abort("topmediai_submit_timeout");
+      } catch {}
     }, HARD_TIMEOUT_MS);
 
     let r;
@@ -46,7 +58,7 @@ export default async function handler(req, res) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
           "x-api-key": KEY,
         },
         body: JSON.stringify(payload),
@@ -68,6 +80,8 @@ export default async function handler(req, res) {
           note: "submit_timeout",
           topmediai_url: topmediaiUrl,
           sent_payload: payload,
+          // debug only
+          received_lyrics: lyrics ? true : false,
         });
       }
 
@@ -77,6 +91,8 @@ export default async function handler(req, res) {
         detail: msg,
         topmediai_url: topmediaiUrl,
         sent_payload: payload,
+        // debug only
+        received_lyrics: lyrics ? true : false,
       });
     } finally {
       clearTimeout(timeout);
@@ -84,7 +100,11 @@ export default async function handler(req, res) {
 
     const rawText = await r.text();
     let data = null;
-    try { data = JSON.parse(rawText); } catch { data = null; }
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = null;
+    }
 
     if (!r.ok || !data) {
       return res.status(500).json({
@@ -95,11 +115,13 @@ export default async function handler(req, res) {
         topmediai_preview: String(rawText || "").slice(0, 1000),
         topmediai_response: data,
         sent_payload: payload,
+        // debug only
+        received_lyrics: lyrics ? true : false,
       });
     }
 
     // ✅ Normalize IDs
-    // Seen response format (from your Network screenshot):
+    // Expected format:
     // {
     //   success: true,
     //   data: {
@@ -115,11 +137,7 @@ export default async function handler(req, res) {
 
     // fallback: some APIs return song_ids
     const songIdsRaw =
-      data?.data?.song_ids ||
-      data?.data?.songIds ||
-      data?.song_ids ||
-      data?.songIds ||
-      null;
+      data?.data?.song_ids || data?.data?.songIds || data?.song_ids || data?.songIds || null;
 
     const songIdsFallback = Array.isArray(songIdsRaw)
       ? songIdsRaw.map((x) => String(x || "").trim()).filter(Boolean)
@@ -128,7 +146,6 @@ export default async function handler(req, res) {
     const provider_song_ids = trackIds.length ? trackIds : songIdsFallback;
 
     if (!provider_song_ids.length) {
-      // This means TopMediai responded but did not give IDs (usually schema error upstream)
       return res.status(500).json({
         ok: false,
         error: "topmediai_missing_ids",
@@ -136,6 +153,8 @@ export default async function handler(req, res) {
         topmediai_url: topmediaiUrl,
         topmediai_response: data,
         sent_payload: payload,
+        // debug only
+        received_lyrics: lyrics ? true : false,
       });
     }
 
@@ -152,6 +171,9 @@ export default async function handler(req, res) {
       topmediai_task_id: taskId ? String(taskId) : null,
       topmediai: data,
       topmediai_url: topmediaiUrl,
+      sent_payload: payload,
+      // debug only
+      received_lyrics: lyrics ? true : false,
     });
   } catch (err) {
     return res.status(500).json({
