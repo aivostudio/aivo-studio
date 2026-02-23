@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const payload = {
       action: "auto",
       style: prompt,
-      mv: "v3.5",
+      mv: "v5.0",
       instrumental: 0,
       gender: "male"
     };
