@@ -1,8 +1,9 @@
 // api/providers/topmediai/music/create.js
-// TopMediai v3 generate
-// POST https://api.topmediai.com/v3/music/generate
-// returns 2 song ids (song_ids / songIds)
-// We normalize => provider_song_ids: string[], provider_job_id: first id
+// TopMediai v3 generate -> returns 2 track ids (song ids) + taskId
+// We normalize:
+// - provider_song_ids: string[]  (from data.tracks[].id OR song_ids)
+// - provider_job_id: first song id (so status can call /v3/music/tasks?ids=...)
+// - also return topmediai.taskId for debugging/trace
 
 export default async function handler(req, res) {
   try {
@@ -18,26 +19,20 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const prompt = String(body.prompt || body?.input?.prompt || body?.text || "").trim();
     const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
-    const title = String(body.title || "AIVO Music").slice(0, 80);
-    const model = String(body.model || body?.input?.model || "TopMediai Fast").trim(); // opsiyonel
 
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // TopMediai: minimal payload
-    // NOT: TopMediai bazen extra alanları ignore ediyor, bozmaz.
-    const payload = {
-      action: "auto",
-      prompt,
-      ...(lyrics ? { lyrics } : {}),
-      ...(title ? { title } : {}),
-      ...(model ? { model } : {}),
-    };
+    // ✅ Minimal, schema-safe payload:
+    // - prompt always
+    // - lyrics only if provided (TopMediai UI has lyrics-to-music mode)
+    const payload = { prompt };
+    if (lyrics) payload.lyrics = lyrics;
 
-    const url = "https://api.topmediai.com/v3/music/generate";
+    const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
-    // Hard timeout (submit aşaması)
+    // HARD TIMEOUT (avoid hanging requests)
     const controller = new AbortController();
     const HARD_TIMEOUT_MS = Number(process.env.TOPMEDIAI_SUBMIT_TIMEOUT_MS || 25000);
 
@@ -47,7 +42,7 @@ export default async function handler(req, res) {
 
     let r;
     try {
-      r = await fetch(url, {
+      r = await fetch(topmediaiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +59,6 @@ export default async function handler(req, res) {
         msg.toLowerCase().includes("abort") ||
         msg.toLowerCase().includes("timeout");
 
-      // Submit timeout olsa bile UI poll devam edebilsin diye 202 dönüyoruz.
       if (isAbort) {
         return res.status(202).json({
           ok: true,
@@ -72,7 +66,7 @@ export default async function handler(req, res) {
           status: "processing",
           state: "PROCESSING",
           note: "submit_timeout",
-          topmediai_url: url,
+          topmediai_url: topmediaiUrl,
           sent_payload: payload,
         });
       }
@@ -81,7 +75,7 @@ export default async function handler(req, res) {
         ok: false,
         error: "topmediai_submit_fetch_failed",
         detail: msg,
-        topmediai_url: url,
+        topmediai_url: topmediaiUrl,
         sent_payload: payload,
       });
     } finally {
@@ -97,50 +91,67 @@ export default async function handler(req, res) {
         ok: false,
         error: "topmediai_create_failed",
         topmediai_status: r.status,
-        topmediai_url: url,
-        topmediai_preview: String(rawText || "").slice(0, 800),
+        topmediai_url: topmediaiUrl,
+        topmediai_preview: String(rawText || "").slice(0, 1000),
         topmediai_response: data,
         sent_payload: payload,
       });
     }
 
-    // song ids normalize
+    // ✅ Normalize IDs
+    // Seen response format (from your Network screenshot):
+    // {
+    //   success: true,
+    //   data: {
+    //     tracks: [{ id, title }, { id, title }],
+    //     taskId: "...",
+    //     status: "processing"
+    //   }
+    // }
+    const tracks = Array.isArray(data?.data?.tracks) ? data.data.tracks : [];
+    const trackIds = tracks
+      .map((t) => String(t?.id || "").trim())
+      .filter(Boolean);
+
+    // fallback: some APIs return song_ids
     const songIdsRaw =
       data?.data?.song_ids ||
       data?.data?.songIds ||
       data?.song_ids ||
       data?.songIds ||
-      data?.data?.ids ||
-      data?.ids ||
       null;
 
-    const provider_song_ids = Array.isArray(songIdsRaw)
-      ? songIdsRaw.map((x) => String(x)).filter(Boolean)
+    const songIdsFallback = Array.isArray(songIdsRaw)
+      ? songIdsRaw.map((x) => String(x || "").trim()).filter(Boolean)
       : [];
 
-    if (provider_song_ids.length === 0) {
-      // Bazı durumlarda hemen id dönmeyebilir → yine de processing dön
-      return res.status(202).json({
-        ok: true,
-        provider: "topmediai",
-        status: "processing",
-        state: "PROCESSING",
-        note: "missing_song_ids_in_generate_response",
-        topmediai: data,
-        topmediai_url: url,
+    const provider_song_ids = trackIds.length ? trackIds : songIdsFallback;
+
+    if (!provider_song_ids.length) {
+      // This means TopMediai responded but did not give IDs (usually schema error upstream)
+      return res.status(500).json({
+        ok: false,
+        error: "topmediai_missing_ids",
+        note: "no_track_ids_or_song_ids_in_response",
+        topmediai_url: topmediaiUrl,
+        topmediai_response: data,
         sent_payload: payload,
       });
     }
 
+    const provider_job_id = provider_song_ids[0];
+    const taskId = data?.data?.taskId || data?.data?.task_id || null;
+
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
-      provider_job_id: provider_song_ids[0],
+      provider_job_id,
       provider_song_ids,
       status: "processing",
       state: "PROCESSING",
+      topmediai_task_id: taskId ? String(taskId) : null,
       topmediai: data,
-      topmediai_url: url,
+      topmediai_url: topmediaiUrl,
     });
   } catch (err) {
     return res.status(500).json({
