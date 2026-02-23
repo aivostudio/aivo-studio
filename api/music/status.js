@@ -53,20 +53,41 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
-   // ---------------------------------------------------------
+ // ---------------------------------------------------------
 // 1) Resolve song ids
 // ---------------------------------------------------------
 const isInternal = raw.startsWith("job_");
 
-let internal_job_id = isInternal ? raw : null;
-let provider_job_id = !isInternal ? raw : null; // tek id gelirse
+// ✅ NEW: Neon jobs.id gibi UUID gelirse bunu da internal kabul et
+const looksLikeUUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+
+let internal_job_id = isInternal || looksLikeUUID ? raw : null;
+let provider_job_id = !isInternal && !looksLikeUUID ? raw : null; // tek id gelirse
 let provider_song_ids = [];
 
-if (isInternal) {
-  // Redis’ten job meta oku: jobs/<internal>/job.json
-  const jobMetaKey = `jobs/${internal_job_id}/job.json`;
-  const jobText = await redis.get(jobMetaKey);
-  const jobObj = jobText ? safeJsonParse(jobText) : null;
+// küçük helper: internal id'den redis job obj bul (iki farklı key ihtimali için)
+async function readJobObjFromRedis(internalId) {
+  if (!internalId) return null;
+
+  // 1) canonical path
+  const k1 = `jobs/${internalId}/job.json`;
+  const t1 = await redis.get(k1);
+  const o1 = t1 ? safeJsonParse(t1) : null;
+  if (o1) return o1;
+
+  // 2) legacy / alternate key
+  const k2 = `job:${internalId}`;
+  const t2 = await redis.get(k2);
+  const o2 = t2 ? safeJsonParse(t2) : null;
+  if (o2) return o2;
+
+  return null;
+}
+
+if (isInternal || looksLikeUUID) {
+  // ✅ Redis’ten job meta oku (jobs/<internal>/job.json veya job:<internal>)
+  const jobObj = await readJobObjFromRedis(internal_job_id);
 
   provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
@@ -89,7 +110,7 @@ if (isInternal) {
     provider_song_ids = uniqStrings(raw.split(","));
     provider_job_id = provider_song_ids[0] || provider_job_id;
   } else {
-    // ✅ NEW: provider_job_id ile gelindiyse önce provider_map'ten internal + song_ids çöz
+    // ✅ provider_job_id ile gelindiyse önce provider_map'ten internal + song_ids çöz
     const providerMapKey = `provider_map:${raw}`;
     const mapText = await redis.get(providerMapKey);
     const mapObj = mapText ? safeJsonParse(mapText) : null;
@@ -111,9 +132,7 @@ if (isInternal) {
 
       // 2) job meta varsa, daha canonical olanı merge et
       if (internal_job_id) {
-        const jobMetaKey = `jobs/${internal_job_id}/job.json`;
-        const jobText = await redis.get(jobMetaKey);
-        const jobObj = jobText ? safeJsonParse(jobText) : null;
+        const jobObj = await readJobObjFromRedis(internal_job_id);
 
         const idsRaw =
           jobObj?.provider_song_ids ||
@@ -123,7 +142,9 @@ if (isInternal) {
           [];
 
         const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-        if (jobIds.length) provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
+        if (jobIds.length) {
+          provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
+        }
 
         provider_job_id =
           String(jobObj?.provider_job_id || "").trim() || provider_job_id;
