@@ -346,31 +346,44 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* ==========================================
-   ATMOSFER: global stroke’u sadece burada sustur
-   sonra içeriye kendi frame’ini çiz
-   ========================================== */
+/* ================================
+   ATMOSFER: DUVARI İÇERİĞE TAŞI
+   (duvar artık main-panel ile uzar)
+   ================================ */
 
-/* 1) Atmosfer moduleHost subtree’sinde tüm stroke çizgilerini kapat */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]{
-  --stroke-w: 0px !important;  /* 🔥 kritik: “duvar çizgisi” kaynağı bu */
+/* 1) Orta kolon kartındaki eski pseudo duvarı kapat */
+section#moduleHost.glassCard::after{
+  content: none !important;
 }
 
-/* 2) Atmosfer’in kendi paneline içten frame çiz */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
-  > section.main-panel[data-module="atmosphere"]{
+/* 2) Atmosfer’in gerçek uzayan içeriğine duvarı çiz */
+.main-panel[data-module="atmosphere"]{
   position: relative;
-  border-radius: var(--card-radius);
-  padding: 18px; /* frame içerde kalsın */
+  border-radius: var(--card-radius, 26px);
+  padding: 18px;              /* eski -18 inset yerine iç padding */
+  min-height: 0;
 }
 
-/* 3) İç frame (Atmosfer’in içine giren çizgi) */
-section#moduleHost.glassCard.studioMotor[data-active-module="atmo"]
-  > section.main-panel[data-module="atmosphere"]::before{
+/* duvar */
+.main-panel[data-module="atmosphere"]::before{
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 0;                   /* artık taşmıyoruz, clip yok */
   border-radius: inherit;
-  border: 1.5px solid rgba(255,255,255,.07); /* istersen .09 yaparız */
   pointer-events: none;
+  z-index: 0;
+
+  border: var(--stroke-w, 1.5px) solid rgba(255,255,255,.07);
+  background:
+    radial-gradient(1200px 800px at 30% 0%,
+      rgba(140,80,255,.35),
+      rgba(70,50,140,.25),
+      rgba(20,18,40,.35)
+    );
+}
+
+/* içerik duvarın üstünde kalsın */
+.main-panel[data-module="atmosphere"] > *{
+  position: relative;
+  z-index: 1;
 }
