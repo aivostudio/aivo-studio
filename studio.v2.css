@@ -405,24 +405,3 @@ button.primary-btn.aivoBtnPrimary{
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   color:#fff !important;
 }
-/* ===============================
-   FIX: Orta panel scroll'u geri getir
-   (en sona koy, override etsin)
-   =============================== */
-
-#mainWorkspace{
-  min-height: 0 !important;
-  overflow: hidden !important; /* sayfa değil, panel scroll alacak */
-}
-
-#twoPanelWrap{
-  min-height: 0 !important;
-}
-
-#moduleHost{
-  height: 100% !important;
-  min-height: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch;
-}
