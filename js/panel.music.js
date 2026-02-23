@@ -22,18 +22,6 @@
     return hostEl;
   }
 
-  function ensureList(){
-    if (!hostEl) return null;
-    listEl = hostEl.querySelector("#musicList");
-    if (!listEl){
-      listEl = document.createElement("div");
-      listEl.className = "aivo-player-list";
-      listEl.id = "musicList";
-      hostEl.appendChild(listEl);
-    }
-    return listEl;
-  }
-
   function esc(s){
     return String(s ?? "")
       .replaceAll("&","&amp;")
@@ -62,11 +50,73 @@
     saveJobs();
   }
 
-  function uiState(status){
-    const s = String(status||"").toLowerCase();
-    if (["ready","done","completed","success"].includes(s)) return "ready";
-    if (["error","failed"].includes(s)) return "error";
-    return "processing";
+  function getBaseJobId(x){
+    const raw = String(x || "").trim();
+    if (!raw) return "";
+    return raw.includes("::") ? raw.split("::")[0] : raw;
+  }
+
+  function ensureVersionCards(baseJobId, title, subtitle){
+    const v1Id = `${baseJobId}::v1`;
+    const v2Id = `${baseJobId}::v2`;
+
+    upsertJob({
+      job_id: v2Id,
+      parent_job_id: baseJobId,
+      version: 2,
+      title: (title || "Müzik Üretimi") + " (Version 2)",
+      subtitle: subtitle || "",
+      __ui_state: "processing",
+      __audio_src: "",
+      output_id: ""
+    });
+
+    upsertJob({
+      job_id: v1Id,
+      parent_job_id: baseJobId,
+      version: 1,
+      title: (title || "Müzik Üretimi") + " (Version 1)",
+      subtitle: subtitle || "",
+      __ui_state: "processing",
+      __audio_src: "",
+      output_id: ""
+    });
+  }
+
+  function setCardReady(baseJobId, version, src, outputId){
+    const vid = `${baseJobId}::v${version}`;
+    const i = jobs.findIndex(j => (j.job_id||j.id) === vid);
+    if (i < 0) return;
+
+    jobs[i] = {
+      ...jobs[i],
+      __ui_state: src ? "ready" : "processing",
+      __audio_src: src || "",
+      output_id: outputId || jobs[i].output_id || ""
+    };
+    saveJobs();
+  }
+
+  function setCardProcessing(baseJobId){
+    for (const v of [1,2]){
+      const vid = `${baseJobId}::v${v}`;
+      const i = jobs.findIndex(j => (j.job_id||j.id) === vid);
+      if (i < 0) continue;
+      jobs[i] = { ...jobs[i], __ui_state: "processing" };
+    }
+    saveJobs();
+  }
+
+  function ensureList(){
+    if (!hostEl) return null;
+    listEl = hostEl.querySelector("#musicList");
+    if (!listEl){
+      listEl = document.createElement("div");
+      listEl.className = "aivo-player-list";
+      listEl.id = "musicList";
+      hostEl.appendChild(listEl);
+    }
+    return listEl;
   }
 
   /* ---------------- REAL PLAYER CARD ---------------- */
@@ -106,9 +156,7 @@
      data-src="${esc(job.__audio_src)}">
 
   <div class="aivo-player-left">
-    <button class="aivo-player-btn" data-action="toggle-play">
-      ▶
-    </button>
+    <button class="aivo-player-btn" data-action="toggle-play">▶</button>
   </div>
 
   <div class="aivo-player-mid">
@@ -149,29 +197,53 @@
 
   /* ---------------- polling ---------------- */
   async function poll(jobId){
+    const baseJobId = getBaseJobId(jobId);
+    if (!baseJobId) return;
+
     try{
-      const r = await fetch(`/api/jobs/status?job_id=${jobId}`, {cache:"no-store"});
+      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(baseJobId)}`, { cache:"no-store" });
       const j = await r.json();
+
       if (!j?.ok){
-        return setTimeout(()=>poll(jobId),1500);
+        setCardProcessing(baseJobId);
+        render();
+        return setTimeout(()=>poll(baseJobId), 1500);
       }
 
-      const job = j.job || {};
-      job.job_id = job.job_id || jobId;
-      job.__ui_state  = uiState(j.status || job.status);
-      job.__audio_src = j?.audio?.src || "";
+      const outs = Array.isArray(j.outputs) ? j.outputs : [];
+      // Backward compat: bazen sadece audio.src gelebilir
+      if (outs.length === 0 && j?.audio?.src) {
+        outs.push({ type:"audio", url:j.audio.src, meta:{ trackId: j.audio.output_id || "" } });
+      }
 
-      upsertJob(job);
+      // 1) en az 1 çıktı
+      if (outs[0]?.url) {
+        setCardReady(baseJobId, 1, outs[0].url, outs[0]?.meta?.trackId || "");
+      }
+
+      // 2) ikinci versiyon
+      if (outs[1]?.url) {
+        setCardReady(baseJobId, 2, outs[1].url, outs[1]?.meta?.trackId || "");
+      }
+
       render();
 
-      if (job.__ui_state !== "ready"){
-        setTimeout(()=>poll(jobId),1500);
-      } else {
-        window.toast?.success?.("Müzik hazır 🎵");
+      const done = String(j.status || j.state || "").toLowerCase();
+      const completed = ["completed","complete","ready","done","success"].includes(done);
+
+      // İki parça da hazırsa toast + dur
+      const v1 = jobs.find(x => (x.job_id||x.id) === `${baseJobId}::v1`);
+      const v2 = jobs.find(x => (x.job_id||x.id) === `${baseJobId}::v2`);
+      const bothReady = !!(v1?.__audio_src && v2?.__audio_src);
+
+      if (bothReady || (completed && outs.length >= 1)) {
+        if (bothReady) window.toast?.success?.("Müzikler hazır 🎵 (2 Version)");
+        return;
       }
 
+      setTimeout(()=>poll(baseJobId), 1500);
     }catch{
-      setTimeout(()=>poll(jobId),2000);
+      setTimeout(()=>poll(baseJobId), 2000);
     }
   }
 
@@ -180,16 +252,11 @@
     const job = e?.detail || e;
     if (!job?.job_id) return;
 
-    upsertJob({
-      job_id: job.job_id,
-      title: job.title,
-      subtitle: job.subtitle,
-      __ui_state: "processing",
-      __audio_src: ""
-    });
+    const baseJobId = getBaseJobId(job.job_id);
 
+    ensureVersionCards(baseJobId, job.title, job.subtitle);
     render();
-    poll(job.job_id);
+    poll(baseJobId);
   }
 
   /* ---------------- panel integration ---------------- */
@@ -209,7 +276,15 @@
     listEl.className = "aivo-player-list";
 
     render();
-    jobs.forEach(j => j?.job_id && poll(j.job_id));
+
+    // LocalStorage’dan gelen job’larda parent/base id’leri tekilleştirip poll et
+    const bases = new Set();
+    for (const j of jobs){
+      const base = j?.parent_job_id || getBaseJobId(j?.job_id || j?.id);
+      if (base) bases.add(base);
+    }
+    for (const base of bases) poll(base);
+
     window.addEventListener("aivo:job", onJob);
   }
 
@@ -229,7 +304,8 @@
     window.addEventListener("DOMContentLoaded", register, {once:true});
   }
 })();
-// panel.music.js içine ekle (bir kere)
+
+/* panel.music.js içine ekle (bir kere) */
 function addToPlayerSafe({ jobId, outputId, src, title }) {
   const P = window.AIVO_PLAYER || window.AIVO_PLAYER_V1 || window.__AIVO_PLAYER_V1__;
   if (!P || typeof P.add !== "function") {
@@ -237,7 +313,6 @@ function addToPlayerSafe({ jobId, outputId, src, title }) {
     return false;
   }
 
-  // 1) Önce config objesi ile dene
   const payload = {
     type: "audio",
     job_id: jobId,
@@ -254,21 +329,17 @@ function addToPlayerSafe({ jobId, outputId, src, title }) {
     console.warn("[panel.music] player.add(payload) fail, element denenecek", e1);
   }
 
-  // 2) Olmazsa DOM element ile dene (player.js hydrate edecek bir kart)
   try {
     const el = document.createElement("div");
-    el.className = "aivo-player-card"; // player.js bunu arıyor olabilir
+    el.className = "aivo-player-card";
     el.dataset.jobId = jobId;
     el.dataset.outputId = outputId;
     el.dataset.src = src;
-
-    // minimum içerik (player.js içeleyip buton/progress basıyor olabilir)
     el.innerHTML = `
       <div class="aivo-player-title">${title || "Müzik Üretimi"}</div>
       <button class="toggle-play" type="button">Play</button>
       <div class="progress"><div class="bar"></div></div>
     `;
-
     const r2 = P.add(el);
     console.log("[panel.music] player.add(el) ok", r2);
     return true;
