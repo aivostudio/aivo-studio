@@ -1,7 +1,11 @@
 // api/providers/topmediai/music/status.js
-// GET ?provider_job_id=... | ?job_id=... | ?ids=id1,id2
-// Primary:  GET https://api.topmediai.com/v3/music/tasks?ids=...
-// Output: stable { ok, provider, provider_job_id, provider_song_ids, job, state, status, audio?, topmediai:{...} }
+// GET ?provider_job_id=... | ?job_id=...  (taskId)
+// Opsiyonel: ?ids=id1,id2 (track ids) fallback
+//
+// Primary:  GET https://api.topmediai.com/v3/music/tasks?taskId=...
+// Fallback: GET https://api.topmediai.com/v3/music/tasks?ids=id1,id2
+//
+// Output: stable { ok, provider, provider_job_id, provider_song_ids, state, status, audio? }
 
 function safeJsonParse(s) {
   try { return JSON.parse(s); } catch { return null; }
@@ -33,11 +37,30 @@ function extractAudioUrl(any) {
   );
 }
 
+function extractAudioUrlFromTask(task) {
+  if (!task) return null;
+
+  // 1) direct
+  const direct = extractAudioUrl(task);
+  if (direct) return direct;
+
+  // 2) tracks inside task
+  const tracks = Array.isArray(task.tracks) ? task.tracks : [];
+
+  const readyTrack =
+    tracks.find((t) => Number(t?.status) === 0 && extractAudioUrl(t)) ||
+    tracks.find((t) => extractAudioUrl(t)) ||
+    null;
+
+  return readyTrack ? extractAudioUrl(readyTrack) : null;
+}
+
 function normalizeStateFromV3({ audioUrl, statusValue, failCode, failReason }) {
-  // TopMediai support: status==0 => ready (audio_url usable)
+  // TopMediai support: status==0 => ready
   if (audioUrl) return "COMPLETED";
 
   const stNum = typeof statusValue === "number" ? statusValue : Number(statusValue);
+
   const hasFail =
     Boolean(failReason) ||
     (typeof failCode === "number" && failCode !== 0) ||
@@ -59,34 +82,35 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_topmediai_api_key" });
     }
 
-    // Accept job_id/provider_job_id/ids
-    const raw = String(
-      req.query.ids ||
-      req.query.provider_song_ids ||
-      req.query.provider_job_id ||
-      req.query.job_id ||
-      ""
-    ).trim();
+    // Prefer taskId
+    const rawTaskId = String(req.query.provider_job_id || req.query.job_id || "").trim();
+    const rawIds = String(req.query.ids || req.query.provider_song_ids || "").trim();
 
-    if (!raw) {
+    if (!rawTaskId && !rawIds) {
       return res.status(400).json({ ok: false, error: "missing_job_id" });
     }
 
-    // ids can be "id1,id2" or a single id
     const provider_song_ids = uniqStrings(
-      raw.includes(",") ? raw.split(",") : [raw]
+      rawIds
+        ? (rawIds.includes(",") ? rawIds.split(",") : [rawIds])
+        : []
     );
 
-    // Backward compat: provider_job_id = first id
-    const provider_job_id = provider_song_ids[0] || raw;
+    const provider_job_id = rawTaskId || provider_song_ids[0] || "";
 
     // --- V3 tasks
     let v3 = { http_status: 0, raw: null };
+
     try {
-      const v3Res = await fetch(
-        `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(provider_song_ids.join(","))}`,
-        { method: "GET", headers: { "accept": "application/json", "x-api-key": KEY } }
-      );
+      const qs = rawTaskId
+        ? `taskId=${encodeURIComponent(rawTaskId)}`
+        : `ids=${encodeURIComponent(provider_song_ids.join(","))}`;
+
+      const v3Res = await fetch(`https://api.topmediai.com/v3/music/tasks?${qs}`, {
+        method: "GET",
+        headers: { accept: "application/json", "x-api-key": KEY },
+      });
+
       const v3Text = await v3Res.text();
       v3.http_status = v3Res.status;
       v3.raw = safeJsonParse(v3Text) ?? { _non_json: v3Text };
@@ -94,24 +118,49 @@ export default async function handler(req, res) {
       v3 = { http_status: 0, raw: { _fetch_error: String(e?.message || e) } };
     }
 
-    // Expect: { data: [ ...tasks ] }
+    // normalize possible shapes
+    // - { data: [ ... ] }
+    // - { data: { data: [ ... ] } }
+    // - { data: { task: {...} } }
+    // - { data: {...task...} }
+    const maybeData = v3.raw?.data;
+
     const v3Arr =
-      Array.isArray(v3.raw?.data) ? v3.raw.data :
-      Array.isArray(v3.raw?.data?.data) ? v3.raw.data.data :
-      Array.isArray(v3.raw) ? v3.raw : // ultra fallback (bazı env’lerde direkt array gelebilir)
+      Array.isArray(maybeData) ? maybeData :
+      Array.isArray(maybeData?.data) ? maybeData.data :
+      Array.isArray(v3.raw) ? v3.raw :
       null;
 
-    // pick the first READY task with audio_url, else first task
     let picked = null;
+
     if (Array.isArray(v3Arr) && v3Arr.length) {
+      // list mode
       picked =
-        v3Arr.find((t) => Number(t?.status) === 0 && extractAudioUrl(t)) ||
+        v3Arr.find((t) => extractAudioUrlFromTask(t)) ||
         v3Arr[0];
+    } else {
+      // single task mode
+      const single =
+        (maybeData?.task && typeof maybeData.task === "object") ? maybeData.task :
+        (maybeData && typeof maybeData === "object") ? maybeData :
+        null;
+
+      picked = single;
     }
 
-    const audioUrl = extractAudioUrl(picked);
-    const failCode = picked?.fail_code ?? picked?.failCode ?? null;
-    const failReason = picked?.fail_reason ?? picked?.failReason ?? null;
+    const audioUrl = extractAudioUrlFromTask(picked);
+
+    const failCode =
+      picked?.fail_code ?? picked?.failCode ??
+      picked?.error_code ?? picked?.errorCode ??
+      null;
+
+    const failReason =
+      picked?.fail_reason ?? picked?.failReason ??
+      picked?.error_reason ?? picked?.errorReason ??
+      picked?.message ??
+      null;
+
     const statusValue = picked?.status ?? null;
 
     if (String(req.query.debug || "") === "1") {
@@ -127,6 +176,7 @@ export default async function handler(req, res) {
     }
 
     const state = normalizeStateFromV3({ audioUrl, statusValue, failCode, failReason });
+
     const status =
       state === "COMPLETED" ? "completed" :
       state === "FAILED" ? "failed" :
@@ -141,8 +191,7 @@ export default async function handler(req, res) {
       state,
       status,
       audio: audioUrl ? { src: audioUrl } : null,
-      // observability
-      topmediai: { v3 },
+      topmediai: { v3 }, // observability
     });
   } catch (err) {
     return res.status(500).json({
