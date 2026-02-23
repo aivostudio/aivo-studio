@@ -405,32 +405,3 @@ button.primary-btn.aivoBtnPrimary{
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   color:#fff !important;
 }
-/* =========================================
-   DUVAR IŞIĞI İÇERİDE KALSIN (FINAL FIX)
-   ========================================= */
-
-/* Kart glow dışarı taşmasın */
-.glassCard,
-.outputsCard,
-.navCard{
-  position: relative;
-  overflow: hidden;
-}
-
-/* Eski dış glow'u override ediyoruz */
-.glassCard::after,
-.outputsCard::after,
-.navCard::after{
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-
-  /* Stroke */
-  box-shadow:
-    inset 0 0 0 var(--stroke-w, 1.5px) rgba(180,120,255,.55),
-    inset 0 0 28px rgba(180,120,255,.25);
-
-  z-index: 0;
-}
