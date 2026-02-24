@@ -40,19 +40,31 @@
     return `${m}:${String(s).padStart(2, "0")}`;
   }
 
-  function setBtnState(btn, playing) {
-    if (!btn) return;
-    btn.setAttribute("aria-label", playing ? "Duraklat" : "Oynat");
-    btn.setAttribute("title", playing ? "Duraklat" : "Oynat");
+ function setBtnState(btn, playing) {
+  if (!btn) return;
 
-    btn.innerHTML = playing
-      ? `<svg viewBox="0 0 24 24" fill="none">
-           <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"/>
-         </svg>`
-      : `<svg viewBox="0 0 24 24" fill="none">
-           <path d="M8 5v14l11-7-11-7z" fill="currentColor"/>
-         </svg>`;
+  btn.setAttribute("aria-label", playing ? "Duraklat" : "Oynat");
+  btn.setAttribute("title", playing ? "Duraklat" : "Oynat");
+
+  // panel.music.js içindeki özel ikonlar varsa onları toggle et
+  const iconPlay = btn.querySelector(".icon-play");
+  const iconPause = btn.querySelector(".icon-pause");
+
+  if (iconPlay && iconPause) {
+    iconPlay.style.display = playing ? "none" : "";
+    iconPause.style.display = playing ? "" : "none";
+    return;
   }
+
+  // fallback (default player kartları için)
+  btn.innerHTML = playing
+    ? `<svg viewBox="0 0 24 24" fill="none">
+         <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"/>
+       </svg>`
+    : `<svg viewBox="0 0 24 24" fill="none">
+         <path d="M8 5v14l11-7-11-7z" fill="currentColor"/>
+       </svg>`;
+}
 
   function clearActiveUI() {
     if (activeBtn) setBtnState(activeBtn, false);
