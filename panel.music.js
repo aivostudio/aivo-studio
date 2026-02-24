@@ -947,14 +947,13 @@ function mount(){
   // ✅ idempotent: eğer shell zaten varsa reset atma
   const already = hostEl.querySelector("#musicList");
   if (!already){
-    hostEl.innerHTML = `
-      <div class="rp-players">
-        <div class="rp-playerCard">
-          <div class="rp-title">Üretilenler</div>
-          <div class="rp-body" id="musicList"></div>
-        </div>
-      </div>
-    `;
+   hostEl.innerHTML = `
+  <div class="rp-players">
+    <div class="rp-playerCard">
+      <div class="rp-body" id="musicList"></div>
+    </div>
+  </div>
+`;
   }
 
   listEl = hostEl.querySelector("#musicList");
