@@ -571,8 +571,8 @@ const POLL_LAST = new Map();   // key: providerId -> timestamp(ms)
 async function poll(jobId) {
   if (!alive || !jobId) return;
 
-const providerId = String(jobId || "").trim();   // ✅ kart id artık direkt provider_song_id (1335305 / 1335306)
-const providerBase = providerId;                 // ✅ split yok
+  const providerId = String(jobId);           // kart id: 1334977::orig / 1334977::rev1
+  const providerBase = providerId.split("::")[0];
 
   // 1) aynı karta paralel bindirme (spam kesilir)
   if (POLL_BUSY.has(providerId)) return;
@@ -588,10 +588,10 @@ const providerBase = providerId;                 // ✅ split yok
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
   const knownReal = existing.__real_job_id || null;
 
- // ✅ Her kart kendi provider_song_id’si ile çağrılır
-async function fetchStatus(id) {
-  const q = encodeURIComponent(providerBase);
-  const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+  // Her zaman provider_job_id ile çağırıyoruz (UI kartları base id ile poll eder)
+  async function fetchStatus(id) {
+    const q = encodeURIComponent(providerBase);
+    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
       cache: "no-store",
       credentials: "include",
     });
@@ -725,52 +725,44 @@ async function fetchStatus(id) {
 /* ---------------- onJob ---------------- */
 function onJob(e){
   const payload = e?.detail || e || {};
+  const baseId = payload.job_id || payload.id;
+  if (!baseId) return;
 
-  // ✅ 2 ayrı şarkı id'si geldiyse onları kullan
-  const ids = Array.isArray(payload.provider_song_ids)
-    ? payload.provider_song_ids.map(x => String(x).trim()).filter(Boolean)
-    : [];
-
-  // fallback: eski davranış (tek id)
-  const baseId = String(payload.job_id || payload.id || payload.provider_job_id || "").trim();
-  if (!baseId && ids.length === 0) return;
-
-  const idA = ids[0] || baseId;
-  const idB = ids[1] || null;
+  // tek job -> 2 kart
+  const origId = `${baseId}::orig`;
+  const revId  = `${baseId}::rev1`;
 
   const common = {
     type: payload.type || "music",
     subtitle: payload.subtitle || "",
     __ui_state: payload.__ui_state || "processing",
     __audio_src: payload.__audio_src || "",
-    provider_job_id: payload.provider_job_id || baseId || idA,
-    provider_song_ids: ids,
+    __real_job_id: payload.__real_job_id || null,
+    provider_job_id: payload.provider_job_id || null,
   };
 
-  // 1. kart
   upsertJob({
     ...common,
-    job_id: idA,
-    id: idA,
+    job_id: origId,
+    id: origId,
     title: (payload.title || "Müzik Üretimi") + " — Original Version",
   });
 
-  // 2. kart (varsa)
-  if (idB){
-    upsertJob({
-      ...common,
-      job_id: idB,
-      id: idB,
-      title: (payload.title || "Müzik Üretimi") + " — Revize Version",
-    });
-  }
+  upsertJob({
+    ...common,
+    job_id: revId,
+    id: revId,
+    title: (payload.title || "Müzik Üretimi") + " — Revize Version",
+  });
 
   render();
 
   // poll başlat
-  poll(idA);
-  if (idB) poll(idB);
+  poll(origId);
+  poll(revId);
 }
+
+
 /* ---------------- panel integration ---------------- */
 function mount(){
   if (!ensureHost()) return;
