@@ -748,31 +748,30 @@ const base = String(jobId).split("::")[0];
     upsertJob(job);
     render();
 
-    // auto-play sadece ORIGINAL ve ilk kez
-    if (
-      job.__ui_state === "ready" &&
-      String(job.job_id || "").endsWith("::orig") &&
-      !job.__auto_played
-    ) {
-      job.__auto_played = true;
-      setTimeout(() => {
-        const card = getCard(job.job_id);
-        if (card) togglePlayFromCard(card);
-      }, 300);
-    }
+   // auto-play sadece ORIGINAL ve ilk kez
+// if (
+//   job.__ui_state === "ready" &&
+//   String(job.job_id || "").endsWith("::orig") &&
+//   !job.__auto_played
+// ) {
+//   job.__auto_played = true;
+//   setTimeout(() => {
+//     const card = getCard(job.job_id);
+//     if (card) togglePlayFromCard(card);
+//   }, 300);
+// }
 
-    if (job.__ui_state === "ready") return;
-    if (job.__ui_state === "error") return;
+if (job.__ui_state === "ready") return;
+if (job.__ui_state === "error") return;
 
-    schedulePoll(providerId, 1500);
+schedulePoll(providerId, 1500);
 
-  } catch (e) {
-    schedulePoll(providerId, 2000);
-  } finally {
-    POLL_BUSY.delete(providerId);
-  }
+} catch (e) {
+  schedulePoll(providerId, 2000);
+} finally {
+  POLL_BUSY.delete(providerId);
 }
-
+}
 /* ---------------- onJob ---------------- */
 function onJob(e){
   const payload = e?.detail || e || {};
