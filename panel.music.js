@@ -280,6 +280,23 @@ function render(){
 
   const view = jobs.filter(j => j?.job_id || j?.id);
 
+     // ✅ her base için sıralama: ::orig üstte, ::rev1 altta
+  view.sort((a, b) => {
+    const aid = String(a.job_id || a.id || "");
+    const bid = String(b.job_id || b.id || "");
+
+    const abase = aid.split("::")[0];
+    const bbase = bid.split("::")[0];
+
+    // önce base (yeni base üstte kalsın)
+    if (abase !== bbase) return bbase.localeCompare(abase);
+
+    // aynı base içinde: orig önce, rev sonra
+    const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
+    const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
+    return ar - br;
+  });
+
   if (!view.length){
     listEl.innerHTML = `
       <div class="aivo-empty">
