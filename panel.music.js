@@ -571,8 +571,8 @@ const POLL_LAST = new Map();   // key: providerId -> timestamp(ms)
 async function poll(jobId) {
   if (!alive || !jobId) return;
 
-  const providerId = String(jobId);           // kart id: 1334977::orig / 1334977::rev1
-  const providerBase = providerId.split("::")[0];
+const providerId = String(jobId || "").trim();   // ✅ kart id artık direkt provider_song_id (1335305 / 1335306)
+const providerBase = providerId;                 // ✅ split yok
 
   // 1) aynı karta paralel bindirme (spam kesilir)
   if (POLL_BUSY.has(providerId)) return;
@@ -588,10 +588,10 @@ async function poll(jobId) {
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
   const knownReal = existing.__real_job_id || null;
 
-  // Her zaman provider_job_id ile çağırıyoruz (UI kartları base id ile poll eder)
-  async function fetchStatus(id) {
-    const q = encodeURIComponent(providerBase);
-    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+ // ✅ Her kart kendi provider_song_id’si ile çağrılır
+async function fetchStatus(id) {
+  const q = encodeURIComponent(providerBase);
+  const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
       cache: "no-store",
       credentials: "include",
     });
@@ -725,12 +725,13 @@ async function poll(jobId) {
 /* ---------------- onJob ---------------- */
 function onJob(e){
   const payload = e?.detail || e || {};
-  const baseId = payload.job_id || payload.id;
-  if (!baseId) return;
 
-  // tek job -> 2 kart
-  const origId = `${baseId}::orig`;
-  const revId  = `${baseId}::rev1`;
+  // ✅ TopMediaAI create response’undan gelen iki ayrı id
+  const songIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
+
+  // fallback: tek id geldiyse yine çalışsın
+  const baseId = payload.provider_job_id || payload.job_id || payload.id;
+  if (!baseId && songIds.length === 0) return;
 
   const common = {
     type: payload.type || "music",
@@ -741,27 +742,32 @@ function onJob(e){
     provider_job_id: payload.provider_job_id || null,
   };
 
-  upsertJob({
-    ...common,
-    job_id: origId,
-    id: origId,
-    title: (payload.title || "Müzik Üretimi") + " — Original Version",
-  });
+  // ✅ 2 ayrı kartın job_id’si artık song id’ler (1335305 / 1335306)
+  const id1 = String(songIds[0] || baseId).trim();
+  const id2 = String(songIds[1] || "").trim();
 
   upsertJob({
     ...common,
-    job_id: revId,
-    id: revId,
-    title: (payload.title || "Müzik Üretimi") + " — Revize Version",
+    job_id: id1,
+    id: id1,
+    title: (payload.title || "Müzik Üretimi") + " — Versiyon 1",
   });
+
+  if (id2 && id2 !== id1){
+    upsertJob({
+      ...common,
+      job_id: id2,
+      id: id2,
+      title: (payload.title || "Müzik Üretimi") + " — Versiyon 2",
+    });
+  }
 
   render();
 
-  // poll başlat
-  poll(origId);
-  poll(revId);
+  // ✅ her kart kendi provider_song_id’si ile poll eder
+  poll(id1);
+  if (id2 && id2 !== id1) poll(id2);
 }
-
 
 /* ---------------- panel integration ---------------- */
 function mount(){
