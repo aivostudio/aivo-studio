@@ -198,7 +198,7 @@ function renderCard(job){
   const date  = job.created_at || job.createdAt || job.__createdAt || "";
 
   const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-  const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor</span>`;
+const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor · <span data-bind="loadingPct">1%</span></span>`;
   const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
 // ✅ artık "ready" UI state şart (iki kart birlikte unlock edilecek)
