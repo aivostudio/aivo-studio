@@ -571,7 +571,7 @@ const POLL_LAST = new Map();   // key: providerId -> timestamp(ms)
 async function poll(jobId) {
   if (!alive || !jobId) return;
 
-  const providerId = String(jobId);           // kart id
+  const providerId = String(jobId);           // kart id: 1334977::orig / 1334977::rev1
   const providerBase = providerId.split("::")[0];
 
   // 1) aynı karta paralel bindirme (spam kesilir)
@@ -618,6 +618,28 @@ async function poll(jobId) {
       return;
     }
 
+    // 2) internal_job_id yakala (varsa)
+    const internalJobId =
+      j?.internal_job_id ||
+      j?.job?.internal_job_id ||
+      j?.data?.internal_job_id ||
+      j?.result?.internal_job_id ||
+      null;
+
+    // İlk response’ta audio yoksa ve internal_job_id varsa -> 2. hop
+    const firstHasAudio = !!(
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      j?.job?.audio?.src
+    );
+
+    if (internalJobId && !firstHasAudio) {
+      const second = await fetchStatus(internalJobId);
+      if (second.ok && second.json) j = second.json;
+    }
+
     const job = j.job || {};
 
     // “real job id” olarak internal id’yi sakla
@@ -632,77 +654,12 @@ async function poll(jobId) {
       upsertJob({ job_id: providerId, id: providerId, __real_job_id: realJobId });
     }
 
-    // ---------------------------------------------------------
-    // ✅ MULTI-TRACK: outputs[] -> 2 ayrı kart üret
-    // ---------------------------------------------------------
-    const outsRaw = Array.isArray(j?.outputs) ? j.outputs : [];
-
-    const outs = outsRaw
-      .map((o, idx) => {
-        const url = String(o?.url || "").trim();
-        const trackId = String(o?.meta?.trackId || o?.meta?.id || o?.id || "").trim();
-        return { url, trackId, idx };
-      })
-      .filter(x => x.url);
-
-    // uniq by url (aynı mp3 iki kez gelirse tek say)
-    const seenUrl = new Set();
-    const outsUniq = [];
-    for (const x of outs) {
-      if (seenUrl.has(x.url)) continue;
-      seenUrl.add(x.url);
-      outsUniq.push(x);
-    }
-
-    // outputId fallback (eski audio output_id)
-    const legacyOutputId =
-      j?.audio?.output_id ||
-      j?.output_id ||
-      j?.result?.output_id ||
-      job?.output_id ||
-      job?.result?.output_id ||
-      "";
-
-    if (outsUniq.length) {
-      // base placeholder (örn: "job_xxx") kartı varsa kaldır
-      const isBase = !String(providerId).includes("::");
-      if (isBase) removeJob(providerId);
-
-      // Her track için job üret (ilk 2 parça)
-      outsUniq.slice(0, 2).forEach((o, idx) => {
-        const label = idx === 0 ? "Original Version" : "Revize Version";
-        const trackKey = o.trackId || `t${idx + 1}`;
-        const cardId = `${providerBase}::${trackKey}`;
-
-        upsertJob({
-          job_id: cardId,
-          id: cardId,
-          type: "music",
-          title: (j?.title || job?.title || "Müzik Üretimi") + ` — ${label}`,
-          subtitle: job?.subtitle || "",
-          __real_job_id: realJobId || null,
-          provider_job_id: provider_job_id || null,
-          __audio_src: o.url,                         // ✅ fark burada
-          output_id: o.trackId || legacyOutputId || "",
-          __ui_state: "ready",
-          __createdAt: j?.created_at || job?.created_at || job?.createdAt || "",
-          __duration: j?.duration || job?.duration || job?.__duration || "",
-        });
-      });
-
-      render();
-      return; // ✅ hazır -> bu poll turunu bitir
-    }
-
-    // ---------------------------------------------------------
-    // ✅ FALLBACK: outputs yoksa legacy audio.src ile tek kart
-    // ---------------------------------------------------------
-
     // kart kimliği sabit
     job.job_id = providerId;
     job.id = providerId;
 
-    const srcLegacy =
+    // src/output yakala
+    const src =
       j?.audio?.src ||
       j?.audio_src ||
       j?.result?.audio?.src ||
@@ -712,13 +669,23 @@ async function poll(jobId) {
       job?.result?.src ||
       "";
 
-    const playUrl = (realJobId && legacyOutputId)
-      ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(legacyOutputId)}`
+    const outputId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      job?.output_id ||
+      job?.result?.output_id ||
+      "";
+
+    // playUrl sadece outputId varsa
+    const playUrl = (realJobId && outputId)
+      ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
       : "";
 
-    job.__audio_src = srcLegacy || playUrl || "";
-    job.output_id = legacyOutputId || job.output_id || "";
+    job.__audio_src = src || playUrl || "";
+    job.output_id = outputId || job.output_id || "";
 
+    // state
     let state = uiState(j.state || j.status || job.status);
     if (job.__audio_src) state = "ready";
     job.__ui_state = state;
@@ -729,6 +696,19 @@ async function poll(jobId) {
 
     upsertJob(job);
     render();
+
+    // auto-play sadece ORIGINAL ve ilk kez
+    if (
+      job.__ui_state === "ready" &&
+      String(job.job_id || "").endsWith("::orig") &&
+      !job.__auto_played
+    ) {
+      job.__auto_played = true;
+      setTimeout(() => {
+        const card = getCard(job.job_id);
+        if (card) togglePlayFromCard(card);
+      }, 300);
+    }
 
     if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
@@ -741,6 +721,48 @@ async function poll(jobId) {
     POLL_BUSY.delete(providerId);
   }
 }
+
+/* ---------------- onJob ---------------- */
+function onJob(e){
+  const payload = e?.detail || e || {};
+  const baseId = payload.job_id || payload.id;
+  if (!baseId) return;
+
+  // tek job -> 2 kart
+  const origId = `${baseId}::orig`;
+  const revId  = `${baseId}::rev1`;
+
+  const common = {
+    type: payload.type || "music",
+    subtitle: payload.subtitle || "",
+    __ui_state: payload.__ui_state || "processing",
+    __audio_src: payload.__audio_src || "",
+    __real_job_id: payload.__real_job_id || null,
+    provider_job_id: payload.provider_job_id || null,
+  };
+
+  upsertJob({
+    ...common,
+    job_id: origId,
+    id: origId,
+    title: (payload.title || "Müzik Üretimi") + " — Original Version",
+  });
+
+  upsertJob({
+    ...common,
+    job_id: revId,
+    id: revId,
+    title: (payload.title || "Müzik Üretimi") + " — Revize Version",
+  });
+
+  render();
+
+  // poll başlat
+  poll(origId);
+  poll(revId);
+}
+
+
 /* ---------------- panel integration ---------------- */
 function mount(){
   if (!ensureHost()) return;
