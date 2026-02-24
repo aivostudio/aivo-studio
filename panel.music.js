@@ -726,49 +726,51 @@ async function fetchStatus(id) {
 function onJob(e){
   const payload = e?.detail || e || {};
 
-  // ✅ TopMediaAI create response’undan gelen iki ayrı id
-  const songIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
+  // ✅ 2 ayrı şarkı id'si geldiyse onları kullan
+  const ids = Array.isArray(payload.provider_song_ids)
+    ? payload.provider_song_ids.map(x => String(x).trim()).filter(Boolean)
+    : [];
 
-  // fallback: tek id geldiyse yine çalışsın
-  const baseId = payload.provider_job_id || payload.job_id || payload.id;
-  if (!baseId && songIds.length === 0) return;
+  // fallback: eski davranış (tek id)
+  const baseId = String(payload.job_id || payload.id || payload.provider_job_id || "").trim();
+  if (!baseId && ids.length === 0) return;
+
+  const idA = ids[0] || baseId;
+  const idB = ids[1] || null;
 
   const common = {
     type: payload.type || "music",
     subtitle: payload.subtitle || "",
     __ui_state: payload.__ui_state || "processing",
     __audio_src: payload.__audio_src || "",
-    __real_job_id: payload.__real_job_id || null,
-    provider_job_id: payload.provider_job_id || null,
+    provider_job_id: payload.provider_job_id || baseId || idA,
+    provider_song_ids: ids,
   };
 
-  // ✅ 2 ayrı kartın job_id’si artık song id’ler (1335305 / 1335306)
-  const id1 = String(songIds[0] || baseId).trim();
-  const id2 = String(songIds[1] || "").trim();
-
+  // 1. kart
   upsertJob({
     ...common,
-    job_id: id1,
-    id: id1,
-    title: (payload.title || "Müzik Üretimi") + " — Versiyon 1",
+    job_id: idA,
+    id: idA,
+    title: (payload.title || "Müzik Üretimi") + " — Original Version",
   });
 
-  if (id2 && id2 !== id1){
+  // 2. kart (varsa)
+  if (idB){
     upsertJob({
       ...common,
-      job_id: id2,
-      id: id2,
-      title: (payload.title || "Müzik Üretimi") + " — Versiyon 2",
+      job_id: idB,
+      id: idB,
+      title: (payload.title || "Müzik Üretimi") + " — Revize Version",
     });
   }
 
   render();
 
-  // ✅ her kart kendi provider_song_id’si ile poll eder
-  poll(id1);
-  if (id2 && id2 !== id1) poll(id2);
+  // poll başlat
+  poll(idA);
+  if (idB) poll(idB);
 }
-
 /* ---------------- panel integration ---------------- */
 function mount(){
   if (!ensureHost()) return;
