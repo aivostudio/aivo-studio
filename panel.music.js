@@ -280,31 +280,99 @@ const leftBtn = `
 if (!window.__AIVO_LOADING_TICKER__) {
   window.__AIVO_LOADING_TICKER__ = true;
 
- setInterval(() => {
-  const cards = document.querySelectorAll(".aivo-player-card.is-loading.is-processing");
-  const now = Date.now();
+  // cardKey -> { lastPct, inflight, lastFetchAt }
+  const _prog = new Map();
+
+  const clampPct = (n) => {
+    const x = Number(n);
+    if (!Number.isFinite(x)) return null;
+    // 0..100 -> 1..99 (READY olunca zaten is-ready render olur)
+    const pct = Math.max(1, Math.min(99, Math.floor(x)));
+    return pct;
+  };
+
+  const pickProviderId = (card) => {
+    // En olası attribute isimleri (sende hangisi varsa onu yakalar)
+    return (
+      card.getAttribute("data-provider-song-id") ||
+      card.getAttribute("data-provider_song_id") ||
+      card.getAttribute("data-provider-job-id") ||
+      card.getAttribute("data-provider_job_id") ||
+      card.getAttribute("data-provider") ||
+      ""
+    );
+  };
+
+  const readProgressFromJson = (j) => {
+    if (!j || typeof j !== "object") return null;
+
+    // yaygın alan isimleri
+    const direct =
+      j.progress ?? j.pct ?? j.percent ?? j.percentage ??
+      j?.data?.progress ?? j?.data?.pct ?? j?.data?.percent ?? j?.data?.percentage;
+
+    if (direct != null) return clampPct(direct);
+
+    // bazı API’ler 0..1 arası dönebiliyor
+    const frac =
+      j.fraction ?? j.frac ?? j?.data?.fraction ?? j?.data?.frac;
+    if (frac != null) return clampPct(Number(frac) * 100);
+
+    return null;
+  };
+
+  setInterval(() => {
+    const cards = document.querySelectorAll(".aivo-player-card.is-loading.is-processing");
+    const now = Date.now();
 
     cards.forEach((card) => {
       const pctEl = card.querySelector('[data-bind="loadingPct"]');
       if (!pctEl) return;
 
-      const startedAt = Number(card.getAttribute("data-loading-started-at")) || 0;
-      if (!startedAt) return;
-
-      const elapsed = now - startedAt;
-
-      // 30 saniyede 0 → 99 arası akar
-      const pct = Math.max(1, Math.min(99, Math.floor((elapsed / 30000) * 99)));
-
-      pctEl.textContent = `· ${pct}%`;
-
-      // blink efekti
+      // blink
       const tag = card.querySelector(".aivo-tag.is-loading");
       if (tag) {
         const visible = tag.getAttribute("data-blink") !== "1";
         tag.setAttribute("data-blink", visible ? "1" : "0");
         tag.style.opacity = visible ? "1" : "0.45";
       }
+
+      const providerId = pickProviderId(card);
+      if (!providerId) {
+        // provider id yoksa yüzde göstermeyelim (uydurma olmasın)
+        pctEl.textContent = "";
+        return;
+      }
+
+      const key = String(providerId);
+      const st = _prog.get(key) || { lastPct: 1, inflight: false, lastFetchAt: 0 };
+      _prog.set(key, st);
+
+      // UI: eldeki son pct’yi yaz (geri düşmez)
+      pctEl.textContent = `· ${st.lastPct}%`;
+
+      // fetch throttling (1.2sn)
+      if (st.inflight) return;
+      if (now - st.lastFetchAt < 1200) return;
+
+      st.inflight = true;
+      st.lastFetchAt = now;
+
+      fetch(`/api/music/status?provider_job_id=${encodeURIComponent(providerId)}`, { credentials: "include" })
+        .then((r) => r.json().catch(() => null))
+        .then((json) => {
+          const pct = readProgressFromJson(json);
+
+          // gerçek pct yoksa dokunma (uydurma yapma)
+          if (pct == null) return;
+
+          // monotonic: asla geri düşmesin
+          if (pct > st.lastPct) st.lastPct = pct;
+        })
+        .catch(() => {})
+        .finally(() => {
+          st.inflight = false;
+        });
     });
   }, 450);
 }
