@@ -141,3 +141,11 @@
   width: 100% !important;
   margin-left: 0 !important;
 }
+/* Loading tag pulse */
+.aivo-tag.is-loading{
+  animation:aivoPulse 1.05s ease-in-out infinite;
+}
+@keyframes aivoPulse{
+  0%,100%{ opacity:1 }
+  50%{ opacity:.45 }
+}
