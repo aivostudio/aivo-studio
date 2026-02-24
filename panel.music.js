@@ -746,6 +746,7 @@ function onJob(e){
     provider_job_id: payload.provider_job_id || null,
   };
 
+  // ORIGINAL
   upsertJob({
     ...common,
     job_id: origId,
@@ -754,6 +755,7 @@ function onJob(e){
     title: (payload.title || "Müzik Üretimi") + " — Original Version",
   });
 
+  // REVIZE
   upsertJob({
     ...common,
     job_id: revId,
