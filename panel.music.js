@@ -573,6 +573,8 @@ async function poll(jobId) {
 
   const providerId = String(jobId);           // kart id: 1334977::orig / 1334977::rev1
   const providerBase = providerId.split("::")[0];
+   const providerSongId =
+  providerId.endsWith("::rev1") ? String(Number(providerBase) + 1) : providerBase;
 
   // 1) aynı karta paralel bindirme (spam kesilir)
   if (POLL_BUSY.has(providerId)) return;
@@ -590,7 +592,7 @@ async function poll(jobId) {
 
   // Her zaman provider_job_id ile çağırıyoruz (UI kartları base id ile poll eder)
   async function fetchStatus(id) {
-    const q = encodeURIComponent(providerBase);
+   const q = encodeURIComponent(String(id || providerSongId));
     const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
       cache: "no-store",
       credentials: "include",
