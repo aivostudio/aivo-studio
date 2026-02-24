@@ -280,9 +280,9 @@ const leftBtn = `
 if (!window.__AIVO_LOADING_TICKER__) {
   window.__AIVO_LOADING_TICKER__ = true;
 
-  setInterval(() => {
-    const cards = document.querySelectorAll(".aivo-player-card.is-loadingState");
-    const now = Date.now();
+ setInterval(() => {
+  const cards = document.querySelectorAll(".aivo-player-card.is-loading.is-processing");
+  const now = Date.now();
 
     cards.forEach((card) => {
       const pctEl = card.querySelector('[data-bind="loadingPct"]');
