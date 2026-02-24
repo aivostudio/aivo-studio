@@ -128,7 +128,7 @@ async function generateMusic(payload) {
         }
       }
 
-      // =========================================================
+           // =========================================================
       // ✅ RESULT NORMALIZE (FIXED)
       // - backend artık provider_job_id döndürüyor: prov_music_...
       // - status endpoint bunu bekliyor
@@ -148,6 +148,14 @@ async function generateMusic(payload) {
         result?.data?.job_id ||
         result?.data?.id ||
         null;
+
+      // ✅ provider_song_ids normalize (2 ayrı şarkı id'si buradan gelecek)
+      const provider_song_ids =
+        result?.provider_song_ids ||
+        result?.providerSongIds ||
+        result?.data?.provider_song_ids ||
+        result?.data?.providerSongIds ||
+        [];
 
       // Öncelik provider id
       const job_id = provider_job_id || internal_job_id;
@@ -191,6 +199,9 @@ dispatchJob({
 
   // panel.music.js bunu direkt okuyor
   provider_job_id: provider_job_id,
+
+  // ✅ EN KRİTİK: iki kart için farklı provider_song_id'ler buradan gelecek
+  provider_song_ids: Array.isArray(provider_song_ids) ? provider_song_ids : [],
 
   // panel.music.js için gerçek job id (internal) sakla
   __real_job_id: internal_job_id || job_id,
