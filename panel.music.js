@@ -239,28 +239,29 @@ const leftBtn = `
     ${leftBtn}
   </div>
 
-  <!-- MID -->
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title">${esc(title)}</div>
-      <div class="aivo-player-tags">${tags}</div>
-    </div>
-
-    <div class="aivo-player-sub">${esc(sub)}</div>
-
-    <div class="aivo-player-meta">
-      <span class="meta-dur">${metaLeft}</span>
-      <span class="aivo-player-dot"></span>
-      <span class="meta-date">${metaRight}</span>
-    </div>
-
-    <div class="aivo-player-controls">
-      <div class="aivo-progress" title="İlerleme">
-        <i style="width:${esc(job.__progress || 0)}%"></i>
-      </div>
-    </div>
+ <!-- MID -->
+<div class="aivo-player-mid">
+  <div class="aivo-player-titleRow">
+    <div class="aivo-player-title">${esc(title)}</div>
+    <div class="aivo-player-tags">${tags}</div>
   </div>
 
+  <div class="aivo-player-sub">${esc(sub)}</div>
+
+  <div class="aivo-player-meta">
+    <span class="meta-dur">${metaLeft}</span>
+    <span class="aivo-player-dot"></span>
+    <span class="meta-date">${metaRight}</span>
+  </div>
+
+  <!-- ✅ Progress artık controls dışında -->
+  <div class="aivo-progress" title="İlerleme">
+    <i style="width:${esc(job.__progress || 0)}%"></i>
+  </div>
+
+  <!-- Controls boş kalabilir (layout bozulmaması için) -->
+  <div class="aivo-player-controls"></div>
+</div>
   <!-- RIGHT ACTIONS -->
   <div class="aivo-player-actions">
     <button class="aivo-action" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">⋯</button>
