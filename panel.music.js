@@ -403,11 +403,10 @@ function render(){
   });
 
   if (!view.length){
-    listEl.innerHTML = `
-      <div class="aivo-empty">
-        <div class="aivo-empty-title">Üretilenler</div>
-        <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
-      </div>`;
+   listEl.innerHTML = `
+  <div class="aivo-empty">
+    <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
+  </div>`;
     return;
   }
 
