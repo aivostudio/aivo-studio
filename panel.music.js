@@ -999,9 +999,19 @@ function destroy(){
   audioEl = null;
 }
 
+// ✅ RightPanel üst başlık + search (manager buradan çiziyor)
+function getHeader(){
+  return {
+    title: "Üretilenler",
+    meta: "",
+    searchPlaceholder: "Müziklerde ara..."
+  };
+}
+
 function register(){
   if (window.RightPanel?.register){
-    window.RightPanel.register(PANEL_KEY, { mount, destroy });
+    // ✅ burası: getHeader'ı objeye ekledik
+    window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy });
     return true;
   }
   return false;
@@ -1010,7 +1020,6 @@ function register(){
 if (!register()){
   window.addEventListener("DOMContentLoaded", register, { once: true });
 }
-
   /* =========================================================
      EXTRA: "Müzik Üret"e 1 kez basınca 2 job başlat (2 kart)
      - studio.music.generate.js yoksa bile çalışsın diye burada köprü var.
