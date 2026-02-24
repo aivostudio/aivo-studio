@@ -588,16 +588,21 @@ POLL_BUSY.add(providerId);
 const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
 const knownReal = existing.__real_job_id || null;
 
-// Her zaman provider_song_id varsa onu, yoksa base id'yi kullan
+// Her kart kendi provider_song_id'si ile status çeker
 async function fetchStatus(id) {
-  const songIdForThisCard = existing.__provider_song_id || providerBase;
-  const q = encodeURIComponent(songIdForThisCard);
+  const q = encodeURIComponent(
+    String(id || existing.__provider_song_id || providerBase)
+  );
 
   const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
     cache: "no-store",
     credentials: "include",
   });
 
+  let j = null;
+  try { j = await r.json(); } catch { j = null; }
+  return { ok: r.ok, json: j };
+}
   let j = null;
   try { j = await r.json(); } catch { j = null; }
   return { ok: r.ok, json: j };
