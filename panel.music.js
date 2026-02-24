@@ -275,7 +275,39 @@ const leftBtn = `
   </div>
 </div>`;
 }
+/* ================= LOADING TICKER (Hazırlanıyor % + blink) ================= */
+if (!window.__AIVO_LOADING_TICKER__) {
+  window.__AIVO_LOADING_TICKER__ = true;
 
+  setInterval(() => {
+    const cards = document.querySelectorAll(".aivo-player-card.is-loadingState");
+    const now = Date.now();
+
+    cards.forEach((card) => {
+      const pctEl = card.querySelector('[data-bind="loadingPct"]');
+      if (!pctEl) return;
+
+      const startedAt = Number(card.getAttribute("data-loading-started-at")) || 0;
+      if (!startedAt) return;
+
+      const elapsed = now - startedAt;
+
+      // 30 saniyede 0 → 99 arası akar
+      const pct = Math.max(1, Math.min(99, Math.floor((elapsed / 30000) * 99)));
+
+      pctEl.textContent = `· ${pct}%`;
+
+      // blink efekti
+      const tag = card.querySelector(".aivo-tag.is-loading");
+      if (tag) {
+        const visible = tag.getAttribute("data-blink") !== "1";
+        tag.setAttribute("data-blink", visible ? "1" : "0");
+        tag.style.opacity = visible ? "1" : "0.45";
+      }
+    });
+  }, 450);
+}
+/* ================= /LOADING TICKER ================= */
 function render(){
   // 🚫 Music panel aktif değilse ASLA DOM'a dokunma
   if (window.RightPanel?.getCurrentKey?.() !== "music") return;
