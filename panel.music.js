@@ -739,7 +739,26 @@ function onJob(e){
   const origId = `${baseId}::orig`;
   const revId  = `${baseId}::rev1`;
 
-  const songIds = payload.provider_song_ids || [];
+  // 🔥 güvenli song id çıkarımı
+  const providerJobId = String(payload.provider_job_id || "").trim();
+  const rawSongIds = Array.isArray(payload.provider_song_ids)
+    ? payload.provider_song_ids
+    : [];
+
+  // fallback mantığı:
+  // - 2 id varsa kullan
+  // - 1 id varsa ikisine de yaz (çökmesin diye)
+  // - hiç yoksa provider_job_id kullan
+  const songIdOrig =
+    String(rawSongIds[0] || providerJobId || "").trim();
+
+  const songIdRev =
+    String(
+      rawSongIds[1] ||
+      rawSongIds[0] ||   // tek id gelirse çökmesin
+      providerJobId ||
+      ""
+    ).trim();
 
   const common = {
     type: payload.type || "music",
@@ -747,7 +766,7 @@ function onJob(e){
     __ui_state: payload.__ui_state || "processing",
     __audio_src: payload.__audio_src || "",
     __real_job_id: payload.__real_job_id || null,
-    provider_job_id: payload.provider_job_id || null,
+    provider_job_id: providerJobId,
   };
 
   // ORIGINAL
@@ -755,7 +774,7 @@ function onJob(e){
     ...common,
     job_id: origId,
     id: origId,
-    __provider_song_id: String(songIds[0] || payload.provider_job_id || ""),
+    __provider_song_id: songIdOrig,
     title: (payload.title || "Müzik Üretimi") + " — Original Version",
   });
 
@@ -764,17 +783,16 @@ function onJob(e){
     ...common,
     job_id: revId,
     id: revId,
-    __provider_song_id: String(songIds[1] || payload.provider_job_id || ""),
+    __provider_song_id: songIdRev,
     title: (payload.title || "Müzik Üretimi") + " — Revize Version",
   });
 
   render();
 
-  // poll başlat
+  // poll başlat (iki kart ayrı ayrı)
   poll(origId);
   poll(revId);
 }
-
 /* ---------------- panel integration ---------------- */
 function mount(){
   if (!ensureHost()) return;
