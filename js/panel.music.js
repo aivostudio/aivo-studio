@@ -90,15 +90,15 @@
     <div class="aivo-player-spinner"></div>
   </div>
 
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title">${esc(t.title || "Müzik Üretimi")}</div>
-      <div class="aivo-player-tags">
-        <span class="aivo-tag is-loading">Hazırlanıyor</span>
-      </div>
+ <div class="aivo-player-mid">
+  <div class="aivo-player-titleRow">
+    <div class="aivo-player-title">${esc(t.title || "Müzik Üretimi")}</div>
+    <div class="aivo-player-tags">
+      <span class="aivo-tag is-loading">Hazırlanıyor · <span data-bind="loadingPct">0</span>%</span>
     </div>
-    <div class="aivo-player-sub">${esc(t.subtitle || "")}</div>
   </div>
+  <div class="aivo-player-sub">${esc(t.subtitle || "")}</div>
+</div>
 
   <div class="aivo-player-actions">
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
