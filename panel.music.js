@@ -732,6 +732,8 @@ function onJob(e){
   const origId = `${baseId}::orig`;
   const revId  = `${baseId}::rev1`;
 
+   const songIds = payload.provider_song_ids || [];
+
   const common = {
     type: payload.type || "music",
     subtitle: payload.subtitle || "",
