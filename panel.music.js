@@ -732,7 +732,7 @@ function onJob(e){
   const origId = `${baseId}::orig`;
   const revId  = `${baseId}::rev1`;
 
-   const songIds = payload.provider_song_ids || [];
+  const songIds = payload.provider_song_ids || [];
 
   const common = {
     type: payload.type || "music",
@@ -747,6 +747,7 @@ function onJob(e){
     ...common,
     job_id: origId,
     id: origId,
+    __provider_song_id: String(songIds[0] || payload.provider_job_id || ""),
     title: (payload.title || "Müzik Üretimi") + " — Original Version",
   });
 
@@ -754,6 +755,7 @@ function onJob(e){
     ...common,
     job_id: revId,
     id: revId,
+    __provider_song_id: String(songIds[1] || payload.provider_job_id || ""),
     title: (payload.title || "Müzik Üretimi") + " — Revize Version",
   });
 
@@ -763,7 +765,6 @@ function onJob(e){
   poll(origId);
   poll(revId);
 }
-
 
 /* ---------------- panel integration ---------------- */
 function mount(){
