@@ -234,9 +234,8 @@ const leftBtn = `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"}"
   data-job-id="${esc(jobId)}"
   data-output-id="${esc(job.output_id || "")}"
-  data-provider-job-id="${esc(job.__provider_song_id || job.provider_song_id || job.provider_job_id || "")}"
-  data-loading-started-at="${esc(job.___loading_startedAt || "")}"
-  data-src="${esc(job.___audio_src || "")}"
+  data-loading-started-at="${esc(job.__loading_startedAt || "")}"
+  data-src="${esc(job.__audio_src || "")}"
   ${disabled}>
 
   <!-- LEFT -->
