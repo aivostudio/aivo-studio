@@ -722,6 +722,10 @@ async function poll(jobId) {
   }
 }
 
+// ✅ 1) /panel.music.js en üstlerine (poll/onJob üstü) EKLE:
+const SONG_ID_BY_CARD = new Map();
+
+
 /* ---------------- onJob ---------------- */
 function onJob(e){
   const payload = e?.detail || e || {};
@@ -731,6 +735,14 @@ function onJob(e){
   // tek job -> 2 kart
   const origId = `${baseId}::orig`;
   const revId  = `${baseId}::rev1`;
+
+  // ✅ 2) onJob içinde, origId/revId'den HEMEN SONRA EKLE:
+  const songIds = payload.provider_song_ids || payload.provider_song_ids || [];
+  const origSongId = songIds?.[0] ? String(songIds[0]) : null;
+  const revSongId  = songIds?.[1] ? String(songIds[1]) : null;
+
+  if (origSongId) SONG_ID_BY_CARD.set(origId, origSongId);
+  if (revSongId)  SONG_ID_BY_CARD.set(revId,  revSongId);
 
   const common = {
     type: payload.type || "music",
@@ -760,6 +772,28 @@ function onJob(e){
   // poll başlat
   poll(origId);
   poll(revId);
+}
+
+
+// ✅ 3) /panel.music.js içinde poll(jobId) fonksiyonunda,
+// şu kısmı bul:
+//   const providerId = String(jobId);
+//   const providerBase = providerId.split("::")[0];
+//   const q = encodeURIComponent(providerBase);
+// ve AŞAĞIDAKİYLE DEĞİŞTİR:
+function poll(jobId){
+  const providerId = String(jobId);
+
+  // kart bazlı song id varsa onu kullan, yoksa eski davranışa düş
+  const songId = SONG_ID_BY_CARD.get(providerId) || providerId.split("::")[0];
+
+  const q = encodeURIComponent(String(songId));
+  fetch(`/api/music/status?provider_job_id=${q}`)
+    .then(r => r.json())
+    .then(data => {
+      // ... (senin mevcut poll içeriğin aynen kalsın)
+    })
+    .catch(() => {});
 }
 
 
