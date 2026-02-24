@@ -255,10 +255,11 @@ const leftBtn = `
     </div>
 
     <div class="aivo-player-controls">
-  <div class="aivo-progress" title="İlerleme">
-    <i style="width:0%"></i>
+      <div class="aivo-progress" title="İlerleme">
+        <i style="width:${esc(job.__progress || 0)}%"></i>
+      </div>
+    </div>
   </div>
-</div>
 
   <!-- RIGHT ACTIONS -->
   <div class="aivo-player-actions">
