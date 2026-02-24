@@ -203,7 +203,7 @@ const isReady = (job.__ui_state === "ready") && !!job.__audio_src;
 
 const leftBtn = `
   <button class="aivo-player-btn"
-    data-action="toggle-play"
+ data-action="toggle-play"
     aria-label="Oynat/Durdur"
     title="Oynat/Durdur"
     ${isReady ? "" : "disabled"}
