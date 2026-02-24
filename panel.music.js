@@ -577,28 +577,31 @@ async function poll(jobId) {
   // 1) aynı karta paralel bindirme (spam kesilir)
   if (POLL_BUSY.has(providerId)) return;
 
-  // 2) aynı karta 1.5sn’den sık vurma (spam kesilir)
-  const now = Date.now();
-  const last = POLL_LAST.get(providerId) || 0;
-  if (now - last < 1500) return;
-  POLL_LAST.set(providerId, now);
+// 2) aynı karta 1.5sn’den sık vurma (spam kesilir)
+const now = Date.now();
+const last = POLL_LAST.get(providerId) || 0;
+if (now - last < 1500) return;
+POLL_LAST.set(providerId, now);
 
-  POLL_BUSY.add(providerId);
+POLL_BUSY.add(providerId);
 
-  const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
-  const knownReal = existing.__real_job_id || null;
+const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
+const knownReal = existing.__real_job_id || null;
 
-  // Her zaman provider_job_id ile çağırıyoruz (UI kartları base id ile poll eder)
-  async function fetchStatus(id) {
-    const q = encodeURIComponent(providerBase);
-    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
-      cache: "no-store",
-      credentials: "include",
-    });
-    let j = null;
-    try { j = await r.json(); } catch { j = null; }
-    return { ok: r.ok, json: j };
-  }
+// Her zaman provider_song_id varsa onu, yoksa base id'yi kullan
+async function fetchStatus(id) {
+  const songIdForThisCard = existing.__provider_song_id || providerBase;
+  const q = encodeURIComponent(songIdForThisCard);
+
+  const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+    cache: "no-store",
+    credentials: "include",
+  });
+
+  let j = null;
+  try { j = await r.json(); } catch { j = null; }
+  return { ok: r.ok, json: j };
+}
 
   try {
     clearPoll(providerId);
