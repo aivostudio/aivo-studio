@@ -187,6 +187,9 @@
 function renderCard(job){
   const jobId = job.job_id || job.id;
   const st = job.__ui_state || "processing";
+   if (st === "processing" && !job.__loading_startedAt) {
+  job.__loading_startedAt = Date.now();
+}
 
   const title = job.title || "Müzik Üretimi";
   const sub   = job.subtitle || "";
@@ -228,7 +231,7 @@ const leftBtn = `
   const disabled = (!job.__audio_src) ? 'data-disabled="1"' : "";
 
   return `
-<div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading"}"
+<div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"}"
   data-job-id="${esc(jobId)}"
   data-output-id="${esc(job.output_id || "")}"
   data-src="${esc(job.__audio_src || "")}"
