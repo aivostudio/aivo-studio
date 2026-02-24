@@ -588,9 +588,9 @@ POLL_BUSY.add(providerId);
 const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
 const knownReal = existing.__real_job_id || null;
 
-// Her zaman provider_song_id varsa onu, yoksa base id'yi kullan
-async function fetchStatus(id) {
-  const songIdForThisCard = existing.__provider_song_id || providerBase;
+// Bu kart hangi provider_song_id'ye aitse onu poll et (orig/rev ayrılır)
+async function fetchStatus() {
+  const songIdForThisCard = String(existing.__provider_song_id || providerBase);
   const q = encodeURIComponent(songIdForThisCard);
 
   const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
@@ -599,16 +599,20 @@ async function fetchStatus(id) {
   });
 
   let j = null;
-  try { j = await r.json(); } catch { j = null; }
+  try {
+    j = await r.json();
+  } catch {
+    j = null;
+  }
+
   return { ok: r.ok, json: j };
 }
-
   try {
     clearPoll(providerId);
 
     // 1) önce (real varsa onu, yoksa providerBase) — fetchStatus zaten providerBase kullanıyor
     const firstId = knownReal || providerBase;
-    let { ok, json: j } = await fetchStatus(firstId);
+ let { ok, json: j } = await fetchStatus();
 
     if (!ok || !j) {
       schedulePoll(providerId, 1500);
