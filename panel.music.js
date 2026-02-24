@@ -234,6 +234,7 @@ const leftBtn = `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"}"
   data-job-id="${esc(jobId)}"
   data-output-id="${esc(job.output_id || "")}"
+  data-loading-started-at="${esc(job.__loading_startedAt || "")}"
   data-src="${esc(job.__audio_src || "")}"
   ${disabled}>
 
