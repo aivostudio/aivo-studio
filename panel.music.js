@@ -198,24 +198,23 @@ function renderCard(job){
   const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor</span>`;
   const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
-  // ✅ state'e bakma: src varsa hazır say
-  const isReady = !!job.__audio_src;
+// ✅ artık "ready" UI state şart (iki kart birlikte unlock edilecek)
+const isReady = (job.__ui_state === "ready") && !!job.__audio_src;
 
-  const leftBtn = `
-    <button class="aivo-player-btn"
-      data-action="toggle-play"
-      aria-label="Oynat/Durdur"
-      title="Oynat/Durdur"
-      ${isReady ? "" : "disabled"}
-      style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-      <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
-      </svg>
-      <svg class="icon-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
-        <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-      </svg>
-    </button>`;
-
+const leftBtn = `
+  <button class="aivo-player-btn"
+    data-action="toggle-play"
+    aria-label="Oynat/Durdur"
+    title="Oynat/Durdur"
+    ${isReady ? "" : "disabled"}
+    style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
+    <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
+    </svg>
+    <svg class="icon-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
+      <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
+    </svg>
+  </button>`;
   // ✅ tag'i de src ile belirle
   const tags =
     isReady ? `${tagReady}<span class="aivo-tag">${esc(lang)}</span>` :
@@ -692,10 +691,38 @@ async function fetchStatus() {
     job.__audio_src = src || playUrl || "";
     job.output_id = outputId || job.output_id || "";
 
-    // state
-    let state = uiState(j.state || j.status || job.status);
-    if (job.__audio_src) state = "ready";
-    job.__ui_state = state;
+  // state (iki kart birlikte unlock)
+let state = uiState(j.state || j.status || job.status);
+
+// mp3 geldiyse bunu "pending" olarak işaretle, ama hemen ready yapma
+if (job.__audio_src) {
+  job.__ui_state = "processing";
+  job.__pending_ready = true;
+} else {
+  job.__ui_state = state;
+  job.__pending_ready = false;
+}
+
+// Eğer bu base'in (133xxxx) iki varyantında da mp3 varsa: ikisini birden ready yap
+try {
+const base = String(jobId).split("::")[0];
+  const aId = `${base}::orig`;
+  const bId = `${base}::rev1`;
+
+  const a = jobs.find(x => (x.job_id || x.id) === aId);
+  const b = jobs.find(x => (x.job_id || x.id) === bId);
+
+  const bothHaveAudio = !!(a?.__audio_src) && !!(b?.__audio_src);
+
+  if (bothHaveAudio) {
+    upsertJob({ job_id: aId, id: aId, __ui_state: "ready", __pending_ready: false });
+    upsertJob({ job_id: bId, id: bId, __ui_state: "ready", __pending_ready: false });
+
+    // mevcut job objesini de ready'ye çek
+    job.__ui_state = "ready";
+    job.__pending_ready = false;
+  }
+} catch {}
 
     job.title = job.title || j?.title || "Müzik Üretimi";
     if (j?.duration) job.__duration = j.duration;
