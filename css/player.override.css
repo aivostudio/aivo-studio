@@ -184,3 +184,13 @@
 .aivo-player-btn .icon-pause{
   opacity: 0;
 }
+/* EQ: sadece çalan kartta görünsün */
+[data-action="toggle-play"] .aivo-eq{
+  display: none !important;
+}
+
+[data-action="toggle-play"][data-playing="1"] .aivo-eq{
+  display: inline-flex !important;
+  align-items: flex-end;
+  gap: 2px;
+}
