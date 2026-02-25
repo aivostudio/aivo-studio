@@ -957,9 +957,9 @@ function onJob(e){
 function mount(){
   if (!ensureHost()) return;
 
-  // ✅ idempotent: eğer shell zaten varsa reset atma
-  const already = hostEl.querySelector("#musicList");
-  if (!already){
+// ✅ idempotent: eğer shell zaten varsa reset atma
+const already = hostEl.querySelector("#musicList");
+
 if (!already){
   hostEl.innerHTML = `
     <div class="rp-players">
@@ -969,7 +969,6 @@ if (!already){
     </div>
   `;
 }
-  }
 
   listEl = hostEl.querySelector("#musicList");
   listEl.className = "aivo-player-list";
