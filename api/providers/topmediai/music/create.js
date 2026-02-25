@@ -24,30 +24,41 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // ✅ TopMediai v3 REQUIRED SCHEMA (UPDATED)
-    const vocalLabel = String(body.vocal || "").trim();
+   // ✅ TopMediai v3 SCHEMA (AUTO vs CUSTOM)
+// - auto: sadece style odaklı
+// - custom: title/lyrics işler
+const vocalLabel = String(body.vocal || "").trim();
 
-    const genderMap = {
-      "Erkek Vokal (AI)": "male",
-      "Kadın Vokal (AI)": "female",
-      "Soft / Çocuk Vokal (AI)": "child",
-    };
+const genderMap = {
+  "Erkek Vokal (AI)": "male",
+  "Kadın Vokal (AI)": "female",
+  "Soft / Çocuk Vokal (AI)": "child",
+};
 
-    const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
-    const gender = genderMap[vocalLabel] || undefined;
+const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
+const gender = genderMap[vocalLabel] || undefined;
 
-    const mood = String(body.mood || "").trim();
-    const style = mood ? `${prompt}, mood: ${mood}` : prompt;
+const mood = String(body.mood || "").trim();
+const style = mood ? `${prompt}, mood: ${mood}` : prompt;
 
-    const payload = {
-      action: "auto",
-      style,
-      mv: "v5.0",
-      instrumental: isInstrumental ? 1 : 0,
-      gender,
-      title: body.title ? String(body.title).trim() : undefined,
-      lyrics: lyrics || undefined,
-    };
+const title = body.title ? String(body.title).trim() : "";
+const hasTitle = !!title;
+
+const hasLyrics = !!lyrics; // yukarıda zaten: const lyrics = String(...).trim();
+
+const action = (hasLyrics || hasTitle) ? "custom" : "auto";
+
+const payload = {
+  action,               // ✅ "custom" olursa title/lyrics çalışır
+  style,
+  mv: "v5.0",
+  instrumental: isInstrumental ? 1 : 0,
+  gender,
+
+  // ✅ sadece custom modda anlamlı
+  title: hasTitle ? title : undefined,
+  lyrics: hasLyrics ? lyrics : undefined,
+};
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
