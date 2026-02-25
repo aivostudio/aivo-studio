@@ -1,9 +1,6 @@
 // api/providers/topmediai/music/create.js
-// TopMediai v3 generate -> returns 2 track/song ids + (sometimes) taskId
-// We normalize:
-// - provider_song_ids: string[]  (from data.tracks[].id OR data.ids OR song_ids)
-// - provider_job_id: first song id (so status can call /v3/music/tasks?ids=...)
-// - also return topmediai.taskId for debugging/trace
+// TopMediai v3 generate
+// ✅ FIX: title/lyrics çalışması için action = "custom" olmalı (AutoGenerateRequest "auto" bunları ignore eder)
 
 export default async function handler(req, res) {
   try {
@@ -13,58 +10,63 @@ export default async function handler(req, res) {
 
     const KEY = process.env.TOPMEDIAI_API_KEY;
     if (!KEY) {
-      return res.status(500).json({ ok: false, error: "missing_topmediai_api_key" });
+      return res
+        .status(500)
+        .json({ ok: false, error: "missing_topmediai_api_key" });
     }
 
     const body = req.body || {};
-    const prompt = String(body.prompt || body?.input?.prompt || body?.text || "").trim();
+    const prompt = String(body.prompt || body?.input?.prompt || body?.text || "")
+      .trim();
     const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
+    const title = String(body.title || "").trim();
 
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-   // ✅ TopMediai v3 SCHEMA (AUTO vs CUSTOM)
-// - auto: sadece style odaklı
-// - custom: title/lyrics işler
-const vocalLabel = String(body.vocal || "").trim();
+    // ✅ UI select’leri
+    const vocalLabel = String(body.vocal || "").trim();
+    const mood = String(body.mood || "").trim();
 
-const genderMap = {
-  "Erkek Vokal (AI)": "male",
-  "Kadın Vokal (AI)": "female",
-  "Soft / Çocuk Vokal (AI)": "child",
-};
+    const genderMap = {
+      "Erkek Vokal (AI)": "male",
+      "Kadın Vokal (AI)": "female",
+      "Soft / Çocuk Vokal (AI)": "child",
+    };
 
-const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
-const gender = genderMap[vocalLabel] || undefined;
+    const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
+    const gender = genderMap[vocalLabel] || undefined;
 
-const mood = String(body.mood || "").trim();
-const style = mood ? `${prompt}, mood: ${mood}` : prompt;
+    // style = prompt (+ mood)
+    const style = mood ? `${prompt}, mood: ${mood}` : prompt;
 
-const title = body.title ? String(body.title).trim() : "";
-const hasTitle = !!title;
+    // ✅ CRITICAL: title/lyrics doluysa action="custom" (CustomGenerateRequest)
+    // Auto ("auto") title/lyrics’i çoğu durumda ignore eder.
+    const hasLyricsOrTitle = (!!lyrics && lyrics.length > 0) || (!!title && title.length > 0);
+    const action = hasLyricsOrTitle ? "custom" : "auto";
 
-const hasLyrics = !!lyrics; // yukarıda zaten: const lyrics = String(...).trim();
+    // ✅ payload (TopMediai v3)
+    // Not: instrumental=1 ise lyrics provider tarafından uygulanmaz (doküman).
+    const payload = {
+      action,           // "custom" | "auto"
+      style,
+      mv: "v5.0",
+      instrumental: isInstrumental ? 1 : 0,
+      gender,
 
-const action = (hasLyrics || hasTitle) ? "custom" : "auto";
-
-const payload = {
-  action,               // ✅ "custom" olursa title/lyrics çalışır
-  style,
-  mv: "v5.0",
-  instrumental: isInstrumental ? 1 : 0,
-  gender,
-
-  // ✅ sadece custom modda anlamlı
-  title: hasTitle ? title : undefined,
-  lyrics: hasLyrics ? lyrics : undefined,
-};
+      // sadece custom’ta anlamlı → yoksa hiç göndermiyoruz
+      ...(action === "custom" ? { title: title || undefined } : null),
+      ...(action === "custom" ? { lyrics: lyrics || undefined } : null),
+    };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
     // HARD TIMEOUT (avoid hanging requests)
     const controller = new AbortController();
-    const HARD_TIMEOUT_MS = Number(process.env.TOPMEDIAI_SUBMIT_TIMEOUT_MS || 25000);
+    const HARD_TIMEOUT_MS = Number(
+      process.env.TOPMEDIAI_SUBMIT_TIMEOUT_MS || 25000
+    );
 
     const timeout = setTimeout(() => {
       try {
@@ -140,13 +142,7 @@ const payload = {
       .map((t) => String(t?.id || "").trim())
       .filter(Boolean);
 
-    const idsRaw =
-      data?.data?.ids ||
-      data?.data?.IDs ||
-      data?.ids ||
-      data?.IDs ||
-      null;
-
+    const idsRaw = data?.data?.ids || data?.data?.IDs || data?.ids || data?.IDs || null;
     const idsList = Array.isArray(idsRaw)
       ? idsRaw.map((x) => String(x || "").trim()).filter(Boolean)
       : [];
@@ -195,6 +191,8 @@ const payload = {
       topmediai_task_id: taskId ? String(taskId) : null,
       topmediai: data,
       topmediai_url: topmediaiUrl,
+      // debug: gerçekten custom mı gitti görelim
+      sent_payload: payload,
     });
   } catch (err) {
     return res.status(500).json({
