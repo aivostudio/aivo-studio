@@ -62,7 +62,7 @@ async function generateMusic(payload) {
 
  const titleEl  = document.querySelector('#title');
 const lyricsEl = document.querySelector('#lyrics');
-const vocalEl  = document.querySelector('#vocal');
+const vocalEl = document.querySelector('#vocalType');
 const moodEl   = document.querySelector('#mood');
 
 const title  = titleEl  ? titleEl.value.trim()  : '';
