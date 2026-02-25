@@ -183,14 +183,22 @@ const payload = {
         result?.data?.providerSongIds ||
         [];
 
-      // Öncelik provider id
-      const job_id = provider_job_id || internal_job_id;
+     // Öncelik provider id
+const job_id = provider_job_id || internal_job_id;
 
-      if (!job_id){
-        console.warn("[music.generate] generate response:", result);
-        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
-        return;
-      }
+// ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
+// Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
+if (!provider_job_id) {
+  console.warn("[music.generate] missing provider_job_id, result:", result);
+  toastError("TopMediai create başarısız (provider_job_id gelmedi). Lütfen tekrar dene.");
+  return;
+}
+
+if (!job_id){
+  console.warn("[music.generate] generate response:", result);
+  toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
+  return;
+}
 
       // DEBUG
       window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
