@@ -53,10 +53,10 @@
     return String(x || "").trim();
   }
 
-  function ensureHost(){
-    hostEl = qs(HOST_SEL);
-    return hostEl;
-  }
+function ensureHost(){
+  hostEl = hostEl || qs(HOST_SEL);
+  return hostEl;
+}
 
   function ensureList(){
     if (!hostEl) return null;
