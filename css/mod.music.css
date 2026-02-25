@@ -430,5 +430,59 @@
   width: calc(50% - 5px) !important;
   border-radius: 999px !important;
 }
+/* =========================
+   MUSIC PLAY EQ INDICATOR
+========================= */
 
+.aivo-player-btn{
+  position: relative;
+}
+
+/* normalde gizli */
+.aivo-eq{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  gap: 3px;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.aivo-eq i{
+  width: 3px;
+  height: 10px;
+  border-radius: 2px;
+  background: #fff;
+  opacity: .9;
+  transform-origin: bottom;
+  animation: aivoEq 0.6s infinite ease-in-out;
+}
+
+.aivo-eq i:nth-child(2){
+  animation-delay: 0.12s;
+  height: 14px;
+}
+
+.aivo-eq i:nth-child(3){
+  animation-delay: 0.24s;
+  height: 8px;
+}
+
+/* sadece çalan kartta görünür */
+.aivo-player-card.is-playing .aivo-eq{
+  display: inline-flex;
+}
+
+/* play ikonunu gizle çalarken */
+.aivo-player-card.is-playing .icon-play{
+  display: none !important;
+}
+
+@keyframes aivoEq{
+  0%   { transform: scaleY(.35); opacity: .7; }
+  50%  { transform: scaleY(1.15); opacity: 1; }
+  100% { transform: scaleY(.45); opacity: .8; }
+}
 
