@@ -339,20 +339,24 @@ function renderCard(job){
   const dur   = job.duration || job.__duration || "";
   const date  = job.created_at || job.createdAt || job.__createdAt || "";
 
-  const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
-  const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
+ const tagReady   = `<span class="aivo-tag is-ready">Hazır</span>`;
+const tagPreview = `<span class="aivo-tag is-loading">Ön izleme hazır</span>`;
+const tagProc    = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
+const tagErr     = `<span class="aivo-tag is-error">Hata</span>`;
 
-// ✅ artık "ready" UI state şart (iki kart birlikte unlock edilecek)
-const isReady = (job.__ui_state === "ready") && !!job.__audio_src;
+// FINAL ready (iki kart birlikte unlock) — bu kural kalsın
+const isFinalReady = (job.__ui_state === "ready") && !!job.__audio_src;
+
+// PREVIEW: mp3 düştüğü anda oynatılabilir ol
+const isPlayable = !!job.__audio_src;
 
 const leftBtn = `
   <button class="aivo-player-btn"
     data-action="toggle-play"
     aria-label="Oynat/Durdur"
     title="Oynat/Durdur"
-    ${isReady ? "" : "disabled"}
-    style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
+    ${isPlayable ? "" : "disabled"}
+    style="${isPlayable ? "" : "opacity:.45; cursor:not-allowed;"}">
 
     <svg class="icon-play" viewBox="0 0 24 24" fill="none">
       <path d="M8 5v14l11-7z" fill="currentColor"></path>
@@ -362,16 +366,22 @@ const leftBtn = `
       <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
     </svg>
 
-  <span class="aivo-eq" aria-hidden="true">
-  <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-</span>
+    <span class="aivo-eq" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </span>
 
   </button>`;
-  // ✅ tag'i de src ile belirle
-  const tags =
-    isReady ? `${tagReady}<span class="aivo-tag">${esc(lang)}</span>` :
-    st === "error" ? `${tagErr}` :
-    `${tagProc}`;
+
+// Tag mantığı:
+// - final ready: Hazır
+// - src var ama final değil: Ön izleme hazır
+// - error: Hata
+// - diğer: Hazırlanıyor
+const tags =
+  isFinalReady ? `${tagReady}<span class="aivo-tag">${esc(lang)}</span>` :
+  st === "error" ? `${tagErr}` :
+  isPlayable ? `${tagPreview}<span class="aivo-tag">${esc(lang)}</span>` :
+  `${tagProc}`;
 
   const metaLeft = dur ? esc(dur) : "0:00";
   const metaRight = date ? esc(date) : "";
