@@ -25,13 +25,24 @@ export default async function handler(req, res) {
     }
 
     // ✅ TopMediai v3 REQUIRED SCHEMA (FIXED)
-    const payload = {
-      action: "auto",
-      style: prompt,
-      mv: "v5.0",
-      instrumental: 0,
-      gender: "male"
-    };
+  const genderMap = {
+  "Erkek Vokal (AI)": "male",
+  "Kadın Vokal (AI)": "female",
+  "Soft / Çocuk Vokal (AI)": "child",
+};
+
+const payload = {
+  action: "auto",
+  style: prompt,
+
+  lyrics: lyrics || undefined,
+  title: body.title || undefined,
+
+  gender: genderMap[body.vocal] || undefined,
+
+  mv: "v5.0",
+  instrumental: body.vocal === "Enstrümantal (Vokalsiz)" ? 1 : 0,
+};
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
