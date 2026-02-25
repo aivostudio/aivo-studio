@@ -24,24 +24,30 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // ✅ TopMediai v3 REQUIRED SCHEMA (FIXED)
-  const genderMap = {
+ // ✅ TopMediai v3 REQUIRED SCHEMA (UPDATED)
+
+const vocalLabel = String(body.vocal || "").trim();
+
+const genderMap = {
   "Erkek Vokal (AI)": "male",
   "Kadın Vokal (AI)": "female",
   "Soft / Çocuk Vokal (AI)": "child",
 };
 
+const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
+const gender = genderMap[vocalLabel] || undefined;
+
+const mood = String(body.mood || "").trim();
+const style = mood ? `${prompt}, mood: ${mood}` : prompt;
+
 const payload = {
   action: "auto",
-  style: prompt,
-
-  lyrics: lyrics || undefined,
-  title: body.title || undefined,
-
-  gender: genderMap[body.vocal] || undefined,
-
+  style,
   mv: "v5.0",
-  instrumental: body.vocal === "Enstrümantal (Vokalsiz)" ? 1 : 0,
+  instrumental: isInstrumental ? 1 : 0,
+  gender,
+  title: body.title ? String(body.title).trim() : undefined,
+  lyrics: lyrics || undefined,
 };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
