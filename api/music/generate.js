@@ -61,39 +61,14 @@ module.exports = async (req, res) => {
 
     let pr;
     try {
-     // UI'dan gelen ek alanlar (title/lyrics/vocal/mood/mode)
-const title  = String(body.title  || "").trim();
-const lyrics = String(body.lyrics || "").trim();
-const vocal  = String(body.vocal  || "").trim();
-const mood   = String(body.mood   || "").trim();
-
-// mode UI'dan gelebilir; yoksa vokale göre çıkar
-let mode = String(body.mode || "").trim();
-if (!mode) {
-  // vokal "Enstrümantal (Vokalsiz)" ise instrumental, değilse vocals
-  mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
-}
-
-// Provider'a gidecek payload (geriye uyumlu: prompt her zaman var)
-// Not: lyrics/title boşsa hiç eklemiyoruz (provider tarafında auto davranış bozulmasın)
-const providerPayload = { prompt };
-
-if (title) providerPayload.title = title;
-if (lyrics) providerPayload.lyrics = lyrics;
-
-// bazı provider wrapper'lar mode/vocal/mood kabul ediyorsa iletelim (boşsa eklemiyoruz)
-if (mode) providerPayload.mode = mode;
-if (vocal) providerPayload.vocal = vocal;
-if (mood) providerPayload.mood = mood;
-
-pr = await fetch(providerCreateUrl, {
-  method: "POST",
-  headers: {
-    "content-type": "application/json",
-    accept: "application/json",
-  },
-  body: JSON.stringify(providerPayload),
-});
+      pr = await fetch(providerCreateUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
     } catch (e) {
       return safeJson(
         res,
