@@ -107,7 +107,139 @@
 
   return audioEl;
 }
+/* ---------------- EQ engine (beat-reactive) ---------------- */
+let eqRaf = 0;
 
+function initEqEngine(){
+  if(!audioEl) return;
+  if(audioEl.__eqInited) return;
+  audioEl.__eqInited = true;
+
+  // AudioContext + analyser
+  let ctx = null;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+  } catch (e){
+    console.warn("[music:eq] AudioContext not available", e);
+    return;
+  }
+
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 256;                 // hızlı/akıcı
+  analyser.smoothingTimeConstant = 0.85;  // yumuşak geçiş
+
+  let srcNode = null;
+  try {
+    srcNode = ctx.createMediaElementSource(audioEl);
+  } catch (e){
+    // aynı audioEl için ikinci kez source yaratılırsa exception atar
+    console.warn("[music:eq] createMediaElementSource failed (already?)", e);
+    return;
+  }
+
+  srcNode.connect(analyser);
+  analyser.connect(ctx.destination);
+
+  const freq = new Uint8Array(analyser.frequencyBinCount);
+
+  audioEl.__eq = { ctx, analyser, freq };
+
+  // play/pause durumlarında döngüyü yönet
+  audioEl.addEventListener("play", () => {
+    try { ctx.resume?.(); } catch {}
+    startEqLoop();
+  }, { passive:true });
+
+  audioEl.addEventListener("pause", () => stopEqLoop(), { passive:true });
+  audioEl.addEventListener("ended", () => stopEqLoop(), { passive:true });
+
+  // sayfa ilk açıldığında “autoplay yok” ama user play’e basınca çalışır
+}
+
+function startEqLoop(){
+  if(eqRaf) return;
+  eqTick();
+}
+
+function stopEqLoop(){
+  if(eqRaf){
+    cancelAnimationFrame(eqRaf);
+    eqRaf = 0;
+  }
+  // pause’da barları sakinleştir
+  setEqBars(0.08, 0.06, 0.04);
+}
+
+function eqTick(){
+  eqRaf = requestAnimationFrame(eqTick);
+
+  if(!audioEl || audioEl.paused) return;
+  const pack = audioEl.__eq;
+  if(!pack) return;
+
+  const { analyser, freq } = pack;
+  analyser.getByteFrequencyData(freq);
+
+  // 3 band çıkar (low/mid/high) => 7 bar’a güzel dağıtacağız
+  const low  = bandAvg(freq, 2, 10);   // bass
+  const mid  = bandAvg(freq, 10, 28);  // body
+  const high = bandAvg(freq, 28, 60);  // air
+
+  // 0..1 normalize (0..255)
+  const L = clamp01(low  / 255);
+  const M = clamp01(mid  / 255);
+  const H = clamp01(high / 255);
+
+  setEqBars(L, M, H);
+}
+
+function bandAvg(arr, a, b){
+  let sum = 0, n = 0;
+  const end = Math.min(arr.length, b);
+  for(let i = Math.max(0,a); i < end; i++){
+    sum += arr[i];
+    n++;
+  }
+  return n ? (sum / n) : 0;
+}
+
+function clamp01(x){
+  if(x < 0) return 0;
+  if(x > 1) return 1;
+  return x;
+}
+
+function setEqBars(L, M, H){
+  // sadece “şu an çalan kartın” butonundaki EQ’yu hareket ettir
+  // (mevcut kodunda currentJobId var: onu kullanıyoruz)
+  if(!currentJobId) return;
+
+  const card = hostEl?.querySelector?.(`.aivo-player-card[data-job-id="${CSS.escape(String(currentJobId))}"]`);
+  if(!card) return;
+
+  const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
+  if(!bars || !bars.length) return;
+
+  // “ultra” görünüm: bass daha çok, high daha titrek
+  // 7 bar: L ağırlıklı merkez, dışlara doğru M/H karışımı
+  const v = [
+    0.20 + H*0.70,
+    0.25 + M*0.85,
+    0.30 + L*1.00,
+    0.25 + L*1.15,  // center “kick”
+    0.30 + L*1.00,
+    0.25 + M*0.85,
+    0.20 + H*0.70,
+  ];
+
+  for(let i=0;i<bars.length;i++){
+    const k = v[i] ?? 0.2;
+    // cap + min (zıplama kontrollü)
+    const s = clamp01(k);
+    bars[i].style.transform = `scaleY(${0.15 + s*1.15})`;
+  }
+}
   function loadJobs(){
     try {
       const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
