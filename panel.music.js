@@ -411,9 +411,22 @@ function render(){
   }
 
   listEl.innerHTML = view.map(renderCard).join("");
+   applyMusicSearchFilter();
 }
 
+function getMusicSearchQ(){
+  const el = document.getElementById("musicOutputsSearch");
+  return (el?.value || "").trim().toLowerCase();
+}
 
+function applyMusicSearchFilter(){
+  const q = getMusicSearchQ();
+  const cards = (listEl || document).querySelectorAll(".aivo-player-card");
+  cards.forEach(card => {
+    const text = (card.textContent || "").toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? "" : "none";
+  });
+}
 
 /* ---------------- play / pause / progress ---------------- */
 function getCard(jobId){
@@ -947,9 +960,21 @@ function mount(){
   // ✅ idempotent: eğer shell zaten varsa reset atma
   const already = hostEl.querySelector("#musicList");
   if (!already){
-   hostEl.innerHTML = `
+  hostEl.innerHTML = `
   <div class="rp-players">
     <div class="rp-playerCard">
+      <div class="rp-title">Üretilenler</div>
+
+      <!-- ✅ Search (Atmo/Video gibi) -->
+      <div class="rp-search">
+        <input
+          id="musicOutputsSearch"
+          type="search"
+          placeholder="Müziklerde ara..."
+          autocomplete="off"
+        />
+      </div>
+
       <div class="rp-body" id="musicList"></div>
     </div>
   </div>
@@ -967,7 +992,11 @@ function mount(){
       if (e.target.closest(".aivo-progress")) onProgressSeek(e);
     }, true);
   }
-
+  document.addEventListener("input", (e) => {
+    if (e.target && e.target.id === "musicOutputsSearch") {
+      applyMusicSearchFilter();
+    }
+  }, true);
   ensureAudio();
 
   // ✅ music panelde global mainAudio bar'ı kapat (PPE/player.js)
