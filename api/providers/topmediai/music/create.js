@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     const payload = {
       action,           // "custom" | "auto"
       style,
-      mv: "v5.0",
+     mv: "v4.5",
       instrumental: isInstrumental ? 1 : 0,
       gender,
 
