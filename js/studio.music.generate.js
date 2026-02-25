@@ -58,30 +58,44 @@ async function generateMusic(payload) {
     }
   }
 
- async function callGenerateAPI(prompt){
+async function callGenerateAPI(prompt){
 
-  const titleEl = document.querySelector('#title');
+  const titleEl  = document.querySelector('#title');
   const lyricsEl = document.querySelector('#lyrics');
+  const vocalEl  = document.querySelector('#vocal');
+  const moodEl   = document.querySelector('#mood');
 
-  const title = titleEl ? titleEl.value.trim() : '';
+  const title  = titleEl  ? titleEl.value.trim()  : '';
   const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
+  const vocal  = vocalEl  ? vocalEl.value         : '';
+  const mood   = moodEl   ? moodEl.value          : '';
 
   const payload = {
     prompt,
     mode: "instrumental",
     title,
     lyrics,
+    vocal,
+    mood,
     use_credits: true,
     charge: true,
     credits: 5,
     cost: 5,
   };
-    const res = await fetch("/api/music/generate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
+
+  const res = await fetch("/api/music/generate", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  let data = null;
+  try { data = await res.json(); }
+  catch { data = { ok:false, error:"non_json_response", status: res.status }; }
+
+  return data;
+}
 
     let data = null;
     try { data = await res.json(); }
