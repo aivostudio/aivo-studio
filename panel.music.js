@@ -979,9 +979,8 @@ let state = uiState(j.state || j.status || job.status);
 
 // mp3 geldiyse bunu "pending" olarak işaretle, ama hemen ready yapma
 if (job.__audio_src) {
-  // 🎧 mp3 düştü → hemen preview oynatılabilir olsun
-  job.__ui_state = "ready";
-  job.__pending_ready = false;
+  job.__ui_state = "processing";
+  job.__pending_ready = true;
 } else {
   job.__ui_state = state;
   job.__pending_ready = false;
