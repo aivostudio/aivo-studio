@@ -576,7 +576,6 @@ function applyMusicSearchFilter(){
     card.style.display = (!q || text.includes(q)) ? "" : "none";
   });
 }
-
 /* ---------------- play / pause / progress ---------------- */
 function getCard(jobId){
   return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl || document);
@@ -584,18 +583,28 @@ function getCard(jobId){
 
 function setCardPlaying(jobId, isPlaying){
   if (!jobId) return;
+
+  // ✅ önce tüm kartları "çalıyor" durumundan çıkar (tek kart çalsın)
+  const root = hostEl || document;
+  root.querySelectorAll('.aivo-player-card.is-playing').forEach((c) => c.classList.remove("is-playing"));
+  root.querySelectorAll('[data-action="toggle-play"][data-playing="1"]').forEach((b) => b.setAttribute("data-playing", "0"));
+
+  // ✅ hedef kart
   const card = getCard(jobId);
   if (!card) return;
 
-  const playIcon = qs(".icon-play", card);
+  const btn = qs('[data-action="toggle-play"]', card);
+  if (btn) btn.setAttribute("data-playing", isPlaying ? "1" : "0");
+
+  const playIcon  = qs(".icon-play", card);
   const pauseIcon = qs(".icon-pause", card);
   if (playIcon && pauseIcon){
-    playIcon.style.display = isPlaying ? "none" : "";
+    playIcon.style.display  = isPlaying ? "none" : "";
     pauseIcon.style.display = isPlaying ? "" : "none";
   }
+
   card.classList.toggle("is-playing", !!isPlaying);
 }
-
 function updateProgressUI(){
   if (!audioEl || !currentJobId) return;
   const card = getCard(currentJobId);
