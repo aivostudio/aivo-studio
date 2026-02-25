@@ -1021,16 +1021,31 @@ function destroy(){
   currentJobId = null;
   audioEl = null;
 }
+if (!already){
+  hostEl.innerHTML = `
+    <div class="rp-players">
+      <div class="rp-playerCard">
 
-// ✅ RightPanel üst başlık + search (manager buradan çiziyor)
-function getHeader(){
-  return {
-    title: "Üretilenler",
-    meta: "",
-    searchPlaceholder: "Müziklerde ara..."
-  };
+        <div class="rp-section-title">
+          Müziklerim
+        </div>
+
+        <div class="rp-search">
+          <input
+            id="musicOutputsSearch"
+            class="rp-searchInput"
+            type="search"
+            placeholder="Müziklerde ara..."
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="rp-body" id="musicList"></div>
+
+      </div>
+    </div>
+  `;
 }
-
 function register(){
   if (window.RightPanel?.register){
     // ✅ burası: getHeader'ı objeye ekledik
