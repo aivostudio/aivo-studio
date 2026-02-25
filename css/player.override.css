@@ -184,3 +184,15 @@
 .aivo-player-btn .icon-pause{
   opacity: 0;
 }
+/* EQ sadece çalan kartta görünsün */
+.aivo-eq { 
+  display: none;
+}
+
+.aivo-card.is-playing .aivo-eq,
+.aivo-player-card.is-playing .aivo-eq,
+.aivo-item.is-playing .aivo-eq {
+  display: inline-flex;
+  gap: 2px;
+  align-items: flex-end;
+}
