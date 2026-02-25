@@ -60,22 +60,28 @@ async function generateMusic(payload) {
 
  async function callGenerateAPI(prompt){
 
-  const titleEl = document.querySelector('#title');
-  const lyricsEl = document.querySelector('#lyrics');
+ const titleEl  = document.querySelector('#title');
+const lyricsEl = document.querySelector('#lyrics');
+const vocalEl  = document.querySelector('#vocal');
+const moodEl   = document.querySelector('#mood');
 
-  const title = titleEl ? titleEl.value.trim() : '';
-  const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
+const title  = titleEl  ? titleEl.value.trim()  : '';
+const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
+const vocal  = vocalEl  ? vocalEl.value         : '';
+const mood   = moodEl   ? moodEl.value          : '';
 
-  const payload = {
-    prompt,
-    mode: "instrumental",
-    title,
-    lyrics,
-    use_credits: true,
-    charge: true,
-    credits: 5,
-    cost: 5,
-  };
+ const payload = {
+  prompt,
+  mode: "instrumental",
+  title,
+  lyrics,
+  vocal,
+  mood,
+  use_credits: true,
+  charge: true,
+  credits: 5,
+  cost: 5,
+};
     const res = await fetch("/api/music/generate", {
       method: "POST",
       headers: { "content-type": "application/json" },
