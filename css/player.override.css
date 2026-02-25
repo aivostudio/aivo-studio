@@ -149,3 +149,38 @@
   0%,100%{ opacity:1 }
   50%{ opacity:.45 }
 }
+/* ---------- Music EQ (inside play button) ---------- */
+.aivo-player-btn{
+  position: relative;
+  overflow: hidden;
+}
+
+.aivo-player-btn .aivo-eq{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 22px;
+  pointer-events: none;
+  opacity: .95;
+}
+
+.aivo-player-btn .aivo-eq i{
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.92);
+  transform: scaleY(.15);
+  transform-origin: bottom;
+  transition: transform 90ms linear;
+  box-shadow: 0 0 10px rgba(140,120,255,.22);
+}
+
+/* play/pause ikonlarını EQ varken gizle (ikon kalabalığı olmasın) */
+.aivo-player-btn .icon-play,
+.aivo-player-btn .icon-pause{
+  opacity: 0;
+}
