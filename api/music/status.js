@@ -241,7 +241,7 @@ if (provider_song_ids.length === 0) {
           item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
         // status==0 => ready (TopMediai’de)
-        const ready = st === 0;
+     const ready = !!urlMp3 || st === 0;
 
         // fail kodları (geniş yakala)
         if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
