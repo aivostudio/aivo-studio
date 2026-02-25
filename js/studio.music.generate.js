@@ -67,12 +67,24 @@ const moodEl   = document.querySelector('#mood');
 
 const title  = titleEl  ? titleEl.value.trim()  : '';
 const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
-const vocal = vocalEl ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "") : "";
-const mood  = moodEl  ? (moodEl.value  || moodEl.selectedOptions?.[0]?.textContent?.trim()  || "") : "";
+const vocalText = vocalEl
+  ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "")
+  : "";
 
- const payload = {
+const moodText = moodEl
+  ? (moodEl.value || moodEl.selectedOptions?.[0]?.textContent?.trim() || "")
+  : "";
+
+// placeholder ise boş gönder
+const vocal = (vocalText === "Vokal tipini seç") ? "" : vocalText;
+const mood  = (moodText  === "Ruh halini seç")   ? "" : moodText;
+
+// mode’u vokale göre ayarla (enstrümantal seçilmediyse vocals)
+const mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
+
+const payload = {
   prompt,
-  mode: "instrumental",
+  mode,
   title,
   lyrics,
   vocal,
