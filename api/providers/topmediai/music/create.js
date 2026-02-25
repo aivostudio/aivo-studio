@@ -24,31 +24,30 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
- // ✅ TopMediai v3 REQUIRED SCHEMA (UPDATED)
+    // ✅ TopMediai v3 REQUIRED SCHEMA (UPDATED)
+    const vocalLabel = String(body.vocal || "").trim();
 
-const vocalLabel = String(body.vocal || "").trim();
+    const genderMap = {
+      "Erkek Vokal (AI)": "male",
+      "Kadın Vokal (AI)": "female",
+      "Soft / Çocuk Vokal (AI)": "child",
+    };
 
-const genderMap = {
-  "Erkek Vokal (AI)": "male",
-  "Kadın Vokal (AI)": "female",
-  "Soft / Çocuk Vokal (AI)": "child",
-};
+    const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
+    const gender = genderMap[vocalLabel] || undefined;
 
-const isInstrumental = vocalLabel === "Enstrümantal (Vokalsiz)";
-const gender = genderMap[vocalLabel] || undefined;
+    const mood = String(body.mood || "").trim();
+    const style = mood ? `${prompt}, mood: ${mood}` : prompt;
 
-const mood = String(body.mood || "").trim();
-const style = mood ? `${prompt}, mood: ${mood}` : prompt;
-
-const payload = {
-  action: "auto",
-  style,
-  mv: "v5.0",
-  instrumental: isInstrumental ? 1 : 0,
-  gender,
-  title: body.title ? String(body.title).trim() : undefined,
-  lyrics: lyrics || undefined,
-};
+    const payload = {
+      action: "auto",
+      style,
+      mv: "v5.0",
+      instrumental: isInstrumental ? 1 : 0,
+      gender,
+      title: body.title ? String(body.title).trim() : undefined,
+      lyrics: lyrics || undefined,
+    };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
 
@@ -125,7 +124,6 @@ const payload = {
     }
 
     // ✅ Normalize IDs (support multiple response shapes)
-
     const tracks = Array.isArray(data?.data?.tracks) ? data.data.tracks : [];
     const trackIds = tracks
       .map((t) => String(t?.id || "").trim())
