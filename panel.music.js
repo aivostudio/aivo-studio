@@ -954,30 +954,66 @@ function onJob(e){
   poll(revId);
 }
 /* ---------------- panel integration ---------------- */
-function mount(){
-  if (!ensureHost()) return;
 
-// ✅ idempotent: eğer shell zaten varsa reset atma
-const already = hostEl.querySelector("#musicList");
+// ✅ Cover'daki gibi: RightPanel gelmeden register deneme
+function waitForRightPanel(cb){
+  const t0 = Date.now();
+  const T = setInterval(() => {
+    if (window.RightPanel && typeof window.RightPanel.register === "function"){
+      clearInterval(T);
+      cb();
+    } else if (Date.now() - t0 > 8000){
+      clearInterval(T);
+      console.warn("[panel.music] RightPanel not ready after 8s");
+    }
+  }, 50);
+}
 
-if (!already){
+let __searchQ = "";
+
+// ✅ Manager search buraya düşecek
+function onSearch(q){
+  __searchQ = String(q || "").trim().toLowerCase();
+  applyMusicSearchFilter();
+}
+
+// ✅ artık manager search’i kullanacağız
+function applyMusicSearchFilter(){
+  const q = (__searchQ || "").trim();
+  const cards = (listEl || document).querySelectorAll(".aivo-player-card");
+  cards.forEach(card => {
+    const text = (card.textContent || "").toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? "" : "none";
+  });
+}
+
+// ✅ Header/search tamamen manager’dan
+function getHeader(){
+  return {
+    title: "Üretilenler",
+    meta: "",
+    searchPlaceholder: "Müziklerde ara...",
+    searchEnabled: true,
+    resetSearch: false
+  };
+}
+
+function mount(contentEl){
+  // 🔥 Manager’ın content alanı burası: #rightPanelHost’a dokunma
+  hostEl = contentEl;
+  alive = true;
+
   hostEl.innerHTML = `
     <div class="rp-players">
       <div class="rp-playerCard">
-
-        <div class="rp-section-title">
-          Müziklerim
-        </div>
-
+        <div class="rp-section-title">Müziklerim</div>
         <div class="rp-body" id="musicList"></div>
-
       </div>
     </div>
   `;
-}
 
   listEl = hostEl.querySelector("#musicList");
-  listEl.className = "aivo-player-list";
+  if (listEl) listEl.className = "aivo-player-list";
 
   // bind events (tek sefer)
   if (!hostEl.__musicBound){
@@ -987,29 +1023,28 @@ if (!already){
       if (e.target.closest(".aivo-progress")) onProgressSeek(e);
     }, true);
   }
-  document.addEventListener("input", (e) => {
-    if (e.target && e.target.id === "musicOutputsSearch") {
-      applyMusicSearchFilter();
-    }
-  }, true);
+
   ensureAudio();
 
   // ✅ music panelde global mainAudio bar'ı kapat (PPE/player.js)
   const mainAudio = document.getElementById("mainAudio");
   if (mainAudio) {
-    mainAudio.pause?.();
+    try { mainAudio.pause?.(); } catch {}
     mainAudio.removeAttribute("src");
-    mainAudio.load?.();
+    try { mainAudio.load?.(); } catch {}
     mainAudio.style.display = "none";
   }
 
   render();
+  applyMusicSearchFilter();
 
   jobs.slice(0, 50).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
-
   window.addEventListener("aivo:job", onJob, true);
 
-  console.log("[panel.music] mounted OK (custom player + actions + 2x generate bridge)");
+  console.log("[panel.music] mounted OK (manager search + onSearch)");
+
+  // ✅ manager unmount zinciri: mount return function olmalı
+  return () => destroy();
 }
 
 function destroy(){
@@ -1022,27 +1057,12 @@ function destroy(){
   audioEl = null;
 }
 
-// ✅ RightPanel üst başlık + search (manager buradan çiziyor)
-function getHeader(){
-  return {
-    title: "Üretilenler",
-    meta: "",
-    searchPlaceholder: "Müziklerde ara..."
-  };
-}
-
 function register(){
-  if (window.RightPanel?.register){
-    // ✅ burası: getHeader'ı objeye ekledik
-    window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy });
-    return true;
-  }
-  return false;
+  window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy, onSearch });
 }
 
-if (!register()){
-  window.addEventListener("DOMContentLoaded", register, { once: true });
-}
+// ✅ RightPanel hazır olunca register et
+waitForRightPanel(register);
   /* =========================================================
      EXTRA: "Müzik Üret"e 1 kez basınca 2 job başlat (2 kart)
      - studio.music.generate.js yoksa bile çalışsın diye burada köprü var.
