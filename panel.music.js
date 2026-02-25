@@ -1006,7 +1006,6 @@ function mount(contentEl){
   hostEl.innerHTML = `
     <div class="rp-players">
       <div class="rp-playerCard">
-        <div class="rp-section-title">Müziklerim</div>
         <div class="rp-body" id="musicList"></div>
       </div>
     </div>
