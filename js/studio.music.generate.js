@@ -255,103 +255,46 @@ dispatchJob({
             __provider_job_id: provider_job_id,
             __internal_job_id: internal_job_id,
           });
-// =========================================================
-// 🔁 POLL STATUS
-// - audio.src gelir gelmez: "Ön izleme hazır" (preview)
-// - iş tamamen bitince: "Hazır" (ready)
-// - 2 şarkı varsa ikisini de ayrı ayrı poll'lar
+           // =========================================================
+// 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
 // =========================================================
 if (provider_job_id) {
-  const ids = (Array.isArray(provider_song_ids) && provider_song_ids.length)
-    ? provider_song_ids.map(String)
-    : [String(provider_job_id)];
-
-  const seenSrc = Object.create(null);   // { [id]: true }
-  const done = Object.create(null);      // { [id]: true }
-
   const pollInterval = setInterval(async () => {
-    for (const songId of ids) {
-      try {
-        const r = await fetch(
-          `/api/music/status?provider_job_id=${encodeURIComponent(songId)}`
-        );
-        const st = await r.json();
+    try {
+      const r = await fetch(
+        `/api/music/status?provider_job_id=${encodeURIComponent(provider_job_id)}`
+      );
+      const st = await r.json();
 
-        const src = st?.audio?.src || st?.mp3_url || st?.audio_url || "";
-        const state = String(st?.state || st?.status || "").toLowerCase();
+      console.log("[music.generate] poll status:", st);
 
-        // 1) ✅ PREVIEW: src ilk kez gelince hemen karta bas
-        if (src && !seenSrc[songId]) {
-          seenSrc[songId] = true;
+      if (st?.state === "ready" && st?.audio?.src) {
+        clearInterval(pollInterval);
 
-          dispatchJob({
-            type: "music",
-            kind: "music",
+        console.log("[music.generate] READY → dispatch UI update", st);
 
-            // kritik: kartları songId üzerinden ayırıyoruz
-            job_id: songId,
-            id: songId,
-
-            // provider bağları
-            provider_job_id: String(provider_job_id),
-            provider_song_id: String(songId),
-            provider_song_ids: ids,
-
-            // UI
-            status: "processing",
-            state: state || "processing",
-            title: "Müzik Üretimi",
-            __ui_state: "preview",     // kartta "Ön izleme hazır" gibi göstereceğiz
-            __audio_src: src,
-            audio: { src },
-            mp3_url: src,
-
-            internal_job_id: st?.internal_job_id || st?.internalJobId || null,
-            __provider_job: true,
-            __provider_job_id: String(provider_job_id),
-            __internal_job_id: st?.internal_job_id || st?.internalJobId || null,
-          });
-        }
-
-        // 2) ✅ READY: iş bitince "Hazır"a geçir
-        if (src && (state === "ready" || state === "completed" || state === "complete")) {
-          if (!done[songId]) {
-            done[songId] = true;
-
-            dispatchJob({
-              type: "music",
-              kind: "music",
-              job_id: songId,
-              id: songId,
-
-              provider_job_id: String(provider_job_id),
-              provider_song_id: String(songId),
-              provider_song_ids: ids,
-
-              status: "ready",
-              state: "ready",
-              title: "Müzik Üretimi",
-              __ui_state: "ready",
-              __audio_src: src,
-              audio: { src },
-              mp3_url: src,
-
-              output_id: st?.output_id || st?.outputId || null,
-              internal_job_id: st?.internal_job_id || st?.internalJobId || null,
-              __provider_job: true,
-              __provider_job_id: String(provider_job_id),
-              __internal_job_id: st?.internal_job_id || st?.internalJobId || null,
-            });
-          }
-        }
-      } catch (e) {
-        console.warn("[music.generate] status poll failed:", songId, e);
+        dispatchJob({
+          type: "music",
+          kind: "music",
+          job_id: provider_job_id,
+          id: provider_job_id,
+          status: "ready",
+          state: "ready",
+          title: "Müzik Üretimi",
+          __ui_state: "ready",
+          __audio_src: st.audio.src,
+          audio: { src: st.audio.src },
+          mp3_url: st.audio.src,
+          output_id: st.output_id,
+          internal_job_id: st.internal_job_id,
+          __provider_job: true,
+          __provider_job_id: provider_job_id,
+          __internal_job_id: st.internal_job_id,
+        });
       }
+    } catch (e) {
+      console.warn("[music.generate] status poll failed:", e);
     }
-
-    // tüm şarkılar done olduysa poll'u durdur
-    const allDone = ids.every((x) => done[String(x)]);
-    if (allDone) clearInterval(pollInterval);
   }, 1500);
 }
 
