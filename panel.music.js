@@ -990,7 +990,7 @@ function applyMusicSearchFilter(){
 // ✅ Header/search tamamen manager’dan
 function getHeader(){
   return {
-    title: "Üretilenler",
+   title: "Müziklerim",
     meta: "",
     searchPlaceholder: "Müziklerde ara...",
     searchEnabled: true,
