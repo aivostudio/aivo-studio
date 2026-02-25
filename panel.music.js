@@ -206,17 +206,24 @@ const isReady = (job.__ui_state === "ready") && !!job.__audio_src;
 
 const leftBtn = `
   <button class="aivo-player-btn"
- data-action="toggle-play"
+    data-action="toggle-play"
     aria-label="Oynat/Durdur"
     title="Oynat/Durdur"
     ${isReady ? "" : "disabled"}
     style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-    <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
+
+    <svg class="icon-play" viewBox="0 0 24 24" fill="none">
+      <path d="M8 5v14l11-7z" fill="currentColor"></path>
     </svg>
-    <svg class="icon-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
+
+    <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="display:none">
       <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
     </svg>
+
+    <span class="aivo-eq" aria-hidden="true">
+      <i></i><i></i><i></i>
+    </span>
+
   </button>`;
   // ✅ tag'i de src ile belirle
   const tags =
