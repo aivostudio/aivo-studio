@@ -963,16 +963,16 @@ function mount(){
   hostEl.innerHTML = `
   <div class="rp-players">
     <div class="rp-playerCard">
-      <div class="rp-title">Üretilenler</div>
-
-      <!-- ✅ Search (Atmo/Video gibi) -->
+   
+  <!-- ✅ Search (Atmo/Video gibi) -->
       <div class="rp-search">
-        <input
-          id="musicOutputsSearch"
-          type="search"
-          placeholder="Müziklerde ara..."
-          autocomplete="off"
-        />
+      <input
+  id="musicOutputsSearch"
+  class="rp-searchInput"
+  type="search"
+  placeholder="Müziklerde ara..."
+  autocomplete="off"
+/>
       </div>
 
       <div class="rp-body" id="musicList"></div>
