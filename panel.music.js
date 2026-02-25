@@ -960,25 +960,15 @@ function mount(){
   // ✅ idempotent: eğer shell zaten varsa reset atma
   const already = hostEl.querySelector("#musicList");
   if (!already){
+if (!already){
   hostEl.innerHTML = `
-  <div class="rp-players">
-    <div class="rp-playerCard">
-   
-  <!-- ✅ Search (Atmo/Video gibi) -->
-      <div class="rp-search">
-      <input
-  id="musicOutputsSearch"
-  class="rp-searchInput"
-  type="search"
-  placeholder="Müziklerde ara..."
-  autocomplete="off"
-/>
+    <div class="rp-players">
+      <div class="rp-playerCard">
+        <div class="rp-body" id="musicList"></div>
       </div>
-
-      <div class="rp-body" id="musicList"></div>
     </div>
-  </div>
-`;
+  `;
+}
   }
 
   listEl = hostEl.querySelector("#musicList");
