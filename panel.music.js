@@ -70,33 +70,43 @@
     return listEl;
   }
 
-  function ensureAudio(){
-    if (audioEl) return audioEl;
-    audioEl = document.getElementById("aivoAudio");
-    if (!audioEl){
-      audioEl = document.createElement("audio");
-      audioEl.id = "aivoAudio";
-      audioEl.preload = "metadata";
-      audioEl.crossOrigin = "anonymous";
-      audioEl.style.display = "none";
-      document.body.appendChild(audioEl);
-    }
-    // when ended -> reset play state
-    audioEl.onended = () => {
-      setCardPlaying(currentJobId, false);
-      currentJobId = null;
-      stopRaf();
-    };
-    audioEl.onpause = () => {
-      if (currentJobId) setCardPlaying(currentJobId, false);
-      stopRaf();
-    };
-    audioEl.onplay = () => {
-      if (currentJobId) setCardPlaying(currentJobId, true);
-      startRaf();
-    };
-    return audioEl;
+ function ensureAudio(){
+  if (audioEl) return audioEl;
+
+  audioEl = document.getElementById("aivoAudio");
+
+  if (!audioEl){
+    audioEl = document.createElement("audio");
+    audioEl.id = "aivoAudio";
+    audioEl.preload = "metadata";
+
+    // ✅ EQ için gerekli
+    audioEl.crossOrigin = "anonymous";
+    initEqEngine();   // 🔥 BURAYA EKLENDİ
+
+    audioEl.style.display = "none";
+    document.body.appendChild(audioEl);
   }
+
+  // when ended -> reset play state
+  audioEl.onended = () => {
+    setCardPlaying(currentJobId, false);
+    currentJobId = null;
+    stopRaf();
+  };
+
+  audioEl.onpause = () => {
+    if (currentJobId) setCardPlaying(currentJobId, false);
+    stopRaf();
+  };
+
+  audioEl.onplay = () => {
+    if (currentJobId) setCardPlaying(currentJobId, true);
+    startRaf();
+  };
+
+  return audioEl;
+}
 
   function loadJobs(){
     try {
@@ -220,9 +230,9 @@ const leftBtn = `
       <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
     </svg>
 
-    <span class="aivo-eq" aria-hidden="true">
-      <i></i><i></i><i></i>
-    </span>
+  <span class="aivo-eq" aria-hidden="true">
+  <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+</span>
 
   </button>`;
   // ✅ tag'i de src ile belirle
