@@ -67,8 +67,8 @@ const moodEl   = document.querySelector('#mood');
 
 const title  = titleEl  ? titleEl.value.trim()  : '';
 const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
-const vocal  = vocalEl  ? vocalEl.value         : '';
-const mood   = moodEl   ? moodEl.value          : '';
+const vocal = vocalEl ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "") : "";
+const mood  = moodEl  ? (moodEl.value  || moodEl.selectedOptions?.[0]?.textContent?.trim()  || "") : "";
 
  const payload = {
   prompt,
