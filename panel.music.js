@@ -1588,9 +1588,7 @@ waitForRightPanel(register);
 
         // Burada “tam kontrol” istiyorsun → varsayılan click’i kesiyoruz:
         // Eğer kesmek istemezsen şu iki satırı kaldır.
-        e.preventDefault();
-        e.stopPropagation();
-
+      
         btn.dataset.__aivo2xBusy = "1";
         const prevDisabled = btn.disabled;
         btn.disabled = true;
