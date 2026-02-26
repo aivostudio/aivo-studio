@@ -1,12 +1,12 @@
 // api/music/status.js
-// Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
-// - Accepts: job_id (internal job_...) OR provider_job_id/song_id OR ids=id1,id2
-// - If internal, reads Redis jobs/<internal>/job.json to get provider_song_ids
-// - Calls TopMediai: GET /v3/music/tasks?ids=id1,id2
-// - Normalizes MULTI-TRACK output to: outputs[] + backward compat audio.src
+// Vercel route: Direct TopMediai v3 tasks poll + normalize to outputs[]
+// + NEW: when READY -> write outputs/status into Neon jobs (DB source-of-truth)
+
+export const config = { runtime: "nodejs" };
 
 const { getRedis } = require("../_kv");
 const fetchFn = globalThis.fetch || require("node-fetch");
+const { neon } = require("@neondatabase/serverless");
 
 function safeJsonParse(s) {
   try {
@@ -29,8 +29,49 @@ function uniqStrings(arr) {
   return out;
 }
 
+function getConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    ""
+  );
+}
+
+// ✅ NEW: DB upsert (idempotent overwrite)
+async function writeMusicResultToDB({ provider_job_id, internal_job_id, outputs, status }) {
+  const conn = getConn();
+  if (!conn) return { ok: false, error: "missing_db_env" };
+
+  const sql = neon(conn);
+
+  // jobs row’unu meta içinden yakalıyoruz:
+  // - meta->>'provider_job_id' = '1338241'
+  // - veya meta->>'internal_job_id' = 'job_....' (sende var)
+  const outJson = Array.isArray(outputs) ? outputs : [];
+
+  const rows = await sql`
+    update jobs
+    set
+      status = ${String(status || "completed")},
+      outputs = ${JSON.stringify(outJson)}::jsonb,
+      updated_at = now()
+    where deleted_at is null
+      and app = 'music'
+      and (
+        meta->>'provider_job_id' = ${String(provider_job_id || "")}
+        or meta->>'internal_job_id' = ${String(internal_job_id || "")}
+      )
+    returning id
+  `;
+
+  const updated = rows && rows.length ? String(rows[0].id) : null;
+  return { ok: !!updated, job_id: updated };
+}
+
 module.exports = async (req, res) => {
-  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks-2026-02-23");
+  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks+dbwrite-2026-02-26");
 
   try {
     if (req.method !== "GET") {
@@ -43,7 +84,7 @@ module.exports = async (req, res) => {
         req.query.providerJobId ||
         req.query.song_id ||
         req.query.songId ||
-        req.query.ids || // opsiyonel: ids=id1,id2
+        req.query.ids || // ids=id1,id2
         ""
     ).trim();
 
@@ -53,127 +94,115 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
- // ---------------------------------------------------------
-// 1) Resolve song ids
-// ---------------------------------------------------------
-const isInternal = raw.startsWith("job_");
+    // ---------------------------------------------------------
+    // 1) Resolve song ids
+    // ---------------------------------------------------------
+    const isInternal = raw.startsWith("job_");
 
-// ✅ NEW: Neon jobs.id gibi UUID gelirse bunu da internal kabul et
-const looksLikeUUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+    // ✅ NEW: Neon jobs.id gibi UUID gelirse bunu da internal kabul et
+    const looksLikeUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
 
-let internal_job_id = isInternal || looksLikeUUID ? raw : null;
-let provider_job_id = !isInternal && !looksLikeUUID ? raw : null; // tek id gelirse
-let provider_song_ids = [];
+    let internal_job_id = isInternal || looksLikeUUID ? raw : null;
+    let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
+    let provider_song_ids = [];
 
-// küçük helper: internal id'den redis job obj bul (iki farklı key ihtimali için)
-async function readJobObjFromRedis(internalId) {
-  if (!internalId) return null;
+    async function readJobObjFromRedis(internalId) {
+      if (!internalId) return null;
 
-  // 1) canonical path
-  const k1 = `jobs/${internalId}/job.json`;
-  const t1 = await redis.get(k1);
-  const o1 = t1 ? safeJsonParse(t1) : null;
-  if (o1) return o1;
+      const k1 = `jobs/${internalId}/job.json`;
+      const t1 = await redis.get(k1);
+      const o1 = t1 ? safeJsonParse(t1) : null;
+      if (o1) return o1;
 
-  // 2) legacy / alternate key
-  const k2 = `job:${internalId}`;
-  const t2 = await redis.get(k2);
-  const o2 = t2 ? safeJsonParse(t2) : null;
-  if (o2) return o2;
+      const k2 = `job:${internalId}`;
+      const t2 = await redis.get(k2);
+      const o2 = t2 ? safeJsonParse(t2) : null;
+      if (o2) return o2;
 
-  return null;
-}
+      return null;
+    }
 
-if (isInternal || looksLikeUUID) {
-  // ✅ Redis’ten job meta oku (jobs/<internal>/job.json veya job:<internal>)
-  const jobObj = await readJobObjFromRedis(internal_job_id);
+    if (isInternal || looksLikeUUID) {
+      const jobObj = await readJobObjFromRedis(internal_job_id);
 
-  provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-  const idsRaw =
-    jobObj?.provider_song_ids ||
-    jobObj?.providerSongIds ||
-    jobObj?.song_ids ||
-    jobObj?.songIds ||
-    [];
-
-  provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-
-  // fallback: provider_song_ids yoksa provider_job_id’yi song id gibi kullan
-  if (provider_song_ids.length === 0 && provider_job_id) {
-    provider_song_ids = [String(provider_job_id)];
-  }
-} else {
-  // raw virgüllü geldiyse (ids)
-  if (raw.includes(",")) {
-    provider_song_ids = uniqStrings(raw.split(","));
-    provider_job_id = provider_song_ids[0] || provider_job_id;
-  } else {
-    // ✅ provider_job_id ile gelindiyse önce provider_map'ten internal + song_ids çöz
-    const providerMapKey = `provider_map:${raw}`;
-    const mapText = await redis.get(providerMapKey);
-    const mapObj = mapText ? safeJsonParse(mapText) : null;
-
-    if (mapObj?.internal_job_id) {
-      internal_job_id = String(mapObj.internal_job_id).trim() || null;
-
-      // 1) map'ten song_ids al
-      const mapIdsRaw =
-        mapObj?.provider_song_ids ||
-        mapObj?.providerSongIds ||
-        mapObj?.song_ids ||
-        mapObj?.songIds ||
+      const idsRaw =
+        jobObj?.provider_song_ids ||
+        jobObj?.providerSongIds ||
+        jobObj?.song_ids ||
+        jobObj?.songIds ||
         [];
 
-      provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
-      provider_job_id =
-        String(mapObj?.provider_job_id || "").trim() || String(raw);
+      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
 
-      // 2) job meta varsa, daha canonical olanı merge et
-      if (internal_job_id) {
-        const jobObj = await readJobObjFromRedis(internal_job_id);
-
-        const idsRaw =
-          jobObj?.provider_song_ids ||
-          jobObj?.providerSongIds ||
-          jobObj?.song_ids ||
-          jobObj?.songIds ||
-          [];
-
-        const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-        if (jobIds.length) {
-          provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
-        }
-
-        provider_job_id =
-          String(jobObj?.provider_job_id || "").trim() || provider_job_id;
-      }
-
-      // 3) fallback
       if (provider_song_ids.length === 0 && provider_job_id) {
         provider_song_ids = [String(provider_job_id)];
       }
     } else {
-      // tek id: song_id kabul et (eski davranış)
-      provider_song_ids = [String(raw)];
-      provider_job_id = String(raw);
+      if (raw.includes(",")) {
+        provider_song_ids = uniqStrings(raw.split(","));
+        provider_job_id = provider_song_ids[0] || provider_job_id;
+      } else {
+        const providerMapKey = `provider_map:${raw}`;
+        const mapText = await redis.get(providerMapKey);
+        const mapObj = mapText ? safeJsonParse(mapText) : null;
+
+        if (mapObj?.internal_job_id) {
+          internal_job_id = String(mapObj.internal_job_id).trim() || null;
+
+          const mapIdsRaw =
+            mapObj?.provider_song_ids ||
+            mapObj?.providerSongIds ||
+            mapObj?.song_ids ||
+            mapObj?.songIds ||
+            [];
+
+          provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
+          provider_job_id = String(mapObj?.provider_job_id || "").trim() || String(raw);
+
+          if (internal_job_id) {
+            const jobObj = await readJobObjFromRedis(internal_job_id);
+
+            const idsRaw =
+              jobObj?.provider_song_ids ||
+              jobObj?.providerSongIds ||
+              jobObj?.song_ids ||
+              jobObj?.songIds ||
+              [];
+
+            const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+            if (jobIds.length) {
+              provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
+            }
+
+            provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+          }
+
+          if (provider_song_ids.length === 0 && provider_job_id) {
+            provider_song_ids = [String(provider_job_id)];
+          }
+        } else {
+          provider_song_ids = [String(raw)];
+          provider_job_id = String(raw);
+        }
+      }
     }
-  }
-}
 
-provider_song_ids = uniqStrings(provider_song_ids);
+    provider_song_ids = uniqStrings(provider_song_ids);
 
-if (provider_song_ids.length === 0) {
-  return res.status(200).json({
-    ok: false,
-    error: "missing_provider_song_ids",
-    state: "processing",
-    status: "processing",
-    provider_job_id: provider_job_id || null,
-    internal_job_id: internal_job_id || null,
-  });
-}
+    if (provider_song_ids.length === 0) {
+      return res.status(200).json({
+        ok: false,
+        error: "missing_provider_song_ids",
+        state: "processing",
+        status: "processing",
+        provider_job_id: provider_job_id || null,
+        internal_job_id: internal_job_id || null,
+      });
+    }
+
     // ---------------------------------------------------------
     // 2) Call TopMediai v3 tasks
     // ---------------------------------------------------------
@@ -237,13 +266,10 @@ if (provider_song_ids.length === 0) {
         const st = Number(item?.status);
 
         const trackId = String(item?.song_id || item?.id || "").trim() || null;
-        const urlMp3 =
-          item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
-        // status==0 => ready (TopMediai’de)
         const ready = st === 0;
 
-        // fail kodları (geniş yakala)
         if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
           anyFail = true;
         }
@@ -257,6 +283,7 @@ if (provider_song_ids.length === 0) {
               provider: "topmediai",
               trackId: trackId || null,
               status: st,
+              app: "music",
             },
           });
         }
@@ -273,9 +300,9 @@ if (provider_song_ids.length === 0) {
       status: "processing",
       outputs,
       topmediai: top,
+      db: null, // ✅ NEW
     };
 
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa diye
     if (outputs.length) {
       data.audio = {
         src: outputs[0].url,
@@ -287,9 +314,20 @@ if (provider_song_ids.length === 0) {
       data.state = "failed";
       data.status = "failed";
     } else if (anyReady) {
-      // en az 1 parça hazırsa completed diyelim (UI “hazır” görsün)
       data.state = "completed";
       data.status = "completed";
+
+      // ✅ NEW: WRITE TO NEON so /api/jobs/list?app=music shows it in Chrome too
+      try {
+        data.db = await writeMusicResultToDB({
+          provider_job_id,
+          internal_job_id,
+          outputs,
+          status: "completed",
+        });
+      } catch (e) {
+        data.db = { ok: false, error: "db_write_failed", detail: String(e?.message || e) };
+      }
     } else {
       data.state = "processing";
       data.status = "processing";
