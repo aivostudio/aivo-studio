@@ -604,55 +604,71 @@
 
 /* ---------------- polling ---------------- */
 const POLL_BUSY = new Set();   // key: cardId
-const POLL_LAST = new Map();   // key: cardId -> ts
+const POLL_LAST = new Map();   // key: cardId -> ts(ms)
 
-// ✅ Worker origin (mutlaka https tam origin)
-const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
+// Worker origin: global varsa onu kullan, yoksa fallback
+const MUSIC_WORKER_ORIGIN =
+  (typeof WORKER_ORIGIN === "string" && WORKER_ORIGIN) ||
+  "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
 function pickAudioFromStatus(j){
-  // ✅ en kritik fix: topmediai.data[0].audio_url (TopMediaAI gerçek mp3 burada)
-  const tm = j?.topmediai?.data?.[0] || null;
+  // ✅ topmediai en kritik alanlar
+  const tm0 = j?.topmediai?.data?.[0] || null;
 
   const src =
-    (j?.audio?.src) ||
-    (j?.audio_src) ||
-    (j?.result?.audio?.src) ||
-    (j?.result?.src) ||
-    (j?.job?.audio?.src) ||
-    (tm?.audio_url) ||
+    j?.audio?.src ||
+    j?.audio_src ||
+    j?.result?.audio?.src ||
+    j?.result?.src ||
+    j?.job?.audio?.src ||
+    tm0?.audio_url ||
     "";
 
   const dur =
-    (j?.duration) ||
-    (j?.audio?.duration) ||
-    (j?.result?.duration) ||
-    (tm?.duration) ||
+    j?.duration ||
+    j?.audio?.duration ||
+    j?.result?.duration ||
+    tm0?.duration ||
     "";
 
-  // output_id bazı akışlarda hiç gelmeyebilir, o yüzden “opsiyonel”
   const outId =
-    (j?.audio?.output_id) ||
-    (j?.output_id) ||
-    (j?.result?.output_id) ||
-    (j?.job?.output_id) ||
+    j?.audio?.output_id ||
+    j?.output_id ||
+    j?.result?.output_id ||
+    j?.job?.output_id ||
+    "";
+
+  const title =
+    j?.title ||
+    tm0?.title ||
+    j?.job?.title ||
+    "";
+
+  const state =
+    j?.state ||
+    j?.status ||
+    j?.job?.status ||
     "";
 
   return {
     src: String(src || "").trim(),
     duration: dur,
-    output_id: String(outId || "").trim()
+    output_id: String(outId || "").trim(),
+    title: String(title || "").trim(),
+    state: String(state || "").trim(),
   };
 }
 
 async function poll(cardId){
   if (!alive || !cardId) return;
 
-  // throttle (card bazlı)
+  // throttle
   const now = Date.now();
   const last = POLL_LAST.get(cardId) || 0;
   if (now - last < 1200) return;
   POLL_LAST.set(cardId, now);
 
+  // busy guard
   if (POLL_BUSY.has(cardId)) return;
   POLL_BUSY.add(cardId);
 
@@ -661,15 +677,14 @@ async function poll(cardId){
 
     const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
     const providerSongId = String(existing.__provider_song_id || "").trim();
-    const providerBase   = String(cardId).split("::")[0];
+    const providerBase = String(cardId).split("::")[0];
 
-    // ✅ orig/rev ayrımı: her kart kendi provider_song_id’si ile poll eder
+    // ✅ orig/rev ayrımı: songId varsa onu kullan
     const q = encodeURIComponent(providerSongId || providerBase);
 
     const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
       cache: "no-store",
       credentials: "include",
-      headers: { "accept": "application/json" }
     });
 
     let j = null;
@@ -680,19 +695,18 @@ async function poll(cardId){
       return;
     }
 
-    // proxy/worker geçici hataları => retry
-    if (j?.ok === false && (j?.error === "proxy_error" || j?.error === "worker_non_json")) {
-      schedulePoll(cardId, 2000);
+    // backend “ok:false” döndürüyorsa retry
+    if (j.ok === false){
+      schedulePoll(cardId, 1800);
       return;
     }
 
-    const { src, duration, output_id } = pickAudioFromStatus(j);
+    const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
+    const st = uiState(state);
 
-    const st = uiState(j?.state || j?.status || j?.job?.status);
-
-    // ✅ Fallback playUrl: sadece src yoksa ve output_id varsa
+    // ✅ only if src yoksa worker play fallback dene
     const playUrl = (!src && providerBase && output_id)
-      ? `${WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
+      ? `${MUSIC_WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
       : "";
 
     const next = {
@@ -704,14 +718,7 @@ async function poll(cardId){
     };
 
     if (duration && Number(duration) > 0) next.__duration = String(duration);
-
-    // ✅ title overwrite koruması: boş title ile ezme
-    const incomingTitle = String(
-      j?.title ||
-      j?.topmediai?.data?.[0]?.title ||
-      ""
-    ).trim();
-    if (incomingTitle) next.title = incomingTitle;
+    if (title) next.title = title; // boş title ile ezmez
 
     upsertJob(next);
     render();
