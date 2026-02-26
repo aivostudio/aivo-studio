@@ -1376,7 +1376,63 @@ function mount(contentEl){
 
   render();
   applyMusicSearchFilter();
+// ✅ DB source-of-truth: ilk listeyi DB’den çek
+(async function hydrateMusicFromDB(){
+  try {
+    const r = await fetch("/api/jobs/list?app=music", {
+      method: "GET",
+      credentials: "include",
+      headers: { "accept": "application/json" },
+      cache: "no-store",
+    });
 
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !j.ok) {
+      console.warn("[panel.music] hydrate failed", r.status, j);
+      return;
+    }
+
+    const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
+    const incoming = (items || []).filter(x => String(x?.app || x?.meta?.app || "").trim() === "music");
+
+    // DB’den gelen job’ları “panel job shape”e basitçe geçir
+    for (const row of incoming) {
+      const baseId = String(row?.job_id || row?.id || "").trim();
+      if (!baseId) continue;
+
+      const songIds = Array.isArray(row?.provider_song_ids) ? row.provider_song_ids : [];
+      const providerJobId = String(row?.provider_job_id || "").trim();
+
+      const origId = `${baseId}::orig`;
+      const revId  = `${baseId}::rev1`;
+
+      const common = {
+        type: "music",
+        provider_job_id: providerJobId,
+        subtitle: "",
+        __ui_state: "processing",
+        __audio_src: "",
+        __real_job_id: null,
+        title: String(row?.meta?.title || row?.title || "").trim(),
+        lyrics: String(row?.meta?.lyrics || row?.lyrics || "").trim(),
+        prompt: String(row?.prompt || row?.meta?.prompt || "").trim(),
+        __createdAt: row?.created_at || row?.createdAt || "",
+      };
+
+      const songIdOrig = String(songIds[0] || providerJobId || "").trim();
+      const songIdRev  = String(songIds[1] || songIds[0] || providerJobId || "").trim();
+
+      upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
+      upsertJob({ ...common, job_id: revId,  id: revId,  __provider_song_id: songIdRev  });
+    }
+
+    render();
+
+  } catch (e) {
+    console.warn("[panel.music] hydrate exception", e);
+  }
+})();
+   
   jobs.slice(0, 50).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
   window.addEventListener("aivo:job", onJob, true);
 
