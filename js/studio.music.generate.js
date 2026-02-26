@@ -126,8 +126,10 @@ async function generateMusic(payload) {
         return;
       }
 
-      // ✅ başlık: UI’dan bir kez oku (READY update’te de aynı değeri kullanacağız)
-      const songTitle = (document.querySelector("#songName")?.value || "").trim();
+      // ✅ UI meta: kart başlığı hiçbir aşamada "Müzik Üretimi" ile ezilmeyecek
+      const uiTitle  = String(document.querySelector("#songName")?.value || "").trim();
+      const uiLyrics = String(document.querySelector("#lyrics")?.value || "").trim();
+      const uiPrompt = String(document.querySelector("#prompt")?.value || "").trim();
 
       window.__LAST_PROMPT__ = prompt;
 
@@ -220,12 +222,6 @@ async function generateMusic(payload) {
 
       toastSuccess("Müzik üretimi başladı 🎵");
 
-      // ✅ event title: önce UI’daki songTitle, yoksa result.title, yoksa fallback
-      const eventTitle =
-        songTitle ||
-        (result?.title || result?.data?.title || "") ||
-        "Müzik Üretimi";
-
       // 1) Panel event
       dispatchJob({
         type: jobType,
@@ -235,7 +231,11 @@ async function generateMusic(payload) {
         id: job_id,
 
         status: result?.state || result?.status || "queued",
-        title: eventTitle,
+
+        // ✅ UI meta forward (title boş olabilir, OK)
+        title: uiTitle,
+        lyrics: uiLyrics,
+        prompt: uiPrompt,
 
         __ui_state: "processing",
         __audio_src: "",
@@ -264,7 +264,12 @@ async function generateMusic(payload) {
             job_id: job_id,
             id: job_id,
             status: result?.state || result?.status || "queued",
-            title: eventTitle,
+
+            // ✅ UI meta forward (title boş olabilir, OK)
+            title: uiTitle,
+            lyrics: uiLyrics,
+            prompt: uiPrompt,
+
             createdAt: new Date().toISOString(),
             __provider_job: isProviderJob,
             __provider_job_id: provider_job_id,
@@ -296,7 +301,12 @@ async function generateMusic(payload) {
                     id: provider_job_id,
                     status: "ready",
                     state: "ready",
-                    title: eventTitle,
+
+                    // ✅ UI meta forward AGAIN (READY update title ezmesin)
+                    title: uiTitle,
+                    lyrics: uiLyrics,
+                    prompt: uiPrompt,
+
                     __ui_state: "ready",
                     __audio_src: st.audio.src,
                     audio: { src: st.audio.src },
