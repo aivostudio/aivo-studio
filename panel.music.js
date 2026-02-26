@@ -14,6 +14,105 @@
   const PANEL_KEY = "music";
   const HOST_SEL  = "#rightPanelHost";
   const LS_KEY    = "aivo.music.jobs.v3";
+   // ✅ DB source-of-truth controller (Atmo modeli)
+let dbCtrl = null;
+
+function norm(s){
+  return String(s || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("_", " ")
+    .replace(/\s+/g, " ");
+}
+function isMusicApp(x){
+  const a = norm(x);
+  return a === "music" || a.includes("music");
+}
+function toMs(v){
+  if (v == null) return 0;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  const s = String(v).trim();
+  if (/^\d{10,13}$/.test(s)) {
+    const n = Number(s);
+    if (Number.isFinite(n)) return n;
+  }
+  // Safari "YYYY-MM-DD HH:mm:ss" fix
+  if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
+    const iso = s.replace(" ", "T") + "Z";
+    const tIso = Date.parse(iso);
+    if (Number.isFinite(tIso)) return tIso;
+  }
+  const t = Date.parse(s);
+  return Number.isFinite(t) ? t : 0;
+}
+
+// DB row/job -> panel jobs (2 kart: orig + rev1)
+function mapDbJobToCards(j){
+  const meta = j?.meta || {};
+  const appGuess = String(j?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
+  if (appGuess && !isMusicApp(appGuess)) return [];
+
+  const provider_job_id = String(
+    meta?.provider_job_id ||
+    meta?.providerJobId ||
+    j?.provider_job_id ||
+    j?.providerJobId ||
+    ""
+  ).trim();
+
+  // base id: müzikte kartları provider_job_id bazlı tutuyoruz
+  const baseId = provider_job_id || String(j?.job_id || j?.id || "").trim();
+  if (!baseId) return [];
+
+  const songIds = Array.isArray(meta?.provider_song_ids)
+    ? meta.provider_song_ids
+    : (Array.isArray(j?.provider_song_ids) ? j.provider_song_ids : []);
+
+  const songIdOrig = String(songIds[0] || provider_job_id || baseId).trim();
+  const songIdRev  = String(songIds[1] || songIds[0] || provider_job_id || baseId).trim();
+
+  const createdMs =
+    toMs(j?.created_at) || toMs(j?.createdAt) || toMs(meta?.created_at) || Date.now();
+
+  const rawStatus = norm(j?.db_status || j?.status || j?.state || "");
+  const ui =
+    ["ready","done","completed","success","succeeded"].includes(rawStatus) ? "ready"
+    : ["error","failed","fail"].includes(rawStatus) ? "error"
+    : "processing";
+
+  // panel’de title/lyrics/prompt zaten derive ediliyor; meta’ya koymak yeterli
+  const baseCommon = {
+    type: "music",
+    provider_job_id: provider_job_id || baseId,
+    __real_job_id: String(meta?.internal_job_id || meta?.job_id || j?.job_id || "").trim() || null,
+    __ui_state: ui,
+    __audio_src: "", // ✅ mp3 varsa bile music’te doğru kaynak provider_song_id ile poll’den gelecek
+    __createdAt: (j?.created_at || meta?.created_at || ""),
+    created_at: (j?.created_at || meta?.created_at || ""),
+    createdAt: createdMs,
+    title: String(meta?.title || "").trim(),
+    lyrics: String(meta?.lyrics || "").trim(),
+    prompt: String(meta?.prompt || j?.prompt || "").trim(),
+    subtitle: String(meta?.subtitle || "").trim(),
+    lang: String(meta?.lang || meta?.language || "").trim(),
+    __duration: String(meta?.duration || "").trim(),
+  };
+
+  return [
+    {
+      ...baseCommon,
+      job_id: `${baseId}::orig`,
+      id: `${baseId}::orig`,
+      __provider_song_id: songIdOrig,
+    },
+    {
+      ...baseCommon,
+      job_id: `${baseId}::rev1`,
+      id: `${baseId}::rev1`,
+      __provider_song_id: songIdRev,
+    },
+  ];
+}
 
   let hostEl = null;
   let listEl = null;
@@ -716,6 +815,82 @@ if (!src){
   }
 
   const A = ensureAudio();
+     // ✅ DB source-of-truth (Atmo modeli)
+  if (window.DBJobs && typeof window.DBJobs.create === "function") {
+    try { dbCtrl?.destroy?.(); } catch {}
+    dbCtrl = window.DBJobs.create({
+      app: "music",
+      debug: false,
+      pollIntervalMs: 4000,
+      hydrateEveryMs: 15000,
+
+      acceptJob: (job) => {
+        const a = String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
+        return !a || isMusicApp(a);
+      },
+
+      acceptOutput: (o) => {
+        // müzikte audio çıktıları
+        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
+        return !t || t === "audio";
+      },
+
+      onChange: (items) => {
+        if (!alive) return;
+
+        const safe = Array.isArray(items) ? items : [];
+
+        // 1) DB -> cards
+        const dbCards = [];
+        for (const j of safe) {
+          const cards = mapDbJobToCards(j);
+          if (cards && cards.length) dbCards.push(...cards);
+        }
+
+        // 2) Merge: DB truth + optimistic (mevcut jobs’ta DB’de olmayanlar kalsın)
+        const byId = new Map();
+        for (const c of dbCards) {
+          const id = String(c?.job_id || c?.id || "").trim();
+          if (!id) continue;
+          byId.set(id, c);
+        }
+
+        // mevcut jobs: DB’de yoksa tut (job_id bazlı)
+        for (const old of (jobs || [])) {
+          const oid = String(old?.job_id || old?.id || "").trim();
+          if (!oid) continue;
+          if (!byId.has(oid)) byId.set(oid, old);
+        }
+
+        // 3) newest base first (baseId sırası + stable)
+        const merged = Array.from(byId.values()).sort((a, b) => {
+          const aid = String(a?.job_id || a?.id || "");
+          const bid = String(b?.job_id || b?.id || "");
+          const abase = aid.split("::")[0];
+          const bbase = bid.split("::")[0];
+
+          const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
+          const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
+
+          if (tb !== ta) return tb - ta;
+          if (bbase !== abase) return bbase.localeCompare(abase);
+
+          const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
+          const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
+          return ar - br;
+        });
+
+        jobs = merged;
+        // ✅ DB truth: LocalStorage cache’i zorlamıyoruz (istersen sonra tamamen kaldırırız)
+        render();
+
+        // DB’den gelen kartlar için poll başlat (orig/rev ayrı)
+        merged.slice(0, 50).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
+      },
+    });
+  } else {
+    console.warn("[panel.music] DBJobs yok; music DB source-of-truth devre dışı.");
+  }
 
   // başka job çalıyorsa durdur
   if (currentJobId && currentJobId !== jobId){
@@ -1220,7 +1395,8 @@ function destroy(){
   currentJobId = null;
   audioEl = null;
 }
-
+  try { dbCtrl?.destroy?.(); } catch {}
+  dbCtrl = null;
 function register(){
   window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy, onSearch });
 }
