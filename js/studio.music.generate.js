@@ -254,21 +254,35 @@ dispatchJob({
 
 
 
-      // 2) AIVO_JOBS store (varsa)
-      try {
-        if (window.AIVO_JOBS?.upsert) {
-          window.AIVO_JOBS.upsert({
-            type: jobType,
-            kind: jobType,
-            job_id: job_id,
-            id: job_id,
-            status: result?.state || result?.status || "queued",
-            title: "Müzik Üretimi",
-            createdAt: new Date().toISOString(),
-            __provider_job: isProviderJob,
-            __provider_job_id: provider_job_id,
-            __internal_job_id: internal_job_id,
-          });
+     // 2) AIVO_JOBS store (varsa)
+try {
+  if (window.AIVO_JOBS?.upsert) {
+    // ✅ UI formundan anlık değerleri al (READY update’lerde overwrite olmasın)
+    const _title  = (document.querySelector("#title")?.value || "").trim();
+    const _lyrics = (document.querySelector("#lyrics")?.value || "").trim();
+    const _prompt = (window.__LAST_PROMPT__ || (document.querySelector("#prompt")?.value || "")).trim();
+
+    window.AIVO_JOBS.upsert({
+      type: jobType,
+      kind: jobType,
+      job_id: job_id,
+      id: job_id,
+      status: result?.state || result?.status || "queued",
+
+      // ⬇️ ESKİ: title: "Müzik Üretimi",
+      title: _title || "Müzik Üretimi",
+      prompt: _prompt,
+      lyrics: _lyrics,
+
+      createdAt: new Date().toISOString(),
+      __provider_job: isProviderJob,
+      __provider_job_id: provider_job_id,
+      __internal_job_id: internal_job_id,
+    });
+  }
+} catch(e) {
+  console.warn("[music.generate] AIVO_JOBS.upsert failed:", e);
+}
            // =========================================================
 // 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
 // =========================================================
