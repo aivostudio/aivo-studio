@@ -240,65 +240,67 @@ function setEqBars(L, M, H){
     bars[i].style.transform = `scaleY(${0.15 + s*1.15})`;
   }
 }
-  function loadJobs(){
-    try {
-      const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
+
+/* ---------------- jobs storage ---------------- */
+function loadJobs(){
+  try {
+    const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+
+function saveJobs(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 200))); } catch {}
+}
+
+function upsertJob(job){
+  const id = job?.job_id || job?.id;
+  if (!id) return;
+
+  const i = jobs.findIndex(j => (j.job_id || j.id) === id);
+  if (i >= 0) jobs[i] = { ...jobs[i], ...job };
+  else jobs.unshift(job);
+
+  saveJobs();
+}
+
+function removeJob(jobId){
+  jobId = safeId(jobId);
+  if (!jobId) return;
+
+  // stop if playing
+  if (currentJobId === jobId && audioEl){
+    try { audioEl.pause(); } catch {}
+    setCardPlaying(jobId, false);
+    currentJobId = null;
+    stopRaf();
   }
 
-  function saveJobs(){
-    try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 200))); } catch {}
-  }
+  clearPoll(jobId);
 
-  function upsertJob(job){
-    const id = job?.job_id || job?.id;
-    if (!id) return;
+  jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
+  saveJobs();
+  render();
+}
 
-    const i = jobs.findIndex(j => (j.job_id || j.id) === id);
-    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
-    else jobs.unshift(job);
+function uiState(status){
+  const s = String(status||"").toLowerCase();
+  if (["ready","done","completed","success"].includes(s)) return "ready";
+  if (["error","failed"].includes(s)) return "error";
+  return "processing";
+}
 
-    saveJobs();
-  }
+function fmtTime(sec){
+  sec = Number(sec || 0);
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
 
-  function removeJob(jobId){
-    jobId = safeId(jobId);
-    if (!jobId) return;
-
-    // stop if playing
-    if (currentJobId === jobId && audioEl){
-      try { audioEl.pause(); } catch {}
-      setCardPlaying(jobId, false);
-      currentJobId = null;
-      stopRaf();
-    }
-
-    clearPoll(jobId);
-
-    jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
-    saveJobs();
-    render();
-  }
-
-  function uiState(status){
-    const s = String(status||"").toLowerCase();
-    if (["ready","done","completed","success"].includes(s)) return "ready";
-    if (["error","failed"].includes(s)) return "error";
-    return "processing";
-  }
-
-  function fmtTime(sec){
-    sec = Number(sec || 0);
-    if (!isFinite(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2,"0")}`;
-  }
-
-  function uid(prefix="tmp"){
-    return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  }
+function uid(prefix="tmp"){
+  return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
 
   /* ---------------- polling timers ---------------- */
   if (!window.__AIVO_MUSIC_POLL_TIMERS__) window.__AIVO_MUSIC_POLL_TIMERS__ = new Map();
@@ -333,7 +335,7 @@ function renderCard(job){
   job.__loading_startedAt = Date.now();
 }
 
-  const title = job.title || "Müzik Üretimi";
+ const title = (String(job?.title || "").trim()) || (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") || (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "") || "Müzik Üretimi";
   const sub   = job.subtitle || "";
   const lang  = job.lang || "Türkçe";
   const dur   = job.duration || job.__duration || "";
@@ -368,10 +370,10 @@ const leftBtn = `
 
   </button>`;
   // ✅ tag'i de src ile belirle
-  const tags =
-    isReady ? `${tagReady}<span class="aivo-tag">${esc(lang)}</span>` :
-    st === "error" ? `${tagErr}` :
-    `${tagProc}`;
+const tags =
+  isReady ? `${tagReady}` :
+  st === "error" ? `${tagErr}` :
+  `${tagProc}`;
 
   const metaLeft = dur ? esc(dur) : "0:00";
   const metaRight = date ? esc(date) : "";
