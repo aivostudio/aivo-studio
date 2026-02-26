@@ -1085,9 +1085,8 @@ function onJob(e){
   };
 
   // ✅ title: payload.title varsa onu kullan, yoksa fallback
-  const safeTitle =
-    (String(payload.title || "").trim()) || "Müzik Üretimi";
-
+  // YENİ  (fallback YOK)
+const safeTitle = String(payload.title || "").trim();
   // ORIGINAL
   upsertJob({
     ...common,
