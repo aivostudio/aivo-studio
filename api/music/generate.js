@@ -36,6 +36,12 @@ function getOrigin(req) {
   return host ? `${proto}://${host}` : "https://aivo.tr";
 }
 
+function isUUID(x) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    String(x || "").trim()
+  );
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === "OPTIONS") return res.status(204).end();
@@ -46,54 +52,51 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
     const body = req.body || {};
-    const prompt = String(body.prompt || body.text || "").trim();
 
+    const prompt = String(body.prompt || body.text || "").trim();
     if (!prompt) {
       return safeJson(res, { ok: false, error: "missing_prompt" }, 400);
     }
 
-    // ✅ internal id bizde kalsın (UI + KV mapping için)
-    const internal_job_id = `job_${uuidLike()}`;
+    // ✅ DB source-of-truth: UI DB job_id (uuid) gönderiyorsa onu kullan.
+    // (Göndermiyorsa legacy job_x ile devam eder.)
+    const inputJobId = String(body.job_id || body.jobId || "").trim();
+    const internal_job_id = isUUID(inputJobId) ? inputJobId : `job_${uuidLike()}`;
 
     // ✅ Worker'ı BYPASS: TopMediai create'i direkt Vercel üzerinden çağır
     const origin = getOrigin(req);
     const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
+    // UI'dan gelen ek alanlar (title/lyrics/vocal/mood/mode)
+    const title = String(body.title || "").trim();
+    const lyrics = String(body.lyrics || "").trim();
+    const vocal = String(body.vocal || "").trim();
+    const mood = String(body.mood || "").trim();
+
+    // mode UI'dan gelebilir; yoksa vokale göre çıkar
+    let mode = String(body.mode || "").trim();
+    if (!mode) {
+      mode = vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals";
+    }
+
+    // Provider'a gidecek payload
+    const providerPayload = { prompt };
+    if (title) providerPayload.title = title;
+    if (lyrics) providerPayload.lyrics = lyrics;
+    if (mode) providerPayload.mode = mode;
+    if (vocal) providerPayload.vocal = vocal;
+    if (mood) providerPayload.mood = mood;
+
     let pr;
     try {
-     // UI'dan gelen ek alanlar (title/lyrics/vocal/mood/mode)
-const title  = String(body.title  || "").trim();
-const lyrics = String(body.lyrics || "").trim();
-const vocal  = String(body.vocal  || "").trim();
-const mood   = String(body.mood   || "").trim();
-
-// mode UI'dan gelebilir; yoksa vokale göre çıkar
-let mode = String(body.mode || "").trim();
-if (!mode) {
-  // vokal "Enstrümantal (Vokalsiz)" ise instrumental, değilse vocals
-  mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
-}
-
-// Provider'a gidecek payload (geriye uyumlu: prompt her zaman var)
-// Not: lyrics/title boşsa hiç eklemiyoruz (provider tarafında auto davranış bozulmasın)
-const providerPayload = { prompt };
-
-if (title) providerPayload.title = title;
-if (lyrics) providerPayload.lyrics = lyrics;
-
-// bazı provider wrapper'lar mode/vocal/mood kabul ediyorsa iletelim (boşsa eklemiyoruz)
-if (mode) providerPayload.mode = mode;
-if (vocal) providerPayload.vocal = vocal;
-if (mood) providerPayload.mood = mood;
-
-pr = await fetch(providerCreateUrl, {
-  method: "POST",
-  headers: {
-    "content-type": "application/json",
-    accept: "application/json",
-  },
-  body: JSON.stringify(providerPayload),
-});
+      pr = await fetch(providerCreateUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify(providerPayload),
+      });
     } catch (e) {
       return safeJson(
         res,
@@ -128,7 +131,10 @@ pr = await fetch(providerCreateUrl, {
     }
 
     // ✅ provider_job_id artık Vercel provider endpoint'ten gelmeli
-    const provider_job_id = String(pjson.provider_job_id || pjson.job_id || pjson.id || "").trim();
+    const provider_job_id = String(
+      pjson.provider_job_id || pjson.job_id || pjson.id || ""
+    ).trim();
+
     if (!provider_job_id) {
       return safeJson(
         res,
@@ -155,6 +161,50 @@ pr = await fetch(providerCreateUrl, {
     const provider_song_ids = Array.isArray(provider_song_ids_raw)
       ? provider_song_ids_raw.map((x) => String(x)).filter(Boolean)
       : [];
+
+    // ---------------------------------------------------------
+    // ✅ DB UPDATE (Music'i DB source-of-truth yapar)
+    // internal_job_id DB uuid ise jobs.id satırını update eder.
+    // ---------------------------------------------------------
+    try {
+      const conn =
+        process.env.POSTGRES_URL_NON_POOLING ||
+        process.env.DATABASE_URL ||
+        process.env.POSTGRES_URL ||
+        process.env.DATABASE_URL_UNPOOLED;
+
+      if (conn && isUUID(internal_job_id)) {
+        const { neon } = require("@neondatabase/serverless");
+        const sql = neon(conn);
+
+        const metaPatch = {
+          provider: "topmediai",
+          prompt,
+          provider_job_id,
+          provider_song_ids: provider_song_ids.length ? provider_song_ids : null,
+          title: title || null,
+          lyrics: lyrics || null,
+          vocal: vocal || null,
+          mood: mood || null,
+          mode: mode || null,
+        };
+
+        await sql`
+          update jobs
+          set
+            provider = ${"topmediai"},
+            prompt = ${prompt},
+            status = ${"processing"},
+            meta = jsonb_strip_nulls(coalesce(meta, '{}'::jsonb) || ${JSON.stringify(metaPatch)}::jsonb),
+            updated_at = now()
+          where id = ${internal_job_id}::uuid
+            and app = 'music'
+            and deleted_at is null
+        `;
+      }
+    } catch (e) {
+      console.error("[music/generate] DB update failed:", e);
+    }
 
     // KV keys
     const mapKey = `providers/music/${provider_job_id}.json`;
