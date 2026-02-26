@@ -327,15 +327,19 @@ function uid(prefix="tmp"){
     TMAP.clear();
   }
 
- /* ---------------- UI render ---------------- */
+/* ---------------- UI render ---------------- */
 function renderCard(job){
   const jobId = job.job_id || job.id;
   const st = job.__ui_state || "processing";
-   if (st === "processing" && !job.__loading_startedAt) {
-  job.__loading_startedAt = Date.now();
-}
+  if (st === "processing" && !job.__loading_startedAt) {
+    job.__loading_startedAt = Date.now();
+  }
 
- const title = (String(job?.title || "").trim()) || (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") || (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "") || "Müzik Üretimi";
+  const title =
+    (String(job?.title || "").trim()) ||
+    (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
+    (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
+
   const sub   = job.subtitle || "";
   const lang  = job.lang || "Türkçe";
   const dur   = job.duration || job.__duration || "";
