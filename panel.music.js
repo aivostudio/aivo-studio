@@ -321,53 +321,61 @@
     TMAP.clear();
   }
 
-  /* ---------------- UI render ---------------- */
-  function renderCard(job){
-    const jobId = job.job_id || job.id;
-    const st = job.__ui_state || "processing";
+/* ---------------- UI render ---------------- */
+function renderCard(job){
+  const jobId = job.job_id || job.id;
+  const st = job.__ui_state || "processing";
 
-    const title =
-      (String(job?.title || "").trim()) ||
-      (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
-      (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
+  const title =
+    (String(job?.title || "").trim()) ||
+    (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
+    (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
 
-    const sub   = job.subtitle || "";
-    const dur   = job.duration || job.__duration || "";
-    const date  = job.created_at || job.createdAt || job.__createdAt || "";
+  const sub   = job.subtitle || "";
+  const dur   = job.duration || job.__duration || "";
+  const date  = job.created_at || job.createdAt || job.__createdAt || "";
 
-    const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-    const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
-    const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
+  const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
+  const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
+  const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
-    const isReady = (st === "ready") && !!job.__audio_src;
-    const tags =
-      isReady ? `${tagReady}` :
-      st === "error" ? `${tagErr}` :
-      `${tagProc}`;
+  const isReady = (st === "ready") && !!job.__audio_src;
 
-    const leftBtn = `
-      <button class="aivo-player-btn"
-        data-action="toggle-play"
-        aria-label="Oynat/Durdur"
-        title="Oynat/Durdur"
-        ${isReady ? "" : "disabled"}
-        style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-        <svg class="icon-play" viewBox="0 0 24 24" fill="none">
-          <path d="M8 5v14l11-7z" fill="currentColor"></path>
-        </svg>
-        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="display:none">
-          <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-        </svg>
-        <span class="aivo-eq" aria-hidden="true">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-        </span>
-      </button>`;
+  // ✅ IMPORTANT: render sırasında "şu an çalan kart" state'i korunur
+  const isPlayingNow =
+    !!isReady &&
+    String(currentJobId || "") === String(jobId || "") &&
+    !!audioEl &&
+    !audioEl.paused;
 
-    const metaLeft = dur ? esc(dur) : "0:00";
-    const metaRight = date ? esc(date) : "";
+  const tags =
+    isReady ? `${tagReady}` :
+    st === "error" ? `${tagErr}` :
+    `${tagProc}`;
 
-    return `
-<div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"}"
+  const leftBtn = `
+    <button class="aivo-player-btn"
+      data-action="toggle-play"
+      aria-label="Oynat/Durdur"
+      title="Oynat/Durdur"
+      ${isReady ? "" : "disabled"}
+      style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
+      <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "display:none" : ""}">
+        <path d="M8 5v14l11-7z" fill="currentColor"></path>
+      </svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "" : "display:none"}">
+        <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
+      </svg>
+      <span class="aivo-eq" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </span>
+    </button>`;
+
+  const metaLeft = dur ? esc(dur) : "0:00";
+  const metaRight = date ? esc(date) : "";
+
+  return `
+<div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
   data-src="${esc(job.__audio_src || "")}"
   data-provider-song-id="${esc(job.__provider_song_id || "")}">
@@ -401,7 +409,7 @@
     <button class="aivo-action is-danger" data-action="delete" title="Müziği Sil" aria-label="Müziği Sil">🗑</button>
   </div>
 </div>`;
-  }
+}
 
   function applyMusicSearchFilter(){
     const q = String(__searchQ || "").trim();
