@@ -1,6 +1,9 @@
 // api/music/status.js
 // Vercel route: Direct TopMediai v3 tasks poll + normalize to outputs[]
 // + NEW: when READY -> write outputs/status into Neon jobs (DB source-of-truth)
+// FIX(2026-02-26): UUID internal_job_id resolve MUST work even if Redis miss.
+//   - If job_id looks like UUID: try Redis, if not found -> read from Neon jobs(id) and pull meta.provider_job_id + meta.provider_song_ids
+//   - DB write: match by jobs.id (internal_job_id) OR meta provider keys
 
 export const config = { runtime: "nodejs" };
 
@@ -39,17 +42,83 @@ function getConn() {
   );
 }
 
-// ✅ NEW: DB upsert (idempotent overwrite)
+function looksLikeUUID(x) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x || "").trim());
+}
+
+/* ---------------- DB helpers ---------------- */
+
+async function readJobMetaFromDB(internalId) {
+  const conn = getConn();
+  if (!conn) return null;
+
+  const sql = neon(conn);
+
+  // We only need meta (and optionally outputs) to resolve provider ids.
+  // jobs.id is UUID (Neon), app=music guard keeps it safe.
+  const rows = await sql`
+    select id, app, status, meta, outputs
+    from jobs
+    where deleted_at is null
+      and app = 'music'
+      and id = ${String(internalId)}
+    limit 1
+  `;
+
+  if (!rows || !rows.length) return null;
+
+  const row = rows[0] || {};
+  const meta = row.meta || {};
+  const outputs = row.outputs || [];
+
+  // provider_song_ids could be in meta OR infer from outputs meta.trackId
+  const provider_job_id = String(
+    meta.provider_job_id ||
+      meta.providerJobId ||
+      meta.song_id ||
+      meta.songId ||
+      ""
+  ).trim();
+
+  const idsRaw =
+    meta.provider_song_ids ||
+    meta.providerSongIds ||
+    meta.song_ids ||
+    meta.songIds ||
+    [];
+
+  let provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+
+  if (!provider_song_ids.length && Array.isArray(outputs) && outputs.length) {
+    // try infer from outputs[].meta.trackId
+    const inferred = [];
+    for (const o of outputs) {
+      const tid = o?.meta?.trackId || o?.meta?.track_id || null;
+      if (tid != null) inferred.push(String(tid));
+    }
+    provider_song_ids = uniqStrings(inferred);
+  }
+
+  return {
+    id: String(row.id || internalId),
+    provider_job_id: provider_job_id || null,
+    provider_song_ids,
+    meta,
+    outputs,
+    status: row.status || null,
+  };
+}
+
+// ✅ DB upsert (idempotent overwrite)
 async function writeMusicResultToDB({ provider_job_id, internal_job_id, outputs, status }) {
   const conn = getConn();
   if (!conn) return { ok: false, error: "missing_db_env" };
 
   const sql = neon(conn);
 
-  // jobs row’unu meta içinden yakalıyoruz:
-  // - meta->>'provider_job_id' = '1338241'
-  // - veya meta->>'internal_job_id' = 'job_....' (sende var)
   const outJson = Array.isArray(outputs) ? outputs : [];
+  const internalId = String(internal_job_id || "").trim();
+  const providerId = String(provider_job_id || "").trim();
 
   const rows = await sql`
     update jobs
@@ -60,8 +129,10 @@ async function writeMusicResultToDB({ provider_job_id, internal_job_id, outputs,
     where deleted_at is null
       and app = 'music'
       and (
-        meta->>'provider_job_id' = ${String(provider_job_id || "")}
-        or meta->>'internal_job_id' = ${String(internal_job_id || "")}
+        -- ✅ FIX: if internal_job_id is a UUID, match jobs.id directly
+        id = ${internalId}
+        or meta->>'provider_job_id' = ${providerId}
+        or meta->>'internal_job_id' = ${internalId}
       )
     returning id
   `;
@@ -70,8 +141,10 @@ async function writeMusicResultToDB({ provider_job_id, internal_job_id, outputs,
   return { ok: !!updated, job_id: updated };
 }
 
+/* ---------------- handler ---------------- */
+
 module.exports = async (req, res) => {
-  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks+dbwrite-2026-02-26");
+  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks+dbwrite+uuiddbresolve-2026-02-26");
 
   try {
     if (req.method !== "GET") {
@@ -98,13 +171,10 @@ module.exports = async (req, res) => {
     // 1) Resolve song ids
     // ---------------------------------------------------------
     const isInternal = raw.startsWith("job_");
+    const isUuid = looksLikeUUID(raw);
 
-    // ✅ NEW: Neon jobs.id gibi UUID gelirse bunu da internal kabul et
-    const looksLikeUUID =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
-
-    let internal_job_id = isInternal || looksLikeUUID ? raw : null;
-    let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
+    let internal_job_id = (isInternal || isUuid) ? raw : null;
+    let provider_job_id = (!isInternal && !isUuid) ? raw : null;
     let provider_song_ids = [];
 
     async function readJobObjFromRedis(internalId) {
@@ -123,28 +193,44 @@ module.exports = async (req, res) => {
       return null;
     }
 
-    if (isInternal || looksLikeUUID) {
+    if (isInternal || isUuid) {
+      // 1A) try Redis first
       const jobObj = await readJobObjFromRedis(internal_job_id);
 
-      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+      if (jobObj) {
+        provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-      const idsRaw =
-        jobObj?.provider_song_ids ||
-        jobObj?.providerSongIds ||
-        jobObj?.song_ids ||
-        jobObj?.songIds ||
-        [];
+        const idsRaw =
+          jobObj?.provider_song_ids ||
+          jobObj?.providerSongIds ||
+          jobObj?.song_ids ||
+          jobObj?.songIds ||
+          [];
 
-      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+        provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
 
-      if (provider_song_ids.length === 0 && provider_job_id) {
-        provider_song_ids = [String(provider_job_id)];
+        if (provider_song_ids.length === 0 && provider_job_id) {
+          provider_song_ids = [String(provider_job_id)];
+        }
+      } else if (isUuid) {
+        // ✅ FIX: if Redis miss and UUID -> resolve from Neon DB by jobs.id
+        const dbRow = await readJobMetaFromDB(internal_job_id);
+        if (dbRow) {
+          provider_job_id = String(dbRow.provider_job_id || "").trim() || provider_job_id;
+          provider_song_ids = Array.isArray(dbRow.provider_song_ids) ? uniqStrings(dbRow.provider_song_ids) : [];
+
+          if (provider_song_ids.length === 0 && provider_job_id) {
+            provider_song_ids = [String(provider_job_id)];
+          }
+        }
       }
     } else {
+      // raw is provider-ish
       if (raw.includes(",")) {
         provider_song_ids = uniqStrings(raw.split(","));
         provider_job_id = provider_song_ids[0] || provider_job_id;
       } else {
+        // provider_map: provider_job_id -> internal_job_id + ids
         const providerMapKey = `provider_map:${raw}`;
         const mapText = await redis.get(providerMapKey);
         const mapObj = mapText ? safeJsonParse(mapText) : null;
@@ -162,22 +248,31 @@ module.exports = async (req, res) => {
           provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
           provider_job_id = String(mapObj?.provider_job_id || "").trim() || String(raw);
 
+          // try enrich from redis internal job object
           if (internal_job_id) {
             const jobObj = await readJobObjFromRedis(internal_job_id);
 
-            const idsRaw =
-              jobObj?.provider_song_ids ||
-              jobObj?.providerSongIds ||
-              jobObj?.song_ids ||
-              jobObj?.songIds ||
-              [];
+            if (jobObj) {
+              const idsRaw =
+                jobObj?.provider_song_ids ||
+                jobObj?.providerSongIds ||
+                jobObj?.song_ids ||
+                jobObj?.songIds ||
+                [];
 
-            const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-            if (jobIds.length) {
-              provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
+              const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+              if (jobIds.length) provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
+
+              provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+            } else if (looksLikeUUID(internal_job_id)) {
+              // if internal_job_id is uuid, try db resolve
+              const dbRow = await readJobMetaFromDB(internal_job_id);
+              if (dbRow) {
+                const dbIds = Array.isArray(dbRow.provider_song_ids) ? uniqStrings(dbRow.provider_song_ids) : [];
+                if (dbIds.length) provider_song_ids = uniqStrings([...(provider_song_ids || []), ...dbIds]);
+                provider_job_id = String(dbRow.provider_job_id || "").trim() || provider_job_id;
+              }
             }
-
-            provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
           }
 
           if (provider_song_ids.length === 0 && provider_job_id) {
@@ -300,7 +395,7 @@ module.exports = async (req, res) => {
       status: "processing",
       outputs,
       topmediai: top,
-      db: null, // ✅ NEW
+      db: null,
     };
 
     if (outputs.length) {
@@ -317,7 +412,7 @@ module.exports = async (req, res) => {
       data.state = "completed";
       data.status = "completed";
 
-      // ✅ NEW: WRITE TO NEON so /api/jobs/list?app=music shows it in Chrome too
+      // ✅ WRITE TO NEON so /api/jobs/list?app=music shows it in Chrome too
       try {
         data.db = await writeMusicResultToDB({
           provider_job_id,
