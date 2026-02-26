@@ -217,7 +217,7 @@ if (!job_id){
 
       toastSuccess("Müzik üretimi başladı 🎵");
 
-   // 1) Panel event
+ // 1) Panel event
 dispatchJob({
   type: jobType,
   kind: jobType,
@@ -226,7 +226,13 @@ dispatchJob({
   id: job_id,
 
   status: result?.state || result?.status || "queued",
-  title: "Müzik Üretimi",
+
+  // ✅ title sabit değil: UI’dan al
+  title: (document.querySelector("#title")?.value || "").trim(),
+
+  // ✅ panel.music.js başlık türetmede kullanacak
+  prompt: prompt || "",
+  lyrics: (document.querySelector("#lyrics")?.value || "").trim(),
 
   __ui_state: "processing",
   __audio_src: "",
