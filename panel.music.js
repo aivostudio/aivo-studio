@@ -103,7 +103,7 @@
 
   /* ---------------- EQ engine (beat-reactive) ---------------- */
   let eqRaf = 0;
-
+let eqBarsCache = { jobId: null, bars: null };
   function initEqEngine(){
     if(!audioEl) return;
     if(audioEl.__eqInited) return;
