@@ -41,7 +41,7 @@ async function generateMusic(payload) {
     if (window.toast?.error) return window.toast.error(msg);
     if (window.toast?.info) return window.toast.info(msg);
     console.warn("[music.generate]", msg);
-    try { alert(msg); } catch {}
+    alert(msg);
   }
 
   function toastSuccess(msg){
@@ -58,43 +58,42 @@ async function generateMusic(payload) {
     }
   }
 
-  async function callGenerateAPI(prompt){
-    const titleEl  = document.querySelector("#title");
-    const lyricsEl = document.querySelector("#lyrics");
-    const vocalEl  = document.querySelector("#vocalType");
-    const moodEl   = document.querySelector("#mood");
+ async function callGenerateAPI(prompt){
 
-    const title  = titleEl  ? titleEl.value.trim()  : "";
-    const lyrics = lyricsEl ? lyricsEl.value.trim() : "";
+ const titleEl  = document.querySelector('#title');
+const lyricsEl = document.querySelector('#lyrics');
+const vocalEl = document.querySelector('#vocalType');
+const moodEl   = document.querySelector('#mood');
 
-    const vocalText = vocalEl
-      ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "")
-      : "";
+const title  = titleEl  ? titleEl.value.trim()  : '';
+const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
+const vocalText = vocalEl
+  ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "")
+  : "";
 
-    const moodText = moodEl
-      ? (moodEl.value || moodEl.selectedOptions?.[0]?.textContent?.trim() || "")
-      : "";
+const moodText = moodEl
+  ? (moodEl.value || moodEl.selectedOptions?.[0]?.textContent?.trim() || "")
+  : "";
 
-    // placeholder ise boş gönder
-    const vocal = (vocalText === "Vokal tipini seç") ? "" : vocalText;
-    const mood  = (moodText  === "Ruh halini seç")   ? "" : moodText;
+// placeholder ise boş gönder
+const vocal = (vocalText === "Vokal tipini seç") ? "" : vocalText;
+const mood  = (moodText  === "Ruh halini seç")   ? "" : moodText;
 
-    // mode’u vokale göre ayarla (enstrümantal seçilmediyse vocals)
-    const mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
+// mode’u vokale göre ayarla (enstrümantal seçilmediyse vocals)
+const mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
 
-    const payload = {
-      prompt,
-      mode,
-      title,
-      lyrics,
-      vocal,
-      mood,
-      use_credits: true,
-      charge: true,
-      credits: 5,
-      cost: 5,
-    };
-
+const payload = {
+  prompt,
+  mode,
+  title,
+  lyrics,
+  vocal,
+  mood,
+  use_credits: true,
+  charge: true,
+  credits: 5,
+  cost: 5,
+};
     const res = await fetch("/api/music/generate", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -127,6 +126,8 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
+   
+
       // 1) Direkt API
       let result = null;
       try {
@@ -153,8 +154,10 @@ async function generateMusic(payload) {
         }
       }
 
-      // =========================================================
-      // ✅ RESULT NORMALIZE
+           // =========================================================
+      // ✅ RESULT NORMALIZE (FIXED)
+      // - backend artık provider_job_id döndürüyor: prov_music_...
+      // - status endpoint bunu bekliyor
       // =========================================================
       const provider_job_id =
         result?.provider_job_id ||
@@ -172,6 +175,7 @@ async function generateMusic(payload) {
         result?.data?.id ||
         null;
 
+      // ✅ provider_song_ids normalize (2 ayrı şarkı id'si buradan gelecek)
       const provider_song_ids =
         result?.provider_song_ids ||
         result?.providerSongIds ||
@@ -179,21 +183,22 @@ async function generateMusic(payload) {
         result?.data?.providerSongIds ||
         [];
 
-      // Öncelik provider id
-      const job_id = provider_job_id || internal_job_id;
+     // Öncelik provider id
+const job_id = provider_job_id || internal_job_id;
 
-      // ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
-      if (!provider_job_id) {
-        console.warn("[music.generate] missing provider_job_id, result:", result);
-        toastError("TopMediai create başarısız (provider_job_id gelmedi). Lütfen tekrar dene.");
-        return;
-      }
+// ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
+// Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
+if (!provider_job_id) {
+  console.warn("[music.generate] missing provider_job_id, result:", result);
+  toastError("TopMediai create başarısız (provider_job_id gelmedi). Lütfen tekrar dene.");
+  return;
+}
 
-      if (!job_id){
-        console.warn("[music.generate] generate response:", result);
-        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
-        return;
-      }
+if (!job_id){
+  console.warn("[music.generate] generate response:", result);
+  toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
+  return;
+}
 
       // DEBUG
       window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
@@ -208,109 +213,102 @@ async function generateMusic(payload) {
       });
 
       const isProviderJob = String(job_id).startsWith("prov_music_");
-      const jobType = "music";
+      const jobType = "music"; // panel key music
 
       toastSuccess("Müzik üretimi başladı 🎵");
 
-      // 1) Panel event (başlık/lyrics/prompt UI’dan)
-      const _title  = (document.querySelector("#title")?.value || "").trim();
-      const _lyrics = (document.querySelector("#lyrics")?.value || "").trim();
+   // 1) Panel event
+dispatchJob({
+  type: jobType,
+  kind: jobType,
 
-      dispatchJob({
-        type: jobType,
-        kind: jobType,
+  job_id: job_id,
+  id: job_id,
 
-        job_id: job_id,
-        id: job_id,
+  status: result?.state || result?.status || "queued",
+  title: "Müzik Üretimi",
 
-        status: result?.state || result?.status || "queued",
+  __ui_state: "processing",
+  __audio_src: "",
 
-        title: _title,           // boş olabilir; panel başlık türetecek
-        prompt: prompt || "",
-        lyrics: _lyrics,
+  // panel.music.js bunu direkt okuyor
+  provider_job_id: provider_job_id,
 
-        __ui_state: "processing",
-        __audio_src: "",
+  // ✅ EN KRİTİK: iki kart için farklı provider_song_id'ler buradan gelecek
+  provider_song_ids: Array.isArray(provider_song_ids) ? provider_song_ids : [],
 
-        provider_job_id: provider_job_id,
-        provider_song_ids: Array.isArray(provider_song_ids) ? provider_song_ids : [],
+  // panel.music.js için gerçek job id (internal) sakla
+  __real_job_id: internal_job_id || job_id,
 
-        __real_job_id: internal_job_id || job_id,
+  // debug flagler kalsın
+  __provider_job: isProviderJob,
+  __provider_job_id: provider_job_id,
+  __internal_job_id: internal_job_id,
+});
 
-        __provider_job: isProviderJob,
-        __provider_job_id: provider_job_id,
-        __internal_job_id: internal_job_id,
-      });
 
-      // 2) AIVO_JOBS store (varsa) — TRY/CATCH DENGELİ
+
+      // 2) AIVO_JOBS store (varsa)
       try {
         if (window.AIVO_JOBS?.upsert) {
-          const __prompt = (window.__LAST_PROMPT__ || (document.querySelector("#prompt")?.value || "")).trim();
-
           window.AIVO_JOBS.upsert({
             type: jobType,
             kind: jobType,
             job_id: job_id,
             id: job_id,
             status: result?.state || result?.status || "queued",
-
-            title: _title || "Müzik Üretimi",
-            prompt: __prompt,
-            lyrics: _lyrics,
-
+            title: "Müzik Üretimi",
             createdAt: new Date().toISOString(),
             __provider_job: isProviderJob,
             __provider_job_id: provider_job_id,
             __internal_job_id: internal_job_id,
           });
+           // =========================================================
+// 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
+// =========================================================
+if (provider_job_id) {
+  const pollInterval = setInterval(async () => {
+    try {
+      const r = await fetch(
+        `/api/music/status?provider_job_id=${encodeURIComponent(provider_job_id)}`
+      );
+      const st = await r.json();
+
+      console.log("[music.generate] poll status:", st);
+
+      if (st?.state === "ready" && st?.audio?.src) {
+        clearInterval(pollInterval);
+
+        console.log("[music.generate] READY → dispatch UI update", st);
+
+        dispatchJob({
+          type: "music",
+          kind: "music",
+          job_id: provider_job_id,
+          id: provider_job_id,
+          status: "ready",
+          state: "ready",
+          title: "Müzik Üretimi",
+          __ui_state: "ready",
+          __audio_src: st.audio.src,
+          audio: { src: st.audio.src },
+          mp3_url: st.audio.src,
+          output_id: st.output_id,
+          internal_job_id: st.internal_job_id,
+          __provider_job: true,
+          __provider_job_id: provider_job_id,
+          __internal_job_id: st.internal_job_id,
+        });
+      }
+    } catch (e) {
+      console.warn("[music.generate] status poll failed:", e);
+    }
+  }, 1500);
+}
+
         }
       } catch(e) {
         console.warn("[music.generate] AIVO_JOBS.upsert failed:", e);
-      }
-
-      // =========================================================
-      // 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
-      // =========================================================
-      if (provider_job_id) {
-        const pollInterval = setInterval(async () => {
-          try {
-            const r = await fetch(
-              `/api/music/status?provider_job_id=${encodeURIComponent(provider_job_id)}`,
-              { credentials: "include", cache: "no-store" }
-            );
-            const st = await r.json();
-
-            console.log("[music.generate] poll status:", st);
-
-            if (st?.state === "ready" && st?.audio?.src) {
-              clearInterval(pollInterval);
-
-              dispatchJob({
-                type: "music",
-                kind: "music",
-                job_id: provider_job_id,
-                id: provider_job_id,
-                status: "ready",
-                state: "ready",
-
-                // burada sabit kalsın; panel zaten title türetiyor
-                title: "Müzik Üretimi",
-
-                __ui_state: "ready",
-                __audio_src: st.audio.src,
-                audio: { src: st.audio.src },
-                mp3_url: st.audio.src,
-                output_id: st.output_id,
-                internal_job_id: st.internal_job_id,
-                __provider_job: true,
-                __provider_job_id: provider_job_id,
-                __internal_job_id: st.internal_job_id,
-              });
-            }
-          } catch (e) {
-            console.warn("[music.generate] status poll failed:", e);
-          }
-        }, 1500);
       }
 
     } catch (e) {
@@ -339,6 +337,7 @@ async function generateMusic(payload) {
   }
 
   setInterval(bind, 500);
+
   window.addEventListener("DOMContentLoaded", bind);
   window.addEventListener("load", bind);
 
