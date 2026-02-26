@@ -24,37 +24,7 @@
   let audioEl = null;
   let rafId = 0;
   let currentJobId = null;
-// ---------------- DB HYDRATE (Chrome fix) ----------------
-let __musicDbHydrated = false;
 
-async function hydrateMusicFromDBOnce() {
-  if (__musicDbHydrated) return;
-  __musicDbHydrated = true;
-
-  try {
-    const res = await fetch("/api/jobs/list?app=music", {
-      credentials: "include",
-      cache: "no-store"
-    });
-
-    const data = await res.json();
-
-    if (!data || data.ok !== true || !Array.isArray(data.items)) {
-      console.warn("[panel.music] DB hydrate skipped:", data);
-      return;
-    }
-
-    for (const job of data.items) {
-      upsertJob(job);
-    }
-
-    console.debug("[panel.music] DB hydrated:", data.items.length, "items");
-    render(); // hydrate sonrası hemen bas
-  } catch (err) {
-    console.warn("[panel.music] DB hydrate failed:", err);
-  }
-}
-// ----------------------------------------------------------
   /* ---------------- utils ---------------- */
   const qs  = (s, r=document)=>r.querySelector(s);
   const qsa = (s, r=document)=>Array.from(r.querySelectorAll(s));
@@ -1228,7 +1198,7 @@ function mount(contentEl){
     try { mainAudio.load?.(); } catch {}
     mainAudio.style.display = "none";
   }
-hydrateMusicFromDBOnce();  
+
   render();
   applyMusicSearchFilter();
 
