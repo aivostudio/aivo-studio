@@ -1228,7 +1228,7 @@ function mount(contentEl){
     try { mainAudio.load?.(); } catch {}
     mainAudio.style.display = "none";
   }
-
+hydrateMusicFromDBOnce();  
   render();
   applyMusicSearchFilter();
 
