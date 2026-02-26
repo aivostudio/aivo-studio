@@ -602,109 +602,131 @@
     toast("info", `Action: ${act}`);
   }
 
-  /* ---------------- polling ---------------- */
-  const POLL_BUSY = new Set();   // key: cardId
-  const POLL_LAST = new Map();   // key: cardId -> ts
+/* ---------------- polling ---------------- */
+const POLL_BUSY = new Set();   // key: cardId
+const POLL_LAST = new Map();   // key: cardId -> ts
 
-  function pickAudioFromStatus(j){
-    // ✅ en kritik fix: topmediai.data[0].audio_url
-    const tmAudio = j?.topmediai?.data?.[0]?.audio_url;
-    const tmDur   = j?.topmediai?.data?.[0]?.duration;
+// ✅ Worker origin (mutlaka https tam origin)
+const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-    const src =
-      j?.audio?.src ||
-      j?.audio_src ||
-      j?.result?.audio?.src ||
-      j?.result?.src ||
-      j?.job?.audio?.src ||
-      tmAudio ||
-      "";
+function pickAudioFromStatus(j){
+  // ✅ en kritik fix: topmediai.data[0].audio_url (TopMediaAI gerçek mp3 burada)
+  const tm = j?.topmediai?.data?.[0] || null;
 
-    const dur =
-      j?.duration ||
-      j?.audio?.duration ||
-      j?.result?.duration ||
-      tmDur ||
-      "";
+  const src =
+    (j?.audio?.src) ||
+    (j?.audio_src) ||
+    (j?.result?.audio?.src) ||
+    (j?.result?.src) ||
+    (j?.job?.audio?.src) ||
+    (tm?.audio_url) ||
+    "";
 
-    const outId =
-      j?.audio?.output_id ||
-      j?.output_id ||
-      j?.result?.output_id ||
-      j?.job?.output_id ||
-      "";
+  const dur =
+    (j?.duration) ||
+    (j?.audio?.duration) ||
+    (j?.result?.duration) ||
+    (tm?.duration) ||
+    "";
 
-    return { src: String(src || "").trim(), duration: dur, output_id: String(outId || "").trim() };
-  }
+  // output_id bazı akışlarda hiç gelmeyebilir, o yüzden “opsiyonel”
+  const outId =
+    (j?.audio?.output_id) ||
+    (j?.output_id) ||
+    (j?.result?.output_id) ||
+    (j?.job?.output_id) ||
+    "";
 
-  async function poll(cardId){
-    if (!alive || !cardId) return;
+  return {
+    src: String(src || "").trim(),
+    duration: dur,
+    output_id: String(outId || "").trim()
+  };
+}
 
-    const now = Date.now();
-    const last = POLL_LAST.get(cardId) || 0;
-    if (now - last < 1200) return;
-    POLL_LAST.set(cardId, now);
+async function poll(cardId){
+  if (!alive || !cardId) return;
 
-    if (POLL_BUSY.has(cardId)) return;
-    POLL_BUSY.add(cardId);
+  // throttle (card bazlı)
+  const now = Date.now();
+  const last = POLL_LAST.get(cardId) || 0;
+  if (now - last < 1200) return;
+  POLL_LAST.set(cardId, now);
 
-    try{
-      clearPoll(cardId);
+  if (POLL_BUSY.has(cardId)) return;
+  POLL_BUSY.add(cardId);
 
-      const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
-      const providerSongId = String(existing.__provider_song_id || "").trim();
-      const providerBase = String(cardId).split("::")[0];
+  try{
+    clearPoll(cardId);
 
-      const q = encodeURIComponent(providerSongId || providerBase);
-      const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
+    const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+    const providerSongId = String(existing.__provider_song_id || "").trim();
+    const providerBase   = String(cardId).split("::")[0];
 
-      let j = null;
-      try { j = await r.json(); } catch { j = null; }
+    // ✅ orig/rev ayrımı: her kart kendi provider_song_id’si ile poll eder
+    const q = encodeURIComponent(providerSongId || providerBase);
 
-      if (!r.ok || !j){
-        schedulePoll(cardId, 1800);
-        return;
-      }
+    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+      cache: "no-store",
+      credentials: "include",
+      headers: { "accept": "application/json" }
+    });
 
-      const { src, duration, output_id } = pickAudioFromStatus(j);
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
 
-      const st = uiState(j.state || j.status || j?.job?.status);
-
-      // play url fallback (DB job id yoksa providerBase ile deneme)
-      const playUrl = (providerBase && output_id)
-        ? `${WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
-        : "";
-
-      const next = {
-        job_id: cardId,
-        id: cardId,
-        __ui_state: src ? "ready" : st,
-        __audio_src: src || playUrl || "",
-        output_id: output_id || existing.output_id || "",
-      };
-
-      if (duration && Number(duration) > 0) next.__duration = String(duration);
-
-      // title overwrite koruması: boş title ile ezme
-      const incomingTitle = String(j?.title || j?.topmediai?.data?.[0]?.title || "").trim();
-      if (incomingTitle) next.title = incomingTitle;
-
-      upsertJob(next);
-      render();
-
-      if (next.__ui_state === "ready") return;
-      if (next.__ui_state === "error") return;
-
-      schedulePoll(cardId, 1600);
-    } catch (e){
-      schedulePoll(cardId, 2000);
-    } finally {
-      POLL_BUSY.delete(cardId);
+    if (!r.ok || !j){
+      schedulePoll(cardId, 1800);
+      return;
     }
+
+    // proxy/worker geçici hataları => retry
+    if (j?.ok === false && (j?.error === "proxy_error" || j?.error === "worker_non_json")) {
+      schedulePoll(cardId, 2000);
+      return;
+    }
+
+    const { src, duration, output_id } = pickAudioFromStatus(j);
+
+    const st = uiState(j?.state || j?.status || j?.job?.status);
+
+    // ✅ Fallback playUrl: sadece src yoksa ve output_id varsa
+    const playUrl = (!src && providerBase && output_id)
+      ? `${WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
+      : "";
+
+    const next = {
+      job_id: cardId,
+      id: cardId,
+      __ui_state: (src || playUrl) ? "ready" : st,
+      __audio_src: src || playUrl || "",
+      output_id: output_id || existing.output_id || "",
+    };
+
+    if (duration && Number(duration) > 0) next.__duration = String(duration);
+
+    // ✅ title overwrite koruması: boş title ile ezme
+    const incomingTitle = String(
+      j?.title ||
+      j?.topmediai?.data?.[0]?.title ||
+      ""
+    ).trim();
+    if (incomingTitle) next.title = incomingTitle;
+
+    upsertJob(next);
+    render();
+
+    if (next.__ui_state === "ready") return;
+    if (next.__ui_state === "error") return;
+
+    schedulePoll(cardId, 1600);
+  } catch (e){
+    schedulePoll(cardId, 2000);
+  } finally {
+    POLL_BUSY.delete(cardId);
   }
+}
+/* ---------------- /polling ---------------- */
 
   /* ---------------- DB -> cards ---------------- */
   function mapDbJobToCards(row){
