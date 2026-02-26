@@ -1013,7 +1013,7 @@ const base = String(jobId).split("::")[0];
   }
 } catch {}
 
-    job.title = job.title || j?.title || "Müzik Üretimi";
+  job.title = (String(job.title || "").trim()) || (String(j?.title || "").trim());
     if (j?.duration) job.__duration = j.duration;
     if (j?.created_at) job.__createdAt = j.created_at;
 
