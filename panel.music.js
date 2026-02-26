@@ -1080,13 +1080,17 @@ function onJob(e){
     provider_job_id: providerJobId,
   };
 
+  // ✅ title: payload.title varsa onu kullan, yoksa fallback
+  const safeTitle =
+    (String(payload.title || "").trim()) || "Müzik Üretimi";
+
   // ORIGINAL
   upsertJob({
     ...common,
     job_id: origId,
     id: origId,
     __provider_song_id: songIdOrig,
-    title: (payload.title || "Müzik Üretimi") + " — Original Version",
+    title: safeTitle,
   });
 
   // REVIZE
@@ -1095,7 +1099,7 @@ function onJob(e){
     job_id: revId,
     id: revId,
     __provider_song_id: songIdRev,
-    title: (payload.title || "Müzik Üretimi") + " — Revize Version",
+    title: safeTitle,
   });
 
   render();
