@@ -826,7 +826,54 @@ async function poll(cardId){
     poll(origId);
     poll(revId);
   }
+/* ---------------- global event bind (NO double-bind) ---------------- */
+if (!window.__AIVO_MUSIC_EVENTS__) {
+  window.__AIVO_MUSIC_EVENTS__ = {
+    attached: false,
+    host: null,
+  };
+}
 
+function setMusicHostForEvents(el){
+  window.__AIVO_MUSIC_EVENTS__.host = el || null;
+
+  if (window.__AIVO_MUSIC_EVENTS__.attached) return;
+  window.__AIVO_MUSIC_EVENTS__.attached = true;
+
+  // CAPTURE: Safari'de nested button/click durumları için güvenli
+  window.addEventListener("click", (e) => {
+    try {
+      // sadece MUSIC panel aktifken
+      if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+
+      const H = window.__AIVO_MUSIC_EVENTS__.host;
+      if (!H) return;
+
+      // sadece host içinden gelen event
+      if (!H.contains(e.target)) return;
+
+      onCardClick(e);
+    } catch (err) {
+      console.warn("[panel.music] click handler error", err);
+    }
+  }, true);
+
+  window.addEventListener("pointerdown", (e) => {
+    try {
+      if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+
+      const H = window.__AIVO_MUSIC_EVENTS__.host;
+      if (!H) return;
+
+      if (!H.contains(e.target)) return;
+
+      if (e.target.closest(".aivo-progress")) onProgressSeek(e);
+    } catch (err) {
+      console.warn("[panel.music] pointer handler error", err);
+    }
+  }, true);
+}
+/* ---------------- /global event bind ---------------- */
   /* ---------------- panel integration ---------------- */
   function waitForRightPanel(cb){
     const t0 = Date.now();
@@ -899,6 +946,8 @@ async function poll(cardId){
     hostEl = contentEl;
     alive = true;
 
+    setMusicHostForEvents(hostEl);
+
     hostEl.innerHTML = `
       <div class="rp-players">
         <div class="rp-playerCard">
@@ -910,13 +959,6 @@ async function poll(cardId){
     listEl = hostEl.querySelector("#musicList");
     if (listEl) listEl.className = "aivo-player-list";
 
-    if (!hostEl.__musicBound){
-      hostEl.__musicBound = true;
-      hostEl.addEventListener("click", onCardClick, true);
-      hostEl.addEventListener("pointerdown", (e) => {
-        if (e.target.closest(".aivo-progress")) onProgressSeek(e);
-      }, true);
-    }
 
     ensureAudio();
 
@@ -994,6 +1036,7 @@ async function poll(cardId){
 
   function destroy(){
     alive = false;
+       setMusicHostForEvents(null);
     window.removeEventListener("aivo:job", onJob, true);
 
     clearAllPolls();
