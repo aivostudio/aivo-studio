@@ -2,30 +2,29 @@
    AIVO Right Panel — Music Panel (CUSTOM PLAYER UI)
    File: /js/panel.music.js
 
-   ✅ FIX (DB source-of-truth):
-   - DBJobs.create(...) artık togglePlayFromCard içinde DEĞİL.
-   - Controller panel açılır açılmaz mount() içinde başlar.
-   - destroy() içinde düzgün kapanır.
-
-   - UI: "aivo-player-card" (CUSTOM)
-   - Job kaynağı: studio.music.generate.js -> "aivo:job" event
-   - DB kaynağı: /api/jobs/list?app=music + (varsa) DBJobs controller
-   - Status: /api/music/status?provider_job_id=...
+   Fixes:
+   - ✅ render() artık #rightPanelHost'a kaçmıyor; mount(contentEl) içinde render eder.
+   - ✅ /api/music/status parse: topmediai.data[0].audio_url desteklenir.
+   - ✅ DB source-of-truth (window.DBJobs) mount'ta kurulur (play'e basınca değil).
+   - ✅ aivo:job event gelince kartlar anında düşer + poll başlar.
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
   window.__AIVO_PANEL_MUSIC__ = true;
 
   const PANEL_KEY = "music";
-  const LS_KEY    = "aivo.music.jobs.v3"; // opsiyonel cache
+  const LS_KEY    = "aivo.music.jobs.v3";
 
-  // ✅ DB controller
+  // worker origin (mp3 play)
+  const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
+
+  // DB controller
   let dbCtrl = null;
 
-  // panel state
+  // panel runtime
   let hostEl = null;
   let listEl = null;
-  let alive  = true;
+  let alive  = false;
   let jobs   = [];
 
   // audio engine
@@ -54,10 +53,6 @@
       .replaceAll(">","&gt;")
       .replaceAll('"',"&quot;")
       .replaceAll("'","&#39;");
-  }
-
-  function safeId(x){
-    return String(x || "").trim();
   }
 
   function norm(s){
@@ -104,45 +99,6 @@
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return `${m}:${String(s).padStart(2,"0")}`;
-  }
-
-  /* ---------------- audio ---------------- */
-  function ensureAudio(){
-    if (audioEl) return audioEl;
-
-    audioEl = document.getElementById("aivoAudio");
-
-    if (!audioEl){
-      audioEl = document.createElement("audio");
-      audioEl.id = "aivoAudio";
-      audioEl.preload = "metadata";
-      audioEl.crossOrigin = "anonymous"; // eq
-      audioEl.style.display = "none";
-      document.body.appendChild(audioEl);
-    }
-
-    initEqEngine();
-
-    audioEl.onended = () => {
-      setCardPlaying(currentJobId, false);
-      currentJobId = null;
-      stopRaf();
-      stopEqLoop();
-    };
-
-    audioEl.onpause = () => {
-      if (currentJobId) setCardPlaying(currentJobId, false);
-      stopRaf();
-      stopEqLoop();
-    };
-
-    audioEl.onplay = () => {
-      if (currentJobId) setCardPlaying(currentJobId, true);
-      startRaf();
-      startEqLoop();
-    };
-
-    return audioEl;
   }
 
   /* ---------------- EQ engine (beat-reactive) ---------------- */
@@ -204,8 +160,8 @@
 
   function eqTick(){
     eqRaf = requestAnimationFrame(eqTick);
-    if(!audioEl || audioEl.paused) return;
 
+    if(!audioEl || audioEl.paused) return;
     const pack = audioEl.__eq;
     if(!pack) return;
 
@@ -241,7 +197,9 @@
 
   function setEqBars(L, M, H){
     if(!currentJobId) return;
-    const card = hostEl?.querySelector?.(`.aivo-player-card[data-job-id="${CSS.escape(String(currentJobId))}"]`);
+    if(!hostEl) return;
+
+    const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(String(currentJobId))}"]`);
     if(!card) return;
 
     const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
@@ -262,6 +220,39 @@
       const s = clamp01(k);
       bars[i].style.transform = `scaleY(${0.15 + s*1.15})`;
     }
+  }
+
+  /* ---------------- audio element ---------------- */
+  function ensureAudio(){
+    if (audioEl) return audioEl;
+
+    audioEl = document.getElementById("aivoAudio");
+    if (!audioEl){
+      audioEl = document.createElement("audio");
+      audioEl.id = "aivoAudio";
+      audioEl.preload = "metadata";
+      audioEl.crossOrigin = "anonymous";
+      audioEl.style.display = "none";
+      document.body.appendChild(audioEl);
+    }
+
+    initEqEngine();
+
+    audioEl.onended = () => {
+      setCardPlaying(currentJobId, false);
+      currentJobId = null;
+      stopRaf();
+    };
+    audioEl.onpause = () => {
+      if (currentJobId) setCardPlaying(currentJobId, false);
+      stopRaf();
+    };
+    audioEl.onplay = () => {
+      if (currentJobId) setCardPlaying(currentJobId, true);
+      startRaf();
+    };
+
+    return audioEl;
   }
 
   /* ---------------- jobs storage ---------------- */
@@ -288,7 +279,7 @@
   }
 
   function removeJob(jobId){
-    jobId = safeId(jobId);
+    jobId = String(jobId || "").trim();
     if (!jobId) return;
 
     if (currentJobId === jobId && audioEl){
@@ -299,65 +290,10 @@
     }
 
     clearPoll(jobId);
+
     jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
     saveJobs();
     render();
-  }
-
-  /* ---------------- DB row -> 2 cards ---------------- */
-  function mapDbJobToCards(j){
-    const meta = j?.meta || {};
-    const appGuess = String(j?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
-    if (appGuess && !isMusicApp(appGuess)) return [];
-
-    const provider_job_id = String(
-      meta?.provider_job_id ||
-      meta?.providerJobId ||
-      j?.provider_job_id ||
-      j?.providerJobId ||
-      ""
-    ).trim();
-
-    const baseId = provider_job_id || String(j?.job_id || j?.id || "").trim();
-    if (!baseId) return [];
-
-    const songIds = Array.isArray(meta?.provider_song_ids)
-      ? meta.provider_song_ids
-      : (Array.isArray(j?.provider_song_ids) ? j.provider_song_ids : []);
-
-    const songIdOrig = String(songIds[0] || provider_job_id || baseId).trim();
-    const songIdRev  = String(songIds[1] || songIds[0] || provider_job_id || baseId).trim();
-
-    const createdMs =
-      toMs(j?.created_at) || toMs(j?.createdAt) || toMs(meta?.created_at) || Date.now();
-
-    const rawStatus = norm(j?.db_status || j?.status || j?.state || "");
-    const ui =
-      ["ready","done","completed","success","succeeded"].includes(rawStatus) ? "ready"
-      : ["error","failed","fail"].includes(rawStatus) ? "error"
-      : "processing";
-
-    const baseCommon = {
-      type: "music",
-      provider_job_id: provider_job_id || baseId,
-      __real_job_id: String(meta?.internal_job_id || meta?.job_id || j?.job_id || "").trim() || null,
-      __ui_state: ui,
-      __audio_src: "",
-      __createdAt: (j?.created_at || meta?.created_at || ""),
-      created_at: (j?.created_at || meta?.created_at || ""),
-      createdAt: createdMs,
-      title: String(meta?.title || "").trim(),
-      lyrics: String(meta?.lyrics || "").trim(),
-      prompt: String(meta?.prompt || j?.prompt || "").trim(),
-      subtitle: String(meta?.subtitle || "").trim(),
-      lang: String(meta?.lang || meta?.language || "").trim(),
-      __duration: String(meta?.duration || "").trim(),
-    };
-
-    return [
-      { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
-      { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev  },
-    ];
   }
 
   /* ---------------- polling timers ---------------- */
@@ -389,9 +325,6 @@
   function renderCard(job){
     const jobId = job.job_id || job.id;
     const st = job.__ui_state || "processing";
-    if (st === "processing" && !job.__loading_startedAt) {
-      job.__loading_startedAt = Date.now();
-    }
 
     const title =
       (String(job?.title || "").trim()) ||
@@ -406,7 +339,11 @@
     const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
     const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
-    const isReady = (job.__ui_state === "ready") && !!job.__audio_src;
+    const isReady = (st === "ready") && !!job.__audio_src;
+    const tags =
+      isReady ? `${tagReady}` :
+      st === "error" ? `${tagErr}` :
+      `${tagProc}`;
 
     const leftBtn = `
       <button class="aivo-player-btn"
@@ -415,48 +352,32 @@
         title="Oynat/Durdur"
         ${isReady ? "" : "disabled"}
         style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-
         <svg class="icon-play" viewBox="0 0 24 24" fill="none">
           <path d="M8 5v14l11-7z" fill="currentColor"></path>
         </svg>
-
         <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="display:none">
           <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
         </svg>
-
         <span class="aivo-eq" aria-hidden="true">
           <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
         </span>
       </button>`;
 
-    const tags =
-      isReady ? `${tagReady}` :
-      st === "error" ? `${tagErr}` :
-      `${tagProc}`;
-
     const metaLeft = dur ? esc(dur) : "0:00";
     const metaRight = date ? esc(date) : "";
-
-    const disabled = (!job.__audio_src) ? 'data-disabled="1"' : "";
 
     return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"}"
   data-job-id="${esc(jobId)}"
-  data-output-id="${esc(job.output_id || "")}"
-  data-loading-started-at="${esc(job.__loading_startedAt || "")}"
   data-src="${esc(job.__audio_src || "")}"
-  ${disabled}>
-
-  <div class="aivo-player-left">
-    ${leftBtn}
-  </div>
+  data-provider-song-id="${esc(job.__provider_song_id || "")}">
+  <div class="aivo-player-left">${leftBtn}</div>
 
   <div class="aivo-player-mid">
     <div class="aivo-player-titleRow">
       <div class="aivo-player-title">${esc(title)}</div>
       <div class="aivo-player-tags">${tags}</div>
     </div>
-
     <div class="aivo-player-sub">${esc(sub)}</div>
 
     <div class="aivo-player-meta">
@@ -482,21 +403,25 @@
 </div>`;
   }
 
-  function render(){
-    // panel aktif değilse DOM'a dokunma
-    if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-    if (!hostEl) return;
+  function applyMusicSearchFilter(){
+    const q = String(__searchQ || "").trim();
+    const cards = (listEl || document).querySelectorAll(".aivo-player-card");
+    cards.forEach(card => {
+      const text = (card.textContent || "").toLowerCase();
+      card.style.display = (!q || text.includes(q)) ? "" : "none";
+    });
+  }
 
-    listEl = hostEl.querySelector("#musicList");
-    if (!listEl) return;
+  function render(){
+    if (!alive) return;
+    if (!hostEl || !listEl) return;
+    if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
     const view = jobs.filter(j => j?.job_id || j?.id);
 
-    // base bazlı sıralama: yeni base üstte, base içinde orig önce
     view.sort((a, b) => {
       const aid = String(a.job_id || a.id || "");
       const bid = String(b.job_id || b.id || "");
-
       const abase = aid.split("::")[0];
       const bbase = bid.split("::")[0];
 
@@ -504,7 +429,7 @@
       const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
 
       if (tb !== ta) return tb - ta;
-      if (abase !== bbase) return bbase.localeCompare(abase);
+      if (bbase !== abase) return bbase.localeCompare(abase);
 
       const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
       const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
@@ -516,7 +441,6 @@
         <div class="aivo-empty">
           <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
         </div>`;
-      applyMusicSearchFilter();
       return;
     }
 
@@ -526,7 +450,8 @@
 
   /* ---------------- play / pause / progress ---------------- */
   function getCard(jobId){
-    return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl || document);
+    if (!hostEl) return null;
+    return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl);
   }
 
   function setCardPlaying(jobId, isPlaying){
@@ -573,137 +498,14 @@
     rafId = 0;
   }
 
-  /* ---------------- actions ---------------- */
-  function actionDownload(card){
-    const src = card?.dataset?.src || "";
-    if (!src) { toast("error","İndirilecek dosya yok"); return; }
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = "";
-    a.target = "_blank";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast("success","İndirme başlatıldı");
-  }
-
-  function actionDelete(card){
-    const jobId = card?.getAttribute("data-job-id") || "";
-    if (!jobId) return;
-    removeJob(jobId);
-    toast("success","Silindi");
-  }
-
-  function actionStems(){ toast("info","Stems: event gönderildi"); }
-  function actionExtend(){ toast("info","Extend: event gönderildi"); }
-  function actionRevise(){ toast("info","Revise: event gönderildi"); }
-
-  function onCardClick(e){
-    const btn  = e.target.closest("[data-action]");
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
-
-    const act = btn?.dataset?.action || null;
-
-    if (act){
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (act === "toggle-play") return togglePlayFromCard(card);
-      if (act === "download") return actionDownload(card);
-      if (act === "delete")   return actionDelete(card);
-      if (act === "stems")    return actionStems(card);
-      if (act === "extend")   return actionExtend(card);
-      if (act === "revise")   return actionRevise(card);
-      return;
-    }
-
-    if (card.classList.contains("is-ready")) togglePlayFromCard(card);
-  }
-
-  function onProgressSeek(e){
-    const wrap = e.target.closest(".aivo-progress");
-    if (!wrap) return;
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
-
-    const jobId = card.getAttribute("data-job-id");
-    if (!jobId || jobId !== currentJobId) return;
-    if (!audioEl || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
-
-    const rect = wrap.getBoundingClientRect();
-    const x = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
-    const ratio = rect.width > 0 ? (x / rect.width) : 0;
-    audioEl.currentTime = ratio * audioEl.duration;
-    updateProgressUI();
-  }
-
-  /* ---------------- toggle play (✅ DB controller burada YOK) ---------------- */
   async function togglePlayFromCard(card){
     if (!card) return;
 
-    let src = card.dataset.src || card.getAttribute("data-src") || "";
     const jobId = card.getAttribute("data-job-id") || "";
     if (!jobId) return;
 
-    const baseId = String(jobId).split("::")[0];
     const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const realJobId = existing.__real_job_id || baseId;
-
-    const looksWrong =
-      !src ||
-      src.includes("output_id=test") ||
-      src.includes("/files/play?job_id=prov_music_");
-
-    if (looksWrong || card.dataset.disabled === "1" || card.getAttribute("data-disabled") === "1"){
-      try{
-        const d = await fetch(`/api/music/status?job_id=${encodeURIComponent(realJobId)}`, {
-          cache: "no-store",
-          credentials: "include",
-        }).then(r => r.json());
-
-        const outputId =
-          d?.audio?.output_id ||
-          d?.output_id ||
-          d?.job?.output_id ||
-          "";
-
-        const realSrc =
-          d?.audio?.src ||
-          d?.audio_src ||
-          "";
-
-        const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
-        const playUrl = (realJobId && outputId)
-          ? `${WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
-          : "";
-
-        src = realSrc || playUrl || "";
-        if (!src){
-          toast("info", "Henüz hazır değil (audio src yok)");
-          return;
-        }
-
-        card.dataset.src = src;
-        card.setAttribute("data-src", src);
-        card.dataset.disabled = "0";
-        card.setAttribute("data-disabled", "0");
-        card.classList.add("is-ready");
-
-        const btn = card.querySelector("button[data-action='toggle-play']");
-        if (btn){
-          btn.disabled = false;
-          btn.removeAttribute("disabled");
-          btn.style.opacity = "";
-          btn.style.cursor = "";
-        }
-      } catch(e){
-        console.warn("[panel.music] status self-heal failed", e);
-        toast("error", "Status okunamadı");
-        return;
-      }
-    }
+    const src = String(existing.__audio_src || card.dataset.src || "").trim();
 
     if (!src){
       toast("info", "Henüz hazır değil");
@@ -736,32 +538,125 @@
     }
   }
 
+  function onProgressSeek(e){
+    const wrap = e.target.closest(".aivo-progress");
+    if (!wrap) return;
+    const card = e.target.closest(".aivo-player-card");
+    if (!card) return;
+
+    const jobId = card.getAttribute("data-job-id");
+    if (!jobId || jobId !== currentJobId) return;
+    if (!audioEl || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+
+    const rect = wrap.getBoundingClientRect();
+    const x = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
+    const ratio = rect.width > 0 ? (x / rect.width) : 0;
+    audioEl.currentTime = ratio * audioEl.duration;
+    updateProgressUI();
+  }
+
+  /* ---------------- ACTIONS ---------------- */
+  function actionDownload(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+    const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
+    if (!src) { toast("error","İndirilecek dosya yok"); return; }
+
+    const a = document.createElement("a");
+    a.href = src;
+    a.download = "";
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("success","İndirme başlatıldı");
+  }
+
+  function actionDelete(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    if (!jobId) return;
+    removeJob(jobId);
+    toast("success","Silindi");
+  }
+
+  function onCardClick(e){
+    const btn  = e.target.closest("[data-action]");
+    const card = e.target.closest(".aivo-player-card");
+    if (!card) return;
+
+    const act = btn?.dataset?.action || null;
+    if (!act){
+      if (card.classList.contains("is-ready")) togglePlayFromCard(card);
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (act === "toggle-play") return togglePlayFromCard(card);
+    if (act === "download") return actionDownload(card);
+    if (act === "delete")   return actionDelete(card);
+
+    // diğerleri şimdilik event
+    toast("info", `Action: ${act}`);
+  }
+
   /* ---------------- polling ---------------- */
   const POLL_BUSY = new Set();   // key: cardId
-  const POLL_LAST = new Map();   // key: cardId -> timestamp(ms)
+  const POLL_LAST = new Map();   // key: cardId -> ts
 
-  async function poll(jobId){
-    if (!alive || !jobId) return;
+  function pickAudioFromStatus(j){
+    // ✅ en kritik fix: topmediai.data[0].audio_url
+    const tmAudio = j?.topmediai?.data?.[0]?.audio_url;
+    const tmDur   = j?.topmediai?.data?.[0]?.duration;
 
-    const cardId = String(jobId);        // 133..::orig / ::rev1
-    const baseId = cardId.split("::")[0];
+    const src =
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      j?.job?.audio?.src ||
+      tmAudio ||
+      "";
 
-    if (POLL_BUSY.has(cardId)) return;
+    const dur =
+      j?.duration ||
+      j?.audio?.duration ||
+      j?.result?.duration ||
+      tmDur ||
+      "";
+
+    const outId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      j?.job?.output_id ||
+      "";
+
+    return { src: String(src || "").trim(), duration: dur, output_id: String(outId || "").trim() };
+  }
+
+  async function poll(cardId){
+    if (!alive || !cardId) return;
 
     const now = Date.now();
     const last = POLL_LAST.get(cardId) || 0;
-    if (now - last < 1500) return;
+    if (now - last < 1200) return;
     POLL_LAST.set(cardId, now);
 
+    if (POLL_BUSY.has(cardId)) return;
     POLL_BUSY.add(cardId);
-
-    const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
-    const songIdForThisCard = String(existing.__provider_song_id || baseId).trim();
 
     try{
       clearPoll(cardId);
 
-      const r = await fetch(`/api/music/status?provider_job_id=${encodeURIComponent(songIdForThisCard)}`, {
+      const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+      const providerSongId = String(existing.__provider_song_id || "").trim();
+      const providerBase = String(cardId).split("::")[0];
+
+      const q = encodeURIComponent(providerSongId || providerBase);
+      const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
         cache: "no-store",
         credentials: "include",
       });
@@ -770,100 +665,40 @@
       try { j = await r.json(); } catch { j = null; }
 
       if (!r.ok || !j){
-        schedulePoll(cardId, 1500);
+        schedulePoll(cardId, 1800);
         return;
       }
 
-      if (j.ok === false && (j.error === "proxy_error" || j.error === "worker_non_json")){
-        schedulePoll(cardId, 2000);
-        return;
-      }
+      const { src, duration, output_id } = pickAudioFromStatus(j);
 
-      const job = j.job || {};
-      job.job_id = cardId;
-      job.id = cardId;
+      const st = uiState(j.state || j.status || j?.job?.status);
 
-      const realJobId =
-        j?.internal_job_id ||
-        job?.internal_job_id ||
-        job?.job_id ||
-        j?.job_id ||
-        null;
-
-      if (realJobId && existing.__real_job_id !== realJobId) {
-        upsertJob({ job_id: cardId, id: cardId, __real_job_id: realJobId });
-      }
-
-      const src =
-        j?.audio?.src ||
-        j?.audio_src ||
-        j?.result?.audio?.src ||
-        j?.result?.src ||
-        job?.audio?.src ||
-        job?.result?.audio?.src ||
-        job?.result?.src ||
-        "";
-
-      const outputId =
-        j?.audio?.output_id ||
-        j?.output_id ||
-        j?.result?.output_id ||
-        job?.output_id ||
-        job?.result?.output_id ||
-        "";
-
-      const playUrl = (realJobId && outputId)
-        ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
+      // play url fallback (DB job id yoksa providerBase ile deneme)
+      const playUrl = (providerBase && output_id)
+        ? `${WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
         : "";
 
-      job.__audio_src = src || playUrl || "";
-      job.output_id = outputId || job.output_id || "";
+      const next = {
+        job_id: cardId,
+        id: cardId,
+        __ui_state: src ? "ready" : st,
+        __audio_src: src || playUrl || "",
+        output_id: output_id || existing.output_id || "",
+      };
 
-      const state = uiState(j.state || j.status || job.status);
+      if (duration && Number(duration) > 0) next.__duration = String(duration);
 
-      // iki kart birlikte unlock (audio gelene kadar processing)
-      if (job.__audio_src) {
-        job.__ui_state = "processing";
-        job.__pending_ready = true;
-      } else {
-        job.__ui_state = state;
-        job.__pending_ready = false;
-      }
+      // title overwrite koruması: boş title ile ezme
+      const incomingTitle = String(j?.title || j?.topmediai?.data?.[0]?.title || "").trim();
+      if (incomingTitle) next.title = incomingTitle;
 
-      try {
-        const base = baseId;
-        const aId = `${base}::orig`;
-        const bId = `${base}::rev1`;
-
-        const a = jobs.find(x => (x.job_id || x.id) === aId);
-        const b = jobs.find(x => (x.job_id || x.id) === bId);
-
-        const bothHaveAudio = !!(a?.__audio_src) && !!(b?.__audio_src);
-        if (bothHaveAudio) {
-          upsertJob({ job_id: aId, id: aId, __ui_state: "ready", __pending_ready: false });
-          upsertJob({ job_id: bId, id: bId, __ui_state: "ready", __pending_ready: false });
-          job.__ui_state = "ready";
-          job.__pending_ready = false;
-        }
-      } catch {}
-
-      // title boş geldiyse eskisini ezme
-      const incomingTitle =
-        (String(job.title || "").trim()) ||
-        (String(j?.title || "").trim());
-      if (incomingTitle) job.title = incomingTitle;
-      else delete job.title;
-
-      if (j?.duration) job.__duration = j.duration;
-      if (j?.created_at) job.__createdAt = j.created_at;
-
-      upsertJob(job);
+      upsertJob(next);
       render();
 
-      if (job.__ui_state === "ready") return;
-      if (job.__ui_state === "error") return;
+      if (next.__ui_state === "ready") return;
+      if (next.__ui_state === "error") return;
 
-      schedulePoll(cardId, 1500);
+      schedulePoll(cardId, 1600);
     } catch (e){
       schedulePoll(cardId, 2000);
     } finally {
@@ -871,7 +706,60 @@
     }
   }
 
-  /* ---------------- onJob (event -> 2 cards) ---------------- */
+  /* ---------------- DB -> cards ---------------- */
+  function mapDbJobToCards(row){
+    const meta = row?.meta || {};
+    const appGuess = String(row?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
+    if (appGuess && !isMusicApp(appGuess)) return [];
+
+    const provider_job_id = String(
+      meta?.provider_job_id ||
+      meta?.providerJobId ||
+      row?.provider_job_id ||
+      row?.providerJobId ||
+      ""
+    ).trim();
+
+    const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
+    if (!baseId) return [];
+
+    const songIds = Array.isArray(meta?.provider_song_ids)
+      ? meta.provider_song_ids
+      : (Array.isArray(row?.provider_song_ids) ? row.provider_song_ids : []);
+
+    const songIdOrig = String(songIds[0] || provider_job_id || baseId).trim();
+    const songIdRev  = String(songIds[1] || songIds[0] || provider_job_id || baseId).trim();
+
+    const createdMs =
+      toMs(row?.created_at) || toMs(row?.createdAt) || toMs(meta?.created_at) || Date.now();
+
+    const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
+    const st =
+      ["ready","done","completed","success","succeeded"].includes(rawStatus) ? "ready"
+      : ["error","failed","fail"].includes(rawStatus) ? "error"
+      : "processing";
+
+    const baseCommon = {
+      type: "music",
+      provider_job_id: provider_job_id || baseId,
+      __ui_state: st,
+      __audio_src: "",
+      createdAt: createdMs,
+      __createdAt: (row?.created_at || meta?.created_at || ""),
+      title: String(meta?.title || row?.title || "").trim(),
+      lyrics: String(meta?.lyrics || row?.lyrics || "").trim(),
+      prompt: String(meta?.prompt || row?.prompt || "").trim(),
+      subtitle: String(meta?.subtitle || "").trim(),
+      __duration: String(meta?.duration || "").trim(),
+    };
+
+    return [
+      { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
+      { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev  },
+    ];
+  }
+
+  /* ---------------- onJob (generate -> event) ---------------- */
   function onJob(e){
     const payload = e?.detail || e || {};
     const baseId = payload.job_id || payload.id;
@@ -889,41 +777,46 @@
     const safeTitle = String(payload.title || "").trim();
 
     const common = {
-      type: payload.type || "music",
-      subtitle: payload.subtitle || "",
-      __ui_state: payload.__ui_state || "processing",
-      __audio_src: payload.__audio_src || "",
-      __real_job_id: payload.__real_job_id || null,
+      type: "music",
+      subtitle: String(payload.subtitle || "").trim(),
       provider_job_id: providerJobId,
+      __ui_state: "processing",
+      __audio_src: "",
       title: safeTitle,
       lyrics: String(payload.lyrics || "").trim(),
       prompt: String(payload.prompt || "").trim(),
-      __createdAt: payload.created_at || payload.__createdAt || "",
+      __createdAt: payload.created_at || payload.createdAt || "",
+      createdAt: Date.now(),
     };
 
     upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
     upsertJob({ ...common, job_id: revId,  id: revId,  __provider_song_id: songIdRev  });
 
     render();
+
     poll(origId);
     poll(revId);
   }
 
-  /* ---------------- manager search integration ---------------- */
+  /* ---------------- panel integration ---------------- */
+  function waitForRightPanel(cb){
+    const t0 = Date.now();
+    const T = setInterval(() => {
+      if (window.RightPanel && typeof window.RightPanel.register === "function"){
+        clearInterval(T);
+        cb();
+      } else if (Date.now() - t0 > 8000){
+        clearInterval(T);
+        console.warn("[panel.music] RightPanel not ready after 8s");
+      }
+    }, 50);
+  }
+
   let __searchQ = "";
 
   function onSearch(q){
     __searchQ = String(q || "").trim().toLowerCase();
     applyMusicSearchFilter();
-  }
-
-  function applyMusicSearchFilter(){
-    const q = (__searchQ || "").trim();
-    const cards = (listEl || document).querySelectorAll(".aivo-player-card");
-    cards.forEach(card => {
-      const text = (card.textContent || "").toLowerCase();
-      card.style.display = (!q || text.includes(q)) ? "" : "none";
-    });
   }
 
   function getHeader(){
@@ -936,120 +829,43 @@
     };
   }
 
-  /* ---------------- DB controller start (✅ burada) ---------------- */
-  function startDbController(){
-    // controller zaten varsa tekrar başlatma
-    if (dbCtrl) return;
-
-    if (!(window.DBJobs && typeof window.DBJobs.create === "function")){
-      return;
-    }
-
-    try {
-      dbCtrl = window.DBJobs.create({
-        app: "music",
-        debug: false,
-        pollIntervalMs: 4000,
-        hydrateEveryMs: 15000,
-
-        acceptJob: (job) => {
-          const a = String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
-          return !a || isMusicApp(a);
-        },
-
-        acceptOutput: (o) => {
-          const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
-          return !t || t === "audio";
-        },
-
-        onChange: (items) => {
-          if (!alive) return;
-
-          const safe = Array.isArray(items) ? items : [];
-
-          // 1) DB -> cards
-          const dbCards = [];
-          for (const j of safe) {
-            const cards = mapDbJobToCards(j);
-            if (cards && cards.length) dbCards.push(...cards);
-          }
-
-          // 2) merge: DB truth + mevcut optimistic
-          const byId = new Map();
-          for (const c of dbCards) {
-            const id = String(c?.job_id || c?.id || "").trim();
-            if (!id) continue;
-            byId.set(id, c);
-          }
-
-          for (const old of (jobs || [])) {
-            const oid = String(old?.job_id || old?.id || "").trim();
-            if (!oid) continue;
-            if (!byId.has(oid)) byId.set(oid, old);
-          }
-
-          jobs = Array.from(byId.values());
-          saveJobs();
-
-          render();
-
-          // poll başlat (orig/rev ayrı)
-          jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
-        },
-      });
-    } catch (e){
-      console.warn("[panel.music] DBJobs.create failed", e);
-      dbCtrl = null;
-    }
-  }
-
   async function hydrateFromDBOnce(){
-    try {
+    try{
       const r = await fetch("/api/jobs/list?app=music", {
         method: "GET",
         credentials: "include",
         headers: { "accept": "application/json" },
         cache: "no-store",
       });
-
       const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) {
-        console.warn("[panel.music] hydrate failed", r.status, j);
-        return;
-      }
+      if (!r.ok || !j || !j.ok) return;
 
       const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
-      const incoming = Array.isArray(items) ? items : [];
-
       const dbCards = [];
-      for (const row of incoming) {
+      for (const row of items){
         const cards = mapDbJobToCards(row);
         if (cards && cards.length) dbCards.push(...cards);
       }
 
-      // merge
+      // merge (db + existing)
       const byId = new Map();
-      for (const c of dbCards) {
+      for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
-        if (!id) continue;
-        byId.set(id, c);
+        if (id) byId.set(id, c);
       }
-
-      for (const old of (jobs || [])) {
-        const oid = String(old?.job_id || old?.id || "").trim();
-        if (!oid) continue;
-        if (!byId.has(oid)) byId.set(oid, old);
+      for (const old of (jobs || [])){
+        const id = String(old?.job_id || old?.id || "").trim();
+        if (id && !byId.has(id)) byId.set(id, old);
       }
 
       jobs = Array.from(byId.values());
       saveJobs();
       render();
-    } catch (e) {
-      console.warn("[panel.music] hydrate exception", e);
+    } catch (e){
+      console.warn("[panel.music] hydrateFromDBOnce error", e);
     }
   }
 
-  /* ---------------- panel mount/destroy ---------------- */
   function mount(contentEl){
     hostEl = contentEl;
     alive = true;
@@ -1065,7 +881,6 @@
     listEl = hostEl.querySelector("#musicList");
     if (listEl) listEl.className = "aivo-player-list";
 
-    // bind events (tek sefer)
     if (!hostEl.__musicBound){
       hostEl.__musicBound = true;
       hostEl.addEventListener("click", onCardClick, true);
@@ -1085,63 +900,89 @@
       mainAudio.style.display = "none";
     }
 
-    // ✅ başlangıç: cache (opsiyonel) -> render
-    jobs = []; // DB truth öncelikli
+    // LS load (hızlı paint)
+    jobs = loadJobs();
     render();
-    applyMusicSearchFilter();
 
-    // ✅ DB controller panel açılır açılmaz başlar
-    startDbController();
-
-    // ✅ controller yoksa bile en az 1 kez DB’den hydrate et
+    // DB hydrate (ilk)
     hydrateFromDBOnce();
 
-    // poll (hydrate sonrası jobs dolarsa)
-    setTimeout(() => {
-      if (!alive) return;
-      jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
-    }, 200);
+    // DBJobs controller (varsa)
+    if (window.DBJobs && typeof window.DBJobs.create === "function"){
+      try { dbCtrl?.destroy?.(); } catch {}
+      dbCtrl = window.DBJobs.create({
+        app: "music",
+        debug: false,
+        pollIntervalMs: 4000,
+        hydrateEveryMs: 15000,
+        acceptJob: (job) => {
+          const a = String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
+          return !a || isMusicApp(a);
+        },
+        acceptOutput: (o) => {
+          const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
+          return !t || t === "audio";
+        },
+        onChange: (items) => {
+          if (!alive) return;
+          const safe = Array.isArray(items) ? items : [];
+          const dbCards = [];
+          for (const row of safe){
+            const cards = mapDbJobToCards(row);
+            if (cards && cards.length) dbCards.push(...cards);
+          }
 
+          const byId = new Map();
+          for (const c of dbCards){
+            const id = String(c?.job_id || c?.id || "").trim();
+            if (id) byId.set(id, c);
+          }
+          for (const old of (jobs || [])){
+            const id = String(old?.job_id || old?.id || "").trim();
+            if (id && !byId.has(id)) byId.set(id, old);
+          }
+
+          jobs = Array.from(byId.values());
+          saveJobs();
+          render();
+
+          // poll görünür kartlar
+          jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
+        }
+      });
+    }
+
+    // event bridge
     window.addEventListener("aivo:job", onJob, true);
 
-    console.log("[panel.music] mounted OK (DB controller in mount)");
+    // initial poll
+    jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
+
+    applyMusicSearchFilter();
 
     return () => destroy();
   }
 
   function destroy(){
     alive = false;
-
     window.removeEventListener("aivo:job", onJob, true);
 
     clearAllPolls();
     stopRaf();
-    stopEqLoop();
-
-    try { if (audioEl) audioEl.pause(); } catch {}
-    currentJobId = null;
 
     try { dbCtrl?.destroy?.(); } catch {}
     dbCtrl = null;
 
-    audioEl = null;
+    try { if (audioEl) audioEl.pause(); } catch {}
+    currentJobId = null;
+
+    hostEl = null;
+    listEl = null;
   }
 
   function register(){
     window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy, onSearch });
-  }
-
-  function waitForRightPanel(cb){
-    const t0 = Date.now();
-    const T = setInterval(() => {
-      if (window.RightPanel && typeof window.RightPanel.register === "function"){
-        clearInterval(T);
-        cb();
-      } else if (Date.now() - t0 > 8000){
-        clearInterval(T);
-        console.warn("[panel.music] RightPanel not ready after 8s");
-      }
-    }, 50);
+    console.log("[panel.music] registered");
   }
 
   waitForRightPanel(register);
