@@ -22,7 +22,7 @@
           box.style.padding = "12px";
           box.innerHTML = `
             <div style="display:flex;flex-direction:column;gap:10px">
-              <audio id="mainAudio" controls style="width:100%;display:none"></audio>
+             <audio id="mainAudio" style="width:100%;display:none"></audio>
               <img id="mainImage" alt="" style="width:100%;border-radius:12px;display:none" />
             </div>
           `;
