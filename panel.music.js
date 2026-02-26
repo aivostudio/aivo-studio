@@ -1013,12 +1013,19 @@ const base = String(jobId).split("::")[0];
   }
 } catch {}
 
-  job.title = (String(job.title || "").trim()) || (String(j?.title || "").trim());
-    if (j?.duration) job.__duration = j.duration;
-    if (j?.created_at) job.__createdAt = j.created_at;
+ // ✅ title boş gelirse ESKİ title'ı EZME (merge'de "" overwrite etmesin)
+const incomingTitle =
+  (String(job.title || "").trim()) ||
+  (String(j?.title || "").trim());
 
-    upsertJob(job);
-    render();
+if (incomingTitle) job.title = incomingTitle;
+else delete job.title;
+
+if (j?.duration) job.__duration = j.duration;
+if (j?.created_at) job.__createdAt = j.created_at;
+
+upsertJob(job);
+render();
 
    // auto-play sadece ORIGINAL ve ilk kez
 // if (
