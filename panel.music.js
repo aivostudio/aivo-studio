@@ -117,7 +117,7 @@ function mapDbJobToCards(j){
   let hostEl = null;
   let listEl = null;
   let alive  = true;
-  let jobs   = loadJobs();
+ let jobs = [];
 
   // single shared audio engine (custom UI controls this)
   let audioEl = null;
