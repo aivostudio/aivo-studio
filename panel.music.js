@@ -7,6 +7,7 @@
    - ✅ /api/music/status parse: topmediai.data[0].audio_url desteklenir.
    - ✅ DB source-of-truth (window.DBJobs) mount'ta kurulur (play'e basınca değil).
    - ✅ aivo:job event gelince kartlar anında düşer + poll başlar.
+   - ✅ EQ bars “takılma” fix: bar NodeList cache + reconnect guard
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
@@ -103,7 +104,10 @@
 
   /* ---------------- EQ engine (beat-reactive) ---------------- */
   let eqRaf = 0;
-let eqBarsCache = { jobId: null, bars: null };
+
+  // ✅ EQ bar cache (re-render olunca querySelectorAll tekrarı “takılma” yapıyordu)
+  let eqBarsCache = { jobId: null, bars: null };
+
   function initEqEngine(){
     if(!audioEl) return;
     if(audioEl.__eqInited) return;
@@ -195,14 +199,42 @@ let eqBarsCache = { jobId: null, bars: null };
     return x;
   }
 
-  function setEqBars(L, M, H){
-    if(!currentJobId) return;
-    if(!hostEl) return;
+  // ✅ EQ bar’ları “tek sefer” bağlayan helper
+  function bindEqBarsForCurrentJob(){
+    if (!currentJobId || !hostEl) {
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
+      return null;
+    }
 
-    const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(String(currentJobId))}"]`);
-    if(!card) return;
+    const jid = String(currentJobId);
+    const card = hostEl.querySelector(
+      `.aivo-player-card[data-job-id="${CSS.escape(jid)}"]`
+    );
+
+    if (!card) {
+      eqBarsCache.jobId = jid;
+      eqBarsCache.bars = null;
+      return null;
+    }
 
     const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
+    eqBarsCache.jobId = jid;
+    eqBarsCache.bars = (bars && bars.length) ? bars : null;
+    return eqBarsCache.bars;
+  }
+
+  function setEqBars(L, M, H){
+    if(!currentJobId) return;
+
+    let bars = eqBarsCache.bars;
+    const jid = String(currentJobId);
+
+    // cache miss / job değişti / render sonrası DOM detach -> yeniden bağla
+    if (!bars || eqBarsCache.jobId !== jid || !bars[0] || !bars[0].isConnected) {
+      bars = bindEqBarsForCurrentJob();
+    }
+
     if(!bars || !bars.length) return;
 
     const v = [
@@ -241,6 +273,8 @@ let eqBarsCache = { jobId: null, bars: null };
     audioEl.onended = () => {
       setCardPlaying(currentJobId, false);
       currentJobId = null;
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
       stopRaf();
     };
     audioEl.onpause = () => {
@@ -248,7 +282,10 @@ let eqBarsCache = { jobId: null, bars: null };
       stopRaf();
     };
     audioEl.onplay = () => {
-      if (currentJobId) setCardPlaying(currentJobId, true);
+      if (currentJobId) {
+        setCardPlaying(currentJobId, true);
+        bindEqBarsForCurrentJob(); // ✅ play anında cache bağla
+      }
       startRaf();
     };
 
@@ -286,6 +323,8 @@ let eqBarsCache = { jobId: null, bars: null };
       try { audioEl.pause(); } catch {}
       setCardPlaying(jobId, false);
       currentJobId = null;
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
       stopRaf();
     }
 
@@ -321,60 +360,60 @@ let eqBarsCache = { jobId: null, bars: null };
     TMAP.clear();
   }
 
-/* ---------------- UI render ---------------- */
-function renderCard(job){
-  const jobId = job.job_id || job.id;
-  const st = job.__ui_state || "processing";
+  /* ---------------- UI render ---------------- */
+  function renderCard(job){
+    const jobId = job.job_id || job.id;
+    const st = job.__ui_state || "processing";
 
-  const title =
-    (String(job?.title || "").trim()) ||
-    (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
-    (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
+    const title =
+      (String(job?.title || "").trim()) ||
+      (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
+      (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
 
-  const sub   = job.subtitle || "";
-  const dur   = job.duration || job.__duration || "";
-  const date  = job.created_at || job.createdAt || job.__createdAt || "";
+    const sub   = job.subtitle || "";
+    const dur   = job.duration || job.__duration || "";
+    const date  = job.created_at || job.createdAt || job.__createdAt || "";
 
-  const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-  const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
-  const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
+    const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
+    const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
+    const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
-  const isReady = (st === "ready") && !!job.__audio_src;
+    const isReady = (st === "ready") && !!job.__audio_src;
 
-  // ✅ IMPORTANT: render sırasında "şu an çalan kart" state'i korunur
-  const isPlayingNow =
-    !!isReady &&
-    String(currentJobId || "") === String(jobId || "") &&
-    !!audioEl &&
-    !audioEl.paused;
+    // ✅ render sırasında “çalan kart” state'i korunur
+    const isPlayingNow =
+      !!isReady &&
+      String(currentJobId || "") === String(jobId || "") &&
+      !!audioEl &&
+      !audioEl.paused;
 
-  const tags =
-    isReady ? `${tagReady}` :
-    st === "error" ? `${tagErr}` :
-    `${tagProc}`;
+    const tags =
+      isReady ? `${tagReady}` :
+      st === "error" ? `${tagErr}` :
+      `${tagProc}`;
 
-  const leftBtn = `
-    <button class="aivo-player-btn"
-      data-action="toggle-play"
-      aria-label="Oynat/Durdur"
-      title="Oynat/Durdur"
-      ${isReady ? "" : "disabled"}
-      style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-      <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "display:none" : ""}">
-        <path d="M8 5v14l11-7z" fill="currentColor"></path>
-      </svg>
-      <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "" : "display:none"}">
-        <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-      </svg>
-      <span class="aivo-eq" aria-hidden="true">
-        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-      </span>
-    </button>`;
+    const leftBtn = `
+      <button class="aivo-player-btn"
+        data-action="toggle-play"
+        aria-label="Oynat/Durdur"
+        title="Oynat/Durdur"
+        ${isReady ? "" : "disabled"}
+        style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
+        <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "display:none" : ""}">
+          <path d="M8 5v14l11-7z" fill="currentColor"></path>
+        </svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "" : "display:none"}">
+          <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
+        </svg>
+        <span class="aivo-eq" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </span>
+      </button>`;
 
-  const metaLeft = dur ? esc(dur) : "0:00";
-  const metaRight = date ? esc(date) : "";
+    const metaLeft = dur ? esc(dur) : "0:00";
+    const metaRight = date ? esc(date) : "";
 
-  return `
+    return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
   data-src="${esc(job.__audio_src || "")}"
@@ -409,7 +448,7 @@ function renderCard(job){
     <button class="aivo-action is-danger" data-action="delete" title="Müziği Sil" aria-label="Müziği Sil">🗑</button>
   </div>
 </div>`;
-}
+  }
 
   function applyMusicSearchFilter(){
     const q = String(__searchQ || "").trim();
@@ -454,6 +493,12 @@ function renderCard(job){
 
     listEl.innerHTML = view.map(renderCard).join("");
     applyMusicSearchFilter();
+
+    // ✅ render sonrası DOM değiştiyse, EQ cache invalid olabilir
+    if (currentJobId) {
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
+    }
   }
 
   /* ---------------- play / pause / progress ---------------- */
@@ -525,6 +570,8 @@ function renderCard(job){
     if (currentJobId && currentJobId !== jobId){
       setCardPlaying(currentJobId, false);
       try { A.pause(); } catch {}
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
     }
 
     if (currentJobId === jobId && !A.paused){
@@ -534,6 +581,10 @@ function renderCard(job){
     }
 
     currentJobId = jobId;
+
+    // ✅ EQ cache bind (play basıldığı an)
+    bindEqBarsForCurrentJob();
+
     setCardPlaying(jobId, true);
 
     try{
@@ -610,138 +661,131 @@ function renderCard(job){
     toast("info", `Action: ${act}`);
   }
 
-/* ---------------- polling ---------------- */
-const POLL_BUSY = new Set();   // key: cardId
-const POLL_LAST = new Map();   // key: cardId -> ts(ms)
+  /* ---------------- polling ---------------- */
+  const POLL_BUSY = new Set();   // key: cardId
+  const POLL_LAST = new Map();   // key: cardId -> ts(ms)
 
-// Worker origin: global varsa onu kullan, yoksa fallback
-const MUSIC_WORKER_ORIGIN =
-  (typeof WORKER_ORIGIN === "string" && WORKER_ORIGIN) ||
-  "https://aivo-archive-worker.aivostudioapp.workers.dev";
+  const MUSIC_WORKER_ORIGIN =
+    (typeof WORKER_ORIGIN === "string" && WORKER_ORIGIN) ||
+    "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-function pickAudioFromStatus(j){
-  // ✅ topmediai en kritik alanlar
-  const tm0 = j?.topmediai?.data?.[0] || null;
+  function pickAudioFromStatus(j){
+    const tm0 = j?.topmediai?.data?.[0] || null;
 
-  const src =
-    j?.audio?.src ||
-    j?.audio_src ||
-    j?.result?.audio?.src ||
-    j?.result?.src ||
-    j?.job?.audio?.src ||
-    tm0?.audio_url ||
-    "";
+    const src =
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      j?.job?.audio?.src ||
+      tm0?.audio_url ||
+      "";
 
-  const dur =
-    j?.duration ||
-    j?.audio?.duration ||
-    j?.result?.duration ||
-    tm0?.duration ||
-    "";
+    const dur =
+      j?.duration ||
+      j?.audio?.duration ||
+      j?.result?.duration ||
+      tm0?.duration ||
+      "";
 
-  const outId =
-    j?.audio?.output_id ||
-    j?.output_id ||
-    j?.result?.output_id ||
-    j?.job?.output_id ||
-    "";
+    const outId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      j?.job?.output_id ||
+      "";
 
-  const title =
-    j?.title ||
-    tm0?.title ||
-    j?.job?.title ||
-    "";
+    const title =
+      j?.title ||
+      tm0?.title ||
+      j?.job?.title ||
+      "";
 
-  const state =
-    j?.state ||
-    j?.status ||
-    j?.job?.status ||
-    "";
+    const state =
+      j?.state ||
+      j?.status ||
+      j?.job?.status ||
+      "";
 
-  return {
-    src: String(src || "").trim(),
-    duration: dur,
-    output_id: String(outId || "").trim(),
-    title: String(title || "").trim(),
-    state: String(state || "").trim(),
-  };
-}
-
-async function poll(cardId){
-  if (!alive || !cardId) return;
-
-  // throttle
-  const now = Date.now();
-  const last = POLL_LAST.get(cardId) || 0;
-  if (now - last < 1200) return;
-  POLL_LAST.set(cardId, now);
-
-  // busy guard
-  if (POLL_BUSY.has(cardId)) return;
-  POLL_BUSY.add(cardId);
-
-  try{
-    clearPoll(cardId);
-
-    const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
-    const providerSongId = String(existing.__provider_song_id || "").trim();
-    const providerBase = String(cardId).split("::")[0];
-
-    // ✅ orig/rev ayrımı: songId varsa onu kullan
-    const q = encodeURIComponent(providerSongId || providerBase);
-
-    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
-      cache: "no-store",
-      credentials: "include",
-    });
-
-    let j = null;
-    try { j = await r.json(); } catch { j = null; }
-
-    if (!r.ok || !j){
-      schedulePoll(cardId, 1800);
-      return;
-    }
-
-    // backend “ok:false” döndürüyorsa retry
-    if (j.ok === false){
-      schedulePoll(cardId, 1800);
-      return;
-    }
-
-    const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
-    const st = uiState(state);
-
-    // ✅ only if src yoksa worker play fallback dene
-    const playUrl = (!src && providerBase && output_id)
-      ? `${MUSIC_WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
-      : "";
-
-    const next = {
-      job_id: cardId,
-      id: cardId,
-      __ui_state: (src || playUrl) ? "ready" : st,
-      __audio_src: src || playUrl || "",
-      output_id: output_id || existing.output_id || "",
+    return {
+      src: String(src || "").trim(),
+      duration: dur,
+      output_id: String(outId || "").trim(),
+      title: String(title || "").trim(),
+      state: String(state || "").trim(),
     };
-
-    if (duration && Number(duration) > 0) next.__duration = String(duration);
-    if (title) next.title = title; // boş title ile ezmez
-
-    upsertJob(next);
-    render();
-
-    if (next.__ui_state === "ready") return;
-    if (next.__ui_state === "error") return;
-
-    schedulePoll(cardId, 1600);
-  } catch (e){
-    schedulePoll(cardId, 2000);
-  } finally {
-    POLL_BUSY.delete(cardId);
   }
-}
-/* ---------------- /polling ---------------- */
+
+  async function poll(cardId){
+    if (!alive || !cardId) return;
+
+    const now = Date.now();
+    const last = POLL_LAST.get(cardId) || 0;
+    if (now - last < 1200) return;
+    POLL_LAST.set(cardId, now);
+
+    if (POLL_BUSY.has(cardId)) return;
+    POLL_BUSY.add(cardId);
+
+    try{
+      clearPoll(cardId);
+
+      const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+      const providerSongId = String(existing.__provider_song_id || "").trim();
+      const providerBase = String(cardId).split("::")[0];
+
+      const q = encodeURIComponent(providerSongId || providerBase);
+
+      const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+        cache: "no-store",
+        credentials: "include",
+      });
+
+      let j = null;
+      try { j = await r.json(); } catch { j = null; }
+
+      if (!r.ok || !j){
+        schedulePoll(cardId, 1800);
+        return;
+      }
+
+      if (j.ok === false){
+        schedulePoll(cardId, 1800);
+        return;
+      }
+
+      const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
+      const st = uiState(state);
+
+      const playUrl = (!src && providerBase && output_id)
+        ? `${MUSIC_WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
+        : "";
+
+      const next = {
+        job_id: cardId,
+        id: cardId,
+        __ui_state: (src || playUrl) ? "ready" : st,
+        __audio_src: src || playUrl || "",
+        output_id: output_id || existing.output_id || "",
+      };
+
+      if (duration && Number(duration) > 0) next.__duration = String(duration);
+      if (title) next.title = title;
+
+      upsertJob(next);
+      render();
+
+      if (next.__ui_state === "ready") return;
+      if (next.__ui_state === "error") return;
+
+      schedulePoll(cardId, 1600);
+    } catch (e){
+      schedulePoll(cardId, 2000);
+    } finally {
+      POLL_BUSY.delete(cardId);
+    }
+  }
+  /* ---------------- /polling ---------------- */
 
   /* ---------------- DB -> cards ---------------- */
   function mapDbJobToCards(row){
@@ -834,54 +878,48 @@ async function poll(cardId){
     poll(origId);
     poll(revId);
   }
-/* ---------------- global event bind (NO double-bind) ---------------- */
-if (!window.__AIVO_MUSIC_EVENTS__) {
-  window.__AIVO_MUSIC_EVENTS__ = {
-    attached: false,
-    host: null,
-  };
-}
 
-function setMusicHostForEvents(el){
-  window.__AIVO_MUSIC_EVENTS__.host = el || null;
+  /* ---------------- global event bind (NO double-bind) ---------------- */
+  if (!window.__AIVO_MUSIC_EVENTS__) {
+    window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
+  }
 
-  if (window.__AIVO_MUSIC_EVENTS__.attached) return;
-  window.__AIVO_MUSIC_EVENTS__.attached = true;
+  function setMusicHostForEvents(el){
+    window.__AIVO_MUSIC_EVENTS__.host = el || null;
 
-  // CAPTURE: Safari'de nested button/click durumları için güvenli
-  window.addEventListener("click", (e) => {
-    try {
-      // sadece MUSIC panel aktifken
-      if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+    if (window.__AIVO_MUSIC_EVENTS__.attached) return;
+    window.__AIVO_MUSIC_EVENTS__.attached = true;
 
-      const H = window.__AIVO_MUSIC_EVENTS__.host;
-      if (!H) return;
+    window.addEventListener("click", (e) => {
+      try {
+        if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-      // sadece host içinden gelen event
-      if (!H.contains(e.target)) return;
+        const H = window.__AIVO_MUSIC_EVENTS__.host;
+        if (!H) return;
+        if (!H.contains(e.target)) return;
 
-      onCardClick(e);
-    } catch (err) {
-      console.warn("[panel.music] click handler error", err);
-    }
-  }, true);
+        onCardClick(e);
+      } catch (err) {
+        console.warn("[panel.music] click handler error", err);
+      }
+    }, true);
 
-  window.addEventListener("pointerdown", (e) => {
-    try {
-      if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+    window.addEventListener("pointerdown", (e) => {
+      try {
+        if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-      const H = window.__AIVO_MUSIC_EVENTS__.host;
-      if (!H) return;
+        const H = window.__AIVO_MUSIC_EVENTS__.host;
+        if (!H) return;
+        if (!H.contains(e.target)) return;
 
-      if (!H.contains(e.target)) return;
+        if (e.target.closest(".aivo-progress")) onProgressSeek(e);
+      } catch (err) {
+        console.warn("[panel.music] pointer handler error", err);
+      }
+    }, true);
+  }
+  /* ---------------- /global event bind ---------------- */
 
-      if (e.target.closest(".aivo-progress")) onProgressSeek(e);
-    } catch (err) {
-      console.warn("[panel.music] pointer handler error", err);
-    }
-  }, true);
-}
-/* ---------------- /global event bind ---------------- */
   /* ---------------- panel integration ---------------- */
   function waitForRightPanel(cb){
     const t0 = Date.now();
@@ -931,7 +969,6 @@ function setMusicHostForEvents(el){
         if (cards && cards.length) dbCards.push(...cards);
       }
 
-      // merge (db + existing)
       const byId = new Map();
       for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
@@ -967,7 +1004,6 @@ function setMusicHostForEvents(el){
     listEl = hostEl.querySelector("#musicList");
     if (listEl) listEl.className = "aivo-player-list";
 
-
     ensureAudio();
 
     // mainAudio bar'ı kapat
@@ -978,6 +1014,10 @@ function setMusicHostForEvents(el){
       try { mainAudio.load?.(); } catch {}
       mainAudio.style.display = "none";
     }
+
+    // EQ cache reset (mount'ta temiz başla)
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
 
     // LS load (hızlı paint)
     jobs = loadJobs();
@@ -1044,7 +1084,7 @@ function setMusicHostForEvents(el){
 
   function destroy(){
     alive = false;
-       setMusicHostForEvents(null);
+    setMusicHostForEvents(null);
     window.removeEventListener("aivo:job", onJob, true);
 
     clearAllPolls();
@@ -1055,6 +1095,10 @@ function setMusicHostForEvents(el){
 
     try { if (audioEl) audioEl.pause(); } catch {}
     currentJobId = null;
+
+    // EQ cache reset
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
 
     hostEl = null;
     listEl = null;
