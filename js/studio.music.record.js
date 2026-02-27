@@ -192,16 +192,16 @@ function fitCanvas(canvas) {
 
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
+  // CSS size (layout)
   canvas.style.width = width + "px";
   canvas.style.height = height + "px";
 
+  // Backing store (pixel)
   canvas.width = Math.floor(width * dpr);
   canvas.height = Math.floor(height * dpr);
 
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  return { w: width, h: height, dpr };
+  // ❗️setTransform YOK (double-scale’i kesiyoruz)
+  return { w: canvas.width, h: canvas.height, dpr };
 }
 
   function drawWaveformLoop(ctx, canvas, analyser, dataArray, stopFlagRef) {
