@@ -1,4 +1,43 @@
 (function () {
+  function initMusicCharCounters(module) {
+    // module scoped selectors (safer)
+    const counters = module.querySelectorAll(".char-counter[data-counter-for]");
+    if (!counters || !counters.length) return;
+
+    const bindOne = (counterEl) => {
+      const id = counterEl.getAttribute("data-counter-for");
+      if (!id) return;
+
+      const ta = module.querySelector(`#${CSS.escape(id)}`);
+      if (!ta) return;
+
+      const maxAttr = ta.getAttribute("maxlength");
+      const max =
+        (maxAttr && Number(maxAttr)) ||
+        (id === "lyrics" ? 5000 : id === "prompt" ? 500 : 0);
+
+      // avoid double bind
+      if (ta.__aivoCounterBound) return;
+      ta.__aivoCounterBound = true;
+
+      counterEl.setAttribute("aria-live", "polite");
+
+      const render = () => {
+        const len = (ta.value || "").length;
+        counterEl.textContent = `${len} / ${max}`;
+
+        const over = max > 0 && len > max;
+        counterEl.style.color = over ? "#ff4d6d" : "";
+        counterEl.style.fontWeight = over ? "700" : "";
+      };
+
+      ta.addEventListener("input", render);
+      render();
+    };
+
+    counters.forEach(bindOne);
+  }
+
   function tryInit() {
     const module = document.querySelector("#moduleHost section[data-module='music']");
     if (!module) return false;
@@ -46,10 +85,13 @@
       });
     }
 
+    // ✅ CHAR COUNTERS (prompt / lyrics)
+    initMusicCharCounters(module);
+
     // backward compat
     window.switchMusicView = function () { return true; };
 
-    console.log("[AIVO] music.module READY (mode toggle ok)");
+    console.log("[AIVO] music.module READY (mode toggle ok, counters ok)");
     return true;
   }
 
