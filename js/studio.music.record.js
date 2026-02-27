@@ -759,7 +759,9 @@
       window.dispatchEvent(new CustomEvent("aivo:music:recorded", { detail: { file, blob: lastBlob || null } }));
 
       // 3) close modal ONLY here
-      cleanup(true);
+      // Modal kapanmasın: sadece “kullanıma alındı” geri bildirimi ver
+      ui.hintEl.textContent = "Kayıt kullanıma alındı ✅";
+      showActions(false);
     }
 
     function showPreview(blob) {
