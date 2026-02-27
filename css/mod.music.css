@@ -546,12 +546,20 @@
   grid-row: 2;
 }
 
-/* Kutuları kompakt yap */
-#moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt{
-  min-height: 190px;
+/* Row-2: Prompt & Lyrics eşit yükseklik (parent + textarea) */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#prompt),
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#lyrics){
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
 }
+
+#moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt,
 #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
-  min-height: 230px;
+  flex: 1;
+  min-height: 230px;   /* ikisi de aynı, eşit olsun */
+  box-sizing: border-box;
 }
 
 /* 3) Upload | Record -> row 3 */
@@ -564,10 +572,32 @@
   grid-row: 3;
 }
 
-/* Upload/Record kutuları kompakt */
-#moduleHost section[data-module="music"][data-mode="advanced"] .upload-box{
+/* Row-3: iki kutu tam eşit genişlik/yükseklik */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio),
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#musicRecordBtn){
+  width: 100%;
+  min-width: 0;
+}
+
+/* Upload kutusu */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio) label.upload-box{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 14px;
-  min-height: 64px;
+  min-height: 72px;   /* Record ile eşit */
+  box-sizing: border-box;
+}
+
+/* Record butonu */
+#moduleHost section[data-module="music"][data-mode="advanced"] #musicRecordBtn{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;   /* Upload ile eşit */
+  box-sizing: border-box;
 }
 
 /* 4) Mood | Vocal -> row 4 */
@@ -578,6 +608,14 @@
 #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#vocalType){
   grid-column: 2;
   grid-row: 4;
+}
+
+/* CTA: eski gibi uzun (tam genişlik) */
+#moduleHost section[data-module="music"] #musicGenerateBtn{
+  width: 100%;
+  max-width: none;
+  display: flex;
+  justify-content: center;
 }
 
 /* Mobile fallback */
@@ -594,45 +632,13 @@
   #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#mood){ grid-row: 6; }
   #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#vocalType){ grid-row: 7; }
 
-  #moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt{ min-height: 170px; }
-  #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{ min-height: 190px; }
-}
-/* ============================= */
-/* FIX: Upload + Record eşit genişlik/yükseklik + CTA full width */
-/* (Bu bloğu mevcut advanced grid CSS'inin EN ALTINA ekle) */
-/* ============================= */
+  #moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt,
+  #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
+    min-height: 200px;
+  }
 
-/* Row3'teki iki kutu: container'lar tam genişlikte kalsın */
-#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio),
-#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#musicRecordBtn){
-  width: 100%;
-  min-width: 0;
-}
-
-/* Upload kutusu (label.upload-box) tam genişlik + aynı min-height */
-#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio) label.upload-box{
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 72px;     /* Record ile eşit görünsün */
-  box-sizing: border-box;
-}
-
-/* Record butonu tam genişlik + aynı min-height */
-#moduleHost section[data-module="music"][data-mode="advanced"] #musicRecordBtn{
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 72px;     /* Upload ile eşit */
-  box-sizing: border-box;
-}
-
-/* Alttaki CTA eski gibi uzun olsun (tam genişlik) */
-#moduleHost section[data-module="music"] #musicGenerateBtn{
-  width: 100%;
-  max-width: none;
-  display: flex;
-  justify-content: center;
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio) label.upload-box,
+  #moduleHost section[data-module="music"][data-mode="advanced"] #musicRecordBtn{
+    min-height: 68px;
+  }
 }
