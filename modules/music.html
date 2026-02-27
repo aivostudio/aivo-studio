@@ -44,7 +44,7 @@
     <div class="card">
       <div class="form-grid">
 
-        <!-- ŞARKI ADI -->
+        <!-- 1) ŞARKI ADI (FULL WIDTH) -->
         <div class="form-field full">
           <label for="songName">Şarkı Adı</label>
           <input type="text"
@@ -52,12 +52,12 @@
                  placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
         </div>
 
-        <!-- PROMPT (HER ZAMAN VAR) -->
-        <div class="form-field full">
+        <!-- 2) PROMPT (SOL / HALF) -->
+        <div class="form-field half">
           <label for="prompt">Ek Açıklama / Prompt</label>
 
           <textarea id="prompt"
-                    rows="5"
+                    rows="6"
                     maxlength="500"
                     placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
 
@@ -67,22 +67,8 @@
           </div>
         </div>
 
-        <!-- REFERANS SES (HER ZAMAN VAR) -->
-        <div class="form-field full">
-          <label>Referans Ses Yükle (opsiyonel)</label>
-
-          <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
-
-          <label class="upload-box" for="refAudio">
-            <div>
-              <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
-              <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
-            </div>
-          </label>
-        </div>
-
-        <!-- SADECE GELİŞMİŞ MOD: ŞARKI SÖZLERİ -->
-        <div class="form-field full" data-visible-in="advanced">
+        <!-- 2) LYRICS (SAĞ / HALF) - SADECE ADVANCED -->
+        <div class="form-field half" data-visible-in="advanced">
           <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
 
           <textarea id="lyrics"
@@ -96,7 +82,84 @@
           </div>
         </div>
 
-        <!-- SADECE GELİŞMİŞ MOD -->
+        <!-- 3) UPLOAD (SOL / HALF) -->
+        <div class="form-field half">
+          <label>Referans Ses Yükle (opsiyonel)</label>
+
+          <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+
+          <label class="upload-box" for="refAudio">
+            <div>
+              <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
+              <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
+            </div>
+          </label>
+        </div>
+
+     <!-- 4) RECORD (SAĞ / HALF) - SADECE ADVANCED -->
+<div class="form-field half" data-visible-in="advanced">
+  <label>Record</label>
+
+  <!-- Record trigger -->
+  <button
+    class="upload-box"
+    type="button"
+    id="musicRecordBtn"
+    aria-haspopup="dialog"
+    aria-controls="musicRecordModal"
+  >
+    <div>
+      <strong>🎙️ Record</strong><br />
+      <span class="upload-hint">Tıkla ve kayda başla</span>
+    </div>
+  </button>
+
+  <!-- Recorded preview (JS dolduracak) -->
+  <div class="record-preview" id="musicRecordPreview" hidden>
+    <audio id="musicRecordAudio" controls></audio>
+    <input type="hidden" id="musicRecordBlobUrl" value="" />
+  </div>
+</div>
+
+<!-- RECORD MODAL (Suno gibi) - JS aç/kapatacak -->
+<div class="modal" id="musicRecordModal" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+  <div class="modal__backdrop" data-close="musicRecordModal"></div>
+
+  <div class="modal__panel" role="document">
+    <div class="modal__head">
+      <div class="modal__title" id="musicRecordTitle">Recording</div>
+      <button class="modal__close" type="button" data-close="musicRecordModal" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal__body">
+      <div class="rec-timer" id="musicRecTimer">00:00</div>
+
+      <!-- dalga alanı (JS çizdirir / sonra canvas koyarız) -->
+      <div class="rec-wave" id="musicRecWave"></div>
+
+      <!-- Record button -->
+      <button class="rec-bigbtn" type="button" id="musicRecToggleBtn" aria-pressed="false">
+        ●
+      </button>
+    </div>
+
+    <div class="modal__foot">
+      <button class="btn" type="button" id="musicRecStartOverBtn">Start Over</button>
+      <button class="btn btn-primary" type="button" id="musicRecSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+          <!-- Coming soon / disabled UI -->
+          <div class="upload-box is-disabled" aria-disabled="true">
+            <div>
+              <strong>🎙️ Record</strong><br />
+              <span class="upload-hint">Coming soon</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5) MOOD + VOCAL (EN ALT / 2 KOLON) -->
         <div class="form-field half" data-visible-in="advanced">
           <label for="mood">Ruh Hali (Mood)</label>
           <select id="mood">
