@@ -834,7 +834,7 @@ function onCardClick(e){
         output_id: output_id || existing.output_id || "",
       };
 
-      if (duration && Number(duration) > 0) next.__duration = String(duration);
+      if (duration) next.__duration = String(duration);
       if (title) next.title = title;
 
       upsertJob(next);
