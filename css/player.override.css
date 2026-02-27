@@ -149,13 +149,3 @@
   0%,100%{ opacity:1 }
   50%{ opacity:.45 }
 }
-/* 📄 (lyrics) — sadece ikon rengi */
-#rightPanelHost .aivo-action[data-action="lyrics"]{
-  background: rgba(255,255,255,.06) !important; /* diğer butonlarla aynı */
-}
-
-#rightPanelHost .aivo-action[data-action="lyrics"] svg,
-#rightPanelHost .aivo-action[data-action="lyrics"] path{
-  stroke: #b98cff !important;
-  fill: #b98cff !important;
-}
