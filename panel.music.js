@@ -1050,17 +1050,16 @@ function setEqBars(L, M, H){
       }
 
       // sonra eski (LS) -> merge
-      for (const old of (jobs || [])){
-        const id = String(old?.job_id || old?.id || "").trim();
-        if (!id) continue;
+    for (const old of (jobs || [])){
+  const id = String(old?.job_id || old?.id || "").trim();
+  if (!id) continue;
 
-        if (byId.has(id)) {
-          const merged = mergePreferDbButKeepReady(old, byId.get(id));
-          byId.set(id, merged);
-        } else {
-          byId.set(id, old);
-        }
-      }
+  if (byId.has(id)) {
+    const merged = mergePreferDbButKeepReady(old, byId.get(id));
+    byId.set(id, merged);
+  }
+  // else yok: DB’de olmayan LS item’ı geri eklenmez
+}
 
       jobs = Array.from(byId.values());
       saveJobs();
