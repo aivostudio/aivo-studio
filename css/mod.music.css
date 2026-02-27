@@ -597,3 +597,42 @@
   #moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt{ min-height: 170px; }
   #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{ min-height: 190px; }
 }
+/* ============================= */
+/* FIX: Upload + Record eşit genişlik/yükseklik + CTA full width */
+/* (Bu bloğu mevcut advanced grid CSS'inin EN ALTINA ekle) */
+/* ============================= */
+
+/* Row3'teki iki kutu: container'lar tam genişlikte kalsın */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio),
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#musicRecordBtn){
+  width: 100%;
+  min-width: 0;
+}
+
+/* Upload kutusu (label.upload-box) tam genişlik + aynı min-height */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio) label.upload-box{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;     /* Record ile eşit görünsün */
+  box-sizing: border-box;
+}
+
+/* Record butonu tam genişlik + aynı min-height */
+#moduleHost section[data-module="music"][data-mode="advanced"] #musicRecordBtn{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;     /* Upload ile eşit */
+  box-sizing: border-box;
+}
+
+/* Alttaki CTA eski gibi uzun olsun (tam genişlik) */
+#moduleHost section[data-module="music"] #musicGenerateBtn{
+  width: 100%;
+  max-width: none;
+  display: flex;
+  justify-content: center;
+}
