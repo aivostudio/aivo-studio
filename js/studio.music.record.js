@@ -610,15 +610,22 @@
 
       const blob = lastBlob || (await (await fetch(ui.audioEl.src)).blob());
 
-      const ext =
-        (blob.type.includes("mp4") && "m4a") ||
-        (blob.type.includes("mpeg") && "mp3") ||
-        (blob.type.includes("webm") && "webm") ||
-        "webm";
+            const ext =
+          (blob.type.includes("mp4") && "m4a") ||
+          (blob.type.includes("mpeg") && "mp3") ||
+          (blob.type.includes("webm") && "webm") ||
+          "webm";
 
-      const fileName = `recording-${Date.now()}.${ext}`;
-      return new File([blob], fileName, { type: blob.type || "audio/webm" });
-    }
+        const fileName = `recording-${Date.now()}.${ext}`;
+
+        // Safari: make sure MIME is clearly "audio/*" so Share Sheet shows it as audio (not video)
+        const safeType =
+          (ext === "m4a" && "audio/mp4") ||
+          (ext === "mp3" && "audio/mpeg") ||
+          (ext === "webm" && "audio/webm") ||
+          "audio/webm";
+
+        const file = new File([blob], fileName, { type: safeType });
 
     function showActions(open) {
       const { actions } = ensurePreviewDOM();
