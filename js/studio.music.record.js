@@ -635,21 +635,27 @@
       }
     }
 
-    async function doDownload(file) {
-      // Safari-safe: no navigation
-      const dlUrl = URL.createObjectURL(file);
+      async function doDownload(file) {
+      try {
+        const url = URL.createObjectURL(file);
 
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      iframe.src = dlUrl;
-      document.body.appendChild(iframe);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name || `recording-${Date.now()}.webm`;
+        a.style.display = "none";
 
-      setTimeout(() => {
-        try { iframe.remove(); } catch (_) {}
-        try { URL.revokeObjectURL(dlUrl); } catch (_) {}
-      }, 60_000);
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          try { a.remove(); } catch (_) {}
+          try { URL.revokeObjectURL(url); } catch (_) {}
+        }, 1500);
+      } catch (e) {
+        console.error("[AIVO][REC] doDownload failed:", e);
+        throw e;
+      }
     }
-
     async function doUse(file) {
       // 1) fill ref input (if exists)
       const input = moduleEl.querySelector(SELECTORS.refAudioInput);
