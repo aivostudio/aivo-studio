@@ -660,3 +660,10 @@
 #moduleHost section[data-module="music"][data-mode="basic"] .form-grid{
   grid-template-columns: 1fr;
 }
+/* ============================= */
+/* MUSIC – BASIC MODE PROMPT SIZE */
+/* ============================= */
+
+#moduleHost section[data-module="music"][data-mode="basic"] textarea#prompt{
+  min-height: 260px;   /* önce 190 civarıydı, şimdi daha dengeli */
+}
