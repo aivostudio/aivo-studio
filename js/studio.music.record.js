@@ -11,6 +11,7 @@
   // ---------- tiny helpers ----------
   const pad2 = (n) => String(n).padStart(2, "0");
   const fmtTime = (sec) => `${pad2(Math.floor(sec / 60))}:${pad2(sec % 60)}`;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function injectCSSOnce() {
     if (document.getElementById("aivoRecCSS")) return;
@@ -24,7 +25,7 @@
         backdrop-filter: blur(6px);
       }
 
-      /* ✅ FIX: modal ölçüleri + flex düzeni (buton asla kesilmesin) */
+      /* modal */
       .aivoRecModal{
         width:min(920px, calc(100vw - 80px));
         height:min(520px, calc(100vh - 140px));
@@ -43,10 +44,11 @@
         position:relative;
       }
       .aivoRecTime{
-        font-weight:800;
-        letter-spacing:.12em;
+        font-weight:900;
+        letter-spacing:.14em;
         color:rgba(255,255,255,.92);
         font-size:20px;
+        font-variant-numeric: tabular-nums;
       }
       .aivoRecClose{
         position:absolute; right:14px; top:12px;
@@ -60,7 +62,6 @@
         font-size:22px;
       }
 
-      /* ✅ FIX: body alanı taşmasın, butonu aşağı itmesin */
       .aivoRecBody{
         flex:1;
         min-height:0;
@@ -70,7 +71,6 @@
         padding: 10px 18px 0;
       }
 
-      /* ✅ FIX: canvas her zaman body içinde kalsın */
       .aivoRecCanvas{
         width:100%;
         height:100%;
@@ -84,12 +84,11 @@
         left:50%; top:54%;
         transform:translate(-50%,-50%);
         color:rgba(255,255,255,.35);
-        font-weight:600;
+        font-weight:700;
         pointer-events:none;
         text-align:center;
       }
 
-      /* ✅ FIX: alt alan sabit yükseklik (kırmızı buton görünür) */
       .aivoRecBottom{
         height: 140px;
         flex: 0 0 140px;
@@ -116,7 +115,6 @@
         background: rgba(0,0,0,.35);
         box-shadow: inset 0 0 0 2px rgba(255,255,255,.10);
       }
-      /* recording state = blink/pulse */
       .aivoRecBtn.is-recording{
         animation: aivoRecPulse 1s ease-in-out infinite;
         box-shadow: 0 14px 60px rgba(255,59,48,.45);
@@ -141,20 +139,19 @@
         background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       }
 
-      /* native audio tamamen gizli */
-      .aivoRecAudio{
-        display:none !important;
-      }
+      /* native audio hidden */
+      .aivoRecAudio{ display:none !important; }
 
       .aivoPlyBtn{
         width:84px; height:84px;
-        border-radius:16px;
+        border-radius:18px;
         border:1px solid rgba(255,255,255,.10);
-        background:rgba(255,255,255,.05);
+        background:rgba(255,255,255,.06);
         cursor:pointer;
         display:flex; align-items:center; justify-content:center;
-        box-shadow: 0 16px 60px rgba(0,0,0,.35);
+        box-shadow: 0 18px 70px rgba(0,0,0,.38);
       }
+      .aivoPlyBtn:hover{ background:rgba(255,255,255,.08); }
       .aivoPlyBtn:active{ transform: translateY(1px); }
 
       .aivoPlyIcon{ width:0; height:0; }
@@ -187,7 +184,7 @@
         width:100%;
         -webkit-appearance:none;
         appearance:none;
-        height:10px;
+        height:12px;
         border-radius:999px;
         background: rgba(255,255,255,.08);
         outline:none;
@@ -202,7 +199,7 @@
         background: rgba(255,255,255,.92);
         border: 4px solid rgba(120,90,255,.55);
         box-shadow: 0 10px 30px rgba(0,0,0,.35);
-        margin-top:-4px;
+        margin-top:-3px;
       }
 
       .aivoPlyTime{
@@ -210,7 +207,7 @@
         align-items:baseline;
         gap:10px;
         color: rgba(255,255,255,.72);
-        font-weight:800;
+        font-weight:900;
         letter-spacing:.06em;
         font-variant-numeric: tabular-nums;
       }
@@ -229,9 +226,7 @@
         cursor:pointer;
         white-space:nowrap;
       }
-      .aivoRecSave:hover{
-        background:rgba(255,255,255,.12);
-      }
+      .aivoRecSave:hover{ background:rgba(255,255,255,.12); }
     `;
     document.head.appendChild(css);
   }
@@ -260,7 +255,7 @@
 
         <div class="aivoRecPreview" style="display:none">
           <audio class="aivoRecAudio" controls preload="metadata"></audio>
-          <button class="aivoRecSave">Save</button>
+          <button class="aivoRecSave" type="button">Save</button>
         </div>
       </div>
     `;
@@ -285,30 +280,25 @@
 
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-    // CSS size (layout)
     canvas.style.width = width + "px";
     canvas.style.height = height + "px";
 
-    // Backing store (pixel)
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(height * dpr);
 
-    // ❗️setTransform YOK (double-scale’i kesiyoruz)
     return { w: canvas.width, h: canvas.height, dpr };
   }
 
   function drawWaveformLoop(ctx, canvas, analyser, dataArray, stopFlagRef) {
-    const { w, h } = fitCanvas(canvas);
-
     function tick() {
       if (stopFlagRef.stop) return;
 
-      // background
+      const { w, h } = fitCanvas(canvas);
+
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "rgba(255,255,255,0.00)";
       ctx.fillRect(0, 0, w, h);
 
-      // midline
       ctx.strokeStyle = "rgba(255,255,255,0.10)";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -316,10 +306,9 @@
       ctx.lineTo(w, h / 2);
       ctx.stroke();
 
-      // waveform
       analyser.getByteTimeDomainData(dataArray);
 
-      ctx.strokeStyle = "rgba(255,255,255,0.60)";
+      ctx.strokeStyle = "rgba(255,255,255,0.62)";
       ctx.lineWidth = 3;
       ctx.beginPath();
 
@@ -327,7 +316,7 @@
       let x = 0;
 
       for (let i = 0; i < dataArray.length; i++) {
-        const v = dataArray[i] / 128.0; // 0..2
+        const v = dataArray[i] / 128.0;
         const y = (v * h) / 2;
 
         if (i === 0) ctx.moveTo(x, y);
@@ -359,53 +348,73 @@
     let startedAt = 0;
     let timer = null;
 
-    // WebAudio
+    // WebAudio (waveform)
     let audioCtx = null;
     let analyser = null;
     let dataArray = null;
     let drawStop = { stop: false };
 
-    // ✅ Preview player runtime
+    // Preview player runtime
     let previewAudio = null;
     let previewUrl = "";
     let previewBound = false;
     let isSeeking = false;
 
-    function cleanup(full = true) {
+    // Last blob (for Save)
+    let lastBlob = null;
+
+    // Beep (start/stop)
+    const beep = (freq = 880, ms = 70, type = "sine") => {
       try {
-        clearInterval(timer);
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        const ctx = new AC();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+
+        o.type = type;
+        o.frequency.value = freq;
+
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ms / 1000);
+
+        o.connect(g);
+        g.connect(ctx.destination);
+
+        o.start();
+        o.stop(ctx.currentTime + ms / 1000 + 0.02);
+
+        setTimeout(() => {
+          try { ctx.close(); } catch (_) {}
+        }, ms + 80);
       } catch (_) {}
+    };
+
+    function cleanup(full = true) {
+      try { clearInterval(timer); } catch (_) {}
       timer = null;
 
       drawStop.stop = true;
 
-      try {
-        mediaRecorder && mediaRecorder.state !== "inactive" && mediaRecorder.stop();
-      } catch (_) {}
+      try { mediaRecorder && mediaRecorder.state !== "inactive" && mediaRecorder.stop(); } catch (_) {}
       mediaRecorder = null;
 
-      try {
-        stream && stream.getTracks().forEach((t) => t.stop());
-      } catch (_) {}
+      try { stream && stream.getTracks().forEach((t) => t.stop()); } catch (_) {}
       stream = null;
 
-      try {
-        audioCtx && audioCtx.state !== "closed" && audioCtx.close();
-      } catch (_) {}
+      try { audioCtx && audioCtx.state !== "closed" && audioCtx.close(); } catch (_) {}
       audioCtx = null;
       analyser = null;
       dataArray = null;
 
-      // ✅ preview cleanup
-      try {
-        previewAudio && previewAudio.pause();
-      } catch (_) {}
+      try { previewAudio && previewAudio.pause(); } catch (_) {}
       previewAudio = null;
 
-      try {
-        previewUrl && URL.revokeObjectURL(previewUrl);
-      } catch (_) {}
+      try { previewUrl && URL.revokeObjectURL(previewUrl); } catch (_) {}
       previewUrl = "";
+
+      lastBlob = null;
 
       if (full) {
         document.documentElement.style.overflow = prevOverflow || "";
@@ -417,30 +426,7 @@
       ui.timeEl.textContent = fmtTime(sec);
     }
 
-    function showPreview(blob) {
-      ui.preview.style.display = "";
-      ui.hintEl.textContent = "Kaydı dinle → Save ile ekle";
-      ui.recBtn.classList.remove("is-recording");
-
-      // cleanup previous preview (same modal multiple takes)
-      try {
-        previewAudio && previewAudio.pause();
-      } catch (_) {}
-      previewAudio = null;
-
-      try {
-        previewUrl && URL.revokeObjectURL(previewUrl);
-      } catch (_) {}
-      previewUrl = URL.createObjectURL(blob);
-
-      // hidden <audio> data-holder (save flow uses this)
-      ui.audioEl.src = previewUrl;
-
-      // controlled Audio()
-      previewAudio = new Audio(previewUrl);
-      previewAudio.preload = "metadata";
-
-      // ensure custom player DOM exists (createModal'ı değiştirmeden)
+    function ensurePreviewDOM() {
       let plyBtn = ui.preview.querySelector(".aivoPlyBtn");
       let plyIcon = ui.preview.querySelector(".aivoPlyIcon");
       let seek = ui.preview.querySelector(".aivoPlySeek");
@@ -474,7 +460,6 @@
 
         const timeRow = document.createElement("div");
         timeRow.className = "aivoPlyTime";
-        timeRow.setAttribute("aria-label", "Time");
 
         cur = document.createElement("span");
         cur.className = "aivoPlyCur";
@@ -504,14 +489,37 @@
         }
       }
 
-      // init UI
+      return { plyBtn, plyIcon, seek, cur, dur };
+    }
+
+    function showPreview(blob) {
+      lastBlob = blob;
+
+      ui.preview.style.display = "";
+      ui.hintEl.textContent = "Kaydı dinle → Save ile indir";
+      ui.recBtn.classList.remove("is-recording");
+
+      try { previewAudio && previewAudio.pause(); } catch (_) {}
+      previewAudio = null;
+
+      try { previewUrl && URL.revokeObjectURL(previewUrl); } catch (_) {}
+      previewUrl = URL.createObjectURL(blob);
+
+      // keep hidden audio as source-holder (also useful if somewhere else reads it)
+      ui.audioEl.src = previewUrl;
+
+      // controlled Audio()
+      previewAudio = new Audio(previewUrl);
+      previewAudio.preload = "metadata";
+
+      const { plyBtn, plyIcon, seek, cur, dur } = ensurePreviewDOM();
+
       plyIcon.setAttribute("data-icon", "play");
       cur.textContent = "00:00";
       dur.textContent = "00:00";
       seek.value = "0";
       seek.max = "1000";
 
-      // bind once per modal
       if (!previewBound) {
         previewBound = true;
 
@@ -526,7 +534,7 @@
           isSeeking = true;
 
           const max = Number(seek.max) || 1000;
-          const ratio = Math.max(0, Math.min(1, Number(seek.value) / max));
+          const ratio = clamp(Number(seek.value) / max, 0, 1);
           const d = Number(previewAudio.duration) || 0;
           if (d > 0) previewAudio.currentTime = ratio * d;
         });
@@ -536,7 +544,6 @@
         });
       }
 
-      // audio events (set for this previewAudio instance)
       previewAudio.onloadedmetadata = () => {
         const d = Math.floor(Number(previewAudio.duration) || 0);
         dur.textContent = fmtTime(d);
@@ -552,6 +559,7 @@
 
       previewAudio.ontimeupdate = () => {
         if (!previewAudio) return;
+
         const t = Math.floor(Number(previewAudio.currentTime) || 0);
         cur.textContent = fmtTime(t);
 
@@ -564,9 +572,7 @@
 
       previewAudio.onended = () => {
         plyIcon.setAttribute("data-icon", "play");
-        try {
-          previewAudio.currentTime = 0;
-        } catch (_) {}
+        try { previewAudio.currentTime = 0; } catch (_) {}
         seek.value = "0";
         cur.textContent = "00:00";
       };
@@ -574,6 +580,7 @@
 
     async function ensureStream() {
       if (stream) return stream;
+
       stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -582,7 +589,6 @@
         },
       });
 
-      // analyser pipeline for waveform
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioCtx.createMediaStreamSource(stream);
       analyser = audioCtx.createAnalyser();
@@ -591,7 +597,6 @@
 
       source.connect(analyser);
 
-      // start drawing immediately (as soon as stream exists)
       const ctx = ui.canvas.getContext("2d");
       drawStop = { stop: false };
       drawWaveformLoop(ctx, ui.canvas, analyser, dataArray, drawStop);
@@ -610,18 +615,19 @@
 
     async function startRecording() {
       chunks = [];
+      lastBlob = null;
+
       ui.hintEl.textContent = "Kayıt alınıyor… tekrar basınca durur";
       ui.preview.style.display = "none";
       ui.recBtn.classList.add("is-recording");
 
-      // if preview was playing, stop it
-      try {
-        previewAudio && previewAudio.pause();
-      } catch (_) {}
+      try { previewAudio && previewAudio.pause(); } catch (_) {}
+
+      // start beep
+      beep(980, 65, "sine");
 
       const s = await ensureStream();
 
-      // choose mime
       const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/mpeg"];
       const mimeType = preferred.find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
 
@@ -643,9 +649,12 @@
     function stopRecording() {
       ui.hintEl.textContent = "Durdu. İşleniyor…";
       ui.recBtn.classList.remove("is-recording");
-      try {
-        clearInterval(timer);
-      } catch (_) {}
+
+      // stop beep (double tone)
+      beep(720, 55, "sine");
+      setTimeout(() => beep(520, 75, "sine"), 80);
+
+      try { clearInterval(timer); } catch (_) {}
       timer = null;
 
       try {
@@ -675,13 +684,12 @@
       }
     });
 
-    // Save → #refAudio input’una dosya olarak bas
+    // Save → indir + #refAudio input’una bas (ikisi birden)
     ui.saveBtn.addEventListener("click", async () => {
-      if (!ui.audioEl.src) return;
+      if (!lastBlob && !ui.audioEl.src) return;
 
       try {
-        const res = await fetch(ui.audioEl.src);
-        const blob = await res.blob();
+        const blob = lastBlob || (await (await fetch(ui.audioEl.src)).blob());
 
         const ext =
           (blob.type.includes("mp4") && "m4a") ||
@@ -689,8 +697,23 @@
           (blob.type.includes("webm") && "webm") ||
           "webm";
 
-        const file = new File([blob], `recording-${Date.now()}.${ext}`, { type: blob.type || "audio/webm" });
+        const fileName = `recording-${Date.now()}.${ext}`;
+        const file = new File([blob], fileName, { type: blob.type || "audio/webm" });
 
+        // 1) download
+        const dlUrl = URL.createObjectURL(file);
+        const a = document.createElement("a");
+        a.href = dlUrl;
+        a.download = fileName;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => {
+          try { URL.revokeObjectURL(dlUrl); } catch (_) {}
+        }, 1500);
+
+        // 2) also fill ref input (if exists)
         const input = moduleEl.querySelector(SELECTORS.refAudioInput);
         if (input && input.type === "file") {
           const dt = new DataTransfer();
@@ -730,7 +753,7 @@
       openRecorder(moduleEl);
     });
 
-    console.log("[AIVO] studio.music.record READY (waveform + blink)");
+    console.log("[AIVO] studio.music.record READY (waveform + player + beep + download)");
     return true;
   }
 
