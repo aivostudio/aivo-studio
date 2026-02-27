@@ -854,6 +854,7 @@ async function actionDelete(card){
     ).trim();
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
+     const dbJobId = String(row?.id || "").trim();
     if (!baseId) return [];
 
     const songIds = Array.isArray(meta?.provider_song_ids)
@@ -873,8 +874,9 @@ async function actionDelete(card){
       : "processing";
 
     const baseCommon = {
-      type: "music",
-      provider_job_id: provider_job_id || baseId,
+  type: "music",
+  __db_job_id: dbJobId,
+  provider_job_id: provider_job_id || baseId,
       __ui_state: st,
       // ✅ DB’den boş gelirse bile merge’de eski src korunacak (aşağıda)
       __audio_src: String(meta?.audio_src || meta?.audioUrl || "").trim(),
