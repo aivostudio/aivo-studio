@@ -486,34 +486,30 @@
   100% { transform: scaleY(.45); opacity: .8; }
 }
 /* ============================= */
-/* MUSIC – TEXTAREA COUNTERS    */
+/* MUSIC – TEXTAREA SIZE TUNING */
 /* ============================= */
 
 .musicPage .form-field textarea {
-  min-height: 140px; /* çok dev görünmemesi için dengeli yükseklik */
+  min-height: 110px;   /* genel küçültme */
+  padding: 14px;
+  resize: vertical;
 }
 
 .musicPage .form-field textarea#lyrics {
-  min-height: 180px; /* lyrics biraz daha büyük */
+  min-height: 140px;   /* sözler biraz daha büyük ama abartı değil */
 }
 
+.musicPage .form-field textarea#prompt {
+  min-height: 100px;   /* prompt daha kompakt */
+}
+
+/* Counter */
 .musicPage .char-counter {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   text-align: right;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  opacity: 0.6;
+  opacity: 0.55;
   transition: color 0.2s ease, opacity 0.2s ease;
-}
-
-.musicPage .char-counter:hover {
-  opacity: 0.9;
-}
-
-/* Limit aşımı rengi (JS inline override da var ama class için hazır) */
-.musicPage .char-counter.is-over {
-  color: #ff4d6d;
-  font-weight: 700;
-  opacity: 1;
 }
