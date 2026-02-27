@@ -257,24 +257,12 @@
           <button class="aivoRecBtn" aria-label="Kayıt başlat / durdur"></button>
         </div>
 
-               <div class="aivoRecPreview" style="display:none">
+        <div class="aivoRecPreview" style="display:none">
           <audio class="aivoRecAudio" controls preload="metadata"></audio>
-
-          <button class="aivoPlyBtn" type="button" aria-label="Play/Pause">
-            <span class="aivoPlyIcon" data-icon="play"></span>
-          </button>
-
-          <div class="aivoPlyMid">
-            <input class="aivoPlySeek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek" />
-            <div class="aivoPlyTime" aria-label="Time">
-              <span class="aivoPlyCur">00:00</span>
-              <span class="aivoPlySep">/</span>
-              <span class="aivoPlyDur">00:00</span>
-            </div>
-          </div>
-
-          <button class="aivoRecSave" type="button">Save</button>
+          <button class="aivoRecSave">Save</button>
         </div>
+      </div>
+    `;
 
     const modal = overlay.querySelector(".aivoRecModal");
     const closeBtn = overlay.querySelector(".aivoRecClose");
@@ -376,12 +364,6 @@ function fitCanvas(canvas) {
     let dataArray = null;
     let drawStop = { stop: false };
 
-    // preview-player runtime state
-    let previewAudio = null;   // Audio instance
-    let previewUrl = "";       // objectURL
-    let previewBound = false;  // bind guards
-    let isSeeking = false;
-
     function cleanup(full = true) {
       try { clearInterval(timer); } catch (_) {}
       timer = null;
@@ -399,115 +381,21 @@ function fitCanvas(canvas) {
       analyser = null;
       dataArray = null;
 
-      // ✅ preview cleanup
-      try { previewAudio && previewAudio.pause(); } catch (_) {}
-      previewAudio = null;
-
-      try { previewUrl && URL.revokeObjectURL(previewUrl); } catch (_) {}
-      previewUrl = "";
-
       if (full) {
         document.documentElement.style.overflow = prevOverflow || "";
         ui.overlay.remove();
       }
     }
 
+    function setTime(sec) {
+      ui.timeEl.textContent = fmtTime(sec);
+    }
+
     function showPreview(blob) {
       ui.preview.style.display = "";
+      ui.audioEl.src = URL.createObjectURL(blob);
       ui.hintEl.textContent = "Kaydı dinle → Save ile ekle";
       ui.recBtn.classList.remove("is-recording");
-
-      // old objectURL cleanup (same modal multiple takes)
-      try { previewUrl && URL.revokeObjectURL(previewUrl); } catch (_) {}
-      previewUrl = URL.createObjectURL(blob);
-
-      // keep hidden <audio> as a fallback data-holder (still hidden via CSS)
-      ui.audioEl.src = previewUrl;
-
-      // create controlled Audio()
-      try { previewAudio && previewAudio.pause(); } catch (_) {}
-      previewAudio = new Audio(previewUrl);
-      previewAudio.preload = "metadata";
-
-      // grab player DOM
-      const btn = ui.preview.querySelector(".aivoPlyBtn");
-      const icon = ui.preview.querySelector(".aivoPlyIcon");
-      const seek = ui.preview.querySelector(".aivoPlySeek");
-      const cur = ui.preview.querySelector(".aivoPlyCur");
-      const dur = ui.preview.querySelector(".aivoPlyDur");
-
-      // safe guards
-      if (!btn || !icon || !seek || !cur || !dur) {
-        console.warn("[AIVO][REC] preview player DOM missing");
-        return;
-      }
-
-      // init UI
-      icon.setAttribute("data-icon", "play");
-      cur.textContent = "00:00";
-      dur.textContent = "00:00";
-      seek.value = "0";
-      seek.max = "1000";
-
-      // bind once per modal
-      if (!previewBound) {
-        previewBound = true;
-
-        btn.addEventListener("click", () => {
-          if (!previewAudio) return;
-          if (previewAudio.paused) {
-            previewAudio.play().catch(() => {});
-          } else {
-            previewAudio.pause();
-          }
-        });
-
-        seek.addEventListener("input", () => {
-          if (!previewAudio) return;
-          isSeeking = true;
-          const max = Number(seek.max) || 1000;
-          const ratio = Math.max(0, Math.min(1, Number(seek.value) / max));
-          const d = Number(previewAudio.duration) || 0;
-          if (d > 0) previewAudio.currentTime = ratio * d;
-        });
-
-        seek.addEventListener("change", () => {
-          isSeeking = false;
-        });
-      }
-
-      // audio events (re-assign safely)
-      previewAudio.onloadedmetadata = () => {
-        const d = Math.floor(Number(previewAudio.duration) || 0);
-        dur.textContent = fmtTime(d);
-      };
-
-      previewAudio.onplay = () => {
-        icon.setAttribute("data-icon", "pause");
-      };
-
-      previewAudio.onpause = () => {
-        icon.setAttribute("data-icon", "play");
-      };
-
-      previewAudio.ontimeupdate = () => {
-        if (!previewAudio) return;
-        const t = Math.floor(Number(previewAudio.currentTime) || 0);
-        cur.textContent = fmtTime(t);
-
-        const d = Number(previewAudio.duration) || 0;
-        if (d > 0 && !isSeeking) {
-          const max = Number(seek.max) || 1000;
-          seek.value = String(Math.round((previewAudio.currentTime / d) * max));
-        }
-      };
-
-      previewAudio.onended = () => {
-        icon.setAttribute("data-icon", "play");
-        try { previewAudio.currentTime = 0; } catch (_) {}
-        seek.value = "0";
-        cur.textContent = "00:00";
-      };
     }
 
     async function ensureStream() {
