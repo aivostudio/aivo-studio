@@ -32,6 +32,8 @@ async function generateMusic(payload) {
 
   function qs(sel, root=document){ return root.querySelector(sel); }
 
+  function sleep(ms){ return new Promise((r)=>setTimeout(r, ms)); }
+
   function getPrompt(){
     const el = qs(PROMPT_SEL);
     return (el?.value || "").trim();
@@ -118,6 +120,21 @@ async function generateMusic(payload) {
   async function doGenerate(){
     if (isBusy) return;
     isBusy = true;
+
+    // =========================================================
+    // ✅ BUTTON LOADING EFFECT (Cover ile aynı)
+    // - basınca disable + "Üretiliyor..." + class is-loading
+    // - minimum 3.5s sonra normale döner
+    // =========================================================
+    const btn = document.getElementById(BTN_ID);
+    const t0 = Date.now();
+    const prevText = btn ? btn.textContent : "";
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("is-loading");
+      btn.textContent = "Üretiliyor...";
+      btn.setAttribute("aria-busy", "true");
+    }
 
     try {
       const prompt = getPrompt();
@@ -332,6 +349,18 @@ async function generateMusic(payload) {
       console.error("[music.generate] error:", e);
       toastError("Müzik üretiminde hata oluştu.");
     } finally {
+      // minimum 3.5s loading görünsün (UX: basıldı hissi)
+      const minMs = 3500;
+      const dt = Date.now() - t0;
+      if (dt < minMs) await sleep(minMs - dt);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("is-loading");
+        btn.textContent = prevText || "🎵 Müzik Üret";
+        btn.removeAttribute("aria-busy");
+      }
+
       isBusy = false;
     }
   }
