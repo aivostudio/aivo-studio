@@ -650,12 +650,39 @@ function setEqBars(L, M, H){
     toast("success","İndirme başlatıldı");
   }
 
-  function actionDelete(card){
-    const jobId = card?.getAttribute("data-job-id") || "";
-    if (!jobId) return;
-    removeJob(jobId);
+  async function actionDelete(card){
+  const jobId = card?.getAttribute("data-job-id") || "";
+  if (!jobId) return;
+
+  // base UUID (jobs tablosundaki gerçek id)
+  const baseId = String(jobId).split("::")[0];
+  if (!baseId) return;
+
+  try {
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ job_id: baseId })
+    });
+
+    const j = await r.json().catch(() => null);
+
+    if (!r.ok || !j?.ok) {
+      toast("error", "Silme başarısız");
+      return;
+    }
+
+    // UI'dan iki varyantı da kaldır
+    removeJob(`${baseId}::orig`);
+    removeJob(`${baseId}::rev1`);
+
     toast("success","Silindi");
+  } catch (e){
+    console.warn("[panel.music] delete failed", e);
+    toast("error","Silme hatası");
   }
+}
 
   function onCardClick(e){
     const btn  = e.target.closest("[data-action]");
