@@ -23,9 +23,11 @@
         display:flex; align-items:center; justify-content:center;
         backdrop-filter: blur(6px);
       }
+
+      /* ✅ FIX: modal ölçüleri + flex düzeni (buton asla kesilmesin) */
       .aivoRecModal{
-        width:min(920px, calc(100vw - 32px));
-        height:min(560px, calc(100vh - 32px));
+        width:min(920px, calc(100vw - 80px));
+        height:min(520px, calc(100vh - 140px));
         border-radius:18px;
         background:rgba(18,18,22,.92);
         border:1px solid rgba(255,255,255,.10);
@@ -34,6 +36,7 @@
         display:flex; flex-direction:column;
         overflow:hidden;
       }
+
       .aivoRecTop{
         padding:16px 18px;
         display:flex; align-items:center; justify-content:center;
@@ -56,19 +59,26 @@
         display:flex; align-items:center; justify-content:center;
         font-size:22px;
       }
+
+      /* ✅ FIX: body alanı taşmasın, butonu aşağı itmesin */
       .aivoRecBody{
         flex:1;
+        min-height:0;
         display:flex;
         align-items:center;
         justify-content:center;
         padding: 10px 18px 0;
       }
+
+      /* ✅ FIX: canvas her zaman body içinde kalsın */
       .aivoRecCanvas{
         width:100%;
         height:100%;
         border-radius:14px;
         background:rgba(255,255,255,.02);
+        display:block;
       }
+
       .aivoRecHint{
         position:absolute;
         left:50%; top:54%;
@@ -78,11 +88,16 @@
         pointer-events:none;
         text-align:center;
       }
+
+      /* ✅ FIX: alt alan sabit yükseklik (kırmızı buton görünür) */
       .aivoRecBottom{
+        height: 140px;
+        flex: 0 0 140px;
         padding: 12px 18px 18px;
         display:flex; align-items:center; justify-content:center;
         border-top:1px solid rgba(255,255,255,.06);
       }
+
       .aivoRecBtn{
         width:88px; height:88px;
         border-radius:999px;
@@ -142,7 +157,6 @@
     `;
     document.head.appendChild(css);
   }
-
   // ---------- recorder modal ----------
   function createModal() {
     injectCSSOnce();
