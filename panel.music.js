@@ -649,7 +649,72 @@ function actionDownload(card){
   a.remove();
   toast("success","İndirme başlatıldı");
 }
+function actionLyrics(card){
+  const jobId = card?.getAttribute("data-job-id") || "";
+  if (!jobId) return;
 
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const title = String(existing.title || card?.querySelector?.(".aivo-player-title")?.textContent || "Şarkı Sözleri").trim();
+  const lyrics = String(existing.lyrics || "").trim();
+
+  if (!lyrics) {
+    toast("info","Bu şarkıda söz yok");
+    return;
+  }
+
+  // varsa eskisini temizle
+  const old = document.getElementById("aivoLyricsModal");
+  if (old) old.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "aivoLyricsModal";
+  modal.style.cssText = `
+    position:fixed; inset:0; z-index:999999;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.55);
+    padding:16px;
+  `;
+
+  const box = document.createElement("div");
+  box.style.cssText = `
+    width:min(720px, 100%);
+    max-height:min(70vh, 720px);
+    overflow:auto;
+    background:#0b1020;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    padding:16px 16px 14px;
+  `;
+
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">
+      <div style="font-weight:800;font-size:16px;line-height:1.2;color:#fff;">${esc(title)}</div>
+      <button data-close="1" style="
+        appearance:none;border:0;background:rgba(255,255,255,.08);color:#fff;
+        padding:8px 10px;border-radius:10px;cursor:pointer;
+      ">Kapat</button>
+    </div>
+    <pre style="
+      margin:0;
+      white-space:pre-wrap;
+      color:rgba(255,255,255,.88);
+      font-size:14px;
+      line-height:1.5;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    ">${esc(lyrics)}</pre>
+  `;
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  // kapatma: backdrop click + buton
+  modal.addEventListener("click", (e) => {
+    const closeBtn = e.target?.closest?.('[data-close="1"]');
+    if (closeBtn) return modal.remove();
+    if (e.target === modal) return modal.remove();
+  }, { passive:true });
+}
 async function actionDelete(card){
   const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
@@ -720,9 +785,10 @@ function onCardClick(e){
   e.preventDefault();
   e.stopPropagation();
 
-  if (act === "toggle-play") return togglePlayFromCard(card);
-  if (act === "download") return actionDownload(card);
-  if (act === "delete")   return actionDelete(card);
+ if (act === "toggle-play") return togglePlayFromCard(card);
+if (act === "lyrics")  return actionLyrics(card);
+if (act === "download") return actionDownload(card);
+if (act === "delete")   return actionDelete(card);
 
   toast("info", `Action: ${act}`);
 }
