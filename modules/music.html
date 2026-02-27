@@ -50,18 +50,37 @@
                  placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
         </div>
 
+        <!-- ŞARKI SÖZLERİ -->
         <div class="form-field full">
           <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
-          <textarea id="lyrics" rows="3"
-            placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+
+          <textarea id="lyrics"
+                    rows="6"
+                    maxlength="5000"
+                    placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+
+          <div class="char-counter"
+               data-counter-for="lyrics">
+            0 / 5000
+          </div>
         </div>
 
+        <!-- PROMPT -->
         <div class="form-field full">
           <label for="prompt">Ek Açıklama / Prompt</label>
-          <textarea id="prompt" rows="3"
-            placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+
+          <textarea id="prompt"
+                    rows="5"
+                    maxlength="500"
+                    placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+
+          <div class="char-counter"
+               data-counter-for="prompt">
+            0 / 500
+          </div>
         </div>
 
+        <!-- REFERANS SES -->
         <div class="form-field full">
           <label>Referans Ses Yükle (opsiyonel)</label>
 
@@ -105,15 +124,13 @@
     <!-- GENERATE -->
     <div class="card">
       <div class="form-field full">
-      <button class="primary-btn aivoBtnPrimary"
-        id="musicGenerateBtn"
-        type="button"
-        data-generate="music"
-        data-credit-cost="5">
-  🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
-</button>
-
-
+        <button class="primary-btn aivoBtnPrimary"
+                id="musicGenerateBtn"
+                type="button"
+                data-generate="music"
+                data-credit-cost="5">
+          🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
+        </button>
       </div>
     </div>
 
