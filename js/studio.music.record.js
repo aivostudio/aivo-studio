@@ -185,13 +185,24 @@
     return { overlay, modal, closeBtn, timeEl, hintEl, canvas, recBtn, preview, audioEl, saveBtn };
   }
 
-  function fitCanvas(canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
-    return { w: canvas.width, h: canvas.height, dpr };
-  }
+function fitCanvas(canvas) {
+  const parent = canvas.parentElement;
+  const width = parent.clientWidth;
+  const height = parent.clientHeight;
+
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  return { w: width, h: height, dpr };
+}
 
   function drawWaveformLoop(ctx, canvas, analyser, dataArray, stopFlagRef) {
     const { w, h } = fitCanvas(canvas);
