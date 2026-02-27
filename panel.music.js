@@ -662,11 +662,13 @@ async function actionDelete(card){
   const dbJobId = String(existing.__db_job_id || "").trim();
 
   // Eğer DB uuid yoksa: şu an delete çalışmaz (backend uuid istiyor)
-  if (!dbJobId) {
-    toast("error", "Silme başarısız (db id yok)");
-    return;
-  }
-
+ if (!dbId) {
+  // DB’de yok -> sadece UI/local sil
+  removeJob(`${baseId}::orig`);
+  removeJob(`${baseId}::rev1`);
+  toast("success","Silindi");
+  return;
+}
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
