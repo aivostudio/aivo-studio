@@ -513,21 +513,3 @@
   opacity: 0.55;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
-/* ============================= */
-/* MUSIC – BASIC vs ADVANCED UI */
-/* ============================= */
-
-/* Basit modda lyrics zaten hidden olacak (JS). Ek olarak boşluk/denge: */
-#moduleHost section[data-module="music"][data-mode="basic"] .form-grid{
-  gap: 14px;
-}
-
-/* Gelişmiş mod: lyrics biraz daha büyük olsun */
-#moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
-  min-height: 220px;
-}
-
-/* Gelişmiş mod: prompt çok uzamasın */
-#moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt{
-  min-height: 110px;
-}
