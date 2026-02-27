@@ -700,18 +700,20 @@
         const fileName = `recording-${Date.now()}.${ext}`;
         const file = new File([blob], fileName, { type: blob.type || "audio/webm" });
 
-        // 1) download
-        const dlUrl = URL.createObjectURL(file);
-        const a = document.createElement("a");
-        a.href = dlUrl;
-        a.download = fileName;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => {
-          try { URL.revokeObjectURL(dlUrl); } catch (_) {}
-        }, 1500);
+        // 1) download (Safari-safe: no navigation)
+const dlUrl = URL.createObjectURL(file);
+
+// hidden iframe download to prevent Safari navigating to blob:
+const iframe = document.createElement("iframe");
+iframe.style.display = "none";
+iframe.src = dlUrl;
+document.body.appendChild(iframe);
+
+// cleanup later (don't revoke too early; Safari needs time)
+setTimeout(() => {
+  try { iframe.remove(); } catch (_) {}
+  try { URL.revokeObjectURL(dlUrl); } catch (_) {}
+}, 60_000);
 
         // 2) also fill ref input (if exists)
         const input = moduleEl.querySelector(SELECTORS.refAudioInput);
