@@ -667,3 +667,20 @@
 #moduleHost section[data-module="music"][data-mode="basic"] textarea#prompt{
   min-height: 260px;   /* önce 190 civarıydı, şimdi daha dengeli */
 }
+/* ============================= */
+/* MUSIC – BASIC MODE LAYOUT RESET */
+/* Basic mod grid'i kapat */
+/* ============================= */
+
+#moduleHost section[data-module="music"][data-mode="basic"] .form-grid{
+  display: block;   /* grid kapalı */
+}
+
+#moduleHost section[data-module="music"][data-mode="basic"] .form-field{
+  margin-bottom: 20px;
+}
+
+/* Prompt daha büyük ve premium görünsün */
+#moduleHost section[data-module="music"][data-mode="basic"] textarea#prompt{
+  min-height: 300px;
+}
