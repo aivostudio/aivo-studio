@@ -44,28 +44,15 @@
     <div class="card">
       <div class="form-grid">
 
+        <!-- ŞARKI ADI -->
         <div class="form-field full">
           <label for="songName">Şarkı Adı</label>
-          <input type="text" id="songName"
+          <input type="text"
+                 id="songName"
                  placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
         </div>
 
-        <!-- ŞARKI SÖZLERİ -->
-        <div class="form-field full">
-          <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
-
-          <textarea id="lyrics"
-                    rows="6"
-                    maxlength="5000"
-                    placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
-
-          <div class="char-counter"
-               data-counter-for="lyrics">
-            0 / 5000
-          </div>
-        </div>
-
-        <!-- PROMPT -->
+        <!-- PROMPT (HER ZAMAN VAR) -->
         <div class="form-field full">
           <label for="prompt">Ek Açıklama / Prompt</label>
 
@@ -80,7 +67,7 @@
           </div>
         </div>
 
-        <!-- REFERANS SES -->
+        <!-- REFERANS SES (HER ZAMAN VAR) -->
         <div class="form-field full">
           <label>Referans Ses Yükle (opsiyonel)</label>
 
@@ -92,6 +79,21 @@
               <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
             </div>
           </label>
+        </div>
+
+        <!-- SADECE GELİŞMİŞ MOD: ŞARKI SÖZLERİ -->
+        <div class="form-field full" data-visible-in="advanced">
+          <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
+
+          <textarea id="lyrics"
+                    rows="6"
+                    maxlength="5000"
+                    placeholder="Şarkı sözlerini buraya yazın..."></textarea>
+
+          <div class="char-counter"
+               data-counter-for="lyrics">
+            0 / 5000
+          </div>
         </div>
 
         <!-- SADECE GELİŞMİŞ MOD -->
