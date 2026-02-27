@@ -417,10 +417,39 @@
       ui.timeEl.textContent = fmtTime(sec);
     }
 
-    function showPreview(blob) {
-      ui.preview.style.display = "";
-      ui.hintEl.textContent = "Kaydı dinle → Save ile ekle";
-      ui.recBtn.classList.remove("is-recording");
+   function showPreview(blob) {
+  ui.preview.style.display = "";
+  ui.audioEl.src = URL.createObjectURL(blob);
+
+  ui.hintEl.textContent = "Kaydı dinle → Save ile ekle";
+  ui.recBtn.classList.remove("is-recording");
+
+  // kayıt buton alanını gizle
+  const bottom = ui.modal.querySelector(".aivoRecBottom");
+  if (bottom) bottom.style.display = "none";
+
+  // hint yazısını gizle
+  if (ui.hintEl) ui.hintEl.style.display = "none";
+
+  // body alanını temizle ve preview'ı oraya taşı
+  const body = ui.modal.querySelector(".aivoRecBody");
+  if (body && ui.preview.parentElement !== body) {
+    while (body.firstChild) {
+      body.removeChild(body.firstChild);
+    }
+    body.appendChild(ui.preview);
+  }
+
+  // preview hero görünüm
+  ui.preview.style.width = "100%";
+  ui.preview.style.flex = "1";
+  ui.preview.style.display = "flex";
+  ui.preview.style.alignItems = "center";
+  ui.preview.style.justifyContent = "space-between";
+  ui.preview.style.borderTop = "0";
+  ui.preview.style.background = "transparent";
+  ui.preview.style.padding = "24px";
+}
 
       // cleanup previous preview (same modal multiple takes)
       try {
