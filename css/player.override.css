@@ -92,6 +92,7 @@
   flex-wrap: nowrap !important;
 }
 
+/* Icon button kutuları */
 #rightPanelHost .aivo-action{
   width: 28px !important;
   height: 28px !important;
@@ -102,11 +103,6 @@
   justify-content: center !important;
 
   border-radius: 9px !important;
-
-  /* ✅ yeni: beyazı ez */
-  background: rgba(124,92,255,.18) !important;
-  border: 1px solid rgba(140,100,255,.18) !important;
-  color: rgba(255,255,255,.92) !important;
 }
 
 /* SVG icon ölçüsü */
