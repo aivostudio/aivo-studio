@@ -413,6 +413,8 @@
 
     // Actions menu state
     let actionsOpen = false;
+        // Prevent overlay "outside click" close while Share Sheet / download is active (Safari)
+    let suppressOverlayClose = false;
 
     // Beep (start/stop)
     const beep = (freq = 880, ms = 70, type = "sine") => {
@@ -708,12 +710,18 @@
       try {
         // 1) Safari (macOS) reliable path: Share Sheet (Files/Save)
         // navigator.canShare exists on Safari 16+ (and many modern browsers)
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "AIVO Kaydı",
-            text: "Kaydı kaydet / paylaş",
-          });
+               if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          suppressOverlayClose = true;
+          try {
+            await navigator.share({
+              files: [file],
+              title: "AIVO Kaydı",
+              text: "Kaydı kaydet / paylaş",
+            });
+          } finally {
+            // Share Sheet kapanırken overlay'e click düşmesin diye küçük gecikme
+            setTimeout(() => { suppressOverlayClose = false; }, 400);
+          }
           return;
         }
 
@@ -723,8 +731,10 @@
         a.href = url;
         a.download = file.name || `recording-${Date.now()}.webm`;
         a.style.display = "none";
-        document.body.appendChild(a);
+              document.body.appendChild(a);
+        suppressOverlayClose = true;
         a.click();
+        setTimeout(() => { suppressOverlayClose = false; }, 400);
 
         setTimeout(() => {
           try { a.remove(); } catch (_) {}
@@ -962,11 +972,12 @@
       return mediaRecorder && mediaRecorder.state === "recording";
     }
 
-    // close handlers
-    ui.closeBtn.addEventListener("click", () => cleanup(true));
     ui.overlay.addEventListener("click", (e) => {
-      if (e.target === ui.overlay) cleanup(true);
-    });
+  // Safari Share Sheet aç/kapa sırasında overlay'e "ghost click" düşebiliyor.
+  // Download/Share aktifken dışarı tıkla kapatmayı geçici olarak engelle.
+  if (suppressOverlayClose) return;
+  if (e.target === ui.overlay) cleanup(true);
+});
 
     // record toggle
     ui.recBtn.addEventListener("click", async () => {
