@@ -650,20 +650,29 @@ function setEqBars(L, M, H){
     toast("success","İndirme başlatıldı");
   }
 
-  async function actionDelete(card){
+async function actionDelete(card){
   const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
 
-  // base UUID (jobs tablosundaki gerçek id)
   const baseId = String(jobId).split("::")[0];
   if (!baseId) return;
+
+  // ✅ DB uuid (jobs tablosundaki gerçek id) -> bunu DB hydrate set edecek
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const dbJobId = String(existing.__db_job_id || "").trim();
+
+  // Eğer DB uuid yoksa: şu an delete çalışmaz (backend uuid istiyor)
+  if (!dbJobId) {
+    toast("error", "Silme başarısız (db id yok)");
+    return;
+  }
 
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
       credentials: "include",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: baseId })
+      body: JSON.stringify({ job_id: dbJobId })
     });
 
     const j = await r.json().catch(() => null);
