@@ -16,7 +16,6 @@
 
   const PANEL_KEY = "music";
   const LS_KEY    = "aivo.music.jobs.v3";
-   const LS_HIDDEN = "aivo.music.hidden.v1"; // tek kart silme tombstone
 
   // worker origin (mp3 play)
   const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
@@ -309,31 +308,7 @@ function setEqBars(L, M, H){
   }
 
   /* ---------------- jobs storage ---------------- */
-  // per-card delete tombstones (DB tek job olduğu için)
-  let hiddenIds = new Set();
-
-  function loadHidden(){
-    try {
-      const arr = JSON.parse(localStorage.getItem(LS_HIDDEN) || "[]");
-      hiddenIds = new Set(Array.isArray(arr) ? arr.map(x => String(x||"").trim()).filter(Boolean) : []);
-    } catch {
-      hiddenIds = new Set();
-    }
-  }
-
-  function saveHidden(){
-    try { localStorage.setItem(LS_HIDDEN, JSON.stringify(Array.from(hiddenIds).slice(0, 500))); } catch {}
-  }
-
-  function hideCardId(cardId){
-    const id = String(cardId || "").trim();
-    if (!id) return;
-    hiddenIds.add(id);
-    saveHidden();
-  }
-
-  // mount'ta çağıracağız (hızlı)
-   function loadJobs(){
+  function loadJobs(){
     try {
       const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
       return Array.isArray(arr) ? arr : [];
@@ -504,12 +479,7 @@ function setEqBars(L, M, H){
     if (!hostEl || !listEl) return;
     if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-    const view = jobs.filter(j => {
-      const id = String(j?.job_id || j?.id || "").trim();
-      if (!id) return false;
-      if (hiddenIds && hiddenIds.has(id)) return false; // 👈 tek kart silme
-      return true;
-    });
+    const view = jobs.filter(j => j?.job_id || j?.id);
 
     view.sort((a, b) => {
       const aid = String(a.job_id || a.id || "");
@@ -681,57 +651,23 @@ function setEqBars(L, M, H){
   }
 
   async function actionDelete(card){
-    const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+    const jobId = card?.getAttribute("data-job-id") || "";
     if (!jobId) return;
 
-    const baseId = String(jobId).split("::")[0].trim();
+    const baseId = String(jobId).split("::")[0];
     if (!baseId) return;
 
-    // 1) Önce UI’de sadece bu kartı gizle (tek kart sil)
-    hideCardId(jobId);
-    removeJob(jobId);
-    toast("success","Silindi");
+    // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
+    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+    const dbJobId = String(existing.__db_job_id || "").trim();
 
-    // 2) Eğer kardeş kart da gizlendiyse (orig+rev1 ikisi de), DB'deki tek job'u sil
-    const otherId = jobId.endsWith("::orig") ? `${baseId}::rev1` : `${baseId}::orig`;
-    const bothHidden = hiddenIds.has(otherId);
-
-    if (!bothHidden) {
-      // diğer kart duracak, DB’ye dokunmuyoruz
-      return;
-    }
-
-    // DB job uuid: iki kartın da __db_job_id'si aynı olmalı
-    const a = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const b = jobs.find(x => (x.job_id || x.id) === otherId) || {};
-    const dbJobId = String(a.__db_job_id || b.__db_job_id || "").trim();
-
+    // ✅ DB uuid yoksa: backend delete yapamaz. Bu durumda sadece UI/local temizle.
     if (!dbJobId) {
-      // DB id yoksa backend delete atamayız; UI zaten gizli
+      removeJob(`${baseId}::orig`);
+      removeJob(`${baseId}::rev1`);
+      toast("success","Silindi");
       return;
     }
-
-    try {
-      const r = await fetch("/api/jobs/delete", {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ job_id: dbJobId })
-      });
-
-      const j = await r.json().catch(() => null);
-
-      if (!r.ok || !j?.ok) {
-        toast("error", "DB silme başarısız (job kaldı)");
-        return;
-      }
-
-      toast("success","Üretim DB’den de silindi");
-    } catch (e){
-      console.warn("[panel.music] delete failed", e);
-      toast("error","DB silme hatası");
-    }
-  }
 
     try {
       const r = await fetch("/api/jobs/delete", {
@@ -1160,8 +1096,7 @@ function setEqBars(L, M, H){
       mainAudio.style.display = "none";
     }
 
-     // LS load (hızlı paint)
-    loadHidden();
+    // LS load (hızlı paint)
     jobs = loadJobs();
     render();
 
