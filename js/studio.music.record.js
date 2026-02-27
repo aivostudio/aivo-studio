@@ -227,6 +227,54 @@
         white-space:nowrap;
       }
       .aivoRecSave:hover{ background:rgba(255,255,255,.12); }
+
+      /* actions bar (Eita-style) */
+      .aivoRecActions{
+        display:none;
+        align-items:center;
+        gap:12px;
+        margin-left:4px;
+      }
+      .aivoRecActions.is-open{ display:flex; }
+
+      .aivoRecActBtn{
+        width:56px; height:56px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.08);
+        cursor:pointer;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow: 0 18px 70px rgba(0,0,0,.28);
+        user-select:none;
+      }
+      .aivoRecActBtn:hover{ background: rgba(255,255,255,.12); }
+      .aivoRecActBtn:active{ transform: translateY(1px); }
+
+      .aivoRecActIcon{
+        width:22px; height:22px;
+        display:inline-block;
+        background: rgba(255,255,255,.92);
+        -webkit-mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+      }
+
+      /* simple inline svg masks */
+      .aivoRecActIcon[data-i="download"]{
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 3a1 1 0 0 1 1 1v9.59l2.3-2.29a1 1 0 1 1 1.4 1.42l-4 3.98a1 1 0 0 1-1.4 0l-4-3.98a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1Zm-7 16a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z'/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 3a1 1 0 0 1 1 1v9.59l2.3-2.29a1 1 0 1 1 1.4 1.42l-4 3.98a1 1 0 0 1-1.4 0l-4-3.98a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1Zm-7 16a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z'/%3E%3C/svg%3E");
+      }
+      .aivoRecActIcon[data-i="use"]{
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M8 5a1 1 0 0 1 1-1h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H9a1 1 0 1 1 0-2h9V6H9a1 1 0 0 1-1-1Zm-2.7 6.3a1 1 0 0 1 1.4 0l1.3 1.3V9a1 1 0 1 1 2 0v6a1 1 0 0 1-1 1H3a1 1 0 1 1 0-2h3.6l-1.3-1.3a1 1 0 0 1 0-1.4Z'/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M8 5a1 1 0 0 1 1-1h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H9a1 1 0 1 1 0-2h9V6H9a1 1 0 0 1-1-1Zm-2.7 6.3a1 1 0 0 1 1.4 0l1.3 1.3V9a1 1 0 1 1 2 0v6a1 1 0 0 1-1 1H3a1 1 0 1 1 0-2h3.6l-1.3-1.3a1 1 0 0 1 0-1.4Z'/%3E%3C/svg%3E");
+      }
+      .aivoRecActIcon[data-i="trash"]{
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M9 3a1 1 0 0 0-1 1v1H5a1 1 0 1 0 0 2h1v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7h1a1 1 0 1 0 0-2h-3V4a1 1 0 0 0-1-1H9Zm1 2h4v0H10v0Zm-1 5a1 1 0 0 1 1 1v7a1 1 0 1 1-2 0v-7a1 1 0 0 1 1-1Zm6 0a1 1 0 0 1 1 1v7a1 1 0 1 1-2 0v-7a1 1 0 0 1 1-1Z'/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M9 3a1 1 0 0 0-1 1v1H5a1 1 0 1 0 0 2h1v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7h1a1 1 0 1 0 0-2h-3V4a1 1 0 0 0-1-1H9Zm1 2h4v0H10v0Zm-1 5a1 1 0 0 1 1 1v7a1 1 0 1 1-2 0v-7a1 1 0 0 1 1-1Zm6 0a1 1 0 0 1 1 1v7a1 1 0 1 1-2 0v-7a1 1 0 0 1 1-1Z'/%3E%3C/svg%3E");
+      }
     `;
     document.head.appendChild(css);
   }
@@ -360,8 +408,11 @@
     let previewBound = false;
     let isSeeking = false;
 
-    // Last blob (for Save)
+    // Last blob (for Save / Download / Use)
     let lastBlob = null;
+
+    // Actions menu state
+    let actionsOpen = false;
 
     // Beep (start/stop)
     const beep = (freq = 880, ms = 70, type = "sine") => {
@@ -415,11 +466,36 @@
       previewUrl = "";
 
       lastBlob = null;
+      actionsOpen = false;
 
       if (full) {
         document.documentElement.style.overflow = prevOverflow || "";
         ui.overlay.remove();
       }
+    }
+
+    function resetToRecordMode() {
+      // stop preview
+      try { previewAudio && previewAudio.pause(); } catch (_) {}
+      previewAudio = null;
+
+      // hide preview
+      ui.preview.style.display = "none";
+
+      // clear audio src holders
+      try { ui.audioEl.removeAttribute("src"); ui.audioEl.load(); } catch (_) {}
+      try { previewUrl && URL.revokeObjectURL(previewUrl); } catch (_) {}
+      previewUrl = "";
+      lastBlob = null;
+
+      // close actions
+      actionsOpen = false;
+      const actions = ui.preview.querySelector(".aivoRecActions");
+      if (actions) actions.classList.remove("is-open");
+      ui.saveBtn.style.display = "";
+
+      // hint back
+      ui.hintEl.textContent = "Kayıt için kırmızı düğmeye bas";
     }
 
     function setTime(sec) {
@@ -432,6 +508,11 @@
       let seek = ui.preview.querySelector(".aivoPlySeek");
       let cur = ui.preview.querySelector(".aivoPlyCur");
       let dur = ui.preview.querySelector(".aivoPlyDur");
+
+      let actions = ui.preview.querySelector(".aivoRecActions");
+      let btnDl = ui.preview.querySelector('[data-act="download"]');
+      let btnUse = ui.preview.querySelector('[data-act="use"]');
+      let btnTrash = ui.preview.querySelector('[data-act="trash"]');
 
       if (!plyBtn) {
         const saveBtn = ui.preview.querySelector(".aivoRecSave");
@@ -480,23 +561,118 @@
         mid.appendChild(seek);
         mid.appendChild(timeRow);
 
+        // actions bar (hidden until Save)
+        actions = document.createElement("div");
+        actions.className = "aivoRecActions";
+        actions.setAttribute("aria-label", "Kayıt işlemleri");
+
+        btnDl = document.createElement("button");
+        btnDl.type = "button";
+        btnDl.className = "aivoRecActBtn";
+        btnDl.setAttribute("data-act", "download");
+        btnDl.setAttribute("aria-label", "İndir");
+        btnDl.innerHTML = `<span class="aivoRecActIcon" data-i="download"></span>`;
+
+        btnUse = document.createElement("button");
+        btnUse.type = "button";
+        btnUse.className = "aivoRecActBtn";
+        btnUse.setAttribute("data-act", "use");
+        btnUse.setAttribute("aria-label", "Kullan");
+        btnUse.innerHTML = `<span class="aivoRecActIcon" data-i="use"></span>`;
+
+        btnTrash = document.createElement("button");
+        btnTrash.type = "button";
+        btnTrash.className = "aivoRecActBtn";
+        btnTrash.setAttribute("data-act", "trash");
+        btnTrash.setAttribute("aria-label", "Sil");
+        btnTrash.innerHTML = `<span class="aivoRecActIcon" data-i="trash"></span>`;
+
+        actions.appendChild(btnDl);
+        actions.appendChild(btnUse);
+        actions.appendChild(btnTrash);
+
         if (saveBtn && saveBtn.parentNode) {
           saveBtn.parentNode.insertBefore(plyBtn, saveBtn);
           saveBtn.parentNode.insertBefore(mid, saveBtn);
+          saveBtn.parentNode.insertBefore(actions, saveBtn);
         } else {
           ui.preview.appendChild(plyBtn);
           ui.preview.appendChild(mid);
+          ui.preview.appendChild(actions);
         }
       }
 
-      return { plyBtn, plyIcon, seek, cur, dur };
+      return { plyBtn, plyIcon, seek, cur, dur, actions, btnDl, btnUse, btnTrash };
+    }
+
+    async function getLastFile() {
+      if (!lastBlob && !ui.audioEl.src) return null;
+
+      const blob = lastBlob || (await (await fetch(ui.audioEl.src)).blob());
+
+      const ext =
+        (blob.type.includes("mp4") && "m4a") ||
+        (blob.type.includes("mpeg") && "mp3") ||
+        (blob.type.includes("webm") && "webm") ||
+        "webm";
+
+      const fileName = `recording-${Date.now()}.${ext}`;
+      return new File([blob], fileName, { type: blob.type || "audio/webm" });
+    }
+
+    function showActions(open) {
+      const { actions } = ensurePreviewDOM();
+      actionsOpen = !!open;
+
+      if (actionsOpen) {
+        actions.classList.add("is-open");
+        ui.saveBtn.style.display = "none";
+        ui.hintEl.textContent = "İşlem seç: indir / kullan / sil";
+      } else {
+        actions.classList.remove("is-open");
+        ui.saveBtn.style.display = "";
+        ui.hintEl.textContent = "Kaydı dinle → Save ile işlemler";
+      }
+    }
+
+    async function doDownload(file) {
+      // Safari-safe: no navigation
+      const dlUrl = URL.createObjectURL(file);
+
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = dlUrl;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        try { iframe.remove(); } catch (_) {}
+        try { URL.revokeObjectURL(dlUrl); } catch (_) {}
+      }, 60_000);
+    }
+
+    async function doUse(file) {
+      // 1) fill ref input (if exists)
+      const input = moduleEl.querySelector(SELECTORS.refAudioInput);
+      if (input && input.type === "file") {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      // 2) event (isteyen dinler)
+      window.dispatchEvent(new CustomEvent("aivo:music:recorded", { detail: { file, blob: lastBlob || null } }));
+
+      // 3) close modal ONLY here
+      cleanup(true);
     }
 
     function showPreview(blob) {
       lastBlob = blob;
+      actionsOpen = false;
 
       ui.preview.style.display = "";
-      ui.hintEl.textContent = "Kaydı dinle → Save ile indir";
+      ui.hintEl.textContent = "Kaydı dinle → Save ile işlemler";
       ui.recBtn.classList.remove("is-recording");
 
       try { previewAudio && previewAudio.pause(); } catch (_) {}
@@ -512,7 +688,11 @@
       previewAudio = new Audio(previewUrl);
       previewAudio.preload = "metadata";
 
-      const { plyBtn, plyIcon, seek, cur, dur } = ensurePreviewDOM();
+      const { plyBtn, plyIcon, seek, cur, dur, actions, btnDl, btnUse, btnTrash } = ensurePreviewDOM();
+
+      // ensure actions closed on new preview
+      actions.classList.remove("is-open");
+      ui.saveBtn.style.display = "";
 
       plyIcon.setAttribute("data-icon", "play");
       cur.textContent = "00:00";
@@ -523,12 +703,14 @@
       if (!previewBound) {
         previewBound = true;
 
+        // play/pause
         plyBtn.addEventListener("click", () => {
           if (!previewAudio) return;
           if (previewAudio.paused) previewAudio.play().catch(() => {});
           else previewAudio.pause();
         });
 
+        // seek
         seek.addEventListener("input", () => {
           if (!previewAudio) return;
           isSeeking = true;
@@ -541,6 +723,34 @@
 
         seek.addEventListener("change", () => {
           isSeeking = false;
+        });
+
+        // actions
+        btnDl.addEventListener("click", async () => {
+          try {
+            const file = await getLastFile();
+            if (!file) return;
+            await doDownload(file);
+            ui.hintEl.textContent = "İndirme başladı.";
+          } catch (e) {
+            console.error("[AIVO][REC] download failed:", e);
+            ui.hintEl.textContent = "İndirme sırasında hata oldu.";
+          }
+        });
+
+        btnTrash.addEventListener("click", () => {
+          resetToRecordMode();
+        });
+
+        btnUse.addEventListener("click", async () => {
+          try {
+            const file = await getLastFile();
+            if (!file) return;
+            await doUse(file);
+          } catch (e) {
+            console.error("[AIVO][REC] use failed:", e);
+            ui.hintEl.textContent = "Kullan sırasında hata oldu.";
+          }
         });
       }
 
@@ -616,6 +826,7 @@
     async function startRecording() {
       chunks = [];
       lastBlob = null;
+      actionsOpen = false;
 
       ui.hintEl.textContent = "Kayıt alınıyor… tekrar basınca durur";
       ui.preview.style.display = "none";
@@ -684,54 +895,10 @@
       }
     });
 
-    // Save → indir + #refAudio input’una bas (ikisi birden)
+    // Save → artık modal kapatmaz; actions menüsünü açar
     ui.saveBtn.addEventListener("click", async () => {
       if (!lastBlob && !ui.audioEl.src) return;
-
-      try {
-        const blob = lastBlob || (await (await fetch(ui.audioEl.src)).blob());
-
-        const ext =
-          (blob.type.includes("mp4") && "m4a") ||
-          (blob.type.includes("mpeg") && "mp3") ||
-          (blob.type.includes("webm") && "webm") ||
-          "webm";
-
-        const fileName = `recording-${Date.now()}.${ext}`;
-        const file = new File([blob], fileName, { type: blob.type || "audio/webm" });
-
-        // 1) download (Safari-safe: no navigation)
-const dlUrl = URL.createObjectURL(file);
-
-// hidden iframe download to prevent Safari navigating to blob:
-const iframe = document.createElement("iframe");
-iframe.style.display = "none";
-iframe.src = dlUrl;
-document.body.appendChild(iframe);
-
-// cleanup later (don't revoke too early; Safari needs time)
-setTimeout(() => {
-  try { iframe.remove(); } catch (_) {}
-  try { URL.revokeObjectURL(dlUrl); } catch (_) {}
-}, 60_000);
-
-        // 2) also fill ref input (if exists)
-        const input = moduleEl.querySelector(SELECTORS.refAudioInput);
-        if (input && input.type === "file") {
-          const dt = new DataTransfer();
-          dt.items.add(file);
-          input.files = dt.files;
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
-        // event (isteyen dinler)
-        window.dispatchEvent(new CustomEvent("aivo:music:recorded", { detail: { file, blob } }));
-
-        cleanup(true);
-      } catch (e) {
-        console.error("[AIVO][REC] save failed:", e);
-        ui.hintEl.textContent = "Save sırasında hata oldu.";
-      }
+      showActions(true);
     });
 
     // first paint
@@ -755,7 +922,7 @@ setTimeout(() => {
       openRecorder(moduleEl);
     });
 
-    console.log("[AIVO] studio.music.record READY (waveform + player + beep + download)");
+    console.log("[AIVO] studio.music.record READY (waveform + player + actions + beep + safari-download)");
     return true;
   }
 
