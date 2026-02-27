@@ -513,3 +513,59 @@
   opacity: 0.55;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
+/* ============================= */
+/* MUSIC – ADVANCED GRID LAYOUT  */
+/* ============================= */
+
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  align-items: start;
+}
+
+/* Song name -> left, full width of left column */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#songName){
+  grid-column: 1;
+}
+
+/* Prompt -> left */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#prompt){
+  grid-column: 1;
+}
+
+/* Upload -> left */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio){
+  grid-column: 1;
+}
+
+/* Lyrics -> right, tall */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#lyrics){
+  grid-column: 2;
+  grid-row: 1 / span 4;
+}
+#moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
+  min-height: 260px;
+}
+
+/* Mood + Vocal -> bottom row, 2 columns */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#mood){
+  grid-column: 1;
+}
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#vocalType){
+  grid-column: 2;
+}
+
+/* Mobile fallback */
+@media (max-width: 920px){
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-grid{
+    grid-template-columns: 1fr;
+  }
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#lyrics){
+    grid-column: 1;
+    grid-row: auto;
+  }
+  #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
+    min-height: 160px;
+  }
+}
