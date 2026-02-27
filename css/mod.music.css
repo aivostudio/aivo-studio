@@ -618,3 +618,26 @@
     grid-row: 7;
   }
 }
+/* ============================= */
+/* MUSIC – ADVANCED SIZE TWEAK  */
+/* Kutuları küçült */
+/* ============================= */
+
+#moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt{
+  min-height: 180px !important;
+}
+
+#moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
+  min-height: 220px !important;
+}
+
+/* Upload + Record box height küçült */
+#moduleHost section[data-module="music"][data-mode="advanced"] .upload-box{
+  padding: 14px 16px !important;
+  min-height: 70px;
+}
+
+/* Record butonu biraz daha kompakt */
+#moduleHost section[data-module="music"][data-mode="advanced"] #musicRecordBtn{
+  min-height: 70px;
+}
