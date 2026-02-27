@@ -130,30 +130,108 @@
         100%{ filter:brightness(1); transform:scale(1); }
       }
 
-      /* preview area */
-      .aivoRecPreview{
-        padding: 16px 18px 18px;
-        display:flex;
-        gap:14px;
-        align-items:center;
-        justify-content:space-between;
-        border-top:1px solid rgba(255,255,255,.06);
-      }
-      .aivoRecAudio{
-        width:100%;
-        max-width:520px;
-      }
-      .aivoRecSave{
-        height:44px;
-        padding:0 18px;
-        border-radius:12px;
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(255,255,255,.10);
-        color:#fff;
-        font-weight:800;
-        cursor:pointer;
-        white-space:nowrap;
-      }
+   /* preview area (AIVO style) */
+.aivoRecPreview{
+  padding: 14px 16px 16px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+  justify-content:space-between;
+  border-top:1px solid rgba(255,255,255,.06);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+}
+
+/* native audio tamamen gizli */
+.aivoRecAudio{
+  display:none !important;
+}
+
+.aivoPlyBtn{
+  width:84px; height:84px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 16px 60px rgba(0,0,0,.35);
+}
+.aivoPlyBtn:active{ transform: translateY(1px); }
+
+.aivoPlyIcon{ width:0; height:0; }
+.aivoPlyIcon[data-icon="play"]{
+  border-style: solid;
+  border-width: 12px 0 12px 18px;
+  border-color: transparent transparent transparent rgba(255,255,255,.92);
+  margin-left:3px;
+}
+.aivoPlyIcon[data-icon="pause"]{
+  width:18px; height:22px;
+  background:
+    linear-gradient(to right,
+      rgba(255,255,255,.92) 0 42%,
+      transparent 42% 58%,
+      rgba(255,255,255,.92) 58% 100%);
+  border-radius:4px;
+}
+
+.aivoPlyMid{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding-right:6px;
+}
+
+.aivoPlySeek{
+  width:100%;
+  -webkit-appearance:none;
+  appearance:none;
+  height:10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.08);
+  outline:none;
+  border:1px solid rgba(255,255,255,.10);
+  overflow:hidden;
+}
+.aivoPlySeek::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:18px; height:18px;
+  border-radius:999px;
+  background: rgba(255,255,255,.92);
+  border: 4px solid rgba(120,90,255,.55);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  margin-top:-4px;
+}
+
+.aivoPlyTime{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  color: rgba(255,255,255,.72);
+  font-weight:800;
+  letter-spacing:.06em;
+  font-variant-numeric: tabular-nums;
+}
+.aivoPlyCur{ color: rgba(255,255,255,.92); }
+.aivoPlySep{ opacity:.45; }
+.aivoPlyDur{ opacity:.70; }
+
+.aivoRecSave{
+  height:46px;
+  padding:0 18px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.aivoRecSave:hover{
+  background:rgba(255,255,255,.12);
+}
     `;
     document.head.appendChild(css);
   }
