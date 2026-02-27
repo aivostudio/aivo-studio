@@ -130,111 +130,112 @@
         100%{ filter:brightness(1); transform:scale(1); }
       }
 
-   /* preview area (AIVO style) */
-.aivoRecPreview{
-  padding: 14px 16px 16px;
-  display:flex;
-  gap:14px;
-  align-items:center;
-  justify-content:space-between;
-  border-top:1px solid rgba(255,255,255,.06);
-  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-}
+      /* preview area (AIVO style) */
+      .aivoRecPreview{
+        padding: 14px 16px 16px;
+        display:flex;
+        gap:14px;
+        align-items:center;
+        justify-content:space-between;
+        border-top:1px solid rgba(255,255,255,.06);
+        background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      }
 
-/* native audio tamamen gizli */
-.aivoRecAudio{
-  display:none !important;
-}
+      /* native audio tamamen gizli */
+      .aivoRecAudio{
+        display:none !important;
+      }
 
-.aivoPlyBtn{
-  width:84px; height:84px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.05);
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow: 0 16px 60px rgba(0,0,0,.35);
-}
-.aivoPlyBtn:active{ transform: translateY(1px); }
+      .aivoPlyBtn{
+        width:84px; height:84px;
+        border-radius:16px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(255,255,255,.05);
+        cursor:pointer;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow: 0 16px 60px rgba(0,0,0,.35);
+      }
+      .aivoPlyBtn:active{ transform: translateY(1px); }
 
-.aivoPlyIcon{ width:0; height:0; }
-.aivoPlyIcon[data-icon="play"]{
-  border-style: solid;
-  border-width: 12px 0 12px 18px;
-  border-color: transparent transparent transparent rgba(255,255,255,.92);
-  margin-left:3px;
-}
-.aivoPlyIcon[data-icon="pause"]{
-  width:18px; height:22px;
-  background:
-    linear-gradient(to right,
-      rgba(255,255,255,.92) 0 42%,
-      transparent 42% 58%,
-      rgba(255,255,255,.92) 58% 100%);
-  border-radius:4px;
-}
+      .aivoPlyIcon{ width:0; height:0; }
+      .aivoPlyIcon[data-icon="play"]{
+        border-style: solid;
+        border-width: 12px 0 12px 18px;
+        border-color: transparent transparent transparent rgba(255,255,255,.92);
+        margin-left:3px;
+      }
+      .aivoPlyIcon[data-icon="pause"]{
+        width:18px; height:22px;
+        background:
+          linear-gradient(to right,
+            rgba(255,255,255,.92) 0 42%,
+            transparent 42% 58%,
+            rgba(255,255,255,.92) 58% 100%);
+        border-radius:4px;
+      }
 
-.aivoPlyMid{
-  flex:1;
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  padding-right:6px;
-}
+      .aivoPlyMid{
+        flex:1;
+        min-width:0;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        padding-right:6px;
+      }
 
-.aivoPlySeek{
-  width:100%;
-  -webkit-appearance:none;
-  appearance:none;
-  height:10px;
-  border-radius:999px;
-  background: rgba(255,255,255,.08);
-  outline:none;
-  border:1px solid rgba(255,255,255,.10);
-  overflow:hidden;
-}
-.aivoPlySeek::-webkit-slider-thumb{
-  -webkit-appearance:none;
-  appearance:none;
-  width:18px; height:18px;
-  border-radius:999px;
-  background: rgba(255,255,255,.92);
-  border: 4px solid rgba(120,90,255,.55);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  margin-top:-4px;
-}
+      .aivoPlySeek{
+        width:100%;
+        -webkit-appearance:none;
+        appearance:none;
+        height:10px;
+        border-radius:999px;
+        background: rgba(255,255,255,.08);
+        outline:none;
+        border:1px solid rgba(255,255,255,.10);
+        overflow:hidden;
+      }
+      .aivoPlySeek::-webkit-slider-thumb{
+        -webkit-appearance:none;
+        appearance:none;
+        width:18px; height:18px;
+        border-radius:999px;
+        background: rgba(255,255,255,.92);
+        border: 4px solid rgba(120,90,255,.55);
+        box-shadow: 0 10px 30px rgba(0,0,0,.35);
+        margin-top:-4px;
+      }
 
-.aivoPlyTime{
-  display:flex;
-  align-items:baseline;
-  gap:10px;
-  color: rgba(255,255,255,.72);
-  font-weight:800;
-  letter-spacing:.06em;
-  font-variant-numeric: tabular-nums;
-}
-.aivoPlyCur{ color: rgba(255,255,255,.92); }
-.aivoPlySep{ opacity:.45; }
-.aivoPlyDur{ opacity:.70; }
+      .aivoPlyTime{
+        display:flex;
+        align-items:baseline;
+        gap:10px;
+        color: rgba(255,255,255,.72);
+        font-weight:800;
+        letter-spacing:.06em;
+        font-variant-numeric: tabular-nums;
+      }
+      .aivoPlyCur{ color: rgba(255,255,255,.92); }
+      .aivoPlySep{ opacity:.45; }
+      .aivoPlyDur{ opacity:.70; }
 
-.aivoRecSave{
-  height:46px;
-  padding:0 18px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.08);
-  color:#fff;
-  font-weight:900;
-  cursor:pointer;
-  white-space:nowrap;
-}
-.aivoRecSave:hover{
-  background:rgba(255,255,255,.12);
-}
+      .aivoRecSave{
+        height:46px;
+        padding:0 18px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(255,255,255,.08);
+        color:#fff;
+        font-weight:900;
+        cursor:pointer;
+        white-space:nowrap;
+      }
+      .aivoRecSave:hover{
+        background:rgba(255,255,255,.12);
+      }
     `;
     document.head.appendChild(css);
   }
+
   // ---------- recorder modal ----------
   function createModal() {
     injectCSSOnce();
@@ -277,24 +278,24 @@
     return { overlay, modal, closeBtn, timeEl, hintEl, canvas, recBtn, preview, audioEl, saveBtn };
   }
 
-function fitCanvas(canvas) {
-  const parent = canvas.parentElement;
-  const width = parent.clientWidth;
-  const height = parent.clientHeight;
+  function fitCanvas(canvas) {
+    const parent = canvas.parentElement;
+    const width = parent.clientWidth;
+    const height = parent.clientHeight;
 
-  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-  // CSS size (layout)
-  canvas.style.width = width + "px";
-  canvas.style.height = height + "px";
+    // CSS size (layout)
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
-  // Backing store (pixel)
-  canvas.width = Math.floor(width * dpr);
-  canvas.height = Math.floor(height * dpr);
+    // Backing store (pixel)
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
 
-  // ❗️setTransform YOK (double-scale’i kesiyoruz)
-  return { w: canvas.width, h: canvas.height, dpr };
-}
+    // ❗️setTransform YOK (double-scale’i kesiyoruz)
+    return { w: canvas.width, h: canvas.height, dpr };
+  }
 
   function drawWaveformLoop(ctx, canvas, analyser, dataArray, stopFlagRef) {
     const { w, h } = fitCanvas(canvas);
@@ -364,22 +365,47 @@ function fitCanvas(canvas) {
     let dataArray = null;
     let drawStop = { stop: false };
 
+    // ✅ Preview player runtime
+    let previewAudio = null;
+    let previewUrl = "";
+    let previewBound = false;
+    let isSeeking = false;
+
     function cleanup(full = true) {
-      try { clearInterval(timer); } catch (_) {}
+      try {
+        clearInterval(timer);
+      } catch (_) {}
       timer = null;
 
       drawStop.stop = true;
 
-      try { mediaRecorder && mediaRecorder.state !== "inactive" && mediaRecorder.stop(); } catch (_) {}
+      try {
+        mediaRecorder && mediaRecorder.state !== "inactive" && mediaRecorder.stop();
+      } catch (_) {}
       mediaRecorder = null;
 
-      try { stream && stream.getTracks().forEach(t => t.stop()); } catch (_) {}
+      try {
+        stream && stream.getTracks().forEach((t) => t.stop());
+      } catch (_) {}
       stream = null;
 
-      try { audioCtx && audioCtx.state !== "closed" && audioCtx.close(); } catch (_) {}
+      try {
+        audioCtx && audioCtx.state !== "closed" && audioCtx.close();
+      } catch (_) {}
       audioCtx = null;
       analyser = null;
       dataArray = null;
+
+      // ✅ preview cleanup
+      try {
+        previewAudio && previewAudio.pause();
+      } catch (_) {}
+      previewAudio = null;
+
+      try {
+        previewUrl && URL.revokeObjectURL(previewUrl);
+      } catch (_) {}
+      previewUrl = "";
 
       if (full) {
         document.documentElement.style.overflow = prevOverflow || "";
@@ -393,9 +419,157 @@ function fitCanvas(canvas) {
 
     function showPreview(blob) {
       ui.preview.style.display = "";
-      ui.audioEl.src = URL.createObjectURL(blob);
       ui.hintEl.textContent = "Kaydı dinle → Save ile ekle";
       ui.recBtn.classList.remove("is-recording");
+
+      // cleanup previous preview (same modal multiple takes)
+      try {
+        previewAudio && previewAudio.pause();
+      } catch (_) {}
+      previewAudio = null;
+
+      try {
+        previewUrl && URL.revokeObjectURL(previewUrl);
+      } catch (_) {}
+      previewUrl = URL.createObjectURL(blob);
+
+      // hidden <audio> data-holder (save flow uses this)
+      ui.audioEl.src = previewUrl;
+
+      // controlled Audio()
+      previewAudio = new Audio(previewUrl);
+      previewAudio.preload = "metadata";
+
+      // ensure custom player DOM exists (createModal'ı değiştirmeden)
+      let plyBtn = ui.preview.querySelector(".aivoPlyBtn");
+      let plyIcon = ui.preview.querySelector(".aivoPlyIcon");
+      let seek = ui.preview.querySelector(".aivoPlySeek");
+      let cur = ui.preview.querySelector(".aivoPlyCur");
+      let dur = ui.preview.querySelector(".aivoPlyDur");
+
+      if (!plyBtn) {
+        const saveBtn = ui.preview.querySelector(".aivoRecSave");
+
+        plyBtn = document.createElement("button");
+        plyBtn.type = "button";
+        plyBtn.className = "aivoPlyBtn";
+        plyBtn.setAttribute("aria-label", "Play/Pause");
+
+        plyIcon = document.createElement("span");
+        plyIcon.className = "aivoPlyIcon";
+        plyIcon.setAttribute("data-icon", "play");
+        plyBtn.appendChild(plyIcon);
+
+        const mid = document.createElement("div");
+        mid.className = "aivoPlyMid";
+
+        seek = document.createElement("input");
+        seek.className = "aivoPlySeek";
+        seek.type = "range";
+        seek.min = "0";
+        seek.max = "1000";
+        seek.value = "0";
+        seek.step = "1";
+        seek.setAttribute("aria-label", "Seek");
+
+        const timeRow = document.createElement("div");
+        timeRow.className = "aivoPlyTime";
+        timeRow.setAttribute("aria-label", "Time");
+
+        cur = document.createElement("span");
+        cur.className = "aivoPlyCur";
+        cur.textContent = "00:00";
+
+        const sep = document.createElement("span");
+        sep.className = "aivoPlySep";
+        sep.textContent = "/";
+
+        dur = document.createElement("span");
+        dur.className = "aivoPlyDur";
+        dur.textContent = "00:00";
+
+        timeRow.appendChild(cur);
+        timeRow.appendChild(sep);
+        timeRow.appendChild(dur);
+
+        mid.appendChild(seek);
+        mid.appendChild(timeRow);
+
+        if (saveBtn && saveBtn.parentNode) {
+          saveBtn.parentNode.insertBefore(plyBtn, saveBtn);
+          saveBtn.parentNode.insertBefore(mid, saveBtn);
+        } else {
+          ui.preview.appendChild(plyBtn);
+          ui.preview.appendChild(mid);
+        }
+      }
+
+      // init UI
+      plyIcon.setAttribute("data-icon", "play");
+      cur.textContent = "00:00";
+      dur.textContent = "00:00";
+      seek.value = "0";
+      seek.max = "1000";
+
+      // bind once per modal
+      if (!previewBound) {
+        previewBound = true;
+
+        plyBtn.addEventListener("click", () => {
+          if (!previewAudio) return;
+          if (previewAudio.paused) previewAudio.play().catch(() => {});
+          else previewAudio.pause();
+        });
+
+        seek.addEventListener("input", () => {
+          if (!previewAudio) return;
+          isSeeking = true;
+
+          const max = Number(seek.max) || 1000;
+          const ratio = Math.max(0, Math.min(1, Number(seek.value) / max));
+          const d = Number(previewAudio.duration) || 0;
+          if (d > 0) previewAudio.currentTime = ratio * d;
+        });
+
+        seek.addEventListener("change", () => {
+          isSeeking = false;
+        });
+      }
+
+      // audio events (set for this previewAudio instance)
+      previewAudio.onloadedmetadata = () => {
+        const d = Math.floor(Number(previewAudio.duration) || 0);
+        dur.textContent = fmtTime(d);
+      };
+
+      previewAudio.onplay = () => {
+        plyIcon.setAttribute("data-icon", "pause");
+      };
+
+      previewAudio.onpause = () => {
+        plyIcon.setAttribute("data-icon", "play");
+      };
+
+      previewAudio.ontimeupdate = () => {
+        if (!previewAudio) return;
+        const t = Math.floor(Number(previewAudio.currentTime) || 0);
+        cur.textContent = fmtTime(t);
+
+        const d = Number(previewAudio.duration) || 0;
+        if (d > 0 && !isSeeking) {
+          const max = Number(seek.max) || 1000;
+          seek.value = String(Math.round((previewAudio.currentTime / d) * max));
+        }
+      };
+
+      previewAudio.onended = () => {
+        plyIcon.setAttribute("data-icon", "play");
+        try {
+          previewAudio.currentTime = 0;
+        } catch (_) {}
+        seek.value = "0";
+        cur.textContent = "00:00";
+      };
     }
 
     async function ensureStream() {
@@ -440,15 +614,15 @@ function fitCanvas(canvas) {
       ui.preview.style.display = "none";
       ui.recBtn.classList.add("is-recording");
 
+      // if preview was playing, stop it
+      try {
+        previewAudio && previewAudio.pause();
+      } catch (_) {}
+
       const s = await ensureStream();
 
       // choose mime
-      const preferred = [
-        "audio/webm;codecs=opus",
-        "audio/webm",
-        "audio/mp4",
-        "audio/mpeg",
-      ];
+      const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/mpeg"];
       const mimeType = preferred.find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
 
       mediaRecorder = new MediaRecorder(s, mimeType ? { mimeType } : undefined);
@@ -469,7 +643,9 @@ function fitCanvas(canvas) {
     function stopRecording() {
       ui.hintEl.textContent = "Durdu. İşleniyor…";
       ui.recBtn.classList.remove("is-recording");
-      try { clearInterval(timer); } catch (_) {}
+      try {
+        clearInterval(timer);
+      } catch (_) {}
       timer = null;
 
       try {
