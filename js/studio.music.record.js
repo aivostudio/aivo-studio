@@ -635,40 +635,32 @@
       }
     }
 
-        async function doDownload(file) {
+    async function doDownload(file) {
       try {
+        // 1) Safari (macOS) reliable path: Share Sheet (Files/Save)
+        // navigator.canShare exists on Safari 16+ (and many modern browsers)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "AIVO Kaydı",
+            text: "Kaydı kaydet / paylaş",
+          });
+          return;
+        }
+
+        // 2) Fallback for Chrome/others: <a download>
         const url = URL.createObjectURL(file);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name || `recording-${Date.now()}.webm`;
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
 
-        // Safari can navigate to blob: if we click in main page.
-        // Use an iframe sandbox to trigger the download without replacing current page.
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.setAttribute("sandbox", "allow-scripts allow-downloads allow-downloads-without-user-activation");
-
-        document.body.appendChild(iframe);
-
-        const name = (file && file.name) ? file.name : `recording-${Date.now()}.webm`;
-
-        const doc = iframe.contentWindow.document;
-        doc.open();
-        doc.write(`
-          <!doctype html>
-          <html><body>
-            <a id="dl" href="${url}" download="${name.replace(/"/g, "")}">download</a>
-            <script>
-              const a = document.getElementById('dl');
-              // ensure click is considered user-initiated within same task
-              a.click();
-            </script>
-          </body></html>
-        `);
-        doc.close();
-
-        // cleanup (Safari needs time)
         setTimeout(() => {
-          try { iframe.remove(); } catch (_) {}
+          try { a.remove(); } catch (_) {}
           try { URL.revokeObjectURL(url); } catch (_) {}
-        }, 60_000);
+        }, 1500);
       } catch (e) {
         console.error("[AIVO][REC] doDownload failed:", e);
         throw e;
