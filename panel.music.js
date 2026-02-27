@@ -653,67 +653,157 @@ function actionLyrics(card){
   const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
 
-  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-  const title = String(existing.title || card?.querySelector?.(".aivo-player-title")?.textContent || "Şarkı Sözleri").trim();
-  const lyrics = String(existing.lyrics || "").trim();
-
-  if (!lyrics) {
-    toast("info","Bu şarkıda söz yok");
-    return;
-  }
-
   // varsa eskisini temizle
   const old = document.getElementById("aivoLyricsModal");
   if (old) old.remove();
 
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+
+  const title =
+    String(existing.title || "").trim() ||
+    String(card?.querySelector?.(".aivo-player-title")?.textContent || "").trim() ||
+    "Şarkı";
+
+  const lyrics = String(existing.lyrics || "").trim();
+
+  if (!lyrics) {
+    toast("info", "Bu şarkıda söz yok");
+    return;
+  }
+
+  const durTextRaw =
+    String(existing.__duration || existing.duration || "").trim() ||
+    String(card?.querySelector?.(".meta-dur")?.textContent || "").trim();
+
+  const dateText =
+    String(existing.__createdAt || existing.created_at || existing.createdAt || "").trim() ||
+    String(card?.querySelector?.(".meta-date")?.textContent || "").trim();
+
+  const styleId = "aivoLyricsModalStyle";
+  if (!document.getElementById(styleId)) {
+    const st = document.createElement("style");
+    st.id = styleId;
+    st.textContent = `
+#aivoLyricsModal{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(0,0,0,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:aivoFadeIn .18s ease-out;}
+@keyframes aivoFadeIn{from{opacity:0}to{opacity:1}}
+#aivoLyricsModal .aivoLm{width:min(860px,96vw);max-height:min(78vh,760px);border-radius:18px;overflow:hidden;position:relative;
+  background:linear-gradient(180deg, rgba(30,18,56,.92), rgba(10,12,22,.92));
+  border:1px solid rgba(140,100,255,.22);
+  box-shadow:0 28px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset;
+  transform:translateY(6px) scale(.99);animation:aivoPop .18s ease-out forwards;}
+@keyframes aivoPop{to{transform:translateY(0) scale(1)}}
+#aivoLyricsModal .aivoLmTop{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px 16px;
+  border-bottom:1px solid rgba(255,255,255,.06);}
+#aivoLyricsModal .aivoLmLeft{display:flex;gap:12px;align-items:center;min-width:0;}
+#aivoLyricsModal .aivoLmIcon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(135deg,#7c5cff,#ff4fd8);box-shadow:0 10px 28px rgba(124,92,255,.25);}
+#aivoLyricsModal .aivoLmTitleWrap{min-width:0;}
+#aivoLyricsModal .aivoLmTitle{font-weight:800;font-size:16px;letter-spacing:.2px;color:rgba(255,255,255,.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#aivoLyricsModal .aivoLmMeta{margin-top:2px;font-size:12px;color:rgba(255,255,255,.55);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+#aivoLyricsModal .aivoLmDot{width:4px;height:4px;border-radius:99px;background:rgba(255,255,255,.28);display:inline-block}
+#aivoLyricsModal .aivoLmBtns{display:flex;gap:10px;align-items:center;}
+#aivoLyricsModal .aivoLmBtn{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:rgba(255,255,255,.92);
+  border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;gap:8px;align-items:center;}
+#aivoLyricsModal .aivoLmBtn:hover{background:rgba(255,255,255,.10)}
+#aivoLyricsModal .aivoLmX{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);cursor:pointer;font-size:18px;line-height:0}
+#aivoLyricsModal .aivoLmX:hover{background:rgba(255,255,255,.10);color:rgba(255,255,255,.92)}
+#aivoLyricsModal .aivoLmBody{padding:16px;max-height:calc(min(78vh,760px) - 72px);overflow:auto;}
+#aivoLyricsModal .aivoLmBody::-webkit-scrollbar{width:10px}
+#aivoLyricsModal .aivoLmBody::-webkit-scrollbar-thumb{background:rgba(140,100,255,.28);border-radius:999px;border:2px solid rgba(10,12,22,.6)}
+#aivoLyricsModal .aivoLmBody::-webkit-scrollbar-track{background:rgba(255,255,255,.04)}
+#aivoLyricsModal .aivoLmLyrics{white-space:pre-wrap;line-height:1.6;font-size:14px;color:rgba(255,255,255,.84);
+  padding:14px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);}
+    `;
+    document.head.appendChild(st);
+  }
+
   const modal = document.createElement("div");
   modal.id = "aivoLyricsModal";
-  modal.style.cssText = `
-    position:fixed; inset:0; z-index:999999;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(0,0,0,.55);
-    padding:16px;
-  `;
 
-  const box = document.createElement("div");
-  box.style.cssText = `
-    width:min(720px, 100%);
-    max-height:min(70vh, 720px);
-    overflow:auto;
-    background:#0b1020;
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:16px;
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
-    padding:16px 16px 14px;
-  `;
+  const safeTitle = esc(title);
+  const safeDur = esc(durTextRaw);
+  const safeDate = esc(dateText);
 
-  box.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">
-      <div style="font-weight:800;font-size:16px;line-height:1.2;color:#fff;">${esc(title)}</div>
-      <button data-close="1" style="
-        appearance:none;border:0;background:rgba(255,255,255,.08);color:#fff;
-        padding:8px 10px;border-radius:10px;cursor:pointer;
-      ">Kapat</button>
+  modal.innerHTML = `
+    <div class="aivoLm" role="dialog" aria-modal="true" aria-label="Şarkı Sözleri">
+      <div class="aivoLmTop">
+        <div class="aivoLmLeft">
+          <div class="aivoLmIcon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18V5l12-2v13" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 16a3 3 0 1 0 0 6a3 3 0 0 0 0-6Z" fill="rgba(255,255,255,.92)"/>
+              <path d="M21 14a3 3 0 1 0 0 6a3 3 0 0 0 0-6Z" fill="rgba(255,255,255,.92)"/>
+            </svg>
+          </div>
+          <div class="aivoLmTitleWrap">
+            <div class="aivoLmTitle">Şarkı Sözleri — ${safeTitle}</div>
+            <div class="aivoLmMeta">
+              ${safeDur ? ('<span>' + safeDur + '</span>') : '<span>—</span>'}
+              <span class="aivoLmDot"></span>
+              ${safeDate ? ('<span>' + safeDate + '</span>') : '<span> </span>'}
+            </div>
+          </div>
+        </div>
+
+        <div class="aivoLmBtns">
+          <button class="aivoLmBtn" type="button" data-lyr-action="copy" title="Kopyala">
+            <span aria-hidden="true">📋</span> Kopyala
+          </button>
+          <button class="aivoLmX" type="button" data-lyr-action="close" aria-label="Kapat" title="Kapat">×</button>
+        </div>
+      </div>
+
+      <div class="aivoLmBody">
+        <div class="aivoLmLyrics" id="aivoLmLyricsText">${esc(lyrics)}</div>
+      </div>
     </div>
-    <pre style="
-      margin:0;
-      white-space:pre-wrap;
-      color:rgba(255,255,255,.88);
-      font-size:14px;
-      line-height:1.5;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    ">${esc(lyrics)}</pre>
   `;
 
-  modal.appendChild(box);
-  document.body.appendChild(modal);
+  function closeLyricsModal(){
+    const m = document.getElementById("aivoLyricsModal");
+    if (m) m.remove();
+  }
 
-  // kapatma: backdrop click + buton
-  modal.addEventListener("click", (e) => {
-    const closeBtn = e.target?.closest?.('[data-close="1"]');
-    if (closeBtn) return modal.remove();
-    if (e.target === modal) return modal.remove();
-  }, { passive:true });
+  modal.addEventListener("click", async (ev) => {
+    const actBtn = ev.target.closest("[data-lyr-action]");
+    if (actBtn){
+      const act = actBtn.getAttribute("data-lyr-action");
+      if (act === "close") return closeLyricsModal();
+      if (act === "copy"){
+        try{
+          await navigator.clipboard.writeText(lyrics);
+          toast("success", "Kopyalandı");
+        } catch {
+          try{
+            const ta = document.createElement("textarea");
+            ta.value = lyrics;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            ta.remove();
+            toast("success", "Kopyalandı");
+          } catch {
+            toast("error", "Kopyalama başarısız");
+          }
+        }
+        return;
+      }
+    }
+    if (ev.target === modal) closeLyricsModal();
+  });
+
+  document.addEventListener("keydown", function __aivoLyricsEsc(e){
+    if (e.key === "Escape"){
+      closeLyricsModal();
+      document.removeEventListener("keydown", __aivoLyricsEsc, true);
+    }
+  }, true);
+
+  document.body.appendChild(modal);
 }
 async function actionDelete(card){
   const jobId = card?.getAttribute("data-job-id") || "";
