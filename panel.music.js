@@ -632,7 +632,7 @@ function setEqBars(L, M, H){
     updateProgressUI();
   }
 
-  /* ---------------- ACTIONS ---------------- */
+   /* ---------------- ACTIONS ---------------- */
   function actionDownload(card){
     const jobId = card?.getAttribute("data-job-id") || "";
     const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
@@ -650,50 +650,50 @@ function setEqBars(L, M, H){
     toast("success","İndirme başlatıldı");
   }
 
-async function actionDelete(card){
-  const jobId = card?.getAttribute("data-job-id") || "";
-  if (!jobId) return;
+  async function actionDelete(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    if (!jobId) return;
 
-  const baseId = String(jobId).split("::")[0];
-  if (!baseId) return;
+    const baseId = String(jobId).split("::")[0];
+    if (!baseId) return;
 
-  // ✅ DB uuid (jobs tablosundaki gerçek id) -> bunu DB hydrate set edecek
-  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-  const dbJobId = String(existing.__db_job_id || "").trim();
+    // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
+    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+    const dbJobId = String(existing.__db_job_id || "").trim();
 
-  // Eğer DB uuid yoksa: şu an delete çalışmaz (backend uuid istiyor)
- if (!dbId) {
-  // DB’de yok -> sadece UI/local sil
-  removeJob(`${baseId}::orig`);
-  removeJob(`${baseId}::rev1`);
-  toast("success","Silindi");
-  return;
-}
-  try {
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: dbJobId })
-    });
-
-    const j = await r.json().catch(() => null);
-
-    if (!r.ok || !j?.ok) {
-      toast("error", "Silme başarısız");
+    // ✅ DB uuid yoksa: backend delete yapamaz. Bu durumda sadece UI/local temizle.
+    if (!dbJobId) {
+      removeJob(`${baseId}::orig`);
+      removeJob(`${baseId}::rev1`);
+      toast("success","Silindi");
       return;
     }
 
-    // UI'dan iki varyantı da kaldır
-    removeJob(`${baseId}::orig`);
-    removeJob(`${baseId}::rev1`);
+    try {
+      const r = await fetch("/api/jobs/delete", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ job_id: dbJobId })
+      });
 
-    toast("success","Silindi");
-  } catch (e){
-    console.warn("[panel.music] delete failed", e);
-    toast("error","Silme hatası");
+      const j = await r.json().catch(() => null);
+
+      if (!r.ok || !j?.ok) {
+        toast("error", "Silme başarısız");
+        return;
+      }
+
+      // UI'dan iki varyantı da kaldır
+      removeJob(`${baseId}::orig`);
+      removeJob(`${baseId}::rev1`);
+
+      toast("success","Silindi");
+    } catch (e){
+      console.warn("[panel.music] delete failed", e);
+      toast("error","Silme hatası");
+    }
   }
-}
 
   function onCardClick(e){
     const btn  = e.target.closest("[data-action]");
@@ -715,7 +715,6 @@ async function actionDelete(card){
 
     toast("info", `Action: ${act}`);
   }
-
   /* ---------------- polling ---------------- */
   const POLL_BUSY = new Set();   // key: cardId
   const POLL_LAST = new Map();   // key: cardId -> ts(ms)
