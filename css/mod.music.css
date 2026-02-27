@@ -524,36 +524,44 @@
   align-items: start;
 }
 
-/* Song name -> left, full width of left column */
+/* 1) Şarkı Adı -> sol / row 1 */
 #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#songName){
   grid-column: 1;
+  grid-row: 1;
 }
 
-/* Prompt -> left */
-#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#prompt){
-  grid-column: 1;
-}
-
-/* Upload -> left */
-#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio){
-  grid-column: 1;
-}
-
-/* Lyrics -> right, tall */
+/* 2) Lyrics -> sağ / row 1-3 (uzun) */
 #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#lyrics){
   grid-column: 2;
-  grid-row: 1 / span 4;
+  grid-row: 1 / span 3;
 }
 #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
-  min-height: 260px;
+  min-height: 300px;
 }
 
-/* Mood + Vocal -> bottom row, 2 columns */
+/* 3) Prompt -> sol / row 2 (nefes alsın) */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#prompt){
+  grid-column: 1;
+  grid-row: 2;
+}
+#moduleHost section[data-module="music"][data-mode="advanced"] textarea#prompt{
+  min-height: 150px;
+}
+
+/* 4) Referans Ses -> sol / row 3 (mood+vocal'ın hemen üstü) */
+#moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio){
+  grid-column: 1;
+  grid-row: 3;
+}
+
+/* 5) Mood + Vocal -> en alt / aynı satır yan yana */
 #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#mood){
   grid-column: 1;
+  grid-row: 4;
 }
 #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#vocalType){
   grid-column: 2;
+  grid-row: 4;
 }
 
 /* Mobile fallback */
@@ -561,11 +569,25 @@
   #moduleHost section[data-module="music"][data-mode="advanced"] .form-grid{
     grid-template-columns: 1fr;
   }
+
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#songName){ grid-row: 1; }
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#prompt){ grid-row: 2; }
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#refAudio){ grid-row: 3; }
+
   #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#lyrics){
     grid-column: 1;
-    grid-row: auto;
+    grid-row: 4;
   }
   #moduleHost section[data-module="music"][data-mode="advanced"] textarea#lyrics{
-    min-height: 160px;
+    min-height: 180px;
+  }
+
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#mood){
+    grid-column: 1;
+    grid-row: 5;
+  }
+  #moduleHost section[data-module="music"][data-mode="advanced"] .form-field:has(#vocalType){
+    grid-column: 1;
+    grid-row: 6;
   }
 }
