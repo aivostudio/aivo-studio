@@ -50,7 +50,7 @@
         font-size:20px;
         font-variant-numeric: tabular-nums;
       }
-      .aivoRecClose{
+          .aivoRecClose{
         position:absolute; right:14px; top:12px;
         width:38px; height:38px;
         border-radius:999px;
@@ -60,6 +60,8 @@
         cursor:pointer;
         display:flex; align-items:center; justify-content:center;
         font-size:22px;
+        z-index: 5;
+        pointer-events: auto;
       }
 
       .aivoRecBody{
@@ -975,6 +977,12 @@
     }
 
     ui.overlay.addEventListener("click", (e) => {
+      // FORCE close button fix (Safari click bug guard)
+ui.closeBtn.onclick = function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  cleanup(true);
+};
   // Safari Share Sheet aç/kapa sırasında overlay'e "ghost click" düşebiliyor.
   // Download/Share aktifken dışarı tıkla kapatmayı geçici olarak engelle.
   if (suppressOverlayClose) return;
