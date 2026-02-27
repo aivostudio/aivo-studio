@@ -747,46 +747,15 @@
         throw e;
       }
     }
-   async function doUse(file) {
-  // 1) fill ref input (if exists)
-  const input = moduleEl.querySelector(SELECTORS.refAudioInput);
-
-  if (input && input.type === "file") {
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    input.files = dt.files;
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-
-    // Visible feedback next to the input (so user understands it was attached)
-    try {
-      const existing = moduleEl.querySelector("#aivoRefAudioBadge");
-      if (existing) existing.remove();
-
-      const badge = document.createElement("div");
-      badge.id = "aivoRefAudioBadge";
-      badge.textContent = `✅ Ses kaydı eklendi (${file.name || "kayıt.wav"})`;
-      badge.style.marginTop = "10px";
-      badge.style.padding = "10px 12px";
-      badge.style.borderRadius = "12px";
-      badge.style.background = "rgba(255,255,255,.08)";
-      badge.style.border = "1px solid rgba(255,255,255,.12)";
-      badge.style.color = "rgba(255,255,255,.92)";
-      badge.style.fontWeight = "900";
-      badge.style.letterSpacing = ".02em";
-
-      input.insertAdjacentElement("afterend", badge);
-      badge.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    } catch (_) {}
-
-    ui.hintEl.textContent = "Kayıt kullanıma alındı ✅";
-    showActions(false);
-  }
-
-  // 👇 input yoksa kullanıcıyı bilgilendir
-  if (!input) {
-    ui.hintEl.textContent = "Ref ses alanı (#refAudio) bu sayfada bulunamadı.";
-  }
-}
+    async function doUse(file) {
+      // 1) fill ref input (if exists)
+      const input = moduleEl.querySelector(SELECTORS.refAudioInput);
+      if (input && input.type === "file") {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
 
       // 2) event (isteyen dinler)
       window.dispatchEvent(new CustomEvent("aivo:music:recorded", { detail: { file, blob: lastBlob || null } }));
