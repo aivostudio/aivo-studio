@@ -632,89 +632,100 @@ function setEqBars(L, M, H){
     updateProgressUI();
   }
 
-   /* ---------------- ACTIONS ---------------- */
-  function actionDownload(card){
-    const jobId = card?.getAttribute("data-job-id") || "";
-    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
-    if (!src) { toast("error","İndirilecek dosya yok"); return; }
+ /* ---------------- ACTIONS ---------------- */
+function actionDownload(card){
+  const jobId = card?.getAttribute("data-job-id") || "";
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
+  if (!src) { toast("error","İndirilecek dosya yok"); return; }
 
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = "";
-    a.target = "_blank";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast("success","İndirme başlatıldı");
+  const a = document.createElement("a");
+  a.href = src;
+  a.download = "";
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast("success","İndirme başlatıldı");
+}
+
+async function actionDelete(card){
+  const jobId = card?.getAttribute("data-job-id") || "";
+  if (!jobId) return;
+
+  const baseId = String(jobId).split("::")[0];
+  if (!baseId) return;
+
+  const isRev = String(jobId).includes("::rev1");
+  const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
+
+  // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const dbJobId = String(existing.__db_job_id || "").trim();
+
+  // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
+  const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
+
+  // ✅ 1) Eğer diğer kart duruyorsa: sadece tıklanan kartı sil, DB delete YOK
+  if (otherStillExists) {
+    removeJob(jobId);
+    toast("success","Silindi");
+    return;
   }
 
-  async function actionDelete(card){
-    const jobId = card?.getAttribute("data-job-id") || "";
-    if (!jobId) return;
+  // ✅ 2) Diğer kart da yoksa: grup bitti.
+  // DB uuid yoksa backend delete atamayız → sadece tıklanan kartı sil
+  if (!dbJobId) {
+    removeJob(jobId);
+    toast("success","Silindi");
+    return;
+  }
 
-    const baseId = String(jobId).split("::")[0];
-    if (!baseId) return;
+  // ✅ 3) Son kart: DB soft delete -> OK olursa UI'dan kaldır
+  try {
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ job_id: dbJobId })
+    });
 
-    // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
-    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const dbJobId = String(existing.__db_job_id || "").trim();
+    const j = await r.json().catch(() => null);
 
-    // ✅ DB uuid yoksa: backend delete yapamaz. Bu durumda sadece UI/local temizle.
-    if (!dbJobId) {
-      removeJob(`${baseId}::orig`);
-      removeJob(`${baseId}::rev1`);
-      toast("success","Silindi");
+    if (!r.ok || !j?.ok) {
+      toast("error", "Silme başarısız");
       return;
     }
 
-    try {
-      const r = await fetch("/api/jobs/delete", {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ job_id: dbJobId })
-      });
+    removeJob(jobId);
+    toast("success","Silindi");
+  } catch (e){
+    console.warn("[panel.music] delete failed", e);
+    toast("error","Silme hatası");
+  }
+}
 
-      const j = await r.json().catch(() => null);
+function onCardClick(e){
+  const btn  = e.target.closest("[data-action]");
+  const card = e.target.closest(".aivo-player-card");
+  if (!card) return;
 
-      if (!r.ok || !j?.ok) {
-        toast("error", "Silme başarısız");
-        return;
-      }
-
-      // UI'dan iki varyantı da kaldır
-      removeJob(`${baseId}::orig`);
-      removeJob(`${baseId}::rev1`);
-
-      toast("success","Silindi");
-    } catch (e){
-      console.warn("[panel.music] delete failed", e);
-      toast("error","Silme hatası");
-    }
+  const act = btn?.dataset?.action || null;
+  if (!act){
+    if (card.classList.contains("is-ready")) togglePlayFromCard(card);
+    return;
   }
 
-  function onCardClick(e){
-    const btn  = e.target.closest("[data-action]");
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
+  e.preventDefault();
+  e.stopPropagation();
 
-    const act = btn?.dataset?.action || null;
-    if (!act){
-      if (card.classList.contains("is-ready")) togglePlayFromCard(card);
-      return;
-    }
+  if (act === "toggle-play") return togglePlayFromCard(card);
+  if (act === "download") return actionDownload(card);
+  if (act === "delete")   return actionDelete(card);
 
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (act === "toggle-play") return togglePlayFromCard(card);
-    if (act === "download") return actionDownload(card);
-    if (act === "delete")   return actionDelete(card);
-
-    toast("info", `Action: ${act}`);
-  }
+  toast("info", `Action: ${act}`);
+}
   /* ---------------- polling ---------------- */
   const POLL_BUSY = new Set();   // key: cardId
   const POLL_LAST = new Map();   // key: cardId -> ts(ms)
