@@ -854,7 +854,7 @@ async function actionDelete(card){
     ).trim();
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
-     const dbJobId = String(row?.id || "").trim();
+   const dbJobId = String(row?.job_id || row?.id || "").trim();
     if (!baseId) return [];
 
     const songIds = Array.isArray(meta?.provider_song_ids)
