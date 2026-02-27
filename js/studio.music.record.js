@@ -605,19 +605,88 @@
       return { plyBtn, plyIcon, seek, cur, dur, actions, btnDl, btnUse, btnTrash };
     }
 
+      function audioBufferToWavBlob(audioBuffer) {
+      const numChannels = audioBuffer.numberOfChannels || 1;
+      const sampleRate = audioBuffer.sampleRate || 44100;
+      const format = 1; // PCM
+      const bitDepth = 16;
+
+      const samples = audioBuffer.length;
+      const blockAlign = (numChannels * bitDepth) / 8;
+      const byteRate = sampleRate * blockAlign;
+      const dataSize = samples * blockAlign;
+
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(buffer);
+
+      let offset = 0;
+      const writeString = (s) => {
+        for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i));
+        offset += s.length;
+      };
+
+      // RIFF header
+      writeString("RIFF");
+      view.setUint32(offset, 36 + dataSize, true); offset += 4;
+      writeString("WAVE");
+
+      // fmt chunk
+      writeString("fmt ");
+      view.setUint32(offset, 16, true); offset += 4;          // PCM chunk size
+      view.setUint16(offset, format, true); offset += 2;      // audio format
+      view.setUint16(offset, numChannels, true); offset += 2; // channels
+      view.setUint32(offset, sampleRate, true); offset += 4;  // sample rate
+      view.setUint32(offset, byteRate, true); offset += 4;    // byte rate
+      view.setUint16(offset, blockAlign, true); offset += 2;  // block align
+      view.setUint16(offset, bitDepth, true); offset += 2;    // bits per sample
+
+      // data chunk
+      writeString("data");
+      view.setUint32(offset, dataSize, true); offset += 4;
+
+      // interleave + convert float32 [-1..1] to int16
+      const channelData = [];
+      for (let ch = 0; ch < numChannels; ch++) channelData.push(audioBuffer.getChannelData(ch));
+
+      let sampleIndex = 0;
+      while (sampleIndex < samples) {
+        for (let ch = 0; ch < numChannels; ch++) {
+          let s = channelData[ch][sampleIndex] || 0;
+          s = Math.max(-1, Math.min(1, s));
+          const int16 = s < 0 ? s * 0x8000 : s * 0x7fff;
+          view.setInt16(offset, int16, true);
+          offset += 2;
+        }
+        sampleIndex++;
+      }
+
+      return new Blob([buffer], { type: "audio/wav" });
+    }
+
+    async function blobToWavFile(blob) {
+      const arrayBuf = await blob.arrayBuffer();
+
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) throw new Error("AudioContext_not_supported");
+
+      const ctx = new AC();
+      try {
+        const audioBuffer = await ctx.decodeAudioData(arrayBuf.slice(0));
+        const wavBlob = audioBufferToWavBlob(audioBuffer);
+        const fileName = `recording-${Date.now()}.wav`;
+        return new File([wavBlob], fileName, { type: "audio/wav" });
+      } finally {
+        try { await ctx.close(); } catch (_) {}
+      }
+    }
+
     async function getLastFile() {
       if (!lastBlob && !ui.audioEl.src) return null;
 
       const blob = lastBlob || (await (await fetch(ui.audioEl.src)).blob());
 
-      const ext =
-        (blob.type.includes("mp4") && "m4a") ||
-        (blob.type.includes("mpeg") && "mp3") ||
-        (blob.type.includes("webm") && "webm") ||
-        "webm";
-
-      const fileName = `recording-${Date.now()}.${ext}`;
-      return new File([blob], fileName, { type: blob.type || "audio/webm" });
+      // IMPORTANT: Always output WAV so Safari Share Sheet classifies it as Audio (not Video)
+      return await blobToWavFile(blob);
     }
 
     function showActions(open) {
