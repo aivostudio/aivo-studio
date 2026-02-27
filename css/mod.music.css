@@ -642,3 +642,21 @@
     min-height: 68px;
   }
 }
+/* ============================= */
+/* MUSIC – BASIC MODE CLEANUP   */
+/* Basit modda Upload + Record gizle */
+/* ============================= */
+
+#moduleHost section[data-module="music"][data-mode="basic"] 
+.form-field:has(#refAudio),
+#moduleHost section[data-module="music"][data-mode="basic"] 
+.form-field:has(#musicRecordBtn),
+#moduleHost section[data-module="music"][data-mode="basic"] 
+.form-grid .upload-box{
+  display: none !important;
+}
+
+/* Basit modda grid tek kolon gibi davransın */
+#moduleHost section[data-module="music"][data-mode="basic"] .form-grid{
+  grid-template-columns: 1fr;
+}
