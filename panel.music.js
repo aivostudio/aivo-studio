@@ -103,154 +103,172 @@
     return `${m}:${String(s).padStart(2,"0")}`;
   }
 
-  /* ---------------- EQ engine (beat-reactive) ---------------- */
-  let eqRaf = 0;
+/* ---------------- EQ engine (beat-reactive) ---------------- */
+let eqRaf = 0;
 
-  // ✅ EQ bars cache (DOM query her frame olmasın)
-  const eqBarsCache = { jobId: null, bars: null };
+// ✅ EQ throttle (30fps) -> micro-stutter fix
+let __eqLastTs = 0;
 
-  function bindEqBarsForCurrentJob(){
-    if (!currentJobId || !hostEl) {
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
-      return null;
-    }
+// ✅ EQ bars cache (DOM query her frame olmasın)
+const eqBarsCache = { jobId: null, bars: null };
 
-    const jid = String(currentJobId);
-    if (eqBarsCache.jobId === jid && eqBarsCache.bars && eqBarsCache.bars.length) {
-      return eqBarsCache.bars;
-    }
+function bindEqBarsForCurrentJob(){
+  if (!currentJobId || !hostEl) {
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+    return null;
+  }
 
-    const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(jid)}"]`);
-    if (!card) {
-      eqBarsCache.jobId = jid;
-      eqBarsCache.bars = null;
-      return null;
-    }
-
-    const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
-    eqBarsCache.jobId = jid;
-    eqBarsCache.bars = (bars && bars.length) ? bars : null;
+  const jid = String(currentJobId);
+  if (eqBarsCache.jobId === jid && eqBarsCache.bars && eqBarsCache.bars.length) {
     return eqBarsCache.bars;
   }
 
-  function initEqEngine(){
-    if(!audioEl) return;
-    if(audioEl.__eqInited) return;
-    audioEl.__eqInited = true;
-
-    let ctx = null;
-    try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      ctx = new AC();
-    } catch (e){
-      console.warn("[music:eq] AudioContext not available", e);
-      return;
-    }
-
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.85;
-
-    let srcNode = null;
-    try {
-      srcNode = ctx.createMediaElementSource(audioEl);
-    } catch (e){
-      console.warn("[music:eq] createMediaElementSource failed (already?)", e);
-      return;
-    }
-
-    srcNode.connect(analyser);
-    analyser.connect(ctx.destination);
-
-    const freq = new Uint8Array(analyser.frequencyBinCount);
-    audioEl.__eq = { ctx, analyser, freq };
-
-    audioEl.addEventListener("play", () => {
-      try { ctx.resume?.(); } catch {}
-      // ✅ play anında bar cache’i yenile (render sonrası DOM değişmiş olabilir)
-      bindEqBarsForCurrentJob();
-      startEqLoop();
-    }, { passive:true });
-
-    audioEl.addEventListener("pause", () => stopEqLoop(), { passive:true });
-    audioEl.addEventListener("ended", () => stopEqLoop(), { passive:true });
+  const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(jid)}"]`);
+  if (!card) {
+    eqBarsCache.jobId = jid;
+    eqBarsCache.bars = null;
+    return null;
   }
 
-  function startEqLoop(){
-    if(eqRaf) return;
-    eqTick();
+  const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
+  eqBarsCache.jobId = jid;
+  eqBarsCache.bars = (bars && bars.length) ? bars : null;
+
+  // ✅ bars'a bir kez perf hint ver (GPU stabilize)
+  if (eqBarsCache.bars) {
+    eqBarsCache.bars.forEach((b) => {
+      b.style.willChange = "transform";
+      b.style.transformOrigin = "50% 100%";
+    });
   }
 
-  function stopEqLoop(){
-    if(eqRaf){
-      cancelAnimationFrame(eqRaf);
-      eqRaf = 0;
-    }
-    setEqBars(0.08, 0.06, 0.04);
+  return eqBarsCache.bars;
+}
+
+function initEqEngine(){
+  if(!audioEl) return;
+  if(audioEl.__eqInited) return;
+  audioEl.__eqInited = true;
+
+  let ctx = null;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+  } catch (e){
+    console.warn("[music:eq] AudioContext not available", e);
+    return;
   }
 
-  function eqTick(){
-    eqRaf = requestAnimationFrame(eqTick);
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.85;
 
-    if(!audioEl || audioEl.paused) return;
-    const pack = audioEl.__eq;
-    if(!pack) return;
-
-    const { analyser, freq } = pack;
-    analyser.getByteFrequencyData(freq);
-
-    const low  = bandAvg(freq, 2, 10);
-    const mid  = bandAvg(freq, 10, 28);
-    const high = bandAvg(freq, 28, 60);
-
-    const L = clamp01(low  / 255);
-    const M = clamp01(mid  / 255);
-    const H = clamp01(high / 255);
-
-    setEqBars(L, M, H);
+  let srcNode = null;
+  try {
+    srcNode = ctx.createMediaElementSource(audioEl);
+  } catch (e){
+    console.warn("[music:eq] createMediaElementSource failed (already?)", e);
+    return;
   }
 
-  function bandAvg(arr, a, b){
-    let sum = 0, n = 0;
-    const end = Math.min(arr.length, b);
-    for(let i = Math.max(0,a); i < end; i++){
-      sum += arr[i];
-      n++;
-    }
-    return n ? (sum / n) : 0;
+  srcNode.connect(analyser);
+  analyser.connect(ctx.destination);
+
+  const freq = new Uint8Array(analyser.frequencyBinCount);
+  audioEl.__eq = { ctx, analyser, freq };
+
+  audioEl.addEventListener("play", () => {
+    try { ctx.resume?.(); } catch {}
+    // ✅ play anında bar cache’i yenile (render sonrası DOM değişmiş olabilir)
+    bindEqBarsForCurrentJob();
+    startEqLoop();
+  }, { passive:true });
+
+  audioEl.addEventListener("pause", () => stopEqLoop(), { passive:true });
+  audioEl.addEventListener("ended", () => stopEqLoop(), { passive:true });
+}
+
+function startEqLoop(){
+  if(eqRaf) return;
+  __eqLastTs = 0; // ✅ her play'de throttle reset
+  eqTick();
+}
+
+function stopEqLoop(){
+  if(eqRaf){
+    cancelAnimationFrame(eqRaf);
+    eqRaf = 0;
   }
+  setEqBars(0.08, 0.06, 0.04);
+}
 
-  function clamp01(x){
-    if(x < 0) return 0;
-    if(x > 1) return 1;
-    return x;
+function eqTick(){
+  eqRaf = requestAnimationFrame(eqTick);
+
+  if(!audioEl || audioEl.paused) return;
+  const pack = audioEl.__eq;
+  if(!pack) return;
+
+  // ✅ 30fps throttle (60fps transform spam -> takılma yapıyordu)
+  const now = performance.now();
+  if (now - __eqLastTs < 33) return;
+  __eqLastTs = now;
+
+  const { analyser, freq } = pack;
+  analyser.getByteFrequencyData(freq);
+
+  const low  = bandAvg(freq, 2, 10);
+  const mid  = bandAvg(freq, 10, 28);
+  const high = bandAvg(freq, 28, 60);
+
+  const L = clamp01(low  / 255);
+  const M = clamp01(mid  / 255);
+  const H = clamp01(high / 255);
+
+  setEqBars(L, M, H);
+}
+
+function bandAvg(arr, a, b){
+  let sum = 0, n = 0;
+  const end = Math.min(arr.length, b);
+  for(let i = Math.max(0,a); i < end; i++){
+    sum += arr[i];
+    n++;
   }
+  return n ? (sum / n) : 0;
+}
 
-  function setEqBars(L, M, H){
-    if(!currentJobId) return;
-    if(!hostEl) return;
+function clamp01(x){
+  if(x < 0) return 0;
+  if(x > 1) return 1;
+  return x;
+}
 
-    // ✅ cached bars kullan
-    const bars = bindEqBarsForCurrentJob();
-    if(!bars || !bars.length) return;
+function setEqBars(L, M, H){
+  if(!currentJobId) return;
+  if(!hostEl) return;
 
-    const v = [
-      0.20 + H*0.70,
-      0.25 + M*0.85,
-      0.30 + L*1.00,
-      0.25 + L*1.15,
-      0.30 + L*1.00,
-      0.25 + M*0.85,
-      0.20 + H*0.70,
-    ];
+  // ✅ cached bars kullan
+  const bars = bindEqBarsForCurrentJob();
+  if(!bars || !bars.length) return;
 
-    for(let i=0;i<bars.length;i++){
-      const k = v[i] ?? 0.2;
-      const s = clamp01(k);
-      bars[i].style.transform = `scaleY(${0.15 + s*1.15})`;
-    }
+  const v = [
+    0.20 + H*0.70,
+    0.25 + M*0.85,
+    0.30 + L*1.00,
+    0.25 + L*1.15,
+    0.30 + L*1.00,
+    0.25 + M*0.85,
+    0.20 + H*0.70,
+  ];
+
+  for(let i=0;i<bars.length;i++){
+    const k = v[i] ?? 0.2;
+    const s = clamp01(k);
+    bars[i].style.transform = `scaleY(${0.15 + s*1.15})`;
   }
+}
 
   /* ---------------- audio element ---------------- */
   function ensureAudio(){
