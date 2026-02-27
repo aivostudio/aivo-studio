@@ -7,7 +7,8 @@
    - ✅ /api/music/status parse: topmediai.data[0].audio_url desteklenir.
    - ✅ DB source-of-truth (window.DBJobs) mount'ta kurulur (play'e basınca değil).
    - ✅ aivo:job event gelince kartlar anında düşer + poll başlar.
-   - ✅ EQ bars “takılma” fix: bar NodeList cache + reconnect guard
+   - ✅ EQ jank fix: EQ bars cache + render sonrası re-bind
+   - ✅ Ready hydrate fix: DB merge eski __audio_src/ready state’i ezmez
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
@@ -105,8 +106,33 @@
   /* ---------------- EQ engine (beat-reactive) ---------------- */
   let eqRaf = 0;
 
-  // ✅ EQ bar cache (re-render olunca querySelectorAll tekrarı “takılma” yapıyordu)
-  let eqBarsCache = { jobId: null, bars: null };
+  // ✅ EQ bars cache (DOM query her frame olmasın)
+  const eqBarsCache = { jobId: null, bars: null };
+
+  function bindEqBarsForCurrentJob(){
+    if (!currentJobId || !hostEl) {
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
+      return null;
+    }
+
+    const jid = String(currentJobId);
+    if (eqBarsCache.jobId === jid && eqBarsCache.bars && eqBarsCache.bars.length) {
+      return eqBarsCache.bars;
+    }
+
+    const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(jid)}"]`);
+    if (!card) {
+      eqBarsCache.jobId = jid;
+      eqBarsCache.bars = null;
+      return null;
+    }
+
+    const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
+    eqBarsCache.jobId = jid;
+    eqBarsCache.bars = (bars && bars.length) ? bars : null;
+    return eqBarsCache.bars;
+  }
 
   function initEqEngine(){
     if(!audioEl) return;
@@ -142,6 +168,8 @@
 
     audioEl.addEventListener("play", () => {
       try { ctx.resume?.(); } catch {}
+      // ✅ play anında bar cache’i yenile (render sonrası DOM değişmiş olabilir)
+      bindEqBarsForCurrentJob();
       startEqLoop();
     }, { passive:true });
 
@@ -199,42 +227,12 @@
     return x;
   }
 
-  // ✅ EQ bar’ları “tek sefer” bağlayan helper
-  function bindEqBarsForCurrentJob(){
-    if (!currentJobId || !hostEl) {
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
-      return null;
-    }
-
-    const jid = String(currentJobId);
-    const card = hostEl.querySelector(
-      `.aivo-player-card[data-job-id="${CSS.escape(jid)}"]`
-    );
-
-    if (!card) {
-      eqBarsCache.jobId = jid;
-      eqBarsCache.bars = null;
-      return null;
-    }
-
-    const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
-    eqBarsCache.jobId = jid;
-    eqBarsCache.bars = (bars && bars.length) ? bars : null;
-    return eqBarsCache.bars;
-  }
-
   function setEqBars(L, M, H){
     if(!currentJobId) return;
+    if(!hostEl) return;
 
-    let bars = eqBarsCache.bars;
-    const jid = String(currentJobId);
-
-    // cache miss / job değişti / render sonrası DOM detach -> yeniden bağla
-    if (!bars || eqBarsCache.jobId !== jid || !bars[0] || !bars[0].isConnected) {
-      bars = bindEqBarsForCurrentJob();
-    }
-
+    // ✅ cached bars kullan
+    const bars = bindEqBarsForCurrentJob();
     if(!bars || !bars.length) return;
 
     const v = [
@@ -282,10 +280,9 @@
       stopRaf();
     };
     audioEl.onplay = () => {
-      if (currentJobId) {
-        setCardPlaying(currentJobId, true);
-        bindEqBarsForCurrentJob(); // ✅ play anında cache bağla
-      }
+      if (currentJobId) setCardPlaying(currentJobId, true);
+      // ✅ DOM yenilenmiş olabilir: cache’i tazele
+      bindEqBarsForCurrentJob();
       startRaf();
     };
 
@@ -380,7 +377,7 @@
 
     const isReady = (st === "ready") && !!job.__audio_src;
 
-    // ✅ render sırasında “çalan kart” state'i korunur
+    // ✅ render sırasında "şu an çalan kart" state'i korunur
     const isPlayingNow =
       !!isReady &&
       String(currentJobId || "") === String(jobId || "") &&
@@ -491,13 +488,17 @@
       return;
     }
 
+    // ✅ DOM’u yeniliyoruz -> EQ cache’i invalid
     listEl.innerHTML = view.map(renderCard).join("");
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+
     applyMusicSearchFilter();
 
-    // ✅ render sonrası DOM değiştiyse, EQ cache invalid olabilir
-    if (currentJobId) {
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
+    // ✅ eğer şu an çalıyorsa: render sonrası barları yeniden bağla
+    if (currentJobId && audioEl && !audioEl.paused) {
+      setCardPlaying(currentJobId, true);
+      bindEqBarsForCurrentJob();
     }
   }
 
@@ -570,8 +571,6 @@
     if (currentJobId && currentJobId !== jobId){
       setCardPlaying(currentJobId, false);
       try { A.pause(); } catch {}
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
     }
 
     if (currentJobId === jobId && !A.paused){
@@ -581,11 +580,12 @@
     }
 
     currentJobId = jobId;
-
-    // ✅ EQ cache bind (play basıldığı an)
-    bindEqBarsForCurrentJob();
-
     setCardPlaying(jobId, true);
+
+    // ✅ job değişti -> EQ cache reset + rebind
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+    bindEqBarsForCurrentJob();
 
     try{
       if (A.src !== src) A.src = src;
@@ -657,7 +657,6 @@
     if (act === "download") return actionDownload(card);
     if (act === "delete")   return actionDelete(card);
 
-    // diğerleri şimdilik event
     toast("info", `Action: ${act}`);
   }
 
@@ -785,7 +784,6 @@
       POLL_BUSY.delete(cardId);
     }
   }
-  /* ---------------- /polling ---------------- */
 
   /* ---------------- DB -> cards ---------------- */
   function mapDbJobToCards(row){
@@ -824,7 +822,8 @@
       type: "music",
       provider_job_id: provider_job_id || baseId,
       __ui_state: st,
-      __audio_src: "",
+      // ✅ DB’den boş gelirse bile merge’de eski src korunacak (aşağıda)
+      __audio_src: String(meta?.audio_src || meta?.audioUrl || "").trim(),
       createdAt: createdMs,
       __createdAt: (row?.created_at || meta?.created_at || ""),
       title: String(meta?.title || row?.title || "").trim(),
@@ -893,11 +892,9 @@
     window.addEventListener("click", (e) => {
       try {
         if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-
         const H = window.__AIVO_MUSIC_EVENTS__.host;
         if (!H) return;
         if (!H.contains(e.target)) return;
-
         onCardClick(e);
       } catch (err) {
         console.warn("[panel.music] click handler error", err);
@@ -907,18 +904,15 @@
     window.addEventListener("pointerdown", (e) => {
       try {
         if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-
         const H = window.__AIVO_MUSIC_EVENTS__.host;
         if (!H) return;
         if (!H.contains(e.target)) return;
-
         if (e.target.closest(".aivo-progress")) onProgressSeek(e);
       } catch (err) {
         console.warn("[panel.music] pointer handler error", err);
       }
     }, true);
   }
-  /* ---------------- /global event bind ---------------- */
 
   /* ---------------- panel integration ---------------- */
   function waitForRightPanel(cb){
@@ -951,6 +945,27 @@
     };
   }
 
+  // ✅ DB merge: DB boş src ile eski ready/src ezmesin
+  function mergePreferDbButKeepReady(oldItem, dbItem){
+    const out = { ...oldItem, ...dbItem };
+
+    const oldSrc = String(oldItem?.__audio_src || "").trim();
+    const dbSrc  = String(dbItem?.__audio_src || "").trim();
+    if (!dbSrc && oldSrc) out.__audio_src = oldSrc;
+
+    const oldState = String(oldItem?.__ui_state || "").trim();
+    const dbState  = String(dbItem?.__ui_state || "").trim();
+    if (oldState === "ready" && dbState !== "ready" && out.__audio_src) {
+      out.__ui_state = "ready";
+    }
+
+    const oldDur = String(oldItem?.__duration || "").trim();
+    const dbDur  = String(dbItem?.__duration || "").trim();
+    if (!dbDur && oldDur) out.__duration = oldDur;
+
+    return out;
+  }
+
   async function hydrateFromDBOnce(){
     try{
       const r = await fetch("/api/jobs/list?app=music", {
@@ -970,13 +985,24 @@
       }
 
       const byId = new Map();
+
+      // önce DB
       for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
         if (id) byId.set(id, c);
       }
+
+      // sonra eski (LS) -> merge
       for (const old of (jobs || [])){
         const id = String(old?.job_id || old?.id || "").trim();
-        if (id && !byId.has(id)) byId.set(id, old);
+        if (!id) continue;
+
+        if (byId.has(id)) {
+          const merged = mergePreferDbButKeepReady(old, byId.get(id));
+          byId.set(id, merged);
+        } else {
+          byId.set(id, old);
+        }
       }
 
       jobs = Array.from(byId.values());
@@ -1006,7 +1032,6 @@
 
     ensureAudio();
 
-    // mainAudio bar'ı kapat
     const mainAudio = document.getElementById("mainAudio");
     if (mainAudio) {
       try { mainAudio.pause?.(); } catch {}
@@ -1014,10 +1039,6 @@
       try { mainAudio.load?.(); } catch {}
       mainAudio.style.display = "none";
     }
-
-    // EQ cache reset (mount'ta temiz başla)
-    eqBarsCache.jobId = null;
-    eqBarsCache.bars = null;
 
     // LS load (hızlı paint)
     jobs = loadJobs();
@@ -1056,25 +1077,30 @@
             const id = String(c?.job_id || c?.id || "").trim();
             if (id) byId.set(id, c);
           }
+
           for (const old of (jobs || [])){
             const id = String(old?.job_id || old?.id || "").trim();
-            if (id && !byId.has(id)) byId.set(id, old);
+            if (!id) continue;
+
+            if (byId.has(id)) {
+              const merged = mergePreferDbButKeepReady(old, byId.get(id));
+              byId.set(id, merged);
+            } else {
+              byId.set(id, old);
+            }
           }
 
           jobs = Array.from(byId.values());
           saveJobs();
           render();
 
-          // poll görünür kartlar
           jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
         }
       });
     }
 
-    // event bridge
     window.addEventListener("aivo:job", onJob, true);
 
-    // initial poll
     jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
 
     applyMusicSearchFilter();
@@ -1096,7 +1122,6 @@
     try { if (audioEl) audioEl.pause(); } catch {}
     currentJobId = null;
 
-    // EQ cache reset
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
 
