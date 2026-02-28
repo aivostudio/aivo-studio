@@ -684,3 +684,29 @@
 #moduleHost section[data-module="music"][data-mode="basic"] textarea#prompt{
   min-height: 300px;
 }
+/* --- Record upload box: make text visible + add mic icon --- */
+#musicRecordBtn.upload-box{
+  color: rgba(255,255,255,.92) !important;
+  font-weight: 800;
+  text-shadow: 0 1px 10px rgba(0,0,0,.35);
+}
+
+#musicRecordBtn.upload-box *{
+  color: rgba(255,255,255,.92) !important;
+}
+
+/* icon + layout */
+#musicRecordBtn.upload-box{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#musicRecordBtn.upload-box::before{
+  content: "🎙️";
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(-1px);
+}
