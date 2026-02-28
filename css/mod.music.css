@@ -703,13 +703,7 @@
   gap: 10px;
 }
 
-#musicRecordBtn.upload-box::before{
-  content: "🎙️";
-  font-size: 18px;
-  line-height: 1;
-  display: inline-block;
-  transform: translateY(-1px);
-}
+
 /* Record box: perfectly center content */
 #musicRecordBtn.upload-box{
   flex-direction: column;
