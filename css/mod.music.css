@@ -684,8 +684,21 @@
 #moduleHost section[data-module="music"][data-mode="basic"] textarea#prompt{
   min-height: 300px;
 }
-/* --- Record upload box: make text visible + add mic icon --- */
+/* --- Record box (music) --- */
 #musicRecordBtn.upload-box{
+  /* match upload box height */
+  min-height: 110px;
+
+  /* layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  /* text */
+  text-align: center;
+  line-height: 1.15;
   color: rgba(255,255,255,.92) !important;
   font-weight: 800;
   text-shadow: 0 1px 10px rgba(0,0,0,.35);
@@ -695,46 +708,20 @@
   color: rgba(255,255,255,.92) !important;
 }
 
-/* icon + layout */
-#musicRecordBtn.upload-box{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-
-/* Record box: perfectly center content */
-#musicRecordBtn.upload-box{
-  flex-direction: column;
-  text-align: center;
-  line-height: 1.15;
-}
-
-#musicRecordBtn.upload-box::before{
-  margin: 0 0 6px 0;
-  transform: none;
-}
-#musicRecordBtn.upload-box{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  text-align: center;
-}
-
 #musicRecordBtn .record-icon{
   font-size: 20px;
+  line-height: 1;
+  margin-bottom: 2px;
 }
 
 #musicRecordBtn .record-title{
-  font-weight: 800;
+  font-weight: 900;
   font-size: 16px;
-  color: rgba(255,255,255,.95);
+  color: rgba(255,255,255,.95) !important;
 }
 
 #musicRecordBtn .record-sub{
   font-size: 13px;
-  color: rgba(255,255,255,.65);
+  font-weight: 700;
+  color: rgba(255,255,255,.65) !important;
 }
