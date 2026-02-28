@@ -458,3 +458,123 @@
   });
   obs.observe(host, { childList: true, subtree: true });
 })();
+/* ============================================================================
+   MUSIC — Reference Audio Upload (R2)  ✅ presign-put -> PUT -> public_url
+   Target: #refAudio (HTML'de mevcut)
+   UI: <label for="refAudio" class="upload-box"> içindeki .upload-hint metnini günceller
+   Placement: /js/music.module.js içinde, module init/boot kısmına (en alta da olur)
+   ============================================================================ */
+
+(() => {
+  // --- guard (double bind engeli)
+  if (window.__MUSIC_REF_AUDIO_UPLOAD_BIND__) return;
+  window.__MUSIC_REF_AUDIO_UPLOAD_BIND__ = true;
+
+  // --- tiny helpers
+  const qs = (sel, root = document) => root.querySelector(sel);
+
+  function setHint(text) {
+    // HTML: <label class="upload-box" for="refAudio"> ... <span class="upload-hint">...</span>
+    const box = qs('label.upload-box[for="refAudio"]');
+    const hint = box ? qs(".upload-hint", box) : null;
+    if (hint) hint.textContent = text;
+  }
+
+  // ---- Backend contract:
+  // POST /api/r2/presign-put
+  // body: { app:"music", kind:"audio", filename, contentType }
+  // resp: { ok:true, uploadUrl/publicUrl } (snake_case varyantları da kabul)
+  async function presignR2({ app, kind, filename, contentType }) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: app || "music",
+        kind,
+        filename,
+        contentType,
+      }),
+    });
+
+    if (!res.ok) throw new Error("presign_failed");
+    const data = await res.json();
+    if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
+
+    const uploadUrl = data.uploadUrl || data.upload_url;
+    const publicUrl = data.publicUrl || data.public_url || data.url;
+    if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
+
+    return { uploadUrl, publicUrl };
+  }
+
+  async function uploadToR2(file, { app = "music", kind = "audio" } = {}) {
+    if (!file) throw new Error("missing_file");
+
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `${kind}-${Date.now()}`;
+
+    const { uploadUrl, publicUrl } = await presignR2({
+      app,
+      kind,
+      filename,
+      contentType,
+    });
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: file,
+    });
+
+    if (!put.ok) throw new Error("r2_put_failed");
+
+    return { url: publicUrl, name: filename };
+  }
+
+  // --- MAIN: input#refAudio change -> upload
+  document.addEventListener("change", async (e) => {
+    const t = e.target;
+    if (!t || t.id !== "refAudio") return;
+
+    const file = t.files && t.files[0] ? t.files[0] : null;
+
+    // temizle
+    if (!file) {
+      try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
+      setHint("MP3, WAV, M4A — maksimum 10MB");
+      return;
+    }
+
+    // boyut guard (10MB)
+    const MAX = 10 * 1024 * 1024;
+    if (file.size > MAX) {
+      try { window.toast?.error?.("Maksimum 10MB"); } catch {}
+      try { t.value = ""; } catch {}
+      try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
+      setHint("MP3, WAV, M4A — maksimum 10MB");
+      return;
+    }
+
+    // UI: uploading
+    setHint("Yükleniyor…");
+    t.disabled = true;
+
+    try {
+      const out = await uploadToR2(file, { app: "music", kind: "audio" });
+
+      // ✅ single source for generate payload
+      window.__MUSIC_REF_AUDIO_URL__ = out.url;
+
+      // UI: ready
+      setHint("Hazır ✓");
+      try { window.toast?.success?.("Referans ses yüklendi"); } catch {}
+    } catch (err) {
+      console.error("[MUSIC][R2] ref audio upload error:", err);
+      try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
+      setHint("Yükleme hatası");
+      try { window.toast?.error?.("Yükleme hatası"); } catch {}
+    } finally {
+      t.disabled = false;
+    }
+  });
+})();
