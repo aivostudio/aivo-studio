@@ -721,3 +721,26 @@
   margin: 0 0 6px 0;
   transform: none;
 }
+#musicRecordBtn.upload-box{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+}
+
+#musicRecordBtn .record-icon{
+  font-size: 20px;
+}
+
+#musicRecordBtn .record-title{
+  font-weight: 800;
+  font-size: 16px;
+  color: rgba(255,255,255,.95);
+}
+
+#musicRecordBtn .record-sub{
+  font-size: 13px;
+  color: rgba(255,255,255,.65);
+}
