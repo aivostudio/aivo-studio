@@ -747,15 +747,53 @@
         throw e;
       }
     }
-    async function doUse(file) {
-      // 1) fill ref input (if exists)
-      const input = moduleEl.querySelector(SELECTORS.refAudioInput);
-      if (input && input.type === "file") {
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        input.files = dt.files;
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      }
+   async function doUse(file) {
+  // 1) fill ref input (if exists)
+  const input = moduleEl.querySelector(SELECTORS.refAudioInput);
+
+  if (input && input.type === "file") {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+
+    // SAFE badge (DOM kırmayacak şekilde)
+    try {
+      const prev = moduleEl.querySelector("#aivoRefAudioBadge");
+      if (prev) prev.remove();
+
+      const badge = document.createElement("div");
+      badge.id = "aivoRefAudioBadge";
+      badge.textContent = `✅ Ses kaydı eklendi (${file.name || "kayıt.wav"})`;
+
+      badge.style.marginTop = "8px";
+      badge.style.padding = "10px 12px";
+      badge.style.borderRadius = "12px";
+      badge.style.background = "rgba(255,255,255,.08)";
+      badge.style.border = "1px solid rgba(255,255,255,.12)";
+      badge.style.color = "rgba(255,255,255,.92)";
+      badge.style.fontWeight = "900";
+      badge.style.letterSpacing = ".02em";
+
+      const host = input.parentElement || moduleEl;
+      host.appendChild(badge);
+    } catch (e) {
+      console.warn("[AIVO][REC] badge failed:", e);
+    }
+
+    ui.hintEl.textContent = "Kayıt kullanıma alındı ✅";
+    showActions(false);
+  } else {
+    ui.hintEl.textContent = "Ref ses alanı (#refAudio) bu sayfada bulunamadı.";
+  }
+
+  // event (isteyen dinler)
+  window.dispatchEvent(
+    new CustomEvent("aivo:music:recorded", {
+      detail: { file, blob: lastBlob || null }
+    })
+  );
+}
 
       // 2) event (isteyen dinler)
       window.dispatchEvent(new CustomEvent("aivo:music:recorded", { detail: { file, blob: lastBlob || null } }));
