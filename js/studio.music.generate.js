@@ -85,13 +85,19 @@ async function generateMusic(payload) {
     // mode’u vokale göre ayarla (enstrümantal seçilmediyse vocals)
     const mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
 
-    const payload = {
+     const reference_audio_url = String(window.__MUSIC_REF_AUDIO_URL__ || "").trim();
+
+     const payload = {
       prompt,
       mode,
       title,
       lyrics,
       vocal,
       mood,
+
+      // ✅ Ref Audio URL only if present (boş göndermiyoruz)
+      ...(reference_audio_url ? { reference_audio_url } : {}),
+
       use_credits: true,
       charge: true,
       credits: 5,
