@@ -100,18 +100,19 @@
 <div class="form-field half" data-visible-in="advanced">
   <label>Record</label>
 
- <!-- Record trigger -->
-<button
-  class="upload-box"
-  type="button"
-  id="musicRecordBtn"
-  aria-haspopup="dialog"
-  aria-controls="musicRecordModal"
->
-  <span class="record-icon">🎙️</span>
-  <span class="record-title">Kayıt</span>
-  <span class="record-sub">Tıkla ve kayda başla</span>
-</button>
+  <!-- Record trigger -->
+  <button
+    class="upload-box"
+    type="button"
+    id="musicRecordBtn"
+    aria-haspopup="dialog"
+    aria-controls="musicRecordModal"
+  >
+    <div>
+      <strong>🎙️ Record</strong><br />
+      <span class="upload-hint">Tıkla ve kayda başla</span>
+    </div>
+  </button>
 
   <!-- Recorded preview (JS dolduracak) -->
   <div class="record-preview" id="musicRecordPreview" hidden>
