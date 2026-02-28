@@ -27,19 +27,8 @@ async function generateMusic(payload) {
   const BTN_ID = "musicGenerateBtn";
   const PROMPT_SEL = "#prompt";
 
-  // ✅ NEW: Ref audio input
-  const REF_AUDIO_INPUT_ID = "refAudio";
-
   let boundBtn = null;
   let isBusy = false;
-
-  // ✅ NEW: Upload state (R2)
-  const refAudioState = {
-    status: "empty",   // empty | uploading | ready | error
-    url: "",
-    name: "",
-    contentType: ""
-  };
 
   function qs(sel, root=document){ return root.querySelector(sel); }
 
@@ -69,177 +58,6 @@ async function generateMusic(payload) {
     } catch(e) {
       console.warn("[music.generate] dispatch aivo:job failed:", e);
     }
-  }
-
-  // =========================================================
-  // ✅ NEW: UI helper for upload-box text
-  // - HTML: <label class="upload-box" for="refAudio"> ... <strong>...</strong> <span class="upload-hint">...</span>
-  // =========================================================
-  function setRefUploadBoxText({ strongText, hintText }){
-    const input = document.getElementById(REF_AUDIO_INPUT_ID);
-    if (!input) return;
-
-    const label = document.querySelector(`label.upload-box[for="${REF_AUDIO_INPUT_ID}"]`);
-    if (!label) return;
-
-    const strongEl = label.querySelector("strong");
-    const hintEl = label.querySelector(".upload-hint");
-
-    if (strongEl && typeof strongText === "string") strongEl.textContent = strongText;
-    if (hintEl && typeof hintText === "string") hintEl.textContent = hintText;
-  }
-
-  // =========================================================
-  // ✅ NEW: R2 presign-put + PUT upload (Music ref audio)
-  // Backend: POST /api/r2/presign-put
-  // body: { app:"music", kind:"ref_audio", filename, contentType }
-  // resp: { ok:true, upload_url|uploadUrl, public_url|publicUrl, required_headers? }
-  // =========================================================
-  async function presignR2({ app, kind, filename, contentType }) {
-    const res = await fetch("/api/r2/presign-put", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        app: app || "music",
-        kind: kind || "ref_audio",
-        filename,
-        contentType
-      })
-    });
-
-    let data = null;
-    try { data = await res.json(); }
-    catch { data = { ok:false, error:"non_json_response", status: res.status }; }
-
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || ("presign_failed:http_" + res.status));
-    }
-
-    const uploadUrl = data.uploadUrl || data.upload_url;
-    const publicUrl = data.publicUrl || data.public_url || data.url;
-    const requiredHeaders = data.required_headers || data.requiredHeaders || null;
-
-    if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
-    return { uploadUrl, publicUrl, requiredHeaders };
-  }
-
-  async function uploadToR2(file, { app="music", kind="ref_audio" } = {}) {
-    if (!file) throw new Error("missing_file");
-    const contentType = file.type || "application/octet-stream";
-    const filename = file.name || `ref-audio-${Date.now()}`;
-
-    const { uploadUrl, publicUrl, requiredHeaders } = await presignR2({
-      app,
-      kind,
-      filename,
-      contentType
-    });
-
-    // required_headers varsa onları bas, yoksa Content-Type bas
-    const headers = {};
-    if (requiredHeaders && typeof requiredHeaders === "object") {
-      Object.assign(headers, requiredHeaders);
-    } else {
-      headers["Content-Type"] = contentType;
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: "PUT",
-      headers,
-      body: file
-    });
-
-    if (!put.ok) throw new Error("r2_put_failed:http_" + put.status);
-
-    return { url: publicUrl, name: filename, contentType };
-  }
-
-  async function handleRefAudioSelected(file){
-    // reset
-    if (!file) {
-      refAudioState.status = "empty";
-      refAudioState.url = "";
-      refAudioState.name = "";
-      refAudioState.contentType = "";
-
-      setRefUploadBoxText({
-        strongText: "Ses dosyası seç veya sürükleyip bırak",
-        hintText: "MP3, WAV, M4A — maksimum 10MB"
-      });
-      return;
-    }
-
-    // validate size (10MB)
-    const maxBytes = 10 * 1024 * 1024;
-    if (file.size > maxBytes) {
-      toastError("Dosya çok büyük. Maksimum 10MB.");
-      // input reset
-      try { const input = document.getElementById(REF_AUDIO_INPUT_ID); if (input) input.value = ""; } catch {}
-      return;
-    }
-
-    refAudioState.status = "uploading";
-    refAudioState.url = "";
-    refAudioState.name = file.name || "";
-    refAudioState.contentType = file.type || "";
-
-    setRefUploadBoxText({
-      strongText: "Yükleniyor…",
-      hintText: (file.name || "Dosya") + " yükleniyor"
-    });
-
-    try {
-      const out = await uploadToR2(file, { app: "music", kind: "ref_audio" });
-
-      refAudioState.status = "ready";
-      refAudioState.url = out.url;
-      refAudioState.name = out.name || file.name || "";
-      refAudioState.contentType = out.contentType || file.type || "";
-
-      setRefUploadBoxText({
-        strongText: "Hazır ✓",
-        hintText: (file.name || refAudioState.name || "Referans ses") + " yüklendi"
-      });
-
-      // debug
-      window.__MUSIC_REF_AUDIO_URL__ = refAudioState.url;
-      window.__MUSIC_REF_AUDIO_NAME__ = refAudioState.name;
-
-      console.log("[music.refaudio] uploaded OK:", {
-        url: refAudioState.url,
-        name: refAudioState.name,
-        contentType: refAudioState.contentType
-      });
-    } catch (e) {
-      console.warn("[music.refaudio] upload failed:", e);
-
-      refAudioState.status = "error";
-      refAudioState.url = "";
-      refAudioState.contentType = "";
-
-      setRefUploadBoxText({
-        strongText: "Yükleme hatası",
-        hintText: "Tekrar dene"
-      });
-
-      toastError("Referans ses yüklenemedi.");
-    }
-  }
-
-  // ✅ NEW: bind input change for ref audio
-  function bindRefAudio(){
-    const input = document.getElementById(REF_AUDIO_INPUT_ID);
-    if (!input) return;
-    if (input.__bound) return;
-    input.__bound = true;
-
-    input.addEventListener("change", async (e) => {
-      const f = e?.target?.files?.[0] || null;
-      await handleRefAudioSelected(f);
-    });
-
-    console.log("[studio.music.generate] refAudio bound OK:", REF_AUDIO_INPUT_ID);
   }
 
   async function callGenerateAPI(prompt){
@@ -274,12 +92,6 @@ async function generateMusic(payload) {
       lyrics,
       vocal,
       mood,
-
-      // ✅ NEW: reference audio url (R2)
-      // backend hangi isimleri bekliyorsa diye iki alan birden gönderiyoruz (aynı değer).
-      reference_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
-      ref_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
-
       use_credits: true,
       charge: true,
       credits: 5,
@@ -442,10 +254,6 @@ async function generateMusic(payload) {
         lyrics: uiLyrics,
         prompt: uiPrompt,
 
-        // ✅ NEW: forward ref audio info (debug + panel kullanımı için)
-        reference_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
-        ref_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
-
         __ui_state: "processing",
         __audio_src: "",
 
@@ -478,10 +286,6 @@ async function generateMusic(payload) {
             title: uiTitle,
             lyrics: uiLyrics,
             prompt: uiPrompt,
-
-            // ✅ NEW: store ref url (debug)
-            reference_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
-            ref_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
 
             createdAt: new Date().toISOString(),
             __provider_job: isProviderJob,
@@ -519,10 +323,6 @@ async function generateMusic(payload) {
                     title: uiTitle,
                     lyrics: uiLyrics,
                     prompt: uiPrompt,
-
-                    // ✅ NEW: forward ref url here too
-                    reference_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
-                    ref_audio_url: (refAudioState.status === "ready" ? refAudioState.url : ""),
 
                     __ui_state: "ready",
                     __audio_src: st.audio.src,
@@ -582,15 +382,9 @@ async function generateMusic(payload) {
     console.log("[studio.music.generate] bound OK:", BTN_ID);
   }
 
-  // ✅ NEW: bind ref upload input too
-  function bindAll(){
-    bind();
-    bindRefAudio();
-  }
+  setInterval(bind, 500);
 
-  setInterval(bindAll, 500);
-
-  window.addEventListener("DOMContentLoaded", bindAll);
-  window.addEventListener("load", bindAll);
+  window.addEventListener("DOMContentLoaded", bind);
+  window.addEventListener("load", bind);
 
 })();
