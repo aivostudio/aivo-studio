@@ -710,3 +710,14 @@
   display: inline-block;
   transform: translateY(-1px);
 }
+/* Record box: perfectly center content */
+#musicRecordBtn.upload-box{
+  flex-direction: column;
+  text-align: center;
+  line-height: 1.15;
+}
+
+#musicRecordBtn.upload-box::before{
+  margin: 0 0 6px 0;
+  transform: none;
+}
