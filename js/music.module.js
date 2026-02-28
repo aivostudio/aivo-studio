@@ -459,10 +459,18 @@
   obs.observe(host, { childList: true, subtree: true });
 })();
 /* ============================================================================
-   MUSIC — Reference Audio Upload (R2)  ✅ presign-put -> PUT -> public_url
-   Target: #refAudio (HTML'de mevcut)
-   UI: <label for="refAudio" class="upload-box"> içindeki .upload-hint metnini günceller
-   Placement: /js/music.module.js içinde, module init/boot kısmına (en alta da olur)
+   MUSIC — Reference Audio Upload (R2) ✅ single-bind + single-upload
+   - Fixes: 2x presign-put → 1x (double bind / double upload engeli)
+   - UI: "Hazır ✓" tek satır (fazla .upload-hint varsa boşaltır)
+   - Aynı dosya tekrar seçilirse yeniden upload ETMEZ
+   - Yeni dosya seçilirse eski upload’ı ABORT eder
+   Target: #refAudio
+   Writes: window.__MUSIC_REF_AUDIO_URL__  (generate payload burada okuyacak)
+   Placement: /js/music.module.js içinde, şu blokla komple REPLACE et:
+     // --- guard (double bind engeli)
+     if (window.__MUSIC_REF_AUDIO_UPLOAD_BIND__) return;
+     window.__MUSIC_REF_AUDIO_UPLOAD_BIND__ = true;
+   ile başlayan ref-audio upload kısmının tamamı
    ============================================================================ */
 
 (() => {
@@ -471,23 +479,48 @@
   window.__MUSIC_REF_AUDIO_UPLOAD_BIND__ = true;
 
   // --- tiny helpers
-  const qs = (sel, root = document) => root.querySelector(sel);
+  const qs  = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   function setHint(text) {
     // HTML: <label class="upload-box" for="refAudio"> ... <span class="upload-hint">...</span>
     const box = qs('label.upload-box[for="refAudio"]');
-    const hint = box ? qs(".upload-hint", box) : null;
-    if (hint) hint.textContent = text;
+    if (!box) return;
+
+    const hints = qsa(".upload-hint", box);
+    if (!hints.length) return;
+
+    // ✅ tek satır: ilkine yaz, geri kalanları boşalt
+    hints[0].textContent = String(text || "");
+    for (let i = 1; i < hints.length; i++) hints[i].textContent = "";
+  }
+
+  function toast(type, msg) {
+    try {
+      const t = window.toast;
+      if (type === "error"   && t?.error)   return t.error(msg);
+      if (type === "success" && t?.success) return t.success(msg);
+      if (t?.info) return t.info(msg);
+    } catch {}
+    console.log("[music.ref]", type, msg);
+  }
+
+  function fileSig(file) {
+    if (!file) return "";
+    // name+size+mtime aynıysa “aynı dosya” say
+    return [file.name, file.size, file.lastModified].join("|");
   }
 
   // ---- Backend contract:
   // POST /api/r2/presign-put
   // body: { app:"music", kind:"audio", filename, contentType }
   // resp: { ok:true, uploadUrl/publicUrl } (snake_case varyantları da kabul)
-  async function presignR2({ app, kind, filename, contentType }) {
+  async function presignR2({ app, kind, filename, contentType, signal }) {
     const res = await fetch("/api/r2/presign-put", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      signal,
       body: JSON.stringify({
         app: app || "music",
         kind,
@@ -507,7 +540,7 @@
     return { uploadUrl, publicUrl };
   }
 
-  async function uploadToR2(file, { app = "music", kind = "audio" } = {}) {
+  async function uploadToR2(file, { app = "music", kind = "audio", signal } = {}) {
     if (!file) throw new Error("missing_file");
 
     const contentType = file.type || "application/octet-stream";
@@ -518,63 +551,113 @@
       kind,
       filename,
       contentType,
+      signal,
     });
 
     const put = await fetch(uploadUrl, {
       method: "PUT",
       headers: { "Content-Type": contentType },
       body: file,
+      signal,
     });
 
     if (!put.ok) throw new Error("r2_put_failed");
-
     return { url: publicUrl, name: filename };
   }
 
-  // --- MAIN: input#refAudio change -> upload
-  document.addEventListener("change", async (e) => {
-    const t = e.target;
-    if (!t || t.id !== "refAudio") return;
+  // --- single bind to the INPUT (document-level change yerine)
+  let lastSig = "";
+  let inFlight = null; // { controller, sig }
 
-    const file = t.files && t.files[0] ? t.files[0] : null;
+  function bindOnce() {
+    const input = qs("#refAudio");
+    if (!input) return false;
 
-    // temizle
-    if (!file) {
-      try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
-      setHint("MP3, WAV, M4A — maksimum 10MB");
-      return;
-    }
+    // ✅ input-level guard (tek listener)
+    if (input.__aivoRefBound) return true;
+    input.__aivoRefBound = true;
 
-    // boyut guard (10MB)
-    const MAX = 10 * 1024 * 1024;
-    if (file.size > MAX) {
-      try { window.toast?.error?.("Maksimum 10MB"); } catch {}
-      try { t.value = ""; } catch {}
-      try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
-      setHint("MP3, WAV, M4A — maksimum 10MB");
-      return;
-    }
+    input.addEventListener("change", async () => {
+      const file = input.files && input.files[0] ? input.files[0] : null;
 
-    // UI: uploading
-    setHint("Yükleniyor…");
-    t.disabled = true;
+      // temizle
+      if (!file) {
+        // önceki upload varsa iptal
+        try { inFlight?.controller?.abort?.(); } catch {}
+        inFlight = null;
+        lastSig = "";
 
-    try {
-      const out = await uploadToR2(file, { app: "music", kind: "audio" });
+        try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
+        setHint("MP3, WAV, M4A — maksimum 10MB");
+        return;
+      }
 
-      // ✅ single source for generate payload
-      window.__MUSIC_REF_AUDIO_URL__ = out.url;
+      // boyut guard (10MB)
+      const MAX = 10 * 1024 * 1024;
+      if (file.size > MAX) {
+        toast("error", "Maksimum 10MB");
+        try { input.value = ""; } catch {}
+        try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
+        setHint("MP3, WAV, M4A — maksimum 10MB");
+        return;
+      }
 
-      // UI: ready
-      setHint("Hazır ✓");
-      try { window.toast?.success?.("Referans ses yüklendi"); } catch {}
-    } catch (err) {
-      console.error("[MUSIC][R2] ref audio upload error:", err);
-      try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
-      setHint("Yükleme hatası");
-      try { window.toast?.error?.("Yükleme hatası"); } catch {}
-    } finally {
-      t.disabled = false;
-    }
-  });
+      // ✅ aynı dosya tekrar seçildiyse: tekrar upload ETME
+      const sig = fileSig(file);
+      if (sig && sig === lastSig && window.__MUSIC_REF_AUDIO_URL__) {
+        // UI’yı doğru göster (bazı durumlarda reset olabiliyor)
+        setHint("Hazır ✓");
+        return;
+      }
+
+      // ✅ yeni dosya: önceki upload’ı abort et
+      try { inFlight?.controller?.abort?.(); } catch {}
+      inFlight = null;
+
+      const controller = new AbortController();
+      inFlight = { controller, sig };
+
+      setHint("Yükleniyor…");
+      input.disabled = true;
+
+      try {
+        const out = await uploadToR2(file, {
+          app: "music",
+          kind: "audio",
+          signal: controller.signal,
+        });
+
+        // eğer bu upload artık “en güncel” değilse (araya yeni dosya girdiyse) yazma
+        if (!inFlight || inFlight.controller !== controller) return;
+
+        // ✅ single source for generate payload
+        window.__MUSIC_REF_AUDIO_URL__ = out.url;
+        lastSig = sig;
+
+        setHint("Hazır ✓");
+        toast("success", "Referans ses yüklendi");
+      } catch (err) {
+        // abort ise sessiz geç
+        if (err?.name === "AbortError") return;
+
+        console.error("[MUSIC][R2] ref audio upload error:", err);
+        try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
+        lastSig = "";
+        setHint("Yükleme hatası");
+        toast("error", "Yükleme hatası");
+      } finally {
+        // sadece “aktif controller” kapanıyorsa state temizle
+        if (inFlight && inFlight.controller === controller) inFlight = null;
+        input.disabled = false;
+      }
+    });
+
+    return true;
+  }
+
+  // DOM hazır değilse kısa süre dene (tek bind olacak)
+  bindOnce();
+  setTimeout(bindOnce, 250);
+  setTimeout(bindOnce, 800);
+  setTimeout(bindOnce, 1600);
 })();
