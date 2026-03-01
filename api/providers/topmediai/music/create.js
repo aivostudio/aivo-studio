@@ -1,6 +1,7 @@
 // api/providers/topmediai/music/create.js
 // TopMediai v3 generate
 // ✅ FIX: title/lyrics çalışması için action = "custom" olmalı (AutoGenerateRequest "auto" bunları ignore eder)
+// ✅ FIX: ref audio varsa action="upload" + audio_url ile gönder (TopMediai UploadGenerateRequest)
 
 export default async function handler(req, res) {
   try {
@@ -21,8 +22,10 @@ export default async function handler(req, res) {
     const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
     const title = String(body.title || "").trim();
 
-    // ✅ NEW: ref audio url (optional)
-    const reference_audio_url = String(body.reference_audio_url || "").trim();
+    // ✅ ref audio url (optional) — UI burayı gönderiyor
+    const reference_audio_url = String(
+      body.reference_audio_url || body.referenceAudioUrl || ""
+    ).trim();
 
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
@@ -44,16 +47,23 @@ export default async function handler(req, res) {
     // style = prompt (+ mood)
     const style = mood ? `${prompt}, mood: ${mood}` : prompt;
 
-    // ✅ CRITICAL: title/lyrics doluysa action="custom" (CustomGenerateRequest)
-    // Auto ("auto") title/lyrics’i çoğu durumda ignore eder.
+    // ✅ action seçimi
+    // 1) Ref audio varsa → UploadGenerateRequest
+    // 2) Yoksa title/lyrics doluysa → CustomGenerateRequest
+    // 3) Yoksa → AutoGenerateRequest
     const hasLyricsOrTitle =
       (!!lyrics && lyrics.length > 0) || (!!title && title.length > 0);
-    const action = hasLyricsOrTitle ? "custom" : "auto";
+
+    const action = reference_audio_url
+      ? "upload"
+      : hasLyricsOrTitle
+      ? "custom"
+      : "auto";
 
     // ✅ payload (TopMediai v3)
     // Not: instrumental=1 ise lyrics provider tarafından uygulanmaz (doküman).
     const payload = {
-      action, // "custom" | "auto"
+      action, // "upload" | "custom" | "auto"
       style,
       mv: "v5.0",
       instrumental: isInstrumental ? 1 : 0,
@@ -63,8 +73,8 @@ export default async function handler(req, res) {
       ...(action === "custom" ? { title: title || undefined } : null),
       ...(action === "custom" ? { lyrics: lyrics || undefined } : null),
 
-      // ✅ NEW: Ref Audio URL only if present (boş göndermiyoruz)
-      ...(reference_audio_url ? { reference_audio_url } : null),
+      // ✅ UploadGenerateRequest: ref audio → audio_url alanıyla gider
+      ...(action === "upload" ? { audio_url: reference_audio_url } : null),
     };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
@@ -206,7 +216,8 @@ export default async function handler(req, res) {
       topmediai_task_id: taskId ? String(taskId) : null,
       topmediai: data,
       topmediai_url: topmediaiUrl,
-      // debug: gerçekten custom mı gitti görelim
+
+      // debug: action + audio_url gerçekten gitti mi kontrol edeceğiz
       sent_payload: payload,
     });
   } catch (err) {
