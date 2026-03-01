@@ -640,7 +640,9 @@ function setEqBars(L, M, H){
   setCardPlaying(jobId, false);
   toast("error", "Play başarısız (src açılamadı)");
 }
-  function onProgressSeek(e){
+} // <-- EKLE (togglePlayFromCard kapanışı)
+
+function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
     if (!wrap) return;
     const card = e.target.closest(".aivo-player-card");
