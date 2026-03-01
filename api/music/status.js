@@ -331,11 +331,11 @@ module.exports = async (req, res) => {
             // copy-to-r2 imzası farklı olabilir; en güvenli şekilde argümanları veriyoruz:
             // (url, key, { contentType, cacheControl, public })
             try {
-              const result = await copyToR2(urlMp3, key, {
-                contentType: guessContentTypeFromUrl(urlMp3),
-                cacheControl: "public, max-age=31536000, immutable",
-                public: true,
-              });
+              const result = await copyToR2({
+  url: urlMp3,
+  key,
+  contentType: guessContentTypeFromUrl(urlMp3),
+});
 
               // result farklı şekillerde dönebilir. URL yakalamaya çalışalım:
               archive_url =
