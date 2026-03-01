@@ -1236,9 +1236,16 @@ if (act === "delete")   return actionDelete(card);
   function mergePreferDbButKeepReady(oldItem, dbItem){
     const out = { ...oldItem, ...dbItem };
 
-    const oldSrc = String(oldItem?.__audio_src || "").trim();
-    const dbSrc  = String(dbItem?.__audio_src || "").trim();
-    if (!dbSrc && oldSrc) out.__audio_src = oldSrc;
+   const oldSrc = String(oldItem?.__audio_src || "").trim();
+const dbSrc  = String(dbItem?.__audio_src || "").trim();
+
+// ✅ R2/CDN (media.aivo.tr) varsa, DB'den gelen TopMediai URL ile geri ezme
+const oldIsCdn = oldSrc.includes("media.aivo.tr/outputs/");
+const dbIsProvider = dbSrc.includes("topmediai.com") || dbSrc.includes("aimusic-api.topmediai.com");
+
+if ((oldIsCdn && dbIsProvider) || (!dbSrc && oldSrc)) {
+  out.__audio_src = oldSrc;
+}
 
     const oldState = String(oldItem?.__ui_state || "").trim();
     const dbState  = String(dbItem?.__ui_state || "").trim();
