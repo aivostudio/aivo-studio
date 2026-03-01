@@ -1059,14 +1059,18 @@ if (act === "delete")   return actionDelete(card);
   function pickAudioFromStatus(j){
     const tm0 = j?.topmediai?.data?.[0] || null;
 
-    const src =
-      j?.audio?.src ||
-      j?.audio_src ||
-      j?.result?.audio?.src ||
-      j?.result?.src ||
-      j?.job?.audio?.src ||
-      tm0?.audio_url ||
-      "";
+   const src =
+  // ✅ 1) En güvenilir: outputs[0].url
+  (Array.isArray(j?.outputs) && j.outputs[0]?.url) ||
+  // ✅ 2) audio object
+  j?.audio?.src ||
+  j?.audio_src ||
+  j?.result?.audio?.src ||
+  j?.result?.src ||
+  j?.job?.audio?.src ||
+  // ✅ 3) topmediai fallback
+  tm0?.audio_url ||
+  "";
 
     const dur =
       j?.duration ||
