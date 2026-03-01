@@ -630,13 +630,13 @@ try{
   // başka bir tık geldiyse bu play'i iptal et (stale)
   if (mySeq !== __playSeq) return;
 
-// ✅ Safari-safe: src set -> load() -> metadata gelmeden play'e geçme
+// ✅ Safari-safe: src set -> load() -> canplay/metadata bekle (duration şartı YOK)
+// TopMediai bazı linklerde duration=Infinity gelebiliyor; bu yüzden "isFinite(duration)" KULLANMIYORUZ.
 await new Promise((resolve, reject) => {
-  // src set edildikten sonra Safari'de metadata için load() şart
   try { A.load(); } catch {}
 
-  // zaten hazırsa
-  if (A.readyState >= 1 && isFinite(A.duration) && A.duration > 0) return resolve();
+  // yeterince hazırsa (metadata/akış) direkt devam
+  if (A.readyState >= 1) return resolve();
 
   let done = false;
   const cleanup = () => {
@@ -644,25 +644,21 @@ await new Promise((resolve, reject) => {
     done = true;
     A.removeEventListener("loadedmetadata", onOk);
     A.removeEventListener("canplay", onOk);
+    A.removeEventListener("canplaythrough", onOk);
     A.removeEventListener("error", onErr);
     clearTimeout(tid);
   };
 
-  const onOk = () => {
-    // metadata geldi ama duration hala yoksa beklemeye devam etmeyelim: fail
-    if (!(isFinite(A.duration) && A.duration > 0)) return;
-    cleanup();
-    resolve();
-  };
-
+  const onOk = () => { cleanup(); resolve(); };
   const onErr = () => { cleanup(); reject(new Error("audio_load_error")); };
 
   A.addEventListener("loadedmetadata", onOk);
   A.addEventListener("canplay", onOk);
+  A.addEventListener("canplaythrough", onOk);
   A.addEventListener("error", onErr);
 
-  // ❗ timeout artık resolve değil: metadata gelmediyse play'e izin verme
-  const tid = setTimeout(() => { cleanup(); reject(new Error("audio_metadata_timeout")); }, 6000);
+  // metadata gelmese bile play'i bloke etme (Safari/Infinity edge)
+  const tid = setTimeout(() => { cleanup(); resolve(); }, 1500);
 });
   // beklerken başka tık geldiyse UI’yi bozma
   if (mySeq !== __playSeq) return;
