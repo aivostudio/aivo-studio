@@ -588,8 +588,8 @@ function setEqBars(L, M, H){
     const jobId = card.getAttribute("data-job-id") || "";
     if (!jobId) return;
 
-    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const src = String(existing.__audio_src || card.dataset.src || "").trim();
+   // kartın kendi data-src'sini tek source of truth yap
+const src = String(card.getAttribute("data-src") || "").trim();
 
     if (!src){
       toast("info", "Henüz hazır değil");
