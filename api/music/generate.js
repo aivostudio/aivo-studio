@@ -4,6 +4,10 @@
 // - Calls TopMediai create via /api/providers/topmediai/music/create
 // - Writes mapping + job meta to Redis
 // - Inserts a row into Neon `jobs` table (best-effort auth)
+//
+// ✅ CHANGE (THIS REVISION):
+// - UI request'te gelse bile `reference_audio_url` artık provider'a forward edilmiyor.
+//   (Benzer ama yeni üretim için provider tarafında upload/audio_url modu tetiklenmesin.)
 
 export const config = { runtime: "nodejs" };
 
@@ -16,7 +20,8 @@ const { neon } = require("@neondatabase/serverless");
 let requireAuth = null;
 try {
   const authModule = require("../_lib/auth.js");
-  requireAuth = authModule?.requireAuth || authModule?.default?.requireAuth || null;
+  requireAuth =
+    authModule?.requireAuth || authModule?.default?.requireAuth || null;
 } catch {
   requireAuth = null;
 }
@@ -47,9 +52,15 @@ function safeParseJson(s) {
 
 function getOrigin(req) {
   const proto =
-    (req.headers["x-forwarded-proto"] || "").toString().split(",")[0].trim() || "https";
+    (req.headers["x-forwarded-proto"] || "")
+      .toString()
+      .split(",")[0]
+      .trim() || "https";
   const host =
-    (req.headers["x-forwarded-host"] || "").toString().split(",")[0].trim() ||
+    (req.headers["x-forwarded-host"] || "")
+      .toString()
+      .split(",")[0]
+      .trim() ||
     (req.headers.host || "").toString().trim();
 
   return host ? `${proto}://${host}` : "https://aivo.tr";
@@ -101,9 +112,8 @@ module.exports = async (req, res) => {
     const vocal = String(body.vocal || "").trim();
     const mood = String(body.mood || "").trim();
 
-    // ✅ NEW: ref audio url (UI -> generate -> provider)
-    // UI request: reference_audio_url
-    const reference_audio_url = String(body.reference_audio_url || "").trim();
+    // ✅ NOTE: UI request'te gelse bile burada intentionally ignore ediyoruz.
+    // const reference_audio_url = String(body.reference_audio_url || "").trim();
 
     let mode = String(body.mode || "").trim();
     if (!mode) {
@@ -117,16 +127,13 @@ module.exports = async (req, res) => {
     const origin = getOrigin(req);
     const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
-    // Provider payload
+    // Provider payload (NO reference_audio_url forward)
     const providerPayload = { prompt };
     if (title) providerPayload.title = title;
     if (lyrics) providerPayload.lyrics = lyrics;
     if (mode) providerPayload.mode = mode;
     if (vocal) providerPayload.vocal = vocal;
     if (mood) providerPayload.mood = mood;
-
-    // ✅ CRITICAL: ref url boş değilse provider'a forward et
-    if (reference_audio_url) providerPayload.reference_audio_url = reference_audio_url;
 
     let pr;
     try {
@@ -175,7 +182,10 @@ module.exports = async (req, res) => {
       );
     }
 
-    const provider_job_id = String(pjson.provider_job_id || pjson.job_id || pjson.id || "").trim();
+    const provider_job_id = String(
+      pjson.provider_job_id || pjson.job_id || pjson.id || ""
+    ).trim();
+
     if (!provider_job_id) {
       return safeJson(
         res,
@@ -259,7 +269,6 @@ module.exports = async (req, res) => {
       mode: mode || null,
       vocal: vocal || null,
       mood: mood || null,
-      reference_audio_url: reference_audio_url || null,
       created_at: nowISO(),
       updated_at: nowISO(),
       outputs: [],
@@ -315,7 +324,7 @@ module.exports = async (req, res) => {
         mode: mode || undefined,
         vocal: vocal || undefined,
         mood: mood || undefined,
-        reference_audio_url: reference_audio_url || undefined,
+        // NOTE: intentionally not storing reference_audio_url in DB meta
       };
 
       try {
@@ -356,7 +365,7 @@ module.exports = async (req, res) => {
     }
 
     // ✅ response: internal_job_id (KV) + db_job_id (Neon)
-    // ✅ + DEBUG: provider sent_payload (TopMediai payload) ve bize gelen provider cevabı
+    // ✅ + DEBUG: sent_to_provider (bizim create'a gönderdiğimiz) ve provider_response
     return safeJson(res, {
       ok: true,
       state: "queued",
