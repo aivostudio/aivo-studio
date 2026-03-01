@@ -102,78 +102,7 @@
     const s = Math.floor(sec % 60);
     return `${m}:${String(s).padStart(2,"0")}`;
   }
-  // ✅ Safari duration 0/NaN kalabiliyor -> ayrı bir "probe audio" ile metadata çek
-  let __probeAudio = null;
-  const __probeBusy = new Set(); // cardId bazlı kilit
 
-  function ensureDurationFromMetadata(cardId, src){
-    try{
-      if (!cardId || !src) return;
-      if (__probeBusy.has(cardId)) return;
-      __probeBusy.add(cardId);
-
-      if (!__probeAudio){
-              __probeAudio = document.createElement("audio");
-        __probeAudio.preload = "metadata";
-        __probeAudio.style.display = "none";
-        document.body.appendChild(__probeAudio);
-      }
-
-      const A = __probeAudio;
-
-      // timeout: Safari bazen event'i geç verir
-      let done = false;
-      const timeout = setTimeout(() => finish(0), 8000);
-
-      function cleanup(){
-        clearTimeout(timeout);
-        A.onloadedmetadata = null;
-        A.ondurationchange = null;
-        A.onerror = null;
-      }
-
-      function finish(durSec){
-        if (done) return;
-        done = true;
-        cleanup();
-
-        __probeBusy.delete(cardId);
-
-        // süre alamadıysak çık
-        if (!isFinite(durSec) || durSec <= 0) return;
-
-        // mm:ss yaz
-        const durText = fmtTime(durSec);
-
-        // job'u güncelle
-        const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
-        // zaten dolu olduysa ezmeyelim
-        if (String(existing.__duration || "").trim()) return;
-
-        upsertJob({ job_id: cardId, id: cardId, __duration: durText });
-        render();
-
-        // çalıyorsa UI barını da tazele
-        try { updateProgressUI(); } catch {}
-      }
-
-      function tryRead(){
-        const d = Number(A.duration || 0);
-        if (isFinite(d) && d > 0) return finish(d);
-      }
-
-      A.onerror = () => finish(0);
-      A.onloadedmetadata = () => tryRead();
-      A.ondurationchange = () => tryRead();
-
-      // src set + load -> metadata tetiklenir
-      if (A.src !== src) A.src = src;
-      try { A.load(); } catch {}
-
-    } catch {
-      try { __probeBusy.delete(cardId); } catch {}
-    }
-  }
 /* ---------------- EQ engine (beat-reactive) ---------------- */
 let eqRaf = 0;
 
@@ -349,8 +278,10 @@ function setEqBars(L, M, H){
     if (!audioEl){
       audioEl = document.createElement("audio");
       audioEl.id = "aivoAudio";
-           audioEl.preload = "metadata";
+      audioEl.preload = "metadata";
+      audioEl.crossOrigin = "anonymous";
       audioEl.style.display = "none";
+      document.body.appendChild(audioEl);
     }
 
     initEqEngine();
@@ -366,30 +297,12 @@ function setEqBars(L, M, H){
       if (currentJobId) setCardPlaying(currentJobId, false);
       stopRaf();
     };
-      audioEl.onplay = () => {
+    audioEl.onplay = () => {
       if (currentJobId) setCardPlaying(currentJobId, true);
       // ✅ DOM yenilenmiş olabilir: cache’i tazele
       bindEqBarsForCurrentJob();
       startRaf();
     };
-
-    // ✅ Safari fix: duration/progress ilk load'da UI'ye yansımayabiliyor.
-    //    Audio metadata/timeupdate event'leri ile UI'yi garanti güncelle.
-    if (!audioEl.__aivoProgressBound) {
-      audioEl.__aivoProgressBound = true;
-
-      audioEl.addEventListener("loadedmetadata", () => {
-        try { updateProgressUI(); } catch {}
-      }, { passive: true });
-
-      audioEl.addEventListener("durationchange", () => {
-        try { updateProgressUI(); } catch {}
-      }, { passive: true });
-
-      audioEl.addEventListener("timeupdate", () => {
-        try { updateProgressUI(); } catch {}
-      }, { passive: true });
-    }
 
     return audioEl;
   }
@@ -638,55 +551,20 @@ function setEqBars(L, M, H){
     card.classList.toggle("is-playing", !!isPlaying);
   }
 
-   function updateProgressUI(){
+  function updateProgressUI(){
     if (!audioEl || !currentJobId) return;
     const card = getCard(currentJobId);
     if (!card) return;
 
+    const dur = audioEl.duration || 0;
     const cur = audioEl.currentTime || 0;
-
-    // ✅ Safari'de audio.duration bazen 0/NaN kalabiliyor.
-    //    Fallback: job.__duration (poll'dan geliyor) veya kartın data-duration/meta text'i.
-    let dur = Number(audioEl.duration || 0);
-          // ✅ Safari bug: duration bazen 0.xx / 1.xx gibi "çöp" geliyor -> UI 0:00 yazıyor.
-    // 2 saniyeden küçük duration'ı GEÇERSİZ sayıp fallback'e zorla.
-    if (!isFinite(dur) || dur <= 0 || dur < 2) {
-      dur = 0;
-    }
-
-    if (!isFinite(dur) || dur <= 0) {
-      const existing = jobs.find(x => (x.job_id || x.id) === currentJobId) || {};
-      const raw = String(existing.__duration || existing.duration || "").trim();
-
-      if (raw) {
-        // "2:52" gibi
-        if (raw.includes(":")) {
-          const parts = raw.split(":").map(s => Number(s));
-          if (parts.length === 2 && isFinite(parts[0]) && isFinite(parts[1])) {
-            dur = parts[0] * 60 + parts[1];
-          } else if (parts.length === 3 && isFinite(parts[0]) && isFinite(parts[1]) && isFinite(parts[2])) {
-            dur = parts[0] * 3600 + parts[1] * 60 + parts[2];
-          }
-        } else {
-          // "121.152" gibi saniye
-          const n = Number(raw);
-          if (isFinite(n) && n > 0) dur = n;
-        }
-      }
-    }
-
     const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
 
     const bar = qs(".aivo-progress i", card);
     if (bar) bar.style.width = pct.toFixed(2) + "%";
 
     const durEl = qs(".meta-dur", card);
-    if (durEl) {
-      // ✅ total yoksa bile elapsed yaz (0:11 / 0:00 gibi değil; total yoksa "0:11")
-      durEl.textContent = (dur > 0)
-        ? `${fmtTime(cur)} / ${fmtTime(dur)}`
-        : `${fmtTime(cur)}`;
-    }
+    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
   }
 
   function startRaf(){
@@ -737,39 +615,9 @@ function setEqBars(L, M, H){
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
+
     try{
-      const changed = (A.src !== src);
-      if (changed) {
-        A.src = src;
-
-        // ✅ FIX: Safari/Chrome ilk set’te duration/progress bazen gelmiyor.
-        //        load() + metadata bekle -> UI anında doğru güncellensin.
-        A.load();
-         ensureDurationFromMetadata(jobId, src);
-
-        await new Promise((resolve) => {
-          let done = false;
-
-          const finish = () => {
-            if (done) return;
-            done = true;
-            try { A.removeEventListener("loadedmetadata", onMeta); } catch {}
-            try { A.removeEventListener("canplay", onMeta); } catch {}
-            resolve();
-          };
-
-          const onMeta = () => finish();
-
-          A.addEventListener("loadedmetadata", onMeta, { once: true });
-          A.addEventListener("canplay", onMeta, { once: true });
-
-          // metadata hiç gelmezse UI kilitlenmesin diye küçük timeout
-          setTimeout(finish, 1200);
-        });
-
-        try { updateProgressUI(); } catch {}
-      }
-
+      if (A.src !== src) A.src = src;
       await A.play();
     } catch(e){
       console.warn("[panel.music] play failed:", e);
@@ -1056,19 +904,15 @@ if (act === "delete")   return actionDelete(card);
   function pickAudioFromStatus(j){
     const tm0 = j?.topmediai?.data?.[0] || null;
 
-   const src =
-  // ✅ 1) En güvenilir: outputs[0].url
-  (Array.isArray(j?.outputs) && j.outputs[0]?.url) ||
-  // ✅ 2) audio object
-const src =
-  (Array.isArray(j?.outputs) && j.outputs[0]?.url) ||
-  j?.audio?.src ||
-  j?.audio_src ||
-  j?.result?.audio?.src ||
-  j?.result?.src ||
-  j?.job?.audio?.src ||
-  tm0?.audio_url ||
-  "";
+    const src =
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      j?.job?.audio?.src ||
+      tm0?.audio_url ||
+      "";
+
     const dur =
       j?.duration ||
       j?.audio?.duration ||
@@ -1142,7 +986,7 @@ const src =
         return;
       }
 
-          const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
+      const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
       const st = uiState(state);
 
       const playUrl = (!src && providerBase && output_id)
@@ -1157,47 +1001,13 @@ const src =
         output_id: output_id || existing.output_id || "",
       };
 
-      // duration provider'dan gelirse yaz
       if (duration) next.__duration = String(duration);
       if (title) next.title = title;
 
       upsertJob(next);
       render();
 
-      // ✅ READY ama duration yoksa: metadata probe ile duration'ı çek ve job'a yaz
-      if (next.__ui_state === "ready") {
-        const curId = String(cardId);
-        const cur = jobs.find(x => (x.job_id || x.id) === curId) || {};
-        const hasDur = String(cur.__duration || "").trim();
-        const srcNow = String(cur.__audio_src || next.__audio_src || "").trim();
-
-        // "0:00", "-1", "" gibi durumları da "yok" say
-        const durBad =
-          !hasDur ||
-          hasDur === "0:00" ||
-          hasDur === "-1" ||
-          hasDur === "-1.0";
-
-        if (durBad && srcNow) {
-          ensureDurationFromMetadata(curId, srcNow);
-        }
-        return;
-      }
-
-      // ✅ READY oldu ama duration yoksa (Safari 0:00), metadata probe ile süreyi yaz
-      if (next.__ui_state === "ready") {
-        const existing2 = jobs.find(x => (x.job_id || x.id) === cardId) || {};
-        const hasDur =
-          String(existing2.__duration || "").trim() ||
-          String(existing2.duration || "").trim();
-
-        if (!hasDur && next.__audio_src) {
-          // arka planda süreyi çek, UI'yi refreshsiz düzelt
-          ensureDurationFromMetadata(cardId, next.__audio_src);
-        }
-        return;
-      }
-
+      if (next.__ui_state === "ready") return;
       if (next.__ui_state === "error") return;
 
       schedulePoll(cardId, 1600);
