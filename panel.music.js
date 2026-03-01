@@ -617,22 +617,47 @@ function setEqBars(L, M, H){
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
 
-   try{
+  try{
   const mySeq = ++__playSeq;
 
-  // src değişiyorsa: güvenli reset (abort riskini sıfırla)
+  // src değişiyorsa: güvenli reset
   if (A.src !== src) {
     try { A.pause(); } catch {}
     A.src = src;
     try { A.load(); } catch {}
   }
 
-  // başka bir tık geldiyse bu play'i iptal et (stale)
+  // stale click koruması
+  if (mySeq !== __playSeq) return;
+
+  // ✅ metadata gelmeden play çağırma (0:00 ve AbortError fix)
+  await new Promise((resolve) => {
+    let done = false;
+
+    const finish = () => {
+      if (done) return;
+      done = true;
+      A.removeEventListener("loadedmetadata", finish);
+      A.removeEventListener("durationchange", finish);
+      A.removeEventListener("canplay", finish);
+      resolve();
+    };
+
+    if (isFinite(A.duration) && A.duration > 0) {
+      return finish();
+    }
+
+    A.addEventListener("loadedmetadata", finish, { once: true });
+    A.addEventListener("durationchange", finish, { once: true });
+    A.addEventListener("canplay", finish, { once: true });
+
+    setTimeout(finish, 1800);
+  });
+
   if (mySeq !== __playSeq) return;
 
   await A.play();
 
-  // play sırasında yine başka tık geldiyse UI’yi bozma
   if (mySeq !== __playSeq) return;
 
 } catch(e){
