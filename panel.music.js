@@ -630,31 +630,40 @@ try{
   // başka bir tık geldiyse bu play'i iptal et (stale)
   if (mySeq !== __playSeq) return;
 
-  // ✅ play'den önce metadata/canplay bekle (duration 0:00 kalmasın)
-  await new Promise((resolve, reject) => {
-    if (A.readyState >= 1 && isFinite(A.duration) && A.duration > 0) return resolve();
+// ✅ Safari-safe: src set -> load() -> metadata gelmeden play'e geçme
+await new Promise((resolve, reject) => {
+  // src set edildikten sonra Safari'de metadata için load() şart
+  try { A.load(); } catch {}
 
-    let done = false;
-    const cleanup = () => {
-      if (done) return;
-      done = true;
-      A.removeEventListener("loadedmetadata", onOk);
-      A.removeEventListener("canplay", onOk);
-      A.removeEventListener("error", onErr);
-      clearTimeout(tid);
-    };
+  // zaten hazırsa
+  if (A.readyState >= 1 && isFinite(A.duration) && A.duration > 0) return resolve();
 
-    const onOk = () => { cleanup(); resolve(); };
-    const onErr = () => { cleanup(); reject(new Error("audio_load_error")); };
+  let done = false;
+  const cleanup = () => {
+    if (done) return;
+    done = true;
+    A.removeEventListener("loadedmetadata", onOk);
+    A.removeEventListener("canplay", onOk);
+    A.removeEventListener("error", onErr);
+    clearTimeout(tid);
+  };
 
-    A.addEventListener("loadedmetadata", onOk);
-    A.addEventListener("canplay", onOk);
-    A.addEventListener("error", onErr);
+  const onOk = () => {
+    // metadata geldi ama duration hala yoksa beklemeye devam etmeyelim: fail
+    if (!(isFinite(A.duration) && A.duration > 0)) return;
+    cleanup();
+    resolve();
+  };
 
-    // metadata hiç gelmezse UI kilitlenmesin diye kısa timeout
-    const tid = setTimeout(() => { cleanup(); resolve(); }, 1500);
-  });
+  const onErr = () => { cleanup(); reject(new Error("audio_load_error")); };
 
+  A.addEventListener("loadedmetadata", onOk);
+  A.addEventListener("canplay", onOk);
+  A.addEventListener("error", onErr);
+
+  // ❗ timeout artık resolve değil: metadata gelmediyse play'e izin verme
+  const tid = setTimeout(() => { cleanup(); reject(new Error("audio_metadata_timeout")); }, 6000);
+});
   // beklerken başka tık geldiyse UI’yi bozma
   if (mySeq !== __playSeq) return;
 
