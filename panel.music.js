@@ -1135,7 +1135,7 @@ if (act === "delete")   return actionDelete(card);
         return;
       }
 
-      const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
+          const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
       const st = uiState(state);
 
       const playUrl = (!src && providerBase && output_id)
@@ -1150,11 +1150,32 @@ if (act === "delete")   return actionDelete(card);
         output_id: output_id || existing.output_id || "",
       };
 
+      // duration provider'dan gelirse yaz
       if (duration) next.__duration = String(duration);
       if (title) next.title = title;
 
-          upsertJob(next);
+      upsertJob(next);
       render();
+
+      // ✅ READY ama duration yoksa: metadata probe ile duration'ı çek ve job'a yaz
+      if (next.__ui_state === "ready") {
+        const curId = String(cardId);
+        const cur = jobs.find(x => (x.job_id || x.id) === curId) || {};
+        const hasDur = String(cur.__duration || "").trim();
+        const srcNow = String(cur.__audio_src || next.__audio_src || "").trim();
+
+        // "0:00", "-1", "" gibi durumları da "yok" say
+        const durBad =
+          !hasDur ||
+          hasDur === "0:00" ||
+          hasDur === "-1" ||
+          hasDur === "-1.0";
+
+        if (durBad && srcNow) {
+          ensureDurationFromMetadata(curId, srcNow);
+        }
+        return;
+      }
 
       // ✅ READY oldu ama duration yoksa (Safari 0:00), metadata probe ile süreyi yaz
       if (next.__ui_state === "ready") {
