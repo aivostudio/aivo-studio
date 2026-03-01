@@ -101,6 +101,10 @@ module.exports = async (req, res) => {
     const vocal = String(body.vocal || "").trim();
     const mood = String(body.mood || "").trim();
 
+    // ✅ NEW: ref audio url (UI -> generate -> provider)
+    // UI request: reference_audio_url
+    const reference_audio_url = String(body.reference_audio_url || "").trim();
+
     let mode = String(body.mode || "").trim();
     if (!mode) {
       mode = vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals";
@@ -121,6 +125,9 @@ module.exports = async (req, res) => {
     if (vocal) providerPayload.vocal = vocal;
     if (mood) providerPayload.mood = mood;
 
+    // ✅ CRITICAL: ref url boş değilse provider'a forward et
+    if (reference_audio_url) providerPayload.reference_audio_url = reference_audio_url;
+
     let pr;
     try {
       pr = await fetchFn(providerCreateUrl, {
@@ -140,6 +147,8 @@ module.exports = async (req, res) => {
           internal_job_id,
           detail: String(e?.message || e),
           provider_create_url: providerCreateUrl,
+          // debug
+          sent_to_provider: providerPayload,
         },
         200
       );
@@ -159,6 +168,8 @@ module.exports = async (req, res) => {
           provider_create_url: providerCreateUrl,
           sample: String(ptext || "").slice(0, 1000),
           provider_response: pjson,
+          // debug
+          sent_to_provider: providerPayload,
         },
         200
       );
@@ -174,6 +185,8 @@ module.exports = async (req, res) => {
           internal_job_id,
           provider_create_url: providerCreateUrl,
           provider_response: pjson,
+          // debug
+          sent_to_provider: providerPayload,
         },
         200
       );
@@ -224,7 +237,10 @@ module.exports = async (req, res) => {
         created_at: nowISO(),
         provider: {
           create_url: providerCreateUrl,
+          // provider raw response
           resp: pjson,
+          // what we sent
+          sent_to_provider: providerPayload,
         },
       })
     );
@@ -243,6 +259,7 @@ module.exports = async (req, res) => {
       mode: mode || null,
       vocal: vocal || null,
       mood: mood || null,
+      reference_audio_url: reference_audio_url || null,
       created_at: nowISO(),
       updated_at: nowISO(),
       outputs: [],
@@ -298,6 +315,7 @@ module.exports = async (req, res) => {
         mode: mode || undefined,
         vocal: vocal || undefined,
         mood: mood || undefined,
+        reference_audio_url: reference_audio_url || undefined,
       };
 
       try {
@@ -338,6 +356,7 @@ module.exports = async (req, res) => {
     }
 
     // ✅ response: internal_job_id (KV) + db_job_id (Neon)
+    // ✅ + DEBUG: provider sent_payload (TopMediai payload) ve bize gelen provider cevabı
     return safeJson(res, {
       ok: true,
       state: "queued",
@@ -351,6 +370,11 @@ module.exports = async (req, res) => {
       },
       keys: { mapKey, jobMetaKey, outputsIndexKey, providerMapKey },
       provider: { ok: true, create_url: providerCreateUrl },
+
+      // ✅ DEBUG (Network Response'da göreceksin)
+      sent_to_provider: providerPayload,
+      sent_payload: pjson?.sent_payload || null,
+      provider_response: pjson,
     });
   } catch (err) {
     console.error("music/generate error:", err);
