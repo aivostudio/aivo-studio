@@ -616,16 +616,29 @@ function setEqBars(L, M, H){
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
 
-    try{
-      if (A.src !== src) A.src = src;
-      await A.play();
-    } catch(e){
-      console.warn("[panel.music] play failed:", e);
-      setCardPlaying(jobId, false);
-      toast("error", "Play başarısız (src açılamadı)");
-    }
+   try{
+  const mySeq = ++__playSeq;
+
+  // src değişiyorsa: güvenli reset (abort riskini sıfırla)
+  if (A.src !== src) {
+    try { A.pause(); } catch {}
+    A.src = src;
+    try { A.load(); } catch {}
   }
 
+  // başka bir tık geldiyse bu play'i iptal et (stale)
+  if (mySeq !== __playSeq) return;
+
+  await A.play();
+
+  // play sırasında yine başka tık geldiyse UI’yi bozma
+  if (mySeq !== __playSeq) return;
+
+} catch(e){
+  console.warn("[panel.music] play failed:", e);
+  setCardPlaying(jobId, false);
+  toast("error", "Play başarısız (src açılamadı)");
+}
   function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
     if (!wrap) return;
