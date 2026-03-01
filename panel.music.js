@@ -113,9 +113,8 @@
       __probeBusy.add(cardId);
 
       if (!__probeAudio){
-        __probeAudio = document.createElement("audio");
+              __probeAudio = document.createElement("audio");
         __probeAudio.preload = "metadata";
-        __probeAudio.crossOrigin = "anonymous";
         __probeAudio.style.display = "none";
         document.body.appendChild(__probeAudio);
       }
@@ -350,10 +349,8 @@ function setEqBars(L, M, H){
     if (!audioEl){
       audioEl = document.createElement("audio");
       audioEl.id = "aivoAudio";
-      audioEl.preload = "metadata";
-      audioEl.crossOrigin = "anonymous";
+           audioEl.preload = "metadata";
       audioEl.style.display = "none";
-      document.body.appendChild(audioEl);
     }
 
     initEqEngine();
