@@ -298,16 +298,28 @@ function setEqBars(L, M, H){
       if (currentJobId) setCardPlaying(currentJobId, false);
       stopRaf();
     };
-    audioEl.onplay = () => {
-      if (currentJobId) setCardPlaying(currentJobId, true);
-      // ✅ DOM yenilenmiş olabilir: cache’i tazele
-      bindEqBarsForCurrentJob();
-      startRaf();
-    };
+   audioEl.onplay = () => {
+  if (currentJobId) setCardPlaying(currentJobId, true);
+  // ✅ DOM yenilenmiş olabilir: cache’i tazele
+  bindEqBarsForCurrentJob();
+  startRaf();
+};
 
-    return audioEl;
+// ✅ Metadata geldiğinde gerçek duration'ı state'e yaz
+audioEl.onloadedmetadata = () => {
+  if (!currentJobId) return;
+
+  const existing = jobs.find(x => (x.job_id || x.id) === currentJobId);
+  if (!existing) return;
+
+  if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+    existing.__duration = fmtTime(audioEl.duration);
+    saveJobs();
+    render();
   }
+};
 
+return audioEl;
   /* ---------------- jobs storage ---------------- */
   function loadJobs(){
     try {
