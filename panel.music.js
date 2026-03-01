@@ -616,33 +616,15 @@ function setEqBars(L, M, H){
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
 
-      try{
-      // ✅ Safari fix: src set sonrası metadata event'i bazen kaçıyor.
-      //    play'den önce load() ile metadata'yı zorla al, metadata gelince UI'yi güncelle.
+    try{
       if (A.src !== src) A.src = src;
-
-      A.preload = "metadata";
-
-      const __metaOnce = () => {
-        try { updateProgressUI(); } catch {}
-      };
-
-      // once: true -> double-bind yok, her track değişiminde 1 kez yakalar
-      A.addEventListener("loadedmetadata", __metaOnce, { once: true });
-      A.addEventListener("durationchange", __metaOnce, { once: true });
-
-      // Safari'de load() kritik: duration=0 takılmasını kırar
-      try { A.load(); } catch {}
-
-      // metadata zaten hazırsa anında bas
-      if (A.readyState >= 1) __metaOnce();
-
       await A.play();
     } catch(e){
       console.warn("[panel.music] play failed:", e);
       setCardPlaying(jobId, false);
       toast("error", "Play başarısız (src açılamadı)");
     }
+  }
 
   function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
