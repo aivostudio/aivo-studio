@@ -317,107 +317,72 @@ module.exports = async (req, res) => {
       });
     }
 
-    // ---------------------------------------------------------
-    // 3) Normalize (MULTI-TRACK) + ✅ R2 ARCHIVE ON READY
-    // ---------------------------------------------------------
-    const arr = Array.isArray(top?.data)
-      ? top.data
-      : Array.isArray(top?.data?.data)
-      ? top.data.data
-      : null;
+// ---------------------------------------------------------
+// 3) Normalize (MULTI-TRACK) + ✅ R2 ARCHIVE ON READY
+// ---------------------------------------------------------
+const arr = Array.isArray(top?.data)
+  ? top.data
+  : Array.isArray(top?.data?.data)
+  ? top.data.data
+  : null;
 
-    let anyFail = false;
-    let anyReady = false;
+let anyFail = false;
+let anyReady = false;
 
-    const outputs = [];
+const outputs = [];
 
-    if (Array.isArray(arr) && arr.length) {
-      for (const item of arr) {
-        const st = Number(item?.status);
+if (Array.isArray(arr) && arr.length) {
+  for (const item of arr) {
+    const st = Number(item?.status);
 
-        const trackId = String(item?.song_id || item?.id || "").trim() || null;
-        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+    const trackId = String(item?.song_id || item?.id || "").trim() || null;
+    const urlMp3 =
+      item?.audio_url ||
+      item?.audio ||
+      item?.mp3 ||
+      item?.url ||
+      null;
 
-        // status==0 => ready (TopMediai’de)
-        const ready = st === 0;
+    // status==0 => ready (TopMediai’de)
+    const ready = st === 0;
 
-        // fail kodları (geniş yakala)
-        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
-          anyFail = true;
-        }
+    // fail kodları (geniş yakala)
+    if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
+      anyFail = true;
+    }
 
-        if (ready && urlMp3) {
-          anyReady = true;
+    if (ready && urlMp3) {
+      anyReady = true;
 
-          // ✅ READY -> R2 archive
-          let finalUrl = urlMp3;
-          let archiveUrl = "";
+      // ✅ READY -> R2 archive
+      let finalUrl = urlMp3;
+      let archiveUrl = "";
 
-          if (trackId) {
-            archiveUrl = await ensureMusicArchivedToR2({
-              redis,
-              trackId,
-              audioUrl: urlMp3,
-            });
-            if (archiveUrl) finalUrl = archiveUrl;
-          }
+      if (trackId) {
+        archiveUrl = await ensureMusicArchivedToR2({
+          redis,
+          trackId,
+          audioUrl: urlMp3,
+        });
 
-          outputs.push({
-            type: "audio",
-            url: finalUrl,
-            meta: {
-              provider: "topmediai",
-              trackId: trackId || null,
-              status: st,
-              archive_url: archiveUrl || null,
-              provider_url: urlMp3 || null,
-            },
-          });
-        }
+        if (archiveUrl) finalUrl = archiveUrl;
       }
+
+      // ✅ ÖNEMLİ: HER ZAMAN SAME-ORIGIN PROXY
+      // Safari 302 + cross-site + range hatasını burada çözüyoruz
+      const proxiedUrl = `/api/media/proxy?url=${encodeURIComponent(finalUrl)}`;
+
+      outputs.push({
+        type: "audio",
+        url: proxiedUrl, // ← artık direkt provider/R2 değil, proxy üzerinden
+        meta: {
+          provider: "topmediai",
+          trackId: trackId || null,
+          status: st,
+          archive_url: archiveUrl || null,
+          provider_url: urlMp3 || null,
+        },
+      });
     }
-
-    const data = {
-      ok: true,
-      provider: "topmediai",
-      provider_job_id,
-      provider_song_ids,
-      internal_job_id: internal_job_id || null,
-      state: "processing",
-      status: "processing",
-      outputs,
-      topmediai: top,
-    };
-
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa diye
-    if (outputs.length) {
-      data.audio = {
-        src: outputs[0].url, // ✅ artık archive_url (varsa) döner
-        output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
-      };
-    }
-
-    if (anyFail) {
-      data.state = "failed";
-      data.status = "failed";
-    } else if (anyReady) {
-      // en az 1 parça hazırsa completed diyelim (UI “hazır” görsün)
-      data.state = "completed";
-      data.status = "completed";
-    } else {
-      data.state = "processing";
-      data.status = "processing";
-    }
-
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error("api/music/status error:", err);
-    return res.status(200).json({
-      ok: false,
-      error: "proxy_error",
-      state: "processing",
-      status: "processing",
-      detail: String(err?.message || err),
-    });
   }
-};
+}
