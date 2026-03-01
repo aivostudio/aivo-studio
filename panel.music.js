@@ -651,6 +651,11 @@ function setEqBars(L, M, H){
     // ✅ Safari'de audio.duration bazen 0/NaN kalabiliyor.
     //    Fallback: job.__duration (poll'dan geliyor) veya kartın data-duration/meta text'i.
     let dur = Number(audioEl.duration || 0);
+          // ✅ Safari bug: duration bazen 0.xx / 1.xx gibi "çöp" geliyor -> UI 0:00 yazıyor.
+    // 2 saniyeden küçük duration'ı GEÇERSİZ sayıp fallback'e zorla.
+    if (!isFinite(dur) || dur <= 0 || dur < 2) {
+      dur = 0;
+    }
 
     if (!isFinite(dur) || dur <= 0) {
       const existing = jobs.find(x => (x.job_id || x.id) === currentJobId) || {};
