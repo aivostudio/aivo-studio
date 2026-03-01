@@ -617,43 +617,45 @@ function setEqBars(L, M, H){
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
 
-  try{
+try{
   const mySeq = ++__playSeq;
 
-  // src değişiyorsa: güvenli reset
+  // src değişiyorsa: pause + src set (A.load() YOK -> AbortError tetikliyordu)
   if (A.src !== src) {
     try { A.pause(); } catch {}
     A.src = src;
-    try { A.load(); } catch {}
+    try { A.currentTime = 0; } catch {}
   }
 
-  // stale click koruması
+  // başka bir tık geldiyse bu play'i iptal et (stale)
   if (mySeq !== __playSeq) return;
 
-  // ✅ metadata gelmeden play çağırma (0:00 ve AbortError fix)
-  await new Promise((resolve) => {
-    let done = false;
+  // ✅ play'den önce metadata/canplay bekle (duration 0:00 kalmasın)
+  await new Promise((resolve, reject) => {
+    if (A.readyState >= 1 && isFinite(A.duration) && A.duration > 0) return resolve();
 
-    const finish = () => {
+    let done = false;
+    const cleanup = () => {
       if (done) return;
       done = true;
-      A.removeEventListener("loadedmetadata", finish);
-      A.removeEventListener("durationchange", finish);
-      A.removeEventListener("canplay", finish);
-      resolve();
+      A.removeEventListener("loadedmetadata", onOk);
+      A.removeEventListener("canplay", onOk);
+      A.removeEventListener("error", onErr);
+      clearTimeout(tid);
     };
 
-    if (isFinite(A.duration) && A.duration > 0) {
-      return finish();
-    }
+    const onOk = () => { cleanup(); resolve(); };
+    const onErr = () => { cleanup(); reject(new Error("audio_load_error")); };
 
-    A.addEventListener("loadedmetadata", finish, { once: true });
-    A.addEventListener("durationchange", finish, { once: true });
-    A.addEventListener("canplay", finish, { once: true });
+    A.addEventListener("loadedmetadata", onOk);
+    A.addEventListener("canplay", onOk);
+    A.addEventListener("error", onErr);
 
-    setTimeout(finish, 1800);
+    // metadata hiç gelmezse UI kilitlenmesin diye kısa timeout
+    const tid = setTimeout(() => { cleanup(); resolve(); }, 1500);
   });
 
+  // beklerken başka tık geldiyse UI’yi bozma
   if (mySeq !== __playSeq) return;
 
   await A.play();
