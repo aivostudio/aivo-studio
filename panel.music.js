@@ -663,9 +663,38 @@ function setEqBars(L, M, H){
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
-
     try{
-      if (A.src !== src) A.src = src;
+      const changed = (A.src !== src);
+      if (changed) {
+        A.src = src;
+
+        // ✅ FIX: Safari/Chrome ilk set’te duration/progress bazen gelmiyor.
+        //        load() + metadata bekle -> UI anında doğru güncellensin.
+        A.load();
+
+        await new Promise((resolve) => {
+          let done = false;
+
+          const finish = () => {
+            if (done) return;
+            done = true;
+            try { A.removeEventListener("loadedmetadata", onMeta); } catch {}
+            try { A.removeEventListener("canplay", onMeta); } catch {}
+            resolve();
+          };
+
+          const onMeta = () => finish();
+
+          A.addEventListener("loadedmetadata", onMeta, { once: true });
+          A.addEventListener("canplay", onMeta, { once: true });
+
+          // metadata hiç gelmezse UI kilitlenmesin diye küçük timeout
+          setTimeout(finish, 1200);
+        });
+
+        try { updateProgressUI(); } catch {}
+      }
+
       await A.play();
     } catch(e){
       console.warn("[panel.music] play failed:", e);
