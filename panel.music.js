@@ -102,7 +102,79 @@
     const s = Math.floor(sec % 60);
     return `${m}:${String(s).padStart(2,"0")}`;
   }
+  // ✅ Safari duration 0/NaN kalabiliyor -> ayrı bir "probe audio" ile metadata çek
+  let __probeAudio = null;
+  const __probeBusy = new Set(); // cardId bazlı kilit
 
+  function ensureDurationFromMetadata(cardId, src){
+    try{
+      if (!cardId || !src) return;
+      if (__probeBusy.has(cardId)) return;
+      __probeBusy.add(cardId);
+
+      if (!__probeAudio){
+        __probeAudio = document.createElement("audio");
+        __probeAudio.preload = "metadata";
+        __probeAudio.crossOrigin = "anonymous";
+        __probeAudio.style.display = "none";
+        document.body.appendChild(__probeAudio);
+      }
+
+      const A = __probeAudio;
+
+      // timeout: Safari bazen event'i geç verir
+      let done = false;
+      const timeout = setTimeout(() => finish(0), 8000);
+
+      function cleanup(){
+        clearTimeout(timeout);
+        A.onloadedmetadata = null;
+        A.ondurationchange = null;
+        A.onerror = null;
+      }
+
+      function finish(durSec){
+        if (done) return;
+        done = true;
+        cleanup();
+
+        __probeBusy.delete(cardId);
+
+        // süre alamadıysak çık
+        if (!isFinite(durSec) || durSec <= 0) return;
+
+        // mm:ss yaz
+        const durText = fmtTime(durSec);
+
+        // job'u güncelle
+        const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+        // zaten dolu olduysa ezmeyelim
+        if (String(existing.__duration || "").trim()) return;
+
+        upsertJob({ job_id: cardId, id: cardId, __duration: durText });
+        render();
+
+        // çalıyorsa UI barını da tazele
+        try { updateProgressUI(); } catch {}
+      }
+
+      function tryRead(){
+        const d = Number(A.duration || 0);
+        if (isFinite(d) && d > 0) return finish(d);
+      }
+
+      A.onerror = () => finish(0);
+      A.onloadedmetadata = () => tryRead();
+      A.ondurationchange = () => tryRead();
+
+      // src set + load -> metadata tetiklenir
+      if (A.src !== src) A.src = src;
+      try { A.load(); } catch {}
+
+    } catch {
+      try { __probeBusy.delete(cardId); } catch {}
+    }
+  }
 /* ---------------- EQ engine (beat-reactive) ---------------- */
 let eqRaf = 0;
 
@@ -1081,10 +1153,23 @@ if (act === "delete")   return actionDelete(card);
       if (duration) next.__duration = String(duration);
       if (title) next.title = title;
 
-      upsertJob(next);
+          upsertJob(next);
       render();
 
-      if (next.__ui_state === "ready") return;
+      // ✅ READY oldu ama duration yoksa (Safari 0:00), metadata probe ile süreyi yaz
+      if (next.__ui_state === "ready") {
+        const existing2 = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+        const hasDur =
+          String(existing2.__duration || "").trim() ||
+          String(existing2.duration || "").trim();
+
+        if (!hasDur && next.__audio_src) {
+          // arka planda süreyi çek, UI'yi refreshsiz düzelt
+          ensureDurationFromMetadata(cardId, next.__audio_src);
+        }
+        return;
+      }
+
       if (next.__ui_state === "error") return;
 
       schedulePoll(cardId, 1600);
