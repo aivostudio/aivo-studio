@@ -569,20 +569,50 @@ function setEqBars(L, M, H){
     card.classList.toggle("is-playing", !!isPlaying);
   }
 
-  function updateProgressUI(){
+   function updateProgressUI(){
     if (!audioEl || !currentJobId) return;
     const card = getCard(currentJobId);
     if (!card) return;
 
-    const dur = audioEl.duration || 0;
     const cur = audioEl.currentTime || 0;
+
+    // ✅ Safari'de audio.duration bazen 0/NaN kalabiliyor.
+    //    Fallback: job.__duration (poll'dan geliyor) veya kartın data-duration/meta text'i.
+    let dur = Number(audioEl.duration || 0);
+
+    if (!isFinite(dur) || dur <= 0) {
+      const existing = jobs.find(x => (x.job_id || x.id) === currentJobId) || {};
+      const raw = String(existing.__duration || existing.duration || "").trim();
+
+      if (raw) {
+        // "2:52" gibi
+        if (raw.includes(":")) {
+          const parts = raw.split(":").map(s => Number(s));
+          if (parts.length === 2 && isFinite(parts[0]) && isFinite(parts[1])) {
+            dur = parts[0] * 60 + parts[1];
+          } else if (parts.length === 3 && isFinite(parts[0]) && isFinite(parts[1]) && isFinite(parts[2])) {
+            dur = parts[0] * 3600 + parts[1] * 60 + parts[2];
+          }
+        } else {
+          // "121.152" gibi saniye
+          const n = Number(raw);
+          if (isFinite(n) && n > 0) dur = n;
+        }
+      }
+    }
+
     const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
 
     const bar = qs(".aivo-progress i", card);
     if (bar) bar.style.width = pct.toFixed(2) + "%";
 
     const durEl = qs(".meta-dur", card);
-    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+    if (durEl) {
+      // ✅ total yoksa bile elapsed yaz (0:11 / 0:00 gibi değil; total yoksa "0:11")
+      durEl.textContent = (dur > 0)
+        ? `${fmtTime(cur)} / ${fmtTime(dur)}`
+        : `${fmtTime(cur)}`;
+    }
   }
 
   function startRaf(){
