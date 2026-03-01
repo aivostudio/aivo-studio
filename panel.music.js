@@ -29,10 +29,11 @@
   let alive  = false;
   let jobs   = [];
 
-  // audio engine
+    // audio engine
   let audioEl = null;
   let rafId = 0;
   let currentJobId = null;
+  let __playSeq = 0;
 
   /* ---------------- utils ---------------- */
   const qs  = (s, r=document)=>r.querySelector(s);
