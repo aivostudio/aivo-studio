@@ -743,6 +743,7 @@ function setEqBars(L, M, H){
         // ✅ FIX: Safari/Chrome ilk set’te duration/progress bazen gelmiyor.
         //        load() + metadata bekle -> UI anında doğru güncellensin.
         A.load();
+         ensureDurationFromMetadata(jobId, src);
 
         await new Promise((resolve) => {
           let done = false;
