@@ -21,6 +21,9 @@ export default async function handler(req, res) {
     const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
     const title = String(body.title || "").trim();
 
+    // ✅ NEW: ref audio url (optional)
+    const reference_audio_url = String(body.reference_audio_url || "").trim();
+
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
@@ -43,13 +46,14 @@ export default async function handler(req, res) {
 
     // ✅ CRITICAL: title/lyrics doluysa action="custom" (CustomGenerateRequest)
     // Auto ("auto") title/lyrics’i çoğu durumda ignore eder.
-    const hasLyricsOrTitle = (!!lyrics && lyrics.length > 0) || (!!title && title.length > 0);
+    const hasLyricsOrTitle =
+      (!!lyrics && lyrics.length > 0) || (!!title && title.length > 0);
     const action = hasLyricsOrTitle ? "custom" : "auto";
 
     // ✅ payload (TopMediai v3)
     // Not: instrumental=1 ise lyrics provider tarafından uygulanmaz (doküman).
     const payload = {
-      action,           // "custom" | "auto"
+      action, // "custom" | "auto"
       style,
       mv: "v5.0",
       instrumental: isInstrumental ? 1 : 0,
@@ -58,6 +62,9 @@ export default async function handler(req, res) {
       // sadece custom’ta anlamlı → yoksa hiç göndermiyoruz
       ...(action === "custom" ? { title: title || undefined } : null),
       ...(action === "custom" ? { lyrics: lyrics || undefined } : null),
+
+      // ✅ NEW: Ref Audio URL only if present (boş göndermiyoruz)
+      ...(reference_audio_url ? { reference_audio_url } : null),
     };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
@@ -142,7 +149,12 @@ export default async function handler(req, res) {
       .map((t) => String(t?.id || "").trim())
       .filter(Boolean);
 
-    const idsRaw = data?.data?.ids || data?.data?.IDs || data?.ids || data?.IDs || null;
+    const idsRaw =
+      data?.data?.ids ||
+      data?.data?.IDs ||
+      data?.ids ||
+      data?.IDs ||
+      null;
     const idsList = Array.isArray(idsRaw)
       ? idsRaw.map((x) => String(x || "").trim()).filter(Boolean)
       : [];
@@ -158,8 +170,11 @@ export default async function handler(req, res) {
       ? songIdsRaw.map((x) => String(x || "").trim()).filter(Boolean)
       : [];
 
-    const provider_song_ids =
-      trackIds.length ? trackIds : idsList.length ? idsList : songIdsFallback;
+    const provider_song_ids = trackIds.length
+      ? trackIds
+      : idsList.length
+      ? idsList
+      : songIdsFallback;
 
     if (!provider_song_ids.length) {
       return res.status(500).json({
