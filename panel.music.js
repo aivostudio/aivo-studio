@@ -297,12 +297,30 @@ function setEqBars(L, M, H){
       if (currentJobId) setCardPlaying(currentJobId, false);
       stopRaf();
     };
-    audioEl.onplay = () => {
+      audioEl.onplay = () => {
       if (currentJobId) setCardPlaying(currentJobId, true);
       // ✅ DOM yenilenmiş olabilir: cache’i tazele
       bindEqBarsForCurrentJob();
       startRaf();
     };
+
+    // ✅ Safari fix: duration/progress ilk load'da UI'ye yansımayabiliyor.
+    //    Audio metadata/timeupdate event'leri ile UI'yi garanti güncelle.
+    if (!audioEl.__aivoProgressBound) {
+      audioEl.__aivoProgressBound = true;
+
+      audioEl.addEventListener("loadedmetadata", () => {
+        try { updateProgressUI(); } catch {}
+      }, { passive: true });
+
+      audioEl.addEventListener("durationchange", () => {
+        try { updateProgressUI(); } catch {}
+      }, { passive: true });
+
+      audioEl.addEventListener("timeupdate", () => {
+        try { updateProgressUI(); } catch {}
+      }, { passive: true });
+    }
 
     return audioEl;
   }
