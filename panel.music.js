@@ -1060,15 +1060,15 @@ if (act === "delete")   return actionDelete(card);
   // ✅ 1) En güvenilir: outputs[0].url
   (Array.isArray(j?.outputs) && j.outputs[0]?.url) ||
   // ✅ 2) audio object
+const src =
+  (Array.isArray(j?.outputs) && j.outputs[0]?.url) ||
   j?.audio?.src ||
   j?.audio_src ||
   j?.result?.audio?.src ||
   j?.result?.src ||
   j?.job?.audio?.src ||
-  // ✅ 3) topmediai fallback
   tm0?.audio_url ||
   "";
-
     const dur =
       j?.duration ||
       j?.audio?.duration ||
