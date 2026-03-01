@@ -1,7 +1,8 @@
 // api/providers/topmediai/music/create.js
 // TopMediai v3 generate
 // ✅ FIX: title/lyrics çalışması için action = "custom" olmalı (AutoGenerateRequest "auto" bunları ignore eder)
-// ✅ FIX: ref audio varsa action="upload" + audio_url ile gönder (TopMediai UploadGenerateRequest)
+// ✅ CHANGE (Benzer ama yeni): ref audio gelse bile action="upload" + audio_url ASLA gönderme.
+//    Yani referans mp3 şu entegrasyonda klon üretiyor → devre dışı.
 
 export default async function handler(req, res) {
   try {
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
     const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
     const title = String(body.title || "").trim();
 
-    // ✅ ref audio url (optional) — UI burayı gönderiyor
+    // UI ref audio gönderiyor olabilir ama "benzer ama yeni" için provider'a YOLLAMAYACAĞIZ
     const reference_audio_url = String(
       body.reference_audio_url || body.referenceAudioUrl || ""
     ).trim();
@@ -47,23 +48,18 @@ export default async function handler(req, res) {
     // style = prompt (+ mood)
     const style = mood ? `${prompt}, mood: ${mood}` : prompt;
 
-    // ✅ action seçimi
-    // 1) Ref audio varsa → UploadGenerateRequest
-    // 2) Yoksa title/lyrics doluysa → CustomGenerateRequest
-    // 3) Yoksa → AutoGenerateRequest
+    // ✅ action seçimi (SADECE custom/auto)
+    // - ref audio var diye upload'a geçmeyeceğiz.
     const hasLyricsOrTitle =
       (!!lyrics && lyrics.length > 0) || (!!title && title.length > 0);
 
-    const action = reference_audio_url
-      ? "upload"
-      : hasLyricsOrTitle
-      ? "custom"
-      : "auto";
+    const action = hasLyricsOrTitle ? "custom" : "auto";
 
     // ✅ payload (TopMediai v3)
     // Not: instrumental=1 ise lyrics provider tarafından uygulanmaz (doküman).
+    // IMPORTANT: audio_url / upload yok!
     const payload = {
-      action, // "upload" | "custom" | "auto"
+      action, // "custom" | "auto"
       style,
       mv: "v5.0",
       instrumental: isInstrumental ? 1 : 0,
@@ -72,9 +68,6 @@ export default async function handler(req, res) {
       // sadece custom’ta anlamlı → yoksa hiç göndermiyoruz
       ...(action === "custom" ? { title: title || undefined } : null),
       ...(action === "custom" ? { lyrics: lyrics || undefined } : null),
-
-      // ✅ UploadGenerateRequest: ref audio → audio_url alanıyla gider
-      ...(action === "upload" ? { audio_url: reference_audio_url } : null),
     };
 
     const topmediaiUrl = "https://api.topmediai.com/v3/music/generate";
@@ -119,6 +112,8 @@ export default async function handler(req, res) {
           note: "submit_timeout",
           topmediai_url: topmediaiUrl,
           sent_payload: payload,
+          // debug: ref audio geldi mi (provider'a göndermedik)
+          reference_audio_ignored: reference_audio_url ? true : false,
         });
       }
 
@@ -128,6 +123,7 @@ export default async function handler(req, res) {
         detail: msg,
         topmediai_url: topmediaiUrl,
         sent_payload: payload,
+        reference_audio_ignored: reference_audio_url ? true : false,
       });
     } finally {
       clearTimeout(timeout);
@@ -150,6 +146,7 @@ export default async function handler(req, res) {
         topmediai_preview: String(rawText || "").slice(0, 1000),
         topmediai_response: data,
         sent_payload: payload,
+        reference_audio_ignored: reference_audio_url ? true : false,
       });
     }
 
@@ -194,6 +191,7 @@ export default async function handler(req, res) {
         topmediai_url: topmediaiUrl,
         topmediai_response: data,
         sent_payload: payload,
+        reference_audio_ignored: reference_audio_url ? true : false,
       });
     }
 
@@ -217,8 +215,11 @@ export default async function handler(req, res) {
       topmediai: data,
       topmediai_url: topmediaiUrl,
 
-      // debug: action + audio_url gerçekten gitti mi kontrol edeceğiz
+      // debug: provider'a ne gönderdik
       sent_payload: payload,
+
+      // debug: ref audio geldi mi (provider'a göndermedik)
+      reference_audio_ignored: reference_audio_url ? true : false,
     });
   } catch (err) {
     return res.status(500).json({
