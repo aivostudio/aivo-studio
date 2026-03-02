@@ -382,18 +382,10 @@
    * ========================= */
   function tryInit() {
     const module = document.querySelector("#moduleHost section[data-module='music']");
-if (!module) return false;
+    if (!module) return false;
 
-// ✅ mode defaultunu HER ZAMAN uygula (switch DOM'u gecikse bile layout bozulmasın)
-let saved = "basic";
-try { saved = sessionStorage.getItem(MODE_KEY) || "basic"; } catch(e) {}
-const initialMode = (saved === "advanced") ? "advanced" : "basic";
-if (!module.getAttribute("data-mode")) {
-  module.setAttribute("data-mode", initialMode);
-}
-
-// switch sonradan gelirse de init devam edebilsin
-const switchEl = module.querySelector(".mode-toggle");
+    const switchEl = module.querySelector(".mode-toggle");
+    if (!switchEl) return false;
 
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
@@ -416,18 +408,20 @@ const switchEl = module.querySelector(".mode-toggle");
       });
     }
 
- // default (yukarıda initialMode set edildi)
-applyMode(initialMode);
+    // default
+    let saved = "basic";
+    try { saved = sessionStorage.getItem(MODE_KEY) || "basic"; } catch(e) {}
+    applyMode(saved);
 
-// bind mode click once (switchEl yoksa bind etmeyelim)
-if (switchEl && !module.__aivo_mode_bound) {
-  module.__aivo_mode_bound = true;
-  module.addEventListener("click", (e) => {
-    const btn = e.target.closest(".mode-toggle [data-mode-button]");
-    if (!btn) return;
-    applyMode(btn.dataset.modeButton);
-  });
-}
+    // bind mode click once
+    if (!module.__aivo_mode_bound) {
+      module.__aivo_mode_bound = true;
+      module.addEventListener("click", (e) => {
+        const btn = e.target.closest(".mode-toggle [data-mode-button]");
+        if (!btn) return;
+        applyMode(btn.dataset.modeButton);
+      });
+    }
 
     // counters
     initMusicCharCounters(module);
