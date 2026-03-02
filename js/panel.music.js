@@ -133,6 +133,13 @@
        href="${esc(t.src)}"
        download
        rel="noopener">İndir</a>
+
+    <button class="aivo-action"
+            data-action="share"
+            data-track-id="${esc(t.track_id)}"
+            title="Paylaş"
+            aria-label="Paylaş">…</button>
+
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
   </div>
 </div>`;
@@ -271,11 +278,59 @@
     pollProviderJob(String(providerJobId));
   }
 
-  function onClick(e){
+  async function onClick(e){
     const btn = e.target?.closest?.("[data-action]");
     if (!btn) return;
 
     const action = btn.getAttribute("data-action");
+
+    // "..." butonu bazı UI'larda data-action="stems" gelebiliyor.
+    // Bu yüzden share davranışını hem "share" hem "stems" için çalıştırıyoruz.
+    if (action === "share" || action === "stems"){
+      const cardEl = btn.closest(".aivo-player-card");
+      const trackId =
+        btn.getAttribute("data-track-id") ||
+        cardEl?.getAttribute("data-track-id") ||
+        "";
+
+      const urlFromDom = cardEl?.getAttribute("data-src") || "";
+      const t = trackId ? tracks.find(x => String(x.track_id) === String(trackId)) : null;
+      const url = (t?.src || urlFromDom || "").trim();
+
+      if (!url){
+        window.toast?.error?.("Paylaşmak için önce çıktı hazır olmalı");
+        return;
+      }
+
+      const title = (t?.title || "AIVO Müzik").trim();
+      const text  = (t?.subtitle || "").trim();
+
+      // 1) Native share
+      try{
+        if (typeof navigator !== "undefined" && navigator.share){
+          await navigator.share({ title, text, url });
+          window.toast?.success?.("Paylaşım açıldı");
+          return;
+        }
+      }catch(err){
+        if (err?.name === "AbortError") return;
+      }
+
+      // 2) Clipboard fallback
+      try{
+        if (navigator.clipboard && window.isSecureContext){
+          await navigator.clipboard.writeText(url);
+          window.toast?.success?.("Link kopyalandı");
+          return;
+        }
+      }catch{}
+
+      // 3) En garanti fallback
+      window.prompt("Linki kopyala:", url);
+      window.toast?.success?.("Link gösterildi");
+      return;
+    }
+
     if (action === "delete"){
       const trackId = btn.getAttribute("data-track-id");
       if (trackId) removeTrack(trackId);
