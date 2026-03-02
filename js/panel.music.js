@@ -278,52 +278,60 @@
     pollProviderJob(String(providerJobId));
   }
 
-  async function onClick(e){
-    const btn = e.target?.closest?.("[data-action]");
-    if (!btn) return;
+async function onClick(e){
+  const btn = e.target?.closest?.("[data-action]");
+  if (!btn) return;
 
-    const action = btn.getAttribute("data-action");
+  const action = btn.getAttribute("data-action");
 
-    if (action === "share"){
-      const trackId = btn.getAttribute("data-track-id");
-      const cardEl  = btn.closest(".aivo-player-card");
-      const urlFromDom = cardEl?.getAttribute("data-src") || "";
+  if (action === "share"){
+    const trackId = btn.getAttribute("data-track-id");
+    const cardEl  = btn.closest(".aivo-player-card");
+    const urlFromDom = cardEl?.getAttribute("data-src") || "";
 
-      const t = trackId ? tracks.find(x => String(x.track_id) === String(trackId)) : null;
-      const url = (t?.src || urlFromDom || "").trim();
+    const t = trackId ? tracks.find(x => String(x.track_id) === String(trackId)) : null;
+    const url = (t?.src || urlFromDom || "").trim();
 
-      if (!url){
-        window.toast?.error?.("Paylaşmak için önce çıktı hazır olmalı");
-        return;
-      }
-
-      const title = (t?.title || "AIVO Müzik").trim();
-      const text  = (t?.subtitle || "").trim();
-
-      try{
-        if (navigator.share){
-          await navigator.share({ title, text, url });
-          return;
-        }
-      }catch{
-        // kullanıcı iptal ederse sessiz geç (native davranış)
-        return;
-      }
-
-      try{
-        await navigator.clipboard.writeText(url);
-        window.toast?.success?.("Link kopyalandı");
-      }catch{
-        window.toast?.error?.("Link kopyalanamadı");
-      }
+    if (!url){
+      window.toast?.error?.("Paylaşmak için önce çıktı hazır olmalı");
       return;
     }
 
-    if (action === "delete"){
-      const trackId = btn.getAttribute("data-track-id");
-      if (trackId) removeTrack(trackId);
+    const title = (t?.title || "AIVO Müzik").trim();
+    const text  = (t?.subtitle || "").trim();
+
+    // 1) Native share (mobil vs.)
+    try{
+      if (typeof navigator !== "undefined" && navigator.share){
+        await navigator.share({ title, text, url });
+        window.toast?.success?.("Paylaşım açıldı");
+        return;
+      }
+    }catch(err){
+      // kullanıcı iptali -> sessiz çık
+      if (err?.name === "AbortError") return;
     }
+
+    // 2) Clipboard fallback (desktop Chrome vs.)
+    try{
+      if (navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(url);
+        window.toast?.success?.("Link kopyalandı");
+        return;
+      }
+    }catch{}
+
+    // 3) En garanti fallback
+    window.prompt("Linki kopyala:", url);
+    window.toast?.success?.("Link gösterildi");
+    return;
   }
+
+  if (action === "delete"){
+    const trackId = btn.getAttribute("data-track-id");
+    if (trackId) removeTrack(trackId);
+  }
+}
 
   /* ---------------- panel integration ---------------- */
   function mount(){
