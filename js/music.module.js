@@ -448,14 +448,15 @@
     return true;
   }
 
-if (tryInit()) return;
+// Her zaman dene (ilk load)
+tryInit();
 
-// 🔥 FIX: moduleHost geç gelse bile init kaçmasın
+// 🔥 FIX: Router/partials DOM'u yeniden render ederse init tekrar çalışsın
 const obs = new MutationObserver(() => {
-  if (tryInit()) obs.disconnect();
+  tryInit(); // DİKKAT: artık disconnect YOK
 });
 
-// document root'u izle (host sonradan eklense bile yakalar)
+// document root'u izle (moduleHost / music section replace edilse bile yakalar)
 obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
 /* ============================================================================
