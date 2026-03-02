@@ -280,7 +280,6 @@ function setEqBars(L, M, H){
       audioEl = document.createElement("audio");
       audioEl.id = "aivoAudio";
       audioEl.preload = "metadata";
-      audioEl.crossOrigin = "anonymous";
       audioEl.style.display = "none";
       document.body.appendChild(audioEl);
     }
