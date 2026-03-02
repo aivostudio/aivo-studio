@@ -76,12 +76,12 @@
     return Array.from(set);
   }
 
-  /* ---------------- UI ---------------- */
-  function renderCard(t){
-    const ready = t.ui_state === "ready" && t.src;
+/* ---------------- UI ---------------- */
+function renderCard(t){
+  const ready = t.ui_state === "ready" && t.src;
 
-    if (!ready){
-      return `
+  if (!ready){
+    return `
 <div class="aivo-player-card is-loadingState"
      data-track-id="${esc(t.track_id)}"
      data-provider-job-id="${esc(t.provider_job_id)}">
@@ -104,9 +104,9 @@
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
   </div>
 </div>`;
-    }
+  }
 
-    return `
+  return `
 <div class="aivo-player-card is-ready"
      data-track-id="${esc(t.track_id)}"
      data-provider-job-id="${esc(t.provider_job_id)}"
@@ -143,35 +143,35 @@
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
   </div>
 </div>`;
-  }
+}
 
-  function render(){
-    if (!ensureHost()) return;
+function render(){
+  if (!ensureHost()) return;
 
+  if (!listEl){
+    listEl = hostEl.querySelector("#musicList");
     if (!listEl){
-      listEl = hostEl.querySelector("#musicList");
-      if (!listEl){
-        listEl = document.createElement("div");
-        listEl.className = "aivo-player-list";
-        listEl.id = "musicList";
-        hostEl.appendChild(listEl);
-      }
+      listEl = document.createElement("div");
+      listEl.className = "aivo-player-list";
+      listEl.id = "musicList";
+      hostEl.appendChild(listEl);
     }
-
-    if (!tracks.length){
-      listEl.innerHTML = `
-        <div class="aivo-empty">
-          <div class="aivo-empty-title">Henüz müzik yok</div>
-        </div>`;
-      return;
-    }
-
-    listEl.innerHTML = tracks
-      .filter(t => t?.track_id)
-      .slice(0,8)
-      .map(renderCard)
-      .join("");
   }
+
+  if (!tracks.length){
+    listEl.innerHTML = `
+      <div class="aivo-empty">
+        <div class="aivo-empty-title">Henüz müzik yok</div>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = tracks
+    .filter(t => t?.track_id)
+    .slice(0,8)
+    .map(renderCard)
+    .join("");
+}
 
   /* ---------------- polling ----------------
      Endpoint: /api/music/status?provider_job_id=XXXX
