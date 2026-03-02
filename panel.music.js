@@ -1083,45 +1083,11 @@ if (act === "delete")   return actionDelete(card);
     const origId = `${baseId}::orig`;
     const revId  = `${baseId}::rev1`;
 
-    const providerJobId = String(
-  payload.provider_job_id ||
-  payload.providerJobId ||
-  payload?.meta?.provider_job_id ||
-  payload?.meta?.providerJobId ||
-  payload?.result?.provider_job_id ||
-  payload?.result?.providerJobId ||
-  ""
-).trim();
+    const providerJobId = String(payload.provider_job_id || "").trim();
+    const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
 
-// ✅ provider_song_ids bazen payload içinde değil: meta/result/job altından da gelebiliyor
-const idsRaw =
-  payload.provider_song_ids ||
-  payload.providerSongIds ||
-  payload.song_ids ||
-  payload.songIds ||
-  payload?.meta?.provider_song_ids ||
-  payload?.meta?.providerSongIds ||
-  payload?.meta?.song_ids ||
-  payload?.meta?.songIds ||
-  payload?.result?.provider_song_ids ||
-  payload?.result?.providerSongIds ||
-  payload?.result?.song_ids ||
-  payload?.result?.songIds ||
-  payload?.job?.provider_song_ids ||
-  payload?.job?.providerSongIds ||
-  payload?.job?.song_ids ||
-  payload?.job?.songIds ||
-  null;
-
-let rawSongIds = [];
-if (Array.isArray(idsRaw)) rawSongIds = idsRaw;
-else if (typeof idsRaw === "string" && idsRaw.includes(",")) rawSongIds = idsRaw.split(",");
-else if (typeof idsRaw === "string" && idsRaw.trim()) rawSongIds = [idsRaw.trim()];
-
-rawSongIds = rawSongIds.map(s => String(s || "").trim()).filter(Boolean);
-
-const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
-const songIdRev  = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
+    const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
+    const songIdRev  = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
 
     const safeTitle = String(payload.title || "").trim();
 
