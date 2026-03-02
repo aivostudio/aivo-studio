@@ -448,15 +448,15 @@
     return true;
   }
 
-  if (tryInit()) return;
+if (tryInit()) return;
 
-  const host = document.getElementById("moduleHost");
-  if (!host) return;
+// 🔥 FIX: moduleHost geç gelse bile init kaçmasın
+const obs = new MutationObserver(() => {
+  if (tryInit()) obs.disconnect();
+});
 
-  const obs = new MutationObserver(() => {
-    if (tryInit()) obs.disconnect();
-  });
-  obs.observe(host, { childList: true, subtree: true });
+// document root'u izle (host sonradan eklense bile yakalar)
+obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
 /* ============================================================================
    MUSIC — Reference Audio Upload (R2) ✅ single-bind + single-upload
