@@ -166,81 +166,67 @@
       .join("");
   }
 
-/* ---------------- polling ----------------
-   Endpoint: /api/music/status?provider_job_id=XXXX
-   Expected when ready:
-     - ok:true
-     - status/state: completed/ready
-     - outputs: [{type:"audio", url:"...", meta:{trackId:"..."}} ...]
------------------------------------------- */
-async function pollProviderJob(providerJobId){
-  if (!providerJobId) return;
+  /* ---------------- polling ----------------
+     Endpoint: /api/music/status?provider_job_id=XXXX
+     Expected when ready:
+       - ok:true
+       - status/state: completed/ready
+       - outputs: [{type:"audio", url:"...", meta:{trackId:"..."}} ...]
+  ------------------------------------------ */
+  async function pollProviderJob(providerJobId){
+    if (!providerJobId) return;
 
-  try{
-    const r = await fetch(`/api/music/status?provider_job_id=${encodeURIComponent(providerJobId)}`, { cache:"no-store" });
-    const j = await r.json();
+    try{
+      const r = await fetch(`/api/music/status?provider_job_id=${encodeURIComponent(providerJobId)}`, { cache:"no-store" });
+      const j = await r.json();
 
-    // ok:false => tekrar dene
-    if (!j?.ok){
-      setTimeout(()=>pollProviderJob(providerJobId), 1500);
-      return;
-    }
-
-    const state = uiState(j.status || j.state);
-
-    // outputs geldiyse: İKİSİ BİRDEN gelmeden "Hazır" yapma (UX: aynı anda hazır)
-    if (Array.isArray(j.outputs) && j.outputs.length){
-      // TopMediai bazen 1 output’u önce döndürür; 2 gelene kadar bekle
-      if (j.outputs.length < 2){
-        tracks.forEach(t => {
-          if (t.provider_job_id === String(providerJobId) && t.ui_state !== "ready"){
-            t.ui_state = state;
-          }
-        });
-        saveTracks();
-        render();
+      // ok:false => tekrar dene
+      if (!j?.ok){
         setTimeout(()=>pollProviderJob(providerJobId), 1500);
         return;
       }
 
-      // 2+ output geldi: tek seferde ikisini de ready yap
-      j.outputs.forEach((out, idx) => {
-        if (!out?.url) return;
-        const trackId = out?.meta?.trackId || out?.meta?.song_id || out?.id || out.url;
+      const state = uiState(j.status || j.state);
 
-        upsertTrack({
-          track_id: String(trackId),
-          provider_job_id: String(providerJobId),
-          title: (j?.topmediai?.data?.[idx]?.title) || (idx === 0 ? "Versiyon 1" : `Versiyon ${idx+1}`),
-          subtitle: (j?.topmediai?.data?.[idx]?.style) || "",
-          src: out.url,
-          ui_state: "ready",
-          created_at: Date.now()
+      // outputs geldiyse: her output için ayrı track oluştur/upsert et
+      if (Array.isArray(j.outputs) && j.outputs.length){
+        j.outputs.forEach((out, idx) => {
+          if (!out?.url) return;
+          const trackId = out?.meta?.trackId || out?.meta?.song_id || out?.id || out.url;
+
+          upsertTrack({
+            track_id: String(trackId),
+            provider_job_id: String(providerJobId),
+            title: (j?.topmediai?.data?.[idx]?.title) || (idx === 0 ? "Versiyon 1" : `Versiyon ${idx+1}`),
+            subtitle: (j?.topmediai?.data?.[idx]?.style) || "",
+            src: out.url,
+            ui_state: "ready",
+            created_at: Date.now()
+          });
         });
-      });
 
-      render();
-      window.toast?.success?.("Müzikler hazır 🎵");
-      return;
-    }
-
-    // outputs yoksa (processing): providerJobId’ye bağlı track’leri processing tut
-    // (Kart sayısı generate tarafında 2 adet seed’leniyor)
-    tracks.forEach(t => {
-      if (t.provider_job_id === String(providerJobId) && t.ui_state !== "ready"){
-        t.ui_state = state;
+        render();
+        window.toast?.success?.("Müzikler hazır 🎵");
+        return;
       }
-    });
-    saveTracks();
-    render();
 
-    if (state !== "ready" && state !== "error"){
-      setTimeout(()=>pollProviderJob(providerJobId), 1500);
+      // outputs yoksa (processing): providerJobId’ye bağlı track’leri processing tut
+      // (Kart sayısı generate tarafında 2 adet seed’leniyor)
+      tracks.forEach(t => {
+        if (t.provider_job_id === String(providerJobId) && t.ui_state !== "ready"){
+          t.ui_state = state;
+        }
+      });
+      saveTracks();
+      render();
+
+      if (state !== "ready" && state !== "error"){
+        setTimeout(()=>pollProviderJob(providerJobId), 1500);
+      }
+    }catch{
+      setTimeout(()=>pollProviderJob(providerJobId), 2000);
     }
-  }catch{
-    setTimeout(()=>pollProviderJob(providerJobId), 2000);
   }
-}
 
   /* ---------------- events ----------------
      Beklenen event payload:
