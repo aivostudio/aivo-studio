@@ -1274,9 +1274,9 @@ if (act === "delete")   return actionDelete(card);
       mainAudio.style.display = "none";
     }
 
-    // LS load (hızlı paint)
-    jobs = loadJobs();
-    render();
+  // DB source of truth: ilk render LS'ten değil
+jobs = [];
+render();
 
     // DB hydrate (ilk)
     hydrateFromDBOnce();
