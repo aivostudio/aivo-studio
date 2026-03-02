@@ -133,6 +133,13 @@
        href="${esc(t.src)}"
        download
        rel="noopener">İndir</a>
+
+    <button class="aivo-action"
+            data-action="share"
+            data-track-id="${esc(t.track_id)}"
+            title="Paylaş"
+            aria-label="Paylaş">…</button>
+
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
   </div>
 </div>`;
@@ -271,11 +278,47 @@
     pollProviderJob(String(providerJobId));
   }
 
-  function onClick(e){
+  async function onClick(e){
     const btn = e.target?.closest?.("[data-action]");
     if (!btn) return;
 
     const action = btn.getAttribute("data-action");
+
+    if (action === "share"){
+      const trackId = btn.getAttribute("data-track-id");
+      const cardEl  = btn.closest(".aivo-player-card");
+      const urlFromDom = cardEl?.getAttribute("data-src") || "";
+
+      const t = trackId ? tracks.find(x => String(x.track_id) === String(trackId)) : null;
+      const url = (t?.src || urlFromDom || "").trim();
+
+      if (!url){
+        window.toast?.error?.("Paylaşmak için önce çıktı hazır olmalı");
+        return;
+      }
+
+      const title = (t?.title || "AIVO Müzik").trim();
+      const text  = (t?.subtitle || "").trim();
+
+      try{
+        if (navigator.share){
+          await navigator.share({ title, text, url });
+          return;
+        }
+      }catch{
+        // kullanıcı iptal ederse sessiz geç (native davranış)
+        return;
+      }
+
+      try{
+        await navigator.clipboard.writeText(url);
+        window.toast?.success?.("Link kopyalandı");
+      }catch{
+        window.toast?.error?.("Link kopyalanamadı");
+      }
+      return;
+    }
+
     if (action === "delete"){
       const trackId = btn.getAttribute("data-track-id");
       if (trackId) removeTrack(trackId);
