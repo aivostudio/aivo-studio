@@ -1,16 +1,10 @@
 // api/music/status.js
 // Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
-// + NEW: Ready MP3'leri R2'ye archive edip response'ta archive_url (stable) döndürür.
-// - Accepts: job_id (internal job_...) OR provider_job_id/song_id OR ids=id1,id2
-// - If internal, reads Redis jobs/<internal>/job.json to get provider_song_ids
-// - Calls TopMediai: GET /v3/music/tasks?ids=id1,id2
-// - Normalizes MULTI-TRACK output to: outputs[] + backward compat audio.src
-//
-// IMPORTANT FIX (0:00 / yarım yük / refresh ile düzeliyor):
-// Provider bazen audio_url veriyor ama duration=-1/0 iken metadata finalize olmamış oluyor.
-// UI mp3'ü hemen src'ye basınca duration=0/NaN kalıyor ve progress yarıda takılıyor.
-// Çözüm: "READY" saymak için duration > 0 gate ekledik.
-// (status ready + audio_url + duration>0) => outputs döner.
+// FIX: Provider audio_url 302 redirect (audiopipe.suno.ai) -> duration Infinity/NaN + progress bar kırılıyor.
+// Çözüm: UI'ya her zaman SAME-ORIGIN URL ver:
+//   1) varsa R2 archive_url
+//   2) yoksa /api/media/proxy?url=... (same-origin, redirect/range/CORS stabilize)
+// Ayrıca: TopMediai status ready bazen 0 değil 2 gelebiliyor -> ready map genişletildi.
 
 const { getRedis } = require("../_kv");
 const fetchFn = globalThis.fetch || require("node-fetch");
@@ -18,22 +12,15 @@ const fetchFn = globalThis.fetch || require("node-fetch");
 /**
  * copy-to-r2 helper'ını esnek resolve ediyoruz.
  * Beklenen: api/_lib/copy-to-r2.js içinde "url -> R2" kopyalayan bir fonksiyon.
- * - export default olabilir
- * - module.exports = function olabilir
- * - { copyToR2 }, { copyUrlToR2 } vb olabilir
  */
 function resolveCopyToR2() {
   try {
     // eslint-disable-next-line import/no-dynamic-require
     const mod = require("../_lib/copy-to-r2");
 
-    // direkt function export
     if (typeof mod === "function") return mod;
-
-    // default function
     if (typeof mod?.default === "function") return mod.default;
 
-    // olası isimler
     const candidates = [
       mod?.copyToR2,
       mod?.copyURLToR2,
@@ -45,7 +32,6 @@ function resolveCopyToR2() {
     ].filter((fn) => typeof fn === "function");
 
     if (candidates.length) return candidates[0];
-
     return null;
   } catch {
     return null;
@@ -84,8 +70,6 @@ function nowIso() {
 function buildMusicR2Key({ provider_job_id, trackId }) {
   const pj = String(provider_job_id || "unknown").trim() || "unknown";
   const tid = String(trackId || "track").trim() || "track";
-  // Çok basit ve stabil path:
-  // outputs/music/<provider_job_id>/<trackId>.mp3
   return `outputs/music/${pj}/${tid}.mp3`;
 }
 
@@ -97,10 +81,28 @@ function guessContentTypeFromUrl(url) {
   return "audio/mpeg";
 }
 
+function getBaseUrl(req) {
+  const proto =
+    (req.headers["x-forwarded-proto"] ? String(req.headers["x-forwarded-proto"]) : "")
+      .split(",")[0]
+      .trim() || "https";
+  const host = (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
+    (req.headers.host ? String(req.headers.host) : "");
+  return `${proto}://${host}`;
+}
+
+function toProxyUrl(req, rawUrl) {
+  const base = getBaseUrl(req);
+  const u = String(rawUrl || "").trim();
+  if (!u) return null;
+  return `${base}/api/media/proxy?url=${encodeURIComponent(u)}`;
+}
+
 module.exports = async (req, res) => {
+  // build stamp
   res.setHeader(
     "x-aivo-status-build",
-    "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-duration-gate"
+    "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-no-redirect"
   );
 
   try {
@@ -114,7 +116,7 @@ module.exports = async (req, res) => {
         req.query.providerJobId ||
         req.query.song_id ||
         req.query.songId ||
-        req.query.ids || // opsiyonel: ids=id1,id2
+        req.query.ids ||
         ""
     ).trim();
 
@@ -128,26 +130,21 @@ module.exports = async (req, res) => {
     // 1) Resolve song ids
     // ---------------------------------------------------------
     const isInternal = raw.startsWith("job_");
-
-    // ✅ Neon jobs.id gibi UUID gelirse bunu da internal kabul et
     const looksLikeUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
 
     let internal_job_id = isInternal || looksLikeUUID ? raw : null;
-    let provider_job_id = !isInternal && !looksLikeUUID ? raw : null; // tek id gelirse
+    let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
     let provider_song_ids = [];
 
-    // küçük helper: internal id'den redis job obj bul (iki farklı key ihtimali için)
     async function readJobObjFromRedis(internalId) {
       if (!internalId) return null;
 
-      // 1) canonical path
       const k1 = `jobs/${internalId}/job.json`;
       const t1 = await redis.get(k1);
       const o1 = t1 ? safeJsonParse(t1) : null;
       if (o1) return o1;
 
-      // 2) legacy / alternate key
       const k2 = `job:${internalId}`;
       const t2 = await redis.get(k2);
       const o2 = t2 ? safeJsonParse(t2) : null;
@@ -157,7 +154,6 @@ module.exports = async (req, res) => {
     }
 
     if (isInternal || looksLikeUUID) {
-      // ✅ Redis’ten job meta oku (jobs/<internal>/job.json veya job:<internal>)
       const jobObj = await readJobObjFromRedis(internal_job_id);
 
       provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
@@ -171,17 +167,14 @@ module.exports = async (req, res) => {
 
       provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
 
-      // fallback: provider_song_ids yoksa provider_job_id’yi song id gibi kullan
       if (provider_song_ids.length === 0 && provider_job_id) {
         provider_song_ids = [String(provider_job_id)];
       }
     } else {
-      // raw virgüllü geldiyse (ids)
       if (raw.includes(",")) {
         provider_song_ids = uniqStrings(raw.split(","));
         provider_job_id = provider_song_ids[0] || provider_job_id;
       } else {
-        // ✅ provider_job_id ile gelindiyse önce provider_map'ten internal + song_ids çöz
         const providerMapKey = `provider_map:${raw}`;
         const mapText = await redis.get(providerMapKey);
         const mapObj = mapText ? safeJsonParse(mapText) : null;
@@ -189,7 +182,6 @@ module.exports = async (req, res) => {
         if (mapObj?.internal_job_id) {
           internal_job_id = String(mapObj.internal_job_id).trim() || null;
 
-          // 1) map'ten song_ids al
           const mapIdsRaw =
             mapObj?.provider_song_ids ||
             mapObj?.providerSongIds ||
@@ -200,7 +192,6 @@ module.exports = async (req, res) => {
           provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
           provider_job_id = String(mapObj?.provider_job_id || "").trim() || String(raw);
 
-          // 2) job meta varsa, daha canonical olanı merge et
           if (internal_job_id) {
             const jobObj = await readJobObjFromRedis(internal_job_id);
 
@@ -219,12 +210,10 @@ module.exports = async (req, res) => {
             provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
           }
 
-          // 3) fallback
           if (provider_song_ids.length === 0 && provider_job_id) {
             provider_song_ids = [String(provider_job_id)];
           }
         } else {
-          // tek id: song_id kabul et (eski davranış)
           provider_song_ids = [String(raw)];
           provider_job_id = String(raw);
         }
@@ -289,7 +278,7 @@ module.exports = async (req, res) => {
     }
 
     // ---------------------------------------------------------
-    // 3) Normalize (MULTI-TRACK) + R2 Archive
+    // 3) Normalize (MULTI-TRACK) + R2 Archive + SAME-ORIGIN URL
     // ---------------------------------------------------------
     const arr = Array.isArray(top?.data)
       ? top.data
@@ -302,35 +291,24 @@ module.exports = async (req, res) => {
 
     const outputs = [];
 
-    // R2 copy helper resolve (bir kere)
     const copyToR2 = resolveCopyToR2();
-
-    // R2 copy yoksa zinciri “görünür” hata olarak işaretleyelim (sessiz geçmeyelim)
-    // (Bu response yine mp3 döndürebilir ama amaç: hastalığı net görmek.)
     let archiveWarning = null;
-    if (!copyToR2) {
-      archiveWarning = "missing_copy_to_r2_helper";
-    }
+    if (!copyToR2) archiveWarning = "missing_copy_to_r2_helper";
+
+    // Ready mapping:
+    // - bazı örneklerde status:0 ready
+    // - bazılarında status:2 iken audio_url dolu (senin screenshot)
+    // - audio_url varsa ve status 0/2 ise ready kabul edeceğiz.
+    const READY_STATUSES = new Set([0, 2]);
 
     if (Array.isArray(arr) && arr.length) {
       for (const item of arr) {
         const st = Number(item?.status);
-
         const trackId = String(item?.song_id || item?.id || "").trim() || null;
         const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
-        // ✅ duration gate (asıl fix)
-        // Provider bazen audio_url veriyor ama duration=-1/0 iken metadata henüz finalize olmamış oluyor.
-        // Bu durumda UI mp3'ü src'ye basınca duration=0 kalıyor ve progress yarıda takılıyor.
-        const dur = Number(item?.duration);
-        const durOk = Number.isFinite(dur) && dur > 0;
+        const ready = !!urlMp3 && (READY_STATUSES.has(st) || !Number.isFinite(st));
 
-        // TopMediai farklı endpointlerde ready status'ü 0 veya 2 olabiliyor.
-        // Biz "gerçek ready" = (status ready) + (audio_url var) + (duration > 0) diyoruz.
-        const statusLooksReady = st === 0 || st === 2;
-        const ready = !!(statusLooksReady && urlMp3 && durOk);
-
-        // fail kodları (geniş yakala)
         if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
           anyFail = true;
         }
@@ -338,14 +316,15 @@ module.exports = async (req, res) => {
         if (ready && urlMp3) {
           anyReady = true;
 
-          // ✅ NEW: archive to R2 and return stable URL
-          let finalUrl = urlMp3;
+          // default: SAME-ORIGIN proxy URL (redirect/range/CORS stabilize)
+          let finalUrl = toProxyUrl(req, urlMp3);
+
+          // optional: archive to R2 (stable) -> finalUrl becomes archive_url if produced
           let archive_url = null;
 
           if (copyToR2) {
             const key = buildMusicR2Key({ provider_job_id, trackId: trackId || provider_job_id });
 
-            // copy-to-r2 imzası farklı olabilir; en güvenli şekilde argümanları veriyoruz:
             try {
               const result = await copyToR2({
                 url: urlMp3,
@@ -353,7 +332,6 @@ module.exports = async (req, res) => {
                 contentType: guessContentTypeFromUrl(urlMp3),
               });
 
-              // result farklı şekillerde dönebilir. URL yakalamaya çalışalım:
               archive_url =
                 (typeof result === "string" ? result : null) ||
                 result?.public_url ||
@@ -362,9 +340,8 @@ module.exports = async (req, res) => {
                 null;
 
               if (archive_url) {
-                finalUrl = archive_url;
+                finalUrl = archive_url; // ✅ UI artık R2 URL görür
               } else {
-                // helper çalıştı ama URL vermedi
                 archiveWarning = archiveWarning || "copy_to_r2_no_url_returned";
               }
             } catch (e) {
@@ -374,15 +351,16 @@ module.exports = async (req, res) => {
 
           outputs.push({
             type: "audio",
-            url: finalUrl, // IMPORTANT: UI artık provider değil, archive_url görsün
+            url: finalUrl, // ✅ SAME-ORIGIN proxy OR R2 archive
             meta: {
               provider: "topmediai",
               trackId: trackId || null,
               status: st,
-              duration: dur, // ✅ UI isterse buradan da basabilir
-              audio_url: urlMp3, // debug için orijinal
+              audio_url: urlMp3, // debug: provider url (redirect olabilir)
               archive_url: archive_url, // varsa
               archived_at: archive_url ? nowIso() : null,
+              // provider duration bazen -1 geliyor, yine de meta'ya koyuyoruz (UI isterse kullanır)
+              duration: typeof item?.duration === "number" ? item.duration : null,
             },
           });
         }
@@ -399,15 +377,15 @@ module.exports = async (req, res) => {
       status: "processing",
       outputs,
       topmediai: top,
-      archive_warning: archiveWarning, // null ise OK
+      archive_warning: archiveWarning,
     };
 
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa diye
+    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa
     if (outputs.length) {
       data.audio = {
-        src: outputs[0].url, // IMPORTANT: archive_url'ye işaret eder
+        src: outputs[0].url, // ✅ artık provider değil: proxy/R2
         output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
-        duration: outputs[0]?.meta?.duration || null,
+        duration: outputs[0]?.meta?.duration ?? null,
       };
     }
 
@@ -415,7 +393,6 @@ module.exports = async (req, res) => {
       data.state = "failed";
       data.status = "failed";
     } else if (anyReady) {
-      // en az 1 parça hazırsa completed diyelim (UI “hazır” görsün)
       data.state = "completed";
       data.status = "completed";
     } else {
