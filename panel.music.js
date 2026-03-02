@@ -588,7 +588,7 @@ function setEqBars(L, M, H){
     if (!jobId) return;
 
     const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const src = String(existing.__audio_src || card.dataset.src || "").trim();
+  const src = String(card.dataset.src || existing.__audio_src || "").trim();
 
     if (!src){
       toast("info", "Henüz hazır değil");
