@@ -896,6 +896,8 @@ if (act === "delete")   return actionDelete(card);
   /* ---------------- polling ---------------- */
   const POLL_BUSY = new Set();   // key: cardId
   const POLL_LAST = new Map();   // key: cardId -> ts(ms)
+     // ✅ toast spam guard: aynı base job için 1 kez
+  const READY_TOASTED = new Set(); // key: baseId
 
   const MUSIC_WORKER_ORIGIN =
     (typeof WORKER_ORIGIN === "string" && WORKER_ORIGIN) ||
@@ -1057,10 +1059,14 @@ if (act === "delete")   return actionDelete(card);
           __pending_duration: ""
         });
 
-        render();
-        toast("success", "Müzikler hazır 🎵");
-        return;
-      }
+      render();
+
+if (!READY_TOASTED.has(baseId)) {
+  READY_TOASTED.add(baseId);
+  toast("success", "Müzikler hazır 🎵");
+}
+
+return;
 
       // 3) İkisi birden hazır değilse polling devam
       render();
