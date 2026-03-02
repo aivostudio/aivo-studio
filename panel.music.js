@@ -1060,12 +1060,18 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
           __pending_duration: ""
         });
 
-        render();
-       // ✅ aynı baseId için sadece 1 kez toast
-if (!READY_TOASTED.has(baseId)) {
-  READY_TOASTED.add(baseId);
-  toast("success", "Müzikler hazır 🎵");
-}
+              render();
+
+        // ✅ aynı baseId için sadece 1 kez toast
+        if (!window.READY_TOASTED) window.READY_TOASTED = new Set();
+
+        const baseId = String(cardId).split("::")[0] || String(cardId);
+
+        if (!window.READY_TOASTED.has(baseId)) {
+          window.READY_TOASTED.add(baseId);
+          toast("success", "Müzikler hazır 🎵");
+        }
+
         return;
       }
 
