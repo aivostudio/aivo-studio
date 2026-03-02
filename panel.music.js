@@ -1061,7 +1061,11 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
         });
 
         render();
-        toast("success", "Müzikler hazır 🎵");
+       // ✅ aynı baseId için sadece 1 kez toast
+if (!READY_TOASTED.has(baseId)) {
+  READY_TOASTED.add(baseId);
+  toast("success", "Müzikler hazır 🎵");
+}
         return;
       }
 
