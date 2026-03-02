@@ -1072,44 +1072,44 @@ if (act === "delete")   return actionDelete(card);
     ];
   }
 
-  /* ---------------- onJob (generate -> event) ---------------- */
-  function onJob(e){
-    const payload = e?.detail || e || {};
-    const baseId = payload.job_id || payload.id;
-    if (!baseId) return;
+/* ---------------- onJob (generate -> event) ---------------- */
+function onJob(e){
+  const payload = e?.detail || e || {};
+  const baseId = payload.internal_job_id || payload.job_id || payload.id;
+  if (!baseId) return;
 
-    const origId = `${baseId}::orig`;
-    const revId  = `${baseId}::rev1`;
+  const origId = `${baseId}::orig`;
+  const revId  = `${baseId}::rev1`;
 
-    const providerJobId = String(payload.provider_job_id || "").trim();
-    const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
+  const providerJobId = String(payload.provider_job_id || "").trim();
+  const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
 
-    const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
-    const songIdRev  = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
+  const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
+  const songIdRev  = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
 
-    const safeTitle = String(payload.title || "").trim();
+  const safeTitle = String(payload.title || "").trim();
 
-    const common = {
-      type: "music",
-      subtitle: String(payload.subtitle || "").trim(),
-      provider_job_id: providerJobId,
-      __ui_state: "processing",
-      __audio_src: "",
-      title: safeTitle,
-      lyrics: String(payload.lyrics || "").trim(),
-      prompt: String(payload.prompt || "").trim(),
-      __createdAt: payload.created_at || payload.createdAt || "",
-      createdAt: Date.now(),
-    };
+  const common = {
+    type: "music",
+    subtitle: String(payload.subtitle || "").trim(),
+    provider_job_id: providerJobId,
+    __ui_state: "processing",
+    __audio_src: "",
+    title: safeTitle,
+    lyrics: String(payload.lyrics || "").trim(),
+    prompt: String(payload.prompt || "").trim(),
+    __createdAt: payload.created_at || payload.createdAt || "",
+    createdAt: Date.now(),
+  };
 
-    upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
-    upsertJob({ ...common, job_id: revId,  id: revId,  __provider_song_id: songIdRev  });
+  upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
+  upsertJob({ ...common, job_id: revId,  id: revId,  __provider_song_id: songIdRev  });
 
-    render();
+  render();
 
-    poll(origId);
-    poll(revId);
-  }
+  poll(origId);
+  poll(revId);
+}
 
   /* ---------------- global event bind (NO double-bind) ---------------- */
   if (!window.__AIVO_MUSIC_EVENTS__) {
