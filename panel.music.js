@@ -34,63 +34,29 @@
   let rafId = 0;
   let currentJobId = null;
 
-/* ---------------- utils ---------------- */
-const qs  = (s, r=document)=>r.querySelector(s);
+  /* ---------------- utils ---------------- */
+  const qs  = (s, r=document)=>r.querySelector(s);
 
-function toast(type, msg){
-  try{
-    const t = window.toast;
-    if (!t) return;
-    if (type === "info" && t.info) return t.info(msg);
-    if (type === "success" && t.success) return t.success(msg);
-    if (type === "error" && t.error) return t.error(msg);
-    if (t.show) return t.show(msg);
-  } catch {}
-} // ✅ toast burada kapanıyor
+  function toast(type, msg){
+    try{
+      const t = window.toast;
+      if (!t) return;
+      if (type === "info" && t.info) return t.info(msg);
+      if (type === "success" && t.success) return t.success(msg);
+      if (type === "error" && t.error) return t.error(msg);
+      if (t.show) return t.show(msg);
+    } catch {}
+  }
 
+  function esc(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
 
-// ✅ GLOBAL "Müzikler hazır" toast dedupe (kim basarsa bassın 1 kere)
-if (!window.__AIVO_TOAST_PATCHED__) {
-  window.__AIVO_TOAST_PATCHED__ = true;
-
-  try {
-    const t = window.toast;
-    if (t && typeof t.success === "function") {
-      const origSuccess = t.success.bind(t);
-
-      if (!window.__AIVO_TOAST_ONCE__) {
-        window.__AIVO_TOAST_ONCE__ = new Map();
-      }
-
-      t.success = (msg) => {
-        try {
-          const s = String(msg || "").toLowerCase();
-
-          if (s.includes("müzikler hazır")) {
-            const now = Date.now();
-            const last = window.__AIVO_TOAST_ONCE__.get("music_ready") || 0;
-
-            // 15 saniye içinde tekrar basma
-            if (now - last < 15000) return;
-
-            window.__AIVO_TOAST_ONCE__.set("music_ready", now);
-          }
-        } catch {}
-
-        return origSuccess(msg);
-      };
-    }
-  } catch {}
-}
-
-function esc(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
-}
   function norm(s){
     return String(s || "")
       .trim()
