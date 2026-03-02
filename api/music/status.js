@@ -1,10 +1,8 @@
 // api/music/status.js
 // Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
-// FIX: Provider audio_url 302 redirect (audiopipe.suno.ai) -> duration Infinity/NaN + progress bar kırılıyor.
-// Çözüm: UI'ya her zaman SAME-ORIGIN URL ver:
-//   1) varsa R2 archive_url
-//   2) yoksa /api/media/proxy?url=... (same-origin, redirect/range/CORS stabilize)
-// Ayrıca: TopMediai status ready bazen 0 değil 2 gelebiliyor -> ready map genişletildi.
+// READY algısı düzeltildi (status=2 + audio_url => ready)
+// MP3 URL'leri: önce R2 archive, olmazsa same-origin proxy ile stabilize edilir.
+// Ayrıca duration/topmediai.duration response'a taşınır (progress 0 kalmasın).
 
 const { getRedis } = require("../_kv");
 const fetchFn = globalThis.fetch || require("node-fetch");
@@ -12,6 +10,9 @@ const fetchFn = globalThis.fetch || require("node-fetch");
 /**
  * copy-to-r2 helper'ını esnek resolve ediyoruz.
  * Beklenen: api/_lib/copy-to-r2.js içinde "url -> R2" kopyalayan bir fonksiyon.
+ * - export default olabilir
+ * - module.exports = function olabilir
+ * - { copyToR2 }, { copyUrlToR2 } vb olabilir
  */
 function resolveCopyToR2() {
   try {
@@ -81,29 +82,47 @@ function guessContentTypeFromUrl(url) {
   return "audio/mpeg";
 }
 
-function getBaseUrl(req) {
-  const proto =
-    (req.headers["x-forwarded-proto"] ? String(req.headers["x-forwarded-proto"]) : "")
-      .split(",")[0]
-      .trim() || "https";
-  const host = (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
-    (req.headers.host ? String(req.headers.host) : "");
-  return `${proto}://${host}`;
+function isLikelyReadyStatus(st, hasAudioUrl) {
+  // Sende gördüğümüz: status=4 => audio_url empty (processing)
+  //                 status=2 => audio_url dolu (play ediliyor ama UI bar 0)
+  // TopMediai dok/behavior farklı varyantlar gösterebiliyor; biz "audio_url varsa ready"yi esas alıyoruz.
+  if (!hasAudioUrl) return false;
+  if (st === 0) return true;
+  if (st === 2) return true;
+  // audio_url var ama farklı bir status gelirse de "ready" say (fail_code yoksa)
+  return true;
 }
 
-function toProxyUrl(req, rawUrl) {
-  const base = getBaseUrl(req);
+function isFailStatus(st, item) {
+  if (st < 0) return true;
+  const stateStr = String(item?.state || "").toUpperCase();
+  if (stateStr.includes("FAIL")) return true;
+  if (item?.fail_code || item?.fail_reason) return true;
+  return false;
+}
+
+function toNum(x) {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : null;
+}
+
+function clampPositiveDuration(d) {
+  const n = toNum(d);
+  if (!n) return null;
+  if (n <= 0) return null;
+  // bazen provider -1 döndürüyor
+  return n;
+}
+
+function sameOriginProxyUrl(rawUrl) {
   const u = String(rawUrl || "").trim();
   if (!u) return null;
-  return `${base}/api/media/proxy?url=${encodeURIComponent(u)}`;
+  // relative döndür (same-origin)
+  return `/api/media/proxy?url=${encodeURIComponent(u)}`;
 }
 
 module.exports = async (req, res) => {
-  // build stamp
-  res.setHeader(
-    "x-aivo-status-build",
-    "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-no-redirect"
-  );
+  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-proxy-ready2");
 
   try {
     if (req.method !== "GET") {
@@ -278,7 +297,7 @@ module.exports = async (req, res) => {
     }
 
     // ---------------------------------------------------------
-    // 3) Normalize (MULTI-TRACK) + R2 Archive + SAME-ORIGIN URL
+    // 3) Normalize (MULTI-TRACK) + R2 Archive + Proxy fallback
     // ---------------------------------------------------------
     const arr = Array.isArray(top?.data)
       ? top.data
@@ -290,42 +309,54 @@ module.exports = async (req, res) => {
     let anyReady = false;
 
     const outputs = [];
-
     const copyToR2 = resolveCopyToR2();
-    let archiveWarning = null;
-    if (!copyToR2) archiveWarning = "missing_copy_to_r2_helper";
 
-    // Ready mapping:
-    // - bazı örneklerde status:0 ready
-    // - bazılarında status:2 iken audio_url dolu (senin screenshot)
-    // - audio_url varsa ve status 0/2 ise ready kabul edeceğiz.
-    const READY_STATUSES = new Set([0, 2]);
+    let archiveWarning = null;
+    if (!copyToR2) {
+      archiveWarning = "missing_copy_to_r2_helper";
+    }
+
+    let bestDuration = null; // response seviyesinde de verelim (ilk track)
+    let firstStableUrl = null;
 
     if (Array.isArray(arr) && arr.length) {
       for (const item of arr) {
         const st = Number(item?.status);
-        const trackId = String(item?.song_id || item?.id || "").trim() || null;
         const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
-        const ready = !!urlMp3 && (READY_STATUSES.has(st) || !Number.isFinite(st));
+        // song_id bazen uuid geliyor, bazen boş geliyor; id fallback'liyoruz
+        const trackId =
+          String(item?.song_id || "").trim() ||
+          String(item?.id || "").trim() ||
+          String(provider_job_id || "").trim() ||
+          null;
 
-        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
+        const durationSec = clampPositiveDuration(item?.duration);
+
+        if (!bestDuration && durationSec) bestDuration = durationSec;
+
+        if (isFailStatus(st, item)) {
           anyFail = true;
+          continue;
         }
+
+        const ready = isLikelyReadyStatus(st, !!urlMp3);
 
         if (ready && urlMp3) {
           anyReady = true;
 
-          // default: SAME-ORIGIN proxy URL (redirect/range/CORS stabilize)
-          let finalUrl = toProxyUrl(req, urlMp3);
-
-          // optional: archive to R2 (stable) -> finalUrl becomes archive_url if produced
+          // 1) Stabil URL: önce R2 archive, olmazsa same-origin proxy
           let archive_url = null;
+          let finalUrl = null;
 
           if (copyToR2) {
-            const key = buildMusicR2Key({ provider_job_id, trackId: trackId || provider_job_id });
+            const key = buildMusicR2Key({
+              provider_job_id,
+              trackId: trackId || provider_job_id,
+            });
 
             try {
+              // helper imzası farklı olabilir; object arg ile çağırıyoruz
               const result = await copyToR2({
                 url: urlMp3,
                 key,
@@ -339,9 +370,7 @@ module.exports = async (req, res) => {
                 result?.archive_url ||
                 null;
 
-              if (archive_url) {
-                finalUrl = archive_url; // ✅ UI artık R2 URL görür
-              } else {
+              if (!archive_url) {
                 archiveWarning = archiveWarning || "copy_to_r2_no_url_returned";
               }
             } catch (e) {
@@ -349,18 +378,25 @@ module.exports = async (req, res) => {
             }
           }
 
+          // finalUrl seçimi:
+          // - archive_url varsa onu kullan (en stabil)
+          // - yoksa proxy kullan (302/cors/duration Infinity için)
+          finalUrl = archive_url || sameOriginProxyUrl(urlMp3);
+
+          if (!firstStableUrl) firstStableUrl = finalUrl;
+
           outputs.push({
             type: "audio",
-            url: finalUrl, // ✅ SAME-ORIGIN proxy OR R2 archive
+            url: finalUrl,
             meta: {
               provider: "topmediai",
               trackId: trackId || null,
               status: st,
-              audio_url: urlMp3, // debug: provider url (redirect olabilir)
-              archive_url: archive_url, // varsa
+              duration: durationSec,
+              audio_url: urlMp3, // debug
+              archive_url: archive_url,
               archived_at: archive_url ? nowIso() : null,
-              // provider duration bazen -1 geliyor, yine de meta'ya koyuyoruz (UI isterse kullanır)
-              duration: typeof item?.duration === "number" ? item.duration : null,
+              proxied: archive_url ? false : true,
             },
           });
         }
@@ -376,16 +412,17 @@ module.exports = async (req, res) => {
       state: "processing",
       status: "processing",
       outputs,
+      duration: bestDuration, // ✅ UI duration fallback
       topmediai: top,
       archive_warning: archiveWarning,
     };
 
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa
+    // Backward-compat: eski panel data.audio.src arıyor olabilir
     if (outputs.length) {
       data.audio = {
-        src: outputs[0].url, // ✅ artık provider değil: proxy/R2
+        src: outputs[0].url,
         output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
-        duration: outputs[0]?.meta?.duration ?? null,
+        duration: outputs[0]?.meta?.duration || bestDuration || null,
       };
     }
 
@@ -399,6 +436,9 @@ module.exports = async (req, res) => {
       data.state = "processing";
       data.status = "processing";
     }
+
+    // ekstra debug: ilk stabil URL'i ayrıca koy (tek bakışta gör)
+    if (firstStableUrl) data.stable_url = firstStableUrl;
 
     return res.status(200).json(data);
   } catch (err) {
