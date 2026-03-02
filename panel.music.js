@@ -1424,4 +1424,14 @@ if (act === "delete")   return actionDelete(card);
 
   waitForRightPanel(register);
 
+     // ✅ Safari BFCache fix: geri/ileri dönüşte RightPanel yeniden init olabiliyor,
+  // ama bu script tekrar çalışmadığı için panel register kaçıyor.
+  window.addEventListener("pageshow", (ev) => {
+    try{
+      if (ev && ev.persisted) {
+        waitForRightPanel(register);
+      }
+    } catch {}
+  }, { passive: true });
+
 })();
