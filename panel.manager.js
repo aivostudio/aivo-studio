@@ -115,23 +115,29 @@
     _keys(){ return Array.from(registry.keys()); },
     _has(key){ return registry.has(key); },
 
-  register(key, impl){
-  if(!key || !impl || typeof impl.mount !== "function"){
-    console.warn("[RightPanel] invalid register:", key, impl);
-    return;
-  }
-  if(registry.has(key)){
-    console.warn("[RightPanel] duplicate register for key:", key);
-  }
+    register(key, impl){
+      if(!key || !impl || typeof impl.mount !== "function"){
+        console.warn("[RightPanel] invalid register:", key, impl);
+        return;
+      }
+      if(registry.has(key)){
+        console.warn("[RightPanel] duplicate register for key:", key);
+      }
+      registry.set(key, impl);
+    },
 
-  registry.set(key, impl);
+    force(key, payload){
+      const host = ensureHost();
+      if(!host) return;
 
-  // ✅ Eğer bu key şu an aktifse (fallback basılmış olabilir),
-  // register olur olmaz tekrar mount et
-  if (currentKey === key) {
-    api.force(key);
-  }
-},
+      ensureShell(host);
+
+      // unmount old
+      if(currentUnmount){
+        safeCall(currentUnmount);
+        currentUnmount = null;
+      }
+
       currentKey = key;
 
       const impl = registry.get(key);
