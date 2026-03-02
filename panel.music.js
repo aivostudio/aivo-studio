@@ -1312,17 +1312,16 @@ if (act === "delete")   return actionDelete(card);
             if (id) byId.set(id, c);
           }
 
-          for (const old of (jobs || [])){
-            const id = String(old?.job_id || old?.id || "").trim();
-            if (!id) continue;
+         for (const old of (jobs || [])) {
+  const id = String(old?.job_id || old?.id || "").trim();
+  if (!id) continue;
 
-            if (byId.has(id)) {
-              const merged = mergePreferDbButKeepReady(old, byId.get(id));
-              byId.set(id, merged);
-            } else {
-              byId.set(id, old);
-            }
-          }
+  // DB’de varsa merge et, yoksa LS item’ını taşıma (Chrome şişmesini bitirir)
+  if (byId.has(id)) {
+    const merged = mergePreferDbButKeepReady(old, byId.get(id));
+    byId.set(id, merged);
+  }
+}
 
           jobs = Array.from(byId.values());
           saveJobs();
