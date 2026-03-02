@@ -76,12 +76,12 @@
     return Array.from(set);
   }
 
-/* ---------------- UI ---------------- */
-function renderCard(t){
-  const ready = t.ui_state === "ready" && t.src;
+  /* ---------------- UI ---------------- */
+  function renderCard(t){
+    const ready = t.ui_state === "ready" && t.src;
 
-  if (!ready){
-    return `
+    if (!ready){
+      return `
 <div class="aivo-player-card is-loadingState"
      data-track-id="${esc(t.track_id)}"
      data-provider-job-id="${esc(t.provider_job_id)}">
@@ -104,9 +104,9 @@ function renderCard(t){
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
   </div>
 </div>`;
-  }
+    }
 
-  return `
+    return `
 <div class="aivo-player-card is-ready"
      data-track-id="${esc(t.track_id)}"
      data-provider-job-id="${esc(t.provider_job_id)}"
@@ -133,45 +133,38 @@ function renderCard(t){
        href="${esc(t.src)}"
        download
        rel="noopener">İndir</a>
-
-    <button class="aivo-action"
-            data-action="share"
-            data-track-id="${esc(t.track_id)}"
-            title="Paylaş"
-            aria-label="Paylaş">…</button>
-
     <button class="aivo-action is-danger" data-action="delete" data-track-id="${esc(t.track_id)}">Sil</button>
   </div>
 </div>`;
-}
+  }
 
-function render(){
-  if (!ensureHost()) return;
+  function render(){
+    if (!ensureHost()) return;
 
-  if (!listEl){
-    listEl = hostEl.querySelector("#musicList");
     if (!listEl){
-      listEl = document.createElement("div");
-      listEl.className = "aivo-player-list";
-      listEl.id = "musicList";
-      hostEl.appendChild(listEl);
+      listEl = hostEl.querySelector("#musicList");
+      if (!listEl){
+        listEl = document.createElement("div");
+        listEl.className = "aivo-player-list";
+        listEl.id = "musicList";
+        hostEl.appendChild(listEl);
+      }
     }
-  }
 
-  if (!tracks.length){
-    listEl.innerHTML = `
-      <div class="aivo-empty">
-        <div class="aivo-empty-title">Henüz müzik yok</div>
-      </div>`;
-    return;
-  }
+    if (!tracks.length){
+      listEl.innerHTML = `
+        <div class="aivo-empty">
+          <div class="aivo-empty-title">Henüz müzik yok</div>
+        </div>`;
+      return;
+    }
 
-  listEl.innerHTML = tracks
-    .filter(t => t?.track_id)
-    .slice(0,8)
-    .map(renderCard)
-    .join("");
-}
+    listEl.innerHTML = tracks
+      .filter(t => t?.track_id)
+      .slice(0,8)
+      .map(renderCard)
+      .join("");
+  }
 
   /* ---------------- polling ----------------
      Endpoint: /api/music/status?provider_job_id=XXXX
@@ -278,60 +271,16 @@ function render(){
     pollProviderJob(String(providerJobId));
   }
 
-async function onClick(e){
-  const btn = e.target?.closest?.("[data-action]");
-  if (!btn) return;
+  function onClick(e){
+    const btn = e.target?.closest?.("[data-action]");
+    if (!btn) return;
 
-  const action = btn.getAttribute("data-action");
-
-  if (action === "share"){
-    const trackId = btn.getAttribute("data-track-id");
-    const cardEl  = btn.closest(".aivo-player-card");
-    const urlFromDom = cardEl?.getAttribute("data-src") || "";
-
-    const t = trackId ? tracks.find(x => String(x.track_id) === String(trackId)) : null;
-    const url = (t?.src || urlFromDom || "").trim();
-
-    if (!url){
-      window.toast?.error?.("Paylaşmak için önce çıktı hazır olmalı");
-      return;
+    const action = btn.getAttribute("data-action");
+    if (action === "delete"){
+      const trackId = btn.getAttribute("data-track-id");
+      if (trackId) removeTrack(trackId);
     }
-
-    const title = (t?.title || "AIVO Müzik").trim();
-    const text  = (t?.subtitle || "").trim();
-
-    // 1) Native share (mobil vs.)
-    try{
-      if (typeof navigator !== "undefined" && navigator.share){
-        await navigator.share({ title, text, url });
-        window.toast?.success?.("Paylaşım açıldı");
-        return;
-      }
-    }catch(err){
-      // kullanıcı iptali -> sessiz çık
-      if (err?.name === "AbortError") return;
-    }
-
-    // 2) Clipboard fallback (desktop Chrome vs.)
-    try{
-      if (navigator.clipboard && window.isSecureContext){
-        await navigator.clipboard.writeText(url);
-        window.toast?.success?.("Link kopyalandı");
-        return;
-      }
-    }catch{}
-
-    // 3) En garanti fallback
-    window.prompt("Linki kopyala:", url);
-    window.toast?.success?.("Link gösterildi");
-    return;
   }
-
-  if (action === "delete"){
-    const trackId = btn.getAttribute("data-track-id");
-    if (trackId) removeTrack(trackId);
-  }
-}
 
   /* ---------------- panel integration ---------------- */
   function mount(){
