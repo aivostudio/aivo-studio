@@ -488,8 +488,6 @@ function setEqBars(L, M, H){
   function render(){
     if (!alive) return;
     if (!hostEl || !listEl) return;
-    if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-
     const view = jobs.filter(j => j?.job_id || j?.id);
 
     view.sort((a, b) => {
