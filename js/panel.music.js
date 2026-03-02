@@ -240,32 +240,23 @@
     if (!providerJobId) return;
 
     const songIds = Array.isArray(job.provider_song_ids) ? job.provider_song_ids : [];
+// Her zaman 2 slot seed'le: ID'ler eksik gelse bile UI anında 2 kart görsün
+const seedIds = [
+  String(songIds[0] || (String(providerJobId) + ":v1")),
+  String(songIds[1] || (String(providerJobId) + ":v2")),
+];
 
-    // 2 kartı daha "processing" aşamasında oluştur (UI hemen 2 slot görsün)
-    if (songIds.length){
-      songIds.forEach((sid, idx) => {
-        upsertTrack({
-          track_id: String(sid),
-          provider_job_id: String(providerJobId),
-          title: job.title || (idx === 0 ? "Versiyon 1" : `Versiyon ${idx+1}`),
-          subtitle: job.subtitle || "",
-          src: "",
-          ui_state: "processing",
-          created_at: Date.now()
-        });
-      });
-    } else {
-      // songId gelmezse yine de tek placeholder oluştur
-      upsertTrack({
-        track_id: String(providerJobId) + ":v1",
-        provider_job_id: String(providerJobId),
-        title: job.title || "Müzik Üretimi",
-        subtitle: job.subtitle || "",
-        src: "",
-        ui_state: "processing",
-        created_at: Date.now()
-      });
-    }
+seedIds.forEach((sid, idx) => {
+  upsertTrack({
+    track_id: sid,
+    provider_job_id: String(providerJobId),
+    title: job.title || (idx === 0 ? "Versiyon 1" : `Versiyon ${idx+1}`),
+    subtitle: job.subtitle || "",
+    src: "",
+    ui_state: "processing",
+    created_at: Date.now()
+  });
+});
 
     render();
     pollProviderJob(String(providerJobId));
