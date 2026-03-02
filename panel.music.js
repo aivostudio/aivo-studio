@@ -1057,10 +1057,17 @@ if (act === "delete")   return actionDelete(card);
           __pending_duration: ""
         });
 
-        render();
-        toast("success", "Müzikler hazır 🎵");
+              render();
+
+        // ✅ Toast sadece "processing -> ready" geçişinde basılsın (refresh/hydrate spam yok)
+        const alreadyBothReady =
+          String(me.__ui_state || "") === "ready" &&
+          !!String(me.__audio_src || "").trim() &&
+          String(other.__ui_state || "") === "ready" &&
+          !!String(other.__audio_src || "").trim();
+
+        if (!alreadyBothReady) toast("success", "Müzikler hazır 🎵");
         return;
-      }
 
       // 3) İkisi birden hazır değilse polling devam
       render();
