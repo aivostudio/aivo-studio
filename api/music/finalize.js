@@ -7,9 +7,9 @@ function nowISO() {
 }
 
 function uuid() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : ((r & 0x3) | 0x8);
     return v.toString(16);
   });
 }
@@ -146,10 +146,7 @@ module.exports = async (req, res) => {
     const jobRaw = await redis.get(jobKey);
     const job = jobRaw ? JSON.parse(jobRaw) : {};
 
-    // NOTE: /files/play production'da 404 olduğu için audio.src'yi asla ona bağlamıyoruz.
-    // Direct MP3 URL tek güvenli kaynak. play_url'yi sadece debug için tutuyoruz.
-    const play_url =
-      `/files/play?job_id=${encodeURIComponent(internal_job_id)}&output_id=${encodeURIComponent(output_id)}`;
+    const play_url = `/files/play?job_id=${encodeURIComponent(internal_job_id)}&output_id=${encodeURIComponent(output_id)}`;
 
     job.id = job.id || internal_job_id;
     job.job_id = job.job_id || internal_job_id;
@@ -174,12 +171,8 @@ module.exports = async (req, res) => {
 
     // UI tarafı için kritik: audio.src
     job.audio = job.audio || {};
-
-    // ✅ FIX: src'yi mp3_url'ye set et (play_url değil)
-    job.audio.src = mp3_url;
-
-    // output_id'yi de güncelle (UI debug/track için)
-    job.audio.output_id = output_id;
+    job.audio.src = job.audio.src || play_url;
+    job.audio.output_id = job.audio.output_id || output_id;
 
     await redis.set(jobKey, JSON.stringify(job));
 
@@ -192,7 +185,6 @@ module.exports = async (req, res) => {
       index_key: indexKey,
       output_meta_key: outputMetaKey,
       play_url,
-      mp3_url,
     });
   } catch (err) {
     console.error("finalize error:", err);
