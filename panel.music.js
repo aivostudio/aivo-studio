@@ -551,21 +551,51 @@ function setEqBars(L, M, H){
     card.classList.toggle("is-playing", !!isPlaying);
   }
 
-  function updateProgressUI(){
-    if (!audioEl || !currentJobId) return;
-    const card = getCard(currentJobId);
-    if (!card) return;
+function updateProgressUI(){
+  if (!audioEl || !currentJobId) return;
+  const card = getCard(currentJobId);
+  if (!card) return;
 
-    const dur = audioEl.duration || 0;
-    const cur = audioEl.currentTime || 0;
-    const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
+  const cur = audioEl.currentTime || 0;
 
-    const bar = qs(".aivo-progress i", card);
-    if (bar) bar.style.width = pct.toFixed(2) + "%";
+  // ✅ duration bazen geç geliyor / 0 kalıyor (Safari/stream edge)
+  // 1) audioEl.duration
+  // 2) UI'daki meta-dur'dan total parse (sayfa yenileyince göründüğü için burada fallback)
+  let dur = 0;
+  const d0 = audioEl.duration;
+  if (Number.isFinite(d0) && d0 > 0) dur = d0;
 
-    const durEl = qs(".meta-dur", card);
-    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+  if (!dur){
+    const durEl0 = qs(".meta-dur", card);
+    const t = String(durEl0?.textContent || "").trim();
+    // "1:08 / 1:54" veya "1:54" gibi durumlarda SON m:ss'i total kabul et
+    const m = t.match(/(\d+):(\d{2})(?!.*\d)/);
+    if (m){
+      const mm = Number(m[1] || 0);
+      const ss = Number(m[2] || 0);
+      const parsed = mm * 60 + ss;
+      if (parsed > 0) dur = parsed;
+    }
   }
+
+  const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
+
+  const bar = qs(".aivo-progress i", card);
+  if (bar) bar.style.width = pct.toFixed(2) + "%";
+
+  const durEl = qs(".meta-dur", card);
+  if (durEl){
+    if (dur > 0){
+      durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+    } else {
+      // total hâlâ yoksa: var olan total metnini koru, sadece "cur" kısmını güncelle
+      const old = String(durEl.textContent || "").trim();
+      const parts = old.split("/");
+      const right = (parts[1] || "0:00").trim();
+      durEl.textContent = `${fmtTime(cur)} / ${right}`;
+    }
+  }
+}
 
   function startRaf(){
     stopRaf();
