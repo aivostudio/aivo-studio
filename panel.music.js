@@ -563,20 +563,9 @@ function setEqBars(L, M, H){
     const bar = qs(".aivo-progress i", card);
     if (bar) bar.style.width = pct.toFixed(2) + "%";
 
-   const durEl = qs(".meta-dur", card);
-if (durEl) {
-  const existing = jobs.find(x => (x.job_id || x.id) === currentJobId) || {};
-
-  const rawFallback = String(existing.__duration || existing.duration || "").trim();
-  const fallbackTotal =
-    rawFallback.includes(":")
-      ? rawFallback
-      : (Number(rawFallback) > 0 ? fmtTime(Number(rawFallback)) : "0:00");
-
-  const total = (isFinite(dur) && dur > 0) ? fmtTime(dur) : fallbackTotal;
-
-  durEl.textContent = `${fmtTime(cur)} / ${total}`;
-}
+    const durEl = qs(".meta-dur", card);
+    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+  }
 
   function startRaf(){
     stopRaf();
