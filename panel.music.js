@@ -274,7 +274,41 @@ function setEqBars(L, M, H){
   function ensureAudio(){
     if (audioEl) return audioEl;
 
-    audioEl = document.getElementById("aivoAudio");
+ function ensureAudio(){
+  if (audioEl) return audioEl;
+
+  // ✅ IMPORTANT: Player v1 ile çakışmamak için ayrı ID
+  audioEl = document.getElementById("aivoMusicAudio");
+  if (!audioEl){
+    audioEl = document.createElement("audio");
+    audioEl.id = "aivoMusicAudio";
+    audioEl.preload = "metadata";
+    audioEl.crossOrigin = "anonymous";
+    audioEl.style.display = "none";
+    document.body.appendChild(audioEl);
+  }
+
+  initEqEngine();
+
+  audioEl.onended = () => {
+    setCardPlaying(currentJobId, false);
+    currentJobId = null;
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+    stopRaf();
+  };
+  audioEl.onpause = () => {
+    if (currentJobId) setCardPlaying(currentJobId, false);
+    stopRaf();
+  };
+  audioEl.onplay = () => {
+    if (currentJobId) setCardPlaying(currentJobId, true);
+    bindEqBarsForCurrentJob();
+    startRaf();
+  };
+
+  return audioEl;
+}
     if (!audioEl){
       audioEl = document.createElement("audio");
       audioEl.id = "aivoAudio";
