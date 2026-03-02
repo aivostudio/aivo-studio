@@ -1059,15 +1059,15 @@ if (act === "delete")   return actionDelete(card);
 
               render();
 
-        // ✅ Toast sadece "processing -> ready" geçişinde basılsın (refresh/hydrate spam yok)
-        const alreadyBothReady =
-          String(me.__ui_state || "") === "ready" &&
-          !!String(me.__audio_src || "").trim() &&
-          String(other.__ui_state || "") === "ready" &&
-          !!String(other.__audio_src || "").trim();
+       // ✅ Toast sadece ilk ready geçişinde basılsın
+const wasReadyBefore =
+  String(existing.__ui_state || "") === "ready";
 
-        if (!alreadyBothReady) toast("success", "Müzikler hazır 🎵");
-        return;
+if (!wasReadyBefore) {
+  toast("success", "Müzikler hazır 🎵");
+}
+
+return;
 
       // 3) İkisi birden hazır değilse polling devam
       render();
