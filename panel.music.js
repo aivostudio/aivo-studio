@@ -1226,19 +1226,19 @@ if (act === "delete")   return actionDelete(card);
         const id = String(c?.job_id || c?.id || "").trim();
         if (id) byId.set(id, c);
       }
-// sonra eski (LS) -> merge (DB yoksa bile LS kartını KORU)
-for (const old of (jobs || [])){
+
+      // sonra eski (LS) -> merge
+    for (const old of (jobs || [])){
   const id = String(old?.job_id || old?.id || "").trim();
   if (!id) continue;
 
   if (byId.has(id)) {
     const merged = mergePreferDbButKeepReady(old, byId.get(id));
     byId.set(id, merged);
-  } else {
-    // ✅ DB henüz rev1’i yazmadıysa bile (ilk saniyeler) kart kaybolmasın
-    byId.set(id, old);
   }
+  // else yok: DB’de olmayan LS item’ı geri eklenmez
 }
+
       jobs = Array.from(byId.values());
       saveJobs();
       render();
