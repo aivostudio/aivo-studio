@@ -1271,9 +1271,7 @@ if (act === "delete")   return actionDelete(card);
       try { mainAudio.load?.(); } catch {}
       mainAudio.style.display = "none";
     }
-
-  // DB source of truth: ilk render LS'ten değil
-jobs = [];
+jobs = loadJobs();
 render();
 
     // DB hydrate (ilk)
