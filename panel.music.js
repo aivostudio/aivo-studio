@@ -611,7 +611,6 @@ const src = String(card.getAttribute("data-src") || "").trim();
 
     currentJobId = jobId;
     setCardPlaying(jobId, true);
-
     // ✅ job değişti -> EQ cache reset + rebind
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
@@ -624,6 +623,16 @@ try{
   if (A.src !== src) {
     try { A.pause(); } catch {}
     A.src = src;
+
+    console.log("[MUSIC][SET_SRC]", {
+      jobId,
+      src,
+      A_src: A.src,
+      currentSrc: A.currentSrc,
+      readyState: A.readyState,
+      networkState: A.networkState
+    });
+
     try { A.currentTime = 0; } catch {}
   }
 
@@ -634,7 +643,6 @@ try{
 // TopMediai bazı linklerde duration=Infinity gelebiliyor; bu yüzden "isFinite(duration)" KULLANMIYORUZ.
 await new Promise((resolve, reject) => {
   try { A.load(); } catch {}
-
   // yeterince hazırsa (metadata/akış) direkt devam
   if (A.readyState >= 1) return resolve();
 
