@@ -896,6 +896,9 @@ if (act === "delete")   return actionDelete(card);
   /* ---------------- polling ---------------- */
   const POLL_BUSY = new Set();   // key: cardId
   const POLL_LAST = new Map();   // key: cardId -> ts(ms)
+   // ✅ Toast latch: aynı job için "Müzikler hazır" sadece 1 kez basılsın
+if (!window.__AIVO_MUSIC_READY_TOASTED__) window.__AIVO_MUSIC_READY_TOASTED__ = new Set();
+const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
 
   const MUSIC_WORKER_ORIGIN =
     (typeof WORKER_ORIGIN === "string" && WORKER_ORIGIN) ||
