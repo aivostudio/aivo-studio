@@ -29,11 +29,10 @@
   let alive  = false;
   let jobs   = [];
 
-   // audio engine
+  // audio engine
   let audioEl = null;
   let rafId = 0;
   let currentJobId = null;
-  let __playSeq = 0; // play yarış koruması
 
   /* ---------------- utils ---------------- */
   const qs  = (s, r=document)=>r.querySelector(s);
@@ -280,6 +279,7 @@ function setEqBars(L, M, H){
       audioEl = document.createElement("audio");
       audioEl.id = "aivoAudio";
       audioEl.preload = "metadata";
+      audioEl.crossOrigin = "anonymous";
       audioEl.style.display = "none";
       document.body.appendChild(audioEl);
     }
@@ -587,8 +587,8 @@ function setEqBars(L, M, H){
     const jobId = card.getAttribute("data-job-id") || "";
     if (!jobId) return;
 
-   // kartın kendi data-src'sini tek source of truth yap
-const src = String(card.getAttribute("data-src") || "").trim();
+    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+    const src = String(existing.__audio_src || card.dataset.src || "").trim();
 
     if (!src){
       toast("info", "Henüz hazır değil");
@@ -610,78 +610,23 @@ const src = String(card.getAttribute("data-src") || "").trim();
 
     currentJobId = jobId;
     setCardPlaying(jobId, true);
+
     // ✅ job değişti -> EQ cache reset + rebind
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
     bindEqBarsForCurrentJob();
 
-try{
-  const mySeq = ++__playSeq;
-
-  // src değişiyorsa: pause + src set (A.load() YOK -> AbortError tetikliyordu)
-  if (A.src !== src) {
-    try { A.pause(); } catch {}
-    A.src = src;
-
-    console.log("[MUSIC][SET_SRC]", {
-      jobId,
-      src,
-      A_src: A.src,
-      currentSrc: A.currentSrc,
-      readyState: A.readyState,
-      networkState: A.networkState
-    });
-
-    try { A.currentTime = 0; } catch {}
+    try{
+      if (A.src !== src) A.src = src;
+      await A.play();
+    } catch(e){
+      console.warn("[panel.music] play failed:", e);
+      setCardPlaying(jobId, false);
+      toast("error", "Play başarısız (src açılamadı)");
+    }
   }
 
-  // başka bir tık geldiyse bu play'i iptal et (stale)
-  if (mySeq !== __playSeq) return;
-
-// ✅ Safari-safe: src set -> load() -> canplay/metadata bekle (duration şartı YOK)
-// TopMediai bazı linklerde duration=Infinity gelebiliyor; bu yüzden "isFinite(duration)" KULLANMIYORUZ.
-await new Promise((resolve, reject) => {
-  try { A.load(); } catch {}
-  // yeterince hazırsa (metadata/akış) direkt devam
-  if (A.readyState >= 1) return resolve();
-
-  let done = false;
-  const cleanup = () => {
-    if (done) return;
-    done = true;
-    A.removeEventListener("loadedmetadata", onOk);
-    A.removeEventListener("canplay", onOk);
-    A.removeEventListener("canplaythrough", onOk);
-    A.removeEventListener("error", onErr);
-    clearTimeout(tid);
-  };
-
-  const onOk = () => { cleanup(); resolve(); };
-  const onErr = () => { cleanup(); reject(new Error("audio_load_error")); };
-
-  A.addEventListener("loadedmetadata", onOk);
-  A.addEventListener("canplay", onOk);
-  A.addEventListener("canplaythrough", onOk);
-  A.addEventListener("error", onErr);
-
-  // metadata gelmese bile play'i bloke etme (Safari/Infinity edge)
-  const tid = setTimeout(() => { cleanup(); resolve(); }, 1500);
-});
-  // beklerken başka tık geldiyse UI’yi bozma
-  if (mySeq !== __playSeq) return;
-
-  await A.play();
-
-  if (mySeq !== __playSeq) return;
-
-} catch(e){
-  console.warn("[panel.music] play failed:", e);
-  setCardPlaying(jobId, false);
-  toast("error", "Play başarısız (src açılamadı)");
-}
-} // <-- EKLE (togglePlayFromCard kapanışı)
-
-function onProgressSeek(e){
+  function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
     if (!wrap) return;
     const card = e.target.closest(".aivo-player-card");
@@ -1239,16 +1184,9 @@ if (act === "delete")   return actionDelete(card);
   function mergePreferDbButKeepReady(oldItem, dbItem){
     const out = { ...oldItem, ...dbItem };
 
-   const oldSrc = String(oldItem?.__audio_src || "").trim();
-const dbSrc  = String(dbItem?.__audio_src || "").trim();
-
-// ✅ R2/CDN (media.aivo.tr) varsa, DB'den gelen TopMediai URL ile geri ezme
-const oldIsCdn = oldSrc.includes("media.aivo.tr/outputs/");
-const dbIsProvider = dbSrc.includes("topmediai.com") || dbSrc.includes("aimusic-api.topmediai.com");
-
-if ((oldIsCdn && dbIsProvider) || (!dbSrc && oldSrc)) {
-  out.__audio_src = oldSrc;
-}
+    const oldSrc = String(oldItem?.__audio_src || "").trim();
+    const dbSrc  = String(dbItem?.__audio_src || "").trim();
+    if (!dbSrc && oldSrc) out.__audio_src = oldSrc;
 
     const oldState = String(oldItem?.__ui_state || "").trim();
     const dbState  = String(dbItem?.__ui_state || "").trim();
