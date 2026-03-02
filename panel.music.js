@@ -1057,17 +1057,10 @@ if (act === "delete")   return actionDelete(card);
           __pending_duration: ""
         });
 
-              render();
-
-       // ✅ Toast sadece ilk ready geçişinde basılsın
-const wasReadyBefore =
-  String(existing.__ui_state || "") === "ready";
-
-if (!wasReadyBefore) {
-  toast("success", "Müzikler hazır 🎵");
-}
-
-return;
+        render();
+        toast("success", "Müzikler hazır 🎵");
+        return;
+      }
 
       // 3) İkisi birden hazır değilse polling devam
       render();
