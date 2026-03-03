@@ -1,6 +1,6 @@
 // api/media/proxy.js
 // CommonJS - Vercel Serverless
-// Range destekli video proxy (mp4 stream için şart)
+// Range destekli proxy (mp4/audio stream için şart)
 
 const { URL } = require("url");
 
@@ -9,6 +9,10 @@ const ALLOWED_HOSTS = new Set([
   "media.aivo.tr",               // R2 custom domain (outputs)
   "file-examples.com",           // test
   "www.file-examples.com",       // test
+
+  // ✅ stems / replicate
+  "replicate.delivery",
+  "cdn.replicate.delivery",
 ]);
 
 module.exports = async (req, res) => {
