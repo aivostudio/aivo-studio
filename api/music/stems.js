@@ -96,11 +96,11 @@ export default async function handler(req, res) {
       // NOTE: client poll için lazım
       urls: j?.urls || null,
     });
-  } catch (err) {
-    return res.status(500).json({
-      ok: false,
-      error: "server_error",
-      message: String(err?.message || err),
-    });
-  }
+catch (err) {
+  return res.status(200).json({
+    ok: false,
+    error: "server_error",
+    message: err?.message || String(err),
+  });
+}
 }
