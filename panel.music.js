@@ -659,7 +659,16 @@ function render(){
     bindEqBarsForCurrentJob();
 
     try{
-      if (A.src !== src) A.src = src;
+      let finalSrc = src;
+
+try {
+  const u = new URL(src, location.origin);
+  if (u.origin !== location.origin) {
+    finalSrc = "/api/media/proxy?url=" + encodeURIComponent(src);
+  }
+} catch {}
+
+if (A.src !== finalSrc) A.src = finalSrc;
       await A.play();
     } catch(e){
       console.warn("[panel.music] play failed:", e);
