@@ -177,7 +177,12 @@ module.exports = async (req, res) => {
       } else {
         const providerMapKey = `provider_map:${raw}`;
         const mapText = await redis.get(providerMapKey);
-        const mapObj = mapText ? safeJsonParse(mapText) : null;
+       const normalized =
+  mapText && typeof mapText === "object" && mapText.result
+    ? mapText.result
+    : mapText;
+
+const mapObj = normalized ? safeJsonParse(normalized) : null;
 
         if (mapObj?.internal_job_id) {
           internal_job_id = String(mapObj.internal_job_id).trim() || null;
