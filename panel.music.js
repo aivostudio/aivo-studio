@@ -375,60 +375,87 @@ function setEqBars(L, M, H){
     TMAP.clear();
   }
 
-  /* ---------------- UI render ---------------- */
-  function renderCard(job){
-    const jobId = job.job_id || job.id;
-    const st = job.__ui_state || "processing";
+ /* ---------------- UI render ---------------- */
+function renderCard(job){
+  const jobId = job.job_id || job.id;
+  const st = job.__ui_state || "processing";
 
-    const title =
-      (String(job?.title || "").trim()) ||
-      (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
-      (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
+  const title =
+    (String(job?.title || "").trim()) ||
+    (String(job?.lyrics || "").replace(/\r/g,"").split("\n").map(s=>s.trim()).find(Boolean) || "") ||
+    (String(job?.prompt || "").trim().split(/\s+/).slice(0,2).join(" ") || "");
 
-    const sub   = job.subtitle || "";
-    const dur   = job.duration || job.__duration || "";
-    const date  = job.created_at || job.createdAt || job.__createdAt || "";
+  const sub   = job.subtitle || "";
+  const dur   = job.duration || job.__duration || "";
+  const date  = job.created_at || job.createdAt || job.__createdAt || "";
 
-    const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-    const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
-    const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
+  const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
+  const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
+  const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
-    const isReady = (st === "ready") && !!job.__audio_src;
+  const isReady = (st === "ready") && !!job.__audio_src;
 
-    // ✅ render sırasında "şu an çalan kart" state'i korunur
-    const isPlayingNow =
-      !!isReady &&
-      String(currentJobId || "") === String(jobId || "") &&
-      !!audioEl &&
-      !audioEl.paused;
+  // ✅ render sırasında "şu an çalan kart" state'i korunur
+  const isPlayingNow =
+    !!isReady &&
+    String(currentJobId || "") === String(jobId || "") &&
+    !!audioEl &&
+    !audioEl.paused;
 
-    const tags =
-      isReady ? `${tagReady}` :
-      st === "error" ? `${tagErr}` :
-      `${tagProc}`;
+  const tags =
+    isReady ? `${tagReady}` :
+    st === "error" ? `${tagErr}` :
+    `${tagProc}`;
 
-    const leftBtn = `
-      <button class="aivo-player-btn"
-        data-action="toggle-play"
-        aria-label="Oynat/Durdur"
-        title="Oynat/Durdur"
-        ${isReady ? "" : "disabled"}
-        style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-        <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "display:none" : ""}">
-          <path d="M8 5v14l11-7z" fill="currentColor"></path>
-        </svg>
-        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "" : "display:none"}">
-          <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-        </svg>
-        <span class="aivo-eq" aria-hidden="true">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-        </span>
-      </button>`;
+  const leftBtn = `
+    <button class="aivo-player-btn"
+      data-action="toggle-play"
+      aria-label="Oynat/Durdur"
+      title="Oynat/Durdur"
+      ${isReady ? "" : "disabled"}
+      style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
+      <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "display:none" : ""}">
+        <path d="M8 5v14l11-7z" fill="currentColor"></path>
+      </svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "" : "display:none"}">
+        <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
+      </svg>
+      <span class="aivo-eq" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </span>
+    </button>`;
 
-    const metaLeft = dur ? esc(dur) : "0:00";
-    const metaRight = date ? esc(date) : "";
+  const metaLeft = dur ? esc(dur) : "0:00";
+  const metaRight = date ? esc(date) : "";
 
-    return `
+  // ✅ stems: sadece UI gösterimi (create/poll yok)
+  const stems = job?.stems || job?.__stems || null;
+  const stemsStatus = String(stems?.status || "").toLowerCase();
+  const stemsOut = stems?.output || null;
+
+  const stemsBadge =
+    stemsStatus === "succeeded" ? `<span class="aivo-tag is-ready">Stems Hazır</span>` :
+    (stemsStatus === "starting" || stemsStatus === "processing") ? `<span class="aivo-tag is-loading">Stems…</span>` :
+    stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` :
+    "";
+
+  const stemsControls =
+    (stemsStatus === "succeeded" && stemsOut) ? `
+      <div class="aivo-stems">
+        <a class="aivo-stem" href="${esc(stemsOut.vocals || "")}" target="_blank" rel="noopener">Vocals</a>
+        <a class="aivo-stem" href="${esc(stemsOut.drums  || "")}" target="_blank" rel="noopener">Drums</a>
+        <a class="aivo-stem" href="${esc(stemsOut.bass   || "")}" target="_blank" rel="noopener">Bass</a>
+        <a class="aivo-stem" href="${esc(stemsOut.other  || "")}" target="_blank" rel="noopener">Other</a>
+        <a class="aivo-stem" href="${esc(stemsOut.guitar || "")}" target="_blank" rel="noopener">Guitar</a>
+        <a class="aivo-stem" href="${esc(stemsOut.piano  || "")}" target="_blank" rel="noopener">Piano</a>
+      </div>
+    ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
+      <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
+    ` : stemsStatus === "failed" ? `
+      <div class="aivo-stems aivo-stems-status">Stems hata</div>
+    ` : "";
+
+  return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
   data-src="${esc(job.__audio_src || "")}"
@@ -438,7 +465,7 @@ function setEqBars(L, M, H){
   <div class="aivo-player-mid">
     <div class="aivo-player-titleRow">
       <div class="aivo-player-title">${esc(title)}</div>
-      <div class="aivo-player-tags">${tags}</div>
+      <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
     </div>
     <div class="aivo-player-sub">${esc(sub)}</div>
 
@@ -452,7 +479,7 @@ function setEqBars(L, M, H){
       <i style="width:${esc(job.__progress || 0)}%"></i>
     </div>
 
-    <div class="aivo-player-controls"></div>
+    <div class="aivo-player-controls">${stemsControls}</div>
   </div>
 
   <div class="aivo-player-actions">
@@ -474,62 +501,62 @@ function setEqBars(L, M, H){
     <button class="aivo-action is-danger" data-action="delete" title="Müziği Sil" aria-label="Müziği Sil">🗑</button>
   </div>
 </div>`;
+}
+
+function applyMusicSearchFilter(){
+  const q = String(__searchQ || "").trim();
+  const cards = (listEl || document).querySelectorAll(".aivo-player-card");
+  cards.forEach(card => {
+    const text = (card.textContent || "").toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? "" : "none";
+  });
+}
+
+function render(){
+  if (!alive) return;
+  if (!hostEl || !listEl) return;
+  if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+
+  const view = jobs.filter(j => j?.job_id || j?.id);
+
+  view.sort((a, b) => {
+    const aid = String(a.job_id || a.id || "");
+    const bid = String(b.job_id || b.id || "");
+    const abase = aid.split("::")[0];
+    const bbase = bid.split("::")[0];
+
+    const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
+    const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
+
+    if (tb !== ta) return tb - ta;
+    if (bbase !== abase) return bbase.localeCompare(abase);
+
+    const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
+    const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
+    return ar - br;
+  });
+
+  if (!view.length){
+    listEl.innerHTML = `
+      <div class="aivo-empty">
+        <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
+      </div>`;
+    return;
   }
 
-  function applyMusicSearchFilter(){
-    const q = String(__searchQ || "").trim();
-    const cards = (listEl || document).querySelectorAll(".aivo-player-card");
-    cards.forEach(card => {
-      const text = (card.textContent || "").toLowerCase();
-      card.style.display = (!q || text.includes(q)) ? "" : "none";
-    });
+  // ✅ DOM’u yeniliyoruz -> EQ cache’i invalid
+  listEl.innerHTML = view.map(renderCard).join("");
+  eqBarsCache.jobId = null;
+  eqBarsCache.bars = null;
+
+  applyMusicSearchFilter();
+
+  // ✅ eğer şu an çalıyorsa: render sonrası barları yeniden bağla
+  if (currentJobId && audioEl && !audioEl.paused) {
+    setCardPlaying(currentJobId, true);
+    bindEqBarsForCurrentJob();
   }
-
-  function render(){
-    if (!alive) return;
-    if (!hostEl || !listEl) return;
-    if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-
-    const view = jobs.filter(j => j?.job_id || j?.id);
-
-    view.sort((a, b) => {
-      const aid = String(a.job_id || a.id || "");
-      const bid = String(b.job_id || b.id || "");
-      const abase = aid.split("::")[0];
-      const bbase = bid.split("::")[0];
-
-      const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
-      const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
-
-      if (tb !== ta) return tb - ta;
-      if (bbase !== abase) return bbase.localeCompare(abase);
-
-      const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
-      const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
-      return ar - br;
-    });
-
-    if (!view.length){
-      listEl.innerHTML = `
-        <div class="aivo-empty">
-          <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
-        </div>`;
-      return;
-    }
-
-    // ✅ DOM’u yeniliyoruz -> EQ cache’i invalid
-    listEl.innerHTML = view.map(renderCard).join("");
-    eqBarsCache.jobId = null;
-    eqBarsCache.bars = null;
-
-    applyMusicSearchFilter();
-
-    // ✅ eğer şu an çalıyorsa: render sonrası barları yeniden bağla
-    if (currentJobId && audioEl && !audioEl.paused) {
-      setCardPlaying(currentJobId, true);
-      bindEqBarsForCurrentJob();
-    }
-  }
+}
 
   /* ---------------- play / pause / progress ---------------- */
   function getCard(jobId){
