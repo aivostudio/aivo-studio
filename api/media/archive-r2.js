@@ -142,11 +142,12 @@ module.exports = async (req, res) => {
 
     let putResp;
     if (upstream.body) {
-      putResp = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: putHeaders,
-        body: upstream.body,
-      });
+     putResp = await fetch(upload_url, {
+  method: "PUT",
+  duplex: "half",
+  headers: putHeaders,
+  body: upstream.body,
+});
     } else {
       // fallback (nadiren)
       const buf = Buffer.from(await upstream.arrayBuffer());
