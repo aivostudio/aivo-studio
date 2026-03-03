@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const { filename, contentType, prefix } = req.body || {};
+  const { filename, contentType, key } = req.body || {};
     if (!filename || !contentType) {
       return res.status(400).json({ ok: false, error: "missing_filename_or_contentType" });
     }
