@@ -175,6 +175,39 @@ module.exports = async (req, res) => {
       if (provider_song_ids.length === 0 && provider_job_id) {
         provider_song_ids = [String(provider_job_id)];
       }
+      // 🔥 Fallback: if internal job not found in job store,
+// try resolving via provider_map scan
+if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
+  // provider_map keys are stored as: provider_map:<provider_job_id>
+  // we don't know provider_job_id yet, so we must try scanning via known pattern
+
+  const keys = await redis.keys("provider_map:*");
+  for (const key of keys) {
+    const rawMap = await redis.get(key);
+    const normalized =
+      rawMap && typeof rawMap === "object" && rawMap.result
+        ? rawMap.result
+        : rawMap;
+
+    const mapObj = normalized ? safeJsonParse(normalized) : null;
+    if (mapObj?.internal_job_id === internal_job_id) {
+      provider_job_id = String(mapObj?.provider_job_id || "").trim() || null;
+
+      const mapIdsRaw =
+        mapObj?.provider_song_ids ||
+        mapObj?.providerSongIds ||
+        mapObj?.song_ids ||
+        mapObj?.songIds ||
+        [];
+
+      provider_song_ids = Array.isArray(mapIdsRaw)
+        ? uniqStrings(mapIdsRaw)
+        : [];
+
+      break;
+    }
+  }
+}
     } else {
       if (raw.includes(",")) {
         provider_song_ids = uniqStrings(raw.split(","));
