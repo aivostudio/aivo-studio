@@ -145,13 +145,21 @@ module.exports = async (req, res) => {
 
   const k1 = `jobs/${internalId}/job.json`;
   const t1raw = await redis.get(k1);
-  const t1 = normalize(t1raw);
+  const t1 =
+    t1raw && typeof t1raw === "object" && t1raw.result
+      ? t1raw.result
+      : t1raw;
+
   const o1 = t1 ? safeJsonParse(t1) : null;
   if (o1) return o1;
 
   const k2 = `job:${internalId}`;
   const t2raw = await redis.get(k2);
-  const t2 = normalize(t2raw);
+  const t2 =
+    t2raw && typeof t2raw === "object" && t2raw.result
+      ? t2raw.result
+      : t2raw;
+
   const o2 = t2 ? safeJsonParse(t2) : null;
   if (o2) return o2;
 
