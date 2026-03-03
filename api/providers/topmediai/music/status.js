@@ -1,141 +1,226 @@
-// api/providers/topmediai/music/status.js
-// GET ?ids=id1,id2  | ?provider_job_id=... | ?job_id=...
-// Primary: GET https://api.topmediai.com/v3/music/tasks?ids=...
-// TopMediai: status == 0 => ready (audio_url usable)
+// /pages/api/music/stems.js
+// Replicate "stems" wrapper: POST { mode:"create", audio_url } or POST { mode:"status", id }
+// On status:succeeded -> downloads replicate.delivery stems and archives them to R2 (idempotent-ish).
 
-function safeJsonParse(s) {
-  try { return JSON.parse(s); } catch { return null; }
+import { S3Client, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+
+// These exist in your repo per tree screenshot:
+// /api/providers/replicate/predictions/create.js
+// /api/providers/replicate/predictions/status.js
+import replicateCreate from "../providers/replicate/predictions/create";
+import replicateStatus from "../providers/replicate/predictions/status";
+
+// --------- R2 (S3-compatible) ---------
+function getR2Client() {
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  if (!accountId || !accessKeyId || !secretAccessKey) return null;
+
+  return new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId, secretAccessKey },
+  });
 }
 
-function uniqStrings(arr) {
-  const out = [];
-  const seen = new Set();
-  for (const x of arr || []) {
-    const s = String(x || "").trim();
-    if (!s) continue;
-    if (seen.has(s)) continue;
-    seen.add(s);
-    out.push(s);
+function getR2Bucket() {
+  return process.env.R2_BUCKET || process.env.R2_BUCKET_NAME || "";
+}
+
+function getPublicBase() {
+  // Example: https://pub-xxxx.r2.dev  OR  https://cdn.aivo.tr
+  return (process.env.R2_PUBLIC_BASE_URL || "").replace(/\/+$/, "");
+}
+
+async function r2Exists(r2, bucket, key) {
+  try {
+    await r2.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+    return true;
+  } catch (e) {
+    // NotFound etc.
+    return false;
   }
-  return out;
 }
 
-function extractAudioUrl(any) {
-  if (!any) return null;
-  return (
-    any.audio_url || any.audioUrl ||
-    any.song_url || any.songUrl ||
-    any.file_url || any.fileUrl ||
-    any.download_url || any.downloadUrl ||
-    any.url || any.mp3 ||
-    any.audio?.url || any.audio?.src ||
-    null
+async function r2Put(r2, bucket, key, body, contentType = "audio/mpeg") {
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      CacheControl: "public, max-age=31536000, immutable",
+    })
   );
 }
 
-function normalizeState({ audioUrl, statusValue, failCode, failReason }) {
-  // if audio exists => completed
-  if (audioUrl) return "COMPLETED";
-
-  const stNum = typeof statusValue === "number" ? statusValue : Number(statusValue);
-  const hasFail =
-    Boolean(failReason) ||
-    (typeof failCode === "number" && failCode !== 0) ||
-    (Number.isFinite(stNum) && stNum < 0);
-
-  if (hasFail) return "FAILED";
-  return "PROCESSING";
+// --------- Download with retry (replicate.delivery sometimes 404 immediately after "succeeded") ---------
+async function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
+async function fetchWithRetry(url, { tries = 10, delayMs = 1200 } = {}) {
+  let lastErr = null;
+
+  for (let i = 0; i < tries; i++) {
+    try {
+      const res = await fetch(url, { method: "GET" });
+      if (res.ok) return res;
+
+      // If replicate.delivery isn't ready, we often see 404 JSON:
+      // {"detail":"requested file not found"}
+      lastErr = new Error(`HTTP ${res.status} for ${url}`);
+    } catch (e) {
+      lastErr = e;
+    }
+
+    // backoff: 1.2s, 2.4s, 3.6s... (cap-ish)
+    await sleep(delayMs * (i + 1));
+  }
+
+  throw lastErr || new Error(`Failed to fetch ${url}`);
+}
+
+async function archiveStemToR2({ predictionId, stemName, sourceUrl }) {
+  const r2 = getR2Client();
+  const bucket = getR2Bucket();
+  const publicBase = getPublicBase();
+
+  if (!r2 || !bucket || !publicBase) {
+    return {
+      archived: false,
+      reason: "missing_r2_env",
+      source_url: sourceUrl,
+      archive_url: null,
+    };
+  }
+
+  const safeStem = String(stemName || "stem").replace(/[^a-z0-9_-]/gi, "_");
+  const key = `stems/${predictionId}/${safeStem}.mp3`;
+
+  // idempotent: if already uploaded, return public url
+  if (await r2Exists(r2, bucket, key)) {
+    return {
+      archived: true,
+      reason: "already_exists",
+      source_url: sourceUrl,
+      archive_url: `${publicBase}/${key}`,
+    };
+  }
+
+  // download (retry because replicate.delivery can 404 for a while)
+  const res = await fetchWithRetry(sourceUrl, { tries: 12, delayMs: 1500 });
+  const buf = Buffer.from(await res.arrayBuffer());
+
+  // upload
+  await r2Put(r2, bucket, key, buf, "audio/mpeg");
+
+  return {
+    archived: true,
+    reason: "uploaded",
+    source_url: sourceUrl,
+    archive_url: `${publicBase}/${key}`,
+  };
+}
+
+// --------- API Handler ---------
 export default async function handler(req, res) {
   try {
-    if (req.method !== "GET") {
+    if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const KEY = process.env.TOPMEDIAI_API_KEY;
-    if (!KEY) {
-      return res.status(500).json({ ok: false, error: "missing_topmediai_api_key" });
+    const body = req.body || {};
+    const mode = String(body.mode || "").toLowerCase();
+
+    if (!mode) {
+      return res.status(400).json({ ok: false, error: "missing_mode" });
     }
 
-    // Accept ids/provider_job_id/job_id
-    const raw = String(
-      req.query.ids ||
-      req.query.provider_song_ids ||
-      req.query.provider_job_id ||
-      req.query.job_id ||
-      ""
-    ).trim();
+    // --------- CREATE ---------
+    if (mode === "create") {
+      const audio_url = body.audio_url;
+      if (!audio_url) {
+        return res.status(400).json({ ok: false, error: "missing_audio_url" });
+      }
 
-    if (!raw) {
-      return res.status(400).json({ ok: false, error: "missing_job_id" });
-    }
-
-    const provider_song_ids = uniqStrings(raw.includes(",") ? raw.split(",") : [raw]);
-    const provider_job_id = provider_song_ids[0] || raw;
-
-    // --- V3 tasks
-    let v3 = { http_status: 0, raw: null };
-    try {
-      const v3Res = await fetch(
-        `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(provider_song_ids.join(","))}`,
-        {
-          method: "GET",
-          headers: { "accept": "application/json", "x-api-key": KEY },
-        }
+      // Delegate to your existing replicate wrapper
+      // Expect it to return something like: { ok:true, id, status, urls }
+      const createResult = await replicateCreate(
+        { method: "POST", body: { audio_url } },
+        null,
+        { fromInternal: true } // harmless extra hint; your wrapper may ignore
       );
-      const v3Text = await v3Res.text();
-      v3.http_status = v3Res.status;
-      v3.raw = safeJsonParse(v3Text) ?? { _non_json: v3Text };
-    } catch (e) {
-      v3 = { http_status: 0, raw: { _fetch_error: String(e?.message || e) } };
+
+      // In case your wrapper is a normal (req,res) handler, fallback:
+      // If it already wrote to res, createResult may be undefined.
+      if (!createResult) {
+        return res.status(200).json({ ok: true, mode: "create", note: "create_dispatched" });
+      }
+
+      return res.status(200).json({ ok: true, mode: "create", ...createResult });
     }
 
-    // Expect array in: raw.data OR raw.data.data OR raw itself
-    const v3Arr =
-      Array.isArray(v3.raw?.data) ? v3.raw.data :
-      Array.isArray(v3.raw?.data?.data) ? v3.raw.data.data :
-      Array.isArray(v3.raw) ? v3.raw :
-      null;
+    // --------- STATUS (+ ARCHIVE) ---------
+    if (mode === "status") {
+      const id = body.id;
+      if (!id) {
+        return res.status(400).json({ ok: false, error: "missing_id" });
+      }
 
-    let picked = null;
-    if (Array.isArray(v3Arr) && v3Arr.length) {
-      // prefer a READY item (status==0) with audio url
-      picked =
-        v3Arr.find((t) => Number(t?.status) === 0 && extractAudioUrl(t)) ||
-        v3Arr.find((t) => extractAudioUrl(t)) ||
-        v3Arr[0];
+      const statusResult = await replicateStatus(
+        { method: "POST", body: { id } },
+        null,
+        { fromInternal: true }
+      );
+
+      if (!statusResult) {
+        return res.status(200).json({ ok: true, mode: "status", id, note: "status_polled" });
+      }
+
+      const status = statusResult.status || statusResult.state || null;
+      const output = statusResult.output || null;
+
+      // If succeeded and output is an object of stems -> urls
+      // Example output: { bass:"https://replicate.delivery/.../bass.mp3", drums:"...", ... }
+      if (status === "succeeded" && output && typeof output === "object") {
+        const entries = Object.entries(output).filter(
+          ([k, v]) => typeof v === "string" && v.startsWith("http")
+        );
+
+        const archived = {};
+        for (const [stemName, sourceUrl] of entries) {
+          archived[stemName] = await archiveStemToR2({
+            predictionId: id,
+            stemName,
+            sourceUrl,
+          });
+        }
+
+        return res.status(200).json({
+          ok: true,
+          mode: "status",
+          id,
+          status,
+          error: statusResult.error ?? null,
+          logs: statusResult.logs ?? null,
+          // Keep original output, but also return archived map
+          output,
+          archived,
+        });
+      }
+
+      return res.status(200).json({ ok: true, mode: "status", ...statusResult });
     }
 
-    const audioUrl = extractAudioUrl(picked);
-    const failCode = picked?.fail_code ?? picked?.failCode ?? null;
-    const failReason = picked?.fail_reason ?? picked?.failReason ?? null;
-    const statusValue = picked?.status ?? null;
-
-    const state = normalizeState({ audioUrl, statusValue, failCode, failReason });
-
-    // UI convenience
-    const status =
-      state === "COMPLETED" ? "completed" :
-      state === "FAILED" ? "failed" :
-      "processing";
-
-    return res.status(200).json({
-      ok: true,
-      provider: "topmediai",
-      provider_job_id,
-      provider_song_ids,
-      job: { job_id: provider_job_id, status: state },
-      state,
-      status,
-      audio: audioUrl ? { src: audioUrl } : null,
-      topmediai: { v3, picked: picked || null },
-    });
+    // --------- UNKNOWN MODE ---------
+    return res.status(400).json({ ok: false, error: "unknown_mode", mode });
   } catch (err) {
     return res.status(500).json({
       ok: false,
       error: "server_error",
-      detail: err?.message ? String(err.message) : String(err),
+      message: err?.message || String(err),
     });
   }
 }
