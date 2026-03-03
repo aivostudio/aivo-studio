@@ -1138,14 +1138,11 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       const providerBase = String(cardId).split("::")[0];
 
       const q = encodeURIComponent(providerSongId || providerBase);
-const url = providerSongId
-  ? `/api/music/status?provider_job_id=${q}`
-  : `/api/music/status?job_id=${encodeURIComponent(providerBase)}`;
 
-const r = await fetch(url, {
-  cache: "no-store",
-  credentials: "include",
-});
+      const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+        cache: "no-store",
+        credentials: "include",
+      });
 
       let j = null;
       try { j = await r.json(); } catch { j = null; }
