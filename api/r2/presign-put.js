@@ -1,3 +1,4 @@
+// api/r2/presign-put.js
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
@@ -25,9 +26,13 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-  const { filename, contentType, key } = req.body || {};
-    if (!filename || !contentType) {
-      return res.status(400).json({ ok: false, error: "missing_filename_or_contentType" });
+    const { filename, contentType, key: keyFromBody, prefix } = req.body || {};
+    const finalName = String(keyFromBody || filename || "").trim();
+
+    if (!finalName || !contentType) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "missing_filename_or_contentType" });
     }
 
     const ct = String(contentType).toLowerCase();
@@ -84,10 +89,16 @@ export default async function handler(req, res) {
       },
     });
 
-    // uploads/tmp/ altında tutuyoruz (lifecycle 3 gün)
-    const basePrefix = safePrefix(prefix || "uploads/tmp/");
-    const id = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex");
-    const key = `${basePrefix}${Date.now()}-${id}-${safeName(filename)}`;
+    // ✅ key: body’den gelirse aynen kullan; gelmezse uploads/tmp/ altında üret
+    let key = finalName;
+
+    if (!keyFromBody) {
+      const basePrefix = safePrefix(prefix || "uploads/tmp/");
+      const id = crypto.randomUUID
+        ? crypto.randomUUID()
+        : crypto.randomBytes(16).toString("hex");
+      key = `${basePrefix}${Date.now()}-${id}-${safeName(filename || "upload")}`;
+    }
 
     const cmd = new PutObjectCommand({
       Bucket: bucket,
