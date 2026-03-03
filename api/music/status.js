@@ -137,21 +137,26 @@ module.exports = async (req, res) => {
     let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
     let provider_song_ids = [];
 
-    async function readJobObjFromRedis(internalId) {
-      if (!internalId) return null;
+   async function readJobObjFromRedis(internalId) {
+  if (!internalId) return null;
 
-      const k1 = `jobs/${internalId}/job.json`;
-      const t1 = await redis.get(k1);
-      const o1 = t1 ? safeJsonParse(t1) : null;
-      if (o1) return o1;
+  const normalize = (v) =>
+    v && typeof v === "object" && v.result ? v.result : v;
 
-      const k2 = `job:${internalId}`;
-      const t2 = await redis.get(k2);
-      const o2 = t2 ? safeJsonParse(t2) : null;
-      if (o2) return o2;
+  const k1 = `jobs/${internalId}/job.json`;
+  const t1raw = await redis.get(k1);
+  const t1 = normalize(t1raw);
+  const o1 = t1 ? safeJsonParse(t1) : null;
+  if (o1) return o1;
 
-      return null;
-    }
+  const k2 = `job:${internalId}`;
+  const t2raw = await redis.get(k2);
+  const t2 = normalize(t2raw);
+  const o2 = t2 ? safeJsonParse(t2) : null;
+  if (o2) return o2;
+
+  return null;
+}
 
     if (isInternal || looksLikeUUID) {
       const jobObj = await readJobObjFromRedis(internal_job_id);
