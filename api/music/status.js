@@ -218,13 +218,7 @@ module.exports = async (req, res) => {
   return null;
 }
 if (isInternal || looksLikeUUID) {
-  let jobObj = await readJobObjFromRedis(internal_job_id);
-
-  // ✅ KV miss olursa Neon fallback (generate DB’ye meta.internal_job_id yazıyor)
-  if (!jobObj) {
-    const dbObj = await readJobObjFromDB(internal_job_id);
-    if (dbObj) jobObj = dbObj;
-  }
+  const jobObj = await readJobObjFromRedis(internal_job_id);
 
   provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
@@ -240,7 +234,7 @@ if (isInternal || looksLikeUUID) {
   if (provider_song_ids.length === 0 && provider_job_id) {
     provider_song_ids = [String(provider_job_id)];
   }
-}
+
       // 🔥 Fallback: if internal job not found in job store,
 // try resolving via provider_map scan
 if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
