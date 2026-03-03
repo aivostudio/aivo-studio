@@ -91,13 +91,13 @@ function resolveCopyToR2() {
 }
 
 function safeJsonParse(s) {
+  if (s && typeof s === "object") return s; // Redis zaten object döndürüyorsa
   try {
     return JSON.parse(s);
   } catch {
     return null;
   }
 }
-
 function uniqStrings(arr) {
   const out = [];
   const seen = new Set();
