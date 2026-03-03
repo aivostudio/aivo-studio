@@ -439,15 +439,20 @@ function renderCard(job){
     stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` :
     "";
 
+  const px = (u) => {
+    u = String(u || "").trim();
+    return u ? ("/api/media/proxy?url=" + encodeURIComponent(u)) : "";
+  };
+
   const stemsControls =
     (stemsStatus === "succeeded" && stemsOut) ? `
       <div class="aivo-stems">
-        <a class="aivo-stem" href="${esc(stemsOut.vocals || "")}" target="_blank" rel="noopener">Vocals</a>
-        <a class="aivo-stem" href="${esc(stemsOut.drums  || "")}" target="_blank" rel="noopener">Drums</a>
-        <a class="aivo-stem" href="${esc(stemsOut.bass   || "")}" target="_blank" rel="noopener">Bass</a>
-        <a class="aivo-stem" href="${esc(stemsOut.other  || "")}" target="_blank" rel="noopener">Other</a>
-        <a class="aivo-stem" href="${esc(stemsOut.guitar || "")}" target="_blank" rel="noopener">Guitar</a>
-        <a class="aivo-stem" href="${esc(stemsOut.piano  || "")}" target="_blank" rel="noopener">Piano</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || ""))}" download>Vocals</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.drums  || ""))}" download>Drums</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.bass   || ""))}" download>Bass</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.other  || ""))}" download>Other</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.guitar || ""))}" download>Guitar</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.piano  || ""))}" download>Piano</a>
       </div>
     ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
       <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
@@ -506,7 +511,6 @@ function renderCard(job){
   </div>
 </div>`;
 }
-
 function applyMusicSearchFilter(){
   const q = String(__searchQ || "").trim();
   const cards = (listEl || document).querySelectorAll(".aivo-player-card");
