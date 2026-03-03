@@ -17,6 +17,27 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const input = body.input || { prompt: "a futuristic neon city at night" };
 
+    // ✅ WAV (44.1k) default: only for audio-style inputs (stems/separation)
+    // If model supports these fields, it will output WAV instead of MP3.
+    const looksLikeAudioJob =
+      !!input.audio ||
+      !!input.audio_url ||
+      !!input.audioUrl ||
+      !!input.song_url ||
+      !!input.songUrl ||
+      !!input.file ||
+      !!input.media_url ||
+      !!input.mediaUrl;
+
+    if (looksLikeAudioJob) {
+      // prefer not to override if caller explicitly set something
+      if (input.output_format == null) input.output_format = "wav";
+      if (input.audio_format == null) input.audio_format = "wav";
+      if (input.format == null) input.format = "wav";
+      if (input.sample_rate == null) input.sample_rate = 44100;
+      if (input.samplerate == null) input.samplerate = 44100;
+    }
+
     const r = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
@@ -44,6 +65,7 @@ export default async function handler(req, res) {
       status: data.status,
       output: data.output ?? null,
       replicate: data,
+      sent_input: input, // debug: confirm wav params actually sent
     });
   } catch (err) {
     return res.status(500).json({
