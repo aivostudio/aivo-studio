@@ -221,6 +221,7 @@ module.exports = async (req, res) => {
     const outputsIndexKey = `jobs/${internal_job_id}/outputs/index.json`;
     const jobKey = `job:${internal_job_id}`;
     const providerMapKey = `provider_map:${provider_job_id}`;
+    const internalMapKey = `internal_map:${internal_job_id}`;
 
     // 1) provider -> internal mapping
     await redis.set(
@@ -232,6 +233,16 @@ module.exports = async (req, res) => {
         provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       })
     );
+    // ✅ NEW: internal -> provider reverse mapping (status?job_id=job_... için)
+await redis.set(
+  internalMapKey,
+  JSON.stringify({
+    internal_job_id,
+    provider_job_id,
+    provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+    created_at: nowISO(),
+  })
+);
 
     // 2) provider meta (debug)
     await redis.set(
