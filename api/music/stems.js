@@ -15,7 +15,9 @@ module.exports = async function handler(req, res) {
     const predictionId = String(body.prediction_id || body.id || "").trim();
     const audioUrl = String(body.audio_url || body.audio || "").trim();
 
-    // ---- (B) Status / poll ----
+    // =========================
+    // (B) STATUS / POLL
+    // =========================
     if (predictionId) {
       const r = await fetch(
         `https://api.replicate.com/v1/predictions/${encodeURIComponent(predictionId)}`,
@@ -29,6 +31,7 @@ module.exports = async function handler(req, res) {
       );
 
       const j = await r.json().catch(() => null);
+
       if (!r.ok) {
         return res.status(r.status).json({
           ok: false,
@@ -41,20 +44,23 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         ok: true,
         mode: "status",
-        id: j?.id,
-        status: j?.status,
+        id: j?.id || null,
+        status: j?.status || null,
         output: j?.output || null,
         error: j?.error || null,
-        logs: j?.logs || null,
       });
     }
 
-    // ---- (A) Create ----
+    // =========================
+    // (A) CREATE
+    // =========================
     if (!audioUrl || !/^https?:\/\//i.test(audioUrl)) {
-      return res.status(400).json({ ok: false, error: "missing_or_invalid_audio_url" });
+      return res.status(400).json({
+        ok: false,
+        error: "missing_or_invalid_audio_url",
+      });
     }
 
-    // cjwbw/demucs (htdemucs_6s)
     const DEMUCS_VERSION =
       "25a173108cff36ef9f80f854c162d01df9e6528be175794b81158fa03836d953";
 
@@ -81,6 +87,7 @@ module.exports = async function handler(req, res) {
     });
 
     const j = await r.json().catch(() => null);
+
     if (!r.ok) {
       return res.status(r.status).json({
         ok: false,
@@ -93,8 +100,8 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       mode: "create",
-      id: j?.id,
-      status: j?.status,
+      id: j?.id || null,
+      status: j?.status || null,
       urls: j?.urls || null,
     });
   } catch (err) {
