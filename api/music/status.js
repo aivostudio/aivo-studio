@@ -1,3 +1,55 @@
+const { neon } = require("@neondatabase/serverless");
+
+function pickConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    ""
+  );
+}
+
+async function readJobObjFromDB(internalId) {
+  const conn = pickConn();
+  if (!conn) return null;
+
+  try {
+    const sql = neon(conn);
+
+    const rows = await sql`
+      select request_id, meta
+      from jobs
+      where meta->>'internal_job_id' = ${internalId}
+      order by created_at desc
+      limit 1
+    `;
+
+    const row = rows?.[0];
+    if (!row) return null;
+
+    const provider_job_id = row.request_id ? String(row.request_id) : "";
+    const meta = row.meta || {};
+
+    const idsRaw =
+      meta.provider_song_ids ||
+      meta.providerSongIds ||
+      meta.song_ids ||
+      meta.songIds ||
+      [];
+
+    const provider_song_ids = Array.isArray(idsRaw)
+      ? idsRaw.map((x) => String(x)).filter(Boolean)
+      : [];
+
+    return {
+      provider_job_id: provider_job_id || null,
+      provider_song_ids: provider_song_ids.length ? provider_song_ids : null,
+    };
+  } catch {
+    return null;
+  }
+}
 // api/music/status.js
 // Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
 // FIX: Provider audio_url 302 redirect (audiopipe.suno.ai) -> duration Infinity/NaN + progress bar kırılıyor.
@@ -165,24 +217,30 @@ module.exports = async (req, res) => {
 
   return null;
 }
+if (isInternal || looksLikeUUID) {
+  let jobObj = await readJobObjFromRedis(internal_job_id);
 
-    if (isInternal || looksLikeUUID) {
-      const jobObj = await readJobObjFromRedis(internal_job_id);
+  // ✅ KV miss olursa Neon fallback (generate DB’ye meta.internal_job_id yazıyor)
+  if (!jobObj) {
+    const dbObj = await readJobObjFromDB(internal_job_id);
+    if (dbObj) jobObj = dbObj;
+  }
 
-      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+  provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-      const idsRaw =
-        jobObj?.provider_song_ids ||
-        jobObj?.providerSongIds ||
-        jobObj?.song_ids ||
-        jobObj?.songIds ||
-        [];
+  const idsRaw =
+    jobObj?.provider_song_ids ||
+    jobObj?.providerSongIds ||
+    jobObj?.song_ids ||
+    jobObj?.songIds ||
+    [];
 
-      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+  provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
 
-      if (provider_song_ids.length === 0 && provider_job_id) {
-        provider_song_ids = [String(provider_job_id)];
-      }
+  if (provider_song_ids.length === 0 && provider_job_id) {
+    provider_song_ids = [String(provider_job_id)];
+  }
+}
       // 🔥 Fallback: if internal job not found in job store,
 // try resolving via provider_map scan
 if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
