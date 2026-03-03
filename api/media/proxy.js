@@ -11,12 +11,18 @@ const ALLOWED_HOSTS = new Set([
   "www.file-examples.com",       // test
 ]);
 
+function safeFilename(name){
+  const n = String(name || "").trim();
+  if (!n) return "";
+  return n.replace(/[\/\\?%*:|"<>]/g, "_").slice(0, 180);
+}
+
 module.exports = async (req, res) => {
   try {
     // ✅ CORS (Safari/Chrome sorunsuz)
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Range,Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Range,Content-Type,Content-Disposition");
 
     if (req.method === "OPTIONS") {
       return res.status(200).end();
@@ -80,6 +86,16 @@ module.exports = async (req, res) => {
     else res.setHeader("Accept-Ranges", "bytes");
 
     res.setHeader("Cache-Control", "no-store");
+
+    // ✅ download zorla: ?filename=Vocals.wav gibi
+    const filenameRaw = String(req.query.filename || "").trim();
+    const filename = safeFilename(filenameRaw);
+    if (filename) {
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+      );
+    }
 
     if (req.method === "HEAD") {
       return res.end();
