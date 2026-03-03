@@ -483,7 +483,11 @@ function renderCard(job){
   </div>
 
   <div class="aivo-player-actions">
-    <button class="aivo-action" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">⋯</button>
+   <button class="aivo-action is-accent" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+    <path d="M4 12h4M10 12h4M16 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+</button>
     <button class="aivo-action is-blue" data-action="download" title="Dosyayı İndir" aria-label="Dosyayı İndir">⬇</button>
     <button class="aivo-action is-accent" data-action="extend" title="Süreyi Uzat" aria-label="Süreyi Uzat">⟲</button>
    <button class="aivo-action" data-action="lyrics" title="Şarkı Sözleri" aria-label="Şarkı Sözleri">
