@@ -444,44 +444,22 @@ function renderCard(job){
     return u ? ("/api/media/proxy?url=" + encodeURIComponent(u)) : "";
   };
 
-   const stemsControls =
+  const stemsControls =
     (stemsStatus === "succeeded" && stemsOut) ? `
-      <div class="aivo-stems" data-stems="1">
-        <button class="aivo-stem" type="button"
-          data-action="stems-download"
-          data-stem-name="vocals"
-          data-url="${esc(stemsOut.vocals || "")}">Vocals</button>
-
-        <button class="aivo-stem" type="button"
-          data-action="stems-download"
-          data-stem-name="drums"
-          data-url="${esc(stemsOut.drums || "")}">Drums</button>
-
-        <button class="aivo-stem" type="button"
-          data-action="stems-download"
-          data-stem-name="bass"
-          data-url="${esc(stemsOut.bass || "")}">Bass</button>
-
-        <button class="aivo-stem" type="button"
-          data-action="stems-download"
-          data-stem-name="other"
-          data-url="${esc(stemsOut.other || "")}">Other</button>
-
-        <button class="aivo-stem" type="button"
-          data-action="stems-download"
-          data-stem-name="guitar"
-          data-url="${esc(stemsOut.guitar || "")}">Guitar</button>
-
-        <button class="aivo-stem" type="button"
-          data-action="stems-download"
-          data-stem-name="piano"
-          data-url="${esc(stemsOut.piano || "")}">Piano</button>
+      <div class="aivo-stems">
+        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || ""))}" download>Vocals</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.drums  || ""))}" download>Drums</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.bass   || ""))}" download>Bass</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.other  || ""))}" download>Other</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.guitar || ""))}" download>Guitar</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.piano  || ""))}" download>Piano</a>
       </div>
     ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
       <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
     ` : stemsStatus === "failed" ? `
       <div class="aivo-stems aivo-stems-status">Stems hata</div>
     ` : "";
+
   return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
