@@ -181,7 +181,7 @@ if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
   // provider_map keys are stored as: provider_map:<provider_job_id>
   // we don't know provider_job_id yet, so we must try scanning via known pattern
 
-  const keys = await redis.keys("provider_map:*");
+ const keys = await redis.keys("provider_map:*");
   for (const key of keys) {
     const rawMap = await redis.get(key);
     const normalized =
@@ -237,6 +237,21 @@ const mapObj = normalized ? safeJsonParse(normalized) : null;
 
           if (internal_job_id) {
             const jobObj = await readJobObjFromRedis(internal_job_id);
+            // fallback: read mapping written by /api/music/generate.js
+if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && internal_job_id) {
+  const tMap = await redis.get(`internal_map:${internal_job_id}`);
+  const oMap = tMap ? safeJsonParse(tMap) : null;
+  if (oMap) {
+    provider_job_id = String(oMap.provider_job_id || "").trim() || provider_job_id;
+    const idsRaw =
+      oMap.provider_song_ids ||
+      oMap.providerSongIds ||
+      oMap.song_ids ||
+      oMap.songIds ||
+      [];
+    provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : provider_song_ids;
+  }
+}
 
             const idsRaw =
               jobObj?.provider_song_ids ||
