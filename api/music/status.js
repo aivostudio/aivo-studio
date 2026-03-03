@@ -86,8 +86,7 @@ function getBaseUrl(req) {
     (req.headers["x-forwarded-proto"] ? String(req.headers["x-forwarded-proto"]) : "")
       .split(",")[0]
       .trim() || "https";
-  const host =
-    (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
+  const host = (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
     (req.headers.host ? String(req.headers.host) : "");
   return `${proto}://${host}`;
 }
@@ -98,53 +97,6 @@ function toProxyUrl(req, rawUrl) {
   if (!u) return null;
   return `${base}/api/media/proxy?url=${encodeURIComponent(u)}`;
 }
-
-// ---- STEMS helpers (sadece ek) ----
-function normalizeStemsCandidate(item) {
-  const stemsRaw =
-    item?.stems ||
-    item?.stem_urls ||
-    item?.stemUrls ||
-    item?.stems_urls ||
-    item?.stemsUrls ||
-    item?.tracks ||
-    item?.separated_tracks ||
-    null;
-
-  // object map: { vocals: url, drums: url }
-  if (stemsRaw && typeof stemsRaw === "object" && !Array.isArray(stemsRaw)) {
-    const out = [];
-    for (const [name, url] of Object.entries(stemsRaw)) {
-      const u = String(url || "").trim();
-      const n = String(name || "").trim();
-      if (!u || !n) continue;
-      out.push({ name: n, url: u });
-    }
-    return out.length ? out : null;
-  }
-
-  // array: [{ name, url }] or [{ type, audio_url }]
-  if (Array.isArray(stemsRaw) && stemsRaw.length) {
-    const out = [];
-    for (const s of stemsRaw) {
-      const name = String(s?.name || s?.type || s?.key || s?.stem || "").trim();
-      const url = String(s?.url || s?.audio_url || s?.audioUrl || s?.audio || "").trim();
-      if (!name || !url) continue;
-      out.push({ name, url });
-    }
-    return out.length ? out : null;
-  }
-
-  return null;
-}
-
-function buildStemR2Key({ provider_job_id, trackId, stemName }) {
-  const pj = String(provider_job_id || "unknown").trim() || "unknown";
-  const tid = String(trackId || "track").trim() || "track";
-  const sn = String(stemName || "stem").trim() || "stem";
-  return `outputs/music/${pj}/${tid}/stems/${sn}.mp3`;
-}
-// ---- /STEMS helpers ----
 
 module.exports = async (req, res) => {
   // build stamp
@@ -397,69 +349,6 @@ module.exports = async (req, res) => {
             }
           }
 
-          // ---- STEMS auto-archive (sadece ek) ----
-          // item içinde stems varsa, her stem URL'i için aynı archive mantığını uygularız.
-          // Normal mp3 akışına dokunmaz; sadece meta'ya stems ekler.
-          const stemsList = normalizeStemsCandidate(item);
-          let stems = null;
-
-          if (stemsList && stemsList.length) {
-            stems = [];
-            for (const s of stemsList) {
-              const stemName = String(s?.name || "").trim();
-              const stemUrl = String(s?.url || "").trim();
-              if (!stemName || !stemUrl) continue;
-
-              // default: SAME-ORIGIN proxy
-              let stemFinalUrl = toProxyUrl(req, stemUrl);
-              let stemArchiveUrl = null;
-
-              if (copyToR2) {
-                const stemKey = buildStemR2Key({
-                  provider_job_id,
-                  trackId: trackId || provider_job_id,
-                  stemName,
-                });
-
-                try {
-                  const rr = await copyToR2({
-                    url: stemUrl,
-                    key: stemKey,
-                    contentType: guessContentTypeFromUrl(stemUrl),
-                  });
-
-                  stemArchiveUrl =
-                    (typeof rr === "string" ? rr : null) ||
-                    rr?.public_url ||
-                    rr?.url ||
-                    rr?.archive_url ||
-                    null;
-
-                  if (stemArchiveUrl) {
-                    stemFinalUrl = stemArchiveUrl;
-                  } else {
-                    archiveWarning = archiveWarning || "copy_to_r2_stem_no_url_returned";
-                  }
-                } catch (e) {
-                  archiveWarning = `copy_to_r2_stem_failed:${String(e?.message || e)}`;
-                }
-              }
-
-              stems.push({
-                name: stemName,
-                url: stemFinalUrl,
-                meta: {
-                  provider_url: stemUrl,
-                  archive_url: stemArchiveUrl,
-                  archived_at: stemArchiveUrl ? nowIso() : null,
-                },
-              });
-            }
-
-            if (stems && stems.length === 0) stems = null;
-          }
-          // ---- /STEMS auto-archive ----
-
           outputs.push({
             type: "audio",
             url: finalUrl, // ✅ SAME-ORIGIN proxy OR R2 archive
@@ -472,8 +361,6 @@ module.exports = async (req, res) => {
               archived_at: archive_url ? nowIso() : null,
               // provider duration bazen -1 geliyor, yine de meta'ya koyuyoruz (UI isterse kullanır)
               duration: typeof item?.duration === "number" ? item.duration : null,
-              // stems varsa ek olarak döner
-              stems: stems || null,
             },
           });
         }
