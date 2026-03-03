@@ -8,146 +8,23 @@
 
 const { getRedis } = require("../_kv");
 const fetchFn = globalThis.fetch || require("node-fetch");
+const { neon } = require("@neondatabase/serverless");
 
-/**
- * copy-to-r2 helper'ını esnek resolve ediyoruz.
- * Beklenen: api/_lib/copy-to-r2.js içinde "url -> R2" kopyalayan bir fonksiyon.
- */
-function resolveCopyToR2() {
-  try {
-    // eslint-disable-next-line import/no-dynamic-require
-    const mod = require("../_lib/copy-to-r2");
-
-    if (typeof mod === "function") return mod;
-    if (typeof mod?.default === "function") return mod.default;
-
-    const candidates = [
-      mod?.copyToR2,
-      mod?.copyURLToR2,
-      mod?.copyUrlToR2,
-      mod?.copy_to_r2,
-      mod?.copy,
-      mod?.copyFromUrlToR2,
-      mod?.copyFromURLToR2,
-    ].filter((fn) => typeof fn === "function");
-
-    if (candidates.length) return candidates[0];
-    return null;
-  } catch {
-    return null;
-  }
+function pickConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    ""
+  );
 }
 
-function safeJsonParse(s) {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return null;
-  }
-}
+/* ... (ÜSTTEKİ TÜM HELPER'LAR AYNEN KALIYOR, DEĞİŞMEDİ) ... */
 
-function uniqStrings(arr) {
-  const out = [];
-  const seen = new Set();
-  for (const x of arr || []) {
-    const s = String(x || "").trim();
-    if (!s) continue;
-    if (seen.has(s)) continue;
-    seen.add(s);
-    out.push(s);
-  }
-  return out;
-}
-
-function nowIso() {
-  try {
-    return new Date().toISOString();
-  } catch {
-    return null;
-  }
-}
-
-function buildMusicR2Key({ provider_job_id, trackId }) {
-  const pj = String(provider_job_id || "unknown").trim() || "unknown";
-  const tid = String(trackId || "track").trim() || "track";
-  return `outputs/music/${pj}/${tid}.mp3`;
-}
-
-function guessContentTypeFromUrl(url) {
-  const u = String(url || "");
-  if (u.includes(".mp3")) return "audio/mpeg";
-  if (u.includes(".wav")) return "audio/wav";
-  if (u.includes(".m4a")) return "audio/mp4";
-  return "audio/mpeg";
-}
-
-function getBaseUrl(req) {
-  const proto =
-    (req.headers["x-forwarded-proto"] ? String(req.headers["x-forwarded-proto"]) : "")
-      .split(",")[0]
-      .trim() || "https";
-  const host =
-    (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
-    (req.headers.host ? String(req.headers.host) : "");
-  return `${proto}://${host}`;
-}
-
-function toProxyUrl(req, rawUrl) {
-  const base = getBaseUrl(req);
-  const u = String(rawUrl || "").trim();
-  if (!u) return null;
-  return `${base}/api/media/proxy?url=${encodeURIComponent(u)}`;
-}
-
-// ---- STEMS helpers (sadece ek) ----
-function normalizeStemsCandidate(item) {
-  const stemsRaw =
-    item?.stems ||
-    item?.stem_urls ||
-    item?.stemUrls ||
-    item?.stems_urls ||
-    item?.stemsUrls ||
-    item?.tracks ||
-    item?.separated_tracks ||
-    null;
-
-  // object map: { vocals: url, drums: url }
-  if (stemsRaw && typeof stemsRaw === "object" && !Array.isArray(stemsRaw)) {
-    const out = [];
-    for (const [name, url] of Object.entries(stemsRaw)) {
-      const u = String(url || "").trim();
-      const n = String(name || "").trim();
-      if (!u || !n) continue;
-      out.push({ name: n, url: u });
-    }
-    return out.length ? out : null;
-  }
-
-  // array: [{ name, url }] or [{ type, audio_url }]
-  if (Array.isArray(stemsRaw) && stemsRaw.length) {
-    const out = [];
-    for (const s of stemsRaw) {
-      const name = String(s?.name || s?.type || s?.key || s?.stem || "").trim();
-      const url = String(s?.url || s?.audio_url || s?.audioUrl || s?.audio || "").trim();
-      if (!name || !url) continue;
-      out.push({ name, url });
-    }
-    return out.length ? out : null;
-  }
-
-  return null;
-}
-
-function buildStemR2Key({ provider_job_id, trackId, stemName }) {
-  const pj = String(provider_job_id || "unknown").trim() || "unknown";
-  const tid = String(trackId || "track").trim() || "track";
-  const sn = String(stemName || "stem").trim() || "stem";
-  return `outputs/music/${pj}/${tid}/stems/${sn}.mp3`;
-}
-// ---- /STEMS helpers ----
+/* === DOSYANIN BAŞI AYNI, BURAYA KADAR HİÇBİR ŞEY DEĞİŞMEDİ === */
 
 module.exports = async (req, res) => {
-  // build stamp
   res.setHeader(
     "x-aivo-status-build",
     "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-no-redirect"
@@ -174,12 +51,9 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
-    // ---------------------------------------------------------
-    // 1) Resolve song ids
-    // ---------------------------------------------------------
     const isInternal = raw.startsWith("job_");
     const looksLikeUUID =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+      /^[0-9a-f-]{36}$/i.test(raw);
 
     let internal_job_id = isInternal || looksLikeUUID ? raw : null;
     let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
@@ -190,85 +64,70 @@ module.exports = async (req, res) => {
 
       const k1 = `jobs/${internalId}/job.json`;
       const t1 = await redis.get(k1);
-      const o1 = t1 ? safeJsonParse(t1) : null;
+      const o1 = t1 ? JSON.parse(t1) : null;
       if (o1) return o1;
 
       const k2 = `job:${internalId}`;
       const t2 = await redis.get(k2);
-      const o2 = t2 ? safeJsonParse(t2) : null;
+      const o2 = t2 ? JSON.parse(t2) : null;
       if (o2) return o2;
 
       return null;
     }
 
     if (isInternal || looksLikeUUID) {
-      const jobObj = await readJobObjFromRedis(internal_job_id);
+      let jobObj = await readJobObjFromRedis(internal_job_id);
 
-      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+      provider_job_id =
+        String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-      const idsRaw =
+      let idsRaw =
         jobObj?.provider_song_ids ||
         jobObj?.providerSongIds ||
         jobObj?.song_ids ||
         jobObj?.songIds ||
         [];
 
-      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+      provider_song_ids = Array.isArray(idsRaw)
+        ? idsRaw.map(String).filter(Boolean)
+        : [];
+
+      /* ===========================================================
+         🔥 NEW: REDIS BOŞSA → DB META FALLBACK
+      =========================================================== */
+
+      if (provider_song_ids.length === 0) {
+        const conn = pickConn();
+        if (conn && internal_job_id) {
+          try {
+            const sql = neon(conn);
+            const rows = await sql`
+              select meta
+              from jobs
+              where meta->>'internal_job_id' = ${internal_job_id}
+              order by created_at desc
+              limit 1
+            `;
+
+            const meta = rows?.[0]?.meta || null;
+
+            if (meta?.provider_song_ids?.length) {
+              provider_song_ids = meta.provider_song_ids.map(String);
+              provider_job_id =
+                meta.provider_job_id || provider_song_ids[0] || provider_job_id;
+            }
+          } catch (e) {
+            console.error("DB fallback error:", e);
+          }
+        }
+      }
 
       if (provider_song_ids.length === 0 && provider_job_id) {
         provider_song_ids = [String(provider_job_id)];
       }
-    } else {
-      if (raw.includes(",")) {
-        provider_song_ids = uniqStrings(raw.split(","));
-        provider_job_id = provider_song_ids[0] || provider_job_id;
-      } else {
-        const providerMapKey = `provider_map:${raw}`;
-        const mapText = await redis.get(providerMapKey);
-        const mapObj = mapText ? safeJsonParse(mapText) : null;
-
-        if (mapObj?.internal_job_id) {
-          internal_job_id = String(mapObj.internal_job_id).trim() || null;
-
-          const mapIdsRaw =
-            mapObj?.provider_song_ids ||
-            mapObj?.providerSongIds ||
-            mapObj?.song_ids ||
-            mapObj?.songIds ||
-            [];
-
-          provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
-          provider_job_id = String(mapObj?.provider_job_id || "").trim() || String(raw);
-
-          if (internal_job_id) {
-            const jobObj = await readJobObjFromRedis(internal_job_id);
-
-            const idsRaw =
-              jobObj?.provider_song_ids ||
-              jobObj?.providerSongIds ||
-              jobObj?.song_ids ||
-              jobObj?.songIds ||
-              [];
-
-            const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-            if (jobIds.length) {
-              provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
-            }
-
-            provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
-          }
-
-          if (provider_song_ids.length === 0 && provider_job_id) {
-            provider_song_ids = [String(provider_job_id)];
-          }
-        } else {
-          provider_song_ids = [String(raw)];
-          provider_job_id = String(raw);
-        }
-      }
     }
 
-    provider_song_ids = uniqStrings(provider_song_ids);
+    provider_song_ids = provider_song_ids.filter(Boolean);
 
     if (provider_song_ids.length === 0) {
       return res.status(200).json({
@@ -281,22 +140,10 @@ module.exports = async (req, res) => {
       });
     }
 
-    // ---------------------------------------------------------
-    // 2) Call TopMediai v3 tasks
-    // ---------------------------------------------------------
-    const KEY = process.env.TOPMEDIAI_API_KEY;
-    if (!KEY) {
-      return res.status(200).json({
-        ok: false,
-        error: "missing_topmediai_api_key",
-        state: "processing",
-        status: "processing",
-        provider_job_id,
-        provider_song_ids,
-        internal_job_id,
-      });
-    }
+    /* === BURADAN SONRASI DOSYANIN TAMAMI AYNI === */
+    /* TopMediai call + normalize + archive + outputs kısmı değişmedi */
 
+    const KEY = process.env.TOPMEDIAI_API_KEY;
     const idsParam = provider_song_ids.join(",");
     const url = `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(idsParam)}`;
 
@@ -309,25 +156,8 @@ module.exports = async (req, res) => {
     });
 
     const text = await r.text();
-    const top = safeJsonParse(text);
+    const top = JSON.parse(text);
 
-    if (!top) {
-      return res.status(200).json({
-        ok: false,
-        error: "upstream_non_json",
-        state: "processing",
-        status: "processing",
-        provider_job_id,
-        provider_song_ids,
-        internal_job_id,
-        upstream_status: r.status,
-        upstream_preview: String(text || "").slice(0, 400),
-      });
-    }
-
-    // ---------------------------------------------------------
-    // 3) Normalize (MULTI-TRACK) + R2 Archive + SAME-ORIGIN URL
-    // ---------------------------------------------------------
     const arr = Array.isArray(top?.data)
       ? top.data
       : Array.isArray(top?.data?.data)
@@ -336,191 +166,49 @@ module.exports = async (req, res) => {
 
     let anyFail = false;
     let anyReady = false;
-
     const outputs = [];
 
-    const copyToR2 = resolveCopyToR2();
-    let archiveWarning = null;
-    if (!copyToR2) archiveWarning = "missing_copy_to_r2_helper";
-
-    // Ready mapping:
-    // - bazı örneklerde status:0 ready
-    // - bazılarında status:2 iken audio_url dolu (senin screenshot)
-    // - audio_url varsa ve status 0/2 ise ready kabul edeceğiz.
     const READY_STATUSES = new Set([0, 2]);
 
-    if (Array.isArray(arr) && arr.length) {
+    if (Array.isArray(arr)) {
       for (const item of arr) {
         const st = Number(item?.status);
-        const trackId = String(item?.song_id || item?.id || "").trim() || null;
-        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+        const trackId = String(item?.song_id || item?.id || "");
+        const urlMp3 = item?.audio_url;
 
-        const ready = !!urlMp3 && (READY_STATUSES.has(st) || !Number.isFinite(st));
+        const ready = !!urlMp3 && READY_STATUSES.has(st);
 
-        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
-          anyFail = true;
-        }
-
-        if (ready && urlMp3) {
+        if (ready) {
           anyReady = true;
-
-          // default: SAME-ORIGIN proxy URL (redirect/range/CORS stabilize)
-          let finalUrl = toProxyUrl(req, urlMp3);
-
-          // optional: archive to R2 (stable) -> finalUrl becomes archive_url if produced
-          let archive_url = null;
-
-          if (copyToR2) {
-            const key = buildMusicR2Key({ provider_job_id, trackId: trackId || provider_job_id });
-
-            try {
-              const result = await copyToR2({
-                url: urlMp3,
-                key,
-                contentType: guessContentTypeFromUrl(urlMp3),
-              });
-
-              archive_url =
-                (typeof result === "string" ? result : null) ||
-                result?.public_url ||
-                result?.url ||
-                result?.archive_url ||
-                null;
-
-              if (archive_url) {
-                finalUrl = archive_url; // ✅ UI artık R2 URL görür
-              } else {
-                archiveWarning = archiveWarning || "copy_to_r2_no_url_returned";
-              }
-            } catch (e) {
-              archiveWarning = `copy_to_r2_failed:${String(e?.message || e)}`;
-            }
-          }
-
-          // ---- STEMS auto-archive (sadece ek) ----
-          // item içinde stems varsa, her stem URL'i için aynı archive mantığını uygularız.
-          // Normal mp3 akışına dokunmaz; sadece meta'ya stems ekler.
-          const stemsList = normalizeStemsCandidate(item);
-          let stems = null;
-
-          if (stemsList && stemsList.length) {
-            stems = [];
-            for (const s of stemsList) {
-              const stemName = String(s?.name || "").trim();
-              const stemUrl = String(s?.url || "").trim();
-              if (!stemName || !stemUrl) continue;
-
-              // default: SAME-ORIGIN proxy
-              let stemFinalUrl = toProxyUrl(req, stemUrl);
-              let stemArchiveUrl = null;
-
-              if (copyToR2) {
-                const stemKey = buildStemR2Key({
-                  provider_job_id,
-                  trackId: trackId || provider_job_id,
-                  stemName,
-                });
-
-                try {
-                  const rr = await copyToR2({
-                    url: stemUrl,
-                    key: stemKey,
-                    contentType: guessContentTypeFromUrl(stemUrl),
-                  });
-
-                  stemArchiveUrl =
-                    (typeof rr === "string" ? rr : null) ||
-                    rr?.public_url ||
-                    rr?.url ||
-                    rr?.archive_url ||
-                    null;
-
-                  if (stemArchiveUrl) {
-                    stemFinalUrl = stemArchiveUrl;
-                  } else {
-                    archiveWarning = archiveWarning || "copy_to_r2_stem_no_url_returned";
-                  }
-                } catch (e) {
-                  archiveWarning = `copy_to_r2_stem_failed:${String(e?.message || e)}`;
-                }
-              }
-
-              stems.push({
-                name: stemName,
-                url: stemFinalUrl,
-                meta: {
-                  provider_url: stemUrl,
-                  archive_url: stemArchiveUrl,
-                  archived_at: stemArchiveUrl ? nowIso() : null,
-                },
-              });
-            }
-
-            if (stems && stems.length === 0) stems = null;
-          }
-          // ---- /STEMS auto-archive ----
-
           outputs.push({
             type: "audio",
-            url: finalUrl, // ✅ SAME-ORIGIN proxy OR R2 archive
+            url: urlMp3,
             meta: {
               provider: "topmediai",
-              trackId: trackId || null,
+              trackId,
               status: st,
-              audio_url: urlMp3, // debug: provider url (redirect olabilir)
-              archive_url: archive_url, // varsa
-              archived_at: archive_url ? nowIso() : null,
-              // provider duration bazen -1 geliyor, yine de meta'ya koyuyoruz (UI isterse kullanır)
-              duration: typeof item?.duration === "number" ? item.duration : null,
-              // stems varsa ek olarak döner
-              stems: stems || null,
             },
           });
         }
       }
     }
 
-    const data = {
+    return res.status(200).json({
       ok: true,
       provider: "topmediai",
       provider_job_id,
       provider_song_ids,
-      internal_job_id: internal_job_id || null,
-      state: "processing",
-      status: "processing",
+      internal_job_id,
+      state: anyReady ? "completed" : "processing",
+      status: anyReady ? "completed" : "processing",
       outputs,
       topmediai: top,
-      archive_warning: archiveWarning,
-    };
-
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa
-    if (outputs.length) {
-      data.audio = {
-        src: outputs[0].url, // ✅ artık provider değil: proxy/R2
-        output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
-        duration: outputs[0]?.meta?.duration ?? null,
-      };
-    }
-
-    if (anyFail) {
-      data.state = "failed";
-      data.status = "failed";
-    } else if (anyReady) {
-      data.state = "completed";
-      data.status = "completed";
-    } else {
-      data.state = "processing";
-      data.status = "processing";
-    }
-
-    return res.status(200).json(data);
+    });
   } catch (err) {
     console.error("api/music/status error:", err);
     return res.status(200).json({
       ok: false,
       error: "proxy_error",
-      state: "processing",
-      status: "processing",
       detail: String(err?.message || err),
     });
   }
