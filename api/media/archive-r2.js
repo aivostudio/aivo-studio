@@ -28,6 +28,16 @@ function safeName(s) {
     .slice(0, 180);
 }
 
+function safeFolder(s) {
+  // folder için "/" istemiyoruz; sadece basit slug
+  return String(s || "stems")
+    .trim()
+    .replace(/[^\w.\-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60) || "stems";
+}
+
 function guessContentTypeByName(name) {
   const n = String(name || "").toLowerCase();
   if (n.endsWith(".wav")) return "audio/wav";
@@ -71,7 +81,7 @@ module.exports = async (req, res) => {
     }
 
     // İsim / klasör
-    const folder = safeName(body.folder || "stems");
+    const folder = safeFolder(body.folder || "stems");
     const filename = safeName(body.filename || "audio.wav");
     const extCt = guessContentTypeByName(filename);
 
@@ -83,7 +93,6 @@ module.exports = async (req, res) => {
       method: "GET",
       redirect: "follow",
       headers: {
-        // bazı CDN'ler için işe yarıyor
         "User-Agent": "aivo-archive/1.0",
       },
     });
@@ -101,27 +110,28 @@ module.exports = async (req, res) => {
     const upstreamCT = upstream.headers.get("content-type") || "";
     if (!contentType && upstreamCT) contentType = upstreamCT;
 
-    if (!contentType) {
-      // son çare
-      contentType = "application/octet-stream";
-    }
+    if (!contentType) contentType = "application/octet-stream";
 
     const upstreamLen = upstream.headers.get("content-length");
     const contentLength = upstreamLen && /^\d+$/.test(upstreamLen) ? upstreamLen : "";
 
     // 2) R2 presign al
-    // Not: presign-put endpoint'inizin JSON beklediğini varsayıyoruz:
-    // POST /api/r2/presign-put  { key, contentType }
+    // presign-put beklenen: { filename, contentType, key? }
     const key = `outputs/${folder}/${Date.now()}-${filename}`;
 
     const pres = await fetch("https://aivo.tr/api/r2/presign-put", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ key, contentType }),
+      body: JSON.stringify({
+        filename,
+        contentType,
+        key,
+      }),
     });
 
     const presJ = await pres.json().catch(() => null);
-    if (!pres.ok || !presJ || !presJ.upload_url || !presJ.public_url) {
+
+    if (!pres.ok || !presJ || !presJ.ok) {
       return res.status(500).json({
         ok: false,
         error: "presign_failed",
@@ -130,26 +140,37 @@ module.exports = async (req, res) => {
       });
     }
 
-    const uploadUrl = String(presJ.upload_url);
-    const publicUrl = String(presJ.public_url);
+    // ✅ BURASI: upload_url/public_url değişkenlerini doğru al
+    const { upload_url, public_url, key: outKey } = presJ;
+
+    if (!upload_url || !public_url) {
+      return res.status(500).json({
+        ok: false,
+        error: "presign_missing_urls",
+        presign_response: presJ,
+      });
+    }
+
+    const uploadUrl = String(upload_url);
+    const publicUrl = String(public_url);
+    const finalKey = String(outKey || key);
 
     // 3) Stream ederek R2'ye PUT
-    // Vercel/Node fetch: upstream.body çoğu durumda stream olarak geçer.
-    const putHeaders = {
-      "Content-Type": contentType,
-    };
+    const putHeaders = { "Content-Type": contentType };
     if (contentLength) putHeaders["Content-Length"] = contentLength;
 
     let putResp;
+
     if (upstream.body) {
-     putResp = await fetch(upload_url, {
-  method: "PUT",
-  duplex: "half",
-  headers: putHeaders,
-  body: upstream.body,
-});
+      // ✅ Node fetch stream gönderirken duplex şart
+      putResp = await fetch(uploadUrl, {
+        method: "PUT",
+        duplex: "half",
+        headers: putHeaders,
+        body: upstream.body,
+      });
     } else {
-      // fallback (nadiren)
+      // fallback
       const buf = Buffer.from(await upstream.arrayBuffer());
       putResp = await fetch(uploadUrl, {
         method: "PUT",
@@ -165,13 +186,13 @@ module.exports = async (req, res) => {
         error: "r2_put_failed",
         r2_status: putResp.status,
         r2_preview: String(t || "").slice(0, 600),
-        key,
+        key: finalKey,
       });
     }
 
     return res.status(200).json({
       ok: true,
-      key,
+      key: finalKey,
       contentType,
       contentLength: contentLength || null,
       public_url: publicUrl,
