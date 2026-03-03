@@ -159,7 +159,14 @@ module.exports = async (req, res) => {
 }
 
     if (isInternal || looksLikeUUID) {
-      const jobObj = await readJobObjFromRedis(internal_job_id);
+      let jobObj = await readJobObjFromRedis(internal_job_id);
+
+      // ✅ FALLBACK: generate tarafında yazılan internal_map'i oku
+      if (!jobObj) {
+        const t = await redis.get(`internal_map:${internal_job_id}`);
+        const o = t ? safeJsonParse(t) : null;
+        if (o) jobObj = o;
+      }
 
       provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
@@ -175,6 +182,7 @@ module.exports = async (req, res) => {
       if (provider_song_ids.length === 0 && provider_job_id) {
         provider_song_ids = [String(provider_job_id)];
       }
+}
       // 🔥 Fallback: if internal job not found in job store,
 // try resolving via provider_map scan
 if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
