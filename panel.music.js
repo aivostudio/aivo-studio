@@ -439,20 +439,27 @@ function renderCard(job){
     stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` :
     "";
 
-  const px = (u) => {
-    u = String(u || "").trim();
-    return u ? ("/api/media/proxy?url=" + encodeURIComponent(u)) : "";
-  };
+ const px = (u, label) => {
+  u = String(u || "").trim();
+  if (!u) return "";
+  const name = String(label || "stem").trim() || "stem";
+  return (
+    "/api/media/convert-wav?url=" +
+    encodeURIComponent(u) +
+    "&filename=" +
+    encodeURIComponent(name + ".wav")
+  );
+};
 
   const stemsControls =
     (stemsStatus === "succeeded" && stemsOut) ? `
       <div class="aivo-stems">
-        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || ""))}" download>Vocals</a>
-        <a class="aivo-stem" href="${esc(px(stemsOut.drums  || ""))}" download>Drums</a>
-        <a class="aivo-stem" href="${esc(px(stemsOut.bass   || ""))}" download>Bass</a>
-        <a class="aivo-stem" href="${esc(px(stemsOut.other  || ""))}" download>Other</a>
-        <a class="aivo-stem" href="${esc(px(stemsOut.guitar || ""))}" download>Guitar</a>
-        <a class="aivo-stem" href="${esc(px(stemsOut.piano  || ""))}" download>Piano</a>
+        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download>Vocals</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums"))}" download>Drums</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass"))}" download>Bass</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other"))}" download>Other</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download>Guitar</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano"))}" download>Piano</a>
       </div>
     ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
       <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
