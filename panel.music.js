@@ -687,6 +687,131 @@ function actionDownload(card){
   a.remove();
   toast("success","İndirme başlatıldı");
 }
+   /* ---------------- STEMS (Demucs) ---------------- */
+if (!window.__AIVO_MUSIC_STEMS_TIMERS__) window.__AIVO_MUSIC_STEMS_TIMERS__ = new Map();
+const STEMS_TMAP = window.__AIVO_MUSIC_STEMS_TIMERS__;
+
+function stemsSet(jobId, patch){
+  const i = jobs.findIndex(x => (x.job_id || x.id) === jobId);
+  if (i < 0) return;
+
+  const cur = jobs[i].stems || jobs[i].__stems || {};
+  const next = { ...cur, ...patch, __ts: Date.now() };
+
+  jobs[i] = { ...jobs[i], stems: next };
+  saveJobs();
+}
+
+async function stemsPost(body){
+  const r = await fetch("/api/music/stems", {
+    method: "POST",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j) throw new Error((j && (j.error || j.message)) || ("http_" + r.status));
+  return j;
+}
+
+function stemsClearTimer(jobId){
+  const tid = STEMS_TMAP.get(jobId);
+  if (tid) clearTimeout(tid);
+  STEMS_TMAP.delete(jobId);
+}
+
+function stemsSchedulePoll(jobId, ms){
+  if (!alive) return;
+  if (!jobId) return;
+  if (STEMS_TMAP.has(jobId)) return;
+
+  const tid = setTimeout(() => {
+    STEMS_TMAP.delete(jobId);
+    stemsPoll(jobId);
+  }, ms);
+
+  STEMS_TMAP.set(jobId, tid);
+}
+
+async function stemsPoll(jobId){
+  if (!alive) return;
+
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const stems = existing.stems || existing.__stems || {};
+  const pid = String(stems.prediction_id || "").trim();
+  if (!pid) return;
+
+  try{
+    const s = await stemsPost({ prediction_id: pid });
+    const status = String(s.status || "").toLowerCase();
+
+    if (status === "succeeded") {
+      stemsSet(jobId, { status: "succeeded", output: s.output || null, error: "" });
+      render();
+      return;
+    }
+
+    if (status === "failed" || status === "canceled" || status === "cancelled") {
+      stemsSet(jobId, { status: "failed", error: s.error || status });
+      render();
+      return;
+    }
+
+    stemsSet(jobId, { status: status || "processing" });
+    render();
+    stemsSchedulePoll(jobId, 2500);
+  } catch (e){
+    stemsSet(jobId, { status: "failed", error: String(e?.message || e || "failed") });
+    render();
+  }
+}
+
+async function actionStems(card){
+  const jobId = card?.getAttribute("data-job-id") || "";
+  if (!jobId) return;
+
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
+  if (!src) { toast("info","Önce müzik hazır olmalı"); return; }
+
+  const stems = existing.stems || existing.__stems || {};
+  const curStatus = String(stems.status || "").toLowerCase();
+  const curPid = String(stems.prediction_id || "").trim();
+
+  // zaten hazırsa
+  if (curStatus === "succeeded") { toast("info","Stems zaten hazır"); return; }
+
+  // zaten çalışıyorsa: sadece poll’a devam
+  if (curPid && (curStatus === "starting" || curStatus === "processing")) {
+    stemsSchedulePoll(jobId, 200);
+    toast("info","Stems hazırlanıyor…");
+    return;
+  }
+
+  // yeni create
+  stemsClearTimer(jobId);
+  stemsSet(jobId, { status: "starting", prediction_id: "", output: null, error: "" });
+  render();
+  toast("info","Stems başlatılıyor…");
+
+  try{
+    const c = await stemsPost({ audio_url: src });
+    const pid = String(c.id || c.prediction_id || "").trim();
+    const st = String(c.status || "starting").toLowerCase();
+
+    if (!pid) throw new Error("missing_prediction_id");
+
+    stemsSet(jobId, { status: st || "starting", prediction_id: pid, output: null, error: "" });
+    render();
+    toast("success","Stems başladı");
+
+    stemsSchedulePoll(jobId, 1200);
+  } catch (e){
+    stemsSet(jobId, { status: "failed", error: String(e?.message || e || "failed") });
+    render();
+    toast("error","Stems başlatılamadı");
+  }
+}
 function actionLyrics(card){
   const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
@@ -913,7 +1038,8 @@ function onCardClick(e){
   e.preventDefault();
   e.stopPropagation();
 
- if (act === "toggle-play") return togglePlayFromCard(card);
+if (act === "toggle-play") return togglePlayFromCard(card);
+if (act === "stems")    return actionStems(card);
 if (act === "lyrics")  return actionLyrics(card);
 if (act === "download") return actionDownload(card);
 if (act === "delete")   return actionDelete(card);
