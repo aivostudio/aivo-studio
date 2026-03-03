@@ -456,13 +456,10 @@ function setEqBars(L, M, H){
   </div>
 
   <div class="aivo-player-actions">
-  
-<button class="aivo-action" data-action="stems" title="Kanallara Böl" aria-label="Kanallara Böl">
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-    <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-    <path d="M7 5v4M12 10v4M17 15v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-  </svg>
-</button>
+    <button class="aivo-action" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">⋯</button>
+    <button class="aivo-action is-blue" data-action="download" title="Dosyayı İndir" aria-label="Dosyayı İndir">⬇</button>
+    <button class="aivo-action is-accent" data-action="extend" title="Süreyi Uzat" aria-label="Süreyi Uzat">⟲</button>
+   <button class="aivo-action" data-action="lyrics" title="Şarkı Sözleri" aria-label="Şarkı Sözleri">
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
     <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
           stroke="currentColor"
