@@ -1,5 +1,5 @@
 // /api/music/stems.js
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
@@ -17,13 +17,16 @@ export default async function handler(req, res) {
 
     // ---- (B) Status / poll ----
     if (predictionId) {
-      const r = await fetch(`https://api.replicate.com/v1/predictions/${encodeURIComponent(predictionId)}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const r = await fetch(
+        `https://api.replicate.com/v1/predictions/${encodeURIComponent(predictionId)}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const j = await r.json().catch(() => null);
       if (!r.ok) {
@@ -35,7 +38,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // output -> { vocals, drums, bass, other, guitar, piano } (model_name: htdemucs_6s)
       return res.status(200).json({
         ok: true,
         mode: "status",
@@ -52,9 +54,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_or_invalid_audio_url" });
     }
 
-    // ✅ cjwbw/demucs (version hash stable; model_name picks htdemucs_6s)
-    // Source: Replicate model API examples + README list includes htdemucs_6s
-    const DEMUCS_VERSION = "25a173108cff36ef9f80f854c162d01df9e6528be175794b81158fa03836d953";
+    // cjwbw/demucs (htdemucs_6s)
+    const DEMUCS_VERSION =
+      "25a173108cff36ef9f80f854c162d01df9e6528be175794b81158fa03836d953";
 
     const payload = {
       version: DEMUCS_VERSION,
@@ -93,14 +95,13 @@ export default async function handler(req, res) {
       mode: "create",
       id: j?.id,
       status: j?.status,
-      // NOTE: client poll için lazım
       urls: j?.urls || null,
     });
-catch (err) {
-  return res.status(200).json({
-    ok: false,
-    error: "server_error",
-    message: err?.message || String(err),
-  });
-}
-}
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      message: err?.message || String(err),
+    });
+  }
+};
