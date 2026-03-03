@@ -219,6 +219,27 @@ module.exports = async (req, res) => {
 }
 if (isInternal || looksLikeUUID) {
   const jobObj = await readJobObjFromRedis(internal_job_id);
+  // DEBUG (only when probe=1): KV'de job var mı yok mu net görelim
+if (!jobObj && String(req.query.probe || "") === "1") {
+  const k1 = `jobs/${internal_job_id}/job.json`;
+  const k2 = `job:${internal_job_id}`;
+  const t1 = await redis.get(k1);
+  const t2 = await redis.get(k2);
+
+  return res.status(200).json({
+    ok: false,
+    error: "debug_kv_missing_job",
+    internal_job_id,
+    debug: {
+      k1,
+      k1_exists: !!t1,
+      k1_sample: String(t1 || "").slice(0, 300),
+      k2,
+      k2_exists: !!t2,
+      k2_sample: String(t2 || "").slice(0, 300),
+    },
+  });
+}
 
   provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
