@@ -511,7 +511,10 @@ const __progClamped = Math.max(0, Math.min(100, __prog));
       <span class="meta-date">${metaRight}</span>
     </div>
 
-   <div class="aivo-wave" title="İlerleme">
+ <div class="aivo-wave" title="İlerleme">
+  <div class="aivo-wave-base">${__waveBars}</div>
+  <div class="aivo-wave-fill" style="width:${esc(__progClamped)}%">${__waveBars}</div>
+</div>
   <div class="aivo-wave-base">${__waveBars}</div>
   <div class="aivo-wave-fill" style="width:${esc(__progClamped)}%">${__waveBars}</div>
 </div>
