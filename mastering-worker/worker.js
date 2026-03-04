@@ -57,6 +57,7 @@ ${outputPath}
     execSync(cmd);
 
     console.log("[WORKER] mastering tamamlandı:", outputPath);
+    console.log("[WORKER] master file ready:", outputPath);
 
   } catch (err) {
     console.error("[WORKER] hata:", err.message);
