@@ -360,7 +360,24 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
     }
 
     provider_song_ids = uniqStrings(provider_song_ids);
+// 🔧 DB fallback (KV mapping missing)
+if (provider_song_ids.length === 0 && internal_job_id) {
+  const dbJob = await readJobObjFromDB(internal_job_id);
 
+ if (dbJob && dbJob.provider_job_id) {
+    provider_job_id = dbJob.provider_job_id;
+
+    const ids = Array.isArray(dbJob.provider_song_ids)
+      ? dbJob.provider_song_ids
+      : [];
+
+    if (ids.length) {
+      provider_song_ids = uniqStrings(ids);
+    } else {
+      provider_song_ids = [provider_job_id];
+    }
+  }
+}
     if (provider_song_ids.length === 0) {
       return res.status(200).json({
         ok: false,
