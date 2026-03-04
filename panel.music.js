@@ -496,7 +496,7 @@ function renderCard(job){
   </div>
 
   <div class="aivo-player-actions">
-   <button class="aivo-action is-accent" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">
+  <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Kanal Ayırma (5 Kredi)" aria-label="Kanal Ayırma">
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
     <path d="M4 12h4M10 12h4M16 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
   </svg>
