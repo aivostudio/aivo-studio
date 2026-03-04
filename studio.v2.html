@@ -530,6 +530,53 @@
 <div id="aivoPlayerRoot" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(920px,96%);z-index:999999;"></div>
 
 
+<script>
+(function(){
+  if (window.__AIVO_STEM_DL__) return;
+  window.__AIVO_STEM_DL__ = true;
 
+  async function downloadViaFetch(url, fallbackName){
+    const r = await fetch(url, { method: "GET" });
+    if (!r.ok) throw new Error("download_failed_" + r.status);
+
+    const blob = await r.blob();
+    const a = document.createElement("a");
+    const obj = URL.createObjectURL(blob);
+
+    // filename: Content-Disposition varsa çoğu tarayıcı zaten alır; yoksa fallback
+    a.href = obj;
+    a.download = fallbackName || "stem.wav";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(obj), 2000);
+  }
+
+  document.addEventListener("click", async (e) => {
+    const a = e.target && e.target.closest && e.target.closest('a[data-fn="aivoDownloadStem"]');
+    if (!a) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const url = a.getAttribute("data-url") || "";
+    if (!url) return;
+
+    const label = (a.textContent || "stem").trim();
+    const name = label.toLowerCase().endsWith(".wav") ? label : (label + ".wav");
+
+    try {
+      a.classList.add("is-downloading");
+      await downloadViaFetch(url, name);
+    } catch (err) {
+      // fallback: eğer fetch engellenirse, eski davranışa dön
+      window.location.href = url;
+    } finally {
+      a.classList.remove("is-downloading");
+    }
+  }, true);
+})();
+</script>
+    
 </body>
 </html>
