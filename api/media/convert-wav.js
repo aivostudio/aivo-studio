@@ -204,13 +204,33 @@ export default async function handler(req, res) {
         return res.status(200).json({ ok: true, url: out.url, key: out.key });
       }
 
-      // AUTO persist -> kullanıcı experience bozulmasın: direkt R2'ye yönlendir (download)
-      // (UI eski linki kullansa bile sonuç kalıcı linkten iner)
-      res.statusCode = 302;
-      res.setHeader("Location", out.url);
-      res.setHeader("Cache-Control", "no-store");
-      return res.end();
-    }
+     // AUTO persist -> eski UX: direkt download (attachment) + aynı anda R2'ye yazılmış olur
+const dlName = safeFilename(req.query.filename || `${autoStem}.wav`);
+res.status(200);
+res.setHeader("Content-Type", "audio/wav");
+res.setHeader("Content-Disposition", `attachment; filename="${dlName}"`);
+res.setHeader("Cache-Control", "no-store");
+
+if (req.method === "HEAD") {
+  try { fs.unlinkSync(inPath); } catch {}
+  try { fs.unlinkSync(outPath); } catch {}
+  return res.end();
+}
+
+const stat = fs.statSync(outPath);
+res.setHeader("Content-Length", String(stat.size));
+
+const readStream = fs.createReadStream(outPath);
+readStream.on("close", () => {
+  try { fs.unlinkSync(inPath); } catch {}
+  try { fs.unlinkSync(outPath); } catch {}
+});
+readStream.on("error", () => {
+  try { fs.unlinkSync(inPath); } catch {}
+  try { fs.unlinkSync(outPath); } catch {}
+});
+
+return readStream.pipe(res);
 
     // 3) Respond as direct download (no new page)
     const filename = safeFilename(req.query.filename || "stem.wav");
