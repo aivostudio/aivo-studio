@@ -466,7 +466,31 @@ function renderCard(job){
     ` : stemsStatus === "failed" ? `
       <div class="aivo-stems aivo-stems-status">Stems hata</div>
     ` : "";
+// Waveform generator
+function buildWaveBars(seedStr){
+  const seed = String(seedStr || "0");
+  let h = 2166136261;
+  for (let i=0;i<seed.length;i++){
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
 
+  let out = "";
+  for (let i=0;i<48;i++){
+    h ^= (h << 13); h >>>= 0;
+    h ^= (h >> 17); h >>>= 0;
+    h ^= (h << 5);  h >>>= 0;
+
+    const r = (h % 100) / 100;
+    const pct = 18 + Math.floor(r * 72);
+    out += `<span class="aivo-wave-bar" style="height:${pct}%"></span>`;
+  }
+  return out;
+}
+
+const __waveBars = buildWaveBars(jobId);
+const __prog = Number(job.__progress || 0) || 0;
+const __progClamped = Math.max(0, Math.min(100, __prog));
   return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
@@ -487,9 +511,10 @@ function renderCard(job){
       <span class="meta-date">${metaRight}</span>
     </div>
 
-    <div class="aivo-progress" title="İlerleme">
-      <i style="width:${esc(job.__progress || 0)}%"></i>
-    </div>
+   <div class="aivo-wave" title="İlerleme">
+  <div class="aivo-wave-base">${__waveBars}</div>
+  <div class="aivo-wave-fill" style="width:${esc(__progClamped)}%">${__waveBars}</div>
+</div>
 
     <div class="aivo-player-controls">${stemsControls}</div>
   </div>
@@ -669,7 +694,7 @@ function render(){
   }
 
   function onProgressSeek(e){
-    const wrap = e.target.closest(".aivo-progress");
+    const wrap = e.target.closest(".aivo-wave");
     if (!wrap) return;
     const card = e.target.closest(".aivo-player-card");
     if (!card) return;
@@ -1377,7 +1402,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
         const H = window.__AIVO_MUSIC_EVENTS__.host;
         if (!H) return;
         if (!H.contains(e.target)) return;
-        if (e.target.closest(".aivo-progress")) onProgressSeek(e);
+        if (e.target.closest(".aivo-wave")) onProgressSeek(e);
       } catch (err) {
         console.warn("[panel.music] pointer handler error", err);
       }
