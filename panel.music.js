@@ -466,32 +466,68 @@ function renderCard(job){
   ` : stemsStatus === "failed" ? `
     <div class="aivo-stems aivo-stems-status">Stems hata</div>
   ` : "";
-  return `
+ return `
+
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
   data-src="${esc(job.__audio_src || "")}"
   data-provider-song-id="${esc(job.__provider_song_id || "")}">
+
   <div class="aivo-player-left">${leftBtn}</div>
 
   <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title">${esc(title)}</div>
-      <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
-    </div>
-    <div class="aivo-player-sub">${esc(sub)}</div>
 
-    <div class="aivo-player-meta">
-      <span class="meta-dur">${metaLeft}</span>
-      <span class="aivo-player-dot"></span>
-      <span class="meta-date">${metaRight}</span>
-    </div>
+```
+<div class="aivo-player-titleRow">
+  <div class="aivo-player-title">${esc(title)}</div>
+  <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
+</div>
 
-    <div class="aivo-progress" title="İlerleme">
-      <i style="width:${esc(job.__progress || 0)}%"></i>
-    </div>
+<div class="aivo-player-sub">${esc(sub)}</div>
 
-    <div class="aivo-player-controls">${stemsControls}</div>
+<div class="aivo-player-meta">
+  <span class="meta-dur">${metaLeft}</span>
+  <span class="aivo-player-dot"></span>
+  <span class="meta-date">${metaRight}</span>
+</div>
+
+<div class="aivo-progress" title="İlerleme">
+  <i style="width:${esc(job.__progress || 0)}%"></i>
+</div>
+
+<div class="aivo-player-controls">${stemsControls}</div>
+```
+
+<style>
+.aivo-stems-icons{
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.aivo-stem-ic{
+  width:34px;
+  height:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  text-decoration:none;
+  user-select:none;
+  font-size:16px;
+}
+
+.aivo-stem-ic:active{
+  transform:translateY(1px);
+}
+</style>
+
   </div>
+`;
+
 
   <div class="aivo-player-actions">
  <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Parçaları Ayır" aria-label="Parçaları Ayır">
@@ -500,7 +536,6 @@ function renderCard(job){
   </svg>
 </button>
     <button class="aivo-action is-blue" data-action="download" title="Dosyayı İndir" aria-label="Dosyayı İndir">⬇</button>
-    <button class="aivo-action is-accent" data-action="extend" title="Süreyi Uzat" aria-label="Süreyi Uzat">⟲</button>
    <button class="aivo-action" data-action="lyrics" title="Şarkı Sözleri" aria-label="Şarkı Sözleri">
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
     <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
