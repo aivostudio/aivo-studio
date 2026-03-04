@@ -696,22 +696,32 @@ function render(){
     }
   }
 
-  function onProgressSeek(e){
-    const wrap = e.target.closest(".aivo-wave");
-    if (!wrap) return;
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
+ function onProgressSeek(e){
+  const wrap = e.target.closest(".aivo-wave");
+  if (!wrap) return;
 
-    const jobId = card.getAttribute("data-job-id");
-    if (!jobId || jobId !== currentJobId) return;
-    if (!audioEl || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+  const card = e.target.closest(".aivo-player-card");
+  if (!card) return;
 
-    const rect = wrap.getBoundingClientRect();
-    const x = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
-    const ratio = rect.width > 0 ? (x / rect.width) : 0;
-    audioEl.currentTime = ratio * audioEl.duration;
-    updateProgressUI();
-  }
+  const jobId = card.getAttribute("data-job-id");
+  if (!jobId || jobId !== currentJobId) return;
+
+  if (!audioEl) return;
+  if (!isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+
+  const rect = wrap.getBoundingClientRect();
+
+  // mouse + touch uyumlu
+  const clientX = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX);
+  if (clientX == null) return;
+
+  const x = Math.min(Math.max(0, clientX - rect.left), rect.width);
+  const ratio = rect.width > 0 ? (x / rect.width) : 0;
+
+  audioEl.currentTime = ratio * audioEl.duration;
+
+  updateProgressUI();
+}
 
  /* ---------------- ACTIONS ---------------- */
 function actionDownload(card){
