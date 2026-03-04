@@ -1,5 +1,7 @@
 // AIVO Mastering Engine
-// Step 1: Master pipeline entry
+// Step 2: audio download stage
+
+import fs from "fs";
 
 export default async function handler(req, res) {
   try {
@@ -18,14 +20,29 @@ export default async function handler(req, res) {
       audio_url
     });
 
-    // Şimdilik sadece pass-through
-    // ileride burada ffmpeg mastering pipeline çalışacak
+    // TMP path
+    const tmpPath = `/tmp/${job_id}.mp3`;
 
+    // download audio
+    const response = await fetch(audio_url);
+
+    if (!response.ok) {
+      throw new Error("audio_download_failed");
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    fs.writeFileSync(tmpPath, buffer);
+
+    console.log("[MASTER] downloaded", tmpPath);
+
+    // mastering henüz yapılmıyor
     return res.status(200).json({
       ok: true,
       job_id,
       mastered: false,
-      audio_url
+      downloaded: true,
+      tmp: tmpPath
     });
 
   } catch (err) {
