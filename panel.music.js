@@ -439,35 +439,57 @@ function renderCard(job){
     stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` :
     "";
 
- const px = (u, label) => {
+const px = (u, label, stemKey) => {
   u = String(u || "").trim();
   if (!u) return "";
+
   const name = String(label || "stem").trim() || "stem";
+  const stem = String(stemKey || "").trim().toLowerCase();
+
+  // job id (hangi alan varsa)
+  const jobId = String(
+    (job && (job.id || job.job_id || job.provider_job_id)) || ""
+  ).trim();
+
+  // jobId yoksa eski davranış (patlamasın)
+  if (!jobId || !stem) {
+    return (
+      "/api/media/convert-wav?url=" +
+      encodeURIComponent(u) +
+      "&filename=" +
+      encodeURIComponent(name + ".wav")
+    );
+  }
+
+  // persist'li kalıcılaştırma
   return (
-    "/api/media/convert-wav?url=" +
+    "/api/media/convert-wav?persist=1" +
+    "&job_id=" +
+    encodeURIComponent(jobId) +
+    "&stem=" +
+    encodeURIComponent(stem) +
+    "&url=" +
     encodeURIComponent(u) +
     "&filename=" +
     encodeURIComponent(name + ".wav")
   );
 };
 
-  const stemsControls =
-    (stemsStatus === "succeeded" && stemsOut) ? `
-      <div class="aivo-stems">
-        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download>Vocals</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums"))}" download>Drums</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass"))}" download>Bass</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other"))}" download>Other</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download>Guitar</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano"))}" download>Piano</a>
-      </div>
-    ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
-      <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
-    ` : stemsStatus === "failed" ? `
-      <div class="aivo-stems aivo-stems-status">Stems hata</div>
-    ` : "";
-
-  return `
+const stemsControls =
+  (stemsStatus === "succeeded" && stemsOut) ? `
+    <div class="aivo-stems">
+      <a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals", "vocals"))}" download>Vocals</a>
+      <a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums",  "drums"))}"  download>Drums</a>
+      <a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass",   "bass"))}"   download>Bass</a>
+      <a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other",  "other"))}"  download>Other</a>
+      <a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar", "guitar"))}" download>Guitar</a>
+      <a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano",  "piano"))}"  download>Piano</a>
+    </div>
+  ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
+    <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
+  ` : stemsStatus === "failed" ? `
+    <div class="aivo-stems aivo-stems-status">Stems hata</div>
+  ` : "";
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
   data-src="${esc(job.__audio_src || "")}"
