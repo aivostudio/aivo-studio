@@ -539,6 +539,51 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       data.status = "processing";
     }
 
+    // --- AUTO MASTER TRIGGER (completed -> /api/music/master) ---
+    // Yer: data.state/status belirlendikten sonra, return res.json(data)'dan hemen önce.
+    try {
+      const isCompleted = data.state === "completed" || data.status === "completed";
+
+      // master var mı? (type==="master" veya outputs/master path)
+      const hasMaster = (data.outputs || []).some((o) => {
+        const t = String(o?.type || "");
+        const u = String(o?.url || "");
+        return t === "master" || u.includes("/outputs/master/");
+      });
+
+      // master basmak için kullanacağımız input audio_url:
+      // 1) outputs[0].meta.audio_url (provider url)
+      // 2) fallback: outputs[0].url (proxy/R2)
+      const first = (data.outputs || [])[0] || null;
+      const audioUrl =
+        (first?.meta?.audio_url ? String(first.meta.audio_url) : "") ||
+        (first?.url ? String(first.url) : "");
+
+      // basit throttle: aynı provider_job_id için 60sn içinde tekrar tetikleme
+      globalThis.__AIVO_MASTER_TRIG = globalThis.__AIVO_MASTER_TRIG || {};
+      const k = data.provider_job_id ? `m:${String(data.provider_job_id)}` : null;
+      const last = k ? globalThis.__AIVO_MASTER_TRIG[k] || 0 : 0;
+      const now = Date.now();
+
+      if (k && isCompleted && !hasMaster && audioUrl && now - last > 60_000) {
+        globalThis.__AIVO_MASTER_TRIG[k] = now;
+
+        const origin = getBaseUrl(req);
+
+        // fire-and-forget
+        fetchFn(`${origin}/api/music/master`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider_job_id: String(data.provider_job_id),
+            audio_url: audioUrl,
+            auto: true,
+          }),
+        }).catch(() => {});
+      }
+    } catch (_) {}
+    // --- /AUTO MASTER TRIGGER ---
+
     return res.status(200).json(data);
   } catch (err) {
     console.error("api/music/status error:", err);
