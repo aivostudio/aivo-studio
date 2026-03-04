@@ -439,7 +439,7 @@ function renderCard(job){
     stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` :
     "";
 
- const px = (u, label) => {
+const px = (u, label) => {
   u = String(u || "").trim();
   if (!u) return "";
   const name = String(label || "stem").trim() || "stem";
@@ -450,8 +450,8 @@ function renderCard(job){
     encodeURIComponent(name + ".wav")
   );
 };
-return `
- const stemsControls =
+
+const stemsControls =
   (stemsStatus === "succeeded" && stemsOut) ? `
     <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
       ${stemsOut.vocals ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.vocals, "Vocals"))}" download target="_self" title="Vocals indir" aria-label="Vocals indir">🎤</a>` : ``}
@@ -466,8 +466,8 @@ return `
   ` : stemsStatus === "failed" ? `
     <div class="aivo-stems aivo-stems-status">Stems hata</div>
   ` : "";
- return `
 
+return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
   data-src="${esc(job.__audio_src || "")}"
@@ -476,59 +476,53 @@ return `
   <div class="aivo-player-left">${leftBtn}</div>
 
   <div class="aivo-player-mid">
+    <div class="aivo-player-titleRow">
+      <div class="aivo-player-title">${esc(title)}</div>
+      <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
+    </div>
 
+    <div class="aivo-player-sub">${esc(sub)}</div>
 
-<div class="aivo-player-titleRow">
-  <div class="aivo-player-title">${esc(title)}</div>
-  <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
-</div>
+    <div class="aivo-player-meta">
+      <span class="meta-dur">${metaLeft}</span>
+      <span class="aivo-player-dot"></span>
+      <span class="meta-date">${metaRight}</span>
+    </div>
 
-<div class="aivo-player-sub">${esc(sub)}</div>
+    <div class="aivo-progress" title="İlerleme">
+      <i style="width:${esc(job.__progress || 0)}%"></i>
+    </div>
 
-<div class="aivo-player-meta">
-  <span class="meta-dur">${metaLeft}</span>
-  <span class="aivo-player-dot"></span>
-  <span class="meta-date">${metaRight}</span>
-</div>
+    <div class="aivo-player-controls">${stemsControls}</div>
 
-<div class="aivo-progress" title="İlerleme">
-  <i style="width:${esc(job.__progress || 0)}%"></i>
-</div>
-
-<div class="aivo-player-controls">${stemsControls}</div>
-
-
-<style>
-.aivo-stems-icons{
-  margin-top:10px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-.aivo-stem-ic{
-  width:34px;
-  height:34px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);
-  text-decoration:none;
-  user-select:none;
-  font-size:16px;
-}
-
-.aivo-stem-ic:active{
-  transform:translateY(1px);
-}
-</style>
+    <style>
+      .aivo-stems-icons{
+        margin-top:10px;
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+      .aivo-stem-ic{
+        width:34px;
+        height:34px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:12px;
+        border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.06);
+        text-decoration:none;
+        user-select:none;
+        font-size:16px;
+      }
+      .aivo-stem-ic:active{
+        transform:translateY(1px);
+      }
+    </style>
 
   </div>
+</div>
 `;
-
-
   <div class="aivo-player-actions">
  <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Parçaları Ayır" aria-label="Parçaları Ayır">
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
