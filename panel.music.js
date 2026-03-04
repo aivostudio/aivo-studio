@@ -1615,5 +1615,142 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       }
     } catch {}
   }, { passive: true });
+// ------------------------------------------------------------
+// STEM CONFIRM MODAL (Kanal Ayırma - 5 Kredi)
+// ------------------------------------------------------------
+(function ensureStemConfirmModalHelpers(){
+  if (window.openStemConfirmModal) return;
 
+  const MODAL_ID = "aivoStemConfirmModal";
+
+  function closeStemConfirmModal() {
+    const el = document.getElementById(MODAL_ID);
+    if (el) el.remove();
+  }
+
+  function openStemConfirmModal({ job_id, onConfirm }) {
+    // tek instance
+    closeStemConfirmModal();
+
+    const overlay = document.createElement("div");
+    overlay.id = MODAL_ID;
+    overlay.innerHTML = `
+      <div class="aivoStemOverlay" role="dialog" aria-modal="true">
+        <div class="aivoStemModal">
+          <button class="aivoStemX" type="button" aria-label="Kapat">×</button>
+
+          <div class="aivoStemTitle">Kanal Ayırma</div>
+          <div class="aivoStemDesc">Bu işlem 5 kredi kullanır. Devam edilsin mi?</div>
+          <div class="aivoStemFine">Bu işlem başlamadan önce kredi kesilir.</div>
+
+          <div class="aivoStemBtns">
+            <button class="aivoStemBtn aivoStemCancel" type="button">İptal</button>
+            <button class="aivoStemBtn aivoStemOk" type="button">Onayla (5 Kredi)</button>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .aivoStemOverlay{
+          position:fixed; inset:0; z-index:99999;
+          display:flex; align-items:center; justify-content:center;
+          background:rgba(0,0,0,.55);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          padding:18px;
+        }
+        .aivoStemModal{
+          width:min(520px, 96vw);
+          border-radius:18px;
+          background:rgba(20,20,24,.92);
+          border:1px solid rgba(255,255,255,.10);
+          box-shadow: 0 20px 60px rgba(0,0,0,.55);
+          padding:18px 18px 16px;
+          position:relative;
+        }
+        .aivoStemX{
+          position:absolute; top:12px; right:12px;
+          width:34px; height:34px; border-radius:10px;
+          border:1px solid rgba(255,255,255,.12);
+          background:rgba(255,255,255,.06);
+          color:#fff; font-size:22px; line-height:32px;
+          cursor:pointer;
+        }
+        .aivoStemTitle{ color:#fff; font-weight:700; font-size:18px; margin-bottom:6px; }
+        .aivoStemDesc{ color:rgba(255,255,255,.82); font-size:14px; line-height:1.35; }
+        .aivoStemFine{ margin-top:8px; color:rgba(255,255,255,.55); font-size:12px; }
+        .aivoStemBtns{
+          margin-top:14px;
+          display:flex; gap:10px; justify-content:flex-end;
+        }
+        .aivoStemBtn{
+          border-radius:12px;
+          padding:10px 12px;
+          border:1px solid rgba(255,255,255,.12);
+          background:rgba(255,255,255,.06);
+          color:#fff;
+          cursor:pointer;
+          font-weight:600;
+        }
+        .aivoStemBtn:hover{ background:rgba(255,255,255,.10); }
+        .aivoStemOk{
+          background:rgba(140,90,255,.28);
+          border:1px solid rgba(160,120,255,.45);
+        }
+        .aivoStemOk:hover{ background:rgba(140,90,255,.36); }
+        .aivoStemBtn[disabled]{ opacity:.55; cursor:not-allowed; }
+      </style>
+    `;
+
+    // overlay click = dışarı tık kapat
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeStemConfirmModal();
+    });
+
+    const modal = overlay.querySelector(".aivoStemModal");
+    const btnX = overlay.querySelector(".aivoStemX");
+    const btnCancel = overlay.querySelector(".aivoStemCancel");
+    const btnOk = overlay.querySelector(".aivoStemOk");
+
+    btnX.addEventListener("click", () => closeStemConfirmModal());
+    btnCancel.addEventListener("click", () => closeStemConfirmModal());
+
+    let locked = false;
+    btnOk.addEventListener("click", async () => {
+      if (locked) return;
+      locked = true;
+
+      btnOk.disabled = true;
+      const prev = btnOk.textContent;
+      btnOk.textContent = "Yükleniyor...";
+
+      try {
+        await (onConfirm?.({ job_id }));
+        // şimdilik modal kapanabilir; kredi kesmeye geçtiğimiz adımda davranışı netleştireceğiz
+        closeStemConfirmModal();
+      } catch (err) {
+        console.error("[stems] confirm failed", err);
+        btnOk.disabled = false;
+        btnOk.textContent = prev;
+        locked = false;
+      }
+    });
+
+    document.body.appendChild(overlay);
+
+    // ESC ile kapat
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        document.removeEventListener("keydown", onKey);
+        closeStemConfirmModal();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+
+    console.debug("[stems] open confirm modal", { job_id });
+  }
+
+  window.openStemConfirmModal = openStemConfirmModal;
+  window.closeStemConfirmModal = closeStemConfirmModal;
+})();
 })();
