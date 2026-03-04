@@ -380,10 +380,9 @@ if (provider_song_ids.length === 0 && internal_job_id) {
     }
   }
 }
-    if (provider_song_ids.length === 0) {
-      return res.status(200).json({
-        ok: false,
-        error: "missing_provider_song_ids",
+   if (provider_song_ids.length === 0 && provider_job_id) {
+  provider_song_ids = [provider_job_id];
+}
         state: "processing",
         status: "processing",
         provider_job_id: provider_job_id || null,
