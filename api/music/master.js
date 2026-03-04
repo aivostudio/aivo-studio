@@ -1,10 +1,6 @@
-import fs from "fs";
-import { neon } from "@neondatabase/serverless";
-
-// NOTE: Vercel/Node ESM'de require lazım olursa:
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
+// api/music/master.js (CommonJS) - Vercel Node Serverless
+const fs = require("fs");
+const { neon } = require("@neondatabase/serverless");
 
 function pickConn() {
   return (
@@ -15,17 +11,21 @@ function pickConn() {
     ""
   );
 }
+
+// getRedis optional (bu repo'da ../_kv varsa kullanır)
 let getRedis = null;
 try {
+  // eslint-disable-next-line import/no-dynamic-require
   getRedis = require("../_kv").getRedis;
 } catch {}
+
 async function appendMasterOutputToDB({ job_id, url }) {
   const conn = pickConn();
   if (!conn) return { ok: false, skipped: true, reason: "missing_db_env" };
 
   const sql = neon(conn);
 
-  // job_id bazen: db uuid, internal_job_id, provider_job_id olabilir diye 3’ünü deniyoruz
+  // job_id: db uuid / internal_job_id / provider_job_id olabiliyor
   const found = await sql`
     select id
     from jobs
@@ -42,7 +42,7 @@ async function appendMasterOutputToDB({ job_id, url }) {
   const db_job_id = found[0].id;
 
   const output = {
-    type: "master",
+    type: "audio",
     url,
     meta: {
       app: "music",
@@ -61,144 +61,65 @@ async function appendMasterOutputToDB({ job_id, url }) {
   return { ok: true, db_job_id };
 }
 
-function getBaseUrl(req) {
-  const proto =
-    (req.headers["x-forwarded-proto"]
-      ? String(req.headers["x-forwarded-proto"])
-      : "https"
-    )
-      .split(",")[0]
-      .trim() || "https";
-  const host =
-    (req.headers["x-forwarded-host"]
-      ? String(req.headers["x-forwarded-host"])
-      : "") ||
-    (req.headers.host ? String(req.headers.host) : "");
-  return `${proto}://${host}`;
-}
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
+    res.setHeader("x-aivo-master-build", "master-cjs-2026-03-05");
+
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     const body = req.body || {};
-    const audio_url = body.audio_url || body.audioUrl || null;
-
-    // öncelik: provider_job_id (senin gerçek case’in)
-    const provider_job_id =
-      body.provider_job_id || body.providerJobId || body.provider_id || null;
-
-    // eski/fallback: job_id
-    const job_id = body.job_id || body.jobId || null;
+    const provider_job_id = body.provider_job_id ? String(body.provider_job_id) : null;
+    const audio_url = body.audio_url ? String(body.audio_url) : null;
+    const auto = body.auto === true;
 
     if (!audio_url) {
       return res.status(400).json({ ok: false, error: "missing_audio_url" });
     }
 
-    // master key için stabil id
-    const id = String(provider_job_id || job_id || Date.now());
+    const id = String(body.job_id || provider_job_id || Date.now());
     const inputPath = `/tmp/${id}.mp3`;
 
-    console.log("[MASTER] start", { id, provider_job_id, job_id, audio_url });
+    console.log("[MASTER] start", { id, provider_job_id, auto });
 
-    // 1) download audio
+    // download audio
     const response = await fetch(audio_url, {
       headers: { "User-Agent": "AIVO-Mastering" },
     });
-    if (!response.ok) throw new Error(`download_failed_${response.status}`);
+
+    if (!response.ok) {
+      throw new Error(`download_failed_${response.status}`);
+    }
 
     const buffer = Buffer.from(await response.arrayBuffer());
     fs.writeFileSync(inputPath, buffer);
-    console.log("[MASTER] downloaded", { inputPath, bytes: buffer.length });
 
-    // 2) R2 presign + upload (outputs/master/...)
-    const origin = getBaseUrl(req);
-    const key = `outputs/master/${id}.mp3`;
+    console.log("[MASTER] downloaded", inputPath);
 
-    const presignRes = await fetch(`${origin}/api/r2/presign-put`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        key,
-        contentType: "audio/mpeg",
-      }),
-    });
+    // Şimdilik mastering worker yok -> queued dönüyoruz (auto flag'i kabul ediyoruz)
+    // İleride burada mastering pipeline çalışacak, R2 upload + DB append yapılacak.
 
-    const presignText = await presignRes.text();
-    let presign;
+    // (best-effort) Redis marker
     try {
-      presign = JSON.parse(presignText);
-    } catch {
-      presign = null;
-    }
+      if (getRedis && provider_job_id) {
+        const redis = getRedis();
+        await redis.set(
+          `music_master:${provider_job_id}`,
+          JSON.stringify({ at: new Date().toISOString(), tmp: inputPath, auto })
+        );
+      }
+    } catch {}
 
-    if (!presignRes.ok || !presign?.ok || !presign?.upload_url || !presign?.public_url) {
-      return res.status(500).json({
-        ok: false,
-        error: "presign_failed",
-        upstream_status: presignRes.status,
-        upstream_preview: String(presignText || "").slice(0, 300),
-      });
-    }
-
-    const upload_url = presign.upload_url;
-    const public_url = presign.public_url;
-
-    const putRes = await fetch(upload_url, {
-      method: "PUT",
-      headers: { "Content-Type": "audio/mpeg" },
-      body: buffer,
-    });
-
-    if (!putRes.ok) {
-      const t = await putRes.text().catch(() => "");
-      return res.status(500).json({
-        ok: false,
-        error: "r2_put_failed",
-        upstream_status: putRes.status,
-        upstream_preview: String(t || "").slice(0, 300),
-      });
-    }
-
-    // 3) verify (HEAD public_url)
-    const headRes = await fetch(public_url, { method: "HEAD" });
-    if (!headRes.ok) {
-      return res.status(500).json({
-        ok: false,
-        error: "r2_verify_failed",
-        upstream_status: headRes.status,
-        public_url,
-      });
-    }
-
-    console.log("[MASTER] uploaded", { key, public_url });
-
-    // 4) best-effort: DB append (job row varsa)
-    const dbTargetId = String(provider_job_id || job_id || id);
-    const db = await appendMasterOutputToDB({ job_id: dbTargetId, url: public_url });
-
-    // 5) best-effort: Redis marker (ileride status.js master’ı buradan da okuyabilir)
-   try {
-  if (getRedis) {
-    const redis = getRedis();
-    await redis.set(
-      `music_master:${String(provider_job_id || id)}`,
-      JSON.stringify({ url: public_url, at: new Date().toISOString() })
-    );
-  }
-} catch {}
+    // (best-effort) DB append yok (master URL yok) -> sadece queued
     return res.status(200).json({
       ok: true,
-      provider_job_id: provider_job_id ? String(provider_job_id) : null,
       job_id: id,
+      provider_job_id,
       downloaded: true,
-      mastering: "completed",
+      mastering: "queued",
       tmp: inputPath,
-      master_url: public_url,
-      key,
-      db,
+      auto,
     });
   } catch (err) {
     console.error("[MASTER] error", err);
@@ -208,4 +129,4 @@ export default async function handler(req, res) {
       message: err?.message || String(err),
     });
   }
-}
+};
