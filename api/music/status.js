@@ -20,7 +20,8 @@ async function readJobObjFromDB(internalId) {
     const rows = await sql`
       select request_id, meta
       from jobs
-      where meta->>'internal_job_id' = ${internalId}
+     where meta->>'internal_job_id' = ${internalId}
+   or id = ${internalId}
       order by created_at desc
       limit 1
     `;
