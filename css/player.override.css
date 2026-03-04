@@ -186,3 +186,7 @@
 .aivo-wave-fill .aivo-wave-bar{
   background: rgba(180,150,255,.95);
 }
+x/* music waveform overlay click'i yemesin */
+#rightPanelHost .aivo-wave{
+  pointer-events: none !important;
+}
