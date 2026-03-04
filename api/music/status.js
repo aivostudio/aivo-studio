@@ -571,12 +571,12 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
         const origin = getBaseUrl(req);
 
         // fire-and-forget
-        fetchFn(`${origin}/api/music/master`, {
+       fetchFn(`${origin}/api/music/finalize`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             provider_job_id: String(data.provider_job_id),
-            audio_url: audioUrl,
+           mp3_url: audioUrl,
             auto: true,
           }),
         }).catch(() => {});
