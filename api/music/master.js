@@ -5,6 +5,7 @@ import { neon } from "@neondatabase/serverless";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
+
 function pickConn() {
   return (
     process.env.POSTGRES_URL_NON_POOLING ||
@@ -14,7 +15,10 @@ function pickConn() {
     ""
   );
 }
-
+let getRedis = null;
+try {
+  getRedis = require("../_kv").getRedis;
+} catch {}
 async function appendMasterOutputToDB({ job_id, url }) {
   const conn = pickConn();
   if (!conn) return { ok: false, skipped: true, reason: "missing_db_env" };
@@ -176,15 +180,15 @@ export default async function handler(req, res) {
     const db = await appendMasterOutputToDB({ job_id: dbTargetId, url: public_url });
 
     // 5) best-effort: Redis marker (ileride status.js master’ı buradan da okuyabilir)
-    try {
-      const { getRedis } = require("../_kv");
-      const redis = getRedis();
-      await redis.set(
-        `music_master:${String(provider_job_id || id)}`,
-        JSON.stringify({ url: public_url, at: new Date().toISOString() })
-      );
-    } catch {}
-
+   try {
+  if (getRedis) {
+    const redis = getRedis();
+    await redis.set(
+      `music_master:${String(provider_job_id || id)}`,
+      JSON.stringify({ url: public_url, at: new Date().toISOString() })
+    );
+  }
+} catch {}
     return res.status(200).json({
       ok: true,
       provider_job_id: provider_job_id ? String(provider_job_id) : null,
