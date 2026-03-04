@@ -1054,11 +1054,31 @@ function onCardClick(e){
   e.preventDefault();
   e.stopPropagation();
 
-if (act === "toggle-play") return togglePlayFromCard(card);
-if (act === "stems")    return actionStems(card);
-if (act === "lyrics")  return actionLyrics(card);
-if (act === "download") return actionDownload(card);
-if (act === "delete")   return actionDelete(card);
+  if (act === "stems_5_confirm") {
+    const job_id =
+      card.getAttribute("data-job-id") ||
+      card.dataset.jobId ||
+      card.getAttribute("data-track-id") ||
+      card.dataset.trackId ||
+      card.getAttribute("data-provider-job-id") ||
+      card.dataset.providerJobId ||
+      "";
+
+    window.openStemConfirmModal?.({
+      job_id,
+      onConfirm: async () => {
+        console.debug("[stems] confirmed 5 credits", { job_id });
+        // ŞİMDİLİK sadece modal + log. (Kredi kesme + stems başlatma bir sonraki adım.)
+      }
+    });
+    return;
+  }
+
+  if (act === "toggle-play") return togglePlayFromCard(card);
+  if (act === "stems")       return actionStems(card);
+  if (act === "lyrics")      return actionLyrics(card);
+  if (act === "download")    return actionDownload(card);
+  if (act === "delete")      return actionDelete(card);
 
   toast("info", `Action: ${act}`);
 }
