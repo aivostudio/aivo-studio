@@ -427,7 +427,6 @@ function renderCard(job){
 
   const metaLeft = dur ? esc(dur) : "0:00";
   const metaRight = date ? esc(date) : "";
-
   // ✅ stems: sadece UI gösterimi (create/poll yok)
   const stems = job?.stems || job?.__stems || null;
   const stemsStatus = String(stems?.status || "").toLowerCase();
@@ -439,29 +438,51 @@ function renderCard(job){
     stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` :
     "";
 
- const px = (u, label) => {
-  u = String(u || "").trim();
-  if (!u) return "";
-  const name = String(label || "stem").trim() || "stem";
-  return (
-    "/api/media/convert-wav?url=" +
-    encodeURIComponent(u) +
-    "&filename=" +
-    encodeURIComponent(name + ".wav")
-  );
-};
+  const px = (u, label) => {
+    u = String(u || "").trim();
+    if (!u) return "";
+    const name = String(label || "stem").trim() || "stem";
+    return (
+      "/api/media/convert-wav?url=" +
+      encodeURIComponent(u) +
+      "&filename=" +
+      encodeURIComponent(name + ".wav")
+    );
+  };
 
   const stemsControls =
     (stemsStatus === "succeeded" && stemsOut) ? `
-      <div class="aivo-stems">
-        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download>Vocals</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download target="_self">Vocals</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums"))}" download target="_self">Drums</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass"))}" download target="_self">Bass</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other"))}" download target="_self">Other</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download target="_self">Guitar</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano"))}" download target="_self">Piano</a>
+      <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
+        ${stemsOut.vocals ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download target="_self" title="Vocals indir" aria-label="Vocals indir">🎤</a>` : ``}
+        ${stemsOut.drums  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.drums  || "", "Drums"))}"  download target="_self" title="Drums indir"  aria-label="Drums indir">🥁</a>` : ``}
+        ${stemsOut.bass   ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.bass   || "", "Bass"))}"   download target="_self" title="Bass indir"   aria-label="Bass indir">🎸</a>` : ``}
+        ${stemsOut.guitar ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download target="_self" title="Guitar indir" aria-label="Guitar indir">🎸</a>` : ``}
+        ${stemsOut.piano  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.piano  || "", "Piano"))}"  download target="_self" title="Piano indir"  aria-label="Piano indir">🎹</a>` : ``}
+        ${stemsOut.other  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.other  || "", "Other"))}"  download target="_self" title="Other indir"  aria-label="Other indir">🎛️</a>` : ``}
       </div>
+
+      <style>
+        .aivo-stems-icons{
+          margin-top:10px;
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+        }
+        .aivo-stem-ic{
+          width:34px;
+          height:34px;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          border-radius:12px;
+          border:1px solid rgba(255,255,255,.12);
+          background:rgba(255,255,255,.06);
+          text-decoration:none;
+          user-select:none;
+          font-size:16px;
+        }
+        .aivo-stem-ic:active{ transform:translateY(1px); }
+      </style>
     ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
       <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
     ` : stemsStatus === "failed" ? `
