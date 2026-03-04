@@ -450,17 +450,17 @@ function renderCard(job){
     encodeURIComponent(name + ".wav")
   );
 };
-const stemsControls =
-  (stemsStatus === "succeeded" && stemsOut) ? `
-    <div class="aivo-stems">
-<a class="aivo-stem" href="/api/media/convert-wav?persist=1&job_id=${encodeURIComponent(job.id)}&stem=vocals&url=${encodeURIComponent(stemsOut.vocals || "")}&filename=Vocals.wav" download>Vocals</a>
-<a class="aivo-stem" href="/api/media/convert-wav?persist=1&job_id=${encodeURIComponent(job.id)}&stem=drums&url=${encodeURIComponent(stemsOut.drums || "")}&filename=Drums.wav" download>Drums</a>
-<a class="aivo-stem" href="/api/media/convert-wav?persist=1&job_id=${encodeURIComponent(job.id)}&stem=bass&url=${encodeURIComponent(stemsOut.bass || "")}&filename=Bass.wav" download>Bass</a>
-<a class="aivo-stem" href="/api/media/convert-wav?persist=1&job_id=${encodeURIComponent(job.id)}&stem=other&url=${encodeURIComponent(stemsOut.other || "")}&filename=Other.wav" download>Other</a>
-<a class="aivo-stem" href="/api/media/convert-wav?persist=1&job_id=${encodeURIComponent(job.id)}&stem=guitar&url=${encodeURIComponent(stemsOut.guitar || "")}&filename=Guitar.wav" download>Guitar</a>
-<a class="aivo-stem" href="/api/media/convert-wav?persist=1&job_id=${encodeURIComponent(job.id)}&stem=piano&url=${encodeURIComponent(stemsOut.piano || "")}&filename=Piano.wav" download>Piano</a>
-    </div>
-  ` : "";
+
+  const stemsControls =
+    (stemsStatus === "succeeded" && stemsOut) ? `
+      <div class="aivo-stems">
+        <a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download>Vocals</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums"))}" download>Drums</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass"))}" download>Bass</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other"))}" download>Other</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download>Guitar</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano"))}" download>Piano</a>
+      </div>
     ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
       <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
     ` : stemsStatus === "failed" ? `
