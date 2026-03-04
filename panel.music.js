@@ -455,11 +455,12 @@ function renderCard(job){
     (stemsStatus === "succeeded" && stemsOut) ? `
       <div class="aivo-stems">
         <a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download>Vocals</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums"))}" download>Drums</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass"))}" download>Bass</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other"))}" download>Other</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download>Guitar</a>
-<a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano"))}" download>Piano</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download target="_self">Vocals</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.drums  || "", "Drums"))}" download target="_self">Drums</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.bass   || "", "Bass"))}" download target="_self">Bass</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.other  || "", "Other"))}" download target="_self">Other</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download target="_self">Guitar</a>
+<a class="aivo-stem" href="${esc(px(stemsOut.piano  || "", "Piano"))}" download target="_self">Piano</a>
       </div>
     ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
       <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
