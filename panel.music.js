@@ -454,10 +454,9 @@ function renderCard(job){
       <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
         ${stemsOut.vocals ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download target="_self" title="Vocals indir" aria-label="Vocals indir">🎤</a>` : ``}
         ${stemsOut.drums  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.drums  || "", "Drums"))}"  download target="_self" title="Drums indir"  aria-label="Drums indir">🥁</a>` : ``}
-        ${stemsOut.bass   ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.bass   || "", "Bass"))}"   download target="_self" title="Bass indir"   aria-label="Bass indir">🎸</a>` : ``}
+        ${stemsOut.bass   ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.bass   || "", "Bass"))}"   download target="_self" title="Bass indir"   aria-label="Bass indir">🔊</a>` : ``}
         ${stemsOut.guitar ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download target="_self" title="Guitar indir" aria-label="Guitar indir">🎸</a>` : ``}
         ${stemsOut.piano  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.piano  || "", "Piano"))}"  download target="_self" title="Piano indir"  aria-label="Piano indir">🎹</a>` : ``}
-        ${stemsOut.other  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.other  || "", "Other"))}"  download target="_self" title="Other indir"  aria-label="Other indir">🎛️</a>` : ``}
       </div>
 
       <style>
@@ -506,7 +505,6 @@ function renderCard(job){
 ` : stemsStatus === "failed" ? `
 <div class="aivo-stems aivo-stems-status">Stems hata</div>
 ` : "";
-
   return `
 <div class="aivo-player-card ${isReady ? "is-ready" : st === "error" ? "is-error" : "is-loading is-processing"} ${isPlayingNow ? "is-playing" : ""}"
   data-job-id="${esc(jobId)}"
