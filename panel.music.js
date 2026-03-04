@@ -450,7 +450,7 @@ function renderCard(job){
     encodeURIComponent(name + ".wav")
   );
 };
-
+return `
  const stemsControls =
   (stemsStatus === "succeeded" && stemsOut) ? `
     <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
