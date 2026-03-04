@@ -1,13 +1,14 @@
 // api/media/convert-wav.js
 // MP3 -> WAV (44.1kHz, PCM s16le) converter + direct download
 // Works great for "stems" when provider only returns MP3.
-// Requires dependency: ffmpeg-static (see command below)
+// Requires dependency: ffmpeg-static
 
 import { URL } from "url";
 import fs from "fs";
 import path from "path";
 import { pipeline } from "stream/promises";
 import { spawn } from "child_process";
+import crypto from "crypto";
 
 import ffmpegPath from "ffmpeg-static";
 
@@ -52,6 +53,49 @@ function pickUpstreamUrl(raw) {
 
 function cleanBase(u) {
   return String(u || "").trim().replace(/\/+$/, "");
+}
+
+function stemFromFilename(filename) {
+  const f = String(filename || "").trim().toLowerCase();
+  if (!f) return "";
+  const base = f.replace(/\.wav$/i, "").trim();
+  const allowed = new Set(["vocals", "drums", "bass", "other", "guitar", "piano"]);
+  return allowed.has(base) ? base : "";
+}
+
+async function persistWavToR2({ outPath, jobId, stem }) {
+  const publicBase = process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE;
+  if (!publicBase) {
+    throw new Error("missing_env:R2_PUBLIC_BASE_URL (or R2_PUBLIC_BASE)");
+  }
+  if (!process.env.R2_BUCKET) {
+    throw new Error("missing_env:R2_BUCKET");
+  }
+
+  const safeStem = String(stem || "").trim().toLowerCase();
+  if (!safeStem || !/^[a-z0-9_-]{2,32}$/.test(safeStem)) {
+    throw new Error("missing_or_invalid_stem");
+  }
+
+  const id = String(jobId || "").trim();
+  const baseKey = id ? `outputs/music/${id}/stems/` : `outputs/music/_stems/${crypto.randomUUID()}/`;
+
+  const key = `${baseKey}${safeStem}.wav`;
+  const wavBuf = fs.readFileSync(outPath);
+
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: key,
+      Body: wavBuf,
+      ContentType: "audio/wav",
+      CacheControl: "public, max-age=31536000, immutable",
+    })
+  );
+
+  const base = cleanBase(publicBase);
+  const url = `${base}/${key}`;
+  return { url, key };
 }
 
 export default async function handler(req, res) {
@@ -100,18 +144,7 @@ export default async function handler(req, res) {
     await new Promise((resolve, reject) => {
       const ff = spawn(
         ffmpegPath,
-        [
-          "-y",
-          "-i",
-          inPath,
-          "-acodec",
-          "pcm_s16le",
-          "-ar",
-          "44100",
-          "-ac",
-          "2",
-          outPath,
-        ],
+        ["-y", "-i", inPath, "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2", outPath],
         { stdio: ["ignore", "ignore", "pipe"] }
       );
 
@@ -128,68 +161,55 @@ export default async function handler(req, res) {
       });
     });
 
-    // 2.5) OPTIONAL: Persist WAV to R2 (stems linkleri ölmesin)
+    // 2.5) Persist WAV to R2
+    // A) explicit persist=1 (mevcut davranış)
     const persist = String(req.query.persist || "").trim() === "1";
-    if (persist) {
-      const jobId = String(req.query.job_id || "").trim();
-      const stem = String(req.query.stem || "").trim().toLowerCase();
 
-      if (!jobId) {
+    // B) AUTO PERSIST: UI persist göndermese bile stems filename ise kalıcılaştır
+    const filenameRaw = String(req.query.filename || "").trim();
+    const autoStem = stemFromFilename(filenameRaw); // vocals/drums/...
+    const autoPersist = !persist && !!autoStem;
+
+    if (persist || autoPersist) {
+      const jobId = String(req.query.job_id || "").trim();
+      const stem = persist ? String(req.query.stem || "").trim().toLowerCase() : autoStem;
+
+      // explicit persist modunda job_id zorunlu kalsın (senin mevcut sözleşmen)
+      if (persist && !jobId) {
         try { fs.unlinkSync(inPath); } catch {}
         try { fs.unlinkSync(outPath); } catch {}
         return res.status(400).json({ ok: false, error: "missing_job_id" });
       }
-      if (!stem || !/^[a-z0-9_-]{2,32}$/.test(stem)) {
+
+      let out;
+      try {
+        out = await persistWavToR2({ outPath, jobId, stem });
+      } catch (e) {
         try { fs.unlinkSync(inPath); } catch {}
         try { fs.unlinkSync(outPath); } catch {}
-        return res.status(400).json({ ok: false, error: "missing_or_invalid_stem" });
+        return res.status(500).json({ ok: false, error: String(e && e.message ? e.message : e) });
       }
-
-      const publicBase =
-        process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE;
-      if (!publicBase) {
-        try { fs.unlinkSync(inPath); } catch {}
-        try { fs.unlinkSync(outPath); } catch {}
-        return res
-          .status(500)
-          .json({ ok: false, error: "missing_env:R2_PUBLIC_BASE_URL (or R2_PUBLIC_BASE)" });
-      }
-
-      if (!process.env.R2_BUCKET) {
-        try { fs.unlinkSync(inPath); } catch {}
-        try { fs.unlinkSync(outPath); } catch {}
-        return res.status(500).json({ ok: false, error: "missing_env:R2_BUCKET" });
-      }
-
-      // outputs/music/{job_id}/stems/{stem}.wav
-      const key = `outputs/music/${jobId}/stems/${stem}.wav`;
-      const wavBuf = fs.readFileSync(outPath);
-
-      await r2.send(
-        new PutObjectCommand({
-          Bucket: process.env.R2_BUCKET,
-          Key: key,
-          Body: wavBuf,
-          ContentType: "audio/wav",
-          CacheControl: "public, max-age=31536000, immutable",
-        })
-      );
 
       // cleanup tmp
       try { fs.unlinkSync(inPath); } catch {}
       try { fs.unlinkSync(outPath); } catch {}
 
-      const base = cleanBase(publicBase);
-      const url = `${base}/${key}`;
-
-      // HEAD ise body göndermeyelim
-      if (req.method === "HEAD") {
-        res.status(200);
-        res.setHeader("Content-Type", "application/json");
-        return res.end();
+      // explicit persist=1 -> JSON döndür (mevcut akışın)
+      if (persist) {
+        if (req.method === "HEAD") {
+          res.status(200);
+          res.setHeader("Content-Type", "application/json");
+          return res.end();
+        }
+        return res.status(200).json({ ok: true, url: out.url, key: out.key });
       }
 
-      return res.status(200).json({ ok: true, url, key });
+      // AUTO persist -> kullanıcı experience bozulmasın: direkt R2'ye yönlendir (download)
+      // (UI eski linki kullansa bile sonuç kalıcı linkten iner)
+      res.statusCode = 302;
+      res.setHeader("Location", out.url);
+      res.setHeader("Cache-Control", "no-store");
+      return res.end();
     }
 
     // 3) Respond as direct download (no new page)
