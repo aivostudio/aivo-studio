@@ -477,7 +477,7 @@ return `
 
   <div class="aivo-player-mid">
 
-```
+
 <div class="aivo-player-titleRow">
   <div class="aivo-player-title">${esc(title)}</div>
   <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
@@ -496,7 +496,7 @@ return `
 </div>
 
 <div class="aivo-player-controls">${stemsControls}</div>
-```
+
 
 <style>
 .aivo-stems-icons{
