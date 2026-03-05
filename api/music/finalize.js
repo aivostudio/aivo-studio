@@ -57,20 +57,30 @@ async function getJsonOrNull(key) {
     for await (const chunk of r.Body) chunks.push(Buffer.from(chunk));
     const text = Buffer.concat(chunks).toString("utf-8");
     return JSON.parse(text);
-  } catch (e) {
-    return null; // not found vs.
+  } catch {
+    return null; // not found vs
   }
 }
 
 async function safeRedisGet(redis, key) {
   const v = await redis.get(key);
   // bazı KV wrapper’larında {result:"..."} gelebiliyor
-  if (v && typeof v === "object" && "result" in v) return v.result;
+  if (v && typeof v === "object" && v.result != null) return v.result;
   return v;
 }
 
+function safeJsonParse(v) {
+  if (!v) return null;
+  if (typeof v === "object") return v; // zaten object ise
+  try {
+    return JSON.parse(v);
+  } catch {
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
-  res.setHeader("x-aivo-finalize-build", "finalize-v4-debug-cjs-config-2026-03-05");
+  res.setHeader("x-aivo-finalize-build", "finalize-v5-safe-kv-parse-2026-03-05");
 
   try {
     if (req.method !== "POST") {
@@ -91,16 +101,17 @@ module.exports = async (req, res) => {
     }
 
     // provider → internal map
-   const map = mapRaw ? (typeof mapRaw === "object" ? mapRaw : JSON.parse(mapRaw)) : null;
-    const map = mapRaw ? JSON.parse(mapRaw) : null;
-    const internal_job_id = map?.internal_job_id;
+    const mapKey = `provider_map:${provider_job_id}`;
+    const mapRaw = await safeRedisGet(redis, mapKey);
+    const map = safeJsonParse(mapRaw);
+    const internal_job_id = String(map?.internal_job_id || "").trim();
 
     if (!internal_job_id) {
       return res.status(404).json({
         ok: false,
         error: "internal_job_not_found",
         provider_job_id,
-        map_key: `provider_map:${provider_job_id}`,
+        map_key: mapKey,
         map_exists: !!mapRaw,
       });
     }
@@ -149,11 +160,11 @@ module.exports = async (req, res) => {
     // Job objesini güncelle
     const jobKey = `job:${internal_job_id}`;
     const jobRaw = await safeRedisGet(redis, jobKey);
-    const job = jobRaw ? JSON.parse(jobRaw) : {};
+    const job = safeJsonParse(jobRaw) || {};
 
-    const play_url = `/files/play?job_id=${encodeURIComponent(internal_job_id)}&output_id=${encodeURIComponent(
-      output_id
-    )}`;
+    const play_url = `/files/play?job_id=${encodeURIComponent(
+      internal_job_id
+    )}&output_id=${encodeURIComponent(output_id)}`;
 
     job.id = job.id || internal_job_id;
     job.job_id = job.job_id || internal_job_id;
