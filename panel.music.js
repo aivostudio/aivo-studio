@@ -459,8 +459,6 @@ const stemsControls =
         ${stemsOut.piano  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.piano  || "", "Piano"))}"  download target="_self" title="Piano indir"  aria-label="Piano indir">🎹</a>` : ``}
       </div>
 
-      <div class="aivo-stems-expire-note">24 saat içinde indirin.</div>
-
       <style>
         .aivo-stems-icons{
           margin-top:8px !important;
@@ -469,6 +467,16 @@ const stemsControls =
           gap:6px !important;
           align-items:center !important;
           justify-content:flex-start !important;
+        }
+
+        /* yazı (garanti) */
+        .aivo-stems-icons::after{
+          content:"24 saat içinde indirin.";
+          display:block;
+          flex-basis:100%;
+          margin-top:6px;
+          font-size:12px;
+          opacity:.7;
         }
 
         /* Mevcut .aivo-stem stillerini ez */
@@ -500,12 +508,6 @@ const stemsControls =
 
         .aivo-stems-icons .aivo-stem-ic:active{
           transform:translateY(1px) !important;
-        }
-
-        .aivo-stems-expire-note{
-          margin-top:6px !important;
-          font-size:12px !important;
-          opacity:.7 !important;
         }
       </style>
 ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
