@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
     }
 
     // provider → internal map
-    const mapRaw = await safeRedisGet(redis, `provider_map:${provider_job_id}`);
+   const map = mapRaw ? (typeof mapRaw === "object" ? mapRaw : JSON.parse(mapRaw)) : null;
     const map = mapRaw ? JSON.parse(mapRaw) : null;
     const internal_job_id = map?.internal_job_id;
 
