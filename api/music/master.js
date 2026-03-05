@@ -1,6 +1,7 @@
 // api/music/master.js (CommonJS) - Vercel Node Serverless
 const fs = require("fs");
 const { neon } = require("@neondatabase/serverless");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 function pickConn() {
   return (
@@ -18,6 +19,31 @@ try {
   // eslint-disable-next-line import/no-dynamic-require
   getRedis = require("../_kv").getRedis;
 } catch {}
+
+// ---- R2 (S3-compatible) ----
+let r2;
+function getR2() {
+  if (r2) return r2;
+
+  const endpoint = process.env.R2_ENDPOINT;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+
+  if (!endpoint || !accessKeyId || !secretAccessKey) {
+    throw new Error("missing_r2_env");
+  }
+
+  r2 = new S3Client({
+    region: "auto",
+    endpoint,
+    forcePathStyle: true,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+
+  return r2;
+}
+
+const BUCKET = process.env.R2_BUCKET || "aivo-archive";
 
 async function appendMasterOutputToDB({ job_id, url }) {
   const conn = pickConn();
@@ -63,7 +89,7 @@ async function appendMasterOutputToDB({ job_id, url }) {
 
 module.exports = async (req, res) => {
   try {
-    res.setHeader("x-aivo-master-build", "master-cjs-2026-03-05");
+    res.setHeader("x-aivo-master-build", "master-cjs-r2-upload-2026-03-05");
 
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -95,10 +121,24 @@ module.exports = async (req, res) => {
     const buffer = Buffer.from(await response.arrayBuffer());
     fs.writeFileSync(inputPath, buffer);
 
-    console.log("[MASTER] downloaded", inputPath);
+    console.log("[MASTER] downloaded", inputPath, "bytes=", buffer.length);
 
-    // Şimdilik mastering worker yok -> queued dönüyoruz (auto flag'i kabul ediyoruz)
-    // İleride burada mastering pipeline çalışacak, R2 upload + DB append yapılacak.
+    // ✅ Upload master to R2 so media.aivo.tr can serve it
+    const masterKey = `outputs/master/${id}.mp3`;
+
+    await getR2().send(
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: masterKey,
+        Body: buffer,
+        ContentType: "audio/mpeg",
+        CacheControl: "public, max-age=31536000, immutable",
+      })
+    );
+
+    const master_url = `https://media.aivo.tr/${masterKey}`;
+
+    console.log("[MASTER] uploaded", { masterKey, master_url });
 
     // (best-effort) Redis marker
     try {
@@ -106,19 +146,27 @@ module.exports = async (req, res) => {
         const redis = getRedis();
         await redis.set(
           `music_master:${provider_job_id}`,
-          JSON.stringify({ at: new Date().toISOString(), tmp: inputPath, auto })
+          JSON.stringify({ at: new Date().toISOString(), tmp: inputPath, master_url, auto })
         );
       }
     } catch {}
 
-    // (best-effort) DB append yok (master URL yok) -> sadece queued
+    // (best-effort) DB append
+    const db = await appendMasterOutputToDB({
+      job_id: String(body.job_id || provider_job_id || id),
+      url: master_url,
+    });
+
     return res.status(200).json({
       ok: true,
       job_id: id,
       provider_job_id,
       downloaded: true,
-      mastering: "queued",
+      mastering: "completed",
       tmp: inputPath,
+      master_key: masterKey,
+      master_url,
+      db,
       auto,
     });
   } catch (err) {
@@ -127,6 +175,12 @@ module.exports = async (req, res) => {
       ok: false,
       error: "master_failed",
       message: err?.message || String(err),
+      env: {
+        R2_ENDPOINT: !!process.env.R2_ENDPOINT,
+        R2_ACCESS_KEY_ID: !!process.env.R2_ACCESS_KEY_ID,
+        R2_SECRET_ACCESS_KEY: !!process.env.R2_SECRET_ACCESS_KEY,
+        R2_BUCKET: !!process.env.R2_BUCKET,
+      },
     });
   }
 };
