@@ -1,3 +1,4 @@
+export const config = { runtime: "nodejs" };
 // api/music/finalize.js
 const { getRedis } = require("../_kv");
 const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
