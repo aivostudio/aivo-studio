@@ -56,11 +56,13 @@ const jobIdClean = String(job_id || "").replace(/^job_/, "");
 
 const raw = String(job_id || "").replace(/^job_/, "");
 
+const raw = String(job_id || "").replace(/^job_/, "");
+
 const found = await sql`
   select id
   from jobs
-  where id::text = ${job_id}
-     or replace(id::text, '-', '') = ${raw}
+  where replace(id::text,'-','') = ${raw}
+     or id::text = ${job_id}
   limit 1
 `;
   if (!found || found.length === 0) {
