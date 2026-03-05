@@ -992,7 +992,13 @@ module.exports = async (req, res) => {
 // --- AUTO MASTERING TRIGGER (music) ---
 // Only when we have the DB uuid job_id (this endpoint does) and archive mp3 is available
 try {
-  const isMusic = job && (job.app === "music" || job.type === "music");
+ const isMusic =
+  job &&
+  (
+    job.app === "music" ||
+    job.type === "music" ||
+    job.provider === "topmediai"
+  );
   const state = (status || job.status || "").toString().toLowerCase();
   const readyLike = state === "completed" || state === "ready";
 
