@@ -54,11 +54,13 @@ async function appendMasterOutputToDB({ job_id, url }) {
  // job_id: db uuid / internal_job_id / provider_job_id olabiliyor
 const jobIdClean = String(job_id || "").replace(/^job_/, "");
 
+const raw = String(job_id || "").replace(/^job_/, "");
+
 const found = await sql`
   select id
   from jobs
   where id::text = ${job_id}
-     or id::text = ${String(job_id || "").replace(/^job_/, "")}
+     or replace(id::text, '-', '') = ${raw}
   limit 1
 `;
   if (!found || found.length === 0) {
