@@ -22,6 +22,36 @@ export default async function handler(req, res) {
     }
 
     const { input } = req.body || {};
+    // --- AIVO: COVER için "NO TEXT" kilidi (Spotify/iTunes safe) ---
+if (String(req.query?.app || "").toLowerCase() === "cover") {
+  const NO_TEXT_LOCK = [
+    "NO text",
+    "NO letters",
+    "NO typography",
+    "NO words",
+    "NO captions",
+    "NO logos",
+    "NO branding",
+    "NO watermark",
+    "NO signature",
+    "NO poster design",
+    "NO album title text",
+    "NO readable text",
+    "leave clean space for later typography",
+  ].join(", ");
+
+  // input yoksa oluştur
+  const _input = input && typeof input === "object" ? input : {};
+  const p = String(_input.prompt || "").trim();
+
+  // Prompt’a lock ekle (sona eklemek en stabil)
+  _input.prompt = p ? `${p}\n\n${NO_TEXT_LOCK}` : NO_TEXT_LOCK;
+
+  // req.body.input referansını güncelle
+  req.body = req.body || {};
+  req.body.input = _input;
+}
+// --- /AIVO ---
     const promptRaw = (input?.prompt || "").trim();
 
     if (!promptRaw) {
