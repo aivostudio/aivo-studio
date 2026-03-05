@@ -19,7 +19,40 @@ try {
 } catch (e) {
   console.warn("muxMp4WithAudio not loaded:", e?.message || e);
 }
+// --- AUTO MASTERING (music) ---
+// Prevent repeated triggers during frequent polling (best-effort; serverless cold starts may reset)
+const __AUTO_MASTERING =
+  globalThis.__AUTO_MASTERING || (globalThis.__AUTO_MASTERING = new Map());
 
+function _autoMasterShouldTrigger(jobId, ttlMs = 120000) {
+  const now = Date.now();
+  const last = __AUTO_MASTERING.get(jobId) || 0;
+  if (now - last < ttlMs) return false;
+  __AUTO_MASTERING.set(jobId, now);
+  return true;
+}
+
+function _pickArchiveAudioUrl(outputs = []) {
+  const audio = outputs.find(
+    (o) =>
+      o &&
+      (o.type === "audio" ||
+        o.kind === "audio" ||
+        (typeof o.url === "string" && o.url.includes(".mp3")) ||
+        (typeof o.archive_url === "string" && o.archive_url.includes(".mp3")))
+  );
+  return (audio && (audio.archive_url || audio.url)) || null;
+}
+
+function _hasMasterOutput(outputs = []) {
+  return outputs.some(
+    (o) =>
+      o &&
+      ((o.meta && o.meta.kind === "master") ||
+        o.kind === "master" ||
+        o.type === "master")
+  );
+}
 // ---------- helpers ----------
 function pickUrl(x) {
   if (!x) return null;
@@ -956,7 +989,44 @@ module.exports = async (req, res) => {
         job.outputs = outputs;
       }
     }
+// --- AUTO MASTERING TRIGGER (music) ---
+// Only when we have the DB uuid job_id (this endpoint does) and archive mp3 is available
+try {
+  const isMusic = job && (job.app === "music" || job.type === "music");
+  const state = (status || job.status || "").toString().toLowerCase();
+  const readyLike = state === "completed" || state === "ready";
 
+  if (isMusic && readyLike && Array.isArray(outputs)) {
+    const hasMaster = _hasMasterOutput(outputs);
+    const archiveUrl = _pickArchiveAudioUrl(outputs);
+
+    if (!hasMaster && archiveUrl && _autoMasterShouldTrigger(job_id)) {
+      const proto =
+        req.headers["x-forwarded-proto"] ||
+        (req.connection && req.connection.encrypted ? "https" : "http") ||
+        "https";
+      const host = req.headers["x-forwarded-host"] || req.headers.host;
+      const base = `${proto}://${host}`;
+
+      await fetch(`${base}/api/music/master`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          // forward cookies if your /api/music/master checks session
+          cookie: req.headers.cookie || "",
+        },
+        body: JSON.stringify({
+          job_id, // DB uuid (critical)
+          audio_url: archiveUrl, // archive mp3
+          auto: true,
+        }),
+      });
+    }
+  }
+} catch (e) {
+  // never block status response
+  console.warn("[auto-master] trigger failed:", e && (e.stack || e.message || e));
+}
     // =========================
     // 4) AUTO LOGO OVERLAY (ATMO) (DONE sonrası)
     // =========================
