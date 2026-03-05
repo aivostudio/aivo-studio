@@ -176,6 +176,11 @@ async function applyCoverTextOverlay(imageUrl) {
     console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
     const imgs = await generateImages({ prompt, style, ratio, n, quality });
+    // --- APPLY TEXT OVERLAY ---
+for (const img of imgs) {
+  const over = await applyCoverTextOverlay(img.url);
+  img.url = over.finalUrl;
+}
 
     const outputs = imgs.map((it, idx) => ({
       type: "image",
