@@ -20,9 +20,7 @@ async function readJobObjFromDB(internalId) {
     const rows = await sql`
       select request_id, meta
       from jobs
-    where meta->>'internal_job_id' = ${internalId}
-   or request_id = ${internalId.replace("job_", "")}
-   or id = ${internalId}
+      where meta->>'internal_job_id' = ${internalId}
       order by created_at desc
       limit 1
     `;
@@ -362,27 +360,11 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
     }
 
     provider_song_ids = uniqStrings(provider_song_ids);
-// 🔧 DB fallback (KV mapping missing)
-if (provider_song_ids.length === 0 && internal_job_id) {
-  const dbJob = await readJobObjFromDB(internal_job_id);
 
- if (dbJob && dbJob.provider_job_id) {
-    provider_job_id = dbJob.provider_job_id;
-
-    const ids = Array.isArray(dbJob.provider_song_ids)
-      ? dbJob.provider_song_ids
-      : [];
-
-    if (ids.length) {
-      provider_song_ids = uniqStrings(ids);
-    } else {
-      provider_song_ids = [provider_job_id];
-    }
-  }
-}
-   if (provider_song_ids.length === 0 && provider_job_id) {
-  provider_song_ids = [provider_job_id];
-}
+    if (provider_song_ids.length === 0) {
+      return res.status(200).json({
+        ok: false,
+        error: "missing_provider_song_ids",
         state: "processing",
         status: "processing",
         provider_job_id: provider_job_id || null,
@@ -556,51 +538,6 @@ if (provider_song_ids.length === 0 && internal_job_id) {
       data.state = "processing";
       data.status = "processing";
     }
-
-    // --- AUTO MASTER TRIGGER (completed -> /api/music/master) ---
-    // Yer: data.state/status belirlendikten sonra, return res.json(data)'dan hemen önce.
-    try {
-      const isCompleted = data.state === "completed" || data.status === "completed";
-
-      // master var mı? (type==="master" veya outputs/master path)
-      const hasMaster = (data.outputs || []).some((o) => {
-        const t = String(o?.type || "");
-        const u = String(o?.url || "");
-        return t === "master" || u.includes("/outputs/master/");
-      });
-
-      // master basmak için kullanacağımız input audio_url:
-      // 1) outputs[0].meta.audio_url (provider url)
-      // 2) fallback: outputs[0].url (proxy/R2)
-      const first = (data.outputs || [])[0] || null;
-      const audioUrl =
-        (first?.meta?.audio_url ? String(first.meta.audio_url) : "") ||
-        (first?.url ? String(first.url) : "");
-
-      // basit throttle: aynı provider_job_id için 60sn içinde tekrar tetikleme
-      globalThis.__AIVO_MASTER_TRIG = globalThis.__AIVO_MASTER_TRIG || {};
-      const k = data.provider_job_id ? `m:${String(data.provider_job_id)}` : null;
-      const last = k ? globalThis.__AIVO_MASTER_TRIG[k] || 0 : 0;
-      const now = Date.now();
-
-      if (k && isCompleted && !hasMaster && audioUrl && now - last > 60_000) {
-        globalThis.__AIVO_MASTER_TRIG[k] = now;
-
-        const origin = getBaseUrl(req);
-
-        // fire-and-forget
-       fetchFn(`${origin}/api/music/finalize`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            provider_job_id: String(data.provider_job_id),
-           mp3_url: audioUrl,
-            auto: true,
-          }),
-        }).catch(() => {});
-      }
-    } catch (_) {}
-    // --- /AUTO MASTER TRIGGER ---
 
     return res.status(200).json(data);
   } catch (err) {
