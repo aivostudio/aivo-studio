@@ -1,4 +1,4 @@
-// --- // api/music/master.js (CommonJS) - Vercel Node Serverless
+// api/music/master.js (CommonJS) - Vercel Node Serverless
 const fs = require("fs");
 const { neon } = require("@neondatabase/serverless");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
@@ -52,16 +52,19 @@ async function appendMasterOutputToDB({ job_id, url }) {
   const sql = neon(conn);
 
   // job_id: db uuid / internal_job_id / provider_job_id olabiliyor
+  // - internal_job_id ör: "job_10f..." gibi geliyor
+  // - DB id UUID: "xxxxxxxx-xxxx-...." gibi
+  // Burada internal_job_id içindeki "job_" prefix'ini kaldırıp,
+  // UUID ise "-" karakterlerini kaldırarak karşılaştırıyoruz.
   const raw = String(job_id || "").replace(/^job_/, "");
 
-const raw = String(job_id || "").replace(/^job_/, "");
+  const found = await sql`
+    select id
+    from jobs
+    where replace(id::text,'-','') = ${raw}
+    limit 1
+  `;
 
-const found = await sql`
-  select id
-  from jobs
-  where replace(id::text,'-','') = ${raw}
-  limit 1
-`;
   if (!found || found.length === 0) {
     return { ok: false, skipped: true, reason: "job_not_found" };
   }
