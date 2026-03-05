@@ -1,4 +1,5 @@
 // FILE: api/cover/overlay-text.js
+export const runtime = "nodejs";
 import sharp from "sharp";
 
 function escapeXml(s = "") {
