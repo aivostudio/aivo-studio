@@ -54,10 +54,21 @@ module.exports = async (req, res) => {
     const raw = await safeRedisGet(redis, metaKey);
     const meta = safeJsonParse(raw);
 
-    const mp3_url = String(meta?.mp3_url || "").trim();
-    if (!mp3_url) {
-      return res.status(404).send("missing_mp3_url_in_meta");
-    }
+   const mp3_url = String(meta?.mp3_url || "").trim();
+if (!mp3_url) {
+  // DEBUG: KV’de gerçekten ne var görelim
+  const rawType = raw === null ? "null" : Array.isArray(raw) ? "array" : typeof raw;
+
+  return res.status(200).json({
+    ok: false,
+    error: "missing_mp3_url_in_meta",
+    meta_key: metaKey,
+    raw_type: rawType,
+    raw_preview: rawType === "string" ? String(raw).slice(0, 500) : raw,
+    meta: meta || null,
+    meta_keys: meta && typeof meta === "object" ? Object.keys(meta).slice(0, 50) : [],
+  });
+}
 
     // same-origin olsun diye media proxy üzerinden yönlendiriyoruz
     const base = getBaseUrl(req);
