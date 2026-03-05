@@ -127,7 +127,7 @@ function withTitleSafeArea(p) {
   return [
     base,
     "album/single cover composition",
-absolutely NO text, NO letters, NO typography, NO words, NO captions, NO logos, NO watermark, no signage, no titles, no branding
+    "NO text, NO letters, NO logos, NO watermark",
     "leave clean negative space at the TOP (top ~20-25% of the image) for title/artist typography",
     "top area should be simple gradient sky / soft bokeh / smooth texture (no busy details)",
     "subject and main action centered or slightly lower to keep top clear",
