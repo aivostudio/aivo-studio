@@ -449,8 +449,8 @@ function renderCard(job){
       encodeURIComponent(name + ".wav")
     );
   };
-  const stemsControls =
-    (stemsStatus === "succeeded" && stemsOut) ? `
+const stemsControls =
+  (stemsStatus === "succeeded" && stemsOut) ? `
       <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
         ${stemsOut.vocals ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download target="_self" title="Vocals indir" aria-label="Vocals indir">🎤</a>` : ``}
         ${stemsOut.drums  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.drums  || "", "Drums"))}"  download target="_self" title="Drums indir"  aria-label="Drums indir">🥁</a>` : ``}
@@ -459,47 +459,55 @@ function renderCard(job){
         ${stemsOut.piano  ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.piano  || "", "Piano"))}"  download target="_self" title="Piano indir"  aria-label="Piano indir">🎹</a>` : ``}
       </div>
 
+      <div class="aivo-stems-expire-note">24 saat içinde indirin.</div>
+
       <style>
-  .aivo-stems-icons{
-    margin-top:8px !important;
-    display:flex !important;
-    flex-wrap:wrap !important;
-    gap:6px !important;
-    align-items:center !important;
-    justify-content:flex-start !important;
-  }
+        .aivo-stems-icons{
+          margin-top:8px !important;
+          display:flex !important;
+          flex-wrap:wrap !important;
+          gap:6px !important;
+          align-items:center !important;
+          justify-content:flex-start !important;
+        }
 
-  /* Mevcut .aivo-stem stillerini ez */
-  .aivo-stems-icons .aivo-stem-ic{
-    display:inline-flex !important;
-    flex:0 0 26px !important;
-    width:26px !important;
-    min-width:26px !important;
-    max-width:26px !important;
-    height:26px !important;
-    min-height:26px !important;
-    max-height:26px !important;
+        /* Mevcut .aivo-stem stillerini ez */
+        .aivo-stems-icons .aivo-stem-ic{
+          display:inline-flex !important;
+          flex:0 0 26px !important;
+          width:26px !important;
+          min-width:26px !important;
+          max-width:26px !important;
+          height:26px !important;
+          min-height:26px !important;
+          max-height:26px !important;
 
-    padding:0 !important;
-    margin:0 !important;
+          padding:0 !important;
+          margin:0 !important;
 
-    align-items:center !important;
-    justify-content:center !important;
+          align-items:center !important;
+          justify-content:center !important;
 
-    border-radius:10px !important;
-    border:1px solid rgba(255,255,255,.12) !important;
-    background:rgba(255,255,255,.06) !important;
+          border-radius:10px !important;
+          border:1px solid rgba(255,255,255,.12) !important;
+          background:rgba(255,255,255,.06) !important;
 
-    text-decoration:none !important;
-    user-select:none !important;
-    line-height:1 !important;
-    font-size:13px !important;
-  }
+          text-decoration:none !important;
+          user-select:none !important;
+          line-height:1 !important;
+          font-size:13px !important;
+        }
 
-  .aivo-stems-icons .aivo-stem-ic:active{
-    transform:translateY(1px) !important;
-  }
-</style>
+        .aivo-stems-icons .aivo-stem-ic:active{
+          transform:translateY(1px) !important;
+        }
+
+        .aivo-stems-expire-note{
+          margin-top:6px !important;
+          font-size:12px !important;
+          opacity:.7 !important;
+        }
+      </style>
 ` : (stemsStatus === "starting" || stemsStatus === "processing") ? `
 <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
 ` : stemsStatus === "failed" ? `
