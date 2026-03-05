@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     const isTopBright = meanLum > 140;
 
     // 4) renkler
-    const textMain = isTopBright ? "#0B0B0D" : "#FFFFFF";
+const textMain = "#0B0B0D";
     const scrimTop = isTopBright ? "rgba(255,255,255,0.32)" : "rgba(0,0,0,0.48)";
     const scrimMid = isTopBright ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.18)";
     const scrimBot = "rgba(0,0,0,0)";
