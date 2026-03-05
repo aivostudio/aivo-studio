@@ -12,6 +12,7 @@
     "resend": "^6.7.0",
     "stripe": "^17.0.0",
     "pg": "^8.11.3",
-    "ffmpeg-static": "^5.2.0"
+    "ffmpeg-static": "^5.2.0",
+    "sharp": "^0.33.2"
   }
 }
