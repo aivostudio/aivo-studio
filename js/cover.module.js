@@ -3,6 +3,43 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
 // cover.module.js — FULL BLOCK (style sync + quality routing + FAL generate + PPE.apply)
 (function () {
+  // --- COVER TEXT OVERLAY (auto) ---
+async function applyCoverTextOverlay(imageUrl) {
+
+  const artistInput =
+    document.querySelector('#coverArtist') ||
+    document.querySelector('input[name="artist"]');
+
+  const titleInput =
+    document.querySelector('#coverTitle') ||
+    document.querySelector('input[name="title"]');
+
+  const artist = artistInput ? artistInput.value.trim() : "";
+  const title = titleInput ? titleInput.value.trim() : "";
+
+  if (!artist && !title) {
+    return { ok:true, finalUrl:imageUrl };
+  }
+
+  const r = await fetch("/api/cover/overlay-text",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      imageUrl,
+      artist,
+      title
+    })
+  });
+
+  if(!r.ok){
+    return { ok:false, finalUrl:imageUrl };
+  }
+
+  const blob = await r.blob();
+  const finalUrl = URL.createObjectURL(blob);
+
+  return { ok:true, finalUrl };
+}
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
 
