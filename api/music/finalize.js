@@ -152,6 +152,26 @@ module.exports = async (req, res) => {
     // R2 write
     await putJson(outputMetaKey, outputMeta);
     await putJson(indexKey, nextIndex);
+    // ✅ READ-AFTER-WRITE doğrulama (R2 gerçekten yazdı mı?)
+const _probe = await getJsonOrNull(outputMetaKey);
+if (!_probe || !_probe.mp3_url) {
+  return res.status(500).json({
+    ok: false,
+    error: "r2_write_verify_failed",
+    hint: "putJson ok göründü ama read-back başarısız; bucket/env/prefix/permission mismatch olabilir",
+    bucket: BUCKET,
+    output_meta_key: outputMetaKey,
+    index_key: indexKey,
+    probe_null: !_probe,
+    probe_has_mp3_url: !!_probe?.mp3_url,
+    env: {
+      R2_ENDPOINT: !!process.env.R2_ENDPOINT,
+      R2_ACCESS_KEY_ID: !!process.env.R2_ACCESS_KEY_ID,
+      R2_SECRET_ACCESS_KEY: !!process.env.R2_SECRET_ACCESS_KEY,
+      R2_BUCKET: process.env.R2_BUCKET || null,
+    },
+  });
+}
 
     // Redis write (yardımcı)
     await redis.set(outputMetaKey, JSON.stringify(outputMeta));
