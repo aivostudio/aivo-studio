@@ -52,11 +52,10 @@ async function appendMasterOutputToDB({ job_id, url }) {
   const sql = neon(conn);
 
   // job_id: db uuid / internal_job_id / provider_job_id olabiliyor
-   const found = await sql`
+    const found = await sql`
     select id
     from jobs
     where id::text = ${job_id}
-       or provider_job_id = ${job_id}
     limit 1
   `;
   if (!found || found.length === 0) {
