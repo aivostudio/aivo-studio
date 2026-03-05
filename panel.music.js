@@ -1472,16 +1472,15 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     __searchQ = String(q || "").trim().toLowerCase();
     applyMusicSearchFilter();
   }
-
-  function getHeader(){
-    return {
-      title: "Müziklerim",
-      meta: "",
-      searchPlaceholder: "Müziklerde ara...",
-      searchEnabled: true,
-      resetSearch: false
-    };
-  }
+function getHeader(){
+  return {
+    title: "Müziklerim",
+    meta: "⚠️ Müzik dosyaları 14 gün saklanır.",
+    searchPlaceholder: "Müziklerde ara...",
+    searchEnabled: true,
+    resetSearch: false
+  };
+}
 
   // ✅ DB merge: DB boş src ile eski ready/src ezmesin
   function mergePreferDbButKeepReady(oldItem, dbItem){
