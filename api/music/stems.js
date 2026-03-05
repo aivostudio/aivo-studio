@@ -41,6 +41,23 @@ module.exports = async function handler(req, res) {
         });
       }
 
+      // Replicate gecici URL -> R2 kalici URL
+      if (j?.status === "succeeded" && j?.output && typeof j.output === "object") {
+        const { copyToR2 } = require("../_lib/copy-to-r2");
+
+        const fixed = {};
+        for (const [name, url] of Object.entries(j.output)) {
+          if (!url) continue;
+
+          const key = `outputs/music/stems/${predictionId}/${name}.mp3`;
+          const r2 = await copyToR2(url, key);
+
+          fixed[name] = r2?.public_url || url;
+        }
+
+        j.output = fixed;
+      }
+
       return res.status(200).json({
         ok: true,
         mode: "status",
