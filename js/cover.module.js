@@ -117,23 +117,37 @@ async function applyCoverTextOverlay(imageUrl) {
     if (j.ok === false) throw j.error || "cover_failed";
     return j;
   }
+// --- COVER PROMPT COMPOSITION: reserve safe title area (top) ---
+function withTitleSafeArea(p) {
+  const base = String(p || "").trim();
+  if (!base) return base;
 
+  // We overlay text ourselves → force image to have NO text/logos.
+  // Reserve top area as clean/low-detail negative space for title typography.
+  return [
+    base,
+    "album/single cover composition",
+    "NO text, NO letters, NO logos, NO watermark",
+    "leave clean negative space at the TOP (top ~20-25% of the image) for title/artist typography",
+    "top area should be simple gradient sky / soft bokeh / smooth texture (no busy details)",
+    "subject and main action centered or slightly lower to keep top clear",
+    "high contrast, cinematic lighting, premium artwork"
+  ].join(", ");
+}
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
   async function generateImages({ prompt, style, ratio, n, quality }) {
     const tasks = [];
     for (let i = 0; i < n; i++) {
       const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
+      const promptForModel = withTitleSafeArea(promptVar);
 
       // style/ratio şu an backend’te kullanılmıyor olabilir; meta olarak saklıyoruz.
       tasks.push(
         postJSON("/api/providers/fal/predictions/create?app=cover", {
           input: {
-            prompt: promptVar,
-            quality, // ✅ backend routing: artist | ultra
-            // İstersen backend destekliyorsa buraya eklenebilir:
-            // style,
-            // ratio,
-          },
+  prompt: promptForModel,
+  quality,
+}
         }).then((j) => {
           const url =
             j.output ||
