@@ -57,7 +57,8 @@ const jobIdClean = String(job_id || "").replace(/^job_/, "");
 const found = await sql`
   select id
   from jobs
-  where id::text = ${jobIdClean}
+  where id::text = ${job_id}
+     or id::text = ${String(job_id || "").replace(/^job_/, "")}
   limit 1
 `;
   if (!found || found.length === 0) {
