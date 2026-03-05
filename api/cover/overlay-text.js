@@ -1,5 +1,6 @@
 ```javascript
 // FILE: api/cover/overlay-text.js
+export const config = { runtime: "nodejs" };
 import sharp from "sharp";
 
 function escapeXml(s = "") {
