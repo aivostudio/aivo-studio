@@ -1033,7 +1033,7 @@ try {
   // never block status response
   console.warn("[auto-master] trigger failed:", e && (e.stack || e.message || e));
 }
-    // =========================
+       // =========================
     // 4) AUTO LOGO OVERLAY (ATMO) (DONE sonrası)
     // =========================
     try {
@@ -1158,6 +1158,40 @@ try {
     const outAudio =
       outputs.find((x) => normType(x?.type) === "audio") || null;
 
+    // =========================
+    // 5.1) AUTO MASTERING (MUSIC) - trigger when audio exists but no master yet
+    // =========================
+    try {
+      const isMusic =
+        String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "music" ||
+        String(job?.provider || job?.meta?.provider || "").toLowerCase() === "topmediai";
+
+      const outAudioUrl = outAudio ? pickUrl(outAudio) : null;
+
+      const isDoneLike = String(job?.status || "").toLowerCase() === "done";
+      const hasMaster = _hasMasterOutput(outputs);
+      const archiveUrl = _pickArchiveAudioUrl(outputs) || outAudioUrl;
+
+      if (isMusic && isDoneLike && archiveUrl && !hasMaster && _autoMasterShouldTrigger(job_id)) {
+        const baseUrl = getBaseUrl(req);
+
+        await fetch(`${baseUrl}/api/music/master`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: req.headers.cookie || "",
+          },
+          body: JSON.stringify({
+            job_id,           // ✅ DB uuid (critical)
+            audio_url: archiveUrl,
+            auto: true,
+          }),
+        });
+      }
+    } catch (e) {
+      console.warn("[auto-master] trigger failed:", e?.message || e);
+    }
+
     const outImage =
       outputs.find((x) => normType(x?.type) === "image") || null;
 
@@ -1196,12 +1230,3 @@ try {
           }
         : {}),
     });
-  } catch (e) {
-    console.error("jobs/status fatal:", e);
-    return res.status(500).json({
-      ok: false,
-      error: "server_error",
-      message: String(e?.message || e),
-    });
-  }
-};
