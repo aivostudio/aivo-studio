@@ -1,6 +1,7 @@
 ```javascript
 // FILE: api/cover/overlay-text.js
-export const config = { runtime: "nodejs" };
+export const runtime = "nodejs";
+
 import sharp from "sharp";
 
 function escapeXml(s = "") {
@@ -36,33 +37,38 @@ function computeFontSizes(title, artist) {
 
 export default async function handler(req, res) {
   try {
+
     if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
+      return res.status(405).json({ ok:false, error:"method_not_allowed" });
     }
 
     const { imageUrl, artist, title } = req.body || {};
     const url = (imageUrl || "").trim();
-    if (!url) return res.status(400).json({ ok: false, error: "imageUrl gerekli" });
+
+    if (!url) {
+      return res.status(400).json({ ok:false, error:"imageUrl_required" });
+    }
 
     const artistText = (artist || "").trim();
     const titleText = (title || "").trim();
 
     if (!artistText && !titleText) {
-      return res.status(400).json({ ok: false, error: "artist/title boş" });
+      return res.status(400).json({ ok:false, error:"artist_or_title_required" });
     }
 
     const imgRes = await fetch(url);
+
     if (!imgRes.ok) {
-      return res.status(400).json({ ok: false, error: "image indirilemedi" });
+      return res.status(400).json({ ok:false, error:"image_download_failed" });
     }
 
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
 
-    const base = sharp(imgBuffer).resize(1024, 1024, { fit: "cover" });
+    const base = sharp(imgBuffer).resize(1024,1024,{ fit:"cover" });
 
     const topStats = await base
       .clone()
-      .extract({ left: 0, top: 0, width: 1024, height: 260 })
+      .extract({ left:0, top:0, width:1024, height:260 })
       .stats();
 
     const c = topStats.channels;
@@ -84,101 +90,104 @@ export default async function handler(req, res) {
     const svg = `
 <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
 
-  <defs>
+<defs>
 
-    <linearGradient id="topScrim" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="${scrimTop}"/>
-      <stop offset="0.65" stop-color="${scrimMid}"/>
-      <stop offset="1" stop-color="${scrimBot}"/>
-    </linearGradient>
+<linearGradient id="topScrim" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0" stop-color="${scrimTop}"/>
+<stop offset="0.65" stop-color="${scrimMid}"/>
+<stop offset="1" stop-color="${scrimBot}"/>
+</linearGradient>
 
-    <linearGradient id="titleGold" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0%" stop-color="#FFF4CC"/>
-      <stop offset="35%" stop-color="#F3D07A"/>
-      <stop offset="65%" stop-color="#D79B3F"/>
-      <stop offset="100%" stop-color="#FFF7D6"/>
-    </linearGradient>
+<linearGradient id="titleGold" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#FFF4CC"/>
+<stop offset="35%" stop-color="#F3D07A"/>
+<stop offset="65%" stop-color="#D79B3F"/>
+<stop offset="100%" stop-color="#FFF7D6"/>
+</linearGradient>
 
-    <filter id="titleShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur"/>
-      <feOffset dx="0" dy="10" result="offsetBlur"/>
-      <feColorMatrix in="offsetBlur" type="matrix"
-        values="0 0 0 0 0
-                0 0 0 0 0
-                0 0 0 0 0
-                0 0 0 0.45 0"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
+<filter id="titleShadow" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur"/>
+<feOffset dx="0" dy="10" result="offsetBlur"/>
+<feColorMatrix in="offsetBlur" type="matrix"
+values="0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0.45 0"/>
+<feMerge>
+<feMergeNode/>
+<feMergeNode in="SourceGraphic"/>
+</feMerge>
+</filter>
 
-    <style>
+<style>
 
-      .title {
-        font-family: "Impact","Arial Black",Arial,sans-serif;
-        font-weight: 900;
-        font-size: ${titleSize}px;
-        text-transform: uppercase;
-        letter-spacing: ${Math.max(0, Math.round(titleSize * 0.006))}px;
-      }
+.title {
+font-family:"Impact","Arial Black",Arial,sans-serif;
+font-weight:900;
+font-size:${titleSize}px;
+text-transform:uppercase;
+letter-spacing:${Math.max(0,Math.round(titleSize*0.006))}px;
+}
 
-      .titleBack {
-        fill: rgba(0,0,0,0.65);
-        transform: translate(0px,12px);
-      }
+.titleBack {
+fill:rgba(0,0,0,0.65);
+}
 
-      .titleFront {
-        fill: url(#titleGold);
-        paint-order: stroke fill;
-        stroke: rgba(0,0,0,0.35);
-        stroke-width: 12;
-      }
+.titleFront {
+fill:url(#titleGold);
+paint-order:stroke fill;
+stroke:rgba(0,0,0,0.35);
+stroke-width:12;
+}
 
-      .artist {
-        font-family: "Montserrat", Arial, sans-serif;
-        font-weight: 700;
-        font-size: ${artistSize}px;
-        letter-spacing: ${Math.max(2, Math.round(artistSize * 0.12))}px;
-        fill: ${textMain};
-        opacity: ${isTopBright ? "0.92" : "0.88"};
-        text-transform: uppercase;
-      }
+.artist {
+font-family:"Montserrat",Arial,sans-serif;
+font-weight:700;
+font-size:${artistSize}px;
+letter-spacing:${Math.max(2,Math.round(artistSize*0.12))}px;
+fill:${textMain};
+opacity:${isTopBright ? "0.92":"0.88"};
+text-transform:uppercase;
+}
 
-    </style>
+</style>
 
-  </defs>
+</defs>
 
-  <rect x="0" y="0" width="1024" height="340" fill="url(#topScrim)"/>
+<rect x="0" y="0" width="1024" height="340" fill="url(#topScrim)"/>
 
-  <!-- TITLE (poster style double layer) -->
-  <g filter="url(#titleShadow)">
-    <text x="512" y="150" text-anchor="middle" class="title titleBack">${safeTitle}</text>
-    <text x="512" y="150" text-anchor="middle" class="title titleFront">${safeTitle}</text>
-  </g>
+<g filter="url(#titleShadow)">
+<text x="512" y="150" text-anchor="middle" class="title titleBack">${safeTitle}</text>
+<text x="512" y="150" text-anchor="middle" class="title titleFront">${safeTitle}</text>
+</g>
 
-  <!-- ARTIST -->
-  <text x="512" y="235" text-anchor="middle" class="artist">${safeArtist}</text>
+<text x="512" y="235" text-anchor="middle" class="artist">${safeArtist}</text>
 
-  <rect x="272" y="260" width="480" height="4" rx="2"
-    fill="${textSoft}" opacity="${isTopBright ? "0.22" : "0.28"}"/>
+<rect x="272" y="260" width="480" height="4" rx="2"
+fill="${textSoft}" opacity="${isTopBright ? "0.22":"0.28"}"/>
 
 </svg>
 `;
 
     const final = await base
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .jpeg({ quality: 95, mozjpeg: true })
+      .composite([{ input: Buffer.from(svg), top:0, left:0 }])
+      .jpeg({ quality:95, mozjpeg:true })
       .toBuffer();
 
-    res.setHeader("Content-Type", "image/jpeg");
-    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Content-Type","image/jpeg");
+    res.setHeader("Cache-Control","no-store");
 
     return res.status(200).send(final);
 
   } catch (e) {
-    console.error("[cover/overlay-text] error:", e);
-    return res.status(500).json({ ok: false, error: e?.message || "server_error" });
+
+    console.error("[cover/overlay-text] error:",e);
+
+    return res.status(500).json({
+      ok:false,
+      error:e?.message || "server_error"
+    });
+
   }
 }
 ```
