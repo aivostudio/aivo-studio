@@ -117,7 +117,7 @@ export default async function handler(req, res) {
 
     <style>
       .title {
-        font-family: "Montserrat", "Arial Black", Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
         font-weight: 900;
         font-size: ${titleSize}px;
         letter-spacing: ${Math.max(1, Math.round(titleSize * 0.02))}px;
@@ -125,7 +125,7 @@ export default async function handler(req, res) {
         text-transform: uppercase;
       }
       .artist {
-        font-family: "Montserrat", Arial, sans-serif;
+        font-family: Arial, Helvetica, sans-serif;
         font-weight: 700;
         font-size: ${artistSize}px;
         letter-spacing: ${Math.max(2, Math.round(artistSize * 0.12))}px;
