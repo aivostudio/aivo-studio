@@ -58,10 +58,18 @@ async function appendMasterOutputToDB({ job_id, url }) {
   // UUID ise "-" karakterlerini kaldırarak karşılaştırıyoruz.
   const raw = String(job_id || "").replace(/^job_/, "");
 
-  const found = await sql`
+   const found = await sql`
     select id
     from jobs
-    where replace(id::text,'-','') = ${raw}
+    where
+      -- 1) body.job_id uuid ise: uuid normalize (dashsiz)
+      replace(id::text,'-','') = ${raw}
+
+      -- 2) body.job_id internal_job_id ise: meta.internal_job_id birebir
+      or meta->>'internal_job_id' = ${String(job_id || '')}
+
+      -- 3) body.job_id "job_" prefixsiz gelirse: "job_" eklenmiş halini de dene
+      or meta->>'internal_job_id' = ${`job_${raw}`}
     limit 1
   `;
 
