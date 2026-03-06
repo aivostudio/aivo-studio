@@ -70,7 +70,7 @@ export default async function handler(req, res) {
     dominant-baseline="middle"
     filter="url(#softShadow)"
     style="
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+     font-family: "DejaVu Sans", Arial, sans-serif;
       font-weight: 900;
       font-size: 84px;
       letter-spacing: 1px;
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     dominant-baseline="middle"
     filter="url(#softShadow)"
     style="
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font-family: "DejaVu Sans", Arial, sans-serif;
       font-weight: 700;
       font-size: 34px;
       letter-spacing: 4px;
