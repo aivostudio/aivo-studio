@@ -2,9 +2,6 @@
 export const config = { runtime: "nodejs" };
 
 import sharp from "sharp";
-import opentype from "opentype.js";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 export default async function handler(req, res) {
   try {
@@ -21,7 +18,6 @@ export default async function handler(req, res) {
     const artistText = String(artist || "").toUpperCase().trim();
     const titleText = String(title || "").trim();
 
-    // resmi indir
     const imgRes = await fetch(imageUrl);
     if (!imgRes.ok) {
       return res.status(400).json({ ok: false, error: "image indirilemedi" });
@@ -29,60 +25,13 @@ export default async function handler(req, res) {
 
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
 
-    // local font dosyaları
-    const sansFontPath = path.join(process.cwd(), "api", "cover", "fonts", "NotoSans-Bold.ttf");
-    const serifFontPath = path.join(process.cwd(), "api", "cover", "fonts", "NotoSerif-Italic.ttf");
-
-    const [sansFontBuf, serifFontBuf] = await Promise.all([
-      readFile(sansFontPath),
-      readFile(serifFontPath),
-    ]);
-
-    // opentype parse için doğru ArrayBuffer slice
-    const sansFont = opentype.parse(
-      sansFontBuf.buffer.slice(
-        sansFontBuf.byteOffset,
-        sansFontBuf.byteOffset + sansFontBuf.byteLength
-      )
-    );
-
-    const serifFont = opentype.parse(
-      serifFontBuf.buffer.slice(
-        serifFontBuf.byteOffset,
-        serifFontBuf.byteOffset + serifFontBuf.byteLength
-      )
-    );
-
-    function buildCenteredPath(font, text, fontSize, centerX, baselineY) {
-      if (!text) return "";
-      const glyphPath = font.getPath(text, 0, 0, fontSize);
-      const box = glyphPath.getBoundingBox();
-      const width = box.x2 - box.x1;
-      const offsetX = centerX - (width / 2) - box.x1;
-      const offsetY = baselineY;
-      return glyphPath.toPathData(2).replace(
-        /^/,
-        `M0 0 `
-      ), { pathData: glyphPath.toPathData(2), offsetX, offsetY };
-    }
-
-    const artistSize = 54;
-    const titleSize = 82;
-
-    const artistGlyph = artistText ? sansFont.getPath(artistText, 0, 0, artistSize) : null;
-    const titleGlyph = titleText ? serifFont.getPath(titleText, 0, 0, titleSize) : null;
-
-    const artistBox = artistGlyph ? artistGlyph.getBoundingBox() : null;
-    const titleBox = titleGlyph ? titleGlyph.getBoundingBox() : null;
-
-    const artistWidth = artistBox ? (artistBox.x2 - artistBox.x1) : 0;
-    const titleWidth = titleBox ? (titleBox.x2 - titleBox.x1) : 0;
-
-    const artistOffsetX = artistBox ? 384 - (artistWidth / 2) - artistBox.x1 : 0;
-    const titleOffsetX = titleBox ? 384 - (titleWidth / 2) - titleBox.x1 : 0;
-
-    const artistPathData = artistGlyph ? artistGlyph.toPathData(2) : "";
-    const titlePathData = titleGlyph ? titleGlyph.toPathData(2) : "";
+    const esc = (s) =>
+      String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 
     const svg = `
 <svg width="768" height="768" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
@@ -100,8 +49,27 @@ export default async function handler(req, res) {
   <rect x="0" y="0" width="768" height="280" fill="url(#topFade)"/>
 
   <g filter="url(#shadow)">
-    ${artistPathData ? `<path d="${artistPathData}" fill="#ffffff" transform="translate(${artistOffsetX},112)" />` : ""}
-    ${titlePathData ? `<path d="${titlePathData}" fill="#ffffff" transform="translate(${titleOffsetX},205)" />` : ""}
+    ${
+      artistText
+        ? `<text x="384" y="112"
+            fill="#ffffff"
+            font-size="54"
+            font-weight="700"
+            text-anchor="middle"
+            font-family="Arial, Helvetica, sans-serif">${esc(artistText)}</text>`
+        : ""
+    }
+
+    ${
+      titleText
+        ? `<text x="384" y="205"
+            fill="#ffffff"
+            font-size="82"
+            font-style="italic"
+            text-anchor="middle"
+            font-family="Georgia, Times New Roman, serif">${esc(titleText)}</text>`
+        : ""
+    }
   </g>
 </svg>
 `;
@@ -117,8 +85,6 @@ export default async function handler(req, res) {
     return res.status(200).send(final);
   } catch (e) {
     console.error("cover/overlay-text error:", e);
-    return res
-      .status(500)
-      .json({ ok: false, error: e?.message || "Server error" });
+    return res.status(500).json({ ok: false, error: e?.message || "Server error" });
   }
 }
