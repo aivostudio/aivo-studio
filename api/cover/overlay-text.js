@@ -27,8 +27,8 @@ export default async function handler(req, res) {
     }
 
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
-        const sansFontPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf");
-    const serifFontPath = path.join(process.cwd(), "public", "fonts", "NotoSerif-Italic.ttf");
+       const sansFontPath = path.join(process.cwd(), "api", "cover", "fonts", "NotoSans-Bold.ttf");
+const serifFontPath = path.join(process.cwd(), "api", "cover", "fonts", "NotoSerif-Italic.ttf");
 
     const [sansFontBuf, serifFontBuf] = await Promise.all([
       readFile(sansFontPath),
