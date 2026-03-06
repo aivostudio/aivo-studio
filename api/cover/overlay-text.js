@@ -24,62 +24,73 @@ export default async function handler(req, res) {
     const artistText = escapeXml((artist || "").trim().toUpperCase());
     const titleText = escapeXml((title || "").trim());
 
+    // resmi indir
     const imgRes = await fetch(imageUrl);
     if (!imgRes.ok) {
       return res.status(400).json({ ok: false, error: "image indirilemedi" });
     }
-
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
 
-    const W = 1024;
-    const H = 1024;
+    // Not: Vercel'de custom font yok -> sadece güvenli sistem fontları
+    // Spotify/Apple Music uyumlu: üstte title büyük, altta artist küçük
+    const W = 768;
+    const H = 768;
 
     const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
   <defs>
+    <!-- Üstte okunurluk için hafif gradient -->
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="rgba(0,0,0,0.55)"/>
       <stop offset="55%" stop-color="rgba(0,0,0,0.00)"/>
     </linearGradient>
 
-    <filter id="shadow">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="black" flood-opacity="0.6"/>
+    <!-- Yumuşak gölge -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+      <feOffset dx="0" dy="3" result="off"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.55"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
 
-  <rect x="0" y="0" width="${W}" height="${Math.round(H * 0.35)}" fill="url(#topFade)"/>
+  <!-- Üst overlay -->
+  <rect x="0" y="0" width="${W}" height="${Math.round(H * 0.34)}" fill="url(#topFade)"/>
 
+  <!-- TITLE -->
   <text
-    x="${W/2}"
-    y="180"
+    x="${W / 2}"
+    y="128"
     text-anchor="middle"
-    filter="url(#shadow)"
+    dominant-baseline="middle"
+    filter="url(#softShadow)"
     style="
-      font-family: DejaVu Sans, Liberation Sans, Arial, sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       font-weight: 900;
-      font-size: 120px;
-      letter-spacing: 2px;
+      font-size: 84px;
+      letter-spacing: 1px;
       fill: #F6E7C8;
-      stroke: rgba(0,0,0,0.6);
-      stroke-width: 6px;
-      paint-order: stroke fill;
     "
   >${titleText}</text>
 
+  <!-- ARTIST -->
   <text
-    x="${W/2}"
-    y="300"
+    x="${W / 2}"
+    y="210"
     text-anchor="middle"
-    filter="url(#shadow)"
+    dominant-baseline="middle"
+    filter="url(#softShadow)"
     style="
-      font-family: DejaVu Sans, Liberation Sans, Arial, sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       font-weight: 700;
-      font-size: 48px;
-      letter-spacing: 6px;
-      fill: rgba(255,255,255,0.95);
-      stroke: rgba(0,0,0,0.5);
-      stroke-width: 3px;
-      paint-order: stroke fill;
+      font-size: 34px;
+      letter-spacing: 4px;
+      fill: rgba(255,255,255,0.92);
     "
   >${artistText}</text>
 </svg>
@@ -87,14 +98,13 @@ export default async function handler(req, res) {
 
     const final = await sharp(imgBuffer)
       .resize(W, H, { fit: "cover" })
-      .composite([{ input: Buffer.from(svg) }])
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
       .jpeg({ quality: 95 })
       .toBuffer();
 
     res.setHeader("Content-Type", "image/jpeg");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(final);
-
   } catch (e) {
     console.error("[overlay-text] error:", e);
     return res.status(500).json({ ok: false, error: e?.message || "server_error" });
