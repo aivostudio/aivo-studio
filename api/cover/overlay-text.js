@@ -2,6 +2,8 @@
 export const config = { runtime: "nodejs" };
 
 import sharp from "sharp";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 export default async function handler(req, res) {
   try {
@@ -25,6 +27,16 @@ export default async function handler(req, res) {
     }
 
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
+        const sansFontPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf");
+    const serifFontPath = path.join(process.cwd(), "public", "fonts", "NotoSerif-Italic.ttf");
+
+    const [sansFontBuf, serifFontBuf] = await Promise.all([
+      readFile(sansFontPath),
+      readFile(serifFontPath),
+    ]);
+
+    const sansFontBase64 = sansFontBuf.toString("base64");
+    const serifFontBase64 = serifFontBuf.toString("base64");
 
     // SVG overlay (Spotify style)
     // Not: SVG içinde user input kullanıyoruz; minimal kaçış uyguluyoruz.
@@ -42,37 +54,54 @@ export default async function handler(req, res) {
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.55"/>
     </filter>
+
+    <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.42)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0.00)" />
+    </linearGradient>
   </defs>
 
   <style>
+    @font-face {
+      font-family: "AivoSans";
+      src: url("data:font/ttf;base64,${sansFontBase64}") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "AivoSerif";
+      src: url("data:font/ttf;base64,${serifFontBase64}") format("truetype");
+      font-weight: 400;
+      font-style: italic;
+    }
+
     .artist {
-      font-family: Montserrat, Arial, sans-serif;
-      font-size: 72px;
-      font-weight: 800;
-      letter-spacing: 1px;
+      font-family: "AivoSans";
+      font-size: 54px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
       fill: #ffffff;
       text-anchor: middle;
     }
+
     .title {
-      font-family: "Playfair Display", Georgia, serif;
-      font-size: 48px;
+      font-family: "AivoSerif";
+      font-size: 82px;
       font-style: italic;
       fill: #ffffff;
       text-anchor: middle;
     }
   </style>
 
-  <!-- subtle top gradient plate for readability -->
-  <rect x="0" y="0" width="768" height="260" fill="rgba(0,0,0,0.18)"/>
+  <rect x="0" y="0" width="768" height="280" fill="url(#topFade)"/>
 
-  <!-- text (shadow filter) -->
   <g filter="url(#shadow)">
-    <text x="384" y="120" class="artist">${esc(artistText)}</text>
-    <text x="384" y="190" class="title">${esc(titleText)}</text>
+    <text x="384" y="112" class="artist">${esc(artistText)}</text>
+    <text x="384" y="205" class="title">${esc(titleText)}</text>
   </g>
 </svg>
 `;
-
     const final = await sharp(imgBuffer)
       .resize(768, 768, { fit: "cover" })
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
