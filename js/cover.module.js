@@ -3,42 +3,43 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
 // cover.module.js — FULL BLOCK (style sync + quality routing + FAL generate + PPE.apply)
 (function () {
-  // --- COVER TEXT OVERLAY (auto) ---
+// --- COVER TEXT OVERLAY (auto) ---
 async function applyCoverTextOverlay(imageUrl) {
+  // Artist/Title inputlarını olabildiğince sağlam yakala
+  const pick = (...sels) => {
+    for (const s of sels) {
+      const el = document.querySelector(s);
+      if (el && typeof el.value === "string") return el.value.trim();
+      if (el && typeof el.textContent === "string" && el.tagName !== "SCRIPT") return el.textContent.trim();
+    }
+    return "";
+  };
 
-  const artistInput =
-    document.querySelector('#coverArtist') ||
-    document.querySelector('input[name="artist"]');
+  const artist =
+    pick('#coverArtist', 'input[name="artist"]', 'input[data-field="artist"]', 'input[placeholder*="Sanatçı"]') ||
+    pick('#artist', 'input[name="coverArtist"]');
 
-  const titleInput =
-    document.querySelector('#coverTitle') ||
-    document.querySelector('input[name="title"]');
+  const title =
+    pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
+    pick('#title', 'input[name="coverTitle"]');
 
-  const artist = artistInput ? artistInput.value.trim() : "";
-  const title = titleInput ? titleInput.value.trim() : "";
+  // Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
+  if (!artist && !title) return { ok: true, finalUrl: imageUrl };
 
-  if (!artist && !title) {
-    return { ok:true, finalUrl:imageUrl };
-  }
-
-  const r = await fetch("/api/cover/overlay-text",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      imageUrl,
-      artist,
-      title
-    })
+  const r = await fetch("/api/cover/overlay-text", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageUrl, artist, title }),
   });
 
-  if(!r.ok){
-    return { ok:false, finalUrl:imageUrl };
+  if (!r.ok) {
+    // başarısızsa orijinal cover’ı göster
+    return { ok: false, finalUrl: imageUrl };
   }
 
   const blob = await r.blob();
   const finalUrl = URL.createObjectURL(blob);
-
-  return { ok:true, finalUrl };
+  return { ok: true, finalUrl };
 }
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
