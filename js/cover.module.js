@@ -196,6 +196,7 @@ function withTitleSafeArea(p) {
     const imgs = await generateImages({ prompt, style, ratio, n, quality });
     // --- APPLY TEXT OVERLAY ---
 for (const img of imgs) {
+  console.log("[cover overlay start]", img.url);
   const over = await applyCoverTextOverlay(img.url);
   img.url = over.finalUrl;
 }
