@@ -22,8 +22,9 @@ async function applyCoverTextOverlay(imageUrl) {
   const title =
     pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
     pick('#title', 'input[name="coverTitle"]');
-
-  // Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
+ 
+  console.log("[cover overlay values]", { artist, title });
+// Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
   if (!artist && !title) return { ok: true, finalUrl: imageUrl };
 console.log("[cover overlay payload]", { imageUrl, artist, title });
   const r = await fetch("/api/cover/overlay-text", {
