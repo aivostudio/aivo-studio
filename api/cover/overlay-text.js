@@ -28,29 +28,35 @@ export default async function handler(req, res) {
 
     const layers = [];
 
+    // ÜST GRADIENT (Spotify hissi)
+    const gradientSvg = `
+      <svg width="${W}" height="260">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="black" stop-opacity="0.65"/>
+            <stop offset="60%" stop-color="black" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="black" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="${W}" height="260" fill="url(#g)"/>
+      </svg>
+    `;
+
     layers.push({
-      input: {
-        create: {
-          width: W,
-          height: 190,
-          channels: 4,
-          background: { r: 0, g: 0, b: 0, alpha: 0.34 },
-        },
-      },
+      input: Buffer.from(gradientSvg),
       top: 0,
       left: 0,
     });
 
+    // TITLE
     if (titleText) {
       const titlePng = await sharp({
         text: {
-          text: titleText,
-          width: W - 80,
-          height: 84,
+          text: `<span foreground="#F8E7BF">${titleText}</span>`,
+          width: W - 120,
           align: "center",
           rgba: true,
-          dpi: 220,
-          font: "Arial Bold 56",
+          font: "Arial Bold 60"
         },
       })
         .png()
@@ -58,21 +64,20 @@ export default async function handler(req, res) {
 
       layers.push({
         input: titlePng,
-        top: 38,
-        left: 40,
+        top: 60,
+        left: 60,
       });
     }
 
+    // ARTIST
     if (artistText) {
       const artistPng = await sharp({
         text: {
-          text: artistText,
-          width: W - 120,
-          height: 40,
+          text: `<span foreground="#FFFFFF">${artistText}</span>`,
+          width: W - 160,
           align: "center",
           rgba: true,
-          dpi: 220,
-          font: "Arial Bold 24",
+          font: "Arial Bold 26"
         },
       })
         .png()
@@ -80,16 +85,20 @@ export default async function handler(req, res) {
 
       layers.push({
         input: artistPng,
-        top: 108,
-        left: 60,
+        top: 140,
+        left: 80,
       });
     }
 
-    const final = await base.composite(layers).jpeg({ quality: 95 }).toBuffer();
+    const final = await base
+      .composite(layers)
+      .jpeg({ quality: 95 })
+      .toBuffer();
 
     res.setHeader("Content-Type", "image/jpeg");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(final);
+
   } catch (e) {
     console.error("[overlay-text] error:", e);
     return res.status(500).json({ ok: false, error: e?.message || "server_error" });
