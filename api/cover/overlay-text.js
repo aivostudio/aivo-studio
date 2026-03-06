@@ -63,33 +63,31 @@ export default async function handler(req, res) {
 
   <text
     x="${W / 2}"
-    y="126"
+    y="118"
     text-anchor="middle"
+    dominant-baseline="middle"
     filter="url(#titleShadow)"
     style="
-      font-family: Georgia, 'Times New Roman', serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       font-weight: 900;
-      font-size: 82px;
-      font-style: italic;
-      letter-spacing: 0.5px;
-      fill: url(#titleFill);
-      stroke: rgba(110,42,72,0.65);
-      stroke-width: 4px;
-      paint-order: stroke fill;
+      font-size: 72px;
+      letter-spacing: 1px;
+      fill: #f8e7bf;
     "
   >${titleText}</text>
 
   <text
     x="${W / 2}"
-    y="196"
+    y="182"
     text-anchor="middle"
+    dominant-baseline="middle"
     filter="url(#artistShadow)"
     style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      font-weight: 800;
-      font-size: 28px;
-      letter-spacing: 6px;
-      fill: rgba(255,245,220,0.96);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      letter-spacing: 5px;
+      fill: #fff7dc;
     "
   >${artistText}</text>
 </svg>
