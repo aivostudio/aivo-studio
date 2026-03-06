@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "imageUrl gerekli" });
     }
 
-    const artistText = String(artist || "").toUpperCase().trim();
+    const artistText = String(artist || "").trim().toUpperCase();
     const titleText = String(title || "").trim();
 
     const imgRes = await fetch(imageUrl);
@@ -34,50 +34,95 @@ export default async function handler(req, res) {
         .replace(/'/g, "&#39;");
 
     const svg = `
-<svg width="768" height="768" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.55"/>
+    <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#08111d" stop-opacity="0.78"/>
+      <stop offset="55%" stop-color="#08111d" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#08111d" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe7a3"/>
+      <stop offset="45%" stop-color="#f7c861"/>
+      <stop offset="100%" stop-color="#c98a23"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.45"/>
     </filter>
 
-    <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0.42"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-    </linearGradient>
+    <filter id="hardShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="6" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
   </defs>
 
-  <rect x="0" y="0" width="768" height="280" fill="url(#topFade)"/>
+  <rect x="0" y="0" width="1024" height="330" fill="url(#topFade)"/>
 
-  <g filter="url(#shadow)">
-    ${
-      artistText
-        ? `<text x="384" y="112"
-            fill="#ffffff"
-            font-size="54"
-            font-weight="700"
-            text-anchor="middle"
-            font-family="Arial, Helvetica, sans-serif">${esc(artistText)}</text>`
-        : ""
-    }
+  ${
+    artistText
+      ? `
+  <g filter="url(#hardShadow)">
+    <text
+      x="512"
+      y="128"
+      text-anchor="middle"
+      font-family="Arial Black, Arial, Helvetica, sans-serif"
+      font-size="88"
+      font-weight="900"
+      letter-spacing="2"
+      fill="url(#goldFill)"
+      stroke="#5a2f00"
+      stroke-width="10"
+      paint-order="stroke fill"
+    >${esc(artistText)}</text>
 
-    ${
-      titleText
-        ? `<text x="384" y="205"
-            fill="#ffffff"
-            font-size="82"
-            font-style="italic"
-            text-anchor="middle"
-            font-family="Georgia, Times New Roman, serif">${esc(titleText)}</text>`
-        : ""
-    }
+    <text
+      x="512"
+      y="128"
+      text-anchor="middle"
+      font-family="Arial Black, Arial, Helvetica, sans-serif"
+      font-size="88"
+      font-weight="900"
+      letter-spacing="2"
+      fill="none"
+      stroke="#ffefbf"
+      stroke-opacity="0.55"
+      stroke-width="2"
+    >${esc(artistText)}</text>
   </g>
+      `
+      : ""
+  }
+
+  ${
+    titleText
+      ? `
+  <g filter="url(#softShadow)">
+    <text
+      x="512"
+      y="218"
+      text-anchor="middle"
+      font-family="Georgia, Times New Roman, serif"
+      font-size="74"
+      font-style="italic"
+      font-weight="700"
+      fill="#f5d36b"
+      stroke="#7a4a00"
+      stroke-width="3"
+      paint-order="stroke fill"
+    >${esc(titleText)}</text>
+  </g>
+      `
+      : ""
+  }
 </svg>
 `;
 
     const final = await sharp(imgBuffer)
-      .resize(768, 768, { fit: "cover" })
+      .resize(1024, 1024, { fit: "cover" })
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .jpeg({ quality: 95 })
+      .jpeg({ quality: 96 })
       .toBuffer();
 
     res.setHeader("Content-Type", "image/jpeg");
