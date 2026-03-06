@@ -1,14 +1,5 @@
 import sharp from "sharp";
 
-function escapeXml(s = "") {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
-}
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -20,8 +11,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "imageUrl gerekli" });
     }
 
-    const artistText = escapeXml((artist || "").trim().toUpperCase());
-    const titleText = escapeXml((title || "").trim());
+    const titleText = String(title || "").trim();
+    const artistText = String(artist || "").trim().toUpperCase();
 
     const imgRes = await fetch(imageUrl);
     if (!imgRes.ok) {
@@ -33,38 +24,68 @@ export default async function handler(req, res) {
     const W = 768;
     const H = 768;
 
-    const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <rect x="0" y="0" width="${W}" height="190" fill="#000000" fill-opacity="0.30"/>
+    const base = sharp(imgBuffer).resize(W, H, { fit: "cover" });
 
-  <text
-    x="${W / 2}"
-    y="78"
-    text-anchor="middle"
-    fill="#F8E7BF"
-    font-family="Helvetica, Arial, sans-serif"
-    font-size="52"
-    font-weight="900"
-  >${titleText}</text>
+    const layers = [];
 
-  <text
-    x="${W / 2}"
-    y="126"
-    text-anchor="middle"
-    fill="#FFF7DC"
-    font-family="Helvetica, Arial, sans-serif"
-    font-size="22"
-    font-weight="700"
-    letter-spacing="3"
-  >${artistText}</text>
-</svg>
-`;
+    layers.push({
+      input: {
+        create: {
+          width: W,
+          height: 190,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: 0.34 },
+        },
+      },
+      top: 0,
+      left: 0,
+    });
 
-    const final = await sharp(imgBuffer)
-      .resize(W, H, { fit: "cover" })
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .jpeg({ quality: 95 })
-      .toBuffer();
+    if (titleText) {
+      const titlePng = await sharp({
+        text: {
+          text: titleText,
+          width: W - 80,
+          height: 84,
+          align: "center",
+          rgba: true,
+          dpi: 220,
+          font: "Arial Bold 56",
+        },
+      })
+        .png()
+        .toBuffer();
+
+      layers.push({
+        input: titlePng,
+        top: 38,
+        left: 40,
+      });
+    }
+
+    if (artistText) {
+      const artistPng = await sharp({
+        text: {
+          text: artistText,
+          width: W - 120,
+          height: 40,
+          align: "center",
+          rgba: true,
+          dpi: 220,
+          font: "Arial Bold 24",
+        },
+      })
+        .png()
+        .toBuffer();
+
+      layers.push({
+        input: artistPng,
+        top: 108,
+        left: 60,
+      });
+    }
+
+    const final = await base.composite(layers).jpeg({ quality: 95 }).toBuffer();
 
     res.setHeader("Content-Type", "image/jpeg");
     res.setHeader("Cache-Control", "no-store");
