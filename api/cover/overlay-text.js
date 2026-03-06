@@ -1,4 +1,4 @@
-import sharp from "sharp";
+const sharp = require("sharp");
 
 export default async function handler(req, res) {
   try {
