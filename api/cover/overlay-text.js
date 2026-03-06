@@ -1,4 +1,4 @@
-const sharp = require("sharp");
+import sharp from "sharp";
 
 function escapeXml(s = "") {
   return String(s)
@@ -14,14 +14,19 @@ function clamp(n, min, max) {
 }
 
 function computeFontSizes(title, artist) {
+  // Title: büyük & iddialı, uzunluk artınca küçülsün
   const tLen = (title || "").length;
   const aLen = (artist || "").length;
 
-  let titleSize = 132;
-  let artistSize = 46;
+  // 1024x1024 cover için iyi baseline
+  let titleSize = 132; // default
+  let artistSize = 46; // default
 
+  // Title küçültme
   if (tLen > 10) titleSize -= (tLen - 10) * 6;
   if (tLen > 18) titleSize -= (tLen - 18) * 4;
+
+  // Artist küçültme
   if (aLen > 14) artistSize -= (aLen - 14) * 1.8;
 
   titleSize = clamp(Math.round(titleSize), 72, 132);
@@ -30,7 +35,7 @@ function computeFontSizes(title, artist) {
   return { titleSize, artistSize };
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "Method not allowed" });
@@ -38,46 +43,54 @@ module.exports = async function handler(req, res) {
 
     const { imageUrl, artist, title } = req.body || {};
     const url = (imageUrl || "").trim();
-    if (!url) {
-      return res.status(400).json({ ok: false, error: "imageUrl gerekli" });
-    }
+    if (!url) return res.status(400).json({ ok: false, error: "imageUrl gerekli" });
 
     const artistText = (artist || "").trim();
     const titleText = (title || "").trim();
 
     if (!artistText && !titleText) {
+      // hiçbir şey basmayacaksak raw görseli döndürmek yerine hata verelim
       return res.status(400).json({ ok: false, error: "artist/title boş" });
     }
 
+    // 1) resmi indir
     const imgRes = await fetch(url);
     if (!imgRes.ok) {
       return res.status(400).json({ ok: false, error: "image indirilemedi" });
     }
-
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
 
+    // 2) 1024x1024 normalize
     const base = sharp(imgBuffer).resize(1024, 1024, { fit: "cover" });
 
+    // 3) Üst bölgede parlaklık ölç (auto-contrast)
+    //    Top area: 0..260px
     const topStats = await base
       .clone()
       .extract({ left: 0, top: 0, width: 1024, height: 260 })
       .stats();
 
-    const c = topStats.channels;
+    const c = topStats.channels; // r,g,b,a
     const meanLum = (c[0].mean + c[1].mean + c[2].mean) / 3;
+
     const isTopBright = meanLum > 140;
 
+    // 4) Renkler
     const textMain = isTopBright ? "#0B0B0D" : "#FFFFFF";
     const textSoft = isTopBright ? "rgba(0,0,0,0.28)" : "rgba(0,0,0,0.45)";
     const scrimTop = isTopBright ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.42)";
     const scrimMid = isTopBright ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.18)";
     const scrimBot = "rgba(0,0,0,0)";
 
+    // 5) Font size hesapla
     const { titleSize, artistSize } = computeFontSizes(titleText, artistText);
 
+    // 6) SVG overlay (Spotify/iTunes vibe)
     const safeTitle = escapeXml(titleText);
     const safeArtist = escapeXml(artistText);
 
+    // Yerleşim: üstte centered title, altında artist
+    // max-width: 900px, metin ortalanmış
     const svg = `
 <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -103,7 +116,7 @@ module.exports = async function handler(req, res) {
 
     <style>
       .title {
-        font-family: "Arial Black", Arial, sans-serif;
+        font-family: "Montserrat", "Arial Black", Arial, sans-serif;
         font-weight: 900;
         font-size: ${titleSize}px;
         letter-spacing: ${Math.max(1, Math.round(titleSize * 0.02))}px;
@@ -111,7 +124,7 @@ module.exports = async function handler(req, res) {
         text-transform: uppercase;
       }
       .artist {
-        font-family: Arial, sans-serif;
+        font-family: "Montserrat", Arial, sans-serif;
         font-weight: 700;
         font-size: ${artistSize}px;
         letter-spacing: ${Math.max(2, Math.round(artistSize * 0.12))}px;
@@ -127,20 +140,25 @@ module.exports = async function handler(req, res) {
     </style>
   </defs>
 
+  <!-- üst scrim: yazının her kapakta okunması için -->
   <rect x="0" y="0" width="1024" height="340" fill="url(#topScrim)"/>
 
+  <!-- TITLE -->
   <g filter="url(#softShadow)">
     <text x="512" y="150" text-anchor="middle" class="title hintStroke">${safeTitle}</text>
   </g>
 
+  <!-- ARTIST -->
   <g filter="url(#softShadow)">
     <text x="512" y="225" text-anchor="middle" class="artist">${safeArtist}</text>
   </g>
 
+  <!-- çok hafif underline vibe (pro) -->
   <rect x="272" y="252" width="480" height="4" rx="2" fill="${textSoft}" opacity="${isTopBright ? "0.22" : "0.28"}"/>
 </svg>
 `;
 
+    // 7) composite + export
     const final = await base
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
       .jpeg({ quality: 95, mozjpeg: true })
@@ -153,4 +171,4 @@ module.exports = async function handler(req, res) {
     console.error("[cover/overlay-text] error:", e);
     return res.status(500).json({ ok: false, error: e?.message || "server_error" });
   }
-};
+}
