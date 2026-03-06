@@ -48,59 +48,46 @@ export default async function handler(req, res) {
       left: 0,
     });
 
-    // TITLE
-    if (titleText) {
-      const titlePng = await sharp({
-        text: {
-          text: `<span foreground="#F8E7BF">${titleText}</span>`,
-          width: W - 120,
-          align: "center",
-          rgba: true,
-          font: "Arial Bold 60"
-        },
-      })
-        .png()
-        .toBuffer();
+   // TITLE
+if (titleText) {
+  const titlePng = await sharp({
+    text: {
+      text: titleText,
+      width: W - 120,
+      align: "centre",
+      rgba: true,
+      dpi: 300,
+      font: "DejaVu Sans Bold",
+    },
+  })
+    .png()
+    .toBuffer();
 
-      layers.push({
-        input: titlePng,
-        top: 60,
-        left: 60,
-      });
-    }
+  layers.push({
+    input: titlePng,
+    top: 52,
+    left: 60,
+  });
+}
 
-    // ARTIST
-    if (artistText) {
-      const artistPng = await sharp({
-        text: {
-          text: `<span foreground="#FFFFFF">${artistText}</span>`,
-          width: W - 160,
-          align: "center",
-          rgba: true,
-          font: "Arial Bold 26"
-        },
-      })
-        .png()
-        .toBuffer();
+// ARTIST
+if (artistText) {
+  const artistPng = await sharp({
+    text: {
+      text: artistText,
+      width: W - 160,
+      align: "centre",
+      rgba: true,
+      dpi: 220,
+      font: "DejaVu Sans Bold",
+    },
+  })
+    .png()
+    .toBuffer();
 
-      layers.push({
-        input: artistPng,
-        top: 140,
-        left: 80,
-      });
-    }
-
-    const final = await base
-      .composite(layers)
-      .jpeg({ quality: 95 })
-      .toBuffer();
-
-    res.setHeader("Content-Type", "image/jpeg");
-    res.setHeader("Cache-Control", "no-store");
-    return res.status(200).send(final);
-
-  } catch (e) {
-    console.error("[overlay-text] error:", e);
-    return res.status(500).json({ ok: false, error: e?.message || "server_error" });
-  }
+  layers.push({
+    input: artistPng,
+    top: 128,
+    left: 80,
+  });
 }
