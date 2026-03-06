@@ -50,11 +50,16 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       // başarısızsa orijinal cover’ı göster
       return { ok: false, finalUrl: imageUrl };
     }
+const blob = await r.blob();
 
-    const blob = await r.blob();
-    const finalUrl = URL.createObjectURL(blob);
-    return { ok: true, finalUrl };
-  }
+const finalUrl = await new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onloadend = () => resolve(reader.result);
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+
+return { ok: true, finalUrl };
 
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
