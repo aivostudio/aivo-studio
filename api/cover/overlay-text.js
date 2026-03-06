@@ -1,4 +1,3 @@
-// FILE: api/cover/overlay-text.js
 import sharp from "sharp";
 
 function escapeXml(s = "") {
@@ -24,41 +23,39 @@ export default async function handler(req, res) {
     const artistText = escapeXml((artist || "").trim().toUpperCase());
     const titleText = escapeXml((title || "").trim());
 
-    // resmi indir
     const imgRes = await fetch(imageUrl);
     if (!imgRes.ok) {
       return res.status(400).json({ ok: false, error: "image indirilemedi" });
     }
+
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
 
-    // Not: Vercel'de custom font yok -> sadece güvenli sistem fontları
-    // Spotify/Apple Music uyumlu: üstte title büyük, altta artist küçük
     const W = 768;
     const H = 768;
 
-  const svg = `
+    const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <rect x="0" y="0" width="${W}" height="220" fill="#000000" fill-opacity="0.38"/>
+  <rect x="0" y="0" width="${W}" height="190" fill="#000000" fill-opacity="0.30"/>
 
   <text
     x="${W / 2}"
-    y="92"
+    y="78"
     text-anchor="middle"
     fill="#F8E7BF"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="64"
+    font-family="Helvetica, Arial, sans-serif"
+    font-size="52"
     font-weight="900"
   >${titleText}</text>
 
   <text
     x="${W / 2}"
-    y="148"
+    y="126"
     text-anchor="middle"
     fill="#FFF7DC"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="24"
+    font-family="Helvetica, Arial, sans-serif"
+    font-size="22"
     font-weight="700"
-    letter-spacing="4"
+    letter-spacing="3"
   >${artistText}</text>
 </svg>
 `;
