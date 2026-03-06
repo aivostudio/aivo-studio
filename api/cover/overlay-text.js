@@ -36,6 +36,40 @@ export default async function handler(req, res) {
     const W = 768;
     const H = 768;
 
+    // --- AUTO CONTRAST (read top band brightness) ---
+    const topH = Math.max(1, Math.round(H * 0.34));
+
+    // Resize once, reuse for sampling + final composite
+    const base = sharp(imgBuffer).resize(W, H, { fit: "cover" });
+
+    // Sample the top area where title/artist sit
+    const topRaw = await base
+      .clone()
+      .extract({ left: 0, top: 0, width: W, height: topH })
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+
+    // Compute average luminance (0..255)
+    let sum = 0;
+    const pxCount = Math.floor(topRaw.length / 3);
+    for (let i = 0; i < topRaw.length; i += 3) {
+      const r = topRaw[i];
+      const g = topRaw[i + 1];
+      const b = topRaw[i + 2];
+      // Rec. 709 luma
+      sum += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+    const avgLuma = pxCount ? sum / pxCount : 0;
+    const isBright = avgLuma >= 150;
+
+    // Theme picks (auto)
+    const TITLE_FILL = isBright ? "#0B0B0F" : "#F6E7C8";
+    const TITLE_STROKE = isBright ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.55)";
+
+    const ARTIST_FILL = isBright ? "rgba(0,0,0,0.82)" : "rgba(255,255,255,0.92)";
+    const ARTIST_STROKE = isBright ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
+
     const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
   <defs>
@@ -60,7 +94,7 @@ export default async function handler(req, res) {
   </defs>
 
   <!-- Üst overlay -->
-  <rect x="0" y="0" width="${W}" height="${Math.round(H * 0.34)}" fill="url(#topFade)"/>
+  <rect x="0" y="0" width="${W}" height="${topH}" fill="url(#topFade)"/>
 
   <!-- TITLE -->
   <text
@@ -74,7 +108,11 @@ export default async function handler(req, res) {
       font-weight: 900;
       font-size: 84px;
       letter-spacing: 1px;
-      fill: #F6E7C8;
+      fill: ${TITLE_FILL};
+      stroke: ${TITLE_STROKE};
+      stroke-width: 10px;
+      paint-order: stroke fill;
+      stroke-linejoin: round;
     "
   >${titleText}</text>
 
@@ -90,14 +128,18 @@ export default async function handler(req, res) {
       font-weight: 700;
       font-size: 34px;
       letter-spacing: 4px;
-      fill: rgba(255,255,255,0.92);
+      fill: ${ARTIST_FILL};
+      stroke: ${ARTIST_STROKE};
+      stroke-width: 6px;
+      paint-order: stroke fill;
+      stroke-linejoin: round;
     "
   >${artistText}</text>
 </svg>
 `;
 
-    const final = await sharp(imgBuffer)
-      .resize(W, H, { fit: "cover" })
+    const final = await base
+      .clone()
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
       .jpeg({ quality: 95 })
       .toBuffer();
