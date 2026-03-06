@@ -117,19 +117,24 @@ async function applyCoverTextOverlay(imageUrl) {
     if (j.ok === false) throw j.error || "cover_failed";
     return j;
   }
-// --- COVER PROMPT COMPOSITION: reserve safe title area (top) ---
+// --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
 function withTitleSafeArea(p) {
   const raw = String(p || "").trim();
 
   return [
     raw,
-    "clean album cover composition",
-    "reserve a clean empty area at the very top for later typography overlay",
-    "do not place any small text, letters, symbols, captions, subtitles, label marks, glyphs, fake words, tiny typography, micro text, decorative characters, square placeholder characters, or unreadable text artifacts in the top area",
-    "top area should stay visually clean and free of text-like elements",
-    "focus all visual storytelling on the stage, crowd, lighting, palm trees, beach atmosphere, and poster-quality composition",
-    "high-end spotify apple music cover artwork",
-    "cinematic, polished, premium, balanced composition"
+    "premium music cover artwork",
+    "spotify and apple music quality album cover",
+    "poster-quality composition with strong headline hierarchy",
+    "design the image like a real commercial single cover",
+    "reserve a clean, visually powerful title zone in the upper top area",
+    "the top area must feel intentionally designed for a large main title and a smaller artist name underneath",
+    "keep the upper composition clean, readable, centered, balanced, and suitable for elegant typography overlay",
+    "do not place faces, hands, busy objects, stage structures, light flares, palm leaves, or important subjects inside the title zone",
+    "avoid fake text, random letters, symbols, captions, label marks, square placeholder glyphs, micro text, and unreadable typographic artifacts",
+    "focus visual energy in the mid and lower sections of the artwork",
+    "cinematic lighting, premium color grading, polished depth, strong focal composition",
+    "luxury poster aesthetic, high-end streaming platform cover design, professional art direction"
   ].join(", ");
 }
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
