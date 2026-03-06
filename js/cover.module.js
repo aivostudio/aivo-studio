@@ -1,76 +1,53 @@
-// FILE: js/cover.module.js
+// FILE: cover.module.js
 console.log("[cover.module] loaded ✅", new Date().toISOString());
 
 // cover.module.js — FULL BLOCK (style sync + quality routing + FAL generate + PPE.apply)
 (function () {
-  function parseCoverTextMeta(prompt) {
-    const raw = String(prompt || "").trim();
-
-    if (!raw) {
-      return { artist: "", title: "", imagePrompt: "" };
+// --- COVER TEXT OVERLAY (auto) ---
+async function applyCoverTextOverlay(imageUrl) {
+  console.log("[cover overlay entered]", imageUrl);
+  // Artist/Title inputlarını olabildiğince sağlam yakala
+  const pick = (...sels) => {
+    for (const s of sels) {
+      const el = document.querySelector(s);
+      if (el && typeof el.value === "string") return el.value.trim();
+      if (el && typeof el.textContent === "string" && el.tagName !== "SCRIPT") return el.textContent.trim();
     }
+    return "";
+  };
 
-    const lines = raw
-      .split("\n")
-      .map((x) => x.trim())
-      .filter(Boolean);
+  const artist =
+    pick('#coverArtist', 'input[name="artist"]', 'input[data-field="artist"]', 'input[placeholder*="Sanatçı"]') ||
+    pick('#artist', 'input[name="coverArtist"]');
 
-    const artist = lines[0] || "";
-    const title = lines[1] || "";
-    const imagePrompt = lines.slice(2).join(", ").trim();
+  const title =
+    pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
+    pick('#title', 'input[name="coverTitle"]');
+ 
+  console.log("[cover overlay values]", { artist, title });
+// Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
+  if (!artist && !title) return { ok: true, finalUrl: imageUrl };
+console.log("[cover overlay payload]", { imageUrl, artist, title });
+  const r = await fetch("/api/cover/overlay-text", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageUrl, artist, title }),
+  });
 
-    return {
-      artist,
-      title,
-      imagePrompt: imagePrompt || raw,
-    };
+  if (!r.ok) {
+    // başarısızsa orijinal cover’ı göster
+    return { ok: false, finalUrl: imageUrl };
   }
 
-  // --- COVER TEXT OVERLAY (auto) ---
-  async function applyCoverTextOverlay(imageUrl, textMeta = {}) {
-    console.log("[cover overlay entered]", imageUrl);
-
-    const artist = String(textMeta.artist || "").trim();
-    const title = String(textMeta.title || "").trim();
-
-    console.log("[cover overlay values]", { artist, title });
-
-    // Artist/title yoksa overlay çağırmayalım
-    if (!artist && !title) return { ok: true, finalUrl: imageUrl };
-
-    console.log("[cover overlay payload]", { imageUrl, artist, title });
-
-    const r = await fetch("/api/cover/overlay-text", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageUrl, artist, title }),
-    });
-
-    if (!r.ok) {
-      // başarısızsa orijinal cover’ı göster
-      return { ok: false, finalUrl: imageUrl };
-    }
-const blob = await r.blob();
-
-const finalUrl = await new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onloadend = () => resolve(reader.result);
-  reader.onerror = reject;
-  reader.readAsDataURL(blob);
-});
-
-return { ok: true, finalUrl };
-
+  const blob = await r.blob();
+  const finalUrl = URL.createObjectURL(blob);
+  return { ok: true, finalUrl };
+}
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
 
-  function qs(sel, root = document) {
-    return root.querySelector(sel);
-  }
-
-  function qsa(sel, root = document) {
-    return Array.from(root.querySelectorAll(sel));
-  }
+  function qs(sel, root = document) { return root.querySelector(sel); }
+  function qsa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 
   function getRoot() {
     return document.querySelector('section.main-panel[data-module="cover"]');
@@ -95,7 +72,6 @@ return { ok: true, finalUrl };
     const card = root.querySelector(`.style-card[data-style="${CSS.escape(style)}"]`);
     const stylePrompt = card ? (card.getAttribute("data-prompt") || "").trim() : "";
     const ta = qs("#coverPrompt", root);
-
     if (ta && stylePrompt) {
       ta.value = stylePrompt;
       ta.dispatchEvent(new Event("input", { bubbles: true }));
@@ -107,7 +83,6 @@ return { ok: true, finalUrl };
 
   function setActiveQuality(root, quality) {
     if (!root) return;
-
     const q = String(quality || "artist").toLowerCase() === "ultra" ? "ultra" : "artist";
 
     qsa(".quality-pill", root).forEach((b) => {
@@ -120,9 +95,7 @@ return { ok: true, finalUrl };
 
     // UI: credit ve buton yazısını güncelle
     const activeBtn = root.querySelector(`.quality-pill[data-quality="${CSS.escape(q)}"]`);
-    const credit =
-      Number(activeBtn?.getAttribute("data-credit-cost") || (q === "ultra" ? 9 : 6)) ||
-      (q === "ultra" ? 9 : 6);
+    const credit = Number(activeBtn?.getAttribute("data-credit-cost") || (q === "ultra" ? 9 : 6)) || (q === "ultra" ? 9 : 6);
 
     const advStrong = root.querySelector(".advanced-credit strong");
     if (advStrong) advStrong.textContent = String(credit);
@@ -142,48 +115,45 @@ return { ok: true, finalUrl };
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
     const j = await r.json().catch(() => null);
     if (!r.ok || !j) throw j?.error || `cover_failed_${r.status}`;
     if (j.ok === false) throw j.error || "cover_failed";
     return j;
   }
+// --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
+function withTitleSafeArea(p) {
+  const raw = String(p || "").trim();
 
-  // --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
-  function withTitleSafeArea(p) {
-    const raw = String(p || "").trim();
-
-    return [
-      raw,
-      "premium music cover artwork",
-      "spotify and apple music quality album cover",
-      "poster-quality composition with strong headline hierarchy",
-      "design the image like a real commercial single cover",
-      "reserve a clean, visually powerful title zone in the upper top area",
-      "the top area must feel intentionally designed for a large main title and a smaller artist name underneath",
-      "keep the upper composition clean, readable, centered, balanced, and suitable for elegant typography overlay",
-      "do not place faces, hands, busy objects, stage structures, light flares, palm leaves, or important subjects inside the title zone",
-      "avoid fake text, random letters, symbols, captions, label marks, square placeholder glyphs, micro text, and unreadable typographic artifacts",
-      "focus visual energy in the mid and lower sections of the artwork",
-      "cinematic lighting, premium color grading, polished depth, strong focal composition",
-      "luxury poster aesthetic, high-end streaming platform cover design, professional art direction",
-    ].join(", ");
-  }
-
-  // n adet görsel için FAL create’i n kere çağır
+  return [
+    raw,
+    "premium music cover artwork",
+    "spotify and apple music quality album cover",
+    "poster-quality composition with strong headline hierarchy",
+    "design the image like a real commercial single cover",
+    "reserve a clean, visually powerful title zone in the upper top area",
+    "the top area must feel intentionally designed for a large main title and a smaller artist name underneath",
+    "keep the upper composition clean, readable, centered, balanced, and suitable for elegant typography overlay",
+    "do not place faces, hands, busy objects, stage structures, light flares, palm leaves, or important subjects inside the title zone",
+    "avoid fake text, random letters, symbols, captions, label marks, square placeholder glyphs, micro text, and unreadable typographic artifacts",
+    "focus visual energy in the mid and lower sections of the artwork",
+    "cinematic lighting, premium color grading, polished depth, strong focal composition",
+    "luxury poster aesthetic, high-end streaming platform cover design, professional art direction"
+  ].join(", ");
+}
+  // n adet görsel için FAL create’i n kere çağır (sync url döner)
   async function generateImages({ prompt, style, ratio, n, quality }) {
     const tasks = [];
-
     for (let i = 0; i < n; i++) {
       const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
       const promptForModel = withTitleSafeArea(promptVar);
 
+      // style/ratio şu an backend’te kullanılmıyor olabilir; meta olarak saklıyoruz.
       tasks.push(
         postJSON("/api/providers/fal/predictions/create?app=cover", {
           input: {
-            prompt: promptForModel,
-            quality,
-          },
+  prompt: promptForModel,
+  quality,
+}
         }).then((j) => {
           const url =
             j.output ||
@@ -204,12 +174,10 @@ return { ok: true, finalUrl };
 
     const results = await Promise.all(tasks);
     const urls = results.map((x) => x.url).filter(Boolean);
-
     if (!urls.length) {
       console.error("[cover] no image url from fal response", results);
       throw "cover_generate_no_image";
     }
-
     return results;
   }
 
@@ -217,35 +185,23 @@ return { ok: true, finalUrl };
     const root = getRoot();
     if (!root) return;
 
-    const rawPrompt = (qs("#coverPrompt", root)?.value || "").trim();
-    if (!rawPrompt) return alert("Lütfen görüntü açıklaması yaz.");
-
-    const textMeta = parseCoverTextMeta(rawPrompt);
-    const prompt = textMeta.imagePrompt || rawPrompt;
+    const prompt = (qs("#coverPrompt", root)?.value || "").trim();
+    if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
 
     const style = root.dataset.coverStyle || null;
     const quality = root.dataset.coverQuality || "artist";
     const n = Number(qs("#coverCount", root)?.value || 1);
     const ratio = qs("#coverRatio", root)?.value || "1:1";
 
-    console.log("[cover] generate request", {
-      prompt,
-      style,
-      quality,
-      n,
-      ratio,
-      artist: textMeta.artist,
-      title: textMeta.title,
-    });
+    console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
     const imgs = await generateImages({ prompt, style, ratio, n, quality });
-
     // --- APPLY TEXT OVERLAY ---
-    for (const img of imgs) {
-      console.log("[cover overlay start]", img.url);
-      const over = await applyCoverTextOverlay(img.url, textMeta);
-      img.url = over.finalUrl;
-    }
+for (const img of imgs) {
+  console.log("[cover overlay start]", img.url);
+  const over = await applyCoverTextOverlay(img.url);
+  img.url = over.finalUrl;
+}
 
     const outputs = imgs.map((it, idx) => ({
       type: "image",
@@ -257,8 +213,6 @@ return { ok: true, finalUrl };
         style: style || undefined,
         ratio,
         prompt: it.prompt,
-        artist: textMeta.artist || undefined,
-        title: textMeta.title || undefined,
       },
     }));
 
@@ -270,7 +224,7 @@ return { ok: true, finalUrl };
     console.log("[cover] PPE.apply ✅", outputs);
   }
 
-  // --- PROMPT CHAR COUNT ---
+  // --- PROMPT CHAR COUNT (opsiyonel) ---
   function bindPromptCounter() {
     const root = getRoot();
     if (!root) return;
@@ -281,9 +235,8 @@ return { ok: true, finalUrl };
     const counterEl =
       qs("#coverPromptCount", root) ||
       qs('[data-role="coverPromptCount"]', root) ||
-      Array.from(root.querySelectorAll("*")).find(
-        (el) => (el.textContent || "").trim() === "0 / 1000"
-      );
+    Array.from(root.querySelectorAll("*")).find((el) => (el.textContent || "").trim() === "0 / 1000");
+
 
     if (!counterEl) return;
 
@@ -291,7 +244,8 @@ return { ok: true, finalUrl };
 
     function update() {
       const n = (promptEl.value || "").length;
-      counterEl.textContent = `${n} / 1000`;
+     counterEl.textContent = `${n} / 1000`;
+
     }
 
     promptEl.addEventListener("input", update);
@@ -364,19 +318,16 @@ return { ok: true, finalUrl };
     if (first) setActiveStyle(root, first.getAttribute("data-style"));
   })();
 
-  // default quality: artist
+  // default quality: artist (UI'da is-active olan varsa onu al)
   (function selectDefaultQuality() {
     const root = getRoot();
     if (!root) return;
-    const active =
-      root.querySelector(".quality-pill.is-active") ||
-      root.querySelector('.quality-pill[data-quality="artist"]');
+    const active = root.querySelector(".quality-pill.is-active") || root.querySelector('.quality-pill[data-quality="artist"]');
     const q = active?.getAttribute("data-quality") || "artist";
     setActiveQuality(root, q);
   })();
 
   bindPromptCounter();
-
   new MutationObserver(() => bindPromptCounter()).observe(document.documentElement, {
     childList: true,
     subtree: true,
