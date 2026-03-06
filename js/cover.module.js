@@ -5,6 +5,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 (function () {
 // --- COVER TEXT OVERLAY (auto) ---
 async function applyCoverTextOverlay(imageUrl) {
+  console.log("[cover overlay entered]", imageUrl);
   // Artist/Title inputlarını olabildiğince sağlam yakala
   const pick = (...sels) => {
     for (const s of sels) {
