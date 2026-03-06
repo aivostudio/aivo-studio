@@ -36,61 +36,60 @@ export default async function handler(req, res) {
     const W = 768;
     const H = 768;
 
-    const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+   const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-    <!-- Üstte okunurluk için hafif gradient -->
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgba(0,0,0,0.55)"/>
-      <stop offset="55%" stop-color="rgba(0,0,0,0.00)"/>
+      <stop offset="0%" stop-color="#05070d" stop-opacity="0.70"/>
+      <stop offset="32%" stop-color="#05070d" stop-opacity="0.30"/>
+      <stop offset="62%" stop-color="#05070d" stop-opacity="0.00"/>
     </linearGradient>
 
-    <!-- Yumuşak gölge -->
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
-      <feOffset dx="0" dy="3" result="off"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.55"/>
-      </feComponentTransfer>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <linearGradient id="titleFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff6d8"/>
+      <stop offset="100%" stop-color="#f6d58f"/>
+    </linearGradient>
+
+    <filter id="titleShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
+
+    <filter id="artistShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.30"/>
     </filter>
   </defs>
 
-  <!-- Üst overlay -->
-  <rect x="0" y="0" width="${W}" height="${Math.round(H * 0.34)}" fill="url(#topFade)"/>
+  <rect x="0" y="0" width="${W}" height="${Math.round(H * 0.33)}" fill="url(#topFade)"/>
 
-  <!-- TITLE -->
   <text
     x="${W / 2}"
-    y="128"
+    y="126"
     text-anchor="middle"
-    dominant-baseline="middle"
-    filter="url(#softShadow)"
+    filter="url(#titleShadow)"
     style="
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-family: Georgia, 'Times New Roman', serif;
       font-weight: 900;
-      font-size: 84px;
-      letter-spacing: 1px;
-      fill: #F6E7C8;
+      font-size: 82px;
+      font-style: italic;
+      letter-spacing: 0.5px;
+      fill: url(#titleFill);
+      stroke: rgba(110,42,72,0.65);
+      stroke-width: 4px;
+      paint-order: stroke fill;
     "
   >${titleText}</text>
 
-  <!-- ARTIST -->
   <text
     x="${W / 2}"
-    y="210"
+    y="196"
     text-anchor="middle"
-    dominant-baseline="middle"
-    filter="url(#softShadow)"
+    filter="url(#artistShadow)"
     style="
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      font-weight: 700;
-      font-size: 34px;
-      letter-spacing: 4px;
-      fill: rgba(255,255,255,0.92);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      letter-spacing: 6px;
+      fill: rgba(255,245,220,0.96);
     "
   >${artistText}</text>
 </svg>
