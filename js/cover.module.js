@@ -25,7 +25,7 @@ async function applyCoverTextOverlay(imageUrl) {
 
   // Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
   if (!artist && !title) return { ok: true, finalUrl: imageUrl };
-
+console.log("[cover overlay payload]", { imageUrl, artist, title });
   const r = await fetch("/api/cover/overlay-text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
