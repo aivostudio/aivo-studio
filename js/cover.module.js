@@ -202,29 +202,7 @@ for (const img of imgs) {
   const over = await applyCoverTextOverlay(img.url);
   img.url = over.finalUrl;
 }
-for (const img of imgs) {
-  const dbRow = await postJSON("/api/cover/generate", {
-    prompt: img.prompt,
-    style,
-    quality,
-    n: 1,
-    ratio,
-    imageUrl: img.url,
-  });
 
-  window.dispatchEvent(new CustomEvent("aivo:cover:job_created", {
-    detail: {
-      app: "cover",
-      job_id: dbRow.job_id,
-      createdAt: Date.now(),
-      prompt: img.prompt,
-      meta: {
-        quality,
-        prompt: img.prompt,
-      }
-    }
-  }));
-}
     const outputs = imgs.map((it, idx) => ({
       type: "image",
       url: it.url,
