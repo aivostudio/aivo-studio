@@ -34,12 +34,13 @@ await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/jobs/create`, {
     }
   })
 });
-    return res.status(200).json({
-      ok: true,
-      type: "cover",
-      imageUrl,
-      prompt: p,
-    });
+   return res.status(200).json({
+  ok: true,
+  type: "cover",
+  job_id: jobId,
+  imageUrl,
+  prompt: p,
+});
   } catch (e) {
     return res.status(500).json({ ok: false, error: e?.message || "Server error" });
   }
