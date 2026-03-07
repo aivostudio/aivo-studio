@@ -23,6 +23,17 @@ async function applyCoverTextOverlay(imageUrl) {
   const title =
     pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
     pick('#title', 'input[name="coverTitle"]');
+  // Eğer inputlardan gelmediyse prompttan dene (UI'ye dokunmaz)
+if (!artist && !title) {
+  const promptEl = document.querySelector("#coverPrompt");
+  const promptText = promptEl?.value || "";
+
+  const m = promptText.match(/^(.+?)\s+by\s+([a-zA-Z0-9 _-]+)/i);
+  if (m) {
+    title = m[1].trim();
+    artist = m[2].trim();
+  }
+}
  
   console.log("[cover overlay values]", { artist, title });
 // Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
