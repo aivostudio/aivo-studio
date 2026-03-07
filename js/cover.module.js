@@ -195,15 +195,55 @@ function withTitleSafeArea(p) {
 
     console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-    const imgs = await generateImages({ prompt, style, ratio, n, quality });
-    // --- APPLY TEXT OVERLAY ---
+   const imgs = await generateImages({ prompt, style, ratio, n, quality });
+
+// --- APPLY TEXT OVERLAY + DB WRITE ---
 for (const img of imgs) {
   console.log("[cover overlay start]", img.url);
+
   const over = await applyCoverTextOverlay(img.url);
   img.url = over.finalUrl;
+
+  try {
+    const db = await postJSON("/api/cover/generate", {
+      prompt: img.prompt || prompt,
+      style,
+      quality,
+      ratio,
+      imageUrl: img.url,
+    });
+
+    console.log("[cover] db saved ✅", db);
+
+    if (db?.job_id) {
+      window.dispatchEvent(
+        new CustomEvent("aivo:cover:job_created", {
+          detail: {
+            app: "cover",
+            job_id: db.job_id,
+            prompt: img.prompt || prompt,
+            quality,
+            style,
+            ratio,
+            imageUrl: img.url,
+            createdAt: Date.now(),
+            meta: {
+              app: "cover",
+              prompt: img.prompt || prompt,
+              quality,
+              style,
+              ratio,
+            },
+          },
+        })
+      );
+    }
+  } catch (e) {
+    console.error("[cover] db write failed", e);
+  }
 }
 
-    const outputs = imgs.map((it, idx) => ({
+const outputs = imgs.map((it, idx) => ({
       type: "image",
       url: it.url,
       index: idx,
