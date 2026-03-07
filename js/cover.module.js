@@ -7,6 +7,19 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 async function applyCoverTextOverlay(imageUrl) {
   console.log("[cover overlay entered]", imageUrl);
   // Artist/Title inputlarını olabildiğince sağlam yakala
+  // prompttan artist/title çıkar
+const promptEl = document.querySelector("#coverPrompt");
+const promptText = promptEl?.value || "";
+
+let artist = "";
+let title = "";
+
+const m = promptText.match(/^(.+?)\s+by\s+(.+?)(?:,|$)/i);
+
+if (m) {
+  title = m[1].trim();
+  artist = m[2].trim();
+}
   const pick = (...sels) => {
     for (const s of sels) {
       const el = document.querySelector(s);
@@ -16,13 +29,7 @@ async function applyCoverTextOverlay(imageUrl) {
     return "";
   };
 
-  const artist =
-    pick('#coverArtist', 'input[name="artist"]', 'input[data-field="artist"]', 'input[placeholder*="Sanatçı"]') ||
-    pick('#artist', 'input[name="coverArtist"]');
-
-  const title =
-    pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
-    pick('#title', 'input[name="coverTitle"]');
+ 
  
   console.log("[cover overlay values]", { artist, title });
 // Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
