@@ -4,18 +4,30 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 // cover.module.js — FULL BLOCK (style sync + quality routing + FAL generate + PPE.apply)
 (function () {
 // --- COVER TEXT OVERLAY (auto) ---
-async function applyCoverTextOverlay(imageUrl, artist = "", title = "") {
+async function applyCoverTextOverlay(imageUrl) {
   console.log("[cover overlay entered]", imageUrl);
+  // Artist/Title inputlarını olabildiğince sağlam yakala
+  const pick = (...sels) => {
+    for (const s of sels) {
+      const el = document.querySelector(s);
+      if (el && typeof el.value === "string") return el.value.trim();
+      if (el && typeof el.textContent === "string" && el.tagName !== "SCRIPT") return el.textContent.trim();
+    }
+    return "";
+  };
 
-  artist = String(artist || "").trim();
-  title = String(title || "").trim();
+  const artist =
+    pick('#coverArtist', 'input[name="artist"]', 'input[data-field="artist"]', 'input[placeholder*="Sanatçı"]') ||
+    pick('#artist', 'input[name="coverArtist"]');
 
+  const title =
+    pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
+    pick('#title', 'input[name="coverTitle"]');
+ 
   console.log("[cover overlay values]", { artist, title });
-
+// Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
   if (!artist && !title) return { ok: true, finalUrl: imageUrl };
-
-  console.log("[cover overlay payload]", { imageUrl, artist, title });
-
+console.log("[cover overlay payload]", { imageUrl, artist, title });
   const r = await fetch("/api/cover/overlay-text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -23,6 +35,7 @@ async function applyCoverTextOverlay(imageUrl, artist = "", title = "") {
   });
 
   if (!r.ok) {
+    // başarısızsa orijinal cover’ı göster
     return { ok: false, finalUrl: imageUrl };
   }
 
@@ -172,38 +185,21 @@ function withTitleSafeArea(p) {
     const root = getRoot();
     if (!root) return;
 
-   const prompt = (qs("#coverPrompt", root)?.value || "").trim();
-if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
+    const prompt = (qs("#coverPrompt", root)?.value || "").trim();
+    if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
 
-const lines = prompt.split("\n").map((x) => x.trim()).filter(Boolean);
+    const style = root.dataset.coverStyle || null;
+    const quality = root.dataset.coverQuality || "artist";
+    const n = Number(qs("#coverCount", root)?.value || 1);
+    const ratio = qs("#coverRatio", root)?.value || "1:1";
 
-let artist = "";
-let title = "";
+    console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-for (const line of lines) {
-  const lower = line.toLowerCase();
-  if (!artist && lower.startsWith("artist:")) {
-    artist = line.slice(7).trim();
-    continue;
-  }
-  if (!title && lower.startsWith("title:")) {
-    title = line.slice(6).trim();
-    continue;
-  }
-}
-
-const style = root.dataset.coverStyle || null;
-const quality = root.dataset.coverQuality || "artist";
-const n = Number(qs("#coverCount", root)?.value || 1);
-const ratio = qs("#coverRatio", root)?.value || "1:1";
-
-console.log("[cover] generate request", { prompt, style, quality, n, ratio, artist, title });
-
-const imgs = await generateImages({ prompt, style, ratio, n, quality });
-// --- APPLY TEXT OVERLAY ---
+    const imgs = await generateImages({ prompt, style, ratio, n, quality });
+    // --- APPLY TEXT OVERLAY ---
 for (const img of imgs) {
   console.log("[cover overlay start]", img.url);
-  const over = await applyCoverTextOverlay(img.url, artist, title);
+  const over = await applyCoverTextOverlay(img.url);
   img.url = over.finalUrl;
 }
 
