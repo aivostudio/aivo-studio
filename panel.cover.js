@@ -17,6 +17,7 @@
   }
 
   waitForRightPanel(() => {
+    console.log("[cover panel live] db-version loaded");
     const PANEL_KEY = "cover";
 
     let alive = true;
