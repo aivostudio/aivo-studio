@@ -1,3 +1,4 @@
+```javascript
 // api/cover/overlay-text.js
 const sharp = require("sharp");
 const fetch = require("node-fetch");
@@ -86,44 +87,44 @@ module.exports = async function handler(req, res) {
   }
 
   ${
-  ${
-  artistText
-    ? `
-<g filter="url(#hardShadow)">
-  <text
-    x="512"
-    y="190"
-    text-anchor="middle"
-    font-family="Impact, Arial Black, Helvetica, sans-serif"
-    font-size="46"
-    font-weight="900"
-    letter-spacing="3"
-    fill="url(#goldFill)"
-    stroke="#5a2f00"
-    stroke-width="4"
-    paint-order="stroke fill"
-  >${esc(artistText)}</text>
+    artistText
+      ? `
+  <g filter="url(#hardShadow)">
+    <text
+      x="512"
+      y="190"
+      text-anchor="middle"
+      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-size="46"
+      font-weight="900"
+      letter-spacing="3"
+      fill="url(#goldFill)"
+      stroke="#5a2f00"
+      stroke-width="4"
+      paint-order="stroke fill"
+    >${esc(artistText)}</text>
 
-  <text
-    x="512"
-    y="190"
-    text-anchor="middle"
-    font-family="Impact, Arial Black, Helvetica, sans-serif"
-    font-size="46"
-    font-weight="900"
-    letter-spacing="3"
-    fill="none"
-    stroke="#ffefbf"
-    stroke-opacity="0.55"
-    stroke-width="2"
-  >${esc(artistText)}</text>
-</g>
-    `
-    : ""
-}
+    <text
+      x="512"
+      y="190"
+      text-anchor="middle"
+      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-size="46"
+      font-weight="900"
+      letter-spacing="3"
+      fill="none"
+      stroke="#ffefbf"
+      stroke-opacity="0.55"
+      stroke-width="2"
+    >${esc(artistText)}</text>
+  </g>
+      `
+      : ""
+  }
 
 </svg>
 `;
+
     const final = await sharp(imgBuffer)
       .resize(1024, 1024, { fit: "cover" })
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
@@ -138,4 +139,5 @@ module.exports = async function handler(req, res) {
     console.error("cover/overlay-text error:", e);
     return res.status(500).json({ ok: false, error: e?.message || "Server error" });
   }
-}
+};
+```
