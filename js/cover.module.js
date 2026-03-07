@@ -27,10 +27,16 @@ async function applyCoverTextOverlay(imageUrl, artist = "", title = "") {
     return { ok: false, finalUrl: imageUrl };
   }
 
-  const blob = await r.blob();
-  const finalUrl = URL.createObjectURL(blob);
+   const blob = await r.blob();
+
+  const finalUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
   return { ok: true, finalUrl };
-}
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
 
