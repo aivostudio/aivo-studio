@@ -233,9 +233,9 @@
       return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
     }
 
-   async function download(url) {
+  async function download(url) {
   try {
-    const r = await fetch(url, { credentials: "omit" });
+    const r = await fetch(url, { mode: "cors", credentials: "omit" });
     if (!r.ok) throw new Error("download_fetch_failed");
 
     const blob = await r.blob();
@@ -244,15 +244,14 @@
     const a = document.createElement("a");
     a.href = blobUrl;
     a.download = "cover.jpg";
-    a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     a.remove();
 
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
   } catch (err) {
     console.error("[cover] download failed", err);
-    window.open(url, "_blank", "noopener");
+    alert("İndirme başlatılamadı.");
   }
 }
 
