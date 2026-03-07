@@ -148,17 +148,23 @@ function withTitleSafeArea(p) {
     raw,
     "premium music cover artwork",
     "spotify and apple music quality album cover",
-    "poster-quality composition with strong headline hierarchy",
-    "design the image like a real commercial single cover",
-    "reserve a clean, visually powerful title zone in the upper top area",
-    "the top area must feel intentionally designed for a large main title and a smaller artist name underneath",
-    "keep the upper composition clean, readable, centered, balanced, and suitable for elegant typography overlay",
-    "do not place faces, hands, busy objects, stage structures, light flares, palm leaves, or important subjects inside the title zone",
-    "avoid fake text, random letters, symbols, captions, label marks, square placeholder glyphs, micro text, and unreadable typographic artifacts",
-    "focus visual energy in the mid and lower sections of the artwork",
-    "cinematic lighting, premium color grading, polished depth, strong focal composition",
-    "luxury poster aesthetic, high-end streaming platform cover design, professional art direction"
+    "real commercial single cover design",
+    "clean balanced composition",
+    "strong focal subject",
+    "cinematic lighting",
+    "premium color grading",
+    "polished depth",
+    "minimal clutter",
+    "no text",
+    "no typography",
+    "no letters",
+    "no words",
+    "no logo",
+    "no watermark",
+    "no fake text",
+    "no random characters"
   ].join(", ");
+
 }
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
 async function generateImages({ prompt, style, ratio, n, quality }) {
