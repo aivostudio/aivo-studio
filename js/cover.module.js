@@ -242,7 +242,7 @@ for (const img of imgs) {
     console.error("[cover] db write failed", e);
   }
 }
-
+}
 
 
   // --- PROMPT CHAR COUNT (opsiyonel) ---
