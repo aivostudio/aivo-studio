@@ -75,21 +75,40 @@ module.exports = async function handler(req, res) {
   <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
 
   ${
+    ${
     titleText
       ? `
-  <g filter="url(#softShadow)">
+  <g filter="url(#hardShadow)">
     <text
       x="512"
-      y="120"
+      y="132"
       text-anchor="middle"
       font-family="CoverFont"
-      font-size="120"
+      font-size="132"
+      font-style="italic"
       font-weight="700"
-      letter-spacing="2"
-      fill="url(#goldFill)"
-      stroke="#5a2f00"
-      stroke-width="10"
+      letter-spacing="1"
+      fill="#ffd79a"
+      stroke="#b44f7b"
+      stroke-width="14"
       paint-order="stroke fill"
+      transform="rotate(-3 512 132)"
+    >${esc(titleText)}</text>
+
+    <text
+      x="512"
+      y="132"
+      text-anchor="middle"
+      font-family="CoverFont"
+      font-size="132"
+      font-style="italic"
+      font-weight="700"
+      letter-spacing="1"
+      fill="none"
+      stroke="#fff1cc"
+      stroke-opacity="0.55"
+      stroke-width="4"
+      transform="rotate(-3 512 132)"
     >${esc(titleText)}</text>
   </g>
       `
