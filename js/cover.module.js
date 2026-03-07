@@ -43,6 +43,26 @@ console.log("[cover overlay payload]", { imageUrl, artist, title });
   const finalUrl = URL.createObjectURL(blob);
   return { ok: true, finalUrl };
 }
+  function shouldApplyCoverTextOverlay() {
+  const pick = (...sels) => {
+    for (const s of sels) {
+      const el = document.querySelector(s);
+      if (el && typeof el.value === "string") return el.value.trim();
+      if (el && typeof el.textContent === "string" && el.tagName !== "SCRIPT") return el.textContent.trim();
+    }
+    return "";
+  };
+
+  const artist =
+    pick('#coverArtist', 'input[name="artist"]', 'input[data-field="artist"]', 'input[placeholder*="Sanatçı"]') ||
+    pick('#artist', 'input[name="coverArtist"]');
+
+  const title =
+    pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
+    pick('#title', 'input[name="coverTitle"]');
+
+  return !!(artist || title);
+}
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
 
@@ -203,9 +223,10 @@ async function generateImages({ prompt, style, ratio, n, quality }) {
 for (const img of imgs) {
   console.log("[cover overlay start]", img.url);
 
-  const over = await applyCoverTextOverlay(img.url);
-  img.url = over.finalUrl;
-
+  if (shouldApplyCoverTextOverlay()) {
+    const over = await applyCoverTextOverlay(img.url);
+    img.url = over.finalUrl;
+  }
   try {
     const db = await postJSON("/api/cover/generate", {
       prompt: img.prompt || prompt,
