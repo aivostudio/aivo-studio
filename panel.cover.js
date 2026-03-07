@@ -317,6 +317,7 @@
           },
 
           onChange: (items) => {
+            console.log("[cover onChange items]", items);
             if (!alive || !hostEl) return;
 
             const safeItems = (items || []).filter(isJobCover);
