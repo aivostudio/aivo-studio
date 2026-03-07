@@ -141,46 +141,48 @@ function withTitleSafeArea(p) {
   ].join(", ");
 }
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
-  async function generateImages({ prompt, style, ratio, n, quality }) {
-    const tasks = [];
-    for (let i = 0; i < n; i++) {
-      const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
-      const promptForModel = withTitleSafeArea(promptVar);
+async function generateImages({ prompt, style, ratio, n, quality }) {
+  const tasks = [];
 
-     // style/ratio artık create payload'ına gidiyor
-tasks.push(
-  postJSON("/api/providers/fal/predictions/create?app=cover", {
-    input: {
-      prompt: promptForModel,
-      quality,
-      ratio,
-    }
-  }).then((j) => {
-    const url =
-      j.output ||
-      j.imageUrl ||
-      j.image_url ||
-      j.url ||
-      j.fal?.images?.[0]?.url ||
-      null;
+  for (let i = 0; i < n; i++) {
+    const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
+    const promptForModel = withTitleSafeArea(promptVar);
 
-    return {
-      url,
-      prompt: promptVar,
-      raw: j,
-    };
-  })
-);
+    tasks.push(
+      postJSON("/api/providers/fal/predictions/create?app=cover", {
+        input: {
+          prompt: promptForModel,
+          quality,
+          ratio,
+        },
+      }).then((j) => {
+        const url =
+          j.output ||
+          j.imageUrl ||
+          j.image_url ||
+          j.url ||
+          j.fal?.images?.[0]?.url ||
+          null;
 
-    const results = await Promise.all(tasks);
-    const urls = results.map((x) => x.url).filter(Boolean);
-    if (!urls.length) {
-      console.error("[cover] no image url from fal response", results);
-      throw "cover_generate_no_image";
-    }
-    return results;
+        return {
+          url,
+          prompt: promptVar,
+          raw: j,
+        };
+      })
+    );
   }
 
+  const results = await Promise.all(tasks);
+  const urls = results.map((x) => x.url).filter(Boolean);
+
+  if (!urls.length) {
+    console.error("[cover] no image url from fal response", results);
+    throw "cover_generate_no_image";
+  }
+
+  return results;
+}
   async function createCover() {
     const root = getRoot();
     if (!root) return;
