@@ -145,9 +145,45 @@
         .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center;background-color: rgba(255,255,255,.04);}
         .cpThumb.is-loading{background:rgba(255,255,255,.04)}
         .cpBadge{position:absolute;top:10px; left:10px;font-size:12px;padding:6px 10px;border-radius:999px;background: rgba(0,0,0,.45);border: 1px solid rgba(255,255,255,.10);z-index:3;}
-        .cpSkel{position:absolute;inset:0;overflow:hidden}
-        .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite;}
-        @keyframes cpShim{0%{transform:translateX(-40%) rotate(12deg)}100%{transform:translateX(40%) rotate(12deg)}}
+        .cpSkel{
+  position:absolute;
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:radial-gradient(
+    80% 80% at 50% 40%,
+    rgba(175,120,255,.18),
+    rgba(0,0,0,.70)
+  );
+
+  overflow:hidden;
+}
+
+.cpSkel:before{
+  content:"";
+
+  position:absolute;
+  inset:-40%;
+
+  background:linear-gradient(
+    90deg,
+    rgba(255,255,255,0),
+    rgba(220,170,255,.14),
+    rgba(255,255,255,0)
+  );
+
+  transform:rotate(18deg);
+
+  animation:cpShimmer 1.4s linear infinite;
+}
+
+@keyframes cpShimmer{
+  0%{transform:translateX(-30%) rotate(18deg);}
+  100%{transform:translateX(30%) rotate(18deg);}
+}
         .cpOverlay{position:absolute; inset:0;display:flex;align-items:center;justify-content:center;background: rgba(0,0,0,.25);opacity:0;transition:opacity .18s ease;z-index:2;}
         .cpCard:hover .cpOverlay{opacity:1}
         @media (hover:none){.cpOverlay{opacity:1; background: rgba(0,0,0,.18);}}
