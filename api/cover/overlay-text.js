@@ -1,4 +1,3 @@
-
 // api/cover/overlay-text.js
 const sharp = require("sharp");
 const fetch = require("node-fetch");
