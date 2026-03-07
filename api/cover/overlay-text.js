@@ -1,8 +1,6 @@
 // api/cover/overlay-text.js
-export const config = { runtime: "nodejs" };
-
-import sharp from "sharp";
-import fetch from "node-fetch";
+const sharp = require("sharp");
+const fetch = require("node-fetch");
 
 export default async function handler(req, res) {
   try {
