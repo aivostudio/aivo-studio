@@ -411,9 +411,24 @@
           const out = pickBestImageOutput(job);
           const url = out?.url || "";
 
-          if (act === "delete") {
-            return;
-          }
+        if (act === "delete") {
+  fetch("/api/jobs/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ job_id: id }),
+  })
+    .then((r) => r.json())
+    .then((j) => {
+      if (!j?.ok) throw new Error(j?.error || "delete_failed");
+      controller?.hydrate?.();
+    })
+    .catch((err) => {
+      console.error("[cover] delete failed", err);
+    });
+
+  return;
+}
 
           if (!url) return;
 
