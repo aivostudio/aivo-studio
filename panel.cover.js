@@ -293,7 +293,7 @@
             </div>
           </div>
         `;
-
+       console.log("[cover] creating DBJobs controller");
         const controller = window.DBJobs.create({
           app: "cover",
           debug: false,
