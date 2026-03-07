@@ -170,12 +170,22 @@ export default async function handler(req, res) {
     // ------------------------------------------------------------
     // Fal payload
     // ------------------------------------------------------------
-    const image_size = (input?.image_size || "square_hd").trim();
+   // ------------------------------------------------------------
+// Fal payload
+// ------------------------------------------------------------
+const ratio = String(input?.ratio || "").trim();
 
-    const falPayload = {
-      prompt: t.prompt_sent,
-      image_size,
-    };
+const image_size =
+  ratio === "16:9"
+    ? "landscape_16_9"
+    : ratio === "9:16"
+    ? "portrait_16_9"
+    : String(input?.image_size || "square_hd").trim();
+
+const falPayload = {
+  prompt: t.prompt_sent,
+  image_size,
+};;
 
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
