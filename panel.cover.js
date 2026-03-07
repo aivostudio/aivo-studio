@@ -336,7 +336,7 @@
             render(hostEl, sorted);
           },
         });
-
+        controller.hydrate?.();
         const offUI = attachEvents(host, controller);
 
         return () => {
