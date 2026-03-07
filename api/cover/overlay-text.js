@@ -65,31 +65,53 @@ export default async function handler(req, res) {
   <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
 
   ${
-    artistText
+    titleText
       ? `
-  <g filter="url(#hardShadow)">
+  <g filter="url(#softShadow)">
     <text
       x="512"
-      y="130"
+      y="110"
       text-anchor="middle"
       font-family="Impact, Arial Black, Helvetica, sans-serif"
-      font-size="92"
+      font-size="120"
       font-weight="900"
       letter-spacing="2"
       fill="url(#goldFill)"
       stroke="#5a2f00"
       stroke-width="10"
       paint-order="stroke fill"
+    >${esc(titleText)}</text>
+  </g>
+      `
+      : ""
+  }
+
+  ${
+    artistText
+      ? `
+  <g filter="url(#hardShadow)">
+    <text
+      x="512"
+      y="190"
+      text-anchor="middle"
+      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-size="46"
+      font-weight="900"
+      letter-spacing="3"
+      fill="#ffe7a3"
+      stroke="#5a2f00"
+      stroke-width="4"
+      paint-order="stroke fill"
     >${esc(artistText)}</text>
 
     <text
       x="512"
-      y="130"
+      y="190"
       text-anchor="middle"
       font-family="Impact, Arial Black, Helvetica, sans-serif"
-      font-size="92"
+      font-size="46"
       font-weight="900"
-      letter-spacing="2"
+      letter-spacing="3"
       fill="none"
       stroke="#ffefbf"
       stroke-opacity="0.55"
@@ -100,31 +122,8 @@ export default async function handler(req, res) {
       : ""
   }
 
-  ${
-    titleText
-      ? `
-  <g filter="url(#softShadow)">
-    <text
-      x="512"
-      y="200"
-      text-anchor="middle"
-      font-family="Georgia, Times, serif"
-      font-size="72"
-      font-style="italic"
-      font-weight="700"
-      fill="#f5d36b"
-      stroke="#7a4a00"
-      stroke-width="3"
-      paint-order="stroke fill"
-    >${esc(titleText)}</text>
-  </g>
-      `
-      : ""
-  }
-
 </svg>
 `;
-
     const final = await sharp(imgBuffer)
       .resize(1024, 1024, { fit: "cover" })
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
