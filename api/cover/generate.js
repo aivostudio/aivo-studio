@@ -1,51 +1,110 @@
-// api/cover/generate.js
-import { getUserFromReq } from "../_lib/auth.js";
-import { query } from "../_lib/r2.js";
+export const config = { runtime: "nodejs" };
+
+import { neon } from "@neondatabase/serverless";
+import authModule from "../_lib/auth.js";
+const { requireAuth } = authModule;
 
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  }
+
+  res.setHeader("Cache-Control", "no-store");
+
+  const conn =
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!conn) {
+    return res.status(500).json({ ok: false, error: "missing_db_env" });
+  }
+
+  let auth;
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
-    }
+    auth = await requireAuth(req);
+  } catch (e) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: String(e?.message || e),
+    });
+  }
 
-    const user = await getUserFromReq(req);
-    if (!user?.id) {
-      return res.status(401).json({ ok: false, error: "Unauthorized" });
-    }
+  const email = auth?.email ? String(auth.email) : null;
+  if (!email) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: "missing_email",
+    });
+  }
 
-    const {
-      prompt = "",
-      style = null,
-      quality = "artist",
-      ratio = "1:1",
-      imageUrl = "",
-    } = req.body || {};
+  const body = req.body || {};
+  const prompt = String(body.prompt || "").trim();
+  const style = body.style ?? null;
+  const quality = String(body.quality || "artist").trim();
+  const ratio = String(body.ratio || "1:1").trim();
+  const imageUrl = String(body.imageUrl || "").trim();
 
-    const p = String(prompt || "").trim();
-    const finalImageUrl = String(imageUrl || "").trim();
+  if (!prompt) {
+    return res.status(400).json({ ok: false, error: "prompt_empty" });
+  }
 
-    if (!p) {
-      return res.status(400).json({ ok: false, error: "Prompt boş" });
-    }
+  if (!imageUrl) {
+    return res.status(400).json({ ok: false, error: "image_url_empty" });
+  }
 
-    if (!finalImageUrl) {
-      const seed = encodeURIComponent(p.slice(0, 120));
-      const fallbackUrl = `https://picsum.photos/seed/${seed}/768/768`;
+  const sql = neon(conn);
 
-      return res.status(200).json({
-        ok: true,
-        type: "cover",
-        imageUrl: fallbackUrl,
-        prompt: p,
-        job_id: null,
-        mock: true,
+  try {
+    const userRow = await sql`
+      select id
+      from users
+      where email = ${email}
+      limit 1
+    `;
+
+    if (!userRow.length) {
+      return res.status(401).json({
+        ok: false,
+        error: "user_not_found",
+        email,
       });
     }
 
-    const inserted = await query(
-      `
-      INSERT INTO jobs (
+    const user_uuid = String(userRow[0].id);
+
+    const metaSafe = {
+      app: "cover",
+      kind: "cover_image",
+      provider: "fal",
+      prompt,
+      style,
+      quality,
+      ratio,
+    };
+
+    const outputsSafe = [
+      {
+        type: "image",
+        url: imageUrl,
+        meta: {
+          app: "cover",
+          prompt,
+          style,
+          quality,
+          ratio,
+        },
+      },
+    ];
+
+    const inserted = await sql`
+      insert into jobs (
         user_id,
+        user_uuid,
+        type,
         app,
         status,
         prompt,
@@ -54,54 +113,38 @@ export default async function handler(req, res) {
         created_at,
         updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-      `,
-      [
-        user.id,
-        "cover",
-        "ready",
-        p,
-        JSON.stringify({
-          app: "cover",
-          prompt: p,
-          style,
-          quality,
-          ratio,
-        }),
-        JSON.stringify([
-          {
-            type: "image",
-            url: finalImageUrl,
-            meta: {
-              app: "cover",
-              prompt: p,
-              style,
-              quality,
-              ratio,
-            },
-          },
-        ]),
-      ]
-    );
+      values (
+        ${email},
+        ${user_uuid}::uuid,
+        'cover',
+        'cover',
+        'ready',
+        ${prompt},
+        ${metaSafe},
+        ${JSON.stringify(outputsSafe)}::jsonb,
+        now(),
+        now()
+      )
+      returning id, user_uuid, app, status, created_at, outputs
+    `;
 
-    const jobId =
-      inserted?.insertId ||
-      inserted?.rows?.insertId ||
-      inserted?.[0]?.insertId ||
-      null;
+    const job_id = String(inserted[0].id);
 
     return res.status(200).json({
       ok: true,
-      type: "cover",
-      job_id: jobId,
-      imageUrl: finalImageUrl,
-      prompt: p,
+      job_id,
+      user_uuid: inserted[0].user_uuid,
+      app: inserted[0].app,
+      status: inserted[0].status,
+      created_at: inserted[0].created_at,
+      imageUrl,
     });
   } catch (e) {
-    console.error("[api/cover/generate] error", e);
+    console.error("cover generate failed:", e);
     return res.status(500).json({
       ok: false,
-      error: e?.message || "Server error",
+      error: "create_failed",
+      message: String(e?.message || e),
     });
   }
 }
