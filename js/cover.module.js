@@ -35,7 +35,7 @@ async function applyCoverTextOverlay(imageUrl) {
     const promptEl = document.querySelector("#coverPrompt");
     const promptText = promptEl?.value || "";
 
-    const m = promptText.match(/^(.+?)\s+by\s+(.+?)(?:,|$)/i);
+ const m = promptText.match(/^(.+?)\s+by\s+([a-zA-Z0-9 _-]+)/i);
 
     if (m) {
       title = m[1].trim();
