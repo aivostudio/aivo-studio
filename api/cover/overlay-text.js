@@ -87,40 +87,41 @@ export default async function handler(req, res) {
   }
 
   ${
-    artistText
-      ? `
-  <g filter="url(#hardShadow)">
-    <text
-      x="512"
-      y="190"
-      text-anchor="middle"
-      font-family="Impact, Arial Black, Helvetica, sans-serif"
-      font-size="46"
-      font-weight="900"
-      letter-spacing="3"
-      fill="#ffe7a3"
-      stroke="#5a2f00"
-      stroke-width="4"
-      paint-order="stroke fill"
-    >${esc(artistText)}</text>
+  ${
+  artistText
+    ? `
+<g filter="url(#hardShadow)">
+  <text
+    x="512"
+    y="190"
+    text-anchor="middle"
+    font-family="Impact, Arial Black, Helvetica, sans-serif"
+    font-size="46"
+    font-weight="900"
+    letter-spacing="3"
+    fill="url(#goldFill)"
+    stroke="#5a2f00"
+    stroke-width="4"
+    paint-order="stroke fill"
+  >${esc(artistText)}</text>
 
-    <text
-      x="512"
-      y="190"
-      text-anchor="middle"
-      font-family="Impact, Arial Black, Helvetica, sans-serif"
-      font-size="46"
-      font-weight="900"
-      letter-spacing="3"
-      fill="none"
-      stroke="#ffefbf"
-      stroke-opacity="0.55"
-      stroke-width="2"
-    >${esc(artistText)}</text>
-  </g>
-      `
-      : ""
-  }
+  <text
+    x="512"
+    y="190"
+    text-anchor="middle"
+    font-family="Impact, Arial Black, Helvetica, sans-serif"
+    font-size="46"
+    font-weight="900"
+    letter-spacing="3"
+    fill="none"
+    stroke="#ffefbf"
+    stroke-opacity="0.55"
+    stroke-width="2"
+  >${esc(artistText)}</text>
+</g>
+    `
+    : ""
+}
 
 </svg>
 `;
