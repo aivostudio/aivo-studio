@@ -147,30 +147,30 @@ function withTitleSafeArea(p) {
       const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
       const promptForModel = withTitleSafeArea(promptVar);
 
-      // style/ratio şu an backend’te kullanılmıyor olabilir; meta olarak saklıyoruz.
-      tasks.push(
-        postJSON("/api/providers/fal/predictions/create?app=cover", {
-          input: {
-  prompt: promptForModel,
-  quality,
-}
-        }).then((j) => {
-          const url =
-            j.output ||
-            j.imageUrl ||
-            j.image_url ||
-            j.url ||
-            j.fal?.images?.[0]?.url ||
-            null;
-
-          return {
-            url,
-            prompt: promptVar,
-            raw: j,
-          };
-        })
-      );
+     // style/ratio artık create payload'ına gidiyor
+tasks.push(
+  postJSON("/api/providers/fal/predictions/create?app=cover", {
+    input: {
+      prompt: promptForModel,
+      quality,
+      ratio,
     }
+  }).then((j) => {
+    const url =
+      j.output ||
+      j.imageUrl ||
+      j.image_url ||
+      j.url ||
+      j.fal?.images?.[0]?.url ||
+      null;
+
+    return {
+      url,
+      prompt: promptVar,
+      raw: j,
+    };
+  })
+);
 
     const results = await Promise.all(tasks);
     const urls = results.map((x) => x.url).filter(Boolean);
