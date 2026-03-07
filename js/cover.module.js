@@ -1,11 +1,10 @@
 // FILE: cover.module.js
 console.log("[cover.module] loaded ✅", new Date().toISOString());
 
-// cover.module.js — FULL BLOCK (style sync + quality routing + FAL generate + PPE.apply)
-(function () {
 // --- COVER TEXT OVERLAY (auto) ---
 async function applyCoverTextOverlay(imageUrl) {
   console.log("[cover overlay entered]", imageUrl);
+
   // Artist/Title inputlarını olabildiğince sağlam yakala
   const pick = (...sels) => {
     for (const s of sels) {
@@ -16,25 +15,51 @@ async function applyCoverTextOverlay(imageUrl) {
     return "";
   };
 
-  const artist =
+  // let kullanıyoruz çünkü fallback'te yeniden atanabilir
+  let artist =
     pick('#coverArtist', 'input[name="artist"]', 'input[data-field="artist"]', 'input[placeholder*="Sanatçı"]') ||
     pick('#artist', 'input[name="coverArtist"]');
 
-  const title =
+  let title =
     pick('#coverTitle', 'input[name="title"]', 'input[data-field="title"]', 'input[placeholder*="Şarkı"]', 'input[placeholder*="Parça"]') ||
     pick('#title', 'input[name="coverTitle"]');
-  // Eğer inputlardan gelmediyse prompttan dene (UI'ye dokunmaz)
-if (!artist && !title) {
-  const promptEl = document.querySelector("#coverPrompt");
-  const promptText = promptEl?.value || "";
 
-  const m = promptText.match(/^(.+?)\s+by\s+([a-zA-Z0-9 _-]+)/i);
-  if (m) {
-    title = m[1].trim();
-    artist = m[2].trim();
+  // Eğer inputlardan gelmediyse prompttan dene (UI'ye dokunmaz)
+  if (!artist && !title) {
+    const promptEl = document.querySelector("#coverPrompt");
+    const promptText = promptEl?.value || "";
+
+    const m = promptText.match(/^(.+?)\s+by\s+([a-zA-Z0-9 _-]+)/i);
+    if (m) {
+      title = m[1].trim();
+      artist = m[2].trim();
+    }
   }
+
+  console.log("[cover overlay values]", { artist, title });
+
+  // Eğer artist/title yoksa overlay çağırmayalım
+  if (!artist && !title) {
+    return { ok: true, finalUrl: imageUrl };
+  }
+
+  console.log("[cover overlay payload]", { imageUrl, artist, title });
+
+  const r = await fetch("/api/cover/overlay-text", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageUrl, artist, title }),
+  });
+
+  if (!r.ok) {
+    return { ok: false, finalUrl: imageUrl };
+  }
+
+  const blob = await r.blob();
+  const finalUrl = URL.createObjectURL(blob);
+
+  return { ok: true, finalUrl };
 }
- 
   console.log("[cover overlay values]", { artist, title });
 // Eğer artist/title yoksa overlay çağırmayalım (boş yazı basmayalım)
   if (!artist && !title) return { ok: true, finalUrl: imageUrl };
