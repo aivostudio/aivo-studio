@@ -1,6 +1,8 @@
+```javascript
 // api/cover/overlay-text.js
 const sharp = require("sharp");
-module.exports = async function handler(req, res) {  
+
+module.exports = async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "Method not allowed" });
@@ -35,6 +37,18 @@ module.exports = async function handler(req, res) {
 
   <defs>
 
+    <style>
+      @font-face {
+        font-family: "TitleFont";
+        src: url("./fonts/NotoSans-Bold.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "ArtistFont";
+        src: url("./fonts/NotoSerif-Italic.ttf") format("truetype");
+      }
+    </style>
+
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#08111d" stop-opacity="0.92"/>
       <stop offset="50%" stop-color="#08111d" stop-opacity="0.55"/>
@@ -57,7 +71,6 @@ module.exports = async function handler(req, res) {
 
   </defs>
 
-  <!-- TOP AREA CLEANER (AI text suppression) -->
   <rect x="0" y="0" width="1024" height="360" fill="#08111d" opacity="0.55"/>
   <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
 
@@ -69,7 +82,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="110"
       text-anchor="middle"
-      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-family="TitleFont"
       font-size="120"
       font-weight="900"
       letter-spacing="2"
@@ -91,7 +104,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="190"
       text-anchor="middle"
-      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-family="ArtistFont"
       font-size="46"
       font-weight="900"
       letter-spacing="3"
@@ -105,7 +118,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="190"
       text-anchor="middle"
-      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-family="ArtistFont"
       font-size="46"
       font-weight="900"
       letter-spacing="3"
@@ -132,9 +145,10 @@ module.exports = async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).send(final);
+
   } catch (e) {
     console.error("cover/overlay-text error:", e);
     return res.status(500).json({ ok: false, error: e?.message || "Server error" });
   }
 };
-
+```
