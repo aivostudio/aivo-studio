@@ -1,7 +1,5 @@
 // api/cover/overlay-text.js
 const sharp = require("sharp");
-const fetch = require("node-fetch");
-
 module.exports = async function handler(req, res) {  
   try {
     if (req.method !== "POST") {
