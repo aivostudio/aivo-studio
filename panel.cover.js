@@ -19,6 +19,7 @@
 
   waitForRightPanel(() => {
     const PANEL_KEY = "cover";
+    const hiddenDeletedIds = new Set();
 
     function norm(s) {
       return String(s || "")
@@ -351,8 +352,9 @@
 
           onChange(items) {
             const safeItems = (items || [])
-              .filter(isJobCover)
-              .sort((a, b) => {
+  .filter(isJobCover)
+  .filter((x) => !hiddenDeletedIds.has(String(x?.job_id || x?.id || "")))
+  .sort((a, b) => {
                 const ta =
                   parseTime(a?.updated_at) ||
                   parseTime(a?.created_at) ||
@@ -411,7 +413,7 @@
           const out = pickBestImageOutput(job);
           const url = out?.url || "";
 
-        if (act === "delete") {
+     if (act === "delete") {
   fetch("/api/jobs/delete", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -421,6 +423,15 @@
     .then((r) => r.json())
     .then((j) => {
       if (!j?.ok) throw new Error(j?.error || "delete_failed");
+
+      hiddenDeletedIds.add(String(id));
+
+      const currentItems = Array.isArray(controller?.state?.items) ? controller.state.items : [];
+      const visibleItems = currentItems.filter(
+        (x) => !hiddenDeletedIds.has(String(x?.job_id || x?.id || ""))
+      );
+
+      render(host, visibleItems);
       controller?.hydrate?.();
     })
     .catch((err) => {
