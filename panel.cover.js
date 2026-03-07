@@ -390,7 +390,7 @@ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0,80)));
           </div>
         `;
 
-        state.items = loadItems();
+       state.items = loadItems() || [];
         render(host);
 
         const offUI = attachEvents(host);
