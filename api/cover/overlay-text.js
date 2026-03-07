@@ -35,10 +35,12 @@ export default async function handler(req, res) {
 
     const svg = `
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+
   <defs>
+
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#08111d" stop-opacity="0.78"/>
-      <stop offset="55%" stop-color="#08111d" stop-opacity="0.28"/>
+      <stop offset="0%" stop-color="#08111d" stop-opacity="0.92"/>
+      <stop offset="50%" stop-color="#08111d" stop-opacity="0.55"/>
       <stop offset="100%" stop-color="#08111d" stop-opacity="0"/>
     </linearGradient>
 
@@ -49,15 +51,18 @@ export default async function handler(req, res) {
     </linearGradient>
 
     <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
     </filter>
 
     <filter id="hardShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="10" stdDeviation="6" flood-color="#000000" flood-opacity="0.55"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
     </filter>
+
   </defs>
 
-  <rect x="0" y="0" width="1024" height="330" fill="url(#topFade)"/>
+  <!-- TOP AREA CLEANER (AI text suppression) -->
+  <rect x="0" y="0" width="1024" height="360" fill="#08111d" opacity="0.55"/>
+  <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
 
   ${
     artistText
@@ -65,10 +70,10 @@ export default async function handler(req, res) {
   <g filter="url(#hardShadow)">
     <text
       x="512"
-      y="128"
+      y="130"
       text-anchor="middle"
-      font-family="Arial Black, Arial, Helvetica, sans-serif"
-      font-size="88"
+      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-size="92"
       font-weight="900"
       letter-spacing="2"
       fill="url(#goldFill)"
@@ -79,10 +84,10 @@ export default async function handler(req, res) {
 
     <text
       x="512"
-      y="128"
+      y="130"
       text-anchor="middle"
-      font-family="Arial Black, Arial, Helvetica, sans-serif"
-      font-size="88"
+      font-family="Impact, Arial Black, Helvetica, sans-serif"
+      font-size="92"
       font-weight="900"
       letter-spacing="2"
       fill="none"
@@ -101,10 +106,10 @@ export default async function handler(req, res) {
   <g filter="url(#softShadow)">
     <text
       x="512"
-      y="218"
+      y="200"
       text-anchor="middle"
-      font-family="Georgia, Times New Roman, serif"
-      font-size="74"
+      font-family="Georgia, Times, serif"
+      font-size="72"
       font-style="italic"
       font-weight="700"
       fill="#f5d36b"
@@ -116,6 +121,7 @@ export default async function handler(req, res) {
       `
       : ""
   }
+
 </svg>
 `;
 
@@ -127,6 +133,7 @@ export default async function handler(req, res) {
 
     res.setHeader("Content-Type", "image/jpeg");
     res.setHeader("Cache-Control", "no-store");
+
     return res.status(200).send(final);
   } catch (e) {
     console.error("cover/overlay-text error:", e);
