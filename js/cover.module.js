@@ -241,7 +241,12 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       setActiveQuality(root, qp.getAttribute("data-quality"));
       return;
     }
-
+    const pill = e.target.closest(".style-pill");
+if (pill && root.contains(pill)) {
+  e.preventDefault();
+  setActiveStyle(root, pill.getAttribute("data-style"));
+  return;
+}
     const card = e.target.closest(".style-card");
     if (card && root.contains(card)) {
       e.preventDefault();
