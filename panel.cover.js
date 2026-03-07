@@ -16,6 +16,7 @@
   waitForRightPanel(() => {
     const PANEL_KEY = "cover";
     const STORAGE_KEY = "aivo.v2.cover.items";
+      const USE_LOCAL_CACHE = false;
 
     // Fal status endpoint (app param önemli)
     // ✅ FIX #2: hem request_id hem requestId yolla (güvenli)
@@ -65,17 +66,21 @@
       return when ? `${label} • ${when}` : label;
     }
 
-    function loadItems() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const arr = raw ? JSON.parse(raw) : [];
-        return Array.isArray(arr) ? arr : [];
-      } catch { return []; }
-    }
+   function loadItems() {
+if (!USE_LOCAL_CACHE) return [];
+try {
+const raw = localStorage.getItem(STORAGE_KEY);
+const arr = raw ? JSON.parse(raw) : [];
+return Array.isArray(arr) ? arr : [];
+} catch { return []; }
+}
 
-    function saveItems() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 80))); } catch {}
-    }
+   function saveItems() {
+if (!USE_LOCAL_CACHE) return;
+try {
+localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0,80)));
+} catch {}
+}
 
     function upsertItem(patch) {
       const rid = String(patch?.request_id || patch?.id || patch?.job_id || "").trim();
