@@ -1293,3 +1293,43 @@ section[data-module="cover"] textarea#coverPrompt {
   box-shadow: none !important;
   background: rgba(255,255,255,0.03) !important;
 }
+/* COVER CTA OVERFLOW FIX */
+section[data-module="cover"] textarea#coverPrompt{
+  min-height: 110px !important;
+  max-height: 110px !important;
+}
+
+section[data-module="cover"] .cover-meta-fields input{
+  height: 42px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill{
+  min-height: 82px !important;
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill .qp-title{
+  font-size: 16px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill[data-quality="artist"] .qp-title::after,
+section[data-module="cover"] .cover-form-grid .quality-pill[data-quality="ultra"] .qp-title::after{
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}
+
+section[data-module="cover"] .cover-style-cards{
+  gap: 8px !important;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card{
+  padding: 10px 12px !important;
+  min-height: 64px !important;
+  border-radius: 14px !important;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-sub{
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
