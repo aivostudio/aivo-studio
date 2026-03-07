@@ -3,7 +3,7 @@
 const sharp = require("sharp");
 const fetch = require("node-fetch");
 
-module.exports = async function handler(req, res) {
+module.exports = async function handler(req, res) {  
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "Method not allowed" });
