@@ -24,28 +24,6 @@
 
 
     const state = { items: [] };
-    const controller = window.DBJobs.create({
-  app: "cover",
-  pollIntervalMs: 4000,
-  hydrateEveryMs: 15000,
-
-  acceptJob: (job) => {
-    if (!job) return false;
-    const app = String(job?.app || job?.meta?.app || "").toLowerCase();
-    return app === "cover";
-  },
-
-  acceptOutput: (o) => {
-    if (!o) return false;
-    const t = String(o.type || o.kind || o.meta?.type || "").toLowerCase();
-    return t === "image";
-  },
-
-  onChange: (items) => {
-    state.items = items || [];
-    if (hostEl) render(hostEl);
-  }
-});
     let alive = true;
     let hostEl = null;
 
@@ -407,7 +385,7 @@
           </div>
         `;
 
-     
+        state.items = loadItems();
         render(host);
 
         const offUI = attachEvents(host);
