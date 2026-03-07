@@ -1,4 +1,4 @@
-```javascript
+
 // api/cover/overlay-text.js
 const sharp = require("sharp");
 const fetch = require("node-fetch");
@@ -140,4 +140,4 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ ok: false, error: e?.message || "Server error" });
   }
 };
-```
+
