@@ -1,196 +1,204 @@
 (function () {
-  // ✅ FIX #1: RightPanel load-order guard (return etme, bekle)
   function waitForRightPanel(cb) {
     const t0 = Date.now();
     const T = setInterval(() => {
-      if (window.RightPanel && typeof window.RightPanel.register === "function") {
+      if (
+        window.RightPanel &&
+        typeof window.RightPanel.register === "function" &&
+        window.DBJobs
+      ) {
         clearInterval(T);
         cb();
       } else if (Date.now() - t0 > 8000) {
         clearInterval(T);
-        console.warn("[cover] RightPanel not ready after 8s");
+        console.warn("[cover] RightPanel/DBJobs not ready after 8s");
       }
     }, 50);
   }
 
   waitForRightPanel(() => {
     const PANEL_KEY = "cover";
-    const STORAGE_KEY = "aivo.v2.cover.items";
 
-    // Fal status endpoint (app param önemli)
-    // ✅ FIX #2: hem request_id hem requestId yolla (güvenli)
-  const STATUS_URL = (jobId) =>
-  `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&app=cover`;
-
-
-    const state = { items: [] };
     let alive = true;
     let hostEl = null;
 
-    if (!window.__AIVO_COVER_POLL_TIMERS__) window.__AIVO_COVER_POLL_TIMERS__ = new Map();
-    const TMAP = window.__AIVO_COVER_POLL_TIMERS__;
+    const norm = (s) =>
+      String(s || "")
+        .trim()
+        .toLowerCase()
+        .replaceAll("_", " ")
+        .replace(/\s+/g, " ");
 
-    function esc(s) {
-      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;",
-        '"': "&quot;", "'": "&#39;"
+    const esc = (s) =>
+      String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
       }[c]));
-    }
 
-    function uid() {
-      return "c_" + Math.random().toString(36).slice(2, 10);
-    }
+    const to2 = (n) => String(Number(n) || 0).padStart(2, "0");
 
-    function to2(n) { return String(Number(n) || 0).padStart(2, "0"); }
-    function formatTR(ms) {
-      const t = Number(ms);
-      if (!Number.isFinite(t) || t <= 0) return "";
-      const d = new Date(t);
-      return `${to2(d.getDate())}.${to2(d.getMonth() + 1)}.${d.getFullYear()} ${to2(d.getHours())}:${to2(d.getMinutes())}`;
-    }
-    function qualityToLabel(q) {
-      const v = String(q || "").toLowerCase();
-      if (v === "ultra") return "Cinematic Ultra HD";
-      return "Artist";
-    }
-    function inferQualityFromTitleOrPrompt(it) {
-      const s = `${it?.title || ""} ${it?.prompt || ""}`.toLowerCase();
-      if (s.includes("cinematic ultra") || s.includes("ultra hd") || s.includes("ultra")) return "ultra";
-      return "artist";
-    }
-    function cardLabel(it) {
-      const quality = it?.quality || it?.meta?.quality || inferQualityFromTitleOrPrompt(it);
-      const label = qualityToLabel(quality);
-      const when = formatTR(it?.createdAt || it?.createdAtMs || it?.meta?.createdAtMs);
-      return when ? `${label} • ${when}` : label;
-    }
-
-    function loadItems() {
+    const formatTR = (v) => {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const arr = raw ? JSON.parse(raw) : [];
-        return Array.isArray(arr) ? arr : [];
-      } catch { return []; }
-    }
+        const d = new Date(v || Date.now());
+        if (!Number.isFinite(d.getTime())) return "";
+        return `${to2(d.getDate())}.${to2(d.getMonth() + 1)}.${d.getFullYear()} ${to2(d.getHours())}:${to2(d.getMinutes())}`;
+      } catch {
+        return "";
+      }
+    };
 
-    function saveItems() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 80))); } catch {}
-    }
+    const getJobApp = (job) =>
+      String(job?.app || job?.meta?.app || job?.meta?.module || "").trim();
 
-    function upsertItem(patch) {
-      const rid = String(patch?.request_id || patch?.id || patch?.job_id || "").trim();
-      if (!rid) return;
+    const getOutApp = (o) =>
+      String(o?.meta?.app || o?.meta?.module || "").trim();
 
-      const i = state.items.findIndex(x => String(x.request_id || x.id || x.job_id) === rid);
-      if (i >= 0) state.items[i] = { ...state.items[i], ...patch };
-      else state.items.unshift({ id: rid, request_id: rid, ...patch });
+    const isCoverApp = (x) => norm(x) === "cover";
 
-      saveItems();
-    }
+    const isJobCover = (job) => isCoverApp(getJobApp(job));
 
-    function removeItem(id) {
-      const sid = String(id || "");
-      state.items = state.items.filter(x => String(x.id) !== sid && String(x.request_id) !== sid);
-      saveItems();
-    }
+    const mapBadge = (job) => {
+      const st = norm(job?.db_status || job?.status || job?.state).toUpperCase();
 
-    function isReady(it) {
-      const st = String(it?.status || "").toUpperCase();
-      return st === "COMPLETED" || st === "READY" || st === "SUCCEEDED" || st === "DONE";
-    }
+      if (st.includes("FAIL") || st.includes("ERROR")) {
+        return { text: "Başarısız", kind: "bad" };
+      }
+      if (
+        st.includes("READY") ||
+        st.includes("DONE") ||
+        st.includes("COMPLET") ||
+        st.includes("SUCC")
+      ) {
+        return { text: "Hazır", kind: "ok" };
+      }
+      return { text: "İşleniyor", kind: "mid" };
+    };
 
-    function extractImageUrl(payload) {
-      return (
-        payload?.image_url ||
-        payload?.image?.url ||
-        payload?.output ||              // ✅ sync create bazen output string döner
-        payload?.output?.url ||
-        payload?.output?.[0] ||
-        payload?.outputs?.[0]?.url ||
-        payload?.images?.[0]?.url ||
-        payload?.result?.images?.[0]?.url ||
-        payload?.result?.[0] ||
-        payload?.result?.url ||
-        null
-      );
-    }
+    const pickBestImageOutput = (job) => {
+      const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+      if (!outs.length) return null;
 
-    function schedulePoll(id, ms) {
-      if (!alive || !id) return;
-      id = String(id).trim();
-      if (!id || id === "TEST") return;
-      if (TMAP.has(id)) return;
+      const filtered = outs.filter((o) => {
+        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+        if (t && t !== "image") return false;
 
-      const tid = setTimeout(() => {
-        TMAP.delete(id);
-        poll(id);
-      }, ms);
+        const oa = getOutApp(o);
+        if (oa && !isCoverApp(oa)) return false;
 
-      TMAP.set(id, tid);
-    }
+        return true;
+      });
 
-    function clearAllPolls() {
-      for (const tid of TMAP.values()) clearTimeout(tid);
-      TMAP.clear();
-    }
+      const pool = filtered.length ? filtered : outs;
+      const best = pool[0];
+      if (!best) return null;
+
+      const url =
+        best.url ||
+        best.image_url ||
+        best.imageUrl ||
+        best.meta?.url ||
+        best.meta?.image_url ||
+        best.meta?.imageUrl ||
+        "";
+
+      if (!url) return null;
+
+      return { ...best, url: String(url).trim() };
+    };
+
+    const qualityToLabel = (q) => {
+      const v = norm(q);
+      if (v === "ultra" || v.includes("cinematic")) return "Cinematic Ultra HD";
+      return "Artist";
+    };
+
+    const inferQuality = (job, out) =>
+      job?.meta?.quality ||
+      out?.meta?.quality ||
+      job?.quality ||
+      "artist";
 
     function ensureStyles() {
       if (document.getElementById("cpStyles")) return;
+
       const s = document.createElement("style");
       s.id = "cpStyles";
       s.textContent = `
         .cpGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
         .cpEmpty{opacity:.7;font-size:13px;padding:12px}
-        .cpCard{background: rgba(255,255,255,.03);border: 1px solid rgba(255,255,255,.07);border-radius: 18px;overflow: hidden;backdrop-filter: blur(10px);}
-        .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center;background-color: rgba(255,255,255,.04);}
+        .cpCard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:18px;overflow:hidden;backdrop-filter:blur(10px)}
+        .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center;background-color:rgba(255,255,255,.04)}
         .cpThumb.is-loading{background:rgba(255,255,255,.04)}
-        .cpBadge{position:absolute;top:10px; left:10px;font-size:12px;padding:6px 10px;border-radius:999px;background: rgba(0,0,0,.45);border: 1px solid rgba(255,255,255,.10);z-index:3;}
+        .cpBadge{position:absolute;top:10px;left:10px;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.10);z-index:3}
         .cpSkel{position:absolute;inset:0;overflow:hidden}
-        .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite;}
+        .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite}
         @keyframes cpShim{0%{transform:translateX(-40%) rotate(12deg)}100%{transform:translateX(40%) rotate(12deg)}}
-        .cpOverlay{position:absolute; inset:0;display:flex;align-items:center;justify-content:center;background: rgba(0,0,0,.25);opacity:0;transition:opacity .18s ease;z-index:2;}
+        .cpOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);opacity:0;transition:opacity .18s ease;z-index:2}
         .cpCard:hover .cpOverlay{opacity:1}
-        @media (hover:none){.cpOverlay{opacity:1; background: rgba(0,0,0,.18);}}
-        .cpOverlayBtns{display:flex;gap:12px;padding: 10px 12px;border-radius: 18px;background: rgba(20,20,28,.35);border: 1px solid rgba(255,255,255,.10);backdrop-filter: blur(10px);}
-        .cpBtn{width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer;transition:transform .12s ease, background .12s ease, border-color .12s ease;}
+        @media (hover:none){.cpOverlay{opacity:1;background:rgba(0,0,0,.18)}}
+        .cpOverlayBtns{display:flex;gap:12px;padding:10px 12px;border-radius:18px;background:rgba(20,20,28,.35);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px)}
+        .cpBtn{width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer;transition:transform .12s ease,background .12s ease,border-color .12s ease}
         .cpBtn svg{width:22px;height:22px;opacity:.95}
-        .cpBtn:hover{transform: translateY(-1px);background: rgba(255,255,255,.10);border-color: rgba(255,255,255,.22);}
-        .cpBtn:active{transform: translateY(0px) scale(.98)}
+        .cpBtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22)}
+        .cpBtn:active{transform:translateY(0) scale(.98)}
         .cpBtn:disabled{opacity:.45;cursor:not-allowed}
-        .cpBtn.danger{border-color: rgba(255,90,90,.28)}
-        .cpBtn.danger:hover{background: rgba(255,90,90,.10); border-color: rgba(255,90,90,.35)}
-        .cpBottom{padding:12px 12px 14px;display:flex;align-items:center;gap:10px;}
-        .cpName{font-size:12px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .cpBtn.danger{border-color:rgba(255,90,90,.28)}
+        .cpBtn.danger:hover{background:rgba(255,90,90,.10);border-color:rgba(255,90,90,.35)}
+        .cpBottom{padding:12px 12px 14px;display:flex;align-items:center;gap:10px}
+        .cpName{font-size:12px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       `;
       document.head.appendChild(s);
     }
 
-    function findGrid(host) { return host.querySelector("[data-cover-grid]"); }
+    function findGrid(host) {
+      return host.querySelector("[data-cover-grid]");
+    }
 
-    function iconEye() { return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/></svg>`; }
-    function iconDown() { return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; }
-    function iconShare() { return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; }
-    function iconTrash() { return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; }
+    function iconEye() {
+      return `<svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/></svg>`;
+    }
+    function iconDown() {
+      return `<svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    }
+    function iconShare() {
+      return `<svg viewBox="0 0 24 24" fill="none"><path d="M14 4h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    }
+    function iconTrash() {
+      return `<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    }
 
-    function render(host) {
+    function render(host, items) {
       const grid = findGrid(host);
       if (!grid) return;
 
-      if (!state.items.length) {
+      const list = Array.isArray(items) ? items : [];
+
+      if (!list.length) {
         grid.innerHTML = `<div class="cpEmpty">Henüz kapak yok.</div>`;
         return;
       }
 
-      grid.innerHTML = state.items.map(it => {
-        const ready = isReady(it) && it.url;
-        const badge = ready ? "Hazır" : (it.status === "ERROR" ? "Başarısız" : "İşleniyor");
-        const name = cardLabel(it);
-        const thumbStyle = ready ? `style="background-image:url('${esc(it.url)}')"` : ``;
+      grid.innerHTML = list.map((job) => {
+        const badge = mapBadge(job);
+        const out = pickBestImageOutput(job);
+        const url = out?.url || "";
+        const ready = badge.kind === "ok" && !!url;
+
+        const quality = inferQuality(job, out);
+        const label = qualityToLabel(quality);
+        const when = formatTR(job?.created_at || job?.updated_at || job?.createdAt);
+        const name = when ? `${label} • ${when}` : label;
+        const thumbStyle = ready ? `style="background-image:url('${esc(url)}')"` : "";
+
+        const jobId = String(job?.job_id || job?.id || "");
 
         return `
-          <div class="cpCard" data-id="${esc(it.id)}" tabindex="0">
+          <div class="cpCard" data-id="${esc(jobId)}" data-url="${esc(url)}" tabindex="0">
             <div class="cpThumb ${ready ? "" : "is-loading"}" ${thumbStyle}>
-              <div class="cpBadge">${esc(badge)}</div>
+              <div class="cpBadge">${esc(badge.text)}</div>
               ${ready ? "" : `<div class="cpSkel"><div class="cpShimmer"></div></div>`}
               <div class="cpOverlay" aria-hidden="${ready ? "false" : "true"}">
                 <div class="cpOverlayBtns">
@@ -211,8 +219,12 @@
 
     function download(url) {
       const a = document.createElement("a");
-      a.href = url; a.download = ""; a.rel = "noopener";
-      document.body.appendChild(a); a.click(); a.remove();
+      a.href = url;
+      a.download = "";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
 
     function share(url) {
@@ -220,25 +232,34 @@
       else navigator.clipboard?.writeText(url).catch(() => {});
     }
 
-    function attachEvents(host) {
+    function attachEvents(host, controller) {
       const grid = findGrid(host);
       if (!grid) return () => {};
 
-      const onClick = (e) => {
+      const onClick = async (e) => {
         const card = e.target.closest(".cpCard");
         if (!card) return;
-
-        const id = card.getAttribute("data-id");
-        const it = state.items.find(x => String(x.id) === String(id));
-        if (!it) return;
 
         const btn = e.target.closest("[data-act]");
         if (!btn) return;
 
         const act = btn.getAttribute("data-act");
-        const url = it.url;
+        const id = card.getAttribute("data-id");
+        const url = card.getAttribute("data-url");
 
-        if (act === "delete") { removeItem(id); render(host); return; }
+        if (act === "delete") {
+          try {
+            await fetch("/api/jobs/delete", {
+              method: "POST",
+              credentials: "include",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ job_id: id, app: "cover" }),
+            });
+            controller?.hydrate?.();
+          } catch {}
+          return;
+        }
+
         if (!url) return;
 
         if (act === "open") window.open(url, "_blank", "noopener");
@@ -250,127 +271,14 @@
       return () => grid.removeEventListener("click", onClick, true);
     }
 
-    // ✅ FIX #2: 404 NOT_FOUND gelirse poll'u durdur + ERROR'a çek (spam kes)
-    async function poll(requestId) {
-      if (!alive || !requestId) return;
-      requestId = String(requestId || "").trim();
-      if (!requestId || requestId === "TEST") return;
-
-      try {
-        const r = await fetch(STATUS_URL(requestId), { cache: "no-store", credentials: "include" });
-        const j = await r.json().catch(() => null);
-
-        // network/json bozuksa bir kere daha dene
-        if (!j) { schedulePoll(requestId, 1500); return; }
-
-        // Fal NOT_FOUND => bu prediction yok: sonsuz schedule ETME
-        const notFound =
-          (j?.fal_response?.status === "NOT_FOUND") ||
-          (j?.fal_status === 404) ||
-          (String(j?.error || "").toLowerCase().includes("not_found"));
-
-        if (notFound) {
-          upsertItem({ id: requestId, request_id: requestId, status: "ERROR" });
-          if (hostEl) render(hostEl);
-          return;
-        }
-
-        const imageUrl = extractImageUrl(j);
-        if (imageUrl) {
-          const prevIt = state.items.find(x => String(x.id) === String(requestId) || String(x.request_id) === String(requestId));
-          upsertItem({
-            id: requestId,
-            request_id: requestId,
-            status: "COMPLETED",
-            url: imageUrl,
-            createdAt: prevIt?.createdAt || Date.now(),
-          });
-
-          window.PPE?.apply?.({
-            state: "COMPLETED",
-            outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
-          });
-
-          if (hostEl) render(hostEl);
-          return;
-        }
-
-        const st = String(j.status || j.state || "").toUpperCase();
-        if (["ERROR", "FAILED", "FAIL"].includes(st)) {
-          upsertItem({ id: requestId, request_id: requestId, status: "ERROR" });
-          if (hostEl) render(hostEl);
-          return;
-        }
-
-        schedulePoll(requestId, 1500);
-      } catch {
-        schedulePoll(requestId, 2000);
-      }
-    }
-
-    function onCoverJobCreated(e) {
-      const d = e?.detail || {};
-      const app = String(d.app || d.type || d.module || d.panel || "").toLowerCase();
-      if (app && app !== "cover") return;
-
-      // rid yoksa zaten sync/PPE akışıyla düşecek -> poll etme
-      const rid = d.request_id || d.id || d.job_id;
-      if (!rid) return;
-
-      upsertItem({
-        id: String(rid),
-        request_id: String(rid),
-        status: "RUNNING",
-        title: d.title || "Kapak",
-        prompt: d.prompt || "",
-        createdAt: d.createdAt || Date.now(),
-        quality: d.quality || d.meta?.quality,
-      });
-
-      if (hostEl) render(hostEl);
-
-      // ✅ sadece gerçekten request_id varsa poll et
-      if (d.request_id) poll(d.request_id);
-    }
-
-    function attachPPE(host) {
-      if (!window.PPE) return () => {};
-
-      const prev = PPE.onOutput;
-      let active = true;
-
-      PPE.onOutput = (job, out) => {
-        try { prev && prev(job, out); } catch {}
-        if (!active) return;
-        if (!out || out.type !== "image" || !out.url) return;
-
-        const app1 = String(out?.meta?.app || "").toLowerCase();
-        const app2 = String(job?.app || "").toLowerCase();
-        if (app1 && app1 !== "cover" && app2 && app2 !== "cover") return;
-
-        const rid = job?.job_id || job?.id || out?.meta?.request_id || out?.meta?.job_id || null;
-        const id = rid ? String(rid) : uid();
-
-        const prevIt = state.items.find(x => String(x.id) === String(id) || (rid && String(x.request_id) === String(rid)));
-
-        upsertItem({
-          id,
-          request_id: rid ? String(rid) : undefined,
-          status: "COMPLETED",
-          url: out.url,
-          title: out?.meta?.title || "Kapak",
-          createdAt: prevIt?.createdAt || out?.meta?.createdAtMs || Date.now(),
-          quality: prevIt?.quality || out?.meta?.quality || out?.meta?.engine || out?.meta?.model,
-        });
-
-        render(host);
-      };
-
-      return () => { active = false; PPE.onOutput = prev || null; };
-    }
-
     window.RightPanel.register(PANEL_KEY, {
-      getHeader() { return { title: "Kapaklarım", meta: "", searchPlaceholder: "Kapaklarda ara..." }; },
+      getHeader() {
+        return {
+          title: "Kapaklarım",
+          meta: "",
+          searchPlaceholder: "Kapaklarda ara...",
+        };
+      },
 
       mount(host) {
         hostEl = host;
@@ -385,28 +293,54 @@
           </div>
         `;
 
-        state.items = loadItems();
-        render(host);
+        const controller = window.DBJobs.create({
+          app: "cover",
+          debug: false,
+          pollIntervalMs: 4000,
+          hydrateEveryMs: 15000,
 
-        const offUI = attachEvents(host);
-        const offPPE = attachPPE(host);
+          acceptJob: (job) => {
+            if (!job) return false;
+            const ja = getJobApp(job);
+            if (ja && !isCoverApp(ja)) return false;
+            return true;
+          },
 
-        window.addEventListener("aivo:cover:job_created", onCoverJobCreated, true);
-        window.addEventListener("aivo:job", onCoverJobCreated, true);
+          acceptOutput: (o) => {
+            if (!o) return false;
+            const t = norm(o.type || o.kind || o.meta?.type || o.meta?.kind);
+            if (t && t !== "image") return false;
+            const oa = getOutApp(o);
+            if (oa && !isCoverApp(oa)) return false;
+            return true;
+          },
 
-        // ✅ sadece request_id gerçekten varsa ve hazır değilse poll et
-        state.items.slice(0, 20).forEach(it => {
-          const rid = it.request_id;
-          if (rid && !isReady(it)) poll(rid);
+          onChange: (items) => {
+            if (!alive || !hostEl) return;
+
+            const safeItems = (items || []).filter(isJobCover);
+
+            const toMs = (v) => {
+              const t = Date.parse(String(v || ""));
+              return Number.isFinite(t) ? t : 0;
+            };
+
+            const sorted = safeItems.sort((a, b) => {
+              const ta = toMs(a?.updated_at) || toMs(a?.created_at) || 0;
+              const tb = toMs(b?.updated_at) || toMs(b?.created_at) || 0;
+              return tb - ta;
+            });
+
+            render(hostEl, sorted);
+          },
         });
+
+        const offUI = attachEvents(host, controller);
 
         return () => {
           alive = false;
           try { offUI(); } catch {}
-          try { offPPE(); } catch {}
-          window.removeEventListener("aivo:cover:job_created", onCoverJobCreated, true);
-          window.removeEventListener("aivo:job", onCoverJobCreated, true);
-          clearAllPolls();
+          try { controller?.destroy?.(); } catch {}
         };
       },
     });
