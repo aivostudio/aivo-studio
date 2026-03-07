@@ -16,7 +16,7 @@
   waitForRightPanel(() => {
     const PANEL_KEY = "cover";
     const STORAGE_KEY = "aivo.v2.cover.items";
-      const USE_LOCAL_CACHE = false;
+    const USE_LOCAL_CACHE = true;
 
     // Fal status endpoint (app param önemli)
     // ✅ FIX #2: hem request_id hem requestId yolla (güvenli)
