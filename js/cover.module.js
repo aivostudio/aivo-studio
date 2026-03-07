@@ -243,26 +243,7 @@ for (const img of imgs) {
   }
 }
 
-const outputs = imgs.map((it, idx) => ({
-      type: "image",
-      url: it.url,
-      index: idx,
-      meta: {
-        app: "cover",
-        quality,
-        style: style || undefined,
-        ratio,
-        prompt: it.prompt,
-      },
-    }));
 
-    window.PPE?.apply({
-      state: "COMPLETED",
-      outputs,
-    });
-
-    console.log("[cover] PPE.apply ✅", outputs);
-  }
 
   // --- PROMPT CHAR COUNT (opsiyonel) ---
   function bindPromptCounter() {
