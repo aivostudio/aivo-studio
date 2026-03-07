@@ -338,6 +338,13 @@
         });
         controller.hydrate?.();
         const offUI = attachEvents(host, controller);
+        const onCoverJobCreated = () => {
+  setTimeout(() => {
+    controller.hydrate?.();
+  }, 250);
+};
+
+window.addEventListener("aivo:cover:job_created", onCoverJobCreated, true);
 
         return () => {
           alive = false;
