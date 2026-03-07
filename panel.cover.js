@@ -407,7 +407,7 @@
           </div>
         `;
 
-        state.items = loadItems();
+     
         render(host);
 
         const offUI = attachEvents(host);
