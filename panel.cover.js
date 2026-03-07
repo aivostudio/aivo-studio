@@ -24,6 +24,54 @@
 
 
     const state = { items: [] };
+    // DBJobs controller (Atmos mimarisinden)
+const controller = window.DBJobs?.create?.({
+  app: "cover",
+  debug: false,
+  pollIntervalMs: 4000,
+  hydrateEveryMs: 15000,
+
+  acceptJob(job) {
+    const app = String(job?.app || job?.meta?.app || "").toLowerCase();
+    return app.includes("cover");
+  },
+
+  acceptOutput(o) {
+    const t = String(o?.type || o?.kind || o?.meta?.type || "").toLowerCase();
+    if (t && t !== "image") return false;
+
+    const app = String(o?.meta?.app || "").toLowerCase();
+    if (app && !app.includes("cover")) return false;
+
+    return true;
+  },
+
+  onChange(items) {
+    if (!Array.isArray(items)) return;
+
+    items.forEach((job) => {
+      const rid = job?.job_id || job?.id;
+      if (!rid) return;
+
+      const out =
+        job?.outputs?.[0]?.url ||
+        job?.outputs?.[0]?.image_url ||
+        null;
+
+      if (!out) return;
+
+      upsertItem({
+        id: rid,
+        request_id: rid,
+        status: "COMPLETED",
+        url: out,
+        createdAt: job?.created_at || Date.now(),
+      });
+    });
+
+    if (hostEl) render(hostEl);
+  },
+});
     let alive = true;
     let hostEl = null;
 
