@@ -1,139 +1,163 @@
-// api/cover/generate.js
-import crypto from "node:crypto";
+export const config = { runtime: "nodejs" };
+
+import { neon } from "@neondatabase/serverless";
+import authModule from "../_lib/auth.js";
+const { requireAuth } = authModule;
 
 export default async function handler(req, res) {
-  return res.status(200).json({ ok: true, marker: "cover-generate-live-v1" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  }
+
+  res.setHeader("Cache-Control", "no-store");
+
+  const conn =
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!conn) {
+    return res.status(500).json({ ok: false, error: "missing_db_env" });
+  }
+
+  let auth;
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
-    }
-
-    const { prompt } = req.body || {};
-    const p = String(prompt || "").trim();
-
-    if (!p) {
-      return res.status(400).json({ ok: false, error: "Prompt boş" });
-    }
-
-    // 1) Kullanıcıyı auth endpoint'inden al
-    const proto =
-      req.headers["x-forwarded-proto"] ||
-      (req.headers.host || "").includes("localhost")
-        ? "http"
-        : "https";
-
-    const host = req.headers.host;
-    const baseUrl = `${proto}://${host}`;
-
-    const cookie = req.headers.cookie || "";
-
-    const meResp = await fetch(`${baseUrl}/api/auth/me`, {
-      headers: {
-        cookie,
-        accept: "application/json",
+    auth = await requireAuth(req);
+  } catch (e) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: String(e?.message || e),
+      debug: {
+        hasCookie: !!req.headers.cookie,
+        cookieKeys: String(req.headers.cookie || "")
+          .split(";")
+          .map((s) => s.trim().split("=")[0])
+          .filter(Boolean),
+        host: req.headers.host || null,
+        xForwardedHost: req.headers["x-forwarded-host"] || null,
+        xForwardedProto: req.headers["x-forwarded-proto"] || null,
       },
     });
+  }
 
-    const me = await meResp.json().catch(() => null);
+  const email = auth?.email ? String(auth.email) : null;
+  if (!email) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: "missing_email",
+    });
+  }
 
-    const userUuid =
-      me?.user?.uuid ||
-      me?.user_uuid ||
-      me?.uuid ||
-      "";
+  const body = req.body || {};
+  const prompt = String(body.prompt || "").trim();
+  const style = body.style ? String(body.style) : null;
+  const quality = body.quality ? String(body.quality) : null;
+  const n = Number(body.n || 1);
+  const ratio = body.ratio ? String(body.ratio) : "1:1";
 
-    const email =
-      me?.user?.email ||
-      me?.email ||
-      "";
+  if (!prompt) {
+    return res.status(400).json({ ok: false, error: "Prompt boş" });
+  }
 
-    if (!userUuid) {
-      return res.status(401).json({ ok: false, error: "Unauthorized" });
+  const sql = neon(conn);
+
+  try {
+    const userRow = await sql`
+      select id
+      from users
+      where email = ${email}
+      limit 1
+    `;
+
+    if (!userRow.length) {
+      return res.status(401).json({
+        ok: false,
+        error: "user_not_found",
+        email,
+      });
     }
 
-    // 2) Job oluştur
-    const jobId = crypto.randomUUID();
-    const now = new Date().toISOString();
+    const user_uuid = String(userRow[0].id);
 
-    // 3) Şimdilik mock görsel
-    const seed = encodeURIComponent(p.slice(0, 120));
+    const seed = encodeURIComponent(prompt.slice(0, 120));
     const imageUrl = `https://picsum.photos/seed/${seed}/768/768`;
 
-    // 4) DB'ye job yaz
-    // NOT:
-    // Projendeki DB helper farklı olabilir.
-    // Bu yüzden önce global/store/supabase varsa onları dener.
-    const db =
-      globalThis.supabaseAdmin ||
-      globalThis.supabase ||
-      globalThis.db ||
-      null;
-
-    if (!db) {
-      return res.status(500).json({
-        ok: false,
-        error: "DB bağlantısı bulunamadı (supabase/db helper yok)",
-      });
-    }
-
-    const row = {
-      job_id: jobId,
-      user_uuid: userUuid,
+    const metaSafe = {
       app: "cover",
+      kind: "cover_image",
       provider: "mock",
-      db_status: "ready",
-      status: "completed",
-      created_at: now,
-      updated_at: now,
-      meta: {
-        app: "cover",
-        prompt: p,
-        email,
-        mock: true,
-      },
-      outputs: [
-        {
-          type: "image",
-          url: imageUrl,
-          meta: {
-            app: "cover",
-            kind: "image",
-          },
-        },
-      ],
+      prompt,
+      style,
+      quality,
+      n,
+      ratio,
+      email,
+      mock: true,
     };
 
-    // Supabase benzeri insert
-    if (typeof db.from === "function") {
-      const { error } = await db.from("jobs").insert(row);
-      if (error) {
-        return res.status(500).json({
-          ok: false,
-          error: error.message || "jobs insert failed",
-        });
-      }
-    } else if (typeof db.insertJob === "function") {
-      await db.insertJob(row);
-    } else {
-      return res.status(500).json({
-        ok: false,
-        error: "Desteklenen DB insert helper bulunamadı",
-      });
-    }
+    const outputs = [
+      {
+        type: "image",
+        url: imageUrl,
+        meta: {
+          app: "cover",
+          kind: "image",
+          style,
+          quality,
+          ratio,
+        },
+      },
+    ];
+
+    const inserted = await sql`
+      insert into jobs (
+        user_id,
+        user_uuid,
+        type,
+        app,
+        status,
+        prompt,
+        meta,
+        outputs,
+        created_at,
+        updated_at
+      )
+      values (
+        ${email},
+        ${user_uuid}::uuid,
+        'cover',
+        'cover',
+        'ready',
+        ${prompt},
+        ${JSON.stringify(metaSafe)}::jsonb,
+        ${JSON.stringify(outputs)}::jsonb,
+        now(),
+        now()
+      )
+      returning id, user_uuid, app, status, created_at
+    `;
+
+    const job_id = String(inserted[0].id);
 
     return res.status(200).json({
       ok: true,
-      app: "cover",
-      job_id: jobId,
-      db_status: "ready",
-      type: "cover",
+      job_id,
+      user_uuid: inserted[0].user_uuid,
+      app: inserted[0].app,
+      status: inserted[0].status,
+      created_at: inserted[0].created_at,
       imageUrl,
-      prompt: p,
+      prompt,
     });
   } catch (e) {
+    console.error("cover generate failed:", e);
     return res.status(500).json({
       ok: false,
-      error: e?.message || "Server error",
+      error: "create_failed",
+      message: String(e?.message || e),
     });
   }
 }
