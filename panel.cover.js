@@ -24,54 +24,6 @@
 
 
     const state = { items: [] };
-    // DBJobs controller (Atmos mimarisinden)
-const controller = window.DBJobs?.create?.({
-  app: "cover",
-  debug: false,
-  pollIntervalMs: 4000,
-  hydrateEveryMs: 15000,
-
-  acceptJob(job) {
-    const app = String(job?.app || job?.meta?.app || "").toLowerCase();
-    return app.includes("cover");
-  },
-
-  acceptOutput(o) {
-    const t = String(o?.type || o?.kind || o?.meta?.type || "").toLowerCase();
-    if (t && t !== "image") return false;
-
-    const app = String(o?.meta?.app || "").toLowerCase();
-    if (app && !app.includes("cover")) return false;
-
-    return true;
-  },
-
-  onChange(items) {
-    if (!Array.isArray(items)) return;
-
-    items.forEach((job) => {
-      const rid = job?.job_id || job?.id;
-      if (!rid) return;
-
-      const out =
-        job?.outputs?.[0]?.url ||
-        job?.outputs?.[0]?.image_url ||
-        null;
-
-      if (!out) return;
-
-      upsertItem({
-        id: rid,
-        request_id: rid,
-        status: "COMPLETED",
-        url: out,
-        createdAt: job?.created_at || Date.now(),
-      });
-    });
-
-    if (hostEl) render(hostEl);
-  },
-});
     let alive = true;
     let hostEl = null;
 
@@ -193,45 +145,9 @@ const controller = window.DBJobs?.create?.({
         .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center;background-color: rgba(255,255,255,.04);}
         .cpThumb.is-loading{background:rgba(255,255,255,.04)}
         .cpBadge{position:absolute;top:10px; left:10px;font-size:12px;padding:6px 10px;border-radius:999px;background: rgba(0,0,0,.45);border: 1px solid rgba(255,255,255,.10);z-index:3;}
-        .cpSkel{
-  position:absolute;
-  inset:0;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  background:radial-gradient(
-    80% 80% at 50% 40%,
-    rgba(175,120,255,.18),
-    rgba(0,0,0,.70)
-  );
-
-  overflow:hidden;
-}
-
-.cpSkel:before{
-  content:"";
-
-  position:absolute;
-  inset:-40%;
-
-  background:linear-gradient(
-    90deg,
-    rgba(255,255,255,0),
-    rgba(220,170,255,.14),
-    rgba(255,255,255,0)
-  );
-
-  transform:rotate(18deg);
-
-  animation:cpShimmer 1.4s linear infinite;
-}
-
-@keyframes cpShimmer{
-  0%{transform:translateX(-30%) rotate(18deg);}
-  100%{transform:translateX(30%) rotate(18deg);}
-}
+        .cpSkel{position:absolute;inset:0;overflow:hidden}
+        .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite;}
+        @keyframes cpShim{0%{transform:translateX(-40%) rotate(12deg)}100%{transform:translateX(40%) rotate(12deg)}}
         .cpOverlay{position:absolute; inset:0;display:flex;align-items:center;justify-content:center;background: rgba(0,0,0,.25);opacity:0;transition:opacity .18s ease;z-index:2;}
         .cpCard:hover .cpOverlay{opacity:1}
         @media (hover:none){.cpOverlay{opacity:1; background: rgba(0,0,0,.18);}}
