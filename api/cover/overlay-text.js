@@ -1,5 +1,7 @@
 // api/cover/overlay-text.js
 const sharp = require("sharp");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = async function handler(req, res) {
   try {
@@ -8,13 +10,16 @@ module.exports = async function handler(req, res) {
     }
 
     const { imageUrl, artist, title } = req.body || {};
-
     if (!imageUrl) {
       return res.status(400).json({ ok: false, error: "imageUrl gerekli" });
     }
 
     const artistText = String(artist || "").trim().toUpperCase();
     const titleText = String(title || "").trim();
+
+    // Fontu oku ve base64'e çevir
+    const fontPath = path.join(process.cwd(), "api/cover/fonts/NotoSans-Bold.ttf");
+    const fontBase64 = fs.readFileSync(fontPath).toString("base64");
 
     const imgRes = await fetch(imageUrl);
     if (!imgRes.ok) {
@@ -35,6 +40,14 @@ module.exports = async function handler(req, res) {
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
 
   <defs>
+
+    <style>
+      @font-face {
+        font-family: "CoverFont";
+        src: url(data:font/truetype;base64,${fontBase64}) format("truetype");
+        font-weight: 700;
+      }
+    </style>
 
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#08111d" stop-opacity="0.92"/>
@@ -67,11 +80,11 @@ module.exports = async function handler(req, res) {
   <g filter="url(#softShadow)">
     <text
       x="512"
-      y="110"
+      y="120"
       text-anchor="middle"
-      font-family="sans-serif"
+      font-family="CoverFont"
       font-size="120"
-      font-weight="900"
+      font-weight="700"
       letter-spacing="2"
       fill="url(#goldFill)"
       stroke="#5a2f00"
@@ -89,11 +102,11 @@ module.exports = async function handler(req, res) {
   <g filter="url(#hardShadow)">
     <text
       x="512"
-      y="190"
+      y="210"
       text-anchor="middle"
-      font-family="sans-serif"
-      font-size="46"
-      font-weight="900"
+      font-family="CoverFont"
+      font-size="48"
+      font-weight="700"
       letter-spacing="3"
       fill="url(#goldFill)"
       stroke="#5a2f00"
@@ -103,11 +116,11 @@ module.exports = async function handler(req, res) {
 
     <text
       x="512"
-      y="190"
+      y="210"
       text-anchor="middle"
-      font-family="sans-serif"
-      font-size="46"
-      font-weight="900"
+      font-family="CoverFont"
+      font-size="48"
+      font-weight="700"
       letter-spacing="3"
       fill="none"
       stroke="#ffefbf"
