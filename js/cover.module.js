@@ -359,13 +359,11 @@ async function createCover() {
     if (first) setActiveStyle(root, first.getAttribute("data-style"));
   })();
 
-  // default quality: artist (UI'da is-active olan varsa onu al)
+   // default quality: her zaman artist ile başlat
   (function selectDefaultQuality() {
     const root = getRoot();
     if (!root) return;
-    const active = root.querySelector(".quality-pill.is-active") || root.querySelector('.quality-pill[data-quality="artist"]');
-    const q = active?.getAttribute("data-quality") || "artist";
-    setActiveQuality(root, q);
+    setActiveQuality(root, "artist");
   })();
 
   bindPromptCounter();
