@@ -199,54 +199,50 @@ const job_id = randomUUID();
     try {
       db_debug.tried = true;
 
-      await sql`
-        insert into jobs (
-          id,
-user_id,
-user_uuid,
-type,
-status,
-created_at,
-app,
-meta,
-outputs,
-error,
-updated_at,
-request_id,
-prompt,
-provider
-        )
-        values (
-         ${job_id},
-${user_id},
-${user_uuid}::uuid,
-${"video"},
-${"queued"}, şimdi 
-şimdi
-          now(),
-          ${"video"},
-          ${JSON.stringify({
-            mode,
-            model,
-            seconds,
-            aspect_ratio,
-            // ✅ sadece meta’da sakla (Gen-4.5 payload'a ekleme)
-            resolution: resolution ?? null,
-            audio: audio ?? null,
-            image_url: image_url ?? null,
-            runway: {
-              endpoint,
-              payload: runwayPayload,
-            },
-          })}::jsonb,
-          ${JSON.stringify([])}::jsonb,
-          ${null},
-          now()::timestamp,
-          ${null},
-          ${prompt || ""},
-          ${"runway"}
-        )
-      `;
+await sql`
+  insert into jobs (
+    id,
+    user_id,
+    type,
+    status,
+    created_at,
+    app,
+    meta,
+    outputs,
+    error,
+    updated_at,
+    request_id,
+    prompt,
+    provider
+  )
+  values (
+    ${job_id},
+    ${user_id},
+    ${"video"},
+    ${"queued"},
+    now(),
+    ${"video"},
+    ${JSON.stringify({
+      mode,
+      model,
+      seconds,
+      aspect_ratio,
+      resolution: resolution ?? null,
+      audio: audio ?? null,
+      image_url: image_url ?? null,
+      runway: {
+        endpoint,
+        payload: runwayPayload,
+      },
+    })}::jsonb,
+    ${JSON.stringify([])}::jsonb,
+    ${null},
+    now()::timestamp,
+    ${null},
+    ${prompt || ""},
+    ${"runway"}
+  )
+`;
 
       db_debug.inserted = true;
     } catch (e) {
