@@ -135,9 +135,63 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_db_env", db_debug });
     }
 
-    const sql = neon(conn);
-    const user_id = extractUserId(req) || "anonymous";
-    const job_id = randomUUID();
+   const sql = neon(conn);
+
+// canonical user resolve (jobs/list ile aynı mantık)
+let authModule;
+let requireAuth;
+try {
+  authModule = require("../../../_lib/auth.js");
+  requireAuth = authModule.requireAuth;
+} catch (e) {
+  return res.status(500).json({
+    ok: false,
+    error: "auth_module_load_failed",
+    message: String(e?.message || e),
+    db_debug,
+  });
+}
+
+let auth;
+try {
+  auth = await requireAuth(req);
+} catch (e) {
+  return res.status(401).json({
+    ok: false,
+    error: "unauthorized",
+    message: String(e?.message || e),
+    db_debug,
+  });
+}
+
+const email = auth?.email ? String(auth.email) : null;
+if (!email) {
+  return res.status(401).json({
+    ok: false,
+    error: "missing_email",
+    db_debug,
+  });
+}
+
+const userRow = await sql`
+  select id
+  from users
+  where email = ${email}
+  limit 1
+`;
+
+if (!userRow.length) {
+  return res.status(401).json({
+    ok: false,
+    error: "user_not_found",
+    email,
+    db_debug,
+  });
+}
+
+const user_id = email;
+const user_uuid = String(userRow[0].id);
+const job_id = randomUUID();
 
     // ===============================
     // 1) DB job aç
@@ -148,18 +202,19 @@ module.exports = async function handler(req, res) {
       await sql`
         insert into jobs (
           id,
-          user_id,
-          type,
-          status,
-          created_at,
-          app,
-          meta,
-          outputs,
-          error,
-          updated_at,
-          request_id,
-          prompt,
-          provider
+user_id,
+user_uuid,
+type,
+status,
+created_at,
+app,
+meta,
+outputs,
+error,
+updated_at,
+request_id,
+prompt,
+provider
         )
         values (
           ${job_id},
