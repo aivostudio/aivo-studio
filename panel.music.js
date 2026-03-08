@@ -1056,8 +1056,7 @@ async function actionDelete(card){
   // Bu yüzden tek kart silinse bile DB row kalırsa refresh'te geri gelir.
   // Çözüm: delete her zaman tüm grubu DB'den kaldırır.
   if (!dbJobId) {
-    removeJob(jobId);
-    removeJob(otherId);
+   removeJob(jobId);
     toast("success", "Silindi");
     return;
   }
