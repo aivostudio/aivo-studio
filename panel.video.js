@@ -382,22 +382,9 @@ async function fetchStatus(job_id) {
     const j = await r.json().catch(() => null);
     if (!r.ok || !j || !j.ok) return null;
 
-    // STRICT job app
+    // STRICT
     const appGuess = String(j?.app || j?.meta?.app || "").trim();
     if (appGuess && !isVideoApp(appGuess)) return null;
-
-    // STRICT output filter
-    if (Array.isArray(j.outputs)) {
-      j.outputs = j.outputs.filter((o) => {
-        const tpe = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
-        if (tpe && tpe !== "video") return false;
-
-        const outApp = String(o?.meta?.app || "").trim();
-        if (outApp && !isVideoApp(outApp)) return false;
-
-        return true;
-      });
-    }
 
     return j;
   } catch {
