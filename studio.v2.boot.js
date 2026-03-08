@@ -181,16 +181,10 @@
   }
 
   function ppeApplyCompleted(appKey, job) {
-    const PPE = window.PPE;
-    if (!PPE || typeof PPE.apply !== "function") {
-      console.warn("[BOOT] PPE.apply missing; hydration skipped");
-      return;
-    }
-
-    const outputs = normalizeOutputs(appKey, job);
-    if (!outputs.length) return;
-
-    PPE.apply({ state: "COMPLETED", outputs });
+    // DB source-of-truth aktif:
+    // RightPanel panelleri kendi render/hydration akışını yönetiyor.
+    // Boot seviyesinde global PPE.apply çağrısı cross-panel karışmaya neden olduğu için kapalı.
+    return;
   }
 
   async function hydrateJobsFromDB(appKey) {
@@ -199,7 +193,6 @@
 
     const resp = await safeFetchJson(url);
 
-    // ✅ AUTH/COOKIE kararını document.cookie değil RESPONSE söylesin
     if (resp.status === 401 || resp.status === 403 || resp.json?.auth === false) {
       console.warn("[BOOT] hydrate skipped (unauthorized)", key, resp.status);
       return;
@@ -216,7 +209,7 @@
       return;
     }
 
-    let applied = 0;
+    let seen = 0;
 
     for (const it of items) {
       const jobId = it.job_id || it.id;
@@ -224,11 +217,10 @@
       if (__hydratedJobIds.has(jobId)) continue;
 
       __hydratedJobIds.add(jobId);
-      ppeApplyCompleted(key, it);
-      applied++;
+      seen++;
     }
 
-    console.log(`[BOOT] hydrate OK: app=${key} items=${items.length} applied=${applied}`);
+    console.log(`[BOOT] hydrate OK: app=${key} items=${items.length} seen=${seen} (PPE disabled)`);
   }
 
   function getCurrentRouteKey() {
