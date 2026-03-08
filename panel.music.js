@@ -1038,17 +1038,32 @@ async function actionDelete(card){
   const baseId = String(jobId).split("::")[0];
   if (!baseId) return;
 
+  const isRev = String(jobId).includes("::rev1");
+  const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
+
+  // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
   const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  if (!dbJobId) {
+  // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
+  const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
+
+  // ✅ 1) Eğer diğer kart duruyorsa: sadece tıklanan kartı sil, DB delete YOK
+  if (otherStillExists) {
     removeJob(jobId);
-    removeJob(`${baseId}::orig`);
-    removeJob(`${baseId}::rev1`);
     toast("success","Silindi");
     return;
   }
 
+  // ✅ 2) Diğer kart da yoksa: grup bitti.
+  // DB uuid yoksa backend delete atamayız → sadece tıklanan kartı sil
+  if (!dbJobId) {
+    removeJob(jobId);
+    toast("success","Silindi");
+    return;
+  }
+
+  // ✅ 3) Son kart: DB soft delete -> OK olursa UI'dan kaldır
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
@@ -1065,14 +1080,13 @@ async function actionDelete(card){
     }
 
     removeJob(jobId);
-    removeJob(`${baseId}::orig`);
-    removeJob(`${baseId}::rev1`);
     toast("success","Silindi");
   } catch (e){
     console.warn("[panel.music] delete failed", e);
     toast("error","Silme hatası");
   }
 }
+
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
   const card = e.target.closest(".aivo-player-card");
