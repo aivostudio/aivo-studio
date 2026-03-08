@@ -1470,3 +1470,27 @@ section[data-module="cover"] .form-grid.cover-form-grid{
     line-height: 1.2 !important;
   }
 }
+/* COVER LEFT WALL/BORDER FIX */
+section[data-module="cover"] .cover-grid{
+  align-items: start !important;
+}
+
+section[data-module="cover"] .cover-left{
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+section[data-module="cover"] .card.cover-left{
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+section[data-module="cover"] .cover-form-grid{
+  height: auto !important;
+  flex: 0 0 auto !important;
+  align-content: start !important;
+}
+
+section[data-module="cover"] .advanced-box{
+  margin-top: 0 !important;
+}
