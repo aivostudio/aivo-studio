@@ -1056,7 +1056,7 @@ async function actionDelete(card){
   // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
   const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
 
-  // Music'te 1 DB row -> 2 kart üretiliyor.
+// Music'te 1 DB row -> 2 kart üretiliyor.
   // Bu yüzden tek kart silinse bile DB row kalırsa refresh'te geri gelir.
   // Çözüm: delete her zaman tüm grubu DB'den kaldırır.
   if (!dbJobId) {
@@ -1088,6 +1088,8 @@ async function actionDelete(card){
     console.warn("[panel.music] delete failed", e);
     toast("error","Silme hatası");
   }
+
+ 
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
   const card = e.target.closest(".aivo-player-card");
