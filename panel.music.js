@@ -1641,6 +1641,7 @@ function getHeader(){
     hydrateFromDBOnce();
 
     // DBJobs controller (varsa)
+      // DBJobs controller (varsa)
     if (window.DBJobs && typeof window.DBJobs.create === "function"){
       try { dbCtrl?.destroy?.(); } catch {}
       dbCtrl = window.DBJobs.create({
@@ -1656,7 +1657,7 @@ function getHeader(){
           const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
           return !t || t === "audio";
         },
-            onChange: (items) => {
+        onChange: (items) => {
           if (!alive) return;
 
           const safe = Array.isArray(items) ? items : [];
@@ -1695,13 +1696,13 @@ function getHeader(){
           saveJobs();
           render();
 
-          jobs
-            .slice(0, 60)
-            .forEach((j) => {
-              const id = j?.job_id || j?.id;
-              if (id) poll(id);
-            });
+          jobs.slice(0, 60).forEach((j) => {
+            const id = j?.job_id || j?.id;
+            if (id) poll(id);
+          });
         }
+      });
+    }
     window.addEventListener("aivo:job", onJob, true);
 
     jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
