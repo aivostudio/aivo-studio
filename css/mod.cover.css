@@ -1333,3 +1333,93 @@ section[data-module="cover"] .cover-style-cards .style-card-sub{
   font-size: 11px !important;
   line-height: 1.2 !important;
 }
+/* COVER CTA FINAL FIT */
+section[data-module="cover"] #coverPrompt{
+  min-height: 92px !important;
+  max-height: 92px !important;
+  padding: 10px 12px !important;
+}
+
+section[data-module="cover"] .prompt-count{
+  margin-top: 4px !important;
+}
+
+section[data-module="cover"] .cover-meta-fields{
+  gap: 10px !important;
+}
+
+section[data-module="cover"] .cover-meta-fields input{
+  height: 40px !important;
+  border-radius: 12px !important;
+  padding: 0 12px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pills{
+  gap: 10px !important;
+  margin-top: 6px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill{
+  min-height: 74px !important;
+  padding: 12px 14px !important;
+  border-radius: 16px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill .qp-ico{
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 17px !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill .qp-title{
+  font-size: 15px !important;
+  line-height: 1.02 !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill[data-quality="artist"] .qp-title::after,
+section[data-module="cover"] .cover-form-grid .quality-pill[data-quality="ultra"] .qp-title::after{
+  font-size: 11px !important;
+  margin-top: 3px !important;
+  line-height: 1.15 !important;
+}
+
+section[data-module="cover"] .cover-form-grid .quality-pill .qp-credit{
+  font-size: 13px !important;
+  padding: 8px 10px !important;
+}
+
+section[data-module="cover"] .cover-style-cards{
+  gap: 8px !important;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card{
+  min-height: 58px !important;
+  padding: 9px 10px !important;
+  border-radius: 12px !important;
+  gap: 8px !important;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-ico{
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 16px !important;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-title{
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-sub{
+  font-size: 10.5px !important;
+  line-height: 1.12 !important;
+  margin-top: 2px !important;
+}
+
+section[data-module="cover"] .form-field label{
+  margin: 0 0 5px !important;
+}
+
+section[data-module="cover"] .form-grid.cover-form-grid{
+  gap: 10px !important;
+}
