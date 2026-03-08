@@ -334,16 +334,27 @@ function setEqBars(L, M, H){
     try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 200))); } catch {}
   }
 
-  function upsertJob(job){
-    const id = job?.job_id || job?.id;
-    if (!id) return;
+ function upsertJob(job){
+  const id = job?.job_id || job?.id;
+  if (!id) return;
 
-    const i = jobs.findIndex(j => (j.job_id || j.id) === id);
-    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
-    else jobs.unshift(job);
+  try {
+    console.log("[MUSIC_UPSERT]", {
+      id,
+      title: job?.title || "",
+      ui_state: job?.__ui_state || "",
+      provider_job_id: job?.provider_job_id || "",
+      provider_song_id: job?.__provider_song_id || "",
+      from_stack: new Error().stack
+    });
+  } catch {}
 
-    saveJobs();
-  }
+  const i = jobs.findIndex(j => (j.job_id || j.id) === id);
+  if (i >= 0) jobs[i] = { ...jobs[i], ...job };
+  else jobs.unshift(job);
+
+  saveJobs();
+}
 
    function removeJob(jobId){
     jobId = String(jobId || "").trim();
