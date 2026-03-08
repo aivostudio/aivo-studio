@@ -1494,3 +1494,7 @@ section[data-module="cover"] .cover-form-grid{
 section[data-module="cover"] .advanced-box{
   margin-top: 0 !important;
 }
+/* COVER CARD HEIGHT +24px */
+section[data-module="cover"] .cover-left{
+  min-height: calc(100% + 24px);
+}
