@@ -312,27 +312,40 @@
       }
 
       const rows = extractListItems(j);
+      const incoming = (rows || [])
+        .map(mapDbItemToPanelItem)
+        .filter(Boolean);
 
-      // DB = tek gerçek kaynak (source-of-truth), merge YOK
-     const incoming = (rows || [])
-  .map(mapDbItemToPanelItem)
-  .filter(Boolean)
-  .slice(0, MAX_ITEMS);
+      const byId = new Map();
 
-// DB + mevcut optimistic/pending kartları merge et
-const incomingIds = new Set(incoming.map((x) => String(idOf(x))));
-const optimistic = (state.items || []).filter((x) => {
-  const jid = String(idOf(x));
-  if (!jid) return false;
-  if (deletedIds.has(jid)) return false;
-  if (incomingIds.has(jid)) return false;
-  return !isReady(x) && !isError(x);
-});
+      // 1) Önce mevcut geçici/pending optimistic kartları koy
+      for (const it of (state.items || [])) {
+        const jid = String(idOf(it));
+        if (!jid) continue;
+        if (deletedIds.has(jid)) continue;
+        if (isReady(it) || isError(it)) continue;
+        byId.set(jid, it);
+      }
 
-state.items = [...incoming, ...optimistic].slice(0, MAX_ITEMS);
+      // 2) Sonra DB kayıtlarını bas: aynı job_id varsa DB her zaman kazanır
+      for (const it of incoming) {
+        const jid = String(idOf(it));
+        if (!jid) continue;
+        if (deletedIds.has(jid)) continue;
+        byId.set(jid, it);
+      }
 
-render(host);
-pollPendingStatuses(host).catch(() => {});
+      state.items = Array.from(byId.values())
+        .sort((a, b) => {
+          const ta = Number(a?.createdAt || 0);
+          const tb = Number(b?.createdAt || 0);
+          if (tb !== ta) return tb - ta;
+          return String(idOf(b)).localeCompare(String(idOf(a)));
+        })
+        .slice(0, MAX_ITEMS);
+
+      render(host);
+      pollPendingStatuses(host).catch(() => {});
     } catch (e) {
       console.warn("[video.panel] hydrate exception", e);
     }
