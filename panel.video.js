@@ -804,8 +804,14 @@
         app: "video",
       });
 
-      state.items = state.items.slice(0, MAX_ITEMS);
+           state.items = state.items.slice(0, MAX_ITEMS);
       render(host);
+
+      // DB row yazıldıysa gerçek kayıt optimistic kartı devralsın
+      setTimeout(() => {
+        hydrateFromDB(host).catch?.(() => {});
+      }, 1200);
+
       pollPendingStatuses(host).catch(() => {});
     };
 
