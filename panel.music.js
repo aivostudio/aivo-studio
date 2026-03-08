@@ -1286,49 +1286,82 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       const isOrig = String(cardId).endsWith("::orig");
       const otherId = isOrig ? `${baseId}::rev1` : `${baseId}::orig`;
 
-      // 1) Bu kart completed + audio aldıysa direkt READY yap
-      if (st === "completed" && (src || playUrl)) {
+      // 1) Bu kartın son durumunu kaydet (AMA tek başına ready yapma)
+      const gotAudio = !!(src || playUrl);
+      const next = {
+        job_id: cardId,
+        id: cardId,
+        __ui_state: gotAudio ? "processing" : st, // <-- IMPORTANT: tek başına ready yok
+        __pending_src: src || playUrl || "",
+        __pending_output_id: output_id || existing.output_id || "",
+      };
+
+      if (duration) next.__pending_duration = String(duration);
+      if (title) next.title = title;
+
+      // error ise hata olarak bırakabiliriz
+      if (st === "error") {
+        upsertJob({ ...next, __ui_state: "error" });
+        render();
+        return;
+      }
+
+      upsertJob(next);
+
+      // 2) Kardeşi kontrol et: ikisi de pending src aldıysa, ikisini BİRDEN ready yap
+      const me = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+      const other = jobs.find(x => (x.job_id || x.id) === otherId) || {};
+
+      const meSrc = String(me.__pending_src || me.__audio_src || "").trim();
+      const otherSrc = String(other.__pending_src || other.__audio_src || "").trim();
+
+      if (meSrc && otherSrc) {
+        const meOut = String(me.__pending_output_id || me.output_id || "").trim();
+        const otherOut = String(other.__pending_output_id || other.output_id || "").trim();
+
+        const meDur = String(me.__pending_duration || me.__duration || "").trim();
+        const otherDur = String(other.__pending_duration || other.__duration || "").trim();
+
         upsertJob({
           job_id: cardId,
           id: cardId,
           __ui_state: "ready",
-          __audio_src: src || playUrl || "",
-          output_id: output_id || existing.output_id || "",
-          ...(duration ? { __duration: String(duration) } : {}),
-          ...(title ? { title } : {}),
+          __audio_src: meSrc,
+          output_id: meOut,
+          ...(meDur ? { __duration: meDur } : {}),
+          __pending_src: "",
+          __pending_output_id: "",
+          __pending_duration: ""
         });
 
-        render();
+        upsertJob({
+          job_id: otherId,
+          id: otherId,
+          __ui_state: "ready",
+          __audio_src: otherSrc,
+          output_id: otherOut,
+          ...(otherDur ? { __duration: otherDur } : {}),
+          __pending_src: "",
+          __pending_output_id: "",
+          __pending_duration: ""
+        });
+
+              render();
+
+        // ✅ aynı baseId için sadece 1 kez toast
+        if (!window.READY_TOASTED) window.READY_TOASTED = new Set();
 
         const baseId = String(cardId).split("::")[0] || String(cardId);
-        if (!READY_TOASTED.has(baseId)) {
-          READY_TOASTED.add(baseId);
+
+        if (!window.READY_TOASTED.has(baseId)) {
+          window.READY_TOASTED.add(baseId);
           toast("success", "Müzikler hazır 🎵");
         }
 
         return;
       }
 
-      // 2) error ise hata olarak bırak
-      if (st === "error") {
-        upsertJob({
-          job_id: cardId,
-          id: cardId,
-          __ui_state: "error",
-          ...(title ? { title } : {}),
-        });
-        render();
-        return;
-      }
-
-      // 3) diğer tüm durumlar processing
-      upsertJob({
-        job_id: cardId,
-        id: cardId,
-        __ui_state: "processing",
-        ...(title ? { title } : {}),
-      });
-
+      // 3) İkisi birden hazır değilse polling devam
       render();
       schedulePoll(cardId, 1600);
     } catch (e){
