@@ -1286,12 +1286,12 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       const isOrig = String(cardId).endsWith("::orig");
       const otherId = isOrig ? `${baseId}::rev1` : `${baseId}::orig`;
 
-          // 1) Bu kartın son durumunu kaydet (AMA tek başına ready yapma)
+      // 1) Bu kartın son durumunu kaydet (AMA tek başına ready yapma)
       const gotAudio = !!(src || playUrl);
       const next = {
         job_id: cardId,
         id: cardId,
-        __ui_state: gotAudio ? "processing" : st,
+        __ui_state: gotAudio ? "processing" : st, // <-- IMPORTANT: tek başına ready yok
         __pending_src: src || playUrl || "",
         __pending_output_id: output_id || existing.output_id || "",
       };
@@ -1346,10 +1346,12 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
           __pending_duration: ""
         });
 
-        render();
+              render();
+
+        // ✅ aynı baseId için sadece 1 kez toast
+        if (!window.READY_TOASTED) window.READY_TOASTED = new Set();
 
         const baseId = String(cardId).split("::")[0] || String(cardId);
-        if (!window.READY_TOASTED) window.READY_TOASTED = new Set();
 
         if (!window.READY_TOASTED.has(baseId)) {
           window.READY_TOASTED.add(baseId);
