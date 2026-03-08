@@ -195,6 +195,13 @@ module.exports = async (req, res) => {
     const provider_job_id = String(
       pjson.provider_job_id || pjson.job_id || pjson.id || ""
     ).trim();
+    console.log("[MUSIC_GENERATE_PROVIDER_CREATE]", {
+  provider_job_id,
+  provider_song_ids_raw_top: pjson?.provider_song_ids || pjson?.providerSongIds || pjson?.song_ids || pjson?.songIds || null,
+  pjson_data: pjson?.data || null,
+  pjson_topmediai: pjson?.topmediai || null,
+  raw: pjson
+});
 
     if (!provider_job_id) {
       return safeJson(
