@@ -338,17 +338,7 @@ function setEqBars(L, M, H){
   const id = job?.job_id || job?.id;
   if (!id) return;
 
-  try {
-    console.log("[MUSIC_UPSERT]", {
-      id,
-      title: job?.title || "",
-      ui_state: job?.__ui_state || "",
-      provider_job_id: job?.provider_job_id || "",
-      provider_song_id: job?.__provider_song_id || "",
-      from_stack: new Error().stack
-    });
-  } catch {}
-
+ 
   const i = jobs.findIndex(j => (j.job_id || j.id) === id);
   if (i >= 0) jobs[i] = { ...jobs[i], ...job };
   else jobs.unshift(job);
@@ -1234,15 +1224,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       const providerBase = String(cardId).split("::")[0];
 
       const q = encodeURIComponent(providerSongId || providerBase);
-       try {
-  console.log("[MUSIC_POLL_REQ]", {
-    cardId,
-    providerSongId,
-    providerBase,
-    q_raw: providerSongId || providerBase,
-    q_encoded: q
-  });
-} catch {}
+      
 
       const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
         cache: "no-store",
@@ -1264,18 +1246,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
 
       const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
        try {
-  console.log("[MUSIC_POLL_RES]", {
-    cardId,
-    providerSongId,
-    providerBase,
-    response_ok: j?.ok,
-    state,
-    src,
-    output_id,
-    title,
-    raw: j
-  });
-} catch {}
+
       const st = uiState(state);
 
       const playUrl = (!src && providerBase && output_id)
