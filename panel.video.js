@@ -570,17 +570,20 @@
     return { ok: true, data: j };
   }
 
-  function downloadUrl(u) {
-    const url = String(u || "").trim();
-    if (!url) return;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
+ function downloadUrl(u) {
+  const raw = String(u || "").trim();
+  if (!raw) return;
+
+  const proxied = `/api/media/proxy?url=${encodeURIComponent(raw)}&filename=video.mp4`;
+
+  const a = document.createElement("a");
+  a.href = proxied;
+  a.download = "video.mp4";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
   function shareUrl(u) {
     const url = String(u || "").trim();
