@@ -528,7 +528,7 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       };
     }
 
-    if (anyFail) {
+      if (anyFail) {
       data.state = "failed";
       data.status = "failed";
     } else if (anyReady) {
@@ -537,6 +537,31 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
     } else {
       data.state = "processing";
       data.status = "processing";
+    }
+
+    // DB sync: music row status/outputs güncellensin
+    try {
+      const conn = pickConn();
+      if (conn && provider_job_id) {
+        const sql = neon(conn);
+
+        await sql`
+          update jobs
+          set
+            status = ${data.status || "processing"},
+            outputs = ${Array.isArray(data.outputs) ? data.outputs : []},
+            updated_at = now()
+          where app = 'music'
+            and deleted_at is null
+            and (
+              request_id = ${String(provider_job_id)}
+              or meta->>'provider_job_id' = ${String(provider_job_id)}
+              or meta->>'internal_job_id' = ${String(internal_job_id || "")}
+            )
+        `;
+      }
+    } catch (e) {
+      console.warn("[api/music/status] db sync failed", e);
     }
 
     return res.status(200).json(data);
