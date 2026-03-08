@@ -729,86 +729,12 @@
   }
 
   /* =======================
-     PPE bridge (STRICT + tombstone)
+     PPE bridge kapalı
+     Video panel artık DB + status poll + aivo:video:job_created ile çalışır
      ======================= */
 
   function attachPPE(host) {
-    if (!window.PPE) return () => {};
-
-    const prev = PPE.onOutput;
-    let active = true;
-
-    PPE.onOutput = (job, out) => {
-      try { prev && prev(job, out); } catch {}
-      if (!active) return;
-
-      if (!out || String(out.type || "").toLowerCase() !== "video") return;
-
-      const outApp = String(out?.meta?.app || "").trim();
-      const jobApp = String(job?.app || job?.meta?.app || "").trim();
-      if ((outApp && !isVideoApp(outApp)) || (jobApp && !isVideoApp(jobApp))) return;
-      if (!isVideoApp(outApp) && !isVideoApp(jobApp)) return;
-
-      const url = String(out.url || "").trim();
-      const archive_url = String(out.archive_url || out.archiveUrl || out.meta?.archive_url || out.meta?.archiveUrl || "").trim();
-      if (!url && !archive_url) return;
-
-      const job_id =
-        job?.job_id ||
-        job?.id ||
-        out?.meta?.job_id ||
-        out?.meta?.id ||
-        null;
-
-      const jid = job_id != null ? String(job_id).trim() : "";
-      if (!jid) return;
-
-      // tombstone: silindiyse asla geri basma
-      if (deletedIds.has(jid)) return;
-
-      const existing = state.items.find(x => String(idOf(x)) === jid);
-
-      const title =
-        out?.meta?.title ||
-        out?.meta?.prompt ||
-        out?.meta?.text ||
-        (existing?.title || "Video");
-
-      if (existing) {
-        if (url) existing.url = url;
-        if (archive_url) existing.archive_url = archive_url;
-        if (Array.isArray(out?.meta?.outputs)) existing.outputs = out.meta.outputs;
-
-        existing.status = "Hazır";
-        existing.title = title;
-        existing.meta = { ...(existing.meta || {}), ...(out.meta || {}), app: "video" };
-        existing.app = "video";
-        existing.playbackUrl = getPlaybackUrl(existing) || "";
-      } else {
-        const item = {
-          id: jid,
-          job_id: jid,
-          url: url || "",
-          archive_url: archive_url || "",
-          status: "Hazır",
-          title,
-          createdAt: Date.now(),
-          meta: { ...(out.meta || {}), app: "video" },
-          outputs: [],
-          app: "video",
-        };
-        item.playbackUrl = getPlaybackUrl(item) || "";
-        state.items.unshift(item);
-        state.items = state.items.slice(0, MAX_ITEMS);
-      }
-
-      render(host);
-    };
-
-    return () => {
-      active = false;
-      PPE.onOutput = prev || null;
-    };
+    return () => {};
   }
 
   /* =======================
