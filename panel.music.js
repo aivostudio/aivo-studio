@@ -1588,8 +1588,8 @@ function getHeader(){
       mainAudio.style.display = "none";
     }
 
-      // DB tek kaynak
-    jobs = [];
+       // LS load (geçici fast paint + ready/src koruma)
+    jobs = loadJobs();
     render();
 
     // DB hydrate (ilk)
