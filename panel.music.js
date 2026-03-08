@@ -28,6 +28,7 @@
   let listEl = null;
   let alive  = false;
   let jobs   = [];
+     const deletedIds = new Set();
 
   // audio engine
   let audioEl = null;
@@ -330,9 +331,11 @@ function setEqBars(L, M, H){
     saveJobs();
   }
 
-  function removeJob(jobId){
+   function removeJob(jobId){
     jobId = String(jobId || "").trim();
     if (!jobId) return;
+
+    deletedIds.add(jobId);
 
     if (currentJobId === jobId && audioEl){
       try { audioEl.pause(); } catch {}
@@ -580,7 +583,12 @@ function render(){
   if (!hostEl || !listEl) return;
   if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-  const view = jobs.filter(j => j?.job_id || j?.id);
+  const view = jobs.filter((j) => {
+    const id = String(j?.job_id || j?.id || "").trim();
+    if (!id) return false;
+    if (deletedIds.has(id)) return false;
+    return true;
+  });
 
   view.sort((a, b) => {
     const aid = String(a.job_id || a.id || "");
