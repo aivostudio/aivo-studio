@@ -540,57 +540,65 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
 }
 
 // ✅ READY olunca DB row da güncellensin ki /api/jobs/list doğru state dönsün
-if (data.status === "completed") {
-  try {
-    const conn = pickConn();
-    if (conn) {
-      const sql = neon(conn);
+try {
+  const conn = pickConn();
+  if (conn) {
+    const sql = neon(conn);
 
-      const mergedMeta = {
-        ...(data.topmediai?.data?.[0] ? { topmediai_first: data.topmediai.data[0] } : {}),
-        provider_job_id: provider_job_id || null,
-        provider_song_ids: provider_song_ids || [],
-        internal_job_id: internal_job_id || null,
-        audio_src:
-          data.audio?.src ||
-          outputs?.[0]?.url ||
-          outputs?.[0]?.meta?.archive_url ||
-          outputs?.[0]?.meta?.audio_url ||
-          "",
-      };
+    const mergedMeta = {
+      ...(data.topmediai?.data?.[0] ? { topmediai_first: data.topmediai.data[0] } : {}),
+      provider_job_id: provider_job_id || null,
+      provider_song_ids: provider_song_ids || [],
+      internal_job_id: internal_job_id || null,
+      audio_src:
+        data.audio?.src ||
+        outputs?.[0]?.url ||
+        outputs?.[0]?.meta?.archive_url ||
+        outputs?.[0]?.meta?.audio_url ||
+        "",
+    };
 
-      if (internal_job_id) {
-        await sql`
-          update jobs
-          set
-            status = ${"completed"},
-            outputs = ${outputs},
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
-            updated_at = now()
-          where app = ${"music"}
-            and deleted_at is null
-            and (
-              meta->>'internal_job_id' = ${internal_job_id}
-              or request_id = ${provider_job_id || ""}
-            )
-        `;
-      } else if (provider_job_id) {
-        await sql`
-          update jobs
-          set
-            status = ${"completed"},
-            outputs = ${outputs},
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
-            updated_at = now()
-          where app = ${"music"}
-            and deleted_at is null
-            and request_id = ${provider_job_id}
-        `;
-      }
+    const nextStatus =
+      data.status === "completed"
+        ? "completed"
+        : data.status === "failed"
+        ? "failed"
+        : "processing";
+
+    if (internal_job_id) {
+      await sql`
+        update jobs
+        set
+          status = ${nextStatus},
+          outputs = ${Array.isArray(outputs) ? outputs : []},
+          meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
+          updated_at = now()
+        where app = ${"music"}
+          and deleted_at is null
+          and (
+            meta->>'internal_job_id' = ${internal_job_id}
+            or request_id = ${provider_job_id || ""}
+          )
+      `;
+    } else if (provider_job_id) {
+      await sql`
+        update jobs
+        set
+          status = ${nextStatus},
+          outputs = ${Array.isArray(outputs) ? outputs : []},
+          meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
+          updated_at = now()
+        where app = ${"music"}
+          and deleted_at is null
+          and (
+            request_id = ${provider_job_id}
+            or meta->>'provider_job_id' = ${provider_job_id}
+          )
+      `;
     }
-  } catch (e) {
-    console.warn("[api/music/status] db sync failed", e);
   }
+} catch (e) {
+  console.warn("[api/music/status] db sync failed", e);
 }
 
 return res.status(200).json(data);
