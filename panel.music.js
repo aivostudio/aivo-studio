@@ -1533,10 +1533,12 @@ function getHeader(){
 
       const byId = new Map();
 
-      // önce DB
+           // önce DB
       for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
-        if (id) byId.set(id, c);
+        if (!id) continue;
+        if (deletedIds.has(id)) continue;
+        byId.set(id, c);
       }
 
       // sonra eski (LS) -> merge
