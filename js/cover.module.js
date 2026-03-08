@@ -231,14 +231,16 @@ for (const img of imgs) {
 
   if (shouldApplyCoverTextOverlay()) {
     const originalImageUrl = img.url;
-const over = await applyCoverTextOverlay(img.url);
+    const over = await applyCoverTextOverlay(img.url);
 
-// Overlay sonucu blob: ise DB'ye kalıcı olmayan URL yazma
-if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
-  img.url = over.finalUrl;
-} else {
-  img.url = originalImageUrl;
-}
+    // Overlay sonucu blob: ise DB'ye kalıcı olmayan URL yazma
+    if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
+      img.url = over.finalUrl;
+    } else {
+      img.url = originalImageUrl;
+    }
+  }
+
   try {
     const db = await postJSON("/api/cover/generate", {
       prompt: img.prompt || prompt,
@@ -277,8 +279,6 @@ if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
     console.error("[cover] db write failed", e);
   }
 }
-}
-
 
   // --- PROMPT CHAR COUNT (opsiyonel) ---
   function bindPromptCounter() {
