@@ -314,15 +314,25 @@
       const rows = extractListItems(j);
 
       // DB = tek gerçek kaynak (source-of-truth), merge YOK
-      const incoming = (rows || [])
-        .map(mapDbItemToPanelItem)
-        .filter(Boolean)
-        .slice(0, MAX_ITEMS);
+     const incoming = (rows || [])
+  .map(mapDbItemToPanelItem)
+  .filter(Boolean)
+  .slice(0, MAX_ITEMS);
 
-      state.items = incoming;
+// DB + mevcut optimistic/pending kartları merge et
+const incomingIds = new Set(incoming.map((x) => String(idOf(x))));
+const optimistic = (state.items || []).filter((x) => {
+  const jid = String(idOf(x));
+  if (!jid) return false;
+  if (deletedIds.has(jid)) return false;
+  if (incomingIds.has(jid)) return false;
+  return !isReady(x) && !isError(x);
+});
 
-      render(host);
-      pollPendingStatuses(host).catch(() => {});
+state.items = [...incoming, ...optimistic].slice(0, MAX_ITEMS);
+
+render(host);
+pollPendingStatuses(host).catch(() => {});
     } catch (e) {
       console.warn("[video.panel] hydrate exception", e);
     }
