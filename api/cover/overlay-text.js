@@ -1,7 +1,5 @@
 // api/cover/overlay-text.js
 const sharp = require("sharp");
-const fs = require("fs");
-const path = require("path");
 
 module.exports = async function handler(req, res) {
   try {
@@ -16,10 +14,6 @@ module.exports = async function handler(req, res) {
 
     const artistText = String(artist || "").trim().toUpperCase();
     const titleText = String(title || "").trim();
-
-    // Fontu oku ve base64'e çevir
-    const fontPath = path.join(process.cwd(), "api/cover/fonts/NotoSans-Bold.ttf");
-    const fontBase64 = fs.readFileSync(fontPath).toString("base64");
 
     const imgRes = await fetch(imageUrl);
     if (!imgRes.ok) {
@@ -38,14 +32,13 @@ module.exports = async function handler(req, res) {
 
     const svg = `
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-
   <defs>
-
     <style>
-  text {
-    font-family: Arial, Helvetica, sans-serif;
-  }
-</style>
+      text {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    </style>
+
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#08111d" stop-opacity="0.92"/>
       <stop offset="50%" stop-color="#08111d" stop-opacity="0.55"/>
@@ -65,11 +58,11 @@ module.exports = async function handler(req, res) {
     <filter id="hardShadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="12" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
     </filter>
-
   </defs>
 
   <rect x="0" y="0" width="1024" height="360" fill="#08111d" opacity="0.55"/>
   <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
+
   ${
     titleText
       ? `
@@ -78,7 +71,6 @@ module.exports = async function handler(req, res) {
       x="512"
       y="132"
       text-anchor="middle"
-      font-family="CoverFont"
       font-size="132"
       font-style="italic"
       font-weight="700"
@@ -94,7 +86,6 @@ module.exports = async function handler(req, res) {
       x="512"
       y="132"
       text-anchor="middle"
-      font-family="CoverFont"
       font-size="132"
       font-style="italic"
       font-weight="700"
@@ -109,7 +100,7 @@ module.exports = async function handler(req, res) {
       `
       : ""
   }
-  
+
   ${
     artistText
       ? `
@@ -118,7 +109,6 @@ module.exports = async function handler(req, res) {
       x="512"
       y="210"
       text-anchor="middle"
-      font-family="CoverFont"
       font-size="48"
       font-weight="700"
       letter-spacing="3"
@@ -132,7 +122,6 @@ module.exports = async function handler(req, res) {
       x="512"
       y="210"
       text-anchor="middle"
-      font-family="CoverFont"
       font-size="48"
       font-weight="700"
       letter-spacing="3"
@@ -145,7 +134,6 @@ module.exports = async function handler(req, res) {
       `
       : ""
   }
-
 </svg>
 `;
 
@@ -159,7 +147,6 @@ module.exports = async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).send(final);
-
   } catch (e) {
     console.error("cover/overlay-text error:", e);
     return res.status(500).json({ ok: false, error: e?.message || "Server error" });
