@@ -1642,7 +1642,7 @@ function getHeader(){
             if (id) byId.set(id, c);
           }
 
-         for (const old of (jobs || [])){
+for (const old of (jobs || [])){
   const id = String(old?.job_id || old?.id || "").trim();
   if (!id) continue;
   if (deletedIds.has(id)) continue;
@@ -1653,7 +1653,6 @@ function getHeader(){
   }
   // DB'de yoksa eski kart geri eklenmez
 }
-
           jobs = Array.from(byId.values());
           saveJobs();
           render();
