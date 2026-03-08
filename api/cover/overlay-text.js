@@ -109,11 +109,12 @@ module.exports = async function handler(req, res) {
       stroke-width="4"
       transform="rotate(-3 512 132)"
     >${esc(titleText)}</text>
-  </g>
+
+</g>
       `
       : ""
   }
-
+  
   ${
     artistText
       ? `
