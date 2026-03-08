@@ -1449,3 +1449,24 @@ section[data-module="cover"] .form-grid.cover-form-grid{
     line-height: 1.08 !important;
   }
 }
+/* SAFARI ONLY — Cover hero compact */
+@supports (-webkit-touch-callout: none) {
+  section[data-module="cover"] .page-hero-card{
+    margin-bottom: 8px !important;
+  }
+
+  section[data-module="cover"] .page-hero-inner{
+    padding: 12px 16px 10px !important;
+    gap: 4px !important;
+  }
+
+  section[data-module="cover"] .page-title{
+    font-size: 16px !important;
+  }
+
+  section[data-module="cover"] .page-subtitle{
+    margin-top: 2px !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
+}
