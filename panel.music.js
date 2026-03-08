@@ -1234,6 +1234,15 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       const providerBase = String(cardId).split("::")[0];
 
       const q = encodeURIComponent(providerSongId || providerBase);
+       try {
+  console.log("[MUSIC_POLL_REQ]", {
+    cardId,
+    providerSongId,
+    providerBase,
+    q_raw: providerSongId || providerBase,
+    q_encoded: q
+  });
+} catch {}
 
       const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
         cache: "no-store",
@@ -1254,6 +1263,19 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
       }
 
       const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
+       try {
+  console.log("[MUSIC_POLL_RES]", {
+    cardId,
+    providerSongId,
+    providerBase,
+    response_ok: j?.ok,
+    state,
+    src,
+    output_id,
+    title,
+    raw: j
+  });
+} catch {}
       const st = uiState(state);
 
       const playUrl = (!src && providerBase && output_id)
