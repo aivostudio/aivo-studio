@@ -183,9 +183,9 @@
 function ppeApplyCompleted(appKey, job) {
   const key = normalizeAppKey(appKey);
 
-   // cover ve music artık kendi panel dosyalarında DB source-of-truth çalışıyor.
-  // Boot hydrate bunlara PPE ile kart basmayacak.
-  if (key === "cover" || key === "music") {
+  // cover artık panel.cover.js üzerinden DB source-of-truth çalışıyor.
+  // Global PPE hydrate ile atmo/müzik alanına sızmaması için boot burada cover'ı basmayacak.
+  if (key === "cover") {
     return;
   }
 
