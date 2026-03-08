@@ -47,9 +47,9 @@
   }
 
   function isVideoApp(x) {
-    return norm(x) === "video";
-  }
-
+  const a = norm(x);
+  return a === "video" || a.includes("video");
+}
   function toMaybeProxyUrl(url) {
     const u = String(url || "").trim();
     if (!u) return "";
