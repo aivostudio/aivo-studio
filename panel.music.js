@@ -1364,24 +1364,6 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     ).trim();
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
-     if (String(provider_job_id) === "1354495" || String(provider_job_id) === "1354313") {
-  console.log("[MAP_DB_JOB]", {
-    row_job_id: row?.job_id || row?.id || "",
-    provider_job_id,
-    row_status: row?.status,
-    row_state: row?.state,
-    outputs: row?.outputs,
-    meta_audio_src: meta?.audio_src || "",
-    picked_audio_src: String(
-      meta?.audio_src ||
-      meta?.audioUrl ||
-      row?.outputs?.[0]?.url ||
-      row?.outputs?.[0]?.meta?.archive_url ||
-      row?.outputs?.[0]?.meta?.audio_url ||
-      ""
-    ).trim()
-  });
-}
   const dbJobId = String(row?.job_id || row?.id || "").trim();
     if (!baseId) return [];
 
