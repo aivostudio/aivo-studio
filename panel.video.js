@@ -295,56 +295,38 @@
 
     return item;
   }
-async function hydrateFromDB(host) {
-  try {
-    const r = await fetch("/api/jobs/list?app=video", {
-      method: "GET",
-      credentials: "include",
-      headers: { "accept": "application/json" },
-    });
 
-    const j = await r.json().catch(() => null);
+  async function hydrateFromDB(host) {
+    try {
+      const r = await fetch("/api/jobs/list?app=video", {
+        method: "GET",
+        credentials: "include",
+        headers: { "accept": "application/json" },
+      });
 
-    if (!r.ok || !j || !j.ok) {
-      console.warn("[video.panel] hydrate failed", r.status, j);
-      return;
+      const j = await r.json().catch(() => null);
+
+      if (!r.ok || !j || !j.ok) {
+        console.warn("[video.panel] hydrate failed", r.status, j);
+        return;
+      }
+
+      const rows = extractListItems(j);
+
+      // DB = tek gerçek kaynak (source-of-truth), merge YOK
+      const incoming = (rows || [])
+        .map(mapDbItemToPanelItem)
+        .filter(Boolean)
+        .slice(0, MAX_ITEMS);
+
+      state.items = incoming;
+
+      render(host);
+      pollPendingStatuses(host).catch(() => {});
+    } catch (e) {
+      console.warn("[video.panel] hydrate exception", e);
     }
-
-    const rows = extractListItems(j);
-
-    const incoming = (rows || [])
-      .map(mapDbItemToPanelItem)
-      .filter(Boolean)
-      .slice(0, MAX_ITEMS);
-
-    // ATMO gibi: DB truth + optimistic merge
-    const byId = new Map();
-
-    // 1) DB items first
-    for (const item of incoming) {
-      const jid = String(idOf(item) || "").trim();
-      if (!jid) continue;
-      byId.set(jid, item);
-    }
-
-    // 2) Existing optimistic/local items keep until DB row arrives
-    for (const item of (state.items || [])) {
-      const jid = String(idOf(item) || "").trim();
-      if (!jid) continue;
-      if (deletedIds.has(jid)) continue;
-      if (!byId.has(jid)) byId.set(jid, item);
-    }
-
-    state.items = Array.from(byId.values())
-      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
-      .slice(0, MAX_ITEMS);
-
-    render(host);
-    pollPendingStatuses(host).catch(() => {});
-  } catch (e) {
-    console.warn("[video.panel] hydrate exception", e);
   }
-}
 
   /* =======================
      Status poll
