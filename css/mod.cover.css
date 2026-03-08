@@ -1423,3 +1423,29 @@ section[data-module="cover"] .form-field label{
 section[data-module="cover"] .form-grid.cover-form-grid{
   gap: 10px !important;
 }
+/* SAFARI ONLY — Cover CTA fit */
+@supports (-webkit-touch-callout: none) {
+  section[data-module="cover"] #coverPrompt{
+    min-height: 84px !important;
+    max-height: 84px !important;
+  }
+
+  section[data-module="cover"] .cover-meta-fields input{
+    height: 38px !important;
+  }
+
+  section[data-module="cover"] .cover-form-grid .quality-pill{
+    min-height: 70px !important;
+    padding: 11px 13px !important;
+  }
+
+  section[data-module="cover"] .cover-style-cards .style-card{
+    min-height: 54px !important;
+    padding: 8px 10px !important;
+  }
+
+  section[data-module="cover"] .cover-style-cards .style-card-sub{
+    font-size: 10px !important;
+    line-height: 1.08 !important;
+  }
+}
