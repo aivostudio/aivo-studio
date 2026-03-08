@@ -1656,8 +1656,9 @@ function getHeader(){
           const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
           return !t || t === "audio";
         },
-        onChange: (items) => {
+            onChange: (items) => {
           if (!alive) return;
+
           const safe = Array.isArray(items) ? items : [];
           const dbCards = [];
           for (const row of safe){
@@ -1666,31 +1667,41 @@ function getHeader(){
           }
 
           const byId = new Map();
+
+          // 1) Önce DB kartlarını yaz
           for (const c of dbCards){
             const id = String(c?.job_id || c?.id || "").trim();
-            if (id) byId.set(id, c);
+            if (!id) continue;
+            if (deletedIds.has(id)) continue;
+            byId.set(id, c);
           }
 
-for (const old of (jobs || [])){
-  const id = String(old?.job_id || old?.id || "").trim();
-  if (!id) continue;
-  if (deletedIds.has(id)) continue;
+          // 2) Sonra mevcut panel state'ini merge et
+          // DB'de varsa merge et, yoksa eski kartı KORU
+          for (const old of (jobs || [])){
+            const id = String(old?.job_id || old?.id || "").trim();
+            if (!id) continue;
+            if (deletedIds.has(id)) continue;
 
-  if (byId.has(id)) {
-    const merged = mergePreferDbButKeepReady(old, byId.get(id));
-    byId.set(id, merged);
-  }
-  // DB'de yoksa eski kart geri eklenmez
-}
+            if (byId.has(id)) {
+              const merged = mergePreferDbButKeepReady(old, byId.get(id));
+              byId.set(id, merged);
+            } else {
+              byId.set(id, old);
+            }
+          }
+
           jobs = Array.from(byId.values());
           saveJobs();
           render();
 
-          jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
+          jobs
+            .slice(0, 60)
+            .forEach((j) => {
+              const id = j?.job_id || j?.id;
+              if (id) poll(id);
+            });
         }
-      });
-    }
-
     window.addEventListener("aivo:job", onJob, true);
 
     jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
