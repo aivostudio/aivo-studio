@@ -367,7 +367,26 @@ async function createCover() {
   })();
 
   bindPromptCounter();
-  new MutationObserver(() => bindPromptCounter()).observe(document.documentElement, {
+
+  function ensureDefaultCoverQuality() {
+    const root = getRoot();
+    if (!root) return;
+
+    const artist = root.querySelector('.quality-pill[data-quality="artist"]');
+    if (!artist) return;
+
+    const hasSelected = root.querySelector('.quality-pill[aria-pressed="true"]');
+    if (!hasSelected) {
+      setActiveQuality(root, "artist");
+    }
+  }
+
+  ensureDefaultCoverQuality();
+
+  new MutationObserver(() => {
+    bindPromptCounter();
+    ensureDefaultCoverQuality();
+  }).observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
