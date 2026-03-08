@@ -1378,7 +1378,14 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
   provider_job_id: provider_job_id || baseId,
       __ui_state: st,
       // ✅ DB’den boş gelirse bile merge’de eski src korunacak (aşağıda)
-      __audio_src: String(meta?.audio_src || meta?.audioUrl || "").trim(),
+      __audio_src: String(
+        meta?.audio_src ||
+        meta?.audioUrl ||
+        row?.outputs?.[0]?.url ||
+        row?.outputs?.[0]?.meta?.archive_url ||
+        row?.outputs?.[0]?.meta?.audio_url ||
+        ""
+      ).trim(),
       createdAt: createdMs,
       __createdAt: (row?.created_at || meta?.created_at || ""),
       title: String(meta?.title || row?.title || "").trim(),
