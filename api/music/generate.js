@@ -18,12 +18,22 @@ const { neon } = require("@neondatabase/serverless");
 // NOTE: auth modülü sende bazı endpointlerde ESM, bazı yerde CJS görünüyor.
 // Burada CJS require ile güvenli alıyoruz:
 let requireAuth = null;
-try {
-  const authModule = require("../_lib/auth.js");
-  requireAuth =
-    authModule?.requireAuth || authModule?.default?.requireAuth || null;
-} catch {
-  requireAuth = null;
+
+async function getRequireAuth() {
+  if (requireAuth) return requireAuth;
+
+  try {
+    const mod = await import("../_lib/auth.js");
+    requireAuth =
+      mod?.requireAuth ||
+      mod?.default?.requireAuth ||
+      mod?.default ||
+      null;
+  } catch {
+    requireAuth = null;
+  }
+
+  return requireAuth;
 }
 
 function nowISO() {
@@ -307,10 +317,11 @@ await redis.set(
       const sql = neon(conn);
 
       // best-effort auth: email/user_id yakalarsak ilişkilendiririz
-      let auth = null;
+          let auth = null;
       try {
-        if (typeof requireAuth === "function") {
-          auth = await requireAuth(req);
+        const authFn = await getRequireAuth();
+        if (typeof authFn === "function") {
+          auth = await authFn(req);
         }
       } catch {
         auth = null;
