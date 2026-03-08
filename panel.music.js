@@ -1576,8 +1576,8 @@ function getHeader(){
       mainAudio.style.display = "none";
     }
 
-    // LS load (hızlı paint)
-    jobs = loadJobs();
+      // DB tek kaynak
+    jobs = [];
     render();
 
     // DB hydrate (ilk)
