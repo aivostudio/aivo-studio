@@ -1642,17 +1642,17 @@ function getHeader(){
             if (id) byId.set(id, c);
           }
 
-          for (const old of (jobs || [])){
-            const id = String(old?.job_id || old?.id || "").trim();
-            if (!id) continue;
+         for (const old of (jobs || [])){
+  const id = String(old?.job_id || old?.id || "").trim();
+  if (!id) continue;
+  if (deletedIds.has(id)) continue;
 
-            if (byId.has(id)) {
-              const merged = mergePreferDbButKeepReady(old, byId.get(id));
-              byId.set(id, merged);
-            } else {
-              byId.set(id, old);
-            }
-          }
+  if (byId.has(id)) {
+    const merged = mergePreferDbButKeepReady(old, byId.get(id));
+    byId.set(id, merged);
+  }
+  // DB'de yoksa eski kart geri eklenmez
+}
 
           jobs = Array.from(byId.values());
           saveJobs();
