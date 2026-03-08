@@ -230,9 +230,15 @@ for (const img of imgs) {
   console.log("[cover overlay start]", img.url);
 
   if (shouldApplyCoverTextOverlay()) {
-    const over = await applyCoverTextOverlay(img.url);
-    img.url = over.finalUrl;
-  }
+    const originalImageUrl = img.url;
+const over = await applyCoverTextOverlay(img.url);
+
+// Overlay sonucu blob: ise DB'ye kalıcı olmayan URL yazma
+if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
+  img.url = over.finalUrl;
+} else {
+  img.url = originalImageUrl;
+}
   try {
     const db = await postJSON("/api/cover/generate", {
       prompt: img.prompt || prompt,
