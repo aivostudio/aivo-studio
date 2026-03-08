@@ -1530,16 +1530,16 @@ function getHeader(){
       }
 
       // sonra eski (LS) -> merge
-    for (const old of (jobs || [])){
-  const id = String(old?.job_id || old?.id || "").trim();
-  if (!id) continue;
+           for (const old of (jobs || [])){
+            const id = String(old?.job_id || old?.id || "").trim();
+            if (!id) continue;
 
-  if (byId.has(id)) {
-    const merged = mergePreferDbButKeepReady(old, byId.get(id));
-    byId.set(id, merged);
-  }
-  // else yok: DB’de olmayan LS item’ı geri eklenmez
-}
+            if (byId.has(id)) {
+              const merged = mergePreferDbButKeepReady(old, byId.get(id));
+              byId.set(id, merged);
+            }
+            // DB'de artık yoksa local eski kartı geri ekleme
+          }
 
       jobs = Array.from(byId.values());
       saveJobs();
