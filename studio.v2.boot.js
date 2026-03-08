@@ -180,18 +180,26 @@
       .filter(Boolean);
   }
 
-  function ppeApplyCompleted(appKey, job) {
-    const PPE = window.PPE;
-    if (!PPE || typeof PPE.apply !== "function") {
-      console.warn("[BOOT] PPE.apply missing; hydration skipped");
-      return;
-    }
+function ppeApplyCompleted(appKey, job) {
+  const key = normalizeAppKey(appKey);
 
-    const outputs = normalizeOutputs(appKey, job);
-    if (!outputs.length) return;
-
-    PPE.apply({ state: "COMPLETED", outputs });
+  // cover artık panel.cover.js üzerinden DB source-of-truth çalışıyor.
+  // Global PPE hydrate ile atmo/müzik alanına sızmaması için boot burada cover'ı basmayacak.
+  if (key === "cover") {
+    return;
   }
+
+  const PPE = window.PPE;
+  if (!PPE || typeof PPE.apply !== "function") {
+    console.warn("[BOOT] PPE.apply missing; hydration skipped");
+    return;
+  }
+
+  const outputs = normalizeOutputs(key, job);
+  if (!outputs.length) return;
+
+  PPE.apply({ state: "COMPLETED", outputs });
+}
 
   async function hydrateJobsFromDB(appKey) {
     const key = normalizeAppKey(appKey);
