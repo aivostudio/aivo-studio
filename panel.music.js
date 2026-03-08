@@ -1394,6 +1394,8 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     const origId = `${baseId}::orig`;
     const revId  = `${baseId}::rev1`;
 
+    if (deletedIds.has(origId) || deletedIds.has(revId)) return;
+
     const providerJobId = String(payload.provider_job_id || "").trim();
     const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
 
