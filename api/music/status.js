@@ -401,13 +401,6 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
 
     const text = await r.text();
     const top = safeJsonParse(text);
-    console.log("[API_MUSIC_STATUS_TOP]", {
-  raw,
-  provider_job_id,
-  provider_song_ids,
-  upstream_status: r.status,
-  top_data: Array.isArray(top?.data) ? top.data : top?.data?.data || null
-});
 
     if (!top) {
       return res.status(200).json({
