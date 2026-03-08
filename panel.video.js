@@ -226,8 +226,8 @@
     const meta = r?.meta || {};
     const outputs = Array.isArray(r?.outputs) ? r.outputs : [];
 
-    const appGuess = String(r?.app || meta?.app || "").trim();
-    if (!isVideoApp(appGuess)) return null; // STRICT
+   const appGuess = String(r?.app || meta?.app || "video").trim();
+if (appGuess && !isVideoApp(appGuess)) return null; // STRICT
 
     // tombstone
     if (job_id && deletedIds.has(String(job_id))) return null;
