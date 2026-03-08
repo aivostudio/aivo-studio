@@ -73,7 +73,6 @@ module.exports = async function handler(req, res) {
 
   <rect x="0" y="0" width="1024" height="360" fill="#08111d" opacity="0.55"/>
   <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
-
   ${
     titleText
       ? `
@@ -109,8 +108,7 @@ module.exports = async function handler(req, res) {
       stroke-width="4"
       transform="rotate(-3 512 132)"
     >${esc(titleText)}</text>
-
-</g>
+  </g>
       `
       : ""
   }
