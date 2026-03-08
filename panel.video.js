@@ -313,7 +313,7 @@
 
       const rows = extractListItems(j);
 
-      // DB = tek gerçek kaynak (source-of-truth), merge YOK
+     // ATMO gibi: DB truth + optimistic merge
      const incoming = (rows || [])
   .map(mapDbItemToPanelItem)
   .filter(Boolean)
