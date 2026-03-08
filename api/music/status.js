@@ -593,7 +593,7 @@ if (data.status === "completed") {
   }
 }
 
-return res.status(200).json(data);
+
     // DB sync: music row status/outputs güncellensin
     try {
       const conn = pickConn();
