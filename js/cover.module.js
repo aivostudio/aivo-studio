@@ -229,25 +229,26 @@ async function createCover() {
   for (const img of imgs) {
     console.log("[cover overlay start]", img.url);
 
+    const originalImageUrl = img.url;
+    let displayImageUrl = img.url;
+
     if (shouldApplyCoverTextOverlay()) {
-      const originalImageUrl = img.url;
       const over = await applyCoverTextOverlay(img.url);
 
-      // Overlay sonucu blob: ise DB'ye kalıcı olmayan URL yazma
-      if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
-        img.url = over.finalUrl;
-      } else {
-        img.url = originalImageUrl;
+      // Ekranda blob kullanılabilir
+      if (over?.finalUrl) {
+        displayImageUrl = over.finalUrl;
       }
     }
 
     try {
+      // DB'ye daima kalıcı/orijinal URL yaz
       const db = await postJSON("/api/cover/generate", {
         prompt: img.prompt || prompt,
         style,
         quality,
         ratio,
-        imageUrl: img.url,
+        imageUrl: originalImageUrl,
       });
 
       console.log("[cover] db saved ✅", db);
@@ -262,7 +263,7 @@ async function createCover() {
               quality,
               style,
               ratio,
-              imageUrl: img.url,
+              imageUrl: displayImageUrl, // UI'da overlay'li görüntü
               createdAt: Date.now(),
               meta: {
                 app: "cover",
@@ -270,6 +271,7 @@ async function createCover() {
                 quality,
                 style,
                 ratio,
+                originalImageUrl,
               },
             },
           })
