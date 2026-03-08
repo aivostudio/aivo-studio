@@ -537,10 +537,18 @@
     if (!grid) return;
 
     // tombstone filtre
-    const items = (state.items || []).filter(it => {
-      const jid = idOf(it);
-      return jid && !deletedIds.has(jid);
-    });
+       const items = (state.items || [])
+      .filter(Boolean)
+      .filter((it) => {
+        const jid = idOf(it);
+        if (!jid) return false;
+        if (deletedIds.has(jid)) return false;
+
+        const appGuess = String(it?.app || it?.meta?.app || "").trim();
+        if (appGuess && !isVideoApp(appGuess)) return false;
+
+        return true;
+      });
 
     if (!items.length) {
       grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
