@@ -1,5 +1,6 @@
 // api/cover/overlay-text.js
 const sharp = require("sharp");
+const path = require("path");
 
 module.exports = async function handler(req, res) {
   try {
@@ -30,12 +31,32 @@ module.exports = async function handler(req, res) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
 
+    const titleFontPath = path.join(process.cwd(), "api/cover/fonts/NotoSerif-Italic.ttf");
+    const artistFontPath = path.join(process.cwd(), "api/cover/fonts/NotoSans-Bold.ttf");
+
+    const titleFontUrl = `file://${titleFontPath.replace(/\\/g, "/")}`;
+    const artistFontUrl = `file://${artistFontPath.replace(/\\/g, "/")}`;
+
     const svg = `
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <style>
+      @font-face {
+        font-family: "CoverTitle";
+        src: url("${titleFontUrl}") format("truetype");
+        font-style: italic;
+        font-weight: 700;
+      }
+
+      @font-face {
+        font-family: "CoverArtist";
+        src: url("${artistFontUrl}") format("truetype");
+        font-style: normal;
+        font-weight: 700;
+      }
+
       text {
-        font-family: Arial, Helvetica, sans-serif;
+        text-rendering: geometricPrecision;
       }
     </style>
 
@@ -71,6 +92,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="132"
       text-anchor="middle"
+      font-family="CoverTitle"
       font-size="132"
       font-style="italic"
       font-weight="700"
@@ -86,6 +108,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="132"
       text-anchor="middle"
+      font-family="CoverTitle"
       font-size="132"
       font-style="italic"
       font-weight="700"
@@ -109,6 +132,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="210"
       text-anchor="middle"
+      font-family="CoverArtist"
       font-size="48"
       font-weight="700"
       letter-spacing="3"
@@ -122,6 +146,7 @@ module.exports = async function handler(req, res) {
       x="512"
       y="210"
       text-anchor="middle"
+      font-family="CoverArtist"
       font-size="48"
       font-weight="700"
       letter-spacing="3"
