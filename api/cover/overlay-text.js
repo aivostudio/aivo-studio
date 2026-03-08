@@ -42,13 +42,10 @@ module.exports = async function handler(req, res) {
   <defs>
 
     <style>
-      @font-face {
-        font-family: "CoverFont";
-        src: url(data:font/truetype;base64,${fontBase64}) format("truetype");
-        font-weight: 700;
-      }
-    </style>
-
+  text {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+</style>
     <linearGradient id="topFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#08111d" stop-opacity="0.92"/>
       <stop offset="50%" stop-color="#08111d" stop-opacity="0.55"/>
