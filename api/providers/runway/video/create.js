@@ -217,10 +217,12 @@ prompt,
 provider
         )
         values (
-          ${job_id},
-          ${user_id},
-          ${"video"},
-          ${"queued"},
+         ${job_id},
+${user_id},
+${user_uuid}::uuid,
+${"video"},
+${"queued"}, şimdi 
+şimdi
           now(),
           ${"video"},
           ${JSON.stringify({
