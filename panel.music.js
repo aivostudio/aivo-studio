@@ -1377,11 +1377,22 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     const createdMs =
       toMs(row?.created_at) || toMs(row?.createdAt) || toMs(meta?.created_at) || Date.now();
 
-    const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
-    const st =
-      ["ready","done","completed","success","succeeded"].includes(rawStatus) ? "ready"
-      : ["error","failed","fail"].includes(rawStatus) ? "error"
-      : "processing";
+   const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
+
+const hasAudioSrc = !!String(
+  meta?.audio_src ||
+  meta?.audioUrl ||
+  row?.outputs?.[0]?.url ||
+  row?.outputs?.[0]?.meta?.archive_url ||
+  row?.outputs?.[0]?.meta?.audio_url ||
+  ""
+).trim();
+
+const st =
+  hasAudioSrc ? "ready"
+  : ["ready","done","completed","success","succeeded"].includes(rawStatus) ? "ready"
+  : ["error","failed","fail"].includes(rawStatus) ? "error"
+  : "processing";--- ---
 
     const baseCommon = {
   type: "music",
