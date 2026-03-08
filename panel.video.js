@@ -361,38 +361,51 @@ pollPendingStatuses(host).catch(() => {});
     return "";
   }
 
-  async function fetchStatus(job_id) {
-    const jid = String(job_id || "").trim();
-    if (!jid) return null;
+async function fetchStatus(job_id) {
+  const jid = String(job_id || "").trim();
+  if (!jid) return null;
 
-    // tombstone
-    if (deletedIds.has(jid)) return null;
+  // tombstone
+  if (deletedIds.has(jid)) return null;
 
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort("timeout"), STATUS_POLL_TIMEOUT_MS);
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort("timeout"), STATUS_POLL_TIMEOUT_MS);
 
-    try {
-      const r = await fetch("/api/jobs/status?job_id=" + encodeURIComponent(jid), {
-        method: "GET",
-        credentials: "include",
-        headers: { "accept": "application/json" },
-        signal: ctrl.signal,
+  try {
+    const r = await fetch("/api/jobs/status?job_id=" + encodeURIComponent(jid), {
+      method: "GET",
+      credentials: "include",
+      headers: { "accept": "application/json" },
+      signal: ctrl.signal,
+    });
+
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !j.ok) return null;
+
+    // STRICT job app
+    const appGuess = String(j?.app || j?.meta?.app || "").trim();
+    if (appGuess && !isVideoApp(appGuess)) return null;
+
+    // STRICT output filter
+    if (Array.isArray(j.outputs)) {
+      j.outputs = j.outputs.filter((o) => {
+        const tpe = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
+        if (tpe && tpe !== "video") return false;
+
+        const outApp = String(o?.meta?.app || "").trim();
+        if (outApp && !isVideoApp(outApp)) return false;
+
+        return true;
       });
-
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) return null;
-
-      // STRICT
-      const appGuess = String(j?.app || j?.meta?.app || "").trim();
-      if (appGuess && !isVideoApp(appGuess)) return null;
-
-      return j;
-    } catch {
-      return null;
-    } finally {
-      try { clearTimeout(t); } catch {}
     }
+
+    return j;
+  } catch {
+    return null;
+  } finally {
+    try { clearTimeout(t); } catch {}
   }
+}
 
   async function pollPendingStatuses(host) {
     const pending = state.items
