@@ -309,25 +309,11 @@ function setEqBars(L, M, H){
   }
 
   /* ---------------- jobs storage ---------------- */
-    function loadJobs(){
+  function loadJobs(){
     try {
       const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-      if (!Array.isArray(arr)) return [];
-
-      return arr.filter((j) => {
-        const id = String(j?.job_id || j?.id || "").trim();
-        if (!id) return false;
-        if (deletedIds.has(id)) return false;
-
-        const st = String(j?.__ui_state || "").trim().toLowerCase();
-        const src = String(j?.__audio_src || "").trim();
-
-        // Sadece gerçekten hazır olan ve audio src taşıyan kartlar fast-paint'e girsin
-        return st === "ready" && !!src;
-      });
-    } catch {
-      return [];
-    }
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
   }
 
   function saveJobs(){
