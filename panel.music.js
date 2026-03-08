@@ -1088,6 +1088,7 @@ async function actionDelete(card){
     console.warn("[panel.music] delete failed", e);
     toast("error","Silme hatası");
   }
+ }
 
  
 function onCardClick(e){
