@@ -693,50 +693,49 @@ function render(){
     rafId = 0;
   }
 
-  async function togglePlayFromCard(card){
-    if (!card) return;
+async function togglePlayFromCard(card){
+  if (!card) return;
 
-    const jobId = card.getAttribute("data-job-id") || "";
-    if (!jobId) return;
+  const jobId = String(card.getAttribute("data-job-id") || "").trim();
+  if (!jobId) return;
 
-     const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-  const dbJobId = String(existing.__db_job_id || "").trim();
-    if (!src){
-      toast("info", "Henüz hazır değil");
-      return;
-    }
+  const existing = jobs.find((x) => String(x.job_id || x.id || "") === jobId) || {};
+  const src = String(existing.__audio_src || card.dataset.src || "").trim();
 
-    const A = ensureAudio();
-
-    if (currentJobId && currentJobId !== jobId){
-      setCardPlaying(currentJobId, false);
-      try { A.pause(); } catch {}
-    }
-
-    if (currentJobId === jobId && !A.paused){
-      try { A.pause(); } catch {}
-      setCardPlaying(jobId, false);
-      return;
-    }
-
-    currentJobId = jobId;
-    setCardPlaying(jobId, true);
-
-    // ✅ job değişti -> EQ cache reset + rebind
-    eqBarsCache.jobId = null;
-    eqBarsCache.bars = null;
-    bindEqBarsForCurrentJob();
-
-    try{
-      if (A.src !== src) A.src = src;
-      await A.play();
-    } catch(e){
-      console.warn("[panel.music] play failed:", e);
-      setCardPlaying(jobId, false);
-      toast("error", "Play başarısız (src açılamadı)");
-    }
+  if (!src) {
+    toast("info", "Henüz hazır değil");
+    return;
   }
 
+  const A = ensureAudio();
+
+  if (currentJobId && currentJobId !== jobId) {
+    setCardPlaying(currentJobId, false);
+    try { A.pause(); } catch {}
+  }
+
+  if (currentJobId === jobId && !A.paused) {
+    try { A.pause(); } catch {}
+    setCardPlaying(jobId, false);
+    return;
+  }
+
+  currentJobId = jobId;
+  setCardPlaying(jobId, true);
+
+  eqBarsCache.jobId = null;
+  eqBarsCache.bars = null;
+  bindEqBarsForCurrentJob();
+
+  try {
+    if (A.src !== src) A.src = src;
+    await A.play();
+  } catch (e) {
+    console.warn("[panel.music] play failed:", e);
+    setCardPlaying(jobId, false);
+    toast("error", "Play başarısız (src açılamadı)");
+  }
+}
   function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
     if (!wrap) return;
