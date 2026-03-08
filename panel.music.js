@@ -686,16 +686,7 @@ function render(){
     if (!jobId) return;
 
      const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-
-  const sibling =
-    jobs.find(x => (x.job_id || x.id) === otherId) ||
-    jobs.find(x => String(x.provider_job_id || "") === String(existing.provider_job_id || ""));
-
-  const dbJobId = String(
-    existing.__db_job_id ||
-    sibling?.__db_job_id ||
-    ""
-  ).trim();
+  const dbJobId = String(existing.__db_job_id || "").trim();
     if (!src){
       toast("info", "Henüz hazır değil");
       return;
