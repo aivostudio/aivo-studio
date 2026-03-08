@@ -75,7 +75,6 @@ module.exports = async function handler(req, res) {
   <rect x="0" y="0" width="1024" height="360" fill="url(#topFade)"/>
 
   ${
-    ${
     titleText
       ? `
   <g filter="url(#hardShadow)">
