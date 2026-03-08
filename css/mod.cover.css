@@ -1333,3 +1333,47 @@ section[data-module="cover"] .cover-style-cards .style-card-sub{
   font-size: 11px !important;
   line-height: 1.2 !important;
 }
+/* COVER QUALITY DEFAULT FIX
+   Tek görsel aktif state kaynağı: aria-pressed
+   Amaç: ilk açılışta sadece Artist aktif görünsün
+*/
+
+section[data-module="cover"] .cover-form-grid .quality-pill{
+  border-color: rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.03) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Ultra kartının pasifte premium/aktif gibi görünmesini tamamen kapat */
+section[data-module="cover"] .cover-form-grid .quality-pill.is-ultra:not([aria-pressed="true"]){
+  border-color: rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.03) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Sadece gerçekten seçili olan kart aktif görünsün */
+section[data-module="cover"] .cover-form-grid .quality-pill[aria-pressed="true"]{
+  border-color: rgba(155,96,214,0.55) !important;
+  background: radial-gradient(
+    1200px 220px at 20% 10%,
+    rgba(155,96,214,0.18),
+    rgba(255,255,255,0.03)
+  ) !important;
+  box-shadow:
+    0 0 0 1px rgba(155,96,214,0.25) inset,
+    0 0 0 1px rgba(155,96,214,0.35),
+    0 24px 70px rgba(0,0,0,0.35),
+    0 0 60px rgba(155,96,214,0.18) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Ultra sadece seçiliyken premium ton alsın */
+section[data-module="cover"] .cover-form-grid .quality-pill.is-ultra[aria-pressed="true"]{
+  background: radial-gradient(
+    1200px 220px at 80% 20%,
+    rgba(155,96,214,0.22),
+    rgba(255,255,255,0.03)
+  ) !important;
+}
