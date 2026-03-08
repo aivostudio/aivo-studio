@@ -209,77 +209,77 @@ async function generateImages({ prompt, style, ratio, n, quality }) {
 
   return results;
 }
-  async function createCover() {
-    const root = getRoot();
-    if (!root) return;
+async function createCover() {
+  const root = getRoot();
+  if (!root) return;
 
-    const prompt = (qs("#coverPrompt", root)?.value || "").trim();
-    if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
+  const prompt = (qs("#coverPrompt", root)?.value || "").trim();
+  if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
 
-    const style = root.dataset.coverStyle || null;
-    const quality = root.dataset.coverQuality || "artist";
-    const n = Number(qs("#coverCount", root)?.value || 1);
-    const ratio = qs("#coverRatio", root)?.value || "1:1";
+  const style = root.dataset.coverStyle || null;
+  const quality = root.dataset.coverQuality || "artist";
+  const n = Number(qs("#coverCount", root)?.value || 1);
+  const ratio = qs("#coverRatio", root)?.value || "1:1";
 
-    console.log("[cover] generate request", { prompt, style, quality, n, ratio });
+  console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-   const imgs = await generateImages({ prompt, style, ratio, n, quality });
+  const imgs = await generateImages({ prompt, style, ratio, n, quality });
 
-// --- APPLY TEXT OVERLAY + DB WRITE ---
-for (const img of imgs) {
-  console.log("[cover overlay start]", img.url);
+  // --- APPLY TEXT OVERLAY + DB WRITE ---
+  for (const img of imgs) {
+    console.log("[cover overlay start]", img.url);
 
-  if (shouldApplyCoverTextOverlay()) {
-    const originalImageUrl = img.url;
-    const over = await applyCoverTextOverlay(img.url);
+    if (shouldApplyCoverTextOverlay()) {
+      const originalImageUrl = img.url;
+      const over = await applyCoverTextOverlay(img.url);
 
-    // Overlay sonucu blob: ise DB'ye kalıcı olmayan URL yazma
-    if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
-      img.url = over.finalUrl;
-    } else {
-      img.url = originalImageUrl;
+      // Overlay sonucu blob: ise DB'ye kalıcı olmayan URL yazma
+      if (over?.finalUrl && !String(over.finalUrl).startsWith("blob:")) {
+        img.url = over.finalUrl;
+      } else {
+        img.url = originalImageUrl;
+      }
     }
-  }
 
-  try {
-    const db = await postJSON("/api/cover/generate", {
-      prompt: img.prompt || prompt,
-      style,
-      quality,
-      ratio,
-      imageUrl: img.url,
-    });
+    try {
+      const db = await postJSON("/api/cover/generate", {
+        prompt: img.prompt || prompt,
+        style,
+        quality,
+        ratio,
+        imageUrl: img.url,
+      });
 
-    console.log("[cover] db saved ✅", db);
+      console.log("[cover] db saved ✅", db);
 
-    if (db?.job_id) {
-      window.dispatchEvent(
-        new CustomEvent("aivo:cover:job_created", {
-          detail: {
-            app: "cover",
-            job_id: db.job_id,
-            prompt: img.prompt || prompt,
-            quality,
-            style,
-            ratio,
-            imageUrl: img.url,
-            createdAt: Date.now(),
-            meta: {
+      if (db?.job_id) {
+        window.dispatchEvent(
+          new CustomEvent("aivo:cover:job_created", {
+            detail: {
               app: "cover",
+              job_id: db.job_id,
               prompt: img.prompt || prompt,
               quality,
               style,
               ratio,
+              imageUrl: img.url,
+              createdAt: Date.now(),
+              meta: {
+                app: "cover",
+                prompt: img.prompt || prompt,
+                quality,
+                style,
+                ratio,
+              },
             },
-          },
-        })
-      );
+          })
+        );
+      }
+    } catch (e) {
+      console.error("[cover] db write failed", e);
     }
-  } catch (e) {
-    console.error("[cover] db write failed", e);
   }
 }
-
   // --- PROMPT CHAR COUNT (opsiyonel) ---
   function bindPromptCounter() {
     const root = getRoot();
