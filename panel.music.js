@@ -28,7 +28,6 @@
   let listEl = null;
   let alive  = false;
   let jobs   = [];
-     const deletedIds = new Set();
 
   // audio engine
   let audioEl = null;
@@ -309,46 +308,31 @@ function setEqBars(L, M, H){
   }
 
   /* ---------------- jobs storage ---------------- */
-    function loadJobs(){
+  function loadJobs(){
     try {
       const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-      if (!Array.isArray(arr)) return [];
-
-      return arr.filter((j) => {
-        const id = String(j?.job_id || j?.id || "").trim();
-        if (!id) return false;
-        if (deletedIds.has(id)) return false;
-
-        const st = String(j?.__ui_state || "").trim().toLowerCase();
-        const src = String(j?.__audio_src || "").trim();
-
-        // Sadece gerçekten hazır olan ve audio src taşıyan kartlar fast-paint'e girsin
-        return st === "ready" && !!src;
-      });
-    } catch {
-      return [];
-    }
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
   }
 
   function saveJobs(){
     try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 200))); } catch {}
   }
 
-function upsertJob(job){
-  const id = job?.job_id || job?.id;
-  if (!id) return;
+  function upsertJob(job){
+    const id = job?.job_id || job?.id;
+    if (!id) return;
 
-  const i = jobs.findIndex(j => (j.job_id || j.id) === id);
-  if (i >= 0) jobs[i] = { ...jobs[i], ...job };
-  else jobs.unshift(job);
+    const i = jobs.findIndex(j => (j.job_id || j.id) === id);
+    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
+    else jobs.unshift(job);
 
-  saveJobs();
-}
-   function removeJob(jobId){
+    saveJobs();
+  }
+
+  function removeJob(jobId){
     jobId = String(jobId || "").trim();
     if (!jobId) return;
-
-    deletedIds.add(jobId);
 
     if (currentJobId === jobId && audioEl){
       try { audioEl.pause(); } catch {}
@@ -596,12 +580,7 @@ function render(){
   if (!hostEl || !listEl) return;
   if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-  const view = jobs.filter((j) => {
-    const id = String(j?.job_id || j?.id || "").trim();
-    if (!id) return false;
-    if (deletedIds.has(id)) return false;
-    return true;
-  });
+  const view = jobs.filter(j => j?.job_id || j?.id);
 
   view.sort((a, b) => {
     const aid = String(a.job_id || a.id || "");
@@ -692,49 +671,51 @@ function render(){
     rafId = 0;
   }
 
-async function togglePlayFromCard(card){
-  if (!card) return;
+  async function togglePlayFromCard(card){
+    if (!card) return;
 
-  const jobId = String(card.getAttribute("data-job-id") || "").trim();
-  if (!jobId) return;
+    const jobId = card.getAttribute("data-job-id") || "";
+    if (!jobId) return;
 
-  const existing = jobs.find((x) => String(x.job_id || x.id || "") === jobId) || {};
-  const src = String(existing.__audio_src || card.dataset.src || "").trim();
+    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+    const src = String(existing.__audio_src || card.dataset.src || "").trim();
 
-  if (!src) {
-    toast("info", "Henüz hazır değil");
-    return;
+    if (!src){
+      toast("info", "Henüz hazır değil");
+      return;
+    }
+
+    const A = ensureAudio();
+
+    if (currentJobId && currentJobId !== jobId){
+      setCardPlaying(currentJobId, false);
+      try { A.pause(); } catch {}
+    }
+
+    if (currentJobId === jobId && !A.paused){
+      try { A.pause(); } catch {}
+      setCardPlaying(jobId, false);
+      return;
+    }
+
+    currentJobId = jobId;
+    setCardPlaying(jobId, true);
+
+    // ✅ job değişti -> EQ cache reset + rebind
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+    bindEqBarsForCurrentJob();
+
+    try{
+      if (A.src !== src) A.src = src;
+      await A.play();
+    } catch(e){
+      console.warn("[panel.music] play failed:", e);
+      setCardPlaying(jobId, false);
+      toast("error", "Play başarısız (src açılamadı)");
+    }
   }
 
-  const A = ensureAudio();
-
-  if (currentJobId && currentJobId !== jobId) {
-    setCardPlaying(currentJobId, false);
-    try { A.pause(); } catch {}
-  }
-
-  if (currentJobId === jobId && !A.paused) {
-    try { A.pause(); } catch {}
-    setCardPlaying(jobId, false);
-    return;
-  }
-
-  currentJobId = jobId;
-  setCardPlaying(jobId, true);
-
-  eqBarsCache.jobId = null;
-  eqBarsCache.bars = null;
-  bindEqBarsForCurrentJob();
-
-  try {
-    if (A.src !== src) A.src = src;
-    await A.play();
-  } catch (e) {
-    console.warn("[panel.music] play failed:", e);
-    setCardPlaying(jobId, false);
-    toast("error", "Play başarısız (src açılamadı)");
-  }
-}
   function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
     if (!wrap) return;
@@ -1060,26 +1041,29 @@ async function actionDelete(card){
   const isRev = String(jobId).includes("::rev1");
   const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
 
+  // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
   const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
+  // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
   const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
 
-  // Diğer kart hâlâ duruyorsa sadece tıklanan kartı sil
+  // ✅ 1) Eğer diğer kart duruyorsa: sadece tıklanan kartı sil, DB delete YOK
   if (otherStillExists) {
     removeJob(jobId);
     toast("success","Silindi");
     return;
   }
 
-  // Grup bitti ama DB uuid yoksa sadece kartı sil
+  // ✅ 2) Diğer kart da yoksa: grup bitti.
+  // DB uuid yoksa backend delete atamayız → sadece tıklanan kartı sil
   if (!dbJobId) {
     removeJob(jobId);
     toast("success","Silindi");
     return;
   }
 
-  // Son kart: DB soft delete
+  // ✅ 3) Son kart: DB soft delete -> OK olursa UI'dan kaldır
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
@@ -1102,7 +1086,7 @@ async function actionDelete(card){
     toast("error","Silme hatası");
   }
 }
- 
+
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
   const card = e.target.closest(".aivo-player-card");
@@ -1217,7 +1201,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     try{
       clearPoll(cardId);
 
-           const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
+      const existing = jobs.find(x => (x.job_id || x.id) === cardId) || {};
       const providerSongId = String(existing.__provider_song_id || "").trim();
       const providerBase = String(cardId).split("::")[0];
 
@@ -1227,6 +1211,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
         cache: "no-store",
         credentials: "include",
       });
+
       let j = null;
       try { j = await r.json(); } catch { j = null; }
 
@@ -1235,7 +1220,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
         return;
       }
 
-           if (j.ok === false){
+      if (j.ok === false){
         schedulePoll(cardId, 1800);
         return;
       }
@@ -1247,7 +1232,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
         ? `${MUSIC_WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
         : "";
 
-      const baseId = String(cardId).split("::")[0];
+           const baseId = String(cardId).split("::")[0];
       const isOrig = String(cardId).endsWith("::orig");
       const otherId = isOrig ? `${baseId}::rev1` : `${baseId}::orig`;
 
@@ -1352,24 +1337,6 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
   const dbJobId = String(row?.job_id || row?.id || "").trim();
-     if (String(provider_job_id) === "1354495" || String(provider_job_id) === "1354313") {
-  console.log("[MAP_DB_JOB]", {
-    row_job_id: row?.job_id || row?.id || "",
-    provider_job_id,
-    row_status: row?.status,
-    row_state: row?.state,
-    outputs: row?.outputs,
-    meta_audio_src: meta?.audio_src || "",
-    picked_audio_src: String(
-      meta?.audio_src ||
-      meta?.audioUrl ||
-      row?.outputs?.[0]?.url ||
-      row?.outputs?.[0]?.meta?.archive_url ||
-      row?.outputs?.[0]?.meta?.audio_url ||
-      ""
-    ).trim()
-  });
-}
     if (!baseId) return [];
 
     const songIds = Array.isArray(meta?.provider_song_ids)
@@ -1394,14 +1361,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
   provider_job_id: provider_job_id || baseId,
       __ui_state: st,
       // ✅ DB’den boş gelirse bile merge’de eski src korunacak (aşağıda)
-      __audio_src: String(
-        meta?.audio_src ||
-        meta?.audioUrl ||
-        row?.outputs?.[0]?.url ||
-        row?.outputs?.[0]?.meta?.archive_url ||
-        row?.outputs?.[0]?.meta?.audio_url ||
-        ""
-      ).trim(),
+      __audio_src: String(meta?.audio_src || meta?.audioUrl || "").trim(),
       createdAt: createdMs,
       __createdAt: (row?.created_at || meta?.created_at || ""),
       title: String(meta?.title || row?.title || "").trim(),
@@ -1425,8 +1385,6 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
 
     const origId = `${baseId}::orig`;
     const revId  = `${baseId}::rev1`;
-
-    if (deletedIds.has(origId) || deletedIds.has(revId)) return;
 
     const providerJobId = String(payload.provider_job_id || "").trim();
     const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
@@ -1565,25 +1523,23 @@ function getHeader(){
 
       const byId = new Map();
 
-           // önce DB
+      // önce DB
       for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
-        if (!id) continue;
-        if (deletedIds.has(id)) continue;
-        byId.set(id, c);
+        if (id) byId.set(id, c);
       }
 
       // sonra eski (LS) -> merge
-           for (const old of (jobs || [])) {
-            const id = String(old?.job_id || old?.id || "").trim();
-            if (!id) continue;
+    for (const old of (jobs || [])){
+  const id = String(old?.job_id || old?.id || "").trim();
+  if (!id) continue;
 
-            if (byId.has(id)) {
-              const merged = mergePreferDbButKeepReady(old, byId.get(id));
-              byId.set(id, merged);
-            }
-            // DB'de yoksa eski item geri eklenmez
-          }
+  if (byId.has(id)) {
+    const merged = mergePreferDbButKeepReady(old, byId.get(id));
+    byId.set(id, merged);
+  }
+  // else yok: DB’de olmayan LS item’ı geri eklenmez
+}
 
       jobs = Array.from(byId.values());
       saveJobs();
@@ -1620,7 +1576,7 @@ function getHeader(){
       mainAudio.style.display = "none";
     }
 
-       // LS load (geçici fast paint + ready/src koruma)
+    // LS load (hızlı paint)
     jobs = loadJobs();
     render();
 
@@ -1628,7 +1584,6 @@ function getHeader(){
     hydrateFromDBOnce();
 
     // DBJobs controller (varsa)
-      // DBJobs controller (varsa)
     if (window.DBJobs && typeof window.DBJobs.create === "function"){
       try { dbCtrl?.destroy?.(); } catch {}
       dbCtrl = window.DBJobs.create({
@@ -1646,7 +1601,6 @@ function getHeader(){
         },
         onChange: (items) => {
           if (!alive) return;
-
           const safe = Array.isArray(items) ? items : [];
           const dbCards = [];
           for (const row of safe){
@@ -1655,21 +1609,14 @@ function getHeader(){
           }
 
           const byId = new Map();
-
-          // 1) Önce DB kartlarını yaz
           for (const c of dbCards){
             const id = String(c?.job_id || c?.id || "").trim();
-            if (!id) continue;
-            if (deletedIds.has(id)) continue;
-            byId.set(id, c);
+            if (id) byId.set(id, c);
           }
 
-          // 2) Sonra mevcut panel state'ini merge et
-          // DB'de varsa merge et, yoksa eski kartı KORU
           for (const old of (jobs || [])){
             const id = String(old?.job_id || old?.id || "").trim();
             if (!id) continue;
-            if (deletedIds.has(id)) continue;
 
             if (byId.has(id)) {
               const merged = mergePreferDbButKeepReady(old, byId.get(id));
@@ -1683,13 +1630,11 @@ function getHeader(){
           saveJobs();
           render();
 
-          jobs.slice(0, 60).forEach((j) => {
-            const id = j?.job_id || j?.id;
-            if (id) poll(id);
-          });
+          jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
         }
       });
     }
+
     window.addEventListener("aivo:job", onJob, true);
 
     jobs.slice(0, 60).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
