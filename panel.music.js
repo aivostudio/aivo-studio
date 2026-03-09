@@ -695,6 +695,7 @@ function render(){
     })?.__db_job_id ||
     ""
   ).trim();
+     console.log("[MUSIC_DELETE_DBID]", { jobId, baseId, dbJobId, existing });
 
     if (!src){
       toast("info", "Henüz hazır değil");
