@@ -21,7 +21,7 @@
   }
 
   const PANEL_KEY = "music";
-  const LS_KEY = "aivo.music.jobs.v4";
+  const LS_KEY = "aivo.music.jobs.v6";
   const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
   let dbCtrl = null;
@@ -33,7 +33,9 @@
   const hiddenDeletedIds = new Set();
   const hiddenDeletedBaseIds = new Set();
   const hiddenDeletedDbIds = new Set();
+  const DELETE_STATE_KEY = "aivo.music.deleted.v2";
 
+  let serverRowsCache = [];
   let audioEl = null;
   let rafId = 0;
   let currentJobId = null;
@@ -164,6 +166,192 @@
     const raw = String(row?.job_id || row?.id || "").trim();
     return raw;
   }
+  function getRowProviderSongIds(row){
+    const a = Array.isArray(row?.meta?.provider_song_ids) ? row.meta.provider_song_ids : [];
+    const b = Array.isArray(row?.provider_song_ids) ? row.provider_song_ids : [];
+    return Array.from(new Set([...a, ...b].map((v) => String(v || "").trim()).filter(Boolean)));
+  }
+
+  function rowHasAudioSignals(row){
+    const meta = row?.meta || {};
+    const direct = String(
+      meta?.audio_src ||
+      meta?.audioUrl ||
+      row?.audio_src ||
+      row?.audioUrl ||
+      row?.result?.audio?.src ||
+      row?.result?.src ||
+      ""
+    ).trim();
+    if (direct) return true;
+
+    const outs = Array.isArray(row?.outputs) ? row.outputs : [];
+    return outs.some((o) => {
+      const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
+      return !t || t === "audio";
+    });
+  }
+
+  function looksLikeMusicRow(row){
+    if (!row || isRowDeleted(row)) return false;
+
+    const appGuess = String(row?.app || row?.meta?.app || row?.meta?.module || row?.meta?.routeKey || "").trim();
+    if (appGuess && isMusicApp(appGuess)) return true;
+
+    if (getRowProviderSongIds(row).length) return true;
+
+    const providerJobId = getRowProviderJobId(row);
+    const title = String(row?.meta?.title || row?.title || "").trim();
+    const lyrics = String(row?.meta?.lyrics || row?.lyrics || "").trim();
+    const prompt = String(row?.meta?.prompt || row?.prompt || "").trim();
+
+    if (providerJobId && (title || lyrics || prompt)) return true;
+    if (providerJobId && rowHasAudioSignals(row)) return true;
+
+    return false;
+  }
+
+  function rowMatchesMusicCard(row, jobId, baseId, familyIds){
+    if (!looksLikeMusicRow(row)) return false;
+
+    const rowDbId = getRowDbId(row);
+    const rowBaseId = getRowBaseId(row);
+    const rowProviderJobId = getRowProviderJobId(row);
+    const rowSongIds = getRowProviderSongIds(row);
+    const cardIds = mapDbJobToCards(row).map((c) => getJobId(c)).filter(Boolean);
+
+    if (rowDbId && familyIds.has(rowDbId)) return true;
+    if (rowBaseId && rowBaseId === baseId) return true;
+    if (rowProviderJobId && rowProviderJobId === baseId) return true;
+    if (rowSongIds.includes(baseId)) return true;
+    if (cardIds.some((id) => familyIds.has(id))) return true;
+
+    const existing = (jobs || []).find((x) => getJobId(x) === jobId) || {};
+    const clickedSongId = String(existing.__provider_song_id || "").trim();
+    if (clickedSongId && rowSongIds.includes(clickedSongId)) return true;
+
+    return false;
+  }
+
+  function setServerRowsCache(rows){
+    const safe = Array.isArray(rows) ? rows.filter((row) => looksLikeMusicRow(row) && !isHiddenRow(row)) : [];
+    const seen = new Set();
+    const next = [];
+
+    for (const row of safe) {
+      const key = String(getRowDbId(row) || getRowBaseId(row) || "").trim();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      next.push(row);
+    }
+
+    serverRowsCache = next;
+  }
+
+  function loadDeleteState(){
+    try {
+      const raw = JSON.parse(localStorage.getItem(DELETE_STATE_KEY) || "{}");
+      const ids = Array.isArray(raw?.ids) ? raw.ids : [];
+      const bases = Array.isArray(raw?.bases) ? raw.bases : [];
+      const dbs = Array.isArray(raw?.dbs) ? raw.dbs : [];
+      ids.forEach((v) => hiddenDeletedIds.add(String(v || "").trim()));
+      bases.forEach((v) => hiddenDeletedBaseIds.add(String(v || "").trim()));
+      dbs.forEach((v) => hiddenDeletedDbIds.add(String(v || "").trim()));
+    } catch {}
+  }
+
+  function saveDeleteState(){
+    try {
+      localStorage.setItem(DELETE_STATE_KEY, JSON.stringify({
+        ids: Array.from(hiddenDeletedIds),
+        bases: Array.from(hiddenDeletedBaseIds),
+        dbs: Array.from(hiddenDeletedDbIds),
+      }));
+    } catch {}
+  }
+
+  async function fetchMusicRowsFromServer(opts = {}){
+    const broadOnly = !!opts.broadOnly;
+    const allowBroadFallback = opts.allowBroadFallback !== false;
+
+    const fetchJson = async (url) => {
+      const r = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: { accept: "application/json" },
+        cache: "no-store",
+      });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !j.ok) return { ok: false, items: [], url, status: r.status };
+      const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
+      return { ok: true, items, url, status: r.status };
+    };
+
+    const mergeUnique = (rows) => {
+      const seen = new Set();
+      const out = [];
+      for (const row of (rows || [])) {
+        if (!row || isRowDeleted(row) || !looksLikeMusicRow(row)) continue;
+        const key = String(getRowDbId(row) || getRowBaseId(row) || "").trim();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        out.push(row);
+      }
+      return out;
+    };
+
+    if (broadOnly) {
+      const allRes = await fetchJson("/api/jobs/list");
+      const rows = mergeUnique(allRes.items);
+      if (allRes.ok) setServerRowsCache(rows);
+      return { ok: allRes.ok, rows, source: "broad", status: allRes.status };
+    }
+
+    const appRes = await fetchJson("/api/jobs/list?app=music");
+    let appRows = mergeUnique(appRes.items);
+
+    if (appRes.ok && appRows.length) {
+      setServerRowsCache(appRows);
+      return { ok: true, rows: appRows, source: "app", status: appRes.status };
+    }
+
+    if (!allowBroadFallback) {
+      if (appRes.ok) setServerRowsCache(appRows);
+      return { ok: appRes.ok, rows: appRows, source: "app", status: appRes.status };
+    }
+
+    const allRes = await fetchJson("/api/jobs/list");
+    const broadRows = mergeUnique(allRes.items);
+
+    const merged = mergeUnique([...appRows, ...broadRows]);
+    if (allRes.ok || appRes.ok) setServerRowsCache(merged);
+
+    return {
+      ok: !!(allRes.ok || appRes.ok),
+      rows: merged,
+      source: broadRows.length ? "broad" : "app",
+      status: allRes.ok ? allRes.status : appRes.status,
+    };
+  }
+
+  function shouldKeepLocalOrphan(job, hadBroadSource){
+    if (!hadBroadSource) return true;
+
+    const state = String(job?.__ui_state || "").trim().toLowerCase();
+    const ts =
+      toMs(job?.updated_at) ||
+      toMs(job?.created_at) ||
+      toMs(job?.createdAt) ||
+      toMs(job?.__createdAt) ||
+      0;
+
+    if (!ts) return state === "processing";
+
+    const age = Date.now() - ts;
+    if (state === "processing") return age < 20 * 60 * 1000;
+    if (state === "ready") return age < 60 * 1000;
+    return false;
+  }
 
   function isHiddenJobId(jobId){
     const id = String(jobId || "").trim();
@@ -188,6 +376,7 @@
     hiddenDeletedBaseIds.delete(b);
     hiddenDeletedIds.delete(`${b}::orig`);
     hiddenDeletedIds.delete(`${b}::rev1`);
+    saveDeleteState();
   }
 
   function saveJobs(){
@@ -274,6 +463,7 @@
 
     jobs = jobs.filter((j) => getJobId(j) !== id);
     saveJobs();
+    saveDeleteState();
     render();
   }
 
@@ -1081,178 +1271,176 @@
       return xid && familyIds.has(xid);
     });
 
-    for (const x of familyJobs) {
-      const dbId = String(x?.__db_job_id || x?.db_job_id || "").trim();
-      if (isUuid(dbId)) return { dbJobId: dbId, row: null, source: "memory_uuid" };
-    }
+    const candidates = [];
+    const push = (v, kind = "") => {
+      const s = String(v || "").trim();
+      if (!s) return;
+      if (!candidates.some((x) => x.value === s)) candidates.push({ value: s, kind });
+    };
 
-    let memoryFallback = "";
-    for (const x of familyJobs) {
-      const dbId = String(x?.__db_job_id || x?.db_job_id || "").trim();
-      if (dbId && !memoryFallback) memoryFallback = dbId;
+    familyJobs.forEach((x) => {
+      push(x?.__db_job_id, "memory_db");
+      push(x?.db_job_id, "memory_db_alt");
+      push(x?.provider_job_id, "memory_provider");
+    });
+    push(baseId, "base_id");
+
+    for (const row of (serverRowsCache || [])) {
+      if (!rowMatchesMusicCard(row, jobId, baseId, familyIds)) continue;
+      push(row?.id, "cache_row_id");
+      push(row?.job_id, "cache_job_id");
+      push(row?.uuid, "cache_uuid");
+      return { row, candidates, source: "cache" };
     }
 
     try {
-      const r = await fetch("/api/jobs/list?app=music", {
-        method: "GET",
-        credentials: "include",
-        headers: { accept: "application/json" },
-        cache: "no-store"
-      });
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) {
-        return memoryFallback
-          ? { dbJobId: memoryFallback, row: null, source: "memory_any" }
-          : { dbJobId: "", row: null, source: "list_fail" };
-      }
+      const res = await fetchMusicRowsFromServer({ broadOnly: true });
+      const rows = Array.isArray(res?.rows) ? res.rows : [];
 
-      const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
-
-      for (const row of items) {
-        if (!row || isRowDeleted(row)) continue;
-
-        const rowDbId = getRowDbId(row);
-        const rowBaseId = getRowBaseId(row);
-        const cards = mapDbJobToCards(row);
-        const cardIds = cards.map((c) => getJobId(c)).filter(Boolean);
-
-        const providerSongIds = Array.isArray(row?.meta?.provider_song_ids)
-          ? row.meta.provider_song_ids.map((v) => String(v || "").trim()).filter(Boolean)
-          : (Array.isArray(row?.provider_song_ids)
-            ? row.provider_song_ids.map((v) => String(v || "").trim()).filter(Boolean)
-            : []);
-
-        const match =
-          (rowDbId && familyIds.has(rowDbId)) ||
-          (rowBaseId && rowBaseId === baseId) ||
-          cardIds.some((id) => familyIds.has(id)) ||
-          providerSongIds.includes(baseId);
-
-        if (!match) continue;
-
-        return { dbJobId: rowDbId, row, source: "list" };
+      for (const row of rows) {
+        if (!rowMatchesMusicCard(row, jobId, baseId, familyIds)) continue;
+        push(row?.id, "row_id");
+        push(row?.job_id, "job_id");
+        push(row?.uuid, "uuid");
+        return { row, candidates, source: res?.source || "broad" };
       }
     } catch (e) {
       console.warn("[panel.music] resolveDbRowForDelete failed", e);
     }
 
-    if (memoryFallback) return { dbJobId: memoryFallback, row: null, source: "memory_any" };
-    return { dbJobId: "", row: null, source: "none" };
+    return { row: null, candidates, source: candidates.length ? "memory_only" : "none" };
   }
 
-async function actionDelete(card){
-  const jobId = String(card?.getAttribute("data-job-id") || "").trim();
-  console.log("[MUSIC_DELETE_FN]", { jobId });
-  if (!jobId) return;
+  async function actionDelete(card){
+    const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+    console.log("[MUSIC_DELETE_FN]", { jobId });
+    if (!jobId) return;
 
-  const baseId = getBaseIdFromJobId(jobId);
+    const baseId = getBaseIdFromJobId(jobId);
+    const familyIds = Array.from(new Set([
+      jobId,
+      ...buildFamilyIds(baseId),
+      ...(jobs || [])
+        .map((x) => getJobId(x))
+        .filter((id) => id && getBaseIdFromJobId(id) === baseId)
+    ])).filter(Boolean);
 
-  const { dbJobId, row, source } = await resolveDbRowForDelete(jobId, baseId);
+    const resolved = await resolveDbRowForDelete(jobId, baseId);
+    const rawCandidates = Array.isArray(resolved?.candidates) ? resolved.candidates : [];
+    const rank = (kind) => {
+      const k = String(kind || "");
+      if (k.includes("row_id") || k.includes("uuid") || k.includes("cache_row_id")) return 1;
+      if (k.includes("job_id") || k.includes("cache_job_id")) return 2;
+      if (k.includes("memory_db")) return 3;
+      if (k.includes("provider")) return 4;
+      if (k.includes("base_id")) return 9;
+      return 5;
+    };
+    const candidates = rawCandidates.slice().sort((a, b) => rank(a?.kind) - rank(b?.kind));
 
-  console.log("[MUSIC_DELETE_RESOLVE]", {
-    jobId,
-    baseId,
-    dbJobId,
-    source,
-    row
-  });
-
-  if (!dbJobId) {
-  hiddenDeletedIds.add(jobId);
-  clearPoll(jobId);
-  POLL_BUSY.delete(jobId);
-  POLL_LAST.delete(jobId);
-  stemsClearTimer(jobId);
-
-  if (currentJobId === jobId && audioEl) {
-    try { audioEl.pause(); } catch {}
-    currentJobId = null;
-    eqBarsCache.jobId = null;
-    eqBarsCache.bars = null;
-    stopRaf();
-  }
-
-  jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
-  saveJobs();
-  render();
-  toast("success", "Kart kaldırıldı");
-  return;
-}
-
-  try {
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: dbJobId })
+    console.log("[MUSIC_DELETE_RESOLVE]", {
+      jobId,
+      baseId,
+      familyIds,
+      candidates,
+      source: resolved?.source || "none",
+      row: resolved?.row || null,
     });
 
-    const j = await r.json().catch(() => null);
+    if (!candidates.length) {
+      toast("error", "DB job id bulunamadı");
+      return;
+    }
 
-    console.log("[DELETE_RES]", {
-      ok: r.ok,
-      status: r.status,
-      data: j,
-      sent_job_id: dbJobId
+    let deleteOk = false;
+    let usedCandidate = "";
+    let lastErr = null;
+
+    for (const c of candidates.slice(0, 8)) {
+      try {
+        const r = await fetch("/api/jobs/delete", {
+          method: "POST",
+          credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ job_id: c.value })
+        });
+
+        const j = await r.json().catch(() => null);
+
+        console.log("[DELETE_RES]", {
+          ok: r.ok,
+          status: r.status,
+          data: j,
+          sent_job_id: c.value,
+          candidate_kind: c.kind,
+        });
+
+        if (r.ok && j?.ok) {
+          deleteOk = true;
+          usedCandidate = String(c.value || "").trim();
+          break;
+        }
+
+        lastErr = { status: r.status, data: j, candidate: c };
+      } catch (e) {
+        lastErr = { error: String(e?.message || e || "delete_failed"), candidate: c };
+      }
+    }
+
+    if (!deleteOk) {
+      console.warn("[panel.music] delete failed", lastErr);
+      toast("error", "Silme başarısız");
+      return;
+    }
+
+    const row = resolved?.row || null;
+    const rowDbId = String(getRowDbId(row) || usedCandidate || "").trim();
+    if (rowDbId) hiddenDeletedDbIds.add(rowDbId);
+    if (baseId) hiddenDeletedBaseIds.add(baseId);
+
+    const sameDbRowIds = (jobs || [])
+      .filter((x) => {
+        const xid = String(x?.__db_job_id || "").trim();
+        return xid && (xid === rowDbId || xid === usedCandidate);
+      })
+      .map((x) => getJobId(x))
+      .filter(Boolean);
+
+    const idsToRemove = Array.from(new Set([
+      ...familyIds,
+      ...sameDbRowIds,
+    ])).filter(Boolean);
+
+    idsToRemove.forEach((id) => {
+      hiddenDeletedIds.add(id);
+      clearPoll(id);
+      POLL_BUSY.delete(id);
+      POLL_LAST.delete(id);
+      stemsClearTimer(id);
+
+      if (currentJobId === id && audioEl) {
+        try { audioEl.pause(); } catch {}
+        currentJobId = null;
+        eqBarsCache.jobId = null;
+        eqBarsCache.bars = null;
+        stopRaf();
+      }
     });
 
-   if (!r.ok || !j?.ok) {
-  const staleNotFound =
-    r.status === 404 ||
-    String(j?.error || "").trim() === "not_found_or_not_owned";
+    saveDeleteState();
 
-  if (staleNotFound) {
-    hiddenDeletedIds.add(jobId);
-    clearPoll(jobId);
-    POLL_BUSY.delete(jobId);
-    POLL_LAST.delete(jobId);
-    stemsClearTimer(jobId);
-
-    if (currentJobId === jobId && audioEl) {
-      try { audioEl.pause(); } catch {}
-      currentJobId = null;
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
-      stopRaf();
-    }
-
-    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
-    saveJobs();
-    render();
-    toast("success", "Kart kaldırıldı");
-    return;
-  }
-
-  toast("error", "Silme başarısız");
-  return;
-}
-
-    hiddenDeletedIds.add(jobId);
-    clearPoll(jobId);
-    POLL_BUSY.delete(jobId);
-    POLL_LAST.delete(jobId);
-    stemsClearTimer(jobId);
-
-    if (currentJobId === jobId && audioEl) {
-      try { audioEl.pause(); } catch {}
-      currentJobId = null;
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
-      stopRaf();
-    }
-
-    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+    jobs = (jobs || []).filter((x) => !idsToRemove.includes(getJobId(x)));
     saveJobs();
     render();
     toast("success", "Silindi");
 
-    try { await hydrateFromDBOnce(); } catch {}
+    try {
+      const res = await fetchMusicRowsFromServer({ broadOnly: true });
+      if (res?.ok) hydrateMergeWithDbRows(res.rows, { hadBroadSource: true });
+    } catch {}
+
     try { dbCtrl?.hydrate?.(); } catch {}
-  } catch (e) {
-    console.warn("[panel.music] delete failed", e);
-    toast("error", "Silme hatası");
   }
-}
 
   function onCardClick(e){
     const btn = e.target.closest("[data-action]");
@@ -1482,8 +1670,7 @@ async function actionDelete(card){
     if (!row || isRowDeleted(row)) return [];
 
     const meta = row?.meta || {};
-    const appGuess = String(row?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
-    if (appGuess && !isMusicApp(appGuess)) return [];
+    if (!looksLikeMusicRow(row)) return [];
 
     const provider_job_id = getRowProviderJobId(row);
     const dbJobId = getRowDbId(row);
@@ -1545,9 +1732,9 @@ async function actionDelete(card){
 
   function onJob(e){
     const payload = e?.detail || e || {};
-   const baseId = String(payload.provider_job_id || payload.job_id || payload.id || "").trim();
+    const baseId = String(payload.job_id || payload.id || "").trim();
     if (!baseId) return;
-    if (hiddenDeletedBaseIds.has(baseId)) return;
+    clearHiddenDeleteMarksForBase(baseId);
 
     const origId = `${baseId}::orig`;
     const revId = `${baseId}::rev1`;
@@ -1627,12 +1814,18 @@ async function actionDelete(card){
     };
   }
 
-  function hydrateMergeWithDbRows(rows){
+  function hydrateMergeWithDbRows(rows, opts = {}){
     const safeRows = Array.isArray(rows) ? rows : [];
+    const hadBroadSource = !!opts.hadBroadSource;
     const dbCards = [];
+    const serverBaseIds = new Set();
+
+    setServerRowsCache(safeRows);
 
     for (const row of safeRows) {
-      if (!row || isRowDeleted(row) || isHiddenRow(row)) continue;
+      if (!row || isRowDeleted(row) || isHiddenRow(row) || !looksLikeMusicRow(row)) continue;
+      const baseId = getRowBaseId(row);
+      if (baseId) serverBaseIds.add(baseId);
       const cards = mapDbJobToCards(row);
       if (cards && cards.length) dbCards.push(...cards);
     }
@@ -1648,9 +1841,16 @@ async function actionDelete(card){
     for (const old of (jobs || [])) {
       const id = getJobId(old);
       if (!id || isHiddenJobId(id)) continue;
+      const baseId = getBaseIdFromJobId(id);
+
       if (byId.has(id)) {
         byId.set(id, mergePreferDbButKeepReady(old, byId.get(id)));
+        continue;
       }
+
+      if (serverBaseIds.has(baseId)) continue;
+      if (!shouldKeepLocalOrphan(old, hadBroadSource)) continue;
+      byId.set(id, old);
     }
 
     jobs = Array.from(byId.values());
@@ -1660,17 +1860,9 @@ async function actionDelete(card){
 
   async function hydrateFromDBOnce(){
     try {
-      const r = await fetch("/api/jobs/list?app=music", {
-        method: "GET",
-        credentials: "include",
-        headers: { accept: "application/json" },
-        cache: "no-store",
-      });
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) return;
-
-      const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
-      hydrateMergeWithDbRows(items);
+      const res = await fetchMusicRowsFromServer({ allowBroadFallback: true });
+      if (!res?.ok) return;
+      hydrateMergeWithDbRows(res.rows, { hadBroadSource: res.source === "broad" });
     } catch (e) {
       console.warn("[panel.music] hydrateFromDBOnce error", e);
     }
@@ -1701,6 +1893,7 @@ async function actionDelete(card){
       mainAudio.style.display = "none";
     }
 
+    loadDeleteState();
     jobs = loadJobs().filter((j) => {
       const id = getJobId(j);
       return id && !isHiddenJobId(id);
@@ -1719,8 +1912,7 @@ async function actionDelete(card){
         hydrateEveryMs: 15000,
         acceptJob: (job) => {
           if (!job || isRowDeleted(job)) return false;
-          const a = String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
-          if (a && !isMusicApp(a)) return false;
+          if (!looksLikeMusicRow(job)) return false;
           const baseId = getRowBaseId(job);
           const dbId = getRowDbId(job);
           if (baseId && hiddenDeletedBaseIds.has(baseId)) return false;
@@ -1733,7 +1925,9 @@ async function actionDelete(card){
         },
         onChange: (items) => {
           if (!alive) return;
-          hydrateMergeWithDbRows(items);
+          const safeItems = Array.isArray(items) ? items.filter((row) => looksLikeMusicRow(row)) : [];
+          if (safeItems.length) setServerRowsCache([...(serverRowsCache || []), ...safeItems]);
+          hydrateMergeWithDbRows(safeItems, { hadBroadSource: false });
           (jobs || []).slice(0, 60).forEach((j) => {
             const id = getJobId(j);
             if (id && !isHiddenJobId(id)) poll(id);
