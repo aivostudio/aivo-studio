@@ -1151,7 +1151,35 @@ async function actionDelete(card){
 
   const otherStillExists = (jobs || []).some((x) => getJobId(x) === otherId);
 
-  if (otherStillExists) {
+ if (otherStillExists) {
+  try {
+    const dbJobId = String(
+      (jobs || []).find((x) => getJobId(x) === jobId)?.__db_job_id || ""
+    ).trim();
+
+    if (!dbJobId) {
+      toast("error", "DB job id bulunamadı");
+      return;
+    }
+
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        job_id: dbJobId,
+        app: "music",
+        variant: getVariantOfJobId(jobId)
+      })
+    });
+
+    const j = await r.json().catch(() => null);
+
+    if (!r.ok || !j?.ok) {
+      toast("error", "Silme başarısız");
+      return;
+    }
+
     hiddenDeletedIds.add(jobId);
     clearPoll(jobId);
     POLL_BUSY.delete(jobId);
@@ -1171,7 +1199,12 @@ async function actionDelete(card){
     render();
     toast("success", "Kart kaldırıldı");
     return;
+  } catch (e) {
+    console.warn("[panel.music] variant delete failed", e);
+    toast("error", "Silme hatası");
+    return;
   }
+}
 
   const { dbJobId } = await resolveDbRowForDelete(jobId, baseId);
 
