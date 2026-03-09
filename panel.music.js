@@ -1045,14 +1045,19 @@ async function actionDelete(card){
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   if (!jobId) return;
 
+  const variant = jobId.endsWith("::orig")
+    ? "orig"
+    : jobId.endsWith("::rev1")
+    ? "rev1"
+    : "";
+
   const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  console.log("[MUSIC_DELETE_DBID]", { jobId, dbJobId, existing });
+  console.log("[MUSIC_DELETE_DBID]", { jobId, variant, dbJobId, existing });
 
-  if (!dbJobId) {
-    removeJob(jobId);
-    toast("success","Silindi");
+  if (!dbJobId || !variant) {
+    toast("error", "Silme için DB id veya variant bulunamadı");
     return;
   }
 
@@ -1061,7 +1066,10 @@ async function actionDelete(card){
       method: "POST",
       credentials: "include",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: dbJobId })
+      body: JSON.stringify({
+        job_id: dbJobId,
+        variant
+      })
     });
 
     const j = await r.json().catch(() => null);
@@ -1077,9 +1085,11 @@ async function actionDelete(card){
       return;
     }
 
+    hiddenDeletedIds.add(jobId);
     removeJob(jobId);
     toast("success","Silindi");
 
+    try { await hydrateFromDBOnce(); } catch {}
     try { dbCtrl?.hydrate?.(); } catch {}
   } catch (e){
     console.warn("[panel.music] delete failed", e);
