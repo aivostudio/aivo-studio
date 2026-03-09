@@ -1158,9 +1158,26 @@ async function actionDelete(card){
   });
 
   if (!dbJobId) {
-    toast("error", "DB job id bulunamadı");
-    return;
+  hiddenDeletedIds.add(jobId);
+  clearPoll(jobId);
+  POLL_BUSY.delete(jobId);
+  POLL_LAST.delete(jobId);
+  stemsClearTimer(jobId);
+
+  if (currentJobId === jobId && audioEl) {
+    try { audioEl.pause(); } catch {}
+    currentJobId = null;
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+    stopRaf();
   }
+
+  jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+  saveJobs();
+  render();
+  toast("success", "Kart kaldırıldı");
+  return;
+}
 
   try {
     const r = await fetch("/api/jobs/delete", {
