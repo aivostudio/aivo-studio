@@ -62,6 +62,71 @@ export default async function handler(req, res) {
   }
 
   const sql = neon(conn);
+  const variant = normId(body.variant || req.query.variant).toLowerCase();
+const app = normId(body.app || req.query.app).toLowerCase();
+
+if (app === "music" && (variant === "orig" || variant === "rev1")) {
+  try {
+    const rows = await sql`
+      update jobs
+      set
+        meta = coalesce(meta, '{}'::jsonb) || jsonb_build_object(
+          'deleted_variants',
+          (
+            select to_jsonb(array(
+              select distinct v
+              from unnest(
+                array_append(
+                  coalesce(
+                    array(
+                      select jsonb_array_elements_text(
+                        case
+                          when jsonb_typeof(coalesce(meta->'deleted_variants', '[]'::jsonb)) = 'array'
+                            then coalesce(meta->'deleted_variants', '[]'::jsonb)
+                          else '[]'::jsonb
+                        end
+                      )
+                    ),
+                    array[]::text[]
+                  ),
+                  ${variant}
+                )
+              ) as v
+            ))
+          )
+        ),
+        updated_at = now()
+      where id = ${job_id}::uuid
+        and deleted_at is null
+        and app = 'music'
+        and (
+          user_id::text = ${user_id || ""}
+          or user_id::text = ${email || ""}
+          or user_id::text = ${legacy_user_id || ""}
+        )
+      returning id, meta
+    `;
+
+    if (!rows?.length) {
+      return res.status(404).json({ ok: false, error: "not_found_or_not_owned", job_id, variant });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      mode: "variant_hide",
+      job_id: String(rows[0].id),
+      variant,
+      meta: rows[0].meta || {}
+    });
+  } catch (e) {
+    console.error("jobs/delete music variant failed:", e);
+    return res.status(500).json({
+      ok: false,
+      error: "variant_delete_failed",
+      message: String(e?.message || e),
+    });
+  }
+}
 
   try {
     // 1) soft delete: sadece bu kullanıcıya aitse
