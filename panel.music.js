@@ -767,12 +767,21 @@
       if (A.src !== src) A.src = src;
       await A.play();
     } catch (e) {
-      console.warn("[panel.music] play failed:", e);
-      setCardPlaying(jobId, false);
-      toast("error", "Play başarısız (src açılamadı)");
-    }
-  }
-
+    } catch (e) {
+  console.warn("[panel.music] play failed", {
+    jobId,
+    src,
+    providerSongId: String(existing.__provider_song_id || ""),
+    uiState: String(existing.__ui_state || ""),
+    errorName: String(e?.name || ""),
+    errorMessage: String(e?.message || e || ""),
+    audioCurrentSrc: String(A?.currentSrc || ""),
+    audioNetworkState: Number(A?.networkState || 0),
+    audioReadyState: Number(A?.readyState || 0)
+  });
+  setCardPlaying(jobId, false);
+  toast("error", "Play başarısız (src açılamadı)");
+}
   function onProgressSeek(e){
     const wrap = e.target.closest(".aivo-progress");
     if (!wrap) return;
