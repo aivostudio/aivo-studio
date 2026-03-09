@@ -1040,6 +1040,7 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
+   console.log("[MUSIC_DELETE_FN]", { jobId: card?.getAttribute("data-job-id") || "" });
   const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
 
