@@ -529,8 +529,10 @@ function renderCard(it) {
 
  const ratio = "16:9";
 
-  const title = formatKind(it);
+  
   const sub = String(it?.meta?.prompt || it?.meta?.title || it?.title || "").trim();
+  const title = String(it?.meta?.prompt || it?.title || formatKind(it) || "").trim();
+const sub = "";
 
   const badgeText = normalizeBadge(it);
   const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
