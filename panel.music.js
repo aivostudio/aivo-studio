@@ -1040,33 +1040,38 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
-  const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+  const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
 
-  const baseId = String(jobId).split("::")[0].trim();
+  const baseId = String(jobId).split("::")[0];
   if (!baseId) return;
 
-  const origId = `${baseId}::orig`;
-  const revId  = `${baseId}::rev1`;
+  const isRev = String(jobId).includes("::rev1");
+  const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
 
-  const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
+  // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  if (!dbJobId) {
-    hiddenDeletedIds.add(origId);
-    hiddenDeletedIds.add(revId);
+  // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
+  const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
 
-    jobs = jobs.filter(j => {
-      const id = String(j.job_id || j.id || "").trim();
-      return id !== origId && id !== revId;
-    });
-
-    saveJobs();
-    render();
+  // ✅ 1) Eğer diğer kart duruyorsa: sadece tıklanan kartı sil, DB delete YOK
+  if (otherStillExists) {
+    removeJob(jobId);
     toast("success","Silindi");
     return;
   }
 
+  // ✅ 2) Diğer kart da yoksa: grup bitti.
+  // DB uuid yoksa backend delete atamayız → sadece tıklanan kartı sil
+  if (!dbJobId) {
+    removeJob(jobId);
+    toast("success","Silindi");
+    return;
+  }
+
+  // ✅ 3) Son kart: DB soft delete -> OK olursa UI'dan kaldır
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
@@ -1082,18 +1087,7 @@ async function actionDelete(card){
       return;
     }
 
-    hiddenDeletedIds.add(origId);
-    hiddenDeletedIds.add(revId);
-
-    jobs = jobs.filter(x => {
-      const id = String(x.job_id || x.id || "").trim();
-      return id !== origId && id !== revId;
-    });
-
-    saveJobs();
-    render();
-
-    try { dbCtrl?.hydrate?.(); } catch {}
+    removeJob(jobId);
     toast("success","Silindi");
   } catch (e){
     console.warn("[panel.music] delete failed", e);
