@@ -1140,99 +1140,76 @@
     return { dbJobId: "", row: null, source: "none" };
   }
 
-  async function actionDelete(card){
-    const jobId = String(card?.getAttribute("data-job-id") || "").trim();
-    console.log("[MUSIC_DELETE_FN]", { jobId });
-    if (!jobId) return;
+async function actionDelete(card){
+  const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+  console.log("[MUSIC_DELETE_FN]", { jobId });
+  if (!jobId) return;
 
-    const baseId = getBaseIdFromJobId(jobId);
-    const familyIds = Array.from(new Set([
-      jobId,
-      ...buildFamilyIds(baseId),
-      ...(jobs || [])
-        .map((x) => getJobId(x))
-        .filter((id) => id && getBaseIdFromJobId(id) === baseId)
-    ])).filter(Boolean);
+  const baseId = getBaseIdFromJobId(jobId);
 
-    const { dbJobId, row, source } = await resolveDbRowForDelete(jobId, baseId);
+  const { dbJobId, row, source } = await resolveDbRowForDelete(jobId, baseId);
 
-    console.log("[MUSIC_DELETE_RESOLVE]", {
-      jobId,
-      baseId,
-      familyIds,
-      dbJobId,
-      source,
-      row
+  console.log("[MUSIC_DELETE_RESOLVE]", {
+    jobId,
+    baseId,
+    dbJobId,
+    source,
+    row
+  });
+
+  if (!dbJobId) {
+    toast("error", "DB job id bulunamadı");
+    return;
+  }
+
+  try {
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ job_id: dbJobId })
     });
 
-    if (!dbJobId) {
-      toast("error", "DB job id bulunamadı");
+    const j = await r.json().catch(() => null);
+
+    console.log("[DELETE_RES]", {
+      ok: r.ok,
+      status: r.status,
+      data: j,
+      sent_job_id: dbJobId
+    });
+
+    if (!r.ok || !j?.ok) {
+      toast("error", "Silme başarısız");
       return;
     }
 
-    try {
-      const r = await fetch("/api/jobs/delete", {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ job_id: dbJobId })
-      });
+    hiddenDeletedIds.add(jobId);
+    clearPoll(jobId);
+    POLL_BUSY.delete(jobId);
+    POLL_LAST.delete(jobId);
+    stemsClearTimer(jobId);
 
-      const j = await r.json().catch(() => null);
-
-      console.log("[DELETE_RES]", {
-        ok: r.ok,
-        status: r.status,
-        data: j,
-        sent_job_id: dbJobId
-      });
-
-      if (!r.ok || !j?.ok) {
-        toast("error", "Silme başarısız");
-        return;
-      }
-
-      hiddenDeletedDbIds.add(String(dbJobId));
-      if (baseId) hiddenDeletedBaseIds.add(baseId);
-
-      const sameDbRowIds = (jobs || [])
-        .filter((x) => String(x?.__db_job_id || "").trim() === String(dbJobId).trim())
-        .map((x) => getJobId(x))
-        .filter(Boolean);
-
-      const idsToRemove = Array.from(new Set([
-        ...familyIds,
-        ...sameDbRowIds
-      ])).filter(Boolean);
-
-      idsToRemove.forEach((id) => {
-        hiddenDeletedIds.add(id);
-        clearPoll(id);
-        POLL_BUSY.delete(id);
-        POLL_LAST.delete(id);
-        stemsClearTimer(id);
-
-        if (currentJobId === id && audioEl) {
-          try { audioEl.pause(); } catch {}
-          currentJobId = null;
-          eqBarsCache.jobId = null;
-          eqBarsCache.bars = null;
-          stopRaf();
-        }
-      });
-
-      jobs = (jobs || []).filter((x) => !idsToRemove.includes(getJobId(x)));
-      saveJobs();
-      render();
-      toast("success", "Silindi");
-
-      try { await hydrateFromDBOnce(); } catch {}
-      try { dbCtrl?.hydrate?.(); } catch {}
-    } catch (e) {
-      console.warn("[panel.music] delete failed", e);
-      toast("error", "Silme hatası");
+    if (currentJobId === jobId && audioEl) {
+      try { audioEl.pause(); } catch {}
+      currentJobId = null;
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
+      stopRaf();
     }
+
+    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+    saveJobs();
+    render();
+    toast("success", "Silindi");
+
+    try { await hydrateFromDBOnce(); } catch {}
+    try { dbCtrl?.hydrate?.(); } catch {}
+  } catch (e) {
+    console.warn("[panel.music] delete failed", e);
+    toast("error", "Silme hatası");
   }
+}
 
   function onCardClick(e){
     const btn = e.target.closest("[data-action]");
