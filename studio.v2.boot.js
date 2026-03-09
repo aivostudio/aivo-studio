@@ -258,7 +258,7 @@ function ppeApplyCompleted(appKey, job) {
     installToastFallback();
 
     console.log("[BOOT] AIVO_PLAYER:", window.AIVO_PLAYER);
-  
+    if (window.toast?.success) window.toast.success("Boot OK ✅");
 
     if (!location.hash) location.hash = "music";
 
