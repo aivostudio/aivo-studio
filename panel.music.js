@@ -1815,6 +1815,15 @@ function setMusicHostForEvents(el){
     }
 
     window.addEventListener("aivo:job", onJob, true);
+    const rehydrateMusicPanel = async () => {
+  try { await hydrateFromDBOnce(); } catch {}
+  try { dbCtrl?.hydrate?.(); } catch {}
+};
+
+window.addEventListener("focus", rehydrateMusicPanel);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") rehydrateMusicPanel();
+});
     (jobs || []).slice(0, 60).forEach((j) => {
       const id = getJobId(j);
       if (id && !isHiddenJobId(id)) poll(id);
@@ -1828,7 +1837,7 @@ function setMusicHostForEvents(el){
     alive = false;
     setMusicHostForEvents(null);
     window.removeEventListener("aivo:job", onJob, true);
-
+window.removeEventListener("focus", rehydrateMusicPanel);
     clearAllPolls();
     stopRaf();
 
