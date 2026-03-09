@@ -1525,7 +1525,7 @@
 
   function onJob(e){
     const payload = e?.detail || e || {};
-    const baseId = String(payload.job_id || payload.id || "").trim();
+   const baseId = String(payload.provider_job_id || payload.job_id || payload.id || "").trim();
     if (!baseId) return;
     if (hiddenDeletedBaseIds.has(baseId)) return;
 
