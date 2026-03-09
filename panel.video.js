@@ -722,7 +722,21 @@ const sub = "";
           if (u) shareUrl(u);
           return;
         }
+       if (act === "play") {
+  if (!card || !it) return;
 
+  const video = card.querySelector("video");
+  if (!video || !isReady(it)) return;
+
+  if (video.paused) {
+    video.setAttribute("data-user-gesture", "1");
+    video.play().catch(() => {});
+  } else {
+    video.pause();
+    video.setAttribute("data-user-gesture", "0");
+  }
+  return;
+}
         if (act === "fs") {
           if (card) goFullscreen(card);
           return;
