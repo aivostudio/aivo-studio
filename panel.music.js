@@ -1049,15 +1049,20 @@ async function actionDelete(card){
   const isRev = String(jobId).includes("::rev1");
   const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
 
+  // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
   const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  // Music'te 1 DB row -> 2 kart üretiliyor.
+  // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
+  const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
+
+// Music'te 1 DB row -> 2 kart üretiliyor.
   // Bu yüzden tek kart silinse bile DB row kalırsa refresh'te geri gelir.
   // Çözüm: delete her zaman tüm grubu DB'den kaldırır.
   if (!dbJobId) {
-   removeJob(jobId);
-    toast("success", "Silindi");
+    removeJob(jobId);
+    removeJob(otherId);
+    toast("success","Silindi");
     return;
   }
 
@@ -1078,12 +1083,12 @@ async function actionDelete(card){
 
     removeJob(jobId);
     removeJob(otherId);
-    toast("success", "Silindi");
-  } catch (e) {
+    toast("success","Silindi");
+  } catch (e){
     console.warn("[panel.music] delete failed", e);
-    toast("error", "Silme hatası");
+    toast("error","Silme hatası");
   }
-}
+
  
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
