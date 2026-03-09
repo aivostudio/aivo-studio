@@ -309,12 +309,34 @@ function setEqBars(L, M, H){
   }
 
   /* ---------------- jobs storage ---------------- */
-  function loadJobs(){
-    try {
-      const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
+ function loadJobs(){
+  try {
+    const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+    const list = Array.isArray(arr) ? arr : [];
+
+    const cleaned = list.filter((j) => {
+      const jobId = String(j?.job_id || j?.id || "").trim();
+      if (!jobId) return false;
+
+      const hasDbJobId = !!String(j?.__db_job_id || "").trim();
+      const hasProviderJobId = !!String(j?.provider_job_id || "").trim();
+      const hasProviderSongId = !!String(j?.__provider_song_id || "").trim();
+      const hasAudio = !!String(j?.__audio_src || j?.__pending_src || "").trim();
+
+      if (!hasDbJobId && !hasProviderJobId && !hasProviderSongId && !hasAudio) {
+        console.warn("[music][loadJobs] dropped ghost local job", { jobId, job: j });
+        return false;
+      }
+
+      return true;
+    });
+
+    try { localStorage.setItem(LS_KEY, JSON.stringify(cleaned.slice(0, 200))); } catch {}
+    return cleaned;
+  } catch {
+    return [];
   }
+}
 
   function saveJobs(){
     try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 200))); } catch {}
