@@ -33,8 +33,10 @@
   display:flex;
   flex-direction:column;
 }
-      ..svcMedia{
+.svcMedia{
   position:relative;
+  flex:none;
+  width:100%;
   margin:0;
   border-radius:16px 16px 0 0;
   overflow:hidden;
