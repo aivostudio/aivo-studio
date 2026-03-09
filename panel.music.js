@@ -1773,10 +1773,20 @@ function setMusicHostForEvents(el){
       mainAudio.style.display = "none";
     }
 
-    jobs = loadJobs().filter((j) => {
-      const id = getJobId(j);
-      return id && !isHiddenJobId(id);
-    });
+   jobs = loadJobs().filter((j) => {
+  const id = getJobId(j);
+  if (!id) return false;
+  if (isHiddenJobId(id)) return false;
+
+  const uiState = String(j?.__ui_state || "").trim().toLowerCase();
+  const audioSrc = String(j?.__audio_src || "").trim();
+  const providerSongId = String(j?.__provider_song_id || "").trim();
+
+  if (uiState === "ready" && audioSrc) return true;
+  if (audioSrc) return true;
+
+  return false;
+});
     render();
     hydrateFromDBOnce();
 
