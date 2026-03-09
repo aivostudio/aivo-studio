@@ -32,15 +32,14 @@
         box-shadow:0 8px 30px rgba(0,0,0,.18);
       }
 
-      .svcMedia{
-        position:relative;
-        margin:10px;
-        border-radius:16px;
-        overflow:hidden;
-        background:#050505;
-        border:1px solid rgba(255,255,255,.08);
-      }
-
+      ..svcMedia{
+  position:relative;
+  margin:0;
+  border-radius:16px 16px 0 0;
+  overflow:hidden;
+  background:#050505;
+  border:none;
+}
       .svcMedia::before{
         content:"";
         display:block;
@@ -218,11 +217,11 @@
       }
 
       .svcBody{
-        padding:2px 12px 12px 12px;
-        display:flex;
-        flex-direction:column;
-        gap:8px;
-      }
+  padding:10px 12px 12px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
 
       .svcTitle{
         font-size:13px;
