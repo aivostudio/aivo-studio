@@ -530,7 +530,7 @@ function renderCard(it) {
  const ratio = "16:9";
 
   
-  const sub = String(it?.meta?.prompt || it?.meta?.title || it?.title || "").trim();
+
   const title = String(it?.meta?.prompt || it?.title || formatKind(it) || "").trim();
 const sub = "";
 
