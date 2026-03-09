@@ -1051,7 +1051,8 @@ async function actionDelete(card){
   console.log("[MUSIC_DELETE_DBID]", { jobId, dbJobId, existing });
 
   if (!dbJobId) {
-    toast("error","DB job id bulunamadı");
+    removeJob(jobId);
+    toast("success","Silindi");
     return;
   }
 
