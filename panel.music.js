@@ -1607,24 +1607,61 @@ async function actionDelete(card){
   return cards;
 }
 
-  function setMusicHostForEvents(el){
-    if (!window.__AIVO_MUSIC_EVENTS__) {
-  window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
-}
-    window.__AIVO_MUSIC_EVENTS__.host = el || null;
-    if (window.__AIVO_MUSIC_EVENTS__.attached) return;
-    window.__AIVO_MUSIC_EVENTS__.attached = true;
+function onJob(e){
+  const payload = e?.detail || e || {};
+  const baseId = String(payload.provider_job_id || payload.job_id || payload.id || "").trim();
+  if (!baseId) return;
+  if (hiddenDeletedBaseIds.has(baseId)) return;
 
-    window.addEventListener("click", (e) => {
-      try {
-        if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-        const H = window.__AIVO_MUSIC_EVENTS__.host;
-        if (!H || !H.contains(e.target)) return;
-        onCardClick(e);
-      } catch (err) {
-        console.warn("[panel.music] click handler error", err);
-      }
-    }, true);
+  const origId = `${baseId}::orig`;
+  const revId = `${baseId}::rev1`;
+
+  const providerJobId = String(payload.provider_job_id || "").trim();
+  const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
+
+  const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
+  const songIdRev = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
+  const safeTitle = String(payload.title || "").trim();
+
+  const common = {
+    type: "music",
+    subtitle: String(payload.subtitle || "").trim(),
+    provider_job_id: providerJobId,
+    __ui_state: "processing",
+    __audio_src: "",
+    title: safeTitle,
+    lyrics: String(payload.lyrics || "").trim(),
+    prompt: String(payload.prompt || "").trim(),
+    __createdAt: payload.created_at || payload.createdAt || "",
+    createdAt: Date.now(),
+  };
+
+  upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
+  upsertJob({ ...common, job_id: revId, id: revId, __provider_song_id: songIdRev });
+
+  render();
+  poll(origId);
+  poll(revId);
+}
+
+function setMusicHostForEvents(el){
+  if (!window.__AIVO_MUSIC_EVENTS__) {
+    window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
+  }
+  window.__AIVO_MUSIC_EVENTS__.host = el || null;
+  if (window.__AIVO_MUSIC_EVENTS__.attached) return;
+  window.__AIVO_MUSIC_EVENTS__.attached = true;
+
+  window.addEventListener("click", (e) => {
+    try {
+      if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+      const H = window.__AIVO_MUSIC_EVENTS__.host;
+      if (!H || !H.contains(e.target)) return;
+      onCardClick(e);
+    } catch (err) {
+      console.warn("[panel.music] click handler error", err);
+    }
+  }, true);
 
     window.addEventListener("pointerdown", (e) => {
       try {
