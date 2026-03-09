@@ -1040,44 +1040,114 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
-  console.log("[MUSIC_DELETE_FN]", { jobId: card?.getAttribute("data-job-id") || "" });
-
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+  console.log("[MUSIC_DELETE_FN]", { jobId });
+
   if (!jobId) return;
 
-  const baseId = String(jobId).split("::")[0].trim();
+  const baseId = jobId.split("::")[0].trim();
 
-  const findDirect = () =>
-    jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
-
-  const findSiblingWithDbId = () =>
-    jobs.find(x => {
-      const xid = String(x.job_id || x.id || "").trim();
-      return xid.startsWith(baseId + "::") && String(x.__db_job_id || "").trim();
-    }) || {};
-
-  let existing = findDirect();
-  let dbJobId = String(existing.__db_job_id || "").trim();
-
-  if (!dbJobId) {
-    const sibling = findSiblingWithDbId();
-    dbJobId = String(sibling.__db_job_id || "").trim();
-  }
-
-  console.log("[MUSIC_DELETE_DBID_BEFORE]", { jobId, baseId, dbJobId, existing });
-
-  if (!dbJobId) {
-    try { await hydrateFromDBOnce(); } catch {}
-    existing = findDirect();
-    dbJobId = String(existing.__db_job_id || "").trim();
-
-    if (!dbJobId) {
-      const sibling = findSiblingWithDbId();
-      dbJobId = String(sibling.__db_job_id || "").trim();
+  const getFamilyIds = () => {
+    const set = new Set([jobId, `${baseId}::orig`, `${baseId}::rev1`]);
+    for (const x of (jobs || [])) {
+      const xid = String(x?.job_id || x?.id || "").trim();
+      if (xid && xid.startsWith(baseId + "::")) set.add(xid);
     }
+    return Array.from(set).filter(Boolean);
+  };
+
+  const isUuid = (s) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      .test(String(s || "").trim());
+
+  const resolveDbIdFromMemory = () => {
+    const family = new Set(getFamilyIds());
+    const sameFamily = (jobs || []).filter(x => {
+      const xid = String(x?.job_id || x?.id || "").trim();
+      return xid && family.has(xid);
+    });
+
+    // Önce gerçek uuid'yi tercih et
+    for (const x of sameFamily) {
+      const v = String(x?.__db_job_id || x?.db_job_id || "").trim();
+      if (isUuid(v)) return v;
+    }
+
+    // Son çare: boş olmayan herhangi bir değer
+    for (const x of sameFamily) {
+      const v = String(x?.__db_job_id || x?.db_job_id || "").trim();
+      if (v) return v;
+    }
+
+    return "";
+  };
+
+  const resolveDbIdFromList = async () => {
+    try {
+      const r = await fetch("/api/jobs/list?app=music", {
+        method: "GET",
+        credentials: "include",
+        headers: { "accept": "application/json" },
+        cache: "no-store",
+      });
+
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !j.ok) return "";
+
+      const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
+
+      for (const row of items) {
+        const cards = mapDbJobToCards(row) || [];
+        const rowCardIds = cards
+          .map(c => String(c?.job_id || c?.id || "").trim())
+          .filter(Boolean);
+
+        const firstRowCardId = String(rowCardIds[0] || "").trim();
+        const rowBaseId = String(
+          row?.meta?.provider_job_id ||
+          row?.meta?.providerJobId ||
+          row?.provider_job_id ||
+          row?.providerJobId ||
+          (firstRowCardId ? firstRowCardId.split("::")[0] : "") ||
+          ""
+        ).trim();
+
+        const matchesBase =
+          rowBaseId === baseId ||
+          rowCardIds.some(id => id.startsWith(baseId + "::"));
+
+        if (!matchesBase) continue;
+
+        // delete endpoint row uuid bekliyor -> önce row.id
+        const rawDbId = String(row?.id || row?.job_id || "").trim();
+        if (rawDbId) return rawDbId;
+
+        const mappedDbId = String(
+          cards.find(c => String(c?.__db_job_id || "").trim())?.__db_job_id || ""
+        ).trim();
+        if (mappedDbId) return mappedDbId;
+      }
+    } catch (e) {
+      console.warn("[panel.music] resolveDbIdFromList failed", e);
+    }
+
+    return "";
+  };
+
+  let dbJobId = resolveDbIdFromMemory();
+
+  // memory'deki değer uuid değilse list'ten tekrar çöz
+  if (!isUuid(dbJobId)) {
+    const fromList = await resolveDbIdFromList();
+    if (fromList) dbJobId = fromList;
   }
 
-  console.log("[MUSIC_DELETE_DBID_AFTER]", { jobId, baseId, dbJobId });
+  console.log("[MUSIC_DELETE_RESOLVE]", {
+    jobId,
+    baseId,
+    familyIds: getFamilyIds(),
+    dbJobId
+  });
 
   if (!dbJobId) {
     toast("error", "DB job id bulunamadı");
@@ -1106,16 +1176,24 @@ async function actionDelete(card){
       return;
     }
 
-    const sameRowIds = jobs
-      .filter(x => String(x.__db_job_id || "").trim() === dbJobId)
-      .map(x => String(x.job_id || x.id || "").trim())
+    const sameDbRowIds = (jobs || [])
+      .filter(x => String(x?.__db_job_id || "").trim() === String(dbJobId).trim())
+      .map(x => String(x?.job_id || x?.id || "").trim())
       .filter(Boolean);
 
-    const idsToRemove = sameRowIds.length ? sameRowIds : [jobId];
+    // EN KRITIK FIX:
+    // row'dan türeyen tüm kart ailesini sil -> sadece __db_job_id dolu olanları değil
+    const idsToRemove = Array.from(new Set([
+      ...getFamilyIds(),
+      ...sameDbRowIds
+    ])).filter(Boolean);
 
     idsToRemove.forEach(id => {
       hiddenDeletedIds.add(id);
       clearPoll(id);
+      POLL_BUSY.delete(id);
+      POLL_LAST.delete(id);
+
       if (currentJobId === id && audioEl) {
         try { audioEl.pause(); } catch {}
         currentJobId = null;
@@ -1125,15 +1203,18 @@ async function actionDelete(card){
       }
     });
 
-    jobs = jobs.filter(x => !idsToRemove.includes(String(x.job_id || x.id || "").trim()));
+    jobs = (jobs || []).filter(x => {
+      const xid = String(x?.job_id || x?.id || "").trim();
+      return !idsToRemove.includes(xid);
+    });
+
     saveJobs();
     render();
-
     toast("success", "Silindi");
 
     try { await hydrateFromDBOnce(); } catch {}
     try { dbCtrl?.hydrate?.(); } catch {}
-  } catch (e){
+  } catch (e) {
     console.warn("[panel.music] delete failed", e);
     toast("error", "Silme hatası");
   }
