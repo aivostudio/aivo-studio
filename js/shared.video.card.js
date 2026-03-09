@@ -116,7 +116,63 @@
         background:linear-gradient(180deg, rgba(0,0,0,.00), rgba(0,0,0,.10));
         transition:opacity .18s ease;
       }
+      .svcHeroPlay{
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-50%,-50%);
+        width:64px;
+        height:64px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.16);
+        background:rgba(255,255,255,.14);
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:22px;
+        cursor:pointer;
+        box-shadow:0 12px 34px rgba(0,0,0,.30);
+        backdrop-filter:blur(12px);
+        pointer-events:auto;
+      }
 
+      .svcQuickActions{
+        position:absolute;
+        right:12px;
+        top:12px;
+        display:flex;
+        gap:8px;
+        pointer-events:auto;
+      }
+
+      .svcQuickBtn{
+        width:36px;
+        height:36px;
+        border-radius:12px;
+        border:1px solid rgba(255,255,255,.12);
+        background:rgba(18,18,28,.46);
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:14px;
+        cursor:pointer;
+        backdrop-filter:blur(10px);
+      }
+
+      .svcQuickBtn:hover{
+        background:rgba(255,255,255,.10);
+      }
+
+      .svcQuickBtn[disabled]{
+        opacity:.45;
+        cursor:not-allowed;
+      }
+
+      .svcQuickBtnDanger{
+        border-color:rgba(255,90,90,.24);
+      }
       .svcPlay{
         width:56px;
         height:56px;
