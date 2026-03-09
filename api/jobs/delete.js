@@ -9,12 +9,6 @@ function normId(x) {
   return String(x || "").trim();
 }
 
-function normVariant(x) {
-  const v = String(x || "").trim().toLowerCase();
-  if (v === "orig" || v === "rev1") return v;
-  return "";
-}
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -32,6 +26,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_db_env" });
   }
 
+  // --- auth ---
   let auth;
   try {
     auth = await requireAuth(req);
@@ -51,6 +46,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ ok: false, error: "unauthorized" });
   }
 
+  // body normalize
   let body = req.body || {};
   if (typeof body === "string") {
     try {
@@ -61,9 +57,6 @@ export default async function handler(req, res) {
   }
 
   const job_id = normId(body.job_id || body.id || req.query.job_id || req.query.id);
-  const app = String(body.app || req.query.app || "").trim().toLowerCase();
-  const variant = normVariant(body.variant || req.query.variant);
-
   if (!job_id) {
     return res.status(400).json({ ok: false, error: "missing_job_id" });
   }
@@ -71,60 +64,7 @@ export default async function handler(req, res) {
   const sql = neon(conn);
 
   try {
-    // music için variant bazlı soft delete
-    if (app === "music" && variant) {
-      const rows = await sql`
-        update jobs
-        set
-          meta = jsonb_set(
-            coalesce(meta, '{}'::jsonb),
-            '{deleted_variants}',
-            (
-              select to_jsonb(array(
-                select distinct x
-                from unnest(
-                  coalesce(
-                    array(
-                      select jsonb_array_elements_text(
-                        coalesce(meta->'deleted_variants', '[]'::jsonb)
-                      )
-                    ),
-                    array[]::text[]
-                  ) || array[${variant}::text]
-                ) as x
-              ))
-            ),
-            true
-          ),
-          updated_at = now()
-        where id = ${job_id}::uuid
-          and deleted_at is null
-          and (
-            user_id::text = ${user_id || ""}
-            or user_id::text = ${email || ""}
-            or user_id::text = ${legacy_user_id || ""}
-          )
-        returning id, meta
-      `;
-
-      if (!rows?.length) {
-        return res.status(404).json({
-          ok: false,
-          error: "not_found_or_not_owned",
-          job_id
-        });
-      }
-
-      return res.status(200).json({
-        ok: true,
-        job_id: String(rows[0].id),
-        app: "music",
-        variant,
-        mode: "variant_soft_delete"
-      });
-    }
-
-    // default: diğer tüm modüller eski davranışla row soft delete
+    // 1) soft delete: sadece bu kullanıcıya aitse
     const rows = await sql`
       update jobs
       set deleted_at = now(),
@@ -140,17 +80,11 @@ export default async function handler(req, res) {
     `;
 
     if (!rows?.length) {
-      return res.status(404).json({
-        ok: false,
-        error: "not_found_or_not_owned",
-        job_id
-      });
+      // job yok ya da kullanıcıya ait değil ya da zaten silinmiş
+      return res.status(404).json({ ok: false, error: "not_found_or_not_owned", job_id });
     }
 
-    return res.status(200).json({
-      ok: true,
-      job_id: String(rows[0].id)
-    });
+    return res.status(200).json({ ok: true, job_id: String(rows[0].id) });
   } catch (e) {
     console.error("jobs/delete failed:", e);
     return res.status(500).json({
