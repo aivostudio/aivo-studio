@@ -26,7 +26,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_db_env" });
   }
 
-  // --- auth ---
   let auth;
   try {
     auth = await requireAuth(req);
@@ -46,7 +45,6 @@ export default async function handler(req, res) {
     return res.status(401).json({ ok: false, error: "unauthorized" });
   }
 
-  // body normalize
   let body = req.body || {};
   if (typeof body === "string") {
     try {
@@ -57,6 +55,9 @@ export default async function handler(req, res) {
   }
 
   const job_id = normId(body.job_id || body.id || req.query.job_id || req.query.id);
+  const variant = normId(body.variant || req.query.variant);
+  const isVariantDelete = variant === "orig" || variant === "rev1";
+
   if (!job_id) {
     return res.status(400).json({ ok: false, error: "missing_job_id" });
   }
@@ -64,7 +65,62 @@ export default async function handler(req, res) {
   const sql = neon(conn);
 
   try {
-    // 1) soft delete: sadece bu kullanıcıya aitse
+    const found = await sql`
+      select id, meta
+      from jobs
+      where id = ${job_id}::uuid
+        and deleted_at is null
+        and (
+          user_id::text = ${user_id || ""}
+          or user_id::text = ${email || ""}
+          or user_id::text = ${legacy_user_id || ""}
+        )
+      limit 1
+    `;
+
+    if (!found?.length) {
+      return res.status(404).json({
+        ok: false,
+        error: "not_found_or_not_owned",
+        job_id,
+      });
+    }
+
+    if (isVariantDelete) {
+      const meta =
+        found[0]?.meta && typeof found[0].meta === "object"
+          ? found[0].meta
+          : {};
+
+      const deletedVariants = Array.isArray(meta.deleted_variants)
+        ? meta.deleted_variants
+        : [];
+
+      const nextDeletedVariants = Array.from(
+        new Set([...deletedVariants, variant])
+      );
+
+      const rows = await sql`
+        update jobs
+        set meta = ${JSON.stringify({
+          ...meta,
+          deleted_variants: nextDeletedVariants,
+        })}::jsonb,
+            updated_at = now()
+        where id = ${job_id}::uuid
+          and deleted_at is null
+        returning id
+      `;
+
+      return res.status(200).json({
+        ok: true,
+        mode: "variant",
+        job_id: String(rows[0].id),
+        variant,
+        deleted_variants: nextDeletedVariants,
+      });
+    }
+
     const rows = await sql`
       update jobs
       set deleted_at = now(),
@@ -80,11 +136,18 @@ export default async function handler(req, res) {
     `;
 
     if (!rows?.length) {
-      // job yok ya da kullanıcıya ait değil ya da zaten silinmiş
-      return res.status(404).json({ ok: false, error: "not_found_or_not_owned", job_id });
+      return res.status(404).json({
+        ok: false,
+        error: "not_found_or_not_owned",
+        job_id,
+      });
     }
 
-    return res.status(200).json({ ok: true, job_id: String(rows[0].id) });
+    return res.status(200).json({
+      ok: true,
+      mode: "row",
+      job_id: String(rows[0].id),
+    });
   } catch (e) {
     console.error("jobs/delete failed:", e);
     return res.status(500).json({
