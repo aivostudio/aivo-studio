@@ -757,9 +757,9 @@ const sub = "";
 
     const onClick = (e) => {
       // Buton işleri bindActions’ta — burada buton tıklamasını hiç ele alma
-      if (e.target.closest("[data-act]")) return;
+     if (e.target.closest("[data-act]") || e.target.closest("[data-svc-act]")) return;
 
-      const card = e.target.closest(".vpCard");
+     const card = e.target.closest(".vpCard, .svcCard");
       if (!card) return;
 
       const id = String(card.getAttribute("data-id") || "").trim();
