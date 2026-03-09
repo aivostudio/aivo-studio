@@ -1196,10 +1196,36 @@ async function actionDelete(card){
       sent_job_id: dbJobId
     });
 
-    if (!r.ok || !j?.ok) {
-      toast("error", "Silme başarısız");
-      return;
+   if (!r.ok || !j?.ok) {
+  const staleNotFound =
+    r.status === 404 ||
+    String(j?.error || "").trim() === "not_found_or_not_owned";
+
+  if (staleNotFound) {
+    hiddenDeletedIds.add(jobId);
+    clearPoll(jobId);
+    POLL_BUSY.delete(jobId);
+    POLL_LAST.delete(jobId);
+    stemsClearTimer(jobId);
+
+    if (currentJobId === jobId && audioEl) {
+      try { audioEl.pause(); } catch {}
+      currentJobId = null;
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
+      stopRaf();
     }
+
+    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+    saveJobs();
+    render();
+    toast("success", "Kart kaldırıldı");
+    return;
+  }
+
+  toast("error", "Silme başarısız");
+  return;
+}
 
     hiddenDeletedIds.add(jobId);
     clearPoll(jobId);
