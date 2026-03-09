@@ -24,13 +24,13 @@
 
     const css = `
       .svcCard{
-        position:relative;
-        border-radius:18px;
-        overflow:hidden;
-        background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.03));
-        border:1px solid rgba(255,255,255,.08);
-        box-shadow:0 8px 30px rgba(0,0,0,.18);
-      }
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);
+  backdrop-filter:blur(10px);
+}
 
       ..svcMedia{
   position:relative;
@@ -215,12 +215,12 @@
         opacity:.45;
         cursor:not-allowed;
       }
-
-      .svcBody{
-  padding:10px 12px 12px 12px;
+.svcBody{
+  padding:12px 12px 14px;
   display:flex;
-  flex-direction:column;
-  gap:6px;
+  align-items:center;
+  gap:10px;
+  min-height:56px;
 }
 
       .svcTitle{
