@@ -301,14 +301,15 @@
                   src="${esc(videoUrl)}"
                 ></video>
 
-                <div class="svcOverlay">
-                  <div class="svcOverlayBtns">
-                    <button class="svcOvBtn" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
-                    <button class="svcOvBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
-                    <button class="svcOvBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
-                    <button class="svcOvBtn svcOvBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
-                  </div>
-                </div>
+               <div class="svcOverlay">
+  <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
+
+  <div class="svcQuickActions">
+    <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
+    <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
+    <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
+  </div>
+</div>
               `
               : `
                 <div class="svcSkel"></div>
