@@ -644,22 +644,22 @@
       return true;
     });
 
-    view.sort((a, b) => {
-      const aid = getJobId(a);
-      const bid = getJobId(b);
-      const abase = getBaseIdFromJobId(aid);
-      const bbase = getBaseIdFromJobId(bid);
+   view.sort((a, b) => {
+  const aid = getJobId(a);
+  const bid = getJobId(b);
+  const abase = getBaseIdFromJobId(aid);
+  const bbase = getBaseIdFromJobId(bid);
 
-      const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
-      const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
+  const ta = toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
+  const tb = toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
 
-      if (tb !== ta) return tb - ta;
-      if (bbase !== abase) return bbase.localeCompare(abase);
+  if (tb !== ta) return tb - ta;
+  if (bbase !== abase) return bbase.localeCompare(abase);
 
-      const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
-      const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
-      return ar - br;
-    });
+  const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
+  const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
+  return ar - br;
+});
 
     if (!view.length) {
       listEl.innerHTML = `
