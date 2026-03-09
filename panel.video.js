@@ -537,26 +537,22 @@ const sub = "";
   const badgeText = normalizeBadge(it);
   const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
 
-  if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-    return `
-      <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
-        ${window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-          id: jid,
-          title,
-          sub,
-          badgeText,
-          badgeKind,
-          videoUrl,
-          posterUrl: "",
-          ratio,
-          ready,
-          canDownload: ready,
-          canShare: ready,
-          canDelete: true
-        })}
-      </div>
-    `;
-  }
+ if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+  return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+    id: jid,
+    title,
+    sub,
+    badgeText,
+    badgeKind,
+    videoUrl,
+    posterUrl: "",
+    ratio,
+    ready,
+    canDownload: ready,
+    canShare: ready,
+    canDelete: true
+  });
+}
 
   return `
     <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
