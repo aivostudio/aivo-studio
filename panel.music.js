@@ -1488,111 +1488,91 @@ async function actionDelete(card){
     }
   }
 
-  function mapDbJobToCards(row){
-    if (!row || isRowDeleted(row)) return [];
+ function mapDbJobToCards(row){
+  if (!row || isRowDeleted(row)) return [];
 
-    const meta = row?.meta || {};
-    const appGuess = String(row?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
-    if (appGuess && !isMusicApp(appGuess)) return [];
+  const meta = row?.meta || {};
+  const appGuess = String(row?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
+  if (appGuess && !isMusicApp(appGuess)) return [];
 
-    const provider_job_id = getRowProviderJobId(row);
-    const dbJobId = getRowDbId(row);
-    const baseId = provider_job_id || String(row?.provider_job_id || row?.providerJobId || row?.job_id || row?.id || "").trim();
-    if (!baseId) return [];
+  const provider_job_id = getRowProviderJobId(row);
+  const dbJobId = getRowDbId(row);
+  const baseId = provider_job_id || String(row?.provider_job_id || row?.providerJobId || row?.job_id || row?.id || "").trim();
+  if (!baseId) return [];
 
-    const songIds = Array.isArray(meta?.provider_song_ids)
-      ? meta.provider_song_ids
-      : (Array.isArray(row?.provider_song_ids) ? row.provider_song_ids : []);
+  const songIds = Array.isArray(meta?.provider_song_ids)
+    ? meta.provider_song_ids
+    : (Array.isArray(row?.provider_song_ids) ? row.provider_song_ids : []);
 
-    const songIdOrig = String(songIds[0] || provider_job_id || baseId).trim();
-    const songIdRev = String(songIds[1] || songIds[0] || provider_job_id || baseId).trim();
+  const songIdOrig = String(songIds[0] || provider_job_id || baseId).trim();
+  const songIdRev = String(songIds[1] || songIds[0] || provider_job_id || baseId).trim();
 
-    const createdMs = toMs(row?.created_at) || toMs(row?.createdAt) || toMs(meta?.created_at) || Date.now();
-    const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
-    const st =
-      ["ready", "done", "completed", "success", "succeeded"].includes(rawStatus) ? "ready" :
-      (["error", "failed", "fail"].includes(rawStatus) ? "error" : "processing");
+  const deletedVariants = Array.isArray(meta?.deleted_variants)
+    ? meta.deleted_variants.map((v) => String(v || "").trim().toLowerCase()).filter(Boolean)
+    : [];
 
-    const audioSrc = String(
-      meta?.audio_src ||
-      meta?.audioUrl ||
-      row?.audio_src ||
-      row?.audioUrl ||
-      row?.result?.audio?.src ||
-      row?.result?.src ||
-      ""
-    ).trim();
+  const createdMs = toMs(row?.created_at) || toMs(row?.createdAt) || toMs(meta?.created_at) || Date.now();
+  const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
+  const st =
+    ["ready", "done", "completed", "success", "succeeded"].includes(rawStatus) ? "ready" :
+    (["error", "failed", "fail"].includes(rawStatus) ? "error" : "processing");
 
-    const duration = String(
-      meta?.duration ||
-      row?.duration ||
-      row?.result?.duration ||
-      ""
-    ).trim();
+  const audioSrc = String(
+    meta?.audio_src ||
+    meta?.audioUrl ||
+    row?.audio_src ||
+    row?.audioUrl ||
+    row?.result?.audio?.src ||
+    row?.result?.src ||
+    ""
+  ).trim();
 
-    const baseCommon = {
-      type: "music",
-      __db_job_id: dbJobId,
-      provider_job_id: provider_job_id || baseId,
-      __ui_state: st,
-      __audio_src: audioSrc,
-      createdAt: createdMs,
-      __createdAt: row?.created_at || meta?.created_at || "",
-      created_at: row?.created_at || meta?.created_at || "",
-      updated_at: row?.updated_at || meta?.updated_at || "",
-      title: String(meta?.title || row?.title || "").trim(),
-      lyrics: String(meta?.lyrics || row?.lyrics || "").trim(),
-      prompt: String(meta?.prompt || row?.prompt || "").trim(),
-      subtitle: String(meta?.subtitle || "").trim(),
-      __duration: duration,
-    };
+  const duration = String(
+    meta?.duration ||
+    row?.duration ||
+    row?.result?.duration ||
+    ""
+  ).trim();
 
-    return [
-      { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
-      { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev },
-    ];
+  const baseCommon = {
+    type: "music",
+    __db_job_id: dbJobId,
+    provider_job_id: provider_job_id || baseId,
+    __ui_state: st,
+    __audio_src: audioSrc,
+    createdAt: createdMs,
+    __createdAt: row?.created_at || meta?.created_at || "",
+    created_at: row?.created_at || meta?.created_at || "",
+    updated_at: row?.updated_at || meta?.updated_at || "",
+    title: String(meta?.title || row?.title || "").trim(),
+    lyrics: String(meta?.lyrics || row?.lyrics || "").trim(),
+    prompt: String(meta?.prompt || row?.prompt || "").trim(),
+    subtitle: String(meta?.subtitle || "").trim(),
+    __duration: duration,
+  };
+
+  const cards = [];
+
+  if (!deletedVariants.includes("orig")) {
+    cards.push({
+      ...baseCommon,
+      job_id: `${baseId}::orig`,
+      id: `${baseId}::orig`,
+      __provider_song_id: songIdOrig
+    });
   }
 
-  function onJob(e){
-    const payload = e?.detail || e || {};
-   const baseId = String(payload.provider_job_id || payload.job_id || payload.id || "").trim();
-    if (!baseId) return;
-    if (hiddenDeletedBaseIds.has(baseId)) return;
-
-    const origId = `${baseId}::orig`;
-    const revId = `${baseId}::rev1`;
-
-    const providerJobId = String(payload.provider_job_id || "").trim();
-    const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
-
-    const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
-    const songIdRev = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
-    const safeTitle = String(payload.title || "").trim();
-
-    const common = {
-      type: "music",
-      subtitle: String(payload.subtitle || "").trim(),
-      provider_job_id: providerJobId,
-      __ui_state: "processing",
-      __audio_src: "",
-      title: safeTitle,
-      lyrics: String(payload.lyrics || "").trim(),
-      prompt: String(payload.prompt || "").trim(),
-      __createdAt: payload.created_at || payload.createdAt || "",
-      createdAt: Date.now(),
-    };
-
-    upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
-    upsertJob({ ...common, job_id: revId, id: revId, __provider_song_id: songIdRev });
-
-    render();
-    poll(origId);
-    poll(revId);
+  if (!deletedVariants.includes("rev1")) {
+    cards.push({
+      ...baseCommon,
+      job_id: `${baseId}::rev1`,
+      id: `${baseId}::rev1`,
+      __provider_song_id: songIdRev
+    });
   }
 
-  if (!window.__AIVO_MUSIC_EVENTS__) {
-    window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
-  }
+  return cards;
+}
 
   function setMusicHostForEvents(el){
     window.__AIVO_MUSIC_EVENTS__.host = el || null;
