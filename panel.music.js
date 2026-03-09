@@ -1045,14 +1045,36 @@ async function actionDelete(card){
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   if (!jobId) return;
 
-  const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
-  const dbJobId = String(existing.__db_job_id || "").trim();
+  const baseId = String(jobId).split("::")[0].trim();
+  if (!baseId) return;
 
-  console.log("[MUSIC_DELETE_DBID]", { jobId, dbJobId, existing });
+  const findDbJobId = () => {
+    const direct = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
+    if (String(direct.__db_job_id || "").trim()) {
+      return String(direct.__db_job_id || "").trim();
+    }
+
+    const sibling = jobs.find(x => {
+      const xid = String(x.job_id || x.id || "").trim();
+      return xid.startsWith(baseId + "::") && String(x.__db_job_id || "").trim();
+    }) || {};
+
+    return String(sibling.__db_job_id || "").trim();
+  };
+
+  let dbJobId = findDbJobId();
+
+  console.log("[MUSIC_DELETE_DBID_BEFORE]", { jobId, baseId, dbJobId });
 
   if (!dbJobId) {
-    removeJob(jobId);
-    toast("success","Silindi");
+    try { await hydrateFromDBOnce(); } catch {}
+    dbJobId = findDbJobId();
+  }
+
+  console.log("[MUSIC_DELETE_DBID_AFTER]", { jobId, baseId, dbJobId });
+
+  if (!dbJobId) {
+    toast("error", "DB job id bulunamadı");
     return;
   }
 
@@ -1069,7 +1091,8 @@ async function actionDelete(card){
     console.log("[DELETE_RES]", {
       ok: r.ok,
       status: r.status,
-      data: j
+      data: j,
+      sent_job_id: dbJobId
     });
 
     if (!r.ok || !j?.ok) {
@@ -1078,12 +1101,13 @@ async function actionDelete(card){
     }
 
     removeJob(jobId);
-    toast("success","Silindi");
+    toast("success", "Silindi");
 
+    try { await hydrateFromDBOnce(); } catch {}
     try { dbCtrl?.hydrate?.(); } catch {}
   } catch (e){
     console.warn("[panel.music] delete failed", e);
-    toast("error","Silme hatası");
+    toast("error", "Silme hatası");
   }
 }
 function onCardClick(e){
