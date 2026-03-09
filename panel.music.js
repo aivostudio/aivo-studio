@@ -334,27 +334,16 @@ function setEqBars(L, M, H){
     try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 200))); } catch {}
   }
 
- function upsertJob(job){
-  const id = job?.job_id || job?.id;
-  if (!id) return;
+  function upsertJob(job){
+    const id = job?.job_id || job?.id;
+    if (!id) return;
 
-  try {
-    console.log("[MUSIC_UPSERT]", {
-      id,
-      title: job?.title || "",
-      ui_state: job?.__ui_state || "",
-      provider_job_id: job?.provider_job_id || "",
-      provider_song_id: job?.__provider_song_id || "",
-      from_stack: new Error().stack
-    });
-  } catch {}
+    const i = jobs.findIndex(j => (j.job_id || j.id) === id);
+    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
+    else jobs.unshift(job);
 
-  const i = jobs.findIndex(j => (j.job_id || j.id) === id);
-  if (i >= 0) jobs[i] = { ...jobs[i], ...job };
-  else jobs.unshift(job);
-
-  saveJobs();
-}
+    saveJobs();
+  }
 
    function removeJob(jobId){
     jobId = String(jobId || "").trim();
@@ -1365,24 +1354,6 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
   const dbJobId = String(row?.job_id || row?.id || "").trim();
-     if (String(provider_job_id) === "1354495" || String(provider_job_id) === "1354313") {
-  console.log("[MAP_DB_JOB]", {
-    row_job_id: row?.job_id || row?.id || "",
-    provider_job_id,
-    row_status: row?.status,
-    row_state: row?.state,
-    outputs: row?.outputs,
-    meta_audio_src: meta?.audio_src || "",
-    picked_audio_src: String(
-      meta?.audio_src ||
-      meta?.audioUrl ||
-      row?.outputs?.[0]?.url ||
-      row?.outputs?.[0]?.meta?.archive_url ||
-      row?.outputs?.[0]?.meta?.audio_url ||
-      ""
-    ).trim()
-  });
-}
     if (!baseId) return [];
 
     const songIds = Array.isArray(meta?.provider_song_ids)
