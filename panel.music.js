@@ -1387,6 +1387,13 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     ).trim();
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
+     console.log("[music][mapDbJobToCards]", {
+  row_job_id: row?.job_id ?? null,
+  row_id: row?.id ?? null,
+  meta: row?.meta ?? null,
+  provider_job_id,
+  baseId
+});
   const dbJobId = String(row?.job_id || row?.id || "").trim();
     if (!baseId) return [];
 
