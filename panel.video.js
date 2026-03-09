@@ -666,10 +666,10 @@ const sub = "";
     host.__vpActionsBound = true;
 
     host.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-act]");
+     const btn = e.target.closest("[data-act], [data-svc-act]");
       if (!btn) return;
 
-      const act = btn.dataset.act;
+     const act = btn.dataset.act || btn.dataset.svcAct;
       const card = btn.closest(".vpCard");
       const id = String(btn.dataset.id || card?.dataset?.id || "").trim();
       if (!id) return;
