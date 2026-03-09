@@ -28,7 +28,7 @@
   let listEl = null;
   let alive  = false;
   let jobs   = [];
-     const deletedIds = new Set();
+  const hiddenDeletedIds = new Set();
 
   // audio engine
   let audioEl = null;
@@ -331,11 +331,11 @@ function setEqBars(L, M, H){
     saveJobs();
   }
 
-   function removeJob(jobId){
+    function removeJob(jobId){
     jobId = String(jobId || "").trim();
     if (!jobId) return;
 
-    deletedIds.add(jobId);
+    hiddenDeletedIds.add(jobId);
 
     if (currentJobId === jobId && audioEl){
       try { audioEl.pause(); } catch {}
@@ -348,7 +348,7 @@ function setEqBars(L, M, H){
 
     clearPoll(jobId);
 
-    jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
+    jobs = jobs.filter(j => String(j.job_id || j.id || "").trim() !== jobId);
     saveJobs();
     render();
   }
@@ -583,10 +583,10 @@ function render(){
   if (!hostEl || !listEl) return;
   if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-  const view = jobs.filter((j) => {
+  const view = jobs.filter(j => {
     const id = String(j?.job_id || j?.id || "").trim();
     if (!id) return false;
-    if (deletedIds.has(id)) return false;
+    if (hiddenDeletedIds.has(id)) return false;
     return true;
   });
 
@@ -685,8 +685,16 @@ function render(){
     const jobId = card.getAttribute("data-job-id") || "";
     if (!jobId) return;
 
-    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const src = String(existing.__audio_src || card.dataset.src || "").trim();
+     const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+
+  const dbJobId = String(
+    existing.__db_job_id ||
+    jobs.find(x => {
+      const xid = String(x.job_id || x.id || "");
+      return xid.startsWith(baseId + "::") && x.__db_job_id;
+    })?.__db_job_id ||
+    ""
+  ).trim();
 
     if (!src){
       toast("info", "Henüz hazır değil");
@@ -1040,6 +1048,7 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
+   console.log("[MUSIC_DELETE_FN]", { jobId: card?.getAttribute("data-job-id") || "" });
   const jobId = card?.getAttribute("data-job-id") || "";
   if (!jobId) return;
 
@@ -1056,16 +1065,22 @@ async function actionDelete(card){
   // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
   const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
 
-// Music'te 1 DB row -> 2 kart üretiliyor.
-  // Bu yüzden tek kart silinse bile DB row kalırsa refresh'te geri gelir.
-  // Çözüm: delete her zaman tüm grubu DB'den kaldırır.
-  if (!dbJobId) {
+  // ✅ 1) Eğer diğer kart duruyorsa: sadece tıklanan kartı sil, DB delete YOK
+  if (otherStillExists) {
     removeJob(jobId);
-    removeJob(otherId);
     toast("success","Silindi");
     return;
   }
 
+  // ✅ 2) Diğer kart da yoksa: grup bitti.
+  // DB uuid yoksa backend delete atamayız → sadece tıklanan kartı sil
+  if (!dbJobId) {
+    removeJob(jobId);
+    toast("success","Silindi");
+    return;
+  }
+
+  // ✅ 3) Son kart: DB soft delete -> OK olursa UI'dan kaldır
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
@@ -1082,14 +1097,13 @@ async function actionDelete(card){
     }
 
     removeJob(jobId);
-    removeJob(otherId);
     toast("success","Silindi");
   } catch (e){
     console.warn("[panel.music] delete failed", e);
     toast("error","Silme hatası");
   }
+}
 
- 
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
   const card = e.target.closest(".aivo-player-card");
@@ -1389,8 +1403,6 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     const origId = `${baseId}::orig`;
     const revId  = `${baseId}::rev1`;
 
-    if (deletedIds.has(origId) || deletedIds.has(revId)) return;
-
     const providerJobId = String(payload.provider_job_id || "").trim();
     const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
 
@@ -1528,16 +1540,16 @@ function getHeader(){
 
       const byId = new Map();
 
-           // önce DB
-      for (const c of dbCards){
+      // önce DB
+           for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
         if (!id) continue;
-        if (deletedIds.has(id)) continue;
+        if (hiddenDeletedIds.has(id)) continue;
         byId.set(id, c);
       }
 
       // sonra eski (LS) -> merge
-           for (const old of (jobs || [])) {
+           for (const old of (jobs || [])){
             const id = String(old?.job_id || old?.id || "").trim();
             if (!id) continue;
 
@@ -1545,7 +1557,7 @@ function getHeader(){
               const merged = mergePreferDbButKeepReady(old, byId.get(id));
               byId.set(id, merged);
             }
-            // DB'de yoksa eski item geri eklenmez
+            // DB'de artık yoksa local eski kartı geri ekleme
           }
 
       jobs = Array.from(byId.values());
@@ -1583,7 +1595,7 @@ function getHeader(){
       mainAudio.style.display = "none";
     }
 
-       // LS load (geçici fast paint + ready/src koruma)
+    // LS load (hızlı paint)
     jobs = loadJobs();
     render();
 
@@ -1616,20 +1628,21 @@ function getHeader(){
           }
 
           const byId = new Map();
-          for (const c of dbCards){
+                  for (const c of dbCards){
             const id = String(c?.job_id || c?.id || "").trim();
-            if (id) byId.set(id, c);
+            if (!id) continue;
+            if (hiddenDeletedIds.has(id)) continue;
+            byId.set(id, c);
           }
 
-          for (const old of (jobs || [])){
+                  for (const old of (jobs || [])){
             const id = String(old?.job_id || old?.id || "").trim();
             if (!id) continue;
+            if (hiddenDeletedIds.has(id)) continue;
 
             if (byId.has(id)) {
               const merged = mergePreferDbButKeepReady(old, byId.get(id));
               byId.set(id, merged);
-            } else {
-              byId.set(id, old);
             }
           }
 
