@@ -527,13 +527,7 @@ function renderCard(it) {
   const ready = isReady(it) && !!String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
   const videoUrl = String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
 
-  const ratio = String(
-    it?.meta?.aspect_ratio ||
-    it?.meta?.ratio ||
-    it?.outputs?.[0]?.meta?.aspect_ratio ||
-    it?.outputs?.[0]?.meta?.ratio ||
-    ""
-  ).trim();
+ const ratio = "16:9";
 
   const title = formatKind(it);
   const sub = String(it?.meta?.prompt || it?.meta?.title || it?.title || "").trim();
