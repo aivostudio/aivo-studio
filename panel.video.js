@@ -670,8 +670,8 @@ const sub = "";
       if (!btn) return;
 
      const act = btn.dataset.act || btn.dataset.svcAct;
-      const card = btn.closest(".vpCard");
-      const id = String(btn.dataset.id || card?.dataset?.id || "").trim();
+     const card = btn.closest(".vpCard, .svcCard");
+const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId || "").trim();
       if (!id) return;
 
       e.preventDefault();
