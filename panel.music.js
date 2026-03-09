@@ -685,8 +685,16 @@ function render(){
     const jobId = card.getAttribute("data-job-id") || "";
     if (!jobId) return;
 
-    const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-    const src = String(existing.__audio_src || card.dataset.src || "").trim();
+     const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+
+  const dbJobId = String(
+    existing.__db_job_id ||
+    jobs.find(x => {
+      const xid = String(x.job_id || x.id || "");
+      return xid.startsWith(baseId + "::") && x.__db_job_id;
+    })?.__db_job_id ||
+    ""
+  ).trim();
 
     if (!src){
       toast("info", "Henüz hazır değil");
