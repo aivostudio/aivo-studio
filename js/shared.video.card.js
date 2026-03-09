@@ -279,7 +279,7 @@
     const canShare = !!opts?.canShare;
     const canDelete = opts?.canDelete !== false;
 
-    return `
+   return `
       <div class="svcCard" data-svc-id="${esc(id)}">
         <div class="svcMedia ${portrait ? "is-portrait" : ""}">
           <div class="svcBadge ${badgeClass(badgeKind)}">${esc(badgeText)}</div>
@@ -288,51 +288,48 @@
             <button class="svcIconBtn" type="button" data-svc-act="fs" data-id="${esc(id)}" title="Büyüt" aria-label="Büyüt">⛶</button>
           </div>
 
-    ```
-  ${
-    ready && videoUrl
-      ? `
-        <video
-          class="svcVideo"
-          preload="metadata"
-          playsinline
-          webkit-playsinline
-          muted
-          ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-          src="${esc(videoUrl)}"
-        ></video>
+          ${
+            ready && videoUrl
+              ? `
+                <video
+                  class="svcVideo"
+                  preload="metadata"
+                  playsinline
+                  webkit-playsinline
+                  muted
+                  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+                  src="${esc(videoUrl)}"
+                ></video>
 
-        <div class="svcOverlay">
-          <div class="svcOverlayBtns">
-            <button class="svcOvBtn" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
-            <button class="svcOvBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
-            <button class="svcOvBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
-            <button class="svcOvBtn svcOvBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
-          </div>
+                <div class="svcOverlay">
+                  <div class="svcOverlayBtns">
+                    <button class="svcOvBtn" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
+                    <button class="svcOvBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
+                    <button class="svcOvBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
+                    <button class="svcOvBtn svcOvBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
+                  </div>
+                </div>
+              `
+              : `
+                <div class="svcSkel"></div>
+                <div class="svcFallback">
+                  <div class="svcFallbackIcon">▶</div>
+                </div>
+              `
+          }
         </div>
-      `
-      : `
-        <div class="svcSkel"></div>
-        <div class="svcFallback">
-          <div class="svcFallbackIcon">▶</div>
+
+        <div class="svcBody">
+          <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
+          <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
         </div>
-      `
+      </div>
+    `;
   }
-</div>
-
-<div class="svcBody">
-  <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
-  <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
-</div>
-```
-
-  </div>
-`;
-}
 
 
   window.AIVO_SHARED_VIDEO_CARD = {
     createCardHtml,
     ensureStyles,
   };
-})(); 
+})();
