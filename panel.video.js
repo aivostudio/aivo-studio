@@ -522,15 +522,53 @@
     `;
   }
 
-  function renderCard(it) {
-    const jid = idOf(it) || uid();
+function renderCard(it) {
+  const jid = idOf(it) || uid();
+  const ready = isReady(it) && !!String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
+  const videoUrl = String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
+
+  const ratio = String(
+    it?.meta?.aspect_ratio ||
+    it?.meta?.ratio ||
+    it?.outputs?.[0]?.meta?.aspect_ratio ||
+    it?.outputs?.[0]?.meta?.ratio ||
+    ""
+  ).trim();
+
+  const title = formatKind(it);
+  const sub = String(it?.meta?.prompt || it?.meta?.title || it?.title || "").trim();
+
+  const badgeText = normalizeBadge(it);
+  const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
+
+  if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
     return `
       <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
-        ${renderThumb(it)}
-        ${renderMeta(it)}
+        ${window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+          id: jid,
+          title,
+          sub,
+          badgeText,
+          badgeKind,
+          videoUrl,
+          posterUrl: "",
+          ratio,
+          ready,
+          canDownload: ready,
+          canShare: ready,
+          canDelete: true
+        })}
       </div>
     `;
   }
+
+  return `
+    <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
+      ${renderThumb(it)}
+      ${renderMeta(it)}
+    </div>
+  `;
+}
 
   function render(host) {
     const grid = findGrid(host);
