@@ -23,7 +23,7 @@
     if (document.getElementById("aivoSharedVideoCardStyles")) return;
 
     const css = `
-      .svcCard{
+    .svcCard{
   position:relative;
   border-radius:18px;
   overflow:hidden;
@@ -31,7 +31,6 @@
   border:1px solid rgba(255,255,255,.07);
   backdrop-filter:blur(10px);
 }
-
       ..svcMedia{
   position:relative;
   margin:0;
@@ -223,15 +222,20 @@
   min-height:56px;
 }
 
-      .svcTitle{
-        font-size:13px;
-        font-weight:800;
-        line-height:1.3;
-        color:rgba(255,255,255,.96);
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
+     .svcTitle{
+  display:block;
+  width:100%;
+  font-size:12px;
+  font-weight:500;
+  line-height:1.35;
+  color:rgba(255,255,255,.95);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.svcSub{
+  display:none !important;
+}
 
       .svcSub{
         font-size:12px;
