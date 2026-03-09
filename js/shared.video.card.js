@@ -288,44 +288,48 @@
             <button class="svcIconBtn" type="button" data-svc-act="fs" data-id="${esc(id)}" title="Büyüt" aria-label="Büyüt">⛶</button>
           </div>
 
-          ${
-            ready && videoUrl
-              ? `
-                <video
-                  class="svcVideo"
-                  preload="metadata"
-                  playsinline
-                  webkit-playsinline
-                  muted
-                  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-                  src="${esc(videoUrl)}"
-                ></video>
-                <div class="svcOverlay">
-                  <div class="svcPlay">▶</div>
-                </div>
-              `
-              : `
-                <div class="svcSkel"></div>
-                <div class="svcFallback">
-                  <div class="svcFallbackIcon">▶</div>
-                </div>
-              `
-          }
-        </div>
+    ```
+  ${
+    ready && videoUrl
+      ? `
+        <video
+          class="svcVideo"
+          preload="metadata"
+          playsinline
+          webkit-playsinline
+          muted
+          ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+          src="${esc(videoUrl)}"
+        ></video>
 
-        <div class="svcBody">
-          <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
-          <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
-
-          <div class="svcActions">
-            <button class="svcAction" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"}>İndir</button>
-            <button class="svcAction" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"}>Paylaş</button>
-            <button class="svcAction is-danger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"}>Sil</button>
+        <div class="svcOverlay">
+          <div class="svcOverlayBtns">
+            <button class="svcOvBtn" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
+            <button class="svcOvBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
+            <button class="svcOvBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
+            <button class="svcOvBtn svcOvBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
           </div>
         </div>
-      </div>
-    `;
+      `
+      : `
+        <div class="svcSkel"></div>
+        <div class="svcFallback">
+          <div class="svcFallbackIcon">▶</div>
+        </div>
+      `
   }
+</div>
+
+<div class="svcBody">
+  <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
+  <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
+</div>
+```
+
+  </div>
+`;
+}
+
 
   window.AIVO_SHARED_VIDEO_CARD = {
     createCardHtml,
