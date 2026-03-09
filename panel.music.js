@@ -1041,6 +1041,7 @@ function actionLyrics(card){
 }
 async function actionDelete(card){
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+  if (!jobId) return;
 
   const variant =
     jobId.endsWith("::orig") ? "orig" :
@@ -1052,21 +1053,52 @@ async function actionDelete(card){
 
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  console.log("[MUSIC_DELETE_DEBUG]", {
+  console.log("[MUSIC_DELETE_RESTORE]", {
     jobId,
     variant,
     dbJobId,
-    existing,
-    jobsSnapshot: (jobs || []).map(x => ({
-      job_id: x?.job_id || x?.id || "",
-      __db_job_id: x?.__db_job_id || "",
-      provider_job_id: x?.provider_job_id || "",
-      __provider_song_id: x?.__provider_song_id || "",
-      __ui_state: x?.__ui_state || ""
-    }))
+    existing
   });
 
-  toast("error", "Delete debug log basıldı. Console'a bak.");
+  if (!dbJobId || !variant) {
+    toast("error", "Silme için DB id veya variant bulunamadı");
+    return;
+  }
+
+  try {
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        job_id: dbJobId,
+        variant
+      })
+    });
+
+    const j = await r.json().catch(() => null);
+
+    console.log("[DELETE_RES]", {
+      ok: r.ok,
+      status: r.status,
+      data: j
+    });
+
+    if (!r.ok || !j?.ok) {
+      toast("error", "Silme başarısız");
+      return;
+    }
+
+    hiddenDeletedIds.add(jobId);
+    removeJob(jobId);
+    toast("success", "Silindi");
+
+    try { await hydrateFromDBOnce(); } catch {}
+    try { dbCtrl?.hydrate?.(); } catch {}
+  } catch (e){
+    console.warn("[panel.music] delete failed", e);
+    toast("error", "Silme hatası");
+  }
 }
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
