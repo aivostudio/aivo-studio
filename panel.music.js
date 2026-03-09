@@ -1608,6 +1608,9 @@ async function actionDelete(card){
 }
 
   function setMusicHostForEvents(el){
+    if (!window.__AIVO_MUSIC_EVENTS__) {
+  window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
+}
     window.__AIVO_MUSIC_EVENTS__.host = el || null;
     if (window.__AIVO_MUSIC_EVENTS__.attached) return;
     window.__AIVO_MUSIC_EVENTS__.attached = true;
