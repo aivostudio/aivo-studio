@@ -1470,8 +1470,14 @@ async function actionDelete(card){
 
       upsertJob(next);
 
-      const me = (jobs || []).find((x) => getJobId(x) === id) || {};
-      const other = (jobs || []).find((x) => getJobId(x) === otherId) || {};
+     const existingMe = (jobs || []).find((x) => getJobId(x) === id) || {};
+const existingOther = (jobs || []).find((x) => getJobId(x) === otherId) || {};
+
+const familyWasAlreadyReady =
+  String(existingMe.__ui_state || "") === "ready" &&
+  !!String(existingMe.__audio_src || "").trim() &&
+  String(existingOther.__ui_state || "") === "ready" &&
+  !!String(existingOther.__audio_src || "").trim();
 
       const meSrc = String(me.__pending_src || me.__audio_src || "").trim();
       const otherSrc = String(other.__pending_src || other.__audio_src || "").trim();
@@ -1514,10 +1520,10 @@ async function actionDelete(card){
 
         render();
 
-        if (baseId && !READY_TOASTED.has(baseId)) {
-          READY_TOASTED.add(baseId);
-          toast("success", "Müzikler hazır 🎵");
-        }
+        if (baseId && !READY_TOASTED.has(baseId) && !familyWasAlreadyReady) {
+  READY_TOASTED.add(baseId);
+  toast("success", "Müzikler hazır 🎵");
+}
         return;
       }
 
