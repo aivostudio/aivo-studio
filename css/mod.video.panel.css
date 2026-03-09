@@ -824,3 +824,23 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   filter: drop-shadow(0 2px 6px rgba(0,0,0,.55));
   opacity: 0.95;
 }
+/* =========================
+   VIDEO CARD TITLE AREA
+   ========================= */
+
+.vpBottom{
+  padding:12px 12px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:56px;
+}
+
+.vpName{
+  font-size:13px;
+  font-weight:500;
+  opacity:.95;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
