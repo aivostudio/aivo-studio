@@ -46,7 +46,7 @@
       .svcMedia::before{
         content:"";
         display:block;
-        padding-top:56.25%;
+        padding-top:68%;
       }
 
       .svcMedia.is-portrait::before{
