@@ -1045,21 +1045,10 @@ async function actionDelete(card){
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   if (!jobId) return;
 
-  const baseId = String(jobId).split("::")[0].trim();
-  if (!baseId) return;
-
   const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
+  const dbJobId = String(existing.__db_job_id || "").trim();
 
-  const dbJobId = String(
-    existing.__db_job_id ||
-    jobs.find(x => {
-      const xid = String(x.job_id || x.id || "").trim();
-      return xid.startsWith(baseId + "::") && x.__db_job_id;
-    })?.__db_job_id ||
-    ""
-  ).trim();
-
-  console.log("[MUSIC_DELETE_DBID]", { jobId, baseId, dbJobId, existing });
+  console.log("[MUSIC_DELETE_DBID]", { jobId, dbJobId, existing });
 
   if (!dbJobId) {
     removeJob(jobId);
@@ -1088,8 +1077,7 @@ async function actionDelete(card){
       return;
     }
 
-    removeJob(`${baseId}::orig`);
-    removeJob(`${baseId}::rev1`);
+    removeJob(jobId);
     toast("success","Silindi");
 
     try { dbCtrl?.hydrate?.(); } catch {}
@@ -1098,7 +1086,6 @@ async function actionDelete(card){
     toast("error","Silme hatası");
   }
 }
-
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
   const card = e.target.closest(".aivo-player-card");
