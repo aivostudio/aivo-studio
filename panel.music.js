@@ -1040,66 +1040,33 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
-  console.log("[MUSIC_DELETE_FN]", { jobId: card?.getAttribute("data-job-id") || "" });
-
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
-  if (!jobId) return;
 
- const variant = jobId.endsWith("::orig")
-  ? "orig"
-  : jobId.endsWith("::rev1")
-  ? "rev1"
-  : (() => {
-      const parent = card?.parentElement;
-      const cards = parent ? Array.from(parent.querySelectorAll(".aivo-player-card")) : [];
-      const idx = cards.indexOf(card);
-      return idx >= 0 ? (idx % 2 === 0 ? "orig" : "rev1") : "";
-    })();
+  const variant =
+    jobId.endsWith("::orig") ? "orig" :
+    jobId.endsWith("::rev1") ? "rev1" :
+    "";
 
-  const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
+  const existing =
+    jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
+
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  console.log("[MUSIC_DELETE_DBID]", { jobId, variant, dbJobId, existing });
+  console.log("[MUSIC_DELETE_DEBUG]", {
+    jobId,
+    variant,
+    dbJobId,
+    existing,
+    jobsSnapshot: (jobs || []).map(x => ({
+      job_id: x?.job_id || x?.id || "",
+      __db_job_id: x?.__db_job_id || "",
+      provider_job_id: x?.provider_job_id || "",
+      __provider_song_id: x?.__provider_song_id || "",
+      __ui_state: x?.__ui_state || ""
+    }))
+  });
 
-  if (!dbJobId || !variant) {
-    toast("error", "Silme için DB id veya variant bulunamadı");
-    return;
-  }
-
-  try {
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        job_id: dbJobId,
-        variant
-      })
-    });
-
-    const j = await r.json().catch(() => null);
-
-    console.log("[DELETE_RES]", {
-      ok: r.ok,
-      status: r.status,
-      data: j
-    });
-
-    if (!r.ok || !j?.ok) {
-      toast("error", "Silme başarısız");
-      return;
-    }
-
-    hiddenDeletedIds.add(jobId);
-    removeJob(jobId);
-    toast("success","Silindi");
-
-    try { await hydrateFromDBOnce(); } catch {}
-    try { dbCtrl?.hydrate?.(); } catch {}
-  } catch (e){
-    console.warn("[panel.music] delete failed", e);
-    toast("error","Silme hatası");
-  }
+  toast("error", "Delete debug log basıldı. Console'a bak.");
 }
 function onCardClick(e){
   const btn  = e.target.closest("[data-action]");
