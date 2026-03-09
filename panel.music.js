@@ -1040,28 +1040,19 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
+  console.log("[MUSIC_DELETE_FN]", { jobId: card?.getAttribute("data-job-id") || "" });
+
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   if (!jobId) return;
 
-  const variant =
-    jobId.endsWith("::orig") ? "orig" :
-    jobId.endsWith("::rev1") ? "rev1" :
-    "";
-
-  const existing =
-    jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
-
+  const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  console.log("[MUSIC_DELETE_RESTORE]", {
-    jobId,
-    variant,
-    dbJobId,
-    existing
-  });
+  console.log("[MUSIC_DELETE_DBID]", { jobId, dbJobId, existing });
 
-  if (!dbJobId || !variant) {
-    toast("error", "Silme için DB id veya variant bulunamadı");
+  if (!dbJobId) {
+    removeJob(jobId);
+    toast("success","Silindi");
     return;
   }
 
@@ -1070,10 +1061,7 @@ async function actionDelete(card){
       method: "POST",
       credentials: "include",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        job_id: dbJobId,
-        variant
-      })
+      body: JSON.stringify({ job_id: dbJobId })
     });
 
     const j = await r.json().catch(() => null);
@@ -1089,15 +1077,13 @@ async function actionDelete(card){
       return;
     }
 
-    hiddenDeletedIds.add(jobId);
     removeJob(jobId);
-    toast("success", "Silindi");
+    toast("success","Silindi");
 
-    try { await hydrateFromDBOnce(); } catch {}
     try { dbCtrl?.hydrate?.(); } catch {}
   } catch (e){
     console.warn("[panel.music] delete failed", e);
-    toast("error", "Silme hatası");
+    toast("error","Silme hatası");
   }
 }
 function onCardClick(e){
@@ -1349,7 +1335,7 @@ const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
     ).trim();
 
     const baseId = provider_job_id || String(row?.job_id || row?.id || "").trim();
-const dbJobId = String(row?.job_id || row?.id || "").trim();
+  const dbJobId = String(row?.job_id || row?.id || "").trim();
     if (!baseId) return [];
 
     const songIds = Array.isArray(meta?.provider_song_ids)
@@ -1373,7 +1359,7 @@ const dbJobId = String(row?.job_id || row?.id || "").trim();
   __db_job_id: dbJobId,
   provider_job_id: provider_job_id || baseId,
       __ui_state: st,
-           // ✅ DB’den boş gelirse bile merge’de eski src korunacak (aşağıda)
+      // ✅ DB’den boş gelirse bile merge’de eski src korunacak (aşağıda)
       __audio_src: String(meta?.audio_src || meta?.audioUrl || "").trim(),
       createdAt: createdMs,
       __createdAt: (row?.created_at || meta?.created_at || ""),
@@ -1384,32 +1370,12 @@ const dbJobId = String(row?.job_id || row?.id || "").trim();
       __duration: String(meta?.duration || "").trim(),
     };
 
-    const deletedVariants = Array.isArray(meta?.deleted_variants)
-      ? meta.deleted_variants.map(x => String(x || "").trim().toLowerCase())
-      : [];
-
-    const cards = [];
-
-    if (!deletedVariants.includes("orig")) {
-      cards.push({
-        ...baseCommon,
-        job_id: `${baseId}::orig`,
-        id: `${baseId}::orig`,
-        __provider_song_id: songIdOrig,
-      });
-    }
-
-    if (!deletedVariants.includes("rev1")) {
-      cards.push({
-        ...baseCommon,
-        job_id: `${baseId}::rev1`,
-        id: `${baseId}::rev1`,
-        __provider_song_id: songIdRev,
-      });
-    }
-
-    return cards;
+    return [
+      { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
+      { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev  },
+    ];
   }
+
   /* ---------------- onJob (generate -> event) ---------------- */
   function onJob(e){
     const payload = e?.detail || e || {};
