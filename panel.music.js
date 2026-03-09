@@ -1547,13 +1547,11 @@ async function actionDelete(card){
       __duration: duration,
     };
 
-    const cards = [
-  { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
-  { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev },
-];
-
-return cards.filter((card) => !hiddenDeletedIds.has(getJobId(card)));
-}
+    return [
+      { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
+      { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev },
+    ];
+  }
 
   function onJob(e){
     const payload = e?.detail || e || {};
