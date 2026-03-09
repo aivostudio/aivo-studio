@@ -85,27 +85,18 @@
       setTimeout(() => t.remove(), 2600);
     }
 
-    const g = window.toast;
-    if (g && typeof g === "object") {
-      const wrap = (fn, type) => (msg) => {
-        try { fn(msg); } catch {}
-        pushToast(type, msg);
-      };
+   const g = window.toast;
+if (g && typeof g === "object") {
+  console.log("[BOOT] existing toast preserved");
+  return;
+}
 
-      if (typeof g.success === "function") g.success = wrap(g.success, "success");
-      if (typeof g.error === "function") g.error = wrap(g.error, "error");
-      if (typeof g.info === "function") g.info = wrap(g.info, "info");
-
-      console.log("[BOOT] toast wrapped with DOM fallback");
-    } else {
-      window.toast = {
-        success: (m) => pushToast("success", m),
-        error: (m) => pushToast("error", m),
-        info: (m) => pushToast("info", m),
-      };
-      console.log("[BOOT] toast fallback installed");
-    }
-  }
+window.toast = {
+  success: (m) => pushToast("success", m),
+  error: (m) => pushToast("error", m),
+  info: (m) => pushToast("info", m),
+};
+console.log("[BOOT] toast fallback installed");
 
   // ------------------------------------------------------------
   // SAFER FETCH (Safari ITP: document.cookie boş görünebilir ama request cookie gider)
