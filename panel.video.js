@@ -521,51 +521,43 @@
       </div>
     `;
   }
+
 function renderCard(it) {
   const jid = idOf(it) || uid();
   const ready = isReady(it) && !!String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
   const videoUrl = String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
 
+ const ratio = "16:9";
+
+  
+
+  const title = String(it?.meta?.prompt || it?.title || formatKind(it) || "").trim();
+const sub = "";
+
   const badgeText = normalizeBadge(it);
-  const promptText = String(it?.meta?.prompt || it?.meta?.title || it?.title || "").trim();
+  const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
+
+ if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+  return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+    id: jid,
+    title,
+    sub,
+    badgeText,
+    badgeKind,
+    videoUrl,
+    posterUrl: "",
+    ratio,
+    ready,
+    canDownload: ready,
+    canShare: ready,
+    canDelete: true
+  });
+}
 
   return `
     <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
-      <div class="vpThumb ${ready ? "" : "is-loading"}">
-        <div class="vpBadge">${esc(badgeText)}</div>
-
-        ${
-          ready && videoUrl
-            ? `
-              <video
-                class="vpVideo"
-                preload="metadata"
-                playsinline
-                webkit-playsinline
-                muted
-                src="${esc(videoUrl)}"
-              ></video>
-            `
-            : `
-              <div class="vpSkel">
-                <div class="vpSkelShimmer"></div>
-              </div>
-            `
-        }
-
-        <div class="vpOverlay" aria-hidden="${ready ? "false" : "true"}">
-          <div class="vpOverlayBtns">
-            <button class="vpBtn" data-act="play" data-id="${esc(jid)}" title="Oynat" ${ready ? "" : "disabled"}>▶</button>
-            <button class="vpBtn" data-act="download" data-id="${esc(jid)}" title="İndir" ${ready ? "" : "disabled"}>⬇</button>
-            <button class="vpBtn" data-act="share" data-id="${esc(jid)}" title="Paylaş" ${ready ? "" : "disabled"}>⤴</button>
-            <button class="vpBtn vpDanger" data-act="delete" data-id="${esc(jid)}" title="Sil">🗑</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="vpBottom">
-        <div class="vpName" title="${esc(promptText)}">${esc(promptText || "Video")}</div>
-      </div>
+      ${renderThumb(it)}
+      ${renderMeta(it)}
     </div>
   `;
 }
