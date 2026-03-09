@@ -1045,11 +1045,16 @@ async function actionDelete(card){
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   if (!jobId) return;
 
-  const variant = jobId.endsWith("::orig")
-    ? "orig"
-    : jobId.endsWith("::rev1")
-    ? "rev1"
-    : "";
+ const variant = jobId.endsWith("::orig")
+  ? "orig"
+  : jobId.endsWith("::rev1")
+  ? "rev1"
+  : (() => {
+      const parent = card?.parentElement;
+      const cards = parent ? Array.from(parent.querySelectorAll(".aivo-player-card")) : [];
+      const idx = cards.indexOf(card);
+      return idx >= 0 ? (idx % 2 === 0 ? "orig" : "rev1") : "";
+    })();
 
   const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
