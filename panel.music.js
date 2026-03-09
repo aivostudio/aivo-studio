@@ -1139,69 +1139,19 @@
     if (memoryFallback) return { dbJobId: memoryFallback, row: null, source: "memory_any" };
     return { dbJobId: "", row: null, source: "none" };
   }
-
+      
 async function actionDelete(card){
   const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   console.log("[MUSIC_DELETE_FN]", { jobId });
   if (!jobId) return;
 
   const baseId = getBaseIdFromJobId(jobId);
+  const isRev = getVariantOfJobId(jobId) === "rev1";
+  const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
 
-  const { dbJobId, row, source } = await resolveDbRowForDelete(jobId, baseId);
+  const otherStillExists = (jobs || []).some((x) => getJobId(x) === otherId);
 
-  console.log("[MUSIC_DELETE_RESOLVE]", {
-    jobId,
-    baseId,
-    dbJobId,
-    source,
-    row
-  });
-
-  if (!dbJobId) {
-  hiddenDeletedIds.add(jobId);
-  clearPoll(jobId);
-  POLL_BUSY.delete(jobId);
-  POLL_LAST.delete(jobId);
-  stemsClearTimer(jobId);
-
-  if (currentJobId === jobId && audioEl) {
-    try { audioEl.pause(); } catch {}
-    currentJobId = null;
-    eqBarsCache.jobId = null;
-    eqBarsCache.bars = null;
-    stopRaf();
-  }
-
-  jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
-  saveJobs();
-  render();
-  toast("success", "Kart kaldırıldı");
-  return;
-}
-
-  try {
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: dbJobId })
-    });
-
-    const j = await r.json().catch(() => null);
-
-    console.log("[DELETE_RES]", {
-      ok: r.ok,
-      status: r.status,
-      data: j,
-      sent_job_id: dbJobId
-    });
-
-   if (!r.ok || !j?.ok) {
-  const staleNotFound =
-    r.status === 404 ||
-    String(j?.error || "").trim() === "not_found_or_not_owned";
-
-  if (staleNotFound) {
+  if (otherStillExists) {
     hiddenDeletedIds.add(jobId);
     clearPoll(jobId);
     POLL_BUSY.delete(jobId);
@@ -1223,9 +1173,70 @@ async function actionDelete(card){
     return;
   }
 
-  toast("error", "Silme başarısız");
-  return;
-}
+  const { dbJobId } = await resolveDbRowForDelete(jobId, baseId);
+
+  if (!dbJobId) {
+    hiddenDeletedIds.add(jobId);
+    clearPoll(jobId);
+    POLL_BUSY.delete(jobId);
+    POLL_LAST.delete(jobId);
+    stemsClearTimer(jobId);
+
+    if (currentJobId === jobId && audioEl) {
+      try { audioEl.pause(); } catch {}
+      currentJobId = null;
+      eqBarsCache.jobId = null;
+      eqBarsCache.bars = null;
+      stopRaf();
+    }
+
+    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+    saveJobs();
+    render();
+    toast("success", "Kart kaldırıldı");
+    return;
+  }
+
+  try {
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ job_id: dbJobId })
+    });
+
+    const j = await r.json().catch(() => null);
+
+    if (!r.ok || !j?.ok) {
+      const staleNotFound =
+        r.status === 404 ||
+        String(j?.error || "").trim() === "not_found_or_not_owned";
+
+      if (staleNotFound) {
+        hiddenDeletedIds.add(jobId);
+        clearPoll(jobId);
+        POLL_BUSY.delete(jobId);
+        POLL_LAST.delete(jobId);
+        stemsClearTimer(jobId);
+
+        if (currentJobId === jobId && audioEl) {
+          try { audioEl.pause(); } catch {}
+          currentJobId = null;
+          eqBarsCache.jobId = null;
+          eqBarsCache.bars = null;
+          stopRaf();
+        }
+
+        jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+        saveJobs();
+        render();
+        toast("success", "Kart kaldırıldı");
+        return;
+      }
+
+      toast("error", "Silme başarısız");
+      return;
+    }
 
     hiddenDeletedIds.add(jobId);
     clearPoll(jobId);
@@ -1253,7 +1264,6 @@ async function actionDelete(card){
     toast("error", "Silme hatası");
   }
 }
-
   function onCardClick(e){
     const btn = e.target.closest("[data-action]");
     const card = e.target.closest(".aivo-player-card");
