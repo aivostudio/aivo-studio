@@ -31,14 +31,13 @@
   border:1px solid rgba(255,255,255,.07);
   backdrop-filter:blur(10px);
 }
-    .svcMedia{
+      ..svcMedia{
   position:relative;
-  margin:12px 12px 0 12px;
-  border-radius:16px;
+  margin:0;
+  border-radius:16px 16px 0 0;
   overflow:hidden;
   background:#050505;
-  border:1px solid rgba(255,255,255,.08);
-  flex:none;
+  border:none;
 }
       .svcMedia::before{
         content:"";
@@ -216,9 +215,11 @@
         cursor:not-allowed;
       }
 .svcBody{
-  padding:12px 12px 14px 12px;
-  display:block;
-  min-height:44px;
+  padding:12px 12px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:56px;
 }
 
      .svcTitle{
