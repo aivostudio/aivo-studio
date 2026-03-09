@@ -1145,9 +1145,10 @@ async function actionDelete(card){
   console.log("[MUSIC_DELETE_FN]", { jobId });
   if (!jobId) return;
 
-  const baseId = getBaseIdFromJobId(jobId);
+ const baseId = getBaseIdFromJobId(jobId);
+const variant = getVariantOfJobId(jobId);
 
-  const { dbJobId, row, source } = await resolveDbRowForDelete(jobId, baseId);
+const { dbJobId, row, source } = await resolveDbRowForDelete(jobId, baseId);
 
   console.log("[MUSIC_DELETE_RESOLVE]", {
     jobId,
@@ -1178,15 +1179,17 @@ async function actionDelete(card){
   toast("success", "Kart kaldırıldı");
   return;
 }
-
-  try {
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: dbJobId })
-    });
-
+try {
+  const r = await fetch("/api/jobs/delete", {
+    method: "POST",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      job_id: dbJobId,
+      app: "music",
+      variant: getVariantOfJobId(jobId)
+    })
+  });
     const j = await r.json().catch(() => null);
 
     console.log("[DELETE_RES]", {
