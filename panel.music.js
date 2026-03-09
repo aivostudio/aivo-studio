@@ -1206,7 +1206,7 @@ async function actionDelete(card){
     jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
     saveJobs();
     render();
-    toast("success", "Kart kaldırıldı");
+   toast("success", "Silindi");
     return;
   } catch (e) {
     console.warn("[panel.music] variant delete failed", e);
@@ -1235,7 +1235,7 @@ async function actionDelete(card){
     jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
     saveJobs();
     render();
-    toast("success", "Kart kaldırıldı");
+    toast("success", "Silindi");
     return;
   }
 
@@ -1272,7 +1272,7 @@ async function actionDelete(card){
         jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
         saveJobs();
         render();
-        toast("success", "Kart kaldırıldı");
+      toast("success", "Silindi");
         return;
       }
 
