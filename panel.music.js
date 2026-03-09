@@ -1046,29 +1046,35 @@ async function actionDelete(card){
   if (!jobId) return;
 
   const baseId = String(jobId).split("::")[0].trim();
-  if (!baseId) return;
 
-  const findDbJobId = () => {
-    const direct = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
-    if (String(direct.__db_job_id || "").trim()) {
-      return String(direct.__db_job_id || "").trim();
-    }
+  const findDirect = () =>
+    jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
 
-    const sibling = jobs.find(x => {
+  const findSiblingWithDbId = () =>
+    jobs.find(x => {
       const xid = String(x.job_id || x.id || "").trim();
       return xid.startsWith(baseId + "::") && String(x.__db_job_id || "").trim();
     }) || {};
 
-    return String(sibling.__db_job_id || "").trim();
-  };
+  let existing = findDirect();
+  let dbJobId = String(existing.__db_job_id || "").trim();
 
-  let dbJobId = findDbJobId();
+  if (!dbJobId) {
+    const sibling = findSiblingWithDbId();
+    dbJobId = String(sibling.__db_job_id || "").trim();
+  }
 
-  console.log("[MUSIC_DELETE_DBID_BEFORE]", { jobId, baseId, dbJobId });
+  console.log("[MUSIC_DELETE_DBID_BEFORE]", { jobId, baseId, dbJobId, existing });
 
   if (!dbJobId) {
     try { await hydrateFromDBOnce(); } catch {}
-    dbJobId = findDbJobId();
+    existing = findDirect();
+    dbJobId = String(existing.__db_job_id || "").trim();
+
+    if (!dbJobId) {
+      const sibling = findSiblingWithDbId();
+      dbJobId = String(sibling.__db_job_id || "").trim();
+    }
   }
 
   console.log("[MUSIC_DELETE_DBID_AFTER]", { jobId, baseId, dbJobId });
@@ -1100,7 +1106,29 @@ async function actionDelete(card){
       return;
     }
 
-    removeJob(jobId);
+    const sameRowIds = jobs
+      .filter(x => String(x.__db_job_id || "").trim() === dbJobId)
+      .map(x => String(x.job_id || x.id || "").trim())
+      .filter(Boolean);
+
+    const idsToRemove = sameRowIds.length ? sameRowIds : [jobId];
+
+    idsToRemove.forEach(id => {
+      hiddenDeletedIds.add(id);
+      clearPoll(id);
+      if (currentJobId === id && audioEl) {
+        try { audioEl.pause(); } catch {}
+        currentJobId = null;
+        eqBarsCache.jobId = null;
+        eqBarsCache.bars = null;
+        stopRaf();
+      }
+    });
+
+    jobs = jobs.filter(x => !idsToRemove.includes(String(x.job_id || x.id || "").trim()));
+    saveJobs();
+    render();
+
     toast("success", "Silindi");
 
     try { await hydrateFromDBOnce(); } catch {}
