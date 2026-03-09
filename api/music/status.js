@@ -442,15 +442,23 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
 
     if (Array.isArray(arr) && arr.length) {
       for (const item of arr) {
-        const st = Number(item?.status);
-        const trackId = String(item?.song_id || item?.id || "").trim() || null;
-        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+       const st = Number(item?.status);
+const trackId = String(item?.song_id || item?.id || "").trim() || null;
+const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+const failReason = String(item?.fail_reason || item?.failReason || "").trim();
+const failCode = String(item?.fail_code || item?.failCode || "").trim();
 
-        const ready = !!urlMp3 && (READY_STATUSES.has(st) || !Number.isFinite(st));
+const ready = !!urlMp3 && (READY_STATUSES.has(st) || !Number.isFinite(st));
 
-        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
-          anyFail = true;
-        }
+if (
+  st < 0 ||
+  st === 3 ||
+  !!failReason ||
+  !!failCode ||
+  String(item?.state || "").toUpperCase().includes("FAIL")
+) {
+  anyFail = true;
+}
 
         if (ready && urlMp3) {
           anyReady = true;
