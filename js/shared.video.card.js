@@ -23,13 +23,15 @@
     if (document.getElementById("aivoSharedVideoCardStyles")) return;
 
     const css = `
-    .svcCard{
+   .svcCard{
   position:relative;
   border-radius:18px;
   overflow:hidden;
   background:rgba(255,255,255,.03);
   border:1px solid rgba(255,255,255,.07);
   backdrop-filter:blur(10px);
+  display:flex;
+  flex-direction:column;
 }
       ..svcMedia{
   position:relative;
@@ -215,11 +217,9 @@
         cursor:not-allowed;
       }
 .svcBody{
-  padding:12px 12px 14px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-height:56px;
+  display:block;
+  padding:12px 12px 14px 12px;
+  min-height:52px;
 }
 
      .svcTitle{
