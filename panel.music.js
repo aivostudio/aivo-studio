@@ -28,6 +28,7 @@
   let listEl = null;
   let alive  = false;
   let jobs   = [];
+  const hiddenDeletedIds = new Set();
 
   // audio engine
   let audioEl = null;
@@ -330,9 +331,11 @@ function setEqBars(L, M, H){
     saveJobs();
   }
 
-  function removeJob(jobId){
+    function removeJob(jobId){
     jobId = String(jobId || "").trim();
     if (!jobId) return;
+
+    hiddenDeletedIds.add(jobId);
 
     if (currentJobId === jobId && audioEl){
       try { audioEl.pause(); } catch {}
@@ -345,7 +348,7 @@ function setEqBars(L, M, H){
 
     clearPoll(jobId);
 
-    jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
+    jobs = jobs.filter(j => String(j.job_id || j.id || "").trim() !== jobId);
     saveJobs();
     render();
   }
@@ -580,7 +583,12 @@ function render(){
   if (!hostEl || !listEl) return;
   if (window.RightPanel?.getCurrentKey?.() !== "music") return;
 
-  const view = jobs.filter(j => j?.job_id || j?.id);
+  const view = jobs.filter(j => {
+    const id = String(j?.job_id || j?.id || "").trim();
+    if (!id) return false;
+    if (hiddenDeletedIds.has(id)) return false;
+    return true;
+  });
 
   view.sort((a, b) => {
     const aid = String(a.job_id || a.id || "");
@@ -1032,38 +1040,33 @@ function actionLyrics(card){
   document.body.appendChild(modal);
 }
 async function actionDelete(card){
-  const jobId = card?.getAttribute("data-job-id") || "";
+  const jobId = String(card?.getAttribute("data-job-id") || "").trim();
   if (!jobId) return;
 
-  const baseId = String(jobId).split("::")[0];
+  const baseId = String(jobId).split("::")[0].trim();
   if (!baseId) return;
 
-  const isRev = String(jobId).includes("::rev1");
-  const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
+  const origId = `${baseId}::orig`;
+  const revId  = `${baseId}::rev1`;
 
-  // ✅ DB uuid (jobs tablosundaki gerçek id) -> mapDbJobToCards içinde __db_job_id set ediliyor
-  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const existing = jobs.find(x => String(x.job_id || x.id || "").trim() === jobId) || {};
   const dbJobId = String(existing.__db_job_id || "").trim();
 
-  // ✅ diğer kart hâlâ duruyor mu? (state üzerinden)
-  const otherStillExists = jobs.some(x => (x.job_id || x.id) === otherId);
-
-  // ✅ 1) Eğer diğer kart duruyorsa: sadece tıklanan kartı sil, DB delete YOK
-  if (otherStillExists) {
-    removeJob(jobId);
-    toast("success","Silindi");
-    return;
-  }
-
-  // ✅ 2) Diğer kart da yoksa: grup bitti.
-  // DB uuid yoksa backend delete atamayız → sadece tıklanan kartı sil
   if (!dbJobId) {
-    removeJob(jobId);
+    hiddenDeletedIds.add(origId);
+    hiddenDeletedIds.add(revId);
+
+    jobs = jobs.filter(j => {
+      const id = String(j.job_id || j.id || "").trim();
+      return id !== origId && id !== revId;
+    });
+
+    saveJobs();
+    render();
     toast("success","Silindi");
     return;
   }
 
-  // ✅ 3) Son kart: DB soft delete -> OK olursa UI'dan kaldır
   try {
     const r = await fetch("/api/jobs/delete", {
       method: "POST",
@@ -1079,7 +1082,18 @@ async function actionDelete(card){
       return;
     }
 
-    removeJob(jobId);
+    hiddenDeletedIds.add(origId);
+    hiddenDeletedIds.add(revId);
+
+    jobs = jobs.filter(x => {
+      const id = String(x.job_id || x.id || "").trim();
+      return id !== origId && id !== revId;
+    });
+
+    saveJobs();
+    render();
+
+    try { dbCtrl?.hydrate?.(); } catch {}
     toast("success","Silindi");
   } catch (e){
     console.warn("[panel.music] delete failed", e);
@@ -1524,9 +1538,11 @@ function getHeader(){
       const byId = new Map();
 
       // önce DB
-      for (const c of dbCards){
+           for (const c of dbCards){
         const id = String(c?.job_id || c?.id || "").trim();
-        if (id) byId.set(id, c);
+        if (!id) continue;
+        if (hiddenDeletedIds.has(id)) continue;
+        byId.set(id, c);
       }
 
       // sonra eski (LS) -> merge
@@ -1609,20 +1625,21 @@ function getHeader(){
           }
 
           const byId = new Map();
-          for (const c of dbCards){
+                  for (const c of dbCards){
             const id = String(c?.job_id || c?.id || "").trim();
-            if (id) byId.set(id, c);
+            if (!id) continue;
+            if (hiddenDeletedIds.has(id)) continue;
+            byId.set(id, c);
           }
 
-          for (const old of (jobs || [])){
+                  for (const old of (jobs || [])){
             const id = String(old?.job_id || old?.id || "").trim();
             if (!id) continue;
+            if (hiddenDeletedIds.has(id)) continue;
 
             if (byId.has(id)) {
               const merged = mergePreferDbButKeepReady(old, byId.get(id));
               byId.set(id, merged);
-            } else {
-              byId.set(id, old);
             }
           }
 
