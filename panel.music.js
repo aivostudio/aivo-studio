@@ -1385,31 +1385,11 @@ const dbJobId = String(row?.job_id || row?.id || "").trim();
       __duration: String(meta?.duration || "").trim(),
     };
 
-  const deletedVariants = Array.isArray(meta?.deleted_variants)
-  ? meta.deleted_variants.map(x => String(x || "").trim().toLowerCase())
-  : [];
-
-const cards = [];
-
-if (!deletedVariants.includes("orig")) {
-  cards.push({
-    ...baseCommon,
-    job_id: `${baseId}::orig`,
-    id: `${baseId}::orig`,
-    __provider_song_id: songIdOrig
-  });
-}
-
-if (!deletedVariants.includes("rev1")) {
-  cards.push({
-    ...baseCommon,
-    job_id: `${baseId}::rev1`,
-    id: `${baseId}::rev1`,
-    __provider_song_id: songIdRev
-  });
-}
-
-return cards;
+    return [
+      { ...baseCommon, job_id: `${baseId}::orig`, id: `${baseId}::orig`, __provider_song_id: songIdOrig },
+      { ...baseCommon, job_id: `${baseId}::rev1`, id: `${baseId}::rev1`, __provider_song_id: songIdRev  },
+    ];
+  }
 
   /* ---------------- onJob (generate -> event) ---------------- */
   function onJob(e){
