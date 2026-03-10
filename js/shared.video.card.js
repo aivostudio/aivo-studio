@@ -270,8 +270,8 @@
       }
 .svcBody{
   display:block;
-  padding:12px 12px 14px 12px;
-  min-height:52px;
+  padding:10px 12px 10px 12px;
+  min-height:40px;
 }
 
      .svcTitle{
