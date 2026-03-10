@@ -361,39 +361,36 @@ const probingUrls = new Set();
               )}"></video>`
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
-    const playbackUrl = hasUrl
+ const playbackUrl = hasUrl
   ? (/^https?:\/\//i.test(String(outUrl))
       ? "/api/media/proxy?url=" + encodeURIComponent(outUrl)
       : outUrl)
   : "";
 
-if (playbackUrl && badge.kind !== "bad" && !playableUrls.has(playbackUrl)) {
-  probePlayableUrl(playbackUrl);
-}
-
 const previewUrl = playbackUrl
   ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
   : "";
 
-const isPlayableNow = playableUrls.has(playbackUrl) && badge.kind !== "bad";
-          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
-                window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                  id: safeStr(job.job_id || ""),
-                  title: promptLine || "—",
-                  sub: "",
-                  badgeText: badge.text,
-                 badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-videoUrl: previewUrl,
-posterUrl: "",
-ratio: portrait ? "9:16" : "16:9",
-ready: isPlayableNow,
-canDownload: isPlayableNow,
-canShare: isPlayableNow,
-canDelete: true
-                }) +
-              '</div>'
-            : "";
+const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+
+return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+  ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
+      window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+        id: safeStr(job.job_id || ""),
+        title: promptLine || "—",
+        sub: "",
+        badgeText: badge.text,
+        badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+        videoUrl: previewUrl,
+        posterUrl: "",
+        ratio: portrait ? "9:16" : "16:9",
+        ready: isPlayableNow,
+        canDownload: isPlayableNow,
+        canShare: isPlayableNow,
+        canDelete: true
+      }) +
+    '</div>'
+  : "";
         })
         .join("");
     }
