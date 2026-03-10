@@ -339,7 +339,7 @@
       $grid.innerHTML = items
         .slice(0, 30)
         .map((job) => {
-          const badge = badgeFor(job);
+         
 
           // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
         const outUrl = safeStr(job.url) || bestVideoFromJob(job);
