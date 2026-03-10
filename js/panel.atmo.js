@@ -353,19 +353,36 @@
         .join("");
     }
 
-    async function handleAction(cardEl, act) {
-      
+     async function handleAction(cardEl, act) {
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
       const url = safeStr(cardEl?.getAttribute("data-url"));
-      if (act === "play") {
-      const video = cardEl?.querySelector("video");
-      if (!video) return;
 
-      if (video.paused) {
-       video.play().catch(() => {});
-       } else {
-       video.pause();
-       }
+      if (act === "play") {
+        const video = cardEl?.querySelector("video");
+        if (!video) return;
+
+        if (video.paused) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+        return;
+      }
+
+      if (act === "fs") {
+        const video = cardEl?.querySelector("video");
+        if (!video) return;
+
+        try {
+          if (document.fullscreenElement) {
+            await document.exitFullscreen().catch(() => {});
+            return;
+          }
+
+          if (video.requestFullscreen) {
+            await video.requestFullscreen().catch(() => {});
+          }
+        } catch {}
         return;
       }
 
@@ -384,8 +401,11 @@
       if (act === "share") {
         if (!url) return;
         try {
-          if (navigator.share) await navigator.share({ title: "Atmosfer Video", url });
-          else await navigator.clipboard.writeText(url);
+          if (navigator.share) {
+            await navigator.share({ title: "Atmosfer Video", url });
+          } else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+          }
         } catch {}
         return;
       }
@@ -393,12 +413,10 @@
       if (act === "delete") {
         if (!jobId) return;
 
-        // önce ephemerals’tan sil
         state.ephemerals = (state.ephemerals || []).filter(
           (x) => safeStr(x?.job_id) !== jobId
         );
 
-        // DB varsa DBJobs delete dene
         if (db && typeof db.deleteJob === "function") {
           const ok = await db.deleteJob(jobId);
           if (!ok) db.hydrate(true);
@@ -413,17 +431,24 @@
       }
     }
 
-   $grid?.addEventListener("click", (e) => {
-  const btn = e.target?.closest?.("[data-act], [data-svc-act]");
-  if (!btn) return;
+    $grid?.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.("[data-svc-act], [data-act]");
+      if (!btn) return;
 
-  const act = btn.getAttribute("data-act") || btn.getAttribute("data-svc-act");
-  const card = btn.closest(".atmoCard, .svcCard");
-  if (!act || !card) return;
+      const act =
+        safeStr(btn.getAttribute("data-svc-act")) ||
+        safeStr(btn.getAttribute("data-act"));
+      if (!act) return;
 
-  if (btn.hasAttribute("disabled")) return;
-  handleAction(card, act);
-});
+      if (btn.hasAttribute("disabled")) return;
+
+      const wrapperCard = btn.closest(".atmoCard");
+      const sharedCard = btn.closest(".svcCard");
+      const card = wrapperCard || sharedCard;
+      if (!card) return;
+
+      handleAction(card, act);
+    });
 
     // --- DB controller ---
     const db =
