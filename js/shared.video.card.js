@@ -498,58 +498,53 @@ ensurePlayBinding();
 ></div>
 
          
-          ${
-            ready && videoUrl
-              ? `
-                <video
-                  class="svcVideo"
-                  preload="metadata"
-                  playsinline
-                  webkit-playsinline
-                  muted
-                  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-                  src="${esc(videoUrl)}"
-                ></video>
-<div class="svcOverlay">
-  <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
+       ${
+  ready && videoUrl
+    ? `
+      <video
+        class="svcVideo"
+        preload="metadata"
+        playsinline
+        webkit-playsinline
+        muted
+        ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+        src="${esc(videoUrl)}"
+      ></video>
 
-  <div class="svcQuickActions">
-    <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
-    <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
-    <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
-  </div>
+      <div class="svcOverlay">
+        <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
-  <div class="svcBottomActions">
-    <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-        <path d="M3 10v4h4l5 4V6L7 10H3Z" fill="currentColor"></path>
-        <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        <path d="M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-      </svg>
-    </button>
-  </div>
-</div>
-              `
-              : `
-                <div class="svcSkel"></div>
-                <div class="svcFallback">
-                  <div class="svcFallbackIcon">▶</div>
-                </div>
-              `
-          }
+        <div class="svcQuickActions">
+          <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
+          <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
+          <button class="svcQuickBtn" type="button" data-svc-act="fs" data-id="${esc(id)}" title="Büyüt" aria-label="Büyüt">⛶</button>
+          <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
         </div>
 
-        <div class="svcBody">
-          <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
-          <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
+        <div class="svcBottomActions">
+          <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+              <path d="M3 10v4h4l5 4V6L7 10H3Z" fill="currentColor"></path>
+              <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+          </button>
         </div>
       </div>
-    `;
-  }
+    `
+    : `
+      <div class="svcSkel"></div>
+      <div class="svcFallback">
+        <div class="svcFallbackIcon">▶</div>
+      </div>
+    `
+}
+</div>
 
-
-  window.AIVO_SHARED_VIDEO_CARD = {
-    createCardHtml,
-    ensureStyles,
-  };
-})();
+<div class="svcBody">
+  <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
+  <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
+</div>
+</div>
+`;
+}
