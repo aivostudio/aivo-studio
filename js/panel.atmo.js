@@ -385,7 +385,7 @@
         } catch {}
         return;
       }
-         if (act === "download") {
+            if (act === "download") {
         if (!url) return;
 
         const proxied =
@@ -394,13 +394,17 @@
           "&filename=" +
           encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
 
-        const a = document.createElement("a");
-        a.href = proxied;
-        a.download = `atmo-${jobId || "video"}.mp4`;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.src = proxied;
+
+        document.body.appendChild(iframe);
+
+        setTimeout(() => {
+          try { iframe.remove(); } catch {}
+        }, 15000);
+
         return;
       }
 
