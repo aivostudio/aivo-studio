@@ -975,20 +975,40 @@ module.exports = async (req, res) => {
           newOutputs.push(o);
         }
       }
+if (changed) {
+  outputs = newOutputs;
 
-      if (changed) {
-        outputs = newOutputs;
+  const persistedFinalUrl =
+    pickFinalFromOutputs(outputs) ||
+    pickVideoByVariant(outputs, "logo_overlay") ||
+    pickVideoByVariant(outputs, "mux") ||
+    pickVideoByVariant(outputs, "provider") ||
+    null;
 
-        await sql`
-          update jobs
-          set outputs = ${JSON.stringify(outputs)}::jsonb,
-              updated_at = now()
-          where id = ${job_id}::uuid
-        `;
+  const persistedFinalVariant =
+    (outputs.find((o) => normType(o?.type) === "video" && o?.meta?.is_final === true)?.meta?.source_variant) ||
+    (pickVideoByVariant(outputs, "logo_overlay") ? "logo_overlay" : null) ||
+    (pickVideoByVariant(outputs, "mux") ? "mux" : null) ||
+    (pickVideoByVariant(outputs, "provider") ? "provider" : null);
 
-        job.outputs = outputs;
-      }
-    }
+  await sql`
+    update jobs
+    set outputs = ${JSON.stringify(outputs)}::jsonb,
+        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+          ...(persistedFinalUrl ? { final_video_url: persistedFinalUrl } : {}),
+          ...(persistedFinalVariant ? { final_variant: persistedFinalVariant } : {}),
+        })}::jsonb,
+        updated_at = now()
+    where id = ${job_id}::uuid
+  `;
+
+  job.outputs = outputs;
+  job.meta = {
+    ...(job.meta || {}),
+    ...(persistedFinalUrl ? { final_video_url: persistedFinalUrl } : {}),
+    ...(persistedFinalVariant ? { final_variant: persistedFinalVariant } : {}),
+  };
+}
 // --- AUTO MASTERING TRIGGER (music) ---
 // Only when we have the DB uuid job_id (this endpoint does) and archive mp3 is available
 try {
