@@ -352,8 +352,20 @@
     }
 
     async function handleAction(cardEl, act) {
+      
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
       const url = safeStr(cardEl?.getAttribute("data-url"));
+      if (act === "play") {
+      const video = cardEl?.querySelector("video");
+      if (!video) return;
+
+      if (video.paused) {
+       video.play().catch(() => {});
+       } else {
+       video.pause();
+       }
+        return;
+      }
 
       if (act === "download") {
         if (!url) return;
