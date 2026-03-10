@@ -400,10 +400,79 @@
       }
     }, true);
   }
+function ensurePlayBinding() {
+  if (window.__AIVO_SHARED_VIDEO_PLAY_BOUND__) return;
+  window.__AIVO_SHARED_VIDEO_PLAY_BOUND__ = true;
 
+  document.addEventListener("click", (e) => {
+    const btn = e.target?.closest?.('[data-svc-act="play"]');
+    if (!btn) return;
+
+    const card = btn.closest(".svcCard");
+    const video = card?.querySelector(".svcVideo");
+    if (!video) return;
+
+    const sync = () => {
+      btn.textContent = video.paused ? "▶" : "❚❚";
+      btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
+      btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
+    };
+
+    sync();
+
+    video.addEventListener("play", sync);
+    video.addEventListener("pause", sync);
+    video.addEventListener("ended", sync);
+
+    setTimeout(sync, 0);
+  }, true);
+
+  document.addEventListener("play", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const btn = card?.querySelector('[data-svc-act="play"]');
+    if (!btn) return;
+
+    btn.textContent = "❚❚";
+    btn.setAttribute("title", "Duraklat");
+    btn.setAttribute("aria-label", "Duraklat");
+  }, true);
+
+  document.addEventListener("pause", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const btn = card?.querySelector('[data-svc-act="play"]');
+    if (!btn) return;
+
+    btn.textContent = "▶";
+    btn.setAttribute("title", "Oynat");
+    btn.setAttribute("aria-label", "Oynat");
+  }, true);
+
+  document.addEventListener("ended", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const btn = card?.querySelector('[data-svc-act="play"]');
+    if (!btn) return;
+
+    btn.textContent = "▶";
+    btn.setAttribute("title", "Oynat");
+    btn.setAttribute("aria-label", "Oynat");
+  }, true);
+}
   function createCardHtml(opts) {
-    ensureStyles();
-    ensureSoundBinding();
+   ensureStyles();
+ensureSoundBinding();
+ensurePlayBinding();
 
     const id = String(opts?.id || "").trim();
     const title = String(opts?.title || "Video").trim();
