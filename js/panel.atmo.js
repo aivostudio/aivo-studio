@@ -437,7 +437,7 @@
       }
     }
 
-       $grid?.addEventListener("click", (e) => {
+         $grid?.addEventListener("click", (e) => {
       const btn = e.target?.closest?.("[data-svc-act], [data-act]");
       if (!btn) return;
 
@@ -455,9 +455,10 @@
 
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
 
       handleAction(card, act);
-    });
+    }, true);
 
     // --- DB controller ---
     const db =
