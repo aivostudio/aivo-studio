@@ -103,9 +103,26 @@
         backdrop-filter:blur(10px);
       }
 
-      .svcBadge.is-ready{ border-color:rgba(120,255,190,.22); }
+           .svcBadge.is-ready{ border-color:rgba(120,255,190,.22); }
       .svcBadge.is-loading{ border-color:rgba(255,255,255,.10); }
       .svcBadge.is-error{ border-color:rgba(255,120,120,.24); }
+
+      .svcRatio{
+        position:absolute;
+        left:12px;
+        bottom:12px;
+        z-index:4;
+        padding:5px 9px;
+        border-radius:999px;
+        font-size:11px;
+        font-weight:800;
+        line-height:1;
+        color:#fff;
+        background:rgba(18,18,28,.46);
+        border:1px solid rgba(255,255,255,.12);
+        backdrop-filter:blur(10px);
+        pointer-events:none;
+      }
 
       .svcOverlay{
         position:absolute;
@@ -410,15 +427,17 @@
   </div>
 
   <div class="svcBottomActions">
- <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-    <path d="M3 10v4h4l5 4V6L7 10H3Z" fill="currentColor"></path>
-    <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-    <path d="M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-  </svg>
-</button>
+    <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+        <path d="M3 10v4h4l5 4V6L7 10H3Z" fill="currentColor"></path>
+        <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        <path d="M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </button>
   </div>
 </div>
+
+<div class="svcRatio">${esc(ratio || "16:9")}</div>
               `
               : `
                 <div class="svcSkel"></div>
