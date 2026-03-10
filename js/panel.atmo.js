@@ -364,25 +364,27 @@
           const previewUrl = hasUrl
             ? (outUrl.includes("#") ? outUrl : (outUrl + "#t=0.001"))
             : "";
-
-          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
-                window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                  id: safeStr(job.job_id || ""),
-                  title: promptLine || "—",
-                  sub: "",
-                  badgeText: badge.text,
-                  badgeKind: badge.kind === "ok" ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-                  videoUrl: previewUrl,
-                  posterUrl: "",
-                  ratio: portrait ? "9:16" : "16:9",
-                  ready: hasUrl,
-                  canDownload: hasUrl,
-                  canShare: hasUrl,
-                  canDelete: true
-                }) +
-              '</div>'
-            : "";
+        const isPersistentReady =
+  /^https:\/\/media\.aivo\.tr\/outputs\//i.test(outUrl) &&
+  badge.kind === "ok";
+         return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+  ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
+      window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+        id: safeStr(job.job_id || ""),
+        title: promptLine || "—",
+        sub: "",
+        badgeText: badge.text,
+        badgeKind: badge.kind === "ok" ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+        videoUrl: previewUrl,
+        posterUrl: "",
+        ratio: portrait ? "9:16" : "16:9",
+        ready: isPersistentReady,
+        canDownload: isPersistentReady,
+        canShare: isPersistentReady,
+        canDelete: true
+      }) +
+    '</div>'
+  : "";
         })
         .join("");
     }
