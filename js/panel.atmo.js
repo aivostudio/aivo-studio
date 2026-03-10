@@ -386,15 +386,27 @@
         return;
       }
 
-      if (act === "download") {
+           if (act === "download") {
         if (!url) return;
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `atmo-${jobId || "video"}.mp4`;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+
+        try {
+          const res = await fetch(url, { mode: "cors", credentials: "omit" });
+          if (!res.ok) throw new Error("download_failed");
+
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `atmo-${jobId || "video"}.mp4`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+        } catch {
+          window.open(url, "_blank", "noopener");
+        }
         return;
       }
 
