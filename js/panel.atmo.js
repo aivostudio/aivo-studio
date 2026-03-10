@@ -360,11 +360,17 @@
               )}"></video>`
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
-          const disabled = hasUrl ? "" : "disabled";
-          const previewUrl = hasUrl
-            ? (outUrl.includes("#") ? outUrl : (outUrl + "#t=0.001"))
-            : "";
-              const isPlayableNow = !!outUrl && badge.kind !== "bad";
+         const playbackUrl = hasUrl
+  ? (String(outUrl).startsWith("http://")
+      ? "/api/media/proxy?url=" + encodeURIComponent(outUrl)
+      : outUrl)
+  : "";
+
+const previewUrl = playbackUrl
+  ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
+  : "";
+
+const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
                 window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
