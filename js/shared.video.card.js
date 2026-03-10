@@ -159,26 +159,26 @@
         background:linear-gradient(180deg, rgba(0,0,0,.00), rgba(0,0,0,.10));
         transition:opacity .18s ease;
       }
-           .svcHeroPlay{
-        position:absolute;
-        left:50%;
-        top:50%;
-        transform:translate(-50%,-50%);
-        width:56px;
-        height:56px;
-        border-radius:999px;
-        border:1px solid rgba(255,255,255,.16);
-        background:rgba(255,255,255,.14);
-        color:#fff;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:18px;
-        cursor:pointer;
-        box-shadow:0 12px 34px rgba(0,0,0,.30);
-        backdrop-filter:blur(12px);
-        pointer-events:auto;
-      }
+      .svcHeroPlay{
+  position:absolute;
+  left:50%;
+  top:52%;
+  transform:translate(-50%,-50%);
+  width:56px;
+  height:56px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow:0 12px 34px rgba(0,0,0,.30);
+  backdrop-filter:blur(12px);
+  pointer-events:auto;
+}
 
     .svcQuickActions{
   position:absolute;
@@ -270,8 +270,8 @@
       }
 .svcBody{
   display:block;
-  padding:10px 12px 10px 12px;
-  min-height:40px;
+  padding:8px 12px 8px 12px;
+  min-height:34px;
 }
 
      .svcTitle{
