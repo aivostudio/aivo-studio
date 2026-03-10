@@ -530,6 +530,7 @@ ensurePlayBinding();
     </svg>
   </button>
 </div>
+</div>
 
               `
               : `
