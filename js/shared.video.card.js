@@ -425,7 +425,6 @@
     <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
     <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
   </div>
-
   <div class="svcBottomActions">
     <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -436,8 +435,6 @@
     </button>
   </div>
 </div>
-
-<div class="svcRatio">${esc(ratio || "16:9")}</div>
               `
               : `
                 <div class="svcSkel"></div>
