@@ -159,13 +159,13 @@
         background:linear-gradient(180deg, rgba(0,0,0,.00), rgba(0,0,0,.10));
         transition:opacity .18s ease;
       }
-      .svcHeroPlay{
+   .svcHeroPlay{
   position:absolute;
   left:50%;
-  top:52%;
+  top:54%;
   transform:translate(-50%,-50%);
-  width:56px;
-  height:56px;
+  width:52px;
+  height:52px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.16);
   background:rgba(255,255,255,.14);
@@ -173,7 +173,7 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:17px;
   cursor:pointer;
   box-shadow:0 12px 34px rgba(0,0,0,.30);
   backdrop-filter:blur(12px);
