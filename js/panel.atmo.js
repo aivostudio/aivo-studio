@@ -416,7 +416,7 @@
   if (!btn) return;
 
   const act = btn.getAttribute("data-act") || btn.getAttribute("data-svc-act");
-  const card = btn.closest("[data-job]");
+  const card = btn.closest(".atmoCard, .svcCard");
   if (!act || !card) return;
 
   if (btn.hasAttribute("disabled")) return;
