@@ -315,15 +315,44 @@
     document.head.appendChild(style);
   }
 
-  function badgeClass(kind) {
+   function badgeClass(kind) {
     const k = norm(kind);
     if (k === "ready" || k === "ok" || k === "hazır") return "is-ready";
     if (k === "error" || k === "bad" || k === "hata") return "is-error";
     return "is-loading";
   }
 
+  function ensureSoundBinding() {
+    if (window.__AIVO_SHARED_VIDEO_SOUND_BOUND__) return;
+    window.__AIVO_SHARED_VIDEO_SOUND_BOUND__ = true;
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.('[data-svc-act="sound"]');
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const card = btn.closest(".svcCard");
+      const video = card?.querySelector(".svcVideo");
+      if (!video) return;
+
+      video.muted = !video.muted;
+      btn.textContent = video.muted ? "🔇" : "🔊";
+      btn.setAttribute("title", video.muted ? "Sesi Aç" : "Sesi Kapat");
+      btn.setAttribute("aria-label", video.muted ? "Sesi Aç" : "Sesi Kapat");
+      btn.setAttribute("aria-pressed", video.muted ? "false" : "true");
+
+      if (!video.paused) {
+        video.play().catch(() => {});
+      }
+    }, true);
+  }
+
   function createCardHtml(opts) {
     ensureStyles();
+    ensureSoundBinding();
 
     const id = String(opts?.id || "").trim();
     const title = String(opts?.title || "Video").trim();
