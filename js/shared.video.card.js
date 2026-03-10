@@ -102,13 +102,12 @@
 }
 
 .svcBadgeDot.is-ready{
-  background:#35d07f;
-  border-color:rgba(190,255,220,.65);
+  background:#67c98f;
+  border-color:rgba(210,245,222,.55);
   box-shadow:
-    0 0 0 3px rgba(0,0,0,.18),
-    0 0 12px rgba(53,208,127,.45);
+    0 0 0 3px rgba(0,0,0,.16),
+    0 0 8px rgba(103,201,143,.22);
 }
-
 .svcBadgeDot.is-loading{
   background:#ffb347;
   border-color:rgba(255,220,160,.70);
@@ -403,29 +402,29 @@
 function ensurePlayBinding() {
   if (window.__AIVO_SHARED_VIDEO_PLAY_BOUND__) return;
   window.__AIVO_SHARED_VIDEO_PLAY_BOUND__ = true;
+document.addEventListener("click", (e) => {
+  const btn = e.target?.closest?.('[data-svc-act="play"]');
+  if (!btn) return;
 
-  document.addEventListener("click", (e) => {
-    const btn = e.target?.closest?.('[data-svc-act="play"]');
-    if (!btn) return;
+  const card = btn.closest(".svcCard");
+  const video = card?.querySelector(".svcVideo");
+  if (!video) return;
 
-    const card = btn.closest(".svcCard");
-    const video = card?.querySelector(".svcVideo");
-    if (!video) return;
+  if (video.__aivoPlaySyncBound) return;
+  video.__aivoPlaySyncBound = true;
 
-    const sync = () => {
-      btn.textContent = video.paused ? "▶" : "❚❚";
-      btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
-      btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
-    };
+  const sync = () => {
+    btn.textContent = video.paused ? "▶" : "❚❚";
+    btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
+    btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
+  };
 
-    sync();
+  video.addEventListener("play", sync);
+  video.addEventListener("pause", sync);
+  video.addEventListener("ended", sync);
 
-    video.addEventListener("play", sync);
-    video.addEventListener("pause", sync);
-    video.addEventListener("ended", sync);
-
-    setTimeout(sync, 0);
-  }, true);
+  sync();
+}, true);
 
   document.addEventListener("play", (e) => {
     const video = e.target;
@@ -518,21 +517,19 @@ ensurePlayBinding();
               <div class="svcOverlay">
   <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
-  <div class="svcQuickActions">
-    <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
-    <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
-    <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
-  </div>
-  <div class="svcBottomActions">
-    <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-        <path d="M3 10v4h4l5 4V6L7 10H3Z" fill="currentColor"></path>
-        <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        <path d="M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-      </svg>
-    </button>
-  </div>
+<div class="svcQuickActions">
+  <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
+  <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
+  <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+      <path d="M3 10v4h4l5 4V6L7 10H3Z" fill="currentColor"></path>
+      <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      <path d="M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+  </button>
+  <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
 </div>
+
               `
               : `
                 <div class="svcSkel"></div>
