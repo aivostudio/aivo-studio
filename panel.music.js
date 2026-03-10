@@ -1857,19 +1857,15 @@ function setMusicHostForEvents(el){
     return () => destroy();
   }
 
-  function destroy(){
-    alive = false;
-    setMusicHostForEvents(null);
-    window.removeEventListener("aivo:job", onJob, true);
-    window.removeEventListener("focus", rehydrateMusicPanel);
-window.removeEventListener("pageshow", rehydrateMusicPanel);
-document.removeEventListener("visibilitychange", onMusicVisibilityChange);
-window.removeEventListener("focus", rehydrateMusicPanel);
-    clearAllPolls();
-    stopRaf();
+ function destroy(){
+  alive = false;
+  setMusicHostForEvents(null);
+  window.removeEventListener("aivo:job", onJob, true);
+  clearAllPolls();
+  stopRaf();
 
-    try { dbCtrl?.destroy?.(); } catch {}
-    dbCtrl = null;
+  try { dbCtrl?.destroy?.(); } catch {}
+  dbCtrl = null;
 
     try { if (audioEl) audioEl.pause(); } catch {}
     currentJobId = null;
