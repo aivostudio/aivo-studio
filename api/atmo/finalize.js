@@ -211,32 +211,28 @@ module.exports = async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
 
-    const muxOut = outputs.find((o) => isVideo(o) && normVariant(o) === "mux");
-    const providerOut = outputs.find((o) => isVideo(o) && normVariant(o) === "provider");
-    const finalOut = outputs.find((o) => isVideo(o) && o?.meta?.is_final === true);
-    const finalizedOut = outputs.find((o) => isVideo(o) && normVariant(o) === "finalized");
+ const muxOut = outputs.find((o) => isVideo(o) && normVariant(o) === "mux");
+const providerOut = outputs.find((o) => isVideo(o) && normVariant(o) === "provider");
+const finalizedOut = outputs.find((o) => isVideo(o) && normVariant(o) === "finalized");
 
-    const existingFinalized =
-      pickUrl(finalizedOut) ||
-      String(meta?.final_video_url || "").trim();
+const existingFinalized = pickUrl(finalizedOut);
 
-    if (existingFinalized && !body.force) {
-      return res.status(200).json({
-        ok: true,
-        job_id,
-        input_url: null,
-        final_url: existingFinalized,
-        skipped: true,
-        reason: "already_finalized",
-      });
-    }
+if (existingFinalized && !body.force) {
+  return res.status(200).json({
+    ok: true,
+    job_id,
+    input_url: null,
+    final_url: existingFinalized,
+    skipped: true,
+    reason: "already_finalized",
+  });
+}
 
-    const input_url =
-      String(meta?.muxed_url || "").trim() ||
-      pickUrl(muxOut) ||
-      pickUrl(finalOut) ||
-      pickUrl(providerOut) ||
-      "";
+const input_url =
+  String(meta?.muxed_url || "").trim() ||
+  pickUrl(muxOut) ||
+  pickUrl(providerOut) ||
+  "";
 
     if (!input_url) {
       return res.status(400).json({
