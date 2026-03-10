@@ -103,9 +103,23 @@
         backdrop-filter:blur(10px);
       }
 
-           .svcBadge.is-ready{ border-color:rgba(120,255,190,.22); }
-      .svcBadge.is-loading{ border-color:rgba(255,255,255,.10); }
-      .svcBadge.is-error{ border-color:rgba(255,120,120,.24); }
+         .svcBadge.is-ready{
+  color:#eafff2;
+  background:rgba(20,110,55,.42);
+  border-color:rgba(120,255,190,.34);
+}
+
+.svcBadge.is-loading{
+  color:#fff6db;
+  background:rgba(145,92,18,.42);
+  border-color:rgba(255,190,90,.34);
+}
+
+.svcBadge.is-error{
+  color:#ffe9e9;
+  background:rgba(120,32,32,.42);
+  border-color:rgba(255,120,120,.30);
+}
 
       .svcRatio{
         position:absolute;
