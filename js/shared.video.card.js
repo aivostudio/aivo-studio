@@ -513,9 +513,8 @@ ensurePlayBinding();
                   ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
                   src="${esc(videoUrl)}"
                 ></video>
-
-            <div class="svcOverlay">
-  <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat"></button>
+<div class="svcOverlay">
+  <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
   <div class="svcQuickActions">
     <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
@@ -533,7 +532,6 @@ ensurePlayBinding();
     </button>
   </div>
 </div>
-
               `
               : `
                 <div class="svcSkel"></div>
