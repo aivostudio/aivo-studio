@@ -84,18 +84,61 @@
       if (u) return u;
     }
 
-    // 5) provider
-    const pv = outs.find((o) => isVideo(o) && variant(o) === "provider");
-    if (pv) {
-      const u = pickUrl(pv);
-      if (u) return u;
-    }
+  function bestVideoFromJob(job) {
+  const meta = job?.meta || {};
+  const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    // 6) fallback ilk video / ilk output
-    const vid = outs.find((o) => isVideo(o)) || outs[0];
-    return pickUrl(vid);
+  const pickUrl = (o) =>
+    safeStr(
+      o?.archive_url ||
+      o?.url ||
+      o?.raw_url ||
+      o?.src ||
+      o?.meta?.archive_url ||
+      o?.meta?.url ||
+      ""
+    );
+
+  const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
+  const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
+
+  // 1) DB’de açık final source varsa önce o
+  if (safeStr(meta?.final_video_url)) return safeStr(meta.final_video_url);
+  if (safeStr(meta?.archive_url)) return safeStr(meta.archive_url);
+  if (safeStr(job?.archive_url)) return safeStr(job.archive_url);
+
+  // 2) outputs içinde explicit final işaretli source
+  const fin = outs.find((o) => isVideo(o) && o?.meta?.is_final === true);
+  if (fin) {
+    const u = pickUrl(fin);
+    if (u) return u;
   }
 
+  // 3) overlay sonucu
+  const ov = outs.find((o) => isVideo(o) && variant(o) === "logo_overlay");
+  if (ov) {
+    const u = pickUrl(ov);
+    if (u) return u;
+  }
+
+  // 4) mux sonucu
+  const mx = outs.find((o) => isVideo(o) && variant(o) === "mux");
+  if (mx) {
+    const u = pickUrl(mx);
+    if (u) return u;
+  }
+
+  // 5) finalized/persist edilmiş archive kaydı
+  const archived = outs.find((o) => isVideo(o) && safeStr(o?.archive_url || o?.meta?.archive_url));
+  if (archived) {
+    const u = pickUrl(archived);
+    if (u) return u;
+  }
+
+  // ❌ provider fallback YOK
+  // ❌ ilk video fallback YOK
+  return "";
+}
   function acceptAtmoOutput(o) {
     if (!o) return false;
     const t = String(o.type || "").toLowerCase();
