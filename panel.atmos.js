@@ -112,7 +112,7 @@
       best.meta?.videoUrl ||
       "";
 
-   const url = String(raw || "").trim();
+    const url = toMaybeProxyUrl(raw);
     if (!url) return null;
 
     return { ...best, url };
@@ -583,31 +583,20 @@
 
             if (!vid) {
               vid = document.createElement("video");
-             vid.className = "atmoThumbVideo";
-vid.setAttribute("playsinline", "");
-vid.setAttribute("webkit-playsinline", "");
-vid.setAttribute("preload", "none");
-vid.setAttribute("controls", "");
-vid.muted = true;
+              vid.className = "atmoThumbVideo";
+              vid.setAttribute("playsinline", "");
+              vid.setAttribute("webkit-playsinline", "");
+              vid.setAttribute("preload", "metadata");
+              vid.setAttribute("controls", "");
+              vid.muted = true;
+              thumb?.appendChild(vid);
+            }
 
-vid.addEventListener("play", () => {
-  try {
-    if (vid.preload !== "auto") vid.preload = "auto";
-    vid.load();
-  } catch {}
-}, { once: true });
-
-thumb?.appendChild(vid);
-}
-
-           const prev = vid.getAttribute("data-src") || "";
-if (prev !== url) {
-  vid.setAttribute("data-src", url);
-  vid.src = url;
-  try {
-    vid.load();
-  } catch {}
-}
+            const prev = vid.getAttribute("data-src") || "";
+            if (prev !== url) {
+              vid.setAttribute("data-src", url);
+              vid.src = url; // sadece bu kart reload eder, diğerleri etmez
+            }
             vid.style.display = "";
           } else {
             if (skel) skel.style.display = "";
