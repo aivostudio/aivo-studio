@@ -437,7 +437,7 @@
       }
     }
 
-    $grid?.addEventListener("click", (e) => {
+       $grid?.addEventListener("click", (e) => {
       const btn = e.target?.closest?.("[data-svc-act], [data-act]");
       if (!btn) return;
 
@@ -452,6 +452,9 @@
       const sharedCard = btn.closest(".svcCard");
       const card = wrapperCard || sharedCard;
       if (!card) return;
+
+      e.preventDefault();
+      e.stopPropagation();
 
       handleAction(card, act);
     });
