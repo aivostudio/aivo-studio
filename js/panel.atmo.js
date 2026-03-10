@@ -360,8 +360,8 @@
               )}"></video>`
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
-         const playbackUrl = hasUrl
-  ? (String(outUrl).startsWith("http://")
+       const playbackUrl = hasUrl
+  ? (/^https?:\/\//i.test(String(outUrl))
       ? "/api/media/proxy?url=" + encodeURIComponent(outUrl)
       : outUrl)
   : "";
