@@ -143,9 +143,13 @@ module.exports = async (req, res) => {
 
     // ✅ Force "download" instead of "open a new page"
     // UI can pass &filename=Vocals.wav (or .mp3, etc.)
-    const reqFilename = req.query.filename;
-    const filename = pickFilename(reqFilename, parsed, ct);
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  const reqFilename = req.query.filename;
+if (reqFilename) {
+  const filename = pickFilename(reqFilename, parsed, ct);
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+} else {
+  res.setHeader("Content-Disposition", "inline");
+}
 
     if (req.method === "HEAD") {
       return res.end();
