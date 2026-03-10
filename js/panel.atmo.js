@@ -341,7 +341,7 @@ const probingUrls = new Set();
           const badge = badgeFor(job);
 
           // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
-          const outUrl = safeStr(job.url) || bestVideoFromJob(job);
+      const outUrl = bestVideoFromJob(job);
           const hasUrl = !!outUrl;
 
           const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
