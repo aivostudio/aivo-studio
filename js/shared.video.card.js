@@ -88,37 +88,48 @@
         backdrop-filter:blur(8px);
       }
 
-      .svcBadge{
-        position:absolute;
-        left:12px;
-        top:12px;
-        z-index:4;
-        padding:6px 10px;
-        border-radius:999px;
-        font-size:12px;
-        font-weight:800;
-        color:#fff;
-        background:rgba(0,0,0,.38);
-        border:1px solid rgba(255,255,255,.10);
-        backdrop-filter:blur(10px);
-      }
-
-         .svcBadge.is-ready{
-  color:#eafff2;
-  background:rgba(20,110,55,.42);
-  border-color:rgba(120,255,190,.34);
+     .svcBadgeDot{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  z-index:6;
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 0 0 3px rgba(0,0,0,.18);
+  pointer-events:none;
 }
 
-.svcBadge.is-loading{
-  color:#fff6db;
-  background:rgba(145,92,18,.42);
-  border-color:rgba(255,190,90,.34);
+.svcBadgeDot.is-ready{
+  background:#35d07f;
+  border-color:rgba(190,255,220,.65);
+  box-shadow:
+    0 0 0 3px rgba(0,0,0,.18),
+    0 0 12px rgba(53,208,127,.45);
 }
 
-.svcBadge.is-error{
-  color:#ffe9e9;
-  background:rgba(120,32,32,.42);
-  border-color:rgba(255,120,120,.30);
+.svcBadgeDot.is-loading{
+  background:#ffb347;
+  border-color:rgba(255,220,160,.70);
+  box-shadow:
+    0 0 0 3px rgba(0,0,0,.18),
+    0 0 12px rgba(255,179,71,.45);
+  animation:svcBadgePulse 1s ease-in-out infinite;
+}
+
+.svcBadgeDot.is-error{
+  background:#ff6b6b;
+  border-color:rgba(255,210,210,.70);
+  box-shadow:
+    0 0 0 3px rgba(0,0,0,.18),
+    0 0 12px rgba(255,107,107,.35);
+}
+
+@keyframes svcBadgePulse{
+  0%{ opacity:.45; transform:scale(.92); }
+  50%{ opacity:1; transform:scale(1); }
+  100%{ opacity:.45; transform:scale(.92); }
 }
 
       .svcRatio{
@@ -412,7 +423,11 @@
    return `
       <div class="svcCard" data-svc-id="${esc(id)}">
         <div class="svcMedia ${portrait ? "is-portrait" : ""}">
-          <div class="svcBadge ${badgeClass(badgeKind)}">${esc(badgeText)}</div>
+         <div
+  class="svcBadgeDot ${badgeClass(badgeKind)}"
+  title="${esc(badgeText)}"
+  aria-label="${esc(badgeText)}"
+></div>
 
           <div class="svcTopRight">
             <button class="svcIconBtn" type="button" data-svc-act="fs" data-id="${esc(id)}" title="Büyüt" aria-label="Büyüt">⛶</button>
