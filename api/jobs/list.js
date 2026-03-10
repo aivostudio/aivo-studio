@@ -26,46 +26,6 @@ function mapState(statusRaw) {
   return "PENDING";
 }
 
-function pickUrl(x) {
-  if (!x) return null;
-  return (
-    x.archive_url ||
-    x.url ||
-    x.raw_url ||
-    x.src ||
-    x.video_url ||
-    x.download_url ||
-    null
-  );
-}
-
-function isPersistentAtmoReady(row) {
-  const app = String(row?.app || row?.type || row?.meta?.app || "").toLowerCase();
-  if (app !== "atmo") return true;
-
-  const outputs = Array.isArray(row?.outputs) ? row.outputs : [];
-  const finalMetaUrl = String(row?.meta?.final_video_url || "").trim();
-
-  // 1) Öncelik: meta.final_video_url
-  if (finalMetaUrl) {
-    return finalMetaUrl.includes("media.aivo.tr/outputs/");
-  }
-
-  // 2) Sonra: outputs içinde is_final işaretli video
-  const finalOut = outputs.find(
-    (o) =>
-      String(o?.type || "").toLowerCase() === "video" &&
-      o?.meta?.is_final === true
-  );
-
-  if (finalOut) {
-    const finalOutUrl = String(pickUrl(finalOut) || "").trim();
-    return finalOutUrl.includes("media.aivo.tr/outputs/");
-  }
-
-  // 3) final kaynak yoksa hazır sayma
-  return false;
-}
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -146,47 +106,35 @@ export default async function handler(req, res) {
       limit 50
     `;
 
- return res.status(200).json({
-  ok: true,
-  app,
-  auth: true,
-  user_uuid,
-  email,
-  count: rows.length,
-  items: rows.map((r) => {
-    const app = String(r.app || r.type || r.meta?.app || "").toLowerCase();
-    const rawStatus = String(r.status || "").toLowerCase();
-
-    const normalizedStatus =
-      app === "atmo" &&
-      ["completed", "ready", "succeeded", "done"].includes(rawStatus) &&
-      !isPersistentAtmoReady(r)
-        ? "processing"
-        : r.status;
-
-    return {
-      job_id: r.id,
-      user_id: r.user_id || null,
-      user_uuid: r.user_uuid || null,
-      app: r.app,
-      type: r.type || r.app || null,
-      status: normalizedStatus,
-      state: mapState(normalizedStatus),
-      prompt: r.prompt || null,
-      meta: r.meta || null,
-      outputs: Array.isArray(r.outputs) ? r.outputs : [],
-      error: r.error || null,
-      created_at: r.created_at,
-      updated_at: r.updated_at,
-    };
-  }),
-});
-} catch (e) {
-  console.error("jobs/list failed:", e);
-  return res.status(500).json({
-    ok: false,
-    error: "list_failed",
-    message: String(e?.message || e),
-  });
-}
+    return res.status(200).json({
+      ok: true,
+      app,
+      auth: true,
+      user_uuid,
+      email,
+      count: rows.length,
+      items: rows.map((r) => ({
+        job_id: r.id,
+        user_id: r.user_id || null,
+        user_uuid: r.user_uuid || null,
+        app: r.app,
+        type: r.type || r.app || null,
+        status: r.status,
+        state: mapState(r.status),
+        prompt: r.prompt || null,
+        meta: r.meta || null,
+        outputs: Array.isArray(r.outputs) ? r.outputs : [],
+        error: r.error || null,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      })),
+    });
+  } catch (e) {
+    console.error("jobs/list failed:", e);
+    return res.status(500).json({
+      ok: false,
+      error: "list_failed",
+      message: String(e?.message || e),
+    });
+  }
 }
