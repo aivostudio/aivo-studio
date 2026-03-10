@@ -49,53 +49,51 @@
   }
 
   // ✅ FINAL video seçimi: meta.final_video_url > outputs.is_final > variant önceliği > fallback
-  function bestVideoFromJob(job) {
-    const meta = job?.meta || {};
-    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+function bestVideoFromJob(job) {
+  const meta = job?.meta || {};
+  const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    const pickUrl = (o) =>
-      safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
+  const pickUrl = (o) =>
+    safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
 
-    // 1) DB tek kaynak
-    if (safeStr(meta?.final_video_url)) return safeStr(meta.final_video_url);
+  // 1) DB tek kaynak
+  if (safeStr(meta?.final_video_url)) return safeStr(meta.final_video_url);
 
-    // helpers
-    const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
-    const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
+  const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
+  const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
 
-    // 2) outputs içinde final işaretli
-    const fin = outs.find((o) => isVideo(o) && o?.meta?.is_final === true);
-    if (fin) {
-      const u = pickUrl(fin);
-      if (u) return u;
-    }
-
-    // 3) logo_overlay
-    const ov = outs.find((o) => isVideo(o) && variant(o) === "logo_overlay");
-    if (ov) {
-      const u = pickUrl(ov);
-      if (u) return u;
-    }
-
-    // 4) mux
-    const mx = outs.find((o) => isVideo(o) && variant(o) === "mux");
-    if (mx) {
-      const u = pickUrl(mx);
-      if (u) return u;
-    }
-
-    // 5) provider
-    const pv = outs.find((o) => isVideo(o) && variant(o) === "provider");
-    if (pv) {
-      const u = pickUrl(pv);
-      if (u) return u;
-    }
-
-    // 6) fallback ilk video / ilk output
-    const vid = outs.find((o) => isVideo(o)) || outs[0];
-    return pickUrl(vid);
+  // 2) outputs içinde final işaretli
+  const fin = outs.find((o) => isVideo(o) && o?.meta?.is_final === true);
+  if (fin) {
+    const u = pickUrl(fin);
+    if (u) return u;
   }
 
+  // 3) logo_overlay
+  const ov = outs.find((o) => isVideo(o) && variant(o) === "logo_overlay");
+  if (ov) {
+    const u = pickUrl(ov);
+    if (u) return u;
+  }
+
+  // 4) mux
+  const mx = outs.find((o) => isVideo(o) && variant(o) === "mux");
+  if (mx) {
+    const u = pickUrl(mx);
+    if (u) return u;
+  }
+
+  // 5) provider
+  const pv = outs.find((o) => isVideo(o) && variant(o) === "provider");
+  if (pv) {
+    const u = pickUrl(pv);
+    if (u) return u;
+  }
+
+  // 6) fallback ilk video / ilk output
+  const vid = outs.find((o) => isVideo(o)) || outs[0];
+  return pickUrl(vid);
+}
   function acceptAtmoOutput(o) {
     if (!o) return false;
     const t = String(o.type || "").toLowerCase();
