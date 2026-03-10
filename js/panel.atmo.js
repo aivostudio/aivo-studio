@@ -247,7 +247,8 @@
       // FAL tamamlandı ama DB’ye henüz düşmediyse geçici gösterelim
       ephemerals: [], // { job_id, url, status, created_at, prompt, meta }
     };
-
+    const playableUrls = new Set();
+const probingUrls = new Set();
     host.innerHTML = `
       <div class="atmoWrap">
         <div class="atmoGrid" data-el="grid"></div>
@@ -360,17 +361,21 @@
               )}"></video>`
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
-       const playbackUrl = hasUrl
+    const playbackUrl = hasUrl
   ? (/^https?:\/\//i.test(String(outUrl))
       ? "/api/media/proxy?url=" + encodeURIComponent(outUrl)
       : outUrl)
   : "";
 
+if (playbackUrl && badge.kind !== "bad" && !playableUrls.has(playbackUrl)) {
+  probePlayableUrl(playbackUrl);
+}
+
 const previewUrl = playbackUrl
   ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
   : "";
 
-const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+const isPlayableNow = playableUrls.has(playbackUrl) && badge.kind !== "bad";
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
                 window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
@@ -566,6 +571,25 @@ canDelete: true
       };
     }
       async function waitUntilPlayable(url, timeoutMs = 12000) {
+        function probePlayableUrl(url) {
+  url = safeStr(url);
+  if (!url) return;
+  if (playableUrls.has(url)) return;
+  if (probingUrls.has(url)) return;
+
+  probingUrls.add(url);
+
+  waitUntilPlayable(url, 12000)
+    .then((ok) => {
+      if (ok) {
+        playableUrls.add(url);
+        render();
+      }
+    })
+    .finally(() => {
+      probingUrls.delete(url);
+    });
+}
   url = safeStr(url);
   if (!url) return false;
 
@@ -642,6 +666,7 @@ if (st.includes("complete") || st.includes("success") || st === "succeeded") {
   }
 
   const playable = await waitUntilPlayable(url, 12000);
+  if (playable) playableUrls.add(url);
   if (!playable) {
     setHeaderMeta("İşleniyor…");
     return;
