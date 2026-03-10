@@ -46,27 +46,26 @@ function isPersistentAtmoReady(row) {
   const outputs = Array.isArray(row?.outputs) ? row.outputs : [];
   const finalMetaUrl = String(row?.meta?.final_video_url || "").trim();
 
-  if (finalMetaUrl.includes("media.aivo.tr/outputs/")) return true;
+  // 1) Öncelik: meta.final_video_url
+  if (finalMetaUrl) {
+    return finalMetaUrl.includes("media.aivo.tr/outputs/");
+  }
 
+  // 2) Sonra: outputs içinde is_final işaretli video
   const finalOut = outputs.find(
     (o) =>
       String(o?.type || "").toLowerCase() === "video" &&
       o?.meta?.is_final === true
   );
 
-  const finalOutUrl = String(pickUrl(finalOut) || "").trim();
-  if (finalOutUrl.includes("media.aivo.tr/outputs/")) return true;
+  if (finalOut) {
+    const finalOutUrl = String(pickUrl(finalOut) || "").trim();
+    return finalOutUrl.includes("media.aivo.tr/outputs/");
+  }
 
-  const anyVideo = outputs.find(
-    (o) => String(o?.type || "").toLowerCase() === "video"
-  );
-
-  const anyVideoUrl = String(pickUrl(anyVideo) || "").trim();
-  if (anyVideoUrl.includes("media.aivo.tr/outputs/")) return true;
-
+  // 3) final kaynak yoksa hazır sayma
   return false;
 }
-
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
