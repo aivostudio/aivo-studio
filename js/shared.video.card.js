@@ -497,10 +497,7 @@ ensurePlayBinding();
   aria-label="${esc(badgeText)}"
 ></div>
 
-          <div class="svcTopRight">
-            <button class="svcIconBtn" type="button" data-svc-act="fs" data-id="${esc(id)}" title="Büyüt" aria-label="Büyüt">⛶</button>
-          </div>
-
+         
           ${
             ready && videoUrl
               ? `
