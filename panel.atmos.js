@@ -493,9 +493,6 @@
         const __cardCache = (window.__ATMO_CARD_CACHE__ = window.__ATMO_CARD_CACHE__ || new Map()); // job_id -> el
 
         function ensureCardEl(job) {
-         if (window.AIVO_SHARED_VIDEO_CARD?.ensureStyles) {
-           window.AIVO_SHARED_VIDEO_CARD.ensureStyles();
-         }
           const id = String(job?.job_id || "").trim();
           if (!id) return null;
 
@@ -507,53 +504,28 @@
           el.setAttribute("data-job", id);
 
           // once-only skeleton structure
-        el.innerHTML = `
-  ${window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-    id,
-    title: "",
-    sub: "",
-    badgeText: "İşleniyor",
-    badgeKind: "loading",
-    videoUrl: "",
-    posterUrl: "",
-    ratio: "16:9",
-    ready: false,
-    canDownload: false,
-    canShare: false,
-    canDelete: true
-  })}
-`;
+          el.innerHTML = `
+            <div class="atmoThumb">
+              <div class="atmoPill mid">İşleniyor</div>
+              <div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>
+            </div>
+
+            <div class="atmoFooter">
+              <div class="atmoMetaLine"></div>
+
+              <div class="atmoActions">
+                <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+                <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+                <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+              </div>
+            </div>
+          `;
 
           __cardCache.set(id, el);
           return el;
         }
 
         function patchCard(el, job) {
-          const badge = mapBadge(job);
-const out = pickBestVideoOutput(job);
-const url = out?.url || "";
-const ready = badge.kind === "ok" && !!url;
-
-const title = String(job?.meta?.prompt || "").trim();
-const sub = "";
-
-if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-  el.innerHTML = window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-    id: String(job?.job_id || "").trim(),
-    title,
-    sub,
-    badgeText: badge.text,
-    badgeKind: ready ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-    videoUrl: url,
-    posterUrl: "",
-    ratio: "16:9",
-    ready,
-    canDownload: ready,
-    canShare: ready,
-    canDelete: true
-  });
-  return;
-}
           if (!el || !job) return;
 
           const badge = mapBadge(job);
