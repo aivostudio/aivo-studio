@@ -112,7 +112,7 @@
       best.meta?.videoUrl ||
       "";
 
-    const url = toMaybeProxyUrl(raw);
+   const url = String(raw || "").trim();
     if (!url) return null;
 
     return { ...best, url };
