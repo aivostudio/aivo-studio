@@ -1,6 +1,3 @@
-api/jobs/status.js
-—————
-
 // /pages/api/jobs/status.js
 // CommonJS
 // ✅ FAL (ATMO) poll FIX: providers/fal/video/status endpoint’ine request_id değil,
