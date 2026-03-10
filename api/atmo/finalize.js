@@ -8,6 +8,7 @@
 const { neon } = require("@neondatabase/serverless");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { spawn } = require("node:child_process");
+const ffmpegPath = require("ffmpeg-static");
 const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const os = require("node:os");
@@ -149,7 +150,7 @@ async function runFfmpegFaststart(inputPath, outputPath) {
       outputPath,
     ];
 
-    const p = spawn("ffmpeg", args, { stdio: ["ignore", "pipe", "pipe"] });
+   const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
     let stderr = "";
     p.stderr.on("data", (d) => {
