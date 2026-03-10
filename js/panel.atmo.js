@@ -411,18 +411,15 @@
       }
     }
 
-$grid?.addEventListener("click", (e) => {
+   $grid?.addEventListener("click", (e) => {
   const btn = e.target?.closest?.("[data-act], [data-svc-act]");
   if (!btn) return;
 
   const act = btn.getAttribute("data-act") || btn.getAttribute("data-svc-act");
-  const card =
-    btn.closest(".atmoCard") ||
-    btn.closest(".svcCard")?.closest(".atmoCard");
-
+  const card = btn.closest(".atmoCard, .svcCard");
   if (!act || !card) return;
-  if (btn.hasAttribute("disabled")) return;
 
+  if (btn.hasAttribute("disabled")) return;
   handleAction(card, act);
 });
 
