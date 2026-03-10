@@ -565,7 +565,50 @@ canDelete: true
         } catch {}
       };
     }
+      async function waitUntilPlayable(url, timeoutMs = 12000) {
+  url = safeStr(url);
+  if (!url) return false;
 
+  return await new Promise((resolve) => {
+    const v = document.createElement("video");
+    let done = false;
+
+    const finish = (ok) => {
+      if (done) return;
+      done = true;
+      try {
+        v.pause();
+        v.removeAttribute("src");
+        v.load();
+      } catch {}
+      resolve(!!ok);
+    };
+
+    const t = setTimeout(() => finish(false), timeoutMs);
+
+    v.preload = "metadata";
+    v.muted = true;
+    v.playsInline = true;
+
+    v.addEventListener("loadeddata", () => {
+      clearTimeout(t);
+      finish(true);
+    }, { once: true });
+
+    v.addEventListener("canplay", () => {
+      clearTimeout(t);
+      finish(true);
+    }, { once: true });
+
+    v.addEventListener("error", () => {
+      clearTimeout(t);
+      finish(false);
+    }, { once: true });
+
+    v.src = url;
+    try { v.load(); } catch {}
+  });
+}
     async function pollFalOnce(rid, promptMaybe) {
       if (destroyed) return;
       rid = safeStr(rid);
@@ -580,33 +623,38 @@ canDelete: true
         return;
       }
 
-      const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
+     const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
 
-      if (st.includes("fail") || st === "error") {
-        setHeaderMeta("Hata");
-        return;
-      }
+if (st.includes("fail") || st === "error") {
+  setHeaderMeta("Hata");
+  return;
+}
 
-      if (st.includes("complete") || st.includes("success") || st === "succeeded") {
-        let url = pickVideoUrl(data);
+if (st.includes("complete") || st.includes("success") || st === "succeeded") {
+  let url = pickVideoUrl(data);
 
-        // ✅ NOT: Overlay artık backend'de deterministik yapılıyor (/api/jobs/status).
-        // Burada client-side overlay çağırmıyoruz. Sadece video url’i PPE + geçici karta basıyoruz.
+  // ✅ NOT: Overlay artık backend'de deterministik yapılıyor (/api/jobs/status).
+  // Burada client-side overlay çağırmıyoruz. Sadece video url’i PPE + geçici karta basıyoruz.
 
-        if (!url) {
-          setHeaderMeta("Tamamlandı (url yok)");
-          return;
-        }
+  if (!url) {
+    setHeaderMeta("Tamamlandı (url yok)");
+    return;
+  }
 
-        setHeaderMeta("Tamamlandı");
+  const playable = await waitUntilPlayable(url, 12000);
+  if (!playable) {
+    setHeaderMeta("İşleniyor…");
+    return;
+  }
 
+  setHeaderMeta("Tamamlandı");
         // geçici göster (DB’ye düşene kadar)
         const tempId = `tmp_${rid}`;
         state.ephemerals = [
           {
             job_id: tempId,
             url,
-            status: "DONE",
+          status: "DONE",
             created_at: Date.now(),
             prompt: promptMaybe || "",
             meta: {
