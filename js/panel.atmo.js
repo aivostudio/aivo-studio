@@ -336,7 +336,7 @@
         return;
       }
 
-      $grid.innerHTML = items
+           const nextHtml = items
         .slice(0, 30)
         .map((job) => {
           const badge = badgeFor(job);
@@ -385,6 +385,10 @@
             : "";
         })
         .join("");
+
+      if ($grid.innerHTML !== nextHtml) {
+        $grid.innerHTML = nextHtml;
+      }
     }
 
      async function handleAction(cardEl, act) {
