@@ -8,15 +8,18 @@ const { URL } = require("url");
 
 const ALLOWED_HOSTS = new Set([
   "dnznrvs05pmza.cloudfront.net", // runway signed cloudfront
-  "media.aivo.tr",               // R2 custom domain (outputs)
-  "file-examples.com",           // test
-  "www.file-examples.com",       // test
+  "media.aivo.tr",                // R2 custom domain (outputs)
+  "file-examples.com",            // test
+  "www.file-examples.com",        // test
 
   // ✅ stems / replicate
   "replicate.delivery",
   "cdn.replicate.delivery",
-]);
 
+  // ✅ FAL signed media
+  "v3b.fal.media",
+  "fal.media",
+]);
 function safeFilename(name) {
   const s = String(name || "").trim();
   if (!s) return "";
