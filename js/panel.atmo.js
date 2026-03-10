@@ -336,12 +336,11 @@
         return;
       }
 
-           const nextHtml = items
+       const nextHtml = items
         .slice(0, 30)
         .map((job) => {
           const badge = badgeFor(job);
 
-          // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
           const outUrl = safeStr(job.url) || bestVideoFromJob(job);
           const hasUrl = !!outUrl;
 
@@ -350,7 +349,6 @@
           const metaLine = `${engine}${dt ? " • " + dt : ""}`;
           const promptLine = safeStr(job?.prompt || "");
 
-          // kart içi video clamp
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
           const portrait = isPortrait(job, dummyOut);
 
@@ -361,6 +359,7 @@
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
 
           const disabled = hasUrl ? "" : "disabled";
+
           const previewUrl = hasUrl
             ? (outUrl.includes("#") ? outUrl : (outUrl + "#t=0.001"))
             : "";
@@ -389,7 +388,6 @@
       if ($grid.innerHTML !== nextHtml) {
         $grid.innerHTML = nextHtml;
       }
-    }
 
      async function handleAction(cardEl, act) {
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
