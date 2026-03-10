@@ -339,24 +339,17 @@
       $grid.innerHTML = items
         .slice(0, 30)
         .map((job) => {
-        // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
-const outUrl = safeStr(job.url) || bestVideoFromJob(job);
-const hasUrl = !!outUrl;
+          const badge = badgeFor(job);
 
-// ✅ gerçek hazır = sadece kalıcı media.aivo.tr çıktısı
-const isPersistentReady =
-  hasUrl && String(outUrl).includes("media.aivo.tr/outputs/");
+          // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
+          const outUrl = safeStr(job.url) || bestVideoFromJob(job);
+          const hasUrl = !!outUrl;
 
-const badge = isPersistentReady
-  ? { text: "Hazır", kind: "ok" }
-  : hasUrl
-  ? { text: "Hazırlanıyor", kind: "mid" }
-  : badgeFor(job);
+          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+          const promptLine = safeStr(job?.prompt || "");
 
-const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
-const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-const metaLine = `${engine}${dt ? " • " + dt : ""}`;
-const promptLine = safeStr(job?.prompt || "");
           // kart içi video clamp
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
           const portrait = isPortrait(job, dummyOut);
@@ -383,9 +376,9 @@ const promptLine = safeStr(job?.prompt || "");
                   videoUrl: previewUrl,
                   posterUrl: "",
                   ratio: portrait ? "9:16" : "16:9",
-                  ready: isPersistentReady,
-                  canDownload: isPersistentReady,
-                  canShare: isPersistentReady,
+                  ready: hasUrl,
+                  canDownload: hasUrl,
+                  canShare: hasUrl,
                   canDelete: true
                 }) +
               '</div>'
