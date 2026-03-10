@@ -1147,39 +1147,56 @@ try {
     // =========================
     // 5) RESPONSE NORMALIZE (tek sefer)
     // =========================
-    const finalMetaUrl = job?.meta?.final_video_url || null;
-    const finalFromOutputs = pickFinalFromOutputs(outputs);
-    const fallbackFirstVideo =
-      outputs.find((x) => normType(x?.type) === "video") || null;
+  const finalMetaUrl = job?.meta?.final_video_url || null;
+const finalFromOutputs = pickFinalFromOutputs(outputs);
+const fallbackFirstVideo =
+  outputs.find((x) => normType(x?.type) === "video") || null;
 
-    const outVideoUrl = finalMetaUrl || finalFromOutputs || (fallbackFirstVideo ? pickUrl(fallbackFirstVideo) : null);
-    const outVideo = outVideoUrl ? { url: outVideoUrl } : null;
+const outVideoUrl =
+  finalMetaUrl ||
+  finalFromOutputs ||
+  (fallbackFirstVideo ? pickUrl(fallbackFirstVideo) : null);
 
-    const outAudio =
-      outputs.find((x) => normType(x?.type) === "audio") || null;
+const outVideo = outVideoUrl ? { url: outVideoUrl } : null;
 
-    const outImage =
-      outputs.find((x) => normType(x?.type) === "image") || null;
+const outAudio =
+  outputs.find((x) => normType(x?.type) === "audio") || null;
 
-    const failureReason =
-      job?.meta?.runway?.failure ||
-      job?.meta?.fal?.failure ||
-      job?.meta?.failure ||
-      null;
+const outImage =
+  outputs.find((x) => normType(x?.type) === "image") || null;
 
-    return res.status(200).json({
-      ok: true,
-      job_id,
-      status: toApiStatus(job.status),
-      error_reason:
-        String(job.status).toLowerCase() === "error"
-          ? failureReason || "provider_failed"
-          : null,
-      video: outVideo,
-      audio: outAudio ? { url: pickUrl(outAudio) } : null,
-      image: outImage ? { url: pickUrl(outImage) } : null,
-      outputs: outputs || [],
-      db_status: job.status,
+const failureReason =
+  job?.meta?.runway?.failure ||
+  job?.meta?.fal?.failure ||
+  job?.meta?.failure ||
+  null;
+
+const isAtmoJob =
+  String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "atmo";
+
+const isPersistentAtmoVideo =
+  !!outVideoUrl && String(outVideoUrl).includes("media.aivo.tr/outputs/");
+
+const apiStatus =
+  isAtmoJob &&
+  String(job.status).toLowerCase() === "done" &&
+  !isPersistentAtmoVideo
+    ? "processing"
+    : toApiStatus(job.status);
+
+return res.status(200).json({
+  ok: true,
+  job_id,
+  status: apiStatus,
+  error_reason:
+    String(job.status).toLowerCase() === "error"
+      ? failureReason || "provider_failed"
+      : null,
+  video: outVideo,
+  audio: outAudio ? { url: pickUrl(outAudio) } : null,
+  image: outImage ? { url: pickUrl(outImage) } : null,
+  outputs: outputs || [],
+  db_status: job.status,
       ...(DEBUG
         ? {
             debug: {
