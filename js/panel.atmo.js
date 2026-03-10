@@ -274,14 +274,45 @@
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
 
-    function combinedItems() {
+       function combinedItems() {
       // DB items + ephemerals (DB’de zaten varsa eklemeyelim)
       const dbItems = Array.isArray(state.items) ? state.items : [];
       const have = new Set(dbItems.map((x) => String(x.job_id || "")));
       const eps = (state.ephemerals || []).filter(
         (e) => e && !have.has(String(e.job_id || ""))
       );
-      return [...eps, ...dbItems];
+
+      const all = [...eps, ...dbItems];
+
+      const rankStatus = (j) => {
+        const st = String(j?.status || j?.state || "").toUpperCase();
+        if (
+          st.includes("PROC") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        ) return 0; // işleniyor kartlar hep üstte
+        if (
+          st.includes("READY") ||
+          st.includes("DONE") ||
+          st.includes("COMPLET") ||
+          st.includes("SUCC")
+        ) return 1;
+        if (st.includes("FAIL") || st.includes("ERROR")) return 2;
+        return 1;
+      };
+
+      const tsOf = (j) => {
+        const t = new Date(j?.updated_at || j?.created_at || Date.now()).getTime();
+        return Number.isFinite(t) ? t : 0;
+      };
+
+      return all.sort((a, b) => {
+        const ra = rankStatus(a);
+        const rb = rankStatus(b);
+        if (ra !== rb) return ra - rb;
+        return tsOf(b) - tsOf(a);
+      });
     }
 
     function render() {
