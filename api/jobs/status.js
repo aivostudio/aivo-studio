@@ -19,12 +19,6 @@ try {
 } catch (e) {
   console.warn("muxMp4WithAudio not loaded:", e?.message || e);
 }
-let faststartMp4 = null;
-try {
-  ({ faststartMp4 } = require("../_lib/faststart-mp4"));
-} catch (e) {
-  console.warn("faststartMp4 not loaded:", e?.message || e);
-}
 // --- AUTO MASTERING (music) ---
 // Prevent repeated triggers during frequent polling (best-effort; serverless cold starts may reset)
 const __AUTO_MASTERING =
@@ -948,37 +942,18 @@ module.exports = async (req, res) => {
         const key = `outputs/${app}/${job_id}/${output_id}.${ext}`;
 
         try {
-         let finalUrl = null;
-
-if (type === "video" && faststartMp4) {
-  let fast = null;
-  try {
-    fast = await faststartMp4(rawUrl);
-
-    finalUrl = await uploadFileToR2({
-      filePath: fast.outMp4Path,
-      key,
-      contentType: "video/mp4",
-    });
-  } finally {
-    try {
-      if (typeof fast?.cleanup === "function") await fast.cleanup();
-    } catch {}
-  }
-} else {
-  finalUrl = await copyToR2({
-    url: rawUrl,
-    key,
-    contentType:
-      type === "video"
-        ? "video/mp4"
-        : type === "audio"
-        ? "audio/mpeg"
-        : type === "image"
-        ? "image/jpeg"
-        : "application/octet-stream",
-  });
-}
+          const finalUrl = await copyToR2({
+            url: rawUrl,
+            key,
+            contentType:
+              type === "video"
+                ? "video/mp4"
+                : type === "audio"
+                ? "audio/mpeg"
+                : type === "image"
+                ? "image/jpeg"
+                : "application/octet-stream",
+          });
 
           changed = true;
 
