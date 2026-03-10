@@ -331,26 +331,25 @@
 
           const disabled = hasUrl ? "" : "disabled";
 
-       return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-  ? `
-      <div class="atmoCard" data-job="${esc(job.job_id || "")}" data-url="${esc(outUrl)}">
-        ${window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-          id: safeStr(job.job_id || ""),
-          title: promptLine || "—",
-          sub: "",
-          badgeText: badge.text,
-          badgeKind: badge.kind === "ok" ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-          videoUrl: hasUrl ? outUrl : "",
-          posterUrl: "",
-          ratio: portrait ? "9:16" : "16:9",
-          ready: hasUrl,
-          canDownload: hasUrl,
-          canShare: hasUrl,
-          canDelete: true
-        })}
-      </div>
-    `
+        return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+  ? window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+      id: safeStr(job.job_id || ""),
+      title: promptLine || "—",
+      sub: "",
+      badgeText: badge.text,
+      badgeKind: badge.kind === "ok" ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+      videoUrl: hasUrl ? outUrl : "",
+      posterUrl: "",
+      ratio: portrait ? "9:16" : "16:9",
+      ready: hasUrl,
+      canDownload: hasUrl,
+      canShare: hasUrl,
+      canDelete: true
+    })
   : "";
+        })
+        .join("");
+    }
 
     async function handleAction(cardEl, act) {
       
