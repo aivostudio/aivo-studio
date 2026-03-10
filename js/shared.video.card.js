@@ -529,6 +529,7 @@ ensurePlayBinding();
   </button>
   <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
 </div>
+</div>
 
               `
               : `
