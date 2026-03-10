@@ -385,22 +385,21 @@
         } catch {}
         return;
       }
-      if (act === "download") {
+         if (act === "download") {
         if (!url) return;
 
+        const proxied =
+          "/api/media/proxy?url=" +
+          encodeURIComponent(url) +
+          "&filename=" +
+          encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
+
         const a = document.createElement("a");
-        a.href = url;
-        a.setAttribute("download", `atmo-${jobId || "video"}.mp4`);
-        a.setAttribute("rel", "noopener");
-        a.setAttribute("target", "_self");
+        a.href = proxied;
+        a.download = `atmo-${jobId || "video"}.mp4`;
+        a.rel = "noopener";
         document.body.appendChild(a);
-
-        try {
-          a.click();
-        } catch {
-          window.location.href = url;
-        }
-
+        a.click();
         a.remove();
         return;
       }
