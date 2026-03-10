@@ -394,8 +394,7 @@
                <div class="svcOverlay">
   <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
-   <div class="svcQuickActions">
-    <button class="svcQuickBtn" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">🔇</button>
+    <div class="svcQuickActions">
     <button class="svcQuickBtn" type="button" data-svc-act="download" data-id="${esc(id)}" ${canDownload ? "" : "disabled"} title="İndir">⬇</button>
     <button class="svcQuickBtn" type="button" data-svc-act="share" data-id="${esc(id)}" ${canShare ? "" : "disabled"} title="Paylaş">⤴</button>
     <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
@@ -414,6 +413,9 @@
         <div class="svcBody">
           <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
           <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
+          <div class="svcActions">
+            <button class="svcAction" type="button" data-svc-act="sound" data-id="${esc(id)}" title="Sesi Aç" aria-label="Sesi Aç" aria-pressed="false">🔇 Ses</button>
+          </div>
         </div>
       </div>
     `;
