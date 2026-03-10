@@ -88,9 +88,9 @@
         backdrop-filter:blur(8px);
       }
 
-     .svcBadgeDot{
+   .svcBadgeDot{
   position:absolute;
-  right:12px;
+  left:12px;
   bottom:12px;
   z-index:6;
   width:10px;
