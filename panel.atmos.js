@@ -529,6 +529,31 @@
         }
 
         function patchCard(el, job) {
+          const badge = mapBadge(job);
+const out = pickBestVideoOutput(job);
+const url = out?.url || "";
+const ready = badge.kind === "ok" && !!url;
+
+const title = String(job?.meta?.prompt || "").trim();
+const sub = "";
+
+if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+  el.innerHTML = window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+    id: String(job?.job_id || "").trim(),
+    title,
+    sub,
+    badgeText: badge.text,
+    badgeKind: ready ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+    videoUrl: url,
+    posterUrl: "",
+    ratio: "16:9",
+    ready,
+    canDownload: ready,
+    canShare: ready,
+    canDelete: true
+  });
+  return;
+}
           if (!el || !job) return;
 
           const badge = mapBadge(job);
