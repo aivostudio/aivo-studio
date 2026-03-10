@@ -364,7 +364,7 @@
           const previewUrl = hasUrl
             ? (outUrl.includes("#") ? outUrl : (outUrl + "#t=0.001"))
             : "";
-
+              const isPlayableNow = !!outUrl && badge.kind !== "bad";
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
                 window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
@@ -372,14 +372,14 @@
                   title: promptLine || "—",
                   sub: "",
                   badgeText: badge.text,
-                  badgeKind: badge.kind === "ok" ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-                  videoUrl: previewUrl,
-                  posterUrl: "",
-                  ratio: portrait ? "9:16" : "16:9",
-                  ready: hasUrl,
-                  canDownload: hasUrl,
-                  canShare: hasUrl,
-                  canDelete: true
+                 badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+videoUrl: previewUrl,
+posterUrl: "",
+ratio: portrait ? "9:16" : "16:9",
+ready: isPlayableNow,
+canDownload: isPlayableNow,
+canShare: isPlayableNow,
+canDelete: true
                 }) +
               '</div>'
             : "";
