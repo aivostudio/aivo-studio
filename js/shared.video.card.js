@@ -388,8 +388,8 @@
     const videoUrl = String(opts?.videoUrl || "").trim();
     const posterUrl = String(opts?.posterUrl || "").trim();
     const ratio = String(opts?.ratio || "").trim();
-    const ready = !!opts?.ready;
-    const portrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
+      const ready = !!opts?.ready;
+    const portrait = false;
 
     const canDownload = !!opts?.canDownload;
     const canShare = !!opts?.canShare;
