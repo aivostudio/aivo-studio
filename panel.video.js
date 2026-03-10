@@ -525,34 +525,35 @@
 function renderCard(it) {
   const jid = idOf(it) || uid();
   const ready = isReady(it) && !!String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
-  const videoUrl = String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
+  const rawVideoUrl = String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
+  const previewVideoUrl = ready
+    ? (rawVideoUrl.includes("#") ? rawVideoUrl : (rawVideoUrl + "#t=0.001"))
+    : "";
 
- const ratio = "16:9";
-
-  
+  const ratio = "16:9";
 
   const title = String(it?.meta?.prompt || it?.title || formatKind(it) || "").trim();
-const sub = "";
+  const sub = "";
 
   const badgeText = normalizeBadge(it);
   const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
 
- if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-  return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-    id: jid,
-    title,
-    sub,
-    badgeText,
-    badgeKind,
-    videoUrl,
-    posterUrl: "",
-    ratio,
-    ready,
-    canDownload: ready,
-    canShare: ready,
-    canDelete: true
-  });
-}
+  if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+    return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+      id: jid,
+      title,
+      sub,
+      badgeText,
+      badgeKind,
+      videoUrl: previewVideoUrl,
+      posterUrl: "",
+      ratio,
+      ready,
+      canDownload: ready,
+      canShare: ready,
+      canDelete: true
+    });
+  }
 
   return `
     <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
