@@ -399,15 +399,17 @@
       }
     }
 
-    $grid?.addEventListener("click", (e) => {
-      const btn = e.target?.closest?.("[data-act]");
-      if (!btn) return;
-      const act = btn.getAttribute("data-act");
-      const card = btn.closest(".atmoCard");
-      if (!act || !card) return;
-      if (btn.hasAttribute("disabled")) return;
-      handleAction(card, act);
-    });
+   $grid?.addEventListener("click", (e) => {
+  const btn = e.target?.closest?.("[data-act], [data-svc-act]");
+  if (!btn) return;
+
+  const act = btn.getAttribute("data-act") || btn.getAttribute("data-svc-act");
+  const card = btn.closest(".atmoCard, .svcCard");
+  if (!act || !card) return;
+
+  if (btn.hasAttribute("disabled")) return;
+  handleAction(card, act);
+});
 
     // --- DB controller ---
     const db =
