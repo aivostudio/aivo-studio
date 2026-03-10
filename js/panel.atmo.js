@@ -358,11 +358,17 @@ const probingUrls = new Set();
                 outUrl
               )}"></video>`
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
-
- const playbackUrl = hasUrl
-  ? (/^https?:\/\//i.test(String(outUrl))
-      ? "/api/media/proxy?url=" + encodeURIComponent(outUrl)
-      : outUrl)
+const playbackUrl = hasUrl
+  ? (
+      /^https?:\/\//i.test(String(outUrl))
+        ? (
+            String(outUrl).includes("media.aivo.tr/outputs/atmo/") &&
+            String(outUrl).includes("/finalized-")
+              ? String(outUrl)
+              : "/api/media/proxy?url=" + encodeURIComponent(outUrl)
+          )
+        : outUrl
+    )
   : "";
 
 const previewUrl = playbackUrl
