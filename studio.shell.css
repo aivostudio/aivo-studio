@@ -160,10 +160,10 @@ html, body {
 section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
-  flex: 0 0 clamp(420px, 34vw, 560px);
-  width: clamp(420px, 34vw, 560px);
-  min-width: 420px;
-  max-width: 560px;
+  flex: 0 0 clamp(480px, 42vw, 760px);
+  width: clamp(480px, 42vw, 760px);
+  min-width: 480px;
+  max-width: 760px;
   min-height: 0;
 }
 /* Asıl host: boşluğu doldursun */
