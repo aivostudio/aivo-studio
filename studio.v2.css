@@ -413,8 +413,8 @@ button.primary-btn.aivoBtnPrimary{
 /* ===== LEFT MENU FINAL ALIGN FIX ===== */
 #leftMenu.studioNav{
   position: sticky !important;
-  top: calc(var(--topbar-h) + 32px) !important;
-  height: calc(100vh - var(--topbar-h) - 32px - 18px) !important;
+  top: calc(var(--topbar-h) + 52px) !important;
+  height: calc(100vh - var(--topbar-h) - 52px - 18px) !important;
 
   display: flex !important;
   flex-direction: column !important;
