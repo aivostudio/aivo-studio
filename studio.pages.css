@@ -1,3 +1,7 @@
+studio.pages.css
+
+——————————
+
 /* =========================================================
    MODAL (AIVO) — SAFE
    - Reusable modal
@@ -2839,46 +2843,46 @@ body.is-studio :where(
 }
 
 /* =========================================================
-   STUDIO — HEIGHT CHAIN HARD FIX (page doğal uzasın)
+   STUDIO — HEIGHT CHAIN HARD FIX (right panel uzasın)
    ========================================================= */
 
-html, body {
-  height: auto !important;
-  min-height: 100% !important;
-}
+html, body { height: 100% !important; }
 
 #studioRoot,
 .studioShell,
 #mainWorkspace,
 #twoPanelWrap {
-  height: auto !important;
+  height: 100% !important;
   min-height: 0 !important;
 }
 
+/* iki panel sarmalı flex olmalı ki çocuklar stretch alabilsin */
 #mainWorkspace,
 #twoPanelWrap {
   display: flex !important;
   align-items: stretch !important;
   min-height: 0 !important;
 }
+
+/* sağ kart kolonu */
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs {
   display: flex !important;
   flex-direction: column !important;
-  flex: 0 0 auto !important;
+flex: 0 0 auto;     /* width sabit kalsın, yükseklik stretch’i parent’tan alır */
   align-self: stretch !important;
   min-height: 0 !important;
-  height: auto !important;
 }
-/* iç host içerik kadar büyüsün */
+
+/* iç host tabana kadar uzasın */
 #rightPanelHost {
-  flex: 0 0 auto !important;
+  flex: 1 1 auto !important;
   min-height: 0 !important;
   height: auto !important;
 }
 
-/* footer doğal akışta kalsın */
+/* footer varsa tabana it */
 .studioOutputs .panelFooter,
 .outputsCard .panelFooter {
-  margin-top: 0 !important;
+  margin-top: auto !important;
 }
