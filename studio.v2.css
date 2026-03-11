@@ -410,3 +410,28 @@ button.primary-btn.aivoBtnPrimary{
 #moduleHost > * > * {
   max-width: none !important;
 }
+/* ===== LEFT MENU FINAL ALIGN FIX ===== */
+#leftMenu.studioNav{
+  position: sticky !important;
+  top: calc(var(--topbar-h) + 32px) !important;
+  height: calc(100vh - var(--topbar-h) - 32px - 18px) !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+
+  align-self: start !important;
+  overflow: hidden !important;
+  padding: 10px !important;
+}
+
+#leftMenu .navScroll{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+#leftMenu .navInfo{
+  margin-top: 0 !important;
+  flex: 0 0 auto !important;
+}
