@@ -44,10 +44,10 @@ section#moduleHost {
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs,
 .outputsCard.studioOutputs {
-  flex: 0 0 460px !important;
-  width: 460px !important;
-  min-width: 460px !important;
-  max-width: 460px !important;
+  flex: 1 1 420px !important;
+  width: auto !important;
+  min-width: 380px !important;
+  max-width: none !important;
   min-height: 0 !important;
   align-self: stretch !important;
   display: flex !important;
@@ -55,7 +55,6 @@ section.outputsCard.studioOutputs,
   overflow: hidden !important;
   box-sizing: border-box !important;
 }
-
 /* SAĞ İÇ HOST */
 #rightPanelHost {
   flex: 1 1 auto !important;
