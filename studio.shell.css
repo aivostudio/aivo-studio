@@ -160,8 +160,8 @@ html, body {
 section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
-  flex: 0.88 1 0 !important;
-  min-width: 420px !important;
+  flex: 0.72 1 0 !important;
+  min-width: 400px !important;
   min-height: 0;
 }
 /* Asıl host: boşluğu doldursun */
