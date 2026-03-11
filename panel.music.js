@@ -29,6 +29,8 @@
   let listEl = null;
   let alive = false;
   let jobs = [];
+  let rehydrateMusicPanel = null;
+let onMusicVisibilityChange = null;
 
   const hiddenDeletedIds = new Set();
   const hiddenDeletedBaseIds = new Set();
