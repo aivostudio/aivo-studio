@@ -457,3 +457,7 @@ header#top.aivo-topbar .aivo-topbar-inner{
   display: flex !important;
   align-items: center !important;
 }
+/* ===== SHELL TOP OFFSET RESTORE ===== */
+#studioRoot.studioShell{
+  padding-top: calc(var(--topbar-h) + 18px) !important;
+}
