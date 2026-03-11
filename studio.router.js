@@ -33,7 +33,6 @@ window.ensureModuleCSS = function(routeKey){
   // ✅ RightPanel: routeKey -> panelKey
   const RIGHT_PANEL_KEY = {
     music: "music",
-    recording: "recording",
     video: "video",
     cover: "cover",
     atmo: "atmo",
@@ -48,7 +47,6 @@ window.ensureModuleCSS = function(routeKey){
 
   const ROUTES = new Set([
     "music",
-    "recording",
     "video",
     "cover",
     "atmo",
@@ -65,7 +63,6 @@ window.ensureModuleCSS = function(routeKey){
 
   const MODULE_FILES = {
     music: "music.html",
-    recording: "recording.html",
     video: "video.html",
     cover: "cover.html",
     atmo: "atmosphere.html",
