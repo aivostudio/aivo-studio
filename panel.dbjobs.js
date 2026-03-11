@@ -37,7 +37,6 @@
     atmo: ["atmo", "atmos", "atmosphere", "atmosfer"],
     cover: ["cover", "kapak"],
     music: ["music", "müzik"],
-    recording: ["recording", "ses", "voice", "kayıt"],
     dashboard: ["dashboard"],
 
     // important: these may ALSO emit video outputs
