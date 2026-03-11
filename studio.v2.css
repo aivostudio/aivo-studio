@@ -57,7 +57,7 @@ body{
 #leftMenu.studioNav{
   position: sticky;
   top: calc(var(--topbar-h) + 18px);
-  height: calc(100vh - var(--topbar-h) - 36px);
+  height: calc(100vh - var(--topbar-h) - 18px);
   overflow: auto;
   align-self: stretch;
   box-sizing: border-box;
