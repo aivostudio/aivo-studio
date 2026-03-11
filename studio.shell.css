@@ -1,98 +1,288 @@
+studio.shell.css
+—————
+
 /* =========================================================
-   STUDIO V2 — SINGLE SOURCE OF TRUTH (3 kolon layout)
-   Sol menü sabit / orta esnek / sağ outputs kontrollü
+   STUDIO V2 — SHELL LAYOUT
+   Amaç: 3 kolon + sadece rightPanel scroll + min-height:0 zinciri
    ========================================================= */
 
-html,
-body {
+html, body {
   height: 100%;
-  min-height: 100%;
+  overflow: hidden;
 }
 
 #studioRoot,
-.studioShell,
-#mainWorkspace,
-#twoPanelWrap {
-  min-height: 0 !important;
+#studioShell,
+#studioLayout {
+  height: 100%;
+  min-height: 0;
 }
 
-#mainWorkspace,
-#twoPanelWrap {
-  display: flex !important;
-  align-items: stretch !important;
-  gap: 18px !important;
-}
-
-/* SOL MENÜ — dokunma, sabit */
-#leftMenu {
-  flex: 0 0 240px !important;
-  width: 240px !important;
-  min-width: 240px !important;
-  min-height: 0 !important;
-}
-
+#leftMenu,
 #moduleHost,
-#moduleHost.studioMotor,
-section#moduleHost {
-  flex: 1 1 720px !important;
-  width: auto !important;
-  min-width: 720px !important;
-  max-width: none !important;
-  min-height: 0 !important;
+#rightPanelHost {
+  min-height: 0;
+  min-width: 0;
 }
-/* SAĞ DIŞ KABUK */
+
+#studioLayout,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
+  gap: 22px;
+  padding: 18px;
+  min-height: 0;
+}
+
+#leftMenu {
+  width: 320px;
+  flex: 0 0 320px;
+  overflow: hidden;
+}
+
+#moduleHost {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+#rightPanelHost {
+  width: 420px;
+  flex: 0 0 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#rightPanelHost .outputsList,
+#rightPanelHost .outputsScroll,
+#rightPanelHost .rp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 1100px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+/* =========================================================
+   STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
+   Hedef:
+   - Menü en dar (2. görsel gibi)
+   - Orta geniş
+   - Sağ outputs orta-dar
+   - Kolonlar arası az boşluk (nefes)
+   - Sağda ekstra boş alan kalsın
+   ========================================================= */
+
+#studioLayout,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;          /* NEFES: 14-22 arası oynarsın */
+  padding: 18px;
+}
+
+/* MENÜ: en dar yer */
+#leftMenu {
+  width: 240px;
+  flex: 0 0 240px;
+  min-width: 240px;
+}
+
+/* ORTA: geniş kart */
+#moduleHost {
+  width: 720px;       /* 680-820 arası */
+  flex: 0 0 720px;    /* flex:1 DEĞİL */
+  min-width: 0;
+}
+/* SAĞ: outputs — sayfanın sonuna kadar uzasın */
+#rightPanelHost {
+  width: 360px;        /* 320–420 arası */
+  flex: 0 0 360px;
+  min-width: 0;
+
+  /* 👇 ASIL FARK BURADA */
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* SAĞDA ekstra boşluk */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "";
+  flex: 1 1 auto;     /* kalan alanı yesin */
+  min-width: 80px;    /* sağda boşluk hissi */
+}
+
+/* Küçük ekran: alt alta */
+@media (max-width: 1200px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #moduleHost, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+}
+/* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
+#mainWorkspace,
+#twoPanelWrap {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
+#twoPanelWrap {
+  gap: 18px;
+}
+
+/* Sağ card (Üretilenler) kolon gibi davransın ve uzasın */
+#twoPanelWrap .studioOutputs,
+section.outputsCard.studioOutputs {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;     /* parent yüksekliğini alsın */
+  min-height: 0;
+}
+
+/* Asıl host: boşluğu doldursun */
+#rightPanelHost {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;       /* 100% yerine daha güvenli */
+}
+
+/* Footer yazısı tabana yapışsın (varsa) */
+.studioOutputs .panelFooter {
+  margin-top: auto;
+}
+/* ===============================
+   TOPBAR GAP FIX (studio) — REVİZE
+   Hedef: her şeyi 1 cm aşağı almak
+   =============================== */
+
+#studioRoot,
+.studioShell,
+#mainWorkspace {
+  margin-top: 0 !important;
+  padding-top: 12px !important; /* ← 1 cm aşağı */
+}
+
+body.is-studio-v2,
+body.panelWithTopbar {
+  padding-top: 12px !important; /* ← body de eşitlendi */
+}
+
+:root{
+  --aivo-topbar-h: 12px !important; /* ← topbar offset geri verildi */
+}
+
+/* ===============================
+   COLUMN TOP ALIGN (same baseline)
+   =============================== */
+
+/* 3 kolon parent */
+#studioLayout,
+#twoPanelWrap,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid{
+  align-items: stretch !important;
+  padding-top: 12px !important; /* 8-16 arası ayarla */
+}
+
+/* 3 kolonun kendisi aynı hizada başlasın */
+#leftMenu,
+#moduleHost,
+#rightPanelHost{
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: stretch !important;
+}
+
+/* Kolon içindeki ilk kart/section üst boşluk yapıyorsa sıfırla */
+#moduleHost > :first-child,
+#rightPanelHost > :first-child,
+#leftMenu  > :first-child{
+  margin-top: 0 !important;
+}
+
+/* =========================================================
+   RIGHT PANEL WIDEN (controlled) — REVİZE
+   Amaç: sağ panel biraz genişlesin, ama sayfanın sonuna kadar gitmesin
+   studio.shell.css en sona ekle
+   ========================================================= */
+
+/* 1) Sağdaki extra boşluğu tamamen silme — sadece küçült */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "" !important;
+  display: block !important;
+  flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
+  min-width: 120px !important;
+}
+
+/* 2) Right panel'i biraz büyüt */
+#rightPanelHost{
+  width: 460px !important;      /* hedef genişlik (420–520 arası) */
+  flex: 0 0 460px !important;   /* sabit tut (flex:1 yapmıyoruz) */
+  min-width: 420px !important;
+  max-width: 520px !important;
+}
+
+/* 3) Sağ kart paneli tam doldursun */
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs,
-.outputsCard.studioOutputs {
-  flex: 0 0 clamp(420px, 32vw, 620px) !important;
-  width: clamp(420px, 32vw, 620px) !important;
-  min-width: 420px !important;
-  max-width: 620px !important;
-  min-height: 0 !important;
-  align-self: stretch !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
+.outputsCard.studioOutputs{
+  width: 100% !important;
+}
+
+/* 4) Eğer içeride padding yüzünden dar görünüyorsa (opsiyonel) */
+#rightPanelHost .outputsCard{
   box-sizing: border-box !important;
 }
-/* SAĞ İÇ HOST */
+/* =========================
+   RightPanel – ortak shell
+   ========================= */
+
 #rightPanelHost {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-self: stretch !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+  height: 100%;
+  display: flex;
 }
 
-/* ORTAK RIGHT PANEL SHELL */
-#rightPanelHost > .rpShell,
 .rpShell {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  box-sizing: border-box !important;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0; /* scroll için kritik */
 }
 
-/* HEADER */
-#rightPanelHost .rpHeader,
-#rightPanelHost .rpHeaderTop,
-#rightPanelHost .rpHeaderBottom {
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
+/* ===== Header (sticky) ===== */
 .rpHeader {
   position: sticky;
   top: 0;
@@ -110,17 +300,23 @@ section.outputsCard.studioOutputs,
   gap: 8px;
 }
 
+.rpTitle {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.rpMeta {
+  font-size: 12px;
+  opacity: .7;
+}
+
 .rpHeaderBottom {
   margin-top: 8px;
 }
 
-/* SEARCH — panel sonuna kadar uzasın */
-#rightPanelHost .rpSearch,
 .rpSearch {
-  display: block !important;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
+  width: 100%;
   height: 34px;
   padding: 0 10px;
   border-radius: 10px;
@@ -128,54 +324,28 @@ section.outputsCard.studioOutputs,
   background: rgba(0,0,0,.25);
   color: #fff;
   font-size: 13px;
-  box-sizing: border-box !important;
 }
 
-/* BODY */
-#rightPanelHost .rpBody,
+.rpSearch::placeholder {
+  opacity: .6;
+}
+
+.rpSearch:focus {
+  outline: none;
+  border-color: rgba(150,120,255,.6);
+  box-shadow: 0 0 0 2px rgba(150,120,255,.15);
+}
+
+/* ===== Scroll body ===== */
 .rpBody {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  flex: 1;
+  min-height: 0; /* scroll için kritik */
+  overflow-y: auto;
   overscroll-behavior: contain;
   padding: 10px 10px 16px;
-  box-sizing: border-box !important;
 }
 
-#rightPanelHost .rpContent,
+/* içerik wrapper */
 .rpContent {
-  width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* SAHTE SAĞ BOŞLUKLARI KAPAT */
-#studioLayout::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after,
-#twoPanelWrap::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* RESPONSIVE */
-@media (max-width: 1200px) {
-  #mainWorkspace,
-  #twoPanelWrap {
-    flex-direction: column !important;
-  }
-
-  #leftMenu,
-  section.outputsCard.studioOutputs,
-  #twoPanelWrap .studioOutputs,
-  .outputsCard.studioOutputs {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    flex: 0 0 auto !important;
-  }
+  display: block;
 }
