@@ -1832,14 +1832,14 @@ function setMusicHostForEvents(el){
 
      window.addEventListener("aivo:job", onJob, true);
 
-    const rehydrateMusicPanel = async () => {
-      try { await hydrateFromDBOnce(); } catch {}
-      try { dbCtrl?.hydrate?.(); } catch {}
-    };
+   rehydrateMusicPanel = async () => {
+  try { await hydrateFromDBOnce(); } catch {}
+  try { dbCtrl?.hydrate?.(); } catch {}
+};
 
-    const onMusicVisibilityChange = () => {
-      if (document.visibilityState === "visible") rehydrateMusicPanel();
-    };
+onMusicVisibilityChange = () => {
+  if (document.visibilityState === "visible") rehydrateMusicPanel?.();
+};
 
     window.addEventListener("focus", rehydrateMusicPanel);
     window.addEventListener("pageshow", rehydrateMusicPanel);
