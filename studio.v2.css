@@ -461,22 +461,33 @@ header#top.aivo-topbar .aivo-topbar-inner{
 #studioRoot.studioShell{
   padding-top: calc(var(--topbar-h) + 18px) !important;
 }
-/* ===== MODULE HOST VISIBLE TINT FIX ===== */
+/* ===== MODULE HOST FINAL COLOR RESET ===== */
 #moduleHost{
   position: relative !important;
   overflow: hidden !important;
+  background:
+    radial-gradient(82% 46% at 50% 10%,
+      rgba(116, 132, 255, .14) 0%,
+      rgba(86, 96, 210, .09) 28%,
+      rgba(34, 40, 78, .16) 52%,
+      rgba(14, 16, 34, .96) 76%,
+      rgba(8, 10, 22, .995) 100%) !important;
+  border: 1px solid rgba(116, 132, 255, .16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    inset 0 0 56px rgba(96,110,255,.045),
+    0 30px 80px rgba(0,0,0,.48) !important;
 }
 
 #moduleHost::after{
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
   background:
-    radial-gradient(78% 44% at 50% 12%,
-      rgba(170, 132, 255, .14) 0%,
-      rgba(128, 92, 230, .08) 34%,
-      rgba(56, 38, 96, .06) 56%,
-      rgba(0, 0, 0, 0) 78%);
+    radial-gradient(70% 34% at 50% 12%,
+      rgba(132, 148, 255, .08) 0%,
+      rgba(92, 108, 255, .04) 42%,
+      rgba(0,0,0,0) 74%) !important;
 }
