@@ -246,9 +246,9 @@ body.panelWithTopbar {
 
 /* 2) Right panel'i biraz büyüt */
 #rightPanelHost{
-  width: 460px !important;      /* hedef genişlik (420–520 arası) */
-  flex: 0 0 460px !important;   /* sabit tut (flex:1 yapmıyoruz) */
-  min-width: 420px !important;
+  width: clamp(360px, 30vw, 520px) !important;
+  flex: 0 0 clamp(360px, 30vw, 520px) !important;
+  min-width: 360px !important;
   max-width: 520px !important;
 }
 
