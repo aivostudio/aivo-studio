@@ -285,6 +285,23 @@
   overflow:hidden;
   text-overflow:ellipsis;
 }
+.svcProgress{
+  width:100%;
+  height:1px;
+  margin-top:7px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.06);
+}
+
+.svcProgressBar{
+  width:0%;
+  height:100%;
+  border-radius:999px;
+  background:#b78cff;
+  transition:width .08s linear;
+  transform-origin:left center;
+}
 .svcSub{
   display:none !important;
 }
@@ -547,8 +564,11 @@ ensurePlayBinding();
           }
         </div>
 
-        <div class="svcBody">
+               <div class="svcBody">
           <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
+          <div class="svcProgress" aria-hidden="true">
+            <div class="svcProgressBar"></div>
+          </div>
           <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
         </div>
       </div>
