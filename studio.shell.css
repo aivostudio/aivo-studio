@@ -243,10 +243,10 @@ body.panelWithTopbar {
 /* orta panel esneyebilsin */
 #moduleHost {
   min-width: 0 !important;
-  flex: 1.35 1 0 !important;
   width: auto !important;
+  max-width: none !important;
+  flex: 1.75 1 0 !important;
 }
-
 /* sağ panel de ekranla birlikte büyüsün */
 #rightPanelHost{
   min-width: 420px !important;
