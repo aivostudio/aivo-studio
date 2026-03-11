@@ -233,17 +233,6 @@ body.panelWithTopbar {
    studio.shell.css en sona ekle
    ========================================================= */
 
-/* 1) Sağdaki extra boşluğu tamamen silme — sadece küçült */
-#studioLayout::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after {
-  content: "" !important;
-  display: block !important;
-  flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
-  min-width: 120px !important;
-}
-
 /* 2) Right panel'i biraz büyüt */
 #rightPanelHost{
   width: clamp(360px, 30vw, 520px) !important;
