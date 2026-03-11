@@ -169,18 +169,20 @@ window.ensureModuleCSS = function(routeKey){
       return; // single flow: hashchange will call go()
     }
 
-    setActiveNav(key);
+   setActiveNav(key);
 
-    // ✅ CSS: route-based
-    window.ensureModuleCSS?.(key);
+// ✅ CSS: route-based
+window.ensureModuleCSS?.(key);
 
-    // ✅ Module inject
-    await loadModuleIntoHost(key);
+// ✅ Right panel: önce hedef panele geç
+const panelKey = RIGHT_PANEL_KEY[key] || "music";
+window.RightPanel?.force?.(panelKey, {});
 
-    // ✅ Right panel: mapped panelKey
-    const panelKey = RIGHT_PANEL_KEY[key] || "music";
-    window.RightPanel?.force?.(panelKey, {});
-  }
+// ✅ Module inject
+await loadModuleIntoHost(key);
+
+// ✅ aynı paneli bir kez daha force et ki header/body senkron kalsın
+window.RightPanel?.force?.(panelKey, {});
 
   function onHashChange() {
     const { key } = parseHash();
