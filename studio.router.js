@@ -170,7 +170,7 @@ window.ensureModuleCSS = function(routeKey){
     }
 
     setActiveNav(key);
-
+console.log("[ROUTER_GO]", key, location.hash, Date.now());
     // ✅ CSS: route-based
     window.ensureModuleCSS?.(key);
 
