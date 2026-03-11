@@ -1143,7 +1143,40 @@ try {
     } catch (e) {
       console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
     }
+// =========================
+// 4.5) AUTO FINALIZE (ATMO)
+// =========================
+try {
+  const isAtmo = String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "atmo";
+  const isDone = String(job?.status || "").toLowerCase() === "done";
 
+  const hasFinalizedOutput =
+    Array.isArray(outputs) &&
+    outputs.some(
+      (o) =>
+        normType(o?.type) === "video" &&
+        normVariant(o) === "finalized"
+    );
+
+  if (isAtmo && isDone && !hasFinalizedOutput) {
+    const baseUrl = getBaseUrl(req);
+
+    fetch(`${baseUrl}/api/atmo/finalize`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.cookie || "",
+      },
+      body: JSON.stringify({
+        job_id,
+      }),
+    }).catch((e) => {
+      console.warn("AUTO_FINALIZE_FAILED:", e?.message || e);
+    });
+  }
+} catch (e) {
+  console.warn("AUTO_FINALIZE_BLOCK_FAILED:", e?.message || e);
+}
     // =========================
     // 5) RESPONSE NORMALIZE (tek sefer)
     // =========================
