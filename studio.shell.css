@@ -34,9 +34,10 @@ body {
 #moduleHost,
 #moduleHost.studioMotor,
 section#moduleHost {
-  flex: 1 1 0 !important;
+  flex: 1 1 720px !important;
   width: auto !important;
-  min-width: 0 !important;
+  min-width: 720px !important;
+  max-width: none !important;
   min-height: 0 !important;
 }
 /* SAĞ DIŞ KABUK */
