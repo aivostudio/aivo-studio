@@ -62,7 +62,6 @@ window.ensureModuleCSS = function(routeKey){
   ]);
 
   const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
-  let __GO_BUSY_KEY__ = "";
 
   const MODULE_FILES = {
     music: "music.html",
@@ -164,15 +163,6 @@ window.ensureModuleCSS = function(routeKey){
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
 
-const activeNow = document.getElementById("moduleHost")?.getAttribute("data-active-module") || "";
-const panelNow = window.RightPanel?.getCurrentKey?.() || "";
-
-if (__GO_BUSY_KEY__ === key) return;
-if (activeNow === key && panelNow === (RIGHT_PANEL_KEY[key] || "music")) return;
-
-__GO_BUSY_KEY__ = key;
-    if (!ROUTES.has(key)) key = "music";
-
     const cur = parseHash();
     if (cur.key !== key) {
       setHash(key);
@@ -180,7 +170,7 @@ __GO_BUSY_KEY__ = key;
     }
 
     setActiveNav(key);
-console.log("[ROUTER_GO]", key, location.hash, Date.now());
+
     // ✅ CSS: route-based
     window.ensureModuleCSS?.(key);
 
@@ -190,7 +180,6 @@ console.log("[ROUTER_GO]", key, location.hash, Date.now());
     // ✅ Right panel: mapped panelKey
     const panelKey = RIGHT_PANEL_KEY[key] || "music";
     window.RightPanel?.force?.(panelKey, {});
-    __GO_BUSY_KEY__ = "";
   }
 
   function onHashChange() {
