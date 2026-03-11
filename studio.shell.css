@@ -351,3 +351,36 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* =========================
+   RightPanel list wrappers — full width
+   Müzik / Kapak listesi paneli tam doldursun
+   ========================= */
+
+#rightPanelHost .rpContent,
+#rightPanelHost .rp-players,
+#rightPanelHost .rp-playerCard {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+#rightPanelHost .rp-players,
+#rightPanelHost .rp-playerCard {
+  display: block !important;
+}
+
+#rightPanelHost .aivo-player-list {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding: 6px !important;
+  align-items: stretch !important;
+  box-sizing: border-box !important;
+}
+
+#rightPanelHost .aivo-player-card {
+  width: 100% !important;
+  max-width: none !important;
+  justify-self: stretch !important;
+  box-sizing: border-box !important;
+}
