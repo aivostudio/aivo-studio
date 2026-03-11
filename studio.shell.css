@@ -1,256 +1,78 @@
 /* =========================================================
-   STUDIO V2 — SINGLE CLEAN LAYOUT
-   Sol menü sabit
-   Orta panel esner/küçülür
-   Sağ ortak outputs paneli kontrollü büyür/küçülür
-   Search + içerik panel sonuna kadar uzar
+   STUDIO V2 — ONLY REAL 2 PANEL FIX
+   Sol menüye dokunmaz
+   Orta panel + gerçek sağ host'u düzeltir
    ========================================================= */
 
-html,
-body {
-  height: 100%;
-  overflow: hidden;
+/* Eski 2 kolon grid kilidini kapat */
+#twoPanelWrap{
+  display:flex !important;
+  grid-template-columns:none !important;
+  gap:18px !important;
+  align-items:stretch !important;
+  min-height:0 !important;
 }
 
-#studioRoot,
-#studioShell,
-#studioLayout,
-#mainWorkspace,
-#twoPanelWrap {
-  height: 100%;
-  min-height: 0;
+/* Orta panel gerçek kolon */
+#twoPanelWrap > section#moduleHost.glassCard.studioMotor{
+  flex:1.15 1 0 !important;
+  min-width:560px !important;
+  width:auto !important;
+  max-width:none !important;
+  min-height:0 !important;
+  align-self:stretch !important;
 }
 
-#studioLayout,
-#twoPanelWrap,
-#studioRoot .studioTwoPanel,
-#studioRoot .studioLayout,
-#studioRoot .studioGrid {
-  display: flex !important;
-  align-items: stretch !important;
-  gap: 18px !important;
-  padding: 18px !important;
-  min-height: 0 !important;
+/* Boş/ara outputs kabuğu düzeni bozmasın */
+#twoPanelWrap > section.outputsCard.studioOutputs{
+  flex:0 0 0 !important;
+  width:0 !important;
+  min-width:0 !important;
+  max-width:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  overflow:hidden !important;
 }
 
-/* SOL MENÜ */
-#leftMenu {
-  flex: 0 0 240px !important;
-  width: 240px !important;
-  min-width: 240px !important;
-  max-width: 240px !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-  align-self: stretch !important;
+/* Gerçek sağ panel host */
+#twoPanelWrap > #rightPanelHost{
+  flex:1 1 0 !important;
+  min-width:420px !important;
+  width:auto !important;
+  max-width:none !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-self:stretch !important;
+  overflow:hidden !important;
 }
 
-/* ORTA PANEL */
-#moduleHost {
-  flex: 1 1 0 !important;
-  width: auto !important;
-  min-width: 320px !important;
-  max-width: none !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-  align-self: stretch !important;
+/* Sağ panel içi tam yayılsın */
+#twoPanelWrap > #rightPanelHost .rpShell{
+  display:flex !important;
+  flex-direction:column !important;
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
 }
 
-/* SAĞ ORTAK OUTPUTS KABUĞU */
-#twoPanelWrap .studioOutputs,
-section.outputsCard.studioOutputs {
-  flex: 1 1 clamp(460px, 38vw, 760px) !important;
-  width: auto !important;
-  min-width: 460px !important;
-  max-width: 760px !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  align-self: stretch !important;
-  box-sizing: border-box !important;
+#twoPanelWrap > #rightPanelHost .rpHeader,
+#twoPanelWrap > #rightPanelHost .rpHeaderTop,
+#twoPanelWrap > #rightPanelHost .rpHeaderBottom,
+#twoPanelWrap > #rightPanelHost .rpSearch,
+#twoPanelWrap > #rightPanelHost .rpBody,
+#twoPanelWrap > #rightPanelHost .rpContent{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
 }
 
-/* SAĞ İÇ HOST */
-#rightPanelHost {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  min-height: 0 !important;
-  height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  align-self: stretch !important;
-  box-sizing: border-box !important;
-}
-
-/* ORTAK SHELL */
-.rpShell {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* HEADER */
-.rpHeader {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: linear-gradient(180deg, rgba(20,18,40,.95), rgba(20,18,40,.85));
-  backdrop-filter: blur(8px);
-  padding: 12px 12px 10px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
-.rpHeaderTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
-.rpTitle {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: .2px;
-  min-width: 0;
-}
-
-.rpMeta {
-  font-size: 12px;
-  opacity: .7;
-  flex: 0 0 auto;
-}
-
-.rpHeaderBottom {
-  margin-top: 8px;
-  width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
-.rpSearch {
-  display: block !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.25);
-  color: #fff;
-  font-size: 13px;
-  box-sizing: border-box !important;
-}
-
-.rpSearch::placeholder {
-  opacity: .6;
-}
-
-.rpSearch:focus {
-  outline: none;
-  border-color: rgba(150,120,255,.6);
-  box-shadow: 0 0 0 2px rgba(150,120,255,.15);
-}
-
-/* BODY + CONTENT */
-.rpBody {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  overscroll-behavior: contain;
-  padding: 10px 10px 16px;
-  box-sizing: border-box !important;
-}
-
-.rpContent {
-  display: block;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-.rpContent > * {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* FOOTER */
-.studioOutputs .panelFooter {
-  margin-top: auto;
-}
-
-/* SAHTE SAĞ BOŞLUK YOK */
-#studioLayout::after,
-#twoPanelWrap::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* ÜST HİZA */
-#leftMenu,
-#moduleHost,
-#rightPanelHost {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  align-self: stretch !important;
-}
-
-#moduleHost > :first-child,
-#rightPanelHost > :first-child,
-#leftMenu > :first-child {
-  margin-top: 0 !important;
-}
-
-/* RESPONSIVE */
-@media (max-width: 1400px) {
-  #moduleHost {
-    min-width: 280px !important;
-  }
-
-  #twoPanelWrap .studioOutputs,
-  section.outputsCard.studioOutputs {
-    min-width: 380px !important;
-  }
-}
-
-@media (max-width: 1100px) {
-  #studioLayout,
-  #twoPanelWrap,
-  #studioRoot .studioTwoPanel,
-  #studioRoot .studioLayout,
-  #studioRoot .studioGrid {
-    flex-direction: column !important;
-  }
-
-  #leftMenu,
-  #moduleHost,
-  #twoPanelWrap .studioOutputs,
-  section.outputsCard.studioOutputs,
-  #rightPanelHost {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    flex: 0 0 auto !important;
-  }
+#twoPanelWrap > #rightPanelHost .rpBody{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
 }
