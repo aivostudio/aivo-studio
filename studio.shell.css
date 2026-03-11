@@ -341,10 +341,10 @@ section.outputsCard.studioOutputs,
 /* ===== Scroll body ===== */
 .rpBody {
   flex: 1;
-  min-height: 0; /* scroll için kritik */
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 10px 10px 16px;
+  padding: 6px 6px 10px;
 }
 
 /* içerik wrapper */
