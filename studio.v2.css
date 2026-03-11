@@ -56,8 +56,8 @@ body{
 /* ===== SOL MENÜ ===== */
 #leftMenu.studioNav{
   position: sticky;
-  top: calc(var(--topbar-h) + 36px);
-  height: calc(100vh - var(--topbar-h) - 36px - 18px);
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - var(--gap));
   overflow: auto;
 
   padding: 10px;
@@ -284,7 +284,8 @@ body{
 
 /* topbar fixed olduğu için menünün top offset'i topbar yüksekliği */
 :root{
-  --topbar-h: 72px;
+  --topbar-h: 72px; /* sende zaten var */
+  --gap: 18px;      /* sende zaten var */
 }
 
 /* Sol menü: kolon içinde sabitlenir */
