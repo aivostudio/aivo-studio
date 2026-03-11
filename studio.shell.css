@@ -23,17 +23,6 @@
   align-self:stretch !important;
 }
 
-/* Boş/ara outputs kabuğu düzeni bozmasın */
-#twoPanelWrap > section.outputsCard.studioOutputs{
-  flex:0 0 0 !important;
-  width:0 !important;
-  min-width:0 !important;
-  max-width:0 !important;
-  padding:0 !important;
-  margin:0 !important;
-  border:0 !important;
-  overflow:hidden !important;
-}
 
 /* Gerçek sağ panel host */
 #twoPanelWrap > #rightPanelHost{
