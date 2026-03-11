@@ -167,9 +167,9 @@ section.outputsCard.studioOutputs {
 
 /* Asıl host: boşluğu doldursun */
 #rightPanelHost {
-  flex: 1 1 auto;
+  flex: 0 0 460px;
   min-height: 0;
-  height: auto;       /* 100% yerine daha güvenli */
+  height: auto;
 }
 
 /* Footer yazısı tabana yapışsın (varsa) */
