@@ -255,115 +255,56 @@ section.outputsCard.studioOutputs {
   }
 }
 /* =========================================================
-   STUDIO V2 — MIDDLE + RIGHT PANEL ONLY
-   Sadece orta panel + sağ outputs panel source-of-truth
-   Sol menüye ve üst shell’e dokunmaz
+   STUDIO V2 — REAL 2-COLUMN SOURCE OF TRUTH
+   Sadece orta panel + sağ panel
    ========================================================= */
 
-/* 1) DIŞ İKİLİ KABUK */
 #twoPanelWrap {
   display: flex !important;
   align-items: stretch !important;
   gap: 18px !important;
   min-height: 0 !important;
-  height: 100% !important;
-  overflow: hidden !important;
 }
 
-/* 2) ORTA PANEL DIŞ KABUK */
-#moduleHost,
-section#moduleHost.glassCard.studioMotor {
-  flex: 1 1 0 !important;
+/* ORTA PANEL */
+#twoPanelWrap > section#moduleHost.glassCard.studioMotor {
+  flex: 1.35 1 0% !important;
+  min-width: 0 !important;
   width: auto !important;
-  min-width: 320px !important;
   max-width: none !important;
-  min-height: 0 !important;
-  height: auto !important;
-  overflow: hidden !important;
   align-self: stretch !important;
-  box-sizing: border-box !important;
 }
 
-/* 3) SAĞ PANEL DIŞ KABUK */
-section.outputsCard.studioOutputs {
-  flex: 0 1 clamp(420px, 34vw, 720px) !important;
-  width: clamp(420px, 34vw, 720px) !important;
-  min-width: 420px !important;
-  max-width: 720px !important;
-  min-height: 0 !important;
-  height: auto !important;
+/* SAĞ PANEL */
+#twoPanelWrap > section.outputsCard.studioOutputs {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
   display: flex !important;
   flex-direction: column !important;
-  overflow: hidden !important;
   align-self: stretch !important;
-  box-sizing: border-box !important;
 }
 
-/* 4) SAĞ PANEL İÇ HOST */
-#rightPanelHost {
-  flex: 1 1 auto !important;
-  width: 100% !important;
+/* SAĞ PANEL İÇİ TAM UZASIN */
+#twoPanelWrap > section.outputsCard.studioOutputs > #rightPanelHost,
+#twoPanelWrap > section.outputsCard.studioOutputs .rpShell,
+#twoPanelWrap > section.outputsCard.studioOutputs .rpBody,
+#twoPanelWrap > section.outputsCard.studioOutputs .rpContent {
   min-width: 0 !important;
-  max-width: none !important;
-  min-height: 0 !important;
+  width: 100% !important;
+}
+
+#twoPanelWrap > section.outputsCard.studioOutputs .rpShell {
+  display: flex !important;
+  flex-direction: column !important;
   height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  align-self: stretch !important;
-  box-sizing: border-box !important;
-}
-
-/* 5) SAĞ PANEL ORTAK SHELL */
-#rightPanelHost .rpShell {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 0 !important;
   min-height: 0 !important;
-  box-sizing: border-box !important;
 }
 
-#rightPanelHost .rpHeader,
-#rightPanelHost .rpHeaderTop,
-#rightPanelHost .rpHeaderBottom,
-#rightPanelHost .rpSearch {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  box-sizing: border-box !important;
-}
-
-#rightPanelHost .rpBody {
+#twoPanelWrap > section.outputsCard.studioOutputs .rpBody {
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  width: 100% !important;
-  min-width: 0 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  box-sizing: border-box !important;
-}
-
-#rightPanelHost .rpContent,
-#rightPanelHost .rpContent > * {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* 6) KÜÇÜK EKRANLARDA ORTA + SAĞ BİRLİKTE DARALSIN */
-@media (max-width: 1400px) {
-  #moduleHost,
-  section#moduleHost.glassCard.studioMotor {
-    min-width: 280px !important;
-  }
-
-  section.outputsCard.studioOutputs {
-    flex-basis: clamp(360px, 36vw, 640px) !important;
-    width: clamp(360px, 36vw, 640px) !important;
-    min-width: 360px !important;
-    max-width: 640px !important;
-  }
 }
