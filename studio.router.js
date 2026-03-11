@@ -145,20 +145,30 @@ window.ensureModuleCSS = function(routeKey){
     throw lastErr || new Error("fetch failed");
   }
 
-  async function loadModuleIntoHost(key) {
-    const host = document.getElementById("moduleHost");
-    if (!host) return;
+ async function loadModuleIntoHost(key) {
+  const host = document.getElementById("moduleHost");
+  if (!host) return;
 
-    const file = MODULE_FILES[key];
-    if (!file) return;
+  const file = MODULE_FILES[key];
+  if (!file) return;
 
-    const currentKey = host.getAttribute("data-active-module") || "";
-    if (currentKey === key) return;
+  const currentKey = host.getAttribute("data-active-module") || "";
+  if (currentKey === key) return;
 
-    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
-    host.innerHTML = await fetchFirstOk(urls);
-    host.setAttribute("data-active-module", key);
-  }
+  // eski modülü hemen düşür
+  host.setAttribute("data-active-module", "");
+  host.innerHTML = "";
+
+  const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+  const html = await fetchFirstOk(urls);
+
+  // fetch dönerken route değiştiyse yanlış modülü basma
+  const nowHash = parseHash().key;
+  if (nowHash !== key) return;
+
+  host.innerHTML = html;
+  host.setAttribute("data-active-module", key);
+}
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
