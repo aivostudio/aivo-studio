@@ -242,13 +242,12 @@ body.panelWithTopbar {
   flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
   min-width: 120px !important;
 }
-
-/* 2) Right panel'i biraz büyüt */
+/* 2) Right panel host — parent genişliğini tam kullansın */
 #rightPanelHost{
-  width: 460px !important;      /* hedef genişlik (420–520 arası) */
-  flex: 0 0 460px !important;   /* sabit tut (flex:1 yapmıyoruz) */
-  min-width: 420px !important;
-  max-width: 520px !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
 }
 
 /* 3) Sağ kart paneli tam doldursun */
