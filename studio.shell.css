@@ -1,1 +1,121 @@
+/* =========================================================
+   STUDIO SHELL — CLEAN BASE LAYOUT
+   Sadece ana kabuk düzeni:
+   topbar + sol menü + orta alan + sağ host
+   Modül iç stiller burada yok
+   ========================================================= */
 
+:root{
+  --topbar-h: 72px;
+  --shell-gap: 18px;
+  --leftmenu-w: 240px;
+}
+
+html,
+body{
+  margin:0;
+  min-height:100%;
+}
+
+body.is-studio-v2{
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+#studioRoot.studioShell{
+  min-height:calc(100vh - var(--topbar-h));
+  display:grid;
+  grid-template-columns: var(--leftmenu-w) minmax(0, 1fr);
+  gap:var(--shell-gap);
+  padding:var(--shell-gap);
+  box-sizing:border-box;
+  align-items:start;
+}
+
+/* SOL MENÜ */
+#leftMenu{
+  width:var(--leftmenu-w);
+  min-width:var(--leftmenu-w);
+  max-width:var(--leftmenu-w);
+  align-self:start;
+  box-sizing:border-box;
+}
+
+/* ANA ÇALIŞMA ALANI */
+#mainWorkspace.studioMain{
+  min-width:0;
+  display:block;
+  box-sizing:border-box;
+}
+
+/* ORTA + SAĞ ALAN KABUĞU */
+#twoPanelWrap.studioTwoPanel{
+  display:grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, .9fr);
+  gap:var(--shell-gap);
+  align-items:start;
+  min-width:0;
+  box-sizing:border-box;
+}
+
+/* ORTA PANEL */
+#twoPanelWrap > #moduleHost{
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* SAĞ KABUK */
+#twoPanelWrap > .studioOutputs,
+#twoPanelWrap > #rightPanelHost{
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* GERÇEK SAĞ HOST */
+#rightPanelHost{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+/* SAĞ PANEL İÇ ORTAK YAPI */
+#rightPanelHost .rpShell{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  width:100%;
+}
+
+#rightPanelHost .rpHeader,
+#rightPanelHost .rpHeaderTop,
+#rightPanelHost .rpHeaderBottom,
+#rightPanelHost .rpSearch,
+#rightPanelHost .rpBody,
+#rightPanelHost .rpContent{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+
+#rightPanelHost .rpBody{
+  min-height:0;
+}
+
+/* KÜÇÜK EKRAN */
+@media (max-width: 1180px){
+  #studioRoot.studioShell{
+    grid-template-columns: 1fr;
+  }
+
+  #leftMenu{
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+
+  #twoPanelWrap.studioTwoPanel{
+    grid-template-columns: 1fr;
+  }
+}
