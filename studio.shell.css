@@ -1,6 +1,3 @@
-studio.shell.css
-—————
-
 /* =========================================================
    STUDIO V2 — SHELL LAYOUT
    Amaç: 3 kolon + sadece rightPanel scroll + min-height:0 zinciri
@@ -230,35 +227,38 @@ body.panelWithTopbar {
 }
 
 /* =========================================================
-   RIGHT PANEL AUTO GROW
-   Amaç: ekran genişledikçe sağ panel de büyüsün
+   RIGHT PANEL WIDEN (controlled) — REVİZE
+   Amaç: sağ panel biraz genişlesin, ama sayfanın sonuna kadar gitmesin
+   studio.shell.css en sona ekle
    ========================================================= */
 
-#moduleHost {
-  min-width: 0;
-  flex: 1 1 0;
-}
-
-#rightPanelHost{
-  min-width: 420px !important;
-  max-width: none !important;
-  width: auto !important;
-  flex: 1.15 1 0 !important;
-}
-
+/* 1) Sağdaki extra boşluğu tamamen silme — sadece küçült */
 #studioLayout::after,
 #studioRoot .studioTwoPanel::after,
 #studioRoot .studioLayout::after,
 #studioRoot .studioGrid::after {
-  display: none !important;
+  content: "" !important;
+  display: block !important;
+  flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
+  min-width: 120px !important;
 }
 
+/* 2) Right panel'i biraz büyüt */
+#rightPanelHost{
+  width: 460px !important;      /* hedef genişlik (420–520 arası) */
+  flex: 0 0 460px !important;   /* sabit tut (flex:1 yapmıyoruz) */
+  min-width: 420px !important;
+  max-width: 520px !important;
+}
+
+/* 3) Sağ kart paneli tam doldursun */
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs,
 .outputsCard.studioOutputs{
   width: 100% !important;
 }
 
+/* 4) Eğer içeride padding yüzünden dar görünüyorsa (opsiyonel) */
 #rightPanelHost .outputsCard{
   box-sizing: border-box !important;
 }
