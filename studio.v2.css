@@ -56,9 +56,12 @@ body{
 /* ===== SOL MENÜ ===== */
 #leftMenu.studioNav{
   position: sticky;
-  top: var(--topbar-h);
-  height: calc(100vh - var(--topbar-h) - var(--gap));
+  top: calc(var(--topbar-h) + 18px);
+  height: calc(100vh - var(--topbar-h) - 36px);
   overflow: auto;
+  align-self: stretch;
+  box-sizing: border-box;
+}
 
   padding: 10px;
   border-radius: var(--radius);
