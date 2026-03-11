@@ -284,8 +284,7 @@ body{
 
 /* topbar fixed olduğu için menünün top offset'i topbar yüksekliği */
 :root{
-  --topbar-h: 72px; /* sende zaten var */
-  --gap: 18px;      /* sende zaten var */
+  --topbar-h: 72px;
 }
 
 /* Sol menü: kolon içinde sabitlenir */
