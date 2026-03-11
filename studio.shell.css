@@ -243,7 +243,7 @@ body.panelWithTopbar {
 /* orta panel esneyebilsin */
 #moduleHost {
   min-width: 0 !important;
-  flex: 1 1 0 !important;
+  flex: 1.22 1 0 !important;
   width: auto !important;
 }
 
@@ -252,7 +252,7 @@ body.panelWithTopbar {
   min-width: 420px !important;
   width: auto !important;
   max-width: none !important;
-  flex: 1 1 0 !important;
+  flex: 0.88 1 0 !important;
 }
 
 /* sağ kart host'u tam doldursun */
