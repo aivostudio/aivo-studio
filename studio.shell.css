@@ -44,10 +44,10 @@ section#moduleHost {
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs,
 .outputsCard.studioOutputs {
-  flex: 1.2 1 420px !important;
-  width: auto !important;
+  flex: 0 0 clamp(420px, 32vw, 620px) !important;
+  width: clamp(420px, 32vw, 620px) !important;
   min-width: 420px !important;
-  max-width: none !important;
+  max-width: 620px !important;
   min-height: 0 !important;
   align-self: stretch !important;
   display: flex !important;
