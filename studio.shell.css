@@ -160,10 +160,10 @@ html, body {
 section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;     /* parent yüksekliğini alsın */
+  flex: 0.88 1 0 !important;
+  min-width: 420px !important;
   min-height: 0;
 }
-
 /* Asıl host: boşluğu doldursun */
 #rightPanelHost {
   flex: 1 1 auto;
@@ -243,7 +243,7 @@ body.panelWithTopbar {
 /* orta panel esneyebilsin */
 #moduleHost {
   min-width: 0 !important;
-  flex: 1.22 1 0 !important;
+  flex: 1.35 1 0 !important;
   width: auto !important;
 }
 
