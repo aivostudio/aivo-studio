@@ -100,9 +100,10 @@ html, body {
 
 /* ORTA: geniş kart */
 #moduleHost {
-  width: 720px;       /* 680-820 arası */
-  flex: 0 0 720px;    /* flex:1 DEĞİL */
-  min-width: 0;
+  flex: 1 1 0;
+  min-width: 720px;
+  max-width: 980px;
+  width: auto;
 }
 /* SAĞ: outputs — sayfanın sonuna kadar uzasın */
 #rightPanelHost {
