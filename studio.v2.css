@@ -404,3 +404,13 @@ button.primary-btn.aivoBtnPrimary{
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   color:#fff !important;
 }
+/* MODULE HOST — inner root full stretch */
+#moduleHost > * {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+#moduleHost > * > * {
+  max-width: none !important;
+}
