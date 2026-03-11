@@ -1,8 +1,9 @@
 // panel.manager.js
 (function(){
-  const registry = new Map();
-  let currentKey = null;
-  let currentUnmount = null;
+ const registry = new Map();
+let currentKey = null;
+let currentUnmount = null;
+let currentImpl = null;
 
   // shell refs (manager-owned)
   let shell = null;
@@ -133,14 +134,18 @@
       ensureShell(host);
 
       // unmount old
-      if(currentUnmount){
-        safeCall(currentUnmount);
-        currentUnmount = null;
-      }
+     // unmount old
+if (currentUnmount) {
+  safeCall(currentUnmount);
+  currentUnmount = null;
+} else if (currentImpl && typeof currentImpl.destroy === "function" && contentEl) {
+  safeCall(currentImpl.destroy, contentEl);
+}
 
-      currentKey = key;
+currentImpl = null;
+currentKey = key;
 
-      const impl = registry.get(key);
+const impl = registry.get(key);
       if(!impl){
         setHeader({ title: "Panel", meta: "", searchEnabled: false, resetSearch: true });
         renderFallback(key);
@@ -176,6 +181,7 @@
       });
 
       currentUnmount = (typeof unmount === "function") ? unmount : null;
+      currentImpl = impl;
 
       // if there was an existing query, re-apply it on new panel
       if(lastQuery && impl && typeof impl.onSearch === "function"){
