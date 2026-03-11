@@ -1,224 +1,102 @@
 /* =========================================================
-   STUDIO V2 — SHELL LAYOUT
-   Amaç: 3 kolon + sadece rightPanel scroll + min-height:0 zinciri
+   STUDIO V2 — SINGLE CLEAN LAYOUT
+   Sol menü sabit
+   Orta panel esner/küçülür
+   Sağ ortak outputs paneli kontrollü büyür/küçülür
+   Search + içerik panel sonuna kadar uzar
    ========================================================= */
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
 }
 
 #studioRoot,
 #studioShell,
-#studioLayout {
-  height: 100%;
-  min-height: 0;
-}
-
-#leftMenu,
-#moduleHost,
-#rightPanelHost {
-  min-height: 0;
-  min-width: 0;
-}
-
 #studioLayout,
-#studioRoot .studioTwoPanel,
-#studioRoot .studioLayout,
-#studioRoot .studioGrid {
-  display: flex;
-  gap: 22px;
-  padding: 18px;
-  min-height: 0;
-}
-
-#leftMenu {
-  width: 320px;
-  flex: 0 0 320px;
-  overflow: hidden;
-}
-
-#moduleHost {
-  flex: 1 1 auto;
-  overflow: hidden;
-}
-
-#rightPanelHost {
-  width: 420px;
-  flex: 0 0 420px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-#rightPanelHost .outputsList,
-#rightPanelHost .outputsScroll,
-#rightPanelHost .rp-scroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-@media (max-width: 1100px) {
-  #studioLayout,
-  #studioRoot .studioTwoPanel,
-  #studioRoot .studioLayout,
-  #studioRoot .studioGrid {
-    flex-direction: column;
-  }
-  #leftMenu, #rightPanelHost {
-    width: auto;
-    flex: 0 0 auto;
-  }
-}
-
-/* =========================================================
-   STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
-   ========================================================= */
-
-#studioLayout,
-#studioRoot .studioTwoPanel,
-#studioRoot .studioLayout,
-#studioRoot .studioGrid {
-  display: flex;
-  align-items: stretch;
-  gap: 18px;
-  padding: 18px;
-}
-
-#leftMenu {
-  width: 240px;
-  flex: 0 0 240px;
-  min-width: 240px;
-}
-
-#moduleHost {
-  width: 720px;
-  flex: 0 0 720px;
-  min-width: 0;
-}
-
-#rightPanelHost {
-  width: 360px;
-  flex: 0 0 360px;
-  min-width: 0;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-}
-
-#studioLayout::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after {
-  content: "";
-  flex: 1 1 auto;
-  min-width: 80px;
-}
-
-@media (max-width: 1200px) {
-  #studioLayout,
-  #studioRoot .studioTwoPanel,
-  #studioRoot .studioLayout,
-  #studioRoot .studioGrid {
-    flex-direction: column;
-  }
-  #leftMenu, #moduleHost, #rightPanelHost {
-    width: auto;
-    flex: 0 0 auto;
-    min-width: 0;
-  }
-}
-
-/* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
 #mainWorkspace,
 #twoPanelWrap {
   height: 100%;
   min-height: 0;
-  display: flex;
-  align-items: stretch;
 }
-
-#twoPanelWrap {
-  gap: 18px;
-}
-
-/* Asıl host: boşluğu doldursun */
-#rightPanelHost {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: auto;
-}
-
-/* Footer yazısı tabana yapışsın (varsa) */
-.studioOutputs .panelFooter {
-  margin-top: auto;
-}
-
-/* ===============================
-   TOPBAR GAP FIX (studio) — REVİZE
-   =============================== */
-
-#studioRoot,
-.studioShell,
-#mainWorkspace {
-  margin-top: 0 !important;
-  padding-top: 12px !important;
-}
-
-body.is-studio-v2,
-body.panelWithTopbar {
-  padding-top: 12px !important;
-}
-
-:root{
-  --aivo-topbar-h: 12px !important;
-}
-
-/* ===============================
-   COLUMN TOP ALIGN (same baseline)
-   =============================== */
 
 #studioLayout,
 #twoPanelWrap,
 #studioRoot .studioTwoPanel,
 #studioRoot .studioLayout,
-#studioRoot .studioGrid{
+#studioRoot .studioGrid {
+  display: flex !important;
   align-items: stretch !important;
-  padding-top: 12px !important;
+  gap: 18px !important;
+  padding: 18px !important;
+  min-height: 0 !important;
 }
 
-#leftMenu,
-#moduleHost,
-#rightPanelHost{
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+/* SOL MENÜ */
+#leftMenu {
+  flex: 0 0 240px !important;
+  width: 240px !important;
+  min-width: 240px !important;
+  max-width: 240px !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   align-self: stretch !important;
 }
 
-#moduleHost > :first-child,
-#rightPanelHost > :first-child,
-#leftMenu  > :first-child{
-  margin-top: 0 !important;
+/* ORTA PANEL */
+#moduleHost {
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 320px !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  align-self: stretch !important;
 }
 
-/* =========================
-   RightPanel – ortak shell
-   ========================= */
+/* SAĞ ORTAK OUTPUTS KABUĞU */
+#twoPanelWrap .studioOutputs,
+section.outputsCard.studioOutputs {
+  flex: 1 1 clamp(460px, 38vw, 760px) !important;
+  width: auto !important;
+  min-width: 460px !important;
+  max-width: 760px !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
 
+/* SAĞ İÇ HOST */
 #rightPanelHost {
-  height: 100%;
-  display: flex;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
 }
 
+/* ORTAK SHELL */
 .rpShell {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  min-height: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
 }
 
+/* HEADER */
 .rpHeader {
   position: sticky;
   top: 0;
@@ -227,6 +105,9 @@ body.panelWithTopbar {
   backdrop-filter: blur(8px);
   padding: 12px 12px 10px;
   border-bottom: 1px solid rgba(255,255,255,.08);
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .rpHeaderTop {
@@ -234,25 +115,35 @@ body.panelWithTopbar {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  width: 100% !important;
+  min-width: 0 !important;
 }
 
 .rpTitle {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: .2px;
+  min-width: 0;
 }
 
 .rpMeta {
   font-size: 12px;
   opacity: .7;
+  flex: 0 0 auto;
 }
 
 .rpHeaderBottom {
   margin-top: 8px;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .rpSearch {
-  width: 100%;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
   height: 34px;
   padding: 0 10px;
   border-radius: 10px;
@@ -260,6 +151,7 @@ body.panelWithTopbar {
   background: rgba(0,0,0,.25);
   color: #fff;
   font-size: 13px;
+  box-sizing: border-box !important;
 }
 
 .rpSearch::placeholder {
@@ -272,14 +164,93 @@ body.panelWithTopbar {
   box-shadow: 0 0 0 2px rgba(150,120,255,.15);
 }
 
+/* BODY + CONTENT */
 .rpBody {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   overscroll-behavior: contain;
   padding: 10px 10px 16px;
+  box-sizing: border-box !important;
 }
 
 .rpContent {
   display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.rpContent > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* FOOTER */
+.studioOutputs .panelFooter {
+  margin-top: auto;
+}
+
+/* SAHTE SAĞ BOŞLUK YOK */
+#studioLayout::after,
+#twoPanelWrap::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ÜST HİZA */
+#leftMenu,
+#moduleHost,
+#rightPanelHost {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: stretch !important;
+}
+
+#moduleHost > :first-child,
+#rightPanelHost > :first-child,
+#leftMenu > :first-child {
+  margin-top: 0 !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1400px) {
+  #moduleHost {
+    min-width: 280px !important;
+  }
+
+  #twoPanelWrap .studioOutputs,
+  section.outputsCard.studioOutputs {
+    min-width: 380px !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  #studioLayout,
+  #twoPanelWrap,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column !important;
+  }
+
+  #leftMenu,
+  #moduleHost,
+  #twoPanelWrap .studioOutputs,
+  section.outputsCard.studioOutputs,
+  #rightPanelHost {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+  }
 }
