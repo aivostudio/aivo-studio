@@ -1,3 +1,6 @@
+studio.v2.css
+—————
+
 :root{
   --topbar-h: 72px;
 
@@ -56,12 +59,9 @@ body{
 /* ===== SOL MENÜ ===== */
 #leftMenu.studioNav{
   position: sticky;
-  top: calc(var(--topbar-h) + 18px);
-  height: calc(100vh - var(--topbar-h) - 18px);
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - var(--gap));
   overflow: auto;
-  align-self: stretch;
-  box-sizing: border-box;
-}
 
   padding: 10px;
   border-radius: var(--radius);
