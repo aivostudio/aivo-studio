@@ -592,11 +592,7 @@
     return `
       <div class="svcCard" data-svc-id="${esc(id)}">
         <div class="svcMedia ${portrait ? "is-portrait" : ""}">
-          <div
-            class="svcBadgeDot ${badgeClass(badgeKind)}"
-            title="${esc(badgeText)}"
-            aria-label="${esc(badgeText)}"
-          ></div>
+         
 
           ${
             ready && videoUrl
