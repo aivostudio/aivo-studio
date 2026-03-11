@@ -345,3 +345,48 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* =========================================================
+   ATMOS RIGHT PANEL — grid'i host genişliğine uydur
+   Dosya sonuna ekle
+   ========================================================= */
+
+#rightPanelHost .atmoGrid,
+#rightPanelHost [data-panel="atmo"] .atmoGrid,
+#rightPanelHost .outputsGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#rightPanelHost .atmoCard,
+#rightPanelHost .atmo-item,
+#rightPanelHost .outputCard,
+#rightPanelHost .outputsGrid > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+#rightPanelHost .atmoCard img,
+#rightPanelHost .atmo-item img,
+#rightPanelHost .outputCard img,
+#rightPanelHost video {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+}
+
+#rightPanelHost .atmoCard .title,
+#rightPanelHost .atmo-item .title,
+#rightPanelHost .outputCard .title,
+#rightPanelHost .cardTitle,
+#rightPanelHost .outputTitle {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
