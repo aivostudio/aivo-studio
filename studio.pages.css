@@ -2862,7 +2862,7 @@ html, body { height: 100% !important; }
 
 #twoPanelWrap {
   display: grid !important;
-grid-template-columns: minmax(0, 1.34fr) minmax(0, 0.66fr) !important;
+grid-template-columns: minmax(0, 1.62fr) minmax(0, 0.38fr) !important;
   align-items: stretch !important;
   min-height: 0 !important;
   width: 100% !important;
