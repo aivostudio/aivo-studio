@@ -2858,21 +2858,18 @@ html, body {
 #mainWorkspace,
 #twoPanelWrap {
   display: flex !important;
-  align-items: flex-start !important;
+  align-items: stretch !important;
   min-height: 0 !important;
 }
-
-/* sağ panel dış kabuğu sayfa ile birlikte uzasın */
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs {
   display: flex !important;
   flex-direction: column !important;
   flex: 0 0 auto !important;
-  align-self: flex-start !important;
+  align-self: stretch !important;
   min-height: 0 !important;
   height: auto !important;
 }
-
 /* iç host içerik kadar büyüsün */
 #rightPanelHost {
   flex: 0 0 auto !important;
