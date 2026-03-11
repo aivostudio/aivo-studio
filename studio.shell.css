@@ -161,7 +161,10 @@ html, body {
 section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;     /* parent yüksekliğini alsın */
+  flex: 0 0 clamp(360px, 30vw, 520px);
+  width: clamp(360px, 30vw, 520px);
+  min-width: 360px;
+  max-width: 520px;
   min-height: 0;
 }
 
