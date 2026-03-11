@@ -254,26 +254,3 @@ section.outputsCard.studioOutputs {
     flex: 0 0 auto !important;
   }
 }
-/* FORCE ONLY: middle + right fill */
-#twoPanelWrap {
-  display: flex !important;
-  align-items: stretch !important;
-  gap: 18px !important;
-}
-
-section#moduleHost.glassCard.studioMotor,
-#moduleHost.glassCard.studioMotor,
-#moduleHost {
-  flex: 1 1 0 !important;
-  width: auto !important;
-  min-width: 0 !important;
-  max-width: none !important;
-}
-
-section.outputsCard.studioOutputs,
-#twoPanelWrap .studioOutputs {
-  flex: 0 0 460px !important;
-  width: 460px !important;
-  min-width: 460px !important;
-  max-width: 460px !important;
-}
