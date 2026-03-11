@@ -169,33 +169,18 @@ window.ensureModuleCSS = function(routeKey){
       return; // single flow: hashchange will call go()
     }
 
-  setActiveNav(key);
+    setActiveNav(key);
 
-console.log("[ROUTER][go:start]", {
-  key,
-  hash: location.hash,
-  activeModuleBefore: document.getElementById("moduleHost")?.getAttribute("data-active-module") || "",
-  panelBefore: window.RightPanel?.getCurrentKey?.() || ""
-});
+    // ✅ CSS: route-based
+    window.ensureModuleCSS?.(key);
 
-// ✅ CSS: route-based
-window.ensureModuleCSS?.(key);
+    // ✅ Module inject
+    await loadModuleIntoHost(key);
 
-// ✅ Module inject
-await loadModuleIntoHost(key);
-
-console.log("[ROUTER][go:module_loaded]", {
-  key,
-  activeModuleAfter: document.getElementById("moduleHost")?.getAttribute("data-active-module") || ""
-});
-
-// ✅ Right panel: mapped panelKey
-const panelKey = RIGHT_PANEL_KEY[key] || "music";
-console.log("[ROUTER][go:panel_force]", {
-  key,
-  panelKey
-});
-window.RightPanel?.force?.(panelKey, {});
+    // ✅ Right panel: mapped panelKey
+    const panelKey = RIGHT_PANEL_KEY[key] || "music";
+    window.RightPanel?.force?.(panelKey, {});
+  }
 
   function onHashChange() {
     const { key } = parseHash();
