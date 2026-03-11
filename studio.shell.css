@@ -71,14 +71,9 @@ html, body {
     flex: 0 0 auto;
   }
 }
+
 /* =========================================================
    STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
-   Hedef:
-   - Menü en dar (2. görsel gibi)
-   - Orta geniş
-   - Sağ outputs orta-dar
-   - Kolonlar arası az boşluk (nefes)
-   - Sağda ekstra boş alan kalsın
    ========================================================= */
 
 #studioLayout,
@@ -87,47 +82,40 @@ html, body {
 #studioRoot .studioGrid {
   display: flex;
   align-items: stretch;
-  gap: 18px;          /* NEFES: 14-22 arası oynarsın */
+  gap: 18px;
   padding: 18px;
 }
 
-/* MENÜ: en dar yer */
 #leftMenu {
   width: 240px;
   flex: 0 0 240px;
   min-width: 240px;
 }
 
-/* ORTA: geniş kart */
 #moduleHost {
-  width: 720px;       /* 680-820 arası */
-  flex: 0 0 720px;    /* flex:1 DEĞİL */
+  width: 720px;
+  flex: 0 0 720px;
   min-width: 0;
 }
-/* SAĞ: outputs — sayfanın sonuna kadar uzasın */
+
 #rightPanelHost {
-  width: 360px;        /* 320–420 arası */
+  width: 360px;
   flex: 0 0 360px;
   min-width: 0;
-
-  /* 👇 ASIL FARK BURADA */
   align-self: stretch;
   display: flex;
   flex-direction: column;
 }
 
-
-/* SAĞDA ekstra boşluk */
 #studioLayout::after,
 #studioRoot .studioTwoPanel::after,
 #studioRoot .studioLayout::after,
 #studioRoot .studioGrid::after {
   content: "";
-  flex: 1 1 auto;     /* kalan alanı yesin */
-  min-width: 80px;    /* sağda boşluk hissi */
+  flex: 1 1 auto;
+  min-width: 80px;
 }
 
-/* Küçük ekran: alt alta */
 @media (max-width: 1200px) {
   #studioLayout,
   #studioRoot .studioTwoPanel,
@@ -141,6 +129,7 @@ html, body {
     min-width: 0;
   }
 }
+
 /* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
 #mainWorkspace,
 #twoPanelWrap {
@@ -150,69 +139,55 @@ html, body {
   align-items: stretch;
 }
 
-/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
 #twoPanelWrap {
   gap: 18px;
 }
 
-/* Sağ card (Üretilenler) kolon gibi davransın ve uzasın */
-#twoPanelWrap .studioOutputs,
-section.outputsCard.studioOutputs {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 clamp(480px, 42vw, 760px);
-  width: clamp(480px, 42vw, 760px);
-  min-width: 480px;
-  max-width: 760px;
-  min-height: 0;
-}
 /* Asıl host: boşluğu doldursun */
 #rightPanelHost {
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;       /* 100% yerine daha güvenli */
+  height: auto;
 }
 
 /* Footer yazısı tabana yapışsın (varsa) */
 .studioOutputs .panelFooter {
   margin-top: auto;
 }
+
 /* ===============================
    TOPBAR GAP FIX (studio) — REVİZE
-   Hedef: her şeyi 1 cm aşağı almak
    =============================== */
 
 #studioRoot,
 .studioShell,
 #mainWorkspace {
   margin-top: 0 !important;
-  padding-top: 12px !important; /* ← 1 cm aşağı */
+  padding-top: 12px !important;
 }
 
 body.is-studio-v2,
 body.panelWithTopbar {
-  padding-top: 12px !important; /* ← body de eşitlendi */
+  padding-top: 12px !important;
 }
 
 :root{
-  --aivo-topbar-h: 12px !important; /* ← topbar offset geri verildi */
+  --aivo-topbar-h: 12px !important;
 }
 
 /* ===============================
    COLUMN TOP ALIGN (same baseline)
    =============================== */
 
-/* 3 kolon parent */
 #studioLayout,
 #twoPanelWrap,
 #studioRoot .studioTwoPanel,
 #studioRoot .studioLayout,
 #studioRoot .studioGrid{
   align-items: stretch !important;
-  padding-top: 12px !important; /* 8-16 arası ayarla */
+  padding-top: 12px !important;
 }
 
-/* 3 kolonun kendisi aynı hizada başlasın */
 #leftMenu,
 #moduleHost,
 #rightPanelHost{
@@ -221,48 +196,12 @@ body.panelWithTopbar {
   align-self: stretch !important;
 }
 
-/* Kolon içindeki ilk kart/section üst boşluk yapıyorsa sıfırla */
 #moduleHost > :first-child,
 #rightPanelHost > :first-child,
 #leftMenu  > :first-child{
   margin-top: 0 !important;
 }
 
-/* =========================================================
-   RIGHT PANEL WIDEN (controlled) — REVİZE
-   Amaç: sağ panel biraz genişlesin, ama sayfanın sonuna kadar gitmesin
-   studio.shell.css en sona ekle
-   ========================================================= */
-
-/* 1) Sağdaki extra boşluğu tamamen silme — sadece küçült */
-#studioLayout::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after {
-  content: "" !important;
-  display: block !important;
-  flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
-  min-width: 120px !important;
-}
-/* 2) Right panel host — parent genişliğini tam kullansın */
-#rightPanelHost{
-  width: 100% !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  max-width: none !important;
-}
-
-/* 3) Sağ kart paneli tam doldursun */
-section.outputsCard.studioOutputs,
-#twoPanelWrap .studioOutputs,
-.outputsCard.studioOutputs{
-  width: 100% !important;
-}
-
-/* 4) Eğer içeride padding yüzünden dar görünüyorsa (opsiyonel) */
-#rightPanelHost .outputsCard{
-  box-sizing: border-box !important;
-}
 /* =========================
    RightPanel – ortak shell
    ========================= */
@@ -277,10 +216,9 @@ section.outputsCard.studioOutputs,
   flex-direction: column;
   height: 100%;
   width: 100%;
-  min-height: 0; /* scroll için kritik */
+  min-height: 0;
 }
 
-/* ===== Header (sticky) ===== */
 .rpHeader {
   position: sticky;
   top: 0;
@@ -334,16 +272,14 @@ section.outputsCard.studioOutputs,
   box-shadow: 0 0 0 2px rgba(150,120,255,.15);
 }
 
-/* ===== Scroll body ===== */
 .rpBody {
   flex: 1;
-  min-height: 0; /* scroll için kritik */
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 10px 10px 16px;
 }
 
-/* içerik wrapper */
 .rpContent {
   display: block;
 }
