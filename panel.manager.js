@@ -60,9 +60,15 @@
             <div class="rpTitle">Panel</div>
             <div class="rpMeta"></div>
           </div>
-          <div class="rpHeaderBottom">
-            <input class="rpSearch" type="search" placeholder="Ara..." autocomplete="off" />
-          </div>
+          <div class="rpHeaderBottom" style="width:100%;display:block;box-sizing:border-box;">
+  <input
+    class="rpSearch"
+    type="search"
+    placeholder="Ara..."
+    autocomplete="off"
+    style="display:block;width:100%;max-width:none;min-width:0;box-sizing:border-box;"
+  />
+</div>
         </div>
 
         <div class="rpBody">
