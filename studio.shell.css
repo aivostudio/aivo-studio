@@ -100,10 +100,9 @@ html, body {
 
 /* ORTA: geniş kart */
 #moduleHost {
-  flex: 1 1 0;
-  min-width: 720px;
-  max-width: 980px;
-  width: auto;
+  width: 720px;       /* 680-820 arası */
+  flex: 0 0 720px;    /* flex:1 DEĞİL */
+  min-width: 0;
 }
 /* SAĞ: outputs — sayfanın sonuna kadar uzasın */
 #rightPanelHost {
@@ -167,9 +166,9 @@ section.outputsCard.studioOutputs {
 
 /* Asıl host: boşluğu doldursun */
 #rightPanelHost {
-  flex: 0 0 460px;
+  flex: 1 1 auto;
   min-height: 0;
-  height: auto;
+  height: auto;       /* 100% yerine daha güvenli */
 }
 
 /* Footer yazısı tabana yapışsın (varsa) */
@@ -233,11 +232,22 @@ body.panelWithTopbar {
    studio.shell.css en sona ekle
    ========================================================= */
 
+/* 1) Sağdaki extra boşluğu tamamen silme — sadece küçült */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "" !important;
+  display: block !important;
+  flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
+  min-width: 120px !important;
+}
+
 /* 2) Right panel'i biraz büyüt */
 #rightPanelHost{
-  width: clamp(360px, 30vw, 520px) !important;
-  flex: 0 0 clamp(360px, 30vw, 520px) !important;
-  min-width: 360px !important;
+  width: 460px !important;      /* hedef genişlik (420–520 arası) */
+  flex: 0 0 460px !important;   /* sabit tut (flex:1 yapmıyoruz) */
+  min-width: 420px !important;
   max-width: 520px !important;
 }
 
