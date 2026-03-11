@@ -222,7 +222,7 @@ body{
 /* 2 panel arası boşluk + oran */
 #twoPanelWrap{
   gap: var(--gap) !important;
-  grid-template-columns: minmax(0, 1.42fr) minmax(0, 0.58fr) !important;
+  grid-template-columns: minmax(0, 1.28fr) minmax(0, 0.72fr) !important;
 }
 /* outputs paneli daha şeffaf + glow */
 .outputsCard{
