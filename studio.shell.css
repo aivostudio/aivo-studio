@@ -27,7 +27,7 @@
 /* Gerçek sağ panel host */
 #twoPanelWrap > #rightPanelHost{
   flex:1 1 0 !important;
-  min-width:420px !important;
+min-width:340px !important;
   width:auto !important;
   max-width:none !important;
   min-height:0 !important;
