@@ -2854,11 +2854,18 @@ html, body { height: 100% !important; }
 }
 
 /* iki panel sarmalı flex olmalı ki çocuklar stretch alabilsin */
-#mainWorkspace,
-#twoPanelWrap {
+#mainWorkspace {
   display: flex !important;
   align-items: stretch !important;
   min-height: 0 !important;
+}
+
+#twoPanelWrap {
+  display: grid !important;
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr) !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+  width: 100% !important;
 }
 
 /* sağ kart kolonu */
