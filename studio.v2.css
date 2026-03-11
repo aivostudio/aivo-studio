@@ -226,9 +226,8 @@ body{
 /* 2 panel arası boşluk + oran */
 #twoPanelWrap{
   gap: var(--gap) !important;
-  grid-template-columns: minmax(560px, var(--motor-w)) minmax(560px, var(--outputs-w)) !important;
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr) !important;
 }
-
 /* outputs paneli daha şeffaf + glow */
 .outputsCard{
   background: rgba(255,255,255,.025) !important;      /* daha şeffaf */
