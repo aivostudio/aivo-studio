@@ -461,9 +461,17 @@ header#top.aivo-topbar .aivo-topbar-inner{
 #studioRoot.studioShell{
   padding-top: calc(var(--topbar-h) + 18px) !important;
 }
-/* ===== MODULE HOST COLOR FINAL FIX ===== */
+/* ===== MODULE HOST PREMIUM TONE FIX ===== */
 #moduleHost{
-  background: #1c1822 !important;
-  border: 1px solid rgba(255,255,255,.06) !important;
-  box-shadow: 0 26px 90px rgba(0,0,0,.42) !important;
+  background:
+    radial-gradient(120% 90% at 50% 0%,
+      rgba(120, 84, 168, .16) 0%,
+      rgba(76, 48, 108, .10) 28%,
+      rgba(31, 24, 40, .96) 62%,
+      rgba(24, 19, 31, .98) 100%) !important;
+  border: 1px solid rgba(168, 126, 255, .14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    inset 0 0 60px rgba(160,110,255,.06),
+    0 30px 80px rgba(0,0,0,.42) !important;
 }
