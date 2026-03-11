@@ -464,15 +464,16 @@ header#top.aivo-topbar .aivo-topbar-inner{
 /* ===== MODULE HOST PREMIUM TONE FIX ===== */
 #moduleHost{
   background:
-    radial-gradient(110% 85% at 50% 0%,
-      rgba(168, 108, 255, .22) 0%,
-      rgba(120, 72, 190, .16) 24%,
-      rgba(58, 36, 86, .22) 42%,
-      rgba(22, 18, 34, .96) 72%,
-      rgba(16, 14, 26, .99) 100%) !important;
-  border: 1px solid rgba(190, 140, 255, .16) !important;
+    radial-gradient(120% 95% at 50% 0%,
+      rgba(182, 150, 255, .30) 0%,
+      rgba(146, 108, 255, .22) 18%,
+      rgba(98, 70, 184, .18) 34%,
+      rgba(42, 30, 68, .30) 52%,
+      rgba(18, 16, 34, .96) 76%,
+      rgba(12, 12, 24, .99) 100%) !important;
+  border: 1px solid rgba(164, 132, 255, .20) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    inset 0 0 90px rgba(176,118,255,.10),
-    0 30px 80px rgba(0,0,0,.44) !important;
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 0 110px rgba(156,118,255,.12),
+    0 30px 80px rgba(0,0,0,.46) !important;
 }
