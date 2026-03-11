@@ -461,3 +461,9 @@ header#top.aivo-topbar .aivo-topbar-inner{
 #studioRoot.studioShell{
   padding-top: calc(var(--topbar-h) + 18px) !important;
 }
+/* ===== MODULE HOST COLOR FINAL FIX ===== */
+#moduleHost{
+  background: #1c1822 !important;
+  border: 1px solid rgba(255,255,255,.06) !important;
+  box-shadow: 0 26px 90px rgba(0,0,0,.42) !important;
+}
