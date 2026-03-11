@@ -345,23 +345,3 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* =========================================================
-   RIGHT PANEL — ortak content full-width fix
-   Header düzeldi; şimdi body/content kökünü tam genişlet
-   ========================================================= */
-
-#rightPanelHost .rpBody,
-#rightPanelHost .rpContent {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  overflow-x: hidden !important;
-}
-
-#rightPanelHost .rpContent > * {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
