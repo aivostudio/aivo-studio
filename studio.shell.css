@@ -31,16 +31,14 @@ body {
   min-height: 0 !important;
 }
 
-/* ORTA PANEL — kalan alanı alsın */
 #moduleHost,
 #moduleHost.studioMotor,
 section#moduleHost {
-  flex: 1 1 auto !important;
+  flex: 1 1 0 !important;
   width: auto !important;
   min-width: 0 !important;
   min-height: 0 !important;
 }
-
 /* SAĞ DIŞ KABUK */
 section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs,
