@@ -2869,11 +2869,11 @@ section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs {
   display: flex !important;
   flex-direction: column !important;
-flex: 0 0 auto;     /* width sabit kalsın, yükseklik stretch’i parent’tan alır */
+  flex: 1 1 0 !important;
   align-self: stretch !important;
+  min-width: 420px !important;
   min-height: 0 !important;
 }
-
 /* iç host tabana kadar uzasın */
 #rightPanelHost {
   flex: 1 1 auto !important;
