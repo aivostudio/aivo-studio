@@ -249,10 +249,10 @@ body.panelWithTopbar {
 }
 /* sağ panel de ekranla birlikte büyüsün */
 #rightPanelHost{
-  min-width: 420px !important;
+  min-width: 380px !important;
   width: auto !important;
   max-width: none !important;
-  flex: 0.88 1 0 !important;
+  flex: 0.70 1 0 !important;
 }
 
 /* sağ kart host'u tam doldursun */
