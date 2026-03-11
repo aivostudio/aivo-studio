@@ -215,14 +215,10 @@ body{
   }
 }
 :root{
-  /* araları 1–2 cm aç (18px -> 26px civarı) */
   --gap: 26px;
-
-  /* motor biraz daha büyüsün */
-  --motor-w: 1.25fr;
-  --outputs-w: 1.15fr;
+  --motor-w: 1.48fr;
+  --outputs-w: 0.92fr;
 }
-
 /* 2 panel arası boşluk + oran */
 #twoPanelWrap{
   gap: var(--gap) !important;
