@@ -56,10 +56,10 @@ body{
 /* ===== SOL MENÜ ===== */
 #leftMenu.studioNav{
   position: sticky;
-  top: calc(var(--topbar-h) + 32px);
-  height: calc(100vh - var(--topbar-h) - 32px);
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - var(--gap));
   overflow: auto;
-}
+
   padding: 10px;
   border-radius: var(--radius);
   background: rgba(255,255,255,.04);
