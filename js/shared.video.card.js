@@ -484,6 +484,74 @@ document.addEventListener("click", (e) => {
     btn.setAttribute("title", "Oynat");
     btn.setAttribute("aria-label", "Oynat");
   }, true);
+    document.addEventListener("loadedmetadata", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const bar = card?.querySelector(".svcProgressBar");
+    if (!bar) return;
+
+    const duration = Number(video.duration);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      bar.style.width = "0%";
+      return;
+    }
+
+    const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
+    bar.style.width = pct + "%";
+  }, true);
+
+  document.addEventListener("timeupdate", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const bar = card?.querySelector(".svcProgressBar");
+    if (!bar) return;
+
+    const duration = Number(video.duration);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      bar.style.width = "0%";
+      return;
+    }
+
+    const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
+    bar.style.width = pct + "%";
+  }, true);
+
+  document.addEventListener("seeking", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const bar = card?.querySelector(".svcProgressBar");
+    if (!bar) return;
+
+    const duration = Number(video.duration);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      bar.style.width = "0%";
+      return;
+    }
+
+    const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
+    bar.style.width = pct + "%";
+  }, true);
+
+  document.addEventListener("ended", (e) => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.classList.contains("svcVideo")) return;
+
+    const card = video.closest(".svcCard");
+    const bar = card?.querySelector(".svcProgressBar");
+    if (!bar) return;
+
+    bar.style.width = "100%";
+  }, true);
 }
   function createCardHtml(opts) {
    ensureStyles();
@@ -564,11 +632,13 @@ ensurePlayBinding();
           }
         </div>
 
-               <div class="svcBody">
+                      <div class="svcBody">
           <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
-          <div class="svcProgress" aria-hidden="true">
+          <div class="svcProgress">
             <div class="svcProgressBar"></div>
           </div>
+          <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
+        </div>
           <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
         </div>
       </div>
