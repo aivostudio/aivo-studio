@@ -96,15 +96,20 @@ window.ensureModuleCSS = function(routeKey){
   // -------------------------------
   // HASH ROUTING
   // -------------------------------
-  function parseHash() {
-    const raw = (location.hash || "").replace(/^#/, "").trim();
-    if (!raw) return { key: "music", params: {} };
+function parseHash() {
+  const raw = (location.hash || "").replace(/^#/, "").trim();
+  if (!raw) return { key: "music", params: {} };
 
-    const [keyPart] = raw.split("?");
-    let key = (keyPart || "music").trim();
-    if (!ROUTES.has(key)) key = "music";
-    return { key, params: {} };
-  }
+  const [keyPart] = raw.split("?");
+  let key = (keyPart || "music").trim();
+
+  if (key === "social") key = "cartoon";
+  if (key === "atmosphere") key = "atmo";
+  if (key === "atm") key = "atmo";
+
+  if (!ROUTES.has(key)) key = "music";
+  return { key, params: {} };
+}
 
   function setHash(key) {
     if (!ROUTES.has(key)) key = "music";
