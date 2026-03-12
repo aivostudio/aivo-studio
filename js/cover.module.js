@@ -160,7 +160,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       "no random characters",
     ].join(", ");
   }
-
 function buildCoverPrompt(prompt, quality) {
   const raw = String(prompt || "").trim();
   const q = String(quality || "artist").toLowerCase();
@@ -177,7 +176,7 @@ function buildCoverPrompt(prompt, quality) {
 
   const shortPrompt = raw.length <= 40 && !/[,.]/.test(raw);
   const multiSubject =
-    /\b(ve|ile|izleyen|bakan|karşı|arasında|yanında|üstünde|altında|içinde)\b/i.test(raw);
+    /\b(ve|ile|izleyen|bakan|karşı|arasında|yanında|üstünde|altında|içinde|kavga eden|koşan|uçan|duran)\b/i.test(raw);
 
   if (shortPrompt && !multiSubject) {
     return [
@@ -193,12 +192,15 @@ function buildCoverPrompt(prompt, quality) {
 
   if (multiSubject) {
     return [
-      "Kapak görselinde kullanıcı isteğine sadık kal.",
-      `İstenen sahne şudur: ${raw}.`,
-      "Tüm özneleri ve aralarındaki ilişkiyi tek sahnede koru.",
-      "Hiçbir özneyi çıkarma, başka bir ana özne icat etme.",
-      "İnsan, kadın yüzü, portre veya alakasız karakter ekleme; yalnızca promptta açıkça varsa kullan.",
-      "Kompozisyon net olsun, ana aksiyon anlaşılır olsun, sahne dağılmasın.",
+      "Kapak görselinde kullanıcı isteğine tam sadık kal.",
+      `İstenen sahne tam olarak şudur: ${raw}.`,
+      "Promptta geçen tüm özneleri eksiksiz koru.",
+      "Özneler arasındaki ilişkiyi, aksiyonu ve yönleri bozma.",
+      "Hiçbir özneyi çıkarma, azaltma, tek özneye düşürme veya başka ana özne icat etme.",
+      "İnsan, kadın yüzü, erkek yüzü, portre, beauty shot, fashion shot veya alakasız karakter ekleme; yalnızca promptta açıkça varsa kullan.",
+      "Alakasız manzara, gökyüzü, dağ, dekoratif arka plan veya boş estetik sahne üretme.",
+      "Kompozisyon tek sahnede net olsun; ana aksiyon açıkça anlaşılsın; sahne dağılmasın.",
+      "Prompt kısa olsa bile kelimeleri yeniden yorumlama; kelimeleri olduğu gibi sahneye çevir.",
       "Sinematik ışık, premium renkler, temiz cover kompozisyonu, yüksek detay olsun.",
       "Yazı, harf, logo, watermark, tipografi olmasın.",
       safeBase
