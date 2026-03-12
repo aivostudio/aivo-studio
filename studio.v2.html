@@ -41,12 +41,6 @@
 <!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
 <link rel="stylesheet" href="/css/player.override.css?v=1005">
 
-
-
-
-
-
-
   <!-- ✅ STUDIO AUTH GATE (legacy'den aynen) -->
   <style id="aivo-auth-gate-style">
     html { visibility: hidden; }
@@ -110,8 +104,7 @@
 
   <style>
     /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
-/* #globalPlayer { display: none !important; } */
-
+    /* #globalPlayer { display: none !important; } */
 
     /* ✅ Footer taşmasını kes (dışarı çıkmayı engelle) */
     .studioOutputs { overflow: hidden; }
@@ -149,8 +142,6 @@
                 </span>
               </a>
 
-             
-
               <a href="/studio.html#cover" data-auth="required" class="product-card" data-product="cover">
                 <span class="pc-ico">🖼️</span>
                 <span class="pc-txt">
@@ -167,19 +158,19 @@
                 </span>
               </a>
 
-              <a href="/studio.html#social" data-auth="required" class="product-card sm-card sm-card--a" data-product="social">
-                <span class="pc-ico">📲</span>
+              <a href="/studio.html#cartoon" data-auth="required" class="product-card sm-card sm-card--a" data-product="cartoon">
+                <span class="pc-ico">🐠</span>
                 <span class="pc-txt">
-                  <span class="pc-title">AI Sosyal Medya</span>
-                  <span class="pc-sub">Müzik + loop + kapak + caption</span>
+                  <span class="pc-title">AI Çocuk Çizgifilm</span>
+                  <span class="pc-sub">Preset karakterlerle sahne üretimi</span>
                 </span>
               </a>
 
-              <a href="/studio.html#hook" data-auth="required" class="product-card sm-card sm-card--b" data-product="hook">
-                <span class="pc-ico">🔥</span>
+              <a href="/studio.html#cartoon" data-auth="required" class="product-card sm-card sm-card--b" data-product="cartoon">
+                <span class="pc-ico">🎈</span>
                 <span class="pc-txt">
-                  <span class="pc-title">AI Viral Hook</span>
-                  <span class="pc-sub">İlk 3 sn viral açılış</span>
+                  <span class="pc-title">AI Çocuk Çizgifilm</span>
+                  <span class="pc-sub">Karakter + sahne + aksiyon tabanlı üretim</span>
                 </span>
               </a>
 
@@ -294,7 +285,6 @@
   </header>
   <!-- ================= /TOPBAR ================= -->
 
-
   <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
   <div class="studioShell" id="studioRoot">
 
@@ -321,12 +311,12 @@
             <span class="navDot"></span> AI Kapak Üret
           </button>
 
-          <button class="navBtn" data-route="social">
-            <span class="navDot"></span> AI Sosyal Medya Paketi
+          <button class="navBtn" data-route="cartoon">
+            <span class="navDot"></span> AI Çocuk Çizgifilm
           </button>
 
-          <button class="navBtn" data-route="hook">
-            <span class="navDot"></span> AI Viral Hook Generator
+          <button class="navBtn" data-route="cartoon">
+            <span class="navDot"></span> AI Çocuk Çizgifilm
           </button>
         </div>
 
@@ -355,28 +345,27 @@
       </div>
     </aside>
 
-<!-- ORTA ALAN: 2 PANEL YAN YANA -->
-<main class="studioMain" id="mainWorkspace">
-  <div class="studioTwoPanel" id="twoPanelWrap">
+    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
+    <main class="studioMain" id="mainWorkspace">
+      <div class="studioTwoPanel" id="twoPanelWrap">
 
-    <section id="moduleHost" class="glassCard studioMotor">
-      <div class="placeholder">
-        <div class="ph-title">Henüz modül yüklenmedi</div>
-        <div class="ph-sub">Soldan bir modül seç.</div>
+        <section id="moduleHost" class="glassCard studioMotor">
+          <div class="placeholder">
+            <div class="ph-title">Henüz modül yüklenmedi</div>
+            <div class="ph-sub">Soldan bir modül seç.</div>
+          </div>
+        </section>
+
+        <section class="outputsCard studioOutputs" aria-label="Üretilenler">
+          <!-- RIGHT PANEL HOST -->
+          <div id="rightPanelHost"></div>
+        </section>
+
       </div>
-    </section>
-
-    <section class="outputsCard studioOutputs" aria-label="Üretilenler">
-      <!-- RIGHT PANEL HOST -->
-      <div id="rightPanelHost"></div>
-    </section>
+    </main>
 
   </div>
-</main>
-
   <!-- ================= /studioRoot ================= -->
-
-
 
   <!-- =========================================================
        ✅ PASSWORD MODAL (PROFILE) — GLOBAL (tek kopya)
@@ -434,6 +423,7 @@
     </div>
   </div>
   <!-- ========================================================= -->
+
 <!-- ================= AUTH / CORE ================= -->
 <script src="/auth.unify.fix.js?v=2" defer></script>
 <script src="/auth.core.js?v=2" defer></script>
@@ -460,7 +450,6 @@
 <script src="/js/shared.video.card.js?v=2" defer></script>
 
 <!-- ================= PANELLER ================= -->
-
 <script src="/panel.music.js?v=6" defer></script>
 <script src="/panel.video.js?v=9999" defer></script>
 <script src="/panel.cover.js?v=2" defer></script>
@@ -481,8 +470,6 @@
 
 <!-- ================= ATMOS (FORM HELPERS) ================= -->
 <script src="/js/atmos.js?v=1" defer></script>
-
-
 
 <!-- ================= STUDIO MODULES (GENEL) ================= -->
 <script src="/studio.modules/viral-hook.js?v=3" defer></script>
@@ -506,10 +493,8 @@
 <script src="/studio.router.js?v=1" defer></script>
 <script src="/studio.v2.boot.js?v=1" defer></script>
 
-
 <!-- AIVO PLAYER ROOT -->
 <div id="aivoPlayerRoot" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(920px,96%);z-index:999999;"></div>
-
 
 <script>
 (function(){
@@ -524,7 +509,6 @@
     const a = document.createElement("a");
     const obj = URL.createObjectURL(blob);
 
-    // filename: Content-Disposition varsa çoğu tarayıcı zaten alır; yoksa fallback
     a.href = obj;
     a.download = fallbackName || "stem.wav";
     document.body.appendChild(a);
@@ -550,7 +534,6 @@
       a.classList.add("is-downloading");
       await downloadViaFetch(url, name);
     } catch (err) {
-      // fallback: eğer fetch engellenirse, eski davranışa dön
       window.location.href = url;
     } finally {
       a.classList.remove("is-downloading");
