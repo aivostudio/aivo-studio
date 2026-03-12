@@ -122,6 +122,10 @@
   gap: 8px;
 }
 
+.main-panel[data-module="cartoon"] .cartoon-block-head + .cartoon-character-grid {
+  margin-bottom: 10px;
+}
+
 .main-panel[data-module="cartoon"] .cartoon-character-card,
 .main-panel[data-module="cartoon"] .cartoon-mini-card,
 .main-panel[data-module="cartoon"] .cartoon-pill,
