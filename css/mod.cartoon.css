@@ -90,7 +90,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-block .cartoon-block-head:not(:first-child) {
+  margin-top: 8px;
 }
 
 .main-panel[data-module="cartoon"] .cartoon-block-head h3 {
