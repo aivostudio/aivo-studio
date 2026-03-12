@@ -493,10 +493,14 @@
 
 .main-panel[data-module="cartoon"] .cartoon-compact-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 18px;
+  align-items: start;
 }
 
+.main-panel[data-module="cartoon"] .cartoon-compact-item--full {
+  grid-column: 1 / -1;
+}
 .main-panel[data-module="cartoon"] .cartoon-compact-item {
   min-width: 0;
 }
@@ -598,5 +602,11 @@
   .main-panel[data-module="cartoon"] .cartoon-upload-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+@media (max-width: 900px) {
+  .main-panel[data-module="cartoon"] .cartoon-compact-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
