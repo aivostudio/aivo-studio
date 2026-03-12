@@ -36,7 +36,7 @@ window.ensureModuleCSS = function(routeKey){
     video: "video",
     cover: "cover",
     atmo: "atmo",
-    cartoon: "cartoon",
+    social: "social",
     hook: "hook",
     dashboard: "dashboard",
     library: "library",
@@ -50,7 +50,7 @@ window.ensureModuleCSS = function(routeKey){
     "video",
     "cover",
     "atmo",
-    "cartoon",
+    "social",
     "hook",
     "dashboard",
     "library",
@@ -66,7 +66,7 @@ window.ensureModuleCSS = function(routeKey){
     video: "video.html",
     cover: "cover.html",
     atmo: "atmosphere.html",
-    cartoon: "sm-pack.html",
+    social: "sm-pack.html",
     hook: "viral-hook.html",
     dashboard: "dashboard.html",
     library: "library.html",
@@ -74,6 +74,7 @@ window.ensureModuleCSS = function(routeKey){
     profile: "profile.html",
     settings: "settings.html",
   };
+
   // -------------------------------
   // URL HELPERS
   // -------------------------------
