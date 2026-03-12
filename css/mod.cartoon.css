@@ -774,3 +774,22 @@
     gap: 12px;
   }
 }
+.main-panel[data-module="cartoon"] .cartoon-form-grid-2--with-audio .cartoon-field--audio,
+.main-panel[data-module="cartoon"] .cartoon-form-grid-2--with-audio .cartoon-field--full {
+  grid-column: span 1;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-form-grid-2--with-audio .cartoon-field--full {
+  min-width: 0;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-form-grid-2--with-audio .cartoon-field--full .cartoon-upload-row {
+  min-height: 42px;
+}
+
+@media (max-width: 900px) {
+  .main-panel[data-module="cartoon"] .cartoon-form-grid-2--with-audio .cartoon-field--audio,
+  .main-panel[data-module="cartoon"] .cartoon-form-grid-2--with-audio .cartoon-field--full {
+    grid-column: 1 / -1;
+  }
+}
