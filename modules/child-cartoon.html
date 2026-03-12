@@ -2,38 +2,64 @@
 
   <!-- ================ CHILD CARTOON MODULE ================ -->
 
-  <div class="smpack-view is-active" data-cartoon-view="root">
+<div class="smpack-view is-active" data-cartoon-view="root">
 
-    <!-- HEADER -->
-    <div class="panel-header">
-      <div class="page-head">
-        <div>
-          <h1>AI Çocuk Çizgifilm</h1>
-          <p>Preset karakterlerle kısa çizgifilm sahneleri üret.</p>
-        </div>
+  <!-- HEADER -->
+  <div class="panel-header">
+    <div class="cartoon-hero">
+      <div class="cartoon-hero__box">
+        <h1 class="cartoon-hero__title">AI Çocuk Çizgifilm</h1>
+        <p class="cartoon-hero__sub">
+          Preset karakterlerle kısa çizgifilm sahneleri üret.
+        </p>
       </div>
     </div>
-<!-- Ek Prompt -->
-<section class="cartoon-block">
-  <div class="cartoon-block-head">
-    <h3>Ek Prompt</h3>
   </div>
 
-  <label class="cartoon-prompt-wrap" for="cartoonExtraPrompt">
-    <textarea
-      id="cartoonExtraPrompt"
-      class="cartoon-prompt-input"
-      name="cartoonExtraPrompt"
-      rows="3"
-      maxlength="1000"
-      data-cartoon-prompt-input
-      placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"></textarea>
+  <!-- MODE SWITCH -->
+  <div class="cartoon-mode-shell" data-cartoon-mode-shell>
+    <div class="cartoon-mode-switch" role="tablist" aria-label="Mod Seçimi">
+      <button
+        type="button"
+        class="cartoon-mode-tab is-active"
+        role="tab"
+        aria-selected="true"
+        data-cartoon-mode="basic">
+        Basic Mod
+      </button>
 
-    <div class="cartoon-prompt-meta">
-      <span class="cartoon-prompt-count" data-cartoon-prompt-count>0 / 1000</span>
+      <button
+        type="button"
+        class="cartoon-mode-tab"
+        role="tab"
+        aria-selected="false"
+        data-cartoon-mode="story">
+        Storyboard Mod ✨
+      </button>
     </div>
-  </label>
-</section>
+  </div>
+
+  <!-- Ek Prompt -->
+  <section class="cartoon-block">
+    <div class="cartoon-block-head">
+      <h3>Ek Prompt</h3>
+    </div>
+
+    <label class="cartoon-prompt-wrap" for="cartoonExtraPrompt">
+      <textarea
+        id="cartoonExtraPrompt"
+        class="cartoon-prompt-input"
+        name="cartoonExtraPrompt"
+        rows="3"
+        maxlength="1000"
+        data-cartoon-prompt-input
+        placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"></textarea>
+
+      <div class="cartoon-prompt-meta">
+        <span class="cartoon-prompt-count" data-cartoon-prompt-count>0 / 1000</span>
+      </div>
+    </label>
+  </section>
     <!-- BODY -->
     <div class="cartoon-layout">
 
