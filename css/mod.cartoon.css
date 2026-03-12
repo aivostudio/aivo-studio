@@ -481,3 +481,122 @@
     min-height: 240px;
   }
 }
+.main-panel[data-module="cartoon"] .cartoon-block--compact {
+  padding: 14px 16px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-muted {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-compact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-compact-item {
+  min-width: 0;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-compact-item--full {
+  grid-column: 1 / -1;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mini-label {
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-inline-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-switch-ui {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  transition: background 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-switch-ui::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-switch input:checked + .cartoon-switch-ui {
+  background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-switch input:checked + .cartoon-switch-ui::after {
+  transform: translateX(18px);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-upload-text {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .main-panel[data-module="cartoon"] .cartoon-upload-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
