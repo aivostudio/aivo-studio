@@ -66,7 +66,7 @@ window.ensureModuleCSS = function(routeKey){
     video: "video.html",
     cover: "cover.html",
     atmo: "atmosphere.html",
-    cartoon: "sm-pack.html",
+    cartoon: "child-cartoon.html",
     hook: "viral-hook.html",
     dashboard: "dashboard.html",
     library: "library.html",
@@ -74,7 +74,6 @@ window.ensureModuleCSS = function(routeKey){
     profile: "profile.html",
     settings: "settings.html",
   };
-
   // -------------------------------
   // URL HELPERS
   // -------------------------------
