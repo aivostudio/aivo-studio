@@ -88,7 +88,7 @@
         backdrop-filter:blur(8px);
       }
 
-   .svcBadgeDot{
+  .svcBadgeDot{
   position:absolute;
   left:12px;
   bottom:12px;
@@ -99,6 +99,10 @@
   border:1px solid rgba(255,255,255,.22);
   box-shadow:0 0 0 3px rgba(0,0,0,.18);
   pointer-events:none;
+}
+
+.svcBadgeDot{
+  display:none !important;
 }
 
 .svcBadgeDot.is-ready{
