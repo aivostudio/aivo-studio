@@ -155,7 +155,21 @@ async function generateImages({ prompt, style, ratio, n, quality }) {
 
   for (let i = 0; i < n; i++) {
     const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
-    const promptForModel = withTitleSafeArea(promptVar);
+    const promptForModel =
+  quality === "ultra"
+    ? [
+        withTitleSafeArea(promptVar),
+        "high prompt adherence",
+        "follow the user description exactly",
+        "do not invent unrelated subjects",
+        "keep the main subject faithful to the prompt",
+        "accurate subject rendering",
+        "cinematic composition",
+        "ultra detailed",
+        "premium lighting",
+        "no unrelated fantasy elements"
+      ].join(", ")
+    : withTitleSafeArea(promptVar);
 
     tasks.push(
       postJSON("/api/providers/fal/predictions/create?app=cover", {
