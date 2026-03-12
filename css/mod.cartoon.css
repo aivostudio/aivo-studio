@@ -1,271 +1,466 @@
-/* =========================================================
-   AIVO — CHILD CARTOON MODULE CSS
-   Route: cartoon
-   File: /css/mod.cartoon.css
-   ========================================================= */
+/* ================================
+   CHILD CARTOON MODULE
+================================ */
 
-.main-panel[data-module="cartoon"]{
-  width:100%;
-  min-height:100%;
-  color:#f3f0ff;
+.main-panel[data-module="cartoon"] {
+  width: 100%;
+  min-width: 0;
 }
 
-.main-panel[data-module="cartoon"] .smpack-view{
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-  width:100%;
+.main-panel[data-module="cartoon"] .smpack-view[data-cartoon-view="root"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
 }
 
-.main-panel[data-module="cartoon"] .panel-header{
-  margin:0 0 4px;
+.main-panel[data-module="cartoon"] .panel-header {
+  margin-bottom: 14px;
 }
 
-.main-panel[data-module="cartoon"] .page-head{
-  margin:0;
+.main-panel[data-module="cartoon"] .page-head h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-.main-panel[data-module="cartoon"] .page-head__box{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  gap:8px;
-  min-height:92px;
-  padding:18px 22px;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,0.12);
+.main-panel[data-module="cartoon"] .page-head p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) 320px;
+  gap: 14px;
+  align-items: start;
+  min-width: 0;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-left,
+.main-panel[data-module="cartoon"] .cartoon-right {
+  min-width: 0;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-form,
+.main-panel[data-module="cartoon"] .cartoon-preview-panel {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)),
-    radial-gradient(120% 140% at 50% 0%, rgba(173,109,255,0.18) 0%, rgba(173,109,255,0.05) 45%, rgba(0,0,0,0) 100%);
+    linear-gradient(180deg, rgba(22, 14, 46, 0.96), rgba(10, 10, 24, 0.96));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 14px 40px rgba(0,0,0,0.20);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 40px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
 }
 
-.main-panel[data-module="cartoon"] .page-head__title{
-  margin:0;
-  font-size:18px;
-  line-height:1.2;
-  font-weight:800;
-  letter-spacing:-0.02em;
-  color:#f7f3ff;
+.main-panel[data-module="cartoon"] .cartoon-form {
+  padding: 14px;
 }
 
-.main-panel[data-module="cartoon"] .page-head__sub{
-  margin:0;
-  font-size:13px;
-  line-height:1.45;
-  color:rgba(240,234,255,0.76);
+.main-panel[data-module="cartoon"] .cartoon-preview-panel {
+  padding: 12px;
+  position: sticky;
+  top: 14px;
 }
 
-.main-panel[data-module="cartoon"] .cartoon-card{
-  position:relative;
-  padding:18px;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,0.09);
+.main-panel[data-module="cartoon"] .cartoon-block {
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.015));
+}
+
+.main-panel[data-module="cartoon"] .cartoon-block:last-of-type {
+  margin-bottom: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-block-head h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-grid,
+.main-panel[data-module="cartoon"] .cartoon-scene-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-card,
+.main-panel[data-module="cartoon"] .cartoon-mini-card,
+.main-panel[data-module="cartoon"] .cartoon-pill,
+.main-panel[data-module="cartoon"] .cartoon-segment,
+.main-panel[data-module="cartoon"] .cartoon-generate-btn,
+.main-panel[data-module="cartoon"] .cartoon-action-btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: #fff;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: left;
+  transition: 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-card.is-selected {
+  border-color: rgba(220, 120, 255, 0.72);
+  background: linear-gradient(180deg, rgba(163, 99, 255, 0.18), rgba(255, 92, 168, 0.12));
+  box-shadow: 0 0 0 1px rgba(220, 120, 255, 0.12) inset;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-thumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mini-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  transition: 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mini-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mini-card.is-selected {
+  border-color: rgba(220, 120, 255, 0.72);
+  background: linear-gradient(180deg, rgba(163, 99, 255, 0.18), rgba(255, 92, 168, 0.12));
+}
+
+.main-panel[data-module="cartoon"] .cartoon-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+  font-weight: 700;
+  transition: 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-pill:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-pill.is-selected {
+  border-color: rgba(220, 120, 255, 0.72);
+  background: linear-gradient(180deg, rgba(163, 99, 255, 0.18), rgba(255, 92, 168, 0.12));
+}
+
+.main-panel[data-module="cartoon"] .cartoon-segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-segmented--tight {
+  gap: 6px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 8px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  transition: 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-segment:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-segment.is-selected {
+  border-color: rgba(220, 120, 255, 0.72);
+  background: linear-gradient(180deg, rgba(163, 99, 255, 0.18), rgba(255, 92, 168, 0.12));
+}
+
+.main-panel[data-module="cartoon"] .cartoon-prompt-wrap {
+  display: block;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-prompt-input {
+  display: block;
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 8, 20, 0.72);
+  color: #fff;
+  outline: none;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-prompt-input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-prompt-input:focus {
+  border-color: rgba(220, 120, 255, 0.62);
+  box-shadow: 0 0 0 3px rgba(163, 99, 255, 0.12);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-summary {
+  margin: 6px 2px 10px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-cta {
+  margin-top: 0;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-generate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.28);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-generate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(139, 92, 246, 0.34);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-preview-head {
+  margin-bottom: 10px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-preview-head h3 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(180deg, rgba(10,11,30,0.92), rgba(8,9,24,0.96)),
-    radial-gradient(120% 140% at 50% 0%, rgba(166,106,255,0.10) 0%, rgba(166,106,255,0.03) 40%, rgba(0,0,0,0) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.05),
-    0 16px 36px rgba(0,0,0,0.22);
+    radial-gradient(circle at top, rgba(163, 99, 255, 0.12), transparent 42%),
+    rgba(255, 255, 255, 0.02);
+  overflow: hidden;
 }
 
-.main-panel[data-module="cartoon"] .card-header{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:12px;
+.main-panel[data-module="cartoon"] .cartoon-preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px;
+  text-align: center;
 }
 
-.main-panel[data-module="cartoon"] .card-title{
-  margin:0;
-  font-size:15px;
-  line-height:1.2;
-  font-weight:800;
-  color:#f7f3ff;
+.main-panel[data-module="cartoon"] .cartoon-preview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 28px;
 }
 
-.main-panel[data-module="cartoon"] .card-subtitle{
-  margin-top:4px;
-  font-size:12px;
-  line-height:1.4;
-  color:rgba(239,232,255,0.66);
+.main-panel[data-module="cartoon"] .cartoon-preview-empty p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
 }
 
-.main-panel[data-module="cartoon"] .cartoon-grid{
-  display:grid;
-  gap:10px;
+.main-panel[data-module="cartoon"] .cartoon-preview-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.main-panel[data-module="cartoon"] .cartoon-grid--cards{
-  grid-template-columns:repeat(3,minmax(0,1fr));
+.main-panel[data-module="cartoon"] .cartoon-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+  font-weight: 800;
+  transition: 160ms ease;
 }
 
-.main-panel[data-module="cartoon"] .cartoon-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+.main-panel[data-module="cartoon"] .cartoon-action-btn:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.main-panel[data-module="cartoon"] .cartoon-choice,
-.main-panel[data-module="cartoon"] .cartoon-pill{
-  appearance:none;
-  border:1px solid rgba(255,255,255,0.11);
-  background:rgba(255,255,255,0.04);
-  color:#f4efff;
-  cursor:pointer;
-  transition:
-    transform .16s ease,
-    border-color .16s ease,
-    background .16s ease,
-    box-shadow .16s ease,
-    opacity .16s ease;
+.main-panel[data-module="cartoon"] .cartoon-action-btn.is-primary {
+  border-color: rgba(220, 120, 255, 0.42);
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.72), rgba(217, 70, 239, 0.72));
 }
 
-.main-panel[data-module="cartoon"] .cartoon-choice:hover,
-.main-panel[data-module="cartoon"] .cartoon-pill:hover{
-  transform:translateY(-1px);
-  border-color:rgba(255,255,255,0.18);
-  background:rgba(255,255,255,0.065);
+.main-panel[data-module="cartoon"] .cartoon-action-btn.is-danger {
+  border-color: rgba(255, 92, 120, 0.28);
+  color: #ffd7df;
 }
 
-.main-panel[data-module="cartoon"] .cartoon-choice{
-  min-height:74px;
-  padding:14px 14px;
-  border-radius:18px;
-  font-size:14px;
-  font-weight:700;
-  text-align:left;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
-}
+@media (max-width: 1180px) {
+  .main-panel[data-module="cartoon"] .cartoon-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-.main-panel[data-module="cartoon"] .cartoon-pill{
-  min-height:40px;
-  padding:0 14px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:700;
-  line-height:1;
-}
+  .main-panel[data-module="cartoon"] .cartoon-preview-panel {
+    position: static;
+    top: auto;
+  }
 
-.main-panel[data-module="cartoon"] .cartoon-choice.is-active,
-.main-panel[data-module="cartoon"] .cartoon-pill.is-active{
-  border-color:rgba(197,140,255,0.60);
-  background:linear-gradient(135deg, rgba(123,92,255,0.30), rgba(255,102,184,0.24));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 10px 24px rgba(133,86,255,0.18);
-  color:#fff7ff;
-}
-
-.main-panel[data-module="cartoon"] .form-row{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.main-panel[data-module="cartoon"] .form-label{
-  font-size:14px;
-  font-weight:800;
-  color:#f7f3ff;
-}
-
-.main-panel[data-module="cartoon"] textarea.input{
-  width:100%;
-  min-height:112px;
-  resize:vertical;
-  padding:14px 15px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,0.10);
-  outline:none;
-  background:rgba(7,8,22,0.82);
-  color:#f5f1ff;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.main-panel[data-module="cartoon"] textarea.input::placeholder{
-  color:rgba(234,227,255,0.42);
-}
-
-.main-panel[data-module="cartoon"] textarea.input:focus{
-  border-color:rgba(190,132,255,0.50);
-  box-shadow:
-    0 0 0 3px rgba(157,101,255,0.10),
-    inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.main-panel[data-module="cartoon"] .cartoon-card--cta{
-  padding-top:16px;
-}
-
-.main-panel[data-module="cartoon"] .cartoon-generate{
-  width:100%;
-  min-height:58px;
-  border:none;
-  border-radius:18px;
-  font-size:16px;
-  font-weight:900;
-  letter-spacing:-0.01em;
-  color:#fff;
-  background:linear-gradient(90deg, #7a63ff 0%, #f56bb3 100%);
-  box-shadow:
-    0 18px 34px rgba(129,92,255,0.24),
-    inset 0 1px 0 rgba(255,255,255,0.15);
-}
-
-.main-panel[data-module="cartoon"] .cartoon-generate:hover{
-  filter:brightness(1.04);
-}
-
-.main-panel[data-module="cartoon"] .cartoon-card--cta > div{
-  color:rgba(238,231,255,0.72);
-  font-size:13px;
-  line-height:1.45;
-}
-
-@media (max-width: 980px){
-  .main-panel[data-module="cartoon"] .cartoon-grid--cards{
-    grid-template-columns:repeat(2,minmax(0,1fr));
+  .main-panel[data-module="cartoon"] .cartoon-preview-stage {
+    min-height: 280px;
   }
 }
 
-@media (max-width: 640px){
-  .main-panel[data-module="cartoon"] .page-head__box{
-    min-height:84px;
-    padding:16px 16px;
-    border-radius:18px;
+@media (max-width: 720px) {
+  .main-panel[data-module="cartoon"] .cartoon-form,
+  .main-panel[data-module="cartoon"] .cartoon-preview-panel {
+    padding: 10px;
+    border-radius: 18px;
   }
 
-  .main-panel[data-module="cartoon"] .page-head__title{
-    font-size:17px;
+  .main-panel[data-module="cartoon"] .cartoon-block {
+    padding: 10px;
+    border-radius: 16px;
   }
 
-  .main-panel[data-module="cartoon"] .cartoon-card{
-    padding:14px;
-    border-radius:18px;
+  .main-panel[data-module="cartoon"] .cartoon-character-grid,
+  .main-panel[data-module="cartoon"] .cartoon-scene-grid,
+  .main-panel[data-module="cartoon"] .cartoon-segmented,
+  .main-panel[data-module="cartoon"] .cartoon-preview-actions {
+    grid-template-columns: 1fr;
   }
 
-  .main-panel[data-module="cartoon"] .cartoon-grid--cards{
-    grid-template-columns:1fr;
+  .main-panel[data-module="cartoon"] .cartoon-character-card,
+  .main-panel[data-module="cartoon"] .cartoon-mini-card,
+  .main-panel[data-module="cartoon"] .cartoon-segment {
+    min-height: 40px;
   }
 
-  .main-panel[data-module="cartoon"] .cartoon-choice{
-    min-height:64px;
-    padding:12px 13px;
-  }
-
-  .main-panel[data-module="cartoon"] .cartoon-pill{
-    min-height:38px;
-    padding:0 12px;
-    font-size:12px;
-  }
-
-  .main-panel[data-module="cartoon"] .cartoon-generate{
-    min-height:54px;
-    font-size:15px;
+  .main-panel[data-module="cartoon"] .cartoon-preview-stage {
+    min-height: 240px;
   }
 }
