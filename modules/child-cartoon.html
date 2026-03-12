@@ -124,52 +124,31 @@
   <button type="button" class="cartoon-pill" data-action="running">Koşuyor</button>
 </div>
           </section>
-<!-- Kişiselleştirme -->
 <section class="cartoon-block cartoon-block--compact">
   <div class="cartoon-block-head">
     <h3>Kişiselleştirme <span class="cartoon-muted">(opsiyonel)</span></h3>
   </div>
 
-  <div class="cartoon-compact-grid">
-
-    <!-- Oran -->
-    <div class="cartoon-compact-item">
-      <div class="cartoon-mini-label">Oran</div>
-      <div class="cartoon-inline-pills">
-        <button type="button" class="cartoon-pill is-selected" data-ratio="16:9">16:9</button>
-        <button type="button" class="cartoon-pill" data-ratio="1:1">1:1</button>
-        <button type="button" class="cartoon-pill" data-ratio="9:16">9:16</button>
-      </div>
+  <div class="cartoon-form-grid-2">
+    <div class="cartoon-field">
+      <label class="cartoon-field-label" for="cartoon-duration">Süre</label>
+      <select id="cartoon-duration" class="cartoon-select">
+        <option value="5" selected>5 Saniye</option>
+        <option value="10">10 Saniye</option>
+        <option value="15">15 Saniye</option>
+      </select>
     </div>
 
-    <!-- Süre -->
-    <div class="cartoon-compact-item">
-      <div class="cartoon-mini-label">Süre</div>
-      <div class="cartoon-inline-pills">
-        <button type="button" class="cartoon-pill is-selected" data-duration="5">5 sn</button>
-        <button type="button" class="cartoon-pill" data-duration="10">10 sn</button>
-        <button type="button" class="cartoon-pill" data-duration="15">15 sn</button>
-      </div>
+    <div class="cartoon-field">
+      <label class="cartoon-field-label" for="cartoon-ratio">En / Boy Oranı</label>
+      <select id="cartoon-ratio" class="cartoon-select">
+        <option value="16:9" selected>Geniş (16:9)</option>
+        <option value="1:1">Kare (1:1)</option>
+        <option value="9:16">Dikey (9:16)</option>
+      </select>
     </div>
-
-    <!-- Ses -->
-    <div class="cartoon-compact-item">
-      <div class="cartoon-mini-label">Ses Üret</div>
-      <label class="cartoon-switch">
-        <input type="checkbox" data-audio-enabled>
-        <span class="cartoon-switch-ui"></span>
-      </label>
-    </div>
-
-    <!-- Kendi karakter görseli -->
-    <div class="cartoon-compact-item cartoon-compact-item--full">
-      <div class="cartoon-mini-label">Kendi Karakter Görseli</div>
-      <label class="cartoon-upload-row">
-        <input type="file" accept="image/*" hidden data-character-upload>
-        <span class="cartoon-upload-btn">Görsel Seç</span>
-        <span class="cartoon-upload-text">Dosya seçilmedi</span>
-      </label>
-    </div>
+  </div>
+</section>
 
   </div>
 </section>
