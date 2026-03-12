@@ -182,10 +182,22 @@ const image_size =
     ? "portrait_16_9"
     : String(input?.image_size || "square_hd").trim();
 
-const falPayload = {
-  prompt: t.prompt_sent,
-  image_size,
-};;
+const falPayload =
+  quality === "ultra"
+    ? {
+        prompt: t.prompt_sent,
+        image_size,
+        guidance_scale: 7,
+        num_images: 1,
+        output_format: "jpeg",
+        safety_tolerance: "2",
+        enhance_prompt: false,
+        raw: true,
+      }
+    : {
+        prompt: t.prompt_sent,
+        image_size,
+      };
 
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
