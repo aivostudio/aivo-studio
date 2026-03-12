@@ -186,7 +186,13 @@ const falPayload = {
   prompt: t.prompt_sent,
   image_size,
 };;
-
+console.log("[cover fal payload]", {
+  quality,
+  model,
+  prompt_original: t.prompt_original,
+  prompt_sent: t.prompt_sent,
+  image_size,
+});
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
       headers: {
