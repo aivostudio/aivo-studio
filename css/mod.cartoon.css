@@ -1133,3 +1133,69 @@
   margin: 6px 2px 6px;
   font-size: 10px;
 }
+.main-panel[data-module="cartoon"] .cartoon-character-duo > .cartoon-block,
+.main-panel[data-module="cartoon"] .cartoon-scene-wrap,
+.main-panel[data-module="cartoon"] .cartoon-action-wrap,
+.main-panel[data-module="cartoon"] .cartoon-block:has(.cartoon-scene-grid),
+.main-panel[data-module="cartoon"] .cartoon-block:has(.cartoon-pill-group) {
+  padding: 10px 12px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-duo > .cartoon-block .cartoon-block-head,
+.main-panel[data-module="cartoon"] .cartoon-block:has(.cartoon-scene-grid) .cartoon-block-head,
+.main-panel[data-module="cartoon"] .cartoon-block:has(.cartoon-pill-group) .cartoon-block-head {
+  margin-bottom: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-duo > .cartoon-block .cartoon-block-head h3,
+.main-panel[data-module="cartoon"] .cartoon-block:has(.cartoon-scene-grid) .cartoon-block-head h3,
+.main-panel[data-module="cartoon"] .cartoon-block:has(.cartoon-pill-group) .cartoon-block-head h3 {
+  font-size: 12px;
+  line-height: 1.05;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-grid {
+  gap: 6px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-card {
+  min-height: 24px;
+  padding: 3px 7px;
+  border-radius: 10px;
+  gap: 6px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-thumb {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-name {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-scene-grid {
+  gap: 6px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mini-card,
+.main-panel[data-module="cartoon"] .cartoon-segment {
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-pill-group,
+.main-panel[data-module="cartoon"] .cartoon-inline-pills {
+  gap: 6px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-pill {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+}
