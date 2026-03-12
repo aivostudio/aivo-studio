@@ -147,12 +147,7 @@ export default async function handler(req, res) {
     // ------------------------------------------------------------
     // Translate (if needed)
     // ------------------------------------------------------------
- const t = {
-  prompt_original: promptRaw,
-  prompt_sent: promptRaw,
-  translated: false,
-  translate_engine: null,
-};
+    const t = await maybeTranslatePrompt(promptRaw);
 
     // ------------------------------------------------------------
     // Model routing (NO arbitrary body.model)
