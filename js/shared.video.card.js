@@ -370,7 +370,7 @@
 
       e.preventDefault();
       e.stopPropagation();
-   
+      e.stopImmediatePropagation();
 
       const card = btn.closest(".svcCard");
       const video = card?.querySelector(".svcVideo");
@@ -418,36 +418,10 @@
       const video = card?.querySelector(".svcVideo");
       if (!video) return;
 
-    if (video.paused) {
-  console.log("[SVC PLAY] click", {
-    src: video.currentSrc || video.src,
-    readyState: video.readyState,
-    networkState: video.networkState,
-    muted: video.muted,
-    paused: video.paused
-  });
-
-  video.play()
-    .then(() => {
-      console.log("[SVC PLAY] started", {
-        src: video.currentSrc || video.src,
-        currentTime: video.currentTime
-      });
-    })
-    .catch((err) => {
-      console.error("[SVC PLAY] failed", err, {
-        src: video.currentSrc || video.src,
-        readyState: video.readyState,
-        networkState: video.networkState,
-        error: video.error ? {
-          code: video.error.code,
-          message: video.error.message || null
-        } : null
-      });
-    });
-} else {
-  video.pause();
-}
+      if (video.paused) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
       }
     }, true);
 
