@@ -370,7 +370,7 @@
 
       e.preventDefault();
       e.stopPropagation();
-      e.stopImmediatePropagation();
+   
 
       const card = btn.closest(".svcCard");
       const video = card?.querySelector(".svcVideo");
