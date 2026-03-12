@@ -1,6 +1,3 @@
-js/cover.module.js
-————
-
 // FILE: cover.module.js
 console.log("[cover.module] loaded ✅", new Date().toISOString());
 
