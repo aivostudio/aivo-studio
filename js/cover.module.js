@@ -161,32 +161,59 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     ].join(", ");
   }
 
-  function buildCoverPrompt(prompt, quality) {
-    const raw = String(prompt || "").trim();
-    const safeBase = withTitleSafeArea(raw);
-    const q = String(quality || "artist").toLowerCase();
+function buildCoverPrompt(prompt, quality) {
+  const raw = String(prompt || "").trim();
+  const q = String(quality || "artist").toLowerCase();
 
-    if (!raw) return safeBase;
+  if (!raw) {
+    return withTitleSafeArea("");
+  }
 
-    if (q !== "ultra") {
-      return safeBase;
-    }
+  const safeBase = withTitleSafeArea(raw);
 
+  if (q !== "ultra") {
+    return safeBase;
+  }
+
+  const shortPrompt = raw.length <= 40 && !/[,.]/.test(raw);
+  const multiSubject =
+    /\b(ve|ile|izleyen|bakan|karşı|arasında|yanında|üstünde|altında|içinde)\b/i.test(raw);
+
+  if (shortPrompt && !multiSubject) {
     return [
-      `PRIMARY SUBJECT: ${raw}.`,
-      "Faithfully depict the user's requested subject, objects, animals, weather, and scene.",
-      "Keep the requested main subject as the clear central focus.",
-      "If the prompt is short, do not reinterpret it as a different subject.",
-      "If the prompt includes multiple subjects, preserve all subjects together in one coherent scene.",
-      "Do not replace the requested subject with a woman, man, human face, beauty portrait, cinematic person shot, or unrelated animal.",
-      "Do not invent a human character unless the user explicitly asked for a human.",
-      "No unrelated portrait.",
-      "No beauty shot.",
-      "No fashion shot.",
-      "No random face.",
-      safeBase,
+      `Kapak görseli için ana özne yalnızca ${raw} olsun.`,
+      `Görselin merkezinde net, baskın ve gerçekçi şekilde ${raw} yer alsın.`,
+      "Başka hayvan, insan, insan yüzü, kadın, erkek, portre, manzara veya alakasız nesne olmasın.",
+      `${raw} doğal ortamında görünsün.`,
+      "Sinematik ışık, premium renkler, temiz kompozisyon, yüksek detay, kapak tasarımına uygun güçlü odak olsun.",
+      "Yazı, harf, logo, watermark, tipografi olmasın.",
+      safeBase
     ].join(" ");
   }
+
+  if (multiSubject) {
+    return [
+      "Kapak görselinde kullanıcı isteğine sadık kal.",
+      `İstenen sahne şudur: ${raw}.`,
+      "Tüm özneleri ve aralarındaki ilişkiyi tek sahnede koru.",
+      "Hiçbir özneyi çıkarma, başka bir ana özne icat etme.",
+      "İnsan, kadın yüzü, portre veya alakasız karakter ekleme; yalnızca promptta açıkça varsa kullan.",
+      "Kompozisyon net olsun, ana aksiyon anlaşılır olsun, sahne dağılmasın.",
+      "Sinematik ışık, premium renkler, temiz cover kompozisyonu, yüksek detay olsun.",
+      "Yazı, harf, logo, watermark, tipografi olmasın.",
+      safeBase
+    ].join(" ");
+  }
+
+  return [
+    `Kullanıcı isteğine sadık kal: ${raw}.`,
+    "Ana özneyi doğru koru, alakasız özne üretme.",
+    "İnsan yüzü, portre, kadın, erkek veya alakasız manzara ekleme; prompt açıkça istemiyorsa kullanma.",
+    "Temiz, güçlü, premium cover kompozisyonu üret.",
+    "Yazı, harf, logo, watermark, tipografi olmasın.",
+    safeBase
+  ].join(" ");
+}
 
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
   async function generateImages({ prompt, style, ratio, n, quality }) {
