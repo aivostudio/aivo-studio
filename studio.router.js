@@ -74,6 +74,7 @@ window.ensureModuleCSS = function(routeKey){
     profile: "profile.html",
     settings: "settings.html",
   };
+
   // -------------------------------
   // URL HELPERS
   // -------------------------------
@@ -82,7 +83,7 @@ window.ensureModuleCSS = function(routeKey){
     const p = (sp.get("page") || "").trim();
     if (!p) return null;
 
-    // alias support
+    if (p === "social") return "cartoon";
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
 
@@ -102,6 +103,11 @@ window.ensureModuleCSS = function(routeKey){
 
     const [keyPart] = raw.split("?");
     let key = (keyPart || "music").trim();
+
+    if (key === "social") key = "cartoon";
+    if (key === "atmosphere") key = "atmo";
+    if (key === "atm") key = "atmo";
+
     if (!ROUTES.has(key)) key = "music";
     return { key, params: {} };
   }
@@ -111,10 +117,8 @@ window.ensureModuleCSS = function(routeKey){
     location.hash = `#${key}`;
   }
 
-  // ✅ First-load normalization:
-  // If no hash, but ?page=... exists, convert to hash (source of truth)
   function normalizeInitialRoute() {
-    if (hasHashKey()) return; // hash wins
+    if (hasHashKey()) return;
     const qp = parseQueryRouteKey();
     if (qp && ROUTES.has(qp)) setHash(qp);
   }
@@ -162,18 +166,15 @@ window.ensureModuleCSS = function(routeKey){
     const cur = parseHash();
     if (cur.key !== key) {
       setHash(key);
-      return; // single flow: hashchange will call go()
+      return;
     }
 
     setActiveNav(key);
 
-    // ✅ CSS: route-based
     window.ensureModuleCSS?.(key);
 
-    // ✅ Module inject
     await loadModuleIntoHost(key);
 
-    // ✅ Right panel: mapped panelKey
     const panelKey = RIGHT_PANEL_KEY[key] || "music";
     window.RightPanel?.force?.(panelKey, {});
   }
@@ -195,10 +196,7 @@ window.ensureModuleCSS = function(routeKey){
   window.addEventListener("hashchange", onHashChange);
   window.addEventListener("DOMContentLoaded", () => {
     (document.getElementById("leftMenu") || document).addEventListener("click", onNavClick);
-
-    // ✅ NEW: allow ?page=atmo / ?page=atmosphere
     normalizeInitialRoute();
-
     onHashChange();
   });
 })();
