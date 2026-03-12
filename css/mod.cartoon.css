@@ -277,7 +277,18 @@
 .main-panel[data-module="cartoon"] .cartoon-prompt-wrap {
   display: block;
 }
+.main-panel[data-module="cartoon"] .cartoon-prompt-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
 
+.main-panel[data-module="cartoon"] .cartoon-prompt-count {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+}
 .main-panel[data-module="cartoon"] .cartoon-prompt-input {
   display: block;
   width: 100%;
