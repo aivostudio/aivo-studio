@@ -1,157 +1,213 @@
 <section class="main-panel" data-module="cartoon">
 
-  <!-- ================= CHILD CARTOON MODULE ================= -->
+  <!-- ================ CHILD CARTOON MODULE ================ -->
 
- <div class="smpack-view is-active" data-cartoon-view="root">
+  <div class="smpack-view is-active" data-cartoon-view="root">
 
     <!-- HEADER -->
     <div class="panel-header">
       <div class="page-head">
-        <div class="page-head__box">
-          <h1 class="page-head__title">AI Çocuk Çizgifilm</h1>
-          <p class="page-head__sub">
-            Hazır karakter seç, sahne kur, aksiyon belirle, kısa çizgifilm sahnesi üret.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 1) ANA KARAKTER -->
-    <div class="card cartoon-card">
-      <div class="card-header">
         <div>
-          <div class="card-title">Ana Karakter</div>
-          <div class="card-subtitle">Tek seçim yap.</div>
+          <h1>AI Çocuk Çizgifilm</h1>
+          <p>Preset karakterlerle kısa çizgifilm sahneleri üret.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="cartoon-layout">
+
+      <!-- LEFT / FORM -->
+      <div class="cartoon-left">
+        <div class="cartoon-form">
+
+          <!-- Ana Karakter -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Ana Karakter</h3>
+            </div>
+
+            <div class="cartoon-character-grid">
+              <button type="button" class="cartoon-character-card is-selected" data-role="main" data-character="red-fish">
+                <span class="cartoon-character-thumb">🐟</span>
+                <span class="cartoon-character-name">Kırmızı Balık</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="main" data-character="blue-fish">
+                <span class="cartoon-character-thumb">🐠</span>
+                <span class="cartoon-character-name">Mavi Balık</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="main" data-character="turtle">
+                <span class="cartoon-character-thumb">🐢</span>
+                <span class="cartoon-character-name">Kaplumbağa</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="main" data-character="frog">
+                <span class="cartoon-character-thumb">🐸</span>
+                <span class="cartoon-character-name">Kurbağa</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="main" data-character="duck">
+                <span class="cartoon-character-thumb">🦆</span>
+                <span class="cartoon-character-name">Ördek</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Yardımcı Karakterler -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Yardımcı Karakterler</h3>
+              <span class="cartoon-count" data-helper-count>0/3</span>
+            </div>
+
+            <div class="cartoon-character-grid">
+              <button type="button" class="cartoon-character-card" data-role="helper" data-character="small-fish-school">
+                <span class="cartoon-character-thumb">🐠</span>
+                <span class="cartoon-character-name">Küçük Balıklar</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="helper" data-character="turtle">
+                <span class="cartoon-character-thumb">🐢</span>
+                <span class="cartoon-character-name">Kaplumbağa</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="helper" data-character="frog">
+                <span class="cartoon-character-thumb">🐸</span>
+                <span class="cartoon-character-name">Kurbağa</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="helper" data-character="duck">
+                <span class="cartoon-character-thumb">🦆</span>
+                <span class="cartoon-character-name">Ördek</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="helper" data-character="seahorse">
+                <span class="cartoon-character-thumb">🪸</span>
+                <span class="cartoon-character-name">Denizatı</span>
+              </button>
+
+              <button type="button" class="cartoon-character-card" data-role="helper" data-character="crab">
+                <span class="cartoon-character-thumb">🦀</span>
+                <span class="cartoon-character-name">Yengeç</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Sahne -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Sahne</h3>
+            </div>
+
+            <div class="cartoon-scene-grid">
+              <button type="button" class="cartoon-mini-card is-selected" data-scene="underwater">Deniz Altı</button>
+              <button type="button" class="cartoon-mini-card" data-scene="pond">Gölet</button>
+              <button type="button" class="cartoon-mini-card" data-scene="forest">Orman</button>
+              <button type="button" class="cartoon-mini-card" data-scene="farm">Çiftlik</button>
+              <button type="button" class="cartoon-mini-card" data-scene="sky">Gökyüzü</button>
+            </div>
+          </section>
+
+          <!-- Aksiyon -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Aksiyon</h3>
+            </div>
+
+            <div class="cartoon-pill-group">
+              <button type="button" class="cartoon-pill is-selected" data-action="swimming">Yüzüyor</button>
+              <button type="button" class="cartoon-pill" data-action="jumping">Zıplıyor</button>
+              <button type="button" class="cartoon-pill" data-action="playing">Oynuyor</button>
+              <button type="button" class="cartoon-pill" data-action="laughing">Gülüyor</button>
+              <button type="button" class="cartoon-pill" data-action="dancing">Dans Ediyor</button>
+              <button type="button" class="cartoon-pill" data-action="waving">El Sallıyor</button>
+              <button type="button" class="cartoon-pill" data-action="moving-slowly">Yavaş İlerliyor</button>
+            </div>
+          </section>
+
+          <!-- Stil -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Stil</h3>
+            </div>
+
+            <div class="cartoon-segmented">
+              <button type="button" class="cartoon-segment is-selected" data-style="2d-simple">2D Basit</button>
+              <button type="button" class="cartoon-segment" data-style="2d-colorful">2D Renkli</button>
+              <button type="button" class="cartoon-segment" data-style="3d-soft">3D Yumuşak</button>
+            </div>
+          </section>
+
+          <!-- Süre -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Süre</h3>
+            </div>
+
+            <div class="cartoon-segmented cartoon-segmented--tight">
+              <button type="button" class="cartoon-segment is-selected" data-duration="5">5 sn</button>
+              <button type="button" class="cartoon-segment" data-duration="10">10 sn</button>
+              <button type="button" class="cartoon-segment" data-duration="15">15 sn</button>
+            </div>
+          </section>
+
+          <!-- Ek Prompt -->
+          <section class="cartoon-block">
+            <div class="cartoon-block-head">
+              <h3>Ek Prompt</h3>
+            </div>
+
+            <label class="cartoon-prompt-wrap" for="cartoonExtraPrompt">
+              <textarea
+                id="cartoonExtraPrompt"
+                class="cartoon-prompt-input"
+                name="cartoonExtraPrompt"
+                rows="3"
+                maxlength="180"
+                placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"></textarea>
+            </label>
+          </section>
+
+          <!-- Özet -->
+          <div class="cartoon-summary" data-cartoon-summary>
+            5 sn • 1 ana karakter • 0 yardımcı • X kredi
+          </div>
+
+          <!-- CTA -->
+          <div class="cartoon-cta">
+            <button type="button" class="cartoon-generate-btn" data-cartoon-generate>
+              Sahneyi Oluştur
+            </button>
+          </div>
+
         </div>
       </div>
 
-      <div class="cartoon-grid cartoon-grid--cards">
-        <button class="cartoon-choice is-active" type="button" data-cartoon-main="kirmizi-balik">Kırmızı Balık</button>
-        <button class="cartoon-choice" type="button" data-cartoon-main="mavi-balik">Mavi Balık</button>
-        <button class="cartoon-choice" type="button" data-cartoon-main="kaplumbaga">Kaplumbağa</button>
-        <button class="cartoon-choice" type="button" data-cartoon-main="kurbaga">Kurbağa</button>
-        <button class="cartoon-choice" type="button" data-cartoon-main="ordek">Ördek</button>
+      <!-- RIGHT / PREVIEW -->
+      <div class="cartoon-right">
+        <section class="cartoon-preview-panel">
+          <div class="cartoon-preview-head">
+            <h3>Çizgifilm Önizleme</h3>
+          </div>
+
+          <div class="cartoon-preview-stage is-empty" data-cartoon-preview>
+            <div class="cartoon-preview-empty">
+              <div class="cartoon-preview-icon">🎬</div>
+              <p>Henüz sahne üretilmedi.</p>
+            </div>
+          </div>
+
+          <div class="cartoon-preview-actions">
+            <button type="button" class="cartoon-action-btn is-primary" data-cartoon-generate>Oluştur</button>
+            <button type="button" class="cartoon-action-btn" data-cartoon-retry>Yeniden Dene</button>
+            <button type="button" class="cartoon-action-btn" data-cartoon-download>İndir</button>
+            <button type="button" class="cartoon-action-btn is-danger" data-cartoon-delete>Sil</button>
+          </div>
+        </section>
       </div>
+
     </div>
-
-    <!-- 2) YARDIMCI KARAKTERLER -->
-    <div class="card cartoon-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Yardımcı Karakterler</div>
-          <div class="card-subtitle">İstersen birden fazla seçebilirsin.</div>
-        </div>
-      </div>
-
-      <div class="cartoon-grid cartoon-grid--cards">
-        <button class="cartoon-choice" type="button" data-cartoon-helper="kucuk-baliklar">Küçük Balıklar</button>
-        <button class="cartoon-choice" type="button" data-cartoon-helper="kaplumbaga">Kaplumbağa</button>
-        <button class="cartoon-choice" type="button" data-cartoon-helper="kurbaga">Kurbağa</button>
-        <button class="cartoon-choice" type="button" data-cartoon-helper="ordek">Ördek</button>
-        <button class="cartoon-choice" type="button" data-cartoon-helper="deniz-kabuklari">Deniz Kabukları</button>
-        <button class="cartoon-choice" type="button" data-cartoon-helper="baloncuklar">Baloncuklar</button>
-      </div>
-    </div>
-
-    <!-- 3) SAHNE -->
-    <div class="card cartoon-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Sahne</div>
-          <div class="card-subtitle">Tek sahne seç.</div>
-        </div>
-      </div>
-
-      <div class="cartoon-row">
-        <button class="cartoon-pill is-active" type="button" data-cartoon-scene="deniz-alti">Deniz Altı</button>
-        <button class="cartoon-pill" type="button" data-cartoon-scene="golet">Gölet</button>
-        <button class="cartoon-pill" type="button" data-cartoon-scene="orman">Orman</button>
-        <button class="cartoon-pill" type="button" data-cartoon-scene="ciftlik">Çiftlik</button>
-        <button class="cartoon-pill" type="button" data-cartoon-scene="gokyuzu">Gökyüzü</button>
-      </div>
-    </div>
-
-    <!-- 4) AKSIYON -->
-    <div class="card cartoon-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Aksiyon</div>
-          <div class="card-subtitle">Tek aksiyon seç.</div>
-        </div>
-      </div>
-
-      <div class="cartoon-row">
-        <button class="cartoon-pill is-active" type="button" data-cartoon-action="yuzuyor">Yüzüyor</button>
-        <button class="cartoon-pill" type="button" data-cartoon-action="zipliyor">Zıplıyor</button>
-        <button class="cartoon-pill" type="button" data-cartoon-action="oynuyor">Oynuyor</button>
-        <button class="cartoon-pill" type="button" data-cartoon-action="guluyor">Gülüyor</button>
-        <button class="cartoon-pill" type="button" data-cartoon-action="dans-ediyor">Dans Ediyor</button>
-        <button class="cartoon-pill" type="button" data-cartoon-action="el-salliyor">El Sallıyor</button>
-        <button class="cartoon-pill" type="button" data-cartoon-action="yavasca-ilerliyor">Yavaşça İlerliyor</button>
-      </div>
-    </div>
-
-    <!-- 5) STIL -->
-    <div class="card cartoon-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Stil</div>
-          <div class="card-subtitle">Tek stil seç.</div>
-        </div>
-      </div>
-
-      <div class="cartoon-row">
-        <button class="cartoon-pill is-active" type="button" data-cartoon-style="2d-basit">2D Basit</button>
-        <button class="cartoon-pill" type="button" data-cartoon-style="2d-renkli">2D Renkli</button>
-        <button class="cartoon-pill" type="button" data-cartoon-style="3d-yumusak">3D Yumuşak</button>
-      </div>
-    </div>
-
-    <!-- 6) SURE -->
-    <div class="card cartoon-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Süre</div>
-          <div class="card-subtitle">Tek süre seç.</div>
-        </div>
-      </div>
-
-      <div class="cartoon-row">
-        <button class="cartoon-pill" type="button" data-cartoon-duration="5">5 sn</button>
-        <button class="cartoon-pill" type="button" data-cartoon-duration="10">10 sn</button>
-        <button class="cartoon-pill is-active" type="button" data-cartoon-duration="15">15 sn</button>
-      </div>
-    </div>
-
-    <!-- 7) EK PROMPT -->
-    <div class="card cartoon-card">
-      <div class="form-row">
-        <div class="form-label">Ek Prompt (Opsiyonel)</div>
-        <textarea
-          id="cartoonExtraPrompt"
-          class="input"
-          rows="4"
-          placeholder="Örn: neşeli, parlak renkler, yumuşak hareketler, çocuk dostu görünüm"
-        ></textarea>
-      </div>
-    </div>
-
-    <!-- CTA -->
-    <div class="card cartoon-card cartoon-card--cta">
-      <button
-        class="btn btn-primary cartoon-generate"
-        type="button"
-        data-generate-cartoon>
-        Çizgifilm Sahnesi Oluştur
-      </button>
-
-      <div style="margin-top:10px;opacity:.85;font-size:13px;">
-        Önce tek sahne üretilecek. Uzun hikâye akışı sonra kurulacak.
-      </div>
-    </div>
-
   </div>
-
-  <!-- ================= /CHILD CARTOON MODULE ================= -->
-
 </section>
