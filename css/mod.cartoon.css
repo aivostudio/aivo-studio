@@ -33,13 +33,19 @@
 }
 
 .main-panel[data-module="cartoon"] .cartoon-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) 320px;
-  gap: 14px;
-  align-items: start;
+  display: block;
+  width: 100%;
   min-width: 0;
 }
 
+.main-panel[data-module="cartoon"] .cartoon-left {
+  width: 100%;
+  min-width: 0;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-form {
+  width: 100%;
+}
 .main-panel[data-module="cartoon"] .cartoon-left,
 .main-panel[data-module="cartoon"] .cartoon-right {
   min-width: 0;
