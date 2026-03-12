@@ -553,10 +553,41 @@ document.addEventListener("click", (e) => {
     bar.style.width = "100%";
   }, true);
 }
+  function ensureFullscreenBinding() {
+  if (window.__AIVO_SHARED_VIDEO_FULLSCREEN_BOUND__) return;
+  window.__AIVO_SHARED_VIDEO_FULLSCREEN_BOUND__ = true;
+
+  document.addEventListener("click", async (e) => {
+    const btn = e.target?.closest?.('[data-svc-act="fullscreen"]');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const card = btn.closest(".svcCard");
+    const video = card?.querySelector(".svcVideo");
+    const media = card?.querySelector(".svcMedia");
+    const target = video || media;
+    if (!target) return;
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (target.requestFullscreen) {
+        await target.requestFullscreen();
+      }
+    } catch (_) {}
+  }, true);
+}
   function createCardHtml(opts) {
-   ensureStyles();
+ ensureStyles();
 ensureSoundBinding();
 ensurePlayBinding();
+ensureFullscreenBinding();
 
     const id = String(opts?.id || "").trim();
     const title = String(opts?.title || "Video").trim();
