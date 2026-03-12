@@ -361,6 +361,15 @@
   transform: translateY(0) scale(.99);
 }
 
+.main-panel[data-module="cartoon"] .cartoon-generate-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-generate-btn:active {
+  transform: translateY(0) scale(.99);
+}
+
 .main-panel[data-module="cartoon"] .cartoon-preview-head {
   margin-bottom: 10px;
 }
