@@ -125,6 +125,64 @@ console.log("[cover overlay payload]", { imageUrl, artist, title });
   }
 // --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
 function withTitleSafeArea(p) {
+  function buildCoverPrompt(userPrompt, quality) {
+  const raw = String(userPrompt || "").trim();
+
+  const baseRules = [
+    "premium music cover artwork",
+    "spotify and apple music quality album cover",
+    "real commercial single cover design",
+    "clean balanced composition",
+    "strong focal subject",
+    "premium color grading",
+    "polished depth",
+    "minimal clutter",
+    "no text",
+    "no typography",
+    "no letters",
+    "no words",
+    "no logo",
+    "no watermark",
+    "no fake text",
+    "no random characters",
+    "no human portrait unless explicitly requested",
+    "no woman face unless explicitly requested",
+    "no man face unless explicitly requested",
+    "no extra unrelated subjects",
+    "main subject must match the user prompt"
+  ];
+
+  const ultraRules = [
+    "high prompt adherence",
+    "follow the user description exactly",
+    "keep the main subject faithful to the prompt",
+    "do not invent unrelated subjects",
+    "do not replace the subject with a human portrait",
+    "if animals are mentioned, animals must be the visible main subject",
+    "if multiple subjects are mentioned, keep them in the same scene",
+    "accurate subject rendering",
+    "cinematic composition",
+    "ultra detailed",
+    "premium lighting"
+  ];
+
+  const artistRules = [
+    "balanced prompt adherence",
+    "clear main subject",
+    "clean cover composition"
+  ];
+
+  const rules =
+    String(quality || "").toLowerCase() === "ultra"
+      ? ultraRules
+      : artistRules;
+
+  return [
+    raw,
+    ...baseRules,
+    ...rules
+  ].join(", ");
+}
   const raw = String(p || "").trim();
 
   return [
