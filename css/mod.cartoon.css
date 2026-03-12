@@ -340,20 +340,25 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 48px;
-  padding: 0 16px;
-  border-radius: 16px;
+  min-height: 78px;
+  padding: 0 28px;
+  border-radius: 30px;
   background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
-  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.28);
-  font-size: 14px;
+  box-shadow:
+    0 18px 40px rgba(139, 92, 246, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  font-size: 18px;
+  line-height: 1;
   font-weight: 900;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
 }
 
 .main-panel[data-module="cartoon"] .cartoon-generate-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(139, 92, 246, 0.34);
+  box-shadow:
+    0 22px 44px rgba(139, 92, 246, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
 .main-panel[data-module="cartoon"] .cartoon-preview-head {
