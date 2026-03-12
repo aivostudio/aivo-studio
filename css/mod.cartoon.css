@@ -1199,3 +1199,45 @@
   padding: 0 10px;
   font-size: 11px;
 }
+.main-panel[data-module="cartoon"] .cartoon-character-duo > .cartoon-block {
+  padding: 14px 16px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-duo > .cartoon-block .cartoon-block-head {
+  margin-bottom: 10px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-duo > .cartoon-block .cartoon-block-head h3 {
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-grid {
+  gap: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-card {
+  min-height: 40px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  gap: 8px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-thumb {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-character-name {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-count {
+  min-width: 40px;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+}
