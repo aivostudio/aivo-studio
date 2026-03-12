@@ -31,47 +31,49 @@ window.ensureModuleCSS = function(routeKey){
   window.__AIVO_ROUTER_BOOTED__ = true;
 
   // ✅ RightPanel: routeKey -> panelKey
- const RIGHT_PANEL_KEY = {
-  music: "music",
-  video: "video",
-  cover: "cover",
-  atmo: "atmo",
-  cartoon: "cartoon",
-  hook: "hook",
-  dashboard: "dashboard",
-  library: "library",
-  invoices: "invoices",
-  profile: "profile",
-  settings: "settings",
-};
+  const RIGHT_PANEL_KEY = {
+    music: "music",
+    video: "video",
+    cover: "cover",
+    atmo: "atmo",
+    cartoon: "cartoon",
+    hook: "hook",
+    dashboard: "dashboard",
+    library: "library",
+    invoices: "invoices",
+    profile: "profile",
+    settings: "settings",
+  };
 
-const ROUTES = new Set([
-  "music",
-  "video",
-  "cover",
-  "atmo",
-  "cartoon",
-  "hook",
-  "dashboard",
-  "library",
-  "invoices",
-  "profile",
-  "settings",
-]);
+  const ROUTES = new Set([
+    "music",
+    "video",
+    "cover",
+    "atmo",
+    "cartoon",
+    "hook",
+    "dashboard",
+    "library",
+    "invoices",
+    "profile",
+    "settings",
+  ]);
 
-const MODULE_FILES = {
-  music: "music.html",
-  video: "video.html",
-  cover: "cover.html",
-  atmo: "atmosphere.html",
-  cartoon: "sm-pack.html",
-  hook: "viral-hook.html",
-  dashboard: "dashboard.html",
-  library: "library.html",
-  invoices: "invoices.html",
-  profile: "profile.html",
-  settings: "settings.html",
-};
+  const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
+
+  const MODULE_FILES = {
+    music: "music.html",
+    video: "video.html",
+    cover: "cover.html",
+    atmo: "atmosphere.html",
+    cartoon: "sm-pack.html",
+    hook: "viral-hook.html",
+    dashboard: "dashboard.html",
+    library: "library.html",
+    invoices: "invoices.html",
+    profile: "profile.html",
+    settings: "settings.html",
+  };
 
   // -------------------------------
   // URL HELPERS
