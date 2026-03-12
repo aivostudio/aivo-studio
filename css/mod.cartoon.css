@@ -138,18 +138,17 @@
 .main-panel[data-module="cartoon"] .cartoon-character-card {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   width: 100%;
   min-width: 0;
-  min-height: 46px;
-  padding: 8px 10px;
-  border-radius: 14px;
+  min-height: 34px;
+  padding: 5px 9px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   text-align: left;
   transition: 160ms ease;
 }
-
 .main-panel[data-module="cartoon"] .cartoon-character-card:hover {
   border-color: rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.05);
@@ -165,12 +164,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.09);
-  font-size: 15px;
+  font-size: 12px;
   line-height: 1;
 }
 
@@ -179,8 +178,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
-  line-height: 1.2;
+  font-size: 11px;
+  line-height: 1.1;
   font-weight: 700;
 }
 
