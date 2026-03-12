@@ -155,7 +155,7 @@ async function generateImages({ prompt, style, ratio, n, quality }) {
 
   for (let i = 0; i < n; i++) {
     const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
-    const promptForModel = withTitleSafeArea(promptVar);
+  const promptForModel = buildCoverPrompt(promptVar, quality);
 
     tasks.push(
       postJSON("/api/providers/fal/predictions/create?app=cover", {
