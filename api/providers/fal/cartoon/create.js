@@ -184,11 +184,31 @@ export default async function handler(req, res) {
 
   const user_uuid = String(userRow[0].id);
 
-  const app = "cartoon";
-  const prompt = buildBasicPrompt(body);
-  const duration = String(body.duration || "5");
-  const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
-  const generate_audio = !!body.audioEnabled;
+ const app = "cartoon";
+
+const characterType = String(body.type || "").trim();
+const characterName = String(body.name || "").trim();
+const characterStyle = String(body.style || "").trim();
+const characterPromptRaw = String(body.prompt || "").trim();
+
+const prompt =
+  mode === "character"
+    ? [
+        "Cute kids cartoon character design.",
+        characterType ? `Character type: ${characterType}.` : "",
+        characterName ? `Character name: ${characterName}.` : "",
+        characterStyle ? `Visual style: ${characterStyle}.` : "",
+        characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
+        "Single character only.",
+        "Centered composition.",
+        "Clean background.",
+        "No text, no watermark."
+      ].filter(Boolean).join(" ")
+    : buildBasicPrompt(body);
+
+const duration = String(body.duration || "5");
+const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
+const generate_audio = !!body.audioEnabled;
 
   const characterImageUrl =
     pick(body, [
