@@ -328,10 +328,7 @@ const elStatus = null;
           return ib.localeCompare(ia);
         });
 
-        render(merged);
-        function render(items) {
-
-        function hasProcessing(items) {
+               function hasProcessing(items) {
           return (items || []).some((j) => {
             const st = norm(j.db_status || j.status || j.state).toUpperCase();
             return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
