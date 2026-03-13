@@ -133,7 +133,7 @@ function syncFormValues(root) {
 
     const items = Array.isArray(state.characters) ? state.characters : [];
 
-          if (!items.length) {
+    if (!items.length) {
       host.innerHTML = `
         <button type="button" class="cartoon-character-mini-card is-empty" disabled>Henüz karakter yok</button>
       `;
@@ -141,26 +141,20 @@ function syncFormValues(root) {
     }
 
     host.innerHTML = `
-      <div class="cartoon-character-grid">
-        ${items.map((item) => `
-        <button type="button" class="cartoon-character-mini-card" data-character-id="${String(item.id || item.job_id || "")}">
-            <div class="cartoon-character-thumb">
-              <img src="${String(item.imageUrl || "").replace(/"/g, "&quot;")}" alt="${String(item.name || "Karakter").replace(/"/g, "&quot;")}" />
-            </div>
-
-            <div class="cartoon-character-meta">
-              <div class="cartoon-character-name">${String(item.name || "Karakter")}</div>
-              <div class="cartoon-character-sub">${String(item.style || item.type || "")}</div>
-            </div>
-
-            <div class="cartoon-character-actions">
-              <button type="button" class="cartoon-character-btn" data-character-act="use" data-character-id="${String(item.id || item.job_id || "")}">Seç</button>
-              <button type="button" class="cartoon-character-btn" data-character-act="edit" data-character-id="${String(item.id || item.job_id || "")}">Düzenle</button>
-              <button type="button" class="cartoon-character-btn is-danger" data-character-act="delete" data-character-id="${String(item.id || item.job_id || "")}">Sil</button>
-            </div>
+      ${items.map((item) => `
+        <button
+          type="button"
+          class="cartoon-character-mini-card"
+          data-character-id="${String(item.id || item.job_id || "")}">
+          <span class="cartoon-character-thumb">
+            <img
+              src="${String(item.imageUrl || "").replace(/"/g, "&quot;")}"
+              alt="${String(item.name || "Karakter").replace(/"/g, "&quot;")}"
+              style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />
+          </span>
+          <span class="cartoon-character-name">${String(item.name || "Karakter")}</span>
         </button>
-        `).join("")}
-      </div>
+      `).join("")}
     `;
   }
  function render(root) {
