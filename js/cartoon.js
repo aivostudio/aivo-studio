@@ -294,12 +294,40 @@ function syncFormValues(root) {
         return;
       }
 
-      const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
+          const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
       if (characterCreateBtn && root.contains(characterCreateBtn)) {
         e.preventDefault();
 
         const payload = buildCharacterCreatePayload(root);
         console.log("[CARTOON][CHARACTER] payload =", payload);
+
+        characterCreateBtn.disabled = true;
+        const prevText = characterCreateBtn.textContent;
+        characterCreateBtn.textContent = "Oluşturuluyor...";
+        characterCreateBtn.classList.add("is-loading");
+
+        fetch("/api/providers/fal/cartoon/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(async (r) => {
+            const j = await r.json().catch(() => null);
+            console.log("[CARTOON][CHARACTER] create response =", j);
+
+            if (!r.ok || !j || j.ok === false) {
+              throw new Error(j?.error || `character_create_failed_${r.status}`);
+            }
+          })
+          .catch((err) => {
+            console.error("[CARTOON][CHARACTER] create error:", err);
+            alert(String(err?.message || err || "character_create_failed"));
+          })
+          .finally(() => {
+            characterCreateBtn.disabled = false;
+            characterCreateBtn.textContent = prevText;
+            characterCreateBtn.classList.remove("is-loading");
+          });
 
         return;
       }
