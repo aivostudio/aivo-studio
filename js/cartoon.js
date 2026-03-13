@@ -257,6 +257,53 @@ if (generateBtn && root.contains(generateBtn)) {
         );
       }
     })
+    const pollCartoonJob = async (jobId, tries = 0) => {
+  try {
+    const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`);
+    const j2 = await r.json().catch(() => null);
+
+    console.log("[CARTOON] poll =", j2);
+
+    if (!j2 || j2.ok === false) {
+      if (tries < 60) {
+        setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+      }
+      return;
+    }
+
+    if (j2.status === "ready" && j2.video?.url) {
+      window.__LAST_CARTOON_STATUS__ = j2;
+      window.dispatchEvent(
+        new CustomEvent("aivo:cartoon:job_ready", {
+          detail: {
+            job_id: jobId,
+            status: j2.status,
+            video: j2.video,
+            outputs: j2.outputs || [],
+            raw: j2
+          }
+        })
+      );
+      return;
+    }
+
+    if (j2.status === "error") {
+      console.error("[CARTOON] job error =", j2);
+      return;
+    }
+
+    if (tries < 60) {
+      setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+    }
+  } catch (err) {
+    console.error("[CARTOON] poll error =", err);
+    if (tries < 60) {
+      setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+    }
+  }
+};
+
+pollCartoonJob(j.job_id);
     .catch((err) => {
       console.error("[CARTOON] create error:", err);
       alert(String(err?.message || err || "cartoon_create_failed"));
