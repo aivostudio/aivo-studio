@@ -732,7 +732,34 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
             // ---- outputs MERGE (NO OVERWRITE) ----
             const existingOutputs = Array.isArray(job.outputs) ? job.outputs : [];
             let merged = existingOutputs;
-            if (providerVideoUrl) {
+                       if (isCharacterJob && providerImageUrl) {
+              merged = mergeOutputs(
+                (Array.isArray(merged) ? merged : []).map((o) => {
+                  if (
+                    o &&
+                    String(o.type || "").toLowerCase() === "image" &&
+                    String(o.meta?.provider || "").toLowerCase() === "fal"
+                  ) {
+                    return {
+                      ...o,
+                      meta: {
+                        ...(o.meta || {}),
+                        app: appKey,
+                      },
+                    };
+                  }
+                  return o;
+                }),
+                [
+                  {
+                    type: "image",
+                    url: providerImageUrl,
+                    output_id: providerOutputId,
+                    meta: { app: appKey, provider: "fal", variant: "provider" },
+                  },
+                ]
+              );
+            } else if (providerVideoUrl) {
               merged = mergeOutputs(
                 (Array.isArray(merged) ? merged : []).map((o) => {
                   if (
