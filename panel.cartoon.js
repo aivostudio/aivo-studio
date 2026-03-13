@@ -564,12 +564,25 @@
     };
   }
 
-  try {
+   try {
     if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register("cartoon", createCartoonPanel);
+      window.RightPanel.register("cartoon", {
+        header: {
+          title: "AI Çocuk Çizgifilm",
+          meta: "Hazır",
+          searchEnabled: false,
+          resetSearch: true
+        },
+
+        mount(host) {
+          const api = createCartoonPanel(host);
+          return () => {
+            try { api?.destroy?.(); } catch {}
+          };
+        }
+      });
     } else {
-      window.RightPanel.panels = window.RightPanel.panels || {};
-      window.RightPanel.panels.cartoon = createCartoonPanel;
+      console.warn("[CARTOON PANEL] RightPanel.register yok.");
     }
   } catch (e) {
     console.warn("[CARTOON PANEL] register failed", e);
