@@ -297,9 +297,11 @@ let image_url = isCharacterMode ? extractImageUrl(fal) : null;
         }
 
         // Kling output genelde burada: { video: { url: ... } }
-        const u2 = extractVideoUrl(j2);
-        if (u2) video_url = u2;
+       const u2 = isCharacterMode ? null : extractVideoUrl(j2);
+const i2 = isCharacterMode ? extractImageUrl(j2) : null;
 
+if (u2) video_url = u2;
+if (i2) image_url = i2;
         // debug için
         fal = {
           ...fal,
@@ -310,11 +312,13 @@ let image_url = isCharacterMode ? extractImageUrl(fal) : null;
       }
     }
 
-    const status = normalizeStatus(rawStatus, video_url);
+   const status = normalizeStatus(rawStatus, video_url || image_url);
 
-    const outputs = video_url
-      ? [{ type: "video", url: video_url, meta: { app } }]
-      : [];
+const outputs = image_url
+  ? [{ type: "image", url: image_url, meta: { app, mode: "character" } }]
+  : video_url
+    ? [{ type: "video", url: video_url, meta: { app } }]
+    : [];
 
     return res.status(200).json({
       ok: true,
