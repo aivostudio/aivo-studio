@@ -816,7 +816,27 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
                 ]
               );
             }
+                      if (isCharacterJob && providerImageUrl) {
+              await sql`
+                update jobs
+                set status = 'done',
+                    outputs = ${JSON.stringify(merged)}::jsonb,
+                    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                      ...patchMeta,
+                      final_image_url: providerImageUrl
+                    })}::jsonb,
+                    updated_at = now()
+                where id = ${job_id}::uuid
+              `;
 
+              job.status = "done";
+              job.outputs = merged;
+              job.meta = {
+                ...(job.meta || {}),
+                ...(patchMeta || {}),
+                final_image_url: providerImageUrl
+              };
+            } else
             // overlay varsa (daha önce yazılmış olabilir) onu da final seçimine dahil et
             const overlayUrlExisting =
               job?.meta?.logo_overlay_url ||
