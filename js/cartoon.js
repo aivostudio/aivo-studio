@@ -311,11 +311,7 @@
             console.error("[CARTOON] create error:", err);
             alert(String(err?.message || err || "cartoon_create_failed"));
           })
-          .finally(() => {
-            generateBtn.disabled = false;
-            generateBtn.textContent = prevText;
-            generateBtn.classList.remove("is-loading");
-          });
+         
 
         return;
       }
