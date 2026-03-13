@@ -263,7 +263,7 @@ export default async function handler(req, res) {
 
   const metaObj = {
     app,
-    mode: "basic",
+    mode,
     kind: "cartoon_video",
     provider: "fal",
     model: falModel,
@@ -321,7 +321,7 @@ export default async function handler(req, res) {
     ok: true,
     provider: "fal",
     app,
-    mode: "basic",
+    mode,
     model: falModel,
     request_id,
     status_url: status_url || null,
