@@ -329,6 +329,7 @@ const elStatus = null;
         });
 
         render(merged);
+        function render(items) {
 
         function hasProcessing(items) {
           return (items || []).some((j) => {
