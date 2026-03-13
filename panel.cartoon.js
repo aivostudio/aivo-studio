@@ -568,6 +568,65 @@ const elStatus = null;
 
       host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
     };
+        const onJobReady = (e) => {
+      const d = e?.detail || {};
+      const job_id = String(d.job_id || "").trim();
+      if (!job_id) return;
+
+      const videoUrl = String(d?.video?.url || "").trim();
+      const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
+
+      const existingDb = Array.isArray(controller?.state?.items)
+        ? controller.state.items.find((j) => String(j?.job_id || "").trim() === job_id)
+        : null;
+
+      if (existingDb) {
+        existingDb.db_status = "ready";
+        existingDb.status = "ready";
+        existingDb.state = "COMPLETED";
+
+        if (videoUrl) {
+          existingDb.outputs = [
+            {
+              type: "video",
+              url: videoUrl,
+              meta: { app: "cartoon", is_final: true }
+            }
+          ];
+        }
+
+        if (outputs.length) {
+          existingDb.outputs = outputs;
+        }
+
+        host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
+        controller?.hydrate?.(true);
+        return;
+      }
+
+      const optimisticJob = optimistic.get(job_id);
+      if (!optimisticJob) return;
+
+      optimistic.set(job_id, {
+        ...optimisticJob,
+        db_status: "ready",
+        status: "ready",
+        state: "COMPLETED",
+        outputs: outputs.length
+          ? outputs
+          : (videoUrl
+              ? [
+                  {
+                    type: "video",
+                    url: videoUrl,
+                    meta: { app: "cartoon", is_final: true }
+                  }
+                ]
+              : optimisticJob.outputs || [])
+      });
+
+      host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
+    };
      controller.start();
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
 
