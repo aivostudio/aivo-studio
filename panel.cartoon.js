@@ -529,7 +529,7 @@ const elStatus = null;
       const meta = d.meta || {};
       const createdAt = d.createdAt || Date.now();
 
-      optimistic.set(job_id, {
+          optimistic.set(job_id, {
         job_id,
         app: "cartoon",
         provider: meta.provider || "Cartoon",
@@ -546,6 +546,8 @@ const elStatus = null;
         },
         outputs: []
       });
+
+      host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
     };
 
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
