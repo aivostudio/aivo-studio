@@ -117,7 +117,8 @@
 
   function render(root) {
     if (!root) return;
-    
+
+    syncModeTabs(root);
     syncMainSelection(root);
     syncHelperSelection(root);
     syncSceneSelection(root);
