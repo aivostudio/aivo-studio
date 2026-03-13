@@ -157,6 +157,39 @@ function syncFormValues(root) {
     };
   }
 
+  function buildCharacterCreatePayload(root) {
+    const typeEl =
+      root.querySelector('[name="characterType"]') ||
+      root.querySelector('[data-cartoon-character-type]');
+
+    const nameEl =
+      root.querySelector('[name="characterName"]') ||
+      root.querySelector('[data-cartoon-character-name]');
+
+    const descEl =
+      root.querySelector('[name="characterPrompt"]') ||
+      root.querySelector('[data-cartoon-character-prompt]');
+
+    const styleEl =
+      root.querySelector('[name="characterStyle"]') ||
+      root.querySelector('[data-cartoon-character-style]');
+
+    const fileEl =
+      root.querySelector('[name="characterReference"]') ||
+      root.querySelector('[data-cartoon-character-reference]');
+
+    const payload = {
+      mode: 'character',
+      type: (typeEl?.value || '').trim(),
+      name: (nameEl?.value || '').trim(),
+      prompt: (descEl?.value || '').trim(),
+      style: (styleEl?.value || '').trim(),
+      referenceFile: fileEl?.files?.[0] || null
+    };
+
+    return payload;
+  }
+
   async function pollCartoonJob(jobId, tries = 0) {
     try {
       const r = await fetch(
