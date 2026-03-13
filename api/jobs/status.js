@@ -453,7 +453,24 @@ function pickFalVideoUrl(body) {
   });
   return hit ? pickUrl(hit) : null;
 }
+function pickFalImageUrl(body) {
+  const direct =
+    body?.image_url ||
+    body?.image?.url ||
+    body?.images?.[0]?.url ||
+    null;
 
+  if (direct && String(direct).startsWith("http")) return direct;
+
+  const outs = Array.isArray(body?.outputs) ? body.outputs : [];
+  const hit = outs.find((o) => {
+    const t = String(o?.type || o?.kind || "").toLowerCase();
+    const u = pickUrl(o);
+    return (t === "image" || String(u || "").match(/\.(png|jpg|jpeg|webp)(\?|$)/i)) && u;
+  });
+
+  return hit ? pickUrl(hit) : null;
+}
 // ---------- R2 PERSIST (REMOTE URL -> R2) ----------
 async function copyToR2({ url, key, contentType }) {
   const publicBase =
