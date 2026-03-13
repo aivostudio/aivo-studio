@@ -638,6 +638,7 @@ function syncFormValues(root) {
   row?.request?.name ||
   row?.input?.name ||
   row?.fal_input?.name ||
+ row?.meta?.ui_state?.name ||
   row?.ui_state?.name ||
   (String(
     row?.prompt ||
@@ -651,12 +652,14 @@ function syncFormValues(root) {
               row?.meta?.type ||
               row?.type ||
               row?.payload?.type ||
+              row?.meta?.ui_state?.type ||
               ""
             ).trim(),
             style: String(
               row?.meta?.style ||
               row?.style ||
               row?.payload?.style ||
+              row?.meta?.ui_state?.style ||
               ""
             ).trim(),
             prompt: String(
