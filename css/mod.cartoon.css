@@ -1271,3 +1271,28 @@
   padding: 0 8px;
   font-size: 11px;
 }
+.cartoon-character-mini-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:8px;
+}
+
+.cartoon-character-mini-card{
+  min-height:72px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.04);
+  color:#fff;
+  padding:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+}
+
+.cartoon-character-mini-card.is-empty{
+  opacity:.65;
+}
