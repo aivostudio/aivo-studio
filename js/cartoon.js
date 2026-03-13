@@ -20,7 +20,8 @@
     ratio: "16:9",
     audioEnabled: false,
     characterImage: null,
-    characterImageName: ""
+   characterImageName: "",
+   characters: []
   });
 
   function getEstimatedCredits() {
@@ -122,7 +123,46 @@ function syncFormValues(root) {
   if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
   if (audio) audio.checked = !!state.audioEnabled;
 }
+  function renderCharacterLibrary(root) {
+    const host =
+      qs("[data-cartoon-character-library]", root) ||
+      qs("[data-cartoon-characters]", root) ||
+      qs("[data-character-library]", root);
 
+    if (!host) return;
+
+    const items = Array.isArray(state.characters) ? state.characters : [];
+
+    if (!items.length) {
+      host.innerHTML = `
+        <div class="cartoon-character-empty">Henüz karakter yok</div>
+      `;
+      return;
+    }
+
+    host.innerHTML = `
+      <div class="cartoon-character-grid">
+        ${items.map((item) => `
+          <article class="cartoon-character-card" data-character-id="${String(item.id || item.job_id || "")}">
+            <div class="cartoon-character-thumb">
+              <img src="${String(item.imageUrl || "").replace(/"/g, "&quot;")}" alt="${String(item.name || "Karakter").replace(/"/g, "&quot;")}" />
+            </div>
+
+            <div class="cartoon-character-meta">
+              <div class="cartoon-character-name">${String(item.name || "Karakter")}</div>
+              <div class="cartoon-character-sub">${String(item.style || item.type || "")}</div>
+            </div>
+
+            <div class="cartoon-character-actions">
+              <button type="button" class="cartoon-character-btn" data-character-act="use" data-character-id="${String(item.id || item.job_id || "")}">Seç</button>
+              <button type="button" class="cartoon-character-btn" data-character-act="edit" data-character-id="${String(item.id || item.job_id || "")}">Düzenle</button>
+              <button type="button" class="cartoon-character-btn is-danger" data-character-act="delete" data-character-id="${String(item.id || item.job_id || "")}">Sil</button>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    `;
+  }
  function render(root) {
   if (!root) return;
 
@@ -137,6 +177,7 @@ function syncFormValues(root) {
   updateHelperCount(root);
   updateUploadText(root);
   updateSummary(root);
+ renderCharacterLibrary(root);
 }
 
   function buildBasicPayload() {
@@ -439,7 +480,38 @@ function syncFormValues(root) {
         return;
       }
     });
+        window.addEventListener("aivo:cartoon:job_ready", (e) => {
+      const d = e?.detail || {};
+      const mode = String(d?.mode || "").trim().toLowerCase();
+      const imageUrl = String(
+        d?.image?.url ||
+        d?.raw?.image?.url ||
+        ""
+      ).trim();
 
+      if (mode !== "character" || !imageUrl) return;
+
+      const raw = d?.raw || {};
+      const meta = raw?.meta || {};
+      const nextItem = {
+        id: String(d.job_id || `character_${Date.now()}`),
+        job_id: String(d.job_id || ""),
+        name: String(meta?.name || raw?.name || "Karakter").trim(),
+        type: String(meta?.type || raw?.type || "").trim(),
+        style: String(meta?.style || raw?.style || "").trim(),
+        prompt: String(meta?.prompt || raw?.prompt || "").trim(),
+        imageUrl
+      };
+
+      const exists = state.characters.some(
+        (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
+      );
+      if (exists) return;
+
+      state.characters = [nextItem, ...state.characters];
+      const root = getCartoonRoot();
+      if (root) render(root);
+    });
     document.addEventListener("input", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
