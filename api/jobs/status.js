@@ -235,11 +235,9 @@ function upsertFinalOutput(outputs, finalUrl, metaExtra) {
   arr = removeFinalFlags(arr);
 
   const finalMeta = {
-    app: "atmo",
     ...(metaExtra || {}),
     is_final: true,
   };
-
   // Öncelik: aynı url'i taşıyan video item varsa onu final işaretle
   let idx = arr.findIndex(
     (o) =>
