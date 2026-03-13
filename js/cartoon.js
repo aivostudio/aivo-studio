@@ -144,7 +144,7 @@ function syncFormValues(root) {
       ${items.map((item) => `
         <button
           type="button"
-          class="cartoon-character-mini-card"
+         class="cartoon-character-mini-card ${String(state.selectedCreatedCharacterId || "") === String(item.id || item.job_id || "") ? "is-selected" : ""}"
           data-character-id="${String(item.id || item.job_id || "")}">
           <span class="cartoon-character-thumb">
             <img
@@ -294,7 +294,7 @@ function syncFormValues(root) {
   }
 
   function bindEvents() {
-   ...
+
     document.addEventListener("click", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
