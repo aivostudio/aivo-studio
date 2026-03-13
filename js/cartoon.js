@@ -309,12 +309,36 @@ function syncFormValues(root) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         })
-          .then(async (r) => {
+                 .then(async (r) => {
             const j = await r.json().catch(() => null);
             console.log("[CARTOON][CHARACTER] create response =", j);
 
             if (!r.ok || !j || j.ok === false) {
               throw new Error(j?.error || `character_create_failed_${r.status}`);
+            }
+
+            if (j?.job_id) {
+              window.dispatchEvent(
+                new CustomEvent("aivo:cartoon:job_created", {
+                  detail: {
+                    app: "cartoon",
+                    mode: "character",
+                    job_id: j.job_id,
+                    createdAt: Date.now(),
+                    meta: {
+                      app: "cartoon",
+                      mode: "character",
+                      provider: "fal",
+                      prompt: payload.prompt || "",
+                      name: payload.name || "",
+                      type: payload.type || "",
+                      style: payload.style || ""
+                    }
+                  }
+                })
+              );
+
+              pollCartoonJob(j.job_id);
             }
           })
           .catch((err) => {
