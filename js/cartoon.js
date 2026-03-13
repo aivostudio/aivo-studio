@@ -102,9 +102,8 @@ function syncModeTabs(root) {
     btn.setAttribute("aria-selected", on ? "true" : "false");
   });
 }
-
 function syncModeViews(root) {
-  qsa("[data-cartoon-view]", root).forEach((el) => {
+  qsa(".cartoon-mode-view[data-cartoon-view]", root).forEach((el) => {
     const view = el.dataset.cartoonView || "";
     const on = view === state.mode;
     el.hidden = !on;
