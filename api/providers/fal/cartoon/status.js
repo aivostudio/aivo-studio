@@ -326,6 +326,7 @@ const outputs = image_url
       app,
       status,
       video_url: video_url || null,
+      image_url: image_url || null,
       outputs,
       fal,
       status_url,
