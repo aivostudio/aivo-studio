@@ -549,7 +549,7 @@ const elStatus = null;
 
       host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
     };
-
+     controller.start();
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
 
     return {
