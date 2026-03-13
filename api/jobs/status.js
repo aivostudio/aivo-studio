@@ -661,7 +661,11 @@ module.exports = async (req, res) => {
 
           if (dbSt === "done") {
             // ---- Provider base video ----
-            const providerVideoUrl = pickFalVideoUrl(body);
+           const isCharacterJob =
+  String(job?.meta?.mode || job?.mode || "").toLowerCase() === "character";
+
+const providerVideoUrl = isCharacterJob ? null : pickFalVideoUrl(body);
+const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
 
             const providerOutputId =
               body?.outputs?.[0]?.id ||
