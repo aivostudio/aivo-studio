@@ -198,17 +198,34 @@ export default async function handler(req, res) {
       "start_image_url",
     ]) || null;
 
-  const falModel = "fal-ai/kling-video/o3/standard/reference-to-video";
+    const falModel =
+    mode === "character"
+      ? "fal-ai/nano-banana-pro"
+      : "fal-ai/kling-video/o3/standard/reference-to-video";
+
   const falUrl = `https://queue.fal.run/${falModel}`;
 
-  const falInput = {
-    prompt,
-    duration,
-    aspect_ratio,
-    generate_audio,
-    shot_type: "customize",
-    ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
-  };
+  const falInput =
+    mode === "character"
+      ? {
+          prompt,
+          num_images: 1,
+          aspect_ratio:
+            aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
+              ? aspect_ratio
+              : "4:5",
+          output_format: "png",
+          safety_tolerance: "4",
+          resolution: "1K"
+        }
+      : {
+          prompt,
+          duration,
+          aspect_ratio,
+          generate_audio,
+          shot_type: "customize",
+          ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
+        };
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
