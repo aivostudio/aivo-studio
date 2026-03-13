@@ -269,6 +269,7 @@ if (generateBtn && root.contains(generateBtn)) {
 
   return;
 }
+ });
 
     document.addEventListener("input", (e) => {
       const root = getCartoonRoot();
