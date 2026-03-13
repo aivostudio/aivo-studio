@@ -143,7 +143,7 @@ function syncFormValues(root) {
     host.innerHTML = `
       <div class="cartoon-character-grid">
         ${items.map((item) => `
-          <article class="cartoon-character-card" data-character-id="${String(item.id || item.job_id || "")}">
+        <button type="button" class="cartoon-character-mini-card" data-character-id="${String(item.id || item.job_id || "")}">
             <div class="cartoon-character-thumb">
               <img src="${String(item.imageUrl || "").replace(/"/g, "&quot;")}" alt="${String(item.name || "Karakter").replace(/"/g, "&quot;")}" />
             </div>
@@ -158,7 +158,7 @@ function syncFormValues(root) {
               <button type="button" class="cartoon-character-btn" data-character-act="edit" data-character-id="${String(item.id || item.job_id || "")}">Düzenle</button>
               <button type="button" class="cartoon-character-btn is-danger" data-character-act="delete" data-character-id="${String(item.id || item.job_id || "")}">Sil</button>
             </div>
-          </article>
+        </button>
         `).join("")}
       </div>
     `;
