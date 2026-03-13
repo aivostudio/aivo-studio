@@ -315,6 +315,7 @@ function syncFormValues(root) {
         return;
       }
            const createdCharacterBtn = e.target.closest("[data-character-id]");
+      console.log("[CARTOON][CHARACTER_CARD_CLICK]", e.target, createdCharacterBtn);
       if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
         e.preventDefault();
 
