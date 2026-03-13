@@ -836,7 +836,7 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
                 ...(patchMeta || {}),
                 final_image_url: providerImageUrl
               };
-            } else
+            }
             // overlay varsa (daha önce yazılmış olabilir) onu da final seçimine dahil et
             const overlayUrlExisting =
               job?.meta?.logo_overlay_url ||
