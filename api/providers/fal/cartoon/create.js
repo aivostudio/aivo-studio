@@ -160,14 +160,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
-  const body = safeJson(req);
+   const body = safeJson(req);
 
   const mode = String(body.mode || "basic").toLowerCase();
-  if (mode !== "basic") {
+  if (!["basic", "character"].includes(mode)) {
     return res.status(400).json({
       ok: false,
       error: "unsupported_mode",
-      message: "this first version only supports basic mode",
+      message: "this first version only supports basic mode and character mode",
     });
   }
 
