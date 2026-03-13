@@ -956,9 +956,10 @@ module.exports = async (req, res) => {
 
         const type = String(o.type || "").toLowerCase();
 
-        const app =
-          o.meta?.app ||
+              const app =
           job.app ||
+          job.type ||
+          o.meta?.app ||
           (type === "video" ? "video" : type === "audio" ? "music" : "cover");
 
         const output_id = o.output_id || o.id || requestId || `${job_id}-${i}`;
