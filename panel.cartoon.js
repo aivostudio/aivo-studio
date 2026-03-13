@@ -245,18 +245,14 @@
     let destroyed = false;
     const optimistic = new Map();
 
-    host.innerHTML = `
-      <div class="cartoonPanelWrap">
-        <div class="cartoonPanelHdr">
-          <div class="cartoonPanelTitle">AI Çocuk Çizgifilm</div>
-          <div class="cartoonPanelStatus">Hazır</div>
-        </div>
-        <div class="cartoonPanelGrid" data-grid></div>
-      </div>
-    `;
+   host.innerHTML = `
+  <div class="cartoonPanelWrap">
+    <div class="cartoonPanelGrid" data-grid></div>
+  </div>
+`;
 
-    const elStatus = host.querySelector(".cartoonPanelStatus");
-    const elGrid = host.querySelector('[data-grid]');
+const elGrid = host.querySelector('[data-grid]');
+const elStatus = null;
 
     const setStatus = (t) => { if (elStatus) elStatus.textContent = t; };
 
@@ -563,28 +559,28 @@
       },
     };
   }
+try {
+  if (typeof window.RightPanel.register === "function") {
+    window.RightPanel.register("cartoon", {
+      header: {
+        title: "AI Çocuk Çizgifilm",
+        meta: "Hazır",
+        searchEnabled: true,
+        searchPlaceholder: "Çizgifilmlerde ara...",
+        resetSearch: true
+      },
 
-   try {
-    if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register("cartoon", {
-        header: {
-          title: "AI Çocuk Çizgifilm",
-          meta: "Hazır",
-          searchEnabled: false,
-          resetSearch: true
-        },
-
-        mount(host) {
-          const api = createCartoonPanel(host);
-          return () => {
-            try { api?.destroy?.(); } catch {}
-          };
-        }
-      });
-    } else {
-      console.warn("[CARTOON PANEL] RightPanel.register yok.");
-    }
-  } catch (e) {
-    console.warn("[CARTOON PANEL] register failed", e);
+      mount(host) {
+        const api = createCartoonPanel(host);
+        return () => {
+          try { api?.destroy?.(); } catch {}
+        };
+      }
+    });
+  } else {
+    console.warn("[CARTOON PANEL] RightPanel.register yok.");
   }
+} catch (e) {
+  console.warn("[CARTOON PANEL] register failed", e);
+}
 })();
