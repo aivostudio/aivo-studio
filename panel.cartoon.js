@@ -420,88 +420,17 @@ const elStatus = null;
           return el;
         }
 
-        function patchCard(el, job) {
+             function patchCard(el, job) {
           if (!el || !job) return;
 
-          const badge = mapBadge(job);
-          const out = pickBestVideoOutput(job);
-          const url = out?.url || "";
+          const html = renderCard(job);
+          if (!html) return;
 
-          const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
-          const engine = (job.provider || job.meta?.provider || "Cartoon").toString();
-
-          const dur = String(job.meta?.ui_state?.duration || job.meta?.duration || job.duration || "").trim();
-          const durText = dur ? `${dur}sn` : "";
-          const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
-
-          const ratio = String(
-            job.meta?.ui_state?.aspect_ratio ||
-            job.meta?.aspect_ratio ||
-            job.meta?.ratio ||
-            out?.meta?.aspect_ratio ||
-            out?.meta?.ratio ||
-            ""
-          );
-
-          const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
-          const ready = badge.kind === "ok";
-          const can = !!(ready && url);
-
-          const thumb = el.querySelector(".cartoonPanelThumb");
-          if (thumb) {
-            thumb.classList.toggle("isPortrait", !!isPortrait);
-            thumb.classList.toggle("is-loading", !can);
-          }
-
-          const pill = el.querySelector(".cartoonPanelPill");
-          if (pill) {
-            pill.textContent = badge.text;
-            pill.classList.remove("ok", "mid", "bad");
-            pill.classList.add(badge.kind);
-          }
-
-          const metaEl = el.querySelector(".cartoonPanelMetaLine");
-          if (metaEl) {
-            metaEl.textContent = job.meta?.prompt || job.prompt || metaLine;
-          }
-
-          const dl = el.querySelector('[data-act="download"]');
-          const sh = el.querySelector('[data-act="share"]');
-          if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
-          if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
-
-          const skel = el.querySelector(".cartoonPanelSkel");
-          let vid = el.querySelector("video.cartoonPanelVideo");
-
-          if (can) {
-            if (skel) skel.style.display = "none";
-
-            if (!vid) {
-              vid = document.createElement("video");
-              vid.className = "cartoonPanelVideo";
-              vid.setAttribute("playsinline", "");
-              vid.setAttribute("webkit-playsinline", "");
-              vid.setAttribute("preload", "metadata");
-              vid.setAttribute("controls", "");
-              vid.muted = true;
-              thumb?.appendChild(vid);
-            }
-
-            const prev = vid.getAttribute("data-src") || "";
-            if (prev !== url) {
-              vid.setAttribute("data-src", url);
-              vid.src = url;
-            }
-            vid.style.display = "";
-          } else {
-            if (skel) skel.style.display = "";
-            if (vid) {
-              vid.pause?.();
-              vid.style.display = "none";
-            }
+          if (el.__renderedHtml !== html) {
+            el.innerHTML = html;
+            el.__renderedHtml = html;
           }
         }
-
         function render(items) {
           if (!elGrid) return;
 
