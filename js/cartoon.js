@@ -294,6 +294,7 @@ function syncFormValues(root) {
   }
 
   function bindEvents() {
+   ...
     document.addEventListener("click", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
@@ -313,7 +314,31 @@ function syncFormValues(root) {
         render(root);
         return;
       }
+           const createdCharacterBtn = e.target.closest("[data-character-id]");
+      if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
+        e.preventDefault();
 
+        const selectedId = String(createdCharacterBtn.dataset.characterId || "").trim();
+        if (!selectedId) return;
+
+        const selectedItem = (state.characters || []).find(
+          (x) => String(x.id || x.job_id || "").trim() === selectedId
+        );
+        if (!selectedItem) return;
+
+        state.selectedCreatedCharacterId = selectedId;
+
+        const nameInput = qs("#cartoon-character-name", root);
+        const descInput = qs("#cartoon-character-desc", root);
+        const styleSelect = qs("#cartoon-character-style", root);
+
+        if (nameInput) nameInput.value = selectedItem.name || "";
+        if (descInput) descInput.value = selectedItem.prompt || "";
+        if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
+
+        render(root);
+        return;
+      }
       const helperBtn = e.target.closest('[data-role="helper"]');
       if (helperBtn && root.contains(helperBtn)) {
         e.preventDefault();
