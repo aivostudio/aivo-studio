@@ -551,8 +551,7 @@ function syncFormValues(root) {
       if (exists) return;
 
       state.characters = [nextItem, ...state.characters];
-      const root = getCartoonRoot();
-      if (root) render(root);
+     if (root) render(root);
     });
     document.addEventListener("input", (e) => {
       const root = getCartoonRoot();
