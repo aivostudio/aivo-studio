@@ -76,7 +76,42 @@ function extractVideoUrl(anyJson) {
 
   return null;
 }
+function extractImageUrl(anyJson) {
+  if (!anyJson) return null;
 
+  const direct =
+    pick(anyJson, [
+      "image.url",
+      "image_url",
+      "images.0.url",
+      "data.image.url",
+      "data.image_url",
+      "data.images.0.url",
+      "result.image.url",
+      "result.image_url",
+      "result.images.0.url",
+      "response.image.url",
+      "response.image_url",
+      "response.images.0.url",
+    ]) || null;
+
+  if (direct && String(direct).startsWith("http")) return direct;
+
+  if (Array.isArray(anyJson.outputs)) {
+    const hit = anyJson.outputs.find((x) => {
+      const u = x?.url || x?.src || null;
+      const t = String(x?.type || x?.kind || "").toLowerCase();
+      return (
+        u &&
+        String(u).startsWith("http") &&
+        (t === "image" || /\.(png|jpg|jpeg|webp)(\?|$)/i.test(String(u)))
+      );
+    });
+    if (hit) return hit.url || hit.src || null;
+  }
+
+  return null;
+}
 // Kling için: status_url -> request_id çıkar -> /requests/<id> endpoint'i
 function requestUrlFromStatusUrl(statusUrl) {
   if (!statusUrl) return null;
@@ -226,7 +261,19 @@ export default async function handler(req, res) {
       pick(fal, ["status", "data.status", "result.status", "state"]) || null;
 
     // 2) Eğer status COMPLETED ise Kling request endpoint'inden output çek
-    let video_url = extractVideoUrl(fal);
+const mode = String(q.mode || b.mode || "").trim().toLowerCase();
+
+const inferredMode =
+  mode ||
+  (
+    String(status_url || "").toLowerCase().includes("nano-banana")
+      ? "character"
+      : ""
+  );
+const isCharacterMode = inferredMode === "character";
+
+let video_url = isCharacterMode ? null : extractVideoUrl(fal);
+let image_url = isCharacterMode ? extractImageUrl(fal) : null;
 
     const stUpper = String(rawStatus || "").toUpperCase();
     if (!video_url && ["COMPLETED", "COMPLETE", "SUCCEEDED", "READY", "DONE"].includes(stUpper)) {
