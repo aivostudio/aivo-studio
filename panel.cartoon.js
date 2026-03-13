@@ -566,7 +566,7 @@ const elStatus = null;
         outputs: []
       });
 
-      host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
+          controller.hydrate(true);
     };
         const onJobReady = (e) => {
       const d = e?.detail || {};
@@ -625,7 +625,7 @@ const elStatus = null;
               : optimisticJob.outputs || [])
       });
 
-      host.dispatchEvent(new CustomEvent("cartoon:panel:refresh"));
+          controller.hydrate(true);
     };
      controller.start();
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
