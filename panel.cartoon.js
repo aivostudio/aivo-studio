@@ -317,54 +317,105 @@ const elStatus = null;
           return Number.isFinite(t) ? t : 0;
         };
 
-        const merged = Array.from(byId.values()).sort((a, b) => {
-          const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
-          const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+          const merged = Array.from(byId.values()).sort((a, b) => {
+      const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+      const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
 
-          if (tb !== ta) return tb - ta;
+      if (tb !== ta) return tb - ta;
 
-          const ia = String(a?.job_id || a?.id || "");
-          const ib = String(b?.job_id || b?.id || "");
-          return ib.localeCompare(ia);
+      const ia = String(a?.job_id || a?.id || "");
+      const ib = String(b?.job_id || b?.id || "");
+      return ib.localeCompare(ia);
+    });
+
+    function hasProcessing(items) {
+      return (items || []).some((j) => {
+        const st = norm(j.db_status || j.status || j.state).toUpperCase();
+        return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
+      });
+    }
+
+    const __cardCache = (window.__CARTOON_CARD_CACHE__ = window.__CARTOON_CARD_CACHE__ || new Map());
+
+    function renderCard(job) {
+      const jid = String(job?.job_id || job?.id || "").trim();
+      const badge = mapBadge(job);
+      const out = pickBestVideoOutput(job);
+      const rawVideoUrl = String(out?.url || "").trim();
+
+      const ready = badge.kind === "ok" && !!rawVideoUrl;
+      const previewVideoUrl = ready
+        ? (rawVideoUrl.includes("#") ? rawVideoUrl : (rawVideoUrl + "#t=0.001"))
+        : "";
+
+      const ratio = String(
+        job?.meta?.ui_state?.aspect_ratio ||
+        job?.meta?.aspect_ratio ||
+        job?.meta?.ratio ||
+        out?.meta?.aspect_ratio ||
+        out?.meta?.ratio ||
+        "16:9"
+      ).trim();
+
+      const title = String(
+        job?.meta?.prompt ||
+        job?.prompt ||
+        "Çizgifilm"
+      ).trim();
+
+      const sub = "";
+      const badgeText = badge.text;
+      const badgeKind = badge.kind === "ok"
+        ? "ready"
+        : (badge.kind === "bad" ? "error" : "loading");
+
+      if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+        return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+          id: jid,
+          title,
+          sub,
+          badgeText,
+          badgeKind,
+          videoUrl: previewVideoUrl,
+          posterUrl: "",
+          ratio,
+          ready,
+          canDownload: ready,
+          canShare: ready,
+          canDelete: true
         });
+      }
 
-               function hasProcessing(items) {
-          return (items || []).some((j) => {
-            const st = norm(j.db_status || j.status || j.state).toUpperCase();
-            return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
-          });
-        }
+      return "";
+    }
 
-        const __cardCache = (window.__CARTOON_CARD_CACHE__ = window.__CARTOON_CARD_CACHE__ || new Map());
+    function ensureCardEl(job) {
+      const id = String(job?.job_id || "").trim();
+      if (!id) return null;
 
-        function ensureCardEl(job) {
-          const id = String(job?.job_id || "").trim();
-          if (!id) return null;
+      let el = __cardCache.get(id);
+      if (el && el.isConnected) return el;
 
-          let el = __cardCache.get(id);
-          if (el && el.isConnected) return el;
+      el = document.createElement("div");
+      el.className = "cartoonPanelCard";
+      el.setAttribute("data-job", id);
 
-          el = document.createElement("div");
-          el.className = "cartoonPanelCard";
-          el.setAttribute("data-job", id);
+      el.innerHTML = `
+        <div class="cartoonPanelThumb">
+          <div class="cartoonPanelPill mid">İşleniyor</div>
+          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">Hazırlanıyor…</div></div>
+        </div>
 
-          el.innerHTML = `
-            <div class="cartoonPanelThumb">
-              <div class="cartoonPanelPill mid">İşleniyor</div>
-              <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">Hazırlanıyor…</div></div>
-            </div>
+        <div class="cartoonPanelFooter">
+          <div class="cartoonPanelMetaLine"></div>
 
-            <div class="cartoonPanelFooter">
-              <div class="cartoonPanelMetaLine"></div>
-
-              <div class="cartoonPanelActions">
-                <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-                <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-                <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
-              </div>
-            </div>
-          `;
-
+          <div class="cartoonPanelActions">
+            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+          </div>
+        </div>
+      `;
           __cardCache.set(id, el);
           return el;
         }
