@@ -305,7 +305,10 @@ const generate_audio = !!body.audioEnabled;
     provider: "fal",
     model: falModel,
     request_id,
-    ui_state: {
+   ui_state: {
+      name: characterName || null,
+      type: characterType || null,
+      style: characterStyle || null,
       mainCharacter: body.mainCharacter || null,
       helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
       scene: body.scene || null,
