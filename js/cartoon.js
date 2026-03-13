@@ -133,7 +133,7 @@ function syncFormValues(root) {
 
     const items = Array.isArray(state.characters) ? state.characters : [];
 
-       if (!items.length) {
+          if (!items.length) {
       host.innerHTML = `
         <button type="button" class="cartoon-character-mini-card is-empty" disabled>Henüz karakter yok</button>
       `;
