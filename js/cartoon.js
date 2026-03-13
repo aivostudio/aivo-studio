@@ -87,48 +87,58 @@
     });
   }
 
-  function syncActionSelection(root) {
-    qsa("[data-action]", root).forEach((btn) => {
-      const on = btn.dataset.action === state.action;
-      btn.classList.toggle("is-selected", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
+ function syncActionSelection(root) {
+  qsa("[data-action]", root).forEach((btn) => {
+    const on = btn.dataset.action === state.action;
+    btn.classList.toggle("is-selected", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
 
-  function syncModeTabs(root) {
-    qsa("[data-cartoon-mode]", root).forEach((btn) => {
-      const on = btn.dataset.cartoonMode === state.mode;
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-selected", on ? "true" : "false");
-    });
-  }
+function syncModeTabs(root) {
+  qsa("[data-cartoon-mode]", root).forEach((btn) => {
+    const on = btn.dataset.cartoonMode === state.mode;
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+}
 
-  function syncFormValues(root) {
-    const prompt = qs("[data-cartoon-prompt-input]", root);
-    const duration = qs("#cartoon-duration", root);
-    const ratio = qs("#cartoon-ratio", root);
-    const audio = qs("[data-audio-enabled]", root);
+function syncModeViews(root) {
+  qsa("[data-cartoon-view]", root).forEach((el) => {
+    const view = el.dataset.cartoonView || "";
+    const on = view === state.mode;
+    el.hidden = !on;
+    el.classList.toggle("is-active", on);
+  });
+}
 
-    if (prompt && prompt.value !== state.extraPrompt) prompt.value = state.extraPrompt;
-    if (duration && duration.value !== state.duration) duration.value = state.duration;
-    if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
-    if (audio) audio.checked = !!state.audioEnabled;
-  }
+function syncFormValues(root) {
+  const prompt = qs("[data-cartoon-prompt-input]", root);
+  const duration = qs("#cartoon-duration", root);
+  const ratio = qs("#cartoon-ratio", root);
+  const audio = qs("[data-audio-enabled]", root);
 
-  function render(root) {
-    if (!root) return;
+  if (prompt && prompt.value !== state.extraPrompt) prompt.value = state.extraPrompt;
+  if (duration && duration.value !== state.duration) duration.value = state.duration;
+  if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
+  if (audio) audio.checked = !!state.audioEnabled;
+}
 
-    syncModeTabs(root);
-    syncMainSelection(root);
-    syncHelperSelection(root);
-    syncSceneSelection(root);
-    syncActionSelection(root);
-    syncFormValues(root);
-    updatePromptCount(root);
-    updateHelperCount(root);
-    updateUploadText(root);
-    updateSummary(root);
-  }
+ function render(root) {
+  if (!root) return;
+
+  syncModeTabs(root);
+  syncModeViews(root);
+  syncMainSelection(root);
+  syncHelperSelection(root);
+  syncSceneSelection(root);
+  syncActionSelection(root);
+  syncFormValues(root);
+  updatePromptCount(root);
+  updateHelperCount(root);
+  updateUploadText(root);
+  updateSummary(root);
+}
 
   function buildBasicPayload() {
     return {
