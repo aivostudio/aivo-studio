@@ -133,9 +133,9 @@ function syncFormValues(root) {
 
     const items = Array.isArray(state.characters) ? state.characters : [];
 
-    if (!items.length) {
+       if (!items.length) {
       host.innerHTML = `
-        <div class="cartoon-character-empty">Henüz karakter yok</div>
+        <button type="button" class="cartoon-character-mini-card is-empty" disabled>Henüz karakter yok</button>
       `;
       return;
     }
