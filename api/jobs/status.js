@@ -709,13 +709,13 @@ module.exports = async (req, res) => {
             const existingOutputs = Array.isArray(job.outputs) ? job.outputs : [];
             let merged = existingOutputs;
 
-            if (providerVideoUrl) {
+                     if (providerVideoUrl) {
               merged = mergeOutputs(merged, [
                 {
                   type: "video",
                   url: providerVideoUrl,
                   output_id: providerOutputId,
-                  meta: { app: "atmo", provider: "fal", variant: "provider" },
+                  meta: { app: appKey, provider: "fal", variant: "provider" },
                 },
               ]);
             }
@@ -726,7 +726,7 @@ module.exports = async (req, res) => {
                   type: "video",
                   url: muxedUrl,
                   output_id: `${providerOutputId}-with-audio`,
-                  meta: { app: "atmo", provider: "fal", variant: "mux" },
+                  meta: { app: appKey, provider: "fal", variant: "mux" },
                 },
               ]);
             }
