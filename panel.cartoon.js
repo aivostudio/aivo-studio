@@ -255,6 +255,46 @@ const elGrid = host.querySelector('[data-grid]');
 const elStatus = null;
 
     const setStatus = (t) => { if (elStatus) elStatus.textContent = t; };
+        host.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-svc-act], [data-act]");
+      if (!btn) return;
+
+      const act = btn.dataset.svcAct || btn.dataset.act;
+      const card = btn.closest(".svcCard, .cartoonPanelCard");
+      const id =
+        String(
+          btn.dataset.id ||
+          btn.dataset.job ||
+          card?.dataset?.svcId ||
+          card?.dataset?.job ||
+          ""
+        ).trim();
+
+      if (!act || !id) return;
+
+      const allItems = [
+        ...(controller?.state?.items || []),
+        ...Array.from(optimistic.values())
+      ];
+
+      const job = allItems.find((x) => String(x?.job_id || x?.id || "").trim() === id);
+      if (!job) return;
+
+      if (act === "play") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const video = card?.querySelector("video.svcVideo");
+        if (!video) return;
+
+        if (video.paused) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+        return;
+      }
+    });
 
     const controller = window.DBJobs.create({
       app: "cartoon",
