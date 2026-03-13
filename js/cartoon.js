@@ -204,14 +204,71 @@
         return;
       }
 
-      const generateBtn = e.target.closest("[data-cartoon-generate]");
-      if (generateBtn && root.contains(generateBtn)) {
-        e.preventDefault();
-        const payload = buildBasicPayload();
-        console.log("[CARTOON] basic payload =", payload);
-        return;
+     const generateBtn = e.target.closest("[data-cartoon-generate]");
+if (generateBtn && root.contains(generateBtn)) {
+  e.preventDefault();
+
+  const payload = buildBasicPayload();
+
+  generateBtn.disabled = true;
+  const prevText = generateBtn.textContent;
+  generateBtn.textContent = "Üretiliyor...";
+  generateBtn.classList.add("is-loading");
+
+  fetch("/api/providers/fal/cartoon/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then(async (r) => {
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || j.ok === false) {
+        throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
       }
+
+      console.log("[CARTOON] create ok =", j);
+
+      if (j?.job_id) {
+        window.dispatchEvent(
+          new CustomEvent("aivo:cartoon:job_created", {
+            detail: {
+              app: "cartoon",
+              job_id: j.job_id,
+              prompt: payload.extraPrompt || "",
+              createdAt: Date.now(),
+              meta: {
+                app: "cartoon",
+                provider: "fal",
+                prompt:
+                  [
+                    payload.mainCharacter,
+                    ...(payload.helperCharacters || []),
+                    payload.scene,
+                    payload.action,
+                    payload.extraPrompt
+                  ]
+                    .filter(Boolean)
+                    .join(" • "),
+                duration: payload.duration,
+                aspect_ratio: payload.aspectRatio
+              }
+            }
+          })
+        );
+      }
+    })
+    .catch((err) => {
+      console.error("[CARTOON] create error:", err);
+      alert(String(err?.message || err || "cartoon_create_failed"));
+    })
+    .finally(() => {
+      generateBtn.disabled = false;
+      generateBtn.textContent = prevText;
+      generateBtn.classList.remove("is-loading");
     });
+
+  return;
+}
 
     document.addEventListener("input", (e) => {
       const root = getCartoonRoot();
