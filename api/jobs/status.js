@@ -607,10 +607,10 @@ module.exports = async (req, res) => {
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
     const requestId = pickRequestIdFromJob(job);
 
+     // =========================
+    // 1) FAL POLL (ATMO + CARTOON)
     // =========================
-    // 1) FAL POLL (ONLY ATMO)
-    // =========================
-    if (provider === "fal" && appKey === "atmo") {
+    if (provider === "fal" && (appKey === "atmo" || appKey === "cartoon")) {
       const current = String(job.status || "").toLowerCase();
       const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
