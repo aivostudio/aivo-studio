@@ -708,27 +708,62 @@ module.exports = async (req, res) => {
             // ---- outputs MERGE (NO OVERWRITE) ----
             const existingOutputs = Array.isArray(job.outputs) ? job.outputs : [];
             let merged = existingOutputs;
-
-                     if (providerVideoUrl) {
-              merged = mergeOutputs(merged, [
-                {
-                  type: "video",
-                  url: providerVideoUrl,
-                  output_id: providerOutputId,
-                  meta: { app: appKey, provider: "fal", variant: "provider" },
-                },
-              ]);
+            if (providerVideoUrl) {
+              merged = mergeOutputs(
+                (Array.isArray(merged) ? merged : []).map((o) => {
+                  if (
+                    o &&
+                    String(o.type || "").toLowerCase() === "video" &&
+                    String(o.meta?.provider || "").toLowerCase() === "fal"
+                  ) {
+                    return {
+                      ...o,
+                      meta: {
+                        ...(o.meta || {}),
+                        app: appKey,
+                      },
+                    };
+                  }
+                  return o;
+                }),
+                [
+                  {
+                    type: "video",
+                    url: providerVideoUrl,
+                    output_id: providerOutputId,
+                    meta: { app: appKey, provider: "fal", variant: "provider" },
+                  },
+                ]
+              );
             }
 
             if (muxedUrl) {
-              merged = mergeOutputs(merged, [
-                {
-                  type: "video",
-                  url: muxedUrl,
-                  output_id: `${providerOutputId}-with-audio`,
-                  meta: { app: appKey, provider: "fal", variant: "mux" },
-                },
-              ]);
+              merged = mergeOutputs(
+                (Array.isArray(merged) ? merged : []).map((o) => {
+                  if (
+                    o &&
+                    String(o.type || "").toLowerCase() === "video" &&
+                    String(o.meta?.provider || "").toLowerCase() === "fal"
+                  ) {
+                    return {
+                      ...o,
+                      meta: {
+                        ...(o.meta || {}),
+                        app: appKey,
+                      },
+                    };
+                  }
+                  return o;
+                }),
+                [
+                  {
+                    type: "video",
+                    url: muxedUrl,
+                    output_id: `${providerOutputId}-with-audio`,
+                    meta: { app: appKey, provider: "fal", variant: "mux" },
+                  },
+                ]
+              );
             }
 
             // overlay varsa (daha önce yazılmış olabilir) onu da final seçimine dahil et
