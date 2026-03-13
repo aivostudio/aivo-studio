@@ -521,7 +521,13 @@ function syncFormValues(root) {
       const nextItem = {
         id: String(d.job_id || `character_${Date.now()}`),
         job_id: String(d.job_id || ""),
-        name: String(meta?.name || raw?.name || "Karakter").trim(),
+       name: String(
+  meta?.name ||
+  raw?.name ||
+  raw?.meta?.ui_state?.name ||
+  raw?.ui_state?.name ||
+  "Karakter"
+).trim(),
         type: String(meta?.type || raw?.type || "").trim(),
         style: String(meta?.style || raw?.style || "").trim(),
         prompt: String(meta?.prompt || raw?.prompt || "").trim(),
