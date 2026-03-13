@@ -518,18 +518,29 @@ function syncFormValues(root) {
 
       const raw = d?.raw || {};
       const meta = raw?.meta || {};
+      const root = getCartoonRoot();
+      const fallbackName = qs("#cartoon-character-name", root)?.value || "";
+      const fallbackStyle = qs("#cartoon-character-style", root)?.value || "";
       const nextItem = {
         id: String(d.job_id || `character_${Date.now()}`),
         job_id: String(d.job_id || ""),
-       name: String(
+      name: String(
   meta?.name ||
   raw?.name ||
   raw?.meta?.ui_state?.name ||
   raw?.ui_state?.name ||
+  fallbackName ||
   "Karakter"
 ).trim(),
         type: String(meta?.type || raw?.type || "").trim(),
-        style: String(meta?.style || raw?.style || "").trim(),
+       style: String(
+  meta?.style ||
+  raw?.style ||
+  raw?.meta?.ui_state?.style ||
+  raw?.ui_state?.style ||
+  fallbackStyle ||
+  ""
+).trim(),
         prompt: String(meta?.prompt || raw?.prompt || "").trim(),
         imageUrl
       };
