@@ -286,7 +286,6 @@ function syncFormValues(root) {
         render(root);
         return;
       }
-
       const actionBtn = e.target.closest("[data-action]");
       if (actionBtn && root.contains(actionBtn)) {
         e.preventDefault();
@@ -295,7 +294,18 @@ function syncFormValues(root) {
         return;
       }
 
+      const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
+      if (characterCreateBtn && root.contains(characterCreateBtn)) {
+        e.preventDefault();
+
+        const payload = buildCharacterCreatePayload(root);
+        console.log("[CARTOON][CHARACTER] payload =", payload);
+
+        return;
+      }
+
       const generateBtn = e.target.closest("[data-cartoon-generate]");
+      
       if (generateBtn && root.contains(generateBtn)) {
         e.preventDefault();
 
