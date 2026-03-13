@@ -234,10 +234,10 @@ function upsertFinalOutput(outputs, finalUrl, metaExtra) {
   let arr = Array.isArray(outputs) ? outputs.slice() : [];
   arr = removeFinalFlags(arr);
 
-  const finalMeta = {
-    ...(metaExtra || {}),
-    is_final: true,
-  };
+ const finalMeta = {
+  ...(metaExtra || {}),
+  is_final: true,
+};
   // Öncelik: aynı url'i taşıyan video item varsa onu final işaretle
   let idx = arr.findIndex(
     (o) =>
