@@ -597,6 +597,7 @@ function syncFormValues(root) {
         (Array.isArray(json?.rows) && json.rows) ||
         [];
       console.log("[CARTOON][CHARACTER_HYDRATE_ROWS]", rows);
+      console.log("[CARTOON][CHARACTER_HYDRATE_FIRST]", rows[0]);
       const nextCharacters = rows
         .map((row) => {
           const mode = String(
