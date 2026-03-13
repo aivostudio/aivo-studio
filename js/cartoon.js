@@ -648,7 +648,7 @@ function syncFormValues(root) {
   ).trim().slice(0, 32)) ||
   "Karakter"
 ).trim(),
-            type: String(
+                type: String(
               row?.meta?.type ||
               row?.type ||
               row?.payload?.type ||
