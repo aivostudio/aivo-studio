@@ -406,11 +406,11 @@ function pickFalStatusUrlFromJob(job) {
   );
 }
 
-async function fetchFalAtmoStatus(req, { job_id, status_url }) {
+async function fetchFalAtmoStatus(req, { job_id, status_url, app }) {
   const baseUrl = getBaseUrl(req);
 
   const qs = new URLSearchParams();
-  qs.set("app", "atmo");
+  qs.set("app", String(app || "atmo").trim());
 
   if (status_url && String(status_url).trim()) {
     qs.set("status_url", String(status_url).trim());
@@ -439,7 +439,6 @@ async function fetchFalAtmoStatus(req, { job_id, status_url }) {
 
   return { ok: true, body: json };
 }
-
 function pickFalVideoUrl(body) {
   const direct = body?.video_url || body?.video?.url || null;
   if (direct && String(direct).startsWith("http")) return direct;
@@ -620,10 +619,11 @@ module.exports = async (req, res) => {
       if (shouldPoll) {
         const statusUrl = pickFalStatusUrlFromJob(job);
 
-        const fr = await fetchFalAtmoStatus(req, {
-          job_id,
-          status_url: statusUrl,
-        });
+       const fr = await fetchFalAtmoStatus(req, {
+  job_id,
+  status_url: statusUrl,
+  app: appKey,
+});
 
         if (fr.ok) {
           const body = fr.body || {};
