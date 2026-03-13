@@ -476,7 +476,12 @@ function syncFormValues(root) {
     });
         window.addEventListener("aivo:cartoon:job_ready", (e) => {
       const d = e?.detail || {};
-      const mode = String(d?.mode || "").trim().toLowerCase();
+     const mode = String(
+  d?.mode ||
+  d?.raw?.mode ||
+  d?.raw?.meta?.mode ||
+  ((d?.image?.url || d?.raw?.image?.url) ? "character" : "")
+).trim().toLowerCase();
       const imageUrl = String(
         d?.image?.url ||
         d?.raw?.image?.url ||
