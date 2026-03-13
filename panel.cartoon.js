@@ -488,9 +488,10 @@ const elStatus = null;
             if (jid && !wanted.has(jid)) elGrid.removeChild(ch);
           }
         }
+         render(merged);
       },
     });
-
+          
     const onJobCreated = (e) => {
       const d = e?.detail || {};
       if (!d.job_id) return;
