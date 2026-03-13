@@ -65,6 +65,13 @@
     String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "").trim();
 
   const isJobCartoon = (job) => isCartoonApp(getJobApp(job));
+    const isCharacterMode = (x) =>
+    String(
+      x?.mode ||
+      x?.meta?.mode ||
+      x?.detail?.mode ||
+      ""
+    ).trim().toLowerCase() === "character";
 
   const mapBadge = (job) => {
     const a = norm(job?.db_status);
@@ -302,13 +309,13 @@ const elStatus = null;
       pollIntervalMs: 4000,
       hydrateEveryMs: 15000,
 
-      acceptJob: (job) => {
+          acceptJob: (job) => {
         if (!job) return false;
         const ja = getJobApp(job);
         if (ja && !isCartoonApp(ja)) return false;
+        if (isCharacterMode(job)) return false;
         return true;
       },
-
       acceptOutput: (o) => {
         if (!o) return false;
         const t = norm(o.type || o.kind || o.meta?.type || o.meta?.kind);
@@ -534,8 +541,10 @@ const elStatus = null;
           
     const onJobCreated = (e) => {
       const d = e?.detail || {};
+            if (isCharacterMode(d) || isCharacterMode(d.meta)) return;
       if (!d.job_id) return;
       if (!isCartoonApp(d.app || d.meta?.app || "cartoon")) return;
+            if (isCharacterMode(d) || isCharacterMode(d.meta)) return;
 
       const job_id = String(d.job_id).trim();
       if (!job_id) return;
