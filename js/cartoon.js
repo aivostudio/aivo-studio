@@ -117,13 +117,7 @@
 
   function render(root) {
     if (!root) return;
-
-    syncModeTabs(root);
-    qsa("[data-cartoon-view]", root).forEach((view) => {
-  const on = (view.dataset.cartoonView || "") === state.mode;
-  view.hidden = !on;
-  view.classList.toggle("is-active", on);
-});
+    
     syncMainSelection(root);
     syncHelperSelection(root);
     syncSceneSelection(root);
