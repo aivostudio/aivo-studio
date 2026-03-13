@@ -631,12 +631,22 @@ function syncFormValues(root) {
           return {
             id: String(row?.job_id || row?.id || imageUrl),
             job_id: String(row?.job_id || row?.id || ""),
-            name: String(
-              row?.meta?.name ||
-              row?.name ||
-              row?.payload?.name ||
-              "Karakter"
-            ).trim(),
+           name: String(
+  row?.meta?.name ||
+  row?.name ||
+  row?.payload?.name ||
+  row?.request?.name ||
+  row?.input?.name ||
+  row?.fal_input?.name ||
+  row?.ui_state?.name ||
+  (String(
+    row?.prompt ||
+    row?.meta?.prompt ||
+    row?.payload?.prompt ||
+    ""
+  ).trim().slice(0, 32)) ||
+  "Karakter"
+).trim(),
             type: String(
               row?.meta?.type ||
               row?.type ||
