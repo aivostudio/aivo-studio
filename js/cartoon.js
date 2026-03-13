@@ -584,7 +584,85 @@ function syncFormValues(root) {
       }
     });
   }
+  async function hydrateCharacterLibrary(root) {
+    try {
+      const res = await fetch("/api/jobs/list?app=cartoon", { credentials: "same-origin" });
+      const json = await res.json().catch(() => null);
 
+      const rows =
+        (Array.isArray(json) && json) ||
+        (Array.isArray(json?.items) && json.items) ||
+        (Array.isArray(json?.jobs) && json.jobs) ||
+        (Array.isArray(json?.rows) && json.rows) ||
+        [];
+
+      const nextCharacters = rows
+        .map((row) => {
+          const mode = String(
+            row?.mode ||
+            row?.meta?.mode ||
+            row?.payload?.mode ||
+            row?.request?.mode ||
+            row?.input?.mode ||
+            ""
+          ).trim().toLowerCase();
+
+          const outputs = Array.isArray(row?.outputs) ? row.outputs : [];
+
+          const imageFromOutputs = outputs.find((o) => {
+            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+            const u = String(o?.url || o?.image_url || "").trim();
+            return t === "image" && !!u;
+          });
+
+          const imageUrl = String(
+            row?.image?.url ||
+            row?.image_url ||
+            imageFromOutputs?.url ||
+            imageFromOutputs?.image_url ||
+            ""
+          ).trim();
+
+          if (mode !== "character" || !imageUrl) return null;
+
+          return {
+            id: String(row?.job_id || row?.id || imageUrl),
+            job_id: String(row?.job_id || row?.id || ""),
+            name: String(
+              row?.meta?.name ||
+              row?.name ||
+              row?.payload?.name ||
+              "Karakter"
+            ).trim(),
+            type: String(
+              row?.meta?.type ||
+              row?.type ||
+              row?.payload?.type ||
+              ""
+            ).trim(),
+            style: String(
+              row?.meta?.style ||
+              row?.style ||
+              row?.payload?.style ||
+              ""
+            ).trim(),
+            prompt: String(
+              row?.meta?.prompt ||
+              row?.prompt ||
+              row?.payload?.prompt ||
+              ""
+            ).trim(),
+            imageUrl
+          };
+        })
+        .filter(Boolean);
+
+      state.characters = nextCharacters;
+      if (root) render(root);
+    } catch (err) {
+      console.error("[CARTOON][CHARACTER_HYDRATE] failed =", err);
+    }
+  }
   function initFromDOM(root) {
     if (!root) return;
 
@@ -619,6 +697,7 @@ function syncFormValues(root) {
     const root = getCartoonRoot();
     if (!root) return false;
     initFromDOM(root);
+    hydrateCharacterLibrary(root);
     return true;
   }
 
