@@ -98,13 +98,14 @@
   const file = input.files && input.files[0] ? input.files[0] : null;
 
   if (!file) {
-    nameEl.textContent = "Dosya seçilmedi";
-    previewEl.style.display = "none";
-    previewEl.removeAttribute("src");
-    return;
-  }
+   if (!file) {
+  nameEl.textContent = "";
+  previewEl.style.display = "none";
+  previewEl.removeAttribute("src");
+  return;
+}
 
-  nameEl.textContent = file.name || "Dosya seçildi";
+nameEl.textContent = "";
 
   try {
     const nextUrl = URL.createObjectURL(file);
