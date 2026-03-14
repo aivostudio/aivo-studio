@@ -404,17 +404,19 @@ function pickFalStatusUrlFromJob(job) {
   );
 }
 
-async function fetchFalAtmoStatus(req, { job_id, status_url, app }) {
+async function fetchFalAtmoStatus(req, { job_id, request_id, status_url, app }) {
   const baseUrl = getBaseUrl(req);
 
-  const qs = new URLSearchParams();
-  qs.set("app", String(app || "atmo").trim());
+ const qs = new URLSearchParams();
+qs.set("app", String(app || "atmo").trim());
 
-  if (status_url && String(status_url).trim()) {
-    qs.set("status_url", String(status_url).trim());
-  } else {
-    qs.set("job_id", String(job_id || "").trim());
-  }
+if (status_url && String(status_url).trim()) {
+  qs.set("status_url", String(status_url).trim());
+} else if (String(app || "").toLowerCase() === "cartoon") {
+  qs.set("request_id", String(request_id || "").trim());
+} else {
+  qs.set("job_id", String(job_id || "").trim());
+}
 
  const providerStatusPath =
   String(app || "").toLowerCase() === "cartoon"
@@ -639,8 +641,9 @@ module.exports = async (req, res) => {
       if (shouldPoll) {
         const statusUrl = pickFalStatusUrlFromJob(job);
 
-       const fr = await fetchFalAtmoStatus(req, {
+      const fr = await fetchFalAtmoStatus(req, {
   job_id,
+  request_id: requestId,
   status_url: statusUrl,
   app: appKey,
 });
