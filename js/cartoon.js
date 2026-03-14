@@ -59,6 +59,67 @@
     if (!textEl) return;
     textEl.textContent = state.characterImageName || "Dosya seçilmedi";
   }
+  function updateCharacterCreateUploadUI(root) {
+  const input = qs("[data-character-create-upload]", root);
+  if (!input) return;
+
+  const host =
+    input.closest(".cartoon-upload-wrap") ||
+    input.parentElement ||
+    input.closest("label") ||
+    input;
+
+  let nameEl = qs("[data-character-create-file-name]", host);
+  if (!nameEl) {
+    nameEl = document.createElement("div");
+    nameEl.setAttribute("data-character-create-file-name", "");
+    nameEl.style.marginTop = "8px";
+    nameEl.style.fontSize = "13px";
+    nameEl.style.fontWeight = "600";
+    nameEl.style.color = "rgba(255,255,255,.88)";
+    host.appendChild(nameEl);
+  }
+
+  let previewEl = qs("[data-character-create-preview]", host);
+  if (!previewEl) {
+    previewEl = document.createElement("img");
+    previewEl.setAttribute("data-character-create-preview", "");
+    previewEl.alt = "Referans görsel önizleme";
+    previewEl.style.display = "none";
+    previewEl.style.width = "72px";
+    previewEl.style.height = "72px";
+    previewEl.style.objectFit = "cover";
+    previewEl.style.borderRadius = "12px";
+    previewEl.style.marginTop = "10px";
+    previewEl.style.border = "1px solid rgba(255,255,255,.12)";
+    host.appendChild(previewEl);
+  }
+
+  const file = input.files && input.files[0] ? input.files[0] : null;
+
+  if (!file) {
+    nameEl.textContent = "Dosya seçilmedi";
+    previewEl.style.display = "none";
+    previewEl.removeAttribute("src");
+    return;
+  }
+
+  nameEl.textContent = file.name || "Dosya seçildi";
+
+  try {
+    const nextUrl = URL.createObjectURL(file);
+
+    if (previewEl.dataset.objectUrl) {
+      try { URL.revokeObjectURL(previewEl.dataset.objectUrl); } catch {}
+    }
+
+    previewEl.src = nextUrl;
+    previewEl.dataset.objectUrl = nextUrl;
+    previewEl.style.display = "block";
+  } catch {
+    previewEl.style.display = "none";
+  }
+}
 
   function updateSummary(root) {
     const el = qs("[data-cartoon-summary]", root);
@@ -287,6 +348,7 @@ function renderCharacterLibrary(root) {
   updateCharacterDescCount(root);
   updateHelperCount(root);
   updateUploadText(root);
+   updateCharacterCreateUploadUI(root);
   updateSummary(root);
  renderCharacterLibrary(root);
 }
@@ -986,6 +1048,11 @@ document.addEventListener("input", (e) => {
         updateSummary(root);
         return;
       }
+     const characterCreateUpload = e.target.closest("[data-character-create-upload]");
+if (characterCreateUpload && root.contains(characterCreateUpload)) {
+  updateCharacterCreateUploadUI(root);
+  return;
+}
 
       const upload = e.target.closest("[data-character-upload]");
       if (upload && root.contains(upload)) {
