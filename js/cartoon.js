@@ -559,7 +559,8 @@ payload.uiState = {
 
   function bindEvents() {
 
-    document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
+
       const root = getCartoonRoot();
       if (!root) return;
 
