@@ -327,32 +327,18 @@ const elStatus = null;
       },
 
       onChange: async (items) => {
-        console.log("[CARTOON PANEL][ON_CHANGE][RAW_ITEMS]", items);
         if (destroyed) return;
         console.debug("[CARTOON DEBUG] onChange items:", items);
 
         const safeItems = (items || []).filter(isJobCartoon);
         const byId = new Map();
 
-    for (const j of safeItems) {
-  const id = String(j?.job_id || "").trim();
-  if (!id) continue;
-
-  byId.set(id, j);
-
-  const st = norm(j?.db_status || j?.status || j?.state);
-  const hasTerminalState =
-    st.includes("ready") ||
-    st.includes("done") ||
-    st.includes("complet") ||
-    st.includes("succ") ||
-    st.includes("error") ||
-    st.includes("fail");
-
-  if (optimistic.has(id) && hasTerminalState) {
-    optimistic.delete(id);
-  }
-}
+        for (const j of safeItems) {
+          const id = String(j?.job_id || "").trim();
+          if (!id) continue;
+          byId.set(id, j);
+          if (optimistic.has(id)) optimistic.delete(id);
+        }
 
         for (const [id, j] of optimistic.entries()) {
           if (!byId.has(id)) byId.set(id, j);
@@ -551,12 +537,10 @@ const elStatus = null;
           }
         }
          render(merged);
-        console.log("[CARTOON PANEL][ON_CHANGE][MERGED]", merged);
       },
     });
           
     const onJobCreated = (e) => {
-      console.log("[CARTOON PANEL][JOB_CREATED]", e?.detail);
       const d = e?.detail || {};
             if (isCharacterMode(d) || isCharacterMode(d.meta)) return;
       if (!d.job_id) return;
