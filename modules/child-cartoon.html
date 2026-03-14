@@ -50,12 +50,26 @@
 
     <!-- CHARACTER MODE -->
     <div class="cartoon-mode-view" data-cartoon-view="character" hidden>
+
       <section class="cartoon-block cartoon-block--compact">
         <div class="cartoon-block-head">
           <h3>Karakter Yarat</h3>
         </div>
 
-        <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
+        <div class="cartoon-field cartoon-field--full">
+          <label class="cartoon-field-label" for="cartoon-character-desc">Kısa Tanım</label>
+          <textarea
+            id="cartoon-character-desc"
+            class="cartoon-prompt-input"
+            rows="4"
+            maxlength="300"
+            placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"
+            data-character-desc></textarea>
+        </div>
+
+        <div
+          class="cartoon-form-grid-3"
+          style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:16px;">
           <div class="cartoon-field">
             <label class="cartoon-field-label" for="cartoon-character-type">Tür</label>
             <select id="cartoon-character-type" class="cartoon-select" data-character-type>
@@ -77,17 +91,6 @@
               data-character-name>
           </div>
 
-          <div class="cartoon-field cartoon-field--full">
-            <label class="cartoon-field-label" for="cartoon-character-desc">Kısa Tanım</label>
-            <textarea
-              id="cartoon-character-desc"
-              class="cartoon-prompt-input"
-              rows="3"
-              maxlength="300"
-              placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"
-              data-character-desc></textarea>
-          </div>
-
           <div class="cartoon-field">
             <label class="cartoon-field-label" for="cartoon-character-style">Stil</label>
             <select id="cartoon-character-style" class="cartoon-select" data-character-style>
@@ -97,15 +100,15 @@
               <option value="bright-kids">Parlak Çocuk Stili</option>
             </select>
           </div>
+        </div>
 
-          <div class="cartoon-field cartoon-field--full">
-            <label class="cartoon-field-label">Referans Görsel</label>
-            <label class="cartoon-upload-row">
-              <input type="file" accept="image/*" hidden data-character-create-upload>
-              <span class="cartoon-upload-btn">Resim Seç</span>
-              <span class="cartoon-upload-text">Dosya seçilmedi</span>
-            </label>
-          </div>
+        <div class="cartoon-field cartoon-field--full" style="margin-top:16px;">
+          <label class="cartoon-field-label">Referans Görsel</label>
+          <label class="cartoon-upload-row">
+            <input type="file" accept="image/*" hidden data-character-create-upload>
+            <span class="cartoon-upload-btn">Resim Seç</span>
+            <span class="cartoon-upload-text">Dosya seçilmedi</span>
+          </label>
         </div>
       </section>
 
