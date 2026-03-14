@@ -353,7 +353,18 @@ const payload = {
 
   referenceFile: fileEl?.files?.[0] || null
 };
-
+payload.uiState = {
+  name: payload.name || "",
+  type: payload.type || "",
+  style: payload.style || "",
+  prompt: payload.prompt || "",
+  hairType: payload.hairType || "",
+  hairColor: payload.hairColor || "",
+  outfit: payload.outfit || "",
+  glasses: payload.glasses || "",
+  accessory: payload.accessory || "",
+  expression: payload.expression || ""
+};
     return payload;
   }
   async function pollCartoonJob(jobId, tries = 0) {
