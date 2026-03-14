@@ -1282,13 +1282,7 @@
   max-width:none;
   overflow:visible;
 }
-[data-character-library]{
-  display:block;
-  width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  padding-bottom:4px;
-}
+
 .cartoon-character-mini-grid > .cpCard{
   flex:0 0 auto;
 }
