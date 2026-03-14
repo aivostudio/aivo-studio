@@ -1272,16 +1272,17 @@
   font-size: 11px;
 }
 .cartoon-character-mini-grid{
-  display:flex;
-  flex-wrap:nowrap;
-  align-items:flex-start;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
   gap:8px;
   margin-top:8px;
-  overflow-x:auto;
-  overflow-y:hidden;
+  max-height:152px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  align-content:start;
   padding-right:4px;
-  padding-bottom:4px;
 }
+
 .cartoon-character-mini-card{
   min-height:56px;
   border-radius:12px;
