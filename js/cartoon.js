@@ -71,6 +71,8 @@ async function uploadCartoonReferenceToR2(file) {
   characters: [],
    characterCreatePending: false,
     characterReferenceImageUrl: "",
+    characterImageUrl: "",
+
 
   });
 
@@ -417,6 +419,7 @@ function renderCharacterLibrary(root) {
       audioEnabled: !!state.audioEnabled,
       characterImage: state.characterImage,
       characterImageName: state.characterImageName,
+      characterImageUrl: state.characterImageUrl || "",
       estimatedCredits: getEstimatedCredits()
     };
   }
@@ -1131,14 +1134,34 @@ if (characterCreateUpload && root.contains(characterCreateUpload)) {
 
 
 
-      const upload = e.target.closest("[data-character-upload]");
-      if (upload && root.contains(upload)) {
-        const file = upload.files && upload.files[0] ? upload.files[0] : null;
-        state.characterImage = file;
-        state.characterImageName = file ? file.name : "";
-        updateUploadText(root);
-        updateSummary(root);
-      }
+    const upload = e.target.closest("[data-character-upload]");
+if (upload && root.contains(upload)) {
+  const file = upload.files && upload.files[0] ? upload.files[0] : null;
+
+  state.characterImage = file;
+  state.characterImageName = file ? file.name : "";
+  state.characterImageUrl = "";
+
+  updateUploadText(root);
+  updateSummary(root);
+
+  if (!file) {
+    return;
+  }
+
+  try {
+    const publicUrl = await uploadCartoonReferenceToR2(file);
+    state.characterImageUrl = String(publicUrl || "").trim();
+    console.log("[CARTOON][BASIC_UPLOAD_OK]", state.characterImageUrl);
+  } catch (err) {
+    state.characterImageUrl = "";
+    console.error("[CARTOON][BASIC_UPLOAD_ERROR]", err);
+    alert(String(err?.message || err || "basic_reference_upload_failed"));
+  }
+
+  return;
+}
+
     });
   }
   async function hydrateCharacterLibrary(root) {
