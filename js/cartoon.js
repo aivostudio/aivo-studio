@@ -463,22 +463,25 @@ if (characterActionBtn && root.contains(characterActionBtn)) {
         type="button"
         data-preview-close
         aria-label="Kapat"
-        style="
-          position:absolute;
-          top:18px;
-          right:18px;
-          width:44px;
-          height:44px;
-          border:none;
-          border-radius:999px;
-          background:rgba(255,255,255,.10);
-          color:#fff;
-          font-size:26px;
-          line-height:1;
-          cursor:pointer;
-          display:grid;
-          place-items:center;
-        "
+       style="
+  position:fixed;
+  top:22px;
+  right:22px;
+  width:48px;
+  height:48px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:rgba(15,18,28,.78);
+  color:#fff;
+  font-size:28px;
+  line-height:1;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  z-index:100000;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  backdrop-filter:blur(10px);
+"
       >×</button>
 
       <img
