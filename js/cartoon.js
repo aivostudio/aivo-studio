@@ -139,7 +139,7 @@ function renderCharacterLibrary(root) {
   }
 
   host.innerHTML = `
-    <div class="cpGrid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+   <div class="cpGrid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">
       ${items.map((item) => {
         const itemId = String(item.id || item.job_id || "");
         const imageUrl = String(item.imageUrl || "").trim();
@@ -152,9 +152,9 @@ function renderCharacterLibrary(root) {
             class="cpCard ${isSelected ? "is-selected" : ""}"
             data-character-id="${itemId.replace(/"/g, "&quot;")}"
             tabindex="0"
-           style="padding:8px;border-radius:16px;"
+          style="padding:6px;border-radius:12px;"
           >
-           <div class="cpThumb" style="aspect-ratio:1/1;height:auto;position:relative;border-radius:14px;">
+         <div class="cpThumb" style="aspect-ratio:1/1;width:100%;max-width:92px;position:relative;border-radius:10px;margin:0 auto;">
               <img
                 src="${imageUrl.replace(/"/g, "&quot;")}"
                 alt="${name.replace(/"/g, "&quot;")}"
@@ -228,11 +228,11 @@ function renderCharacterLibrary(root) {
               </div>
             </div>
 
-           <div class="cpBottom" style="padding-top:6px;height:auto;min-height:24px;">
+          <div class="cpBottom" style="padding-top:4px;height:auto;min-height:18px;justify-content:center;">
               <div
                 class="cpName"
                 title="${name.replace(/"/g, "&quot;")}"
-               style="font-size:12px;font-weight:700;line-height:1.2;"
+             style="font-size:11px;font-weight:700;line-height:1.1;text-align:center;"
               >${name}</div>
             </div>
           </div>
