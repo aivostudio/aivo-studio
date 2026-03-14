@@ -1273,18 +1273,20 @@
 }
 .cartoon-character-mini-grid{
   display:flex;
-  flex-wrap:nowrap;
+  flex-wrap:wrap;
   align-items:flex-start;
   gap:8px;
   margin-top:8px;
-  overflow-x:auto;
-  overflow-y:hidden;
+  max-height:280px;
+  overflow-y:auto;
+  overflow-x:hidden;
   padding-right:4px;
   padding-bottom:4px;
 }
+
 .cartoon-character-mini-grid > .cpCard{
-  flex:0 0 104px;
-  width:104px;
+  flex:0 0 auto;
+  width:auto;
 }
 
 .cartoon-character-mini-card{
