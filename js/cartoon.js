@@ -466,30 +466,40 @@ if (characterActionBtn && root.contains(characterActionBtn)) {
     max-height:88vh;
   "
 >
-  <button
-    type="button"
-    data-preview-close
-    aria-label="Kapat"
-    style="
-      position:absolute;
-      top:14px;
-      right:14px;
-      width:44px;
-      height:44px;
-      border:1px solid rgba(255,255,255,.18);
-      border-radius:999px;
-      background:rgba(15,18,28,.82);
-      color:#fff;
-      font-size:28px;
-      line-height:1;
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-      z-index:2;
-      box-shadow:0 10px 30px rgba(0,0,0,.35);
-      backdrop-filter:blur(10px);
-    "
-  >×</button>
+ <button
+  type="button"
+  data-preview-close
+  aria-label="Kapat"
+  title="Kapat"
+  style="
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:999px;
+    background:rgba(12,14,24,.72);
+    color:rgba(255,255,255,.96);
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+    z-index:5;
+    box-shadow:0 10px 30px rgba(0,0,0,.32);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  "
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;display:block;">
+    <path
+      d="M7 7l10 10M17 7 7 17"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+  </svg>
+</button>
 
   <img
     src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
