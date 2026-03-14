@@ -139,7 +139,7 @@ function renderCharacterLibrary(root) {
   }
 
   host.innerHTML = `
-   <div class="cpGrid" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;max-height:236px;overflow-y:auto;overflow-x:hidden;align-content:start;padding-right:4px;">
+    <div class="cpGrid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">
       ${items.map((item) => {
         const itemId = String(item.id || item.job_id || "");
         const imageUrl = String(item.imageUrl || "").trim();
@@ -159,7 +159,7 @@ function renderCharacterLibrary(root) {
               data-act="open"
               data-character-id="${itemId.replace(/"/g, "&quot;")}"
               title="Önizle"
-             style="width:92px;height:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;flex:0 0 92px;"
+              style="aspect-ratio:1/1;width:100%;max-width:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;"
             >
               <img
                 src="${imageUrl.replace(/"/g, "&quot;")}"
