@@ -423,32 +423,92 @@ function renderCharacterLibrary(root) {
         render(root);
         return;
       }
-           const createdCharacterBtn = e.target.closest("[data-character-id]");
-      console.log("[CARTOON][CHARACTER_CARD_CLICK]", e.target, createdCharacterBtn);
-      if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
-        e.preventDefault();
+   const characterActionBtn = e.target.closest("[data-act][data-character-id]");
+if (characterActionBtn && root.contains(characterActionBtn)) {
+  e.preventDefault();
+  e.stopPropagation();
 
-        const selectedId = String(createdCharacterBtn.dataset.characterId || "").trim();
-        if (!selectedId) return;
+  const act = String(characterActionBtn.dataset.act || "").trim();
+  const selectedId = String(characterActionBtn.dataset.characterId || "").trim();
+  if (!selectedId) return;
 
-        const selectedItem = (state.characters || []).find(
-          (x) => String(x.id || x.job_id || "").trim() === selectedId
-        );
-        if (!selectedItem) return;
+  const selectedItem = (state.characters || []).find(
+    (x) => String(x.id || x.job_id || "").trim() === selectedId
+  );
+  if (!selectedItem) return;
 
-        state.selectedCreatedCharacterId = selectedId;
+  if (act === "open") {
+    if (selectedItem.imageUrl) window.open(selectedItem.imageUrl, "_blank", "noopener");
+    return;
+  }
 
-        const nameInput = qs("#cartoon-character-name", root);
-        const descInput = qs("#cartoon-character-desc", root);
-        const styleSelect = qs("#cartoon-character-style", root);
+  if (act === "download") {
+    if (!selectedItem.imageUrl) return;
+    const a = document.createElement("a");
+    a.href = selectedItem.imageUrl;
+    a.download = `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
 
-        if (nameInput) nameInput.value = selectedItem.name || "";
-        if (descInput) descInput.value = selectedItem.prompt || "";
-        if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
+  if (act === "select") {
+    state.selectedCreatedCharacterId = selectedId;
 
-        render(root);
-        return;
-      }
+    const nameInput = qs("#cartoon-character-name", root);
+    const descInput = qs("#cartoon-character-desc", root);
+    const styleSelect = qs("#cartoon-character-style", root);
+
+    if (nameInput) nameInput.value = selectedItem.name || "";
+    if (descInput) descInput.value = selectedItem.prompt || "";
+    if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
+
+    render(root);
+    return;
+  }
+
+  if (act === "delete") {
+    state.characters = (state.characters || []).filter(
+      (x) => String(x.id || x.job_id || "").trim() !== selectedId
+    );
+
+    if (String(state.selectedCreatedCharacterId || "") === selectedId) {
+      state.selectedCreatedCharacterId = "";
+    }
+
+    render(root);
+    return;
+  }
+}
+
+const createdCharacterBtn = e.target.closest(".cpCard[data-character-id]");
+console.log("[CARTOON][CHARACTER_CARD_CLICK]", e.target, createdCharacterBtn);
+if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
+  e.preventDefault();
+
+  const selectedId = String(createdCharacterBtn.dataset.characterId || "").trim();
+  if (!selectedId) return;
+
+  const selectedItem = (state.characters || []).find(
+    (x) => String(x.id || x.job_id || "").trim() === selectedId
+  );
+  if (!selectedItem) return;
+
+  state.selectedCreatedCharacterId = selectedId;
+
+  const nameInput = qs("#cartoon-character-name", root);
+  const descInput = qs("#cartoon-character-desc", root);
+  const styleSelect = qs("#cartoon-character-style", root);
+
+  if (nameInput) nameInput.value = selectedItem.name || "";
+  if (descInput) descInput.value = selectedItem.prompt || "";
+  if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
+
+  render(root);
+  return;
+}
       const helperBtn = e.target.closest('[data-role="helper"]');
       if (helperBtn && root.contains(helperBtn)) {
         e.preventDefault();
