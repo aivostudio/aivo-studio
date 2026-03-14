@@ -40,7 +40,14 @@
     const len = String(input.value || "").length;
     out.textContent = `${len} / 1000`;
   }
+ function updateCharacterDescCount(root) {
+  const input = qs("[data-character-desc]", root);
+  const out = qs("[data-character-desc-count]", root);
+  if (!input || !out) return;
 
+  const len = String(input.value || "").length;
+  out.textContent = `${len} / 1000`;
+}
   function updateHelperCount(root) {
     const el = qs("[data-helper-count]", root);
     if (!el) return;
@@ -277,6 +284,7 @@ function renderCharacterLibrary(root) {
   syncActionSelection(root);
   syncFormValues(root);
   updatePromptCount(root);
+  updateCharacterDescCount(root);
   updateHelperCount(root);
   updateUploadText(root);
   updateSummary(root);
@@ -840,8 +848,12 @@ document.addEventListener("input", (e) => {
     updatePromptCount(root);
     updateSummary(root);
   }
-});
 
+  const characterDesc = e.target.closest("[data-character-desc]");
+  if (characterDesc && root.contains(characterDesc)) {
+    updateCharacterDescCount(root);
+  }
+});
     document.addEventListener("change", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
