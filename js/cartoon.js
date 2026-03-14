@@ -922,6 +922,12 @@ console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
         generateBtn.disabled = true;
         const prevText = generateBtn.textContent;
+        const resetGenerateBtn = () => {
+  generateBtn.disabled = false;
+  generateBtn.textContent = prevText;
+  generateBtn.classList.remove("is-loading");
+};
+
         generateBtn.textContent = "Üretiliyor...";
         generateBtn.classList.add("is-loading");
 
