@@ -130,20 +130,23 @@ if (app === "music" && (variant === "orig" || variant === "rev1")) {
 
   try {
     // 1) soft delete: sadece bu kullanıcıya aitse
-    const rows = await sql`
-      update jobs
-      set deleted_at = now(),
-          updated_at = now()
-      where id = ${job_id}::uuid
-        and deleted_at is null
-        and (
-          user_id::text = ${user_id || ""}
-          or user_id::text = ${email || ""}
-          or user_id::text = ${legacy_user_id || ""}
-        )
-      returning id
-    `;
-
+const rows = await sql`
+  update jobs
+  set deleted_at = now(),
+      updated_at = now()
+  where deleted_at is null
+    and (
+      id::text = ${job_id}
+      or job_id::text = ${job_id}
+    )
+    and (
+      user_id::text = ${user_id || ""}
+      or user_id::text = ${email || ""}
+      or user_id::text = ${legacy_user_id || ""}
+    )
+  returning id, job_id
+`;
+ 
     if (!rows?.length) {
       // job yok ya da kullanıcıya ait değil ya da zaten silinmiş
       return res.status(404).json({ ok: false, error: "not_found_or_not_owned", job_id });
