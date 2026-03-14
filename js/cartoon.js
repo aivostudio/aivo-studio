@@ -167,7 +167,7 @@ function renderCharacterLibrary(root) {
               >
                 Seçili
               </div>
-<div class="cpOverlay" aria-hidden="false" style="opacity:1;background:transparent;inset:auto;bottom:22px;left:50%;transform:translateX(-50%);display:flex;justify-content:center;pointer-events:none;">
+<div class="cpOverlay" aria-hidden="false" style="opacity:1;background:transparent;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;justify-content:center;pointer-events:none;z-index:4;">
   <div class="cpOverlayBtns" style="display:flex;gap:6px;padding:4px 6px;border-radius:999px;background:rgba(10,12,22,.58);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.22);pointer-events:auto;">
     <button
       type="button"
