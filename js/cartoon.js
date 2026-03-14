@@ -1089,7 +1089,7 @@ if (generateBtn && root.contains(generateBtn)) {
 
   return;
 }
-}
+
     });
  window.addEventListener("aivo:cartoon:job_ready", (e) => {
   const d = e?.detail || {};
