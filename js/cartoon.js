@@ -8,6 +8,53 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
+ async function presignCartoonReference(file) {
+  const res = await fetch("/api/r2/presign-put", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: "cartoon",
+      kind: "reference",
+      filename: file?.name || `reference-${Date.now()}.png`,
+      contentType: file?.type || "application/octet-stream"
+    })
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data || data.ok === false) {
+    throw new Error(data?.error || "cartoon_reference_presign_failed");
+  }
+
+  return {
+    uploadUrl: data.uploadUrl || data.upload_url,
+    publicUrl: data.publicUrl || data.public_url || data.url || "",
+  };
+}
+
+async function uploadCartoonReferenceToR2(file) {
+  if (!file) throw new Error("missing_reference_file");
+
+  const { uploadUrl, publicUrl } = await presignCartoonReference(file);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error("cartoon_reference_missing_upload_urls");
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream"
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error("cartoon_reference_r2_put_failed");
+  }
+
+  return publicUrl;
+}
 
   const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
     mode: "basic",
@@ -1052,7 +1099,7 @@ document.addEventListener("input", (e) => {
         updateSummary(root);
         return;
       }
-   const characterCreateUpload = e.target.closest("[data-character-create-upload]");
+const characterCreateUpload = e.target.closest("[data-character-create-upload]");
 if (characterCreateUpload && root.contains(characterCreateUpload)) {
   const file =
     characterCreateUpload.files && characterCreateUpload.files[0]
@@ -1066,18 +1113,21 @@ if (characterCreateUpload && root.contains(characterCreateUpload)) {
     return;
   }
 
-  try {
-    if (state.characterReferenceImageUrl && state.characterReferenceImageUrl.startsWith("blob:")) {
-      try { URL.revokeObjectURL(state.characterReferenceImageUrl); } catch {}
-    }
+  state.characterReferenceImageUrl = "";
 
-    state.characterReferenceImageUrl = URL.createObjectURL(file);
-  } catch {
+  try {
+    const publicUrl = await uploadCartoonReferenceToR2(file);
+    state.characterReferenceImageUrl = String(publicUrl || "").trim();
+    console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
+  } catch (err) {
     state.characterReferenceImageUrl = "";
+    console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
+    alert(String(err?.message || err || "reference_upload_failed"));
   }
 
   return;
 }
+
 
 
       const upload = e.target.closest("[data-character-upload]");
