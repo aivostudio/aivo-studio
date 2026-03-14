@@ -174,75 +174,61 @@ function renderCharacterLibrary(root) {
                 Seçili
               </div>
 
-              <div
-                class="cpOverlay"
-                aria-hidden="false"
-                style="opacity:${isSelected ? "1" : "0"};background:transparent;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;justify-content:center;pointer-events:none;z-index:4;transition:opacity .18s ease;"
-              >
-                <div
-                  class="cpOverlayBtns"
-                  style="display:flex;gap:6px;padding:4px 6px;border-radius:999px;background:rgba(10,12,22,.58);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.22);pointer-events:auto;"
-                >
-                  <button
-                    type="button"
-                    class="cpBtn"
-                    data-act="open"
-                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="Görüntüle"
-                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                      <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/>
-                      <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/>
-                    </svg>
-                  </button>
+             <div
+  class="cpOverlay"
+  aria-hidden="false"
+  style="opacity:${isSelected ? "1" : "0"};background:transparent;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;justify-content:center;pointer-events:none;z-index:4;transition:opacity .18s ease;"
+>
+  <div
+    class="cpOverlayBtns"
+    style="display:flex;gap:4px;padding:4px 5px;border-radius:999px;background:rgba(10,12,22,.58);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.22);pointer-events:auto;"
+  >
+    <button
+      type="button"
+      class="cpBtn"
+      data-act="download"
+      data-character-id="${itemId.replace(/"/g, "&quot;")}"
+      title="İndir"
+      style="width:22px;height:22px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
+    >
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px;">
+        <path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
 
-                  <button
-                    type="button"
-                    class="cpBtn"
-                    data-act="download"
-                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="İndir"
-                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                      <path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      <path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
-                  </button>
+    <button
+      type="button"
+      class="cpBtn"
+      data-act="select"
+      data-character-id="${itemId.replace(/"/g, "&quot;")}"
+      title="Kullan"
+      style="width:22px;height:22px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
+    >
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px;">
+        <path d="M5 12.5 9.2 16.7 19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
 
-                  <button
-                    type="button"
-                    class="cpBtn"
-                    data-act="select"
-                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="Kullan"
-                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                      <path d="M5 12.5 9.2 16.7 19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-
-                  <button
-                    type="button"
-                    class="cpBtn danger"
-                    data-act="delete"
-                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="Sil"
-                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,120,120,.95);display:grid;place-items:center;padding:0;"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                      <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      <path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      <path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      <path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
+    <button
+      type="button"
+      class="cpBtn danger"
+      data-act="delete"
+      data-character-id="${itemId.replace(/"/g, "&quot;")}"
+      title="Sil"
+      style="width:22px;height:22px;border-radius:999px;background:transparent;border:none;color:rgba(255,120,120,.95);display:grid;place-items:center;padding:0;"
+    >
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px;">
+        <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
             </div>
 
             <div class="cpBottom" style="padding-top:4px;height:auto;min-height:18px;justify-content:center;">
