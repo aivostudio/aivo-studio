@@ -159,7 +159,7 @@ function renderCharacterLibrary(root) {
               data-act="open"
               data-character-id="${itemId.replace(/"/g, "&quot;")}"
               title="Önizle"
-              style="aspect-ratio:1/1;width:100%;max-width:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;"
+             style="width:92px;height:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;flex:0 0 92px;"
             >
               <img
                 src="${imageUrl.replace(/"/g, "&quot;")}"
