@@ -49,182 +49,187 @@
     </div>
 
     <!-- CHARACTER MODE -->
- <div class="cartoon-mode-view" data-cartoon-view="character" hidden>
-  <section class="cartoon-block cartoon-block--compact">
-    <div class="cartoon-block-head">
-      <h3>Karakter Yarat</h3>
+    <div class="cartoon-mode-view" data-cartoon-view="character" hidden>
+      <section class="cartoon-block cartoon-block--compact">
+        <div class="cartoon-block-head">
+          <h3>Karakter Yarat</h3>
+        </div>
+
+        <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-type">Tür</label>
+            <select id="cartoon-character-type" class="cartoon-select" data-character-type>
+              <option value="animal" selected>Hayvan</option>
+              <option value="human">İnsan</option>
+              <option value="fantasy">Fantastik</option>
+              <option value="object">Nesne</option>
+              <option value="custom">Serbest</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-name">Karakter Adı</label>
+            <input
+              id="cartoon-character-name"
+              class="cartoon-select"
+              type="text"
+              placeholder="Örn: Mini Tavşan"
+              data-character-name>
+          </div>
+
+          <div class="cartoon-field cartoon-field--full">
+            <label class="cartoon-field-label" for="cartoon-character-desc">Kısa Tanım</label>
+            <textarea
+              id="cartoon-character-desc"
+              class="cartoon-prompt-input"
+              rows="3"
+              maxlength="300"
+              placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"
+              data-character-desc></textarea>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-style">Stil</label>
+            <select id="cartoon-character-style" class="cartoon-select" data-character-style>
+              <option value="cute-3d" selected>Sevimli 3D</option>
+              <option value="soft-cartoon">Yumuşak Çizgifilm</option>
+              <option value="pastel">Pastel</option>
+              <option value="bright-kids">Parlak Çocuk Stili</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field cartoon-field--full">
+            <label class="cartoon-field-label">Referans Görsel</label>
+            <label class="cartoon-upload-row">
+              <input type="file" accept="image/*" hidden data-character-create-upload>
+              <span class="cartoon-upload-btn">Resim Seç</span>
+              <span class="cartoon-upload-text">Dosya seçilmedi</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="cartoon-block cartoon-block--compact">
+        <div class="cartoon-block-head">
+          <h3>Karakterlerim</h3>
+        </div>
+
+        <div
+          class="cartoon-character-mini-grid"
+          data-character-library
+          style="max-height:260px; overflow-y:auto; overflow-x:hidden;">
+          <button type="button" class="cartoon-character-mini-card is-empty" disabled>
+            Henüz karakter yok
+          </button>
+        </div>
+      </section>
+
+      <section class="cartoon-block cartoon-block--compact">
+        <div class="cartoon-block-head">
+          <h3>Gelişmiş Özelleştirme</h3>
+        </div>
+
+        <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-hair-type">Saç Tipi</label>
+            <select id="cartoon-character-hair-type" class="cartoon-select" data-character-hair-type>
+              <option value="" selected>Seçiniz</option>
+              <option value="short">Kısa</option>
+              <option value="long">Uzun</option>
+              <option value="curly">Kıvırcık</option>
+              <option value="wavy">Dalgalı</option>
+              <option value="straight">Düz</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-hair-color">Saç Rengi</label>
+            <select id="cartoon-character-hair-color" class="cartoon-select" data-character-hair-color>
+              <option value="" selected>Seçiniz</option>
+              <option value="black">Siyah</option>
+              <option value="brown">Kahverengi</option>
+              <option value="blonde">Sarı</option>
+              <option value="red">Kızıl</option>
+              <option value="pink">Pembe</option>
+              <option value="blue">Mavi</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-outfit">Kıyafet</label>
+            <select id="cartoon-character-outfit" class="cartoon-select" data-character-outfit>
+              <option value="" selected>Seçiniz</option>
+              <option value="dress">Elbise</option>
+              <option value="tshirt-shorts">Tişört + Şort</option>
+              <option value="hoodie">Kapüşonlu</option>
+              <option value="superhero">Süper Kahraman</option>
+              <option value="princess">Prenses</option>
+              <option value="school">Okul Kıyafeti</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-glasses">Gözlük</label>
+            <select id="cartoon-character-glasses" class="cartoon-select" data-character-glasses>
+              <option value="" selected>Yok</option>
+              <option value="round">Yuvarlak</option>
+              <option value="square">Kare</option>
+              <option value="star">Yıldız</option>
+              <option value="heart">Kalp</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-accessory">Aksesuar</label>
+            <select id="cartoon-character-accessory" class="cartoon-select" data-character-accessory>
+              <option value="" selected>Yok</option>
+              <option value="hat">Şapka</option>
+              <option value="bow">Fiyonk</option>
+              <option value="bag">Çanta</option>
+              <option value="wand">Sihirli Değnek</option>
+              <option value="crown">Taç</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-expression">Yüz İfadesi</label>
+            <select id="cartoon-character-expression" class="cartoon-select" data-character-expression>
+              <option value="" selected>Seçiniz</option>
+              <option value="happy">Mutlu</option>
+              <option value="excited">Heyecanlı</option>
+              <option value="cute">Sevimli</option>
+              <option value="calm">Sakin</option>
+              <option value="funny">Komik</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field cartoon-field--full">
+            <label class="cartoon-field-label" for="cartoon-character-color-palette">Renk Paleti</label>
+            <select id="cartoon-character-color-palette" class="cartoon-select" data-character-color-palette>
+              <option value="" selected>Seçiniz</option>
+              <option value="pastel">Pastel</option>
+              <option value="vivid">Canlı</option>
+              <option value="soft">Yumuşak Tonlar</option>
+              <option value="rainbow">Gökkuşağı</option>
+              <option value="warm">Sıcak Tonlar</option>
+              <option value="cool">Soğuk Tonlar</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="cartoon-block cartoon-block--compact cartoon-block--cta-only">
+        <div class="cartoon-cta">
+          <button
+            type="button"
+            class="cartoon-generate-btn"
+            data-character-generate
+            data-cartoon-character-create>
+            🧩 Karakter Oluştur
+          </button>
+        </div>
+      </section>
     </div>
-
-    <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-type">Tür</label>
-        <select id="cartoon-character-type" class="cartoon-select" data-character-type>
-          <option value="animal" selected>Hayvan</option>
-          <option value="human">İnsan</option>
-          <option value="fantasy">Fantastik</option>
-          <option value="object">Nesne</option>
-          <option value="custom">Serbest</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-name">Karakter Adı</label>
-        <input
-          id="cartoon-character-name"
-          class="cartoon-select"
-          type="text"
-          placeholder="Örn: Mini Tavşan"
-          data-character-name>
-      </div>
-
-      <div class="cartoon-field cartoon-field--full">
-        <label class="cartoon-field-label" for="cartoon-character-desc">Kısa Tanım</label>
-        <textarea
-          id="cartoon-character-desc"
-          class="cartoon-prompt-input"
-          rows="3"
-          maxlength="300"
-          placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"
-          data-character-desc></textarea>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-style">Stil</label>
-        <select id="cartoon-character-style" class="cartoon-select" data-character-style>
-          <option value="cute-3d" selected>Sevimli 3D</option>
-          <option value="soft-cartoon">Yumuşak Çizgifilm</option>
-          <option value="pastel">Pastel</option>
-          <option value="bright-kids">Parlak Çocuk Stili</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field cartoon-field--full">
-        <label class="cartoon-field-label">Referans Görsel</label>
-        <label class="cartoon-upload-row">
-          <input type="file" accept="image/*" hidden data-character-create-upload>
-          <span class="cartoon-upload-btn">Resim Seç</span>
-          <span class="cartoon-upload-text">Dosya seçilmedi</span>
-        </label>
-      </div>
-    </div>
-  </section>
-
-  <section class="cartoon-block cartoon-block--compact">
-    <div class="cartoon-block-head">
-      <h3>Gelişmiş Özelleştirme</h3>
-    </div>
-
-    <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-hair-type">Saç Tipi</label>
-        <select id="cartoon-character-hair-type" class="cartoon-select" data-character-hair-type>
-          <option value="" selected>Seçiniz</option>
-          <option value="short">Kısa</option>
-          <option value="long">Uzun</option>
-          <option value="curly">Kıvırcık</option>
-          <option value="wavy">Dalgalı</option>
-          <option value="straight">Düz</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-hair-color">Saç Rengi</label>
-        <select id="cartoon-character-hair-color" class="cartoon-select" data-character-hair-color>
-          <option value="" selected>Seçiniz</option>
-          <option value="black">Siyah</option>
-          <option value="brown">Kahverengi</option>
-          <option value="blonde">Sarı</option>
-          <option value="red">Kızıl</option>
-          <option value="pink">Pembe</option>
-          <option value="blue">Mavi</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-outfit">Kıyafet</label>
-        <select id="cartoon-character-outfit" class="cartoon-select" data-character-outfit>
-          <option value="" selected>Seçiniz</option>
-          <option value="dress">Elbise</option>
-          <option value="tshirt-shorts">Tişört + Şort</option>
-          <option value="hoodie">Kapüşonlu</option>
-          <option value="superhero">Süper Kahraman</option>
-          <option value="princess">Prenses</option>
-          <option value="school">Okul Kıyafeti</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-glasses">Gözlük</label>
-        <select id="cartoon-character-glasses" class="cartoon-select" data-character-glasses>
-          <option value="" selected>Yok</option>
-          <option value="round">Yuvarlak</option>
-          <option value="square">Kare</option>
-          <option value="star">Yıldız</option>
-          <option value="heart">Kalp</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-accessory">Aksesuar</label>
-        <select id="cartoon-character-accessory" class="cartoon-select" data-character-accessory>
-          <option value="" selected>Yok</option>
-          <option value="hat">Şapka</option>
-          <option value="bow">Fiyonk</option>
-          <option value="bag">Çanta</option>
-          <option value="wand">Sihirli Değnek</option>
-          <option value="crown">Taç</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-character-expression">Yüz İfadesi</label>
-        <select id="cartoon-character-expression" class="cartoon-select" data-character-expression>
-          <option value="" selected>Seçiniz</option>
-          <option value="happy">Mutlu</option>
-          <option value="excited">Heyecanlı</option>
-          <option value="cute">Sevimli</option>
-          <option value="calm">Sakin</option>
-          <option value="funny">Komik</option>
-        </select>
-      </div>
-
-      <div class="cartoon-field cartoon-field--full">
-        <label class="cartoon-field-label" for="cartoon-character-color-palette">Renk Paleti</label>
-        <select id="cartoon-character-color-palette" class="cartoon-select" data-character-color-palette>
-          <option value="" selected>Seçiniz</option>
-          <option value="pastel">Pastel</option>
-          <option value="vivid">Canlı</option>
-          <option value="soft">Yumuşak Tonlar</option>
-          <option value="rainbow">Gökkuşağı</option>
-          <option value="warm">Sıcak Tonlar</option>
-          <option value="cool">Soğuk Tonlar</option>
-        </select>
-      </div>
-    </div>
-    </section>
-     <section class="cartoon-block cartoon-block--compact cartoon-block--cta-only">
-  <div class="cartoon-cta">
-    <button
-      type="button"
-      class="cartoon-generate-btn"
-      data-character-generate
-      data-cartoon-character-create>
-      🧩 Karakter Oluştur
-    </button>
-  </div>
-</section>
-  <section class="cartoon-block cartoon-block--compact">
-    <div class="cartoon-block-head">
-      <h3>Karakterlerim</h3>
-    </div>
-
-    <div class="cartoon-character-mini-grid" data-character-library>
-      <button type="button" class="cartoon-character-mini-card is-empty" disabled>
-        Henüz karakter yok
-      </button>
-    </div>
-  </section>
-</div>
 
     <!-- BASIC MODE -->
     <div class="cartoon-mode-view" data-cartoon-view="basic">
