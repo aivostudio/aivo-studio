@@ -1277,14 +1277,14 @@
   align-items:flex-start;
   gap:8px;
   margin-top:8px;
+  width:100%;
   overflow-x:auto;
   overflow-y:hidden;
-  padding-right:4px;
   padding-bottom:4px;
 }
+
 .cartoon-character-mini-grid > .cpCard{
-  flex:0 0 104px;
-  width:104px;
+  flex:0 0 auto;
 }
 
 .cartoon-character-mini-card{
