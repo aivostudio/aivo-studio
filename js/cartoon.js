@@ -72,7 +72,7 @@ async function uploadCartoonReferenceToR2(file) {
    characterCreatePending: false,
     characterReferenceImageUrl: "",
     characterImageUrl: "",
-
+    characterImageUploadPromise: null,
 
   });
 
@@ -906,7 +906,18 @@ if (characterCreateBtn && root.contains(characterCreateBtn)) {
       if (generateBtn && root.contains(generateBtn)) {
         e.preventDefault();
 
-        const payload = buildBasicPayload();
+      if (state.characterImage && !state.characterImageUrl) {
+  if (state.characterImageUploadPromise) {
+    try {
+      await state.characterImageUploadPromise;
+    } catch {
+      return;
+    }
+  }
+}
+
+const payload = buildBasicPayload();
+console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
         generateBtn.disabled = true;
         const prevText = generateBtn.textContent;
@@ -1150,13 +1161,14 @@ if (characterCreateUpload && root.contains(characterCreateUpload)) {
 
 
 
-    const upload = e.target.closest("[data-character-upload]");
+const upload = e.target.closest("[data-character-upload]");
 if (upload && root.contains(upload)) {
   const file = upload.files && upload.files[0] ? upload.files[0] : null;
 
   state.characterImage = file;
   state.characterImageName = file ? file.name : "";
   state.characterImageUrl = "";
+  state.characterImageUploadPromise = null;
 
   updateUploadText(root);
   updateSummary(root);
@@ -1165,15 +1177,18 @@ if (upload && root.contains(upload)) {
     return;
   }
 
-  try {
-    const publicUrl = await uploadCartoonReferenceToR2(file);
-    state.characterImageUrl = String(publicUrl || "").trim();
-    console.log("[CARTOON][BASIC_UPLOAD_OK]", state.characterImageUrl);
-  } catch (err) {
-    state.characterImageUrl = "";
-    console.error("[CARTOON][BASIC_UPLOAD_ERROR]", err);
-    alert(String(err?.message || err || "basic_reference_upload_failed"));
-  }
+  state.characterImageUploadPromise = uploadCartoonReferenceToR2(file)
+    .then((publicUrl) => {
+      state.characterImageUrl = String(publicUrl || "").trim();
+      console.log("[CARTOON][BASIC_UPLOAD_OK]", state.characterImageUrl);
+      return state.characterImageUrl;
+    })
+    .catch((err) => {
+      state.characterImageUrl = "";
+      console.error("[CARTOON][BASIC_UPLOAD_ERROR]", err);
+      alert(String(err?.message || err || "basic_reference_upload_failed"));
+      throw err;
+    });
 
   return;
 }
