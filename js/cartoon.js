@@ -875,7 +875,18 @@ if (characterCreateBtn && root.contains(characterCreateBtn)) {
   ""
 ).trim(),
         prompt: String(meta?.prompt || raw?.prompt || "").trim(),
-        uiState: raw?.meta?.ui_state || raw?.ui_state || {},
+       uiState: raw?.meta?.ui_state || raw?.ui_state || {
+  name: qs("#cartoon-character-name", root)?.value || "",
+  type: qs("#cartoon-character-type", root)?.value || "",
+  style: qs("#cartoon-character-style", root)?.value || "",
+  prompt: qs("#cartoon-character-desc", root)?.value || "",
+  hairType: qs("[data-character-hair-type]", root)?.value || "",
+  hairColor: qs("[data-character-hair-color]", root)?.value || "",
+  outfit: qs("[data-character-outfit]", root)?.value || "",
+  glasses: qs("[data-character-glasses]", root)?.value || "",
+  accessory: qs("[data-character-accessory]", root)?.value || "",
+  expression: qs("[data-character-expression]", root)?.value || ""
+},
         imageUrl
       };
 
