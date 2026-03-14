@@ -459,45 +459,54 @@ if (characterActionBtn && root.contains(characterActionBtn)) {
         padding:24px;
       "
     >
-      <button
-        type="button"
-        data-preview-close
-        aria-label="Kapat"
-       style="
-  position:fixed;
-  top:22px;
-  right:22px;
-  width:48px;
-  height:48px;
-  border:1px solid rgba(255,255,255,.16);
-  border-radius:999px;
-  background:rgba(15,18,28,.78);
-  color:#fff;
-  font-size:28px;
-  line-height:1;
-  cursor:pointer;
-  display:grid;
-  place-items:center;
-  z-index:100000;
-  box-shadow:0 10px 30px rgba(0,0,0,.35);
-  backdrop-filter:blur(10px);
-"
-      >×</button>
+<div
+  style="
+    position:relative;
+    display:inline-block;
+    max-width:min(92vw,1200px);
+    max-height:88vh;
+  "
+>
+  <button
+    type="button"
+    data-preview-close
+    aria-label="Kapat"
+    style="
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:44px;
+      height:44px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      background:rgba(15,18,28,.82);
+      color:#fff;
+      font-size:28px;
+      line-height:1;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      z-index:2;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px);
+    "
+  >×</button>
 
-      <img
-        src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
-        alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
-        style="
-          max-width:min(92vw,1200px);
-          max-height:88vh;
-          width:auto;
-          height:auto;
-          display:block;
-          border-radius:18px;
-          box-shadow:0 18px 60px rgba(0,0,0,.45);
-          background:#111;
-        "
-      />
+  <img
+    src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
+    alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
+    style="
+      max-width:min(92vw,1200px);
+      max-height:88vh;
+      width:auto;
+      height:auto;
+      display:block;
+      border-radius:18px;
+      box-shadow:0 18px 60px rgba(0,0,0,.45);
+      background:#111;
+    "
+  />
+</div>
     </div>
   `;
 
