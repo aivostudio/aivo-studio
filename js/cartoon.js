@@ -123,40 +123,124 @@ function syncFormValues(root) {
   if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
   if (audio) audio.checked = !!state.audioEnabled;
 }
-  function renderCharacterLibrary(root) {
-    const host =
-      qs("[data-cartoon-character-library]", root) ||
-      qs("[data-cartoon-characters]", root) ||
-      qs("[data-character-library]", root);
+function renderCharacterLibrary(root) {
+  const host =
+    qs("[data-cartoon-character-library]", root) ||
+    qs("[data-cartoon-characters]", root) ||
+    qs("[data-character-library]", root);
 
-    if (!host) return;
+  if (!host) return;
 
-    const items = Array.isArray(state.characters) ? state.characters : [];
+  const items = Array.isArray(state.characters) ? state.characters : [];
 
-    if (!items.length) {
-      host.innerHTML = `
-        <button type="button" class="cartoon-character-mini-card is-empty" disabled>Henüz karakter yok</button>
-      `;
-      return;
-    }
-
-    host.innerHTML = `
-      ${items.map((item) => `
-        <button
-          type="button"
-         class="cartoon-character-mini-card ${String(state.selectedCreatedCharacterId || "") === String(item.id || item.job_id || "") ? "is-selected" : ""}"
-          data-character-id="${String(item.id || item.job_id || "")}">
-          <span class="cartoon-character-thumb">
-            <img
-              src="${String(item.imageUrl || "").replace(/"/g, "&quot;")}"
-              alt="${String(item.name || "Karakter").replace(/"/g, "&quot;")}"
-              style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />
-          </span>
-          <span class="cartoon-character-name">${String(item.name || "Karakter")}</span>
-        </button>
-      `).join("")}
-    `;
+  if (!items.length) {
+    host.innerHTML = `<div class="cpEmpty">Henüz karakter yok.</div>`;
+    return;
   }
+
+  host.innerHTML = `
+    <div class="cpGrid" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+      ${items.map((item) => {
+        const itemId = String(item.id || item.job_id || "");
+        const imageUrl = String(item.imageUrl || "").trim();
+        const name = String(item.name || "Karakter").trim();
+        const isSelected =
+          String(state.selectedCreatedCharacterId || "") === itemId;
+
+        return `
+          <div
+            class="cpCard ${isSelected ? "is-selected" : ""}"
+            data-character-id="${itemId.replace(/"/g, "&quot;")}"
+            tabindex="0"
+            style="padding:10px;"
+          >
+            <div class="cpThumb" style="height:120px;position:relative;">
+              <img
+                src="${imageUrl.replace(/"/g, "&quot;")}"
+                alt="${name.replace(/"/g, "&quot;")}"
+                style="width:100%;height:100%;object-fit:cover;display:block;"
+              />
+
+              <div
+                class="cpBadge ok"
+                style="top:10px;left:10px;${isSelected ? "" : "display:none;"}"
+              >
+                Seçili
+              </div>
+
+              <div class="cpOverlay" aria-hidden="false" style="opacity:1;background:rgba(0,0,0,.18);">
+                <div class="cpOverlayBtns">
+                  <button
+                    type="button"
+                    class="cpBtn"
+                    data-act="open"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="Görüntüle"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cpBtn"
+                    data-act="download"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="İndir"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cpBtn"
+                    data-act="select"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="Kullan"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M5 12.5 9.2 16.7 19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cpBtn danger"
+                    data-act="delete"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="Sil"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="cpBottom" style="padding-top:8px;height:auto;min-height:34px;">
+              <div
+                class="cpName"
+                title="${name.replace(/"/g, "&quot;")}"
+                style="font-size:14px;font-weight:700;"
+              >${name}</div>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
  function render(root) {
   if (!root) return;
 
