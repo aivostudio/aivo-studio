@@ -327,6 +327,7 @@ const elStatus = null;
       },
 
       onChange: async (items) => {
+        console.log("[CARTOON PANEL][ON_CHANGE][RAW_ITEMS]", items);
         if (destroyed) return;
         console.debug("[CARTOON DEBUG] onChange items:", items);
 
@@ -550,10 +551,12 @@ const elStatus = null;
           }
         }
          render(merged);
+        console.log("[CARTOON PANEL][ON_CHANGE][MERGED]", merged);
       },
     });
           
     const onJobCreated = (e) => {
+      console.log("[CARTOON PANEL][JOB_CREATED]", e?.detail);
       const d = e?.detail || {};
             if (isCharacterMode(d) || isCharacterMode(d.meta)) return;
       if (!d.job_id) return;
