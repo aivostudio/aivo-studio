@@ -437,10 +437,91 @@ if (characterActionBtn && root.contains(characterActionBtn)) {
   );
   if (!selectedItem) return;
 
-  if (act === "open") {
-    if (selectedItem.imageUrl) window.open(selectedItem.imageUrl, "_blank", "noopener");
-    return;
-  }
+ if (act === "open") {
+  if (!selectedItem.imageUrl) return;
+
+  const existing = document.getElementById("cartoonCharacterPreviewModal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "cartoonCharacterPreviewModal";
+  modal.innerHTML = `
+    <div
+      data-preview-backdrop
+      style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.82);
+        z-index:99999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:24px;
+      "
+    >
+      <button
+        type="button"
+        data-preview-close
+        aria-label="Kapat"
+        style="
+          position:absolute;
+          top:18px;
+          right:18px;
+          width:44px;
+          height:44px;
+          border:none;
+          border-radius:999px;
+          background:rgba(255,255,255,.10);
+          color:#fff;
+          font-size:26px;
+          line-height:1;
+          cursor:pointer;
+          display:grid;
+          place-items:center;
+        "
+      >×</button>
+
+      <img
+        src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
+        alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
+        style="
+          max-width:min(92vw,1200px);
+          max-height:88vh;
+          width:auto;
+          height:auto;
+          display:block;
+          border-radius:18px;
+          box-shadow:0 18px 60px rgba(0,0,0,.45);
+          background:#111;
+        "
+      />
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => {
+    const node = document.getElementById("cartoonCharacterPreviewModal");
+    if (node) node.remove();
+    document.removeEventListener("keydown", onEsc, true);
+  };
+
+  const onEsc = (evt) => {
+    if (evt.key === "Escape") closeModal();
+  };
+
+  modal.addEventListener("click", (evt) => {
+    if (
+      evt.target.closest("[data-preview-close]") ||
+      evt.target.hasAttribute("data-preview-backdrop")
+    ) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", onEsc, true);
+  return;
+}
 
   if (act === "download") {
     if (!selectedItem.imageUrl) return;
