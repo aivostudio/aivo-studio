@@ -106,28 +106,27 @@ function buildBasicPrompt(body) {
     : [];
 
   const extraPrompt = String(body.extraPrompt || "").trim();
-   const hasCustomCharacterImage = !!String(
-  body.characterImageUrl ||
-  body.character_image_url ||
-  body.image_url ||
-  body.start_image_url ||
-  ""
-).trim();
+  const hasCustomCharacterImage = !!String(
+    body.characterImageUrl ||
+    body.character_image_url ||
+    body.image_url ||
+    body.start_image_url ||
+    ""
+  ).trim();
 
-const mainCharacterText = hasCustomCharacterImage
-  ? "Use the uploaded custom character as the main subject."
-  : `Main character: ${mainCharacter}.`;
+  const mainCharacterText = hasCustomCharacterImage
+    ? "Use the uploaded custom character as the main subject."
+    : `Main character: ${mainCharacter}.`;
 
-const helperCharactersText = hasCustomCharacterImage
-  ? ""
-  : (helpers.length ? `Helper characters: ${helpers.join(", ")}.` : "");
+  const helperCharactersText = hasCustomCharacterImage
+    ? ""
+    : (helpers.length ? `Helper characters: ${helpers.join(", ")}.` : "");
 
   const parts = [
     "Cute kids cartoon style.",
     "Bright colorful animated scene.",
-   mainCharacterText,
-helperCharactersText,
-
+    mainCharacterText,
+    helperCharactersText,
     `Scene: ${sceneText}.`,
     `Action: ${actionText}.`,
     "Friendly, adorable, child-safe, expressive animation.",
@@ -176,7 +175,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
-   const body = safeJson(req);
+  const body = safeJson(req);
 
   const mode = String(body.mode || "basic").toLowerCase();
   if (!["basic", "character"].includes(mode)) {
@@ -186,6 +185,11 @@ export default async function handler(req, res) {
       message: "this first version only supports basic mode and character mode",
     });
   }
+
+  const requestNonce =
+    mode === "basic"
+      ? `shot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+      : "";
 
   const userRow = await sql`
     select id
@@ -200,48 +204,48 @@ export default async function handler(req, res) {
 
   const user_uuid = String(userRow[0].id);
 
- const app = "cartoon";
+  const app = "cartoon";
 
-const characterType = String(body.type || "").trim();
-const characterName = String(body.name || "").trim();
-const characterStyle = String(body.style || "").trim();
-const characterPromptRaw = String(body.prompt || "").trim();
+  const characterType = String(body.type || "").trim();
+  const characterName = String(body.name || "").trim();
+  const characterStyle = String(body.style || "").trim();
+  const characterPromptRaw = String(body.prompt || "").trim();
 
-const characterHairType = String(body.hairType || "").trim();
-const characterHairColor = String(body.hairColor || "").trim();
-const characterOutfit = String(body.outfit || "").trim();
-const characterGlasses = String(body.glasses || "").trim();
-const characterAccessory = String(body.accessory || "").trim();
-const characterExpression = String(body.expression || "").trim();
+  const characterHairType = String(body.hairType || "").trim();
+  const characterHairColor = String(body.hairColor || "").trim();
+  const characterOutfit = String(body.outfit || "").trim();
+  const characterGlasses = String(body.glasses || "").trim();
+  const characterAccessory = String(body.accessory || "").trim();
+  const characterExpression = String(body.expression || "").trim();
 
-const prompt =
-  mode === "character"
-    ? [
-        "Cute kids cartoon character design.",
-        characterType ? `Character type: ${characterType}.` : "",
-        characterName ? `Character name: ${characterName}.` : "",
-        characterStyle ? `Visual style: ${characterStyle}.` : "",
-        characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
+  const prompt =
+    mode === "character"
+      ? [
+          "Cute kids cartoon character design.",
+          characterType ? `Character type: ${characterType}.` : "",
+          characterName ? `Character name: ${characterName}.` : "",
+          characterStyle ? `Visual style: ${characterStyle}.` : "",
+          characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
 
-        characterHairType ? `Hair type: ${characterHairType}.` : "",
-        characterHairColor ? `Hair color: ${characterHairColor}.` : "",
-        characterOutfit ? `Outfit: ${characterOutfit}.` : "",
-        characterGlasses ? `Glasses: ${characterGlasses}.` : "",
-        characterAccessory ? `Accessory: ${characterAccessory}.` : "",
-        characterExpression ? `Facial expression: ${characterExpression}.` : "",
+          characterHairType ? `Hair type: ${characterHairType}.` : "",
+          characterHairColor ? `Hair color: ${characterHairColor}.` : "",
+          characterOutfit ? `Outfit: ${characterOutfit}.` : "",
+          characterGlasses ? `Glasses: ${characterGlasses}.` : "",
+          characterAccessory ? `Accessory: ${characterAccessory}.` : "",
+          characterExpression ? `Facial expression: ${characterExpression}.` : "",
 
-        "Single character only.",
-        "Full body character.",
-        "Centered composition.",
-        "Clean simple background.",
-        "Child-friendly, adorable, expressive design.",
-        "No text, no watermark."
-      ].filter(Boolean).join(" ")
-    : buildBasicPrompt(body);
+          "Single character only.",
+          "Full body character.",
+          "Centered composition.",
+          "Clean simple background.",
+          "Child-friendly, adorable, expressive design.",
+          "No text, no watermark."
+        ].filter(Boolean).join(" ")
+      : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
 
-const duration = String(body.duration || "5");
-const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
-const generate_audio = !!body.audioEnabled;
+  const duration = String(body.duration || "5");
+  const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
+  const generate_audio = !!body.audioEnabled;
 
   const characterImageUrl =
     pick(body, [
@@ -250,47 +254,46 @@ const generate_audio = !!body.audioEnabled;
       "image_url",
       "start_image_url",
     ]) || null;
+
   const referenceImageUrl =
-  pick(body, [
-    "referenceImageUrl",
-    "reference_image_url",
-    "referenceImage.image_url",
-    "reference.image_url",
-    "image_urls.0",
-    "imageUrls.0",
-  ]) || null;
+    pick(body, [
+      "referenceImageUrl",
+      "reference_image_url",
+      "referenceImage.image_url",
+      "reference.image_url",
+      "image_urls.0",
+      "imageUrls.0",
+    ]) || null;
 
-
-    const falModel =
+  const falModel =
     mode === "character"
       ? "fal-ai/nano-banana-pro"
       : "fal-ai/kling-video/o3/standard/reference-to-video";
 
   const falUrl = `https://queue.fal.run/${falModel}`;
 
- const falInput =
-  mode === "character"
-    ? {
-        prompt,
-        num_images: 1,
-        aspect_ratio:
-          aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
-            ? aspect_ratio
-            : "4:5",
-        output_format: "png",
-        safety_tolerance: "4",
-        resolution: "1K",
-        ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
-      }
-    : {
-        prompt,
-        duration,
-        aspect_ratio,
-        generate_audio,
-        shot_type: "customize",
-        ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
-      };
-
+  const falInput =
+    mode === "character"
+      ? {
+          prompt,
+          num_images: 1,
+          aspect_ratio:
+            aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
+              ? aspect_ratio
+              : "4:5",
+          output_format: "png",
+          safety_tolerance: "4",
+          resolution: "1K",
+          ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
+        }
+      : {
+          prompt,
+          duration,
+          aspect_ratio,
+          generate_audio,
+          shot_type: "customize",
+          ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
+        };
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
@@ -350,31 +353,31 @@ const generate_audio = !!body.audioEnabled;
     provider: "fal",
     model: falModel,
     request_id,
-ui_state: {
-  name: characterName || null,
-  type: characterType || null,
-  style: characterStyle || null,
-  prompt: characterPromptRaw || "",
+    ui_state: {
+      name: characterName || null,
+      type: characterType || null,
+      style: characterStyle || null,
+      prompt: characterPromptRaw || "",
 
-  hairType: characterHairType || "",
-  hairColor: characterHairColor || "",
-  outfit: characterOutfit || "",
-  glasses: characterGlasses || "",
-  accessory: characterAccessory || "",
-  expression: characterExpression || "",
+      hairType: characterHairType || "",
+      hairColor: characterHairColor || "",
+      outfit: characterOutfit || "",
+      glasses: characterGlasses || "",
+      accessory: characterAccessory || "",
+      expression: characterExpression || "",
 
-  mainCharacter: body.mainCharacter || null,
-  helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
-  scene: body.scene || null,
-  action: body.action || null,
-  extraPrompt: body.extraPrompt || "",
-  duration,
-  aspect_ratio,
-  generate_audio,
-  characterImageUrl: characterImageUrl || null,
-  referenceImageUrl: referenceImageUrl || null,
-
-},
+      mainCharacter: body.mainCharacter || null,
+      helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
+      scene: body.scene || null,
+      action: body.action || null,
+      extraPrompt: body.extraPrompt || "",
+      duration,
+      aspect_ratio,
+      generate_audio,
+      characterImageUrl: characterImageUrl || null,
+      referenceImageUrl: referenceImageUrl || null,
+      requestNonce: requestNonce || null,
+    },
     fal_input: falInput,
     provider_response: {
       status_url: status_url || null,
