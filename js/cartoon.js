@@ -571,13 +571,17 @@ payload.uiState = {
         return;
       }
 
-      const mainBtn = e.target.closest('[data-role="main"]');
-      if (mainBtn && root.contains(mainBtn)) {
-        e.preventDefault();
-        state.mainCharacter = mainBtn.dataset.character || state.mainCharacter;
-        render(root);
-        return;
-      }
+    const mainBtn = e.target.closest('[data-role="main"]');
+if (mainBtn && root.contains(mainBtn)) {
+  e.preventDefault();
+
+  const value = mainBtn.dataset.character || "";
+  state.mainCharacter = state.mainCharacter === value ? "" : value;
+
+  render(root);
+  return;
+}
+
    const characterActionBtn = e.target.closest("[data-act][data-character-id]");
 if (characterActionBtn && root.contains(characterActionBtn)) {
   e.preventDefault();
@@ -815,20 +819,28 @@ if (expressionSelect && ui.expression) expressionSelect.value = ui.expression;
         return;
       }
 
-      const sceneBtn = e.target.closest("[data-scene]");
-      if (sceneBtn && root.contains(sceneBtn)) {
-        e.preventDefault();
-        state.scene = sceneBtn.dataset.scene || state.scene;
-        render(root);
-        return;
-      }
-      const actionBtn = e.target.closest("[data-action]");
-      if (actionBtn && root.contains(actionBtn)) {
-        e.preventDefault();
-        state.action = actionBtn.dataset.action || state.action;
-        render(root);
-        return;
-      }
+     const sceneBtn = e.target.closest("[data-scene]");
+if (sceneBtn && root.contains(sceneBtn)) {
+  e.preventDefault();
+
+  const value = sceneBtn.dataset.scene || "";
+  state.scene = state.scene === value ? "" : value;
+
+  render(root);
+  return;
+}
+
+     const actionBtn = e.target.closest("[data-action]");
+if (actionBtn && root.contains(actionBtn)) {
+  e.preventDefault();
+
+  const value = actionBtn.dataset.action || "";
+  state.action = state.action === value ? "" : value;
+
+  render(root);
+  return;
+}
+
 
     const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
 if (characterCreateBtn && root.contains(characterCreateBtn)) {
