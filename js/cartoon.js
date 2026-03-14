@@ -1031,7 +1031,6 @@ if (generateBtn && root.contains(generateBtn)) {
   const payload = buildBasicPayload();
   console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
-  const prevText = generateBtn.textContent;
   state.isGenerating = true;
   generateBtn.disabled = true;
   generateBtn.textContent = "Üretiliyor...";
@@ -1068,9 +1067,7 @@ if (generateBtn && root.contains(generateBtn)) {
                 payload.scene,
                 payload.action,
                 payload.extraPrompt
-              ]
-                .filter(Boolean)
-                .join(" • "),
+              ].filter(Boolean).join(" • "),
               duration: payload.duration,
               aspect_ratio: payload.aspectRatio
             }
@@ -1081,14 +1078,17 @@ if (generateBtn && root.contains(generateBtn)) {
       pollCartoonJob(j.job_id);
     }
   } catch (err) {
+    state.isGenerating = false;
+    generateBtn.disabled = false;
+    generateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
+    generateBtn.classList.remove("is-loading");
+
     console.error("[CARTOON] create error:", err);
     alert(String(err?.message || err || "cartoon_create_failed"));
-  } finally {
- finally {
-  const nextRoot = getCartoonRoot();
-  if (nextRoot) updateBasicUploadStatusUI(nextRoot);
-}
+  }
+
   return;
+}
 }
     });
  window.addEventListener("aivo:cartoon:job_ready", (e) => {
