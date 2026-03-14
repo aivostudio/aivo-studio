@@ -1305,3 +1305,40 @@
 .cartoon-character-mini-card.is-empty{
   opacity:.65;
 }
+/* CHARACTER CREATE — reference upload layout fix */
+.cartoon-mode-view[data-cartoon-view="character"] .cartoon-upload-wrap,
+.cartoon-mode-view[data-cartoon-view="character"] .cartoonUploadWrap,
+.cartoon-mode-view[data-cartoon-view="character"] .cartoon-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cartoon-mode-view[data-cartoon-view="character"] [data-character-create-file-name] {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.2;
+  color: rgba(255,255,255,.92) !important;
+  margin-top: 0 !important;
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cartoon-mode-view[data-cartoon-view="character"] [data-character-create-preview] {
+  width: 84px !important;
+  height: 84px !important;
+  object-fit: cover;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(255,255,255,.04);
+  margin-top: 0 !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.18);
+  flex: 0 0 auto;
+}
+
+.cartoon-mode-view[data-cartoon-view="character"] .cartoon-upload-text {
+  display: none !important;
+}
