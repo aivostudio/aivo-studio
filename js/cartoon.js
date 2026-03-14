@@ -23,6 +23,8 @@
    characterImageName: "",
   characters: [],
    characterCreatePending: false,
+    characterReferenceImageUrl: "",
+
   });
 
   function getEstimatedCredits() {
@@ -413,8 +415,9 @@ const payload = {
   glasses: (glassesEl?.value || "").trim(),
   accessory: (accessoryEl?.value || "").trim(),
   expression: (expressionEl?.value || "").trim(),
+referenceFile: fileEl?.files?.[0] || null,
+referenceImageUrl: state.characterReferenceImageUrl || ""
 
-  referenceFile: fileEl?.files?.[0] || null
 };
 payload.uiState = {
   name: payload.name || "",
@@ -1049,11 +1052,33 @@ document.addEventListener("input", (e) => {
         updateSummary(root);
         return;
       }
-     const characterCreateUpload = e.target.closest("[data-character-create-upload]");
+   const characterCreateUpload = e.target.closest("[data-character-create-upload]");
 if (characterCreateUpload && root.contains(characterCreateUpload)) {
+  const file =
+    characterCreateUpload.files && characterCreateUpload.files[0]
+      ? characterCreateUpload.files[0]
+      : null;
+
   updateCharacterCreateUploadUI(root);
+
+  if (!file) {
+    state.characterReferenceImageUrl = "";
+    return;
+  }
+
+  try {
+    if (state.characterReferenceImageUrl && state.characterReferenceImageUrl.startsWith("blob:")) {
+      try { URL.revokeObjectURL(state.characterReferenceImageUrl); } catch {}
+    }
+
+    state.characterReferenceImageUrl = URL.createObjectURL(file);
+  } catch {
+    state.characterReferenceImageUrl = "";
+  }
+
   return;
 }
+
 
       const upload = e.target.closest("[data-character-upload]");
       if (upload && root.contains(upload)) {
