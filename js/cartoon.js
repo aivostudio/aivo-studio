@@ -152,7 +152,7 @@ function renderCharacterLibrary(root) {
             class="cpCard ${isSelected ? "is-selected" : ""}"
             data-character-id="${itemId.replace(/"/g, "&quot;")}"
             tabindex="0"
-            style="padding:6px;border-radius:12px;position:relative;"
+           style="width:92px;box-sizing:border-box;padding:6px;border-radius:12px;position:relative;"
           >
             <div
               class="cpThumb"
