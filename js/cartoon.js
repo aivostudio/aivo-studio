@@ -643,6 +643,21 @@ if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
   if (nameInput) nameInput.value = selectedItem.name || "";
   if (descInput) descInput.value = selectedItem.prompt || "";
   if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
+  const hairTypeSelect = qs("[data-character-hair-type]", root);
+const hairColorSelect = qs("[data-character-hair-color]", root);
+const outfitSelect = qs("[data-character-outfit]", root);
+const glassesSelect = qs("[data-character-glasses]", root);
+const accessorySelect = qs("[data-character-accessory]", root);
+const expressionSelect = qs("[data-character-expression]", root);
+
+const ui = selectedItem.uiState || {};
+
+if (hairTypeSelect) hairTypeSelect.value = ui.hairType || "";
+if (hairColorSelect) hairColorSelect.value = ui.hairColor || "";
+if (outfitSelect) outfitSelect.value = ui.outfit || "";
+if (glassesSelect) glassesSelect.value = ui.glasses || "";
+if (accessorySelect) accessorySelect.value = ui.accessory || "";
+if (expressionSelect) expressionSelect.value = ui.expression || "";
 
   render(root);
   return;
@@ -846,6 +861,7 @@ if (characterCreateBtn && root.contains(characterCreateBtn)) {
   ""
 ).trim(),
         prompt: String(meta?.prompt || raw?.prompt || "").trim(),
+        uiState: raw?.meta?.ui_state || raw?.ui_state || {},
         imageUrl
       };
 
