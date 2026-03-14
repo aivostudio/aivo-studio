@@ -21,7 +21,7 @@
     audioEnabled: false,
     characterImage: null,
    characterImageName: "",
-   characters: []
+  characters: [],
    characterCreatePending: false,
   });
 
