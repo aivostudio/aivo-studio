@@ -1075,7 +1075,8 @@ document.addEventListener("input", (e) => {
     updateCharacterDescCount(root);
   }
 });
-    document.addEventListener("change", (e) => {
+   document.addEventListener("change", async (e) => {
+
       const root = getCartoonRoot();
       if (!root) return;
 
