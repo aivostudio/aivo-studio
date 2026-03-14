@@ -1272,17 +1272,23 @@
   font-size: 11px;
 }
 .cartoon-character-mini-grid{
-  display:flex;
+  display:inline-flex;
   flex-wrap:nowrap;
   align-items:flex-start;
   gap:8px;
   margin-top:8px;
+  min-width:100%;
+  width:max-content;
+  max-width:none;
+  overflow:visible;
+}
+[data-character-library]{
+  display:block;
   width:100%;
   overflow-x:auto;
   overflow-y:hidden;
   padding-bottom:4px;
 }
-
 .cartoon-character-mini-grid > .cpCard{
   flex:0 0 auto;
 }
