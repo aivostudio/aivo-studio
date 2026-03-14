@@ -97,8 +97,7 @@
 
   const file = input.files && input.files[0] ? input.files[0] : null;
 
-  if (!file) {
-   if (!file) {
+ if (!file) {
   nameEl.textContent = "";
   previewEl.style.display = "none";
   previewEl.removeAttribute("src");
@@ -106,6 +105,7 @@
 }
 
 nameEl.textContent = "";
+
 
   try {
     const nextUrl = URL.createObjectURL(file);
