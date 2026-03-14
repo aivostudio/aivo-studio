@@ -138,148 +138,148 @@ function renderCharacterLibrary(root) {
     return;
   }
 
-host.innerHTML = `
-  <div class="cpGrid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">
-    ${items.map((item) => {
-      const itemId = String(item.id || item.job_id || "");
-      const imageUrl = String(item.imageUrl || "").trim();
-      const name = String(item.name || "Karakter").trim();
-      const isSelected =
-        String(state.selectedCreatedCharacterId || "") === itemId;
+  host.innerHTML = `
+    <div class="cpGrid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">
+      ${items.map((item) => {
+        const itemId = String(item.id || item.job_id || "");
+        const imageUrl = String(item.imageUrl || "").trim();
+        const name = String(item.name || "Karakter").trim();
+        const isSelected =
+          String(state.selectedCreatedCharacterId || "") === itemId;
 
-      return `
-        <div
-          class="cpCard ${isSelected ? "is-selected" : ""}"
-          data-character-id="${itemId.replace(/"/g, "&quot;")}"
-          tabindex="0"
-          style="padding:6px;border-radius:12px;position:relative;"
-        >
+        return `
           <div
-            class="cpThumb"
-            style="aspect-ratio:1/1;width:100%;max-width:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;"
-            data-act="open"
+            class="cpCard ${isSelected ? "is-selected" : ""}"
             data-character-id="${itemId.replace(/"/g, "&quot;")}"
-            title="Önizle"
+            tabindex="0"
+            style="padding:6px;border-radius:12px;position:relative;"
           >
-            <img
-              src="${imageUrl.replace(/"/g, "&quot;")}"
-              alt="${name.replace(/"/g, "&quot;")}"
-              style="width:100%;height:100%;object-fit:cover;display:block;"
-            />
-
             <div
-              class="cpBadge ok"
-              style="top:6px;left:6px;${isSelected ? "" : "display:none;"}"
+              class="cpThumb"
+              data-act="open"
+              data-character-id="${itemId.replace(/"/g, "&quot;")}"
+              title="Önizle"
+              style="aspect-ratio:1/1;width:100%;max-width:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;"
             >
-              Seçili
-            </div>
+              <img
+                src="${imageUrl.replace(/"/g, "&quot;")}"
+                alt="${name.replace(/"/g, "&quot;")}"
+                style="width:100%;height:100%;object-fit:cover;display:block;"
+              />
 
-            <div
-              class="cpOverlay"
-              aria-hidden="false"
-              style="opacity:${isSelected ? "1" : "0"};background:transparent;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;justify-content:center;pointer-events:none;z-index:4;transition:opacity .18s ease;"
-            >
               <div
-                class="cpOverlayBtns"
-                style="display:flex;gap:6px;padding:4px 6px;border-radius:999px;background:rgba(10,12,22,.58);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.22);pointer-events:auto;"
+                class="cpBadge ok"
+                style="top:6px;left:6px;${isSelected ? "" : "display:none;"}"
               >
-                <button
-                  type="button"
-                  class="cpBtn"
-                  data-act="open"
-                  data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                  title="Görüntüle"
-                  style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                    <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/>
-                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/>
-                  </svg>
-                </button>
+                Seçili
+              </div>
 
-                <button
-                  type="button"
-                  class="cpBtn"
-                  data-act="download"
-                  data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                  title="İndir"
-                  style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
+              <div
+                class="cpOverlay"
+                aria-hidden="false"
+                style="opacity:${isSelected ? "1" : "0"};background:transparent;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;justify-content:center;pointer-events:none;z-index:4;transition:opacity .18s ease;"
+              >
+                <div
+                  class="cpOverlayBtns"
+                  style="display:flex;gap:6px;padding:4px 6px;border-radius:999px;background:rgba(10,12,22,.58);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.22);pointer-events:auto;"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                    <path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                  </svg>
-                </button>
+                  <button
+                    type="button"
+                    class="cpBtn"
+                    data-act="open"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="Görüntüle"
+                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
+                      <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/>
+                    </svg>
+                  </button>
 
-                <button
-                  type="button"
-                  class="cpBtn"
-                  data-act="select"
-                  data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                  title="Kullan"
-                  style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                    <path d="M5 12.5 9.2 16.7 19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
+                  <button
+                    type="button"
+                    class="cpBtn"
+                    data-act="download"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="İndir"
+                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
+                      <path d="M12 3v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M7.5 10.8 12 15.3l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
 
-                <button
-                  type="button"
-                  class="cpBtn danger"
-                  data-act="delete"
-                  data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                  title="Sil"
-                  style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,120,120,.95);display:grid;place-items:center;padding:0;"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
-                    <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                  </svg>
-                </button>
+                  <button
+                    type="button"
+                    class="cpBtn"
+                    data-act="select"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="Kullan"
+                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
+                      <path d="M5 12.5 9.2 16.7 19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cpBtn danger"
+                    data-act="delete"
+                    data-character-id="${itemId.replace(/"/g, "&quot;")}"
+                    title="Sil"
+                    style="width:24px;height:24px;border-radius:999px;background:transparent;border:none;color:rgba(255,120,120,.95);display:grid;place-items:center;padding:0;"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:14px;height:14px;">
+                      <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
+
+            <div class="cpBottom" style="padding-top:4px;height:auto;min-height:18px;justify-content:center;">
+              <div
+                class="cpName"
+                title="${name.replace(/"/g, "&quot;")}"
+                style="font-size:11px;font-weight:700;line-height:1.1;text-align:center;"
+              >${name}</div>
+            </div>
           </div>
+        `;
+      }).join("")}
+    </div>
+  `;
 
-          <div class="cpBottom" style="padding-top:4px;height:auto;min-height:18px;justify-content:center;">
-            <div
-              class="cpName"
-              title="${name.replace(/"/g, "&quot;")}"
-              style="font-size:11px;font-weight:700;line-height:1.1;text-align:center;"
-            >${name}</div>
-          </div>
-        </div>
-      `;
-    }).join("")}
-  </div>
-`;
+  qsa(".cpCard", host).forEach((card) => {
+    const overlay = qs(".cpOverlay", card);
+    if (!overlay) return;
 
-qsa(".cpCard", host).forEach((card) => {
-  const overlay = qs(".cpOverlay", card);
-  if (!overlay) return;
-
-  card.addEventListener("mouseenter", () => {
-    overlay.style.opacity = "1";
-  });
-
-  card.addEventListener("mouseleave", () => {
-    if (!card.classList.contains("is-selected")) {
-      overlay.style.opacity = "0";
-    }
-  });
-
-  card.addEventListener("click", () => {
-    qsa(".cpCard .cpOverlay", host).forEach((el) => {
-      el.style.opacity = "0";
+    card.addEventListener("mouseenter", () => {
+      overlay.style.opacity = "1";
     });
 
-    overlay.style.opacity = "1";
+    card.addEventListener("mouseleave", () => {
+      if (!card.classList.contains("is-selected")) {
+        overlay.style.opacity = "0";
+      }
+    });
+
+    card.addEventListener("click", () => {
+      qsa(".cpCard .cpOverlay", host).forEach((el) => {
+        el.style.opacity = "0";
+      });
+      overlay.style.opacity = "1";
+    });
   });
-});
+}
  function render(root) {
   if (!root) return;
 
