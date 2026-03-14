@@ -329,14 +329,30 @@ function renderCharacterLibrary(root) {
     const fileEl =
       root.querySelector("[data-character-create-upload]");
 
-    const payload = {
-      mode: "character",
-      type: (typeEl?.value || "").trim(),
-      name: (nameEl?.value || "").trim(),
-      prompt: (descEl?.value || "").trim(),
-      style: (styleEl?.value || "").trim(),
-      referenceFile: fileEl?.files?.[0] || null
-    };
+   const hairTypeEl = root.querySelector("[data-character-hair-type]");
+const hairColorEl = root.querySelector("[data-character-hair-color]");
+const outfitEl = root.querySelector("[data-character-outfit]");
+const glassesEl = root.querySelector("[data-character-glasses]");
+const accessoryEl = root.querySelector("[data-character-accessory]");
+const expressionEl = root.querySelector("[data-character-expression]");
+
+const payload = {
+  mode: "character",
+
+  type: (typeEl?.value || "").trim(),
+  name: (nameEl?.value || "").trim(),
+  prompt: (descEl?.value || "").trim(),
+  style: (styleEl?.value || "").trim(),
+
+  hairType: (hairTypeEl?.value || "").trim(),
+  hairColor: (hairColorEl?.value || "").trim(),
+  outfit: (outfitEl?.value || "").trim(),
+  glasses: (glassesEl?.value || "").trim(),
+  accessory: (accessoryEl?.value || "").trim(),
+  expression: (expressionEl?.value || "").trim(),
+
+  referenceFile: fileEl?.files?.[0] || null
+};
 
     return payload;
   }
