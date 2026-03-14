@@ -191,6 +191,13 @@ const characterName = String(body.name || "").trim();
 const characterStyle = String(body.style || "").trim();
 const characterPromptRaw = String(body.prompt || "").trim();
 
+const characterHairType = String(body.hairType || "").trim();
+const characterHairColor = String(body.hairColor || "").trim();
+const characterOutfit = String(body.outfit || "").trim();
+const characterGlasses = String(body.glasses || "").trim();
+const characterAccessory = String(body.accessory || "").trim();
+const characterExpression = String(body.expression || "").trim();
+
 const prompt =
   mode === "character"
     ? [
@@ -199,9 +206,19 @@ const prompt =
         characterName ? `Character name: ${characterName}.` : "",
         characterStyle ? `Visual style: ${characterStyle}.` : "",
         characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
+
+        characterHairType ? `Hair type: ${characterHairType}.` : "",
+        characterHairColor ? `Hair color: ${characterHairColor}.` : "",
+        characterOutfit ? `Outfit: ${characterOutfit}.` : "",
+        characterGlasses ? `Glasses: ${characterGlasses}.` : "",
+        characterAccessory ? `Accessory: ${characterAccessory}.` : "",
+        characterExpression ? `Facial expression: ${characterExpression}.` : "",
+
         "Single character only.",
+        "Full body character.",
         "Centered composition.",
-        "Clean background.",
+        "Clean simple background.",
+        "Child-friendly, adorable, expressive design.",
         "No text, no watermark."
       ].filter(Boolean).join(" ")
     : buildBasicPrompt(body);
