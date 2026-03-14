@@ -56,27 +56,29 @@ async function uploadCartoonReferenceToR2(file) {
   return publicUrl;
 }
 
-  const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
-    mode: "basic",
-    extraPrompt: "",
-    mainCharacter: "red-fish",
-    helpers: [],
-    scene: "underwater",
-    action: "swimming",
-    duration: "5",
-    ratio: "16:9",
-    audioEnabled: false,
-    characterImage: null,
-   characterImageName: "",
+const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
+  mode: "basic",
+  extraPrompt: "",
+  mainCharacter: "red-fish",
+  helpers: [],
+  scene: "underwater",
+  action: "swimming",
+  duration: "5",
+  ratio: "16:9",
+  audioEnabled: false,
+  characterImage: null,
+  characterImageName: "",
   characters: [],
-   characterCreatePending: false,
-    characterReferenceImageUrl: "",
-    characterImageUrl: "",
-    characterImageUploadPromise: null,
-    characterImageUploadStatus: "idle",
-    characterImageUploadError: "",
-    isGenerating: false,
- });
+  characterCreatePending: false,
+  characterReferenceImageUrl: "",
+  characterImageUrl: "",
+  characterImageUploadPromise: null,
+  characterImageUploadStatus: "idle",
+  characterImageUploadError: "",
+  isGenerating: false,
+  activeBasicJobId: "",
+  activeBasicPollToken: 0,
+});
 
   function getEstimatedCredits() {
     const durationNum = Number(state.duration || 5);
@@ -588,76 +590,140 @@ payload.uiState = {
 };
     return payload;
   }
-  async function pollCartoonJob(jobId, tries = 0) {
-    try {
-      const r = await fetch(
-        `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`
+async function pollCartoonJob(jobId, tries = 0, pollToken = 0) {
+  try {
+    const activeJobId = String(state.activeBasicJobId || "").trim();
+    const activePollToken = Number(state.activeBasicPollToken || 0);
+    const currentJobId = String(jobId || "").trim();
+
+    if (activeJobId && activeJobId !== currentJobId) {
+      return;
+    }
+
+    if (pollToken && activePollToken && pollToken !== activePollToken) {
+      return;
+    }
+
+    const r = await fetch(
+      `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`
+    );
+    const j2 = await r.json().catch(() => null);
+
+    console.log("[CARTOON] poll =", j2);
+
+    if (!j2 || j2.ok === false) {
+      if (tries < 60) {
+        setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+      }
+      return;
+    }
+
+    const readyVideoUrl = String(j2?.video?.url || "").trim();
+    const readyImageUrl = String(j2?.image?.url || "").trim();
+    const readyMode = String(
+      j2?.mode ||
+      j2?.meta?.mode ||
+      j2?.job?.mode ||
+      ""
+    ).trim().toLowerCase();
+
+    if (
+      j2.status === "ready" &&
+      (
+        readyVideoUrl ||
+        readyImageUrl ||
+        (Array.isArray(j2?.outputs) && j2.outputs.some((o) => {
+          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+          const u = String(o?.url || o?.image_url || o?.video_url || "").trim();
+          return !!u && (t === "video" || t === "image");
+        }))
+      )
+    ) {
+      window.__LAST_CARTOON_STATUS__ = j2;
+
+      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+        state.activeBasicJobId = "";
+        state.activeBasicPollToken = 0;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent("aivo:cartoon:job_ready", {
+          detail: {
+            job_id: jobId,
+            status: j2.status,
+            mode: readyMode,
+            video: readyVideoUrl ? j2.video : null,
+            image: readyImageUrl ? j2.image : null,
+            outputs: j2.outputs || [],
+            raw: j2
+          }
+        })
       );
-      const j2 = await r.json().catch(() => null);
+      return;
+    }
 
-      console.log("[CARTOON] poll =", j2);
+    if (j2.status === "error") {
+      console.error("[CARTOON] job error =", j2);
 
-      if (!j2 || j2.ok === false) {
-        if (tries < 60) {
-          setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+        state.activeBasicJobId = "";
+        state.activeBasicPollToken = 0;
+        state.isGenerating = false;
+
+        const root = getCartoonRoot();
+        const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+        if (basicGenerateBtn) {
+          basicGenerateBtn.disabled = false;
+          basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
+          basicGenerateBtn.classList.remove("is-loading");
         }
-        return;
       }
 
-            const readyVideoUrl = String(j2?.video?.url || "").trim();
-      const readyImageUrl = String(j2?.image?.url || "").trim();
-      const readyMode = String(
-        j2?.mode ||
-        j2?.meta?.mode ||
-        j2?.job?.mode ||
-        ""
-      ).trim().toLowerCase();
+      return;
+    }
 
-           if (
-        j2.status === "ready" &&
-        (
-          readyVideoUrl ||
-          readyImageUrl ||
-          (Array.isArray(j2?.outputs) && j2.outputs.some((o) => {
-            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
-            const u = String(o?.url || o?.image_url || o?.video_url || "").trim();
-            return !!u && (t === "video" || t === "image");
-          }))
-        )
-      ) {
-        window.__LAST_CARTOON_STATUS__ = j2;
+    if (tries < 60) {
+      setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+      return;
+    }
 
-        window.dispatchEvent(
-          new CustomEvent("aivo:cartoon:job_ready", {
-            detail: {
-              job_id: jobId,
-              status: j2.status,
-              mode: readyMode,
-              video: readyVideoUrl ? j2.video : null,
-              image: readyImageUrl ? j2.image : null,
-              outputs: j2.outputs || [],
-              raw: j2
-            }
-          })
-        );
-        return;
-      }
-      if (j2.status === "error") {
-        console.error("[CARTOON] job error =", j2);
-        return;
-      }
+    if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+      state.activeBasicJobId = "";
+      state.activeBasicPollToken = 0;
+      state.isGenerating = false;
 
-      if (tries < 60) {
-        setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+      const root = getCartoonRoot();
+      const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+      if (basicGenerateBtn) {
+        basicGenerateBtn.disabled = false;
+        basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
+        basicGenerateBtn.classList.remove("is-loading");
       }
-    } catch (err) {
-      console.error("[CARTOON] poll error =", err);
-      if (tries < 60) {
-        setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+    }
+  } catch (err) {
+    console.error("[CARTOON] poll error =", err);
+
+    if (tries < 60) {
+      setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+      return;
+    }
+
+    const currentJobId = String(jobId || "").trim();
+    if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+      state.activeBasicJobId = "";
+      state.activeBasicPollToken = 0;
+      state.isGenerating = false;
+
+      const root = getCartoonRoot();
+      const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+      if (basicGenerateBtn) {
+        basicGenerateBtn.disabled = false;
+        basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
+        basicGenerateBtn.classList.remove("is-loading");
       }
     }
   }
-
+}
   function bindEvents() {
 
   document.addEventListener("click", async (e) => {
@@ -968,29 +1034,40 @@ if (characterCreateBtn && root.contains(characterCreateBtn)) {
         throw new Error(j?.error || `character_create_failed_${r.status}`);
       }
 
-      if (j?.job_id) {
-        window.dispatchEvent(
-          new CustomEvent("aivo:cartoon:job_created", {
-            detail: {
-              app: "cartoon",
-              mode: "character",
-              job_id: j.job_id,
-              createdAt: Date.now(),
-              meta: {
-                app: "cartoon",
-                mode: "character",
-                provider: "fal",
-                prompt: payload.prompt || "",
-                name: payload.name || "",
-                type: payload.type || "",
-                style: payload.style || ""
-              }
-            }
-          })
-        );
+     if (j?.job_id) {
+  const nextPollToken = Date.now();
 
-        pollCartoonJob(j.job_id);
+  state.activeBasicJobId = String(j.job_id || "").trim();
+  state.activeBasicPollToken = nextPollToken;
+
+  window.dispatchEvent(
+    new CustomEvent("aivo:cartoon:job_created", {
+      detail: {
+        app: "cartoon",
+        mode: "basic",
+        job_id: j.job_id,
+        prompt: payload.extraPrompt || "",
+        createdAt: Date.now(),
+        meta: {
+          app: "cartoon",
+          mode: "basic",
+          provider: "fal",
+          prompt: [
+            payload.mainCharacter,
+            ...(payload.helperCharacters || []),
+            payload.scene,
+            payload.action,
+            payload.extraPrompt
+          ].filter(Boolean).join(" • "),
+          duration: payload.duration,
+          aspect_ratio: payload.aspectRatio
+        }
       }
+    })
+  );
+
+  pollCartoonJob(j.job_id, 0, nextPollToken);
+}
     })
     .catch((err) => {
       state.characterCreatePending = false;
