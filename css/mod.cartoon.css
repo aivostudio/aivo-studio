@@ -1275,39 +1275,16 @@
   display:flex;
   flex-wrap:nowrap;
   align-items:flex-start;
-  gap:12px;
+  gap:8px;
   margin-top:8px;
-  width:100%;
-  max-width:100%;
   overflow-x:auto;
   overflow-y:hidden;
-  overscroll-behavior-x:contain;
-  -webkit-overflow-scrolling:touch;
-  padding:4px 6px 10px 2px;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(255,255,255,0.22) transparent;
+  padding-right:4px;
+  padding-bottom:4px;
 }
-
-.cartoon-character-mini-grid::-webkit-scrollbar{
-  height:8px;
-}
-
-.cartoon-character-mini-grid::-webkit-scrollbar-track{
-  background:transparent;
-}
-
-.cartoon-character-mini-grid::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,0.18);
-  border-radius:999px;
-}
-
-.cartoon-character-mini-grid::-webkit-scrollbar-thumb:hover{
-  background:rgba(255,255,255,0.28);
-}
-
 .cartoon-character-mini-grid > .cpCard{
-  flex:0 0 150px;
-  width:150px;
+  flex:0 0 104px;
+  width:104px;
 }
 
 .cartoon-character-mini-card{
