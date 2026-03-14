@@ -117,7 +117,7 @@
         <div
           class="cartoon-character-mini-grid"
           data-character-library
-          style="max-height:260px; overflow-y:auto; overflow-x:hidden;">
+          style="max-height: 280px; overflow-y: auto; overflow-x: hidden;">
           <button type="button" class="cartoon-character-mini-card is-empty" disabled>
             Henüz karakter yok
           </button>
@@ -203,7 +203,7 @@
             </select>
           </div>
 
-          <div class="cartoon-field cartoon-field--full">
+          <div class="cartoon-field">
             <label class="cartoon-field-label" for="cartoon-character-color-palette">Renk Paleti</label>
             <select id="cartoon-character-color-palette" class="cartoon-select" data-character-color-palette>
               <option value="" selected>Seçiniz</option>
@@ -213,6 +213,19 @@
               <option value="rainbow">Gökkuşağı</option>
               <option value="warm">Sıcak Tonlar</option>
               <option value="cool">Soğuk Tonlar</option>
+            </select>
+          </div>
+
+          <div class="cartoon-field">
+            <label class="cartoon-field-label" for="cartoon-character-pose">Karakter Pozu</label>
+            <select id="cartoon-character-pose" class="cartoon-select" data-character-pose>
+              <option value="" selected>Seçiniz</option>
+              <option value="standing">Ayakta</option>
+              <option value="walking">Yürürken</option>
+              <option value="jumping">Zıplarken</option>
+              <option value="waving">El Sallıyor</option>
+              <option value="sitting">Oturuyor</option>
+              <option value="flying">Uçuyor</option>
             </select>
           </div>
         </div>
