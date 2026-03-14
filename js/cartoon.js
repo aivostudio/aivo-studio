@@ -1084,15 +1084,10 @@ if (generateBtn && root.contains(generateBtn)) {
     console.error("[CARTOON] create error:", err);
     alert(String(err?.message || err || "cartoon_create_failed"));
   } finally {
-    state.isGenerating = false;
-    generateBtn.disabled = false;
-    generateBtn.textContent = prevText;
-    generateBtn.classList.remove("is-loading");
-
-    const nextRoot = getCartoonRoot();
-    if (nextRoot) updateBasicUploadStatusUI(nextRoot);
-  }
-
+ finally {
+  const nextRoot = getCartoonRoot();
+  if (nextRoot) updateBasicUploadStatusUI(nextRoot);
+}
   return;
 }
     });
