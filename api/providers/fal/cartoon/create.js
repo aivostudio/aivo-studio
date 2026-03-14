@@ -106,12 +106,28 @@ function buildBasicPrompt(body) {
     : [];
 
   const extraPrompt = String(body.extraPrompt || "").trim();
+   const hasCustomCharacterImage = !!String(
+  body.characterImageUrl ||
+  body.character_image_url ||
+  body.image_url ||
+  body.start_image_url ||
+  ""
+).trim();
+
+const mainCharacterText = hasCustomCharacterImage
+  ? "Use the uploaded custom character as the main subject."
+  : `Main character: ${mainCharacter}.`;
+
+const helperCharactersText = hasCustomCharacterImage
+  ? ""
+  : (helpers.length ? `Helper characters: ${helpers.join(", ")}.` : "");
 
   const parts = [
     "Cute kids cartoon style.",
     "Bright colorful animated scene.",
-    `Main character: ${mainCharacter}.`,
-    helpers.length ? `Helper characters: ${helpers.join(", ")}.` : "",
+   mainCharacterText,
+helperCharactersText,
+
     `Scene: ${sceneText}.`,
     `Action: ${actionText}.`,
     "Friendly, adorable, child-safe, expressive animation.",
