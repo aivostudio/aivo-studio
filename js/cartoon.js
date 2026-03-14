@@ -139,7 +139,7 @@ function renderCharacterLibrary(root) {
   }
 
   host.innerHTML = `
-   <div class="cpGrid" style="display:grid;grid-template-columns:repeat(5,112px);justify-content:start;gap:10px;max-height:236px;overflow-y:auto;overflow-x:hidden;align-content:start;padding-right:4px;">
+    <div class="cpGrid" style="display:grid;grid-template-columns:repeat(5,92px);justify-content:start;gap:10px;max-height:236px;overflow-y:auto;overflow-x:hidden;align-content:start;padding-right:4px;">
       ${items.map((item) => {
         const itemId = String(item.id || item.job_id || "");
         const imageUrl = String(item.imageUrl || "").trim();
