@@ -1053,25 +1053,27 @@ if (generateBtn && root.contains(generateBtn)) {
     if (j?.job_id) {
       window.dispatchEvent(
         new CustomEvent("aivo:cartoon:job_created", {
-          detail: {
-            app: "cartoon",
-            job_id: j.job_id,
-            prompt: payload.extraPrompt || "",
-            createdAt: Date.now(),
-            meta: {
-              app: "cartoon",
-              provider: "fal",
-              prompt: [
-                payload.mainCharacter,
-                ...(payload.helperCharacters || []),
-                payload.scene,
-                payload.action,
-                payload.extraPrompt
-              ].filter(Boolean).join(" • "),
-              duration: payload.duration,
-              aspect_ratio: payload.aspectRatio
-            }
-          }
+    detail: {
+  app: "cartoon",
+  mode: "basic",
+  job_id: j.job_id,
+  prompt: payload.extraPrompt || "",
+  createdAt: Date.now(),
+  meta: {
+    app: "cartoon",
+    mode: "basic",
+    provider: "fal",
+    prompt: [
+      payload.mainCharacter,
+      ...(payload.helperCharacters || []),
+      payload.scene,
+      payload.action,
+      payload.extraPrompt
+    ].filter(Boolean).join(" • "),
+    duration: payload.duration,
+    aspect_ratio: payload.aspectRatio
+  }
+}
         })
       );
 
