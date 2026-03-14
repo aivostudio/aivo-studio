@@ -73,8 +73,10 @@ async function uploadCartoonReferenceToR2(file) {
     characterReferenceImageUrl: "",
     characterImageUrl: "",
     characterImageUploadPromise: null,
-
-  });
+    characterImageUploadStatus: "idle",
+    characterImageUploadError: "",
+    isGenerating: false,
+ });
 
   function getEstimatedCredits() {
     const durationNum = Number(state.duration || 5);
@@ -113,7 +115,46 @@ async function uploadCartoonReferenceToR2(file) {
   if (!textEl) return;
   textEl.textContent = state.characterImageName || "Dosya seçilmedi";
 }
+ function updateBasicUploadStatusUI(root) {
+  const textEl =
+    qs("[data-basic-upload-text]", root) ||
+    qs(".cartoon-upload-text", root);
 
+  const generateBtn = qs("[data-cartoon-generate]", root);
+
+  if (!textEl) return;
+
+  if (!state.characterImage) {
+    textEl.textContent = "Dosya seçilmedi";
+    if (generateBtn) {
+      generateBtn.disabled = !!state.isGenerating;
+    }
+    return;
+  }
+
+  if (state.characterImageUploadStatus === "uploading") {
+    textEl.textContent = `${state.characterImageName} · Yükleniyor...`;
+    if (generateBtn) generateBtn.disabled = true;
+    return;
+  }
+
+  if (state.characterImageUploadStatus === "ready") {
+    textEl.textContent = `${state.characterImageName} · Hazır ✓`;
+    if (generateBtn) generateBtn.disabled = !!state.isGenerating;
+    return;
+  }
+
+  if (state.characterImageUploadStatus === "error") {
+    textEl.textContent = `${state.characterImageName} · Yükleme hatası`;
+    if (generateBtn) generateBtn.disabled = true;
+    return;
+  }
+
+  textEl.textContent = state.characterImageName || "Dosya seçilmedi";
+  if (generateBtn) {
+    generateBtn.disabled = !!state.isGenerating;
+  }
+}
   function updateCharacterCreateUploadUI(root) {
   const input = qs("[data-character-create-upload]", root);
   if (!input) return;
@@ -403,7 +444,7 @@ function renderCharacterLibrary(root) {
   updatePromptCount(root);
   updateCharacterDescCount(root);
   updateHelperCount(root);
-  updateUploadText(root);
+updateBasicUploadStatusUI(root);
    updateCharacterCreateUploadUI(root);
   updateSummary(root);
  renderCharacterLibrary(root);
@@ -902,86 +943,98 @@ if (characterCreateBtn && root.contains(characterCreateBtn)) {
 
   return;
 }
-      const generateBtn = e.target.closest("[data-cartoon-generate]");
-      
-      if (generateBtn && root.contains(generateBtn)) {
-        e.preventDefault();
+const generateBtn = e.target.closest("[data-cartoon-generate]");
 
-      if (state.characterImage && !state.characterImageUrl) {
-  if (state.characterImageUploadPromise) {
-    try {
-      await state.characterImageUploadPromise;
-    } catch {
+if (generateBtn && root.contains(generateBtn)) {
+  e.preventDefault();
+
+  if (state.isGenerating) return;
+
+  if (state.characterImage) {
+    if (
+      state.characterImageUploadStatus === "uploading" &&
+      state.characterImageUploadPromise
+    ) {
+      try {
+        await state.characterImageUploadPromise;
+      } catch {
+        return;
+      }
+    }
+
+    if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
+      alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
       return;
     }
   }
-}
 
-const payload = buildBasicPayload();
-console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
+  const payload = buildBasicPayload();
+  console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
-        generateBtn.disabled = true;
-        const prevText = generateBtn.textContent;
-        const resetGenerateBtn = () => {
-  generateBtn.disabled = false;
-  generateBtn.textContent = prevText;
-  generateBtn.classList.remove("is-loading");
-};
+  const prevText = generateBtn.textContent;
+  state.isGenerating = true;
+  generateBtn.disabled = true;
+  generateBtn.textContent = "Üretiliyor...";
+  generateBtn.classList.add("is-loading");
 
-        generateBtn.textContent = "Üretiliyor...";
-        generateBtn.classList.add("is-loading");
+  try {
+    const r = await fetch("/api/providers/fal/cartoon/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-        fetch("/api/providers/fal/cartoon/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || j.ok === false) {
+      throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
+    }
+
+    console.log("[CARTOON] create ok =", j);
+
+    if (j?.job_id) {
+      window.dispatchEvent(
+        new CustomEvent("aivo:cartoon:job_created", {
+          detail: {
+            app: "cartoon",
+            job_id: j.job_id,
+            prompt: payload.extraPrompt || "",
+            createdAt: Date.now(),
+            meta: {
+              app: "cartoon",
+              provider: "fal",
+              prompt: [
+                payload.mainCharacter,
+                ...(payload.helperCharacters || []),
+                payload.scene,
+                payload.action,
+                payload.extraPrompt
+              ]
+                .filter(Boolean)
+                .join(" • "),
+              duration: payload.duration,
+              aspect_ratio: payload.aspectRatio
+            }
+          }
         })
-          .then(async (r) => {
-            const j = await r.json().catch(() => null);
-            if (!r.ok || !j || j.ok === false) {
-              throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
-            }
+      );
 
-            console.log("[CARTOON] create ok =", j);
+      pollCartoonJob(j.job_id);
+    }
+  } catch (err) {
+    console.error("[CARTOON] create error:", err);
+    alert(String(err?.message || err || "cartoon_create_failed"));
+  } finally {
+    state.isGenerating = false;
+    generateBtn.disabled = false;
+    generateBtn.textContent = prevText;
+    generateBtn.classList.remove("is-loading");
 
-            if (j?.job_id) {
-              window.dispatchEvent(
-                new CustomEvent("aivo:cartoon:job_created", {
-                  detail: {
-                    app: "cartoon",
-                    job_id: j.job_id,
-                    prompt: payload.extraPrompt || "",
-                    createdAt: Date.now(),
-                    meta: {
-                      app: "cartoon",
-                      provider: "fal",
-                      prompt: [
-                        payload.mainCharacter,
-                        ...(payload.helperCharacters || []),
-                        payload.scene,
-                        payload.action,
-                        payload.extraPrompt
-                      ]
-                        .filter(Boolean)
-                        .join(" • "),
-                      duration: payload.duration,
-                      aspect_ratio: payload.aspectRatio
-                    }
-                  }
-                })
-              );
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) updateBasicUploadStatusUI(nextRoot);
+  }
 
-              pollCartoonJob(j.job_id);
-            }
-          })
-          .catch((err) => {
-            console.error("[CARTOON] create error:", err);
-            alert(String(err?.message || err || "cartoon_create_failed"));
-          })
-         
-
-        return;
-      }
+  return;
+}
     });
         window.addEventListener("aivo:cartoon:job_ready", (e) => {
       const d = e?.detail || {};
@@ -1176,8 +1229,10 @@ if (upload && root.contains(upload)) {
   state.characterImageName = file ? file.name : "";
   state.characterImageUrl = "";
   state.characterImageUploadPromise = null;
+  state.characterImageUploadError = "";
+  state.characterImageUploadStatus = file ? "uploading" : "idle";
 
-  updateUploadText(root);
+  updateBasicUploadStatusUI(root);
   updateSummary(root);
 
   if (!file) {
@@ -1187,19 +1242,30 @@ if (upload && root.contains(upload)) {
   state.characterImageUploadPromise = uploadCartoonReferenceToR2(file)
     .then((publicUrl) => {
       state.characterImageUrl = String(publicUrl || "").trim();
+      state.characterImageUploadStatus = "ready";
+      state.characterImageUploadError = "";
       console.log("[CARTOON][BASIC_UPLOAD_OK]", state.characterImageUrl);
+
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) updateBasicUploadStatusUI(nextRoot);
+
       return state.characterImageUrl;
     })
     .catch((err) => {
       state.characterImageUrl = "";
+      state.characterImageUploadStatus = "error";
+      state.characterImageUploadError = String(err?.message || err || "basic_reference_upload_failed");
       console.error("[CARTOON][BASIC_UPLOAD_ERROR]", err);
-      alert(String(err?.message || err || "basic_reference_upload_failed"));
+
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) updateBasicUploadStatusUI(nextRoot);
+
+      alert(state.characterImageUploadError);
       throw err;
     });
 
   return;
 }
-
     });
   }
   async function hydrateCharacterLibrary(root) {
