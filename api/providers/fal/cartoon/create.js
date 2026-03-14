@@ -234,6 +234,16 @@ const generate_audio = !!body.audioEnabled;
       "image_url",
       "start_image_url",
     ]) || null;
+  const referenceImageUrl =
+  pick(body, [
+    "referenceImageUrl",
+    "reference_image_url",
+    "referenceImage.image_url",
+    "reference.image_url",
+    "image_urls.0",
+    "imageUrls.0",
+  ]) || null;
+
 
     const falModel =
     mode === "character"
@@ -242,27 +252,29 @@ const generate_audio = !!body.audioEnabled;
 
   const falUrl = `https://queue.fal.run/${falModel}`;
 
-  const falInput =
-    mode === "character"
-      ? {
-          prompt,
-          num_images: 1,
-          aspect_ratio:
-            aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
-              ? aspect_ratio
-              : "4:5",
-          output_format: "png",
-          safety_tolerance: "4",
-          resolution: "1K"
-        }
-      : {
-          prompt,
-          duration,
-          aspect_ratio,
-          generate_audio,
-          shot_type: "customize",
-          ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
-        };
+ const falInput =
+  mode === "character"
+    ? {
+        prompt,
+        num_images: 1,
+        aspect_ratio:
+          aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
+            ? aspect_ratio
+            : "4:5",
+        output_format: "png",
+        safety_tolerance: "4",
+        resolution: "1K",
+        ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
+      }
+    : {
+        prompt,
+        duration,
+        aspect_ratio,
+        generate_audio,
+        shot_type: "customize",
+        ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
+      };
+
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
@@ -344,6 +356,8 @@ ui_state: {
   aspect_ratio,
   generate_audio,
   characterImageUrl: characterImageUrl || null,
+  referenceImageUrl: referenceImageUrl || null,
+
 },
     fal_input: falInput,
     provider_response: {
