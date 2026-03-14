@@ -640,24 +640,38 @@ if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
   const descInput = qs("#cartoon-character-desc", root);
   const styleSelect = qs("#cartoon-character-style", root);
 
-  if (nameInput) nameInput.value = selectedItem.name || "";
-  if (descInput) descInput.value = selectedItem.prompt || "";
-  if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
-  const hairTypeSelect = qs("[data-character-hair-type]", root);
+ if (nameInput && selectedItem.name) {
+  nameInput.value = selectedItem.name;
+}
+
+const ui = selectedItem.uiState || {};
+
+const nextPrompt =
+  selectedItem.prompt ||
+  ui.prompt ||
+  "";
+
+if (descInput && nextPrompt) {
+  descInput.value = nextPrompt;
+}
+
+if (styleSelect && (selectedItem.style || ui.style)) {
+  styleSelect.value = selectedItem.style || ui.style;
+}
+
+const hairTypeSelect = qs("[data-character-hair-type]", root);
 const hairColorSelect = qs("[data-character-hair-color]", root);
 const outfitSelect = qs("[data-character-outfit]", root);
 const glassesSelect = qs("[data-character-glasses]", root);
 const accessorySelect = qs("[data-character-accessory]", root);
 const expressionSelect = qs("[data-character-expression]", root);
 
-const ui = selectedItem.uiState || {};
-
-if (hairTypeSelect) hairTypeSelect.value = ui.hairType || "";
-if (hairColorSelect) hairColorSelect.value = ui.hairColor || "";
-if (outfitSelect) outfitSelect.value = ui.outfit || "";
-if (glassesSelect) glassesSelect.value = ui.glasses || "";
-if (accessorySelect) accessorySelect.value = ui.accessory || "";
-if (expressionSelect) expressionSelect.value = ui.expression || "";
+if (hairTypeSelect && ui.hairType) hairTypeSelect.value = ui.hairType;
+if (hairColorSelect && ui.hairColor) hairColorSelect.value = ui.hairColor;
+if (outfitSelect && ui.outfit) outfitSelect.value = ui.outfit;
+if (glassesSelect && ui.glasses) glassesSelect.value = ui.glasses;
+if (accessorySelect && ui.accessory) accessorySelect.value = ui.accessory;
+if (expressionSelect && ui.expression) expressionSelect.value = ui.expression;
 
   render(root);
   return;
