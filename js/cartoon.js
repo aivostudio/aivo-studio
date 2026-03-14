@@ -115,12 +115,72 @@ async function uploadCartoonReferenceToR2(file) {
   if (!textEl) return;
   textEl.textContent = state.characterImageName || "Dosya seçilmedi";
 }
+  function clearBasicCharacterImage(root) {
+  const input = qs("[data-character-upload]", root);
+
+  state.characterImage = null;
+  state.characterImageName = "";
+  state.characterImageUrl = "";
+  state.characterImageUploadPromise = null;
+  state.characterImageUploadStatus = "idle";
+  state.characterImageUploadError = "";
+
+  if (input) {
+    input.value = "";
+  }
+
+  updateBasicUploadStatusUI(root);
+  updateSummary(root);
+}
+
+function ensureBasicUploadClearButton(root) {
+  const textEl =
+    qs("[data-basic-upload-text]", root) ||
+    qs(".cartoon-upload-text", root);
+
+  if (!textEl) return;
+
+  const host = textEl.parentElement || textEl;
+  let clearBtn = qs("[data-basic-upload-clear]", host);
+
+  if (!clearBtn) {
+    clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.setAttribute("data-basic-upload-clear", "");
+    clearBtn.setAttribute("aria-label", "Yüklenen resmi temizle");
+    clearBtn.title = "Resmi kaldır";
+    clearBtn.textContent = "×";
+    clearBtn.style.marginLeft = "8px";
+    clearBtn.style.width = "22px";
+    clearBtn.style.height = "22px";
+    clearBtn.style.borderRadius = "999px";
+    clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+    clearBtn.style.background = "rgba(255,255,255,.08)";
+    clearBtn.style.color = "#fff";
+    clearBtn.style.cursor = "pointer";
+    clearBtn.style.display = "none";
+    clearBtn.style.verticalAlign = "middle";
+    host.appendChild(clearBtn);
+
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const nextRoot = getCartoonRoot();
+      if (!nextRoot) return;
+      clearBasicCharacterImage(nextRoot);
+    });
+  }
+
+  clearBtn.style.display = state.characterImage ? "inline-grid" : "none";
+  clearBtn.style.placeItems = "center";
+}
  function updateBasicUploadStatusUI(root) {
   const textEl =
     qs("[data-basic-upload-text]", root) ||
     qs(".cartoon-upload-text", root);
 
   const generateBtn = qs("[data-cartoon-generate]", root);
+   ensureBasicUploadClearButton(root);
 
   if (!textEl) return;
 
