@@ -22,6 +22,7 @@
     characterImage: null,
    characterImageName: "",
    characters: []
+   characterCreatePending: false,
   });
 
   function getEstimatedCredits() {
@@ -645,68 +646,65 @@ if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
         return;
       }
 
-          const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
-      if (characterCreateBtn && root.contains(characterCreateBtn)) {
-        e.preventDefault();
+    const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
+if (characterCreateBtn && root.contains(characterCreateBtn)) {
+  e.preventDefault();
 
-        const payload = buildCharacterCreatePayload(root);
-        console.log("[CARTOON][CHARACTER] payload =", payload);
+  const payload = buildCharacterCreatePayload(root);
+  console.log("[CARTOON][CHARACTER] payload =", payload);
 
-        characterCreateBtn.disabled = true;
-        const prevText = characterCreateBtn.textContent;
-        characterCreateBtn.textContent = "Oluşturuluyor...";
-        characterCreateBtn.classList.add("is-loading");
+  state.characterCreatePending = true;
+  characterCreateBtn.disabled = true;
+  characterCreateBtn.textContent = "Üretiliyor...";
 
-        fetch("/api/providers/fal/cartoon/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-                 .then(async (r) => {
-            const j = await r.json().catch(() => null);
-            console.log("[CARTOON][CHARACTER] create response =", j);
+  fetch("/api/providers/fal/cartoon/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then(async (r) => {
+      const j = await r.json().catch(() => null);
+      console.log("[CARTOON][CHARACTER] create response =", j);
 
-            if (!r.ok || !j || j.ok === false) {
-              throw new Error(j?.error || `character_create_failed_${r.status}`);
-            }
-
-            if (j?.job_id) {
-              window.dispatchEvent(
-                new CustomEvent("aivo:cartoon:job_created", {
-                  detail: {
-                    app: "cartoon",
-                    mode: "character",
-                    job_id: j.job_id,
-                    createdAt: Date.now(),
-                    meta: {
-                      app: "cartoon",
-                      mode: "character",
-                      provider: "fal",
-                      prompt: payload.prompt || "",
-                      name: payload.name || "",
-                      type: payload.type || "",
-                      style: payload.style || ""
-                    }
-                  }
-                })
-              );
-
-              pollCartoonJob(j.job_id);
-            }
-          })
-          .catch((err) => {
-            console.error("[CARTOON][CHARACTER] create error:", err);
-            alert(String(err?.message || err || "character_create_failed"));
-          })
-          .finally(() => {
-            characterCreateBtn.disabled = false;
-            characterCreateBtn.textContent = prevText;
-            characterCreateBtn.classList.remove("is-loading");
-          });
-
-        return;
+      if (!r.ok || !j || j.ok === false) {
+        throw new Error(j?.error || `character_create_failed_${r.status}`);
       }
 
+      if (j?.job_id) {
+        window.dispatchEvent(
+          new CustomEvent("aivo:cartoon:job_created", {
+            detail: {
+              app: "cartoon",
+              mode: "character",
+              job_id: j.job_id,
+              createdAt: Date.now(),
+              meta: {
+                app: "cartoon",
+                mode: "character",
+                provider: "fal",
+                prompt: payload.prompt || "",
+                name: payload.name || "",
+                type: payload.type || "",
+                style: payload.style || ""
+              }
+            }
+          })
+        );
+
+        pollCartoonJob(j.job_id);
+      }
+    })
+    .catch((err) => {
+      state.characterCreatePending = false;
+      characterCreateBtn.disabled = false;
+      characterCreateBtn.textContent = "🧩 Karakter Oluştur";
+
+      console.error("[CARTOON][CHARACTER] create error:", err);
+      alert(String(err?.message || err || "character_create_failed"));
+    });
+
+  return;
+}
       const generateBtn = e.target.closest("[data-cartoon-generate]");
       
       if (generateBtn && root.contains(generateBtn)) {
@@ -821,20 +819,28 @@ if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
       );
       if (exists) return;
 
-      state.characters = [nextItem, ...state.characters];
-     if (root) render(root);
-    });
-    document.addEventListener("input", (e) => {
-      const root = getCartoonRoot();
-      if (!root) return;
+   state.characters = [nextItem, ...state.characters];
+state.characterCreatePending = false;
 
-      const prompt = e.target.closest("[data-cartoon-prompt-input]");
-      if (prompt && root.contains(prompt)) {
-        state.extraPrompt = String(prompt.value || "");
-        updatePromptCount(root);
-        updateSummary(root);
-      }
-    });
+const createBtn = root?.querySelector("[data-cartoon-character-create]");
+if (createBtn) {
+  createBtn.disabled = false;
+  createBtn.textContent = "🧩 Karakter Oluştur";
+}
+
+if (root) render(root);
+});
+document.addEventListener("input", (e) => {
+  const root = getCartoonRoot();
+  if (!root) return;
+
+  const prompt = e.target.closest("[data-cartoon-prompt-input]");
+  if (prompt && root.contains(prompt)) {
+    state.extraPrompt = String(prompt.value || "");
+    updatePromptCount(root);
+    updateSummary(root);
+  }
+});
 
     document.addEventListener("change", (e) => {
       const root = getCartoonRoot();
