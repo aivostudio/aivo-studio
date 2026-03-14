@@ -105,11 +105,15 @@ async function uploadCartoonReferenceToR2(file) {
     el.textContent = `${state.helpers.length}/3`;
   }
 
-  function updateUploadText(root) {
-    const textEl = qs(".cartoon-upload-text", root);
-    if (!textEl) return;
-    textEl.textContent = state.characterImageName || "Dosya seçilmedi";
-  }
+ function updateUploadText(root) {
+  const textEl =
+    qs("[data-basic-upload-text]", root) ||
+    qs(".cartoon-upload-text", root);
+
+  if (!textEl) return;
+  textEl.textContent = state.characterImageName || "Dosya seçilmedi";
+}
+
   function updateCharacterCreateUploadUI(root) {
   const input = qs("[data-character-create-upload]", root);
   if (!input) return;
