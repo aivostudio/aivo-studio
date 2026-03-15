@@ -8,77 +8,21 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
- async function presignCartoonReference(file) {
-  const res = await fetch("/api/r2/presign-put", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: "cartoon",
-      kind: "reference",
-      filename: file?.name || `reference-${Date.now()}.png`,
-      contentType: file?.type || "application/octet-stream"
-    })
+
+  const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
+    mode: "basic",
+    extraPrompt: "",
+    mainCharacter: "red-fish",
+    helpers: [],
+    scene: "underwater",
+    action: "swimming",
+    duration: "5",
+    ratio: "16:9",
+    audioEnabled: false,
+    characterImage: null,
+   characterImageName: "",
+   characters: []
   });
-
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || "cartoon_reference_presign_failed");
-  }
-
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || "",
-  };
-}
-
-async function uploadCartoonReferenceToR2(file) {
-  if (!file) throw new Error("missing_reference_file");
-
-  const { uploadUrl, publicUrl } = await presignCartoonReference(file);
-
-  if (!uploadUrl || !publicUrl) {
-    throw new Error("cartoon_reference_missing_upload_urls");
-  }
-
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream"
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error("cartoon_reference_r2_put_failed");
-  }
-
-  return publicUrl;
-}
-
-const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
-  mode: "basic",
-  extraPrompt: "",
-  mainCharacter: "red-fish",
-  helpers: [],
-  scene: "underwater",
-  action: "swimming",
-  duration: "5",
-  ratio: "16:9",
-  audioEnabled: false,
-  characterImage: null,
-  characterImageName: "",
-  characters: [],
-  characterCreatePending: false,
-  characterReferenceImageUrl: "",
-  characterImageUrl: "",
-  characterImageUploadPromise: null,
-  characterImageUploadStatus: "idle",
-  characterImageUploadError: "",
-  isGenerating: false,
-  activeBasicJobId: "",
-  activeBasicPollToken: 0,
-});
 
   function getEstimatedCredits() {
     const durationNum = Number(state.duration || 5);
@@ -95,190 +39,18 @@ const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ |
     const len = String(input.value || "").length;
     out.textContent = `${len} / 1000`;
   }
- function updateCharacterDescCount(root) {
-  const input = qs("[data-character-desc]", root);
-  const out = qs("[data-character-desc-count]", root);
-  if (!input || !out) return;
 
-  const len = String(input.value || "").length;
-  out.textContent = `${len} / 1000`;
-}
   function updateHelperCount(root) {
     const el = qs("[data-helper-count]", root);
     if (!el) return;
     el.textContent = `${state.helpers.length}/3`;
   }
 
- function updateUploadText(root) {
-  const textEl =
-    qs("[data-basic-upload-text]", root) ||
-    qs(".cartoon-upload-text", root);
-
-  if (!textEl) return;
-  textEl.textContent = state.characterImageName || "Dosya seçilmedi";
-}
-  function clearBasicCharacterImage(root) {
-  const input = qs("[data-character-upload]", root);
-
-  state.characterImage = null;
-  state.characterImageName = "";
-  state.characterImageUrl = "";
-  state.characterImageUploadPromise = null;
-  state.characterImageUploadStatus = "idle";
-  state.characterImageUploadError = "";
-
-  if (input) {
-    input.value = "";
+  function updateUploadText(root) {
+    const textEl = qs(".cartoon-upload-text", root);
+    if (!textEl) return;
+    textEl.textContent = state.characterImageName || "Dosya seçilmedi";
   }
-
-  updateBasicUploadStatusUI(root);
-  updateSummary(root);
-}
-
-function ensureBasicUploadClearButton(root) {
-  const textEl =
-    qs("[data-basic-upload-text]", root) ||
-    qs(".cartoon-upload-text", root);
-
-  if (!textEl) return;
-
-  const host = textEl.parentElement || textEl;
-  let clearBtn = qs("[data-basic-upload-clear]", host);
-
-  if (!clearBtn) {
-    clearBtn = document.createElement("button");
-    clearBtn.type = "button";
-    clearBtn.setAttribute("data-basic-upload-clear", "");
-    clearBtn.setAttribute("aria-label", "Yüklenen resmi temizle");
-    clearBtn.title = "Resmi kaldır";
-    clearBtn.textContent = "×";
-    clearBtn.style.marginLeft = "8px";
-    clearBtn.style.width = "22px";
-    clearBtn.style.height = "22px";
-    clearBtn.style.borderRadius = "999px";
-    clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
-    clearBtn.style.background = "rgba(255,255,255,.08)";
-    clearBtn.style.color = "#fff";
-    clearBtn.style.cursor = "pointer";
-    clearBtn.style.display = "none";
-    clearBtn.style.verticalAlign = "middle";
-    host.appendChild(clearBtn);
-
-    clearBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const nextRoot = getCartoonRoot();
-      if (!nextRoot) return;
-      clearBasicCharacterImage(nextRoot);
-    });
-  }
-
-  clearBtn.style.display = state.characterImage ? "inline-grid" : "none";
-  clearBtn.style.placeItems = "center";
-}
- function updateBasicUploadStatusUI(root) {
-  const textEl =
-    qs("[data-basic-upload-text]", root) ||
-    qs(".cartoon-upload-text", root);
-
-  const generateBtn = qs("[data-cartoon-generate]", root);
-   ensureBasicUploadClearButton(root);
-
-  if (!textEl) return;
-
-  if (!state.characterImage) {
-    textEl.textContent = "Dosya seçilmedi";
-    if (generateBtn) {
-      generateBtn.disabled = !!state.isGenerating;
-    }
-    return;
-  }
-
-  if (state.characterImageUploadStatus === "uploading") {
-    textEl.textContent = `${state.characterImageName} · Yükleniyor...`;
-    if (generateBtn) generateBtn.disabled = true;
-    return;
-  }
-
-  if (state.characterImageUploadStatus === "ready") {
-    textEl.textContent = `${state.characterImageName} · Hazır ✓`;
-    if (generateBtn) generateBtn.disabled = !!state.isGenerating;
-    return;
-  }
-
-  if (state.characterImageUploadStatus === "error") {
-    textEl.textContent = `${state.characterImageName} · Yükleme hatası`;
-    if (generateBtn) generateBtn.disabled = true;
-    return;
-  }
-
-  textEl.textContent = state.characterImageName || "Dosya seçilmedi";
-  if (generateBtn) {
-    generateBtn.disabled = !!state.isGenerating;
-  }
-}
-  function updateCharacterCreateUploadUI(root) {
-  const input = qs("[data-character-create-upload]", root);
-  if (!input) return;
-
-  const host =
-    input.closest(".cartoon-upload-wrap") ||
-    input.parentElement ||
-    input.closest("label") ||
-    input;
-
-  let nameEl = qs("[data-character-create-file-name]", host);
-  if (!nameEl) {
-    nameEl = document.createElement("div");
-    nameEl.setAttribute("data-character-create-file-name", "");
-    nameEl.style.marginTop = "8px";
-    nameEl.style.fontSize = "13px";
-    nameEl.style.fontWeight = "600";
-    nameEl.style.color = "rgba(255,255,255,.88)";
-    host.appendChild(nameEl);
-  }
-
-  let previewEl = qs("[data-character-create-preview]", host);
-  if (!previewEl) {
-    previewEl = document.createElement("img");
-    previewEl.setAttribute("data-character-create-preview", "");
-    previewEl.alt = "Referans görsel önizleme";
-    previewEl.style.display = "none";
-    previewEl.style.width = "72px";
-    previewEl.style.height = "72px";
-    previewEl.style.objectFit = "cover";
-    previewEl.style.borderRadius = "12px";
-    previewEl.style.marginTop = "10px";
-    previewEl.style.border = "1px solid rgba(255,255,255,.12)";
-    host.appendChild(previewEl);
-  }
-
-  const file = input.files && input.files[0] ? input.files[0] : null;
-
- if (!file) {
-  nameEl.textContent = "";
-  previewEl.style.display = "none";
-  previewEl.removeAttribute("src");
-  return;
-}
-
-nameEl.textContent = "";
-
-
-  try {
-    const nextUrl = URL.createObjectURL(file);
-
-    if (previewEl.dataset.objectUrl) {
-      try { URL.revokeObjectURL(previewEl.dataset.objectUrl); } catch {}
-    }
-
-    previewEl.src = nextUrl;
-    previewEl.dataset.objectUrl = nextUrl;
-    previewEl.style.display = "block";
-  } catch {
-    previewEl.style.display = "none";
-  }
-}
 
   function updateSummary(root) {
     const el = qs("[data-cartoon-summary]", root);
@@ -504,10 +276,8 @@ function renderCharacterLibrary(root) {
   syncActionSelection(root);
   syncFormValues(root);
   updatePromptCount(root);
-  updateCharacterDescCount(root);
   updateHelperCount(root);
-updateBasicUploadStatusUI(root);
-   updateCharacterCreateUploadUI(root);
+  updateUploadText(root);
   updateSummary(root);
  renderCharacterLibrary(root);
 }
@@ -526,7 +296,6 @@ updateBasicUploadStatusUI(root);
       audioEnabled: !!state.audioEnabled,
       characterImage: state.characterImage,
       characterImageName: state.characterImageName,
-      characterImageUrl: state.characterImageUrl || "",
       estimatedCredits: getEstimatedCredits()
     };
   }
@@ -551,183 +320,90 @@ updateBasicUploadStatusUI(root);
     const fileEl =
       root.querySelector("[data-character-create-upload]");
 
-   const hairTypeEl = root.querySelector("[data-character-hair-type]");
-const hairColorEl = root.querySelector("[data-character-hair-color]");
-const outfitEl = root.querySelector("[data-character-outfit]");
-const glassesEl = root.querySelector("[data-character-glasses]");
-const accessoryEl = root.querySelector("[data-character-accessory]");
-const expressionEl = root.querySelector("[data-character-expression]");
+    const payload = {
+      mode: "character",
+      type: (typeEl?.value || "").trim(),
+      name: (nameEl?.value || "").trim(),
+      prompt: (descEl?.value || "").trim(),
+      style: (styleEl?.value || "").trim(),
+      referenceFile: fileEl?.files?.[0] || null
+    };
 
-const payload = {
-  mode: "character",
-
-  type: (typeEl?.value || "").trim(),
-  name: (nameEl?.value || "").trim(),
-  prompt: (descEl?.value || "").trim(),
-  style: (styleEl?.value || "").trim(),
-
-  hairType: (hairTypeEl?.value || "").trim(),
-  hairColor: (hairColorEl?.value || "").trim(),
-  outfit: (outfitEl?.value || "").trim(),
-  glasses: (glassesEl?.value || "").trim(),
-  accessory: (accessoryEl?.value || "").trim(),
-  expression: (expressionEl?.value || "").trim(),
-referenceFile: fileEl?.files?.[0] || null,
-referenceImageUrl: state.characterReferenceImageUrl || ""
-
-};
-payload.uiState = {
-  name: payload.name || "",
-  type: payload.type || "",
-  style: payload.style || "",
-  prompt: payload.prompt || "",
-  hairType: payload.hairType || "",
-  hairColor: payload.hairColor || "",
-  outfit: payload.outfit || "",
-  glasses: payload.glasses || "",
-  accessory: payload.accessory || "",
-  expression: payload.expression || ""
-};
     return payload;
   }
-async function pollCartoonJob(jobId, tries = 0, pollToken = 0) {
-  try {
-    const activeJobId = String(state.activeBasicJobId || "").trim();
-    const activePollToken = Number(state.activeBasicPollToken || 0);
-    const currentJobId = String(jobId || "").trim();
-
-    if (activeJobId && activeJobId !== currentJobId) {
-      return;
-    }
-
-    if (pollToken && activePollToken && pollToken !== activePollToken) {
-      return;
-    }
-
-    const r = await fetch(
-      `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`
-    );
-    const j2 = await r.json().catch(() => null);
-
-    console.log("[CARTOON] poll =", j2);
-
-    if (!j2 || j2.ok === false) {
-      if (tries < 60) {
-        setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-      }
-      return;
-    }
-
-    const readyVideoUrl = String(j2?.video?.url || "").trim();
-    const readyImageUrl = String(j2?.image?.url || "").trim();
-    const readyMode = String(
-      j2?.mode ||
-      j2?.meta?.mode ||
-      j2?.job?.mode ||
-      ""
-    ).trim().toLowerCase();
-
-    if (
-      j2.status === "ready" &&
-      (
-        readyVideoUrl ||
-        readyImageUrl ||
-        (Array.isArray(j2?.outputs) && j2.outputs.some((o) => {
-          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
-          const u = String(o?.url || o?.image_url || o?.video_url || "").trim();
-          return !!u && (t === "video" || t === "image");
-        }))
-      )
-    ) {
-      window.__LAST_CARTOON_STATUS__ = j2;
-
-      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-        state.activeBasicJobId = "";
-        state.activeBasicPollToken = 0;
-      }
-
-      window.dispatchEvent(
-        new CustomEvent("aivo:cartoon:job_ready", {
-          detail: {
-            job_id: jobId,
-            status: j2.status,
-            mode: readyMode,
-            video: readyVideoUrl ? j2.video : null,
-            image: readyImageUrl ? j2.image : null,
-            outputs: j2.outputs || [],
-            raw: j2
-          }
-        })
+  async function pollCartoonJob(jobId, tries = 0) {
+    try {
+      const r = await fetch(
+        `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`
       );
-      return;
-    }
+      const j2 = await r.json().catch(() => null);
 
-    if (j2.status === "error") {
-      console.error("[CARTOON] job error =", j2);
+      console.log("[CARTOON] poll =", j2);
 
-      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-        state.activeBasicJobId = "";
-        state.activeBasicPollToken = 0;
-        state.isGenerating = false;
-
-        const root = getCartoonRoot();
-        const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-        if (basicGenerateBtn) {
-          basicGenerateBtn.disabled = false;
-          basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-          basicGenerateBtn.classList.remove("is-loading");
+      if (!j2 || j2.ok === false) {
+        if (tries < 60) {
+          setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
         }
+        return;
       }
 
-      return;
-    }
+            const readyVideoUrl = String(j2?.video?.url || "").trim();
+      const readyImageUrl = String(j2?.image?.url || "").trim();
+      const readyMode = String(
+        j2?.mode ||
+        j2?.meta?.mode ||
+        j2?.job?.mode ||
+        ""
+      ).trim().toLowerCase();
 
-    if (tries < 60) {
-      setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-      return;
-    }
+           if (
+        j2.status === "ready" &&
+        (
+          readyVideoUrl ||
+          readyImageUrl ||
+          (Array.isArray(j2?.outputs) && j2.outputs.some((o) => {
+            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+            const u = String(o?.url || o?.image_url || o?.video_url || "").trim();
+            return !!u && (t === "video" || t === "image");
+          }))
+        )
+      ) {
+        window.__LAST_CARTOON_STATUS__ = j2;
 
-    if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-      state.activeBasicJobId = "";
-      state.activeBasicPollToken = 0;
-      state.isGenerating = false;
-
-      const root = getCartoonRoot();
-      const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-      if (basicGenerateBtn) {
-        basicGenerateBtn.disabled = false;
-        basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-        basicGenerateBtn.classList.remove("is-loading");
+        window.dispatchEvent(
+          new CustomEvent("aivo:cartoon:job_ready", {
+            detail: {
+              job_id: jobId,
+              status: j2.status,
+              mode: readyMode,
+              video: readyVideoUrl ? j2.video : null,
+              image: readyImageUrl ? j2.image : null,
+              outputs: j2.outputs || [],
+              raw: j2
+            }
+          })
+        );
+        return;
       }
-    }
-  } catch (err) {
-    console.error("[CARTOON] poll error =", err);
+      if (j2.status === "error") {
+        console.error("[CARTOON] job error =", j2);
+        return;
+      }
 
-    if (tries < 60) {
-      setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-      return;
-    }
-
-    const currentJobId = String(jobId || "").trim();
-    if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-      state.activeBasicJobId = "";
-      state.activeBasicPollToken = 0;
-      state.isGenerating = false;
-
-      const root = getCartoonRoot();
-      const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-      if (basicGenerateBtn) {
-        basicGenerateBtn.disabled = false;
-        basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-        basicGenerateBtn.classList.remove("is-loading");
+      if (tries < 60) {
+        setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
+      }
+    } catch (err) {
+      console.error("[CARTOON] poll error =", err);
+      if (tries < 60) {
+        setTimeout(() => pollCartoonJob(jobId, tries + 1), 3000);
       }
     }
   }
-}
+
   function bindEvents() {
 
-  document.addEventListener("click", async (e) => {
-
+    document.addEventListener("click", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
 
@@ -739,17 +415,13 @@ async function pollCartoonJob(jobId, tries = 0, pollToken = 0) {
         return;
       }
 
-    const mainBtn = e.target.closest('[data-role="main"]');
-if (mainBtn && root.contains(mainBtn)) {
-  e.preventDefault();
-
-  const value = mainBtn.dataset.character || "";
-  state.mainCharacter = state.mainCharacter === value ? "" : value;
-
-  render(root);
-  return;
-}
-
+      const mainBtn = e.target.closest('[data-role="main"]');
+      if (mainBtn && root.contains(mainBtn)) {
+        e.preventDefault();
+        state.mainCharacter = mainBtn.dataset.character || state.mainCharacter;
+        render(root);
+        return;
+      }
    const characterActionBtn = e.target.closest("[data-act][data-character-id]");
 if (characterActionBtn && root.contains(characterActionBtn)) {
   e.preventDefault();
@@ -794,40 +466,30 @@ if (characterActionBtn && root.contains(characterActionBtn)) {
     max-height:88vh;
   "
 >
- <button
-  type="button"
-  data-preview-close
-  aria-label="Kapat"
-  title="Kapat"
-  style="
-    position:absolute;
-    top:16px;
-    right:16px;
-    width:42px;
-    height:42px;
-    border:none;
-    border-radius:999px;
-    background:rgba(12,14,24,.72);
-    color:rgba(255,255,255,.96);
-    cursor:pointer;
-    display:grid;
-    place-items:center;
-    z-index:5;
-    box-shadow:0 10px 30px rgba(0,0,0,.32);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-  "
->
-  <svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;display:block;">
-    <path
-      d="M7 7l10 10M17 7 7 17"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-    />
-  </svg>
-</button>
+  <button
+    type="button"
+    data-preview-close
+    aria-label="Kapat"
+    style="
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:44px;
+      height:44px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      background:rgba(15,18,28,.82);
+      color:#fff;
+      font-size:28px;
+      line-height:1;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      z-index:2;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px);
+    "
+  >×</button>
 
   <img
     src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
@@ -932,38 +594,9 @@ if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
   const descInput = qs("#cartoon-character-desc", root);
   const styleSelect = qs("#cartoon-character-style", root);
 
- if (nameInput && selectedItem.name) {
-  nameInput.value = selectedItem.name;
-}
-
-const ui = selectedItem.uiState || {};
-
-const nextPrompt =
-  selectedItem.prompt ||
-  ui.prompt ||
-  "";
-
-if (descInput && nextPrompt) {
-  descInput.value = nextPrompt;
-}
-
-if (styleSelect && (selectedItem.style || ui.style)) {
-  styleSelect.value = selectedItem.style || ui.style;
-}
-
-const hairTypeSelect = qs("[data-character-hair-type]", root);
-const hairColorSelect = qs("[data-character-hair-color]", root);
-const outfitSelect = qs("[data-character-outfit]", root);
-const glassesSelect = qs("[data-character-glasses]", root);
-const accessorySelect = qs("[data-character-accessory]", root);
-const expressionSelect = qs("[data-character-expression]", root);
-
-if (hairTypeSelect && ui.hairType) hairTypeSelect.value = ui.hairType;
-if (hairColorSelect && ui.hairColor) hairColorSelect.value = ui.hairColor;
-if (outfitSelect && ui.outfit) outfitSelect.value = ui.outfit;
-if (glassesSelect && ui.glasses) glassesSelect.value = ui.glasses;
-if (accessorySelect && ui.accessory) accessorySelect.value = ui.accessory;
-if (expressionSelect && ui.expression) expressionSelect.value = ui.expression;
+  if (nameInput) nameInput.value = selectedItem.name || "";
+  if (descInput) descInput.value = selectedItem.prompt || "";
+  if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
 
   render(root);
   return;
@@ -987,338 +620,213 @@ if (expressionSelect && ui.expression) expressionSelect.value = ui.expression;
         return;
       }
 
-     const sceneBtn = e.target.closest("[data-scene]");
-if (sceneBtn && root.contains(sceneBtn)) {
-  e.preventDefault();
-
-  const value = sceneBtn.dataset.scene || "";
-  state.scene = state.scene === value ? "" : value;
-
-  render(root);
-  return;
-}
-
-     const actionBtn = e.target.closest("[data-action]");
-if (actionBtn && root.contains(actionBtn)) {
-  e.preventDefault();
-
-  const value = actionBtn.dataset.action || "";
-  state.action = state.action === value ? "" : value;
-
-  render(root);
-  return;
-}
-
-
-    const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
-if (characterCreateBtn && root.contains(characterCreateBtn)) {
-  e.preventDefault();
-
-  const payload = buildCharacterCreatePayload(root);
-  console.log("[CARTOON][CHARACTER] payload =", payload);
-
-  state.characterCreatePending = true;
-  characterCreateBtn.disabled = true;
-  characterCreateBtn.textContent = "Üretiliyor...";
-
-  fetch("/api/providers/fal/cartoon/create", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-    .then(async (r) => {
-      const j = await r.json().catch(() => null);
-      console.log("[CARTOON][CHARACTER] create response =", j);
-
-      if (!r.ok || !j || j.ok === false) {
-        throw new Error(j?.error || `character_create_failed_${r.status}`);
-      }
-
-     if (j?.job_id) {
-  const nextPollToken = Date.now();
-
-  state.activeBasicJobId = String(j.job_id || "").trim();
-  state.activeBasicPollToken = nextPollToken;
-
-  window.dispatchEvent(
-    new CustomEvent("aivo:cartoon:job_created", {
-      detail: {
-        app: "cartoon",
-        mode: "basic",
-        job_id: j.job_id,
-        prompt: payload.extraPrompt || "",
-        createdAt: Date.now(),
-        meta: {
-          app: "cartoon",
-          mode: "basic",
-          provider: "fal",
-          prompt: [
-            payload.mainCharacter,
-            ...(payload.helperCharacters || []),
-            payload.scene,
-            payload.action,
-            payload.extraPrompt
-          ].filter(Boolean).join(" • "),
-          duration: payload.duration,
-          aspect_ratio: payload.aspectRatio
-        }
-      }
-    })
-  );
-
-  pollCartoonJob(j.job_id, 0, nextPollToken);
-}
-    })
-    .catch((err) => {
-      state.characterCreatePending = false;
-      characterCreateBtn.disabled = false;
-      characterCreateBtn.textContent = "🧩 Karakter Oluştur";
-
-      console.error("[CARTOON][CHARACTER] create error:", err);
-      alert(String(err?.message || err || "character_create_failed"));
-    });
-
-  return;
-}
-const generateBtn = e.target.closest("[data-cartoon-generate]");
-
-if (generateBtn && root.contains(generateBtn)) {
-  e.preventDefault();
-
-  if (state.isGenerating) return;
-
-  if (state.characterImage) {
-    if (
-      state.characterImageUploadStatus === "uploading" &&
-      state.characterImageUploadPromise
-    ) {
-      try {
-        await state.characterImageUploadPromise;
-      } catch {
+      const sceneBtn = e.target.closest("[data-scene]");
+      if (sceneBtn && root.contains(sceneBtn)) {
+        e.preventDefault();
+        state.scene = sceneBtn.dataset.scene || state.scene;
+        render(root);
         return;
       }
-    }
+      const actionBtn = e.target.closest("[data-action]");
+      if (actionBtn && root.contains(actionBtn)) {
+        e.preventDefault();
+        state.action = actionBtn.dataset.action || state.action;
+        render(root);
+        return;
+      }
 
-    if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
-      alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
-      return;
-    }
-  }
+          const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
+      if (characterCreateBtn && root.contains(characterCreateBtn)) {
+        e.preventDefault();
 
-  const payload = buildBasicPayload();
-  console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
+        const payload = buildCharacterCreatePayload(root);
+        console.log("[CARTOON][CHARACTER] payload =", payload);
 
-  state.isGenerating = true;
-  generateBtn.disabled = true;
-  generateBtn.textContent = "Üretiliyor...";
-  generateBtn.classList.add("is-loading");
+        characterCreateBtn.disabled = true;
+        const prevText = characterCreateBtn.textContent;
+        characterCreateBtn.textContent = "Oluşturuluyor...";
+        characterCreateBtn.classList.add("is-loading");
 
-  try {
-    const r = await fetch("/api/providers/fal/cartoon/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const j = await r.json().catch(() => null);
-    if (!r.ok || !j || j.ok === false) {
-      throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
-    }
-
-    console.log("[CARTOON] create ok =", j);
-
-    if (j?.job_id) {
-      window.dispatchEvent(
-        new CustomEvent("aivo:cartoon:job_created", {
-    detail: {
-  app: "cartoon",
-  mode: "basic",
-  job_id: j.job_id,
-  prompt: payload.extraPrompt || "",
-  createdAt: Date.now(),
-  meta: {
-    app: "cartoon",
-    mode: "basic",
-    provider: "fal",
-    prompt: [
-      payload.mainCharacter,
-      ...(payload.helperCharacters || []),
-      payload.scene,
-      payload.action,
-      payload.extraPrompt
-    ].filter(Boolean).join(" • "),
-    duration: payload.duration,
-    aspect_ratio: payload.aspectRatio
-  }
-}
+        fetch("/api/providers/fal/cartoon/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         })
-      );
+                 .then(async (r) => {
+            const j = await r.json().catch(() => null);
+            console.log("[CARTOON][CHARACTER] create response =", j);
 
-      pollCartoonJob(j.job_id);
-    }
-  } catch (err) {
-    state.isGenerating = false;
-    generateBtn.disabled = false;
-    generateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-    generateBtn.classList.remove("is-loading");
+            if (!r.ok || !j || j.ok === false) {
+              throw new Error(j?.error || `character_create_failed_${r.status}`);
+            }
 
-    console.error("[CARTOON] create error:", err);
-    alert(String(err?.message || err || "cartoon_create_failed"));
-  }
+            if (j?.job_id) {
+              window.dispatchEvent(
+                new CustomEvent("aivo:cartoon:job_created", {
+                  detail: {
+                    app: "cartoon",
+                    mode: "character",
+                    job_id: j.job_id,
+                    createdAt: Date.now(),
+                    meta: {
+                      app: "cartoon",
+                      mode: "character",
+                      provider: "fal",
+                      prompt: payload.prompt || "",
+                      name: payload.name || "",
+                      type: payload.type || "",
+                      style: payload.style || ""
+                    }
+                  }
+                })
+              );
 
-  return;
-}
+              pollCartoonJob(j.job_id);
+            }
+          })
+          .catch((err) => {
+            console.error("[CARTOON][CHARACTER] create error:", err);
+            alert(String(err?.message || err || "character_create_failed"));
+          })
+          .finally(() => {
+            characterCreateBtn.disabled = false;
+            characterCreateBtn.textContent = prevText;
+            characterCreateBtn.classList.remove("is-loading");
+          });
 
+        return;
+      }
+
+      const generateBtn = e.target.closest("[data-cartoon-generate]");
+      
+      if (generateBtn && root.contains(generateBtn)) {
+        e.preventDefault();
+
+        const payload = buildBasicPayload();
+
+        generateBtn.disabled = true;
+        const prevText = generateBtn.textContent;
+        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.classList.add("is-loading");
+
+        fetch("/api/providers/fal/cartoon/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(async (r) => {
+            const j = await r.json().catch(() => null);
+            if (!r.ok || !j || j.ok === false) {
+              throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
+            }
+
+            console.log("[CARTOON] create ok =", j);
+
+            if (j?.job_id) {
+              window.dispatchEvent(
+                new CustomEvent("aivo:cartoon:job_created", {
+                  detail: {
+                    app: "cartoon",
+                    job_id: j.job_id,
+                    prompt: payload.extraPrompt || "",
+                    createdAt: Date.now(),
+                    meta: {
+                      app: "cartoon",
+                      provider: "fal",
+                      prompt: [
+                        payload.mainCharacter,
+                        ...(payload.helperCharacters || []),
+                        payload.scene,
+                        payload.action,
+                        payload.extraPrompt
+                      ]
+                        .filter(Boolean)
+                        .join(" • "),
+                      duration: payload.duration,
+                      aspect_ratio: payload.aspectRatio
+                    }
+                  }
+                })
+              );
+
+              pollCartoonJob(j.job_id);
+            }
+          })
+          .catch((err) => {
+            console.error("[CARTOON] create error:", err);
+            alert(String(err?.message || err || "cartoon_create_failed"));
+          })
+         
+
+        return;
+      }
     });
- window.addEventListener("aivo:cartoon:job_ready", (e) => {
-  const d = e?.detail || {};
-  const raw = d?.raw || {};
-  const root = getCartoonRoot();
-
-  const mode = String(
-    d?.mode ||
-    d?.raw?.mode ||
-    d?.raw?.meta?.mode ||
-    ((d?.image?.url || d?.raw?.image?.url) ? "character" : "")
-  ).trim().toLowerCase();
-
-  const imageUrl = String(
-    d?.image?.url ||
-    d?.raw?.image?.url ||
-    ""
-  ).trim();
-
-  if (mode === "character" && imageUrl) {
-    const meta = raw?.meta || {};
-    const fallbackName = qs("#cartoon-character-name", root)?.value || "";
-    const fallbackStyle = qs("#cartoon-character-style", root)?.value || "";
-
-    const nextItem = {
-      id: String(d.job_id || `character_${Date.now()}`),
-      job_id: String(d.job_id || ""),
-      name: String(
-        meta?.name ||
-        raw?.name ||
-        raw?.meta?.ui_state?.name ||
-        raw?.ui_state?.name ||
-        fallbackName ||
-        "Karakter"
-      ).trim(),
-      type: String(meta?.type || raw?.type || "").trim(),
-      style: String(
-        meta?.style ||
-        raw?.style ||
-        raw?.meta?.ui_state?.style ||
-        raw?.ui_state?.style ||
-        fallbackStyle ||
+        window.addEventListener("aivo:cartoon:job_ready", (e) => {
+      const d = e?.detail || {};
+     const mode = String(
+  d?.mode ||
+  d?.raw?.mode ||
+  d?.raw?.meta?.mode ||
+  ((d?.image?.url || d?.raw?.image?.url) ? "character" : "")
+).trim().toLowerCase();
+      const imageUrl = String(
+        d?.image?.url ||
+        d?.raw?.image?.url ||
         ""
-      ).trim(),
-      prompt: String(meta?.prompt || raw?.prompt || "").trim(),
-      uiState: {
-        name:
-          raw?.meta?.ui_state?.name ||
-          raw?.ui_state?.name ||
-          qs("#cartoon-character-name", root)?.value ||
-          "",
-        type:
-          raw?.meta?.ui_state?.type ||
-          raw?.ui_state?.type ||
-          qs("#cartoon-character-type", root)?.value ||
-          "",
-        style:
-          raw?.meta?.ui_state?.style ||
-          raw?.ui_state?.style ||
-          qs("#cartoon-character-style", root)?.value ||
-          "",
-        prompt:
-          raw?.meta?.ui_state?.prompt ||
-          raw?.ui_state?.prompt ||
-          qs("#cartoon-character-desc", root)?.value ||
-          "",
-        hairType:
-          raw?.meta?.ui_state?.hairType ||
-          raw?.ui_state?.hairType ||
-          qs("[data-character-hair-type]", root)?.value ||
-          "",
-        hairColor:
-          raw?.meta?.ui_state?.hairColor ||
-          raw?.ui_state?.hairColor ||
-          qs("[data-character-hair-color]", root)?.value ||
-          "",
-        outfit:
-          raw?.meta?.ui_state?.outfit ||
-          raw?.ui_state?.outfit ||
-          qs("[data-character-outfit]", root)?.value ||
-          "",
-        glasses:
-          raw?.meta?.ui_state?.glasses ||
-          raw?.ui_state?.glasses ||
-          qs("[data-character-glasses]", root)?.value ||
-          "",
-        accessory:
-          raw?.meta?.ui_state?.accessory ||
-          raw?.ui_state?.accessory ||
-          qs("[data-character-accessory]", root)?.value ||
-          "",
-        expression:
-          raw?.meta?.ui_state?.expression ||
-          raw?.ui_state?.expression ||
-          qs("[data-character-expression]", root)?.value ||
-          ""
-      },
-      imageUrl
-    };
+      ).trim();
 
-    const exists = state.characters.some(
-      (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
-    );
-    if (!exists) {
+      if (mode !== "character" || !imageUrl) return;
+
+      const raw = d?.raw || {};
+      const meta = raw?.meta || {};
+      const root = getCartoonRoot();
+      const fallbackName = qs("#cartoon-character-name", root)?.value || "";
+      const fallbackStyle = qs("#cartoon-character-style", root)?.value || "";
+      const nextItem = {
+        id: String(d.job_id || `character_${Date.now()}`),
+        job_id: String(d.job_id || ""),
+      name: String(
+  meta?.name ||
+  raw?.name ||
+  raw?.meta?.ui_state?.name ||
+  raw?.ui_state?.name ||
+  fallbackName ||
+  "Karakter"
+).trim(),
+        type: String(meta?.type || raw?.type || "").trim(),
+       style: String(
+  meta?.style ||
+  raw?.style ||
+  raw?.meta?.ui_state?.style ||
+  raw?.ui_state?.style ||
+  fallbackStyle ||
+  ""
+).trim(),
+        prompt: String(meta?.prompt || raw?.prompt || "").trim(),
+        imageUrl
+      };
+
+      const exists = state.characters.some(
+        (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
+      );
+      if (exists) return;
+
       state.characters = [nextItem, ...state.characters];
-    }
+     if (root) render(root);
+    });
+    document.addEventListener("input", (e) => {
+      const root = getCartoonRoot();
+      if (!root) return;
 
-    state.characterCreatePending = false;
+      const prompt = e.target.closest("[data-cartoon-prompt-input]");
+      if (prompt && root.contains(prompt)) {
+        state.extraPrompt = String(prompt.value || "");
+        updatePromptCount(root);
+        updateSummary(root);
+      }
+    });
 
-    const createBtn = root?.querySelector("[data-cartoon-character-create]");
-    if (createBtn) {
-      createBtn.disabled = false;
-      createBtn.textContent = "🧩 Karakter Oluştur";
-    }
-
-    if (root) render(root);
-    return;
-  }
-
-  const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-  if (basicGenerateBtn) {
-    state.isGenerating = false;
-    basicGenerateBtn.disabled = false;
-    basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-    basicGenerateBtn.classList.remove("is-loading");
-  }
-
-  if (root) {
-    updateBasicUploadStatusUI(root);
-    render(root);
-  }
-});
-document.addEventListener("input", (e) => {
-  const root = getCartoonRoot();
-  if (!root) return;
-
-  const prompt = e.target.closest("[data-cartoon-prompt-input]");
-  if (prompt && root.contains(prompt)) {
-    state.extraPrompt = String(prompt.value || "");
-    updatePromptCount(root);
-    updateSummary(root);
-  }
-
-  const characterDesc = e.target.closest("[data-character-desc]");
-  if (characterDesc && root.contains(characterDesc)) {
-    updateCharacterDescCount(root);
-  }
-});
-   document.addEventListener("change", async (e) => {
-
+    document.addEventListener("change", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
 
@@ -1342,82 +850,15 @@ document.addEventListener("input", (e) => {
         updateSummary(root);
         return;
       }
-const characterCreateUpload = e.target.closest("[data-character-create-upload]");
-if (characterCreateUpload && root.contains(characterCreateUpload)) {
-  const file =
-    characterCreateUpload.files && characterCreateUpload.files[0]
-      ? characterCreateUpload.files[0]
-      : null;
 
-  updateCharacterCreateUploadUI(root);
-
-  if (!file) {
-    state.characterReferenceImageUrl = "";
-    return;
-  }
-
-  state.characterReferenceImageUrl = "";
-
-  try {
-    const publicUrl = await uploadCartoonReferenceToR2(file);
-    state.characterReferenceImageUrl = String(publicUrl || "").trim();
-    console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
-  } catch (err) {
-    state.characterReferenceImageUrl = "";
-    console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
-    alert(String(err?.message || err || "reference_upload_failed"));
-  }
-
-  return;
-}
-
-
-
-const upload = e.target.closest("[data-character-upload]");
-if (upload && root.contains(upload)) {
-  const file = upload.files && upload.files[0] ? upload.files[0] : null;
-
-  state.characterImage = file;
-  state.characterImageName = file ? file.name : "";
-  state.characterImageUrl = "";
-  state.characterImageUploadPromise = null;
-  state.characterImageUploadError = "";
-  state.characterImageUploadStatus = file ? "uploading" : "idle";
-
-  updateBasicUploadStatusUI(root);
-  updateSummary(root);
-
-  if (!file) {
-    return;
-  }
-
-  state.characterImageUploadPromise = uploadCartoonReferenceToR2(file)
-    .then((publicUrl) => {
-      state.characterImageUrl = String(publicUrl || "").trim();
-      state.characterImageUploadStatus = "ready";
-      state.characterImageUploadError = "";
-      console.log("[CARTOON][BASIC_UPLOAD_OK]", state.characterImageUrl);
-
-      const nextRoot = getCartoonRoot();
-      if (nextRoot) updateBasicUploadStatusUI(nextRoot);
-
-      return state.characterImageUrl;
-    })
-    .catch((err) => {
-      state.characterImageUrl = "";
-      state.characterImageUploadStatus = "error";
-      state.characterImageUploadError = String(err?.message || err || "basic_reference_upload_failed");
-      console.error("[CARTOON][BASIC_UPLOAD_ERROR]", err);
-
-      const nextRoot = getCartoonRoot();
-      if (nextRoot) updateBasicUploadStatusUI(nextRoot);
-
-      alert(state.characterImageUploadError);
-      throw err;
-    });
-
-  return;
-}
+      const upload = e.target.closest("[data-character-upload]");
+      if (upload && root.contains(upload)) {
+        const file = upload.files && upload.files[0] ? upload.files[0] : null;
+        state.characterImage = file;
+        state.characterImageName = file ? file.name : "";
+        updateUploadText(root);
+        updateSummary(root);
+      }
     });
   }
   async function hydrateCharacterLibrary(root) {
