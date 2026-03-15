@@ -367,15 +367,12 @@
                 </div>
 
  <div class="cartoon-form-grid-3 cartoon-form-grid-3--personalize cartoon-field--full">
-  <div class="cartoon-field cartoon-field--audio">
-    <div class="cartoon-field-label">Ses Üretimi</div>
-    <label class="cartoon-audio-toggle">
-      <span class="cartoon-audio-toggle-text">Aç / Kapat</span>
-      <span class="cartoon-switch">
-        <input type="checkbox" data-audio-enabled>
-        <span class="cartoon-switch-ui"></span>
-      </span>
-    </label>
+  <div class="cartoon-field">
+    <label class="cartoon-field-label" for="cartoon-audio-source">Ses Kaynağı</label>
+    <select id="cartoon-audio-source" class="cartoon-select" data-audio-source>
+      <option value="none" selected>Ses yok</option>
+      <option value="upload">Kendi sesimi yükle</option>
+    </select>
   </div>
 
   <div class="cartoon-field">
