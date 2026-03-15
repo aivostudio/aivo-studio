@@ -76,8 +76,10 @@ const mode = String(
   job.input?.mode ||
   ""
 ).trim().toLowerCase();
-
 if (app === "cartoon" && mode === "character") {
+  const targets = this.ensureTargets();
+  targets.image.removeAttribute("src");
+  targets.image.style.display = "none";
   return { ok: false, reason: "skip_cartoon_character_output" };
 }
 
