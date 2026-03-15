@@ -618,49 +618,66 @@ async function pollCartoonJob(jobId, tries = 0, pollToken = 0) {
       return;
     }
 
-    const readyVideoUrl = String(j2?.video?.url || "").trim();
-    const readyImageUrl = String(j2?.image?.url || "").trim();
-    const readyMode = String(
-      j2?.mode ||
-      j2?.meta?.mode ||
-      j2?.job?.mode ||
-      ""
-    ).trim().toLowerCase();
+const normalizedStatus = String(
+  j2?.status ||
+  j2?.db_status ||
+  j2?.state ||
+  ""
+).trim().toLowerCase();
 
-    if (
-      j2.status === "ready" &&
-      (
-        readyVideoUrl ||
-        readyImageUrl ||
-        (Array.isArray(j2?.outputs) && j2.outputs.some((o) => {
-          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
-          const u = String(o?.url || o?.image_url || o?.video_url || "").trim();
-          return !!u && (t === "video" || t === "image");
-        }))
-      )
-    ) {
-      window.__LAST_CARTOON_STATUS__ = j2;
+const readyVideoUrl = String(
+  j2?.video?.url ||
+  j2?.video_url ||
+  ""
+).trim();
 
-      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-        state.activeBasicJobId = "";
-        state.activeBasicPollToken = 0;
+const readyImageUrl = String(
+  j2?.image?.url ||
+  j2?.image_url ||
+  ""
+).trim();
+
+const readyMode = String(
+  j2?.mode ||
+  j2?.meta?.mode ||
+  j2?.job?.mode ||
+  ""
+).trim().toLowerCase();
+
+const hasReadyOutput =
+  Array.isArray(j2?.outputs) &&
+  j2.outputs.some((o) => {
+    const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+    const u = String(o?.url || o?.image_url || o?.video_url || "").trim();
+    return !!u && (t === "video" || t === "image");
+  });
+
+if (
+  ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
+  (readyVideoUrl || readyImageUrl || hasReadyOutput)
+) {
+  window.__LAST_CARTOON_STATUS__ = j2;
+
+  if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+    state.activeBasicJobId = "";
+    state.activeBasicPollToken = 0;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("aivo:cartoon:job_ready", {
+      detail: {
+        job_id: jobId,
+        status: normalizedStatus,
+        mode: readyMode,
+        video: readyVideoUrl ? { url: readyVideoUrl } : null,
+        image: readyImageUrl ? { url: readyImageUrl } : null,
+        outputs: j2.outputs || [],
+        raw: j2
       }
-
-      window.dispatchEvent(
-        new CustomEvent("aivo:cartoon:job_ready", {
-          detail: {
-            job_id: jobId,
-            status: j2.status,
-            mode: readyMode,
-            video: readyVideoUrl ? j2.video : null,
-            image: readyImageUrl ? j2.image : null,
-            outputs: j2.outputs || [],
-            raw: j2
-          }
-        })
-      );
-      return;
-    }
+    })
+  );
+  return;
+}
 
     if (j2.status === "error") {
       console.error("[CARTOON] job error =", j2);
