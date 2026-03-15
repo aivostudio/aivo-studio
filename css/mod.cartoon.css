@@ -1431,9 +1431,9 @@
 
 .story-card-head{
   display:flex;
+  flex-direction:column;
   align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
+  gap:6px;
   margin-bottom:14px;
 }
 
@@ -1446,17 +1446,15 @@
 }
 
 .story-card-note{
-  display:inline-flex;
-  align-items:center;
-  min-height:28px;
-  padding:0 12px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:999px;
-  font-size:12px;
-  font-weight:700;
-  color:rgba(255,255,255,.76);
-  background:rgba(255,255,255,.04);
-  white-space:nowrap;
+  margin:0;
+  padding:0;
+  border:0;
+  font-size:11px;
+  font-weight:500;
+  line-height:1.35;
+  color:rgba(255,255,255,.64);
+  background:transparent;
+  white-space:normal;
 }
 
 .story-field{
