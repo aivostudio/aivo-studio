@@ -415,6 +415,341 @@
         </div>
       </div>
     </div>
+   <section class="cartoon-story-view" data-story-view>
+  <header class="story-head">
+    <h3>Hikaye Modu</h3>
+    <p>Kısa hikaye fikrini 12 sahnelik akışa böl ve 3 dakikalık çizgifilmini oluştur.</p>
+  </header>
 
+  <div class="story-layout">
+    <!-- 1) Hikaye Özeti -->
+    <section class="story-card story-summary-card">
+      <div class="story-card-head">
+        <h4>Hikaye Özeti</h4>
+        <span class="story-card-note">Bu hikaye otomatik olarak 12 sahneye bölünecek.</span>
+      </div>
+
+      <div class="story-field">
+        <label for="storyIdea">Hikaye Fikri</label>
+        <textarea
+          id="storyIdea"
+          name="storyIdea"
+          rows="5"
+          maxlength="5000"
+          placeholder="Örn: Kırmızı balık kaybolan inciyi bulmak için arkadaşlarıyla ormanda ve gölette maceraya çıkar."
+          data-story-idea
+        ></textarea>
+        <div class="story-counter">
+          <span data-story-idea-count>0</span>
+          <span>/ 5000</span>
+        </div>
+      </div>
+
+      <div class="story-grid story-grid-3">
+        <div class="story-field">
+          <label for="storyTheme">Tema / Duygu</label>
+          <select id="storyTheme" name="storyTheme" data-story-theme>
+            <option value="">Seçiniz</option>
+            <option value="neseli">Neşeli</option>
+            <option value="merakli">Meraklı</option>
+            <option value="heyecanli">Heyecanlı</option>
+            <option value="duygusal">Duygusal</option>
+            <option value="eglenceli">Eğlenceli</option>
+          </select>
+        </div>
+
+        <div class="story-field">
+          <label for="storyAge">Yaş Grubu</label>
+          <select id="storyAge" name="storyAge" data-story-age>
+            <option value="">Seçiniz</option>
+            <option value="3-5">3-5 Yaş</option>
+            <option value="5-7">5-7 Yaş</option>
+            <option value="7-9">7-9 Yaş</option>
+          </select>
+        </div>
+
+        <div class="story-field">
+          <label for="storyDuration">Süre Hedefi</label>
+          <select id="storyDuration" name="storyDuration" data-story-duration>
+            <option value="180" selected>3 Dakika</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) Karakterler -->
+    <section class="story-card story-characters-card">
+      <div class="story-card-head">
+        <h4>Karakterler</h4>
+      </div>
+
+      <div class="story-grid story-grid-3">
+        <div class="story-field">
+          <label for="storyMainCharacter">Ana Karakter</label>
+          <select id="storyMainCharacter" name="storyMainCharacter" data-story-main-character>
+            <option value="">Seçiniz</option>
+          </select>
+        </div>
+
+        <div class="story-field">
+          <label for="storySideCharacter1">Yardımcı Karakter 1</label>
+          <select id="storySideCharacter1" name="storySideCharacter1" data-story-side-character-1>
+            <option value="">Seçiniz</option>
+          </select>
+        </div>
+
+        <div class="story-field">
+          <label for="storySideCharacter2">Yardımcı Karakter 2</label>
+          <select id="storySideCharacter2" name="storySideCharacter2" data-story-side-character-2>
+            <option value="">Seçiniz</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="story-inline-actions">
+        <button type="button" class="story-ghost-btn" data-story-pick-character>
+          Hazır Karakter Seç
+        </button>
+        <button type="button" class="story-ghost-btn" data-story-upload-character>
+          Referans Görsel Ekle
+        </button>
+      </div>
+    </section>
+
+    <!-- 3) Hikaye Akışı -->
+    <section class="story-card story-flow-card">
+      <div class="story-card-head">
+        <h4>Hikaye Akışı</h4>
+      </div>
+
+      <div class="story-accordion" data-story-accordion>
+        <!-- Giriş -->
+        <article class="story-section is-open" data-story-section="intro">
+          <button type="button" class="story-section-head" data-story-section-toggle>
+            <span class="story-section-copy">
+              <strong>Giriş</strong>
+              <small>Dünya, ana karakter ve hedef tanıtılır</small>
+            </span>
+            <span class="story-section-meta">
+              <em>3 Sahne</em>
+              <i>⌄</i>
+            </span>
+          </button>
+
+          <div class="story-section-body">
+            <div class="story-scene-list">
+              <button type="button" class="story-scene-row" data-edit-scene="1">
+                <span class="story-scene-copy">
+                  <strong>Sahne 1 · Dünya Açılışı</strong>
+                  <small>Ortam ve genel atmosfer kurulur.</small>
+                </span>
+                <span class="story-scene-meta">15 sn</span>
+              </button>
+
+              <button type="button" class="story-scene-row" data-edit-scene="2">
+                <span class="story-scene-copy">
+                  <strong>Sahne 2 · Ana Karakter Tanıtımı</strong>
+                  <small>Ana karakter ilk kez görünür.</small>
+                </span>
+                <span class="story-scene-meta">15 sn</span>
+              </button>
+
+              <button type="button" class="story-scene-row" data-edit-scene="3">
+                <span class="story-scene-copy">
+                  <strong>Sahne 3 · Hedefin Ortaya Çıkışı</strong>
+                  <small>Karakterin amacı netleşir.</small>
+                </span>
+                <span class="story-scene-meta">15 sn</span>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Kurulum -->
+        <article class="story-section" data-story-section="setup">
+          <button type="button" class="story-section-head" data-story-section-toggle>
+            <span class="story-section-copy">
+              <strong>Kurulum</strong>
+              <small>Yardımcı unsur gelir, yolculuk başlar, ilk engel çıkar</small>
+            </span>
+            <span class="story-section-meta">
+              <em>3 Sahne</em>
+              <i>⌄</i>
+            </span>
+          </button>
+
+          <div class="story-section-body" hidden></div>
+        </article>
+
+        <!-- Macera -->
+        <article class="story-section" data-story-section="adventure">
+          <button type="button" class="story-section-head" data-story-section-toggle>
+            <span class="story-section-copy">
+              <strong>Macera</strong>
+              <small>Olaylar büyür, denemeler artar, doruğa gidilir</small>
+            </span>
+            <span class="story-section-meta">
+              <em>4 Sahne</em>
+              <i>⌄</i>
+            </span>
+          </button>
+
+          <div class="story-section-body" hidden></div>
+        </article>
+
+        <!-- Final -->
+        <article class="story-section" data-story-section="final">
+          <button type="button" class="story-section-head" data-story-section-toggle>
+            <span class="story-section-copy">
+              <strong>Final</strong>
+              <small>Sorun çözülür, hikaye sıcak bir kapanış yapar</small>
+            </span>
+            <span class="story-section-meta">
+              <em>2 Sahne</em>
+              <i>⌄</i>
+            </span>
+          </button>
+
+          <div class="story-section-body" hidden></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4) Üretim Ayarları -->
+    <section class="story-card story-settings-card is-collapsed">
+      <button type="button" class="story-card-collapse" data-story-settings-toggle>
+        <span>
+          <strong>Üretim Ayarları</strong>
+          <small>Oran, stil, ses ve ekstra prompt</small>
+        </span>
+        <i>⌄</i>
+      </button>
+
+      <div class="story-settings-body" hidden>
+        <div class="story-grid story-grid-2">
+          <div class="story-field">
+            <label for="storyAspectRatio">En / Boy Oranı</label>
+            <select id="storyAspectRatio" name="storyAspectRatio" data-story-aspect-ratio>
+              <option value="16:9" selected>Geniş (16:9)</option>
+              <option value="9:16">Dikey (9:16)</option>
+              <option value="1:1">Kare (1:1)</option>
+            </select>
+          </div>
+
+          <div class="story-field">
+            <label for="storyStyle">Stil</label>
+            <select id="storyStyle" name="storyStyle" data-story-style>
+              <option value="">Seçiniz</option>
+              <option value="cute-3d">Sevimli 3D</option>
+              <option value="soft-cartoon">Yumuşak Cartoon</option>
+              <option value="bright-kids">Parlak Çocuk Stili</option>
+            </select>
+          </div>
+
+          <div class="story-field">
+            <label for="storyAudio">Ses</label>
+            <select id="storyAudio" name="storyAudio" data-story-audio>
+              <option value="none" selected>Ses yok</option>
+              <option value="native">Model sesi üret</option>
+              <option value="upload">Kendi sesimi yükle</option>
+            </select>
+          </div>
+
+          <div class="story-field">
+            <label for="storyExtraPrompt">Ekstra Prompt</label>
+            <input
+              id="storyExtraPrompt"
+              name="storyExtraPrompt"
+              type="text"
+              placeholder="Örn: parlak renkler, sıcak ışık, sevimli ifade"
+              data-story-extra-prompt
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Alt sabit CTA -->
+  <footer class="story-footer">
+    <div class="story-footer-info">12 sahne · yaklaşık 3 dk · sahne başı ort. 15 sn</div>
+    <button type="button" class="story-primary-btn" data-story-generate>
+      Hikayeyi Oluştur
+    </button>
+  </footer>
+
+  <!-- Sahne Mini Edit Popup / Drawer -->
+  <aside class="story-scene-editor" data-story-scene-editor hidden>
+    <div class="story-scene-editor-card">
+      <div class="story-card-head">
+        <h4>Sahne Düzenle</h4>
+      </div>
+
+      <div class="story-field">
+        <label for="sceneTitle">Sahne Başlığı</label>
+        <input id="sceneTitle" name="sceneTitle" type="text" data-scene-title />
+      </div>
+
+      <div class="story-field">
+        <label for="sceneDescription">Sahne Açıklaması</label>
+        <textarea id="sceneDescription" name="sceneDescription" rows="4" data-scene-description></textarea>
+      </div>
+
+      <div class="story-field">
+        <label>Sahnedeki Karakterler</label>
+        <div class="story-character-pills" data-scene-characters></div>
+      </div>
+
+      <div class="story-grid story-grid-2">
+        <div class="story-field">
+          <label for="sceneDuration">Süre</label>
+          <select id="sceneDuration" name="sceneDuration" data-scene-duration>
+            <option value="15" selected>15 sn</option>
+          </select>
+        </div>
+
+        <div class="story-field">
+          <label for="sceneMood">Sahne Duygusu</label>
+          <select id="sceneMood" name="sceneMood" data-scene-mood>
+            <option value="">Seçiniz</option>
+            <option value="neseli">Neşeli</option>
+            <option value="merakli">Meraklı</option>
+            <option value="heyecanli">Heyecanlı</option>
+            <option value="gergin">Gergin</option>
+            <option value="duygusal">Duygusal</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="story-field">
+        <label for="sceneType">Sahne Tipi</label>
+        <select id="sceneType" name="sceneType" data-scene-type>
+          <option value="">Seçiniz</option>
+          <option value="giris">Giriş</option>
+          <option value="diyalog">Diyalog</option>
+          <option value="aksiyon">Aksiyon</option>
+          <option value="gecis">Geçiş</option>
+          <option value="final">Final</option>
+        </select>
+      </div>
+
+      <div class="story-field">
+        <label for="sceneDirectorNote">Ek Yönetmen Notu</label>
+        <textarea
+          id="sceneDirectorNote"
+          name="sceneDirectorNote"
+          rows="3"
+          placeholder="Örn: kamera soldan açılsın, karakter koşarak gelsin"
+          data-scene-director-note
+        ></textarea>
+      </div>
+
+      <div class="story-editor-actions">
+        <button type="button" class="story-ghost-btn" data-scene-cancel>İptal</button>
+        <button type="button" class="story-primary-btn" data-scene-save>Kaydet</button>
+      </div>
+    </div>
+  </aside>
+</section>
   </div>
 </section>
