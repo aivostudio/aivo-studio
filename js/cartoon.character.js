@@ -771,19 +771,38 @@
         return;
       }
 
-      if (act === "delete") {
-        state.characters = (state.characters || []).filter(
-          (x) => String(x.id || x.job_id || "").trim() !== selectedId
-        );
+    if (act === "delete") {
+  const deleteId = String(selectedItem.job_id || selectedItem.id || "").trim();
+  if (!deleteId) return;
 
-        if (String(state.selectedCreatedCharacterId || "") === selectedId) {
-          state.selectedCreatedCharacterId = "";
-        }
+  try {
+    const r = await fetch("/api/jobs/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ job_id: deleteId }),
+    });
 
-        renderCharacterLibrary(root);
-        return;
-      }
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || j.ok === false) {
+      throw new Error(j?.error || "delete_failed");
     }
+
+    state.characters = (state.characters || []).filter(
+      (x) => String(x.id || x.job_id || "").trim() !== selectedId
+    );
+
+    if (String(state.selectedCreatedCharacterId || "") === selectedId) {
+      state.selectedCreatedCharacterId = "";
+    }
+
+    renderCharacterLibrary(root);
+  } catch (err) {
+    console.error("[CARTOON][CHARACTER] delete failed =", err);
+  }
+
+  return;
+}
 
     const createdCharacterBtn = e.target.closest(".cpCard[data-character-id]");
     if (createdCharacterBtn && root.contains(createdCharacterBtn)) {
