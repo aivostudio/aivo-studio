@@ -481,33 +481,32 @@
   dbId: job?.id,
   job
 });
-          const r = await fetch("/api/jobs/delete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-          body: JSON.stringify({ job_id: String(job?.job_id || id || "").trim() }),
-          });
-
-          const j = await r.json().catch(() => null);
-          if (!r.ok || !j || j.ok === false) {
-            throw new Error(j?.error || "delete_failed");
-          }
-
-          hiddenDeletedIds.add(id);
+                  hiddenDeletedIds.add(id);
           optimistic.delete(id);
           currentDbItems = currentDbItems.filter(
             (x) => String(x?.job_id || x?.id || "").trim() !== id
           );
 
           renderCurrent();
-          try { controller?.hydrate?.(); } catch {}
+
+          const ok = await controller.deleteJob(id);
+          if (!ok) {
+            hiddenDeletedIds.delete(id);
+            try { await controller?.hydrate?.(true); } catch {}
+            console.error("[CARTOON PANEL] delete failed");
+            return;
+          }
+
+          try { await controller?.hydrate?.(true); } catch {}
         } catch (err) {
+          hiddenDeletedIds.delete(id);
+          try { await controller?.hydrate?.(true); } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
         }
 
         return;
       }
-      
+
        });
     
         const hiddenDeletedIds = new Set();
