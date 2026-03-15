@@ -182,6 +182,19 @@
 
 function ppeApplyCompleted(appKey, job) {
   const key = normalizeAppKey(appKey);
+  const mode = String(
+  job?.mode ||
+  job?.meta?.mode ||
+  job?.payload?.mode ||
+  job?.request?.mode ||
+  job?.input?.mode ||
+  ""
+).trim().toLowerCase();
+
+if (key === "cartoon" && mode === "character") {
+  return;
+}
+  
 
    // cover ve music artık kendi panel dosyalarında DB source-of-truth çalışıyor.
   // Boot hydrate bunlara PPE ile kart basmayacak.
