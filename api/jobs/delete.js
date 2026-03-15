@@ -135,16 +135,13 @@ const rows = await sql`
   set deleted_at = now(),
       updated_at = now()
   where deleted_at is null
-    and (
-      id::text = ${job_id}
-      or job_id::text = ${job_id}
-    )
+    and id::text = ${job_id}
     and (
       user_id::text = ${user_id || ""}
       or user_id::text = ${email || ""}
       or user_id::text = ${legacy_user_id || ""}
     )
-  returning id, job_id
+  returning id
 `;
  
     if (!rows?.length) {
