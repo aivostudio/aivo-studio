@@ -737,17 +737,23 @@
         return;
       }
 
-      if (act === "download") {
-        if (!selectedItem.imageUrl) return;
-        const a = document.createElement("a");
-        a.href = selectedItem.imageUrl;
-        a.download = `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        return;
-      }
+    if (act === "download") {
+  if (!selectedItem.imageUrl) return;
+
+  const cleanUrl = String(selectedItem.imageUrl || "").trim();
+  const proxied = `/api/media/proxy?url=${encodeURIComponent(cleanUrl)}&filename=${encodeURIComponent(
+    `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`
+  )}`;
+
+  const a = document.createElement("a");
+  a.href = proxied;
+  a.download = `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return;
+}
 
       if (act === "select") {
         state.selectedCreatedCharacterId = selectedId;
