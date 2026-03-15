@@ -109,7 +109,7 @@ async function uploadCartoonAudioToR2(file) {
     mainCharacter: "red-fish",
     helpers: [],
     scene: "underwater",
-    action: "swimming",
+  actions: ["swimming"],
     duration: "5",
     ratio: "16:9",
    audioSource: "none",
@@ -362,13 +362,14 @@ function updateBasicAudioUploadStatusUI(root) {
     });
   }
 
-  function syncActionSelection(root) {
-    qsa("[data-action]", root).forEach((btn) => {
-      const on = btn.dataset.action === state.action;
-      btn.classList.toggle("is-selected", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
+ function syncActionSelection(root) {
+  qsa("[data-action]", root).forEach((btn) => {
+    const value = btn.dataset.action || "";
+    const on = Array.isArray(state.actions) && state.actions.includes(value);
+    btn.classList.toggle("is-selected", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
 
   function syncModeTabs(root) {
     qsa("[data-cartoon-mode]", root).forEach((btn) => {
@@ -426,7 +427,8 @@ function updateBasicAudioUploadStatusUI(root) {
       mainCharacter: state.mainCharacter,
       helperCharacters: [...state.helpers],
       scene: state.scene,
-      action: state.action,
+     actions: [...(state.actions || [])],
+action: (state.actions || []).join(", "),
       duration: state.duration,
       aspectRatio: state.ratio,
       audioSource: state.audioSource || "none",
@@ -635,14 +637,23 @@ audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
         return;
       }
 
-      const actionBtn = e.target.closest("[data-action]");
-      if (actionBtn && root.contains(actionBtn)) {
-        e.preventDefault();
-        const value = actionBtn.dataset.action || "";
-        state.action = state.action === value ? "" : value;
-        render(root);
-        return;
-      }
+    const actionBtn = e.target.closest("[data-action]");
+if (actionBtn && root.contains(actionBtn)) {
+  e.preventDefault();
+  const value = actionBtn.dataset.action || "";
+  if (!value) return;
+
+  const exists = Array.isArray(state.actions) && state.actions.includes(value);
+
+  if (exists) {
+    state.actions = state.actions.filter((x) => x !== value);
+  } else {
+    state.actions = [...(Array.isArray(state.actions) ? state.actions : []), value];
+  }
+
+  render(root);
+  return;
+}
 
       const generateBtn = e.target.closest("[data-cartoon-generate]");
       if (generateBtn && root.contains(generateBtn)) {
@@ -732,7 +743,7 @@ if (state.audioSource === "upload") {
                       payload.mainCharacter,
                       ...(payload.helperCharacters || []),
                       payload.scene,
-                      payload.action,
+                     ...((payload.actions || []).filter(Boolean)),
                       payload.extraPrompt
                     ].filter(Boolean).join(" • "),
                     duration: payload.duration,
@@ -920,7 +931,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     const selectedMode = qs('[data-cartoon-mode].is-active', root);
     const selectedMain = qs('[data-role="main"].is-selected', root);
     const selectedScene = qs('[data-scene].is-selected', root);
-    const selectedAction = qs('[data-action].is-selected', root);
+ const selectedActions = qsa('[data-action].is-selected', root);
     const selectedHelpers = qsa('[data-role="helper"].is-selected', root);
 
     const prompt = qs("[data-cartoon-prompt-input]", root);
@@ -931,7 +942,9 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
     if (selectedMain?.dataset.character) state.mainCharacter = selectedMain.dataset.character;
     if (selectedScene?.dataset.scene) state.scene = selectedScene.dataset.scene;
-    if (selectedAction?.dataset.action) state.action = selectedAction.dataset.action;
+  state.actions = selectedActions
+  .map((btn) => btn.dataset.action)
+  .filter(Boolean);
 
     state.helpers = selectedHelpers
       .map((btn) => btn.dataset.character)
