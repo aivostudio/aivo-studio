@@ -144,6 +144,18 @@
     return payload;
   }
 
+  function extractImageUrlFromOutputs(outputs) {
+    if (!Array.isArray(outputs)) return "";
+
+    const hit = outputs.find((o) => {
+      const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+      const u = String(o?.url || o?.image_url || "").trim();
+      return !!u && t === "image";
+    });
+
+    return String(hit?.url || hit?.image_url || "").trim();
+  }
+
   async function pollCartoonCharacterJob(jobId, tries = 0) {
     try {
       const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`);
@@ -168,6 +180,7 @@
       const readyImageUrl = String(
         j2?.image?.url ||
         j2?.image_url ||
+        extractImageUrlFromOutputs(j2?.outputs) ||
         ""
       ).trim();
 
@@ -330,6 +343,8 @@
     const imageUrl = String(
       d?.image?.url ||
       d?.raw?.image?.url ||
+      extractImageUrlFromOutputs(d?.outputs) ||
+      extractImageUrlFromOutputs(d?.raw?.outputs) ||
       ""
     ).trim();
 
