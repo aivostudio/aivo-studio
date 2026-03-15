@@ -1034,39 +1034,30 @@ if (characterCreateBtn && root.contains(characterCreateBtn)) {
         throw new Error(j?.error || `character_create_failed_${r.status}`);
       }
 
-     if (j?.job_id) {
-  const nextPollToken = Date.now();
-
-  state.activeBasicJobId = String(j.job_id || "").trim();
-  state.activeBasicPollToken = nextPollToken;
-
+   if (j?.job_id) {
   window.dispatchEvent(
     new CustomEvent("aivo:cartoon:job_created", {
       detail: {
         app: "cartoon",
-        mode: "basic",
+        mode: "character",
         job_id: j.job_id,
-        prompt: payload.extraPrompt || "",
+        prompt: payload.prompt || "",
         createdAt: Date.now(),
         meta: {
           app: "cartoon",
-          mode: "basic",
+          mode: "character",
           provider: "fal",
-          prompt: [
-            payload.mainCharacter,
-            ...(payload.helperCharacters || []),
-            payload.scene,
-            payload.action,
-            payload.extraPrompt
-          ].filter(Boolean).join(" • "),
-          duration: payload.duration,
-          aspect_ratio: payload.aspectRatio
+          name: payload.name || "",
+          type: payload.type || "",
+          style: payload.style || "",
+          prompt: payload.prompt || "",
+          ui_state: payload.uiState || {}
         }
       }
     })
   );
 
-  pollCartoonJob(j.job_id, 0, nextPollToken);
+  pollCartoonJob(j.job_id, 0, 0);
 }
     })
     .catch((err) => {
