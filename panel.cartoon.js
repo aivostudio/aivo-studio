@@ -475,6 +475,12 @@
         e.stopPropagation();
 
         try {
+          console.log("[CARTOON DELETE DEBUG]", {
+  clickedId: id,
+  jobId: job?.job_id,
+  dbId: job?.id,
+  job
+});
           const r = await fetch("/api/jobs/delete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
