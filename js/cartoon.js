@@ -240,6 +240,23 @@
     });
   }
 
+  function syncModeTabs(root) {
+    qsa("[data-cartoon-mode]", root).forEach((btn) => {
+      const on = btn.dataset.cartoonMode === state.mode;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+
+  function syncModeViews(root) {
+    qsa(".cartoon-mode-view[data-cartoon-view]", root).forEach((el) => {
+      const view = el.dataset.cartoonView || "";
+      const on = view === state.mode;
+      el.hidden = !on;
+      el.classList.toggle("is-active", on);
+    });
+  }
+
   function syncFormValues(root) {
     const prompt = qs("[data-cartoon-prompt-input]", root);
     const duration = qs("#cartoon-duration", root);
@@ -255,6 +272,8 @@
   function render(root) {
     if (!root) return;
 
+    syncModeTabs(root);
+    syncModeViews(root);
     syncMainSelection(root);
     syncHelperSelection(root);
     syncSceneSelection(root);
@@ -435,6 +454,14 @@
       const root = getCartoonRoot();
       if (!root) return;
 
+      const modeBtn = e.target.closest("[data-cartoon-mode]");
+      if (modeBtn && root.contains(modeBtn)) {
+        e.preventDefault();
+        state.mode = modeBtn.dataset.cartoonMode || "basic";
+        render(root);
+        return;
+      }
+
       const mainBtn = e.target.closest('[data-role="main"]');
       if (mainBtn && root.contains(mainBtn)) {
         e.preventDefault();
@@ -485,6 +512,7 @@
       if (generateBtn && root.contains(generateBtn)) {
         e.preventDefault();
 
+        if (state.mode !== "basic") return;
         if (state.isGenerating) return;
 
         if (state.characterImage) {
@@ -686,6 +714,7 @@
   function initFromDOM(root) {
     if (!root) return;
 
+    const selectedMode = qs('[data-cartoon-mode].is-active', root);
     const selectedMain = qs('[data-role="main"].is-selected', root);
     const selectedScene = qs('[data-scene].is-selected', root);
     const selectedAction = qs('[data-action].is-selected', root);
@@ -696,6 +725,7 @@
     const ratio = qs("#cartoon-ratio", root);
     const audio = qs("[data-audio-enabled]", root);
 
+    if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
     if (selectedMain?.dataset.character) state.mainCharacter = selectedMain.dataset.character;
     if (selectedScene?.dataset.scene) state.scene = selectedScene.dataset.scene;
     if (selectedAction?.dataset.action) state.action = selectedAction.dataset.action;
