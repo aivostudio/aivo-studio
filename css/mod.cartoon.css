@@ -1342,3 +1342,35 @@
 .cartoon-mode-view[data-cartoon-view="character"] .cartoon-upload-text {
   display: none !important;
 }
+.cartoon-form-grid-3--personalize{
+  display:grid;
+  grid-template-columns: 0.9fr 1fr 1fr;
+  gap:16px;
+  align-items:end;
+}
+
+.cartoon-upload-row--compact{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+  min-width:0;
+}
+
+.cartoon-upload-row--compact .cartoon-upload-text{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.cartoon-upload-row--compact .cartoon-upload-clear{
+  flex:0 0 auto;
+}
+
+@media (max-width: 900px){
+  .cartoon-form-grid-3--personalize{
+    grid-template-columns:1fr;
+  }
+}
