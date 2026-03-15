@@ -629,113 +629,126 @@
       );
       if (!selectedItem) return;
 
-      if (act === "open") {
-        if (!selectedItem.imageUrl) return;
+   if (act === "open") {
+  if (!selectedItem.imageUrl) return;
 
-        const existing = document.getElementById("cartoonCharacterPreviewModal");
-        if (existing) existing.remove();
+  const existing = document.getElementById("cartoonCharacterPreviewModal");
+  if (existing) existing.remove();
 
-        const modal = document.createElement("div");
-        modal.id = "cartoonCharacterPreviewModal";
-        modal.innerHTML = `
-          <div
-            data-preview-backdrop
-            style="
-              position:fixed;
-              inset:0;
-              background:rgba(0,0,0,.82);
-              z-index:99999;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              padding:24px;
-            "
-          >
-            <div
-              style="
-                position:relative;
-                display:inline-block;
-                max-width:min(92vw,1200px);
-                max-height:88vh;
-              "
-            >
-              <button
-                type="button"
-                data-preview-close
-                aria-label="Kapat"
-                title="Kapat"
-                style="
-                  position:absolute;
-                  top:16px;
-                  right:16px;
-                  width:42px;
-                  height:42px;
-                  border:none;
-                  border-radius:999px;
-                  background:rgba(12,14,24,.72);
-                  color:rgba(255,255,255,.96);
-                  cursor:pointer;
-                  display:grid;
-                  place-items:center;
-                  z-index:5;
-                  box-shadow:0 10px 30px rgba(0,0,0,.32);
-                  backdrop-filter:blur(12px);
-                  -webkit-backdrop-filter:blur(12px);
-                "
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;display:block;">
-                  <path
-                    d="M7 7l10 10M17 7 7 17"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </button>
+  const modal = document.createElement("div");
+  modal.id = "cartoonCharacterPreviewModal";
+  modal.innerHTML = `
+    <div
+      data-preview-backdrop
+      style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.82);
+        z-index:99999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:24px;
+      "
+    >
+      <div
+        style="
+          position:relative;
+          display:inline-block;
+          max-width:min(92vw,1200px);
+          max-height:88vh;
+        "
+      >
+        <button
+          type="button"
+          data-preview-close
+          aria-label="Kapat"
+          title="Kapat"
+          style="
+            position:absolute;
+            top:16px;
+            right:16px;
+            width:44px;
+            height:44px;
+            border:none;
+            border-radius:999px;
+            background:rgba(18,20,30,.58);
+            color:rgba(255,255,255,.96);
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            z-index:20;
+            box-shadow:0 10px 30px rgba(0,0,0,.30);
+            backdrop-filter:blur(12px);
+            -webkit-backdrop-filter:blur(12px);
+            transition:transform .16s ease, background .16s ease, opacity .16s ease;
+          "
+          onmouseover="this.style.transform='scale(1.06)';this.style.background='rgba(28,30,44,.72)'"
+          onmouseout="this.style.transform='scale(1)';this.style.background='rgba(18,20,30,.58)'"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;display:block;">
+            <path
+              d="M7 7l10 10M17 7 7 17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
 
-              <img
-                src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
-                alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
-                style="
-                  max-width:min(92vw,1200px);
-                  max-height:88vh;
-                  width:auto;
-                  height:auto;
-                  display:block;
-                  border-radius:18px;
-                  box-shadow:0 18px 60px rgba(0,0,0,.45);
-                  background:#111;
-                "
-              />
-            </div>
-          </div>
-        `;
+        <img
+          src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
+          alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
+          style="
+            max-width:min(92vw,1200px);
+            max-height:88vh;
+            width:auto;
+            height:auto;
+            display:block;
+            border-radius:18px;
+            box-shadow:0 18px 60px rgba(0,0,0,.45);
+            background:#111;
+          "
+        />
+      </div>
+    </div>
+  `;
 
-        document.body.appendChild(modal);
+  document.body.appendChild(modal);
 
-        const closeModal = () => {
-          const node = document.getElementById("cartoonCharacterPreviewModal");
-          if (node) node.remove();
-          document.removeEventListener("keydown", onEsc, true);
-        };
+  function closeModal() {
+    const node = document.getElementById("cartoonCharacterPreviewModal");
+    if (node) node.remove();
+    document.removeEventListener("keydown", onEsc, true);
+  }
 
-        const onEsc = (evt) => {
-          if (evt.key === "Escape") closeModal();
-        };
+  function onEsc(evt) {
+    if (evt.key === "Escape") closeModal();
+  }
 
-        modal.addEventListener("click", (evt) => {
-          if (
-            evt.target.closest("[data-preview-close]") ||
-            evt.target.hasAttribute("data-preview-backdrop")
-          ) {
-            closeModal();
-          }
-        });
+  modal.addEventListener("click", (evt) => {
+    const closeBtn = evt.target.closest("[data-preview-close]");
+    const backdrop = evt.target.closest("[data-preview-backdrop]");
 
-        document.addEventListener("keydown", onEsc, true);
-        return;
-      }
+    if (closeBtn) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      closeModal();
+      return;
+    }
+
+    if (backdrop && evt.target === backdrop) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", onEsc, true);
+  return;
+}
 
     if (act === "download") {
   if (!selectedItem.imageUrl) return;
