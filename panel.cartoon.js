@@ -316,6 +316,7 @@
       const byId = new Map();
 
       for (const j of currentDbItems) {
+       if (hiddenDeletedIds.has(String(j?.job_id || "").trim())) continue;
         const id = String(j?.job_id || "").trim();
         if (!id) continue;
 
