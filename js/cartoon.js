@@ -823,6 +823,7 @@ if (audioUpload && root.contains(audioUpload)) {
   state.audioFileUploadPromise = null;
   state.audioFileUploadError = "";
   state.audioFileUploadStatus = file ? "uploading" : "idle";
+  updateBasicAudioUploadStatusUI(root);
 
   updateSummary(root);
 
@@ -833,6 +834,8 @@ if (audioUpload && root.contains(audioUpload)) {
       state.audioFileUrl = String(publicUrl || "").trim();
       state.audioFileUploadStatus = "ready";
       state.audioFileUploadError = "";
+      const nextRoot = getCartoonRoot();
+if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
       console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
       return state.audioFileUrl;
     })
@@ -841,6 +844,8 @@ if (audioUpload && root.contains(audioUpload)) {
       state.audioFileUploadStatus = "error";
       state.audioFileUploadError = String(err?.message || err || "basic_audio_upload_failed");
       console.error("[CARTOON][BASIC_AUDIO_UPLOAD_ERROR]", err);
+      const nextRoot = getCartoonRoot();
+if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
       alert(state.audioFileUploadError);
       throw err;
     });
