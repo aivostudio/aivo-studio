@@ -143,7 +143,7 @@ audioFileUploadError: "",
     if (!input || !out) return;
 
     const len = String(input.value || "").length;
-    out.textContent = `${len} / 1000`;
+  out.textContent = `${len} / 5000`;
   }
 
   function updateHelperCount(root) {
