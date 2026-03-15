@@ -485,7 +485,7 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-           body: JSON.stringify({ job_id: String(job?.id || "").trim() }),
+          body: JSON.stringify({ job_id: String(job?.job_id || id || "").trim() }),
           });
 
           const j = await r.json().catch(() => null);
