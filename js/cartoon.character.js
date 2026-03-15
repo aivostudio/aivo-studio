@@ -437,22 +437,12 @@
       state.characters = [nextItem, ...(state.characters || [])];
     }
 
-   state.characterCreatePending = false;
+    state.characterCreatePending = false;
 
-const createBtn = root?.querySelector("[data-cartoon-character-create]");
-if (createBtn) {
-  createBtn.disabled = false;
-  createBtn.textContent = "🧩 Karakter Oluştur";
-}
-
-if (root && typeof window.renderCartoonCharacterLibrary === "function") {
-  window.renderCartoonCharacterLibrary(root);
-}
-
-window.dispatchEvent(
-  new CustomEvent("aivo:cartoon:character_library_changed", {
-    detail: {
-      characters: state.characters || []
+    const createBtn = root?.querySelector("[data-cartoon-character-create]");
+    if (createBtn) {
+      createBtn.disabled = false;
+      createBtn.textContent = "🧩 Karakter Oluştur";
     }
-  })
-);
+  });
+})();
