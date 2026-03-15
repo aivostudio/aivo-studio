@@ -245,7 +245,19 @@ export default async function handler(req, res) {
 
   const duration = String(body.duration || "5");
   const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
-  const generate_audio = !!body.audioEnabled;
+ const audio_mode =
+  String(body.audioMode || body.audio_mode || "none").toLowerCase() === "upload"
+    ? "upload"
+    : "none";
+
+const audio_url =
+  String(body.audioFileUrl || body.audio_url || "").trim() || null;
+
+const silent_copy = audio_mode !== "upload";
+
+// Fal'ın kendi otomatik sesi şimdilik kapalı kalsın.
+// Çünkü bizim hedefimiz kullanıcı yüklediği mp3'ü sonradan mux etmek.
+const generate_audio = false;
 
   const characterImageUrl =
     pick(body, [
@@ -351,6 +363,9 @@ export default async function handler(req, res) {
     mode,
     kind: "cartoon_video",
     provider: "fal",
+    audio_mode,
+   audio_url,
+   silent_copy,
     model: falModel,
     request_id,
     ui_state: {
@@ -374,9 +389,13 @@ export default async function handler(req, res) {
       duration,
       aspect_ratio,
       generate_audio,
-      characterImageUrl: characterImageUrl || null,
-      referenceImageUrl: referenceImageUrl || null,
-      requestNonce: requestNonce || null,
+     generate_audio,
+audio_mode,
+audio_url,
+silent_copy,
+characterImageUrl: characterImageUrl || null,
+referenceImageUrl: referenceImageUrl || null,
+requestNonce: requestNonce || null,
     },
     fal_input: falInput,
     provider_response: {
