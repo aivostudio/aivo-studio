@@ -1106,7 +1106,7 @@ try {
     job.type === "music" ||
     job.provider === "topmediai"
   );
-  const state = (status || job.status || "").toString().toLowerCase();
+ const state = (job?.status || job?.db_status || job?.state || "").toString().toLowerCase();
   const readyLike = state === "completed" || state === "ready";
 
   if (isMusic && readyLike && Array.isArray(outputs)) {
