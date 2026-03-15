@@ -56,7 +56,53 @@
 
     return publicUrl;
   }
+async function presignCartoonAudio(file) {
+  const res = await fetch("/api/r2/presign-put", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: "cartoon",
+      kind: "audio",
+      filename: file?.name || `audio-${Date.now()}.mp3`,
+      contentType: file?.type || "application/octet-stream"
+    })
+  });
 
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data || data.ok === false) {
+    throw new Error(data?.error || "cartoon_audio_presign_failed");
+  }
+
+  return {
+    uploadUrl: data.uploadUrl || data.upload_url,
+    publicUrl: data.publicUrl || data.public_url || data.url || "",
+  };
+}
+
+async function uploadCartoonAudioToR2(file) {
+  if (!file) throw new Error("missing_audio_file");
+
+  const { uploadUrl, publicUrl } = await presignCartoonAudio(file);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error("cartoon_audio_missing_upload_urls");
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream"
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error("cartoon_audio_r2_put_failed");
+  }
+
+  return publicUrl;
+}
   const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
     mode: "basic",
     extraPrompt: "",
@@ -303,6 +349,8 @@ audioFileUploadError: "",
       duration: state.duration,
       aspectRatio: state.ratio,
       audioEnabled: !!state.audioEnabled,
+      audioFileName: state.audioFileName,
+      audioFileUrl: state.audioFileUrl || "",
       characterImage: state.characterImage,
       characterImageName: state.characterImageName,
       characterImageUrl: state.characterImageUrl || "",
@@ -538,7 +586,23 @@ audioFileUploadError: "",
             return;
           }
         }
+        if (state.audioFile) {
+  if (
+    state.audioFileUploadStatus === "uploading" &&
+    state.audioFileUploadPromise
+  ) {
+    try {
+      await state.audioFileUploadPromise;
+    } catch {
+      return;
+    }
+  }
 
+  if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
+    alert("Ses dosyası henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+    return;
+  }
+}
         const payload = buildBasicPayload();
         console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
@@ -670,7 +734,40 @@ audioFileUploadError: "",
         updateSummary(root);
         return;
       }
+     const audioUpload = e.target.closest("[data-audio-upload]");
+if (audioUpload && root.contains(audioUpload)) {
+  const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
 
+  state.audioFile = file;
+  state.audioFileName = file ? file.name : "";
+  state.audioFileUrl = "";
+  state.audioFileUploadPromise = null;
+  state.audioFileUploadError = "";
+  state.audioFileUploadStatus = file ? "uploading" : "idle";
+
+  updateSummary(root);
+
+  if (!file) return;
+
+  state.audioFileUploadPromise = uploadCartoonAudioToR2(file)
+    .then((publicUrl) => {
+      state.audioFileUrl = String(publicUrl || "").trim();
+      state.audioFileUploadStatus = "ready";
+      state.audioFileUploadError = "";
+      console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
+      return state.audioFileUrl;
+    })
+    .catch((err) => {
+      state.audioFileUrl = "";
+      state.audioFileUploadStatus = "error";
+      state.audioFileUploadError = String(err?.message || err || "basic_audio_upload_failed");
+      console.error("[CARTOON][BASIC_AUDIO_UPLOAD_ERROR]", err);
+      alert(state.audioFileUploadError);
+      throw err;
+    });
+
+  return;
+}
       const upload = e.target.closest("[data-character-upload]");
       if (upload && root.contains(upload)) {
         const file = upload.files && upload.files[0] ? upload.files[0] : null;
