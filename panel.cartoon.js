@@ -65,7 +65,6 @@
     String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "").trim();
 
   const isJobCartoon = (job) => isCartoonApp(getJobApp(job));
-  
     const isCharacterMode = (x) =>
     String(
       x?.mode ||
@@ -310,7 +309,7 @@ const elStatus = null;
       pollIntervalMs: 4000,
       hydrateEveryMs: 15000,
 
-               acceptJob: (job) => {
+          acceptJob: (job) => {
         if (!job) return false;
         const ja = getJobApp(job);
         if (ja && !isCartoonApp(ja)) return false;
