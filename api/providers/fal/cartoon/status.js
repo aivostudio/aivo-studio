@@ -276,7 +276,7 @@ let video_url = isCharacterMode ? null : extractVideoUrl(fal);
 let image_url = isCharacterMode ? extractImageUrl(fal) : null;
 
     const stUpper = String(rawStatus || "").toUpperCase();
-   if (!video_url) {
+    if (!video_url && ["COMPLETED", "COMPLETE", "SUCCEEDED", "READY", "DONE"].includes(stUpper)) {
       const reqUrl = requestUrlFromStatusUrl(status_url);
 
       if (reqUrl) {
