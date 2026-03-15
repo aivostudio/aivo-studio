@@ -1344,9 +1344,22 @@
 }
 .cartoon-form-grid-3--personalize{
   display:grid;
-  grid-template-columns: 0.9fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   gap:16px;
   align-items:end;
+  width:100%;
+}
+
+.cartoon-form-grid-3--personalize > .cartoon-field,
+.cartoon-form-grid-3--personalize > .cartoon-field--audio,
+.cartoon-form-grid-3--personalize > *{
+  min-width:0;
+  width:100%;
+}
+
+.cartoon-form-grid-3--personalize .cartoon-audio-toggle,
+.cartoon-form-grid-3--personalize .cartoon-upload-row--compact{
+  width:100%;
 }
 
 .cartoon-upload-row--compact{
@@ -1354,7 +1367,13 @@
   align-items:center;
   gap:10px;
   flex-wrap:nowrap;
+  width:100%;
   min-width:0;
+}
+
+.cartoon-upload-row--compact .cartoon-upload-btn{
+  flex:0 0 152px;
+  min-width:152px;
 }
 
 .cartoon-upload-row--compact .cartoon-upload-text{
@@ -1372,5 +1391,10 @@
 @media (max-width: 900px){
   .cartoon-form-grid-3--personalize{
     grid-template-columns:1fr;
+  }
+
+  .cartoon-upload-row--compact .cartoon-upload-btn{
+    flex:0 0 140px;
+    min-width:140px;
   }
 }
