@@ -154,7 +154,16 @@ const rows = await sql`
 
     return res.status(200).json({ ok: true, job_id: String(rows[0].id) });
   } catch (e) {
-    console.error("jobs/delete failed:", e);
+   console.error("jobs/delete failed:", {
+  message: String(e?.message || e),
+  code: e?.code || "",
+  detail: e?.detail || "",
+  hint: e?.hint || "",
+  job_id,
+  user_id,
+  email,
+  legacy_user_id,
+});
     return res.status(500).json({
       ok: false,
       error: "delete_failed",
