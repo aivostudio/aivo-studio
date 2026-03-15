@@ -247,7 +247,85 @@ audioFileUploadError: "",
     textEl.textContent = state.characterImageName || "Dosya seçilmedi";
     if (generateBtn) generateBtn.disabled = !!state.isGenerating;
   }
+  function clearBasicAudioFile(root) {
+  const input = qs("[data-audio-upload]", root);
 
+  state.audioFile = null;
+  state.audioFileName = "";
+  state.audioFileUrl = "";
+  state.audioFileUploadPromise = null;
+  state.audioFileUploadStatus = "idle";
+  state.audioFileUploadError = "";
+
+  if (input) input.value = "";
+
+  updateBasicAudioUploadStatusUI(root);
+  updateSummary(root);
+}
+
+function ensureBasicAudioUploadClearButton(root) {
+  const clearBtn = qs("[data-basic-audio-upload-clear]", root);
+  if (!clearBtn || clearBtn.dataset.bound === "1") return;
+
+  clearBtn.dataset.bound = "1";
+  clearBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const nextRoot = getCartoonRoot();
+    if (!nextRoot) return;
+    clearBasicAudioFile(nextRoot);
+  });
+}
+
+function updateBasicAudioUploadStatusUI(root) {
+  const textEl = qs("[data-basic-audio-upload-text]", root);
+  const clearBtn = qs("[data-basic-audio-upload-clear]", root);
+
+  ensureBasicAudioUploadClearButton(root);
+
+  if (!textEl) return;
+
+  if (!state.audioFile) {
+    textEl.textContent = "Dosya seçilmedi";
+    if (clearBtn) clearBtn.style.display = "none";
+    return;
+  }
+
+  if (state.audioFileUploadStatus === "uploading") {
+    textEl.textContent = `${state.audioFileName} · Yükleniyor...`;
+    if (clearBtn) clearBtn.style.display = "none";
+    return;
+  }
+
+  if (state.audioFileUploadStatus === "ready") {
+    textEl.textContent = `${state.audioFileName} · Hazır ✓`;
+    if (clearBtn) {
+      clearBtn.style.display = "inline-grid";
+      clearBtn.style.placeItems = "center";
+      clearBtn.style.marginLeft = "8px";
+      clearBtn.style.width = "22px";
+      clearBtn.style.height = "22px";
+      clearBtn.style.borderRadius = "999px";
+      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+      clearBtn.style.background = "rgba(255,255,255,.08)";
+      clearBtn.style.color = "#fff";
+      clearBtn.style.cursor = "pointer";
+    }
+    return;
+  }
+
+  if (state.audioFileUploadStatus === "error") {
+    textEl.textContent = `${state.audioFileName} · Yükleme hatası`;
+    if (clearBtn) {
+      clearBtn.style.display = "inline-grid";
+      clearBtn.style.placeItems = "center";
+    }
+    return;
+  }
+
+  textEl.textContent = state.audioFileName || "Dosya seçilmedi";
+  if (clearBtn) clearBtn.style.display = "none";
+}
   function updateSummary(root) {
     const el = qs("[data-cartoon-summary]", root);
     if (!el) return;
@@ -334,6 +412,7 @@ audioFileUploadError: "",
     updatePromptCount(root);
     updateHelperCount(root);
     updateBasicUploadStatusUI(root);
+    updateBasicAudioUploadStatusUI(root);
     updateSummary(root);
   }
 
