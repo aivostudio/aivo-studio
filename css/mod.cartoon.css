@@ -1901,3 +1901,21 @@
     padding:14px;
   }
 }
+.story-grid-3{
+  align-items:start;
+}
+
+.story-grid-3 .story-field{
+  margin-top:0 !important;
+}
+
+.story-grid-3 .story-field label{
+  min-height:28px;
+  display:flex;
+  align-items:flex-end;
+}
+
+.story-grid-3 .story-field select,
+.story-grid-3 .story-field input{
+  margin-top:0;
+}
