@@ -483,46 +483,152 @@
     </div>
   </div>
 </section>
-
 <!-- 2) Karakterler -->
 <section class="story-card story-characters-card">
   <div class="story-card-head">
     <h4>Karakterler</h4>
+    <p class="story-card-note">
+      En fazla 4 referans görsel/karakter kullanılabilir.
+    </p>
   </div>
 
   <div class="story-grid story-grid-3">
-    <div class="story-field">
+    <div class="story-field story-character-field">
       <label for="storyMainCharacter">Ana Karakter</label>
       <select id="storyMainCharacter" name="storyMainCharacter" data-story-main-character>
         <option value="">Seçiniz</option>
       </select>
+
+      <div class="story-upload-slot" data-story-upload-slot="main">
+        <input
+          type="file"
+          id="storyMainCharacterImage"
+          accept="image/*"
+          hidden
+          data-story-character-file="main"
+        />
+
+        <button
+          type="button"
+          class="story-ghost-btn story-upload-btn"
+          data-story-upload-trigger="main"
+        >
+          Ana Karakter Görseli Yükle
+        </button>
+
+        <div
+          class="story-upload-state"
+          data-story-upload-state="main"
+          hidden
+        >
+          <span
+            class="story-upload-name"
+            data-story-upload-name="main"
+          >Dosya seçilmedi</span>
+
+          <button
+            type="button"
+            class="story-upload-remove"
+            aria-label="Ana karakter görselini kaldır"
+            data-story-upload-remove="main"
+          >
+            ×
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="story-field">
+    <div class="story-field story-character-field">
       <label for="storySideCharacter1">Yardımcı Karakter 1</label>
       <select id="storySideCharacter1" name="storySideCharacter1" data-story-helper-1>
         <option value="">Seçiniz</option>
       </select>
+
+      <div class="story-upload-slot" data-story-upload-slot="helper1">
+        <input
+          type="file"
+          id="storyHelperCharacter1Image"
+          accept="image/*"
+          hidden
+          data-story-character-file="helper1"
+        />
+
+        <button
+          type="button"
+          class="story-ghost-btn story-upload-btn"
+          data-story-upload-trigger="helper1"
+        >
+          Yardımcı 1 Görseli Yükle
+        </button>
+
+        <div
+          class="story-upload-state"
+          data-story-upload-state="helper1"
+          hidden
+        >
+          <span
+            class="story-upload-name"
+            data-story-upload-name="helper1"
+          >Dosya seçilmedi</span>
+
+          <button
+            type="button"
+            class="story-upload-remove"
+            aria-label="Yardımcı karakter 1 görselini kaldır"
+            data-story-upload-remove="helper1"
+          >
+            ×
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="story-field">
+    <div class="story-field story-character-field">
       <label for="storySideCharacter2">Yardımcı Karakter 2</label>
       <select id="storySideCharacter2" name="storySideCharacter2" data-story-helper-2>
         <option value="">Seçiniz</option>
       </select>
+
+      <div class="story-upload-slot" data-story-upload-slot="helper2">
+        <input
+          type="file"
+          id="storyHelperCharacter2Image"
+          accept="image/*"
+          hidden
+          data-story-character-file="helper2"
+        />
+
+        <button
+          type="button"
+          class="story-ghost-btn story-upload-btn"
+          data-story-upload-trigger="helper2"
+        >
+          Yardımcı 2 Görseli Yükle
+        </button>
+
+        <div
+          class="story-upload-state"
+          data-story-upload-state="helper2"
+          hidden
+        >
+          <span
+            class="story-upload-name"
+            data-story-upload-name="helper2"
+          >Dosya seçilmedi</span>
+
+          <button
+            type="button"
+            class="story-upload-remove"
+            aria-label="Yardımcı karakter 2 görselini kaldır"
+            data-story-upload-remove="helper2"
+          >
+            ×
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="story-inline-actions">
-    <button type="button" class="story-ghost-btn" data-story-pick-character>
-      Hazır Karakter Seç
-    </button>
-    <button type="button" class="story-ghost-btn" data-story-upload-character>
-      Referans Görsel Ekle
-    </button>
-  </div>
 </section>
-
 <!-- 3) Hikaye Akışı -->
 <section class="story-card story-flow-card">
   <div class="story-card-head">
