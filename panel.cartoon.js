@@ -441,8 +441,105 @@
 
         return;
       }
-    });
+            const out = pickBestVideoOutput(job);
+      const url = String(out?.url || "").trim();
+      const directUrl = url.includes("#") ? url.split("#")[0] : url;
 
+      if (act === "open") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!directUrl) return;
+        window.open(directUrl, "_blank", "noopener");
+        return;
+      }
+
+      if (act === "download") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!directUrl) return;
+        download(directUrl);
+        return;
+      }
+
+      if (act === "share") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!directUrl) return;
+        share(directUrl);
+        return;
+      }
+
+      if (act === "delete") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+          const r = await fetch("/api/jobs/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ job_id: id }),
+          });
+
+          const j = await r.json().catch(() => null);
+          if (!r.ok || !j || j.ok === false) {
+            throw new Error(j?.error || "delete_failed");
+          }
+
+          hiddenDeletedIds.add(id);
+          optimistic.delete(id);
+          currentDbItems = currentDbItems.filter(
+            (x) => String(x?.job_id || x?.id || "").trim() !== id
+          );
+
+          renderCurrent();
+          try { controller?.hydrate?.(); } catch {}
+        } catch (err) {
+          console.error("[CARTOON PANEL] delete failed", err);
+        }
+
+        return;
+      }
+      
+       });
+    
+        const hiddenDeletedIds = new Set();
+
+    function download(url) {
+      const cleanUrl = String(url || "").trim();
+      if (!cleanUrl) return;
+
+      const directUrl = cleanUrl.includes("#")
+        ? cleanUrl.split("#")[0]
+        : cleanUrl;
+
+      const proxied = directUrl.startsWith("/api/media/proxy?url=")
+        ? directUrl
+        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=cartoon.mp4`;
+
+      const a = document.createElement("a");
+      a.href = proxied;
+      a.download = "cartoon.mp4";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function share(url) {
+      const cleanUrl = String(url || "").trim();
+      if (!cleanUrl) return;
+
+      const directUrl = cleanUrl.includes("#")
+        ? cleanUrl.split("#")[0]
+        : cleanUrl;
+
+      if (navigator.share) {
+        navigator.share({ url: directUrl }).catch(() => {});
+      } else {
+        navigator.clipboard?.writeText(directUrl).catch(() => {});
+      }
+    }
     const controller = window.DBJobs.create({
       app: "cartoon",
       debug: false,
