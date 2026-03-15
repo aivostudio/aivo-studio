@@ -59,29 +59,6 @@
     // Ana fonksiyon: job COMPLETED ise output’u UI’a bas
     apply(job) {
       if (!job || job.state !== "COMPLETED") return { ok: false, reason: "not_completed" };
-      const app = String(
-  job.app ||
-  job.meta?.app ||
-  job.payload?.app ||
-  job.request?.app ||
-  job.input?.app ||
-  ""
-).trim().toLowerCase();
-
-const mode = String(
-  job.mode ||
-  job.meta?.mode ||
-  job.payload?.mode ||
-  job.request?.mode ||
-  job.input?.mode ||
-  ""
-).trim().toLowerCase();
-if (app === "cartoon" && mode === "character") {
-  const targets = this.ensureTargets();
-  targets.image.removeAttribute("src");
-  targets.image.style.display = "none";
-  return { ok: false, reason: "skip_cartoon_character_output" };
-}
 
       const out = this.pickOutput(job.outputs);
       if (!out) return { ok: false, reason: "no_output" };
