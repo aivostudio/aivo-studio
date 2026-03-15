@@ -112,7 +112,7 @@ async function uploadCartoonAudioToR2(file) {
     action: "swimming",
     duration: "5",
     ratio: "16:9",
-    audioEnabled: false,
+   audioSource: "none",
     audioFile: null,
 audioFileName: "",
 audioFileUrl: "",
@@ -391,12 +391,14 @@ function updateBasicAudioUploadStatusUI(root) {
     const prompt = qs("[data-cartoon-prompt-input]", root);
     const duration = qs("#cartoon-duration", root);
     const ratio = qs("#cartoon-ratio", root);
-    const audio = qs("[data-audio-enabled]", root);
+   const audioSource = qs("[data-audio-source]", root);
 
     if (prompt && prompt.value !== state.extraPrompt) prompt.value = state.extraPrompt;
     if (duration && duration.value !== state.duration) duration.value = state.duration;
     if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
-    if (audio) audio.checked = !!state.audioEnabled;
+   if (audioSource && audioSource.value !== state.audioSource) {
+  audioSource.value = state.audioSource;
+}
   }
 
   function render(root) {
@@ -427,9 +429,10 @@ function updateBasicAudioUploadStatusUI(root) {
       action: state.action,
       duration: state.duration,
       aspectRatio: state.ratio,
-      audioEnabled: !!state.audioEnabled,
-      audioFileName: state.audioFileName,
-      audioFileUrl: state.audioFileUrl || "",
+      audioSource: state.audioSource || "none",
+audioMode: state.audioSource === "upload" ? "upload" : "none",
+audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
+audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
       characterImage: state.characterImage,
       characterImageName: state.characterImageName,
       characterImageUrl: state.characterImageUrl || "",
@@ -665,7 +668,12 @@ function updateBasicAudioUploadStatusUI(root) {
             return;
           }
         }
-        if (state.audioFile) {
+if (state.audioSource === "upload") {
+  if (!state.audioFile) {
+    alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
+    return;
+  }
+
   if (
     state.audioFileUploadStatus === "uploading" &&
     state.audioFileUploadPromise
@@ -807,15 +815,23 @@ function updateBasicAudioUploadStatusUI(root) {
         return;
       }
 
-      const audio = e.target.closest("[data-audio-enabled]");
-      if (audio && root.contains(audio)) {
-        state.audioEnabled = !!audio.checked;
-        updateSummary(root);
-        return;
-      }
+    const audioSource = e.target.closest("[data-audio-source]");
+if (audioSource && root.contains(audioSource)) {
+  state.audioSource = audioSource.value || "none";
+
+  if (state.audioSource !== "upload") {
+    clearBasicAudioFile(root);
+  }
+
+  updateSummary(root);
+  return;
+}
      const audioUpload = e.target.closest("[data-audio-upload]");
 if (audioUpload && root.contains(audioUpload)) {
   const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
+  if (state.audioSource !== "upload") {
+  state.audioSource = "upload";
+}
 
   state.audioFile = file;
   state.audioFileName = file ? file.name : "";
@@ -910,7 +926,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     const prompt = qs("[data-cartoon-prompt-input]", root);
     const duration = qs("#cartoon-duration", root);
     const ratio = qs("#cartoon-ratio", root);
-    const audio = qs("[data-audio-enabled]", root);
+   const audioSource = qs("[data-audio-source]", root);
 
     if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
     if (selectedMain?.dataset.character) state.mainCharacter = selectedMain.dataset.character;
@@ -925,7 +941,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     if (prompt) state.extraPrompt = String(prompt.value || "");
     if (duration?.value) state.duration = duration.value;
     if (ratio?.value) state.ratio = ratio.value;
-    if (audio) state.audioEnabled = !!audio.checked;
+   if (audioSource?.value) state.audioSource = audioSource.value;
 
     render(root);
   }
