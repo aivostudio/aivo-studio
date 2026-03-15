@@ -1941,14 +1941,14 @@
   display:none !important;
 }
 
-/* Butonu tek başına geniş yap */
 .cartoon-mode-view[data-cartoon-view="story"] .story-footer .story-primary-btn{
   display:flex;
   width:100%;
   min-width:0;
-  height:78px;
+  height:56px;
   border-radius:999px;
   justify-content:center;
+  align-items:center;
   font-size:24px;
   font-weight:800;
   box-shadow:0 14px 40px rgba(191,86,255,.24);
