@@ -731,7 +731,7 @@
   <button type="button" class="story-card-collapse" data-story-settings-toggle>
     <span>
       <strong>Üretim Ayarları</strong>
-      <small>Oran, stil, ses ve ekstra prompt</small>
+      <small>Oran, stil ve ses</small>
     </span>
     <i data-story-settings-icon>⌄</i>
   </button>
@@ -758,23 +758,29 @@
       </div>
 
       <div class="story-field">
-        <label for="storyAudio">Ses</label>
+        <label for="storyAudio">Ses Kaynağı</label>
         <select id="storyAudio" name="storyAudio" data-story-audio>
           <option value="none" selected>Ses yok</option>
-          <option value="native">Model sesi üret</option>
           <option value="upload">Kendi sesimi yükle</option>
         </select>
       </div>
 
-      <div class="story-field">
-        <label for="storyExtraPrompt">Ekstra Prompt</label>
-        <input
-          id="storyExtraPrompt"
-          name="storyExtraPrompt"
-          type="text"
-          placeholder="Örn: parlak renkler, sıcak ışık, sevimli ifade"
-          data-story-extra-prompt
-        />
+      <div class="story-field" data-story-audio-upload-field>
+        <label>Kendi Sesini Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="audio/*" hidden data-story-audio-upload>
+          <span class="cartoon-upload-btn">Audio Seç</span>
+          <span class="cartoon-upload-text" data-story-audio-upload-text>Dosya seçilmedi</span>
+          <button
+            type="button"
+            class="cartoon-upload-clear"
+            data-story-audio-upload-clear
+            aria-label="Yüklenen sesi kaldır"
+            title="Sesi kaldır"
+            style="display:none;">
+            ×
+          </button>
+        </label>
       </div>
     </div>
   </div>
