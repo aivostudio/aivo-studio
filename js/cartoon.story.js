@@ -5,6 +5,41 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  const STORY_CHARACTER_SLOT_CONFIG = [
+    {
+      slot: "main",
+      stateKey: "mainCharacter",
+      selectSelectors: ['[data-story-main-character]'],
+      uploadInputSelectors: ['[data-story-character-file="main"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="main"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="main"]']
+    },
+    {
+      slot: "helper1",
+      stateKey: "helperCharacter1",
+      selectSelectors: ['[data-story-helper-1]'],
+      uploadInputSelectors: ['[data-story-character-file="helper1"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="helper1"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="helper1"]']
+    },
+    {
+      slot: "helper2",
+      stateKey: "helperCharacter2",
+      selectSelectors: ['[data-story-helper-2]'],
+      uploadInputSelectors: ['[data-story-character-file="helper2"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="helper2"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="helper2"]']
+    },
+    {
+      slot: "extra",
+      stateKey: "extraCharacter",
+      selectSelectors: ['[data-story-helper-3]', '[data-story-extra-character]'],
+      uploadInputSelectors: ['[data-story-character-file="extra"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="extra"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="extra"]']
+    }
+  ];
+
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
@@ -269,6 +304,7 @@
       mainCharacter: "",
       helperCharacter1: "",
       helperCharacter2: "",
+      extraCharacter: "",
       settingsOpen: false,
       ratio: "16:9",
       style: "",
@@ -280,7 +316,8 @@
       characterImages: {
         main: createEmptyStoryCharacterImageState(),
         helper1: createEmptyStoryCharacterImageState(),
-        helper2: createEmptyStoryCharacterImageState()
+        helper2: createEmptyStoryCharacterImageState(),
+        extra: createEmptyStoryCharacterImageState()
       },
       scenes: createDefaultScenes(),
       characterOptions: []
@@ -306,6 +343,41 @@
     };
   }
 
+  function getShortFileName(name, max = 28) {
+    const text = String(name || "").trim();
+    if (!text) return "";
+    if (text.length <= max) return text;
+    return `${text.slice(0, max - 3)}...`;
+  }
+
+  function getStoryCharacterLabelBySlot(slot) {
+    const key = safeText(slot);
+    if (!key) return "";
+
+    if (key === "main") return safeText(state.mainCharacter);
+    if (key === "helper1") return safeText(state.helperCharacter1);
+    if (key === "helper2") return safeText(state.helperCharacter2);
+    if (key === "extra") return safeText(state.extraCharacter);
+    return "";
+  }
+
+  function getStoryCharacterEntries() {
+    return STORY_CHARACTER_SLOT_CONFIG
+      .map((config) => {
+        const label = getStoryCharacterLabelBySlot(config.slot);
+        const image = getStoryCharacterImage(config.slot) || createEmptyStoryCharacterImageState();
+
+        return {
+          slot: config.slot,
+          label,
+          fileName: safeText(image.fileName),
+          fileUrl: safeText(image.fileUrl),
+          hasImage: !!safeText(image.fileName)
+        };
+      })
+      .filter((item) => !!item.label);
+  }
+
   function resetStoryCharacterImage(root, slot) {
     const key = String(slot || "").trim();
     if (!key) return;
@@ -315,13 +387,12 @@
 
     setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
     updateStoryCharacterUploadUI(root, key);
-  }
 
-  function getShortFileName(name, max = 22) {
-    const text = String(name || "").trim();
-    if (!text) return "";
-    if (text.length <= max) return text;
-    return `${text.slice(0, max - 3)}...`;
+    const scene = getSceneById(state.editingSceneId);
+    if (scene) {
+      renderSceneCharacterPicker(root, scene);
+      syncSceneRows(root);
+    }
   }
 
   function updateStoryCharacterUploadUI(root, slot) {
@@ -364,8 +435,8 @@
   }
 
   function syncAllStoryCharacterUploadUI(root) {
-    ["main", "helper1", "helper2"].forEach((slot) => {
-      updateStoryCharacterUploadUI(root, slot);
+    STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
+      updateStoryCharacterUploadUI(root, config.slot);
     });
   }
 
@@ -383,7 +454,8 @@
     return {
       main: safeText(state.mainCharacter),
       helper1: safeText(state.helperCharacter1),
-      helper2: safeText(state.helperCharacter2)
+      helper2: safeText(state.helperCharacter2),
+      extra: safeText(state.extraCharacter)
     };
   }
 
@@ -398,7 +470,13 @@
     const slotMap = getStoryCharacterSlotMap();
     const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
     const labels = slots
-      .map((slot) => slotMap[slot])
+      .map((slot) => {
+        const label = slotMap[slot];
+        const imageState = getStoryCharacterImage(slot);
+        const fileName = safeText(imageState?.fileName);
+        if (!label) return "";
+        return fileName ? `${label} (${getShortFileName(fileName, 26)})` : label;
+      })
       .filter(Boolean);
 
     if (labels.length) return labels;
@@ -411,30 +489,109 @@
     let wrap = qs("[data-scene-character-picker]", editor);
     if (wrap) return wrap;
 
-    const field =
+    const hiddenField =
       qs("[data-scene-editor-characters]", editor)?.closest(".form-field") ||
       qs("[data-scene-editor-characters]", editor)?.parentElement ||
       null;
 
-    if (!field || !field.parentElement) return null;
+    if (hiddenField) hiddenField.style.display = "none";
 
-    const hiddenInput = qs("[data-scene-editor-characters]", editor);
-    if (hiddenInput) hiddenInput.style.display = "none";
+    const descriptionField =
+      qs("[data-scene-editor-description]", editor)?.closest(".form-field") ||
+      qs("[data-scene-editor-description]", editor)?.parentElement ||
+      null;
+
+    if (!descriptionField || !descriptionField.parentElement) return null;
 
     wrap = document.createElement("div");
     wrap.className = "form-field";
     wrap.setAttribute("data-scene-character-picker", "");
-
+    wrap.style.marginTop = "18px";
     wrap.innerHTML = `
-      <label style="display:block;font-weight:700;margin-bottom:8px;">Sahnedeki Karakterler</label>
+      <label
+        style="
+          display:block;
+          font-weight:800;
+          font-size:18px;
+          line-height:1.2;
+          margin-bottom:12px;
+        "
+      >
+        Sahnedeki Karakterler
+      </label>
+
       <div
         data-scene-character-picker-options
-        style="display:flex;flex-wrap:wrap;gap:10px;"
+        style="
+          display:grid;
+          grid-template-columns:repeat(4,minmax(0,1fr));
+          gap:12px;
+          align-items:stretch;
+        "
       ></div>
+
+      <div
+        data-scene-character-picker-empty
+        style="
+          display:none;
+          margin-top:8px;
+          opacity:.78;
+          font-size:14px;
+        "
+      >
+        Önce üst bölümden karakter seç.
+      </div>
     `;
 
-    field.parentElement.insertBefore(wrap, field.nextSibling);
+    descriptionField.parentElement.insertBefore(wrap, descriptionField.nextSibling);
     return wrap;
+  }
+
+  function createSceneCharacterItem(entry, isSelected) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.setAttribute("data-scene-character-item", "");
+    btn.setAttribute("data-scene-character-slot", entry.slot);
+    btn.setAttribute("data-selected", isSelected ? "true" : "false");
+
+    btn.style.cssText = `
+      min-height:84px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:center;
+      gap:6px;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid ${isSelected ? "rgba(201,119,255,.55)" : "rgba(255,255,255,.12)"};
+      background:${isSelected ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))" : "rgba(255,255,255,.04)"};
+      box-shadow:${isSelected ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)" : "none"};
+      cursor:pointer;
+      text-align:left;
+      transition:all .18s ease;
+      width:100%;
+    `;
+
+    const fileText = entry.hasImage ? getShortFileName(entry.fileName, 24) : "Görsel yüklenmedi";
+
+    btn.innerHTML = `
+      <span style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;line-height:1.2;">
+        <span
+          style="
+            width:12px;
+            height:12px;
+            border-radius:999px;
+            flex:0 0 12px;
+            background:${isSelected ? "linear-gradient(135deg,#a565ff,#ff5cb8)" : "rgba(255,255,255,.18)"};
+            box-shadow:${isSelected ? "0 0 12px rgba(180,90,255,.45)" : "none"};
+          "
+        ></span>
+        <span>${entry.label}</span>
+      </span>
+      <span style="font-size:12px;opacity:.82;line-height:1.25;word-break:break-word;">${fileText}</span>
+    `;
+
+    return btn;
   }
 
   function renderSceneCharacterPicker(root, scene) {
@@ -445,10 +602,10 @@
     if (!wrap) return;
 
     const optionsBox = qs("[data-scene-character-picker-options]", wrap);
-    if (!optionsBox) return;
+    const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
+    if (!optionsBox || !emptyBox) return;
 
-    const slotMap = getStoryCharacterSlotMap();
-    const available = Object.entries(slotMap).filter(([, label]) => !!safeText(label));
+    const available = getStoryCharacterEntries().slice(0, 4);
     const selected = Array.isArray(scene?.characterSlots)
       ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
       : [];
@@ -456,25 +613,17 @@
     optionsBox.innerHTML = "";
 
     if (!available.length) {
-      optionsBox.innerHTML = `
-        <div style="opacity:.7;font-size:13px;">
-          Önce üst bölümden karakter seç.
-        </div>
-      `;
+      optionsBox.style.display = "none";
+      emptyBox.style.display = "block";
       return;
     }
 
-    available.forEach(([slot, label]) => {
-      const item = document.createElement("label");
-      item.style.cssText =
-        "display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.04);cursor:pointer;";
+    optionsBox.style.display = "grid";
+    emptyBox.style.display = "none";
 
-      item.innerHTML = `
-        <input type="checkbox" data-scene-character-slot="${slot}" ${selected.includes(slot) ? "checked" : ""}>
-        <span>${label}</span>
-      `;
-
-      optionsBox.appendChild(item);
+    available.forEach((entry) => {
+      const isSelected = selected.includes(entry.slot);
+      optionsBox.appendChild(createSceneCharacterItem(entry, isSelected));
     });
   }
 
@@ -482,7 +631,7 @@
     const editor = qs("[data-story-scene-editor]", root);
     if (!editor) return [];
 
-    return qsa("[data-scene-character-slot]:checked", editor)
+    return qsa('[data-scene-character-item][data-selected="true"]', editor)
       .map((el) => safeText(el.dataset.sceneCharacterSlot))
       .filter(Boolean);
   }
@@ -548,9 +697,12 @@
   }
 
   function syncCharacterSelects(root) {
-    fillCharacterSelect(qs("[data-story-main-character]", root), state.mainCharacter);
-    fillCharacterSelect(qs("[data-story-helper-1]", root), state.helperCharacter1);
-    fillCharacterSelect(qs("[data-story-helper-2]", root), state.helperCharacter2);
+    STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
+      const selectedValue = safeText(state[config.stateKey]);
+      config.selectSelectors.forEach((selector) => {
+        fillCharacterSelect(qs(selector, root), selectedValue);
+      });
+    });
   }
 
   function updateStoryIdeaCount(root) {
@@ -800,6 +952,7 @@
         main: state.mainCharacter,
         helper1: state.helperCharacter1,
         helper2: state.helperCharacter2,
+        extra: state.extraCharacter,
         images: {
           main: {
             fileName: state.characterImages?.main?.fileName || "",
@@ -812,6 +965,10 @@
           helper2: {
             fileName: state.characterImages?.helper2?.fileName || "",
             fileUrl: state.characterImages?.helper2?.fileUrl || ""
+          },
+          extra: {
+            fileName: state.characterImages?.extra?.fileName || "",
+            fileUrl: state.characterImages?.extra?.fileUrl || ""
           }
         }
       },
@@ -829,7 +986,8 @@
     const slotValueMap = {
       main: safeText(storyPayload?.characters?.main),
       helper1: safeText(storyPayload?.characters?.helper1),
-      helper2: safeText(storyPayload?.characters?.helper2)
+      helper2: safeText(storyPayload?.characters?.helper2),
+      extra: safeText(storyPayload?.characters?.extra)
     };
 
     let slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots.filter(Boolean) : [];
@@ -850,7 +1008,10 @@
 
     const allNames = slots.map((slot) => slotValueMap[slot]).filter(Boolean);
 
-    const imageSlot = mainSlot;
+    const imageSlot =
+      slots.find((slot) => safeText(storyPayload?.characters?.images?.[slot]?.fileUrl)) ||
+      mainSlot;
+
     const characterImageUrl =
       safeText(storyPayload?.characters?.images?.[imageSlot]?.fileUrl) || "";
 
@@ -1161,6 +1322,37 @@
         return;
       }
 
+      const sceneCharacterItem = e.target.closest("[data-scene-character-item]");
+      if (sceneCharacterItem && root.contains(sceneCharacterItem)) {
+        e.preventDefault();
+
+        const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
+        if (!slot) return;
+
+        const isSelected = sceneCharacterItem.dataset.selected === "true";
+        sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
+
+        const dot = qs("span span", sceneCharacterItem);
+        if (dot) {
+          dot.style.background = isSelected
+            ? "rgba(255,255,255,.18)"
+            : "linear-gradient(135deg,#a565ff,#ff5cb8)";
+          dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(180,90,255,.45)";
+        }
+
+        sceneCharacterItem.style.border = isSelected
+          ? "1px solid rgba(255,255,255,.12)"
+          : "1px solid rgba(201,119,255,.55)";
+        sceneCharacterItem.style.background = isSelected
+          ? "rgba(255,255,255,.04)"
+          : "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))";
+        sceneCharacterItem.style.boxShadow = isSelected
+          ? "none"
+          : "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)";
+
+        return;
+      }
+
       const cancelBtn = e.target.closest("[data-scene-cancel]");
       if (cancelBtn && root.contains(cancelBtn)) {
         e.preventDefault();
@@ -1211,7 +1403,7 @@
           return;
         }
 
-        const slots = ["main", "helper1", "helper2"];
+        const slots = STORY_CHARACTER_SLOT_CONFIG.map((config) => config.slot);
 
         for (const slot of slots) {
           const imageState = getStoryCharacterImage(slot);
@@ -1342,6 +1534,13 @@
         return;
       }
 
+      const helper3 = e.target.closest("[data-story-helper-3], [data-story-extra-character]");
+      if (helper3 && root.contains(helper3)) {
+        state.extraCharacter = helper3.value || "";
+        render(root);
+        return;
+      }
+
       const ratio = e.target.closest("[data-story-ratio]");
       if (ratio && root.contains(ratio)) {
         state.ratio = ratio.value || "16:9";
@@ -1381,6 +1580,12 @@
 
         updateStoryCharacterUploadUI(root, slot);
 
+        const scene = getSceneById(state.editingSceneId);
+        if (scene) {
+          renderSceneCharacterPicker(root, scene);
+          syncSceneRows(root);
+        }
+
         if (!file) return;
 
         const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
@@ -1393,7 +1598,15 @@
             });
 
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
+            if (nextRoot) {
+              updateStoryCharacterUploadUI(nextRoot, slot);
+
+              const nextScene = getSceneById(state.editingSceneId);
+              if (nextScene) {
+                renderSceneCharacterPicker(nextRoot, nextScene);
+                syncSceneRows(nextRoot);
+              }
+            }
 
             console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
             return publicUrl;
@@ -1407,7 +1620,15 @@
             });
 
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
+            if (nextRoot) {
+              updateStoryCharacterUploadUI(nextRoot, slot);
+
+              const nextScene = getSceneById(state.editingSceneId);
+              if (nextScene) {
+                renderSceneCharacterPicker(nextRoot, nextScene);
+                syncSceneRows(nextRoot);
+              }
+            }
 
             console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
             alert(String(err?.message || err || "story_reference_upload_failed"));
@@ -1433,6 +1654,10 @@
     state.mainCharacter = qs("[data-story-main-character]", root)?.value || "";
     state.helperCharacter1 = qs("[data-story-helper-1]", root)?.value || "";
     state.helperCharacter2 = qs("[data-story-helper-2]", root)?.value || "";
+    state.extraCharacter =
+      qs("[data-story-helper-3]", root)?.value ||
+      qs("[data-story-extra-character]", root)?.value ||
+      "";
     state.ratio = qs("[data-story-ratio]", root)?.value || "16:9";
     state.style = qs("[data-story-style]", root)?.value || "";
     state.audio = qs("[data-story-audio]", root)?.value || "none";
