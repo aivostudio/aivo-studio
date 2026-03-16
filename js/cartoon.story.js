@@ -605,61 +605,37 @@ function renderSceneCharacterPicker(root, scene) {
   const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
   if (!optionsBox || !emptyBox) return;
 
-  const available = getStoryCharacterEntries().slice(0, 4);
   const selected = Array.isArray(scene?.characterSlots)
     ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
     : [];
 
-  const slotMap = new Map();
-  available.forEach((entry) => {
-    slotMap.set(entry.slot, entry);
-  });
-
   const items = qsa("[data-scene-character-item]", optionsBox);
+  if (!items.length) return;
 
-  if (!items.length) {
-    optionsBox.style.display = "none";
-    emptyBox.style.display = "block";
-    return;
-  }
-
-  if (!available.length) {
-    items.forEach((item) => {
-      item.hidden = true;
-      item.dataset.selected = "false";
-    });
-    optionsBox.style.display = "none";
-    emptyBox.style.display = "block";
-    return;
-  }
-
-  optionsBox.style.display = "grid";
-  emptyBox.style.display = "none";
+  let hasAnySelectedStoryCharacter = false;
 
   items.forEach((item) => {
     const slot = safeText(item.dataset.sceneCharacterSlot);
-    const entry = slotMap.get(slot);
-
-    if (!entry) {
-      item.hidden = true;
-      item.dataset.selected = "false";
-      return;
-    }
-
-    const isSelected = selected.includes(slot);
     const labelEl = qs("[data-scene-character-label]", item);
     const fileEl = qs("[data-scene-character-file]", item);
 
-    item.hidden = false;
+    const label = getStoryCharacterLabelBySlot(slot);
+    const image = getStoryCharacterImage(slot) || createEmptyStoryCharacterImageState();
+    const hasCharacter = !!label;
+    const isSelected = hasCharacter && selected.includes(slot);
+
+    if (hasCharacter) hasAnySelectedStoryCharacter = true;
+
+    item.hidden = !hasCharacter;
     item.dataset.selected = isSelected ? "true" : "false";
 
     if (labelEl) {
-      labelEl.textContent = entry.label || "Karakter";
+      labelEl.textContent = label || "Karakter seçilmedi";
     }
 
     if (fileEl) {
-      fileEl.textContent = entry.hasImage
-        ? getShortFileName(entry.fileName, 24)
+      fileEl.textContent = image.fileName
+        ? getShortFileName(image.fileName, 24)
         : "Görsel yüklenmedi";
     }
 
@@ -683,6 +659,14 @@ function renderSceneCharacterPicker(root, scene) {
         : "none";
     }
   });
+
+  if (hasAnySelectedStoryCharacter) {
+    optionsBox.hidden = false;
+    emptyBox.hidden = true;
+  } else {
+    optionsBox.hidden = true;
+    emptyBox.hidden = false;
+  }
 }
   function getSceneCharacterPickerValues(root) {
     const editor = qs("[data-story-scene-editor]", root);
