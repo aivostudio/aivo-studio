@@ -2275,3 +2275,8 @@
   align-items:flex-end;
   margin:0 0 10px 0;
 }
+[data-story-duration-summary]{
+  font-size:18px;
+  line-height:1.15;
+  font-weight:700;
+}
