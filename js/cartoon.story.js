@@ -436,7 +436,48 @@
     if (labels.length) return labels;
     return [];
   }
+   function getSceneCharacterLabels(scene) {
+    const slotMap = getStoryCharacterSlotMap();
+    const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
+    const labels = slots
+      .map((slot) => slotMap[slot])
+      .filter(Boolean);
 
+    if (labels.length) return labels;
+    return [];
+  }
+
+  function ensureSceneCharacterPicker(editor) {
+    if (!editor) return null;
+
+    let wrap = qs("[data-scene-character-picker]", editor);
+    if (wrap) return wrap;
+
+    const field =
+      qs("[data-scene-editor-characters]", editor)?.closest(".form-field") ||
+      qs("[data-scene-editor-characters]", editor)?.parentElement ||
+      null;
+
+    if (!field || !field.parentElement) return null;
+
+    const hiddenInput = qs("[data-scene-editor-characters]", editor);
+    if (hiddenInput) hiddenInput.style.display = "none";
+
+    wrap = document.createElement("div");
+    wrap.className = "form-field";
+    wrap.setAttribute("data-scene-character-picker", "");
+
+    wrap.innerHTML = `
+      <label style="display:block;font-weight:700;margin-bottom:8px;">Sahnedeki Karakterler</label>
+      <div
+        data-scene-character-picker-options
+        style="display:flex;flex-wrap:wrap;gap:10px;"
+      ></div>
+    `;
+
+    field.parentElement.insertBefore(wrap, field.nextSibling);
+    return wrap;
+  }
   function getSelectedScenes() {
     return state.scenes.filter((scene) => scene && scene.selected === true);
   }
@@ -697,7 +738,6 @@
     const heading = qs("[data-scene-editor-heading]", editor);
     const title = qs("[data-scene-editor-title]", editor);
     const description = qs("[data-scene-editor-description]", editor);
-    const characters = qs("[data-scene-editor-characters]", editor);
     const duration = qs("[data-scene-editor-duration]", editor);
     const mood = qs("[data-scene-editor-mood]", editor);
     const type = qs("[data-scene-editor-type]", editor);
@@ -706,11 +746,7 @@
     if (heading) heading.textContent = scene.title || "Sahne Düzenle";
     if (title) title.value = scene.title || "";
     if (description) description.value = scene.description || "";
-    if (characters) {
-      const labels = getSceneCharacterLabels(scene);
-      characters.value = labels.length ? labels.join(", ") : scene.characters || "";
-      characters.placeholder = "Ana karakter, Yardımcı Karakter 1, Yardımcı Karakter 2 veya hepsi";
-    }
+        renderSceneCharacterPicker(root, scene);
     if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
     if (mood) mood.value = scene.mood || "";
     if (type) type.value = scene.type || "";
