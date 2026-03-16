@@ -490,7 +490,10 @@
     <p class="story-card-note">En fazla 4 referans kullanılabilir.</p>
   </div>
 
-  <div class="story-grid story-grid-4">
+<div
+  class="story-grid story-grid-4"
+  style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; align-items:start;"
+>
     <div class="story-field story-character-field">
       <label for="storyMainCharacter">Ana Karakter</label>
       <select id="storyMainCharacter" name="storyMainCharacter" data-story-main-character>
