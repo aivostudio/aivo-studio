@@ -584,20 +584,26 @@ function syncAllStoryCharacterUploadUI(root) {
         return;
       }
 
-      const pickBtn = e.target.closest('[data-story-pick-character]');
-      if (pickBtn && root.contains(pickBtn)) {
-        e.preventDefault();
-        const mainSelect = qs('[data-story-main-character]', root);
-        if (mainSelect) mainSelect.focus();
-        return;
-      }
+    const uploadTrigger = e.target.closest('[data-story-upload-trigger]');
+if (uploadTrigger && root.contains(uploadTrigger)) {
+  e.preventDefault();
+  const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
+  if (!slot) return;
 
-      const uploadBtn = e.target.closest('[data-story-upload-character]');
-      if (uploadBtn && root.contains(uploadBtn)) {
-        e.preventDefault();
-        ensureStoryUploadInput(root).click();
-        return;
-      }
+  const input = qs(`[data-story-character-file="${slot}"]`, root);
+  if (input) input.click();
+  return;
+}
+
+const uploadRemove = e.target.closest('[data-story-upload-remove]');
+if (uploadRemove && root.contains(uploadRemove)) {
+  e.preventDefault();
+  const slot = safeText(uploadRemove.dataset.storyUploadRemove);
+  if (!slot) return;
+
+  resetStoryCharacterImage(root, slot);
+  return;
+}
 
       const generateBtn = e.target.closest('[data-story-generate]');
       if (generateBtn && root.contains(generateBtn)) {
@@ -693,24 +699,70 @@ function syncAllStoryCharacterUploadUI(root) {
         return;
       }
 
-      const upload = e.target.closest('[data-story-reference-upload]');
-      if (upload && root.contains(upload)) {
-        const file = upload.files && upload.files[0] ? upload.files[0] : null;
-        state.referenceImageFile = file;
-        state.referenceImageName = file ? file.name : '';
+    const characterFileInput = e.target.closest('[data-story-character-file]');
+if (characterFileInput && root.contains(characterFileInput)) {
+  const slot = safeText(characterFileInput.dataset.storyCharacterFile);
+  if (!slot) return;
 
-        const uploadBtn = qs('[data-story-upload-character]', root);
-        if (uploadBtn) {
-          uploadBtn.textContent = state.referenceImageName || 'Referans Görsel Ekle';
-        }
-      }
+  const file =
+    characterFileInput.files && characterFileInput.files[0]
+      ? characterFileInput.files[0]
+      : null;
+
+  setStoryCharacterImage(slot, {
+    file,
+    fileName: file ? file.name : "",
+    fileUrl: "",
+    uploadPromise: null,
+    uploadStatus: file ? "uploading" : "idle",
+    uploadError: ""
+  });
+
+  updateStoryCharacterUploadUI(root, slot);
+
+  if (!file) return;
+
+  const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
+    .then((publicUrl) => {
+      setStoryCharacterImage(slot, {
+        fileUrl: safeText(publicUrl),
+        uploadStatus: "ready",
+        uploadError: "",
+        uploadPromise: null
+      });
+
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
+
+      console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
+      return publicUrl;
+    })
+    .catch((err) => {
+      setStoryCharacterImage(slot, {
+        fileUrl: "",
+        uploadStatus: "error",
+        uploadError: String(err?.message || err || "story_reference_upload_failed"),
+        uploadPromise: null
+      });
+
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
+
+      console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
+      alert(String(err?.message || err || "story_reference_upload_failed"));
+      throw err;
+    });
+
+  setStoryCharacterImage(slot, { uploadPromise });
+  return;
+}
     });
   }
 
   function initFromDOM(root) {
     if (!root) return;
 
-    ensureStoryUploadInput(root);
+   
 
     const selectedMode = qs('[data-cartoon-mode].is-active', root);
     if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
