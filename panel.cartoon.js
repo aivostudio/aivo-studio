@@ -244,7 +244,14 @@
         "16:9"
       ).trim();
 
-      const title = String(job?.meta?.prompt || job?.prompt || "Çizgifilm").trim();
+     const title = String(
+  job?.meta?.scene_title ||
+  job?.meta?.title ||
+  job?.title ||
+  job?.meta?.prompt ||
+  job?.prompt ||
+  "Çizgifilm"
+).trim();
       const sub = "";
       const badgeText = badge.text;
       const badgeKind =
