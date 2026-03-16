@@ -1367,7 +1367,7 @@ function buildCharacterOptions(root) {
         return;
       }
 
-      const sceneCharacterItem = e.target.closest("[data-scene-character-item]");
+     const sceneCharacterItem = e.target.closest(".story-scene-character-item");
       if (sceneCharacterItem && root.contains(sceneCharacterItem)) {
         e.preventDefault();
 
