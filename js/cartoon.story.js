@@ -1625,7 +1625,18 @@ function buildCharacterOptions(root) {
           characterFileInput.files && characterFileInput.files[0]
             ? characterFileInput.files[0]
             : null;
+           const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
 
+if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
+  const autoLabel = safeText(file.name)
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
+
+  if (autoLabel) {
+    state[slotConfig.stateKey] = autoLabel;
+  }
+}
         setStoryCharacterImage(slot, {
           file,
           fileName: file ? file.name : "",
