@@ -404,16 +404,6 @@
     if (labels.length) return labels;
     return [];
   }
-   function getSceneCharacterLabels(scene) {
-    const slotMap = getStoryCharacterSlotMap();
-    const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
-    const labels = slots
-      .map((slot) => slotMap[slot])
-      .filter(Boolean);
-
-    if (labels.length) return labels;
-    return [];
-  }
 
   function ensureSceneCharacterPicker(editor) {
     if (!editor) return null;
@@ -446,13 +436,16 @@
     field.parentElement.insertBefore(wrap, field.nextSibling);
     return wrap;
   }
-    function renderSceneCharacterPicker(root, scene) {
+
+  function renderSceneCharacterPicker(root, scene) {
     const editor = qs("[data-story-scene-editor]", root);
     if (!editor || !scene) return;
 
     const wrap = ensureSceneCharacterPicker(editor);
+    if (!wrap) return;
+
     const optionsBox = qs("[data-scene-character-picker-options]", wrap);
-    if (!wrap || !optionsBox) return;
+    if (!optionsBox) return;
 
     const slotMap = getStoryCharacterSlotMap();
     const available = Object.entries(slotMap).filter(([, label]) => !!safeText(label));
@@ -473,7 +466,8 @@
 
     available.forEach(([slot, label]) => {
       const item = document.createElement("label");
-      item.style.cssText = "display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.04);cursor:pointer;";
+      item.style.cssText =
+        "display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.04);cursor:pointer;";
 
       item.innerHTML = `
         <input type="checkbox" data-scene-character-slot="${slot}" ${selected.includes(slot) ? "checked" : ""}>
@@ -492,6 +486,7 @@
       .map((el) => safeText(el.dataset.sceneCharacterSlot))
       .filter(Boolean);
   }
+
   function getSelectedScenes() {
     return state.scenes.filter((scene) => scene && scene.selected === true);
   }
@@ -760,7 +755,9 @@
     if (heading) heading.textContent = scene.title || "Sahne Düzenle";
     if (title) title.value = scene.title || "";
     if (description) description.value = scene.description || "";
-        renderSceneCharacterPicker(root, scene);
+
+    renderSceneCharacterPicker(root, scene);
+
     if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
     if (mood) mood.value = scene.mood || "";
     if (type) type.value = scene.type || "";
@@ -775,15 +772,16 @@
     editor.hidden = !isOpen;
     editor.classList.toggle("is-open", isOpen);
 
- if (isOpen) {
-  fillSceneEditor(root, state.editingSceneId);
+    if (isOpen) {
+      fillSceneEditor(root, state.editingSceneId);
 
-  const scene = getSceneById(state.editingSceneId);
-  if (scene) {
-    renderSceneCharacterPicker(root, scene);
+      const scene = getSceneById(state.editingSceneId);
+      if (scene) {
+        renderSceneCharacterPicker(root, scene);
+      }
+    }
   }
- }
-}
+
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
     const totalSeconds = getSelectedTotalSeconds();
@@ -1083,21 +1081,21 @@
     if (!title) return alert("Sahne Başlığı zorunlu.");
     if (!description) return alert("Sahne Açıklaması zorunlu.");
 
-   if (!characterSlots.length) {
-  return alert("Bu sahne için en az 1 karakter seçmelisin.");
-}
+    if (!characterSlots.length) {
+      return alert("Bu sahne için en az 1 karakter seçmelisin.");
+    }
 
-   updateSceneById(state.editingSceneId, {
-  title,
-  description,
-  characters: "",
-  characterSlots,
-  selected: true,
-  duration,
-  mood,
-  type,
-  directorNote: note
-});
+    updateSceneById(state.editingSceneId, {
+      title,
+      description,
+      characters: "",
+      characterSlots,
+      selected: true,
+      duration,
+      mood,
+      type,
+      directorNote: note
+    });
 
     state.editingSceneId = "";
     render(root);
