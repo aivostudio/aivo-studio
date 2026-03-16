@@ -1060,8 +1060,8 @@
 
     const title = safeText(qs("[data-scene-editor-title]", editor)?.value);
     const description = safeText(qs("[data-scene-editor-description]", editor)?.value);
-    const characters = safeText(qs("[data-scene-editor-characters]", editor)?.value);
     const duration = normalizeStorySceneDuration(qs("[data-scene-editor-duration]", editor)?.value || "15");
+    const characterSlots = getSceneCharacterPickerValues(root);
     const mood = safeText(qs("[data-scene-editor-mood]", editor)?.value);
     const type = safeText(qs("[data-scene-editor-type]", editor)?.value);
     const note = clampText(qs("[data-scene-editor-note]", editor)?.value, 1000);
@@ -1069,23 +1069,21 @@
     if (!title) return alert("Sahne Başlığı zorunlu.");
     if (!description) return alert("Sahne Açıklaması zorunlu.");
 
-    const characterSlots = inferCharacterSlotsFromText(characters);
+   if (!characterSlots.length) {
+  return alert("Bu sahne için en az 1 karakter seçmelisin.");
+}
 
-    if (!characterSlots.length) {
-      return alert("Sahnedeki Karakterler alanına Ana Karakter, Yardımcı Karakter 1, Yardımcı Karakter 2 veya hepsi yaz.");
-    }
-
-    updateSceneById(state.editingSceneId, {
-      title,
-      description,
-      characters,
-      characterSlots,
-      selected: true,
-      duration,
-      mood,
-      type,
-      directorNote: note
-    });
+   updateSceneById(state.editingSceneId, {
+  title,
+  description,
+  characters: "",
+  characterSlots,
+  selected: true,
+  duration,
+  mood,
+  type,
+  directorNote: note
+});
 
     state.editingSceneId = "";
     render(root);
