@@ -729,10 +729,14 @@
     editor.hidden = !isOpen;
     editor.classList.toggle("is-open", isOpen);
 
-    if (isOpen) {
-      fillSceneEditor(root, state.editingSceneId);
-    }
+ if (isOpen) {
+  fillSceneEditor(root, state.editingSceneId);
+
+  const scene = getSceneById(state.editingSceneId);
+  if (scene) {
+    renderSceneCharacterPicker(root, scene);
   }
+}
 
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
