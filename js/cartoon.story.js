@@ -528,7 +528,7 @@ function syncAllStoryCharacterUploadUI(root) {
   }
 
   function bindClicks() {
-    document.addEventListener('click', (e) => {
+  document.addEventListener('click', async (e) => {
       const root = getCartoonRoot();
       if (!root) return;
 
@@ -583,8 +583,7 @@ function syncAllStoryCharacterUploadUI(root) {
         saveSceneEditor(root);
         return;
       }
-
-    const uploadTrigger = e.target.closest('[data-story-upload-trigger]');
+const uploadTrigger = e.target.closest('[data-story-upload-trigger]');
 if (uploadTrigger && root.contains(uploadTrigger)) {
   e.preventDefault();
   const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
@@ -604,17 +603,6 @@ if (uploadRemove && root.contains(uploadRemove)) {
   resetStoryCharacterImage(root, slot);
   return;
 }
-     const uploadTrigger = e.target.closest('[data-story-upload-trigger]');
-if (uploadTrigger && root.contains(uploadTrigger)) {
-  e.preventDefault();
-  const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
-  if (!slot) return;
-
-  const input = qs(`[data-story-character-file="${slot}"]`, root);
-  if (input) input.click();
-  return;
-}
-
 const uploadRemove = e.target.closest('[data-story-upload-remove]');
 if (uploadRemove && root.contains(uploadRemove)) {
   e.preventDefault();
