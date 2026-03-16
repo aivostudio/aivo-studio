@@ -284,19 +284,125 @@ const generate_audio = false;
 
   const falUrl = `https://queue.fal.run/${falModel}`;
 
-  const falInput =
-    mode === "character"
+ const requestedMode = String(body.mode || "basic").toLowerCase();
+const mode =
+  requestedMode === "basic" &&
+  String(body?.meta?.mode || "").toLowerCase() === "story"
+    ? "story"
+    : requestedMode;
+
+if (!["basic", "character", "story"].includes(mode)) {
+  return res.status(400).json({
+    ok: false,
+    error: "unsupported_mode",
+    message: "this version supports basic mode, character mode and story mode",
+  });
+}
+
+const requestNonce =
+  mode === "character"
+    ? ""
+    : `shot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+const prompt =
+  mode === "character"
+    ? [
+        "Cute kids cartoon character design.",
+        characterType ? `Character type: ${characterType}.` : "",
+        characterName ? `Character name: ${characterName}.` : "",
+        characterStyle ? `Visual style: ${characterStyle}.` : "",
+        characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
+
+        characterHairType ? `Hair type: ${characterHairType}.` : "",
+        characterHairColor ? `Hair color: ${characterHairColor}.` : "",
+        characterOutfit ? `Outfit: ${characterOutfit}.` : "",
+        characterGlasses ? `Glasses: ${characterGlasses}.` : "",
+        characterAccessory ? `Accessory: ${characterAccessory}.` : "",
+        characterExpression ? `Facial expression: ${characterExpression}.` : "",
+
+        "Single character only.",
+        "Full body character.",
+        "Centered composition.",
+        "Clean simple background.",
+        "Child-friendly, adorable, expressive design.",
+        "No text, no watermark."
+      ].filter(Boolean).join(" ")
+    : mode === "story"
+      ? `${String(body.extraPrompt || "").trim()} Unique shot token: ${requestNonce}.`
+      : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
+
+const duration = String(body.duration || "5");
+const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
+const audio_mode =
+  String(body.audioMode || body.audio_mode || "none").toLowerCase() === "upload"
+    ? "upload"
+    : "none";
+
+const audio_url =
+  String(body.audioFileUrl || body.audio_url || "").trim() || null;
+
+const silent_copy = audio_mode !== "upload";
+
+// Fal'ın kendi otomatik sesi şimdilik kapalı kalsın.
+// Çünkü bizim hedefimiz kullanıcı yüklediği mp3'ü sonradan mux etmek.
+const generate_audio = false;
+
+const characterImageUrl =
+  pick(body, [
+    "characterImageUrl",
+    "character_image_url",
+    "image_url",
+    "start_image_url",
+  ]) || null;
+
+const referenceImageUrl =
+  pick(body, [
+    "referenceImageUrl",
+    "reference_image_url",
+    "referenceImage.image_url",
+    "reference.image_url",
+    "image_urls.0",
+    "imageUrls.0",
+  ]) || null;
+
+const storyImageUrls = Array.isArray(body.image_urls)
+  ? body.image_urls.map((x) => String(x || "").trim()).filter(Boolean).slice(0, 4)
+  : [];
+
+if (!storyImageUrls.length && characterImageUrl) {
+  storyImageUrls.push(String(characterImageUrl).trim());
+}
+
+const falModel =
+  mode === "character"
+    ? "fal-ai/nano-banana-pro"
+    : mode === "story"
+      ? "fal-ai/kling-video/o3/pro/reference-to-video"
+      : "fal-ai/kling-video/o3/standard/reference-to-video";
+
+const falUrl = `https://queue.fal.run/${falModel}`;
+
+const falInput =
+  mode === "character"
+    ? {
+        prompt,
+        num_images: 1,
+        aspect_ratio:
+          aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
+            ? aspect_ratio
+            : "4:5",
+        output_format: "png",
+        safety_tolerance: "4",
+        resolution: "1K",
+        ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
+      }
+    : mode === "story"
       ? {
           prompt,
-          num_images: 1,
-          aspect_ratio:
-            aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
-              ? aspect_ratio
-              : "4:5",
-          output_format: "png",
-          safety_tolerance: "4",
-          resolution: "1K",
-          ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
+          duration,
+          aspect_ratio,
+          generate_audio: false,
+          ...(storyImageUrls.length ? { image_urls: storyImageUrls } : {})
         }
       : {
           prompt,
