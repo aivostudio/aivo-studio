@@ -604,7 +604,26 @@ if (uploadRemove && root.contains(uploadRemove)) {
   resetStoryCharacterImage(root, slot);
   return;
 }
+     const uploadTrigger = e.target.closest('[data-story-upload-trigger]');
+if (uploadTrigger && root.contains(uploadTrigger)) {
+  e.preventDefault();
+  const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
+  if (!slot) return;
 
+  const input = qs(`[data-story-character-file="${slot}"]`, root);
+  if (input) input.click();
+  return;
+}
+
+const uploadRemove = e.target.closest('[data-story-upload-remove]');
+if (uploadRemove && root.contains(uploadRemove)) {
+  e.preventDefault();
+  const slot = safeText(uploadRemove.dataset.storyUploadRemove);
+  if (!slot) return;
+
+  resetStoryCharacterImage(root, slot);
+  return;
+}
       const generateBtn = e.target.closest('[data-story-generate]');
       if (generateBtn && root.contains(generateBtn)) {
         e.preventDefault();
