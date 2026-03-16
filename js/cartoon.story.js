@@ -477,7 +477,211 @@ function syncAllStoryCharacterUploadUI(root) {
       scenes: [...state.scenes]
     };
   }
+  function normalizeStorySceneDuration(value) {
+    const n = Number(value || 15);
+    if (n <= 5) return '5';
+    if (n <= 10) return '10';
+    return '15';
+  }
 
+  function mapStorySceneToBasicPayload(storyPayload, scene) {
+    const characterMap = {
+      [String(storyPayload?.characters?.main || '').trim()]: 'main',
+      [String(storyPayload?.characters?.helper1 || '').trim()]: 'helper1',
+      [String(storyPayload?.characters?.helper2 || '').trim()]: 'helper2'
+    };
+
+    const rawCharacters = String(scene?.characters || '')
+      .split(',')
+      .map((x) => String(x || '').trim())
+      .filter(Boolean);
+
+    const sceneMain = rawCharacters[0] || String(storyPayload?.characters?.main || '').trim();
+    const helperCharacters = rawCharacters.slice(1, 4);
+
+    const imageSlot = characterMap[sceneMain] || 'main';
+    const characterImageUrl =
+      String(storyPayload?.characters?.images?.[imageSlot]?.fileUrl || '').trim() || '';
+
+    const promptParts = [
+      'Cute kids cartoon style.',
+      'Bright colorful animated scene.',
+      `Scene title: ${String(scene?.title || '').trim()}.`,
+      `Scene description: ${String(scene?.description || '').trim()}.`,
+      rawCharacters.length ? `Characters in this scene: ${rawCharacters.join(', ')}.` : '',
+      scene?.mood ? `Mood: ${String(scene.mood).trim()}.` : '',
+      scene?.type ? `Shot type: ${String(scene.type).trim()}.` : '',
+      scene?.directorNote ? `Director note: ${String(scene.directorNote).trim()}.` : '',
+      storyPayload?.settings?.style ? `Visual style: ${String(storyPayload.settings.style).trim()}.` : '',
+      'Friendly, adorable, child-safe, expressive animation.',
+      'Clean frame, no text, no subtitles, no watermark.'
+    ].filter(Boolean);
+
+    return {
+      app: 'cartoon',
+      mode: 'basic',
+      extraPrompt: promptParts.join(' '),
+      mainCharacter: sceneMain,
+      helperCharacters,
+      scene: String(scene?.section || 'story').trim() || 'story',
+      actions: [],
+      action: 'acting naturally in the scene',
+      duration: normalizeStorySceneDuration(scene?.duration),
+      aspectRatio: String(storyPayload?.settings?.aspectRatio || '16:9'),
+      audioSource: 'none',
+      audioMode: 'none',
+      audioFileName: '',
+      audioFileUrl: '',
+      characterImage: null,
+      characterImageName: '',
+      characterImageUrl,
+      estimatedCredits: 0,
+      meta: {
+        app: 'cartoon',
+        mode: 'story',
+        scene_id: String(scene?.id || ''),
+        scene_title: String(scene?.title || ''),
+        story_idea: String(storyPayload?.summary?.idea || '')
+      }
+    };
+  }
+
+  async function createStoryScenesFromPayload(storyPayload) {
+    const scenes = Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : [];
+    const created = [];
+
+    for (const scene of scenes) {
+      const body = mapStorySceneToBasicPayload(storyPayload, scene);
+
+      const r = await fetch('/api/providers/fal/cartoon/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const j = await r.json().catch(() => null);
+
+      if (!r.ok || !j || j.ok === false) {
+        throw new Error(
+          `${String(scene?.title || 'scene')} -> ${j?.error || `story_scene_create_failed_${r.status}`}`
+        );
+      }
+
+      const item = {
+        scene_id: String(scene?.id || ''),
+        scene_title: String(scene?.title || ''),
+        job_id: String(j?.job_id || ''),
+        request_id: String(j?.request_id || ''),
+        status_url: String(j?.status_url || '')
+      };
+
+      created.push(item);
+          if (!window.__CARTOON_STORY_CREATED_JOBS__) {
+      window.__CARTOON_STORY_CREATED_JOBS__ = [];
+    }
+    window.__CARTOON_STORY_CREATED_JOBS__.push(item);
+      window.dispatchEvent(
+        new CustomEvent('aivo:cartoon:job_created', {
+          detail: {
+            app: 'cartoon',
+            mode: 'story',
+            sceneId: item.scene_id,
+            sceneTitle: item.scene_title,
+            job_id: item.job_id,
+            request_id: item.request_id,
+            status_url: item.status_url,
+            createdAt: Date.now(),
+            meta: {
+              app: 'cartoon',
+              mode: 'story',
+              provider: 'fal',
+              scene_id: item.scene_id,
+              scene_title: item.scene_title
+            }
+          }
+        })
+      );
+
+      if (item.job_id) {
+        pollStorySceneJob(item.job_id, item);
+      }
+    }
+
+    return created;
+  }
+    async function pollStorySceneJob(jobId, item, tries = 0) {
+    try {
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`);
+      const j = await r.json().catch(() => null);
+
+      console.log('[CARTOON][STORY] poll =', jobId, item?.scene_title, j);
+
+      if (!j || j.ok === false) {
+        if (tries < 60) {
+          setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
+        }
+        return;
+      }
+
+      const normalizedStatus = String(
+        j?.status ||
+        j?.db_status ||
+        j?.state ||
+        ''
+      ).trim().toLowerCase();
+
+      const readyVideoUrl = String(
+        j?.video?.url ||
+        j?.video_url ||
+        ''
+      ).trim();
+
+      const hasReadyOutput =
+        Array.isArray(j?.outputs) &&
+        j.outputs.some((o) => {
+          const t = String(o?.type || o?.kind || o?.meta?.type || '').trim().toLowerCase();
+          const u = String(o?.url || o?.video_url || '').trim();
+          return !!u && t === 'video';
+        });
+
+      if (
+        ['ready', 'completed', 'complete', 'succeeded', 'done'].includes(normalizedStatus) &&
+        (readyVideoUrl || hasReadyOutput)
+      ) {
+        window.dispatchEvent(
+          new CustomEvent('aivo:cartoon:story_scene_ready', {
+            detail: {
+              app: 'cartoon',
+              mode: 'story',
+              sceneId: String(item?.scene_id || ''),
+              sceneTitle: String(item?.scene_title || ''),
+              job_id: String(jobId || ''),
+              status: normalizedStatus,
+              video: readyVideoUrl ? { url: readyVideoUrl } : null,
+              outputs: j?.outputs || [],
+              raw: j
+            }
+          })
+        );
+        return;
+      }
+
+      if (normalizedStatus === 'error' || normalizedStatus === 'failed') {
+        console.error('[CARTOON][STORY] job error =', jobId, item?.scene_title, j);
+        return;
+      }
+
+      if (tries < 60) {
+        setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
+      }
+    } catch (err) {
+      console.error('[CARTOON][STORY] poll error =', jobId, item?.scene_title, err);
+
+      if (tries < 60) {
+        setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
+      }
+    }
+  }
   function saveSceneEditor(root) {
     if (!state.editingSceneId) return;
 
@@ -633,16 +837,48 @@ if (generateBtn && root.contains(generateBtn)) {
   const payload = buildStoryPayload();
   window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
   console.log('[CARTOON][STORY_PAYLOAD_READY]', payload);
-  window.dispatchEvent(
-    new CustomEvent('aivo:cartoon:story_payload_ready', { detail: payload })
-  );
-}
- });
+
+  state.isGenerating = true;
+  generateBtn.disabled = true;
+  generateBtn.textContent = 'Üretiliyor...';
+  generateBtn.classList.add('is-loading');
+
+  try {
+    const created = await createStoryScenesFromPayload(payload);
+
+    window.__LAST_CARTOON_STORY_CREATED__ = created;
+    console.log('[CARTOON][STORY_CREATE_OK]', created);
+
+    window.dispatchEvent(
+      new CustomEvent('aivo:cartoon:story_payload_ready', {
+        detail: {
+          payload,
+          created
+        }
+      })
+    );
+  } catch (err) {
+    console.error('[CARTOON][STORY_CREATE_ERROR]', err);
+    alert(String(err?.message || err || 'story_scene_create_failed'));
+    } finally {
+    state.isGenerating = false;
+    generateBtn.disabled = false;
+    generateBtn.textContent = 'Hikayeyi Oluştur';
+    generateBtn.classList.remove('is-loading');
   }
-  function bindInputs() {
-    document.addEventListener('input', (e) => {
-      const root = getCartoonRoot();
-      if (!root) return;
+}
+  });
+
+  window.addEventListener('aivo:cartoon:story_scene_ready', (e) => {
+    const d = e?.detail || {};
+    console.log('[CARTOON][STORY_SCENE_READY]', d);
+  });
+}
+
+function bindInputs() {
+  document.addEventListener('input', (e) => {
+    const root = getCartoonRoot();
+    if (!root) return;
 
       const storyIdea = e.target.closest('[data-story-idea]');
       if (storyIdea && root.contains(storyIdea)) {
