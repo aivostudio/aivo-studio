@@ -2275,8 +2275,14 @@
   align-items:flex-end;
   margin:0 0 10px 0;
 }
-[data-story-duration-summary]{
-  font-size:16px;
-  line-height:1.15;
-  font-weight:700;
+.main-panel[data-module="cartoon"] [data-story-duration-summary]{
+  font-size:14px !important;
+  line-height:1.15 !important;
+  font-weight:600 !important;
+}
+
+.main-panel[data-module="cartoon"] [data-story-duration-summary-wrap] label{
+  font-size:13px !important;
+  line-height:1.15 !important;
+  font-weight:700 !important;
 }
