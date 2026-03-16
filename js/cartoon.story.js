@@ -736,8 +736,8 @@
   if (scene) {
     renderSceneCharacterPicker(root, scene);
   }
+ }
 }
-
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
     const totalSeconds = getSelectedTotalSeconds();
