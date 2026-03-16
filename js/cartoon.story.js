@@ -700,19 +700,7 @@ function buildCharacterOptions(root) {
     if (value && label) map.set(value, label);
   });
 
-  qsa('[data-character-library] .cartoon-character-mini-card', root).forEach((btn) => {
-    if (btn.disabled) return;
-
-    const value =
-      safeText(btn.dataset.character) ||
-      safeText(btn.dataset.id) ||
-      safeText(btn.getAttribute("value")) ||
-      safeText(btn.textContent).toLowerCase().replace(/\s+/g, "-");
-
-    const label = safeText(btn.textContent);
-
-    if (value && label) map.set(value, label);
-  });
+ 
 
   const storySelectedValues = [
     safeText(state.mainCharacter),
