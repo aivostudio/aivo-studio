@@ -446,6 +446,52 @@
     field.parentElement.insertBefore(wrap, field.nextSibling);
     return wrap;
   }
+    function renderSceneCharacterPicker(root, scene) {
+    const editor = qs("[data-story-scene-editor]", root);
+    if (!editor || !scene) return;
+
+    const wrap = ensureSceneCharacterPicker(editor);
+    const optionsBox = qs("[data-scene-character-picker-options]", wrap);
+    if (!wrap || !optionsBox) return;
+
+    const slotMap = getStoryCharacterSlotMap();
+    const available = Object.entries(slotMap).filter(([, label]) => !!safeText(label));
+    const selected = Array.isArray(scene?.characterSlots)
+      ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
+      : [];
+
+    optionsBox.innerHTML = "";
+
+    if (!available.length) {
+      optionsBox.innerHTML = `
+        <div style="opacity:.7;font-size:13px;">
+          Önce üst bölümden karakter seç.
+        </div>
+      `;
+      return;
+    }
+
+    available.forEach(([slot, label]) => {
+      const item = document.createElement("label");
+      item.style.cssText = "display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.04);cursor:pointer;";
+
+      item.innerHTML = `
+        <input type="checkbox" data-scene-character-slot="${slot}" ${selected.includes(slot) ? "checked" : ""}>
+        <span>${label}</span>
+      `;
+
+      optionsBox.appendChild(item);
+    });
+  }
+
+  function getSceneCharacterPickerValues(root) {
+    const editor = qs("[data-story-scene-editor]", root);
+    if (!editor) return [];
+
+    return qsa("[data-scene-character-slot]:checked", editor)
+      .map((el) => safeText(el.dataset.sceneCharacterSlot))
+      .filter(Boolean);
+  }
   function getSelectedScenes() {
     return state.scenes.filter((scene) => scene && scene.selected === true);
   }
