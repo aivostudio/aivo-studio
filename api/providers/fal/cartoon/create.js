@@ -1,9 +1,13 @@
-export const config = { runtime: "nodejs" };
+const { neon } = require("@neondatabase/serverless");
+const authModule = require("../../../_lib/auth.js");
 
-// /pages/api/providers/fal/cartoon/create.js
-import { neon } from "@neondatabase/serverless";
-import authModule from "../../../_lib/auth.js";
-const { requireAuth } = authModule;
+const requireAuth =
+  authModule?.requireAuth ||
+  authModule?.default?.requireAuth ||
+  authModule?.default ||
+  authModule;
+
+module.exports.config = { runtime: "nodejs" };
 
 function pickConn() {
   return (
@@ -137,7 +141,7 @@ function buildBasicPrompt(body) {
   return parts.join(" ");
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   if (req.method !== "POST") {
@@ -177,19 +181,20 @@ export default async function handler(req, res) {
 
   const body = safeJson(req);
 
-  const mode = String(body.mode || "basic").toLowerCase();
-  if (!["basic", "character"].includes(mode)) {
+  const requestedMode = String(body.mode || "basic").toLowerCase();
+  const mode =
+    requestedMode === "basic" &&
+    String(body?.meta?.mode || "").toLowerCase() === "story"
+      ? "story"
+      : requestedMode;
+
+  if (!["basic", "character", "story"].includes(mode)) {
     return res.status(400).json({
       ok: false,
       error: "unsupported_mode",
-      message: "this first version only supports basic mode and character mode",
+      message: "this version supports basic mode, character mode and story mode",
     });
   }
-
-  const requestNonce =
-    mode === "basic"
-      ? `shot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-      : "";
 
   const userRow = await sql`
     select id
@@ -203,7 +208,6 @@ export default async function handler(req, res) {
   }
 
   const user_uuid = String(userRow[0].id);
-
   const app = "cartoon";
 
   const characterType = String(body.type || "").trim();
@@ -218,6 +222,11 @@ export default async function handler(req, res) {
   const characterAccessory = String(body.accessory || "").trim();
   const characterExpression = String(body.expression || "").trim();
 
+  const requestNonce =
+    mode === "character"
+      ? ""
+      : `shot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
   const prompt =
     mode === "character"
       ? [
@@ -226,14 +235,12 @@ export default async function handler(req, res) {
           characterName ? `Character name: ${characterName}.` : "",
           characterStyle ? `Visual style: ${characterStyle}.` : "",
           characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
-
           characterHairType ? `Hair type: ${characterHairType}.` : "",
           characterHairColor ? `Hair color: ${characterHairColor}.` : "",
           characterOutfit ? `Outfit: ${characterOutfit}.` : "",
           characterGlasses ? `Glasses: ${characterGlasses}.` : "",
           characterAccessory ? `Accessory: ${characterAccessory}.` : "",
           characterExpression ? `Facial expression: ${characterExpression}.` : "",
-
           "Single character only.",
           "Full body character.",
           "Centered composition.",
@@ -241,23 +248,23 @@ export default async function handler(req, res) {
           "Child-friendly, adorable, expressive design.",
           "No text, no watermark."
         ].filter(Boolean).join(" ")
-      : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
+      : mode === "story"
+        ? `${String(body.extraPrompt || "").trim()} Unique shot token: ${requestNonce}.`
+        : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
 
   const duration = String(body.duration || "5");
   const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
- const audio_mode =
-  String(body.audioMode || body.audio_mode || "none").toLowerCase() === "upload"
-    ? "upload"
-    : "none";
 
-const audio_url =
-  String(body.audioFileUrl || body.audio_url || "").trim() || null;
+  const audio_mode =
+    String(body.audioMode || body.audio_mode || "none").toLowerCase() === "upload"
+      ? "upload"
+      : "none";
 
-const silent_copy = audio_mode !== "upload";
+  const audio_url =
+    String(body.audioFileUrl || body.audio_url || "").trim() || null;
 
-// Fal'ın kendi otomatik sesi şimdilik kapalı kalsın.
-// Çünkü bizim hedefimiz kullanıcı yüklediği mp3'ü sonradan mux etmek.
-const generate_audio = false;
+  const silent_copy = audio_mode !== "upload";
+  const generate_audio = false;
 
   const characterImageUrl =
     pick(body, [
@@ -277,141 +284,53 @@ const generate_audio = false;
       "imageUrls.0",
     ]) || null;
 
+  const storyImageUrls = Array.isArray(body.image_urls)
+    ? body.image_urls.map((x) => String(x || "").trim()).filter(Boolean).slice(0, 4)
+    : [];
+
+  if (!storyImageUrls.length && characterImageUrl) {
+    storyImageUrls.push(String(characterImageUrl).trim());
+  }
+
   const falModel =
     mode === "character"
       ? "fal-ai/nano-banana-pro"
-      : "fal-ai/kling-video/o3/standard/reference-to-video";
+      : mode === "story"
+        ? "fal-ai/kling-video/o3/pro/reference-to-video"
+        : "fal-ai/kling-video/o3/standard/reference-to-video";
 
   const falUrl = `https://queue.fal.run/${falModel}`;
 
- const requestedMode = String(body.mode || "basic").toLowerCase();
-const mode =
-  requestedMode === "basic" &&
-  String(body?.meta?.mode || "").toLowerCase() === "story"
-    ? "story"
-    : requestedMode;
-
-if (!["basic", "character", "story"].includes(mode)) {
-  return res.status(400).json({
-    ok: false,
-    error: "unsupported_mode",
-    message: "this version supports basic mode, character mode and story mode",
-  });
-}
-
-const requestNonce =
-  mode === "character"
-    ? ""
-    : `shot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-const prompt =
-  mode === "character"
-    ? [
-        "Cute kids cartoon character design.",
-        characterType ? `Character type: ${characterType}.` : "",
-        characterName ? `Character name: ${characterName}.` : "",
-        characterStyle ? `Visual style: ${characterStyle}.` : "",
-        characterPromptRaw ? `Description: ${characterPromptRaw}.` : "",
-
-        characterHairType ? `Hair type: ${characterHairType}.` : "",
-        characterHairColor ? `Hair color: ${characterHairColor}.` : "",
-        characterOutfit ? `Outfit: ${characterOutfit}.` : "",
-        characterGlasses ? `Glasses: ${characterGlasses}.` : "",
-        characterAccessory ? `Accessory: ${characterAccessory}.` : "",
-        characterExpression ? `Facial expression: ${characterExpression}.` : "",
-
-        "Single character only.",
-        "Full body character.",
-        "Centered composition.",
-        "Clean simple background.",
-        "Child-friendly, adorable, expressive design.",
-        "No text, no watermark."
-      ].filter(Boolean).join(" ")
-    : mode === "story"
-      ? `${String(body.extraPrompt || "").trim()} Unique shot token: ${requestNonce}.`
-      : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
-
-const duration = String(body.duration || "5");
-const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
-const audio_mode =
-  String(body.audioMode || body.audio_mode || "none").toLowerCase() === "upload"
-    ? "upload"
-    : "none";
-
-const audio_url =
-  String(body.audioFileUrl || body.audio_url || "").trim() || null;
-
-const silent_copy = audio_mode !== "upload";
-
-// Fal'ın kendi otomatik sesi şimdilik kapalı kalsın.
-// Çünkü bizim hedefimiz kullanıcı yüklediği mp3'ü sonradan mux etmek.
-const generate_audio = false;
-
-const characterImageUrl =
-  pick(body, [
-    "characterImageUrl",
-    "character_image_url",
-    "image_url",
-    "start_image_url",
-  ]) || null;
-
-const referenceImageUrl =
-  pick(body, [
-    "referenceImageUrl",
-    "reference_image_url",
-    "referenceImage.image_url",
-    "reference.image_url",
-    "image_urls.0",
-    "imageUrls.0",
-  ]) || null;
-
-const storyImageUrls = Array.isArray(body.image_urls)
-  ? body.image_urls.map((x) => String(x || "").trim()).filter(Boolean).slice(0, 4)
-  : [];
-
-if (!storyImageUrls.length && characterImageUrl) {
-  storyImageUrls.push(String(characterImageUrl).trim());
-}
-
-const falModel =
-  mode === "character"
-    ? "fal-ai/nano-banana-pro"
-    : mode === "story"
-      ? "fal-ai/kling-video/o3/pro/reference-to-video"
-      : "fal-ai/kling-video/o3/standard/reference-to-video";
-
-const falUrl = `https://queue.fal.run/${falModel}`;
-
-const falInput =
-  mode === "character"
-    ? {
-        prompt,
-        num_images: 1,
-        aspect_ratio:
-          aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
-            ? aspect_ratio
-            : "4:5",
-        output_format: "png",
-        safety_tolerance: "4",
-        resolution: "1K",
-        ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
-      }
-    : mode === "story"
+  const falInput =
+    mode === "character"
       ? {
           prompt,
-          duration,
-          aspect_ratio,
-          generate_audio: false,
-          ...(storyImageUrls.length ? { image_urls: storyImageUrls } : {})
+          num_images: 1,
+          aspect_ratio:
+            aspect_ratio === "16:9" || aspect_ratio === "9:16" || aspect_ratio === "1:1"
+              ? aspect_ratio
+              : "4:5",
+          output_format: "png",
+          safety_tolerance: "4",
+          resolution: "1K",
+          ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
         }
-      : {
-          prompt,
-          duration,
-          aspect_ratio,
-          generate_audio,
-          shot_type: "customize",
-          ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
-        };
+      : mode === "story"
+        ? {
+            prompt,
+            duration,
+            aspect_ratio,
+            generate_audio: false,
+            ...(storyImageUrls.length ? { image_urls: storyImageUrls } : {})
+          }
+        : {
+            prompt,
+            duration,
+            aspect_ratio,
+            generate_audio,
+            shot_type: "customize",
+            ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {})
+          };
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
@@ -456,6 +375,9 @@ const falInput =
       error: "fal_error",
       fal_status: r.status,
       fal_response: data,
+      mode,
+      model: falModel,
+      fal_input: falInput
     });
   }
 
@@ -467,11 +389,11 @@ const falInput =
   const metaObj = {
     app,
     mode,
-    kind: "cartoon_video",
+    kind: mode === "character" ? "cartoon_character" : "cartoon_video",
     provider: "fal",
     audio_mode,
-   audio_url,
-   silent_copy,
+    audio_url,
+    silent_copy,
     model: falModel,
     request_id,
     ui_state: {
@@ -479,14 +401,12 @@ const falInput =
       type: characterType || null,
       style: characterStyle || null,
       prompt: characterPromptRaw || "",
-
       hairType: characterHairType || "",
       hairColor: characterHairColor || "",
       outfit: characterOutfit || "",
       glasses: characterGlasses || "",
       accessory: characterAccessory || "",
       expression: characterExpression || "",
-
       mainCharacter: body.mainCharacter || null,
       helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
       scene: body.scene || null,
@@ -495,13 +415,14 @@ const falInput =
       duration,
       aspect_ratio,
       generate_audio,
-     generate_audio,
-audio_mode,
-audio_url,
-silent_copy,
-characterImageUrl: characterImageUrl || null,
-referenceImageUrl: referenceImageUrl || null,
-requestNonce: requestNonce || null,
+      audio_mode,
+      audio_url,
+      silent_copy,
+      characterImageUrl: characterImageUrl || null,
+      referenceImageUrl: referenceImageUrl || null,
+      storyImageUrls,
+      requestNonce: requestNonce || null,
+      story_meta: body.meta || null
     },
     fal_input: falInput,
     provider_response: {
@@ -552,4 +473,4 @@ requestNonce: requestNonce || null,
     job_id: rows?.[0]?.id || null,
     raw: data,
   });
-}
+};
