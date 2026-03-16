@@ -818,10 +818,6 @@
 
     let slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots.filter(Boolean) : [];
 
-    if (!slots.length) {
-      slots = inferCharacterSlotsFromText(scene?.characters || "");
-    }
-
     slots = slots.filter((slot) => !!slotValueMap[slot]);
 
     if (!slots.length) {
