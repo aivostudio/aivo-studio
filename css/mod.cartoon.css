@@ -2208,3 +2208,58 @@
     grid-template-columns: 1fr;
   }
 }
+.story-characters-card .story-card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.story-characters-card .story-card-head h4{
+  margin:0;
+}
+
+.story-characters-card .story-card-head .story-card-note{
+  margin:0;
+  font-size:14px;
+  line-height:1.2;
+  opacity:.82;
+  white-space:nowrap;
+}
+
+.story-characters-card .story-grid-4{
+  align-items:start;
+}
+
+.story-characters-card .story-character-field{
+  display:flex;
+  flex-direction:column;
+}
+
+.story-characters-card .story-character-field label{
+  margin-bottom:10px;
+}
+
+.story-characters-card .story-character-field select{
+  min-height:56px;
+}
+
+.story-characters-card .story-upload-slot{
+  margin-top:10px;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+}
+
+.story-characters-card .story-upload-btn,
+.story-characters-card .story-upload-state{
+  width:100%;
+  min-height:44px;
+}
+
+.story-characters-card .story-upload-state{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
