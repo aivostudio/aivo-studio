@@ -490,7 +490,7 @@
     <p class="story-card-note">En fazla 4 referans kullanılabilir.</p>
   </div>
 
-  <div class="story-grid story-grid-3">
+  <div class="story-grid story-grid-4">
     <div class="story-field story-character-field">
       <label for="storyMainCharacter">Ana Karakter</label>
       <select id="storyMainCharacter" name="storyMainCharacter" data-story-main-character>
@@ -619,6 +619,51 @@
             class="story-upload-remove"
             aria-label="Yardımcı karakter 2 görselini kaldır"
             data-story-upload-remove="helper2"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="story-field story-character-field">
+      <label for="storyExtraCharacter">Ek Karakter</label>
+      <select id="storyExtraCharacter" name="storyExtraCharacter" data-story-extra-character>
+        <option value="">Seçiniz</option>
+      </select>
+
+      <div class="story-upload-slot" data-story-upload-slot="extra">
+        <input
+          type="file"
+          id="storyExtraCharacterImage"
+          accept="image/*"
+          hidden
+          data-story-character-file="extra"
+        />
+
+        <button
+          type="button"
+          class="story-ghost-btn story-upload-btn"
+          data-story-upload-trigger="extra"
+        >
+          Ek Karakter Görseli Yükle
+        </button>
+
+        <div
+          class="story-upload-state"
+          data-story-upload-state="extra"
+          hidden
+        >
+          <span
+            class="story-upload-name"
+            data-story-upload-name="extra"
+          >Dosya seçilmedi</span>
+
+          <button
+            type="button"
+            class="story-upload-remove"
+            aria-label="Ek karakter görselini kaldır"
+            data-story-upload-remove="extra"
           >
             ×
           </button>
