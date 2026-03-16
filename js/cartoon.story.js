@@ -394,38 +394,6 @@
       .map(([slot]) => slot);
   }
 
-  function inferCharacterSlotsFromText(text) {
-    const raw = safeText(text).toLowerCase();
-    const availableSlots = getAvailableStoryCharacterSlots();
-    if (!raw) return [];
-
-    if (["hepsi", "hep", "tümü", "tum", "all"].includes(raw)) {
-      return [...availableSlots];
-    }
-
-    const next = new Set();
-    const slotMap = getStoryCharacterSlotMap();
-
-    const tokens = raw
-      .split(",")
-      .map((x) => safeText(x).toLowerCase())
-      .filter(Boolean);
-
-    for (const token of tokens) {
-      if (token.includes("ana")) next.add("main");
-      if (token.includes("yardımcı 1") || token.includes("yardimci 1") || token.includes("helper1")) next.add("helper1");
-      if (token.includes("yardımcı 2") || token.includes("yardimci 2") || token.includes("helper2")) next.add("helper2");
-
-      for (const [slot, value] of Object.entries(slotMap)) {
-        if (value && token === value.toLowerCase()) {
-          next.add(slot);
-        }
-      }
-    }
-
-    return availableSlots.filter((slot) => next.has(slot));
-  }
-
   function getSceneCharacterLabels(scene) {
     const slotMap = getStoryCharacterSlotMap();
     const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
