@@ -637,6 +637,8 @@ if (generateBtn && root.contains(generateBtn)) {
     new CustomEvent('aivo:cartoon:story_payload_ready', { detail: payload })
   );
 }
+ });
+  }
   function bindInputs() {
     document.addEventListener('input', (e) => {
       const root = getCartoonRoot();
