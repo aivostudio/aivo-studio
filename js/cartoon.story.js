@@ -1377,12 +1377,13 @@ function buildCharacterOptions(root) {
         const isSelected = sceneCharacterItem.dataset.selected === "true";
         sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
 
-        const dot = qs("span span", sceneCharacterItem);
+     const dot = qs(".story-scene-character-dot", sceneCharacterItem);
         if (dot) {
           dot.style.background = isSelected
-            ? "rgba(255,255,255,.18)"
-            : "linear-gradient(135deg,#a565ff,#ff5cb8)";
-          dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(180,90,255,.45)";
+  ? "rgba(255,255,255,.18)"
+  : "linear-gradient(135deg,#22c55e,#16a34a)";
+
+dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
         }
 
         sceneCharacterItem.style.border = isSelected
