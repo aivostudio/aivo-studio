@@ -609,7 +609,7 @@ function renderSceneCharacterPicker(root, scene) {
     ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
     : [];
 
-  const items = qsa("[data-scene-character-item]", optionsBox);
+const items = qsa(".story-scene-character-item", optionsBox);
   if (!items.length) return;
 
   let hasAnySelectedStoryCharacter = false;
