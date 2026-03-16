@@ -547,7 +547,8 @@ function syncAllStoryCharacterUploadUI(root) {
   }
 
   async function createStoryScenesFromPayload(storyPayload) {
-    const scenes = Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : [];
+const scenes = (Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : [])
+  .filter((scene) => String(scene?.duration || '') === '5');
     const created = [];
 
     for (const scene of scenes) {
