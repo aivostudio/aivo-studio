@@ -668,14 +668,14 @@ const items = qsa(".story-scene-character-item", optionsBox);
     emptyBox.hidden = false;
   }
 }
-  function getSceneCharacterPickerValues(root) {
-    const editor = qs("[data-story-scene-editor]", root);
-    if (!editor) return [];
+function getSceneCharacterPickerValues(root) {
+  const editor = qs("[data-story-scene-editor]", root);
+  if (!editor) return [];
 
-    return qsa('[data-scene-character-item][data-selected="true"]', editor)
-      .map((el) => safeText(el.dataset.sceneCharacterSlot))
-      .filter(Boolean);
-  }
+  return qsa('.story-scene-character-item[data-selected="true"]', editor)
+    .map((el) => safeText(el.dataset.sceneCharacterSlot))
+    .filter(Boolean);
+}
 
   function getSelectedScenes() {
     return state.scenes.filter((scene) => scene && scene.selected === true);
