@@ -687,12 +687,14 @@
     controller.start();
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
+    window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
 
     return {
       destroy() {
         destroyed = true;
         try { window.removeEventListener("aivo:cartoon:job_created", onJobCreated); } catch {}
         try { window.removeEventListener("aivo:cartoon:job_ready", onJobReady); } catch {}
+        try { window.removeEventListener("aivo:cartoon:story_scene_ready", onJobReady); } catch {}
         try { controller?.destroy?.(); } catch {}
         try { host.innerHTML = ""; } catch {}
       },
