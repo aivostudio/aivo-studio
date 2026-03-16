@@ -702,6 +702,7 @@
   }
 
   try {
+    console.log("[PANEL.CARTOON] register run");
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("cartoon", {
         header: {
