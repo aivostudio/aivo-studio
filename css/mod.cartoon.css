@@ -2263,3 +2263,15 @@
   align-items:center;
   justify-content:space-between;
 }
+.story-characters-card .story-grid-4 > .story-character-field{
+  align-self:start;
+  margin-top:0 !important;
+  padding-top:0 !important;
+}
+
+.story-characters-card .story-grid-4 > .story-character-field > label{
+  min-height:44px;
+  display:flex;
+  align-items:flex-end;
+  margin:0 0 10px 0;
+}
