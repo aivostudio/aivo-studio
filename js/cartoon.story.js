@@ -594,39 +594,96 @@
     return btn;
   }
 
-  function renderSceneCharacterPicker(root, scene) {
-    const editor = qs("[data-story-scene-editor]", root);
-    if (!editor || !scene) return;
+function renderSceneCharacterPicker(root, scene) {
+  const editor = qs("[data-story-scene-editor]", root);
+  if (!editor || !scene) return;
 
-    const wrap = ensureSceneCharacterPicker(editor);
-    if (!wrap) return;
+  const wrap = ensureSceneCharacterPicker(editor);
+  if (!wrap) return;
 
-    const optionsBox = qs("[data-scene-character-picker-options]", wrap);
-    const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
-    if (!optionsBox || !emptyBox) return;
+  const optionsBox = qs("[data-scene-character-picker-options]", wrap);
+  const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
+  if (!optionsBox || !emptyBox) return;
 
-    const available = getStoryCharacterEntries().slice(0, 4);
-    const selected = Array.isArray(scene?.characterSlots)
-      ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
-      : [];
+  const available = getStoryCharacterEntries().slice(0, 4);
+  const selected = Array.isArray(scene?.characterSlots)
+    ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
+    : [];
 
-    optionsBox.innerHTML = "";
+  const slotMap = new Map();
+  available.forEach((entry) => {
+    slotMap.set(entry.slot, entry);
+  });
 
-    if (!available.length) {
-      optionsBox.style.display = "none";
-      emptyBox.style.display = "block";
+  const items = qsa("[data-scene-character-item]", optionsBox);
+
+  if (!items.length) {
+    optionsBox.style.display = "none";
+    emptyBox.style.display = "block";
+    return;
+  }
+
+  if (!available.length) {
+    items.forEach((item) => {
+      item.hidden = true;
+      item.dataset.selected = "false";
+    });
+    optionsBox.style.display = "none";
+    emptyBox.style.display = "block";
+    return;
+  }
+
+  optionsBox.style.display = "grid";
+  emptyBox.style.display = "none";
+
+  items.forEach((item) => {
+    const slot = safeText(item.dataset.sceneCharacterSlot);
+    const entry = slotMap.get(slot);
+
+    if (!entry) {
+      item.hidden = true;
+      item.dataset.selected = "false";
       return;
     }
 
-    optionsBox.style.display = "grid";
-    emptyBox.style.display = "none";
+    const isSelected = selected.includes(slot);
+    const labelEl = qs("[data-scene-character-label]", item);
+    const fileEl = qs("[data-scene-character-file]", item);
 
-    available.forEach((entry) => {
-      const isSelected = selected.includes(entry.slot);
-      optionsBox.appendChild(createSceneCharacterItem(entry, isSelected));
-    });
-  }
+    item.hidden = false;
+    item.dataset.selected = isSelected ? "true" : "false";
 
+    if (labelEl) {
+      labelEl.textContent = entry.label || "Karakter";
+    }
+
+    if (fileEl) {
+      fileEl.textContent = entry.hasImage
+        ? getShortFileName(entry.fileName, 24)
+        : "Görsel yüklenmedi";
+    }
+
+    item.style.border = isSelected
+      ? "1px solid rgba(201,119,255,.55)"
+      : "1px solid rgba(255,255,255,.12)";
+    item.style.background = isSelected
+      ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
+      : "rgba(255,255,255,.04)";
+    item.style.boxShadow = isSelected
+      ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
+      : "none";
+
+    const dot = qs(".story-scene-character-dot", item);
+    if (dot) {
+      dot.style.background = isSelected
+        ? "linear-gradient(135deg,#a565ff,#ff5cb8)"
+        : "rgba(255,255,255,.18)";
+      dot.style.boxShadow = isSelected
+        ? "0 0 12px rgba(180,90,255,.45)"
+        : "none";
+    }
+  });
+}
   function getSceneCharacterPickerValues(root) {
     const editor = qs("[data-story-scene-editor]", root);
     if (!editor) return [];
