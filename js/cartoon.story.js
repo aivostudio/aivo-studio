@@ -603,16 +603,8 @@ if (uploadRemove && root.contains(uploadRemove)) {
   resetStoryCharacterImage(root, slot);
   return;
 }
-const uploadRemove = e.target.closest('[data-story-upload-remove]');
-if (uploadRemove && root.contains(uploadRemove)) {
-  e.preventDefault();
-  const slot = safeText(uploadRemove.dataset.storyUploadRemove);
-  if (!slot) return;
 
-  resetStoryCharacterImage(root, slot);
-  return;
-}
-    const generateBtn = e.target.closest('[data-story-generate]');
+const generateBtn = e.target.closest('[data-story-generate]');
 if (generateBtn && root.contains(generateBtn)) {
   e.preventDefault();
   if (state.mode !== 'story') return;
@@ -645,9 +637,6 @@ if (generateBtn && root.contains(generateBtn)) {
     new CustomEvent('aivo:cartoon:story_payload_ready', { detail: payload })
   );
 }
-    });
-  }
-
   function bindInputs() {
     document.addEventListener('input', (e) => {
       const root = getCartoonRoot();
