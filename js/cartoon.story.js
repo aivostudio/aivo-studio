@@ -687,32 +687,48 @@ const items = qsa(".story-scene-character-item", optionsBox);
     }, 0);
   }
 
-  function buildCharacterOptions(root) {
-    const map = new Map();
+function buildCharacterOptions(root) {
+  const map = new Map();
 
-    qsa('[data-role="main"], [data-role="helper"]', root).forEach((btn) => {
-      const value = safeText(btn.dataset.character);
-      const label =
-        safeText(qs('.cartoon-character-name', btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        value;
+  qsa('[data-role="main"], [data-role="helper"]', root).forEach((btn) => {
+    const value = safeText(btn.dataset.character);
+    const label =
+      safeText(qs('.cartoon-character-name', btn)?.textContent) ||
+      safeText(btn.textContent) ||
+      value;
 
-      if (value && label) map.set(value, label);
-    });
+    if (value && label) map.set(value, label);
+  });
 
-    qsa('[data-character-library] .cartoon-character-mini-card', root).forEach((btn) => {
-      if (btn.disabled) return;
-      const value =
-        safeText(btn.dataset.character) ||
-        safeText(btn.dataset.id) ||
-        safeText(btn.getAttribute("value")) ||
-        safeText(btn.textContent).toLowerCase().replace(/\s+/g, "-");
-      const label = safeText(btn.textContent);
-      if (value && label) map.set(value, label);
-    });
+  qsa('[data-character-library] .cartoon-character-mini-card', root).forEach((btn) => {
+    if (btn.disabled) return;
 
-    state.characterOptions = Array.from(map.entries()).map(([value, label]) => ({ value, label }));
-  }
+    const value =
+      safeText(btn.dataset.character) ||
+      safeText(btn.dataset.id) ||
+      safeText(btn.getAttribute("value")) ||
+      safeText(btn.textContent).toLowerCase().replace(/\s+/g, "-");
+
+    const label = safeText(btn.textContent);
+
+    if (value && label) map.set(value, label);
+  });
+
+  const storySelectedValues = [
+    safeText(state.mainCharacter),
+    safeText(state.helperCharacter1),
+    safeText(state.helperCharacter2),
+    safeText(state.extraCharacter)
+  ].filter(Boolean);
+
+  storySelectedValues.forEach((value) => {
+    if (!map.has(value)) {
+      map.set(value, value);
+    }
+  });
+
+  state.characterOptions = Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+}
 
   function fillCharacterSelect(selectEl, selectedValue) {
     if (!selectEl) return;
