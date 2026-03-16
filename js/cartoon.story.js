@@ -16,21 +16,149 @@
   function clampText(value, max) {
     return String(value || "").slice(0, max);
   }
+async function presignStoryCharacterReference(file, slot) {
+  const safeSlot = String(slot || "main").trim() || "main";
 
-  function ensureStoryUploadInput(root) {
-    let input = qs('[data-story-reference-upload]', root);
-    if (input) return input;
+  const res = await fetch("/api/r2/presign-put", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: "cartoon",
+      kind: `story-reference-${safeSlot}`,
+      filename: file?.name || `${safeSlot}-${Date.now()}.png`,
+      contentType: file?.type || "application/octet-stream"
+    })
+  });
 
-    input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.hidden = true;
-    input.setAttribute('data-story-reference-upload', '');
+  const data = await res.json().catch(() => null);
 
-    const host = qs('.story-inline-actions', root) || root;
-    host.appendChild(input);
-    return input;
+  if (!res.ok || !data || data.ok === false) {
+    throw new Error(data?.error || "story_reference_presign_failed");
   }
+
+  return {
+    uploadUrl: data.uploadUrl || data.upload_url,
+    publicUrl: data.publicUrl || data.public_url || data.url || ""
+  };
+}
+
+async function uploadStoryCharacterReferenceToR2(file, slot) {
+  if (!file) throw new Error("missing_story_reference_file");
+
+  const { uploadUrl, publicUrl } = await presignStoryCharacterReference(file, slot);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error("story_reference_missing_upload_urls");
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream"
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error("story_reference_r2_put_failed");
+  }
+
+  return publicUrl;
+}
+
+function createEmptyStoryCharacterImageState() {
+  return {
+    file: null,
+    fileName: "",
+    fileUrl: "",
+    uploadPromise: null,
+    uploadStatus: "idle",
+    uploadError: ""
+  };
+}
+
+function getStoryCharacterImage(slot) {
+  const key = String(slot || "").trim();
+  return state.characterImages?.[key] || null;
+}
+
+function setStoryCharacterImage(slot, patch) {
+  const key = String(slot || "").trim();
+  if (!key) return;
+
+  const prev = getStoryCharacterImage(key) || createEmptyStoryCharacterImageState();
+
+  state.characterImages = {
+    ...(state.characterImages || {}),
+    [key]: {
+      ...prev,
+      ...patch
+    }
+  };
+}
+
+function resetStoryCharacterImage(root, slot) {
+  const key = String(slot || "").trim();
+  if (!key) return;
+
+  const input = qs(`[data-story-character-file="${key}"]`, root);
+  if (input) input.value = "";
+
+  setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
+  updateStoryCharacterUploadUI(root, key);
+}
+
+function getShortFileName(name, max = 22) {
+  const text = String(name || "").trim();
+  if (!text) return "";
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 3)}...`;
+}
+
+function updateStoryCharacterUploadUI(root, slot) {
+  const key = String(slot || "").trim();
+  if (!key) return;
+
+  const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
+  const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
+  const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
+  const imageState = getStoryCharacterImage(key);
+
+  if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
+
+  if (!imageState.file) {
+    uploadBtn.hidden = false;
+    stateBox.hidden = true;
+    nameEl.textContent = "Dosya seçilmedi";
+    return;
+  }
+
+  uploadBtn.hidden = true;
+  stateBox.hidden = false;
+
+  if (imageState.uploadStatus === "uploading") {
+    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+    return;
+  }
+
+  if (imageState.uploadStatus === "ready") {
+    nameEl.textContent = getShortFileName(imageState.fileName);
+    return;
+  }
+
+  if (imageState.uploadStatus === "error") {
+    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+    return;
+  }
+
+  nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+}
+
+function syncAllStoryCharacterUploadUI(root) {
+  ["main", "helper1", "helper2"].forEach((slot) => {
+    updateStoryCharacterUploadUI(root, slot);
+  });
+}
 
   function createDefaultScenes() {
     return [
@@ -70,8 +198,11 @@
       openSection: 'intro',
       editingSceneId: '',
       isGenerating: false,
-      referenceImageFile: null,
-      referenceImageName: '',
+     characterImages: {
+  main: createEmptyStoryCharacterImageState(),
+  helper1: createEmptyStoryCharacterImageState(),
+  helper2: createEmptyStoryCharacterImageState()
+},
       scenes: createDefaultScenes(),
       characterOptions: []
     });
@@ -318,12 +449,25 @@
         ageGroup: state.ageGroup,
         maxDurationSeconds: Number(state.duration || 180)
       },
-      characters: {
-        main: state.mainCharacter,
-        helper1: state.helperCharacter1,
-        helper2: state.helperCharacter2,
-        referenceImageName: state.referenceImageName || ''
-      },
+     characters: {
+  main: state.mainCharacter,
+  helper1: state.helperCharacter1,
+  helper2: state.helperCharacter2,
+  images: {
+    main: {
+      fileName: state.characterImages?.main?.fileName || "",
+      fileUrl: state.characterImages?.main?.fileUrl || ""
+    },
+    helper1: {
+      fileName: state.characterImages?.helper1?.fileName || "",
+      fileUrl: state.characterImages?.helper1?.fileUrl || ""
+    },
+    helper2: {
+      fileName: state.characterImages?.helper2?.fileName || "",
+      fileUrl: state.characterImages?.helper2?.fileUrl || ""
+    }
+  }
+},
       settings: {
         aspectRatio: state.ratio,
         style: state.style,
@@ -380,6 +524,7 @@
     syncSceneRows(root);
     syncSceneEditor(root);
     updateStoryIdeaCount(root);
+    syncAllStoryCharacterUploadUI(root);
   }
 
   function bindClicks() {
