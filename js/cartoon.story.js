@@ -1290,7 +1290,10 @@ function buildCharacterOptions(root) {
     if (!characterSlots.length) {
       return alert("Bu sahne için en az 1 karakter seçmelisin.");
     }
-
+   state.scenes = state.scenes.map((scene) => ({
+  ...scene,
+  selected: scene.id === state.editingSceneId ? scene.selected : false
+}));
     updateSceneById(state.editingSceneId, {
       title,
       description,
