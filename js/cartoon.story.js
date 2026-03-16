@@ -651,12 +651,12 @@ const items = qsa(".story-scene-character-item", optionsBox);
 
     const dot = qs(".story-scene-character-dot", item);
     if (dot) {
-      dot.style.background = isSelected
-        ? "linear-gradient(135deg,#a565ff,#ff5cb8)"
-        : "rgba(255,255,255,.18)";
-      dot.style.boxShadow = isSelected
-        ? "0 0 12px rgba(180,90,255,.45)"
-        : "none";
+     dot.style.background = isSelected
+  ? "linear-gradient(135deg,#22c55e,#16a34a)"
+  : "rgba(255,255,255,.18)";
+    dot.style.boxShadow = isSelected
+  ? "0 0 12px rgba(34,197,94,.45)"
+  : "none";
     }
   });
 
