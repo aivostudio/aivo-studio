@@ -624,19 +624,39 @@ if (uploadRemove && root.contains(uploadRemove)) {
   resetStoryCharacterImage(root, slot);
   return;
 }
-      const generateBtn = e.target.closest('[data-story-generate]');
-      if (generateBtn && root.contains(generateBtn)) {
-        e.preventDefault();
-        if (state.mode !== 'story') return;
-        if (state.isGenerating) return;
+    const generateBtn = e.target.closest('[data-story-generate]');
+if (generateBtn && root.contains(generateBtn)) {
+  e.preventDefault();
+  if (state.mode !== 'story') return;
+  if (state.isGenerating) return;
 
-        const payload = buildStoryPayload();
-        window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
-        console.log('[CARTOON][STORY_PAYLOAD_READY]', payload);
-        window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:story_payload_ready', { detail: payload })
-        );
+  const slots = ['main', 'helper1', 'helper2'];
+
+  for (const slot of slots) {
+    const imageState = getStoryCharacterImage(slot);
+    if (!imageState || !imageState.file) continue;
+
+    if (imageState.uploadStatus === 'uploading' && imageState.uploadPromise) {
+      try {
+        await imageState.uploadPromise;
+      } catch {
+        return;
       }
+    }
+
+    if (!imageState.fileUrl || imageState.uploadStatus !== 'ready') {
+      alert('Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.');
+      return;
+    }
+  }
+
+  const payload = buildStoryPayload();
+  window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
+  console.log('[CARTOON][STORY_PAYLOAD_READY]', payload);
+  window.dispatchEvent(
+    new CustomEvent('aivo:cartoon:story_payload_ready', { detail: payload })
+  );
+}
     });
   }
 
