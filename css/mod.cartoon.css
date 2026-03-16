@@ -2109,3 +2109,102 @@
     gap: 16px;
   }
 }
+.story-scene-characters-field {
+  display: block;
+  width: 100%;
+}
+
+.story-scene-character-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.story-scene-character-item {
+  width: 100%;
+  min-height: 86px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  text-align: left;
+  transition: 0.18s ease;
+  box-shadow: none;
+}
+
+.story-scene-character-item:hover {
+  border-color: rgba(196, 120, 255, 0.34);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.story-scene-character-item[data-selected="true"] {
+  border-color: rgba(214, 118, 255, 0.58);
+  background: linear-gradient(135deg, rgba(140, 92, 255, 0.22), rgba(255, 94, 176, 0.18));
+  box-shadow:
+    0 0 0 1px rgba(214, 118, 255, 0.12) inset,
+    0 10px 28px rgba(111, 56, 255, 0.16);
+}
+
+.story-scene-character-dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.20);
+  transition: 0.18s ease;
+}
+
+.story-scene-character-item[data-selected="true"] .story-scene-character-dot {
+  background: linear-gradient(135deg, #a665ff, #ff5db8);
+  box-shadow: 0 0 12px rgba(180, 90, 255, 0.45);
+}
+
+.story-scene-character-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.story-scene-character-copy strong,
+.story-scene-character-item [data-scene-character-label] {
+  display: block;
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #fff;
+  word-break: break-word;
+}
+
+.story-scene-character-copy small,
+.story-scene-character-item [data-scene-character-file] {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.74);
+  word-break: break-word;
+}
+
+.story-scene-character-empty {
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 1100px) {
+  .story-scene-character-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .story-scene-character-grid {
+    grid-template-columns: 1fr;
+  }
+}
