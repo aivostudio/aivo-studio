@@ -16,196 +16,358 @@
   function clampText(value, max) {
     return String(value || "").slice(0, max);
   }
-async function presignStoryCharacterReference(file, slot) {
-  const safeSlot = String(slot || "main").trim() || "main";
 
-  const res = await fetch("/api/r2/presign-put", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: "cartoon",
-      kind: `story-reference-${safeSlot}`,
-      filename: file?.name || `${safeSlot}-${Date.now()}.png`,
-      contentType: file?.type || "application/octet-stream"
-    })
-  });
-
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || "story_reference_presign_failed");
+  function normalizeStorySceneDuration(value) {
+    const n = Number(value || 15);
+    if (n <= 5) return "5";
+    if (n <= 10) return "10";
+    return "15";
   }
 
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || ""
-  };
-}
-
-async function uploadStoryCharacterReferenceToR2(file, slot) {
-  if (!file) throw new Error("missing_story_reference_file");
-
-  const { uploadUrl, publicUrl } = await presignStoryCharacterReference(file, slot);
-
-  if (!uploadUrl || !publicUrl) {
-    throw new Error("story_reference_missing_upload_urls");
+  function formatSecondsLabel(totalSeconds) {
+    const total = Math.max(0, Number(totalSeconds || 0));
+    const minutes = Math.floor(total / 60);
+    const seconds = total % 60;
+    if (minutes > 0 && seconds > 0) return `${minutes} dk ${seconds} sn`;
+    if (minutes > 0) return `${minutes} dk`;
+    return `${seconds} sn`;
   }
 
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream"
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error("story_reference_r2_put_failed");
+  function toSceneDurationNumber(value) {
+    return Number(normalizeStorySceneDuration(value));
   }
 
-  return publicUrl;
-}
+  async function presignStoryCharacterReference(file, slot) {
+    const safeSlot = String(slot || "main").trim() || "main";
 
-function createEmptyStoryCharacterImageState() {
-  return {
-    file: null,
-    fileName: "",
-    fileUrl: "",
-    uploadPromise: null,
-    uploadStatus: "idle",
-    uploadError: ""
-  };
-}
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: `story-reference-${safeSlot}`,
+        filename: file?.name || `${safeSlot}-${Date.now()}.png`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
 
-function getStoryCharacterImage(slot) {
-  const key = String(slot || "").trim();
-  return state.characterImages?.[key] || null;
-}
+    const data = await res.json().catch(() => null);
 
-function setStoryCharacterImage(slot, patch) {
-  const key = String(slot || "").trim();
-  if (!key) return;
-
-  const prev = getStoryCharacterImage(key) || createEmptyStoryCharacterImageState();
-
-  state.characterImages = {
-    ...(state.characterImages || {}),
-    [key]: {
-      ...prev,
-      ...patch
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "story_reference_presign_failed");
     }
-  };
-}
 
-function resetStoryCharacterImage(root, slot) {
-  const key = String(slot || "").trim();
-  if (!key) return;
-
-  const input = qs(`[data-story-character-file="${key}"]`, root);
-  if (input) input.value = "";
-
-  setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
-  updateStoryCharacterUploadUI(root, key);
-}
-
-function getShortFileName(name, max = 22) {
-  const text = String(name || "").trim();
-  if (!text) return "";
-  if (text.length <= max) return text;
-  return `${text.slice(0, max - 3)}...`;
-}
-
-function updateStoryCharacterUploadUI(root, slot) {
-  const key = String(slot || "").trim();
-  if (!key) return;
-
-  const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
-  const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
-  const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
-  const imageState = getStoryCharacterImage(key);
-
-  if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
-
-  if (!imageState.file) {
-    uploadBtn.hidden = false;
-    stateBox.hidden = true;
-    nameEl.textContent = "Dosya seçilmedi";
-    return;
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ""
+    };
   }
 
-  uploadBtn.hidden = true;
-  stateBox.hidden = false;
+  async function uploadStoryCharacterReferenceToR2(file, slot) {
+    if (!file) throw new Error("missing_story_reference_file");
 
-  if (imageState.uploadStatus === "uploading") {
-    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
-    return;
+    const { uploadUrl, publicUrl } = await presignStoryCharacterReference(file, slot);
+
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("story_reference_missing_upload_urls");
+    }
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("story_reference_r2_put_failed");
+    }
+
+    return publicUrl;
   }
 
-  if (imageState.uploadStatus === "ready") {
-    nameEl.textContent = getShortFileName(imageState.fileName);
-    return;
+  function createEmptyStoryCharacterImageState() {
+    return {
+      file: null,
+      fileName: "",
+      fileUrl: "",
+      uploadPromise: null,
+      uploadStatus: "idle",
+      uploadError: ""
+    };
   }
-
-  if (imageState.uploadStatus === "error") {
-    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
-    return;
-  }
-
-  nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
-}
-
-function syncAllStoryCharacterUploadUI(root) {
-  ["main", "helper1", "helper2"].forEach((slot) => {
-    updateStoryCharacterUploadUI(root, slot);
-  });
-}
 
   function createDefaultScenes() {
     return [
-      { id: 'intro-1', section: 'intro', title: 'Sahne 1 · Dünya Açılışı', description: 'Ortam ve genel atmosfer kurulur.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'intro-2', section: 'intro', title: 'Sahne 2 · Ana Karakter Tanıtımı', description: 'Ana karakter ilk kez görünür.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'intro-3', section: 'intro', title: 'Sahne 3 · Hedefin Ortaya Çıkışı', description: 'Karakterin amacı netleşir.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-
-      { id: 'setup-1', section: 'setup', title: 'Sahne 4 · Yardımcı Unsur Gelir', description: 'Yardımcı karakter veya unsur hikayeye dahil olur.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'setup-2', section: 'setup', title: 'Sahne 5 · Yolculuk Başlar', description: 'Karakterler harekete geçer.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'setup-3', section: 'setup', title: 'Sahne 6 · İlk Engel', description: 'İlk zorluk ortaya çıkar.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-
-      { id: 'adventure-1', section: 'adventure', title: 'Sahne 7 · Macera Derinleşir', description: 'Olaylar büyümeye başlar.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'adventure-2', section: 'adventure', title: 'Sahne 8 · Deneme ve Çaba', description: 'Karakterler çözüm için yeni bir yol dener.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'adventure-3', section: 'adventure', title: 'Sahne 9 · Gerilim Artar', description: 'Risk yükselir, baskı artar.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'adventure-4', section: 'adventure', title: 'Sahne 10 · Doruk Noktası', description: 'En kritik karşılaşma yaşanır.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-
-      { id: 'final-1', section: 'final', title: 'Sahne 11 · Çözüm', description: 'Sorun çözülür.', characters: '', duration: '15', mood: '', type: '', directorNote: '' },
-      { id: 'final-2', section: 'final', title: 'Sahne 12 · Kapanış', description: 'Hikaye sıcak bir final ile biter.', characters: '', duration: '15', mood: '', type: '', directorNote: '' }
+      {
+        id: "intro-1",
+        section: "intro",
+        title: "Sahne 1 · Dünya Açılışı",
+        description: "Ortam ve genel atmosfer kurulur.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "intro-2",
+        section: "intro",
+        title: "Sahne 2 · Ana Karakter Tanıtımı",
+        description: "Ana karakter ilk kez görünür.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "intro-3",
+        section: "intro",
+        title: "Sahne 3 · Hedefin Ortaya Çıkışı",
+        description: "Karakterin amacı netleşir.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "setup-1",
+        section: "setup",
+        title: "Sahne 4 · Yardımcı Unsur Gelir",
+        description: "Yardımcı karakter veya unsur hikayeye dahil olur.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "setup-2",
+        section: "setup",
+        title: "Sahne 5 · Yolculuk Başlar",
+        description: "Karakterler harekete geçer.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "setup-3",
+        section: "setup",
+        title: "Sahne 6 · İlk Engel",
+        description: "İlk zorluk ortaya çıkar.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "adventure-1",
+        section: "adventure",
+        title: "Sahne 7 · Macera Derinleşir",
+        description: "Olaylar büyümeye başlar.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "adventure-2",
+        section: "adventure",
+        title: "Sahne 8 · Deneme ve Çaba",
+        description: "Karakterler çözüm için yeni bir yol dener.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "adventure-3",
+        section: "adventure",
+        title: "Sahne 9 · Gerilim Artar",
+        description: "Risk yükselir, baskı artar.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "adventure-4",
+        section: "adventure",
+        title: "Sahne 10 · Doruk Noktası",
+        description: "En kritik karşılaşma yaşanır.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "final-1",
+        section: "final",
+        title: "Sahne 11 · Çözüm",
+        description: "Sorun çözülür.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      },
+      {
+        id: "final-2",
+        section: "final",
+        title: "Sahne 12 · Kapanış",
+        description: "Hikaye sıcak bir final ile biter.",
+        characters: "",
+        characterSlots: [],
+        selected: false,
+        duration: "15",
+        mood: "",
+        type: "",
+        directorNote: ""
+      }
     ];
   }
 
   const state = (window.__CARTOON_STORY_STATE__ =
     window.__CARTOON_STORY_STATE__ || {
-      mode: 'story',
-      storyIdea: '',
-      theme: '',
-      ageGroup: '',
-      duration: '180',
-      mainCharacter: '',
-      helperCharacter1: '',
-      helperCharacter2: '',
+      mode: "story",
+      storyIdea: "",
+      theme: "",
+      ageGroup: "",
+      duration: "180",
+      mainCharacter: "",
+      helperCharacter1: "",
+      helperCharacter2: "",
       settingsOpen: false,
-      ratio: '16:9',
-      style: '',
-      audio: 'none',
-      extraPrompt: '',
-      openSection: 'intro',
-      editingSceneId: '',
+      ratio: "16:9",
+      style: "",
+      audio: "none",
+      extraPrompt: "",
+      openSection: "intro",
+      editingSceneId: "",
       isGenerating: false,
-     characterImages: {
-  main: createEmptyStoryCharacterImageState(),
-  helper1: createEmptyStoryCharacterImageState(),
-  helper2: createEmptyStoryCharacterImageState()
-},
+      characterImages: {
+        main: createEmptyStoryCharacterImageState(),
+        helper1: createEmptyStoryCharacterImageState(),
+        helper2: createEmptyStoryCharacterImageState()
+      },
       scenes: createDefaultScenes(),
       characterOptions: []
     });
+
+  function getStoryCharacterImage(slot) {
+    const key = String(slot || "").trim();
+    return state.characterImages?.[key] || null;
+  }
+
+  function setStoryCharacterImage(slot, patch) {
+    const key = String(slot || "").trim();
+    if (!key) return;
+
+    const prev = getStoryCharacterImage(key) || createEmptyStoryCharacterImageState();
+
+    state.characterImages = {
+      ...(state.characterImages || {}),
+      [key]: {
+        ...prev,
+        ...patch
+      }
+    };
+  }
+
+  function resetStoryCharacterImage(root, slot) {
+    const key = String(slot || "").trim();
+    if (!key) return;
+
+    const input = qs(`[data-story-character-file="${key}"]`, root);
+    if (input) input.value = "";
+
+    setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
+    updateStoryCharacterUploadUI(root, key);
+  }
+
+  function getShortFileName(name, max = 22) {
+    const text = String(name || "").trim();
+    if (!text) return "";
+    if (text.length <= max) return text;
+    return `${text.slice(0, max - 3)}...`;
+  }
+
+  function updateStoryCharacterUploadUI(root, slot) {
+    const key = String(slot || "").trim();
+    if (!key) return;
+
+    const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
+    const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
+    const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
+    const imageState = getStoryCharacterImage(key);
+
+    if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
+
+    if (!imageState.file) {
+      uploadBtn.hidden = false;
+      stateBox.hidden = true;
+      nameEl.textContent = "Dosya seçilmedi";
+      return;
+    }
+
+    uploadBtn.hidden = true;
+    stateBox.hidden = false;
+
+    if (imageState.uploadStatus === "uploading") {
+      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+      return;
+    }
+
+    if (imageState.uploadStatus === "ready") {
+      nameEl.textContent = getShortFileName(imageState.fileName);
+      return;
+    }
+
+    if (imageState.uploadStatus === "error") {
+      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+      return;
+    }
+
+    nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+  }
+
+  function syncAllStoryCharacterUploadUI(root) {
+    ["main", "helper1", "helper2"].forEach((slot) => {
+      updateStoryCharacterUploadUI(root, slot);
+    });
+  }
 
   function getSceneById(sceneId) {
     return state.scenes.find((scene) => scene.id === sceneId) || null;
@@ -215,6 +377,74 @@ function syncAllStoryCharacterUploadUI(root) {
     state.scenes = state.scenes.map((scene) =>
       scene.id === sceneId ? { ...scene, ...patch } : scene
     );
+  }
+
+  function getStoryCharacterSlotMap() {
+    return {
+      main: safeText(state.mainCharacter),
+      helper1: safeText(state.helperCharacter1),
+      helper2: safeText(state.helperCharacter2)
+    };
+  }
+
+  function getAvailableStoryCharacterSlots() {
+    const slotMap = getStoryCharacterSlotMap();
+    return Object.entries(slotMap)
+      .filter(([, value]) => !!value)
+      .map(([slot]) => slot);
+  }
+
+  function inferCharacterSlotsFromText(text) {
+    const raw = safeText(text).toLowerCase();
+    const availableSlots = getAvailableStoryCharacterSlots();
+    if (!raw) return [];
+
+    if (["hepsi", "hep", "tümü", "tum", "all"].includes(raw)) {
+      return [...availableSlots];
+    }
+
+    const next = new Set();
+    const slotMap = getStoryCharacterSlotMap();
+
+    const tokens = raw
+      .split(",")
+      .map((x) => safeText(x).toLowerCase())
+      .filter(Boolean);
+
+    for (const token of tokens) {
+      if (token.includes("ana")) next.add("main");
+      if (token.includes("yardımcı 1") || token.includes("yardimci 1") || token.includes("helper1")) next.add("helper1");
+      if (token.includes("yardımcı 2") || token.includes("yardimci 2") || token.includes("helper2")) next.add("helper2");
+
+      for (const [slot, value] of Object.entries(slotMap)) {
+        if (value && token === value.toLowerCase()) {
+          next.add(slot);
+        }
+      }
+    }
+
+    return availableSlots.filter((slot) => next.has(slot));
+  }
+
+  function getSceneCharacterLabels(scene) {
+    const slotMap = getStoryCharacterSlotMap();
+    const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
+    const labels = slots
+      .map((slot) => slotMap[slot])
+      .filter(Boolean);
+
+    if (labels.length) return labels;
+    return [];
+  }
+
+  function getSelectedScenes() {
+    return state.scenes.filter((scene) => scene && scene.selected === true);
+  }
+
+  function getSelectedTotalSeconds() {
+    return getSelectedScenes().reduce((sum, scene) => {
+      return sum + toSceneDurationNumber(scene?.duration);
+    }, 0);
   }
 
   function buildCharacterOptions(root) {
@@ -235,8 +465,8 @@ function syncAllStoryCharacterUploadUI(root) {
       const value =
         safeText(btn.dataset.character) ||
         safeText(btn.dataset.id) ||
-        safeText(btn.getAttribute('value')) ||
-        safeText(btn.textContent).toLowerCase().replace(/\s+/g, '-');
+        safeText(btn.getAttribute("value")) ||
+        safeText(btn.textContent).toLowerCase().replace(/\s+/g, "-");
       const label = safeText(btn.textContent);
       if (value && label) map.set(value, label);
     });
@@ -247,17 +477,17 @@ function syncAllStoryCharacterUploadUI(root) {
   function fillCharacterSelect(selectEl, selectedValue) {
     if (!selectEl) return;
 
-    const current = String(selectedValue || '');
+    const current = String(selectedValue || "");
     const options = state.characterOptions || [];
 
-    selectEl.innerHTML = '';
-    const empty = document.createElement('option');
-    empty.value = '';
-    empty.textContent = 'Seçiniz';
+    selectEl.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "Seçiniz";
     selectEl.appendChild(empty);
 
     options.forEach((item) => {
-      const opt = document.createElement('option');
+      const opt = document.createElement("option");
       opt.value = item.value;
       opt.textContent = item.label;
       if (item.value === current) opt.selected = true;
@@ -268,51 +498,90 @@ function syncAllStoryCharacterUploadUI(root) {
   }
 
   function syncCharacterSelects(root) {
-    fillCharacterSelect(qs('[data-story-main-character]', root), state.mainCharacter);
-    fillCharacterSelect(qs('[data-story-helper-1]', root), state.helperCharacter1);
-    fillCharacterSelect(qs('[data-story-helper-2]', root), state.helperCharacter2);
+    fillCharacterSelect(qs("[data-story-main-character]", root), state.mainCharacter);
+    fillCharacterSelect(qs("[data-story-helper-1]", root), state.helperCharacter1);
+    fillCharacterSelect(qs("[data-story-helper-2]", root), state.helperCharacter2);
   }
 
   function updateStoryIdeaCount(root) {
-    const input = qs('[data-story-idea]', root);
-    const out = qs('[data-story-idea-count]', root);
+    const input = qs("[data-story-idea]", root);
+    const out = qs("[data-story-idea-count]", root);
     if (!input || !out) return;
 
-    const len = String(input.value || '').length;
+    const len = String(input.value || "").length;
     out.textContent = String(len);
   }
 
+  function ensureStoryDurationSummary(root) {
+    const wrap = qs("[data-story-duration-summary-wrap]", root);
+    if (wrap) return wrap;
+
+    const durationField =
+      qs("[data-story-duration]", root)?.closest(".form-field") ||
+      qs("[data-story-duration]", root)?.parentElement ||
+      null;
+
+    if (!durationField || !durationField.parentElement) return null;
+
+    const box = document.createElement("div");
+    box.className = "story-duration-summary";
+    box.setAttribute("data-story-duration-summary-wrap", "");
+
+    box.innerHTML = `
+      <label style="display:block;font-weight:700;margin-bottom:8px;">Toplam Süre</label>
+      <div
+        data-story-duration-summary
+        style="min-height:64px;display:flex;align-items:center;padding:0 18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(5,6,28,.55);font-weight:700;"
+      ></div>
+    `;
+
+    durationField.parentElement.appendChild(box);
+    durationField.style.display = "none";
+    return box;
+  }
+
+  function syncStoryDurationSummary(root) {
+    const box = ensureStoryDurationSummary(root);
+    const out = qs("[data-story-duration-summary]", root);
+    if (!box || !out) return;
+
+    const selectedCount = getSelectedScenes().length;
+    const totalSeconds = getSelectedTotalSeconds();
+    out.textContent =
+      selectedCount > 0
+        ? `${selectedCount} sahne · ${formatSecondsLabel(totalSeconds)}`
+        : "Henüz sahne seçilmedi";
+  }
+
   function syncModeTabs(root) {
-    qsa('[data-cartoon-mode]', root).forEach((btn) => {
+    qsa("[data-cartoon-mode]", root).forEach((btn) => {
       const on = btn.dataset.cartoonMode === state.mode;
-      btn.classList.toggle('is-active', on);
-      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
     });
   }
 
   function syncModeViews(root) {
-    qsa('.cartoon-mode-view[data-cartoon-view]', root).forEach((el) => {
-      const view = el.dataset.cartoonView || '';
+    qsa(".cartoon-mode-view[data-cartoon-view]", root).forEach((el) => {
+      const view = el.dataset.cartoonView || "";
       const on = view === state.mode;
       el.hidden = !on;
-      el.classList.toggle('is-active', on);
+      el.classList.toggle("is-active", on);
     });
   }
 
   function syncStoryFormValues(root) {
-    const storyIdea = qs('[data-story-idea]', root);
-    const theme = qs('[data-story-theme]', root);
-    const ageGroup = qs('[data-story-age-group]', root);
-    const duration = qs('[data-story-duration]', root);
-    const ratio = qs('[data-story-ratio]', root);
-    const style = qs('[data-story-style]', root);
-    const audio = qs('[data-story-audio]', root);
-    const extraPrompt = qs('[data-story-extra-prompt]', root);
+    const storyIdea = qs("[data-story-idea]", root);
+    const theme = qs("[data-story-theme]", root);
+    const ageGroup = qs("[data-story-age-group]", root);
+    const ratio = qs("[data-story-ratio]", root);
+    const style = qs("[data-story-style]", root);
+    const audio = qs("[data-story-audio]", root);
+    const extraPrompt = qs("[data-story-extra-prompt]", root);
 
     if (storyIdea && storyIdea.value !== state.storyIdea) storyIdea.value = state.storyIdea;
     if (theme && theme.value !== state.theme) theme.value = state.theme;
     if (ageGroup && ageGroup.value !== state.ageGroup) ageGroup.value = state.ageGroup;
-    if (duration && duration.value !== state.duration) duration.value = state.duration;
     if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
     if (style && style.value !== state.style) style.value = state.style;
     if (audio && audio.value !== state.audio) audio.value = state.audio;
@@ -320,41 +589,53 @@ function syncAllStoryCharacterUploadUI(root) {
   }
 
   function createSceneRow(scene) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'story-scene-row';
-    btn.setAttribute('data-story-scene-id', scene.id);
-    btn.setAttribute('data-edit-scene', scene.id);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "story-scene-row";
+    btn.setAttribute("data-story-scene-id", scene.id);
+    btn.setAttribute("data-edit-scene", scene.id);
+
+    const selectedBadge = scene.selected
+      ? `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(170,88,255,.18);font-size:12px;font-weight:700;">Seçili</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;">Seçili değil</span>`;
 
     btn.innerHTML = `
       <span class="story-scene-copy">
         <strong data-scene-title></strong>
         <small data-scene-description></small>
+        <small data-scene-characters style="opacity:.8;"></small>
       </span>
-      <span class="story-scene-meta" data-scene-duration></span>
+      <span class="story-scene-meta" style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+        ${selectedBadge}
+        <span data-scene-duration></span>
+      </span>
     `;
 
-    qs('[data-scene-title]', btn).textContent = scene.title || 'Sahne';
-    qs('[data-scene-description]', btn).textContent = scene.description || '';
-    qs('[data-scene-duration]', btn).textContent = `${scene.duration || '15'} sn`;
+    qs("[data-scene-title]", btn).textContent = scene.title || "Sahne";
+    qs("[data-scene-description]", btn).textContent = scene.description || "";
+    qs("[data-scene-duration]", btn).textContent = `${normalizeStorySceneDuration(scene.duration)} sn`;
+
+    const charEl = qs("[data-scene-characters]", btn);
+    const labels = getSceneCharacterLabels(scene);
+    charEl.textContent = labels.length ? `Karakterler: ${labels.join(", ")}` : "Karakter seçilmedi";
 
     return btn;
   }
 
   function renderSectionScenes(root) {
-    qsa('[data-story-section]', root).forEach((sectionEl) => {
-      const sectionId = sectionEl.dataset.storySection || '';
-      const body = qs('[data-story-section-body]', sectionEl);
+    qsa("[data-story-section]", root).forEach((sectionEl) => {
+      const sectionId = sectionEl.dataset.storySection || "";
+      const body = qs("[data-story-section-body]", sectionEl);
       if (!body) return;
 
-      let list = qs('.story-scene-list', body);
+      let list = qs(".story-scene-list", body);
       if (!list) {
-        list = document.createElement('div');
-        list.className = 'story-scene-list';
+        list = document.createElement("div");
+        list.className = "story-scene-list";
         body.appendChild(list);
       }
 
-      list.innerHTML = '';
+      list.innerHTML = "";
       state.scenes
         .filter((scene) => scene.section === sectionId)
         .forEach((scene) => list.appendChild(createSceneRow(scene)));
@@ -362,77 +643,87 @@ function syncAllStoryCharacterUploadUI(root) {
   }
 
   function syncStoryAccordion(root) {
-    qsa('[data-story-section]', root).forEach((sectionEl) => {
-      const sectionId = sectionEl.dataset.storySection || '';
+    qsa("[data-story-section]", root).forEach((sectionEl) => {
+      const sectionId = sectionEl.dataset.storySection || "";
       const isOpen = sectionId === state.openSection;
 
-      sectionEl.classList.toggle('is-open', isOpen);
+      sectionEl.classList.toggle("is-open", isOpen);
 
-      const body = qs('[data-story-section-body]', sectionEl);
+      const body = qs("[data-story-section-body]", sectionEl);
       if (body) body.hidden = !isOpen;
 
-      const toggle = qs('[data-story-section-toggle]', sectionEl);
-      if (toggle) toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      const toggle = qs("[data-story-section-toggle]", sectionEl);
+      if (toggle) toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
     });
   }
 
   function syncStorySettings(root) {
-    const body = qs('[data-story-settings-body]', root);
-    const toggle = qs('[data-story-settings-toggle]', root);
-    const icon = qs('[data-story-settings-icon]', root);
+    const body = qs("[data-story-settings-body]", root);
+    const toggle = qs("[data-story-settings-toggle]", root);
+    const icon = qs("[data-story-settings-icon]", root);
 
     if (body) body.hidden = !state.settingsOpen;
-    if (toggle) toggle.setAttribute('aria-expanded', state.settingsOpen ? 'true' : 'false');
-    if (icon) icon.classList.toggle('is-open', !!state.settingsOpen);
+    if (toggle) toggle.setAttribute("aria-expanded", state.settingsOpen ? "true" : "false");
+    if (icon) icon.classList.toggle("is-open", !!state.settingsOpen);
   }
 
   function syncSceneRows(root) {
-    qsa('[data-story-scene-id]', root).forEach((row) => {
-      const sceneId = row.dataset.storySceneId || '';
+    qsa("[data-story-scene-id]", root).forEach((row) => {
+      const sceneId = row.dataset.storySceneId || "";
       const scene = getSceneById(sceneId);
       if (!scene) return;
 
-      const titleEl = qs('[data-scene-title]', row);
-      const descEl = qs('[data-scene-description]', row);
-      const durationEl = qs('[data-scene-duration]', row);
+      const titleEl = qs("[data-scene-title]", row);
+      const descEl = qs("[data-scene-description]", row);
+      const durationEl = qs("[data-scene-duration]", row);
+      const charsEl = qs("[data-scene-characters]", row);
 
-      if (titleEl) titleEl.textContent = scene.title || 'Sahne';
-      if (descEl) descEl.textContent = scene.description || '';
-      if (durationEl) durationEl.textContent = `${scene.duration || '15'} sn`;
+      if (titleEl) titleEl.textContent = scene.title || "Sahne";
+      if (descEl) descEl.textContent = scene.description || "";
+      if (durationEl) durationEl.textContent = `${normalizeStorySceneDuration(scene.duration)} sn`;
+
+      if (charsEl) {
+        const labels = getSceneCharacterLabels(scene);
+        charsEl.textContent = labels.length ? `Karakterler: ${labels.join(", ")}` : "Karakter seçilmedi";
+      }
     });
   }
 
   function fillSceneEditor(root, sceneId) {
-    const editor = qs('[data-story-scene-editor]', root);
+    const editor = qs("[data-story-scene-editor]", root);
     const scene = getSceneById(sceneId);
     if (!editor || !scene) return;
 
-    const heading = qs('[data-scene-editor-heading]', editor);
-    const title = qs('[data-scene-editor-title]', editor);
-    const description = qs('[data-scene-editor-description]', editor);
-    const characters = qs('[data-scene-editor-characters]', editor);
-    const duration = qs('[data-scene-editor-duration]', editor);
-    const mood = qs('[data-scene-editor-mood]', editor);
-    const type = qs('[data-scene-editor-type]', editor);
-    const note = qs('[data-scene-editor-note]', editor);
+    const heading = qs("[data-scene-editor-heading]", editor);
+    const title = qs("[data-scene-editor-title]", editor);
+    const description = qs("[data-scene-editor-description]", editor);
+    const characters = qs("[data-scene-editor-characters]", editor);
+    const duration = qs("[data-scene-editor-duration]", editor);
+    const mood = qs("[data-scene-editor-mood]", editor);
+    const type = qs("[data-scene-editor-type]", editor);
+    const note = qs("[data-scene-editor-note]", editor);
 
-    if (heading) heading.textContent = scene.title || 'Sahne Düzenle';
-    if (title) title.value = scene.title || '';
-    if (description) description.value = scene.description || '';
-    if (characters) characters.value = scene.characters || '';
-    if (duration) duration.value = scene.duration || '15';
-    if (mood) mood.value = scene.mood || '';
-    if (type) type.value = scene.type || '';
-    if (note) note.value = scene.directorNote || '';
+    if (heading) heading.textContent = scene.title || "Sahne Düzenle";
+    if (title) title.value = scene.title || "";
+    if (description) description.value = scene.description || "";
+    if (characters) {
+      const labels = getSceneCharacterLabels(scene);
+      characters.value = labels.length ? labels.join(", ") : scene.characters || "";
+      characters.placeholder = "Ana karakter, Yardımcı Karakter 1, Yardımcı Karakter 2 veya hepsi";
+    }
+    if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
+    if (mood) mood.value = scene.mood || "";
+    if (type) type.value = scene.type || "";
+    if (note) note.value = scene.directorNote || "";
   }
 
   function syncSceneEditor(root) {
-    const editor = qs('[data-story-scene-editor]', root);
+    const editor = qs("[data-story-scene-editor]", root);
     if (!editor) return;
 
     const isOpen = !!state.editingSceneId;
     editor.hidden = !isOpen;
-    editor.classList.toggle('is-open', isOpen);
+    editor.classList.toggle("is-open", isOpen);
 
     if (isOpen) {
       fillSceneEditor(root, state.editingSceneId);
@@ -440,122 +731,167 @@ function syncAllStoryCharacterUploadUI(root) {
   }
 
   function buildStoryPayload() {
+    const selectedScenes = getSelectedScenes();
+    const totalSeconds = getSelectedTotalSeconds();
+
     return {
-      app: 'cartoon',
-      mode: 'story',
+      app: "cartoon",
+      mode: "story",
       summary: {
         idea: state.storyIdea,
         theme: state.theme,
         ageGroup: state.ageGroup,
-        maxDurationSeconds: Number(state.duration || 180)
+        selectedSceneCount: selectedScenes.length,
+        totalSelectedDurationSeconds: totalSeconds
       },
-     characters: {
-  main: state.mainCharacter,
-  helper1: state.helperCharacter1,
-  helper2: state.helperCharacter2,
-  images: {
-    main: {
-      fileName: state.characterImages?.main?.fileName || "",
-      fileUrl: state.characterImages?.main?.fileUrl || ""
-    },
-    helper1: {
-      fileName: state.characterImages?.helper1?.fileName || "",
-      fileUrl: state.characterImages?.helper1?.fileUrl || ""
-    },
-    helper2: {
-      fileName: state.characterImages?.helper2?.fileName || "",
-      fileUrl: state.characterImages?.helper2?.fileUrl || ""
-    }
-  }
-},
+      characters: {
+        main: state.mainCharacter,
+        helper1: state.helperCharacter1,
+        helper2: state.helperCharacter2,
+        images: {
+          main: {
+            fileName: state.characterImages?.main?.fileName || "",
+            fileUrl: state.characterImages?.main?.fileUrl || ""
+          },
+          helper1: {
+            fileName: state.characterImages?.helper1?.fileName || "",
+            fileUrl: state.characterImages?.helper1?.fileUrl || ""
+          },
+          helper2: {
+            fileName: state.characterImages?.helper2?.fileName || "",
+            fileUrl: state.characterImages?.helper2?.fileUrl || ""
+          }
+        }
+      },
       settings: {
         aspectRatio: state.ratio,
         style: state.style,
         audio: state.audio,
         extraPrompt: state.extraPrompt
       },
-      scenes: [...state.scenes]
+      scenes: state.scenes.map((scene) => ({ ...scene }))
     };
   }
-  function normalizeStorySceneDuration(value) {
-    const n = Number(value || 15);
-    if (n <= 5) return '5';
-    if (n <= 10) return '10';
-    return '15';
+
+  function resolveSceneCharacters(scene, storyPayload) {
+    const slotValueMap = {
+      main: safeText(storyPayload?.characters?.main),
+      helper1: safeText(storyPayload?.characters?.helper1),
+      helper2: safeText(storyPayload?.characters?.helper2)
+    };
+
+    let slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots.filter(Boolean) : [];
+
+    if (!slots.length) {
+      slots = inferCharacterSlotsFromText(scene?.characters || "");
+    }
+
+    slots = slots.filter((slot) => !!slotValueMap[slot]);
+
+    if (!slots.length) {
+      if (slotValueMap.main) slots = ["main"];
+      else slots = Object.keys(slotValueMap).filter((slot) => !!slotValueMap[slot]).slice(0, 1);
+    }
+
+    const mainSlot = slots[0] || "main";
+    const sceneMain = slotValueMap[mainSlot] || "";
+    const helperCharacters = slots
+      .slice(1)
+      .map((slot) => slotValueMap[slot])
+      .filter(Boolean);
+
+    const allNames = slots.map((slot) => slotValueMap[slot]).filter(Boolean);
+
+    const imageSlot = mainSlot;
+    const characterImageUrl =
+      safeText(storyPayload?.characters?.images?.[imageSlot]?.fileUrl) || "";
+
+    return {
+      slots,
+      sceneMain,
+      helperCharacters,
+      allNames,
+      imageSlot,
+      characterImageUrl
+    };
   }
 
   function mapStorySceneToBasicPayload(storyPayload, scene) {
-    const characterMap = {
-      [String(storyPayload?.characters?.main || '').trim()]: 'main',
-      [String(storyPayload?.characters?.helper1 || '').trim()]: 'helper1',
-      [String(storyPayload?.characters?.helper2 || '').trim()]: 'helper2'
-    };
-
-    const rawCharacters = String(scene?.characters || '')
-      .split(',')
-      .map((x) => String(x || '').trim())
-      .filter(Boolean);
-
-    const sceneMain = rawCharacters[0] || String(storyPayload?.characters?.main || '').trim();
-    const helperCharacters = rawCharacters.slice(1, 4);
-
-    const imageSlot = characterMap[sceneMain] || 'main';
-    const characterImageUrl =
-      String(storyPayload?.characters?.images?.[imageSlot]?.fileUrl || '').trim() || '';
+    const resolved = resolveSceneCharacters(scene, storyPayload);
 
     const promptParts = [
-      'Cute kids cartoon style.',
-      'Bright colorful animated scene.',
-      `Scene title: ${String(scene?.title || '').trim()}.`,
-      `Scene description: ${String(scene?.description || '').trim()}.`,
-      rawCharacters.length ? `Characters in this scene: ${rawCharacters.join(', ')}.` : '',
-      scene?.mood ? `Mood: ${String(scene.mood).trim()}.` : '',
-      scene?.type ? `Shot type: ${String(scene.type).trim()}.` : '',
-      scene?.directorNote ? `Director note: ${String(scene.directorNote).trim()}.` : '',
-      storyPayload?.settings?.style ? `Visual style: ${String(storyPayload.settings.style).trim()}.` : '',
-      'Friendly, adorable, child-safe, expressive animation.',
-      'Clean frame, no text, no subtitles, no watermark.'
+      "Cute kids cartoon style.",
+      "Bright colorful animated scene.",
+      `Scene title: ${safeText(scene?.title)}.`,
+      `Scene description: ${safeText(scene?.description)}.`,
+      resolved.allNames.length ? `Characters in this scene: ${resolved.allNames.join(", ")}.` : "",
+      scene?.mood ? `Mood: ${safeText(scene.mood)}.` : "",
+      scene?.type ? `Shot type: ${safeText(scene.type)}.` : "",
+      scene?.directorNote ? `Director note: ${safeText(scene.directorNote)}.` : "",
+      storyPayload?.settings?.style ? `Visual style: ${safeText(storyPayload.settings.style)}.` : "",
+      "Friendly, adorable, child-safe, expressive animation.",
+      "Clean frame, no text, no subtitles, no watermark."
     ].filter(Boolean);
 
     return {
-      app: 'cartoon',
-      mode: 'basic',
-      extraPrompt: promptParts.join(' '),
-      mainCharacter: sceneMain,
-      helperCharacters,
-      scene: String(scene?.section || 'story').trim() || 'story',
+      app: "cartoon",
+      mode: "basic",
+      extraPrompt: promptParts.join(" "),
+      mainCharacter: resolved.sceneMain,
+      helperCharacters: resolved.helperCharacters,
+      scene: safeText(scene?.section || "story") || "story",
       actions: [],
-      action: 'acting naturally in the scene',
+      action: "acting naturally in the scene",
       duration: normalizeStorySceneDuration(scene?.duration),
-      aspectRatio: String(storyPayload?.settings?.aspectRatio || '16:9'),
-      audioSource: 'none',
-      audioMode: 'none',
-      audioFileName: '',
-      audioFileUrl: '',
+      aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
+      audioSource: "none",
+      audioMode: "none",
+      audioFileName: "",
+      audioFileUrl: "",
       characterImage: null,
-      characterImageName: '',
-      characterImageUrl,
+      characterImageName: "",
+      characterImageUrl: resolved.characterImageUrl,
       estimatedCredits: 0,
       meta: {
-        app: 'cartoon',
-        mode: 'story',
-        scene_id: String(scene?.id || ''),
-        scene_title: String(scene?.title || ''),
-        story_idea: String(storyPayload?.summary?.idea || '')
+        app: "cartoon",
+        mode: "story",
+        scene_id: String(scene?.id || ""),
+        scene_title: String(scene?.title || ""),
+        scene_duration: normalizeStorySceneDuration(scene?.duration),
+        scene_slots: resolved.slots,
+        story_idea: String(storyPayload?.summary?.idea || "")
       }
     };
   }
 
   async function createStoryScenesFromPayload(storyPayload) {
-    const scenes = Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : [];
+    const scenes = (Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : []).filter(
+      (scene) => scene && scene.selected === true
+    );
+
+    if (!scenes.length) {
+      throw new Error("Önce en az 1 sahne seçip kaydetmelisin.");
+    }
+
     const created = [];
 
     for (const scene of scenes) {
       const body = mapStorySceneToBasicPayload(storyPayload, scene);
 
-      const r = await fetch('/api/providers/fal/cartoon/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      console.log("[CARTOON][STORY_SCENE_CREATE_BODY]", {
+        scene_id: scene?.id,
+        scene_title: scene?.title,
+        selected: scene?.selected,
+        duration: scene?.duration,
+        normalized_duration: body?.duration,
+        characterSlots: scene?.characterSlots || [],
+        mainCharacter: body?.mainCharacter,
+        helperCharacters: body?.helperCharacters
+      });
+
+      const r = await fetch("/api/providers/fal/cartoon/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
 
@@ -563,28 +899,31 @@ function syncAllStoryCharacterUploadUI(root) {
 
       if (!r.ok || !j || j.ok === false) {
         throw new Error(
-          `${String(scene?.title || 'scene')} -> ${j?.error || `story_scene_create_failed_${r.status}`}`
+          `${String(scene?.title || "scene")} -> ${j?.error || `story_scene_create_failed_${r.status}`}`
         );
       }
 
       const item = {
-        scene_id: String(scene?.id || ''),
-        scene_title: String(scene?.title || ''),
-        job_id: String(j?.job_id || ''),
-        request_id: String(j?.request_id || ''),
-        status_url: String(j?.status_url || '')
+        scene_id: String(scene?.id || ""),
+        scene_title: String(scene?.title || ""),
+        job_id: String(j?.job_id || ""),
+        request_id: String(j?.request_id || ""),
+        status_url: String(j?.status_url || "")
       };
 
       created.push(item);
-          if (!window.__CARTOON_STORY_CREATED_JOBS__) {
-      window.__CARTOON_STORY_CREATED_JOBS__ = [];
-    }
-    window.__CARTOON_STORY_CREATED_JOBS__.push(item);
+
+      if (!window.__CARTOON_STORY_CREATED_JOBS__) {
+        window.__CARTOON_STORY_CREATED_JOBS__ = [];
+      }
+
+      window.__CARTOON_STORY_CREATED_JOBS__.push(item);
+
       window.dispatchEvent(
-        new CustomEvent('aivo:cartoon:job_created', {
+        new CustomEvent("aivo:cartoon:job_created", {
           detail: {
-            app: 'cartoon',
-            mode: 'story',
+            app: "cartoon",
+            mode: "story",
             sceneId: item.scene_id,
             sceneTitle: item.scene_title,
             job_id: item.job_id,
@@ -592,9 +931,9 @@ function syncAllStoryCharacterUploadUI(root) {
             status_url: item.status_url,
             createdAt: Date.now(),
             meta: {
-              app: 'cartoon',
-              mode: 'story',
-              provider: 'fal',
+              app: "cartoon",
+              mode: "story",
+              provider: "fal",
               scene_id: item.scene_id,
               scene_title: item.scene_title
             }
@@ -609,12 +948,13 @@ function syncAllStoryCharacterUploadUI(root) {
 
     return created;
   }
-    async function pollStorySceneJob(jobId, item, tries = 0) {
+
+  async function pollStorySceneJob(jobId, item, tries = 0) {
     try {
       const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`);
       const j = await r.json().catch(() => null);
 
-      console.log('[CARTOON][STORY] poll =', jobId, item?.scene_title, j);
+      console.log("[CARTOON][STORY] poll =", jobId, item?.scene_title, j);
 
       if (!j || j.ok === false) {
         if (tries < 60) {
@@ -623,39 +963,32 @@ function syncAllStoryCharacterUploadUI(root) {
         return;
       }
 
-      const normalizedStatus = String(
-        j?.status ||
-        j?.db_status ||
-        j?.state ||
-        ''
-      ).trim().toLowerCase();
+      const normalizedStatus = String(j?.status || j?.db_status || j?.state || "")
+        .trim()
+        .toLowerCase();
 
-      const readyVideoUrl = String(
-        j?.video?.url ||
-        j?.video_url ||
-        ''
-      ).trim();
+      const readyVideoUrl = String(j?.video?.url || j?.video_url || "").trim();
 
       const hasReadyOutput =
         Array.isArray(j?.outputs) &&
         j.outputs.some((o) => {
-          const t = String(o?.type || o?.kind || o?.meta?.type || '').trim().toLowerCase();
-          const u = String(o?.url || o?.video_url || '').trim();
-          return !!u && t === 'video';
+          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+          const u = String(o?.url || o?.video_url || "").trim();
+          return !!u && t === "video";
         });
 
       if (
-        ['ready', 'completed', 'complete', 'succeeded', 'done'].includes(normalizedStatus) &&
+        ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
         (readyVideoUrl || hasReadyOutput)
       ) {
         window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:story_scene_ready', {
+          new CustomEvent("aivo:cartoon:story_scene_ready", {
             detail: {
-              app: 'cartoon',
-              mode: 'story',
-              sceneId: String(item?.scene_id || ''),
-              sceneTitle: String(item?.scene_title || ''),
-              job_id: String(jobId || ''),
+              app: "cartoon",
+              mode: "story",
+              sceneId: String(item?.scene_id || ""),
+              sceneTitle: String(item?.scene_title || ""),
+              job_id: String(jobId || ""),
               status: normalizedStatus,
               video: readyVideoUrl ? { url: readyVideoUrl } : null,
               outputs: j?.outputs || [],
@@ -666,8 +999,8 @@ function syncAllStoryCharacterUploadUI(root) {
         return;
       }
 
-      if (normalizedStatus === 'error' || normalizedStatus === 'failed') {
-        console.error('[CARTOON][STORY] job error =', jobId, item?.scene_title, j);
+      if (normalizedStatus === "error" || normalizedStatus === "failed") {
+        console.error("[CARTOON][STORY] job error =", jobId, item?.scene_title, j);
         return;
       }
 
@@ -675,42 +1008,50 @@ function syncAllStoryCharacterUploadUI(root) {
         setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
       }
     } catch (err) {
-      console.error('[CARTOON][STORY] poll error =', jobId, item?.scene_title, err);
+      console.error("[CARTOON][STORY] poll error =", jobId, item?.scene_title, err);
 
       if (tries < 60) {
         setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
       }
     }
   }
+
   function saveSceneEditor(root) {
     if (!state.editingSceneId) return;
 
-    const editor = qs('[data-story-scene-editor]', root);
+    const editor = qs("[data-story-scene-editor]", root);
     if (!editor) return;
 
-    const title = safeText(qs('[data-scene-editor-title]', editor)?.value);
-    const description = safeText(qs('[data-scene-editor-description]', editor)?.value);
-    const characters = safeText(qs('[data-scene-editor-characters]', editor)?.value);
-    const duration = safeText(qs('[data-scene-editor-duration]', editor)?.value) || '15';
-    const mood = safeText(qs('[data-scene-editor-mood]', editor)?.value);
-    const type = safeText(qs('[data-scene-editor-type]', editor)?.value);
-    const note = clampText(qs('[data-scene-editor-note]', editor)?.value, 1000);
+    const title = safeText(qs("[data-scene-editor-title]", editor)?.value);
+    const description = safeText(qs("[data-scene-editor-description]", editor)?.value);
+    const characters = safeText(qs("[data-scene-editor-characters]", editor)?.value);
+    const duration = normalizeStorySceneDuration(qs("[data-scene-editor-duration]", editor)?.value || "15");
+    const mood = safeText(qs("[data-scene-editor-mood]", editor)?.value);
+    const type = safeText(qs("[data-scene-editor-type]", editor)?.value);
+    const note = clampText(qs("[data-scene-editor-note]", editor)?.value, 1000);
 
-    if (!title) return alert('Sahne Başlığı zorunlu.');
-    if (!description) return alert('Sahne Açıklaması zorunlu.');
-    if (!characters) return alert('Sahnedeki Karakterler zorunlu.');
+    if (!title) return alert("Sahne Başlığı zorunlu.");
+    if (!description) return alert("Sahne Açıklaması zorunlu.");
+
+    const characterSlots = inferCharacterSlotsFromText(characters);
+
+    if (!characterSlots.length) {
+      return alert("Sahnedeki Karakterler alanına Ana Karakter, Yardımcı Karakter 1, Yardımcı Karakter 2 veya hepsi yaz.");
+    }
 
     updateSceneById(state.editingSceneId, {
       title,
       description,
       characters,
+      characterSlots,
+      selected: true,
       duration,
       mood,
       type,
       directorNote: note
     });
 
-    state.editingSceneId = '';
+    state.editingSceneId = "";
     render(root);
   }
 
@@ -729,33 +1070,34 @@ function syncAllStoryCharacterUploadUI(root) {
     syncSceneEditor(root);
     updateStoryIdeaCount(root);
     syncAllStoryCharacterUploadUI(root);
+    syncStoryDurationSummary(root);
   }
 
   function bindClicks() {
-  document.addEventListener('click', async (e) => {
+    document.addEventListener("click", async (e) => {
       const root = getCartoonRoot();
       if (!root) return;
 
-      const modeBtn = e.target.closest('[data-cartoon-mode]');
+      const modeBtn = e.target.closest("[data-cartoon-mode]");
       if (modeBtn && root.contains(modeBtn)) {
         e.preventDefault();
-        state.mode = modeBtn.dataset.cartoonMode || 'story';
+        state.mode = modeBtn.dataset.cartoonMode || "story";
         render(root);
         return;
       }
 
-      const sectionToggle = e.target.closest('[data-story-section-toggle]');
+      const sectionToggle = e.target.closest("[data-story-section-toggle]");
       if (sectionToggle && root.contains(sectionToggle)) {
         e.preventDefault();
-        const sectionEl = sectionToggle.closest('[data-story-section]');
-        const sectionId = sectionEl?.dataset.storySection || '';
+        const sectionEl = sectionToggle.closest("[data-story-section]");
+        const sectionId = sectionEl?.dataset.storySection || "";
         if (!sectionId) return;
-        state.openSection = state.openSection === sectionId ? '' : sectionId;
+        state.openSection = state.openSection === sectionId ? "" : sectionId;
         render(root);
         return;
       }
 
-      const settingsToggle = e.target.closest('[data-story-settings-toggle]');
+      const settingsToggle = e.target.closest("[data-story-settings-toggle]");
       if (settingsToggle && root.contains(settingsToggle)) {
         e.preventDefault();
         state.settingsOpen = !state.settingsOpen;
@@ -763,131 +1105,146 @@ function syncAllStoryCharacterUploadUI(root) {
         return;
       }
 
-      const editSceneBtn = e.target.closest('[data-edit-scene]');
+      const editSceneBtn = e.target.closest("[data-edit-scene]");
       if (editSceneBtn && root.contains(editSceneBtn)) {
         e.preventDefault();
-        const sceneId = editSceneBtn.dataset.editScene || '';
+        const sceneId = editSceneBtn.dataset.editScene || "";
         if (!sceneId) return;
         state.editingSceneId = sceneId;
         render(root);
         return;
       }
 
-      const cancelBtn = e.target.closest('[data-scene-cancel]');
+      const cancelBtn = e.target.closest("[data-scene-cancel]");
       if (cancelBtn && root.contains(cancelBtn)) {
         e.preventDefault();
-        state.editingSceneId = '';
+        state.editingSceneId = "";
         render(root);
         return;
       }
 
-      const saveBtn = e.target.closest('[data-scene-save]');
+      const saveBtn = e.target.closest("[data-scene-save]");
       if (saveBtn && root.contains(saveBtn)) {
         e.preventDefault();
         saveSceneEditor(root);
         return;
       }
-const uploadTrigger = e.target.closest('[data-story-upload-trigger]');
-if (uploadTrigger && root.contains(uploadTrigger)) {
-  e.preventDefault();
-  const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
-  if (!slot) return;
 
-  const input = qs(`[data-story-character-file="${slot}"]`, root);
-  if (input) input.click();
-  return;
-}
+      const uploadTrigger = e.target.closest("[data-story-upload-trigger]");
+      if (uploadTrigger && root.contains(uploadTrigger)) {
+        e.preventDefault();
+        const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
+        if (!slot) return;
 
-const uploadRemove = e.target.closest('[data-story-upload-remove]');
-if (uploadRemove && root.contains(uploadRemove)) {
-  e.preventDefault();
-  const slot = safeText(uploadRemove.dataset.storyUploadRemove);
-  if (!slot) return;
-
-  resetStoryCharacterImage(root, slot);
-  return;
-}
-
-const generateBtn = e.target.closest('[data-story-generate]');
-if (generateBtn && root.contains(generateBtn)) {
-  e.preventDefault();
-  if (state.mode !== 'story') return;
-  if (state.isGenerating) return;
-
-  const slots = ['main', 'helper1', 'helper2'];
-
-  for (const slot of slots) {
-    const imageState = getStoryCharacterImage(slot);
-    if (!imageState || !imageState.file) continue;
-
-    if (imageState.uploadStatus === 'uploading' && imageState.uploadPromise) {
-      try {
-        await imageState.uploadPromise;
-      } catch {
+        const input = qs(`[data-story-character-file="${slot}"]`, root);
+        if (input) input.click();
         return;
       }
-    }
 
-    if (!imageState.fileUrl || imageState.uploadStatus !== 'ready') {
-      alert('Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.');
-      return;
-    }
-  }
+      const uploadRemove = e.target.closest("[data-story-upload-remove]");
+      if (uploadRemove && root.contains(uploadRemove)) {
+        e.preventDefault();
+        const slot = safeText(uploadRemove.dataset.storyUploadRemove);
+        if (!slot) return;
 
-  const payload = buildStoryPayload();
-  window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
-  console.log('[CARTOON][STORY_PAYLOAD_READY]', payload);
+        resetStoryCharacterImage(root, slot);
+        return;
+      }
 
-  state.isGenerating = true;
-  generateBtn.disabled = true;
-  generateBtn.textContent = 'Üretiliyor...';
-  generateBtn.classList.add('is-loading');
+      const generateBtn = e.target.closest("[data-story-generate]");
+      if (generateBtn && root.contains(generateBtn)) {
+        e.preventDefault();
+        if (state.mode !== "story") return;
+        if (state.isGenerating) return;
 
-  try {
-    const created = await createStoryScenesFromPayload(payload);
+        const selectedScenes = getSelectedScenes();
+        const totalSeconds = getSelectedTotalSeconds();
 
-    window.__LAST_CARTOON_STORY_CREATED__ = created;
-    console.log('[CARTOON][STORY_CREATE_OK]', created);
-
-    window.dispatchEvent(
-      new CustomEvent('aivo:cartoon:story_payload_ready', {
-        detail: {
-          payload,
-          created
+        if (!selectedScenes.length) {
+          alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
+          return;
         }
-      })
-    );
-  } catch (err) {
-    console.error('[CARTOON][STORY_CREATE_ERROR]', err);
-    alert(String(err?.message || err || 'story_scene_create_failed'));
-    } finally {
-    state.isGenerating = false;
-    generateBtn.disabled = false;
-    generateBtn.textContent = 'Hikayeyi Oluştur';
-    generateBtn.classList.remove('is-loading');
+
+        const slots = ["main", "helper1", "helper2"];
+
+        for (const slot of slots) {
+          const imageState = getStoryCharacterImage(slot);
+          if (!imageState || !imageState.file) continue;
+
+          if (imageState.uploadStatus === "uploading" && imageState.uploadPromise) {
+            try {
+              await imageState.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
+            alert("Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
+        const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nDevam edilsin mi?`;
+        if (!window.confirm(summaryText)) {
+          return;
+        }
+
+        const payload = buildStoryPayload();
+        window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
+        console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
+
+        state.isGenerating = true;
+        generateBtn.disabled = true;
+        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.classList.add("is-loading");
+
+        try {
+          const created = await createStoryScenesFromPayload(payload);
+
+          window.__LAST_CARTOON_STORY_CREATED__ = created;
+          console.log("[CARTOON][STORY_CREATE_OK]", created);
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:cartoon:story_payload_ready", {
+              detail: {
+                payload,
+                created
+              }
+            })
+          );
+        } catch (err) {
+          console.error("[CARTOON][STORY_CREATE_ERROR]", err);
+          alert(String(err?.message || err || "story_scene_create_failed"));
+        } finally {
+          state.isGenerating = false;
+          generateBtn.disabled = false;
+          generateBtn.textContent = "Hikayeyi Oluştur";
+          generateBtn.classList.remove("is-loading");
+          render(root);
+        }
+      }
+    });
+
+    window.addEventListener("aivo:cartoon:story_scene_ready", (e) => {
+      const d = e?.detail || {};
+      console.log("[CARTOON][STORY_SCENE_READY]", d);
+    });
   }
-}
-  });
 
-  window.addEventListener('aivo:cartoon:story_scene_ready', (e) => {
-    const d = e?.detail || {};
-    console.log('[CARTOON][STORY_SCENE_READY]', d);
-  });
-}
+  function bindInputs() {
+    document.addEventListener("input", (e) => {
+      const root = getCartoonRoot();
+      if (!root) return;
 
-function bindInputs() {
-  document.addEventListener('input', (e) => {
-    const root = getCartoonRoot();
-    if (!root) return;
-
-      const storyIdea = e.target.closest('[data-story-idea]');
+      const storyIdea = e.target.closest("[data-story-idea]");
       if (storyIdea && root.contains(storyIdea)) {
         state.storyIdea = clampText(storyIdea.value, 5000);
         updateStoryIdeaCount(root);
         return;
       }
 
-      const extraPrompt = e.target.closest('[data-story-extra-prompt]');
+      const extraPrompt = e.target.closest("[data-story-extra-prompt]");
       if (extraPrompt && root.contains(extraPrompt)) {
         state.extraPrompt = clampText(extraPrompt.value, 5000);
       }
@@ -895,150 +1252,152 @@ function bindInputs() {
   }
 
   function bindChanges() {
-    document.addEventListener('change', (e) => {
+    document.addEventListener("change", (e) => {
       const root = getCartoonRoot();
       if (!root) return;
 
-      const theme = e.target.closest('[data-story-theme]');
+      const theme = e.target.closest("[data-story-theme]");
       if (theme && root.contains(theme)) {
-        state.theme = theme.value || '';
+        state.theme = theme.value || "";
         return;
       }
 
-      const ageGroup = e.target.closest('[data-story-age-group]');
+      const ageGroup = e.target.closest("[data-story-age-group]");
       if (ageGroup && root.contains(ageGroup)) {
-        state.ageGroup = ageGroup.value || '';
+        state.ageGroup = ageGroup.value || "";
         return;
       }
 
-      const duration = e.target.closest('[data-story-duration]');
+      const duration = e.target.closest("[data-story-duration]");
       if (duration && root.contains(duration)) {
-        state.duration = duration.value || '180';
+        state.duration = duration.value || "180";
+        render(root);
         return;
       }
 
-      const mainCharacter = e.target.closest('[data-story-main-character]');
+      const mainCharacter = e.target.closest("[data-story-main-character]");
       if (mainCharacter && root.contains(mainCharacter)) {
-        state.mainCharacter = mainCharacter.value || '';
+        state.mainCharacter = mainCharacter.value || "";
+        render(root);
         return;
       }
 
-      const helper1 = e.target.closest('[data-story-helper-1]');
+      const helper1 = e.target.closest("[data-story-helper-1]");
       if (helper1 && root.contains(helper1)) {
-        state.helperCharacter1 = helper1.value || '';
+        state.helperCharacter1 = helper1.value || "";
+        render(root);
         return;
       }
 
-      const helper2 = e.target.closest('[data-story-helper-2]');
+      const helper2 = e.target.closest("[data-story-helper-2]");
       if (helper2 && root.contains(helper2)) {
-        state.helperCharacter2 = helper2.value || '';
+        state.helperCharacter2 = helper2.value || "";
+        render(root);
         return;
       }
 
-      const ratio = e.target.closest('[data-story-ratio]');
+      const ratio = e.target.closest("[data-story-ratio]");
       if (ratio && root.contains(ratio)) {
-        state.ratio = ratio.value || '16:9';
+        state.ratio = ratio.value || "16:9";
         return;
       }
 
-      const style = e.target.closest('[data-story-style]');
+      const style = e.target.closest("[data-story-style]");
       if (style && root.contains(style)) {
-        state.style = style.value || '';
+        state.style = style.value || "";
         return;
       }
 
-      const audio = e.target.closest('[data-story-audio]');
+      const audio = e.target.closest("[data-story-audio]");
       if (audio && root.contains(audio)) {
-        state.audio = audio.value || 'none';
+        state.audio = audio.value || "none";
         return;
       }
 
-    const characterFileInput = e.target.closest('[data-story-character-file]');
-if (characterFileInput && root.contains(characterFileInput)) {
-  const slot = safeText(characterFileInput.dataset.storyCharacterFile);
-  if (!slot) return;
+      const characterFileInput = e.target.closest("[data-story-character-file]");
+      if (characterFileInput && root.contains(characterFileInput)) {
+        const slot = safeText(characterFileInput.dataset.storyCharacterFile);
+        if (!slot) return;
 
-  const file =
-    characterFileInput.files && characterFileInput.files[0]
-      ? characterFileInput.files[0]
-      : null;
+        const file =
+          characterFileInput.files && characterFileInput.files[0]
+            ? characterFileInput.files[0]
+            : null;
 
-  setStoryCharacterImage(slot, {
-    file,
-    fileName: file ? file.name : "",
-    fileUrl: "",
-    uploadPromise: null,
-    uploadStatus: file ? "uploading" : "idle",
-    uploadError: ""
-  });
+        setStoryCharacterImage(slot, {
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
 
-  updateStoryCharacterUploadUI(root, slot);
+        updateStoryCharacterUploadUI(root, slot);
 
-  if (!file) return;
+        if (!file) return;
 
-  const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
-    .then((publicUrl) => {
-      setStoryCharacterImage(slot, {
-        fileUrl: safeText(publicUrl),
-        uploadStatus: "ready",
-        uploadError: "",
-        uploadPromise: null
-      });
+        const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
+          .then((publicUrl) => {
+            setStoryCharacterImage(slot, {
+              fileUrl: safeText(publicUrl),
+              uploadStatus: "ready",
+              uploadError: "",
+              uploadPromise: null
+            });
 
-      const nextRoot = getCartoonRoot();
-      if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
 
-      console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
-      return publicUrl;
-    })
-    .catch((err) => {
-      setStoryCharacterImage(slot, {
-        fileUrl: "",
-        uploadStatus: "error",
-        uploadError: String(err?.message || err || "story_reference_upload_failed"),
-        uploadPromise: null
-      });
+            console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
+            return publicUrl;
+          })
+          .catch((err) => {
+            setStoryCharacterImage(slot, {
+              fileUrl: "",
+              uploadStatus: "error",
+              uploadError: String(err?.message || err || "story_reference_upload_failed"),
+              uploadPromise: null
+            });
 
-      const nextRoot = getCartoonRoot();
-      if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryCharacterUploadUI(nextRoot, slot);
 
-      console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
-      alert(String(err?.message || err || "story_reference_upload_failed"));
-      throw err;
-    });
+            console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
+            alert(String(err?.message || err || "story_reference_upload_failed"));
+            throw err;
+          });
 
-  setStoryCharacterImage(slot, { uploadPromise });
-  return;
-}
+        setStoryCharacterImage(slot, { uploadPromise });
+        return;
+      }
     });
   }
 
   function initFromDOM(root) {
     if (!root) return;
 
-   
-
-    const selectedMode = qs('[data-cartoon-mode].is-active', root);
+    const selectedMode = qs("[data-cartoon-mode].is-active", root);
     if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
 
-    state.storyIdea = clampText(qs('[data-story-idea]', root)?.value, 5000);
-    state.theme = qs('[data-story-theme]', root)?.value || '';
-    state.ageGroup = qs('[data-story-age-group]', root)?.value || '';
-    state.duration = qs('[data-story-duration]', root)?.value || '180';
-    state.mainCharacter = qs('[data-story-main-character]', root)?.value || '';
-    state.helperCharacter1 = qs('[data-story-helper-1]', root)?.value || '';
-    state.helperCharacter2 = qs('[data-story-helper-2]', root)?.value || '';
-    state.ratio = qs('[data-story-ratio]', root)?.value || '16:9';
-    state.style = qs('[data-story-style]', root)?.value || '';
-    state.audio = qs('[data-story-audio]', root)?.value || 'none';
-    state.extraPrompt = clampText(qs('[data-story-extra-prompt]', root)?.value, 5000);
+    state.storyIdea = clampText(qs("[data-story-idea]", root)?.value, 5000);
+    state.theme = qs("[data-story-theme]", root)?.value || "";
+    state.ageGroup = qs("[data-story-age-group]", root)?.value || "";
+    state.duration = qs("[data-story-duration]", root)?.value || "180";
+    state.mainCharacter = qs("[data-story-main-character]", root)?.value || "";
+    state.helperCharacter1 = qs("[data-story-helper-1]", root)?.value || "";
+    state.helperCharacter2 = qs("[data-story-helper-2]", root)?.value || "";
+    state.ratio = qs("[data-story-ratio]", root)?.value || "16:9";
+    state.style = qs("[data-story-style]", root)?.value || "";
+    state.audio = qs("[data-story-audio]", root)?.value || "none";
+    state.extraPrompt = clampText(qs("[data-story-extra-prompt]", root)?.value, 5000);
 
-    const openSectionEl = qs('[data-story-section].is-open', root) || qs('[data-story-section]', root);
+    const openSectionEl = qs("[data-story-section].is-open", root) || qs("[data-story-section]", root);
     if (openSectionEl?.dataset.storySection) {
       state.openSection = openSectionEl.dataset.storySection;
     }
 
-    const settingsBody = qs('[data-story-settings-body]', root);
+    const settingsBody = qs("[data-story-settings-body]", root);
     state.settingsOpen = settingsBody ? !settingsBody.hidden : false;
 
     render(root);
