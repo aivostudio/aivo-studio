@@ -348,6 +348,9 @@ const falModel =
  console.log("[FAL_CREATE_DEBUG]", JSON.stringify({
   mode,
   model: falModel,
+  body_duration: body.duration,
+  fal_input_duration: falInput?.duration,
+  aspect_ratio,
   body_elements_count: Array.isArray(body.elements) ? body.elements.length : 0,
   fal_input: falInput
 }, null, 2));
