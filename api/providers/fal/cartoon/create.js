@@ -315,14 +315,26 @@ module.exports = async function handler(req, res) {
           resolution: "1K",
           ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
         }
-      : mode === "story"
+   : mode === "story"
+  ? {
+      prompt,
+      duration,
+      aspect_ratio,
+      generate_audio: false,
+      ...(Array.isArray(body.elements) && body.elements.length
         ? {
-            prompt,
-            duration,
-            aspect_ratio,
-            generate_audio: false,
-            ...(storyImageUrls.length ? { image_urls: storyImageUrls } : {})
+            elements: body.elements.map((el) => ({
+              frontal_image_url: String(el?.frontal_image_url || "").trim(),
+              reference_image_urls: Array.isArray(el?.reference_image_urls)
+                ? el.reference_image_urls.map((x) => String(x || "").trim()).filter(Boolean)
+                : []
+            }))
           }
+        : {}),
+      ...(!Array.isArray(body.elements) || !body.elements.length
+        ? (storyImageUrls.length ? { image_urls: storyImageUrls } : {})
+        : {})
+    }
         : {
             prompt,
             duration,
