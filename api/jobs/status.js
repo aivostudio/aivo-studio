@@ -634,8 +634,7 @@ module.exports = async (req, res) => {
       const current = String(job.status || "").toLowerCase();
       const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
-      const shouldPoll =
-        current !== "done" && current !== "error" ? true : outputsNow.length === 0;
+     const shouldPoll = true;
 
       if (shouldPoll) {
         const statusUrl = pickFalStatusUrlFromJob(job);
