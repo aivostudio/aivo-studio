@@ -2469,3 +2469,39 @@
     opacity: 0;
   }
 }
+/* STORY FLOW TEXT ALIGN / CENTER */
+.main-panel[data-module="cartoon"] .story-flow-card{
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .story-flow-card .story-card-head-copy{
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-panel[data-module="cartoon"] .story-flow-card .story-card-head-copy h4{
+  margin: 0;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .story-flow-card .story-card-head-copy small{
+  display: block;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .story-flow-note{
+  max-width: 860px;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: rgba(255,255,255,.82);
+  text-align: center;
+}
