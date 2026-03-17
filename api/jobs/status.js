@@ -900,20 +900,24 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
             `;
             job.status = "error";
             job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-          } else if (dbSt === "queued" || dbSt === "processing") {
-            await sql`
-              update jobs
-              set status = ${dbSt},
-                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-                  updated_at = now()
-              where id = ${job_id}::uuid
-            `;
-            job.status = dbSt;
-            job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-          }
-        }
+         } else if (dbSt === "queued" || dbSt === "processing") {
+  const currentDbStatus = String(job.status || "").toLowerCase();
+
+  if (currentDbStatus !== "done" && currentDbStatus !== "error") {
+    await sql`
+      update jobs
+      set status = ${dbSt},
+          meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+          updated_at = now()
+      where id = ${job_id}::uuid
+    `;
+    job.status = dbSt;
+    job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+  }
+}
       }
     }
+}
 
     // =========================
     // 2) RUNWAY POLL (as-is)
