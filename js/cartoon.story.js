@@ -1023,43 +1023,14 @@
     if (type) type.value = scene.type || "";
     if (note) note.value = scene.directorNote || "";
   }
- function ensureStorySceneEditorPortal(root) {
-  const editor =
-    qs("[data-story-scene-editor]", root) ||
-    qs("[data-story-scene-editor]", document);
 
-  if (!editor) return null;
-
-  const portalNode =
-    editor.closest("[data-story-scene-overlay]") ||
-    editor.closest("[data-story-scene-modal]") ||
-    editor.parentElement;
-
-  if (!portalNode) return editor;
-
-  if (portalNode.parentElement !== document.body) {
-    document.body.appendChild(portalNode);
-  }
-
-  return editor;
-}
   function syncSceneEditor(root) {
-   const editor = ensureStorySceneEditorPortal(root);
+    const editor = qs("[data-story-scene-editor]", root);
     if (!editor) return;
 
     const isOpen = !!state.editingSceneId;
     editor.hidden = !isOpen;
     editor.classList.toggle("is-open", isOpen);
-    if (isOpen) {
-  editor.style.position = "fixed";
-  editor.style.left = "50%";
-  editor.style.top = "50%";
-  editor.style.transform = "translate(-50%, -50%)";
-  editor.style.width = "min(720px, calc(100vw - 32px))";
-  editor.style.maxWidth = "720px";
-  editor.style.margin = "0";
-  editor.style.zIndex = "9999";
-}
 
     if (isOpen) {
       fillSceneEditor(root, state.editingSceneId);
