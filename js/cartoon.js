@@ -939,7 +939,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     const ratio = qs("#cartoon-ratio", root);
    const audioSource = qs("[data-audio-source]", root);
 
-    if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
+  state.mode = "character";
     if (selectedMain?.dataset.character) state.mainCharacter = selectedMain.dataset.character;
     if (selectedScene?.dataset.scene) state.scene = selectedScene.dataset.scene;
   state.actions = selectedActions
