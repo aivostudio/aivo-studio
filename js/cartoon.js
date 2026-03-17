@@ -103,8 +103,8 @@ async function uploadCartoonAudioToR2(file) {
 
   return publicUrl;
 }
-  const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
-    mode: "basic",
+ const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
+  mode: "character",
     extraPrompt: "",
     mainCharacter: "red-fish",
     helpers: [],
