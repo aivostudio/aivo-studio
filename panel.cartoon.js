@@ -616,7 +616,6 @@
         if (oa && !isCartoonApp(oa)) return false;
         return true;
       },
-
       onChange: async (items) => {
         if (destroyed) return;
 
@@ -628,9 +627,35 @@
             return id && !hiddenDeletedIds.has(id);
           });
 
+        console.log("[CARTOON MERGE DEBUG]", {
+          db: currentDbItems.map((j) => ({
+            id: j?.id || null,
+            job_id: j?.job_id || null,
+            key: idOf(j),
+            title:
+              j?.meta?.scene_title ||
+              j?.meta?.title ||
+              j?.title ||
+              j?.meta?.prompt ||
+              null,
+            status: j?.db_status || j?.status || j?.state || null
+          })),
+          optimistic: Array.from(optimistic.entries()).map(([k, v]) => ({
+            key: k,
+            id: v?.id || null,
+            job_id: v?.job_id || null,
+            title:
+              v?.meta?.scene_title ||
+              v?.meta?.title ||
+              v?.title ||
+              v?.meta?.prompt ||
+              null,
+            status: v?.db_status || v?.status || v?.state || null
+          }))
+        });
+
         renderCurrent();
       },
-    });
 
     const onJobCreated = (e) => {
       const d = e?.detail || {};
