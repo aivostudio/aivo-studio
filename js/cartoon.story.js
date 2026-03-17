@@ -1572,7 +1572,7 @@
       }
 
       const sceneCharacterItem = e.target.closest(".story-scene-character-item");
-      if (sceneCharacterItem && root.contains(sceneCharacterItem)) {
+    if (sceneCharacterItem && getStorySceneEditor(root)?.contains(sceneCharacterItem)) {
         e.preventDefault();
 
         const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
