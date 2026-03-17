@@ -2517,3 +2517,18 @@
   color: rgba(255,255,255,.72);
   max-width: 760px;
 }
+.main-panel[data-module="cartoon"] .story-summary-card .story-card-head{
+  align-items: center;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .story-summary-card .story-card-head h4{
+  width: 100%;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .story-summary-card .story-card-helper{
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
