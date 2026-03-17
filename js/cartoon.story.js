@@ -5,6 +5,11 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  const STORY_MAX_POLLS = 240;          // 240 * 3000ms = 12 dk
+  const STORY_POLL_INTERVAL = 3000;
+  const STORY_READY_RECHECK_LIMIT = 20; // ready oldu ama output yoksa ekstra bekleme
+  const STORY_READY_RECHECK_INTERVAL = 1500;
+
   const STORY_CHARACTER_SLOT_CONFIG = [
     {
       slot: "main",
@@ -323,6 +328,160 @@
       characterOptions: []
     });
 
+  const storyPollState = (window.__CARTOON_STORY_POLL_STATE__ =
+    window.__CARTOON_STORY_POLL_STATE__ || {
+      jobs: {},
+      total: 0,
+      ready: 0,
+      failed: 0
+    });
+
+  function resetStoryPollBatch() {
+    storyPollState.jobs = {};
+    storyPollState.total = 0;
+    storyPollState.ready = 0;
+    storyPollState.failed = 0;
+  }
+
+  function setStoryGenerateButton(root, loading) {
+    const btn = root?.querySelector("[data-story-generate]");
+    if (!btn) return;
+
+    btn.disabled = !!loading;
+    btn.textContent = loading ? "Üretiliyor..." : "Hikayeyi Oluştur";
+    btn.classList.toggle("is-loading", !!loading);
+  }
+
+  function completeStoryGenerateIfAllSettled() {
+    const root = getCartoonRoot();
+    const total = Number(storyPollState.total || 0);
+    const ready = Number(storyPollState.ready || 0);
+    const failed = Number(storyPollState.failed || 0);
+
+    if (!total) return;
+    if (ready + failed < total) return;
+
+    state.isGenerating = false;
+    setStoryGenerateButton(root, false);
+
+    console.log("[CARTOON][STORY_ALL_SETTLED]", {
+      total,
+      ready,
+      failed,
+      jobs: storyPollState.jobs
+    });
+  }
+
+  function ensureStoryJobState(jobId, item) {
+    const key = safeText(jobId);
+    if (!key) return null;
+
+    if (!storyPollState.jobs[key]) {
+      storyPollState.jobs[key] = {
+        job_id: key,
+        scene_id: safeText(item?.scene_id),
+        scene_title: safeText(item?.scene_title),
+        tries: 0,
+        readyChecks: 0,
+        done: false,
+        failed: false,
+        timer: null,
+        lastStatus: "",
+        lastResponse: null,
+        startedAt: Date.now()
+      };
+    }
+
+    return storyPollState.jobs[key];
+  }
+
+  function clearStoryJobTimer(jobId) {
+    const key = safeText(jobId);
+    const entry = storyPollState.jobs?.[key];
+    if (!entry) return;
+    if (entry.timer) {
+      clearTimeout(entry.timer);
+      entry.timer = null;
+    }
+  }
+
+  function scheduleStoryPoll(jobId, item, tries, delay) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!entry || entry.done || entry.failed) return;
+
+    clearStoryJobTimer(key);
+    entry.timer = setTimeout(() => {
+      pollStorySceneJob(key, item, tries);
+    }, Number(delay || STORY_POLL_INTERVAL));
+  }
+
+  function markStoryJobReady(jobId, item, payload) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!entry || entry.done) return;
+
+    entry.done = true;
+    entry.failed = false;
+    entry.lastResponse = payload?.raw || payload || null;
+    entry.lastStatus = safeText(payload?.status).toLowerCase();
+    clearStoryJobTimer(key);
+    storyPollState.ready += 1;
+
+    const detail = {
+      app: "cartoon",
+      mode: "story",
+      sceneId: safeText(item?.scene_id),
+      sceneTitle: safeText(item?.scene_title),
+      job_id: key,
+      status: safeText(payload?.status).toLowerCase(),
+      video: payload?.video || null,
+      outputs: Array.isArray(payload?.outputs) ? payload.outputs : [],
+      raw: payload?.raw || null
+    };
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:cartoon:story_scene_ready", { detail })
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:cartoon:job_ready", {
+        detail: {
+          ...detail,
+          meta: {
+            app: "cartoon",
+            mode: "story",
+            scene_id: safeText(item?.scene_id),
+            scene_title: safeText(item?.scene_title)
+          }
+        }
+      })
+    );
+
+    completeStoryGenerateIfAllSettled();
+  }
+
+  function markStoryJobFailed(jobId, item, raw) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!entry || entry.done || entry.failed) return;
+
+    entry.failed = true;
+    entry.done = false;
+    entry.lastResponse = raw || null;
+    entry.lastStatus = safeText(raw?.status || raw?.db_status || raw?.state).toLowerCase();
+    clearStoryJobTimer(key);
+    storyPollState.failed += 1;
+
+    console.error("[CARTOON][STORY_JOB_FAILED_FINAL]", {
+      jobId: key,
+      sceneTitle: item?.scene_title || "",
+      raw
+    });
+
+    completeStoryGenerateIfAllSettled();
+  }
+
   function getStoryCharacterImage(slot) {
     const key = String(slot || "").trim();
     return state.characterImages?.[key] || null;
@@ -547,135 +706,89 @@
     return wrap;
   }
 
-  function createSceneCharacterItem(entry, isSelected) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.setAttribute("data-scene-character-item", "");
-    btn.setAttribute("data-scene-character-slot", entry.slot);
-    btn.setAttribute("data-selected", isSelected ? "true" : "false");
+  function renderSceneCharacterPicker(root, scene) {
+    const editor = qs("[data-story-scene-editor]", root);
+    if (!editor || !scene) return;
 
-    btn.style.cssText = `
-      min-height:84px;
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      justify-content:center;
-      gap:6px;
-      padding:14px 14px;
-      border-radius:16px;
-      border:1px solid ${isSelected ? "rgba(201,119,255,.55)" : "rgba(255,255,255,.12)"};
-      background:${isSelected ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))" : "rgba(255,255,255,.04)"};
-      box-shadow:${isSelected ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)" : "none"};
-      cursor:pointer;
-      text-align:left;
-      transition:all .18s ease;
-      width:100%;
-    `;
+    const wrap = ensureSceneCharacterPicker(editor);
+    if (!wrap) return;
 
-    const fileText = entry.hasImage ? getShortFileName(entry.fileName, 24) : "Görsel yüklenmedi";
+    const optionsBox = qs("[data-scene-character-picker-options]", wrap);
+    const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
+    if (!optionsBox || !emptyBox) return;
 
-    btn.innerHTML = `
-      <span style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;line-height:1.2;">
-        <span
-          style="
-            width:12px;
-            height:12px;
-            border-radius:999px;
-            flex:0 0 12px;
-            background:${isSelected ? "linear-gradient(135deg,#a565ff,#ff5cb8)" : "rgba(255,255,255,.18)"};
-            box-shadow:${isSelected ? "0 0 12px rgba(180,90,255,.45)" : "none"};
-          "
-        ></span>
-        <span>${entry.label}</span>
-      </span>
-      <span style="font-size:12px;opacity:.82;line-height:1.25;word-break:break-word;">${fileText}</span>
-    `;
+    const selected = Array.isArray(scene?.characterSlots)
+      ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
+      : [];
 
-    return btn;
+    const items = qsa(".story-scene-character-item", optionsBox);
+    if (!items.length) return;
+
+    let hasAnySelectedStoryCharacter = false;
+
+    items.forEach((item) => {
+      const slot = safeText(item.dataset.sceneCharacterSlot);
+      const labelEl = qs("[data-scene-character-label]", item);
+      const fileEl = qs("[data-scene-character-file]", item);
+
+      const label = getStoryCharacterLabelBySlot(slot);
+      const image = getStoryCharacterImage(slot) || createEmptyStoryCharacterImageState();
+      const hasCharacter = !!label;
+      const isSelected = hasCharacter && selected.includes(slot);
+
+      if (hasCharacter) hasAnySelectedStoryCharacter = true;
+
+      item.hidden = !hasCharacter;
+      item.dataset.selected = isSelected ? "true" : "false";
+
+      if (labelEl) {
+        labelEl.textContent = label || "Karakter seçilmedi";
+      }
+
+      if (fileEl) {
+        fileEl.textContent = image.fileName
+          ? getShortFileName(image.fileName, 24)
+          : "Görsel yüklenmedi";
+      }
+
+      item.style.border = isSelected
+        ? "1px solid rgba(201,119,255,.55)"
+        : "1px solid rgba(255,255,255,.12)";
+      item.style.background = isSelected
+        ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
+        : "rgba(255,255,255,.04)";
+      item.style.boxShadow = isSelected
+        ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
+        : "none";
+
+      const dot = qs(".story-scene-character-dot", item);
+      if (dot) {
+        dot.style.background = isSelected
+          ? "linear-gradient(135deg,#22c55e,#16a34a)"
+          : "rgba(255,255,255,.18)";
+        dot.style.boxShadow = isSelected
+          ? "0 0 12px rgba(34,197,94,.45)"
+          : "none";
+      }
+    });
+
+    if (hasAnySelectedStoryCharacter) {
+      optionsBox.hidden = false;
+      emptyBox.hidden = true;
+    } else {
+      optionsBox.hidden = true;
+      emptyBox.hidden = false;
+    }
   }
 
-function renderSceneCharacterPicker(root, scene) {
-  const editor = qs("[data-story-scene-editor]", root);
-  if (!editor || !scene) return;
+  function getSceneCharacterPickerValues(root) {
+    const editor = qs("[data-story-scene-editor]", root);
+    if (!editor) return [];
 
-  const wrap = ensureSceneCharacterPicker(editor);
-  if (!wrap) return;
-
-  const optionsBox = qs("[data-scene-character-picker-options]", wrap);
-  const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
-  if (!optionsBox || !emptyBox) return;
-
-  const selected = Array.isArray(scene?.characterSlots)
-    ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
-    : [];
-
-const items = qsa(".story-scene-character-item", optionsBox);
-  if (!items.length) return;
-
-  let hasAnySelectedStoryCharacter = false;
-
-  items.forEach((item) => {
-    const slot = safeText(item.dataset.sceneCharacterSlot);
-    const labelEl = qs("[data-scene-character-label]", item);
-    const fileEl = qs("[data-scene-character-file]", item);
-
-    const label = getStoryCharacterLabelBySlot(slot);
-    const image = getStoryCharacterImage(slot) || createEmptyStoryCharacterImageState();
-    const hasCharacter = !!label;
-    const isSelected = hasCharacter && selected.includes(slot);
-
-    if (hasCharacter) hasAnySelectedStoryCharacter = true;
-
-    item.hidden = !hasCharacter;
-    item.dataset.selected = isSelected ? "true" : "false";
-
-    if (labelEl) {
-      labelEl.textContent = label || "Karakter seçilmedi";
-    }
-
-    if (fileEl) {
-      fileEl.textContent = image.fileName
-        ? getShortFileName(image.fileName, 24)
-        : "Görsel yüklenmedi";
-    }
-
-    item.style.border = isSelected
-      ? "1px solid rgba(201,119,255,.55)"
-      : "1px solid rgba(255,255,255,.12)";
-    item.style.background = isSelected
-      ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
-      : "rgba(255,255,255,.04)";
-    item.style.boxShadow = isSelected
-      ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
-      : "none";
-
-    const dot = qs(".story-scene-character-dot", item);
-    if (dot) {
-     dot.style.background = isSelected
-  ? "linear-gradient(135deg,#22c55e,#16a34a)"
-  : "rgba(255,255,255,.18)";
-    dot.style.boxShadow = isSelected
-  ? "0 0 12px rgba(34,197,94,.45)"
-  : "none";
-    }
-  });
-
-  if (hasAnySelectedStoryCharacter) {
-    optionsBox.hidden = false;
-    emptyBox.hidden = true;
-  } else {
-    optionsBox.hidden = true;
-    emptyBox.hidden = false;
+    return qsa('.story-scene-character-item[data-selected="true"]', editor)
+      .map((el) => safeText(el.dataset.sceneCharacterSlot))
+      .filter(Boolean);
   }
-}
-function getSceneCharacterPickerValues(root) {
-  const editor = qs("[data-story-scene-editor]", root);
-  if (!editor) return [];
-
-  return qsa('.story-scene-character-item[data-selected="true"]', editor)
-    .map((el) => safeText(el.dataset.sceneCharacterSlot))
-    .filter(Boolean);
-}
 
   function getSelectedScenes() {
     return state.scenes.filter((scene) => scene && scene.selected === true);
@@ -687,36 +800,34 @@ function getSceneCharacterPickerValues(root) {
     }, 0);
   }
 
-function buildCharacterOptions(root) {
-  const map = new Map();
+  function buildCharacterOptions(root) {
+    const map = new Map();
 
-  qsa('[data-role="main"], [data-role="helper"]', root).forEach((btn) => {
-    const value = safeText(btn.dataset.character);
-    const label =
-      safeText(qs('.cartoon-character-name', btn)?.textContent) ||
-      safeText(btn.textContent) ||
-      value;
+    qsa('[data-role="main"], [data-role="helper"]', root).forEach((btn) => {
+      const value = safeText(btn.dataset.character);
+      const label =
+        safeText(qs('.cartoon-character-name', btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        value;
 
-    if (value && label) map.set(value, label);
-  });
+      if (value && label) map.set(value, label);
+    });
 
- 
+    const storySelectedValues = [
+      safeText(state.mainCharacter),
+      safeText(state.helperCharacter1),
+      safeText(state.helperCharacter2),
+      safeText(state.extraCharacter)
+    ].filter(Boolean);
 
-  const storySelectedValues = [
-    safeText(state.mainCharacter),
-    safeText(state.helperCharacter1),
-    safeText(state.helperCharacter2),
-    safeText(state.extraCharacter)
-  ].filter(Boolean);
+    storySelectedValues.forEach((value) => {
+      if (!map.has(value)) {
+        map.set(value, value);
+      }
+    });
 
-  storySelectedValues.forEach((value) => {
-    if (!map.has(value)) {
-      map.set(value, value);
-    }
-  });
-
-  state.characterOptions = Array.from(map.entries()).map(([value, label]) => ({ value, label }));
-}
+    state.characterOptions = Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+  }
 
   function fillCharacterSelect(selectEl, selectedValue) {
     if (!selectEl) return;
@@ -1070,106 +1181,107 @@ function buildCharacterOptions(root) {
     };
   }
 
-function mapStorySceneToBasicPayload(storyPayload, scene) {
-  const resolved = resolveSceneCharacters(scene, storyPayload);
+  function mapStorySceneToBasicPayload(storyPayload, scene) {
+    const resolved = resolveSceneCharacters(scene, storyPayload);
 
-  const slotLabelMap = {
-    main: safeText(storyPayload?.characters?.main),
-    helper1: safeText(storyPayload?.characters?.helper1),
-    helper2: safeText(storyPayload?.characters?.helper2),
-    extra: safeText(storyPayload?.characters?.extra)
-  };
+    const slotLabelMap = {
+      main: safeText(storyPayload?.characters?.main),
+      helper1: safeText(storyPayload?.characters?.helper1),
+      helper2: safeText(storyPayload?.characters?.helper2),
+      extra: safeText(storyPayload?.characters?.extra)
+    };
 
-  const slotImageMap = {
-    main: safeText(storyPayload?.characters?.images?.main?.fileUrl),
-    helper1: safeText(storyPayload?.characters?.images?.helper1?.fileUrl),
-    helper2: safeText(storyPayload?.characters?.images?.helper2?.fileUrl),
-    extra: safeText(storyPayload?.characters?.images?.extra?.fileUrl)
-  };
+    const slotImageMap = {
+      main: safeText(storyPayload?.characters?.images?.main?.fileUrl),
+      helper1: safeText(storyPayload?.characters?.images?.helper1?.fileUrl),
+      helper2: safeText(storyPayload?.characters?.images?.helper2?.fileUrl),
+      extra: safeText(storyPayload?.characters?.images?.extra?.fileUrl)
+    };
 
-  const activeSlots = (Array.isArray(resolved?.slots) ? resolved.slots : [])
-    .map((slot) => safeText(slot))
-    .filter(Boolean);
+    const activeSlots = (Array.isArray(resolved?.slots) ? resolved.slots : [])
+      .map((slot) => safeText(slot))
+      .filter(Boolean);
 
-  const elements = activeSlots
-    .map((slot, index) => {
-      const label = slotLabelMap[slot];
-      const imageUrl = slotImageMap[slot];
-      if (!label || !imageUrl) return null;
+    const elements = activeSlots
+      .map((slot, index) => {
+        const label = slotLabelMap[slot];
+        const imageUrl = slotImageMap[slot];
+        if (!label || !imageUrl) return null;
 
-      return {
-        token: `@Element${index + 1}`,
-        slot,
-        name: label,
-        frontal_image_url: imageUrl,
-        reference_image_urls: [imageUrl]
-      };
-    })
-    .filter(Boolean);
+        return {
+          token: `@Element${index + 1}`,
+          slot,
+          name: label,
+          frontal_image_url: imageUrl,
+          reference_image_urls: [imageUrl]
+        };
+      })
+      .filter(Boolean);
 
-  const characterPromptLine = elements.length
-    ? `Characters: ${elements.map((el) => `${el.token} = ${el.name}`).join(", ")}.`
-    : (resolved.allNames.length
-        ? `Characters in this scene: ${resolved.allNames.join(", ")}.`
-        : "");
+    const characterPromptLine = elements.length
+      ? `Characters: ${elements.map((el) => `${el.token} = ${el.name}`).join(", ")}.`
+      : (resolved.allNames.length
+          ? `Characters in this scene: ${resolved.allNames.join(", ")}.`
+          : "");
 
-  const promptParts = [
-    "Cute kids cartoon style.",
-    "Bright colorful animated scene.",
-    `Scene title: ${safeText(scene?.title)}.`,
-    `Scene description: ${safeText(scene?.description)}.`,
-    characterPromptLine,
-    scene?.mood ? `Mood: ${safeText(scene.mood)}.` : "",
-    scene?.type ? `Shot type: ${safeText(scene.type)}.` : "",
-    scene?.directorNote ? `Director note: ${safeText(scene.directorNote)}.` : "",
-    storyPayload?.settings?.style ? `Visual style: ${safeText(storyPayload.settings.style)}.` : "",
-    storyPayload?.settings?.extraPrompt ? `Extra prompt: ${safeText(storyPayload.settings.extraPrompt)}.` : "",
-    elements.length ? `Use the provided character references exactly and preserve character identity consistently across the whole shot.` : "",
-    "Friendly, adorable, child-safe, expressive animation.",
-    "Clean frame, no text, no subtitles, no watermark."
-  ].filter(Boolean);
+    const promptParts = [
+      "Cute kids cartoon style.",
+      "Bright colorful animated scene.",
+      `Scene title: ${safeText(scene?.title)}.`,
+      `Scene description: ${safeText(scene?.description)}.`,
+      characterPromptLine,
+      scene?.mood ? `Mood: ${safeText(scene.mood)}.` : "",
+      scene?.type ? `Shot type: ${safeText(scene.type)}.` : "",
+      scene?.directorNote ? `Director note: ${safeText(scene.directorNote)}.` : "",
+      storyPayload?.settings?.style ? `Visual style: ${safeText(storyPayload.settings.style)}.` : "",
+      storyPayload?.settings?.extraPrompt ? `Extra prompt: ${safeText(storyPayload.settings.extraPrompt)}.` : "",
+      elements.length ? `Use the provided character references exactly and preserve character identity consistently across the whole shot.` : "",
+      "Friendly, adorable, child-safe, expressive animation.",
+      "Clean frame, no text, no subtitles, no watermark."
+    ].filter(Boolean);
 
-  return {
-    app: "cartoon",
-    mode: "basic",
-    extraPrompt: promptParts.join(" "),
-    mainCharacter: resolved.sceneMain,
-    helperCharacters: resolved.helperCharacters,
-    scene: safeText(scene?.section || "story") || "story",
-    actions: [],
-    action: "acting naturally in the scene",
-    duration: normalizeStorySceneDuration(scene?.duration),
-    aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
-    audioSource: "none",
-    audioMode: "none",
-    audioFileName: "",
-    audioFileUrl: "",
-    characterImage: null,
-    characterImageName: "",
-    characterImageUrl: resolved.characterImageUrl,
-    elements: elements.map((el) => ({
-      token: el.token,
-      frontal_image_url: el.frontal_image_url,
-      reference_image_urls: el.reference_image_urls
-    })),
-    estimatedCredits: 0,
-    meta: {
+    return {
       app: "cartoon",
-      mode: "story",
-      scene_id: String(scene?.id || ""),
-      scene_title: String(scene?.title || ""),
-      scene_duration: normalizeStorySceneDuration(scene?.duration),
-      scene_slots: resolved.slots,
-      story_idea: String(storyPayload?.summary?.idea || ""),
-      fal_elements_debug: elements.map((el) => ({
+      mode: "basic",
+      extraPrompt: promptParts.join(" "),
+      mainCharacter: resolved.sceneMain,
+      helperCharacters: resolved.helperCharacters,
+      scene: safeText(scene?.section || "story") || "story",
+      actions: [],
+      action: "acting naturally in the scene",
+      duration: normalizeStorySceneDuration(scene?.duration),
+      aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
+      audioSource: "none",
+      audioMode: "none",
+      audioFileName: "",
+      audioFileUrl: "",
+      characterImage: null,
+      characterImageName: "",
+      characterImageUrl: resolved.characterImageUrl,
+      elements: elements.map((el) => ({
         token: el.token,
-        slot: el.slot,
-        name: el.name,
-        frontal_image_url: el.frontal_image_url
-      }))
-    }
-  };
-}
+        frontal_image_url: el.frontal_image_url,
+        reference_image_urls: el.reference_image_urls
+      })),
+      estimatedCredits: 0,
+      meta: {
+        app: "cartoon",
+        mode: "story",
+        scene_id: String(scene?.id || ""),
+        scene_title: String(scene?.title || ""),
+        scene_duration: normalizeStorySceneDuration(scene?.duration),
+        scene_slots: resolved.slots,
+        story_idea: String(storyPayload?.summary?.idea || ""),
+        fal_elements_debug: elements.map((el) => ({
+          token: el.token,
+          slot: el.slot,
+          name: el.name,
+          frontal_image_url: el.frontal_image_url
+        }))
+      }
+    };
+  }
+
   async function createStoryScenesFromPayload(storyPayload) {
     const scenes = (Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : []).filter(
       (scene) => scene && scene.selected === true
@@ -1178,6 +1290,9 @@ function mapStorySceneToBasicPayload(storyPayload, scene) {
     if (!scenes.length) {
       throw new Error("Önce en az 1 sahne seçip kaydetmelisin.");
     }
+
+    resetStoryPollBatch();
+    storyPollState.total = scenes.length;
 
     const created = [];
 
@@ -1248,23 +1363,40 @@ function mapStorySceneToBasicPayload(storyPayload, scene) {
       );
 
       if (item.job_id) {
-        pollStorySceneJob(item.job_id, item);
+        ensureStoryJobState(item.job_id, item);
+        pollStorySceneJob(item.job_id, item, 0);
       }
     }
 
     return created;
   }
 
-  async function pollStorySceneJob(jobId, item, tries = 0) {
+  async function pollStorySceneJob(jobId, item, tries = 0, readyChecks = 0) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!key || !entry || entry.done || entry.failed) return;
+
+    entry.tries = Number(tries || 0);
+    entry.readyChecks = Number(readyChecks || 0);
+
     try {
-      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`);
+      const url = `/api/jobs/status?job_id=${encodeURIComponent(key)}&debug=1&t=${Date.now()}`;
+      const r = await fetch(url, { cache: "no-store" });
       const j = await r.json().catch(() => null);
 
-      console.log("[CARTOON][STORY] poll =", jobId, item?.scene_title, j);
+      entry.lastResponse = j || null;
+
+      console.log("[CARTOON][STORY] poll =", key, item?.scene_title, {
+        tries,
+        readyChecks,
+        response: j
+      });
 
       if (!j || j.ok === false) {
-        if (tries < 60) {
-          setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
+        if (tries < STORY_MAX_POLLS) {
+          scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+        } else {
+          markStoryJobFailed(key, item, j);
         }
         return;
       }
@@ -1273,60 +1405,94 @@ function mapStorySceneToBasicPayload(storyPayload, scene) {
         .trim()
         .toLowerCase();
 
-      const readyVideoUrl = String(j?.video?.url || j?.video_url || "").trim();
+      const readyVideoUrl = String(
+        j?.video?.url ||
+        j?.video_url ||
+        j?.output?.url ||
+        ""
+      ).trim();
 
-      const hasReadyOutput =
-        Array.isArray(j?.outputs) &&
-        j.outputs.some((o) => {
-          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
-          const u = String(o?.url || o?.video_url || "").trim();
-          return !!u && t === "video";
-        });
+      const outputs = Array.isArray(j?.outputs) ? j.outputs : [];
+
+      const hasReadyOutput = outputs.some((o) => {
+        const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+        const u = String(o?.url || o?.video_url || "").trim();
+        return !!u && (!t || t === "video");
+      });
+
+      const finalVideoUrl =
+        readyVideoUrl ||
+        String(
+          outputs.find((o) => String(o?.url || o?.video_url || "").trim())?.url ||
+          outputs.find((o) => String(o?.url || o?.video_url || "").trim())?.video_url ||
+          ""
+        ).trim();
+
+      entry.lastStatus = normalizedStatus;
+
       console.log("[CARTOON][STORY_READY_CHECK]", {
-  jobId,
-  sceneTitle: item?.scene_title || "",
-  normalizedStatus,
-  readyVideoUrl,
-  hasReadyOutput,
-  outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-  raw: j
-});
-      if (
-        ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
-        (readyVideoUrl || hasReadyOutput)
-      ) {
-        window.dispatchEvent(
-          new CustomEvent("aivo:cartoon:story_scene_ready", {
-            detail: {
-              app: "cartoon",
-              mode: "story",
-              sceneId: String(item?.scene_id || ""),
-              sceneTitle: String(item?.scene_title || ""),
-              job_id: String(jobId || ""),
-              status: normalizedStatus,
-              video: readyVideoUrl ? { url: readyVideoUrl } : null,
-              outputs: j?.outputs || [],
-              raw: j
-            }
-          })
-        );
+        jobId: key,
+        sceneTitle: item?.scene_title || "",
+        tries,
+        readyChecks,
+        normalizedStatus,
+        readyVideoUrl,
+        finalVideoUrl,
+        hasReadyOutput,
+        outputs,
+        raw: j
+      });
+
+      const isReadyLike = ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus);
+      const isFailedLike = ["error", "failed", "cancelled", "canceled"].includes(normalizedStatus);
+
+      if (isReadyLike && finalVideoUrl) {
+        markStoryJobReady(key, item, {
+          status: normalizedStatus,
+          video: { url: finalVideoUrl },
+          outputs,
+          raw: j
+        });
         return;
       }
 
-      if (normalizedStatus === "error" || normalizedStatus === "failed") {
-        console.error("[CARTOON][STORY] job error =", jobId, item?.scene_title, j);
+      if (isReadyLike && !finalVideoUrl) {
+        if (readyChecks < STORY_READY_RECHECK_LIMIT) {
+          scheduleStoryPoll(key, item, tries, STORY_READY_RECHECK_INTERVAL);
+          entry.readyChecks = readyChecks + 1;
+          return;
+        }
+
+        if (tries < STORY_MAX_POLLS) {
+          scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+          return;
+        }
+
+        markStoryJobFailed(key, item, j);
         return;
       }
 
-      if (tries < 60) {
-        setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
+      if (isFailedLike) {
+        console.error("[CARTOON][STORY] job error =", key, item?.scene_title, j);
+        markStoryJobFailed(key, item, j);
+        return;
       }
+
+      if (tries < STORY_MAX_POLLS) {
+        scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+        return;
+      }
+
+      markStoryJobFailed(key, item, j);
     } catch (err) {
-      console.error("[CARTOON][STORY] poll error =", jobId, item?.scene_title, err);
+      console.error("[CARTOON][STORY] poll error =", key, item?.scene_title, err);
 
-      if (tries < 60) {
-        setTimeout(() => pollStorySceneJob(jobId, item, tries + 1), 3000);
+      if (tries < STORY_MAX_POLLS) {
+        scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+        return;
       }
+
+      markStoryJobFailed(key, item, { error: String(err?.message || err || "story_poll_failed") });
     }
   }
 
@@ -1427,7 +1593,7 @@ function mapStorySceneToBasicPayload(storyPayload, scene) {
         return;
       }
 
-     const sceneCharacterItem = e.target.closest(".story-scene-character-item");
+      const sceneCharacterItem = e.target.closest(".story-scene-character-item");
       if (sceneCharacterItem && root.contains(sceneCharacterItem)) {
         e.preventDefault();
 
@@ -1437,13 +1603,12 @@ function mapStorySceneToBasicPayload(storyPayload, scene) {
         const isSelected = sceneCharacterItem.dataset.selected === "true";
         sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
 
-     const dot = qs(".story-scene-character-dot", sceneCharacterItem);
+        const dot = qs(".story-scene-character-dot", sceneCharacterItem);
         if (dot) {
           dot.style.background = isSelected
-  ? "rgba(255,255,255,.18)"
-  : "linear-gradient(135deg,#22c55e,#16a34a)";
-
-dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
+            ? "rgba(255,255,255,.18)"
+            : "linear-gradient(135deg,#22c55e,#16a34a)";
+          dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
         }
 
         sceneCharacterItem.style.border = isSelected
@@ -1539,9 +1704,7 @@ dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
         console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
 
         state.isGenerating = true;
-        generateBtn.disabled = true;
-        generateBtn.textContent = "Üretiliyor...";
-        generateBtn.classList.add("is-loading");
+        setStoryGenerateButton(root, true);
 
         try {
           const created = await createStoryScenesFromPayload(payload);
@@ -1560,19 +1723,22 @@ dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
         } catch (err) {
           console.error("[CARTOON][STORY_CREATE_ERROR]", err);
           alert(String(err?.message || err || "story_scene_create_failed"));
-        } finally {
           state.isGenerating = false;
-          generateBtn.disabled = false;
-          generateBtn.textContent = "Hikayeyi Oluştur";
-          generateBtn.classList.remove("is-loading");
+          setStoryGenerateButton(root, false);
+        } finally {
           render(root);
         }
+
+        return;
       }
     });
 
     window.addEventListener("aivo:cartoon:story_scene_ready", (e) => {
       const d = e?.detail || {};
       console.log("[CARTOON][STORY_SCENE_READY]", d);
+
+      const root = getCartoonRoot();
+      if (root) render(root);
     });
   }
 
@@ -1674,18 +1840,20 @@ dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
           characterFileInput.files && characterFileInput.files[0]
             ? characterFileInput.files[0]
             : null;
-           const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
 
-if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
-  const autoLabel = safeText(file.name)
-    .replace(/\.[^.]+$/, "")
-    .replace(/[_-]+/g, " ")
-    .trim();
+        const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
 
-  if (autoLabel) {
-    state[slotConfig.stateKey] = autoLabel;
-  }
-}
+        if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
+          const autoLabel = safeText(file.name)
+            .replace(/\.[^.]+$/, "")
+            .replace(/[_-]+/g, " ")
+            .trim();
+
+          if (autoLabel) {
+            state[slotConfig.stateKey] = autoLabel;
+          }
+        }
+
         setStoryCharacterImage(slot, {
           file,
           fileName: file ? file.name : "",
