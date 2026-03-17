@@ -405,17 +405,25 @@ const falModel =
 
   const status_url = extractFalStatusUrl(data);
 
- const metaObj = {
-  ...(body.meta && typeof body.meta === "object" ? body.meta : {}),
+const metaObj = {
   app,
   mode,
   kind: mode === "character" ? "cartoon_character" : "cartoon_video",
   provider: "fal",
+
+  scene_id: String(body?.meta?.scene_id || ""),
+  scene_title: String(body?.meta?.scene_title || ""),
+  title: String(body?.meta?.scene_title || body?.meta?.title || ""),
+  scene_description: String(body?.meta?.scene_description || body?.description || ""),
+  scene_duration: String(body?.meta?.scene_duration || duration || ""),
+  story_flow_duration: String(body?.meta?.story_flow_duration || ""),
+
   audio_mode,
   audio_url,
   silent_copy,
   model: falModel,
   request_id,
+
   ui_state: {
     name: characterName || null,
     type: characterType || null,
@@ -444,6 +452,7 @@ const falModel =
     requestNonce: requestNonce || null,
     story_meta: body.meta || null
   },
+
   fal_input: falInput,
   provider_response: {
     status_url: status_url || null,
@@ -451,47 +460,6 @@ const falModel =
     raw: data,
   },
 };
-    provider: "fal",
-    audio_mode,
-    audio_url,
-    silent_copy,
-    model: falModel,
-    request_id,
-    ui_state: {
-      name: characterName || null,
-      type: characterType || null,
-      style: characterStyle || null,
-      prompt: characterPromptRaw || "",
-      hairType: characterHairType || "",
-      hairColor: characterHairColor || "",
-      outfit: characterOutfit || "",
-      glasses: characterGlasses || "",
-      accessory: characterAccessory || "",
-      expression: characterExpression || "",
-      mainCharacter: body.mainCharacter || null,
-      helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
-      scene: body.scene || null,
-      action: body.action || null,
-      extraPrompt: body.extraPrompt || "",
-      duration,
-      aspect_ratio,
-      generate_audio,
-      audio_mode,
-      audio_url,
-      silent_copy,
-      characterImageUrl: characterImageUrl || null,
-      referenceImageUrl: referenceImageUrl || null,
-      storyImageUrls,
-      requestNonce: requestNonce || null,
-      story_meta: body.meta || null
-    },
-    fal_input: falInput,
-    provider_response: {
-      status_url: status_url || null,
-      response_url: status_url || null,
-      raw: data,
-    },
-  };
 
   const now = new Date().toISOString();
 
