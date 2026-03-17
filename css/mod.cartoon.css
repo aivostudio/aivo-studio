@@ -2509,3 +2509,11 @@
   color: rgba(255,255,255,.82);
   text-align: center;
 }
+.main-panel[data-module="cartoon"] .story-card-helper{
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+  max-width: 760px;
+}
