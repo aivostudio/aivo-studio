@@ -1282,7 +1282,15 @@ function mapStorySceneToBasicPayload(storyPayload, scene) {
           const u = String(o?.url || o?.video_url || "").trim();
           return !!u && t === "video";
         });
-
+      console.log("[CARTOON][STORY_READY_CHECK]", {
+  jobId,
+  sceneTitle: item?.scene_title || "",
+  normalizedStatus,
+  readyVideoUrl,
+  hasReadyOutput,
+  outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+  raw: j
+});
       if (
         ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
         (readyVideoUrl || hasReadyOutput)
