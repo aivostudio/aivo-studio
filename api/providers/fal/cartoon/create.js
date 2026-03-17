@@ -292,13 +292,12 @@ module.exports = async function handler(req, res) {
     storyImageUrls.push(String(characterImageUrl).trim());
   }
 
-  const falModel =
-    mode === "character"
-      ? "fal-ai/nano-banana-pro"
-      : mode === "story"
-        ? "fal-ai/kling-video/o3/pro/reference-to-video"
-        : "fal-ai/kling-video/o3/standard/reference-to-video";
-
+const falModel =
+  mode === "character"
+    ? "fal-ai/nano-banana-pro"
+    : mode === "story"
+      ? "fal-ai/kling-video/o3/standard/reference-to-video"
+      : "fal-ai/kling-video/o3/standard/reference-to-video";
   const falUrl = `https://queue.fal.run/${falModel}`;
 
   const falInput =
