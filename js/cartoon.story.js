@@ -1023,9 +1023,18 @@
     if (type) type.value = scene.type || "";
     if (note) note.value = scene.directorNote || "";
   }
+ function ensureStorySceneEditorPortal(root) {
+  const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
+  if (!editor) return null;
 
+  if (editor.parentElement !== document.body) {
+    document.body.appendChild(editor);
+  }
+
+  return editor;
+}
   function syncSceneEditor(root) {
-    const editor = qs("[data-story-scene-editor]", root);
+   const editor = ensureStorySceneEditorPortal(root);
     if (!editor) return;
 
     const isOpen = !!state.editingSceneId;
