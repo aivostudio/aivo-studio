@@ -580,6 +580,15 @@
         if (destroyed) return;
 
         currentDbItems = (items || []).filter(isJobCartoon).filter((j) => !isCharacterMode(j));
+        console.log("[CARTOON PANEL ID DEBUG]", {
+  dbItems: currentDbItems.map((j) => ({
+    id: j?.id || null,
+    job_id: j?.job_id || null,
+    title: j?.meta?.scene_title || j?.meta?.title || j?.title || null,
+    db_status: j?.db_status || j?.status || null
+  })),
+  optimisticKeys: Array.from(optimistic.keys())
+});
         renderCurrent();
       },
     });
