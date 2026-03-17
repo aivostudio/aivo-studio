@@ -346,7 +346,12 @@ module.exports = async function handler(req, res) {
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
-
+ console.log("[FAL_CREATE_DEBUG]", JSON.stringify({
+  mode,
+  model: falModel,
+  body_elements_count: Array.isArray(body.elements) ? body.elements.length : 0,
+  fal_input: falInput
+}, null, 2));
   let r;
   try {
     r = await fetch(falUrl, {
