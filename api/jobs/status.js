@@ -657,6 +657,18 @@ module.exports = async (req, res) => {
 }, null, 2));
           const stRaw = pickFalStatus(body);
           const dbSt = toDbStatus(stRaw);
+          console.log("[JOBS_STATUS_TRANSITION]", JSON.stringify({
+  job_id,
+  appKey,
+  requestId,
+  stRaw: stRaw || null,
+  dbSt: dbSt || null,
+  body_status: body?.status || null,
+  body_video_url: body?.video_url || null,
+  body_outputs_count: Array.isArray(body?.outputs) ? body.outputs.length : 0,
+  current_job_status: job?.status || null,
+  current_outputs_count: Array.isArray(job?.outputs) ? job.outputs.length : 0
+}, null, 2));
 
           const patchMeta = {
             fal: {
