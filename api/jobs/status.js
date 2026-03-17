@@ -900,23 +900,38 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
             `;
             job.status = "error";
             job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-         } else if (dbSt === "queued" || dbSt === "processing") {
+} else if (dbSt === "queued" || dbSt === "processing") {
   const currentDbStatus = String(job.status || "").toLowerCase();
 
   if (currentDbStatus !== "done" && currentDbStatus !== "error") {
-    await sql`
+    const upd = await sql`
       update jobs
       set status = ${dbSt},
           meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
           updated_at = now()
       where id = ${job_id}::uuid
+        and coalesce(status, '') not in ('done', 'error')
+      returning status, meta
     `;
-    job.status = dbSt;
-    job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
-  }
-}
+
+    if (upd[0]) {
+      job.status = upd[0].status;
+      job.meta = upd[0].meta;
+    } else {
+      const freshRows = await sql`
+        select status, meta, outputs
+        from jobs
+        where id = ${job_id}::uuid
+        limit 1
+      `;
+      const fresh = freshRows[0] || null;
+      if (fresh) {
+        job.status = fresh.status;
+        job.meta = fresh.meta;
+        job.outputs = fresh.outputs;
       }
     }
+  }
 }
 
     // =========================
