@@ -1024,11 +1024,21 @@
     if (note) note.value = scene.directorNote || "";
   }
  function ensureStorySceneEditorPortal(root) {
-  const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
+  const editor =
+    qs("[data-story-scene-editor]", root) ||
+    qs("[data-story-scene-editor]", document);
+
   if (!editor) return null;
 
-  if (editor.parentElement !== document.body) {
-    document.body.appendChild(editor);
+  const portalNode =
+    editor.closest("[data-story-scene-overlay]") ||
+    editor.closest("[data-story-scene-modal]") ||
+    editor.parentElement;
+
+  if (!portalNode) return editor;
+
+  if (portalNode.parentElement !== document.body) {
+    document.body.appendChild(portalNode);
   }
 
   return editor;
