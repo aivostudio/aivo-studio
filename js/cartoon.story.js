@@ -1023,41 +1023,21 @@
     if (type) type.value = scene.type || "";
     if (note) note.value = scene.directorNote || "";
   }
+ function ensureStorySceneEditorPortal(root) {
+  const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
+  if (!editor) return null;
 
+  if (editor.parentElement !== document.body) {
+    document.body.appendChild(editor);
+  }
+
+  return editor;
+}
   function syncSceneEditor(root) {
-    const editor = qs("[data-story-scene-editor]", root);
+   const editor = ensureStorySceneEditorPortal(root);
     if (!editor) return;
 
     const isOpen = !!state.editingSceneId;
-    const card = qs(".story-scene-editor-card", editor);
-
-if (isOpen) {
-  editor.style.position = "fixed";
-  editor.style.top = "0";
-  editor.style.right = "0";
-  editor.style.bottom = "0";
-  editor.style.left = "0";
-  editor.style.width = "100vw";
-  editor.style.height = "100dvh";
-  editor.style.minHeight = "100dvh";
-  editor.style.display = "flex";
-  editor.style.alignItems = "center";
-  editor.style.justifyContent = "center";
-  editor.style.padding = "24px";
-  editor.style.zIndex = "9999";
-  editor.style.overflow = "auto";
-  editor.style.webkitOverflowScrolling = "touch";
-
-  if (card) {
-    card.style.width = "min(760px, calc(100vw - 48px))";
-    card.style.maxWidth = "760px";
-    card.style.maxHeight = "88dvh";
-    card.style.margin = "auto";
-  }
-} else {
-  editor.style.cssText = "";
-  if (card) card.style.cssText = "";
-}
     editor.hidden = !isOpen;
     editor.classList.toggle("is-open", isOpen);
 
@@ -1544,200 +1524,196 @@ if (isOpen) {
     syncStoryDurationSummary(root);
   }
 
-function bindClicks() {
-  document.addEventListener("click", async (e) => {
-    const root = getCartoonRoot();
-    if (!root) return;
+  function bindClicks() {
+    document.addEventListener("click", async (e) => {
+      const root = getCartoonRoot();
+      if (!root) return;
 
-    const modalEditor = document.querySelector("[data-story-scene-editor]");
-    const isInsideRoot = root.contains(e.target);
-    const isInsideModal = !!e.target.closest("[data-story-scene-editor]");
-
-    const modeBtn = e.target.closest("[data-cartoon-mode]");
-    if (modeBtn && isInsideRoot) {
-      e.preventDefault();
-      state.mode = modeBtn.dataset.cartoonMode || "story";
-      render(root);
-      return;
-    }
-
-    const sectionToggle = e.target.closest("[data-story-section-toggle]");
-    if (sectionToggle && isInsideRoot) {
-      e.preventDefault();
-      const sectionEl = sectionToggle.closest("[data-story-section]");
-      const sectionId = sectionEl?.dataset.storySection || "";
-      if (!sectionId) return;
-      state.openSection = state.openSection === sectionId ? "" : sectionId;
-      render(root);
-      return;
-    }
-
-    const settingsToggle = e.target.closest("[data-story-settings-toggle]");
-    if (settingsToggle && isInsideRoot) {
-      e.preventDefault();
-      state.settingsOpen = !state.settingsOpen;
-      render(root);
-      return;
-    }
-
-    const editSceneBtn = e.target.closest("[data-edit-scene]");
-    if (editSceneBtn && isInsideRoot) {
-      e.preventDefault();
-      const sceneId = editSceneBtn.dataset.editScene || "";
-      if (!sceneId) return;
-      state.editingSceneId = sceneId;
-      render(root);
-      return;
-    }
-
-    const sceneCharacterItem = e.target.closest(".story-scene-character-item");
-    if (sceneCharacterItem && (isInsideRoot || isInsideModal)) {
-      e.preventDefault();
-
-      const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
-      if (!slot) return;
-
-      const isSelected = sceneCharacterItem.dataset.selected === "true";
-      sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
-
-      const dot = qs(".story-scene-character-dot", sceneCharacterItem);
-      if (dot) {
-        dot.style.background = isSelected
-          ? "rgba(255,255,255,.18)"
-          : "linear-gradient(135deg,#22c55e,#16a34a)";
-        dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
-      }
-
-      sceneCharacterItem.style.border = isSelected
-        ? "1px solid rgba(255,255,255,.12)"
-        : "1px solid rgba(201,119,255,.55)";
-      sceneCharacterItem.style.background = isSelected
-        ? "rgba(255,255,255,.04)"
-        : "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))";
-      sceneCharacterItem.style.boxShadow = isSelected
-        ? "none"
-        : "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)";
-
-      return;
-    }
-
-    const cancelBtn = e.target.closest("[data-scene-cancel]");
-    if (cancelBtn && (isInsideRoot || isInsideModal)) {
-      e.preventDefault();
-      state.editingSceneId = "";
-      render(root);
-      return;
-    }
-
-    const saveBtn = e.target.closest("[data-scene-save]");
-    if (saveBtn && (isInsideRoot || isInsideModal)) {
-      e.preventDefault();
-      saveSceneEditor(root);
-      return;
-    }
-
-    const uploadTrigger = e.target.closest("[data-story-upload-trigger]");
-    if (uploadTrigger && isInsideRoot) {
-      e.preventDefault();
-      const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
-      if (!slot) return;
-
-      const input = qs(`[data-story-character-file="${slot}"]`, root);
-      if (input) input.click();
-      return;
-    }
-
-    const uploadRemove = e.target.closest("[data-story-upload-remove]");
-    if (uploadRemove && isInsideRoot) {
-      e.preventDefault();
-      const slot = safeText(uploadRemove.dataset.storyUploadRemove);
-      if (!slot) return;
-
-      resetStoryCharacterImage(root, slot);
-      return;
-    }
-
-    const generateBtn = e.target.closest("[data-story-generate]");
-    if (generateBtn && isInsideRoot) {
-      e.preventDefault();
-      if (state.mode !== "story") return;
-      if (state.isGenerating) return;
-
-      const selectedScenes = getSelectedScenes();
-      const totalSeconds = getSelectedTotalSeconds();
-
-      if (!selectedScenes.length) {
-        alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
+      const modeBtn = e.target.closest("[data-cartoon-mode]");
+      if (modeBtn && root.contains(modeBtn)) {
+        e.preventDefault();
+        state.mode = modeBtn.dataset.cartoonMode || "story";
+        render(root);
         return;
       }
 
-      const slots = STORY_CHARACTER_SLOT_CONFIG.map((config) => config.slot);
+      const sectionToggle = e.target.closest("[data-story-section-toggle]");
+      if (sectionToggle && root.contains(sectionToggle)) {
+        e.preventDefault();
+        const sectionEl = sectionToggle.closest("[data-story-section]");
+        const sectionId = sectionEl?.dataset.storySection || "";
+        if (!sectionId) return;
+        state.openSection = state.openSection === sectionId ? "" : sectionId;
+        render(root);
+        return;
+      }
 
-      for (const slot of slots) {
-        const imageState = getStoryCharacterImage(slot);
-        if (!imageState || !imageState.file) continue;
+      const settingsToggle = e.target.closest("[data-story-settings-toggle]");
+      if (settingsToggle && root.contains(settingsToggle)) {
+        e.preventDefault();
+        state.settingsOpen = !state.settingsOpen;
+        render(root);
+        return;
+      }
 
-        if (imageState.uploadStatus === "uploading" && imageState.uploadPromise) {
-          try {
-            await imageState.uploadPromise;
-          } catch {
+      const editSceneBtn = e.target.closest("[data-edit-scene]");
+      if (editSceneBtn && root.contains(editSceneBtn)) {
+        e.preventDefault();
+        const sceneId = editSceneBtn.dataset.editScene || "";
+        if (!sceneId) return;
+        state.editingSceneId = sceneId;
+        render(root);
+        return;
+      }
+
+      const sceneCharacterItem = e.target.closest(".story-scene-character-item");
+      if (sceneCharacterItem && root.contains(sceneCharacterItem)) {
+        e.preventDefault();
+
+        const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
+        if (!slot) return;
+
+        const isSelected = sceneCharacterItem.dataset.selected === "true";
+        sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
+
+        const dot = qs(".story-scene-character-dot", sceneCharacterItem);
+        if (dot) {
+          dot.style.background = isSelected
+            ? "rgba(255,255,255,.18)"
+            : "linear-gradient(135deg,#22c55e,#16a34a)";
+          dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
+        }
+
+        sceneCharacterItem.style.border = isSelected
+          ? "1px solid rgba(255,255,255,.12)"
+          : "1px solid rgba(201,119,255,.55)";
+        sceneCharacterItem.style.background = isSelected
+          ? "rgba(255,255,255,.04)"
+          : "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))";
+        sceneCharacterItem.style.boxShadow = isSelected
+          ? "none"
+          : "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)";
+
+        return;
+      }
+
+      const cancelBtn = e.target.closest("[data-scene-cancel]");
+      if (cancelBtn && root.contains(cancelBtn)) {
+        e.preventDefault();
+        state.editingSceneId = "";
+        render(root);
+        return;
+      }
+
+      const saveBtn = e.target.closest("[data-scene-save]");
+      if (saveBtn && root.contains(saveBtn)) {
+        e.preventDefault();
+        saveSceneEditor(root);
+        return;
+      }
+
+      const uploadTrigger = e.target.closest("[data-story-upload-trigger]");
+      if (uploadTrigger && root.contains(uploadTrigger)) {
+        e.preventDefault();
+        const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
+        if (!slot) return;
+
+        const input = qs(`[data-story-character-file="${slot}"]`, root);
+        if (input) input.click();
+        return;
+      }
+
+      const uploadRemove = e.target.closest("[data-story-upload-remove]");
+      if (uploadRemove && root.contains(uploadRemove)) {
+        e.preventDefault();
+        const slot = safeText(uploadRemove.dataset.storyUploadRemove);
+        if (!slot) return;
+
+        resetStoryCharacterImage(root, slot);
+        return;
+      }
+
+      const generateBtn = e.target.closest("[data-story-generate]");
+      if (generateBtn && root.contains(generateBtn)) {
+        e.preventDefault();
+        if (state.mode !== "story") return;
+        if (state.isGenerating) return;
+
+        const selectedScenes = getSelectedScenes();
+        const totalSeconds = getSelectedTotalSeconds();
+
+        if (!selectedScenes.length) {
+          alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
+          return;
+        }
+
+        const slots = STORY_CHARACTER_SLOT_CONFIG.map((config) => config.slot);
+
+        for (const slot of slots) {
+          const imageState = getStoryCharacterImage(slot);
+          if (!imageState || !imageState.file) continue;
+
+          if (imageState.uploadStatus === "uploading" && imageState.uploadPromise) {
+            try {
+              await imageState.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
+            alert("Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
             return;
           }
         }
 
-        if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
-          alert("Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+        const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nDevam edilsin mi?`;
+        if (!window.confirm(summaryText)) {
           return;
         }
-      }
 
-      const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nDevam edilsin mi?`;
-      if (!window.confirm(summaryText)) {
+        const payload = buildStoryPayload();
+        window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
+        console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
+
+        state.isGenerating = true;
+        setStoryGenerateButton(root, true);
+
+        try {
+          const created = await createStoryScenesFromPayload(payload);
+
+          window.__LAST_CARTOON_STORY_CREATED__ = created;
+          console.log("[CARTOON][STORY_CREATE_OK]", created);
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:cartoon:story_payload_ready", {
+              detail: {
+                payload,
+                created
+              }
+            })
+          );
+        } catch (err) {
+          console.error("[CARTOON][STORY_CREATE_ERROR]", err);
+          alert(String(err?.message || err || "story_scene_create_failed"));
+          state.isGenerating = false;
+          setStoryGenerateButton(root, false);
+        } finally {
+          render(root);
+        }
+
         return;
       }
+    });
 
-      const payload = buildStoryPayload();
-      window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
-      console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
+    window.addEventListener("aivo:cartoon:story_scene_ready", (e) => {
+      const d = e?.detail || {};
+      console.log("[CARTOON][STORY_SCENE_READY]", d);
 
-      state.isGenerating = true;
-      setStoryGenerateButton(root, true);
-
-      try {
-        const created = await createStoryScenesFromPayload(payload);
-
-        window.__LAST_CARTOON_STORY_CREATED__ = created;
-        console.log("[CARTOON][STORY_CREATE_OK]", created);
-
-        window.dispatchEvent(
-          new CustomEvent("aivo:cartoon:story_payload_ready", {
-            detail: {
-              payload,
-              created
-            }
-          })
-        );
-      } catch (err) {
-        console.error("[CARTOON][STORY_CREATE_ERROR]", err);
-        alert(String(err?.message || err || "story_scene_create_failed"));
-        state.isGenerating = false;
-        setStoryGenerateButton(root, false);
-      } finally {
-        render(root);
-      }
-
-      return;
-    }
-  });
-
-  window.addEventListener("aivo:cartoon:story_scene_ready", (e) => {
-    const d = e?.detail || {};
-    console.log("[CARTOON][STORY_SCENE_READY]", d);
-
-    const root = getCartoonRoot();
-    if (root) render(root);
-  });
-}
+      const root = getCartoonRoot();
+      if (root) render(root);
+    });
+  }
 
   function bindInputs() {
     document.addEventListener("input", (e) => {
