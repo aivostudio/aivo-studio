@@ -96,7 +96,12 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
-
+ function getStorySceneEditor(root) {
+  return (
+    qs("[data-story-scene-editor]", root || document) ||
+    qs("[data-story-scene-editor]", document)
+  );
+}
   function safeText(value) {
     return String(value || "").trim();
   }
@@ -640,7 +645,7 @@
   }
 
   function renderSceneCharacterPicker(root, scene) {
-    const editor = qs("[data-story-scene-editor]", root);
+  const editor = getStorySceneEditor(root);
     if (!editor || !scene) return;
 
     const wrap = ensureSceneCharacterPicker(editor);
@@ -715,7 +720,7 @@
   }
 
   function getSceneCharacterPickerValues(root) {
-    const editor = qs("[data-story-scene-editor]", root);
+  const editor = getStorySceneEditor(root);
     if (!editor) return [];
 
     return qsa('.story-scene-character-item[data-selected="true"]', editor)
@@ -1000,7 +1005,7 @@
   }
 
   function fillSceneEditor(root, sceneId) {
-    const editor = qs("[data-story-scene-editor]", root);
+  const editor = getStorySceneEditor(root);
     const scene = getSceneById(sceneId);
     if (!editor || !scene) return;
 
@@ -1470,7 +1475,7 @@
   function saveSceneEditor(root) {
     if (!state.editingSceneId) return;
 
-    const editor = qs("[data-story-scene-editor]", root);
+  const editor = getStorySceneEditor(root);
     if (!editor) return;
 
     const title = safeText(qs("[data-scene-editor-title]", editor)?.value);
@@ -1598,7 +1603,7 @@
       }
 
       const cancelBtn = e.target.closest("[data-scene-cancel]");
-      if (cancelBtn && root.contains(cancelBtn)) {
+    if (cancelBtn && getStorySceneEditor(root)?.contains(cancelBtn)) {
         e.preventDefault();
         state.editingSceneId = "";
         render(root);
@@ -1606,7 +1611,7 @@
       }
 
       const saveBtn = e.target.closest("[data-scene-save]");
-      if (saveBtn && root.contains(saveBtn)) {
+    if (saveBtn && root.contains(saveBtn)) {
         e.preventDefault();
         saveSceneEditor(root);
         return;
