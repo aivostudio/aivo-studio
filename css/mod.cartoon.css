@@ -2022,7 +2022,18 @@
   justify-content:center;
   padding:24px;
 }
-
+.main-panel[data-module="cartoon"] .story-scene-editor{
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  -webkit-backdrop-filter: blur(8px);
+}
 .main-panel[data-module="cartoon"] .story-scene-editor-card{
   width:min(760px, calc(100vw - 48px));
   max-width:760px;
