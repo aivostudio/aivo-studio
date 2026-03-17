@@ -647,6 +647,13 @@ module.exports = async (req, res) => {
 
         if (fr.ok) {
           const body = fr.body || {};
+          console.log("[JOBS_STATUS_FAL_RAW]", JSON.stringify({
+  job_id,
+  appKey,
+  requestId,
+  statusUrl,
+  body
+}, null, 2));
           const stRaw = pickFalStatus(body);
           const dbSt = toDbStatus(stRaw);
 
