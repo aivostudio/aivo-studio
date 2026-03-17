@@ -4,6 +4,8 @@
 // - onChange DB item'ları ile merge edilir
 // - ready olunca kart yerinde güncellenir
 // - character job'ları paneli tetiklemez
+// - FIX: optimistic + DB merge için tek kimlik helper'ı (idOf)
+// - FIX: story kartı ile DB ready kartı aynı job altında birleşir
 
 (function () {
   if (!window.RightPanel) return;
@@ -58,15 +60,27 @@
       x?.meta?.mode ||
       x?.detail?.mode ||
       ""
-    ).trim().toLowerCase() === "character";
+    )
+      .trim()
+      .toLowerCase() === "character";
 
   const toMaybeProxyUrl = (url) => {
     const u = String(url || "").trim();
     if (!u) return "";
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
+    if (
+      u.startsWith("/api/media/proxy?url=") ||
+      u.includes("/api/media/proxy?url=")
+    ) {
+      return u;
+    }
+    if (u.startsWith("http://")) {
+      return "/api/media/proxy?url=" + encodeURIComponent(u);
+    }
     return u;
   };
+
+  // ✅ TEK KİMLİK KURALI
+  const idOf = (it) => String(it?.job_id || it?.id || "").trim();
 
   const mapBadge = (job) => {
     const a = norm(job?.db_status);
@@ -74,9 +88,25 @@
     const c = norm(job?.state);
     const st = (a || b || c || "").toUpperCase();
 
-    if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
-    if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
-    if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
+    if (st.includes("FAIL") || st.includes("ERROR")) {
+      return { text: "Hata", kind: "bad" };
+    }
+    if (
+      st.includes("READY") ||
+      st.includes("DONE") ||
+      st.includes("COMPLET") ||
+      st.includes("SUCC")
+    ) {
+      return { text: "Hazır", kind: "ok" };
+    }
+    if (
+      st.includes("RUN") ||
+      st.includes("PROC") ||
+      st.includes("PEND") ||
+      st.includes("QUEUE")
+    ) {
+      return { text: "İşleniyor", kind: "mid" };
+    }
     return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
@@ -96,7 +126,8 @@
 
     const pool = outsFiltered.length ? outsFiltered : outs;
     const videos = pool.filter(
-      (o) => norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video"
+      (o) =>
+        norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video"
     );
     const best = videos[0] || pool[0] || null;
     if (!best) return null;
@@ -163,8 +194,10 @@
     let currentDbItems = [];
 
     const optimistic = new Map();
-    const cardCache = (window.__CARTOON_CARD_CACHE__ =
-      window.__CARTOON_CARD_CACHE__ || new Map());
+    const hiddenDeletedIds = new Set();
+    const cardCache =
+      window.__CARTOON_CARD_CACHE__ ||
+      (window.__CARTOON_CARD_CACHE__ = new Map());
 
     host.innerHTML = `
       <div class="cartoonPanelWrap">
@@ -225,37 +258,44 @@
     }
 
     function renderCard(job) {
-      const jid = String(job?.job_id || job?.id || "").trim();
+      const jid = idOf(job);
       const badge = mapBadge(job);
       const out = pickBestVideoOutput(job);
       const rawVideoUrl = String(out?.url || "").trim();
 
       const ready = badge.kind === "ok" && !!rawVideoUrl;
       const previewVideoUrl = ready
-        ? (rawVideoUrl.includes("#") ? rawVideoUrl : rawVideoUrl + "#t=0.001")
+        ? rawVideoUrl.includes("#")
+          ? rawVideoUrl
+          : rawVideoUrl + "#t=0.001"
         : "";
 
       const ratio = String(
         job?.meta?.ui_state?.aspect_ratio ||
-        job?.meta?.aspect_ratio ||
-        job?.meta?.ratio ||
-        out?.meta?.aspect_ratio ||
-        out?.meta?.ratio ||
-        "16:9"
+          job?.meta?.aspect_ratio ||
+          job?.meta?.ratio ||
+          out?.meta?.aspect_ratio ||
+          out?.meta?.ratio ||
+          "16:9"
       ).trim();
 
-     const title = String(
-  job?.meta?.scene_title ||
-  job?.meta?.title ||
-  job?.title ||
-  job?.meta?.prompt ||
-  job?.prompt ||
-  "Çizgifilm"
-).trim();
+      const title = String(
+        job?.meta?.scene_title ||
+          job?.meta?.title ||
+          job?.title ||
+          job?.meta?.prompt ||
+          job?.prompt ||
+          "Çizgifilm"
+      ).trim();
+
       const sub = "";
       const badgeText = badge.text;
       const badgeKind =
-        badge.kind === "ok" ? "ready" : badge.kind === "bad" ? "error" : "loading";
+        badge.kind === "ok"
+          ? "ready"
+          : badge.kind === "bad"
+            ? "error"
+            : "loading";
 
       if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
         return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
@@ -278,7 +318,7 @@
     }
 
     function ensureCardEl(job) {
-      const id = String(job?.job_id || "").trim();
+      const id = idOf(job);
       if (!id) return null;
 
       let el = cardCache.get(id);
@@ -323,9 +363,9 @@
       const byId = new Map();
 
       for (const j of currentDbItems) {
-       if (hiddenDeletedIds.has(String(j?.job_id || "").trim())) continue;
-        const id = String(j?.job_id || "").trim();
+        const id = idOf(j);
         if (!id) continue;
+        if (hiddenDeletedIds.has(id)) continue;
 
         byId.set(id, j);
 
@@ -335,19 +375,23 @@
       }
 
       for (const [id, j] of optimistic.entries()) {
+        if (!id) continue;
+        if (hiddenDeletedIds.has(id)) continue;
         if (!byId.has(id)) {
           byId.set(id, j);
         }
       }
 
       return Array.from(byId.values()).sort((a, b) => {
-        const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
-        const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+        const ta =
+          toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+        const tb =
+          toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
 
         if (tb !== ta) return tb - ta;
 
-        const ia = String(a?.job_id || a?.id || "");
-        const ib = String(b?.job_id || b?.id || "");
+        const ia = idOf(a);
+        const ib = idOf(b);
         return ib.localeCompare(ia);
       });
     }
@@ -384,7 +428,7 @@
       let anchor = elGrid.firstChild;
 
       for (const job of list) {
-        const id = String(job?.job_id || "").trim();
+        const id = idOf(job);
         if (!id) continue;
 
         wanted.add(id);
@@ -406,7 +450,7 @@
 
       for (const ch of Array.from(elGrid.children)) {
         if (ch.id === EMPTY_ID) continue;
-        const jid = ch.getAttribute?.("data-job");
+        const jid = String(ch.getAttribute?.("data-job") || "").trim();
         if (jid && !wanted.has(jid)) {
           elGrid.removeChild(ch);
         }
@@ -416,107 +460,6 @@
     function renderCurrent() {
       render(buildMergedItems());
     }
-
-    host.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-svc-act], [data-act]");
-      if (!btn) return;
-
-      const act = btn.dataset.svcAct || btn.dataset.act;
-      const card = btn.closest(".svcCard, .cartoonPanelCard");
-      const id = String(
-        btn.dataset.id ||
-        btn.dataset.job ||
-        card?.dataset?.svcId ||
-        card?.dataset?.job ||
-        ""
-      ).trim();
-
-      if (!act || !id) return;
-
-      const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
-      const job = allItems.find((x) => String(x?.job_id || x?.id || "").trim() === id);
-      if (!job) return;
-
-      if (act === "play") {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const video = card?.querySelector("video.svcVideo");
-        if (!video) return;
-
-        if (video.paused) video.play().catch(() => {});
-        else video.pause();
-
-        return;
-      }
-            const out = pickBestVideoOutput(job);
-      const url = String(out?.url || "").trim();
-      const directUrl = url.includes("#") ? url.split("#")[0] : url;
-
-      if (act === "open") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!directUrl) return;
-        window.open(directUrl, "_blank", "noopener");
-        return;
-      }
-
-      if (act === "download") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!directUrl) return;
-        download(directUrl);
-        return;
-      }
-
-      if (act === "share") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!directUrl) return;
-        share(directUrl);
-        return;
-      }
-
-      if (act === "delete") {
-        e.preventDefault();
-        e.stopPropagation();
-
-        try {
-          console.log("[CARTOON DELETE DEBUG]", {
-  clickedId: id,
-  jobId: job?.job_id,
-  dbId: job?.id,
-  job
-});
-                  hiddenDeletedIds.add(id);
-          optimistic.delete(id);
-          currentDbItems = currentDbItems.filter(
-            (x) => String(x?.job_id || x?.id || "").trim() !== id
-          );
-
-          renderCurrent();
-
-          const ok = await controller.deleteJob(id);
-          if (!ok) {
-            hiddenDeletedIds.delete(id);
-            try { await controller?.hydrate?.(true); } catch {}
-            console.error("[CARTOON PANEL] delete failed");
-            return;
-          }
-
-          try { await controller?.hydrate?.(true); } catch {}
-        } catch (err) {
-          hiddenDeletedIds.delete(id);
-          try { await controller?.hydrate?.(true); } catch {}
-          console.error("[CARTOON PANEL] delete failed", err);
-        }
-
-        return;
-      }
-
-       });
-    
-        const hiddenDeletedIds = new Set();
 
     function download(url) {
       const cleanUrl = String(url || "").trim();
@@ -553,6 +496,104 @@
         navigator.clipboard?.writeText(directUrl).catch(() => {});
       }
     }
+
+    host.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-svc-act], [data-act]");
+      if (!btn) return;
+
+      const act = btn.dataset.svcAct || btn.dataset.act;
+      const card = btn.closest(".svcCard, .cartoonPanelCard");
+      const id = String(
+        btn.dataset.id ||
+          btn.dataset.job ||
+          card?.dataset?.svcId ||
+          card?.dataset?.job ||
+          ""
+      ).trim();
+
+      if (!act || !id) return;
+
+      const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
+      const job = allItems.find((x) => idOf(x) === id);
+      if (!job) return;
+
+      if (act === "play") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const video = card?.querySelector("video.svcVideo");
+        if (!video) return;
+
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+
+        return;
+      }
+
+      const out = pickBestVideoOutput(job);
+      const url = String(out?.url || "").trim();
+      const directUrl = url.includes("#") ? url.split("#")[0] : url;
+
+      if (act === "open") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!directUrl) return;
+        window.open(directUrl, "_blank", "noopener");
+        return;
+      }
+
+      if (act === "download") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!directUrl) return;
+        download(directUrl);
+        return;
+      }
+
+      if (act === "share") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!directUrl) return;
+        share(directUrl);
+        return;
+      }
+
+      if (act === "delete") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+          hiddenDeletedIds.add(id);
+          optimistic.delete(id);
+          currentDbItems = currentDbItems.filter((x) => idOf(x) !== id);
+
+          renderCurrent();
+
+          const ok = await controller.deleteJob(id);
+          if (!ok) {
+            hiddenDeletedIds.delete(id);
+            try {
+              await controller?.hydrate?.(true);
+            } catch {}
+            console.error("[CARTOON PANEL] delete failed");
+            return;
+          }
+
+          try {
+            await controller?.hydrate?.(true);
+          } catch {}
+        } catch (err) {
+          hiddenDeletedIds.delete(id);
+          try {
+            await controller?.hydrate?.(true);
+          } catch {}
+          console.error("[CARTOON PANEL] delete failed", err);
+        }
+
+        return;
+      }
+    });
+
     const controller = window.DBJobs.create({
       app: "cartoon",
       debug: false,
@@ -579,16 +620,14 @@
       onChange: async (items) => {
         if (destroyed) return;
 
-        currentDbItems = (items || []).filter(isJobCartoon).filter((j) => !isCharacterMode(j));
-        console.log("[CARTOON PANEL ID DEBUG]", {
-  dbItems: currentDbItems.map((j) => ({
-    id: j?.id || null,
-    job_id: j?.job_id || null,
-    title: j?.meta?.scene_title || j?.meta?.title || j?.title || null,
-    db_status: j?.db_status || j?.status || null
-  })),
-  optimisticKeys: Array.from(optimistic.keys())
-});
+        currentDbItems = (items || [])
+          .filter(isJobCartoon)
+          .filter((j) => !isCharacterMode(j))
+          .filter((j) => {
+            const id = idOf(j);
+            return id && !hiddenDeletedIds.has(id);
+          });
+
         renderCurrent();
       },
     });
@@ -601,8 +640,9 @@
 
       const job_id = String(d.job_id || "").trim();
       if (!job_id) return;
+      if (hiddenDeletedIds.has(job_id)) return;
 
-      const existsDb = currentDbItems.some((j) => String(j?.job_id || "").trim() === job_id);
+      const existsDb = currentDbItems.some((j) => idOf(j) === job_id);
       if (existsDb) return;
       if (optimistic.has(job_id)) return;
 
@@ -634,19 +674,15 @@
       const d = e?.detail || {};
       const job_id = String(d?.job_id || "").trim();
       if (!job_id) return;
+      if (hiddenDeletedIds.has(job_id)) return;
 
       const videoUrl = String(
-        d?.video?.url ||
-        d?.raw?.video?.url ||
-        d?.raw?.video_url ||
-        ""
+        d?.video?.url || d?.raw?.video?.url || d?.raw?.video_url || ""
       ).trim();
 
       const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
 
-      const existingDb = currentDbItems.find(
-        (j) => String(j?.job_id || "").trim() === job_id
-      );
+      const existingDb = currentDbItems.find((j) => idOf(j) === job_id);
 
       if (existingDb) {
         existingDb.db_status = "ready";
@@ -663,6 +699,11 @@
               meta: { app: "cartoon", is_final: true },
             },
           ];
+        }
+
+        // DB item geldiyse optimistic aynı key ile düşsün
+        if (optimistic.has(job_id)) {
+          optimistic.delete(job_id);
         }
 
         renderCurrent();
@@ -701,11 +742,24 @@
     return {
       destroy() {
         destroyed = true;
-        try { window.removeEventListener("aivo:cartoon:job_created", onJobCreated); } catch {}
-        try { window.removeEventListener("aivo:cartoon:job_ready", onJobReady); } catch {}
-        try { window.removeEventListener("aivo:cartoon:story_scene_ready", onJobReady); } catch {}
-        try { controller?.destroy?.(); } catch {}
-        try { host.innerHTML = ""; } catch {}
+        try {
+          window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
+        } catch {}
+        try {
+          window.removeEventListener("aivo:cartoon:job_ready", onJobReady);
+        } catch {}
+        try {
+          window.removeEventListener(
+            "aivo:cartoon:story_scene_ready",
+            onJobReady
+          );
+        } catch {}
+        try {
+          controller?.destroy?.();
+        } catch {}
+        try {
+          host.innerHTML = "";
+        } catch {}
       },
     };
   }
@@ -725,7 +779,9 @@
         mount(host) {
           const api = createCartoonPanel(host);
           return () => {
-            try { api?.destroy?.(); } catch {}
+            try {
+              api?.destroy?.();
+            } catch {}
           };
         },
       });
