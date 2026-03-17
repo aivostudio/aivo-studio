@@ -576,6 +576,7 @@ module.exports = async (req, res) => {
   try {
     // ping healthcheck (job_id istemez)
     if (String(req.query.ping || "") === "1") {
+      
       return res.status(200).json({ ok: true, alive: true, ts: Date.now() });
     }
 
@@ -1320,7 +1321,14 @@ try {
       job?.meta?.fal?.failure ||
       job?.meta?.failure ||
       null;
-
+    console.log("[JOBS_STATUS_RESPONSE_DEBUG]", JSON.stringify({
+  job_id,
+  db_status: job.status,
+  final_video_url: job?.meta?.final_video_url || null,
+  outputs_count: Array.isArray(outputs) ? outputs.length : 0,
+  first_output: Array.isArray(outputs) && outputs[0] ? outputs[0] : null,
+  response_video_url: outVideoUrl || null
+}, null, 2));
     return res.status(200).json({
       ok: true,
       job_id,
