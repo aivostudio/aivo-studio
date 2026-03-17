@@ -2041,7 +2041,24 @@
   overflow:auto;
   box-sizing:border-box;
 }
+.story-scene-editor.is-open{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
 
+.story-scene-editor.is-open .story-scene-editor-card{
+  width: min(760px, calc(100vw - 48px));
+  max-width: 760px;
+  max-height: 88dvh;
+  margin: 0 auto;
+  overflow: auto;
+  box-sizing: border-box;
+}
 .main-panel[data-module="cartoon"] .story-scene-editor-card .story-grid,
 .main-panel[data-module="cartoon"] .story-scene-editor-card .story-grid-2,
 .main-panel[data-module="cartoon"] .story-scene-editor-card .story-field,
