@@ -1299,16 +1299,24 @@
     for (const scene of scenes) {
       const body = mapStorySceneToBasicPayload(storyPayload, scene);
 
-      console.log("[CARTOON][STORY_SCENE_CREATE_BODY]", {
-        scene_id: scene?.id,
-        scene_title: scene?.title,
-        selected: scene?.selected,
-        duration: scene?.duration,
-        normalized_duration: body?.duration,
-        characterSlots: scene?.characterSlots || [],
-        mainCharacter: body?.mainCharacter,
-        helperCharacters: body?.helperCharacters
-      });
+    console.log("[CARTOON][STORY_SCENE_CREATE_BODY]", {
+  scene_id: scene?.id,
+  scene_title: scene?.title,
+  selected: scene?.selected,
+  duration: scene?.duration,
+  normalized_duration: body?.duration,
+
+  scene_characterSlots_raw: scene?.characterSlots || [],
+  body_mainCharacter: body?.mainCharacter,
+  body_helperCharacters: body?.helperCharacters || [],
+
+  body_elements: body?.elements || [],
+  body_meta_scene_slots: body?.meta?.scene_slots || [],
+  body_fal_elements_debug: body?.meta?.fal_elements_debug || [],
+
+  body_characterImageUrl: body?.characterImageUrl || "",
+  body_extraPrompt: body?.extraPrompt || ""
+});
 
       const r = await fetch("/api/providers/fal/cartoon/create", {
         method: "POST",
