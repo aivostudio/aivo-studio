@@ -1029,6 +1029,35 @@
     if (!editor) return;
 
     const isOpen = !!state.editingSceneId;
+    const card = qs(".story-scene-editor-card", editor);
+
+if (isOpen) {
+  editor.style.position = "fixed";
+  editor.style.top = "0";
+  editor.style.right = "0";
+  editor.style.bottom = "0";
+  editor.style.left = "0";
+  editor.style.width = "100vw";
+  editor.style.height = "100dvh";
+  editor.style.minHeight = "100dvh";
+  editor.style.display = "flex";
+  editor.style.alignItems = "center";
+  editor.style.justifyContent = "center";
+  editor.style.padding = "24px";
+  editor.style.zIndex = "9999";
+  editor.style.overflow = "auto";
+  editor.style.webkitOverflowScrolling = "touch";
+
+  if (card) {
+    card.style.width = "min(760px, calc(100vw - 48px))";
+    card.style.maxWidth = "760px";
+    card.style.maxHeight = "88dvh";
+    card.style.margin = "auto";
+  }
+} else {
+  editor.style.cssText = "";
+  if (card) card.style.cssText = "";
+}
     editor.hidden = !isOpen;
     editor.classList.toggle("is-open", isOpen);
 
