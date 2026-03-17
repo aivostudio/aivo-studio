@@ -1611,7 +1611,7 @@
       }
 
       const saveBtn = e.target.closest("[data-scene-save]");
-    if (saveBtn && root.contains(saveBtn)) {
+   if (saveBtn && getStorySceneEditor(root)?.contains(saveBtn)) {
         e.preventDefault();
         saveSceneEditor(root);
         return;
