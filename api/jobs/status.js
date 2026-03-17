@@ -910,7 +910,7 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
           meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
           updated_at = now()
       where id = ${job_id}::uuid
-        and coalesce(status, '') not in ('done', 'error')
+    and status not in ('done', 'error')
       returning status, meta
     `;
 
