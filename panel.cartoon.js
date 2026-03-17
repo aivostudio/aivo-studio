@@ -616,7 +616,7 @@
         if (oa && !isCartoonApp(oa)) return false;
         return true;
       },
-      onChange: async (items) => {
+           onChange: async (items) => {
         if (destroyed) return;
 
         currentDbItems = (items || [])
@@ -656,7 +656,6 @@
 
         renderCurrent();
       },
-
     const onJobCreated = (e) => {
       const d = e?.detail || {};
       if (!d.job_id) return;
