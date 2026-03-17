@@ -832,6 +832,8 @@
   </button>
 </footer>
 
+</section>
+
 <!-- Sahne Mini Edit Popup / Drawer -->
 <aside class="story-scene-editor" data-story-scene-editor hidden>
   <div class="story-scene-editor-card">
@@ -849,79 +851,80 @@
       <textarea id="sceneDescription" name="sceneDescription" rows="4" data-scene-editor-description></textarea>
     </div>
 
-   <div class="story-field story-scene-characters-field" data-scene-character-picker>
-  <label>Sahnedeki Karakterler</label>
+    <div class="story-field story-scene-characters-field" data-scene-character-picker>
+      <label>Sahnedeki Karakterler</label>
 
-  <input
-    id="sceneCharacters"
-    name="sceneCharacters"
-    type="hidden"
-    value=""
-    data-scene-editor-characters
-  />
+      <input
+        id="sceneCharacters"
+        name="sceneCharacters"
+        type="hidden"
+        value=""
+        data-scene-editor-characters
+      />
 
-  <div class="story-scene-character-grid" data-scene-character-picker-options>
-    <button
-      type="button"
-      class="story-scene-character-item"
-      data-scene-character-slot="main"
-      data-selected="false"
-      hidden
-    >
-      <span class="story-scene-character-dot"></span>
-      <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Ana Karakter</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
-      </span>
-    </button>
+      <div class="story-scene-character-grid" data-scene-character-picker-options>
+        <button
+          type="button"
+          class="story-scene-character-item"
+          data-scene-character-slot="main"
+          data-selected="false"
+          hidden
+        >
+          <span class="story-scene-character-dot"></span>
+          <span class="story-scene-character-copy">
+            <strong data-scene-character-label>Ana Karakter</strong>
+            <small data-scene-character-file>Dosya seçilmedi</small>
+          </span>
+        </button>
 
-    <button
-      type="button"
-      class="story-scene-character-item"
-      data-scene-character-slot="helper1"
-      data-selected="false"
-      hidden
-    >
-      <span class="story-scene-character-dot"></span>
-      <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Yardımcı Karakter 1</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
-      </span>
-    </button>
+        <button
+          type="button"
+          class="story-scene-character-item"
+          data-scene-character-slot="helper1"
+          data-selected="false"
+          hidden
+        >
+          <span class="story-scene-character-dot"></span>
+          <span class="story-scene-character-copy">
+            <strong data-scene-character-label>Yardımcı Karakter 1</strong>
+            <small data-scene-character-file>Dosya seçilmedi</small>
+          </span>
+        </button>
 
-    <button
-      type="button"
-      class="story-scene-character-item"
-      data-scene-character-slot="helper2"
-      data-selected="false"
-      hidden
-    >
-      <span class="story-scene-character-dot"></span>
-      <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Yardımcı Karakter 2</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
-      </span>
-    </button>
+        <button
+          type="button"
+          class="story-scene-character-item"
+          data-scene-character-slot="helper2"
+          data-selected="false"
+          hidden
+        >
+          <span class="story-scene-character-dot"></span>
+          <span class="story-scene-character-copy">
+            <strong data-scene-character-label>Yardımcı Karakter 2</strong>
+            <small data-scene-character-file>Dosya seçilmedi</small>
+          </span>
+        </button>
 
-    <button
-      type="button"
-      class="story-scene-character-item"
-      data-scene-character-slot="extra"
-      data-selected="false"
-      hidden
-    >
-      <span class="story-scene-character-dot"></span>
-      <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Ek Karakter</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
-      </span>
-    </button>
-  </div>
+        <button
+          type="button"
+          class="story-scene-character-item"
+          data-scene-character-slot="extra"
+          data-selected="false"
+          hidden
+        >
+          <span class="story-scene-character-dot"></span>
+          <span class="story-scene-character-copy">
+            <strong data-scene-character-label>Ek Karakter</strong>
+            <small data-scene-character-file>Dosya seçilmedi</small>
+          </span>
+        </button>
+      </div>
 
-  <div class="story-scene-character-empty" data-scene-character-picker-empty hidden>
-    Önce üst bölümden karakter seç.
-  </div>
-</div>
+      <div class="story-scene-character-empty" data-scene-character-picker-empty hidden>
+        Önce üst bölümden karakter seç.
+      </div>
+    </div>
+
     <div class="story-grid story-grid-2">
       <div class="story-field">
         <label for="sceneDuration">Süre</label>
