@@ -10,6 +10,54 @@
   const STORY_READY_RECHECK_LIMIT = 20; // ready oldu ama output yoksa ekstra bekleme
   const STORY_READY_RECHECK_INTERVAL = 1500;
 
+  const STORY_FLOW_PRESETS = {
+    "3": { intro: 3, setup: 3, adventure: 4, final: 2 },
+    "4": { intro: 4, setup: 4, adventure: 6, final: 4 },
+    "5": { intro: 6, setup: 6, adventure: 8, final: 4 },
+    "6": { intro: 7, setup: 7, adventure: 10, final: 6 }
+  };
+
+  const STORY_SECTION_SCENE_BLUEPRINTS = {
+    intro: [
+      { title: "Dünya Açılışı", description: "Ortam ve genel atmosfer kurulur." },
+      { title: "Ana Karakter Tanıtımı", description: "Ana karakter ilk kez görünür." },
+      { title: "Hedefin Ortaya Çıkışı", description: "Karakterin amacı netleşir." },
+      { title: "İlk Duygusal Bağ", description: "Karakterin iç dünyası görünür olur." },
+      { title: "Merak Kıvılcımı", description: "Yeni bir soru veya merak doğar." },
+      { title: "Dünyanın Kuralı", description: "Hikayenin temel düzeni iyice hissedilir." },
+      { title: "Yola Çağrı", description: "Karakter harekete geçmeye hazırlanır." }
+    ],
+    setup: [
+      { title: "Yardımcı Unsur Gelir", description: "Yardımcı karakter veya unsur hikayeye dahil olur." },
+      { title: "Yolculuk Başlar", description: "Karakterler harekete geçer." },
+      { title: "İlk Engel", description: "İlk zorluk ortaya çıkar." },
+      { title: "Plan Kurulur", description: "Sorunu çözmek için ilk plan yapılır." },
+      { title: "Yeni İpucu", description: "Hedefe giden yolda yeni bir bilgi öğrenilir." },
+      { title: "Denge Bozulur", description: "Karakterlerin düzeni iyice değişir." },
+      { title: "Karar Anı", description: "Geri dönmek yerine devam etme kararı verilir." }
+    ],
+    adventure: [
+      { title: "Macera Derinleşir", description: "Olaylar büyümeye başlar." },
+      { title: "Deneme ve Çaba", description: "Karakterler çözüm için yeni bir yol dener." },
+      { title: "Gerilim Artar", description: "Risk yükselir, baskı artar." },
+      { title: "Doruk Noktası", description: "En kritik karşılaşma yaşanır." },
+      { title: "Beklenmedik Sürpriz", description: "Plan dışı yeni bir gelişme olur." },
+      { title: "Takım Ruhu", description: "Karakterler birlikte hareket etmeyi öğrenir." },
+      { title: "Büyük Engel", description: "Daha güçlü bir zorluk kahramanların önüne çıkar." },
+      { title: "Son Hazırlık", description: "Final öncesi son hazırlıklar yapılır." },
+      { title: "Umut Yeniden Doğar", description: "Karakterler tekrar güç kazanır." },
+      { title: "Büyük Karşılaşma", description: "Hikayenin en yoğun anı yaşanır." }
+    ],
+    final: [
+      { title: "Çözüm", description: "Sorun çözülür." },
+      { title: "Kapanış", description: "Hikaye sıcak bir final ile biter." },
+      { title: "Kutlama", description: "Karakterler başarıyı birlikte yaşar." },
+      { title: "Duygusal Veda", description: "Hikayenin duygusal etkisi tamamlanır." },
+      { title: "Yeni Denge", description: "Dünyada yeni bir düzen kurulmuş olur." },
+      { title: "Son Gülümseme", description: "İzleyiciye sıcak bir son an bırakılır." }
+    ]
+  };
+
   const STORY_CHARACTER_SLOT_CONFIG = [
     {
       slot: "main",
@@ -77,6 +125,47 @@
     return Number(normalizeStorySceneDuration(value));
   }
 
+  function getStoryFlowPreset(flowDuration) {
+    return STORY_FLOW_PRESETS[String(flowDuration || "3")] || STORY_FLOW_PRESETS["3"];
+  }
+
+  function buildStoryScenesFromFlowDuration(flowDuration) {
+    const preset = getStoryFlowPreset(flowDuration);
+    const sectionOrder = ["intro", "setup", "adventure", "final"];
+    const scenes = [];
+    let sceneNumber = 1;
+
+    sectionOrder.forEach((section) => {
+      const count = Number(preset[section] || 0);
+      const blueprints = STORY_SECTION_SCENE_BLUEPRINTS[section] || [];
+
+      for (let i = 0; i < count; i += 1) {
+        const blueprint = blueprints[i] || {
+          title: `${sceneNumber}. Sahne`,
+          description: "Bu bölüm için yeni sahne."
+        };
+
+        scenes.push({
+          id: `${section}-${i + 1}`,
+          section,
+          title: `Sahne ${sceneNumber} · ${blueprint.title}`,
+          description: blueprint.description,
+          characters: "",
+          characterSlots: [],
+          selected: false,
+          duration: "15",
+          mood: "",
+          type: "",
+          directorNote: ""
+        });
+
+        sceneNumber += 1;
+      }
+    });
+
+    return scenes;
+  }
+
   async function presignStoryCharacterReference(file, slot) {
     const safeSlot = String(slot || "main").trim() || "main";
 
@@ -138,170 +227,14 @@
     };
   }
 
-  function createDefaultScenes() {
-    return [
-      {
-        id: "intro-1",
-        section: "intro",
-        title: "Sahne 1 · Dünya Açılışı",
-        description: "Ortam ve genel atmosfer kurulur.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "intro-2",
-        section: "intro",
-        title: "Sahne 2 · Ana Karakter Tanıtımı",
-        description: "Ana karakter ilk kez görünür.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "intro-3",
-        section: "intro",
-        title: "Sahne 3 · Hedefin Ortaya Çıkışı",
-        description: "Karakterin amacı netleşir.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "setup-1",
-        section: "setup",
-        title: "Sahne 4 · Yardımcı Unsur Gelir",
-        description: "Yardımcı karakter veya unsur hikayeye dahil olur.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "setup-2",
-        section: "setup",
-        title: "Sahne 5 · Yolculuk Başlar",
-        description: "Karakterler harekete geçer.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "setup-3",
-        section: "setup",
-        title: "Sahne 6 · İlk Engel",
-        description: "İlk zorluk ortaya çıkar.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "adventure-1",
-        section: "adventure",
-        title: "Sahne 7 · Macera Derinleşir",
-        description: "Olaylar büyümeye başlar.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "adventure-2",
-        section: "adventure",
-        title: "Sahne 8 · Deneme ve Çaba",
-        description: "Karakterler çözüm için yeni bir yol dener.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "adventure-3",
-        section: "adventure",
-        title: "Sahne 9 · Gerilim Artar",
-        description: "Risk yükselir, baskı artar.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "adventure-4",
-        section: "adventure",
-        title: "Sahne 10 · Doruk Noktası",
-        description: "En kritik karşılaşma yaşanır.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "final-1",
-        section: "final",
-        title: "Sahne 11 · Çözüm",
-        description: "Sorun çözülür.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      },
-      {
-        id: "final-2",
-        section: "final",
-        title: "Sahne 12 · Kapanış",
-        description: "Hikaye sıcak bir final ile biter.",
-        characters: "",
-        characterSlots: [],
-        selected: false,
-        duration: "15",
-        mood: "",
-        type: "",
-        directorNote: ""
-      }
-    ];
+  function createDefaultScenes(flowDuration = "3") {
+    return buildStoryScenesFromFlowDuration(flowDuration);
   }
 
   const state = (window.__CARTOON_STORY_STATE__ =
     window.__CARTOON_STORY_STATE__ || {
       mode: "story",
+      flowDuration: "3",
       storyIdea: "",
       theme: "",
       ageGroup: "",
@@ -324,7 +257,7 @@
         helper2: createEmptyStoryCharacterImageState(),
         extra: createEmptyStoryCharacterImageState()
       },
-      scenes: createDefaultScenes(),
+      scenes: createDefaultScenes("3"),
       characterOptions: []
     });
 
@@ -928,6 +861,25 @@
     });
   }
 
+  function syncStoryFlowDuration(root) {
+    const select = qs("[data-story-flow-duration]", root);
+    if (!select) return;
+    if (select.value !== String(state.flowDuration || "3")) {
+      select.value = String(state.flowDuration || "3");
+    }
+  }
+
+  function syncStorySectionCounts(root) {
+    qsa("[data-story-section]", root).forEach((sectionEl) => {
+      const sectionId = safeText(sectionEl.dataset.storySection);
+      if (!sectionId) return;
+
+      const count = state.scenes.filter((scene) => scene.section === sectionId).length;
+      const em = qs(".story-section-meta em", sectionEl);
+      if (em) em.textContent = `${count} Sahne`;
+    });
+  }
+
   function syncStoryFormValues(root) {
     const storyIdea = qs("[data-story-idea]", root);
     const theme = qs("[data-story-theme]", root);
@@ -1102,7 +1054,8 @@
         theme: state.theme,
         ageGroup: state.ageGroup,
         selectedSceneCount: selectedScenes.length,
-        totalSelectedDurationSeconds: totalSeconds
+        totalSelectedDurationSeconds: totalSeconds,
+        flowDuration: state.flowDuration
       },
       characters: {
         main: state.mainCharacter,
@@ -1272,6 +1225,7 @@
         scene_duration: normalizeStorySceneDuration(scene?.duration),
         scene_slots: resolved.slots,
         story_idea: String(storyPayload?.summary?.idea || ""),
+        story_flow_duration: String(storyPayload?.summary?.flowDuration || ""),
         fal_elements_debug: elements.map((el) => ({
           token: el.token,
           slot: el.slot,
@@ -1299,24 +1253,24 @@
     for (const scene of scenes) {
       const body = mapStorySceneToBasicPayload(storyPayload, scene);
 
-    console.log("[CARTOON][STORY_SCENE_CREATE_BODY]", {
-  scene_id: scene?.id,
-  scene_title: scene?.title,
-  selected: scene?.selected,
-  duration: scene?.duration,
-  normalized_duration: body?.duration,
+      console.log("[CARTOON][STORY_SCENE_CREATE_BODY]", {
+        scene_id: scene?.id,
+        scene_title: scene?.title,
+        selected: scene?.selected,
+        duration: scene?.duration,
+        normalized_duration: body?.duration,
 
-  scene_characterSlots_raw: scene?.characterSlots || [],
-  body_mainCharacter: body?.mainCharacter,
-  body_helperCharacters: body?.helperCharacters || [],
+        scene_characterSlots_raw: scene?.characterSlots || [],
+        body_mainCharacter: body?.mainCharacter,
+        body_helperCharacters: body?.helperCharacters || [],
 
-  body_elements: body?.elements || [],
-  body_meta_scene_slots: body?.meta?.scene_slots || [],
-  body_fal_elements_debug: body?.meta?.fal_elements_debug || [],
+        body_elements: body?.elements || [],
+        body_meta_scene_slots: body?.meta?.scene_slots || [],
+        body_fal_elements_debug: body?.meta?.fal_elements_debug || [],
 
-  body_characterImageUrl: body?.characterImageUrl || "",
-  body_extraPrompt: body?.extraPrompt || ""
-});
+        body_characterImageUrl: body?.characterImageUrl || "",
+        body_extraPrompt: body?.extraPrompt || ""
+      });
 
       const r = await fetch("/api/providers/fal/cartoon/create", {
         method: "POST",
@@ -1548,8 +1502,10 @@
     syncModeTabs(root);
     syncModeViews(root);
     syncStoryFormValues(root);
+    syncStoryFlowDuration(root);
     syncCharacterSelects(root);
     renderSectionScenes(root);
+    syncStorySectionCounts(root);
     syncStoryAccordion(root);
     syncStorySettings(root);
     syncSceneRows(root);
@@ -1786,6 +1742,16 @@
         return;
       }
 
+      const flowDuration = e.target.closest("[data-story-flow-duration]");
+      if (flowDuration && root.contains(flowDuration)) {
+        state.flowDuration = flowDuration.value || "3";
+        state.scenes = createDefaultScenes(state.flowDuration);
+        state.openSection = "intro";
+        state.editingSceneId = "";
+        render(root);
+        return;
+      }
+
       const duration = e.target.closest("[data-story-duration]");
       if (duration && root.contains(duration)) {
         state.duration = duration.value || "180";
@@ -1943,6 +1909,7 @@
     state.storyIdea = clampText(qs("[data-story-idea]", root)?.value, 5000);
     state.theme = qs("[data-story-theme]", root)?.value || "";
     state.ageGroup = qs("[data-story-age-group]", root)?.value || "";
+    state.flowDuration = qs("[data-story-flow-duration]", root)?.value || "3";
     state.duration = qs("[data-story-duration]", root)?.value || "180";
     state.mainCharacter = qs("[data-story-main-character]", root)?.value || "";
     state.helperCharacter1 = qs("[data-story-helper-1]", root)?.value || "";
@@ -1955,6 +1922,8 @@
     state.style = qs("[data-story-style]", root)?.value || "";
     state.audio = qs("[data-story-audio]", root)?.value || "none";
     state.extraPrompt = clampText(qs("[data-story-extra-prompt]", root)?.value, 5000);
+
+    state.scenes = createDefaultScenes(state.flowDuration);
 
     const openSectionEl = qs("[data-story-section].is-open", root) || qs("[data-story-section]", root);
     if (openSectionEl?.dataset.storySection) {
