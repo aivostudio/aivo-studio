@@ -1070,54 +1070,106 @@ function buildCharacterOptions(root) {
     };
   }
 
-  function mapStorySceneToBasicPayload(storyPayload, scene) {
-    const resolved = resolveSceneCharacters(scene, storyPayload);
+function mapStorySceneToBasicPayload(storyPayload, scene) {
+  const resolved = resolveSceneCharacters(scene, storyPayload);
 
-    const promptParts = [
-      "Cute kids cartoon style.",
-      "Bright colorful animated scene.",
-      `Scene title: ${safeText(scene?.title)}.`,
-      `Scene description: ${safeText(scene?.description)}.`,
-      resolved.allNames.length ? `Characters in this scene: ${resolved.allNames.join(", ")}.` : "",
-      scene?.mood ? `Mood: ${safeText(scene.mood)}.` : "",
-      scene?.type ? `Shot type: ${safeText(scene.type)}.` : "",
-      scene?.directorNote ? `Director note: ${safeText(scene.directorNote)}.` : "",
-      storyPayload?.settings?.style ? `Visual style: ${safeText(storyPayload.settings.style)}.` : "",
-      "Friendly, adorable, child-safe, expressive animation.",
-      "Clean frame, no text, no subtitles, no watermark."
-    ].filter(Boolean);
+  const slotLabelMap = {
+    main: safeText(storyPayload?.characters?.main),
+    helper1: safeText(storyPayload?.characters?.helper1),
+    helper2: safeText(storyPayload?.characters?.helper2),
+    extra: safeText(storyPayload?.characters?.extra)
+  };
 
-    return {
+  const slotImageMap = {
+    main: safeText(storyPayload?.characters?.images?.main?.fileUrl),
+    helper1: safeText(storyPayload?.characters?.images?.helper1?.fileUrl),
+    helper2: safeText(storyPayload?.characters?.images?.helper2?.fileUrl),
+    extra: safeText(storyPayload?.characters?.images?.extra?.fileUrl)
+  };
+
+  const activeSlots = (Array.isArray(resolved?.slots) ? resolved.slots : [])
+    .map((slot) => safeText(slot))
+    .filter(Boolean);
+
+  const elements = activeSlots
+    .map((slot, index) => {
+      const label = slotLabelMap[slot];
+      const imageUrl = slotImageMap[slot];
+      if (!label || !imageUrl) return null;
+
+      return {
+        token: `@Element${index + 1}`,
+        slot,
+        name: label,
+        frontal_image_url: imageUrl,
+        reference_image_urls: [imageUrl]
+      };
+    })
+    .filter(Boolean);
+
+  const characterPromptLine = elements.length
+    ? `Characters: ${elements.map((el) => `${el.token} = ${el.name}`).join(", ")}.`
+    : (resolved.allNames.length
+        ? `Characters in this scene: ${resolved.allNames.join(", ")}.`
+        : "");
+
+  const promptParts = [
+    "Cute kids cartoon style.",
+    "Bright colorful animated scene.",
+    `Scene title: ${safeText(scene?.title)}.`,
+    `Scene description: ${safeText(scene?.description)}.`,
+    characterPromptLine,
+    scene?.mood ? `Mood: ${safeText(scene.mood)}.` : "",
+    scene?.type ? `Shot type: ${safeText(scene.type)}.` : "",
+    scene?.directorNote ? `Director note: ${safeText(scene.directorNote)}.` : "",
+    storyPayload?.settings?.style ? `Visual style: ${safeText(storyPayload.settings.style)}.` : "",
+    storyPayload?.settings?.extraPrompt ? `Extra prompt: ${safeText(storyPayload.settings.extraPrompt)}.` : "",
+    elements.length ? `Use the provided character references exactly and preserve character identity consistently across the whole shot.` : "",
+    "Friendly, adorable, child-safe, expressive animation.",
+    "Clean frame, no text, no subtitles, no watermark."
+  ].filter(Boolean);
+
+  return {
+    app: "cartoon",
+    mode: "basic",
+    extraPrompt: promptParts.join(" "),
+    mainCharacter: resolved.sceneMain,
+    helperCharacters: resolved.helperCharacters,
+    scene: safeText(scene?.section || "story") || "story",
+    actions: [],
+    action: "acting naturally in the scene",
+    duration: normalizeStorySceneDuration(scene?.duration),
+    aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
+    audioSource: "none",
+    audioMode: "none",
+    audioFileName: "",
+    audioFileUrl: "",
+    characterImage: null,
+    characterImageName: "",
+    characterImageUrl: resolved.characterImageUrl,
+    elements: elements.map((el) => ({
+      token: el.token,
+      frontal_image_url: el.frontal_image_url,
+      reference_image_urls: el.reference_image_urls
+    })),
+    estimatedCredits: 0,
+    meta: {
       app: "cartoon",
-      mode: "basic",
-      extraPrompt: promptParts.join(" "),
-      mainCharacter: resolved.sceneMain,
-      helperCharacters: resolved.helperCharacters,
-      scene: safeText(scene?.section || "story") || "story",
-      actions: [],
-      action: "acting naturally in the scene",
-      duration: normalizeStorySceneDuration(scene?.duration),
-      aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
-      audioSource: "none",
-      audioMode: "none",
-      audioFileName: "",
-      audioFileUrl: "",
-      characterImage: null,
-      characterImageName: "",
-      characterImageUrl: resolved.characterImageUrl,
-      estimatedCredits: 0,
-      meta: {
-        app: "cartoon",
-        mode: "story",
-        scene_id: String(scene?.id || ""),
-        scene_title: String(scene?.title || ""),
-        scene_duration: normalizeStorySceneDuration(scene?.duration),
-        scene_slots: resolved.slots,
-        story_idea: String(storyPayload?.summary?.idea || "")
-      }
-    };
-  }
-
+      mode: "story",
+      scene_id: String(scene?.id || ""),
+      scene_title: String(scene?.title || ""),
+      scene_duration: normalizeStorySceneDuration(scene?.duration),
+      scene_slots: resolved.slots,
+      story_idea: String(storyPayload?.summary?.idea || ""),
+      fal_elements_debug: elements.map((el) => ({
+        token: el.token,
+        slot: el.slot,
+        name: el.name,
+        frontal_image_url: el.frontal_image_url
+      }))
+    }
+  };
+}
   async function createStoryScenesFromPayload(storyPayload) {
     const scenes = (Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : []).filter(
       (scene) => scene && scene.selected === true
