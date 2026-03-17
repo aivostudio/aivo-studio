@@ -676,22 +676,26 @@
   </div>
 </section>
 <!-- 3) Hikaye Akışı -->
-<div class="story-card-head story-card-head--flow">
-  <div class="story-card-head-copy">
-    <h4>Hikaye Akışı</h4>
-    <small>Film süresine göre önerilen sahne dağılımı otomatik hazırlanır.</small>
-  </div>
+<section class="story-card story-flow-card">
+  <div class="story-card-head story-card-head--flow">
+    <div class="story-card-head-copy">
+      <h4>Hikaye Akışı</h4>
+      <small>Film süresine göre önerilen sahne dağılımı otomatik hazırlanır.</small>
+    </div>
 
-  <label class="story-flow-duration" for="storyFlowDuration">
-    <span>Film Süresi</span>
-    <select id="storyFlowDuration" data-story-flow-duration>
-      <option value="3" selected>3 dk</option>
-      <option value="4">4 dk</option>
-      <option value="5">5 dk</option>
-      <option value="6">6 dk</option>
-    </select>
-  </label>
-</div>
+    <div class="story-flow-duration-wrap">
+      <label class="story-flow-duration-label" for="storyFlowDuration">Film Süresi</label>
+
+      <div class="story-flow-duration-control">
+        <select id="storyFlowDuration" data-story-flow-duration>
+          <option value="3" selected>3 dk</option>
+          <option value="4">4 dk</option>
+          <option value="5">5 dk</option>
+          <option value="6">6 dk</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
   <div class="story-accordion" data-story-accordion>
     <!-- Giriş -->
