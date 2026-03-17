@@ -1040,6 +1040,16 @@
     const isOpen = !!state.editingSceneId;
     editor.hidden = !isOpen;
     editor.classList.toggle("is-open", isOpen);
+    if (isOpen) {
+  editor.style.position = "fixed";
+  editor.style.left = "50%";
+  editor.style.top = "50%";
+  editor.style.transform = "translate(-50%, -50%)";
+  editor.style.width = "min(720px, calc(100vw - 32px))";
+  editor.style.maxWidth = "720px";
+  editor.style.margin = "0";
+  editor.style.zIndex = "9999";
+}
 
     if (isOpen) {
       fillSceneEditor(root, state.editingSceneId);
