@@ -1,1 +1,139 @@
+/* ================================
+   STUDIO ROOT LAYOUT
+================================ */
+.cartoon-mode-view[data-cartoon-view="studio"] {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+}
 
+.cartoon-mode-view[data-cartoon-view="studio"] > .studio-card,
+.cartoon-mode-view[data-cartoon-view="studio"] > .story-card.studio-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+/* Son kartı özel davranıştan çıkar */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type {
+  position: relative;
+  inset: auto;
+  bottom: auto;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: auto;
+  transform: none;
+  margin: 0;
+}
+
+/* ================================
+   STUDIO CARD HEAD
+================================ */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card-head,
+.cartoon-mode-view[data-cartoon-view="studio"] .story-card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card-head h4,
+.cartoon-mode-view[data-cartoon-view="studio"] .story-card-head h4 {
+  margin: 0;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card-helper,
+.cartoon-mode-view[data-cartoon-view="studio"] .story-card-helper {
+  margin: 0;
+}
+
+/* ================================
+   STUDIO CONTENT GRIDS
+================================ */
+.cartoon-mode-view[data-cartoon-view="studio"] .story-grid,
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field,
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-field {
+  min-width: 0;
+}
+
+/* ================================
+   FINAL FOOTER CTA
+================================ */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  z-index: 1;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .story-ghost-btn,
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .studio-ghost-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .story-primary-btn,
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .studio-primary-btn {
+  flex: 1 1 auto;
+  min-width: 220px;
+  white-space: nowrap;
+}
+
+/* Eski kart içi final actions varsa etkisizleştir */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions {
+  position: relative;
+  inset: auto;
+  bottom: auto;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: auto;
+  transform: none;
+  margin: 0;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+@media (max-width: 980px) {
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions {
+    flex-wrap: wrap;
+  }
+
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .story-primary-btn,
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .studio-primary-btn {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
