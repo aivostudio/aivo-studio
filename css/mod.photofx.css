@@ -457,3 +457,60 @@
 .pfxEngineCreditLabel{
   color:rgba(255,255,255,.62) !important;
 }
+/* =========================================
+   PhotoFX -> dimmer / less bright
+   File: /css/mod.photofx.css
+   Add under the color mood override block
+   ========================================= */
+
+.pfxHero,
+.pfxBlock,
+.pfxEngine{
+  background:
+    radial-gradient(1200px 600px at 15% 10%, rgba(170,120,255,.10), transparent 55%),
+    radial-gradient(900px 600px at 85% 20%, rgba(80,140,255,.07), transparent 55%),
+    linear-gradient(180deg, rgba(20,22,40,.72), rgba(15,17,34,.78)) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.34) !important;
+}
+
+.pfxHero{
+  background:
+    radial-gradient(1200px 600px at 15% 10%, rgba(170,120,255,.11), transparent 55%),
+    radial-gradient(900px 600px at 85% 20%, rgba(80,140,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(22,24,44,.74), rgba(18,19,38,.80)) !important;
+}
+
+.pfxChoiceCard,
+.pfxPresetCard{
+  background:rgba(255,255,255,.035) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.24) !important;
+}
+
+.pfxChoiceCard:hover,
+.pfxPresetCard:hover{
+  background:rgba(255,255,255,.05) !important;
+  border-color:rgba(170,120,255,.22) !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.30) !important;
+}
+
+.pfxChoiceCard.is-active,
+.pfxPresetCard.is-active{
+  background:
+    radial-gradient(900px 260px at 15% 10%, rgba(140,111,255,.16), transparent 60%),
+    radial-gradient(700px 260px at 85% 20%, rgba(255,120,190,.08), transparent 65%),
+    rgba(255,255,255,.05) !important;
+  border-color:rgba(255,255,255,.18) !important;
+  box-shadow:
+    0 0 0 1px rgba(170,120,255,.12),
+    0 12px 26px rgba(0,0,0,.28) !important;
+}
+
+.pfxChoiceCredit{
+  background:rgba(255,255,255,.07) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:none !important;
+}
+
+.pfxCreateBtn{
+  box-shadow:0 10px 24px rgba(140,110,255,.14) !important;
+}
