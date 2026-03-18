@@ -180,38 +180,39 @@
     height:64px !important;
   }
 }
-/* ===== Montaj Stüdyosu — Final CTA tek blok ===== */
+/* ===== Montaj Stüdyosu — sticky final CTA ===== */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
-  padding: 18px 20px 20px !important;
+  position: sticky;
+  bottom: 0;
+  z-index: 8;
+  margin-top: 10px !important;
+  padding: 16px 18px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(12,10,34,.94), rgba(8,8,24,.96)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-card-head{
-  margin-bottom: 12px !important;
+  margin-bottom: 14px !important;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .studio-final-actions{
-  position: sticky !important;
-  bottom: 0 !important;
-  z-index: 12 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
   flex-wrap: wrap !important;
   gap: 12px !important;
-  margin-top: 14px !important;
-  padding-top: 18px !important;
-  background: linear-gradient(
-    180deg,
-    rgba(10,10,24,0) 0%,
-    rgba(10,10,24,0.82) 28%,
-    rgba(10,10,24,0.96) 100%
-  ) !important;
+  margin-top: 0 !important;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-ghost-btn{
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   height: 52px !important;
   padding: 0 22px !important;
   border-radius: 18px !important;
@@ -233,6 +234,10 @@
 }
 
 @media (max-width: 900px){
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+
   .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .studio-final-actions{
     flex-direction: column !important;
     align-items: stretch !important;
