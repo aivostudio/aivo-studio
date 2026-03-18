@@ -57,32 +57,45 @@ section[data-module="photofx"] .pfxEngine > *{
 
 /* hero */
 section[data-module="photofx"] .pfxHero{
-  border: 1px solid var(--pfx-stroke);
+  margin: 0 10px 2px;
+  border-radius: 24px;
+  border: 1px solid rgba(151, 108, 255, .28);
+  background:
+    linear-gradient(180deg, rgba(137, 104, 224, .22), rgba(91, 109, 196, .18)),
+    linear-gradient(90deg, rgba(140,110,255,.16), rgba(255,120,190,.10));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 10px 30px rgba(0,0,0,.20);
+  overflow: hidden;
+}
+
+section[data-module="photofx"] .pfxHero::before{
+  display: none;
 }
 
 section[data-module="photofx"] .pfxHeroText{
-  padding: 18px 18px 16px;
+  padding: 26px 20px 24px;
   text-align: center;
   display: grid;
   justify-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 
 section[data-module="photofx"] .pfxTitle{
   margin: 0;
-  font-size: 18px;
+  font-size: 24px;
+  line-height: 1.15;
   font-weight: 800;
-  color: var(--pfx-text);
-  letter-spacing: .2px;
-  line-height: 1.2;
+  color: rgba(255,255,255,.96);
+  letter-spacing: -.02em;
 }
 
 section[data-module="photofx"] .pfxSub{
   margin: 0;
-  max-width: 720px;
-  color: var(--pfx-sub);
+  max-width: 760px;
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.4;
+  color: rgba(255,255,255,.68);
   text-align: center;
 }
 
