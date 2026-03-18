@@ -982,3 +982,218 @@
     </div>
   </div>
 </aside>
+   <div class="cartoon-mode-view" data-cartoon-view="studio" hidden>
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Format Seç</h4>
+      <p class="story-card-helper">Final video oranını seç.</p>
+    </div>
+
+    <div class="story-pill-group studio-pill-group">
+      <button type="button" class="story-pill is-active">YouTube 16:9</button>
+      <button type="button" class="story-pill">Reels / TikTok 9:16</button>
+      <button type="button" class="story-pill">Kare 1:1</button>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Sahneleri Birleştir</h4>
+      <p class="story-card-helper">Final videoya girecek sahneleri seç ve sırala.</p>
+    </div>
+
+    <div class="studio-scene-list">
+      <div class="studio-scene-row">
+        <label class="studio-scene-check">
+          <input type="checkbox" checked>
+          <span>Dahil</span>
+        </label>
+        <div class="studio-scene-thumb">Önizleme</div>
+        <div class="studio-scene-copy">
+          <strong>Sahne 1 · Açılış</strong>
+          <small>15 sn</small>
+        </div>
+        <div class="studio-scene-actions">
+          <button type="button">↑</button>
+          <button type="button">↓</button>
+        </div>
+      </div>
+
+      <div class="studio-scene-row">
+        <label class="studio-scene-check">
+          <input type="checkbox" checked>
+          <span>Dahil</span>
+        </label>
+        <div class="studio-scene-thumb">Önizleme</div>
+        <div class="studio-scene-copy">
+          <strong>Sahne 2 · Karakter Girişi</strong>
+          <small>15 sn</small>
+        </div>
+        <div class="studio-scene-actions">
+          <button type="button">↑</button>
+          <button type="button">↓</button>
+        </div>
+      </div>
+
+      <div class="studio-scene-row">
+        <label class="studio-scene-check">
+          <input type="checkbox">
+          <span>Dahil</span>
+        </label>
+        <div class="studio-scene-thumb">Önizleme</div>
+        <div class="studio-scene-copy">
+          <strong>Sahne 3 · Geçiş</strong>
+          <small>10 sn</small>
+        </div>
+        <div class="studio-scene-actions">
+          <button type="button">↑</button>
+          <button type="button">↓</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="studio-inline-summary">
+      <span>Seçilen Sahne: 2</span>
+      <span>Toplam Süre: 30 sn</span>
+      <span>Format: 16:9</span>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Ses Ekle</h4>
+      <p class="story-card-helper">Müzik veya kendi sesini ekle.</p>
+    </div>
+
+    <div class="story-grid story-grid-2">
+      <div class="story-field">
+        <label>Hazır Müzik</label>
+        <select>
+          <option>Seçiniz</option>
+          <option>Neşeli</option>
+          <option>Yumuşak</option>
+          <option>Macera</option>
+        </select>
+      </div>
+
+      <div class="story-field">
+        <label>Kendi Sesini Yükle</label>
+        <input type="file" accept="audio/*">
+      </div>
+
+      <div class="story-field">
+        <label>Ses</label>
+        <select>
+          <option>Açık</option>
+          <option>Kapalı</option>
+        </select>
+      </div>
+
+      <div class="story-field">
+        <label>Müzik Seviyesi</label>
+        <input type="range" min="0" max="100" value="60">
+      </div>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Yazı / Başlık</h4>
+      <p class="story-card-helper">Final video başlığı ve kısa açıklama.</p>
+    </div>
+
+    <div class="story-grid story-grid-2">
+      <div class="story-field">
+        <label>Video Başlığı</label>
+        <input type="text" placeholder="Örn: Mini Tavşan’ın Macerası">
+      </div>
+
+      <div class="story-field">
+        <label>Altyazı</label>
+        <select>
+          <option>Açık</option>
+          <option>Kapalı</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="story-field">
+      <label>Kısa Açıklama</label>
+      <textarea rows="3" placeholder="Paylaşım metni veya kısa açıklama"></textarea>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Marka Ekle</h4>
+      <p class="story-card-helper">Logo ve filigran ayarları.</p>
+    </div>
+
+    <div class="story-grid story-grid-2">
+      <div class="story-field">
+        <label>Logo Yükle</label>
+        <input type="file" accept="image/*">
+      </div>
+
+      <div class="story-field">
+        <label>Filigran</label>
+        <select>
+          <option>Açık</option>
+          <option>Kapalı</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Kapak Seç</h4>
+      <p class="story-card-helper">Videodan kare seç veya özel kapak yükle.</p>
+    </div>
+
+    <div class="story-grid story-grid-2">
+      <div class="story-field">
+        <label>Videodan Kare</label>
+        <select>
+          <option>Seçiniz</option>
+          <option>Sahne 1 / Kare 1</option>
+          <option>Sahne 2 / Kare 3</option>
+          <option>Sahne 4 / Kare 2</option>
+        </select>
+      </div>
+
+      <div class="story-field">
+        <label>Ayrı Kapak Yükle</label>
+        <input type="file" accept="image/*">
+      </div>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Montaj Özeti</h4>
+      <p class="story-card-helper">Export öncesi son kontrol.</p>
+    </div>
+
+    <div class="studio-inline-summary">
+      <span>8 sahne seçildi</span>
+      <span>Toplam süre: 2 dk 10 sn</span>
+      <span>Format: 9:16</span>
+      <span>Kapak: seçildi</span>
+    </div>
+  </section>
+
+  <section class="story-card studio-card studio-card--compact">
+    <div class="story-card-head">
+      <h4>Final Çıktı</h4>
+      <p class="story-card-helper">Önizle, dışa aktar, indir.</p>
+    </div>
+
+    <div class="studio-final-actions">
+      <button type="button" class="story-ghost-btn">Önizle</button>
+      <button type="button" class="story-ghost-btn">Dışa Aktar</button>
+      <button type="button" class="story-ghost-btn">İndir</button>
+      <button type="button" class="story-primary-btn">Paylaşmaya Hazır Çıktı Al</button>
+    </div>
+  </section>
+</div>
