@@ -83,21 +83,26 @@
   </div>
 
   <div class="pfxBlock glassCard">
-  <div class="pfxBlockHead">
-    <div class="pfxBlockTitle">Klip Ayarları</div>
-    <div class="pfxBlockSub">Çıkış süresi, oran ve efekt yoğunluğunu belirle.</div>
-  </div>
-
-  <div class="pfxUploadMiniRow">
-    <div class="pfxUploadMiniField">
-      <span class="pfxLabel">Ana Görsel</span>
-      <button type="button" class="pfxUploadMiniBtn" id="pfxInlineUploadBtn">Resim Seç</button>
+    <div class="pfxBlockHead">
+      <div class="pfxBlockTitle">Klip Ayarları</div>
+      <div class="pfxBlockSub">Çıkış süresi, oran ve efekt yoğunluğunu belirle.</div>
     </div>
 
-    <div class="pfxUploadMiniField pfxUploadMiniField--file">
-      <span class="pfxLabel">Yüklenen Dosya</span>
-      <div class="pfxUploadMiniMeta" id="pfxInlineFileMeta">
-        <span class="pfxUploadMiniName" id="pfxInlineFileName">Dosya seçilmedi</span>
+    <div class="pfxUploadInlineGrid">
+      <div class="pfxField">
+        <span class="pfxLabel">Ana Görsel</span>
+        <button type="button" class="pfxUploadMiniBtn" id="pfxInlineUploadBtn">Resim Seç</button>
+      </div>
+
+      <div class="pfxField">
+        <span class="pfxLabel">Yüklenen Dosya</span>
+        <div class="pfxUploadMiniMeta" id="pfxInlineFileMeta">
+          <span class="pfxUploadMiniName" id="pfxInlineFileName">Dosya seçilmedi</span>
+        </div>
+      </div>
+
+      <div class="pfxField">
+        <span class="pfxLabel">Sil</span>
         <button
           type="button"
           class="pfxUploadMiniRemove"
@@ -107,57 +112,6 @@
         >×</button>
       </div>
     </div>
-  </div>
-
-  <div class="pfxFormGrid">
-    <label class="pfxField">
-      <span class="pfxLabel">Klip Süresi</span>
-      <select class="pfxSelect" id="pfxDuration">
-        <option value="10">10 saniye</option>
-        <option value="15">15 saniye</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">En / Boy Oranı</span>
-      <select class="pfxSelect" id="pfxAspect">
-        <option value="9:16">Dikey (9:16)</option>
-        <option value="1:1">Kare (1:1)</option>
-        <option value="16:9">Yatay (16:9)</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Hareket Seviyesi</span>
-      <select class="pfxSelect" id="pfxMotionLevel">
-        <option value="soft">Yumuşak</option>
-        <option value="balanced" selected>Dengeli</option>
-        <option value="strong">Güçlü</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Efekt Gücü</span>
-      <select class="pfxSelect" id="pfxEffectPower">
-        <option value="light">Hafif</option>
-        <option value="medium" selected>Orta</option>
-        <option value="high">Yüksek</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Renk Havası</span>
-      <select class="pfxSelect" id="pfxColorMood">
-        <option value="original">Orijinal</option>
-        <option value="cold">Soğuk</option>
-        <option value="warm">Sıcak</option>
-        <option value="neon">Neon</option>
-        <option value="dark">Karanlık</option>
-        <option value="cinematic">Sinematik</option>
-      </select>
-    </label>
-  </div>
-</div>
 
     <div class="pfxFormGrid">
       <label class="pfxField">
