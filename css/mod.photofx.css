@@ -1,51 +1,44 @@
 /* =========================================
    AIVO — PhotoFX Module
    File: /css/mod.photofx.css
-   RESET FOUNDATION — cover uyumlu hero/prompt
+   FINAL CLEAN / DIM / MINIMAL
    ========================================= */
 
 .pfxPage{
-  --pfx-bg: rgba(18, 20, 34, .55);
-  --pfx-card: rgba(22, 24, 44, .60);
-  --pfx-card2: rgba(18, 19, 38, .60);
-  --pfx-stroke: rgba(160, 110, 255, .22);
-  --pfx-stroke2: rgba(90, 120, 255, .18);
-  --pfx-text: rgba(255,255,255,.92);
-  --pfx-sub: rgba(255,255,255,.62);
-  --pfx-soft: rgba(255,255,255,.08);
-  --pfx-soft2: rgba(255,255,255,.12);
-  --pfx-shadow: 0 18px 60px rgba(0,0,0,.45);
-  --pfx-radius: 22px;
-
   display:flex;
   flex-direction:column;
-  gap:14px;
-  padding:14px 14px 22px;
-  color:var(--pfx-text);
+  gap:10px;
+  padding:0;
+  color:#f5f2ff;
 }
 
-/* ===== main cards ===== */
+/* ===== main shells ===== */
 
 .pfxHero,
 .pfxBlock,
 .pfxEngine{
   position:relative;
   overflow:hidden;
-  border-radius:var(--pfx-radius);
-  background:linear-gradient(180deg, var(--pfx-card), var(--pfx-card2));
-  border:1px solid var(--pfx-stroke2);
-  box-shadow:var(--pfx-shadow);
+  border-radius:20px;
+  border:1px solid rgba(146,104,220,.18);
+  background:
+    linear-gradient(180deg, rgba(24,26,44,.88), rgba(17,18,32,.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 10px 24px rgba(0,0,0,.26);
 }
 
-.pfxHero.has-gradient,
-.pfxBlock.has-gradient,
-.pfxEngine.has-gradient,
-.pfxHero{
+.pfxHero::before,
+.pfxBlock::before,
+.pfxEngine::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
   background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170, 120, 255, .22), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80, 140, 255, .18), transparent 55%),
-    linear-gradient(180deg, var(--pfx-card), var(--pfx-card2));
-  border:1px solid var(--pfx-stroke);
+    radial-gradient(900px 320px at 20% 0%, rgba(152,102,228,.10), transparent 58%),
+    radial-gradient(700px 300px at 100% 18%, rgba(70,118,210,.07), transparent 60%);
+  opacity:.55; /* kritik: ışığı burada kısıyoruz */
 }
 
 .pfxHero > *,
@@ -58,99 +51,770 @@
 /* ===== hero ===== */
 
 .pfxHero{
-  margin-bottom:0;
+  padding:18px 16px;
+  border-radius:18px;
 }
 
 .pfxHeroText{
-  padding:18px 18px 16px;
   text-align:center;
-  display:grid;
-  justify-items:center;
-  gap:6px;
 }
 
 .pfxTitle{
-  margin:0;
-  font-size:18px;
+  margin:0 0 5px;
+  font-size:15px;
   line-height:1.2;
   font-weight:800;
-  color:var(--pfx-text);
-  letter-spacing:.2px;
+  letter-spacing:-.02em;
+  color:rgba(255,255,255,.92);
 }
 
 .pfxSub{
   margin:0;
-  max-width:720px;
-  font-size:13px;
-  line-height:1.35;
-  color:var(--pfx-sub);
-  text-align:center;
+  font-size:11px;
+  line-height:1.45;
+  color:rgba(255,255,255,.58);
 }
 
 /* ===== generic blocks ===== */
 
 .pfxBlock{
-  padding:0;
+  padding:12px;
 }
 
 .pfxBlockHead{
-  padding:16px 18px 12px;
-  margin:0;
+  margin-bottom:10px;
 }
 
 .pfxBlockTitle{
-  font-size:16px;
+  font-size:13px;
   line-height:1.2;
-  font-weight:700;
-  color:var(--pfx-text);
-  letter-spacing:.2px;
+  font-weight:800;
+  color:rgba(255,255,255,.92);
 }
 
 .pfxBlockSub{
-  margin-top:3px;
-  font-size:12.5px;
+  margin-top:4px;
+  font-size:11px;
+  line-height:1.4;
+  color:rgba(255,255,255,.58);
+}
+
+/* ===== upload ===== */
+
+.pfxUploadBox{
+  min-height:132px;
+  border:1px dashed rgba(255,255,255,.10);
+  border-radius:16px;
+  background:
+    linear-gradient(180deg, rgba(11,12,24,.78), rgba(8,9,18,.88));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.pfxUploadInner{
+  max-width:320px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+
+.pfxUploadIcon{
+  font-size:20px;
+  line-height:1;
+}
+
+.pfxUploadTitle{
+  font-size:13px;
+  font-weight:800;
+  color:rgba(255,255,255,.92);
+}
+
+.pfxUploadHint{
+  font-size:10px;
   line-height:1.35;
-  color:var(--pfx-sub);
+  color:rgba(255,255,255,.56);
 }
 
-/* block inner spacing */
-.pfxBlockBody,
-.pfxBlockContent,
-.pfxBlockInner{
-  padding:0 18px 18px;
+/* ===== grids ===== */
+
+.pfxQualityGrid,
+.pfxPresetGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
 }
 
-/* ===== prompt ===== */
+/* ===== choice / preset cards ===== */
 
+.pfxChoiceCard,
+.pfxPresetCard{
+  appearance:none;
+  text-align:left;
+  cursor:pointer;
+  color:#f5f2ff;
+  padding:12px;
+  min-height:70px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(34,36,58,.74), rgba(20,22,38,.82));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.02),
+    0 6px 14px rgba(0,0,0,.18);
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease,
+    background .16s ease;
+}
+
+.pfxChoiceCard:hover,
+.pfxPresetCard:hover{
+  transform:translateY(-1px);
+  border-color:rgba(156,110,228,.22);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)),
+    linear-gradient(180deg, rgba(36,38,60,.78), rgba(22,24,40,.86));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.02),
+    0 8px 18px rgba(0,0,0,.22);
+}
+
+.pfxChoiceCard.is-active,
+.pfxPresetCard.is-active{
+  border-color:rgba(160,110,220,.26);
+  background:
+    linear-gradient(180deg, rgba(138,96,215,.08), rgba(255,255,255,.015)),
+    linear-gradient(180deg, rgba(38,40,66,.82), rgba(22,24,42,.88));
+  box-shadow:
+    inset 0 0 0 1px rgba(160,110,220,.10),
+    0 8px 18px rgba(0,0,0,.22);
+}
+
+.pfxChoiceTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:7px;
+}
+
+.pfxChoiceTitle,
+.pfxPresetTitle{
+  font-size:11px;
+  line-height:1.2;
+  font-weight:800;
+  color:rgba(255,255,255,.92);
+}
+
+.pfxChoiceDesc,
+.pfxPresetDesc{
+  font-size:10px;
+  line-height:1.35;
+  color:rgba(255,255,255,.58);
+}
+
+.pfxChoiceCredit{
+  flex:0 0 auto;
+  min-width:58px;
+  height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.92);
+  font-size:10px;
+  font-weight:800;
+  box-shadow:none;
+}
+
+/* ===== form ===== */
+
+.pfxFormGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+.pfxField{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.pfxLabel{
+  font-size:11px;
+  font-weight:700;
+  color:rgba(255,255,255,.70);
+}
+
+.pfxSelect{
+  width:100%;
+  height:38px;
+  padding:0 12px;
+  border-radius:12px;
+  outline:none;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.90);
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(180deg, rgba(10,11,22,.74), rgba(8,9,18,.88));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.pfxSelect:focus{
+  border-color:rgba(150,106,220,.26);
+  box-shadow:
+    0 0 0 2px rgba(150,106,220,.08),
+    inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+/* ===== engine ===== */
+
+.pfxEngine{
+  padding:12px 14px;
+  border-style:dashed;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.pfxEngineTitle{
+  font-size:12px;
+  font-weight:800;
+  color:rgba(255,255,255,.92);
+}
+
+.pfxEngineSub{
+  margin-top:4px;
+  font-size:10px;
+  line-height:1.4;
+  color:rgba(255,255,255,.58);
+}
+
+.pfxEngineMeta{
+  flex:0 0 auto;
+  text-align:right;
+}
+
+.pfxEngineCreditLabel{
+  font-size:10px;
+  font-weight:700;
+  color:rgba(255,255,255,.60);
+}
+
+.pfxEngineCreditValue{
+  margin-top:4px;
+  font-size:20px;
+  line-height:1;
+  font-weight:900;
+  color:rgba(255,255,255,.92);
+}
+
+/* ===== actions ===== */
+
+.pfxActions{
+  margin-top:0;
+}
+
+.pfxCreateBtn{
+  width:100%;
+  min-height:46px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:-.02em;
+  box-shadow:0 10px 22px rgba(140,110,255,.12);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxCreateBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 12px 24px rgba(140,110,255,.14);
+}
+
+.pfxCreateBtn:active{
+  transform:translateY(1px);
+}
+
+/* ===== responsive ===== */
+
+@media (max-width: 980px){
+  .pfxQualityGrid,
+  .pfxPresetGrid,
+  .pfxFormGrid{
+    grid-template-columns:1fr;
+  }
+
+  .pfxEngine{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .pfxEngineMeta{
+    text-align:left;
+  }
+}
+
+@media (max-width: 640px){
+  .pfxHero{
+    padding:16px 12px;
+    border-radius:16px;
+  }
+
+  .pfxBlock,
+  .pfxEngine{
+    padding:12px;
+    border-radius:16px;
+  }
+
+  .pfxUploadBox{
+    min-height:120px;
+    padding:12px;
+    border-radius:14px;
+  }
+
+  .pfxChoiceCard,
+  .pfxPresetCard{
+    min-height:auto;
+    padding:11px;
+    border-radius:14px;
+  }
+
+  .pfxSelect{
+    height:36px;
+    border-radius:10px;
+  }
+
+  .pfxCreateBtn{
+    min-height:42px;
+    border-radius:14px;
+    font-size:13px;
+  }
+}
+/* =========================================
+   PhotoFX inline upload row
+   File: /css/mod.photofx.css
+   Add at bottom
+   ========================================= */
+
+.pfxUploadInlineGrid{
+  display:grid;
+  grid-template-columns: 1.05fr 1.8fr .55fr;
+  gap:12px;
+  margin:0 0 12px;
+  align-items:end;
+}
+
+.pfxUploadMiniBtn{
+  width:100%;
+  height:38px;
+  padding:0 14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(140,110,255,.12);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxUploadMiniBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 10px 20px rgba(140,110,255,.14);
+}
+
+.pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+.pfxUploadMiniMeta{
+  width:100%;
+  height:38px;
+  padding:0 12px;
+  display:flex;
+  align-items:center;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(10,11,22,.74), rgba(8,9,18,.88));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.pfxUploadMiniName{
+  display:block;
+  width:100%;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.78);
+}
+
+.pfxUploadMiniRemove{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.88);
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+}
+
+.pfxUploadMiniRemove:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+}
+
+.pfxUploadMiniRemove:active{
+  transform:translateY(1px);
+}
+
+@media (max-width: 780px){
+  .pfxUploadInlineGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
+/* =========================================
+   PhotoFX upload tools row
+   File: /css/mod.photofx.css
+   Add at bottom
+   ========================================= */
+
+.pfxUploadToolsGrid{
+  display:grid;
+  grid-template-columns: 1.15fr 1.15fr .9fr;
+  gap:14px;
+  margin:0 0 14px;
+  align-items:end;
+}
+
+.pfxUploadTool{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.pfxUploadMiniBtn{
+  flex:0 0 auto;
+  min-width:132px;
+  height:40px;
+  padding:0 16px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(140,110,255,.12);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxUploadMiniBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 10px 20px rgba(140,110,255,.14);
+}
+
+.pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+.pfxUploadMiniBtn--ghost{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:none;
+}
+
+.pfxUploadMiniBtn--ghost:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+  box-shadow:none;
+}
+
+.pfxUploadToolName{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.72);
+}
+
+@media (max-width: 900px){
+  .pfxUploadToolsGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
+/* =========================================
+   PhotoFX upload tools row — compact
+   File: /css/mod.photofx.css
+   Add at bottom
+   ========================================= */
+
+.pfxUploadToolsGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap:12px;
+  margin:0 0 12px;
+  align-items:end;
+}
+
+.pfxUploadTool{
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.pfxUploadMiniBtn{
+  flex:0 0 auto;
+  min-width:104px;
+  height:36px;
+  padding:0 12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(140,110,255,.10);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxUploadMiniBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 8px 16px rgba(140,110,255,.12);
+}
+
+.pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+.pfxUploadMiniBtn--ghost{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:none;
+}
+
+.pfxUploadMiniBtn--ghost:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+  box-shadow:none;
+}
+
+.pfxUploadToolName{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.72);
+}
+
+/* JS dosya seçince bu class ile X ekleyebilir */
+.pfxUploadTool.has-file{
+  gap:6px;
+}
+
+.pfxUploadTool.has-file .pfxUploadToolName{
+  max-width:calc(100% - 30px);
+}
+
+.pfxUploadToolRemove{
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.86);
+  font-size:14px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+}
+
+.pfxUploadToolRemove:hover{
+  background:rgba(255,255,255,.12);
+}
+
+@media (max-width: 900px){
+  .pfxUploadToolsGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
+/* =========================================
+   PhotoFX upload tools row — internal split fix
+   File: /css/mod.photofx.css
+   Add at very bottom
+   ========================================= */
+
+.pfxUploadToolsGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap:14px;
+  margin:0 0 14px;
+  align-items:end;
+}
+
+.pfxUploadTool{
+  height:40px;
+  display:grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap:10px;
+  align-items:center;
+}
+
+.pfxUploadMiniBtn{
+  width:118px;
+  min-width:118px;
+  height:40px;
+  padding:0 12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(140,110,255,.10);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxUploadMiniBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 8px 16px rgba(140,110,255,.12);
+}
+
+.pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+.pfxUploadMiniBtn--ghost{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:none;
+}
+
+.pfxUploadMiniBtn--ghost:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+  box-shadow:none;
+}
+
+.pfxUploadToolName{
+  height:40px;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(10,11,22,.74), rgba(8,9,18,.88));
+  color:rgba(255,255,255,.72);
+  font-size:11px;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+@media (max-width: 900px){
+  .pfxUploadToolsGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
+/* PhotoFX — sadece 3. pfxBlock = Klip Ayarları başlığını ortala */
+.pfxPage > .pfxBlock:nth-of-type(3) > .pfxBlockHead{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+
+.pfxPage > .pfxBlock:nth-of-type(3) > .pfxBlockHead > .pfxBlockTitle,
+.pfxPage > .pfxBlock:nth-of-type(3) > .pfxBlockHead > .pfxBlockSub{
+  width:100%;
+  text-align:center;
+}
+/* PhotoFX — sadece Klip Ayarları başlığını ortala */
+.pfxClipBlock .pfxBlockHead{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+
+.pfxClipBlock .pfxBlockTitle,
+.pfxClipBlock .pfxBlockSub{
+  width:100%;
+  text-align:center;
+}
+/* PhotoFX — Prompt alanı */
 .pfxPromptField{
-  padding:0 18px 18px;
-  margin:0;
+  margin:0 0 14px;
 }
 
 .pfxPromptInput{
   width:100%;
-  min-height:160px;
-  max-height:190px;
-  resize:none;
-  border-radius:14px;
-  padding:12px 12px;
-  color:rgba(255,255,255,.90);
-  background:rgba(10, 11, 22, .55);
-  border:1px solid rgba(255,255,255,.14);
+  min-height:140px;
+  resize:vertical;
+  padding:16px 18px;
+  border-radius:18px;
   outline:none;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(10,11,22,.78), rgba(8,9,18,.90));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+  color:rgba(255,255,255,.92);
   font-size:15px;
-  line-height:1.5;
+  line-height:1.55;
   font-weight:500;
-  box-shadow:none;
 }
 
 .pfxPromptInput::placeholder{
-  color:rgba(255,255,255,.42);
+  color:rgba(255,255,255,.38);
 }
 
 .pfxPromptInput:focus{
-  border-color:rgba(170,120,255,.50);
-  box-shadow:0 0 0 3px rgba(170,120,255,.16);
+  border-color:rgba(150,106,220,.28);
+  box-shadow:
+    0 0 0 2px rgba(150,106,220,.08),
+    inset 0 1px 0 rgba(255,255,255,.02);
 }
 
 .pfxPromptCount{
@@ -163,174 +827,4 @@
 
 #pfxPromptCount{
   color:rgba(255,255,255,.92);
-}
-
-/* ===== select / input baseline ===== */
-
-.pfxField{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.pfxLabel{
-  display:block;
-  color:rgba(255,255,255,.72);
-  font-size:12px;
-  margin:2px 0 0;
-  font-weight:600;
-}
-
-.pfxSelect{
-  width:100%;
-  height:48px;
-  border-radius:14px;
-  padding:0 14px;
-  color:rgba(255,255,255,.90);
-  background:rgba(10, 11, 22, .55);
-  border:1px solid rgba(255,255,255,.14);
-  outline:none;
-  font-size:14px;
-  font-weight:600;
-  box-shadow:none;
-}
-
-.pfxSelect:focus{
-  border-color:rgba(170,120,255,.50);
-  box-shadow:0 0 0 3px rgba(170,120,255,.16);
-}
-
-/* ===== engine ===== */
-
-.pfxEngine{
-  padding:12px 12px;
-  border-radius:16px;
-  border:1px dashed rgba(255,255,255,.20);
-  background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170, 120, 255, .10), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80, 140, 255, .08), transparent 55%),
-    rgba(255,255,255,.04);
-  box-shadow:none;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.pfxEngineTitle{
-  color:rgba(255,255,255,.85);
-  font-weight:700;
-  font-size:12.5px;
-}
-
-.pfxEngineSub{
-  margin:8px 0 0;
-  color:rgba(255,255,255,.60);
-  font-size:12px;
-  line-height:1.35;
-}
-
-.pfxEngineMeta{
-  flex:0 0 auto;
-  text-align:right;
-}
-
-.pfxEngineCreditLabel{
-  color:rgba(255,255,255,.70);
-  font-weight:600;
-  font-size:12px;
-}
-
-.pfxEngineCreditValue{
-  margin-top:4px;
-  font-size:18px;
-  line-height:1;
-  font-weight:800;
-  color:rgba(255,255,255,.92);
-}
-
-/* ===== CTA ===== */
-
-.pfxActions{
-  margin-top:0;
-}
-
-.pfxCreateBtn{
-  width:100%;
-  min-height:64px;
-  border:0;
-  border-radius:18px;
-  padding:14px 14px;
-  font-weight:800;
-  font-size:18px;
-  color:rgba(255,255,255,.95);
-  cursor:pointer;
-  background:linear-gradient(90deg, rgba(140,110,255,.95), rgba(255,120,190,.92));
-  box-shadow:0 14px 40px rgba(140,110,255,.20);
-  transition:transform .10s ease, filter .15s ease;
-}
-
-.pfxCreateBtn:hover{
-  transform:translateY(-1px);
-  filter:brightness(1.03);
-}
-
-.pfxCreateBtn:active{
-  transform:translateY(1px) scale(.995);
-}
-
-/* ===== responsive ===== */
-
-@media (max-width: 980px){
-  .pfxEngine{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .pfxEngineMeta{
-    text-align:left;
-  }
-}
-
-@media (max-width: 640px){
-  .pfxPage{
-    padding:12px 12px 18px;
-    gap:12px;
-  }
-
-  .pfxHeroText{
-    padding:16px 14px 14px;
-  }
-
-  .pfxTitle{
-    font-size:17px;
-  }
-
-  .pfxSub{
-    font-size:12px;
-  }
-
-  .pfxBlockHead,
-  .pfxPromptField,
-  .pfxBlockBody,
-  .pfxBlockContent,
-  .pfxBlockInner{
-    padding-left:14px;
-    padding-right:14px;
-  }
-
-  .pfxPromptInput{
-    min-height:140px;
-    max-height:180px;
-  }
-
-  .pfxSelect{
-    height:44px;
-  }
-
-  .pfxCreateBtn{
-    min-height:58px;
-    font-size:16px;
-    border-radius:16px;
-  }
 }
