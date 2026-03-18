@@ -1,139 +1,347 @@
-/* ================================
-   STUDIO ROOT LAYOUT
-================================ */
-.cartoon-mode-view[data-cartoon-view="studio"] {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  align-items: stretch;
-  width: 100%;
-  min-width: 0;
+/* ===== Montaj Stüdyosu — temiz baştan kurulum ===== */
+
+.cartoon-mode-view[data-cartoon-view="studio"]{
+  display:block;
+  width:100%;
+  min-width:0;
+  padding-top:8px;
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] > .studio-card,
-.cartoon-mode-view[data-cartoon-view="studio"] > .story-card.studio-card {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  flex: 0 0 auto;
-  overflow: hidden;
+.cartoon-mode-view[data-cartoon-view="studio"] #studioTestTitle,
+.cartoon-mode-view[data-cartoon-view="studio"] h2[style*="MONTAJ STÜDYOSU TEST"]{
+  display:none !important;
 }
 
-/* Son kartı özel davranıştan çıkar */
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type {
-  position: relative;
-  inset: auto;
-  bottom: auto;
-  top: auto;
-  left: auto;
-  right: auto;
-  z-index: auto;
-  transform: none;
-  margin: 0;
+/* kart genel */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card{
+  position:relative;
+  margin:0 0 10px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01)),
+    radial-gradient(120% 120% at 0% 0%, rgba(159,90,253,.10), transparent 54%),
+    linear-gradient(180deg, rgba(18,14,40,.96), rgba(8,8,26,.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 8px 22px rgba(0,0,0,.18);
 }
 
-/* ================================
-   STUDIO CARD HEAD
-================================ */
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-card-head,
-.cartoon-mode-view[data-cartoon-view="studio"] .story-card-head {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+/* başlık */
+.cartoon-mode-view[data-cartoon-view="studio"] .story-card-head{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  margin:0 0 10px;
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-card-head h4,
-.cartoon-mode-view[data-cartoon-view="studio"] .story-card-head h4 {
-  margin: 0;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-card-head h4{
+  margin:0;
+  font-size:15px;
+  line-height:1.15;
+  font-weight:800;
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-card-helper,
-.cartoon-mode-view[data-cartoon-view="studio"] .story-card-helper {
-  margin: 0;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-card-helper{
+  margin:0;
+  font-size:11px;
+  line-height:1.4;
+  font-weight:600;
+  color:rgba(255,255,255,.68);
 }
 
-/* ================================
-   STUDIO CONTENT GRIDS
-================================ */
-.cartoon-mode-view[data-cartoon-view="studio"] .story-grid,
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-grid {
-  width: 100%;
-  min-width: 0;
+/* format pills */
+.cartoon-mode-view[data-cartoon-view="studio"] .story-pill-group,
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-pill-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] .story-field,
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-field {
-  min-width: 0;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-pill,
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-pill-group button{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:none;
 }
 
-/* ================================
-   FINAL FOOTER CTA
-================================ */
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  flex: 0 0 auto;
-  z-index: 1;
+/* grid */
+.cartoon-mode-view[data-cartoon-view="studio"] .story-grid{
+  display:grid;
+  gap:10px;
+  margin-top:10px;
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: nowrap;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  overflow: visible;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-grid.story-grid-2{
+  grid-template-columns:repeat(2,minmax(0,1fr));
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .story-ghost-btn,
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .studio-ghost-btn {
-  flex: 0 0 auto;
-  white-space: nowrap;
+/* alanlar */
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field{
+  min-width:0;
 }
 
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .story-primary-btn,
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .studio-primary-btn {
-  flex: 1 1 auto;
-  min-width: 220px;
-  white-space: nowrap;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field label{
+  display:block;
+  margin:0 0 6px;
+  font-size:11px;
+  line-height:1.15;
+  font-weight:700;
+  color:rgba(255,255,255,.9);
 }
 
-/* Eski kart içi final actions varsa etkisizleştir */
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions {
-  position: relative;
-  inset: auto;
-  bottom: auto;
-  top: auto;
-  left: auto;
-  right: auto;
-  z-index: auto;
-  transform: none;
-  margin: 0;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field input[type="text"],
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field select,
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field textarea{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(4,6,20,.92);
+  color:#fff;
+  font-size:11px;
+  font-weight:600;
+  box-shadow:none;
 }
 
-/* ================================
-   RESPONSIVE
-================================ */
-@media (max-width: 980px) {
-  .cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions {
-    flex-wrap: wrap;
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field select,
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field input[type="text"]{
+  height:36px;
+  padding:0 12px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .story-field textarea{
+  min-height:72px;
+  padding:10px 12px;
+  resize:vertical;
+}
+
+/* sahne listesi */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:10px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-row{
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(255,255,255,.025);
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-check{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  line-height:1;
+  font-weight:700;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-thumb{
+  width:72px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.045);
+  font-size:10px;
+  color:rgba(255,255,255,.72);
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-copy{
+  min-width:0;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-copy strong{
+  display:block;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:800;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-copy small{
+  display:block;
+  margin-top:2px;
+  font-size:10px;
+  line-height:1.2;
+  color:rgba(255,255,255,.66);
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-actions{
+  display:flex;
+  gap:6px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-actions button{
+  width:28px;
+  height:28px;
+  min-width:28px;
+  padding:0;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  font-size:12px;
+  line-height:1;
+}
+
+/* özet */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-inline-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+  font-size:10px;
+  line-height:1.3;
+  font-weight:600;
+  color:rgba(255,255,255,.78);
+}
+
+/* genel final actions — normal */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+  flex-wrap:nowrap;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-ghost-btn{
+  flex:0 0 auto;
+  min-width:0;
+  height:36px;
+  padding:0 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  color:#fff;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:none;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
+  flex:1 1 auto;
+  min-width:0;
+  height:44px;
+  padding:0 16px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:800;
+  line-height:1;
+  box-shadow:0 10px 24px rgba(191,86,255,.18);
+}
+
+/* ===== Montaj Stüdyosu — sticky final CTA ===== */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
+  position:sticky;
+  bottom:0;
+  z-index:8;
+  margin-top:10px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(12,10,34,.94), rgba(8,8,24,.96));
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-card-head{
+  margin-bottom:12px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .studio-final-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:nowrap;
+  gap:10px;
+  margin-top:0;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-ghost-btn{
+  height:42px;
+  padding:0 16px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-primary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:1 1 auto;
+  min-width:0;
+  height:48px;
+  padding:0 18px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:800;
+  box-shadow:0 14px 40px rgba(191,86,255,.24);
+}
+
+/* inputs */
+.cartoon-mode-view[data-cartoon-view="studio"] input[type="range"]{
+  width:100%;
+  min-height:20px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] input[type="file"]{
+  width:100%;
+  min-width:0;
+  font-size:10px;
+}
+
+/* mobile */
+@media (max-width: 900px){
+  .cartoon-mode-view[data-cartoon-view="studio"] .story-grid.story-grid-2{
+    grid-template-columns:1fr;
   }
 
-  .cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .story-primary-btn,
-  .cartoon-mode-view[data-cartoon-view="studio"] .studio-footer-actions > .studio-primary-btn {
-    flex: 1 1 100%;
-    min-width: 0;
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-row{
+    grid-template-columns:1fr;
+  }
+
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-thumb{
+    width:100%;
+    height:52px;
+  }
+
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
+    padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .studio-final-actions{
+    flex-wrap:wrap;
+  }
+
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-primary-btn{
+    flex:1 1 100%;
+    width:100%;
   }
 }
