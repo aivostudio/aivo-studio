@@ -1,4 +1,5 @@
-/* ===== Montaj Stüdyosu — reset + compact ===== */
+/* ===== Montaj Stüdyosu — temiz baştan kurulum ===== */
+
 .cartoon-mode-view[data-cartoon-view="studio"]{
   display:block;
   width:100%;
@@ -6,317 +7,341 @@
   padding-top:8px;
 }
 
-/* eski test başlıklarını kapat */
 .cartoon-mode-view[data-cartoon-view="studio"] #studioTestTitle,
 .cartoon-mode-view[data-cartoon-view="studio"] h2[style*="MONTAJ STÜDYOSU TEST"]{
   display:none !important;
 }
 
-/* tüm kartlar */
+/* kart genel */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-card{
-  position:relative !important;
-  inset:auto !important;
-  bottom:auto !important;
-  top:auto !important;
-  z-index:auto !important;
-  padding:12px 14px !important;
-  margin:0 0 10px 0 !important;
-  border-radius:18px !important;
-  border:1px solid rgba(255,255,255,.08) !important;
+  position:relative;
+  margin:0 0 10px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
   background:
     linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01)),
     radial-gradient(120% 120% at 0% 0%, rgba(159,90,253,.10), transparent 54%),
-    linear-gradient(180deg, rgba(18,14,40,.96), rgba(8,8,26,.96)) !important;
+    linear-gradient(180deg, rgba(18,14,40,.96), rgba(8,8,26,.96));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.04),
-    0 8px 22px rgba(0,0,0,.18) !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
+    0 8px 22px rgba(0,0,0,.18);
 }
 
-/* Final kartına özel sticky / sabit / overlay her şeyi kapat */
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
-  position:relative !important;
-  inset:auto !important;
-  bottom:auto !important;
-  top:auto !important;
-  z-index:auto !important;
-  transform:none !important;
-}
-
-/* başlıklar */
+/* başlık */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-card-head{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:flex-start !important;
-  gap:4px !important;
-  margin:0 0 10px 0 !important;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  margin:0 0 10px;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-card-head h4{
-  margin:0 !important;
-  font-size:15px !important;
-  line-height:1.15 !important;
-  font-weight:800 !important;
+  margin:0;
+  font-size:15px;
+  line-height:1.15;
+  font-weight:800;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-card-helper{
-  margin:0 !important;
-  font-size:11px !important;
-  line-height:1.4 !important;
-  font-weight:600 !important;
-  color:rgba(255,255,255,.68) !important;
+  margin:0;
+  font-size:11px;
+  line-height:1.4;
+  font-weight:600;
+  color:rgba(255,255,255,.68);
 }
 
-/* format butonları */
+/* format pills */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-pill-group,
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-pill-group{
-  display:flex !important;
-  flex-wrap:wrap !important;
-  gap:8px !important;
-  margin-top:10px !important;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-pill,
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-pill-group button{
-  appearance:none !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  background:rgba(255,255,255,.05) !important;
-  color:#fff !important;
-  min-height:32px !important;
-  padding:0 12px !important;
-  border-radius:999px !important;
-  font-size:11px !important;
-  font-weight:700 !important;
-  box-shadow:none !important;
+  appearance:none;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:none;
 }
 
-/* gridler */
+/* grid */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-grid{
-  display:grid !important;
-  gap:10px !important;
-  margin-top:10px !important;
+  display:grid;
+  gap:10px;
+  margin-top:10px;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-grid.story-grid-2{
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
 }
 
 /* alanlar */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field{
-  min-width:0 !important;
+  min-width:0;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field label{
-  display:block !important;
-  margin:0 0 6px 0 !important;
-  font-size:11px !important;
-  line-height:1.15 !important;
-  font-weight:700 !important;
-  color:rgba(255,255,255,.9) !important;
+  display:block;
+  margin:0 0 6px;
+  font-size:11px;
+  line-height:1.15;
+  font-weight:700;
+  color:rgba(255,255,255,.9);
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field input[type="text"],
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field select,
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field textarea{
-  width:100% !important;
-  min-width:0 !important;
-  box-sizing:border-box !important;
-  border:1px solid rgba(255,255,255,.08) !important;
-  border-radius:14px !important;
-  background:rgba(4,6,20,.92) !important;
-  color:#fff !important;
-  font-size:11px !important;
-  font-weight:600 !important;
-  box-shadow:none !important;
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(4,6,20,.92);
+  color:#fff;
+  font-size:11px;
+  font-weight:600;
+  box-shadow:none;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field select,
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field input[type="text"]{
-  height:36px !important;
-  padding:0 12px !important;
+  height:36px;
+  padding:0 12px;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .story-field textarea{
-  min-height:72px !important;
-  padding:10px 12px !important;
-  resize:vertical !important;
+  min-height:72px;
+  padding:10px 12px;
+  resize:vertical;
 }
 
 /* sahne listesi */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-list{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:8px !important;
-  margin-top:10px !important;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:10px;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-row{
-  display:grid !important;
-  grid-template-columns:72px minmax(0,1fr) auto !important;
-  gap:8px !important;
-  align-items:center !important;
-  padding:8px 10px !important;
-  border:1px solid rgba(255,255,255,.08) !important;
-  border-radius:14px !important;
-  background:rgba(255,255,255,.025) !important;
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(255,255,255,.025);
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-check{
-  display:flex !important;
-  align-items:center !important;
-  gap:6px !important;
-  font-size:10px !important;
-  line-height:1 !important;
-  font-weight:700 !important;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  line-height:1;
+  font-weight:700;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-thumb{
-  width:72px !important;
-  height:42px !important;
-  display:grid !important;
-  place-items:center !important;
-  border-radius:10px !important;
-  border:1px solid rgba(255,255,255,.08) !important;
-  background:rgba(255,255,255,.045) !important;
-  font-size:10px !important;
-  color:rgba(255,255,255,.72) !important;
+  width:72px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.045);
+  font-size:10px;
+  color:rgba(255,255,255,.72);
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-copy{
-  min-width:0 !important;
+  min-width:0;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-copy strong{
-  display:block !important;
-  font-size:11px !important;
-  line-height:1.2 !important;
-  font-weight:800 !important;
+  display:block;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:800;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-copy small{
-  display:block !important;
-  margin-top:2px !important;
-  font-size:10px !important;
-  line-height:1.2 !important;
-  color:rgba(255,255,255,.66) !important;
+  display:block;
+  margin-top:2px;
+  font-size:10px;
+  line-height:1.2;
+  color:rgba(255,255,255,.66);
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-actions{
-  display:flex !important;
-  gap:6px !important;
+  display:flex;
+  gap:6px;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-actions button{
-  width:28px !important;
-  height:28px !important;
-  min-width:28px !important;
-  padding:0 !important;
-  border-radius:9px !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  background:rgba(255,255,255,.05) !important;
-  color:#fff !important;
-  font-size:12px !important;
-  line-height:1 !important;
+  width:28px;
+  height:28px;
+  min-width:28px;
+  padding:0;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  font-size:12px;
+  line-height:1;
 }
 
-/* özet satırları */
+/* özet */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-inline-summary{
-  display:flex !important;
-  flex-wrap:wrap !important;
-  gap:8px !important;
-  margin-top:10px !important;
-  font-size:10px !important;
-  line-height:1.3 !important;
-  font-weight:600 !important;
-  color:rgba(255,255,255,.78) !important;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+  font-size:10px;
+  line-height:1.3;
+  font-weight:600;
+  color:rgba(255,255,255,.78);
 }
 
-/* final buton alanı — sticky yok, fixed yok, overlay yok */
+/* genel final actions — normal */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions{
-  position:relative !important;
-  inset:auto !important;
-  bottom:auto !important;
-  top:auto !important;
-  z-index:auto !important;
-  display:grid !important;
-  grid-template-columns:auto auto auto minmax(180px,1fr) !important;
-  gap:8px !important;
-  align-items:center !important;
-  margin-top:10px !important;
-  padding:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-ghost-btn,
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
-  appearance:none !important;
-  box-shadow:none !important;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+  flex-wrap:nowrap;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-ghost-btn{
-  min-width:0 !important;
-  height:36px !important;
-  padding:0 14px !important;
-  border-radius:14px !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  background:rgba(255,255,255,.04) !important;
-  color:#fff !important;
-  font-size:11px !important;
-  font-weight:700 !important;
+  flex:0 0 auto;
+  min-width:0;
+  height:36px;
+  padding:0 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  color:#fff;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:none;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
-  width:100% !important;
-  min-width:0 !important;
-  height:44px !important;
-  padding:0 16px !important;
-  border-radius:999px !important;
-  font-size:13px !important;
-  font-weight:800 !important;
-  line-height:1 !important;
-  justify-self:stretch !important;
-  box-shadow:0 10px 24px rgba(191,86,255,.18) !important;
+  flex:1 1 auto;
+  min-width:0;
+  height:44px;
+  padding:0 16px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:800;
+  line-height:1;
+  box-shadow:0 10px 24px rgba(191,86,255,.18);
 }
 
-/* range */
+/* ===== Montaj Stüdyosu — sticky final CTA ===== */
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
+  position:sticky;
+  bottom:0;
+  z-index:8;
+  margin-top:10px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(12,10,34,.94), rgba(8,8,24,.96));
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-card-head{
+  margin-bottom:12px;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .studio-final-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:nowrap;
+  gap:10px;
+  margin-top:0;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-ghost-btn{
+  height:42px;
+  padding:0 16px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-primary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:1 1 auto;
+  min-width:0;
+  height:48px;
+  padding:0 18px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:800;
+  box-shadow:0 14px 40px rgba(191,86,255,.24);
+}
+
+/* inputs */
 .cartoon-mode-view[data-cartoon-view="studio"] input[type="range"]{
-  width:100% !important;
-  height:auto !important;
-  min-height:20px !important;
+  width:100%;
+  min-height:20px;
 }
 
-/* file */
 .cartoon-mode-view[data-cartoon-view="studio"] input[type="file"]{
-  width:100% !important;
-  min-width:0 !important;
-  font-size:10px !important;
+  width:100%;
+  min-width:0;
+  font-size:10px;
 }
 
-/* mobil */
+/* mobile */
 @media (max-width: 900px){
   .cartoon-mode-view[data-cartoon-view="studio"] .story-grid.story-grid-2{
-    grid-template-columns:1fr !important;
+    grid-template-columns:1fr;
   }
 
   .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-row{
-    grid-template-columns:1fr !important;
+    grid-template-columns:1fr;
   }
 
   .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-thumb{
-    width:100% !important;
-    height:52px !important;
+    width:100%;
+    height:52px;
   }
 
-  .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions{
-    grid-template-columns:1fr !important;
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
+    padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   }
 
-  .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-ghost-btn,
-  .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
-    width:100% !important;
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .studio-final-actions{
+    flex-wrap:wrap;
+  }
+
+  .cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type .story-primary-btn{
+    flex:1 1 100%;
+    width:100%;
   }
 }
