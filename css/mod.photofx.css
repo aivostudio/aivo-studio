@@ -498,3 +498,77 @@
     gap:10px;
   }
 }
+/* =========================================
+   PhotoFX upload tools row
+   File: /css/mod.photofx.css
+   Add at bottom
+   ========================================= */
+
+.pfxUploadToolsGrid{
+  display:grid;
+  grid-template-columns: 1.15fr 1.15fr .9fr;
+  gap:14px;
+  margin:0 0 14px;
+  align-items:end;
+}
+
+.pfxUploadTool{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.pfxUploadMiniBtn{
+  flex:0 0 auto;
+  min-width:132px;
+  height:40px;
+  padding:0 16px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(140,110,255,.12);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxUploadMiniBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 10px 20px rgba(140,110,255,.14);
+}
+
+.pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+.pfxUploadMiniBtn--ghost{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:none;
+}
+
+.pfxUploadMiniBtn--ghost:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+  box-shadow:none;
+}
+
+.pfxUploadToolName{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.72);
+}
+
+@media (max-width: 900px){
+  .pfxUploadToolsGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
