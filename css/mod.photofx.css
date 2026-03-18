@@ -759,17 +759,16 @@
     gap:10px;
   }
 }
-/* PhotoFX — sadece Klip Ayarları başlığını ortala */
-.pfxBlock:has(.pfxUploadToolsGrid) .pfxBlockHead{
+/* PhotoFX — sadece 3. pfxBlock = Klip Ayarları başlığını ortala */
+.pfxPage > .pfxBlock:nth-of-type(3) > .pfxBlockHead{
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
   text-align:center;
 }
 
-.pfxBlock:has(.pfxUploadToolsGrid) .pfxBlockTitle,
-.pfxBlock:has(.pfxUploadToolsGrid) .pfxBlockSub{
+.pfxPage > .pfxBlock:nth-of-type(3) > .pfxBlockHead > .pfxBlockTitle,
+.pfxPage > .pfxBlock:nth-of-type(3) > .pfxBlockHead > .pfxBlockSub{
   width:100%;
   text-align:center;
 }
