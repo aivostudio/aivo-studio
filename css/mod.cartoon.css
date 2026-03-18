@@ -2645,30 +2645,26 @@
   min-width: 260px;
   border-radius: 24px;
   background:
-    radial-gradient(120% 120% at 50% 100%, rgba(72, 118, 255, .22) 0%, rgba(72, 118, 255, .10) 24%, rgba(72, 118, 255, 0) 68%),
-    radial-gradient(90% 90% at 50% 50%, rgba(122, 92, 255, .14) 0%, rgba(122, 92, 255, .08) 36%, rgba(122, 92, 255, 0) 72%),
-    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)),
-    rgba(10, 10, 30, 0.28);
-  border: 1px solid rgba(120, 150, 255, 0.18);
+    radial-gradient(90% 90% at 50% 50%, rgba(124, 92, 255, .10) 0%, rgba(124, 92, 255, .04) 38%, rgba(124, 92, 255, 0) 74%),
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)),
+    rgba(10, 10, 24, 0.18);
+  border: 1px solid rgba(170, 120, 255, 0.12);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    0 0 0 1px rgba(122, 92, 255, .06),
-    0 12px 30px rgba(0,0,0,.20),
-    0 0 30px rgba(72, 118, 255, .14);
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 12px 30px rgba(0,0,0,.18);
 }
-
 .main-panel[data-module="cartoon"] .story-flow-duration-wrap::before{
   content:"";
   position:absolute;
   left:50%;
-  bottom:-8px;
+  bottom:-10px;
   transform:translateX(-50%);
-  width:118%;
-  height:90%;
+  width:108%;
+  height:82%;
   border-radius:28px;
   background:
-    radial-gradient(circle at 50% 70%, rgba(72, 118, 255, .22) 0%, rgba(72, 118, 255, .10) 30%, rgba(72, 118, 255, 0) 72%);
-  filter: blur(18px);
+    radial-gradient(circle at 50% 68%, rgba(146, 98, 255, .12) 0%, rgba(146, 98, 255, .05) 34%, rgba(146, 98, 255, 0) 74%);
+  filter: blur(16px);
   pointer-events:none;
   z-index:0;
 }
