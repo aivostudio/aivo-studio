@@ -1,6 +1,7 @@
 /* =========================================
    AIVO — PhotoFX Module
    File: /css/mod.photofx.css
+   FINAL CLEAN / DIM / MINIMAL
    ========================================= */
 
 .pfxPage{
@@ -11,27 +12,47 @@
   color:#f5f2ff;
 }
 
+/* ===== main shells ===== */
+
 .pfxHero,
 .pfxBlock,
 .pfxEngine{
   position:relative;
   overflow:hidden;
-  border:1px solid rgba(168,120,255,.16);
   border-radius:20px;
+  border:1px solid rgba(146,104,220,.18);
   background:
-    radial-gradient(1200px 420px at 50% -10%, rgba(168,120,255,.13), transparent 58%),
-    linear-gradient(180deg, rgba(86,58,146,.18), rgba(14,10,38,.90));
+    linear-gradient(180deg, rgba(24,26,44,.88), rgba(17,18,32,.92));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    0 10px 28px rgba(0,0,0,.18);
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 10px 24px rgba(0,0,0,.26);
 }
+
+.pfxHero::before,
+.pfxBlock::before,
+.pfxEngine::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 320px at 20% 0%, rgba(152,102,228,.10), transparent 58%),
+    radial-gradient(700px 300px at 100% 18%, rgba(70,118,210,.07), transparent 60%);
+  opacity:.55; /* kritik: ışığı burada kısıyoruz */
+}
+
+.pfxHero > *,
+.pfxBlock > *,
+.pfxEngine > *{
+  position:relative;
+  z-index:1;
+}
+
+/* ===== hero ===== */
 
 .pfxHero{
   padding:18px 16px;
   border-radius:18px;
-  background:
-    linear-gradient(180deg, rgba(122,94,196,.24), rgba(53,36,103,.20)),
-    linear-gradient(180deg, rgba(20,14,48,.96), rgba(16,11,36,.96));
 }
 
 .pfxHeroText{
@@ -44,15 +65,17 @@
   line-height:1.2;
   font-weight:800;
   letter-spacing:-.02em;
-  color:#ffffff;
+  color:rgba(255,255,255,.92);
 }
 
 .pfxSub{
   margin:0;
   font-size:11px;
   line-height:1.45;
-  color:rgba(236,229,255,.68);
+  color:rgba(255,255,255,.58);
 }
+
+/* ===== generic blocks ===== */
 
 .pfxBlock{
   padding:12px;
@@ -66,28 +89,30 @@
   font-size:13px;
   line-height:1.2;
   font-weight:800;
-  color:#ffffff;
+  color:rgba(255,255,255,.92);
 }
 
 .pfxBlockSub{
   margin-top:4px;
   font-size:11px;
   line-height:1.4;
-  color:rgba(236,229,255,.62);
+  color:rgba(255,255,255,.58);
 }
+
+/* ===== upload ===== */
 
 .pfxUploadBox{
   min-height:132px;
-  border:1px dashed rgba(168,120,255,.22);
+  border:1px dashed rgba(255,255,255,.10);
   border-radius:16px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)),
-    linear-gradient(180deg, rgba(7,8,28,.92), rgba(10,10,32,.96));
+    linear-gradient(180deg, rgba(11,12,24,.78), rgba(8,9,18,.88));
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
   padding:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
 }
 
 .pfxUploadInner{
@@ -106,14 +131,16 @@
 .pfxUploadTitle{
   font-size:13px;
   font-weight:800;
-  color:#fff;
+  color:rgba(255,255,255,.92);
 }
 
 .pfxUploadHint{
   font-size:10px;
   line-height:1.35;
-  color:rgba(236,229,255,.62);
+  color:rgba(255,255,255,.56);
 }
+
+/* ===== grids ===== */
 
 .pfxQualityGrid,
 .pfxPresetGrid{
@@ -122,42 +149,52 @@
   gap:10px;
 }
 
+/* ===== choice / preset cards ===== */
+
 .pfxChoiceCard,
 .pfxPresetCard{
   appearance:none;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
-    linear-gradient(180deg, rgba(34,25,72,.92), rgba(18,15,45,.94));
-  color:#f5f2ff;
   text-align:left;
+  cursor:pointer;
+  color:#f5f2ff;
   padding:12px;
   min-height:70px;
-  cursor:pointer;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(34,36,58,.74), rgba(20,22,38,.82));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.02),
+    0 6px 14px rgba(0,0,0,.18);
   transition:
-    transform .18s ease,
-    border-color .18s ease,
-    box-shadow .18s ease,
-    background .18s ease;
+    transform .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease,
+    background .16s ease;
 }
 
 .pfxChoiceCard:hover,
 .pfxPresetCard:hover{
   transform:translateY(-1px);
-  border-color:rgba(185,135,255,.22);
-  box-shadow:0 8px 18px rgba(0,0,0,.14);
+  border-color:rgba(156,110,228,.22);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)),
+    linear-gradient(180deg, rgba(36,38,60,.78), rgba(22,24,40,.86));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.02),
+    0 8px 18px rgba(0,0,0,.22);
 }
 
 .pfxChoiceCard.is-active,
 .pfxPresetCard.is-active{
-  border-color:rgba(191,118,255,.42);
-  box-shadow:
-    inset 0 0 0 1px rgba(191,118,255,.14),
-    0 10px 22px rgba(110,58,189,.14);
+  border-color:rgba(160,110,220,.26);
   background:
-    linear-gradient(180deg, rgba(180,118,255,.12), rgba(255,255,255,.02)),
-    linear-gradient(180deg, rgba(53,39,104,.96), rgba(22,16,53,.98));
+    linear-gradient(180deg, rgba(138,96,215,.08), rgba(255,255,255,.015)),
+    linear-gradient(180deg, rgba(38,40,66,.82), rgba(22,24,42,.88));
+  box-shadow:
+    inset 0 0 0 1px rgba(160,110,220,.10),
+    0 8px 18px rgba(0,0,0,.22);
 }
 
 .pfxChoiceTop{
@@ -173,7 +210,14 @@
   font-size:11px;
   line-height:1.2;
   font-weight:800;
-  color:#fff;
+  color:rgba(255,255,255,.92);
+}
+
+.pfxChoiceDesc,
+.pfxPresetDesc{
+  font-size:10px;
+  line-height:1.35;
+  color:rgba(255,255,255,.58);
 }
 
 .pfxChoiceCredit{
@@ -181,23 +225,19 @@
   min-width:58px;
   height:28px;
   padding:0 10px;
-  border:1px solid rgba(255,255,255,.10);
   border-radius:999px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
+  border:1px solid rgba(255,255,255,.10);
   background:rgba(255,255,255,.05);
-  color:#fff;
+  color:rgba(255,255,255,.92);
   font-size:10px;
   font-weight:800;
+  box-shadow:none;
 }
 
-.pfxChoiceDesc,
-.pfxPresetDesc{
-  font-size:10px;
-  line-height:1.35;
-  color:rgba(236,229,255,.66);
-}
+/* ===== form ===== */
 
 .pfxFormGrid{
   display:grid;
@@ -214,30 +254,32 @@
 .pfxLabel{
   font-size:11px;
   font-weight:700;
-  color:rgba(245,242,255,.90);
+  color:rgba(255,255,255,.70);
 }
 
 .pfxSelect{
   width:100%;
   height:38px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;
-  background:
-    linear-gradient(180deg, rgba(9,10,31,.94), rgba(8,8,24,.98));
-  color:#ffffff;
   padding:0 12px;
+  border-radius:12px;
   outline:none;
   font-size:11px;
   font-weight:600;
+  color:rgba(255,255,255,.90);
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(180deg, rgba(10,11,22,.74), rgba(8,9,18,.88));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
 }
 
 .pfxSelect:focus{
-  border-color:rgba(187,122,255,.34);
+  border-color:rgba(150,106,220,.26);
   box-shadow:
-    0 0 0 2px rgba(155,97,255,.08),
-    inset 0 1px 0 rgba(255,255,255,.03);
+    0 0 0 2px rgba(150,106,220,.08),
+    inset 0 1px 0 rgba(255,255,255,.02);
 }
+
+/* ===== engine ===== */
 
 .pfxEngine{
   padding:12px 14px;
@@ -251,14 +293,14 @@
 .pfxEngineTitle{
   font-size:12px;
   font-weight:800;
-  color:#fff;
+  color:rgba(255,255,255,.92);
 }
 
 .pfxEngineSub{
   margin-top:4px;
   font-size:10px;
   line-height:1.4;
-  color:rgba(236,229,255,.66);
+  color:rgba(255,255,255,.58);
 }
 
 .pfxEngineMeta{
@@ -269,7 +311,7 @@
 .pfxEngineCreditLabel{
   font-size:10px;
   font-weight:700;
-  color:rgba(236,229,255,.70);
+  color:rgba(255,255,255,.60);
 }
 
 .pfxEngineCreditValue{
@@ -277,8 +319,10 @@
   font-size:20px;
   line-height:1;
   font-weight:900;
-  color:#ffffff;
+  color:rgba(255,255,255,.92);
 }
+
+/* ===== actions ===== */
 
 .pfxActions{
   margin-top:0;
@@ -289,21 +333,25 @@
   min-height:46px;
   border:none;
   border-radius:16px;
-  background:linear-gradient(90deg, #8d67ff 0%, #e85aa7 100%);
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
   color:#fff;
   font-size:14px;
   font-weight:900;
   letter-spacing:-.02em;
-  box-shadow:0 10px 22px rgba(176,88,255,.16);
+  box-shadow:0 10px 22px rgba(140,110,255,.12);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
 }
 
 .pfxCreateBtn:hover{
-  filter:brightness(1.03);
+  filter:brightness(1.02);
+  box-shadow:0 12px 24px rgba(140,110,255,.14);
 }
 
 .pfxCreateBtn:active{
   transform:translateY(1px);
 }
+
+/* ===== responsive ===== */
 
 @media (max-width: 980px){
   .pfxQualityGrid,
@@ -357,160 +405,4 @@
     border-radius:14px;
     font-size:13px;
   }
-}
-/* =========================================
-   PhotoFX -> Cover color mood override
-   File: /css/mod.photofx.css
-   Add at very bottom
-   ========================================= */
-
-.pfxHero,
-.pfxBlock,
-.pfxEngine{
-  background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170,120,255,.16), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80,140,255,.12), transparent 55%),
-    linear-gradient(180deg, rgba(22,24,44,.60), rgba(18,19,38,.60)) !important;
-  border:1px solid rgba(160,110,255,.22) !important;
-  box-shadow:0 18px 60px rgba(0,0,0,.45) !important;
-}
-
-.pfxHero{
-  background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170,120,255,.18), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80,140,255,.14), transparent 55%),
-    linear-gradient(180deg, rgba(22,24,44,.68), rgba(18,19,38,.66)) !important;
-  border:1px solid rgba(160,110,255,.22) !important;
-}
-
-.pfxUploadBox{
-  background:rgba(10,11,22,.55) !important;
-  border:1px dashed rgba(255,255,255,.14) !important;
-}
-
-.pfxChoiceCard,
-.pfxPresetCard{
-  background:rgba(255,255,255,.05) !important;
-  border:1px solid rgba(255,255,255,.14) !important;
-  box-shadow:0 10px 28px rgba(0,0,0,.28) !important;
-}
-
-.pfxChoiceCard:hover,
-.pfxPresetCard:hover{
-  background:rgba(255,255,255,.08) !important;
-  border-color:rgba(170,120,255,.30) !important;
-  box-shadow:0 16px 40px rgba(0,0,0,.45) !important;
-}
-
-.pfxChoiceCard.is-active,
-.pfxPresetCard.is-active{
-  background:
-    radial-gradient(900px 260px at 15% 10%, rgba(140,111,255,.30), transparent 60%),
-    radial-gradient(700px 260px at 85% 20%, rgba(255,120,190,.18), transparent 65%),
-    rgba(255,255,255,.07) !important;
-  border-color:rgba(255,255,255,.28) !important;
-  box-shadow:
-    0 0 0 1px rgba(170,120,255,.22),
-    0 18px 40px rgba(0,0,0,.42) !important;
-}
-
-.pfxChoiceCredit{
-  background:rgba(255,255,255,.10) !important;
-  border:1px solid rgba(255,255,255,.16) !important;
-  color:rgba(255,255,255,.96) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 6px 18px rgba(0,0,0,.22) !important;
-}
-
-.pfxSelect{
-  background:rgba(10,11,22,.55) !important;
-  border:1px solid rgba(255,255,255,.14) !important;
-  color:rgba(255,255,255,.90) !important;
-}
-
-.pfxSelect:focus{
-  border-color:rgba(170,120,255,.50) !important;
-  box-shadow:0 0 0 3px rgba(170,120,255,.16) !important;
-}
-
-.pfxCreateBtn{
-  background:linear-gradient(90deg, rgba(140,110,255,.95), rgba(255,120,190,.92)) !important;
-  box-shadow:0 14px 40px rgba(140,110,255,.20) !important;
-}
-
-.pfxTitle,
-.pfxBlockTitle,
-.pfxEngineTitle,
-.pfxChoiceTitle,
-.pfxPresetTitle{
-  color:rgba(255,255,255,.92) !important;
-}
-
-.pfxSub,
-.pfxBlockSub,
-.pfxEngineSub,
-.pfxChoiceDesc,
-.pfxPresetDesc,
-.pfxUploadHint,
-.pfxLabel,
-.pfxEngineCreditLabel{
-  color:rgba(255,255,255,.62) !important;
-}
-/* =========================================
-   PhotoFX -> dimmer / less bright
-   File: /css/mod.photofx.css
-   Add under the color mood override block
-   ========================================= */
-
-.pfxHero,
-.pfxBlock,
-.pfxEngine{
-  background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170,120,255,.10), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80,140,255,.07), transparent 55%),
-    linear-gradient(180deg, rgba(20,22,40,.72), rgba(15,17,34,.78)) !important;
-  box-shadow:0 14px 34px rgba(0,0,0,.34) !important;
-}
-
-.pfxHero{
-  background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170,120,255,.11), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80,140,255,.08), transparent 55%),
-    linear-gradient(180deg, rgba(22,24,44,.74), rgba(18,19,38,.80)) !important;
-}
-
-.pfxChoiceCard,
-.pfxPresetCard{
-  background:rgba(255,255,255,.035) !important;
-  box-shadow:0 8px 20px rgba(0,0,0,.24) !important;
-}
-
-.pfxChoiceCard:hover,
-.pfxPresetCard:hover{
-  background:rgba(255,255,255,.05) !important;
-  border-color:rgba(170,120,255,.22) !important;
-  box-shadow:0 12px 28px rgba(0,0,0,.30) !important;
-}
-
-.pfxChoiceCard.is-active,
-.pfxPresetCard.is-active{
-  background:
-    radial-gradient(900px 260px at 15% 10%, rgba(140,111,255,.16), transparent 60%),
-    radial-gradient(700px 260px at 85% 20%, rgba(255,120,190,.08), transparent 65%),
-    rgba(255,255,255,.05) !important;
-  border-color:rgba(255,255,255,.18) !important;
-  box-shadow:
-    0 0 0 1px rgba(170,120,255,.12),
-    0 12px 26px rgba(0,0,0,.28) !important;
-}
-
-.pfxChoiceCredit{
-  background:rgba(255,255,255,.07) !important;
-  border:1px solid rgba(255,255,255,.12) !important;
-  box-shadow:none !important;
-}
-
-.pfxCreateBtn{
-  box-shadow:0 10px 24px rgba(140,110,255,.14) !important;
 }
