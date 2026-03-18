@@ -759,3 +759,15 @@
     gap:10px;
   }
 }
+/* PhotoFX — Klip Ayarları başlığını ortaya al */
+.photofx-clip-settings .section-title,
+.photofx-clip-settings .mod-title,
+.photofx-clip-settings h2,
+.photofx-clip-settings h3 {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
