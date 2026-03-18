@@ -37,7 +37,7 @@ window.ensureModuleCSS = function(routeKey){
     cover: "cover",
     atmo: "atmo",
     cartoon: "cartoon",
-    hook: "hook",
+    photofx: "photofx",
     dashboard: "dashboard",
     library: "library",
     invoices: "invoices",
@@ -51,7 +51,7 @@ window.ensureModuleCSS = function(routeKey){
     "cover",
     "atmo",
     "cartoon",
-    "hook",
+    "photofx",
     "dashboard",
     "library",
     "invoices",
@@ -67,7 +67,7 @@ window.ensureModuleCSS = function(routeKey){
     cover: "cover.html",
     atmo: "atmosphere.html",
     cartoon: "child-cartoon.html",
-    hook: "viral-hook.html",
+    photofx: "photofx.html",
     dashboard: "dashboard.html",
     library: "library.html",
     invoices: "invoices.html",
@@ -86,6 +86,11 @@ window.ensureModuleCSS = function(routeKey){
     if (p === "social") return "cartoon";
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
+
+    // ✅ eski hook linkleri bozulmasın
+    if (p === "hook") return "photofx";
+    if (p === "viral-hook") return "photofx";
+    if (p === "photofx") return "photofx";
 
     return p;
   }
@@ -107,6 +112,11 @@ window.ensureModuleCSS = function(routeKey){
     if (key === "social") key = "cartoon";
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
+
+    // ✅ eski hook hash'leri bozulmasın
+    if (key === "hook") key = "photofx";
+    if (key === "viral-hook") key = "photofx";
+    if (key === "photofx") key = "photofx";
 
     if (!ROUTES.has(key)) key = "music";
     return { key, params: {} };
