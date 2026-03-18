@@ -2686,7 +2686,8 @@
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.06),
     0 12px 28px rgba(0,0,0,.24),
-    0 0 0 1px rgba(126, 92, 255, .08);
+    0 0 0 1px rgba(214, 102, 255, .10),
+    0 0 24px rgba(236, 91, 167, .10);
 }
 
 .main-panel[data-module="cartoon"] .story-flow-duration-control select{
