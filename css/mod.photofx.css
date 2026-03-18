@@ -619,3 +619,73 @@ section[data-module="photofx"] .pfxPresetBlock .pfxBlockSub{
   width: 100%;
   text-align: center;
 }
+/* PhotoFX — upload row compact (resim/audio/müzik) */
+section[data-module="photofx"] .pfxUploadToolsGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr .9fr;
+  gap:14px;
+  align-items:end;
+}
+
+section[data-module="photofx"] .pfxUploadTool{
+  height:40px;
+  display:grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap:10px;
+  align-items:center;
+}
+
+section[data-module="photofx"] .pfxUploadMiniBtn{
+  width:118px;
+  min-width:118px;
+  height:40px;
+  padding:0 12px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:800;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.88);
+  box-shadow:none;
+}
+
+section[data-module="photofx"] .pfxUploadMiniBtn:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+}
+
+section[data-module="photofx"] .pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+section[data-module="photofx"] .pfxUploadToolName{
+  height:40px;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(10,11,22,.74), rgba(8,9,18,.88));
+  color:rgba(255,255,255,.72);
+  font-size:11px;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+section[data-module="photofx"] .pfxSelect{
+  height:40px;
+  border-radius:12px;
+  font-size:11px;
+  padding:0 12px;
+}
+
+@media (max-width: 900px){
+  section[data-module="photofx"] .pfxUploadToolsGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
