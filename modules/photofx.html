@@ -88,29 +88,30 @@
       <div class="pfxBlockSub">Çıkış süresi, oran ve efekt yoğunluğunu belirle.</div>
     </div>
 
-    <div class="pfxUploadInlineGrid">
+    <div class="pfxUploadToolsGrid">
       <div class="pfxField">
         <span class="pfxLabel">Ana Görsel</span>
-        <button type="button" class="pfxUploadMiniBtn" id="pfxInlineUploadBtn">Resim Seç</button>
-      </div>
-
-      <div class="pfxField">
-        <span class="pfxLabel">Yüklenen Dosya</span>
-        <div class="pfxUploadMiniMeta" id="pfxInlineFileMeta">
-          <span class="pfxUploadMiniName" id="pfxInlineFileName">Dosya seçilmedi</span>
+        <div class="pfxUploadTool">
+          <button type="button" class="pfxUploadMiniBtn" id="pfxInlineUploadBtn">Resim Seç</button>
+          <span class="pfxUploadToolName" id="pfxInlineFileName">Dosya seçilmedi</span>
         </div>
       </div>
 
       <div class="pfxField">
-        <span class="pfxLabel">Sil</span>
-        <button
-          type="button"
-          class="pfxUploadMiniRemove"
-          id="pfxInlineFileRemove"
-          aria-label="Dosyayı kaldır"
-          title="Dosyayı kaldır"
-        >×</button>
+        <span class="pfxLabel">Audio Yükle</span>
+        <div class="pfxUploadTool">
+          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxAudioUploadBtn">Audio Seç</button>
+          <span class="pfxUploadToolName" id="pfxAudioFileName">Dosya seçilmedi</span>
+        </div>
       </div>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Müziği Videoya Dahil Et</span>
+        <select class="pfxSelect" id="pfxIncludeMusic">
+          <option value="no" selected>Hayır</option>
+          <option value="yes">Evet</option>
+        </select>
+      </label>
     </div>
 
     <div class="pfxFormGrid">
