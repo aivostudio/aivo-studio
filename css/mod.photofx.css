@@ -572,3 +572,108 @@
     gap:10px;
   }
 }
+/* =========================================
+   PhotoFX upload tools row — compact
+   File: /css/mod.photofx.css
+   Add at bottom
+   ========================================= */
+
+.pfxUploadToolsGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap:12px;
+  margin:0 0 12px;
+  align-items:end;
+}
+
+.pfxUploadTool{
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.pfxUploadMiniBtn{
+  flex:0 0 auto;
+  min-width:104px;
+  height:36px;
+  padding:0 12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg, rgba(140,110,255,.92), rgba(255,120,190,.88));
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(140,110,255,.10);
+  transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+
+.pfxUploadMiniBtn:hover{
+  filter:brightness(1.02);
+  box-shadow:0 8px 16px rgba(140,110,255,.12);
+}
+
+.pfxUploadMiniBtn:active{
+  transform:translateY(1px);
+}
+
+.pfxUploadMiniBtn--ghost{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:none;
+}
+
+.pfxUploadMiniBtn--ghost:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(160,110,220,.22);
+  box-shadow:none;
+}
+
+.pfxUploadToolName{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.72);
+}
+
+/* JS dosya seçince bu class ile X ekleyebilir */
+.pfxUploadTool.has-file{
+  gap:6px;
+}
+
+.pfxUploadTool.has-file .pfxUploadToolName{
+  max-width:calc(100% - 30px);
+}
+
+.pfxUploadToolRemove{
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.86);
+  font-size:14px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+}
+
+.pfxUploadToolRemove:hover{
+  background:rgba(255,255,255,.12);
+}
+
+@media (max-width: 900px){
+  .pfxUploadToolsGrid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
