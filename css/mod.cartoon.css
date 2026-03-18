@@ -2662,8 +2662,8 @@
   width:108%;
   height:82%;
   border-radius:28px;
-  background:
-    radial-gradient(circle at 50% 68%, rgba(146, 98, 255, .12) 0%, rgba(146, 98, 255, .05) 34%, rgba(146, 98, 255, 0) 74%);
+ background:
+  radial-gradient(circle at 50% 68%, rgba(146, 98, 255, .06) 0%, rgba(146, 98, 255, .025) 34%, rgba(146, 98, 255, 0) 74%);
   filter: blur(16px);
   pointer-events:none;
   z-index:0;
