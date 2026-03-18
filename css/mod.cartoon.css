@@ -2439,7 +2439,7 @@
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 15px;
   background:
-    linear-gradient(90deg, rgba(140, 96, 255, .96), rgba(182, 102, 232, .96));
+  linear-gradient(90deg, rgba(140, 96, 255, .38), rgba(182, 102, 232, .34));
   color: #fff;
   font-size: 17px;
   line-height: 1;
