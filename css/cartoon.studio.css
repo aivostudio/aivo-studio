@@ -1,4 +1,4 @@
-/* ===== Montaj Stüdyosu — reset + compact ===== */
+/* ===== Montaj Stüdyosu — temiz compact reset ===== */
 .cartoon-mode-view[data-cartoon-view="studio"]{
   display:block;
   width:100%;
@@ -6,21 +6,23 @@
   padding-top:8px;
 }
 
-/* eski test başlıklarını kapat */
 .cartoon-mode-view[data-cartoon-view="studio"] #studioTestTitle,
 .cartoon-mode-view[data-cartoon-view="studio"] h2[style*="MONTAJ STÜDYOSU TEST"]{
   display:none !important;
 }
 
-/* tüm kartlar */
+/* kartlar */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-card{
   position:relative !important;
   inset:auto !important;
-  bottom:auto !important;
   top:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:auto !important;
   z-index:auto !important;
-  padding:12px 14px !important;
+  transform:none !important;
   margin:0 0 10px 0 !important;
+  padding:12px 14px !important;
   border-radius:18px !important;
   border:1px solid rgba(255,255,255,.08) !important;
   background:
@@ -34,17 +36,7 @@
   -webkit-backdrop-filter:none !important;
 }
 
-/* Final kartına özel sticky / sabit / overlay her şeyi kapat */
-.cartoon-mode-view[data-cartoon-view="studio"] .studio-card:last-of-type{
-  position:relative !important;
-  inset:auto !important;
-  bottom:auto !important;
-  top:auto !important;
-  z-index:auto !important;
-  transform:none !important;
-}
-
-/* başlıklar */
+/* başlık */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-card-head{
   display:flex !important;
   flex-direction:column !important;
@@ -68,7 +60,7 @@
   color:rgba(255,255,255,.68) !important;
 }
 
-/* format butonları */
+/* format */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-pill-group,
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-pill-group{
   display:flex !important;
@@ -91,7 +83,7 @@
   box-shadow:none !important;
 }
 
-/* gridler */
+/* grid */
 .cartoon-mode-view[data-cartoon-view="studio"] .story-grid{
   display:grid !important;
   gap:10px !important;
@@ -143,7 +135,7 @@
   resize:vertical !important;
 }
 
-/* sahne listesi */
+/* scene list */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-scene-list{
   display:flex !important;
   flex-direction:column !important;
@@ -220,7 +212,7 @@
   line-height:1 !important;
 }
 
-/* özet satırları */
+/* summary */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-inline-summary{
   display:flex !important;
   flex-wrap:wrap !important;
@@ -232,15 +224,12 @@
   color:rgba(255,255,255,.78) !important;
 }
 
-/* final buton alanı — sticky yok, fixed yok, overlay yok */
+/* final actions */
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions{
   position:relative !important;
   inset:auto !important;
-  bottom:auto !important;
-  top:auto !important;
-  z-index:auto !important;
   display:grid !important;
-  grid-template-columns:auto auto auto minmax(180px,1fr) !important;
+  grid-template-columns:auto auto auto minmax(220px,1fr) !important;
   gap:8px !important;
   align-items:center !important;
   margin-top:10px !important;
@@ -255,10 +244,12 @@
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
   appearance:none !important;
   box-shadow:none !important;
+  transform:none !important;
 }
 
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-ghost-btn{
   min-width:0 !important;
+  width:auto !important;
   height:36px !important;
   padding:0 14px !important;
   border-radius:14px !important;
@@ -272,6 +263,7 @@
 .cartoon-mode-view[data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
   width:100% !important;
   min-width:0 !important;
+  max-width:none !important;
   height:44px !important;
   padding:0 16px !important;
   border-radius:999px !important;
@@ -282,21 +274,19 @@
   box-shadow:0 10px 24px rgba(191,86,255,.18) !important;
 }
 
-/* range */
+/* inputs */
 .cartoon-mode-view[data-cartoon-view="studio"] input[type="range"]{
   width:100% !important;
-  height:auto !important;
   min-height:20px !important;
 }
 
-/* file */
 .cartoon-mode-view[data-cartoon-view="studio"] input[type="file"]{
   width:100% !important;
   min-width:0 !important;
   font-size:10px !important;
 }
 
-/* mobil */
+/* mobile */
 @media (max-width: 900px){
   .cartoon-mode-view[data-cartoon-view="studio"] .story-grid.story-grid-2{
     grid-template-columns:1fr !important;
