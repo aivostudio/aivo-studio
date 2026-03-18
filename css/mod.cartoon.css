@@ -2645,25 +2645,30 @@
   min-width: 260px;
   border-radius: 24px;
   background:
+    radial-gradient(120% 120% at 50% 100%, rgba(72, 118, 255, .22) 0%, rgba(72, 118, 255, .10) 24%, rgba(72, 118, 255, 0) 68%),
+    radial-gradient(90% 90% at 50% 50%, rgba(122, 92, 255, .14) 0%, rgba(122, 92, 255, .08) 36%, rgba(122, 92, 255, 0) 72%),
     linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)),
-    rgba(10, 10, 30, 0.46);
-  border: 1px solid rgba(184, 126, 255, 0.16);
+    rgba(10, 10, 30, 0.28);
+  border: 1px solid rgba(120, 150, 255, 0.18);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.04),
-    0 12px 30px rgba(0,0,0,.20);
+    0 0 0 1px rgba(122, 92, 255, .06),
+    0 12px 30px rgba(0,0,0,.20),
+    0 0 30px rgba(72, 118, 255, .14);
 }
 
 .main-panel[data-module="cartoon"] .story-flow-duration-wrap::before{
   content:"";
   position:absolute;
   left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:112%;
-  height:112%;
+  bottom:-8px;
+  transform:translateX(-50%);
+  width:118%;
+  height:90%;
   border-radius:28px;
-  background: radial-gradient(circle, rgba(120, 92, 255, 0.16) 0%, rgba(120, 92, 255, 0) 70%);
-  filter: blur(14px);
+  background:
+    radial-gradient(circle at 50% 70%, rgba(72, 118, 255, .22) 0%, rgba(72, 118, 255, .10) 30%, rgba(72, 118, 255, 0) 72%);
+  filter: blur(18px);
   pointer-events:none;
   z-index:0;
 }
