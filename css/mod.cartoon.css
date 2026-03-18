@@ -2030,10 +2030,10 @@
   width: 100vw;
   height: 100dvh;
   min-height: 100dvh;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   -webkit-backdrop-filter: blur(8px);
 }
+
 .main-panel[data-module="cartoon"] .story-scene-editor-card{
   width:min(760px, calc(100vw - 48px));
   max-width:760px;
@@ -2057,6 +2057,7 @@
   max-height: 88dvh;
   margin: 0 auto;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
 }
 .main-panel[data-module="cartoon"] .story-scene-editor-card .story-grid,
