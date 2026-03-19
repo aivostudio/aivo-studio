@@ -296,6 +296,10 @@ function syncIncludeMusic(root) {
       form.includeAudio && form.audioFile ? await uploadFile(form.audioFile) : "";
 
     const providerVariant = form.quality === "premium" ? "pro" : "fast";
+    const providerModel =
+  providerVariant === "pro"
+    ? "fal-ai/ltx-2.3/image-to-video/pro"
+    : "fal-ai/ltx-2.3/image-to-video/fast";
 
     const provider = await postJSON("/api/providers/fal/predictions/create?app=photofx", {
       input: {
