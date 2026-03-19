@@ -305,6 +305,7 @@ function syncIncludeMusic(root) {
       input: {
         prompt: form.prompt,
         quality: providerVariant,
+        model: providerModel,
         style: form.style,
         styles: form.styles,
         image_url: imageUrl,
@@ -349,10 +350,11 @@ function syncIncludeMusic(root) {
       includeAudio: form.includeAudio,
       imageUrl,
       audioUrl,
-      providerJobId,
-      providerName: "fal",
-      providerVariant,
-      status: "processing",
+    providerJobId,
+    providerName: "fal",
+    providerVariant,
+    providerModel,
+    status: "processing",
     });
 
     const finalJobId = db?.job_id || providerJobId;
@@ -380,6 +382,7 @@ function syncIncludeMusic(root) {
             audioUrl,
             provider: "fal",
             provider_variant: providerVariant,
+            provider_model: providerModel,
           },
         },
       })
