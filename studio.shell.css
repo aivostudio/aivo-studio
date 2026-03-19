@@ -384,3 +384,14 @@ section.outputsCard.studioOutputs,
   justify-self: stretch !important;
   box-sizing: border-box !important;
 }
+/* PHOTOFX OUTER FRAME KILL */
+#moduleHost,
+#moduleHost::before,
+#moduleHost::after,
+#moduleHost > section[data-module="photofx"],
+#moduleHost > section[data-module="photofx"]::before,
+#moduleHost > section[data-module="photofx"]::after{
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
