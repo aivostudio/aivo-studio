@@ -171,31 +171,23 @@ window.ensureModuleCSS = function(routeKey){
   }
 
   async function go(key) {
-  if (!ROUTES.has(key)) key = "music";
+    if (!ROUTES.has(key)) key = "music";
 
-  const cur = parseHash();
-  if (cur.key !== key) {
-    setHash(key);
-    return;
-  }
+    const cur = parseHash();
+    if (cur.key !== key) {
+      setHash(key);
+      return;
+    }
 
-  setActiveNav(key);
-  window.ensureModuleCSS?.(key);
+    setActiveNav(key);
 
-  try {
+    window.ensureModuleCSS?.(key);
+
     await loadModuleIntoHost(key);
-  } catch (err) {
-    console.error("[StudioRouter] loadModuleIntoHost failed:", key, err);
-  }
 
-  const panelKey = RIGHT_PANEL_KEY[key] || "music";
-
-  try {
+    const panelKey = RIGHT_PANEL_KEY[key] || "music";
     window.RightPanel?.force?.(panelKey, {});
-  } catch (err) {
-    console.error("[StudioRouter] RightPanel.force failed:", panelKey, err);
   }
-}
 
   function onHashChange() {
     const { key } = parseHash();
