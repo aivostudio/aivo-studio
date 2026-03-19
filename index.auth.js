@@ -841,7 +841,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const product = (card.getAttribute("data-product") || "").trim();
     if (!product) return;
 
-    const isStudio = /\/studio(\.html)?/i.test(location.pathname) || /studio\.html/i.test(location.href);
+   const isStudio =
+  /\/studio(\.html)?$/i.test(location.pathname) ||
+  /\/studio\.v2\.html$/i.test(location.pathname) ||
+  /studio\.html/i.test(location.href) ||
+  /studio\.v2\.html/i.test(location.href);
 
     function safeIsLoggedIn(){
       try{
