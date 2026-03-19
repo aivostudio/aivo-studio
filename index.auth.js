@@ -137,16 +137,19 @@ function openModal(mode /* "login" | "register" */) {
    TARGET / REDIRECT
    ========================= */
 function normalizeStudio(url) {
-  const u = (url || "/studio.html").trim();
-  // studio hedefi geldiyse query/hash'i KORU
-  if (u.includes("/studio")) {
-    const parts = u.split("/studio");
-    // u zaten "/studio.html?page=..." gibi ise aynen bırak
-    if (u.includes("/studio.html")) return u;
-    // "/studio?page=..." gibi gelirse "/studio.html?page=..." yap
-    const suffix = u.substring(u.indexOf("/studio") + "/studio".length) || "";
-    return "/studio.html" + suffix;
+  const u = (url || "/studio.v2.html").trim();
+
+  if (u.includes("/studio.v2.html")) return u;
+
+  if (u.includes("/studio.html")) {
+    return u.replace("/studio.html", "/studio.v2.html");
   }
+
+  if (u.includes("/studio")) {
+    const suffix = u.substring(u.indexOf("/studio") + "/studio".length) || "";
+    return "/studio.v2.html" + suffix;
+  }
+
   return u;
 }
 
