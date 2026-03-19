@@ -134,9 +134,10 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   }
 
   function setActiveQuality(root, quality) {
-    const q = String(quality || "standard").toLowerCase() === "premium"
-      ? "premium"
-      : "standard";
+    const q =
+      String(quality || "standard").toLowerCase() === "premium"
+        ? "premium"
+        : "standard";
 
     qsa(".pfxChoiceCard", root).forEach((btn) => {
       const on = (btn.getAttribute("data-quality") || "") === q;
@@ -162,17 +163,48 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     console.log("[photofx] quality =", q, "credit =", credit);
   }
 
-  function setActivePreset(root, preset) {
-    if (!preset) return;
+  function getSelectedPresets(root) {
+    const raw = String(root.dataset.photofxPresets || "").trim();
+    if (!raw) return [];
+    return raw
+      .split(",")
+      .map((x) => String(x || "").trim())
+      .filter(Boolean);
+  }
+
+  function setSelectedPresets(root, presets) {
+    const clean = Array.from(
+      new Set(
+        (Array.isArray(presets) ? presets : [])
+          .map((x) => String(x || "").trim())
+          .filter(Boolean)
+      )
+    );
+
+    root.dataset.photofxPresets = clean.join(",");
 
     qsa(".pfxPresetCard", root).forEach((btn) => {
-      const on = (btn.getAttribute("data-preset") || "") === preset;
+      const value = String(btn.getAttribute("data-preset") || "").trim();
+      const on = clean.includes(value);
       btn.classList.toggle("is-active", on);
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
-    root.dataset.photofxPreset = preset;
-    console.log("[photofx] preset =", preset);
+    console.log("[photofx] presets =", clean);
+  }
+
+  function togglePreset(root, preset) {
+    const value = String(preset || "").trim();
+    if (!value) return;
+
+    const current = getSelectedPresets(root);
+    const exists = current.includes(value);
+
+    const next = exists
+      ? current.filter((x) => x !== value)
+      : [...current, value];
+
+    setSelectedPresets(root, next);
   }
 
   function syncIncludeMusic(root) {
@@ -252,10 +284,13 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   }
 
   function collectForm(root) {
+    const selectedPresets = getSelectedPresets(root);
+
     return {
       prompt: (qs("#pfxPrompt", root)?.value || "").trim(),
       quality: root.dataset.photofxQuality || "standard",
-      style: root.dataset.photofxPreset || "neon-pulse",
+      styles: selectedPresets,
+      style: selectedPresets[0] || "neon-pulse",
       duration: qs("#pfxDuration", root)?.value || "10",
       ratio: qs("#pfxAspect", root)?.value || "9:16",
       motionLevel: qs("#pfxMotionLevel", root)?.value || "balanced",
@@ -284,6 +319,11 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       return;
     }
 
+    if (!form.styles.length) {
+      alert("Lütfen en az 1 efekt stili seç.");
+      return;
+    }
+
     const imageUrl = await uploadFile(form.imageFile);
     const audioUrl =
       form.includeAudio && form.audioFile ? await uploadFile(form.audioFile) : "";
@@ -295,6 +335,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         prompt: form.prompt,
         quality: providerVariant,
         style: form.style,
+        styles: form.styles,
         image_url: imageUrl,
         start_image_url: imageUrl,
         audio_url: audioUrl || undefined,
@@ -325,6 +366,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     const db = await postJSON("/api/photofx/generate", {
       prompt: form.prompt,
+      styles: form.styles,
       style: form.style,
       quality: form.quality,
       ratio: form.ratio,
@@ -346,6 +388,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
             app: "photofx",
             job_id: db.job_id,
             prompt: form.prompt,
+            styles: form.styles,
             style: form.style,
             quality: form.quality,
             ratio: form.ratio,
@@ -364,7 +407,11 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       );
     }
 
-    console.log("[photofx] create done ✅", { job_id: db?.job_id, videoUrl });
+    console.log("[photofx] create done ✅", {
+      job_id: db?.job_id,
+      styles: form.styles,
+      videoUrl,
+    });
   }
 
   function ensureDefaults(root) {
@@ -372,15 +419,13 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       setActiveQuality(root, "standard");
     }
 
-    if (!root.dataset.photofxPreset) {
-      const firstPreset = qs(".pfxPresetCard[data-preset]", root);
-      if (firstPreset) {
-        setActivePreset(root, firstPreset.getAttribute("data-preset"));
-      }
+    if (!root.dataset.photofxPresets) {
+      root.dataset.photofxPresets = "";
     }
 
     setPromptCounter(root);
     bindUploadButtons(root);
+    setSelectedPresets(root, getSelectedPresets(root));
   }
 
   document.addEventListener(
@@ -412,7 +457,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       const presetBtn = e.target.closest(".pfxPresetCard[data-preset]");
       if (presetBtn && root.contains(presetBtn)) {
         e.preventDefault();
-        setActivePreset(root, presetBtn.getAttribute("data-preset"));
+        togglePreset(root, presetBtn.getAttribute("data-preset"));
         return;
       }
 
