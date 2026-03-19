@@ -87,21 +87,13 @@ section[data-module="photofx"] .pfxTitle{
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -.02em;
-
-  background: linear-gradient(
-    90deg,
-    rgba(196, 150, 255, .96) 0%,
-    rgba(224, 170, 255, .94) 38%,
-    rgba(255, 150, 210, .90) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-
-  filter: saturate(.9) brightness(.96);
+  color: rgba(255,255,255,.96);
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
+  filter: none;
 }
-
 section[data-module="photofx"] .pfxSub{
   margin: 0;
   max-width: 760px;
