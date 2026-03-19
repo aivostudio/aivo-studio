@@ -2,6 +2,7 @@ export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
 import authModule from "../_lib/auth.js";
+
 const { requireAuth } = authModule;
 
 export default async function handler(req, res) {
@@ -42,14 +43,15 @@ export default async function handler(req, res) {
   }
 
   const body = req.body || {};
+
   const prompt = String(body.prompt || "").trim();
-  const style = body.style ?? null;
+  const style = String(body.style || "neon-pulse").trim();
   const quality = String(body.quality || "standard").trim();
   const ratio = String(body.ratio || "9:16").trim();
   const duration = String(body.duration || "10").trim();
-  const motionLevel = String(body.motionLevel || "medium").trim();
+  const motionLevel = String(body.motionLevel || "balanced").trim();
   const effectStrength = String(body.effectStrength || "medium").trim();
-  const colorMood = String(body.colorMood || "neutral").trim();
+  const colorMood = String(body.colorMood || "original").trim();
   const transitionSpeed = String(body.transitionSpeed || "normal").trim();
   const includeAudio = !!body.includeAudio;
   const imageUrl = String(body.imageUrl || "").trim();
@@ -89,8 +91,8 @@ export default async function handler(req, res) {
     const user_uuid = String(userRow[0].id);
     const providerModel =
       quality === "premium"
-        ? "ltx-2.3-image-to-video-pro"
-        : "ltx-2.3-image-to-video-fast";
+        ? "fal-ai/ltx-2.3/image-to-video/pro"
+        : "fal-ai/ltx-2.3/image-to-video/fast";
 
     const metaSafe = {
       app: "photofx",
