@@ -45,7 +45,10 @@ export default async function handler(req, res) {
   const body = req.body || {};
 
   const prompt = String(body.prompt || "").trim();
-  const style = String(body.style || "neon-pulse").trim();
+  const styles = Array.isArray(body.styles)
+    ? body.styles.map((x) => String(x || "").trim()).filter(Boolean)
+    : [];
+  const style = String(body.style || styles[0] || "neon-pulse").trim();
   const quality = String(body.quality || "standard").trim();
   const ratio = String(body.ratio || "9:16").trim();
   const duration = String(body.duration || "10").trim();
@@ -56,7 +59,10 @@ export default async function handler(req, res) {
   const includeAudio = !!body.includeAudio;
   const imageUrl = String(body.imageUrl || "").trim();
   const audioUrl = String(body.audioUrl || "").trim();
-  const videoUrl = String(body.videoUrl || "").trim();
+  const providerJobId = String(body.providerJobId || "").trim();
+  const providerName = String(body.providerName || "fal").trim();
+  const providerVariant = String(body.providerVariant || "").trim();
+  const status = String(body.status || "processing").trim().toLowerCase();
 
   if (!prompt) {
     return res.status(400).json({ ok: false, error: "prompt_empty" });
@@ -66,8 +72,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: "image_url_empty" });
   }
 
-  if (!videoUrl) {
-    return res.status(400).json({ ok: false, error: "video_url_empty" });
+  if (!providerJobId) {
+    return res.status(400).json({ ok: false, error: "provider_job_id_empty" });
   }
 
   const sql = neon(conn);
@@ -97,10 +103,13 @@ export default async function handler(req, res) {
     const metaSafe = {
       app: "photofx",
       kind: "photofx_video",
-      provider: "fal",
+      provider: providerName,
+      providerJobId,
+      providerVariant,
       model: providerModel,
       prompt,
       style,
+      styles,
       quality,
       ratio,
       duration,
@@ -112,21 +121,6 @@ export default async function handler(req, res) {
       imageUrl,
       audioUrl,
     };
-
-    const outputsSafe = [
-      {
-        type: "video",
-        url: videoUrl,
-        meta: {
-          app: "photofx",
-          prompt,
-          style,
-          quality,
-          ratio,
-          duration,
-        },
-      },
-    ];
 
     const inserted = await sql`
       insert into jobs (
@@ -146,14 +140,14 @@ export default async function handler(req, res) {
         ${user_uuid}::uuid,
         'photofx',
         'photofx',
-        'ready',
+        ${status},
         ${prompt},
         ${metaSafe},
-        ${JSON.stringify(outputsSafe)}::jsonb,
+        '[]'::jsonb,
         now(),
         now()
       )
-      returning id, user_uuid, app, status, created_at, outputs
+      returning id, user_uuid, app, status, created_at, outputs, meta
     `;
 
     const job_id = String(inserted[0].id);
@@ -165,8 +159,16 @@ export default async function handler(req, res) {
       app: inserted[0].app,
       status: inserted[0].status,
       created_at: inserted[0].created_at,
-      videoUrl,
+      providerJobId,
     });
+  } catch (e) {
+    console.error("photofx generate failed:", e);
+    return res.status(500).json({
+      ok: false,
+      error: "create_failed",
+      message: String(e?.message || e),
+    });
+  }
   } catch (e) {
     console.error("photofx generate failed:", e);
     return res.status(500).json({
