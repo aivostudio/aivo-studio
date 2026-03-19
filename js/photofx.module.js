@@ -228,7 +228,7 @@ function syncIncludeMusic(root) {
       const form = new FormData();
       form.append("file", file);
 
-      const r = await fetch("/api/upload", {
+     const r = await fetch("/api/r2/presign-put", {
         method: "POST",
         body: form,
       });
