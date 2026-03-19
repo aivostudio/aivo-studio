@@ -1,11 +1,11 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function(routeKey){
+  window.ensureModuleCSS = function(routeKey){
   const link = document.getElementById("studio-module-css");
   if(!link) return;
 
-  const v = Date.now();
+  const v = "1";
   const primary  = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
@@ -23,7 +23,7 @@ window.ensureModuleCSS = function(routeKey){
 // ===============================
 // ROUTER
 // ===============================
-(function () {
+  (function () {
   if (window.__AIVO_ROUTER_BOOTED__) {
     console.warn("[AIVO] router already booted, skipping");
     return;
