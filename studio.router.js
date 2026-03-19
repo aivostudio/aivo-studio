@@ -199,7 +199,7 @@ window.ensureModuleCSS = function(routeKey){
   if (!btn) return;
 
   const key = btn.dataset.route || "music";
-  console.log("[NAV CLICK]", key, btn);
+
 
   setHash(key);
 }
