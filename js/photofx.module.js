@@ -1,4 +1,4 @@
-// FILE: studio.modules/photofx.module.js
+// FILE: js/photofx.module.js
 console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
 (function () {
