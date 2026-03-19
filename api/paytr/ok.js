@@ -6,7 +6,7 @@ export default function handler(req, res) {
 
   // Not: Bu sadece redirect. Asıl doğrulama notify + verify ile yapılır.
   res.writeHead(302, {
-    Location: `${baseUrl}/studio.html?page=checkout&paytr=ok&oid=${oid}`,
+   Location: `${baseUrl}/studio.v2.html#checkout?paytr=ok&oid=${oid}`,
   });
   res.end();
 }
