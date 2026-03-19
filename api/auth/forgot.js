@@ -1,6 +1,7 @@
 // api/auth/forgot.js
 const crypto = require("crypto");
 const { kv } = require("@vercel/kv");
+const { getMailer } = require("../../lib/mail/mailer");
 
 function json(res, code, obj) {
   res.statusCode = code;
@@ -62,14 +63,34 @@ module.exports = async function handler(req, res) {
   );
 
   const base = getBaseUrl(req);
-  const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
+ const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
 
-  // production → debug link gösterme
-  const isProd = process.env.VERCEL_ENV === "production";
+try {
+  const mailer = getMailer();
 
- return json(res, 200, {
-  ok: true,
-  debug_reset_url: resetUrl
-});
+  await mailer.sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: email,
+    subject: "AIVO Şifre Sıfırlama",
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111">
+        <h2>AIVO Şifre Sıfırlama</h2>
+        <p>Şifreni sıfırlamak için aşağıdaki butona tıkla:</p>
+        <p>
+          <a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px;">
+            Şifremi Sıfırla
+          </a>
+        </p>
+        <p>Buton çalışmazsa bu linki tarayıcıya yapıştır:</p>
+        <p>${resetUrl}</p>
+        <p>Bu link 30 dakika geçerlidir.</p>
+      </div>
+    `
+  });
 
+  return json(res, 200, { ok: true });
+} catch (err) {
+  console.error("FORGOT_MAIL_SEND_FAIL:", err);
+  return json(res, 500, { ok: false, reason: "mail_send_failed" });
+}
 };
