@@ -5,44 +5,44 @@
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- ================= GLOBAL / CORE ================= -->
-  <link rel="stylesheet" href="/index.css?v=1002">
+<!-- ================= GLOBAL / CORE ================= -->
+<link rel="stylesheet" href="/index.css?v=1002">
 
-  <!-- ================= TOPBAR / DROPDOWN (BASE) ================= -->
-  <link rel="stylesheet" href="/products.dropdown.css?v=14">
-  <link rel="stylesheet" href="/products.dropdown.override.css?v=9" />
+<!-- ================= TOPBAR / DROPDOWN (BASE) ================= -->
+<link rel="stylesheet" href="/products.dropdown.css?v=14">
+<link rel="stylesheet" href="/products.dropdown.override.css?v=9" />
 
-  <!-- ================= STUDIO — SHELL (LAYOUT / İSKELET) ================= -->
-  <link rel="stylesheet" href="/studio.shell.css?v=5">
+<!-- ================= STUDIO — SHELL (LAYOUT / İSKELET) ================= -->
+<link rel="stylesheet" href="/studio.shell.css?v=5">
 
-  <!-- ================= STUDIO — UI / PAGES ================= -->
-  <link rel="stylesheet" href="/studio.app.css?v=4">
-  <link rel="stylesheet" href="/studio.pages.css?v=8">
+<!-- ================= STUDIO — UI / PAGES ================= -->
+<link rel="stylesheet" href="/studio.app.css?v=4">
+<link rel="stylesheet" href="/studio.pages.css?v=8">
 
-  <!-- ================= MODULE CSS (router yönetir) ================= -->
-  <link id="studio-module-css" rel="stylesheet" href="/css/mod.dashboard.css?v=3">
+<!-- ================= MODULE CSS (router yönetir) ================= -->
+<link id="studio-module-css" rel="stylesheet" href="/css/mod.dashboard.css?v=3">
 
-  <!-- ================= PAGE CSS (ATMOSPHERE / COVER vs) ================= -->
-  <link rel="stylesheet" href="/studio.atmosphere.css?v=11">
+<!-- ================= PAGE CSS (ATMOSPHERE / COVER vs) ================= -->
+<link rel="stylesheet" href="/studio.atmosphere.css?v=11">
 
-  <!-- ================= PANEL CSS (video/covers/atmo panel ui) ================= -->
-  <link rel="stylesheet" href="/css/mod.video.panel.css?v=2">
-  <link rel="stylesheet" href="/css/mod.atmo.panel.css?v=1">
-  <link rel="stylesheet" href="/css/mod.cartoon.css?v=1">
-  <link rel="stylesheet" href="/css/mod.photofx.css?v=1">
-  <link rel="stylesheet" href="/css/cartoon.studio.css?v=1">
+<!-- ================= PANEL CSS (video/covers/atmo panel ui) ================= -->
+<link rel="stylesheet" href="/css/mod.video.panel.css?v=2">
+<link rel="stylesheet" href="/css/mod.atmo.panel.css?v=1">
+<link rel="stylesheet" href="/css/mod.cartoon.css?v=1">
+<link rel="stylesheet" href="/css/mod.photofx.css?v=1">
+<link rel="stylesheet" href="/css/cartoon.studio.css?v=1">
 
-  <!-- ================= STUDIO V2 (GENEL OVERRIDE KATMANI) ================= -->
-  <link rel="stylesheet" href="/studio.v2.css?v=20260223_01" />
+<!-- ================= STUDIO V2 (GENEL OVERRIDE KATMANI) ================= -->
+<link rel="stylesheet" href="/studio.v2.css?v=20260223_01" />
 
-  <!-- ================= TOAST (UI üstü, player’a dokunmaz) ================= -->
-  <link rel="stylesheet" href="/toast.css?v=3">
+<!-- ================= TOAST (UI üstü, player’a dokunmaz) ================= -->
+<link rel="stylesheet" href="/toast.css?v=3">
 
-  <!-- ================= PLAYER BASE ================= -->
-  <link rel="stylesheet" href="/css/player.css?v=4">
+<!-- ================= PLAYER BASE ================= -->
+<link rel="stylesheet" href="/css/player.css?v=4">
 
-  <!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
-  <link rel="stylesheet" href="/css/player.override.css?v=1005">
+<!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
+<link rel="stylesheet" href="/css/player.override.css?v=1005">
 
   <!-- ✅ STUDIO AUTH GATE (legacy'den aynen) -->
   <style id="aivo-auth-gate-style">
@@ -107,7 +107,8 @@
 
   <style>
     /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
-    /* #globalPlayer { display: none !important; } */
+/* #globalPlayer { display: none !important; } */
+
 
     /* ✅ Footer taşmasını kes (dışarı çıkmayı engelle) */
     .studioOutputs { overflow: hidden; }
@@ -145,6 +146,8 @@
                 </span>
               </a>
 
+             
+
               <a href="/studio.v2.html#cover" data-auth="required" class="product-card" data-product="cover">
                 <span class="pc-ico">🖼️</span>
                 <span class="pc-txt">
@@ -161,21 +164,21 @@
                 </span>
               </a>
 
-              <a href="/studio.v2.html#cartoon" data-auth="required" class="product-card sm-card sm-card--a" data-product="cartoon">
-                <span class="pc-ico">🐠</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Çocuk Çizgifilm</span>
-                  <span class="pc-sub">Preset karakterlerle sahne üretimi</span>
-                </span>
-              </a>
+             <a href="/studio.v2.html#cartoon" data-auth="required" class="product-card sm-card sm-card--a" data-product="cartoon">
+  <span class="pc-ico">🐠</span>
+  <span class="pc-txt">
+    <span class="pc-title">AI Çocuk Çizgifilm</span>
+    <span class="pc-sub">Preset karakterlerle sahne üretimi</span>
+  </span>
+</a>
 
-              <a href="/studio.v2.html#photofx" data-auth="required" class="product-card sm-card sm-card--b" data-product="photofx">
-                <span class="pc-ico">✨</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Foto Efekt Video Clip</span>
-                  <span class="pc-sub">Tek fotoğraftan hareketli efekt klip üret</span>
-                </span>
-              </a>
+            <a href="/studio.v2.html#photofx" data-auth="required" class="product-card sm-card sm-card--b" data-product="photofx">
+  <span class="pc-ico">✨</span>
+  <span class="pc-txt">
+    <span class="pc-title">AI Foto Efekt Video Clip</span>
+    <span class="pc-sub">Tek fotoğraftan hareketli efekt klip üret</span>
+  </span>
+</a>
 
               <a href="/studio.v2.html#atmo" data-auth="required" class="product-card" data-product="atmo">
                 <span class="pc-ico">🌫️</span>
@@ -288,6 +291,7 @@
   </header>
   <!-- ================= /TOPBAR ================= -->
 
+
   <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
   <div class="studioShell" id="studioRoot">
 
@@ -314,13 +318,12 @@
             <span class="navDot"></span> AI Kapak Üret
           </button>
 
-          <button class="navBtn" data-route="cartoon">
-            <span class="navDot"></span> AI Çocuk Çizgifilm
-          </button>
-
-          <button class="navBtn" data-route="photofx">
-            <span class="navDot"></span> AI Foto Efekt Video Clip
-          </button>
+         <button class="navBtn" data-route="cartoon">
+  <span class="navDot"></span> AI Çocuk Çizgifilm
+</button>
+         <button class="navBtn" data-route="photofx">
+  <span class="navDot"></span> AI Foto Efekt Video Clip
+</button>
         </div>
 
         <div class="navCard">
@@ -348,27 +351,28 @@
       </div>
     </aside>
 
-    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
-    <main class="studioMain" id="mainWorkspace">
-      <div class="studioTwoPanel" id="twoPanelWrap">
+<!-- ORTA ALAN: 2 PANEL YAN YANA -->
+<main class="studioMain" id="mainWorkspace">
+  <div class="studioTwoPanel" id="twoPanelWrap">
 
-        <section id="moduleHost" class="glassCard studioMotor">
-          <div class="placeholder">
-            <div class="ph-title">Henüz modül yüklenmedi</div>
-            <div class="ph-sub">Soldan bir modül seç.</div>
-          </div>
-        </section>
-
-        <section class="outputsCard studioOutputs" aria-label="Üretilenler">
-          <!-- RIGHT PANEL HOST -->
-          <div id="rightPanelHost"></div>
-        </section>
-
+    <section id="moduleHost" class="glassCard studioMotor">
+      <div class="placeholder">
+        <div class="ph-title">Henüz modül yüklenmedi</div>
+        <div class="ph-sub">Soldan bir modül seç.</div>
       </div>
-    </main>
+    </section>
+
+    <section class="outputsCard studioOutputs" aria-label="Üretilenler">
+      <!-- RIGHT PANEL HOST -->
+      <div id="rightPanelHost"></div>
+    </section>
 
   </div>
+</main>
+
   <!-- ================= /studioRoot ================= -->
+
+
 
   <!-- =========================================================
        ✅ PASSWORD MODAL (PROFILE) — GLOBAL (tek kopya)
@@ -426,206 +430,209 @@
     </div>
   </div>
   <!-- ========================================================= -->
+<!-- ================= AUTH / CORE ================= -->
+<script src="/auth.unify.fix.js?v=2" defer></script>
+<script src="/auth.core.js?v=2" defer></script>
 
-  <!-- ================= AUTH / CORE ================= -->
-  <script src="/auth.unify.fix.js?v=2" defer></script>
-  <script src="/auth.core.js?v=2" defer></script>
+<!-- ================= STUDIO GUARD / STORE ================= -->
+<script src="/studio.guard.js?v=12" defer></script>
+<script src="/store.js?v=2" defer></script>
 
-  <!-- ================= STUDIO GUARD / STORE ================= -->
-  <script src="/studio.guard.js?v=12" defer></script>
-  <script src="/store.js?v=2" defer></script>
+<!-- ================= PARTIALS ================= -->
+<script src="/include.partials.js?v=1" defer></script>
 
-  <!-- ================= PARTIALS ================= -->
-  <script src="/include.partials.js?v=1" defer></script>
+<!-- ================= 🎧 GLOBAL PLAYER (ÖNCE) ================= -->
+<script src="/js/player.js?v=5" defer></script>
 
-  <!-- ================= 🎧 GLOBAL PLAYER (ÖNCE) ================= -->
-  <script src="/js/player.js?v=5" defer></script>
+<!-- ================= PPE (Player Processing Engine) ================= -->
+<script src="/ppe.js?v=1" defer></script>
 
-  <!-- ================= PPE (Player Processing Engine) ================= -->
-  <script src="/ppe.js?v=1" defer></script>
+<!-- ================= APP / SERVİSLER ================= -->
+<script src="/js/studio.services.js?v=3" defer></script>
 
-  <!-- ================= APP / SERVİSLER ================= -->
-  <script src="/js/studio.services.js?v=3" defer></script>
+<!-- ================= RIGHT PANEL CORE ================= -->
+<script src="/panel.manager.js?v=1" defer></script>
+<script src="/panel.dbjobs.js?v=1" defer></script>
+<script src="/js/shared.video.card.js?v=2" defer></script>
 
-  <!-- ================= RIGHT PANEL CORE ================= -->
-  <script src="/panel.manager.js?v=1" defer></script>
-  <script src="/panel.dbjobs.js?v=1" defer></script>
-  <script src="/js/shared.video.card.js?v=2" defer></script>
+<!-- ================= PANELLER ================= -->
 
-  <!-- ================= PANELLER ================= -->
-  <script src="/panel.music.js?v=6" defer></script>
-  <script src="/panel.video.js?v=9999" defer></script>
-  <script src="/panel.cover.js?v=2" defer></script>
+<script src="/panel.music.js?v=6" defer></script>
+<script src="/panel.video.js?v=9999" defer></script>
+<script src="/panel.cover.js?v=2" defer></script>
 
-  <!-- ✅ ATMOS PANEL (ORİJİNAL ÇALIŞAN) -->
-  <script src="/js/panel.atmo.js?v=3" defer></script>
+<!-- ✅ ATMOS PANEL (ORİJİNAL ÇALIŞAN) -->
+<script src="/js/panel.atmo.js?v=3" defer></script>
 
-  <script src="/panel.cartoon.js?v=1" defer></script>
-  <script src="/panel.photofx.js?v=1" defer></script>
+<script src="/panel.cartoon.js?v=1" defer></script>
+<script src="/panel.photofx.js?v=1" defer></script>
 
-  <!-- ================= MODÜLLER (FORM + ACTION) ================= -->
-  <script src="/js/music.module.js?v=1" defer></script>
-  <script src="/js/studio.music.record.js?v=1" defer></script>
-  <script src="/js/studio.music.generate.js?v=1" defer></script>
+<!-- ================= MODÜLLER (FORM + ACTION) ================= -->
+<script src="/js/music.module.js?v=1" defer></script>
+<script src="/js/studio.music.record.js?v=1" defer></script>
+<script src="/js/studio.music.generate.js?v=1" defer></script>
 
-  <script src="/js/video.module.js?v=2" defer></script>
-  <script src="/js/cover.module.js?v=2" defer></script>
+<script src="/js/video.module.js?v=2" defer></script>
+<script src="/js/cover.module.js?v=2" defer></script>
 
-  <!-- ================= ATMOS (FORM HELPERS) ================= -->
-  <script src="/js/atmos.js?v=1" defer></script>
-  <script src="/js/cartoon.character.js" defer></script>
-  <script src="/js/cartoon.story.js" defer></script>
-  <script src="/js/cartoon.js" defer></script>
+<!-- ================= ATMOS (FORM HELPERS) ================= -->
+<script src="/js/atmos.js?v=1" defer></script>
+<script src="js/cartoon.character.js"></script>
+<script src="js/cartoon.story.js"></script>
+<script src="js/cartoon.js"></script>
 
-  <!-- ================= STUDIO MODULES (GENEL) ================= -->
-  <script src="/js/photofx.module.js?v=2" defer></script>
-  <script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
+<!-- ================= STUDIO MODULES (GENEL) ================= -->
+<script src="/js/photofx.module.js?v=2" defer></script>
 
-  <!-- ================= DASHBOARD / PROFILE / SETTINGS ================= -->
-  <script src="/studio.dashboard.recent.js?v=7" defer></script>
-  <script src="/studio.stats.js?v=15" defer></script>
-  <script src="/studio.settings.js?v=3" defer></script>
-  <script src="/studio.profile.js?v=202601120200" defer></script>
+<script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
 
-  <!-- ================= ARCHIVE DOWNLOAD ================= -->
-  <script src="/js/aivo.archive.download.js?v=2" defer></script>
+<!-- ================= DASHBOARD / PROFILE / SETTINGS ================= -->
+<script src="/studio.dashboard.recent.js?v=7" defer></script>
+<script src="/studio.stats.js?v=15" defer></script>
+<script src="/studio.settings.js?v=3" defer></script>
+<script src="/studio.profile.js?v=202601120200" defer></script>
 
-  <!-- ================= TOAST ================= -->
-  <script src="/toast.manager.js?v=1" defer></script>
-  <script src="/toast.compat.js?v=1" defer></script>
+<!-- ================= ARCHIVE DOWNLOAD ================= -->
+<script src="/js/aivo.archive.download.js?v=2" defer></script>
 
-  <!-- ================= ROUTER + BOOT (EN SON) ================= -->
-  <script src="/studio.router.js?v=1" defer></script>
-  <script src="/studio.v2.boot.js?v=1" defer></script>
+<!-- ================= TOAST ================= -->
+<script src="/toast.manager.js?v=1" defer></script>
+<script src="/toast.compat.js?v=1" defer></script>
 
-  <!-- AIVO PLAYER ROOT -->
-  <div id="aivoPlayerRoot" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(920px,96%);z-index:999999;"></div>
+<!-- ================= ROUTER + BOOT (EN SON) ================= -->
+<script src="/studio.router.js?v=1" defer></script>
+<script src="/studio.v2.boot.js?v=1" defer></script>
 
-  <script>
-  (function(){
-    if (window.__AIVO_STEM_DL__) return;
-    window.__AIVO_STEM_DL__ = true;
+<!-- AIVO PLAYER ROOT -->
+<div id="aivoPlayerRoot" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(920px,96%);z-index:999999;"></div>
 
-    async function downloadViaFetch(url, fallbackName){
-      const r = await fetch(url, { method: "GET" });
-      if (!r.ok) throw new Error("download_failed_" + r.status);
 
-      const blob = await r.blob();
-      const a = document.createElement("a");
-      const obj = URL.createObjectURL(blob);
+<script>
+(function(){
+  if (window.__AIVO_STEM_DL__) return;
+  window.__AIVO_STEM_DL__ = true;
 
-      // filename: Content-Disposition varsa çoğu tarayıcı zaten alır; yoksa fallback
-      a.href = obj;
-      a.download = fallbackName || "stem.wav";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(obj), 2000);
+  async function downloadViaFetch(url, fallbackName){
+    const r = await fetch(url, { method: "GET" });
+    if (!r.ok) throw new Error("download_failed_" + r.status);
+
+    const blob = await r.blob();
+    const a = document.createElement("a");
+    const obj = URL.createObjectURL(blob);
+
+    // filename: Content-Disposition varsa çoğu tarayıcı zaten alır; yoksa fallback
+    a.href = obj;
+    a.download = fallbackName || "stem.wav";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(obj), 2000);
+  }
+
+  document.addEventListener("click", async (e) => {
+    const a = e.target && e.target.closest && e.target.closest('a[data-fn="aivoDownloadStem"]');
+    if (!a) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const url = a.getAttribute("data-url") || "";
+    if (!url) return;
+
+    const label = (a.textContent || "stem").trim();
+    const name = label.toLowerCase().endsWith(".wav") ? label : (label + ".wav");
+
+    try {
+      a.classList.add("is-downloading");
+      await downloadViaFetch(url, name);
+    } catch (err) {
+      // fallback: eğer fetch engellenirse, eski davranışa dön
+      window.location.href = url;
+    } finally {
+      a.classList.remove("is-downloading");
     }
+  }, true);
+})();
+</script>
 
-    document.addEventListener("click", async (e) => {
-      const a = e.target && e.target.closest && e.target.closest('a[data-fn="aivoDownloadStem"]');
-      if (!a) return;
+<!-- ✅ ESKİ STUDIO'DAN TAŞINAN USER MENU DAVRANIŞI -->
+<script>
+(function AIVO_USER_MENU_FINAL(){
+  if (window.__AIVO_USER_MENU_FINAL__) return;
+  window.__AIVO_USER_MENU_FINAL__ = true;
 
-      e.preventDefault();
-      e.stopPropagation();
+  const btn       = document.querySelector('#btnUserMenuTop');
+  const panel     = document.querySelector('#userMenuPanel');
+  const wrap      = document.querySelector('#userMenuWrap');
 
-      const url = a.getAttribute("data-url") || "";
-      if (!url) return;
+  const topInitial = document.querySelector('#topUserInitial');
+  const umAvatar   = document.querySelector('#umAvatar');
+  const umName     = document.querySelector('#umName');
+  const umEmail    = document.querySelector('#umEmail');
 
-      const label = (a.textContent || "stem").trim();
-      const name = label.toLowerCase().endsWith(".wav") ? label : (label + ".wav");
+  if (!btn || !panel) return;
 
-      try {
-        a.classList.add("is-downloading");
-        await downloadViaFetch(url, name);
-      } catch (err) {
-        // fallback: eğer fetch engellenirse, eski davranışa dön
-        window.location.href = url;
-      } finally {
-        a.classList.remove("is-downloading");
-      }
-    }, true);
-  })();
-  </script>
+  function isOpen(){
+    return panel.hidden === false;
+  }
 
-  <!-- ✅ LEGACY'DEN TAŞINAN USER MENU DAVRANIŞI -->
-  <script>
-  (function AIVO_USER_MENU_FINAL(){
-    if (window.__AIVO_USER_MENU_FINAL__) return;
-    window.__AIVO_USER_MENU_FINAL__ = true;
-
-    const btn       = document.querySelector('#btnUserMenuTop');
-    const panel     = document.querySelector('#userMenuPanel');
-    const wrap      = document.querySelector('#userMenuWrap');
-
-    const topInitial = document.querySelector('#topUserInitial');
-    const umAvatar   = document.querySelector('#umAvatar');
-    const umName     = document.querySelector('#umName');
-    const umEmail    = document.querySelector('#umEmail');
-
-    if (!btn || !panel) return;
-
-    const isOpen = () => panel.hidden === false;
-
-    function setOpen(open){
-      if (open) {
-        panel.hidden = false;
-        panel.setAttribute('aria-hidden', 'false');
-        btn.setAttribute('aria-expanded', 'true');
-        panel.classList.add('is-open');
-      } else {
-        panel.hidden = true;
-        panel.setAttribute('aria-hidden', 'true');
-        btn.setAttribute('aria-expanded', 'false');
-        panel.classList.remove('is-open');
-      }
+  function setOpen(open){
+    if (open) {
+      panel.hidden = false;
+      panel.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+      panel.classList.add('is-open');
+    } else {
+      panel.hidden = true;
+      panel.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+      panel.classList.remove('is-open');
     }
+  }
 
-    function applyInitial(){
-      const src =
-        (umName && umName.textContent.trim()) ||
-        (umEmail && umEmail.textContent.trim()) ||
-        'H';
+  function applyInitial(){
+    const src =
+      (umName && umName.textContent.trim()) ||
+      (umEmail && umEmail.textContent.trim()) ||
+      'H';
 
-      const ch = src.charAt(0).toUpperCase() || 'H';
+    const ch = src.charAt(0).toUpperCase() || 'H';
 
-      if (topInitial) topInitial.textContent = ch;
-      if (umAvatar)   umAvatar.textContent   = ch;
-    }
+    if (topInitial) topInitial.textContent = ch;
+    if (umAvatar)   umAvatar.textContent   = ch;
+  }
 
-    applyInitial();
-    setTimeout(applyInitial, 300);
-    setTimeout(applyInitial, 1200);
+  applyInitial();
+  setTimeout(applyInitial, 300);
+  setTimeout(applyInitial, 1200);
 
-    btn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    setOpen(!isOpen());
+  }, true);
 
-      setOpen(!isOpen());
-    }, true);
+  panel.addEventListener('click', function(e){
+    e.stopPropagation();
+  }, true);
 
-    panel.addEventListener('click', (e)=>{
-      e.stopPropagation();
-    }, true);
-
-    function outsideClose(e){
-      const t = e.target;
-      if (wrap && wrap.contains(t)) return;
-      setOpen(false);
-    }
-
-    document.addEventListener('pointerdown', outsideClose, true);
-    document.addEventListener('click', outsideClose, true);
-
-    document.addEventListener('keydown', (e)=>{
-      if (e.key === 'Escape') setOpen(false);
-    }, true);
-
+  function outsideClose(e){
+    const t = e.target;
+    if (wrap && wrap.contains(t)) return;
     setOpen(false);
-  })();
-  </script>
+  }
 
+  document.addEventListener('pointerdown', outsideClose, true);
+  document.addEventListener('click', outsideClose, true);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') setOpen(false);
+  }, true);
+
+  setOpen(false);
+})();
+</script>
+    
 </body>
 </html>
