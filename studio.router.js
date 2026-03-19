@@ -1,12 +1,12 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-  window.ensureModuleCSS = function(routeKey){
+window.ensureModuleCSS = function(routeKey) {
   const link = document.getElementById("studio-module-css");
-  if(!link) return;
+  if (!link) return;
 
   const v = "1";
-  const primary  = `/css/mod.${routeKey}.css?v=${v}`;
+  const primary = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
   link.onerror = () => {
@@ -23,14 +23,13 @@
 // ===============================
 // ROUTER
 // ===============================
-  (function () {
+(function () {
   if (window.__AIVO_ROUTER_BOOTED__) {
     console.warn("[AIVO] router already booted, skipping");
     return;
   }
   window.__AIVO_ROUTER_BOOTED__ = true;
 
-  // ✅ RightPanel: routeKey -> panelKey
   const RIGHT_PANEL_KEY = {
     music: "music",
     video: "video",
@@ -75,6 +74,10 @@
     settings: "settings.html",
   };
 
+  let __moduleLoadSeq = 0;
+  let __moduleLoadCtrl = null;
+  let __goSeq = 0;
+
   // -------------------------------
   // URL HELPERS
   // -------------------------------
@@ -87,7 +90,6 @@
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
 
-    // ✅ eski hook linkleri bozulmasın
     if (p === "hook") return "photofx";
     if (p === "viral-hook") return "photofx";
     if (p === "photofx") return "photofx";
@@ -113,7 +115,6 @@
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
 
-    // ✅ eski hook hash'leri bozulmasın
     if (key === "hook") key = "photofx";
     if (key === "viral-hook") key = "photofx";
     if (key === "photofx") key = "photofx";
@@ -124,13 +125,19 @@
 
   function setHash(key) {
     if (!ROUTES.has(key)) key = "music";
-    location.hash = `#${key}`;
+    const nextHash = `#${key}`;
+    if (location.hash === nextHash) return;
+    location.hash = nextHash;
   }
 
   function normalizeInitialRoute() {
     if (hasHashKey()) return;
     const qp = parseQueryRouteKey();
-    if (qp && ROUTES.has(qp)) setHash(qp);
+    if (qp && ROUTES.has(qp)) {
+      setHash(qp);
+      return;
+    }
+    setHash("music");
   }
 
   function setActiveNav(key) {
@@ -141,17 +148,20 @@
     });
   }
 
-  async function fetchFirstOk(urls) {
+  async function fetchFirstOk(urls, signal) {
     let lastErr = null;
+
     for (const url of urls) {
       try {
-        const r = await fetch(url, { cache: "no-store" });
+        const r = await fetch(url, { cache: "no-store", signal });
         if (r.ok) return await r.text();
         lastErr = new Error("HTTP " + r.status);
       } catch (e) {
+        if (e?.name === "AbortError") throw e;
         lastErr = e;
       }
     }
+
     throw lastErr || new Error("fetch failed");
   }
 
@@ -165,35 +175,55 @@
     const currentKey = host.getAttribute("data-active-module") || "";
     if (currentKey === key) return;
 
+    __moduleLoadSeq += 1;
+    const seq = __moduleLoadSeq;
+
+    try {
+      __moduleLoadCtrl?.abort();
+    } catch (_) {}
+
+    __moduleLoadCtrl = new AbortController();
+
     const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
-    host.innerHTML = await fetchFirstOk(urls);
+    const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+
+    if (seq !== __moduleLoadSeq) return;
+
+    host.innerHTML = html;
     host.setAttribute("data-active-module", key);
   }
 
-async function go(key) {
-  if (!ROUTES.has(key)) key = "music";
+  async function go(key) {
+    if (!ROUTES.has(key)) key = "music";
 
-  const __t0 = performance.now();
-  console.log("[ROUTER] go:start", key, Math.round(__t0) + "ms");
+    const mySeq = ++__goSeq;
 
-  const cur = parseHash();
-  if (cur.key !== key) {
-    setHash(key);
-    return;
+    const cur = parseHash();
+    if (cur.key !== key) {
+      setHash(key);
+      return;
+    }
+
+    setActiveNav(key);
+    window.ensureModuleCSS?.(key);
+
+    try {
+      await loadModuleIntoHost(key);
+    } catch (e) {
+      if (e?.name === "AbortError") return;
+      console.warn("[ROUTER] loadModuleIntoHost failed:", key, e);
+      return;
+    }
+
+    if (mySeq !== __goSeq) return;
+
+    const panelKey = RIGHT_PANEL_KEY[key] || "music";
+    try {
+      window.RightPanel?.force?.(panelKey, {});
+    } catch (e) {
+      console.warn("[ROUTER] RightPanel.force failed:", panelKey, e);
+    }
   }
-
-  setActiveNav(key);
-
-  window.ensureModuleCSS?.(key);
-  console.log("[ROUTER] after css", key, Math.round(performance.now() - __t0) + "ms");
-
-  await loadModuleIntoHost(key);
-  console.log("[ROUTER] after module", key, Math.round(performance.now() - __t0) + "ms");
-
-  const panelKey = RIGHT_PANEL_KEY[key] || "music";
-  window.RightPanel?.force?.(panelKey, {});
-  console.log("[ROUTER] after panel", key, Math.round(performance.now() - __t0) + "ms");
-}
 
   function onHashChange() {
     const { key } = parseHash();
@@ -201,27 +231,29 @@ async function go(key) {
   }
 
   function onNavClick(e) {
-  const btn = e.target.closest(".navBtn");
-  if (!btn) return;
+    const btn = e.target.closest(".navBtn");
+    if (!btn) return;
 
-  const key = btn.dataset.route || "music";
+    e.preventDefault();
+    e.stopPropagation();
 
-
-  setHash(key);
-}
+    const key = btn.dataset.route || "music";
+    setHash(key);
+  }
 
   window.StudioRouter = { go, setHash };
 
   window.addEventListener("hashchange", onHashChange);
+
   window.addEventListener("DOMContentLoaded", () => {
-  const navRoot = document.getElementById("leftMenu") || document;
+    const navRoot = document.getElementById("leftMenu") || document;
 
-  if (!navRoot.__aivoRouterClickBound) {
-    navRoot.__aivoRouterClickBound = true;
-    navRoot.addEventListener("click", onNavClick);
-  }
+    if (!navRoot.__aivoRouterClickBound) {
+      navRoot.__aivoRouterClickBound = true;
+      navRoot.addEventListener("click", onNavClick, true);
+    }
 
-  normalizeInitialRoute();
-  onHashChange();
-});
+    normalizeInitialRoute();
+    onHashChange();
+  });
 })();
