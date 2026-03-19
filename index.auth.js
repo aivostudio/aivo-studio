@@ -829,8 +829,17 @@ document.addEventListener("DOMContentLoaded", () => {
 (function bindProductsNav(){
   if (window.__AIVO_PRODUCTS_NAV_GATE__) return;
   window.__AIVO_PRODUCTS_NAV_GATE__ = true;
+   function safeOpenLogin(){
+  try{
+    if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
+    if (typeof window.openAuthModal  === "function") { window.openAuthModal("login"); return; }
+    if (typeof window.openModal      === "function") { window.openModal("login"); return; }
+    const btn = document.getElementById("btnLoginTop");
+    if (btn) { btn.click(); return; }
+  }catch(_){}
+}
 
-  document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
     const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
     if (!card) return;
 
@@ -871,7 +880,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const map = { music: "music", cover: "cover", video: "video" };
     const page = map[product] || product;
 
-    if (!isStudio && !safeIsLoggedIn()) {
+  if (!isStudio && !(await safeIsLoggedInServer())) {
    try { sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page)); } catch(_) {}
       safeOpenLogin();
       return;
