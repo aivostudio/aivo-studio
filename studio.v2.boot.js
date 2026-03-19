@@ -276,9 +276,9 @@ if (key === "cartoon" && mode === "character") {
 
     scheduleHydrateForRoute();
 
-    window.addEventListener("hashchange", () => {
-      scheduleHydrateForRoute();
-    });
+   // window.addEventListener("hashchange", () => {
+//   scheduleHydrateForRoute();
+// });
 
     if (window.StudioRouter && typeof window.StudioRouter.onChange === "function") {
       window.StudioRouter.onChange(() => {
