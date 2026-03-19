@@ -220,6 +220,7 @@ console.log("[ROUTER][LOAD] mount:after", {
   activeNow: host.getAttribute("data-active-module"),
   childCount: host.childNodes.length
 });
+}
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
