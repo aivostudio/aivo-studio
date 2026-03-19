@@ -393,6 +393,7 @@ function syncIncludeMusic(root) {
       finalJobId,
       styles: form.styles,
     });
+    }
 
   function initStateFromDOM(root) {
     const state = getState(root);
