@@ -471,7 +471,7 @@ header#top.aivo-topbar .aivo-topbar-inner{
       rgba(42, 30, 68, .30) 52%,
       rgba(18, 16, 34, .96) 76%,
       rgba(12, 12, 24, .99) 100%) !important;
- border: none !important;
+  border: 1px solid rgba(164, 132, 255, .20) !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.06),
     inset 0 0 110px rgba(156,118,255,.12),
