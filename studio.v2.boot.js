@@ -262,11 +262,10 @@ if (key === "cartoon" && mode === "character") {
     setTimeout(() => hydrateJobsFromDB(routeKey), 250);
   }
 
-  window.addEventListener("DOMContentLoaded", () => {
-    tryMountTopbarPartial();
-    wireLeftMenu();
-    setFakeCredits();
-
+ window.addEventListener("DOMContentLoaded", () => {
+  tryMountTopbarPartial();
+  setFakeCredits();
+   
     ensurePlayerRoot();
     installToastFallback();
 
