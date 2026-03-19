@@ -419,6 +419,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     renderPresets(root);
     renderUploads(root);
     syncIncludeMusic(root);
+    bindEvents(root);
   }
 
   document.addEventListener(
