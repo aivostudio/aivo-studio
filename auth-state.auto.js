@@ -180,33 +180,9 @@
       }
     });
 
-    // Autofill için polling (stabilize + tek deneme)
-    let elapsed = 0;
-    pollTimer = setInterval(() => {
-      elapsed += CFG.pollMs;
-
-      if (!existsInBody(pass) || !existsInBody(btn)) {
-        resetForNextOpen();
-        return;
-      }
-
-      if (!triedForThisOpen) {
-        const e = emailNorm(rawVal(email));
-        const p = trimmed(rawVal(pass));
-        if (e && p) {
-          // doldu -> stabilize bekle
-          clearInterval(pollTimer);
-          pollTimer = null;
-          safeSubmitStabilized();
-          return;
-        }
-      }
-
-      if (elapsed >= CFG.maxPollMs) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-      }
-    }, CFG.pollMs);
+     // Autofill auto-submit KAPALI.
+    // Chrome password manager alanları doldursa bile kendi kendine login denemesi yapılmaz.
+    // Submit sadece kullanıcının Enter basması veya normal buton tıklamasıyla olur.
 
     // Modal kapanıp tekrar açılınca resetlemek için watcher
     resetWatchTimer = setInterval(() => {
