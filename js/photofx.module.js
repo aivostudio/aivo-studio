@@ -585,7 +585,22 @@ function bindEvents(root) {
   }
 }
 
-  boot();
+ function retryBoot(attempt = 0) {
+  const root = getRoot();
 
-  console.log("[PHOTOFX] module READY ✅");
+  if (root) {
+    boot();
+    console.log("[PHOTOFX] module READY ✅");
+    return;
+  }
+
+  if (attempt >= 40) {
+    console.warn("[PHOTOFX] root not found after retry limit");
+    return;
+  }
+
+  setTimeout(() => retryBoot(attempt + 1), 250);
+}
+
+retryBoot();
 })();
