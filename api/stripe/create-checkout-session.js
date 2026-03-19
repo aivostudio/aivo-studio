@@ -111,7 +111,7 @@ export default async function handler(req, res) {
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
 
-      success_url: `${ORIGIN}/studio.html?verified=1&session_id={CHECKOUT_SESSION_ID}`,
+     success_url: `${ORIGIN}/studio.v2.html?verified=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${ORIGIN}/fiyatlandirma.html?canceled=1`,
 
       customer_email: userEmail,
