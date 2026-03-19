@@ -2416,7 +2416,7 @@ body.has-global-player .layout > .right-panel{
 /* ORTA PANEL (asıl içerik) */
 body.has-global-player .layout > .main-panel{
   height: 100% !important;
-  overflow-y: auto !important;
+  overflow-y: visible !important;
   min-width: 0;
 }
 /* =========================================================
