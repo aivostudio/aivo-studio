@@ -452,10 +452,12 @@
 tryInit();
 
 // 🔥 FIX: Router/partials DOM'u yeniden render ederse init tekrar çalışsın
-// const obs = new MutationObserver(() => {
-//   tryInit(); // DİKKAT: artık disconnect YOK
-// });
-// obs.observe(document.documentElement, { childList: true, subtree: true });
+const obs = new MutationObserver(() => {
+  tryInit(); // DİKKAT: artık disconnect YOK
+});
+
+// document root'u izle (moduleHost / music section replace edilse bile yakalar)
+obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
 /* ============================================================================
    MUSIC — Reference Audio Upload (R2) ✅ single-bind + single-upload
