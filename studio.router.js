@@ -208,8 +208,14 @@ window.ensureModuleCSS = function(routeKey){
 
   window.addEventListener("hashchange", onHashChange);
   window.addEventListener("DOMContentLoaded", () => {
-    (document.getElementById("leftMenu") || document).addEventListener("click", onNavClick);
-    normalizeInitialRoute();
-    onHashChange();
-  });
+  const navRoot = document.getElementById("leftMenu") || document;
+
+  if (!navRoot.__aivoRouterClickBound) {
+    navRoot.__aivoRouterClickBound = true;
+    navRoot.addEventListener("click", onNavClick);
+  }
+
+  normalizeInitialRoute();
+  onHashChange();
+});
 })();
