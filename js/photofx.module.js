@@ -22,6 +22,21 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return document.querySelector('section.pfxPage[data-module="photofx"]');
   }
 
+  function getState(root) {
+    if (!root) return null;
+
+    if (!root.__photofxState) {
+      root.__photofxState = {
+        quality: "standard",
+        presets: [],
+        imageFile: null,
+        audioFile: null,
+      };
+    }
+
+    return root.__photofxState;
+  }
+
   function ensureHiddenInput(root, id, accept) {
     let input = qs(`#${id}`, root);
     if (input) return input;
@@ -35,16 +50,105 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return input;
   }
 
-  function ensureInfoNode(btn, id, emptyText) {
-    let el = qs(`#${id}`);
-    if (el) return el;
+  function ensureFileNameNode(root, btnId, infoId, emptyText) {
+    const btn = qs(`#${btnId}`, root);
+    if (!btn) return null;
 
-    el = document.createElement("div");
-    el.id = id;
-    el.className = "pfxUploadFileName";
-    el.textContent = emptyText;
-    btn.insertAdjacentElement("afterend", el);
-    return el;
+    let info = qs(`#${infoId}`, root);
+    if (info) return info;
+
+    const wrap = btn.closest(".pfxUploadTool") || btn.parentElement || root;
+
+    info = document.createElement("div");
+    info.id = infoId;
+    info.className = "pfxUploadFileName";
+    info.textContent = emptyText;
+
+    wrap.appendChild(info);
+    return info;
+  }
+
+  function getSelectedPresets(root) {
+    const state = getState(root);
+    return Array.isArray(state?.presets) ? state.presets : [];
+  }
+
+  function setPromptCounter(root) {
+    const ta = qs("#pfxPrompt", root);
+    const count = qs("#pfxPromptCount", root);
+    if (!ta || !count) return;
+
+    count.textContent = String((ta.value || "").length);
+  }
+
+  function renderQuality(root) {
+    const state = getState(root);
+    const quality = state?.quality === "premium" ? "premium" : "standard";
+    const credit = QUALITY_CREDITS[quality] || QUALITY_CREDITS.standard;
+
+    qsa(".pfxChoiceCard[data-quality]", root).forEach((btn) => {
+      const on = String(btn.getAttribute("data-quality") || "") === quality;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    const creditValue = qs(".pfxEngineCreditValue", root);
+    if (creditValue) {
+      creditValue.textContent = String(credit);
+    }
+
+    const createBtn = qs(".pfxCreateBtn", root);
+    if (createBtn) {
+      createBtn.setAttribute("data-credit-cost", String(credit));
+      createBtn.textContent = `🎬 Klip Oluştur (${credit} Kredi)`;
+    }
+  }
+
+  function renderPresets(root) {
+    const selected = getSelectedPresets(root);
+
+    qsa(".pfxPresetCard[data-preset]", root).forEach((btn) => {
+      const preset = String(btn.getAttribute("data-preset") || "").trim();
+      const on = selected.includes(preset);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function renderUploads(root) {
+    const state = getState(root);
+    const imageName = ensureFileNameNode(root, "pfxInlineUploadBtn", "pfxImageName", "Dosya seçilmedi");
+    const audioName = ensureFileNameNode(root, "pfxAudioUploadBtn", "pfxAudioName", "Dosya seçilmedi");
+
+    if (imageName) {
+      imageName.textContent = state.imageFile ? state.imageFile.name : "Dosya seçilmedi";
+    }
+
+    if (audioName) {
+      audioName.textContent = state.audioFile ? state.audioFile.name : "Dosya seçilmedi";
+    }
+  }
+
+  function syncIncludeMusic(root) {
+    const state = getState(root);
+    const includeMusic = qs("#pfxIncludeMusic", root);
+    const audioBtn = qs("#pfxAudioUploadBtn", root);
+    const audioInput = qs("#pfxAudioInput", root);
+    const audioName = qs("#pfxAudioName", root);
+
+    if (!includeMusic || !audioBtn || !audioInput) return;
+
+    const enabled = String(includeMusic.value || "no") === "yes";
+
+    audioBtn.disabled = !enabled;
+    audioInput.disabled = !enabled;
+    audioBtn.classList.toggle("is-disabled", !enabled);
+
+    if (!enabled) {
+      audioInput.value = "";
+      state.audioFile = null;
+      if (audioName) audioName.textContent = "Dosya seçilmedi";
+    }
   }
 
   async function postJSON(url, payload) {
@@ -55,15 +159,24 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     });
 
     const j = await r.json().catch(() => null);
-    if (!r.ok || !j) throw j?.error || `photofx_failed_${r.status}`;
-    if (j.ok === false) throw j.error || "photofx_failed";
+
+    if (!r.ok || !j) {
+      throw j?.error || `photofx_failed_${r.status}`;
+    }
+
+    if (j.ok === false) {
+      throw j.error || "photofx_failed";
+    }
+
     return j;
   }
 
   async function uploadViaPresign(file) {
     const sign = await postJSON("/api/r2/presign-put", {
-      filename: file.name,
-      contentType: file.type || "application/octet-stream",
+      app: "photofx",
+      kind: "asset",
+      filename: file?.name || `photofx-${Date.now()}`,
+      contentType: file?.type || "application/octet-stream",
       folder: "photofx",
     });
 
@@ -118,195 +231,41 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       });
 
       const j = await r.json().catch(() => null);
-      if (!r.ok || !j) throw j?.error || `upload_failed_${r.status}`;
-      if (j.ok === false) throw j.error || "upload_failed";
+
+      if (!r.ok || !j) {
+        throw j?.error || `upload_failed_${r.status}`;
+      }
+
+      if (j.ok === false) {
+        throw j.error || "upload_failed";
+      }
 
       return String(j.url || j.fileUrl || j.publicUrl || "");
     }
   }
 
-  function setPromptCounter(root) {
-    const ta = qs("#pfxPrompt", root);
-    const count = qs("#pfxPromptCount", root);
-    if (!ta || !count) return;
-
-    count.textContent = String((ta.value || "").length);
-  }
-
-  function setActiveQuality(root, quality) {
-    const q =
-      String(quality || "standard").toLowerCase() === "premium"
-        ? "premium"
-        : "standard";
-
-    qsa(".pfxChoiceCard", root).forEach((btn) => {
-      const on = (btn.getAttribute("data-quality") || "") === q;
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-
-    root.dataset.photofxQuality = q;
-
-    const credit = QUALITY_CREDITS[q] || QUALITY_CREDITS.standard;
-
-    const creditBox = qs(".pfxEngineCreditValue", root);
-    if (creditBox) {
-      creditBox.textContent = String(credit);
-    }
-
-    const createBtn = qs(".pfxCreateBtn", root);
-    if (createBtn) {
-      createBtn.setAttribute("data-credit-cost", String(credit));
-      createBtn.textContent = `🎬 Klip Oluştur (${credit} Kredi)`;
-    }
-
-    console.log("[photofx] quality =", q, "credit =", credit);
-  }
-
-  function getSelectedPresets(root) {
-    const raw = String(root.dataset.photofxPresets || "").trim();
-    if (!raw) return [];
-    return raw
-      .split(",")
-      .map((x) => String(x || "").trim())
-      .filter(Boolean);
-  }
-
-  function setSelectedPresets(root, presets) {
-    const clean = Array.from(
-      new Set(
-        (Array.isArray(presets) ? presets : [])
-          .map((x) => String(x || "").trim())
-          .filter(Boolean)
-      )
-    );
-
-    root.dataset.photofxPresets = clean.join(",");
-
-    qsa(".pfxPresetCard", root).forEach((btn) => {
-      const value = String(btn.getAttribute("data-preset") || "").trim();
-      const on = clean.includes(value);
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-
-    console.log("[photofx] presets =", clean);
-  }
-
-  function togglePreset(root, preset) {
-    const value = String(preset || "").trim();
-    if (!value) return;
-
-    const current = getSelectedPresets(root);
-    const exists = current.includes(value);
-
-    const next = exists
-      ? current.filter((x) => x !== value)
-      : [...current, value];
-
-    setSelectedPresets(root, next);
-  }
-
-  function syncIncludeMusic(root) {
-    const select = qs("#pfxIncludeMusic", root);
-    const audioBtn = qs("#pfxAudioUploadBtn", root);
-    const audioInput = qs("#pfxAudioInput", root);
-    const audioName = qs("#pfxAudioName", root);
-
-    if (!select || !audioBtn || !audioInput) return;
-
-    const enabled = String(select.value || "no") === "yes";
-
-    audioBtn.disabled = !enabled;
-    audioBtn.classList.toggle("is-disabled", !enabled);
-    audioInput.disabled = !enabled;
-
-    if (!enabled) {
-      audioInput.value = "";
-      root.__photofxAudioFile = null;
-      if (audioName) audioName.textContent = "Dosya seçilmedi";
-    }
-  }
-
-  function bindUploadButtons(root) {
-    const imageBtn = qs("#pfxInlineUploadBtn", root);
-    const audioBtn = qs("#pfxAudioUploadBtn", root);
-    const includeMusic = qs("#pfxIncludeMusic", root);
-
-    const imageInput = ensureHiddenInput(root, "pfxImageInput", "image/*");
-    const audioInput = ensureHiddenInput(root, "pfxAudioInput", "audio/*");
-
-    const imageName = imageBtn
-      ? ensureInfoNode(imageBtn, "pfxImageName", "Dosya seçilmedi")
-      : null;
-
-    const audioName = audioBtn
-      ? ensureInfoNode(audioBtn, "pfxAudioName", "Dosya seçilmedi")
-      : null;
-
-    if (imageBtn && !imageBtn.__bound) {
-      imageBtn.__bound = true;
-      imageBtn.addEventListener("click", () => imageInput.click());
-    }
-
-    if (audioBtn && !audioBtn.__bound) {
-      audioBtn.__bound = true;
-      audioBtn.addEventListener("click", () => {
-        if (audioBtn.disabled) return;
-        audioInput.click();
-      });
-    }
-
-    if (!imageInput.__bound) {
-      imageInput.__bound = true;
-      imageInput.addEventListener("change", () => {
-        const file = imageInput.files?.[0] || null;
-        root.__photofxImageFile = file;
-        if (imageName) imageName.textContent = file ? file.name : "Dosya seçilmedi";
-      });
-    }
-
-    if (!audioInput.__bound) {
-      audioInput.__bound = true;
-      audioInput.addEventListener("change", () => {
-        const file = audioInput.files?.[0] || null;
-        root.__photofxAudioFile = file;
-        if (audioName) audioName.textContent = file ? file.name : "Dosya seçilmedi";
-      });
-    }
-
-    if (includeMusic && !includeMusic.__bound) {
-      includeMusic.__bound = true;
-      includeMusic.addEventListener("change", () => syncIncludeMusic(root));
-    }
-
-    syncIncludeMusic(root);
-  }
-
   function collectForm(root) {
+    const state = getState(root);
     const selectedPresets = getSelectedPresets(root);
 
     return {
-      prompt: (qs("#pfxPrompt", root)?.value || "").trim(),
-      quality: root.dataset.photofxQuality || "standard",
+      prompt: String(qs("#pfxPrompt", root)?.value || "").trim(),
+      quality: state.quality || "standard",
       styles: selectedPresets,
-      style: selectedPresets[0] || "neon-pulse",
+      style: selectedPresets[0] || "",
       duration: qs("#pfxDuration", root)?.value || "10",
       ratio: qs("#pfxAspect", root)?.value || "9:16",
       motionLevel: qs("#pfxMotionLevel", root)?.value || "balanced",
       effectStrength: qs("#pfxEffectPower", root)?.value || "medium",
       colorMood: qs("#pfxColorMood", root)?.value || "original",
       transitionSpeed: qs("#pfxTransitionSpeed", root)?.value || "normal",
-      includeAudio: (qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
-      imageFile: root.__photofxImageFile || null,
-      audioFile: root.__photofxAudioFile || null,
+      includeAudio: String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
+      imageFile: state.imageFile || null,
+      audioFile: state.audioFile || null,
     };
   }
 
-  async function createPhotoFx() {
-    const root = getRoot();
-    if (!root) return;
-
+  async function createPhotoFx(root) {
     const form = collectForm(root);
 
     if (!form.prompt) {
@@ -321,6 +280,11 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     if (!form.styles.length) {
       alert("Lütfen en az 1 efekt stili seç.");
+      return;
+    }
+
+    if (form.includeAudio && !form.audioFile) {
+      alert("Müziği videoya dahil etmek için bir audio dosyası seç.");
       return;
     }
 
@@ -414,18 +378,39 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     });
   }
 
-  function ensureDefaults(root) {
-    if (!root.dataset.photofxQuality) {
-      setActiveQuality(root, "standard");
-    }
+  function initStateFromDOM(root) {
+    const state = getState(root);
+    if (!state) return;
 
-    if (!root.dataset.photofxPresets) {
-      root.dataset.photofxPresets = "";
-    }
+    const activeQuality = qs(".pfxChoiceCard.is-active[data-quality]", root);
+    state.quality = activeQuality?.getAttribute("data-quality") === "premium"
+      ? "premium"
+      : "standard";
+
+    const activePresets = qsa(".pfxPresetCard.is-active[data-preset]", root)
+      .map((btn) => String(btn.getAttribute("data-preset") || "").trim())
+      .filter(Boolean);
+
+    state.presets = Array.from(new Set(activePresets));
+  }
+
+  function boot() {
+    const root = getRoot();
+    if (!root) return;
+
+    initStateFromDOM(root);
+
+    ensureHiddenInput(root, "pfxImageInput", "image/*");
+    ensureHiddenInput(root, "pfxAudioInput", "audio/*");
+
+    ensureFileNameNode(root, "pfxInlineUploadBtn", "pfxImageName", "Dosya seçilmedi");
+    ensureFileNameNode(root, "pfxAudioUploadBtn", "pfxAudioName", "Dosya seçilmedi");
 
     setPromptCounter(root);
-    bindUploadButtons(root);
-    setSelectedPresets(root, getSelectedPresets(root));
+    renderQuality(root);
+    renderPresets(root);
+    renderUploads(root);
+    syncIncludeMusic(root);
   }
 
   document.addEventListener(
@@ -442,43 +427,118 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   );
 
   document.addEventListener(
+    "change",
+    (e) => {
+      const root = getRoot();
+      if (!root || !root.contains(e.target)) return;
+
+      const state = getState(root);
+
+      if (e.target.matches("#pfxIncludeMusic")) {
+        syncIncludeMusic(root);
+        return;
+      }
+
+      if (e.target.matches("#pfxImageInput")) {
+        const file = e.target.files?.[0] || null;
+        state.imageFile = file;
+        renderUploads(root);
+        console.log("[photofx] image selected =", file?.name || null);
+        return;
+      }
+
+      if (e.target.matches("#pfxAudioInput")) {
+        const file = e.target.files?.[0] || null;
+        state.audioFile = file;
+        renderUploads(root);
+        console.log("[photofx] audio selected =", file?.name || null);
+        return;
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
     "click",
     (e) => {
       const root = getRoot();
       if (!root) return;
 
+      const state = getState(root);
+
+      const imageBtn = e.target.closest("#pfxInlineUploadBtn");
+      if (imageBtn && root.contains(imageBtn)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const imageInput = qs("#pfxImageInput", root);
+        if (imageInput) imageInput.click();
+        return;
+      }
+
+      const audioBtn = e.target.closest("#pfxAudioUploadBtn");
+      if (audioBtn && root.contains(audioBtn)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (audioBtn.disabled) return;
+
+        const audioInput = qs("#pfxAudioInput", root);
+        if (audioInput) audioInput.click();
+        return;
+      }
+
       const qualityBtn = e.target.closest(".pfxChoiceCard[data-quality]");
       if (qualityBtn && root.contains(qualityBtn)) {
         e.preventDefault();
-        setActiveQuality(root, qualityBtn.getAttribute("data-quality"));
+        e.stopPropagation();
+
+        state.quality =
+          qualityBtn.getAttribute("data-quality") === "premium"
+            ? "premium"
+            : "standard";
+
+        renderQuality(root);
         return;
       }
 
       const presetBtn = e.target.closest(".pfxPresetCard[data-preset]");
       if (presetBtn && root.contains(presetBtn)) {
         e.preventDefault();
-        togglePreset(root, presetBtn.getAttribute("data-preset"));
+        e.stopPropagation();
+
+        const preset = String(presetBtn.getAttribute("data-preset") || "").trim();
+        if (!preset) return;
+
+        if (state.presets.includes(preset)) {
+          state.presets = state.presets.filter((x) => x !== preset);
+        } else {
+          state.presets = [...state.presets, preset];
+        }
+
+        renderPresets(root);
         return;
       }
 
       const createBtn = e.target.closest(".pfxCreateBtn");
       if (createBtn && root.contains(createBtn)) {
         e.preventDefault();
+        e.stopPropagation();
 
-        const prev = createBtn.textContent;
+        const credit = createBtn.getAttribute("data-credit-cost") || "8";
+
         createBtn.disabled = true;
         createBtn.classList.add("is-loading");
         createBtn.textContent = "Üretiliyor...";
 
-        createPhotoFx()
+        createPhotoFx(root)
           .catch((err) => {
             console.error("[photofx] create error:", err);
-            alert(String(err));
+            alert(String(err?.message || err || "photofx_create_failed"));
           })
           .finally(() => {
             createBtn.disabled = false;
             createBtn.classList.remove("is-loading");
-            const credit = createBtn.getAttribute("data-credit-cost") || "8";
             createBtn.textContent = `🎬 Klip Oluştur (${credit} Kredi)`;
           });
 
@@ -487,12 +547,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     },
     true
   );
-
-  function boot() {
-    const root = getRoot();
-    if (!root) return;
-    ensureDefaults(root);
-  }
 
   boot();
 
