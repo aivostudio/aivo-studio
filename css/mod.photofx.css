@@ -156,8 +156,8 @@ section[data-module="photofx"] .pfxPromptInput{
   background: rgba(10, 11, 22, .55);
   border: 1px solid rgba(255,255,255,.14);
   outline: none;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.4;
   font-weight: 500;
   box-shadow: none;
 }
