@@ -2452,9 +2452,9 @@ var theme =
 
 /* =========================================================
    STUDIO — OPEN PRICING VIA URL (SINGLE BLOCK / FINAL)
-   Supports:
-     /studio.html?open=pricing
-     /studio.html?open=pricing&pack=standard
+  Supports:
+  /studio.v2.html?open=pricing
+  /studio.v2.html?open=pricing&pack=standard
    Goal: Open the SAME pricing modal behavior as Studio's "Kredi Al"
    ========================================================= */
 (function studioOpenPricingViaUrl_FINAL(){
