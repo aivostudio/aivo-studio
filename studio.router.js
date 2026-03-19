@@ -164,34 +164,48 @@ window.ensureModuleCSS = function(routeKey) {
 
     throw lastErr || new Error("fetch failed");
   }
+async function loadModuleIntoHost(key) {
+  const host = document.getElementById("moduleHost");
+  if (!host) return;
 
-  async function loadModuleIntoHost(key) {
-    const host = document.getElementById("moduleHost");
-    if (!host) return;
+  const file = MODULE_FILES[key];
+  if (!file) return;
 
-    const file = MODULE_FILES[key];
-    if (!file) return;
+  __moduleLoadSeq += 1;
+  const seq = __moduleLoadSeq;
 
-    const currentKey = host.getAttribute("data-active-module") || "";
-    if (currentKey === key) return;
+  try {
+    __moduleLoadCtrl?.abort();
+  } catch (_) {}
 
-    __moduleLoadSeq += 1;
-    const seq = __moduleLoadSeq;
+  __moduleLoadCtrl = new AbortController();
 
-    try {
-      __moduleLoadCtrl?.abort();
-    } catch (_) {}
+  const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
-    __moduleLoadCtrl = new AbortController();
+  host.setAttribute("data-loading-module", key);
 
-    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
-    const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+  const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
 
-    if (seq !== __moduleLoadSeq) return;
+  if (seq !== __moduleLoadSeq) return;
 
-    host.innerHTML = html;
-    host.setAttribute("data-active-module", key);
+  const wrap = document.createElement("div");
+  wrap.innerHTML = html;
+
+  const incomingRoot =
+    wrap.querySelector("[data-module-root]") ||
+    wrap.firstElementChild ||
+    wrap.firstChild;
+
+  if (!incomingRoot) {
+    throw new Error("module html empty: " + key);
   }
+
+  if (seq !== __moduleLoadSeq) return;
+
+  host.replaceChildren(incomingRoot);
+  host.setAttribute("data-active-module", key);
+  host.removeAttribute("data-loading-module");
+}
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
