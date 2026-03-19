@@ -736,7 +736,7 @@
         <a href="/#top">Ana Sayfa</a>
         <a href="/#modules">Özellikler</a>
         <a href="/fiyatlandirma.html">Fiyatlandırma</a>
-        <a href="/studio.html" data-auth="required">Dashboard</a>
+       <a href="/studio.v2.html#dashboard" data-auth="required">Dashboard</a>
       </div>
 
       <div class="aivo-footer-col">
@@ -1013,7 +1013,7 @@
   }
 
   function setReturnAfterPayment(){
-    try { sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard"); } catch(e){}
+   try { sessionStorage.setItem("aivo_return_after_payment", "/studio.v2.html#dashboard"); } catch(e){}
   }
 
   async function startCheckout(pack){
