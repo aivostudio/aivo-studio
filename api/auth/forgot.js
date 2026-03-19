@@ -60,10 +60,12 @@ module.exports = async function handler(req, res) {
   const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
 
   try {
-    const { default: sendMail } = await import("../../lib/mail/mailer.js");
+    const { getMailer } = require("../../lib/mailer.js");
+    const mailer = getMailer();
 
-    await sendMail({
+    await mailer.sendMail({
       to: email,
+      from: process.env.SMTP_FROM || "AIVO <info@aivo.tr>",
       subject: "AIVO Şifre Sıfırlama",
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111">
