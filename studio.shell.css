@@ -338,19 +338,7 @@ section.outputsCard.studioOutputs,
   box-shadow: 0 0 0 2px rgba(150,120,255,.15);
 }
 
-/* ===== Scroll body ===== */
-.rpBody {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 6px 6px 10px;
-}
 
-/* içerik wrapper */
-.rpContent {
-  display: block;
-}
 /* =========================
    RightPanel list wrappers — full width
    Müzik / Kapak listesi paneli tam doldursun
@@ -383,15 +371,4 @@ section.outputsCard.studioOutputs,
   max-width: none !important;
   justify-self: stretch !important;
   box-sizing: border-box !important;
-}
-/* PHOTOFX OUTER FRAME KILL */
-#moduleHost,
-#moduleHost::before,
-#moduleHost::after,
-#moduleHost > section[data-module="photofx"],
-#moduleHost > section[data-module="photofx"]::before,
-#moduleHost > section[data-module="photofx"]::after{
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
 }
