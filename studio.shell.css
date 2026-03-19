@@ -338,7 +338,19 @@ section.outputsCard.studioOutputs,
   box-shadow: 0 0 0 2px rgba(150,120,255,.15);
 }
 
+/* ===== Scroll body ===== */
+.rpBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 6px 10px;
+}
 
+/* içerik wrapper */
+.rpContent {
+  display: block;
+}
 /* =========================
    RightPanel list wrappers — full width
    Müzik / Kapak listesi paneli tam doldursun
