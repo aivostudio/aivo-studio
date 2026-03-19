@@ -240,10 +240,9 @@ function redirectToLogin(returnUrl) {
       if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
       if (typeof window.showAuthModal === "function") { window.showAuthModal("login"); return; }
     } catch (_) {}
-
-    location.href = "/studio.html?open=login";
+   location.href = "/studio.v2.html?open=login";
   } catch (_) {
-    location.href = "/studio.html?open=login";
+   location.href = "/studio.v2.html?open=login";
   }
 }
 
