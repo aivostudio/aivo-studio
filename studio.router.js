@@ -183,8 +183,11 @@ async function loadModuleIntoHost(key) {
   const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
   host.setAttribute("data-loading-module", key);
-
+  console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
+  
+  
   const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+  console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
 
   if (seq !== __moduleLoadSeq) return;
 
@@ -201,11 +204,22 @@ async function loadModuleIntoHost(key) {
   }
 
   if (seq !== __moduleLoadSeq) return;
+  console.log("[ROUTER][LOAD] mount:before", {
+  key,
+  seq,
+  currentActive: host.getAttribute("data-active-module"),
+  incomingTag: incomingRoot && incomingRoot.nodeName
+});
 
-  host.replaceChildren(incomingRoot);
-  host.setAttribute("data-active-module", key);
-  host.removeAttribute("data-loading-module");
-}
+ host.replaceChildren(incomingRoot);
+host.setAttribute("data-active-module", key);
+host.removeAttribute("data-loading-module");
+console.log("[ROUTER][LOAD] mount:after", {
+  key,
+  seq,
+  activeNow: host.getAttribute("data-active-module"),
+  childCount: host.childNodes.length
+});
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
