@@ -137,27 +137,22 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     }
   }
 
-  function syncIncludeMusic(root) {
-    const state = getState(root);
-    const includeMusic = qs("#pfxIncludeMusic", root);
-    const audioBtn = qs("#pfxAudioUploadBtn", root);
-    const audioInput = qs("#pfxAudioInput", root);
-    const audioName = qs("#pfxAudioName", root);
+function syncIncludeMusic(root) {
+  const includeMusic = qs("#pfxIncludeMusic", root);
+  const audioBtn = qs("#pfxAudioUploadBtn", root);
+  const audioInput = qs("#pfxAudioInput", root);
 
-    if (!includeMusic || !audioBtn || !audioInput) return;
+  if (!includeMusic || !audioBtn || !audioInput) return;
 
-    const enabled = String(includeMusic.value || "no") === "yes";
+  const enabled = String(includeMusic.value || "no") === "yes";
 
-    audioBtn.disabled = !enabled;
-    audioInput.disabled = !enabled;
-    audioBtn.classList.toggle("is-disabled", !enabled);
+  audioBtn.disabled = false;
+  audioInput.disabled = false;
+  audioBtn.classList.remove("is-disabled");
 
-    if (!enabled) {
-      audioInput.value = "";
-      state.audioFile = null;
-      if (audioName) audioName.textContent = "Dosya seçilmedi";
-    }
-  }
+  audioBtn.dataset.includeMusicEnabled = enabled ? "yes" : "no";
+  audioInput.dataset.includeMusicEnabled = enabled ? "yes" : "no";
+}
 
   async function postJSON(url, payload) {
     const r = await fetch(url, {
