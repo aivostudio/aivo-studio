@@ -405,8 +405,8 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   tryBindAll();
 
   // Router/mount sonrası için tek observer
- // const obs = new MutationObserver(() => tryBindAll());
-// obs.observe(document.documentElement, { childList: true, subtree: true });
+const obs = new MutationObserver(() => tryBindAll());
+obs.observe(document.documentElement, { childList: true, subtree: true });
 
   console.log("[VIDEO] module READY (create + poll + PPE) ✅");
 })();
