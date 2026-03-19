@@ -33,7 +33,7 @@ var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
   NOT:
   - ToastFlash / sessionStorage "__AIVO_TOAST__" yolu KALDIRILDI.
   - Login success artık URL ile taşır:
-      /studio.html?tf=success&tm=...
+    /studio.v2.html?tf=success&tm=...
 */
 
 
@@ -163,12 +163,12 @@ function rememberTargetFromAnchor(a) {
 
 function rememberTarget(url) {
   try {
-    sessionStorage.setItem(TARGET_KEY, url || "/studio.html");
+   sessionStorage.setItem(TARGET_KEY, normalizeStudio(url || "/studio.v2.html"));
   } catch (_) {}
 }
 
 function goAfterLogin() {
-  const raw = sessionStorage.getItem(TARGET_KEY) || "/studio.html";
+const raw = sessionStorage.getItem(TARGET_KEY) || "/studio.v2.html";
   sessionStorage.removeItem(TARGET_KEY);
   location.href = normalizeStudio(raw);
 }
@@ -448,8 +448,8 @@ try {
   // ✅ başarı toast'ı redirect'ten önce sakla
   window.toastFlash("success", "Girişiniz başarılı");
 
-  try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href = "/studio.html"; }
-  catch(_){ location.href = "/studio.html"; }
+ try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href = "/studio.v2.html"; }
+catch(_){ location.href = "/studio.v2.html"; }
 
 } catch (e) {
   window.toast.error("Bağlantı hatası. Tekrar dene.");
@@ -696,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       e.stopPropagation();
       try {
-        sessionStorage.setItem("aivo_after_login", a.getAttribute("href") || "/studio.html");
+     sessionStorage.setItem("aivo_after_login", normalizeStudio(a.getAttribute("href") || "/studio.v2.html"));
       } catch (_) {}
       openLoginSafe();
     }
@@ -868,7 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const page = map[product] || product;
 
     if (!isStudio && !safeIsLoggedIn()) {
-      try { sessionStorage.setItem("aivo_after_login", "/studio.html?page=" + encodeURIComponent(page)); } catch(_) {}
+   try { sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page)); } catch(_) {}
       safeOpenLogin();
       return;
     }
@@ -877,7 +877,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!isStudio) {
       const suffix = (location.search || "") + (location.hash || "");
-      location.href = "/studio.html?page=" + encodeURIComponent(page) + suffix;
+     location.href = "/studio.v2.html#" + encodeURIComponent(page);
       return;
     }
 
@@ -1485,7 +1485,7 @@ try {
 } catch (_) {}
 
 const msg = encodeURIComponent("Girişiniz başarılı");
-window.location.href = `/studio.html?tf=success&tm=${msg}`;
+window.location.href = `/studio.v2.html?tf=success&tm=${msg}`;
 return;
 } catch (err) {
   window.toast.error("Bağlantı hatası. Tekrar dene.");
