@@ -62,6 +62,7 @@ export default async function handler(req, res) {
   const providerJobId = String(body.providerJobId || "").trim();
   const providerName = String(body.providerName || "fal").trim();
   const providerVariant = String(body.providerVariant || "").trim();
+  const providerModel = String(body.providerModel || "").trim();
   const status = String(body.status || "processing").trim().toLowerCase();
 
   if (!prompt) {
@@ -95,10 +96,6 @@ export default async function handler(req, res) {
     }
 
     const user_uuid = String(userRow[0].id);
-    const providerModel =
-      quality === "premium"
-        ? "fal-ai/ltx-2.3/image-to-video/pro"
-        : "fal-ai/ltx-2.3/image-to-video/fast";
 
     const metaSafe = {
       app: "photofx",
@@ -106,7 +103,11 @@ export default async function handler(req, res) {
       provider: providerName,
       providerJobId,
       providerVariant,
-      model: providerModel,
+      model:
+        providerModel ||
+        (quality === "premium"
+          ? "fal-ai/ltx-2.3/image-to-video/pro"
+          : "fal-ai/ltx-2.3/image-to-video/fast"),
       prompt,
       style,
       styles,
@@ -161,14 +162,6 @@ export default async function handler(req, res) {
       created_at: inserted[0].created_at,
       providerJobId,
     });
-  } catch (e) {
-    console.error("photofx generate failed:", e);
-    return res.status(500).json({
-      ok: false,
-      error: "create_failed",
-      message: String(e?.message || e),
-    });
-  }
   } catch (e) {
     console.error("photofx generate failed:", e);
     return res.status(500).json({
