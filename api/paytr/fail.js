@@ -4,7 +4,7 @@ export default function handler(req, res) {
   const oid = encodeURIComponent(String(req.query?.oid || ""));
 
   res.writeHead(302, {
-    Location: `${baseUrl}/studio.html?page=checkout&paytr=fail&oid=${oid}`,
+   Location: `${baseUrl}/studio.v2.html#checkout?paytr=fail&oid=${oid}`,
   });
   res.end();
 }
