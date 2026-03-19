@@ -466,95 +466,123 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     true
   );
 
-  document.addEventListener(
-    "click",
-    (e) => {
-      const root = getRoot();
-      if (!root) return;
+function bindEvents(root) {
+  if (!root || root.__photofxEventsBound) return;
+  root.__photofxEventsBound = true;
 
-      const state = getState(root);
+  const state = getState(root);
 
-      const imageBtn = e.target.closest("#pfxInlineUploadBtn");
-      if (imageBtn && root.contains(imageBtn)) {
-        e.preventDefault();
-        e.stopPropagation();
+  const includeMusic = qs("#pfxIncludeMusic", root);
+  const imageInput = qs("#pfxImageInput", root);
+  const audioInput = qs("#pfxAudioInput", root);
+  const imageBtn = qs("#pfxInlineUploadBtn", root);
+  const audioBtn = qs("#pfxAudioUploadBtn", root);
+  const createBtn = qs(".pfxCreateBtn", root);
 
-        const imageInput = qs("#pfxImageInput", root);
-        if (imageInput) imageInput.click();
-        return;
+  if (includeMusic && !includeMusic.__bound) {
+    includeMusic.__bound = true;
+    includeMusic.addEventListener("change", () => {
+      syncIncludeMusic(root);
+    });
+  }
+
+  if (imageBtn && imageInput && !imageBtn.__bound) {
+    imageBtn.__bound = true;
+    imageBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      imageInput.click();
+    });
+  }
+
+  if (audioBtn && audioInput && !audioBtn.__bound) {
+    audioBtn.__bound = true;
+    audioBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (audioBtn.disabled) return;
+      audioInput.click();
+    });
+  }
+
+  if (imageInput && !imageInput.__bound) {
+    imageInput.__bound = true;
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files?.[0] || null;
+      state.imageFile = file;
+      renderUploads(root);
+      console.log("[photofx] image selected =", file?.name || null);
+    });
+  }
+
+  if (audioInput && !audioInput.__bound) {
+    audioInput.__bound = true;
+    audioInput.addEventListener("change", () => {
+      const file = audioInput.files?.[0] || null;
+      state.audioFile = file;
+      renderUploads(root);
+      console.log("[photofx] audio selected =", file?.name || null);
+    });
+  }
+
+  qsa(".pfxChoiceCard[data-quality]", root).forEach((btn) => {
+    if (btn.__bound) return;
+    btn.__bound = true;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      state.quality =
+        btn.getAttribute("data-quality") === "premium"
+          ? "premium"
+          : "standard";
+
+      renderQuality(root);
+    });
+  });
+
+  qsa(".pfxPresetCard[data-preset]", root).forEach((btn) => {
+    if (btn.__bound) return;
+    btn.__bound = true;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const preset = String(btn.getAttribute("data-preset") || "").trim();
+      if (!preset) return;
+
+      if (state.presets.includes(preset)) {
+        state.presets = state.presets.filter((x) => x !== preset);
+      } else {
+        state.presets = [...state.presets, preset];
       }
 
-      const audioBtn = e.target.closest("#pfxAudioUploadBtn");
-      if (audioBtn && root.contains(audioBtn)) {
-        e.preventDefault();
-        e.stopPropagation();
+      renderPresets(root);
+    });
+  });
 
-        if (audioBtn.disabled) return;
+  if (createBtn && !createBtn.__bound) {
+    createBtn.__bound = true;
+    createBtn.addEventListener("click", (e) => {
+      e.preventDefault();
 
-        const audioInput = qs("#pfxAudioInput", root);
-        if (audioInput) audioInput.click();
-        return;
-      }
+      const credit = createBtn.getAttribute("data-credit-cost") || "8";
 
-      const qualityBtn = e.target.closest(".pfxChoiceCard[data-quality]");
-      if (qualityBtn && root.contains(qualityBtn)) {
-        e.preventDefault();
-        e.stopPropagation();
+      createBtn.disabled = true;
+      createBtn.classList.add("is-loading");
+      createBtn.textContent = "Üretiliyor...";
 
-        state.quality =
-          qualityBtn.getAttribute("data-quality") === "premium"
-            ? "premium"
-            : "standard";
-
-        renderQuality(root);
-        return;
-      }
-
-      const presetBtn = e.target.closest(".pfxPresetCard[data-preset]");
-      if (presetBtn && root.contains(presetBtn)) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const preset = String(presetBtn.getAttribute("data-preset") || "").trim();
-        if (!preset) return;
-
-        if (state.presets.includes(preset)) {
-          state.presets = state.presets.filter((x) => x !== preset);
-        } else {
-          state.presets = [...state.presets, preset];
-        }
-
-        renderPresets(root);
-        return;
-      }
-
-      const createBtn = e.target.closest(".pfxCreateBtn");
-      if (createBtn && root.contains(createBtn)) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const credit = createBtn.getAttribute("data-credit-cost") || "8";
-
-        createBtn.disabled = true;
-        createBtn.classList.add("is-loading");
-        createBtn.textContent = "Üretiliyor...";
-
-        createPhotoFx(root)
-          .catch((err) => {
-            console.error("[photofx] create error:", err);
-            alert(String(err?.message || err || "photofx_create_failed"));
-          })
-          .finally(() => {
-            createBtn.disabled = false;
-            createBtn.classList.remove("is-loading");
-            createBtn.textContent = `🎬 Klip Oluştur (${credit} Kredi)`;
-          });
-
-        return;
-      }
-    },
-    true
-  );
+      createPhotoFx(root)
+        .catch((err) => {
+          console.error("[photofx] create error:", err);
+          alert(String(err?.message || err || "photofx_create_failed"));
+        })
+        .finally(() => {
+          createBtn.disabled = false;
+          createBtn.classList.remove("is-loading");
+          createBtn.textContent = `🎬 Klip Oluştur (${credit} Kredi)`;
+        });
+    });
+  }
+}
 
   boot();
 
