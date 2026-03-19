@@ -317,18 +317,18 @@ function syncIncludeMusic(root) {
       },
     });
 
-    const videoUrl =
-      provider.output ||
-      provider.videoUrl ||
-      provider.video_url ||
-      provider.url ||
-      provider.data?.video?.url ||
-      provider.fal?.video?.url ||
+    const providerJobId =
+      provider.job_id ||
+      provider.id ||
+      provider.request_id ||
+      provider.prediction_id ||
+      provider.data?.job_id ||
+      provider.data?.id ||
       "";
 
-    if (!videoUrl) {
-      console.error("[photofx] provider response missing video url", provider);
-      throw "photofx_generate_no_video";
+    if (!providerJobId) {
+      console.error("[photofx] provider response missing job id", provider);
+      throw "photofx_generate_no_job_id";
     }
 
     const db = await postJSON("/api/photofx/generate", {
@@ -345,15 +345,22 @@ function syncIncludeMusic(root) {
       includeAudio: form.includeAudio,
       imageUrl,
       audioUrl,
-      videoUrl,
+      providerJobId,
+      providerName: "fal",
+      providerVariant,
+      status: "processing",
     });
 
-    if (db?.job_id) {
-      window.dispatchEvent(
-        new CustomEvent("aivo:photofx:job_created", {
-          detail: {
+    const finalJobId = db?.job_id || providerJobId;
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:photofx:job_created", {
+        detail: {
+          app: "photofx",
+          job_id: finalJobId,
+          createdAt: Date.now(),
+          meta: {
             app: "photofx",
-            job_id: db.job_id,
             prompt: form.prompt,
             styles: form.styles,
             style: form.style,
@@ -367,19 +374,18 @@ function syncIncludeMusic(root) {
             includeAudio: form.includeAudio,
             imageUrl,
             audioUrl,
-            videoUrl,
-            createdAt: Date.now(),
+            provider: "fal",
+            provider_variant: providerVariant,
           },
-        })
-      );
-    }
+        },
+      })
+    );
 
-    console.log("[photofx] create done ✅", {
-      job_id: db?.job_id,
+    console.log("[photofx] create queued ✅", {
+      providerJobId,
+      finalJobId,
       styles: form.styles,
-      videoUrl,
     });
-  }
 
   function initStateFromDOM(root) {
     const state = getState(root);
