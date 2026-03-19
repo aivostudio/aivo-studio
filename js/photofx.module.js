@@ -451,12 +451,5 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
   boot();
 
-  new MutationObserver(() => {
-    boot();
-  }).observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-
   console.log("[PHOTOFX] module READY ✅");
 })();
