@@ -63,34 +63,35 @@ module.exports = async function handler(req, res) {
   );
 
   const base = getBaseUrl(req);
-  const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
 
-  try {
-    const { default: sendMail } = await import("../../lib/mail/mailer.js");
+const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
 
-    await sendMail({
-      to: email,
-      subject: "AIVO Şifre Sıfırlama",
-      html: `
-        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111">
-          <h2>AIVO Şifre Sıfırlama</h2>
-          <p>Şifreni sıfırlamak için aşağıdaki butona tıkla:</p>
-          <p>
-            <a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px;">
-              Şifremi Sıfırla
-            </a>
-          </p>
-          <p>Buton çalışmazsa bu linki tarayıcıya yapıştır:</p>
-          <p>${resetUrl}</p>
-          <p>Bu link 30 dakika geçerlidir.</p>
-        </div>
-      `,
-      replyTo: "info@aivo.tr",
-    });
+try {
+  const { default: sendMail } = await import("../../lib/mail/mailer.js");
 
-    return json(res, 200, { ok: true });
-  } catch (err) {
-    console.error("FORGOT_MAIL_SEND_FAIL:", err);
-    return json(res, 500, { ok: false, reason: "mail_send_failed" });
-  }
+  await sendMail({
+    to: email,
+    subject: "AIVO Şifre Sıfırlama",
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111">
+        <h2>AIVO Şifre Sıfırlama</h2>
+        <p>Şifreni sıfırlamak için aşağıdaki butona tıkla:</p>
+        <p>
+          <a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px;">
+            Şifremi Sıfırla
+          </a>
+        </p>
+        <p>Buton çalışmazsa bu linki tarayıcıya yapıştır:</p>
+        <p>${resetUrl}</p>
+        <p>Bu link 30 dakika geçerlidir.</p>
+      </div>
+    `,
+    replyTo: "info@aivo.tr",
+  });
+
+  return json(res, 200, { ok: true });
+} catch (err) {
+  console.error("FORGOT_MAIL_SEND_FAIL:", err);
+  return json(res, 500, { ok: false, reason: "mail_send_failed" });
+}
 };
