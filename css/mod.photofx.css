@@ -689,3 +689,20 @@ section[data-module="photofx"] .pfxSelect{
     gap:10px;
   }
 }
+/* PhotoFX — section ayrımı güçlendir */
+section[data-module="photofx"] .pfxQualityBlock,
+section[data-module="photofx"] .pfxPresetBlock,
+section[data-module="photofx"] .pfxClipBlock{
+  border: 1px solid rgba(123, 98, 210, .34) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 0 0 1px rgba(92, 74, 170, .18),
+    0 18px 42px rgba(0,0,0,.18),
+    0 0 26px rgba(120, 92, 220, .08) !important;
+}
+
+section[data-module="photofx"] .pfxQualityBlock::before,
+section[data-module="photofx"] .pfxPresetBlock::before,
+section[data-module="photofx"] .pfxClipBlock::before{
+  opacity: .82 !important;
+}
