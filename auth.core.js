@@ -238,9 +238,9 @@ if (!kvkk) {
         else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
       } catch (_) {}
 
-      let after = "/studio.html";
+    let after = "/studio.v2.html";
       try {
-        after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+       after = sessionStorage.getItem("aivo_after_login") || "/studio.v2.html";
         sessionStorage.removeItem("aivo_after_login");
       } catch (_) {}
 
