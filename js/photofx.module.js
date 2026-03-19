@@ -37,18 +37,26 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return root.__photofxState;
   }
 
-  function ensureHiddenInput(root, id, accept) {
-    let input = qs(`#${id}`, root);
-    if (input) return input;
+ function ensureHiddenInput(root, id, accept) {
+  let input = qs(`#${id}`, root);
+  if (input) return input;
 
-    input = document.createElement("input");
-    input.type = "file";
-    input.id = id;
-    input.accept = accept || "";
-    input.hidden = true;
-    root.appendChild(input);
-    return input;
-  }
+  input = document.createElement("input");
+  input.type = "file";
+  input.id = id;
+  input.accept = accept || "";
+
+  input.style.position = "absolute";
+  input.style.left = "-9999px";
+  input.style.top = "0";
+  input.style.width = "1px";
+  input.style.height = "1px";
+  input.style.opacity = "0";
+  input.style.pointerEvents = "none";
+
+  root.appendChild(input);
+  return input;
+}
 
   function ensureFileNameNode(root, btnId, infoId, emptyText) {
     const btn = qs(`#${btnId}`, root);
