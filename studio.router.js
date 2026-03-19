@@ -195,11 +195,14 @@ window.ensureModuleCSS = function(routeKey){
   }
 
   function onNavClick(e) {
-    const btn = e.target.closest(".navBtn");
-    if (!btn) return;
-    const key = btn.dataset.route || "music";
-    setHash(key);
-  }
+  const btn = e.target.closest(".navBtn");
+  if (!btn) return;
+
+  const key = btn.dataset.route || "music";
+  console.log("[NAV CLICK]", key, btn);
+
+  setHash(key);
+}
 
   window.StudioRouter = { go, setHash };
 
