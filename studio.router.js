@@ -170,24 +170,30 @@
     host.setAttribute("data-active-module", key);
   }
 
-  async function go(key) {
-    if (!ROUTES.has(key)) key = "music";
+async function go(key) {
+  if (!ROUTES.has(key)) key = "music";
 
-    const cur = parseHash();
-    if (cur.key !== key) {
-      setHash(key);
-      return;
-    }
+  const __t0 = performance.now();
+  console.log("[ROUTER] go:start", key, Math.round(__t0) + "ms");
 
-    setActiveNav(key);
-
-    window.ensureModuleCSS?.(key);
-
-    await loadModuleIntoHost(key);
-
-    const panelKey = RIGHT_PANEL_KEY[key] || "music";
-    window.RightPanel?.force?.(panelKey, {});
+  const cur = parseHash();
+  if (cur.key !== key) {
+    setHash(key);
+    return;
   }
+
+  setActiveNav(key);
+
+  window.ensureModuleCSS?.(key);
+  console.log("[ROUTER] after css", key, Math.round(performance.now() - __t0) + "ms");
+
+  await loadModuleIntoHost(key);
+  console.log("[ROUTER] after module", key, Math.round(performance.now() - __t0) + "ms");
+
+  const panelKey = RIGHT_PANEL_KEY[key] || "music";
+  window.RightPanel?.force?.(panelKey, {});
+  console.log("[ROUTER] after panel", key, Math.round(performance.now() - __t0) + "ms");
+}
 
   function onHashChange() {
     const { key } = parseHash();
