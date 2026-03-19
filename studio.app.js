@@ -100,7 +100,7 @@ window.consumeCoverCredits = async function (cost) {
   })
   .finally(() => {
     // tekrar çalışmasın
-    history.replaceState({}, "", "/studio.html?stab=security");
+   history.replaceState({}, "", "/studio.v2.html?stab=security");
   });
 })();
 
