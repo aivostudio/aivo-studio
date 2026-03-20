@@ -479,17 +479,9 @@
         });
 
         // ✅ AUTO LOGO OVERLAY: READY yakala -> overlay üret -> optimistic'e yaz -> render
-       render(merged);
+        const merged2 = await applyOverlayToMerged(merged);
+        render(merged2);
 
-Promise.resolve()
-  .then(() => applyOverlayToMerged(merged))
-  .then((merged2) => {
-    if (destroyed) return;
-    render(merged2);
-  })
-  .catch((e) => {
-    console.warn("[ATMO] deferred overlay render error:", e);
-  });
         function hasProcessing(items) {
           return (items || []).some(j => {
             const st = norm(j.db_status || j.status || j.state).toUpperCase();
