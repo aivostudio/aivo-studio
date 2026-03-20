@@ -743,15 +743,25 @@ function deactivatePanel() {
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
 
-    return {
-      destroy() {
-        destroyed = true;
-        try { window.removeEventListener("aivo:atmo:job_created", onJobCreated); } catch {}
-        try { controller?.destroy?.(); } catch {}
-        try { host.innerHTML = ""; } catch {}
-      },
-    };
-  }
+  return {
+  onShow() {
+    panelVisible = true;
+    activatePanel();
+  },
+
+  onHide() {
+    panelVisible = false;
+    deactivatePanel();
+  },
+
+  destroy() {
+    destroyed = true;
+    panelVisible = false;
+    try { deactivatePanel(); } catch {}
+    try { window.removeEventListener("aivo:atmo:job_created", onJobCreated); } catch {}
+    try { host.innerHTML = ""; } catch {}
+  },
+};
 
   // Panel register (varsa)
   try {
