@@ -1333,8 +1333,7 @@ if (!kvkk) {
         if (!res.ok) {
           window.toast.error(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
 return;
-
-
+      }
       window.toast.success(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
 
 
