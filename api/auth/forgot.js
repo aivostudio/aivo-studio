@@ -37,25 +37,23 @@ module.exports = async function handler(req, res) {
     return json(res, 200, { ok: true });
   }
 
-  const token = crypto.randomBytes(24).toString("hex");
-  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+ const token = crypto.randomBytes(24).toString("hex");
 
-  const now = Date.now();
-  const ttlSeconds = 30 * 60;
-  const expiresAt = now + ttlSeconds * 1000;
+const now = Date.now();
+const ttlSeconds = 30 * 60;
+const expiresAt = now + ttlSeconds * 1000;
 
-  const key = `aivo:reset:${tokenHash}`;
+const key = `reset:${token}`;
 
-  await kv.set(
-    key,
-    {
-      email,
-      expiresAt,
-      used: false,
-      createdAt: now,
-    },
-    { ex: ttlSeconds }
-  );
+await kv.set(
+  key,
+  {
+    email,
+    expiresAt,
+    createdAt: now,
+  },
+  { ex: ttlSeconds }
+);
 
   const base = getBaseUrl(req);
   const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
