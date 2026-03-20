@@ -1,9 +1,3 @@
-panel.video.js
-
-———————
-
-
-
 // panel.video.js
 // RightPanel Video (v2) — STRICT app filtering (video only)
 // Fix: Atmo outputs leaking into Video panel via PPE bridge
