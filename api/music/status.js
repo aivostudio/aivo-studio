@@ -1,4 +1,6 @@
 const { neon } = require("@neondatabase/serverless");
+const { getRedis } = require("../_kv");
+const fetchFn = globalThis.fetch || require("node-fetch");
 
 function pickConn() {
   return (
@@ -50,16 +52,6 @@ async function readJobObjFromDB(internalId) {
     return null;
   }
 }
-// api/music/status.js
-// Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
-// FIX: Provider audio_url 302 redirect (audiopipe.suno.ai) -> duration Infinity/NaN + progress bar kırılıyor.
-// Çözüm: UI'ya her zaman SAME-ORIGIN URL ver:
-//   1) varsa R2 archive_url
-//   2) yoksa /api/media/proxy?url=... (same-origin, redirect/range/CORS stabilize)
-// Ayrıca: TopMediai status ready bazen 0 değil 2 gelebiliyor -> ready map genişletildi.
-
-const { getRedis } = require("../_kv");
-const fetchFn = globalThis.fetch || require("node-fetch");
 
 /**
  * copy-to-r2 helper'ını esnek resolve ediyoruz.
@@ -67,7 +59,6 @@ const fetchFn = globalThis.fetch || require("node-fetch");
  */
 function resolveCopyToR2() {
   try {
-    // eslint-disable-next-line import/no-dynamic-require
     const mod = require("../_lib/copy-to-r2");
 
     if (typeof mod === "function") return mod;
@@ -91,13 +82,14 @@ function resolveCopyToR2() {
 }
 
 function safeJsonParse(s) {
-  if (s && typeof s === "object") return s; // Redis zaten object döndürüyorsa
+  if (s && typeof s === "object") return s;
   try {
     return JSON.parse(s);
   } catch {
     return null;
   }
 }
+
 function uniqStrings(arr) {
   const out = [];
   const seen = new Set();
@@ -138,7 +130,8 @@ function getBaseUrl(req) {
     (req.headers["x-forwarded-proto"] ? String(req.headers["x-forwarded-proto"]) : "")
       .split(",")[0]
       .trim() || "https";
-  const host = (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
+  const host =
+    (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
     (req.headers.host ? String(req.headers.host) : "");
   return `${proto}://${host}`;
 }
@@ -151,10 +144,9 @@ function toProxyUrl(req, rawUrl) {
 }
 
 module.exports = async (req, res) => {
-  // build stamp
   res.setHeader(
     "x-aivo-status-build",
-    "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-no-redirect"
+    "status-direct-v3-topmediai-tasks-2026-03-20-clean-jsonb-sync"
   );
 
   try {
@@ -178,9 +170,6 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
-    // ---------------------------------------------------------
-    // 1) Resolve song ids
-    // ---------------------------------------------------------
     const isInternal = raw.startsWith("job_");
     const looksLikeUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
@@ -189,106 +178,99 @@ module.exports = async (req, res) => {
     let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
     let provider_song_ids = [];
 
-   async function readJobObjFromRedis(internalId) {
-  if (!internalId) return null;
+    async function readJobObjFromRedis(internalId) {
+      if (!internalId) return null;
 
-  const normalize = (v) =>
-    v && typeof v === "object" && v.result ? v.result : v;
+      const k1 = `jobs/${internalId}/job.json`;
+      const t1raw = await redis.get(k1);
+      const t1 =
+        t1raw && typeof t1raw === "object" && t1raw.result
+          ? t1raw.result
+          : t1raw;
+      const o1 = t1 ? safeJsonParse(t1) : null;
+      if (o1) return o1;
 
-  const k1 = `jobs/${internalId}/job.json`;
-  const t1raw = await redis.get(k1);
-  const t1 =
-    t1raw && typeof t1raw === "object" && t1raw.result
-      ? t1raw.result
-      : t1raw;
+      const k2 = `job:${internalId}`;
+      const t2raw = await redis.get(k2);
+      const t2 =
+        t2raw && typeof t2raw === "object" && t2raw.result
+          ? t2raw.result
+          : t2raw;
+      const o2 = t2 ? safeJsonParse(t2) : null;
+      if (o2) return o2;
 
-  const o1 = t1 ? safeJsonParse(t1) : null;
-  if (o1) return o1;
+      return null;
+    }
 
-  const k2 = `job:${internalId}`;
-  const t2raw = await redis.get(k2);
-  const t2 =
-    t2raw && typeof t2raw === "object" && t2raw.result
-      ? t2raw.result
-      : t2raw;
+    if (isInternal || looksLikeUUID) {
+      const jobObj =
+        (await readJobObjFromRedis(internal_job_id)) ||
+        (await readJobObjFromDB(internal_job_id));
 
-  const o2 = t2 ? safeJsonParse(t2) : null;
-  if (o2) return o2;
+      if (!jobObj && String(req.query.probe || "") === "1") {
+        const k1 = `jobs/${internal_job_id}/job.json`;
+        const k2 = `job:${internal_job_id}`;
+        const t1 = await redis.get(k1);
+        const t2 = await redis.get(k2);
 
-  return null;
-}
-if (isInternal || looksLikeUUID) {
-  const jobObj = await readJobObjFromRedis(internal_job_id);
-  // DEBUG (only when probe=1): KV'de job var mı yok mu net görelim
-if (!jobObj && String(req.query.probe || "") === "1") {
-  const k1 = `jobs/${internal_job_id}/job.json`;
-  const k2 = `job:${internal_job_id}`;
-  const t1 = await redis.get(k1);
-  const t2 = await redis.get(k2);
+        return res.status(200).json({
+          ok: false,
+          error: "debug_kv_missing_job",
+          internal_job_id,
+          debug: {
+            k1,
+            k1_exists: !!t1,
+            k1_sample: String(t1 || "").slice(0, 300),
+            k2,
+            k2_exists: !!t2,
+            k2_sample: String(t2 || "").slice(0, 300),
+          },
+        });
+      }
 
-  return res.status(200).json({
-    ok: false,
-    error: "debug_kv_missing_job",
-    internal_job_id,
-    debug: {
-      k1,
-      k1_exists: !!t1,
-      k1_sample: String(t1 || "").slice(0, 300),
-      k2,
-      k2_exists: !!t2,
-      k2_sample: String(t2 || "").slice(0, 300),
-    },
-  });
-}
+      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-  provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
-
-  const idsRaw =
-    jobObj?.provider_song_ids ||
-    jobObj?.providerSongIds ||
-    jobObj?.song_ids ||
-    jobObj?.songIds ||
-    [];
-
-  provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-
-  if (provider_song_ids.length === 0 && provider_job_id) {
-    provider_song_ids = [String(provider_job_id)];
-  }
-
-      // 🔥 Fallback: if internal job not found in job store,
-// try resolving via provider_map scan
-if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
-  // provider_map keys are stored as: provider_map:<provider_job_id>
-  // we don't know provider_job_id yet, so we must try scanning via known pattern
-
- const keys = await redis.keys("provider_map:*");
-  for (const key of keys) {
-    const rawMap = await redis.get(key);
-    const normalized =
-      rawMap && typeof rawMap === "object" && rawMap.result
-        ? rawMap.result
-        : rawMap;
-
-    const mapObj = normalized ? safeJsonParse(normalized) : null;
-    if (mapObj?.internal_job_id === internal_job_id) {
-      provider_job_id = String(mapObj?.provider_job_id || "").trim() || null;
-
-      const mapIdsRaw =
-        mapObj?.provider_song_ids ||
-        mapObj?.providerSongIds ||
-        mapObj?.song_ids ||
-        mapObj?.songIds ||
+      const idsRaw =
+        jobObj?.provider_song_ids ||
+        jobObj?.providerSongIds ||
+        jobObj?.song_ids ||
+        jobObj?.songIds ||
         [];
 
-      provider_song_ids = Array.isArray(mapIdsRaw)
-        ? uniqStrings(mapIdsRaw)
-        : [];
+      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
 
-      break;
-    }
-  }
-}
+      if (provider_song_ids.length === 0 && provider_job_id) {
+        provider_song_ids = [String(provider_job_id)];
+      }
+
+      if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
+        const keys = await redis.keys("provider_map:*");
+        for (const key of keys) {
+          const rawMap = await redis.get(key);
+          const normalized =
+            rawMap && typeof rawMap === "object" && rawMap.result
+              ? rawMap.result
+              : rawMap;
+
+          const mapObj = normalized ? safeJsonParse(normalized) : null;
+          if (mapObj?.internal_job_id === internal_job_id) {
+            provider_job_id = String(mapObj?.provider_job_id || "").trim() || null;
+
+            const mapIdsRaw =
+              mapObj?.provider_song_ids ||
+              mapObj?.providerSongIds ||
+              mapObj?.song_ids ||
+              mapObj?.songIds ||
+              [];
+
+            provider_song_ids = Array.isArray(mapIdsRaw)
+              ? uniqStrings(mapIdsRaw)
+              : [];
+
+            break;
+          }
+        }
+      }
     } else {
       if (raw.includes(",")) {
         provider_song_ids = uniqStrings(raw.split(","));
@@ -296,12 +278,12 @@ if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
       } else {
         const providerMapKey = `provider_map:${raw}`;
         const mapText = await redis.get(providerMapKey);
-       const normalized =
-  mapText && typeof mapText === "object" && mapText.result
-    ? mapText.result
-    : mapText;
+        const normalized =
+          mapText && typeof mapText === "object" && mapText.result
+            ? mapText.result
+            : mapText;
 
-const mapObj = normalized ? safeJsonParse(normalized) : null;
+        const mapObj = normalized ? safeJsonParse(normalized) : null;
 
         if (mapObj?.internal_job_id) {
           internal_job_id = String(mapObj.internal_job_id).trim() || null;
@@ -317,22 +299,27 @@ const mapObj = normalized ? safeJsonParse(normalized) : null;
           provider_job_id = String(mapObj?.provider_job_id || "").trim() || String(raw);
 
           if (internal_job_id) {
-            const jobObj = await readJobObjFromRedis(internal_job_id);
-            // fallback: read mapping written by /api/music/generate.js
-if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && internal_job_id) {
-  const tMap = await redis.get(`internal_map:${internal_job_id}`);
-  const oMap = tMap ? safeJsonParse(tMap) : null;
-  if (oMap) {
-    provider_job_id = String(oMap.provider_job_id || "").trim() || provider_job_id;
-    const idsRaw =
-      oMap.provider_song_ids ||
-      oMap.providerSongIds ||
-      oMap.song_ids ||
-      oMap.songIds ||
-      [];
-    provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : provider_song_ids;
-  }
-}
+            let jobObj =
+              (await readJobObjFromRedis(internal_job_id)) ||
+              (await readJobObjFromDB(internal_job_id));
+
+            if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && internal_job_id) {
+              const tMap = await redis.get(`internal_map:${internal_job_id}`);
+              const normalizedMap =
+                tMap && typeof tMap === "object" && tMap.result ? tMap.result : tMap;
+              const oMap = normalizedMap ? safeJsonParse(normalizedMap) : null;
+
+              if (oMap) {
+                provider_job_id = String(oMap.provider_job_id || "").trim() || provider_job_id;
+                const idsRaw =
+                  oMap.provider_song_ids ||
+                  oMap.providerSongIds ||
+                  oMap.song_ids ||
+                  oMap.songIds ||
+                  [];
+                provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : provider_song_ids;
+              }
+            }
 
             const idsRaw =
               jobObj?.provider_song_ids ||
@@ -372,9 +359,6 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       });
     }
 
-    // ---------------------------------------------------------
-    // 2) Call TopMediai v3 tasks
-    // ---------------------------------------------------------
     const KEY = process.env.TOPMEDIAI_API_KEY;
     if (!KEY) {
       return res.status(200).json({
@@ -416,9 +400,6 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       });
     }
 
-    // ---------------------------------------------------------
-    // 3) Normalize (MULTI-TRACK) + R2 Archive + SAME-ORIGIN URL
-    // ---------------------------------------------------------
     const arr = Array.isArray(top?.data)
       ? top.data
       : Array.isArray(top?.data?.data)
@@ -427,17 +408,12 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
 
     let anyFail = false;
     let anyReady = false;
-
     const outputs = [];
 
     const copyToR2 = resolveCopyToR2();
     let archiveWarning = null;
     if (!copyToR2) archiveWarning = "missing_copy_to_r2_helper";
 
-    // Ready mapping:
-    // - bazı örneklerde status:0 ready
-    // - bazılarında status:2 iken audio_url dolu (senin screenshot)
-    // - audio_url varsa ve status 0/2 ise ready kabul edeceğiz.
     const READY_STATUSES = new Set([0, 2]);
 
     if (Array.isArray(arr) && arr.length) {
@@ -455,14 +431,14 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
         if (ready && urlMp3) {
           anyReady = true;
 
-          // default: SAME-ORIGIN proxy URL (redirect/range/CORS stabilize)
           let finalUrl = toProxyUrl(req, urlMp3);
-
-          // optional: archive to R2 (stable) -> finalUrl becomes archive_url if produced
           let archive_url = null;
 
           if (copyToR2) {
-            const key = buildMusicR2Key({ provider_job_id, trackId: trackId || provider_job_id });
+            const key = buildMusicR2Key({
+              provider_job_id,
+              trackId: trackId || provider_job_id,
+            });
 
             try {
               const result = await copyToR2({
@@ -479,7 +455,7 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
                 null;
 
               if (archive_url) {
-                finalUrl = archive_url; // ✅ UI artık R2 URL görür
+                finalUrl = archive_url;
               } else {
                 archiveWarning = archiveWarning || "copy_to_r2_no_url_returned";
               }
@@ -490,15 +466,14 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
 
           outputs.push({
             type: "audio",
-            url: finalUrl, // ✅ SAME-ORIGIN proxy OR R2 archive
+            url: finalUrl,
             meta: {
               provider: "topmediai",
               trackId: trackId || null,
               status: st,
-              audio_url: urlMp3, // debug: provider url (redirect olabilir)
-              archive_url: archive_url, // varsa
+              audio_url: urlMp3,
+              archive_url: archive_url,
               archived_at: archive_url ? nowIso() : null,
-              // provider duration bazen -1 geliyor, yine de meta'ya koyuyoruz (UI isterse kullanır)
               duration: typeof item?.duration === "number" ? item.duration : null,
             },
           });
@@ -519,107 +494,79 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       archive_warning: archiveWarning,
     };
 
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa
     if (outputs.length) {
       data.audio = {
-        src: outputs[0].url, // ✅ artık provider değil: proxy/R2
+        src: outputs[0].url,
         output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
         duration: outputs[0]?.meta?.duration ?? null,
       };
     }
 
-     if (anyFail) {
-  data.state = "failed";
-  data.status = "failed";
-} else if (anyReady) {
-  data.state = "completed";
-  data.status = "completed";
-} else {
-  data.state = "processing";
-  data.status = "processing";
-}
-
-// ✅ READY olunca DB row da güncellensin ki /api/jobs/list doğru state dönsün
-if (data.status === "completed") {
-  try {
-    const conn = pickConn();
-    if (conn) {
-      const sql = neon(conn);
-
-      const mergedMeta = {
-        ...(data.topmediai?.data?.[0] ? { topmediai_first: data.topmediai.data[0] } : {}),
-        provider_job_id: provider_job_id || null,
-        provider_song_ids: provider_song_ids || [],
-        internal_job_id: internal_job_id || null,
-        audio_src:
-          data.audio?.src ||
-          outputs?.[0]?.url ||
-          outputs?.[0]?.meta?.archive_url ||
-          outputs?.[0]?.meta?.audio_url ||
-          "",
-      };
-
-      const outputsJson = JSON.stringify(Array.isArray(outputs) ? outputs : []);
-      const mergedMetaJson = JSON.stringify(mergedMeta);
-
-      if (internal_job_id) {
-        await sql`
-          update jobs
-          set
-            status = ${"completed"},
-            outputs = ${outputsJson}::jsonb,
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMetaJson}::jsonb,
-            updated_at = now()
-          where app = ${"music"}
-            and deleted_at is null
-            and (
-              meta->>'internal_job_id' = ${internal_job_id}
-              or request_id = ${provider_job_id || ""}
-            )
-        `;
-      } else if (provider_job_id) {
-        await sql`
-          update jobs
-          set
-            status = ${"completed"},
-            outputs = ${outputsJson}::jsonb,
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMetaJson}::jsonb,
-            updated_at = now()
-          where app = ${"music"}
-            and deleted_at is null
-            and request_id = ${provider_job_id}
-        `;
-      }
+    if (anyFail) {
+      data.state = "failed";
+      data.status = "failed";
+    } else if (anyReady) {
+      data.state = "completed";
+      data.status = "completed";
+    } else {
+      data.state = "processing";
+      data.status = "processing";
     }
-  } catch (e) {
-    console.warn("[api/music/status] db sync failed", e);
-  }
-}
 
-return res.status(200).json(data);
-    // DB sync: music row status/outputs güncellensin
-    try {
-      const conn = pickConn();
-      if (conn && provider_job_id) {
-        const sql = neon(conn);
+    if (data.status === "completed") {
+      try {
+        const conn = pickConn();
+        if (conn) {
+          const sql = neon(conn);
 
-        await sql`
-          update jobs
-          set
-            status = ${data.status || "processing"},
-            outputs = ${Array.isArray(data.outputs) ? data.outputs : []},
-            updated_at = now()
-          where app = 'music'
-            and deleted_at is null
-            and (
-              request_id = ${String(provider_job_id)}
-              or meta->>'provider_job_id' = ${String(provider_job_id)}
-              or meta->>'internal_job_id' = ${String(internal_job_id || "")}
-            )
-        `;
+          const mergedMeta = {
+            ...(data.topmediai?.data?.[0] ? { topmediai_first: data.topmediai.data[0] } : {}),
+            provider_job_id: provider_job_id || null,
+            provider_song_ids: provider_song_ids || [],
+            internal_job_id: internal_job_id || null,
+            audio_src:
+              data.audio?.src ||
+              outputs?.[0]?.url ||
+              outputs?.[0]?.meta?.archive_url ||
+              outputs?.[0]?.meta?.audio_url ||
+              "",
+          };
+
+          const outputsJson = JSON.stringify(Array.isArray(outputs) ? outputs : []);
+          const mergedMetaJson = JSON.stringify(mergedMeta);
+
+          if (internal_job_id) {
+            await sql`
+              update jobs
+              set
+                status = ${"completed"},
+                outputs = ${outputsJson}::jsonb,
+                meta = coalesce(meta, '{}'::jsonb) || ${mergedMetaJson}::jsonb,
+                updated_at = now()
+              where app = ${"music"}
+                and deleted_at is null
+                and (
+                  meta->>'internal_job_id' = ${internal_job_id}
+                  or request_id = ${provider_job_id || ""}
+                )
+            `;
+          } else if (provider_job_id) {
+            await sql`
+              update jobs
+              set
+                status = ${"completed"},
+                outputs = ${outputsJson}::jsonb,
+                meta = coalesce(meta, '{}'::jsonb) || ${mergedMetaJson}::jsonb,
+                updated_at = now()
+              where app = ${"music"}
+                and deleted_at is null
+                and request_id = ${provider_job_id}
+            `;
+          }
+        }
+      } catch (e) {
+        console.warn("[api/music/status] db sync failed", e);
       }
-    } catch (e) {
-      console.warn("[api/music/status] db sync failed", e);
     }
 
     return res.status(200).json(data);
