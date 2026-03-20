@@ -1870,6 +1870,9 @@ onMusicVisibilityChange = () => {
     window.addEventListener("pageshow", rehydrateMusicPanel);
     document.addEventListener("visibilitychange", onMusicVisibilityChange);
 
+    setTimeout(() => { rehydrateMusicPanel(); }, 350);
+    setTimeout(() => { rehydrateMusicPanel(); }, 1200);
+
     (jobs || []).slice(0, 60).forEach((j) => {
       const id = getJobId(j);
       if (id && !isHiddenJobId(id)) poll(id);
