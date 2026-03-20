@@ -129,6 +129,7 @@
   // JOB LIST HYDRATION (DB -> PPE.apply)
   // ------------------------------------------------------------
   const __hydratedJobIds = new Set();
+  let __lastHydrateRouteKey = "";
 
   function normalizeAppKey(key) {
     const k = String(key || "").replace(/^#/, "").trim().toLowerCase();
@@ -258,9 +259,16 @@ if (key === "cartoon" && mode === "character") {
   }
 
   function scheduleHydrateForRoute() {
-    const routeKey = getCurrentRouteKey();
-    setTimeout(() => hydrateJobsFromDB(routeKey), 250);
+  const routeKey = getCurrentRouteKey();
+
+  if (__lastHydrateRouteKey === routeKey) {
+    console.log("[BOOT] hydrate skipped same route:", routeKey);
+    return;
   }
+
+  __lastHydrateRouteKey = routeKey;
+  setTimeout(() => hydrateJobsFromDB(routeKey), 250);
+}
 
  window.addEventListener("DOMContentLoaded", () => {
   tryMountTopbarPartial();
