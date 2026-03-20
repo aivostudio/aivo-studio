@@ -276,9 +276,17 @@
     syncWiring(root);
 
     // sonradan basılan kartlar için
-    const mo = new MutationObserver(() => {
-      syncWiring(root);
-    });
+    let wiringQueued = false;
+
+const mo = new MutationObserver(() => {
+  if (wiringQueued) return;
+  wiringQueued = true;
+
+  requestAnimationFrame(() => {
+    wiringQueued = false;
+    syncWiring(root);
+  });
+});
     mo.observe(root, { childList: true, subtree: true });
 
     console.log("[PLAYER] v1 ready (root:", SELECTORS.root + ")");
