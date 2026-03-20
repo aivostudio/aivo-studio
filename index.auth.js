@@ -369,6 +369,108 @@ document.addEventListener("keydown", (e) => {
 
 
 /* =========================================================
+   AUTH SUBMIT — REAL LOGIN (PROD) [REVIZE]
+   - Button: #btnAuthSubmit  ✅ (senin gerçek ID)
+   - Mode:   #loginModal[data-mode="login|register"]
+   - Login endpoint: POST /api/auth/login
+   ========================================================= */
+(function AIVO_REAL_LOGIN_BIND(){
+  if (window.__AIVO_REAL_LOGIN_BOUND__) return;
+  window.__AIVO_REAL_LOGIN_BOUND__ = true;
+
+  const modal = document.getElementById("loginModal");
+  const btn = document.getElementById("btnAuthSubmit"); // ✅ FIX (btnAuthSubmit)
+  if (!modal || !btn) return;
+
+  function getMode(){
+    return String(modal.getAttribute("data-mode") || "login").toLowerCase();
+  }
+
+  function val(id){
+    return (document.getElementById(id)?.value || "").trim();
+  }
+
+  async function runLogin(){
+    const email = val("loginEmail").toLowerCase();
+    const pass  = val("loginPass");
+
+  if (!email || !pass) {
+  window.toast.warning("E-posta ve şifre zorunlu.");
+  return;
+}
+
+  window.toast.warning("E-posta ve şifre zorunlu.");
+  return;
+}
+
+
+  btn.disabled = true;
+const old = btn.textContent;
+btn.textContent = "Giriş yapılıyor...";
+
+try {
+  const r = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify({ email, password: pass }),
+  });
+btn.disabled = true;
+const old = btn.textContent;
+btn.textContent = "Giriş yapılıyor...";
+
+try {
+  const r = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify({ email, password: pass }),
+  });
+
+  const j = await r.json().catch(() => ({}));
+
+  if (!r.ok || j?.ok === false) {
+    window.toast.error(j?.message || j?.error || "Giriş başarısız.");
+    return;
+  }
+
+  // ✅ oturum yaz
+  localStorage.setItem("aivo_logged_in", "1");
+  localStorage.setItem("aivo_user_email", j?.user?.email || email);
+  if (j?.token) localStorage.setItem("aivo_token", j.token);
+
+  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch(_){}
+  try {
+    if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+    else if (typeof closeModal === "function") closeModal();
+  } catch(_){}
+
+  // ✅ başarı toast'ı redirect'ten önce sakla
+  window.toastFlash("success", "Girişiniz başarılı");
+
+ try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href = "/studio.v2.html"; }
+catch(_){ location.href = "/studio.v2.html"; }
+
+} catch (e) {
+  window.toast.error("Bağlantı hatası. Tekrar dene.");
+} finally {
+  btn.disabled = false;
+  btn.textContent = old;
+}
+
+    // ✅ sadece LOGIN modunda çalış
+    if (getMode() !== "login") return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    runLogin();
+  }, true); // ✅ capture: diğer click handler’ları ezmesin
+})();
+
+
+/* =========================================================
    🔄 CREDIT SYNC — AFTER LOGIN (SAFE / NO-OVERRIDE)
    - index.auth.js içinde kullan
    - Tab başına 1 kez çalışır
@@ -1331,24 +1433,19 @@ if (!kvkk) {
         try { data = JSON.parse(text); } catch (_) {}
 
         if (!res.ok) {
-        window.toast.error(
-          safeMsg(data?.error || data?.message || text || "Kayıt başarısız.")
-        );
-        return;
-      }
+          window.toast.error(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+return;
 
-      window.toast.success(
-        safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin.")
-      );
 
-      modal.setAttribute("data-mode", "login");
-      try { qs("registerPass2").value = ""; } catch (_) {}
-      try { qs("kvkkOk").checked = false; } catch (_) {}
+      window.toast.success(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
 
-      setBusy(false, "Giriş Yap");
-      setTimeout(() => {
-        try { qs("loginPass")?.focus(); } catch (_) {}
-      }, 50);
+
+        modal.setAttribute("data-mode", "login");
+        try { qs("registerPass2").value = ""; } catch(_) {}
+        try { qs("kvkkOk").checked = false; } catch(_) {}
+
+        setBusy(false, "Giriş Yap");
+        setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
 
       } catch (err) {
         window.toast.error("Bağlantı hatası. Tekrar dene.");
@@ -1384,21 +1481,10 @@ const text = await res.text();
 let data = {};
 try { data = JSON.parse(text); } catch (_) {}
 
-const loginErrorMap = {
-  invalid_credentials: "Giriş başarısız. Lütfen şifreni kontrol et.",
-  email_not_verified: "Email adresini doğrulamadan giriş yapamazsın.",
-  user_not_found: "Bu email ile kayıtlı kullanıcı bulunamadı.",
-  user_disabled: "Hesabın pasif durumda.",
-  bad_request: "E-posta ve şifre gir.",
-  server_error: "Sunucu hatası oluştu. Tekrar dene.",
-};
-
-const loginErrorText =
-  loginErrorMap[data?.error] ||
-  safeMsg(data?.message || data?.error || text || "Giriş başarısız.");
-
 if (!res.ok || data?.ok === false) {
-  window.toast.error(loginErrorText);
+  window.toast.error(
+    safeMsg(data?.error || data?.message || text || "Giriş başarısız.")
+  );
   return;
 }
 // ✅ LOGIN SUCCESS — URL TOAST (storage'siz kesin çözüm)
@@ -1420,4 +1506,3 @@ return;
   setBusy(false, old || "Giriş Yap");
 }
 } // doLogin BİTTİ
-
