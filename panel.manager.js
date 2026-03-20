@@ -1,6 +1,8 @@
 // panel.manager.js
 (function(){
   const registry = new Map();
+  const panelCache = new Map(); // key -> { wrapEl, mounted, unmount, impl }
+
   let currentKey = null;
   let currentUnmount = null;
 
@@ -71,15 +73,14 @@
       </div>
     `;
 
-    shell    = host.querySelector(".rpShell");
-    headerEl = host.querySelector(".rpHeader");
-    titleEl  = host.querySelector(".rpTitle");
-    metaEl   = host.querySelector(".rpMeta");
-    searchEl = host.querySelector(".rpSearch");
-    bodyEl   = host.querySelector(".rpBody");
-    contentEl= host.querySelector(".rpContent");
+    shell     = host.querySelector(".rpShell");
+    headerEl  = host.querySelector(".rpHeader");
+    titleEl   = host.querySelector(".rpTitle");
+    metaEl    = host.querySelector(".rpMeta");
+    searchEl  = host.querySelector(".rpSearch");
+    bodyEl    = host.querySelector(".rpBody");
+    contentEl = host.querySelector(".rpContent");
 
-    // search -> active panel
     if(searchEl){
       searchEl.addEventListener("input", () => {
         lastQuery = String(searchEl.value || "");
@@ -95,23 +96,57 @@
     opts = opts || {};
     if(titleEl && (opts.title != null)) titleEl.textContent = String(opts.title);
     if(metaEl && (opts.meta != null)) metaEl.textContent = String(opts.meta);
+
     if(searchEl){
       const enabled = (opts.searchEnabled !== false);
       searchEl.style.display = enabled ? "" : "none";
-      if(opts.searchPlaceholder != null) searchEl.placeholder = String(opts.searchPlaceholder);
-      // keep last query unless explicitly reset
+
+      if(opts.searchPlaceholder != null){
+        searchEl.placeholder = String(opts.searchPlaceholder);
+      }
+
       if(opts.resetSearch){
         lastQuery = "";
         searchEl.value = "";
       }else{
-        // preserve query across force calls
         searchEl.value = lastQuery || "";
       }
     }
   }
 
+  function ensurePanelWrap(key){
+    if(!contentEl) return null;
+
+    let cached = panelCache.get(key);
+    if(cached && cached.wrapEl && cached.wrapEl.isConnected){
+      return cached.wrapEl;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "rpPanelWrap";
+    wrap.dataset.panelKey = String(key || "");
+    wrap.style.display = "none";
+    wrap.style.width = "100%";
+    wrap.style.height = "100%";
+    contentEl.appendChild(wrap);
+
+    if(!cached){
+      cached = { wrapEl: wrap, mounted: false, unmount: null, impl: null };
+      panelCache.set(key, cached);
+    }else{
+      cached.wrapEl = wrap;
+    }
+
+    return wrap;
+  }
+
+  function hideAllPanelWraps(){
+    if(!contentEl) return;
+    const nodes = contentEl.querySelectorAll(".rpPanelWrap");
+    nodes.forEach((el) => { el.style.display = "none"; });
+  }
+
   const api = {
-    // debug
     _keys(){ return Array.from(registry.keys()); },
     _has(key){ return registry.has(key); },
 
@@ -120,10 +155,17 @@
         console.warn("[RightPanel] invalid register:", key, impl);
         return;
       }
+
       if(registry.has(key)){
         console.warn("[RightPanel] duplicate register for key:", key);
       }
+
       registry.set(key, impl);
+
+      const cached = panelCache.get(key);
+      if(cached){
+        cached.impl = impl;
+      }
     },
 
     force(key, payload){
@@ -132,22 +174,22 @@
 
       ensureShell(host);
 
-      // unmount old
-      if(currentUnmount){
-        safeCall(currentUnmount);
-        currentUnmount = null;
-      }
-
       currentKey = key;
 
       const impl = registry.get(key);
       if(!impl){
-        setHeader({ title: "Panel", meta: "", searchEnabled: false, resetSearch: true });
+        hideAllPanelWraps();
+        if(contentEl) contentEl.innerHTML = "";
+        setHeader({
+          title: "Panel",
+          meta: "",
+          searchEnabled: false,
+          resetSearch: true
+        });
         renderFallback(key);
         return;
       }
 
-      // header defaults (panel can override via impl.header or impl.getHeader)
       let hdr = null;
       if(typeof impl.getHeader === "function"){
         hdr = safeCall(impl.getHeader, payload);
@@ -158,47 +200,93 @@
       const fallbackTitle = String(key || "Panel");
       setHeader({
         title: (hdr && hdr.title != null) ? hdr.title : fallbackTitle,
-        meta:  (hdr && hdr.meta != null)  ? hdr.meta  : "",
+        meta: (hdr && hdr.meta != null) ? hdr.meta : "",
         searchEnabled: (hdr && hdr.searchEnabled === false) ? false : true,
         searchPlaceholder: (hdr && hdr.searchPlaceholder != null) ? hdr.searchPlaceholder : "Ara...",
-        // keep query by default
         resetSearch: (hdr && hdr.resetSearch === true) ? true : false
       });
 
-      // clear content only (header stays)
-      if(contentEl) contentEl.innerHTML = "";
+      hideAllPanelWraps();
 
-      // mount into manager-owned content area
-      const unmount = safeCall(impl.mount, contentEl, payload, {
-        key,
-        setHeader,               // panel may update title/meta later
-        getQuery: () => lastQuery
-      });
+      const wrapEl = ensurePanelWrap(key);
+      if(!wrapEl){
+        renderFallback(key);
+        return;
+      }
 
-      currentUnmount = (typeof unmount === "function") ? unmount : null;
+      let cached = panelCache.get(key);
+      if(!cached){
+        cached = { wrapEl, mounted: false, unmount: null, impl };
+        panelCache.set(key, cached);
+      }else{
+        cached.wrapEl = wrapEl;
+        cached.impl = impl;
+      }
 
-      // if there was an existing query, re-apply it on new panel
-      if(lastQuery && impl && typeof impl.onSearch === "function"){
+      wrapEl.style.display = "";
+
+      if(!cached.mounted){
+        const unmount = safeCall(impl.mount, wrapEl, payload, {
+          key,
+          setHeader,
+          getQuery: () => lastQuery
+        });
+
+        cached.unmount = (typeof unmount === "function") ? unmount : null;
+        cached.mounted = true;
+      }
+
+      currentUnmount = cached.unmount || null;
+
+      if(lastQuery && typeof impl.onSearch === "function"){
         safeCall(impl.onSearch, lastQuery);
       }
     },
 
-    getCurrentKey(){ return currentKey; },
+    getCurrentKey(){
+      return currentKey;
+    },
 
-    // optional: let panels update header after mount
     setHeader,
 
-    // optional: allow external setting/clearing query
     setSearchQuery(q){
       lastQuery = String(q || "");
       if(searchEl) searchEl.value = lastQuery;
+
       const impl = registry.get(currentKey);
       if(impl && typeof impl.onSearch === "function"){
         safeCall(impl.onSearch, lastQuery);
       }
     },
+
     clearSearch(){
       api.setSearchQuery("");
+    },
+
+    destroyPanel(key){
+      const cached = panelCache.get(key);
+      if(!cached) return;
+
+      try {
+        if(cached.unmount) safeCall(cached.unmount);
+      } catch(e){}
+
+      if(cached.wrapEl && cached.wrapEl.parentNode){
+        cached.wrapEl.parentNode.removeChild(cached.wrapEl);
+      }
+
+      panelCache.delete(key);
+
+      if(currentKey === key){
+        currentKey = null;
+        currentUnmount = null;
+      }
+    },
+
+    destroyAll(){
+      for(const key of panelCache.keys()){
+        api.destroyPanel(key);
+      }
     }
   };
 
