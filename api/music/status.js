@@ -532,8 +532,17 @@ module.exports = async (req, res) => {
               "",
           };
 
-          const outputsJson = JSON.stringify(Array.isArray(outputs) ? outputs : []);
+                  const outputsJson = JSON.stringify(Array.isArray(outputs) ? outputs : []);
           const mergedMetaJson = JSON.stringify(mergedMeta);
+
+          console.log("[api/music/status] db sync preview", {
+            provider_job_id: provider_job_id || null,
+            internal_job_id: internal_job_id || null,
+            data_status: data.status || null,
+            outputs_count: Array.isArray(outputs) ? outputs.length : 0,
+            outputs_json_preview: String(outputsJson || "").slice(0, 500),
+            merged_meta_json_preview: String(mergedMetaJson || "").slice(0, 500),
+          });
 
           if (internal_job_id) {
             await sql`
