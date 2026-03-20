@@ -763,43 +763,42 @@ function deactivatePanel() {
   },
 };
 
-  // Panel register (varsa)
-  try {
-    if (typeof window.RightPanel.register === "function") {
-     window.RightPanel.register("atmo", {
-  mount(wrapEl, payload, ctx) {
-   let panel = createAtmosPanel(wrapEl);
-wrapEl.__atmoPanel = panel || null;
+// Panel register (varsa)
+try {
+  if (typeof window.RightPanel.register === "function") {
+    let atmoPanelInstance = null;
 
-this.__getAtmoPanel = () => panel || wrapEl.__atmoPanel || null;
+    window.RightPanel.register("atmo", {
+      mount(wrapEl, payload, ctx) {
+        atmoPanelInstance = createAtmosPanel(wrapEl) || null;
 
-return () => {
-  try { panel?.destroy?.(); } catch {}
-  try { delete wrapEl.__atmoPanel; } catch {}
-  try { delete this.__getAtmoPanel; } catch {}
-  panel = null;
-};
+        return () => {
+          try { atmoPanelInstance?.destroy?.(); } catch {}
+          atmoPanelInstance = null;
+        };
+      },
 
-  onShow(payload, ctx) {
-    try { ctx?.setHeader?.({ title: "Atmosfer Video", meta: "", searchEnabled: false }); } catch {}
-    try {
-      const host = document.querySelector('.rpPanelWrap[data-panel-key="atmo"]');
-      host?.__atmoPanel?.onShow?.();
-    } catch {}
-  },
+      onShow(payload, ctx) {
+        try {
+          ctx?.setHeader?.({
+            title: "Atmosfer Video",
+            meta: "",
+            searchEnabled: false
+          });
+        } catch {}
 
-  onHide(payload, ctx) {
-    try {
-      const host = document.querySelector('.rpPanelWrap[data-panel-key="atmo"]');
-      host?.__atmoPanel?.onHide?.();
-    } catch {}
+        try { atmoPanelInstance?.onShow?.(); } catch {}
+      },
+
+      onHide(payload, ctx) {
+        try { atmoPanelInstance?.onHide?.(); } catch {}
+      }
+    });
+  } else {
+    window.RightPanel.panels = window.RightPanel.panels || {};
+    window.RightPanel.panels.atmo = createAtmosPanel;
   }
-});
-    } else {
-      window.RightPanel.panels = window.RightPanel.panels || {};
-      window.RightPanel.panels.atmo = createAtmosPanel;
-    }
-  } catch (e) {
-    console.warn("[ATMO PANEL] register failed", e);
-  }
+} catch (e) {
+  console.warn("[ATMO PANEL] register failed", e);
+}
 })();
