@@ -270,28 +270,19 @@ if (key === "cartoon" && mode === "character") {
   setTimeout(() => hydrateJobsFromDB(routeKey), 250);
 }
 
- window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", () => {
   tryMountTopbarPartial();
   setFakeCredits();
-   
-    ensurePlayerRoot();
-    installToastFallback();
 
-    console.log("[BOOT] AIVO_PLAYER:", window.AIVO_PLAYER);
-    if (window.toast?.success) window.toast.success("Boot OK ✅");
+  ensurePlayerRoot();
+  installToastFallback();
 
-    if (!location.hash) location.hash = "music";
+  console.log("[BOOT] AIVO_PLAYER:", window.AIVO_PLAYER);
+  if (window.toast?.success) window.toast.success("Boot OK ✅");
 
-    scheduleHydrateForRoute();
+  if (!location.hash) location.hash = "music";
 
-    window.addEventListener("hashchange", () => {
-      scheduleHydrateForRoute();
-    });
-
-    if (window.StudioRouter && typeof window.StudioRouter.onChange === "function") {
-      window.StudioRouter.onChange(() => {
-        scheduleHydrateForRoute();
-      });
-    }
-  });
+  // Studio v2 RightPanel modülleri kendi DB/hydrate akışlarını kendileri yönetiyor.
+  // Boot seviyesinde ekstra hydrate başlatmıyoruz.
+});
 })();
