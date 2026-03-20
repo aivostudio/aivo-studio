@@ -1,3 +1,9 @@
+panel.video.js
+
+———————
+
+
+
 // panel.video.js
 // RightPanel Video (v2) — STRICT app filtering (video only)
 // Fix: Atmo outputs leaking into Video panel via PPE bridge
@@ -15,20 +21,10 @@
   const STATUS_POLL_BATCH = 3;
   const STATUS_POLL_TIMEOUT_MS = 15000;
 
-const state = { items: [] };
+  const state = { items: [] };
 
-const runtime = {
-  host: null,
-  tList: null,
-  tStatus: null,
-  offEvents: null,
-  offJobs: null,
-  hydrateKick: null,
-  active: false,
-};
-
-// “Silindi ama interval hydrate/poll ile geri geldi” sorununa karşı tombstone
-const deletedIds = new Set(); // string(job_id)
+  // “Silindi ama interval hydrate/poll ile geri geldi” sorununa karşı tombstone
+  const deletedIds = new Set(); // string(job_id)
 
   /* =======================
      Utils
@@ -828,7 +824,7 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
      Job created bridge (video only + tombstone)
      ======================= */
 
-   function attachJobCreated(host) {
+  function attachJobCreated(host) {
     const onJob = (e) => {
       const d = e?.detail || {};
       if (!isVideoApp(d.app) || !d.job_id) return;
@@ -867,13 +863,11 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
         app: "video",
       });
 
-      state.items = state.items.slice(0, MAX_ITEMS);
+           state.items = state.items.slice(0, MAX_ITEMS);
       render(host);
 
-           // DB row yazıldıysa gerçek kayıt optimistic kartı devralsın
-      try { if (runtime.hydrateKick) clearTimeout(runtime.hydrateKick); } catch {}
-      runtime.hydrateKick = setTimeout(() => {
-        if (!runtime.active) return;
+      // DB row yazıldıysa gerçek kayıt optimistic kartı devralsın
+      setTimeout(() => {
         hydrateFromDB(host).catch?.(() => {});
       }, 1200);
 
@@ -882,50 +876,6 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
 
     window.addEventListener("aivo:video:job_created", onJob);
     return () => window.removeEventListener("aivo:video:job_created", onJob);
-  }
-
-  function startRuntime(host) {
-    runtime.host = host;
-
-    if (runtime.active) {
-      pollPendingStatuses(host).catch(() => {});
-      return;
-    }
-
-    runtime.active = true;
-
-    hydrateFromDB(host).catch(() => {});
-    pollPendingStatuses(host).catch(() => {});
-
-    runtime.tList = setInterval(() => {
-      hydrateFromDB(host).catch(() => {});
-    }, 15000);
-
-    runtime.tStatus = setInterval(() => {
-      pollPendingStatuses(host).catch(() => {});
-    }, STATUS_POLL_EVERY_MS);
-
-    runtime.offEvents = attachEvents(host);
-    runtime.offJobs = attachJobCreated(host);
-  }
-
-  function stopRuntime() {
-    runtime.active = false;
-
-    try { if (runtime.tList) clearInterval(runtime.tList); } catch {}
-    try { if (runtime.tStatus) clearInterval(runtime.tStatus); } catch {}
-
-      runtime.tList = null;
-    runtime.tStatus = null;
-
-    try { if (runtime.hydrateKick) clearTimeout(runtime.hydrateKick); } catch {}
-    runtime.hydrateKick = null;
-
-    try { runtime.offEvents && runtime.offEvents(); } catch {}
-    try { runtime.offJobs && runtime.offJobs(); } catch {}
-
-    runtime.offEvents = null;
-    runtime.offJobs = null;
   }
 
   /* =======================
@@ -938,8 +888,6 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
     },
 
     mount(host) {
-      runtime.host = host;
-
       host.innerHTML = `
         <div class="videoSide">
           <div class="videoSideCard">
@@ -948,28 +896,33 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
         </div>
       `;
 
-      // İlk mount hafif kalsın
+      // ✅ Tek kaynak: DB. İlk render boş.
       state.items = [];
       render(host);
 
-      // Actions tek sefer bağlansın
+      // ✅ Actions (download/share/fs/delete) tek yerde
       bindActions(host);
 
+      // ✅ DB hydrate
+      hydrateFromDB(host);
+
+      // ✅ periodic hydrate (list)
+      const tList = setInterval(() => hydrateFromDB(host), 15000);
+
+      // ✅ fast status poll for pending items
+      const tStatus = setInterval(() => pollPendingStatuses(host).catch(() => {}), STATUS_POLL_EVERY_MS);
+
+      const offEvents = attachEvents(host);
+     const offPPE = () => {};
+      const offJobs = attachJobCreated(host);
+
       return () => {
-        stopRuntime();
-        runtime.host = null;
+        try { clearInterval(tList); } catch {}
+        try { clearInterval(tStatus); } catch {}
+        try { offEvents(); } catch {}
+        try { offPPE(); } catch {}
+        try { offJobs(); } catch {}
       };
-    },
-
-    onShow(_payload, ctx) {
-      const host = ctx?.wrapEl || runtime.host;
-      if (!host) return;
-      runtime.host = host;
-      startRuntime(host);
-    },
-
-    onHide() {
-      stopRuntime();
     },
   });
 })();
