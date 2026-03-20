@@ -48,9 +48,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_db_env" });
   }
 
+  const __t0 = Date.now();
+  const __mark = (label) => {
+    const ms = Date.now() - __t0;
+    console.log(`[jobs/list][${app}] ${label} ${ms}ms`);
+  };
+
   let auth;
   try {
     auth = await requireAuth(req);
+    __mark("after requireAuth");
   } catch (e) {
     return res.status(401).json({
       ok: false,
@@ -72,13 +79,13 @@ export default async function handler(req, res) {
   const sql = neon(conn);
 
   try {
-    // 🔥 CANONICAL USER RESOLVE
     const userRow = await sql`
       select id
       from users
       where email = ${email}
       limit 1
     `;
+    __mark("after user lookup");
 
     if (!userRow.length) {
       return res.status(401).json({
@@ -90,9 +97,6 @@ export default async function handler(req, res) {
 
     const user_uuid = String(userRow[0].id);
 
-    // 🔥 BACKWARD COMPAT QUERY
-    // Some old jobs may have only user_id=email
-    // New jobs should always have user_uuid filled
     const rows = await sql`
       select id, user_id, user_uuid, app, type, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
@@ -105,6 +109,25 @@ export default async function handler(req, res) {
       order by created_at desc
       limit 50
     `;
+    __mark("after jobs query");
+
+    const items = rows.map((r) => ({
+      job_id: r.id,
+      user_id: r.user_id || null,
+      user_uuid: r.user_uuid || null,
+      app: r.app,
+      type: r.type || r.app || null,
+      status: r.status,
+      state: mapState(r.status),
+      prompt: r.prompt || null,
+      meta: r.meta || null,
+      outputs: Array.isArray(r.outputs) ? r.outputs : [],
+      error: r.error || null,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    }));
+
+    __mark("before response");
 
     return res.status(200).json({
       ok: true,
@@ -112,22 +135,8 @@ export default async function handler(req, res) {
       auth: true,
       user_uuid,
       email,
-      count: rows.length,
-      items: rows.map((r) => ({
-        job_id: r.id,
-        user_id: r.user_id || null,
-        user_uuid: r.user_uuid || null,
-        app: r.app,
-        type: r.type || r.app || null,
-        status: r.status,
-        state: mapState(r.status),
-        prompt: r.prompt || null,
-        meta: r.meta || null,
-        outputs: Array.isArray(r.outputs) ? r.outputs : [],
-        error: r.error || null,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-      })),
+      count: items.length,
+      items,
     });
   } catch (e) {
     console.error("jobs/list failed:", e);
