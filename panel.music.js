@@ -1471,7 +1471,30 @@ async function actionDelete(card){
       }
 
       upsertJob(next);
+   const readySrc = String(src || playUrl || "").trim();
 
+if (st === "ready" && readySrc) {
+  upsertJob({
+    job_id: id,
+    id,
+    __ui_state: "ready",
+    __audio_src: readySrc,
+    output_id: output_id || existing.output_id || "",
+    ...(duration ? { __duration: String(duration) } : {}),
+    __pending_src: "",
+    __pending_output_id: "",
+    __pending_duration: "",
+    __db_job_id: String(existing.__db_job_id || "").trim(),
+    provider_job_id: String(existing.provider_job_id || "").trim(),
+    __provider_song_id: String(existing.__provider_song_id || "").trim(),
+    ...(title ? { title } : {})
+  });
+
+  clearPoll(id);
+  POLL_BUSY.delete(id);
+  render();
+  return;
+}
      const existingMe = (jobs || []).find((x) => getJobId(x) === id) || {};
 const existingOther = (jobs || []).find((x) => getJobId(x) === otherId) || {};
 
