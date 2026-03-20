@@ -1403,3 +1403,18 @@ return;
   setBusy(false, old || "Giriş Yap");
 }
 } // doLogin BİTTİ
+btn.addEventListener("click", async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+  if (getMode() === "register") {
+    await doRegister();
+    return;
+  }
+
+  await doLogin();
+}, true);
+
+  });
+})();
