@@ -1,106 +1,77 @@
 // api/auth/reset.js
-import bcrypt from "bcryptjs";
-import kvMod from "../_kv.js";
+const crypto = require("crypto");
+const { kv } = require("@vercel/kv");
 
-const kv = kvMod?.default || kvMod || {};
-const kvGetJson = kv.kvGetJson;
-const kvSetJson = kv.kvSetJson;
-const kvDel =
-  kv.kvDel || kv.kvDelKey || kv.kvDelSafe || kv.kvDelJson || null;
+// MVP USER STORE (GEÇİCİ)
+// Canlı: gerçek kullanıcı DB (email -> password_hash) olacak.
+global.__AIVO_USER_STORE__ = global.__AIVO_USER_STORE__ || new Map();
 
-function json(res, status, data) {
-  res.statusCode = status;
+function json(res, code, obj) {
+  res.statusCode = code;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(data));
+  res.end(JSON.stringify(obj));
 }
 
-const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
+function hashPassword(password, saltHex) {
+  // Basit PBKDF2 (MVP). Canlıda argon2/bcrypt tercih edilir.
+  const salt = Buffer.from(saltHex, "hex");
+  const derived = crypto.pbkdf2Sync(password, salt, 120000, 32, "sha256");
+  return derived.toString("hex");
+}
 
-async function delSafe(key) {
+module.exports = async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") return res.status(204).end();
+
+  if (req.method !== "POST") return json(res, 405, { ok: false, reason: "method" });
+
+  let body = {};
   try {
-    if (typeof kvDel === "function") return await kvDel(key);
+    body = typeof req.body === "object" ? req.body : JSON.parse(req.body || "{}");
   } catch (_) {}
-  return null;
-}
 
-async function readJson(req) {
-  try {
-    if (req.body && typeof req.body === "object") return req.body;
-    const chunks = [];
-    for await (const c of req) chunks.push(c);
-    if (!chunks.length) return {};
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch {
-    return null;
+  const token = String(body.token || "").trim();
+  const password = String(body.password || "");
+
+  if (!token || token.length < 16) return json(res, 200, { ok: false, reason: "invalid" });
+  if (!password || password.length < 8) return json(res, 200, { ok: false, reason: "weak" });
+
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const key = `aivo:reset:${tokenHash}`;
+
+  // Redis'ten oku
+  const rec = await kv.get(key);
+
+  if (!rec) return json(res, 200, { ok: false, reason: "invalid" });
+  if (rec.used) return json(res, 200, { ok: false, reason: "used" });
+
+  const now = Date.now();
+  if (now > Number(rec.expiresAt || 0)) {
+    // expired → temizle
+    await kv.del(key);
+    return json(res, 200, { ok: false, reason: "expired" });
   }
-}
 
-export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      res.setHeader("Allow", "POST");
-      return json(res, 405, { ok: false, error: "method_not_allowed" });
-    }
-
-    if (typeof kvGetJson !== "function" || typeof kvSetJson !== "function") {
-      return json(res, 503, { ok: false, error: "kv_not_available" });
-    }
-
-    const body = await readJson(req);
-    if (!body) {
-      return json(res, 400, { ok: false, error: "invalid_json" });
-    }
-
-    const token = String(body.token || "").trim();
-    const password = String(body.password || "");
-
-    if (!token || token.length < 16) {
-      return json(res, 400, { ok: false, error: "invalid_token" });
-    }
-
-    if (!password || password.length < 8) {
-      return json(res, 400, { ok: false, error: "weak_password" });
-    }
-
-    const resetKey = `reset:${token}`;
-    const rec = await kvGetJson(resetKey).catch(() => null);
-
-    if (!rec || typeof rec !== "object") {
-      return json(res, 400, { ok: false, error: "invalid_or_expired_token" });
-    }
-
-    const email = normalizeEmail(rec.email);
-    if (!email || !email.includes("@")) {
-      await delSafe(resetKey);
-      return json(res, 400, { ok: false, error: "bad_reset_payload" });
-    }
-
-    const userKey = `user:${email}`;
-    const existing = await kvGetJson(userKey).catch(() => null);
-
-    if (!existing || typeof existing !== "object") {
-      await delSafe(resetKey);
-      return json(res, 404, { ok: false, error: "user_not_found" });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    const next = {
-      ...existing,
-      email,
-      passwordHash,
-      updatedAt: Date.now(),
-    };
-
-    await kvSetJson(userKey, next);
-    await delSafe(resetKey);
-
-    return json(res, 200, { ok: true });
-  } catch (e) {
-    return json(res, 500, {
-      ok: false,
-      error: "reset_failed",
-      message: String(e?.message || e),
-    });
+  // “Şifre güncelleme” (MVP user store)
+  const email = String(rec.email || "").toLowerCase();
+  if (!email) {
+    await kv.del(key);
+    return json(res, 200, { ok: false, reason: "invalid" });
   }
-}
+
+  const saltHex = crypto.randomBytes(16).toString("hex");
+  const passHash = hashPassword(password, saltHex);
+
+  global.__AIVO_USER_STORE__.set(email, {
+    password_hash: passHash,
+    salt: saltHex,
+    updatedAt: now
+  });
+
+  // Tek kullanımlık: token'ı sil
+  await kv.del(key);
+
+  return json(res, 200, { ok: true });
+};
