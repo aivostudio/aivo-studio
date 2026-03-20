@@ -129,16 +129,17 @@ window.ensureModuleCSS = function(routeKey) {
     if (location.hash === nextHash) return;
     location.hash = nextHash;
   }
-
-  function normalizeInitialRoute() {
-    if (hasHashKey()) return;
-    const qp = parseQueryRouteKey();
-    if (qp && ROUTES.has(qp)) {
-      setHash(qp);
-      return;
-    }
-    setHash("music");
+function normalizeInitialRoute() {
+  const qp = parseQueryRouteKey();
+  if (qp && ROUTES.has(qp)) {
+    setHash(qp);
+    return;
   }
+
+  if (hasHashKey()) return;
+
+  setHash("music");
+}
 
   function setActiveNav(key) {
     document.querySelectorAll(".navBtn[data-route]").forEach((btn) => {
