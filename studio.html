@@ -1,0 +1,4499 @@
+<!DOCTYPE html>
+<html lang="tr" class="aivoAuthPreload">
+<head>
+
+
+
+  <meta charset="UTF-8" />
+  <title>AIVO Studio (Beta)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- ================= GLOBAL / CORE =================
+<link rel="stylesheet" href="/index.css?v=1000">
+
+================= TOPBAR / DROPDOWN (BASE) =================
+<link rel="stylesheet" href="/products.dropdown.css?v=12">
+<link rel="stylesheet" href="/products.dropdown.override.css?v=7" />
+
+================= STUDIO (LEGACY – EN ALTTA EZİLSİN) =================
+<link rel="stylesheet" href="/studio.css?v=9">
+<link rel="stylesheet" href="/invoices.css?v=1">
+<link rel="stylesheet" href="/studio.products.css?v=1">
+
+================= STUDIO — YENİ MİMARİ =================
+<link rel="stylesheet" href="/studio.app.css?v=2">
+<link rel="stylesheet" href="/studio.pages.css?v=6">
+
+================= ATMOSPHERE =================
+<link rel="stylesheet" href="/studio.atmosphere.css?v=9">
+
+================= TOAST (HER ZAMAN EN SON) =================
+<link rel="stylesheet" href="/toast.css?v=1">
+-->
+
+
+
+
+
+  <style id="aivo-auth-gate-style">
+    html { visibility: hidden; }
+  </style>
+
+<script>
+(function AIVO_STUDIO_HARD_GATE(){
+  if (window.__AIVO_STUDIO_HARD_GATE__) return;
+  window.__AIVO_STUDIO_HARD_GATE__ = true;
+
+  function goIndexLogin(){
+    var from = encodeURIComponent(location.href);
+    location.replace("/?open=login&from=" + from);
+  }
+
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  })
+  .then(async function(r){
+    clearTimeout(t);
+
+    if (r.status === 200) {
+      const me = await r.json();
+
+      // ✅ Auth OK -> sayfayı göster
+      var st = document.getElementById("aivo-auth-gate-style");
+      if (st) st.remove();
+      document.documentElement.style.visibility = "visible";
+
+      // ===============================
+      // 🟢 ONLINE PRESENCE PING
+      // ===============================
+      if (me && me.email) {
+
+        // ilk ping (hemen)
+        fetch("/api/presence/ping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: me.email })
+        });
+
+        // 30 sn'de bir ping
+        setInterval(function(){
+          fetch("/api/presence/ping", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: me.email })
+          });
+        }, 30000);
+      }
+      // ===============================
+
+      return;
+    }
+
+    // ❌ 401/403 -> Index'e + login açık
+    goIndexLogin();
+  })
+  .catch(function(){
+    // ❌ timeout/network -> fail-closed
+    goIndexLogin();
+  });
+})();
+</script>
+
+
+</head>
+
+<body class="is-studio" data-mode="advanced">
+
+
+
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
+
+      <!-- LOGO -->
+      <a class="aivo-brand" href="/" aria-label="AIVO">
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
+      </a>
+
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
+
+           <!-- ÜRÜNLER -->
+<div class="nav-item has-dropdown" id="navProducts">
+  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+    Ürünler <span class="chevron">▾</span>
+  </button>
+
+  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+    <div class="products-menu">
+
+      <!-- 1) AI MÜZİK -->
+      <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
+        <span class="pc-ico">🎵</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Müzik</span>
+          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+        </span>
+      </a>
+
+      <!-- 2) AI KAPAK / GÖRSEL -->
+      <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
+        <span class="pc-ico">🖼️</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Kapak / Görsel</span>
+          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+        </span>
+      </a>
+
+      <!-- 3) AI VIDEO -->
+      <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
+        <span class="pc-ico">🎬</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Video</span>
+          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+        </span>
+      </a>
+
+    <!-- 4) AI SOSYAL MEDYA -->
+<a href="/studio.html?page=sm-pack-a"
+   data-auth="required"
+   class="product-card sm-card sm-card--a"
+   data-product="sm-pack-a">
+  <span class="pc-ico">📲</span>
+  <span class="pc-txt">
+    <span class="pc-title">AI Sosyal Medya</span>
+    <span class="pc-sub">Müzik + loop + kapak + caption</span>
+  </span>
+</a>
+
+<!-- 5) AI VIRAL HOOK -->
+<a href="/studio.html?page=sm-pack-b"
+   data-auth="required"
+   class="product-card sm-card sm-card--b"
+   data-product="sm-pack-b">
+  <span class="pc-ico">🔥</span>
+  <span class="pc-txt">
+    <span class="pc-title">AI Viral Hook</span>
+    <span class="pc-sub">İlk 3 sn viral açılış</span>
+  </span>
+</a>
+
+<!-- 6) AI ATMOSFER -->
+<a href="/studio.html?page=atmo"
+   data-auth="required"
+   class="product-card"
+   data-product="atmo">
+  <span class="pc-ico">🌫️</span>
+  <span class="pc-txt">
+    <span class="pc-title">AI Atmosfer</span>
+    <span class="pc-sub">Loop sahne & atmosfer</span>
+  </span>
+</a>
+
+
+    </div>
+  </div>
+</div>
+<!-- /ÜRÜNLER -->
+
+
+        <!-- KURUMSAL -->
+        <div class="nav-item has-dropdown" id="navCorp">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Kurumsal <span class="chevron">▾</span>
+          </button>
+
+          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
+            <div class="corp-menu">
+              <div class="corp-grid">
+
+                <a href="/kurumsal/hakkimizda.html" class="corp-card">
+                  <span class="cc-ico">ⓘ</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Hakkımızda</span>
+                    <span class="cc-sub">AIVO’nun hikayesi</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/ozellikler.html" class="corp-card">
+                  <span class="cc-ico">⚙️</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Özellikler</span>
+                    <span class="cc-sub">Neler sunuyoruz</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/gizlilik.html" class="corp-card">
+                  <span class="cc-ico">🔒</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Gizlilik Politikası</span>
+                    <span class="cc-sub">KVKK / GDPR</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
+                  <span class="cc-ico">📄</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Mesafeli Satış</span>
+                    <span class="cc-sub">Sözleşme metni</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/destek-merkezi.html" class="corp-card">
+                  <span class="cc-ico">❓</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Destek Merkezi</span>
+                    <span class="cc-sub">Yardım &amp; SSS</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/destek.html" class="corp-card">
+                  <span class="cc-ico">✉️</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">İletişim</span>
+                    <span class="cc-sub">Destek &amp; bilgi</span>
+                  </span>
+                </a>
+
+              </div><!-- /.corp-grid -->
+            </div><!-- /.corp-menu -->
+          </div><!-- /.dropdown -->
+        </div><!-- /.nav-item -->
+
+        <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
+
+      </nav>
+      <!-- /NAV -->
+
+      <!-- AUTH -->
+      <div class="aivo-auth">
+
+        <!-- GUEST (BOŞ OLSA BİLE ŞART) -->
+        <div class="auth-guest" id="authGuest"></div>
+
+        <!-- USER -->
+        <div class="auth-user" id="authUser" hidden>
+
+          <!-- ✅ CREDIT AREA (Sadece auth-user içinde görünür) -->
+          <div class="top-credits" id="topCredits">
+            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+              Kredi <strong id="topCreditCount">0</strong>
+            </div>
+
+            <a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">
+              Kredi Al
+            </a>
+          </div>
+
+          <!-- 🔒 USER MENU WRAP (✅ TOPBAR İÇİNDE / ✅ AUTHUSER İÇİNDE) -->
+          <div class="user-menu-wrap" id="userMenuWrap">
+
+            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+              <span class="user-ava" id="topUserInitial"></span>
+              <span class="user-name" id="topUserName">Hesap</span>
+              <span class="chev">▾</span>
+            </button>
+
+            <!-- ✅ hidden ile fail-safe başlangıç -->
+            <div id="userMenuPanel" class="user-menu" aria-hidden="true" hidden>
+              <div class="user-menu-card">
+
+                <div class="um-head">
+                  <div class="um-ava" id="umAvatar"></div>
+
+                  <div class="um-meta">
+                    <div class="um-title" id="umName">Hesap</div>
+                    <div class="um-sub" id="umEmail"></div>
+                  </div>
+                </div>
+
+                <div class="um-plan">
+                  <span class="um-plan-ico">💎</span>
+                  <span class="um-plan-txt" id="umPlan">Basic</span>
+                </div>
+
+                <div class="um-sep"></div>
+
+                <!-- ✅ DOĞRU YÖNLENDİRME: query param ile -->
+                <a class="um-item" href="/studio.html?to=dashboard">
+                  <span class="um-i">✦</span><span>Dashboard</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=library">
+                  <span class="um-i">▦</span><span>Ürettiklerim</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=profile">
+                  <span class="um-i">👤</span><span>Profil</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=settings">
+                  <span class="um-i">⚙</span><span>Ayarlar</span>
+                </a>
+
+                <div class="um-sep"></div>
+
+                <!-- ✅ sidebar-link class'ı KALDIRILDI (studio sidebar JS ile çakışmasın) -->
+                <button class="um-item um-item-danger"
+                        data-action="logout"
+                        data-redirect="/"
+                        type="button">
+                  <span>Çıkış Yap</span>
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+          <!-- /USER MENU WRAP -->
+
+        </div><!-- /#authUser -->
+        <!-- /USER -->
+
+      </div><!-- /.aivo-auth -->
+      <!-- /AUTH -->
+
+    </div><!-- /.container.aivo-topbar-inner -->
+  </header>
+  <!-- ================= /AIVO TOPBAR ================= -->
+
+
+
+
+<!-- =========================================================
+     ✅ AIVO STUDIO (BETA)  (tek kopya)  (İLK AÇILIŞ)
+     ========================================================= -->
+<div class="page page-studio" data-page="studio">
+  <div class="layout">
+
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+        <button class="sidebar-link" data-page-link="music" data-music-tab="geleneksel">
+          <span>Müzik Üret</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="music" data-music-tab="ses-kaydi" type="button">
+          <span>AI Ses Kaydı</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="music" data-music-tab="ai-video" type="button">
+          <span>AI Video Üret</span>
+        </button>
+
+        <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+        <button class="sidebar-link" data-page-link="atmosphere" type="button">
+          <span>AI Atmosfer Video</span>
+      
+
+        </button>
+
+        <button class="sidebar-link" data-page-link="cover" type="button">
+          <span>Kapak Üret</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="sm-pack" type="button">
+          <span>AI Sosyal Medya Paketi</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="viral-hook" type="button">
+          <span>AI Viral Hook Generator</span>
+        </button>
+      </div>
+
+
+      <!-- Divider (CSS’e dokunmadan) -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+      <!-- ✅ KRİTİK KARAR: Kredi Satın Al burada -->
+<a class="sidebar-link" href="/fiyatlandirma.html#packs">
+  <span>Kredi Satın Al</span>
+</a>
+
+<button class="sidebar-link" data-page-link="invoices" type="button">
+  <span>Faturalarım</span>
+</button>
+
+<button class="sidebar-link" data-page-link="profile" type="button">
+  <span>Profil</span>
+</button>
+
+<button class="sidebar-link" data-page-link="settings" type="button">
+  <span>Ayarlar</span>
+</button>
+ <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+ 
+
+
+
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">Durum</div>
+        <p class="hint-text">
+          AIVO Studio (Beta) hazırlık aşamasında. Menü tutarlılığı + performans iyileştirmeleri sürüyor.
+        </p>
+      </div>
+
+      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">Beta Notu</div>
+        <p class="hint-text">
+          Stabilite önceliğimiz. Her sayfada panellerin aynı kalması için arayüzü standardize ediyoruz.
+        </p>
+      </div>
+
+    </aside>
+
+  <!-- ORTA PANEL -->
+<section class="main-panel">
+  <div class="panel-header">
+    <h1 class="panel-title">AIVO Studio (Beta)</h1>
+    <p class="panel-subtitle">
+      Türkçe odaklı üretim stüdyosu: müzik, kapak ve video tek yerde.
+    </p>
+  </div>
+
+  <!-- ❌ Beta aşamasındayız kartı SİLİNDİ -->
+
+  <div class="card">
+    <div style="font-weight:800; font-size:16px; margin-bottom:10px;">Neden AIVO?</div>
+    <div style="opacity:.88; line-height:1.7;">
+      Dakikalar içinde fikirden çıktıya geç: <b>Müzik</b> üret, aynı anda <b>Kapak</b> tasarla,
+      sonra <b>AI Video</b> ile paylaşılabilir içerik oluştur.
+    </div>
+  </div>
+
+  <div class="card">
+    <b>Hedef:</b> Kullanıcı ilk dakikada “ne kazanacağını” anlasın.
+    AIVO ile üretim sürecini kısalt, çıktıyı büyüt.
+  </div>
+</section>
+
+
+    </section><!-- /.main-panel -->
+
+<!-- SAĞ PANEL (HER SAYFADA VAR) -->
+<aside class="right-panel">
+  <div class="card right-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Son Durum</div>
+        <div class="card-subtitle">Beta notları</div>
+      </div>
+    </div>
+
+    <!-- ✅ YENİ RIGHT PANEL HOST (TEK GERÇEK MOUNT) -->
+    <div id="rightPanelHost"></div>
+
+    <!-- ⛔️ outputsMount KALDIRILDI -->
+    <!-- ⛔️ hard-coded audio player KALDIRILDI -->
+
+    <div class="right-list">
+      <div class="right-empty" style="display:flex;">
+        <div class="right-empty-icon">✨</div>
+      </div>
+
+      <div class="card" style="margin-top:10px;">
+        <div style="font-weight:700; margin-bottom:6px;">Şu an</div>
+        <div style="opacity:.85; line-height:1.6;">
+          Menü stabilitesi + panel tutarlılığı tamamlanıyor.
+          Sonraki adım: vitrin sayfası içerikleri ve ödeme akışı.
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+</div><!-- /.layout -->
+</div><!-- /.page page-music -->
+
+
+
+
+
+
+
+
+
+<!-- ================= PAGE: MUSIC ================= -->
+<div class="page page-music" data-page="music">
+  <div class="layout">
+
+    <!-- SOL PANEL (MASTER) -->
+    <aside class="sidebar">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+        <!-- ⬇️ ALT MENÜ SİLİNDİ, AYRI BUTONLAR EKLENDİ -->
+<button class="sidebar-link is-active" data-page-link="music" type="button">
+  <span>AI Müzik (Geleneksel)</span>
+</button>
+
+<button class="sidebar-link" data-page-link="record" type="button">
+  <span>AI Ses Kaydı</span>
+</button>
+
+<button class="sidebar-link" data-page-link="video" type="button">
+  <span>AI Video Üret</span>
+</button>
+
+<!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+<button class="sidebar-link" data-page-link="atmosphere" type="button">
+  <span>AI Atmosfer Video</span>
+ 
+</button>
+
+<button class="sidebar-link" data-page-link="cover" type="button">
+  <span>AI Kapak Üret</span>
+</button>
+
+<button class="sidebar-link" data-page-link="sm-pack" type="button">
+  <span>AI Sosyal Medya Paketi</span>
+</button>
+
+<button class="sidebar-link" data-page-link="viral-hook" type="button">
+  <span>AI Viral Hook Generator</span>
+</button>
+</div>
+
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
+
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
+         <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+
+      
+     
+
+      <!-- 3) SABİT İPUCU -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">
+          Önce şarkının duygusunu ve temposunu seç. Presetlerden biriyle başla,
+          kalan ayarları AIVO senin için doldursun.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+      <!-- 🔽 BURADAN AŞAĞISI SENİN GÖNDERDİĞİN HALİYLE DEVAM EDİYOR -->
+
+            <!-- ****** GELENEKSEL ****** -->
+
+
+<!-- ****** GELENEKSEL VIEW ****** -->
+<div class="music-view" data-music-view="geleneksel">
+
+ <div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">AI Müzik Üret</h1>
+      <p class="page-head__sub">
+        Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+  <!-- ÇALIŞMA MODU (KART) -->
+  <div class="card" data-ui="workmode">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Çalışma Modu</div>
+        <div class="card-subtitle">
+          Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="mode-toggle">
+        <button class="mode-btn" type="button" data-mode-button="basic">Basit Mod</button>
+        <button class="mode-btn" type="button" data-mode-button="advanced">
+          Gelişmiş Mod <span class="mode-star" aria-hidden="true">✦</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /ÇALIŞMA MODU -->
+
+  <!-- FORM (ANA KART) -->
+  <div class="card">
+    <div class="form-grid">
+
+      <div class="form-field full">
+        <label for="songName">Şarkı Adı</label>
+        <input type="text" id="songName" placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+      </div>
+
+      <div class="form-field full">
+        <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
+        <textarea id="lyrics" rows="3" placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+      </div>
+
+      <div class="form-field full">
+        <label for="prompt">Ek Açıklama / Prompt</label>
+        <textarea id="prompt" rows="3" placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+      </div>
+
+      <div class="form-field full">
+        <label for="songDesc">Şarkı Açıklaması (max 200 karakter)</label>
+        <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
+      </div>
+
+      <!-- ✅ DÜZELTİLEN ALAN: INLINE onclick KALDIRILDI -->
+      <div class="form-field full">
+        <label>Referans Ses Yükle (opsiyonel)</label>
+
+        <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+
+        <label class="upload-box" for="refAudio">
+          <div>
+            <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
+            <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-field half" data-visible-in="advanced">
+        <label for="mood">Ruh Hali (Mood)</label>
+        <select id="mood">
+          <option value="">Ruh halini seç</option>
+          <option>Enerjik</option>
+          <option>Hüzünlü</option>
+          <option>Romantik</option>
+          <option>Sakin</option>
+          <option>Epik</option>
+        </select>
+      </div>
+
+      <div class="form-field half" data-visible-in="advanced">
+        <label for="vocalType">Vokal Tipi</label>
+        <select id="vocalType">
+          <option value="">Vokal tipini seç</option>
+          <option>Erkek Vokal (AI)</option>
+          <option>Kadın Vokal (AI)</option>
+          <option>Soft / Çocuk Vokal (AI)</option>
+          <option>Enstrümantal (Vokalsiz)</option>
+        </select>
+      </div>
+
+      <div class="form-field half">
+        <label for="genre">Tür (Genre)</label>
+        <select id="genre">
+          <option value="">Tür seçin</option>
+          <option>Türkçe Pop</option>
+          <option>Anadolu Pop</option>
+          <option>Arabesk</option>
+          <option>Deep House</option>
+          <option>Lo-fi</option>
+          <option>Trap</option>
+        </select>
+      </div>
+
+      <div class="form-field half">
+        <label for="bpm">Tempo (BPM)</label>
+        <input type="number" id="bpm" placeholder="Örn: 128" />
+      </div>
+
+    </div><!-- /.form-grid -->
+  </div><!-- /.card -->
+
+  <!-- BUTON KARTI -->
+  <div class="card">
+    <div class="form-field full">
+      <button
+        class="primary-btn full-width"
+        id="musicGenerateBtn"
+        type="button"
+        data-generate="music"
+        data-credit-cost="5">
+        🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /music-view geleneksel -->
+<!-- ****** /GELENEKSEL VIEW ****** -->
+
+
+<!-- ****** SES KAYDI VIEW ****** -->
+<div class="music-view" data-music-view="ses-kaydi" id="musicViewSesKaydi">
+  <div class="card record-main-card">
+
+    <div class="record-circle" role="button" aria-label="Kayıt">
+      <span class="record-icon">🎙️</span>
+    </div>
+
+    <div class="ses-button-under-circle">
+      <button class="primary-btn record-btn" type="button">⏺ Kaydı Başlat</button>
+    </div>
+
+    <div class="record-wave" id="recordWave" aria-hidden="true">
+      <div class="wave-bar" style="--i:1"></div>
+      <div class="wave-bar" style="--i:2"></div>
+      <div class="wave-bar" style="--i:3"></div>
+      <div class="wave-bar" style="--i:4"></div>
+      <div class="wave-bar" style="--i:5"></div>
+      <div class="wave-bar" style="--i:6"></div>
+      <div class="wave-bar" style="--i:7"></div>
+      <div class="wave-bar" style="--i:8"></div>
+      <div class="wave-bar" style="--i:9"></div>
+      <div class="wave-bar" style="--i:10"></div>
+      <div class="wave-bar" style="--i:11"></div>
+      <div class="wave-bar" style="--i:12"></div>
+    </div>
+
+    <!-- KAYIT SONUCU -->
+    <div class="record-result-card" id="recordResult" style="display:none;">
+      <div class="record-result-header">
+        <span class="record-result-title">Kayıt Tamamlandı</span>
+        <span class="record-result-duration" id="recordResultTime">00:00</span>
+      </div>
+
+      <div class="record-result-actions">
+        <button class="result-icon-btn play" type="button" data-record-action="play" aria-label="Oynat">▶</button>
+        <button class="result-icon-btn download" type="button" data-record-action="download" aria-label="İndir">⬇</button>
+        <button class="result-icon-btn to-music" type="button" data-record-action="to-music" aria-label="Müzikte referans">🎵</button>
+        <button class="result-icon-btn delete" type="button" data-record-action="delete" aria-label="Sil">✖</button>
+      </div>
+    </div>
+
+    <!-- ALT BİLGİ ALANI -->
+    <div class="record-bottom-shell">
+      <div class="record-info-grid">
+
+        <!-- SOL BİLGİ KARTI -->
+        <div class="record-info-card">
+          <h3 class="record-info-title">Ses Kaydetmeye Başlayın</h3>
+
+          <p class="record-info-text">
+            Butona tıklayarak kayıt modunu aç. İlk kullanımda tarayıcı
+            mikrofon izni isteyebilir; “İzin ver” demeyi unutma.
+          </p>
+
+          <div class="record-timer-wrap">
+            <div class="record-timer" id="recordTimer">00:00</div>
+            <div class="record-neon-pulse" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <p class="record-info-hint">
+            Kayıt tamamlandığında sesi indirip AIVO Müzik Üret ekranında
+            referans olarak kullanabilirsin.
+          </p>
+        </div>
+
+        <!-- SAĞ YÜKLEME KARTI -->
+        <div class="record-info-card is-upload">
+          <h3 class="record-info-title">Ses Dosyası Yükle</h3>
+
+          <p class="record-info-text">
+            Mikrofondan kayıt almak yerine daha önce kaydettiğin bir
+            MP3 / WAV / M4A dosyasını da kullanabilirsin.
+          </p>
+
+          <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
+
+          <label class="upload-box record-upload-box" for="recordMp3Input" id="recordUploadBox">
+            <div class="upload-ui">
+              <div class="upload-ic" aria-hidden="true">
+                <!-- basit upload ikonu (SVG) -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                  <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 14v4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <div class="upload-txt">
+                <strong>Ses dosyası seç</strong>
+                <span class="upload-sub">veya sürükleyip bırak</span>
+                <span class="record-upload-hint">MP3 / WAV / M4A • Maksimum 10 MB</span>
+
+                <!-- seçilen dosya adı buraya düşecek -->
+                <span class="upload-file" id="recordUploadFileName" style="display:none;"></span>
+              </div>
+            </div>
+          </label>
+
+          <!-- ✅ EKSİK KAPANIŞLAR (BUNLAR ŞART) -->
+        </div><!-- /.record-info-card.is-upload -->
+      </div><!-- /.record-info-grid -->
+    </div><!-- /.record-bottom-shell -->
+
+  </div><!-- /.card.record-main-card -->
+</div><!-- /.music-view ses-kaydi -->
+<!-- ****** /SES KAYDI VIEW ****** -->
+
+
+
+<!-- ****** AI VIDEO ÜRET ****** -->
+<div class="music-view" data-music-view="ai-video">
+
+  <div class="panel-header">
+    <div class="page-head">
+      <div class="page-head__box">
+        <h1 class="page-head__title">AI Video Üret</h1>
+        <p class="page-head__sub">Yazıdan veya görselden sinematik videolar oluştur.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ORTAK VİDEO AYARLARI ================= -->
+  <div class="card video-common-settings">
+    <div class="form-grid">
+      <div class="form-field half">
+        <label for="videoDuration">Süre</label>
+        <select id="videoDuration">
+          <option value="4">4 Saniye</option>
+          <option value="6">6 Saniye</option>
+          <option value="8" selected>8 Saniye</option>
+        </select>
+      </div>
+
+      <div class="form-field half">
+        <label for="videoResolution">Çözünürlük</label>
+        <select id="videoResolution">
+          <option value="720">720p HD</option>
+          <option value="1080">1080p Full HD</option>
+        </select>
+      </div>
+
+      <div class="form-field full">
+        <label for="videoRatio">En / Boy Oranı</label>
+        <select id="videoRatio">
+          <option value="16:9">Geniş (16:9)</option>
+          <option value="9:16">Dikey (9:16)</option>
+          <option value="1:1">Kare (1:1)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <!-- =============== /ORTAK VİDEO AYARLARI ================= -->
+
+  <!-- ================= SES ÜRETİMİ ================= -->
+  <div class="audio-toggle-card">
+    <div class="audio-toggle-left">
+      <div class="audio-icon">🔊</div>
+      <div class="audio-text">
+        <div class="audio-title">Ses Üretimi</div>
+        <div class="audio-desc">Kapalıysa %33 daha az kredi harcar</div>
+      </div>
+    </div>
+
+    <label class="audio-switch">
+      <input type="checkbox" id="audioEnabled" checked />
+      <span class="audio-slider"></span>
+    </label>
+  </div>
+  <!-- =============== /SES ÜRETİMİ ================= -->
+
+  <div class="video-tabs">
+    <button class="video-tab" type="button" data-video-tab="text">Yazıdan Video</button>
+    <button class="video-tab" type="button" data-video-tab="image">Resimden Video</button>
+  </div>
+
+  <div class="video-view" data-video-view="text">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Video Açıklaması</div>
+          <div class="card-subtitle">Max 1000 karakter</div>
+        </div>
+        <div class="badge-beta">10 Kredi</div>
+      </div>
+
+      <div class="video-prompt-wrapper">
+        <div class="video-prompt-tip">
+          Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
+        </div>
+        <textarea id="videoPrompt" maxlength="1000" placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+        <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
+      </div>
+
+      <button
+        class="primary-btn big-video-btn full-width"
+        id="videoGenerateTextBtn"
+        type="button"
+        data-generate="video"
+        data-credit-cost="10">
+        🎬 Video Oluştur (10 Kredi)
+      </button>
+    </div>
+  </div>
+
+  <div class="video-view" data-video-view="image">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Resim Yükle</div>
+          <div class="card-subtitle">PNG / JPG – Max 10MB</div>
+        </div>
+        <div class="badge-beta">10 Kredi</div>
+      </div>
+
+      <div class="upload-box" onclick="document.getElementById('videoImageInput').click()">
+        <strong>Resim seç veya sürükleyip bırak</strong>
+        <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
+        <input type="file" id="videoImageInput" accept="image/*" hidden />
+      </div>
+
+      <div class="video-prompt-wrapper">
+        <div class="video-prompt-tip">
+          Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
+        </div>
+        <textarea id="videoImagePrompt" maxlength="500" placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
+        <div class="video-prompt-counter" id="videoImagePromptCounter">0 / 500</div>
+      </div>
+
+      <button
+        class="primary-btn big-video-btn full-width"
+        id="videoGenerateImageBtn"
+        type="button"
+        data-generate="video"
+        data-credit-cost="10">
+        🎞 Video Oluştur (10 Kredi)
+      </button>
+    </div>
+  </div>
+</div>
+<!-- /music-view: ai-video -->
+
+
+<!-- ✅ BURASI SADECE main-panel KAPANIŞI İÇİN.
+     Eğer main-panel’i ( <section class="main-panel"> ) daha önce kapattıysan,
+     aşağıdaki </section> satırını SİL. -->
+</section>
+
+<!-- SAĞ PANEL (HER SAYFADA VAR) -->
+<aside class="right-panel">
+  <div class="card right-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title" id="rightPanelTitle">Çıktılarım</div>
+        <div class="card-subtitle" id="rightPanelSubtitle">Son üretilen içerikler</div>
+      </div>
+    </div>
+
+    <!-- ✅ TEK OTORİTE: outputs panel buraya basılacak -->
+    <div id="outputsMount"></div>
+  </div>
+
+  <!-- right-panel en alt -->
+  <div class="rp-player" id="rpPlayer" hidden>
+    <div class="rp-player__inner">
+      <video id="rpVideo" controls playsinline preload="metadata"></video>
+
+      <div class="rp-player__meta">
+        <div class="rp-player__title" id="rpVideoTitle">Video</div>
+        <button class="rp-player__close" id="rpPlayerClose" type="button">×</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW MODAL (tek tane global) -->
+  <div class="vprev" id="vprev" hidden>
+    <div class="vprev-backdrop" data-close="1"></div>
+    <div class="vprev-card">
+      <button class="vprev-x" data-close="1" aria-label="Kapat">✕</button>
+      <div class="vprev-player">
+        <video id="vprevVideo" controls playsinline preload="metadata"></video>
+      </div>
+      <div class="vprev-meta">
+        <div class="vprev-title" id="vprevTitle">Video</div>
+        <div class="vprev-actions">
+          <a class="vbtn" id="vprevDownload" href="#" download>İndir</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ✅ BURASI layout/page kapanışı olmalı.
+     Bu iki kapanışı SADECE şu durumlarda koy:
+     - Eğer gerçekten şu iki açılış daha yukarıda var ise:
+       <div class="layout">
+       <div class="page page-music" data-page="music">  (veya benzeri)
+     Aksi halde fazla kapanış sayfayı bozar. -->
+</div><!-- /.layout -->
+</div><!-- /.page-music -->
+
+
+<!-- ================= PAGE: ATMOSPHERE (REVİZE + TEMİZ + SUPER MODE DOLU) ================= -->
+<div class="page page-atmosphere" data-page="atmosphere" id="atmRoot">
+  <div class="layout">
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
+        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
+        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
+
+        <!-- ✅ Video ile Kapak arasına -->
+        <button class="sidebar-link is-active" data-page-link="atmosphere" type="button">
+          <span>AI Atmosfer Video</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+      </div>
+
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+
+        <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+          <span>Çıkış Yap</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">Atmosferi 1–2 efektle başlat.</p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+      <div class="panel-header">
+        <div class="page-head">
+          <div class="page-head__box">
+            <h1 class="page-head__title">AI Atmosfer Video</h1>
+            <p class="page-head__sub">
+              Klip çekemeyenler için: kar yağsın, yağmur aksın, ışık titresin — 6–8 sn kusursuz loop.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ MODE SHELL (Switch + Panels birlikte; scope garanti) -->
+      <div class="mode-shell" data-mode-shell="atmosphere">
+
+        <!-- ✅ MOD SWITCH -->
+        <div class="mode-switch" role="tablist" aria-label="Mod Seçimi">
+          <button
+            class="mode-tab is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="atmPanelBasic"
+            id="atmTabBasic"
+            data-mode="basic">Basit Mod</button>
+
+          <button
+            class="mode-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="atmPanelPro"
+            id="atmTabPro"
+            data-mode="pro">Süper Mod ✨</button>
+        </div>
+
+        <!-- 🟢 BASİT MOD -->
+        <div class="mode-panel is-active" data-mode-panel="basic" role="tabpanel" id="atmPanelBasic" aria-labelledby="atmTabBasic">
+
+          <!-- 1) SAHNE -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Arka Mekan</div>
+                <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
+              </div>
+            </div>
+
+            <div class="smpack-grid smpack-grid--themes" id="atmScenes">
+              <button class="smpack-choice is-active" type="button" data-atm-scene="winter_cafe">
+                <div class="smpack-choice__title">Kış Kafe</div>
+                <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
+              </button>
+
+              <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
+                <div class="smpack-choice__title">Dağ Evi</div>
+                <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
+              </button>
+
+              <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
+                <div class="smpack-choice__title">Göl Kenarı</div>
+                <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
+              </button>
+
+              <button class="smpack-choice" type="button" data-atm-scene="city_night">
+                <div class="smpack-choice__title">Şehir Gecesi</div>
+                <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
+              </button>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <label class="btn" style="cursor:pointer;">
+                <input type="file" id="atmImageFile" accept="image/*" hidden>
+                Kendi görselini yükle
+              </label>
+              <div style="opacity:.8;font-size:13px;">Yüklenen görsel sahne seçimini override eder.</div>
+            </div>
+          </div>
+
+          <!-- 2) ATMOSFER (UNLIMITED + HER PILL +1 KREDİ) -->
+          <div class="card" id="atmCard">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Atmosfer</div>
+                <div class="card-subtitle">İstediğin kadar seç. Örn: Kar + Işık</div>
+              </div>
+            </div>
+
+            <div class="smpack-row" id="atmEffects"
+                 data-atm-max="999" data-atm-bound="0"
+                 data-selected=""
+                 role="group" aria-label="Atmosfer Seçimleri">
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="snow" data-eff="snow" data-effect="snow"
+                      aria-pressed="false">❄️ Kar</button>
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="rain" data-eff="rain" data-effect="rain"
+                      aria-pressed="false">🌧️ Yağmur</button>
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="leaf" data-eff="leaf" data-effect="leaf"
+                      aria-pressed="false">🍃 Yaprak</button>
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="fog" data-eff="fog" data-effect="fog"
+                      aria-pressed="false">🌫️ Sis</button>
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="light" data-eff="light" data-effect="light"
+                      aria-pressed="false">✨ Işık</button>
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="fire" data-eff="fire" data-effect="fire"
+                      aria-pressed="false">🔥 Ateş</button>
+
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="wind" data-eff="wind" data-effect="wind"
+                      aria-pressed="false">🌬️ Rüzgar</button>
+
+              <!-- ✅ legacy/form okuyucu garantisi (SADECE 1 TANE) -->
+              <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
+            </div>
+
+            <div id="atmWarn"
+                 style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
+          </div>
+
+          <!-- 3) KAMERA + SÜRE -->
+          <div class="card">
+            <div class="form-row">
+              <div class="form-label">Kamera</div>
+              <select id="atmCamera" class="input">
+                <option value="static">Sabit</option>
+                <option value="zoom_soft">Yavaş Zoom</option>
+                <option value="pan_soft">Hafif Pan</option>
+                <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
+              </select>
+            </div>
+
+            <div class="form-row" style="margin-top:12px;">
+              <div class="form-label">Süre</div>
+              <select id="atmDuration" class="input">
+                <option value="6">6 sn</option>
+                <option value="8" selected>8 sn</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 4) LOGO + AUDIO -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Kişiselleştirme (opsiyonel)</div>
+                <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <div class="form-label">Logo</div>
+                <label class="btn" style="cursor:pointer;">
+                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
+                  Logo Yükle
+                </label>
+
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                  <select id="atmLogoPos" class="input">
+                    <option value="bl">Sol Alt</option>
+                    <option value="br" selected>Sağ Alt</option>
+                    <option value="center_small">Ortada (küçük)</option>
+                  </select>
+                  <select id="atmLogoSize" class="input">
+                    <option value="sm" selected>Küçük</option>
+                    <option value="md">Orta</option>
+                  </select>
+                </div>
+
+                <div style="margin-top:10px;">
+                  <div class="form-label">Opaklık</div>
+                  <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+                </div>
+              </div>
+
+              <div>
+                <div class="form-label">Müzik / Jingle</div>
+                <label class="btn" style="cursor:pointer;">
+                  <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+                  Audio Yükle
+                </label>
+
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                  <select id="atmAudioMode" class="input">
+                    <option value="none" selected>Ses yok</option>
+                    <option value="embed">MP4 içine ekle</option>
+                  </select>
+                  <select id="atmAudioTrim" class="input">
+                    <option value="loop_to_fit" selected>Loop ile uydur</option>
+                    <option value="trim">Kırp</option>
+                  </select>
+                </div>
+
+                <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
+                  <input type="checkbox" id="atmSilentCopy" checked>
+                  Spotify Canvas için sessiz kopya üret
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5) ÇIKTI BİLGİSİ -->
+          <div class="card">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
+              <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
+              <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
+              <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
+            </div>
+          </div>
+
+        <!-- 6) CTA (BASİT = 20 + seçili pill sayısı) -->
+<div class="card smpack-card smpack-card--cta">
+  <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
+    Atmosfer Video Oluştur (20 Kredi)
+  </button>
+</div>
+
+</div><!-- /BASİT MOD -->
+
+        <!-- 🔥 SÜPER MOD (PRO) — TEK PARÇA / KAPANIŞLAR GÜVENLİ -->
+        <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
+<!-- SUPER: PROMPT + REFERANS (GÖRSEL + MÜZİK) -->
+<div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
+
+  <!-- ÜST AÇIKLAMA -->
+  <div class="card-header" style="padding-bottom:8px;">
+    <div style="color:#fff;font-weight:600;font-size:14px;">
+      Sahne + kamera + atmosferi tek prompt’ta anlat
+    </div>
+    <div style="opacity:.7;font-size:12px;margin-top:4px;">
+      Referanslar yön verir, birebir kopyalanmaz.
+    </div>
+  </div>
+
+  <!-- PROMPT -->
+  <div style="margin-top:8px;">
+    <textarea
+      id="atmSuperPrompt"
+      rows="4"
+      maxlength="1000"
+      placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik."
+      style="
+        width:100%;
+        resize:none;
+        border-radius:14px;
+        padding:12px 14px;
+        background:rgba(0,0,0,.25);
+        color:#fff;
+        border:1px solid rgba(255,255,255,.08);
+        font-size:14px;
+      "
+    ></textarea>
+  </div>
+
+  <!-- REFERANS KUTULARI -->
+  <div style="
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:12px;
+  ">
+
+    <!-- REFERANS GÖRSEL -->
+    <label
+      for="atmSceneImageInput"
+      style="
+        cursor:pointer;
+        border-radius:14px;
+        padding:14px;
+        background:rgba(160,110,255,.08);
+        border:1px dashed rgba(160,110,255,.35);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        color:#fff;
+        font-weight:600;
+        font-size:13px;
+      "
+    >
+      🖼️ Referans Görsel
+      <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
+    </label>
+
+    <!-- MÜZİK / JINGLE -->
+    <label
+      for="atmSceneAudioInput"
+      style="
+        cursor:pointer;
+        border-radius:14px;
+        padding:14px;
+        background:rgba(160,110,255,.08);
+        border:1px dashed rgba(160,110,255,.35);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        color:#fff;
+        font-weight:600;
+        font-size:13px;
+      "
+    >
+      🎵 Müzik / Jingle
+      <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
+    </label>
+
+  </div>
+
+  <!-- ALT BİLGİ -->
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    font-size:12px;
+    opacity:.75;
+  ">
+    <div>
+      <span style="
+        padding:4px 10px;
+        border-radius:999px;
+        background:rgba(255,255,255,.08);
+        font-weight:600;
+      ">
+        Zorunlu: Base frame
+      </span>
+    </div>
+    <div>
+      <span id="atmSuperCount">0</span> / 1000
+    </div>
+  </div>
+
+</div>
+<!-- /SUPER: PROMPT + REFERANS -->
+
+
+
+
+<!-- 2) IŞIK & DUYGU + EXPORT (tek kart) -->
+<div class="card" id="atmProMoodExport" style="margin-top:14px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Işık · Export · Duygu</div>
+
+      <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+
+    <!-- SOL: IŞIK + DUYGU -->
+    <div>
+      <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
+      <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+        <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+        <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+        <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+        <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+        <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+      </div>
+
+      <div style="font-weight:600;font-size:13px;opacity:.85;margin:12px 0 8px;">🎭 Duygu</div>
+      <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+        <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+        <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+        <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+        <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+        <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+      </div>
+    </div>
+
+    <!-- SAĞ: EXPORT -->
+    <div>
+      <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
+
+      <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+        🎞️ FPS
+        <select id="atmProFps">
+          <option value="24">24 FPS</option>
+          <option value="30">30 FPS</option>
+        </select>
+      </label>
+
+      <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+        📁 Format
+        <select id="atmProFormat">
+          <option value="mp4">MP4</option>
+          <option value="webm">WebM</option>
+        </select>
+      </label>
+
+      <label style="display:flex;gap:10px;align-items:center;">
+        <input type="checkbox" id="atmProSeamFix">
+        🔁 Loop Seam Fix
+      </label>
+
+      <div style="margin-top:10px;font-size:12px;opacity:.6;">
+        shader / ffmpeg post-process
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- /IŞIK & DUYGU + EXPORT -->
+
+
+
+
+          <!-- 3) DETAY EFEKTLER -->
+          <div class="card" id="atmProDetails" style="margin-top:14px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Detay Efektler</div>
+                <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+               <div></div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">🎨 Color Grade / LUT</div>
+              <select id="atmProLut" style="width:100%;">
+                <option value="">Kapalı</option>
+                <option value="warm">Sıcak</option>
+                <option value="cold">Soğuk</option>
+                <option value="cinematic">Sinematik</option>
+                <option value="lofi">Lo-fi</option>
+              </select>
+            </div>
+          </div>
+          <!-- /DETAY EFEKTLER -->
+
+        <!-- 4) CTA -->
+<div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+  <button class="btn btn-primary" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro">
+    Süper Atmosfer Video Oluştur (30 Kredi)
+  </button>
+</div>
+
+</div><!-- /SÜPER MOD -->
+
+</div><!-- /MODE SHELL -->
+
+</section><!-- /main-panel -->
+
+
+    <!-- SAĞ PANEL (GARANTİ: layout içinde sibling) -->
+    <aside class="right-panel" id="studioRightPanel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.layout -->
+</div><!-- /.page -->
+ 
+<script>
+(() => {
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  const btn = page.querySelector("#atmGenerateBtnPro");
+  const promptEl = page.querySelector("#atmSuperPrompt");
+  if (!btn || !promptEl) return;
+
+  if (btn.dataset.proBound === "1") return;
+  btn.dataset.proBound = "1";
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+  }, { passive: false });
+
+})();
+</script>
+<script>
+(() => {
+
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  const proPanel = page.querySelector('#atmPanelPro');
+  if (!proPanel) return;
+
+  if (proPanel.dataset.proPillsBound === "1") return;
+  proPanel.dataset.proPillsBound = "1";
+
+  const isProPill = (btn) =>
+    btn.classList.contains("smpack-pill") &&
+    (btn.hasAttribute("data-atm-light") || btn.hasAttribute("data-atm-mood"));
+
+  // ✅ aynı grupta tek seçim (light ayrı, mood ayrı)
+  const selectOne = (btn) => {
+    const key = btn.getAttribute("data-atm-light") ? "data-atm-light" : "data-atm-mood";
+    const groupSel = `button.smpack-pill[${key}]`;
+    proPanel.querySelectorAll(groupSel).forEach(b => {
+      b.classList.remove("is-active");
+      b.setAttribute("aria-pressed", "false");
+    });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-pressed", "true");
+  };
+
+  proPanel.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn || !isProPill(btn)) return;
+
+    // legacy engellemesin diye capture + stop
+    e.preventDefault();
+    e.stopPropagation();
+
+    selectOne(btn);
+  }, true);
+})();
+</script>
+<script>
+(() => {
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  const scope = page.querySelector("#atmProMoodExport");
+  if (!scope) return;
+
+  if (scope.dataset.proPillsBound === "1") return;
+  scope.dataset.proPillsBound = "1";
+
+  const setActive = (btn, on) => {
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+
+  const singleSelect = (selector, keepBtn) => {
+    scope.querySelectorAll(selector).forEach(b => {
+      if (b !== keepBtn) setActive(b, false);
+    });
+  };
+
+  // ✅ SADECE data-atm-light / data-atm-mood olan button’ları yakala
+  scope.addEventListener("click", (e) => {
+    const btn = e.target.closest('button.smpack-pill[data-atm-light], button.smpack-pill[data-atm-mood]');
+    if (!btn) return; // select/checkbox/label vs -> dokunma
+
+    // sadece pill click’ini yönet
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isLight = btn.hasAttribute("data-atm-light");
+    const isMood  = btn.hasAttribute("data-atm-mood");
+
+    // toggle
+    const on = !btn.classList.contains("is-active");
+    setActive(btn, on);
+
+    // light/mood tek seçim istiyorsan:
+    if (on && isLight) singleSelect('button.smpack-pill[data-atm-light]', btn);
+    if (on && isMood)  singleSelect('button.smpack-pill[data-atm-mood]', btn);
+
+  }, false);
+})();
+</script>
+<script>
+(() => {
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  // Kredi kaynağı: topbar (en güvenlisi)
+  const getCredits = () => {
+    const el = document.getElementById("topCreditCount") || document.querySelector("#topCredits #topCreditCount");
+    const n = parseInt((el?.textContent || "0").replace(/[^\d]/g, ""), 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const goPricing = () => {
+   window.toast?.warning?.("Kredi yok. Paket seçip kredi satın al.");
+
+    // küçük gecikme: toast görünsün
+    setTimeout(() => {
+      window.location.href = "/fiyatlandirma.html#packs";
+    }, 250);
+  };
+
+  // Her iki buton da
+  const bind = (btnId) => {
+    const btn = page.querySelector(btnId);
+    if (!btn) return;
+
+    if (btn.dataset.creditGuardBound === "1") return;
+    btn.dataset.creditGuardBound = "1";
+
+    btn.addEventListener("click", (e) => {
+      const credits = getCredits();
+
+      if (credits <= 0) {
+        // legacy handler’ı ez
+        e.preventDefault();
+        e.stopPropagation();
+        goPricing();
+        return;
+      }
+      // kredi varsa: diğer handler’lar devam etsin
+    }, true);
+  };
+
+  bind("#atmGenerateBtn");    // Basit Mod butonu
+  bind("#atmGenerateBtnPro"); // Süper Mod butonu
+})();
+</script>
+
+
+<!-- ================= /PAGE: ATMOSPHERE ================= -->
+
+
+
+
+
+<!-- ✅ MODE CSS (studio.pages.css en altına koyabilirsin) -->
+<style>
+  .mode-panel { display:none; }
+  .mode-panel.is-active { display:block; }
+  .mode-panel[hidden] { display:none !important; }
+</style>
+
+<script>
+/* ✅ ATMOSFER FIX (TEMİZ)
+   - Unlimited pill seçim (legacy max=2 kilidini ezer)
+   - Seçtikçe kredi: 20 + seçili pill sayısı
+   - Legacy okuyan alanlara yazar: #atmEffectsValue + #atmEffects.dataset.selected
+   - Sağ panelin "kaybolma" sebebi kapanış bozukluğuydu: bu blokta kapanışlar temiz + panel layout içinde
+*/
+(() => {
+  const root = document.getElementById("atmEffects");
+  const genBtn = document.getElementById("atmGenerateBtn");
+  const hidden = document.getElementById("atmEffectsValue");
+  const warn = document.getElementById("atmWarn");
+  const rp = document.getElementById("studioRightPanel");
+
+  if (!root) return;
+  if (root.dataset.atmFixBound === "1") return;
+  root.dataset.atmFixBound = "1";
+
+  const BASE_COST = 20;
+
+  const keyOf = (btn) =>
+    btn.getAttribute("data-effect") ||
+    btn.getAttribute("data-atm-eff") ||
+    btn.getAttribute("data-eff") ||
+    btn.dataset.effect ||
+    btn.dataset.atmEff ||
+    btn.dataset.eff;
+
+  const hardEnableAll = () => {
+    root.querySelectorAll("button.atm-pill").forEach(b => {
+      b.disabled = false;
+      b.style.pointerEvents = "auto";
+    });
+  };
+
+  const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
+  const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
+
+  const sync = () => {
+    hardEnableAll();
+
+    const keys = getSelectedKeys();
+    const val = keys.join(",");
+
+    root.dataset.selected = val;
+    if (hidden) hidden.value = val;
+
+    // kredi = 20 + seçim sayısı
+    const total = BASE_COST + keys.length;
+    if (genBtn) {
+      const baseText = (genBtn.textContent || "")
+        .replace(/\(\s*\d+\s*Kredi\s*\)/i, "")
+        .trim() || "Atmosfer Video Oluştur";
+      genBtn.textContent = `${baseText} (${total} Kredi)`;
+      genBtn.dataset.atmCost = String(total);
+    }
+
+    if (warn) { warn.style.display = "none"; warn.textContent = ""; }
+
+    if (rp) {
+      rp.style.display = "";
+      rp.style.visibility = "visible";
+      rp.style.opacity = "1";
+    }
+  };
+
+  const setActive = (btn, on) => {
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+
+  // capture: legacy click handler’dan önce çalış
+  root.addEventListener("click", (e) => {
+    const btn = e.target.closest("button.atm-pill");
+    if (!btn) return;
+
+    hardEnableAll();
+
+    const on = btn.classList.contains("is-active");
+    setActive(btn, !on);
+
+    // legacy sonra kurcalarsa tekrar düzelt
+    sync();
+    setTimeout(sync, 0);
+  }, true);
+
+  // legacy disabled/class/style ile kilitlerse geri al
+  const mo = new MutationObserver(() => sync());
+  mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
+
+  // ilk sync
+  sync();
+})();
+</script>
+
+
+
+
+
+
+
+<!-- ================= PAGE: COVER ================= -->
+<div class="page page-cover" data-page="cover">
+  <div class="layout">
+
+    <!-- SOL PANEL (STANDART SIDEBAR) -->
+    <aside class="sidebar">
+<!-- AI ÜRET -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+  <button
+    class="sidebar-link"
+    data-page-link="music"
+    data-music-tab="geleneksel"
+    type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button
+    class="sidebar-link"
+    data-page-link="music"
+    data-music-tab="ses-kaydi"
+    type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button
+    class="sidebar-link"
+    data-page-link="music"
+    data-music-tab="ai-video"
+    type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button
+    class="sidebar-link"
+    data-page-link="atmosphere"
+    type="button">
+    <span>AI Atmosfer Video</span>
+   
+  </button>
+
+  <button
+    class="sidebar-link is-active"
+    data-page-link="cover"
+    type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <button
+    class="sidebar-link"
+    data-page-link="sm-pack"
+    type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button
+    class="sidebar-link"
+    data-page-link="viral-hook"
+    type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
+
+      <!-- PANELLER -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
+
+        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
+
+        <button class="sidebar-link" data-logout type="button">
+          <span>Çıkış Yap</span>
+        </button>
+    
+
+
+ 
+      </div>
+
+      <!-- ✅ KAPAK İPUCU (PANELLER ALTINDA / KUTU İÇİNDE) -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">KAPAK İPUCU</div>
+
+        <div class="studio-hint-text">
+          Kapak görseli, ürettiğin içeriğin ilk izlenimini belirler.
+          Başlık ve tarzla uyumlu, sade ama dikkat çekici bir görsel seç.
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ORTA ALAN -->
+    <section class="main-panel cover-main">
+
+      <!-- HERO (KAPSÜL) -->
+      <div class="card page-hero-card has-gradient">
+        <div class="page-hero-inner">
+          <div class="page-title">Kapak / Görsel Üret</div>
+          <div class="page-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</div>
+        </div>
+      </div>
+
+      <!-- İÇ GRID -->
+      <div class="cover-grid">
+
+        <!-- SOL: FORM -->
+        <div class="card cover-left">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Yeni Görüntü</div>
+              <div class="card-subtitle">Kapak açıklamasını ve stilini seç.</div>
+            </div>
+            <span class="badge-beta">BETA</span>
+          </div>
+
+          <div class="form-grid cover-form-grid">
+
+            <div class="form-field full">
+              <label for="coverPrompt">Görüntü Açıklaması</label>
+              <textarea id="coverPrompt" rows="3" maxlength="480" placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
+            </div>
+
+            <div class="form-field full">
+              <label>Stil Seçenekleri</label>
+              <div class="style-grid">
+                <button class="style-pill" type="button">Gerçekçi</button>
+                <button class="style-pill" type="button">Sanatsal</button>
+                <button class="style-pill" type="button">Çizgi Film</button>
+                <button class="style-pill" type="button">Soyut</button>
+                <button class="style-pill" type="button">Fotoğrafik</button>
+                <button class="style-pill" type="button">Anime</button>
+              </div>
+            </div>
+
+            <!-- STİL KARTLARI -->
+            <div class="form-field full">
+              <div class="cover-style-cards">
+
+                <button class="style-card" type="button"
+                  data-style="Gerçekçi"
+                  data-prompt="Spotify albüm kapağı, gerçekçi portre, stüdyo ışığı, premium, keskin detay, 1:1">
+                  <span class="style-card-ico">📸</span>
+                  <span class="style-card-text">
+                    <span class="style-card-title">Gerçekçi</span>
+                    <span class="style-card-sub">Stüdyo ışığında net, doğal ve yüksek detaylı kapaklar</span>
+                  </span>
+                </button>
+
+                <button class="style-card" type="button"
+                  data-style="Sanatsal"
+                  data-prompt="Sanatsal albüm kapağı, yağlı boya dokusu, dramatik ışık, derin renkler, 1:1">
+                  <span class="style-card-ico">🎨</span>
+                  <span class="style-card-text">
+                    <span class="style-card-title">Sanatsal</span>
+                    <span class="style-card-sub">Doku, ışık ve derin renklerle “eser” hissi veren kompozisyonlar</span>
+                  </span>
+                </button>
+
+                <button class="style-card" type="button"
+                  data-style="Çizgi Film"
+                  data-prompt="Çizgi film albüm kapağı, canlı renkler, kalın kontur, eğlenceli karakter stili, 1:1">
+                  <span class="style-card-ico">🧸</span>
+                  <span class="style-card-text">
+                    <span class="style-card-title">Çizgi Film</span>
+                    <span class="style-card-sub">Temiz hatlar, canlı tonlar ve karakter odaklı eğlenceli stil</span>
+                  </span>
+                </button>
+
+                <button class="style-card" type="button"
+                  data-style="Soyut"
+                  data-prompt="Soyut albüm kapağı, geometrik şekiller, yumuşak geçişler, modern tasarım, 1:1">
+                  <span class="style-card-ico">🫧</span>
+                  <span class="style-card-text">
+                    <span class="style-card-title">Soyut</span>
+                    <span class="style-card-sub">Geometrik formlar ve yumuşak geçişlerle modern konsept tasarım</span>
+                  </span>
+                </button>
+
+                <button class="style-card" type="button"
+                  data-style="Fotoğrafik"
+                  data-prompt="Fotoğrafik albüm kapağı, sinematik ışık, alan derinliği, premium fotoğraf estetiği, 1:1">
+                  <span class="style-card-ico">📷</span>
+                  <span class="style-card-text">
+                    <span class="style-card-title">Fotoğrafik</span>
+                    <span class="style-card-sub">Sinematik ışık, alan derinliği ve premium fotoğraf estetiği</span>
+                  </span>
+                </button>
+
+                <button class="style-card" type="button"
+                  data-style="Anime"
+                  data-prompt="Anime albüm kapağı, japon manga stili, yumuşak ışık, temiz hatlar, 1:1">
+                  <span class="style-card-ico">🌸</span>
+                  <span class="style-card-text">
+                    <span class="style-card-title">Anime</span>
+                    <span class="style-card-sub">Manga dokusu, yumuşak ışık ve temiz çizgilerle anime dili</span>
+                  </span>
+                </button>
+
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>Görüntü Sayısı</label>
+              <select class="select" id="coverCount">
+                <option value="1">1 Görüntü</option>
+                <option value="2">2 Görüntü</option>
+                <option value="4">4 Görüntü</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>En / Boy Oranı</label>
+              <select class="select" id="coverRatio">
+                <option value="1:1">Kare (1:1)</option>
+                <option value="9:16">Dikey (9:16)</option>
+                <option value="16:9">Yatay (16:9)</option>
+              </select>
+            </div>
+
+            <div class="form-field full advanced-box">
+              <div class="advanced-header">
+                <span>AIVO Kapak Motoru</span>
+                <span class="advanced-credit">Gerekli Kredi: <strong>6</strong></span>
+              </div>
+              <p class="advanced-desc">6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.</p>
+            </div>
+
+            <div class="form-field full">
+              <button
+                class="primary-btn full-width"
+                id="coverGenerateBtn"
+                type="button"
+                data-generate="cover"
+                data-credit-cost="6">
+                🖼️ Kapak Üret (6 Kredi)
+              </button>
+            </div>
+
+          </div><!-- /.form-grid -->
+        </div><!-- /.card.cover-left -->
+
+        <!-- SAĞ: GALERİ (TEK PANEL) -->
+        <div class="cover-right">
+          <div class="card cover-gallery-card has-gradient">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Görsel Galeriniz</div>
+                <div class="card-subtitle">Ürettiğiniz kapaklar burada listelenir.</div>
+              </div>
+
+              <select class="gallery-filter">
+                <option>Tümü</option>
+                <option>Spotify</option>
+                <option>YouTube</option>
+                <option>Instagram</option>
+              </select>
+            </div>
+
+            <div class="card-body">
+              <div class="gallery-grid" id="coverGallery">
+                <!-- örnek placeholder -->
+                <div class="gallery-card">
+                  <div class="gallery-thumb fake-thumb thumb-1"></div>
+                </div>
+              </div>
+
+              <div class="gallery-footer">
+                <div class="gallery-pagination">
+                  <button class="page-btn" type="button">1</button>
+                  <button class="page-btn" type="button">2</button>
+                  <button class="page-btn" type="button">Sonraki</button>
+                </div>
+                <div class="gallery-count">—</div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.cover-right -->
+
+      </div><!-- /.cover-grid -->
+    </section><!-- /.main-panel -->
+
+  </div><!-- /.layout -->
+</div><!-- /.page-cover -->
+<!-- ================= /PAGE: COVER ================= -->
+
+
+
+
+<!-- ================= PAGE: SM PACK ================= -->
+<div class="page page-sm-pack" data-page="sm-pack">
+  <div class="layout">
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="record" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+   
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <!-- ✅ aktif burada -->
+  <button class="sidebar-link is-active" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+     <!-- ================= PANELLER (ALT) ================= -->
+<div class="sidebar-section sidebar-section--panels">
+  <div class="sidebar-title">Paneller</div>
+
+  <button class="sidebar-link" data-page-link="dashboard" type="button">
+    <span>Dashboard</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="library" type="button">
+    <span>Ürettiklerim</span>
+  </button>
+
+  <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+  <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+    <span>Kredi Satın Al</span>
+  </a>
+
+  <button class="sidebar-link" data-page-link="invoices" type="button">
+    <span>Faturalarım</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="profile" type="button">
+    <span>Profil</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="settings" type="button">
+    <span>Ayarlar</span>
+  </button><button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+  </div>
+ 
+
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">
+          Tema seç → platform seç → tek tıkla paylaşılabilir sosyal medya paketi.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+    <div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">AI Sosyal Medya Paketi</h1>
+      <p class="page-head__sub">
+        Tema seç, formatı seç, AIVO paylaşılabilir post paketi üretsin.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+
+      <!-- 0) MARKA / ÜRÜN / MESAJ -->
+      <div class="card smpack-card">
+        <div class="form-row">
+          <div class="form-label">Marka / Ürün / Mesaj (1 cümle)</div>
+
+          <!-- ✅ KRİTİK: JS buradan okuyor -->
+          <input
+            id="smPackInput"
+            class="input"
+            type="text"
+            autocomplete="off"
+            placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Sosyal medya paketi hazırla."
+          />
+        </div>
+      </div>
+
+      <!-- 1) TEMA SEÇİMİ -->
+      <div class="card smpack-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Tema Seç</div>
+            <div class="card-subtitle">Sadece 1 tema seç.</div>
+          </div>
+        </div>
+
+        <div class="smpack-grid smpack-grid--themes">
+          <button class="smpack-choice is-active" type="button" data-smpack-theme="viral">
+            <div class="smpack-choice__title">Viral</div>
+            <div class="smpack-choice__desc">Algoritma dostu, dikkat çeken.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-smpack-theme="fun">
+            <div class="smpack-choice__title">Eğlenceli</div>
+            <div class="smpack-choice__desc">Enerjik, paylaşmalık.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-smpack-theme="emotional">
+            <div class="smpack-choice__title">Duygusal</div>
+            <div class="smpack-choice__desc">Hikâye ve his odaklı.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-smpack-theme="brand">
+            <div class="smpack-choice__title">Marka / Tanıtım</div>
+            <div class="smpack-choice__desc">Ürün ve kampanya için.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2) PLATFORM SEÇİMİ -->
+      <div class="card smpack-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Platform Seç</div>
+            <div class="card-subtitle">AIVO formatı otomatik ayarlar.</div>
+          </div>
+        </div>
+
+        <div class="smpack-row">
+          <button class="smpack-pill is-active" type="button" data-smpack-platform="tiktok">TikTok</button>
+          <button class="smpack-pill" type="button" data-smpack-platform="reels">Instagram Reels</button>
+          <button class="smpack-pill" type="button" data-smpack-platform="shorts">YouTube Shorts</button>
+        </div>
+      </div>
+
+  <!-- 3) CTA -->
+<div class="card smpack-card smpack-card--cta">
+  <button
+    class="btn btn-primary smpack-generate"
+    type="button"
+    data-generate-sm-pack>
+    Paketi Oluştur (X Kredi)
+  </button>
+
+  <div style="margin-top:10px;opacity:.85;font-size:13px;">
+    Tek tık → tek paket. Varyasyon sonra.
+  </div>
+
+  <!-- READY (GARANTİ GÖRÜNÜR) -->
+  <div
+    style="
+      margin-top:10px;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,0.35);
+      background:rgba(255,255,255,0.06);
+      font-size:13px;
+      line-height:1.4;
+      opacity:0.95;
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+    ">
+    <span style="font-size:14px;">✨</span>
+    <span>
+      <strong>Hazırsın.</strong>
+      Paketi oluşturunca çıktılar sağ panelde görünecek.
+      Beğenmezsen yeniden oluşturabilirsin.
+    </span>
+  </div>
+</div>
+
+</section>
+
+
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+<!-- ================= /PAGE: SM PACK ================= -->
+
+
+
+
+<!-- ================= PAGE: VIRAL HOOK ================= -->
+<div class="page page-viral-hook" data-page="viral-hook">
+  <div class="layout">
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+        <button class="sidebar-link" data-page-link="music" type="button">
+          <span>AI Müzik (Geleneksel)</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="record" type="button">
+          <span>AI Ses Kaydı</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="video" type="button">
+          <span>AI Video Üret</span>
+        </button>
+
+        <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+        <button class="sidebar-link" data-page-link="atmosphere" type="button">
+          <span>AI Atmosfer Video</span>
+       
+        </button>
+
+        <button class="sidebar-link" data-page-link="cover" type="button">
+          <span>AI Kapak Üret</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="sm-pack" type="button">
+          <span>AI Sosyal Medya Paketi</span>
+        </button>
+
+        <!-- ✅ aktif burada (AI Üret BLOĞUNUN İÇİNDE olmalı) -->
+        <button class="sidebar-link is-active" data-page-link="viral-hook" type="button">
+          <span>AI Viral Hook Generator</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
+
+        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
+        <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+      </div>
+
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">
+          Viral Hook: İlk 3 saniyede durduran kısa giriş cümlesi/voice. Konu + hedef + ton seç.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+      <div class="panel-header">
+        <div class="page-head">
+          <div class="page-head__box">
+            <h1 class="page-head__title">AI Viral Hook Generator</h1>
+            <p class="page-head__sub">
+              İlk 3 saniyede durduran, trend uyumlu ultra kısa hook üretimi.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1) Konu / Brief -->
+      <div class="card">
+        <div class="form-row">
+          <div class="form-label">Konu / Ürün / Mesaj (1 cümle)</div>
+          <input
+            id="viralHookInput"
+            class="input"
+            type="text"
+            placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Yeni özellik: Viral Hook."
+          />
+        </div>
+      </div>
+
+      <!-- 2) Stil seçimleri -->
+      <div class="card" style="margin-top:12px;">
+        <div class="panel-mini-title">Stil Seç</div>
+
+        <div class="choice-grid">
+          <button class="choice-card style-card is-active" type="button" data-style="Viral">
+            <div class="choice-title">Viral</div>
+            <div class="choice-sub">Algoritma dostu, dikkat çeken.</div>
+          </button>
+
+          <button class="choice-card style-card" type="button" data-style="Eğlenceli">
+            <div class="choice-title">Eğlenceli</div>
+            <div class="choice-sub">Enerjik, paylaşmalık.</div>
+          </button>
+
+          <button class="choice-card style-card" type="button" data-style="Duygusal">
+            <div class="choice-title">Duygusal</div>
+            <div class="choice-sub">Hikâye ve his odaklı.</div>
+          </button>
+
+          <button class="choice-card style-card" type="button" data-style="Marka">
+            <div class="choice-title">Marka / Tanıtım</div>
+            <div class="choice-sub">Ürün ve kampanya için.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3) Üret Butonu -->
+      <div class="card" style="margin-top:12px;">
+        <button
+  class="btn btn-primary hook-generate"
+  type="button"
+  data-generate-viral-hook
+  data-credit-cost="4"
+>
+  Hook Üret (4 Kredi)
+</button>
+
+
+        <div class="muted" style="margin-top:10px;">
+          Tek tık → 3 varyasyon. Sonra “yeniden üret”.
+        </div>
+
+        <!-- READY (micro) -->
+        <div class="hook-ready-inline">
+          <span class="hook-ready-ico">✨</span>
+          <span class="hook-ready-text">
+            <strong>Hazırsın.</strong> Tek tıkla 3 farklı hook üretilir. Beğenmezsen yeniden üretebilirsin.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.layout -->
+</div><!-- /.page-viral-hook -->
+<!-- ================= /PAGE: VIRAL HOOK ================= -->
+
+
+
+<!-- ================= /PAGE: COVER ================= -->
+
+  </main>
+<!-- ================= /MAIN PAGES ================= -->
+<!-- =========================================================
+     ✅ DASHBOARD (TEK KOPYA / FINAL)
+     - Hızlı Kısayollar: 1 kez
+     - Son İşler: 1 kez (MVP container)
+     - Right panel: layout içinde (main-panel’in kardeşi)
+     ========================================================= -->
+
+<!-- ================= PAGE: DASHBOARD ================= -->
+<div class="page page-dashboard" data-page="dashboard">
+  <div class="layout">
+
+ <!-- SOL PANEL (DOLU / STANDART) -->
+<aside class="sidebar">
+
+  <div class="sidebar-section sidebar-section--ai">
+    <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+    <button class="sidebar-link" data-page-link="music" type="button">
+      <span>AI Müzik (Geleneksel)</span>
+    </button>
+
+    <button class="sidebar-link" data-page-link="voice" type="button">
+      <span>AI Ses Kaydı</span>
+    </button>
+
+    <button class="sidebar-link" data-page-link="video" type="button">
+      <span>AI Video Üret</span>
+    </button>
+
+    <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+    <button class="sidebar-link" data-page-link="atmosphere" type="button">
+      <span>AI Atmosfer Video</span>
+    
+    </button>
+
+    <button class="sidebar-link" data-page-link="cover" type="button">
+      <span>AI Kapak Üret</span>
+    </button>
+
+    <button class="sidebar-link" data-page-link="sm-pack" type="button">
+      <span>AI Sosyal Medya Paketi</span>
+    </button>
+
+    <button class="sidebar-link" data-page-link="viral-hook" type="button">
+      <span>AI Viral Hook Generator</span>
+    </button>
+  </div>
+
+
+
+
+     <!-- ================= PANELLER (ALT) ================= -->
+<div class="sidebar-section sidebar-section--panels">
+  <div class="sidebar-title">Paneller</div>
+
+  <button class="sidebar-link is-active" data-page-link="dashboard" type="button">
+    <span>Dashboard</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="library" type="button">
+    <span>Ürettiklerim</span>
+  </button>
+
+  <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+  <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+    <span>Kredi Satın Al</span>
+  </a>
+
+  <button class="sidebar-link" data-page-link="invoices" type="button">
+    <span>Faturalarım</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="profile" type="button">
+    <span>Profil</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="settings" type="button">
+    <span>Ayarlar</span>
+  </button>
+   <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+
+
+
+  <!-- ================= HIZLI İŞLEMLER (DASHBOARD ÖZEL) ================= -->
+<div class="sidebar-section">
+  <div class="sidebar-title">Hızlı İşlemler</div>
+  <div class="preset-chip-row">
+    <button class="preset-chip" type="button" data-page-link="music">🎵 Müzik Üret</button>
+    <button class="preset-chip" type="button" data-page-link="cover">🖼 Kapak Üret</button>
+    <button class="preset-chip" type="button" data-page-link="video">🎬 Video Üret</button>
+
+    <!-- ✅ KRİTİK KARAR: Kredi Al → tek commerce hub -->
+    <a class="preset-chip" href="/fiyatlandirma.html#packs">💳 Kredi Al</a>
+  </div>
+</div>
+
+
+      <!-- ================= SABİT NOT ================= -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">Beta Notu</div>
+        <p class="hint-text">
+          Dashboard: kredi durumu, son üretimler ve hızlı aksiyonlar burada toplanır.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+    <div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">Dashboard</h1>
+      <p class="page-head__sub">
+        Özet metrikler, hızlı erişimler ve son aktiviteler.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+      <!-- ================= DASHBOARD: KPI KARTLAR ================= -->
+      <section class="aivo-kpi-wrap">
+        <div class="aivo-kpi-grid">
+
+          <article class="card aivo-kpi-card has-gradient" data-kpi="credits">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Kredi</div>
+                <div class="aivo-kpi-value">
+                  <span data-kpi-credits>—</span>
+                  <span class="aivo-kpi-unit">kredi</span>
+                </div>
+              </div>
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill" data-kpi-credits-state>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Bugün harcanan</span>
+                <span class="aivo-kpi-meta-val" data-kpi-spent-today>—</span>
+              </div>
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Son yükleme</span>
+                <span class="aivo-kpi-meta-val" data-kpi-last-topup>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+             <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">
+  Kredi Satın Al
+</a>
+
+            </div>
+          </article>
+
+          <article class="card aivo-kpi-card" data-kpi="today">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Bugün Üretilen</div>
+                <div class="aivo-kpi-value">
+                  <span data-kpi-today-total>—</span>
+                  <span class="aivo-kpi-unit">adet</span>
+                </div>
+              </div>
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill aivo-pill--muted">Özet</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-inline" data-kpi-today-breakdown>
+                Müzik: — • Video: — • Kapak: — • SM Pack: — • Hook: —
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+              <button class="chip-btn" type="button" data-page-link="music">Müzik Üret</button>
+              <button class="chip-btn" type="button" data-page-link="video">Video Üret</button>
+            </div>
+          </article>
+
+          <article class="card aivo-kpi-card" data-kpi="lastjob">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Son İş</div>
+                <div class="aivo-kpi-value"><span data-kpi-lastjob-status>—</span></div>
+              </div>
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill" data-kpi-lastjob-pill>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Tür</span>
+                <span class="aivo-kpi-meta-val" data-kpi-lastjob-type>—</span>
+              </div>
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Zaman</span>
+                <span class="aivo-kpi-meta-val" data-kpi-lastjob-time>—</span>
+              </div>
+              <div class="aivo-kpi-progress" aria-hidden="true">
+                <div class="aivo-kpi-progress-bar" style="width:45%"></div>
+              </div>
+            </div>
+
+            
+          </article>
+
+          <article class="card aivo-kpi-card" data-kpi="plan">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Paket</div>
+                <div class="aivo-kpi-value"><span data-kpi-plan>—</span></div>
+              </div>
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill aivo-pill--muted" data-kpi-plan-badge>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Yenileme</span>
+                <span class="aivo-kpi-meta-val" data-kpi-renewal>—</span>
+              </div>
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Kalan gün</span>
+                <span class="aivo-kpi-meta-val" data-kpi-days-left>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+            <a class="chip-btn" href="/fiyatlandirma.html#packs">
+  Planı Yükselt
+</a>
+
+            </div>
+          </article>
+
+        </div>
+      </section>
+      <!-- ================= /DASHBOARD: KPI KARTLAR ================= -->
+
+   <!-- ================= DASHBOARD: HIZLI KISAYOLLAR (TEK) ================= -->
+<section class="aivo-dash-quick">
+  <div class="aivo-dash-block-head">
+    <div>
+      <div class="aivo-dash-block-title">Hızlı Kısayollar</div>
+      <div class="aivo-dash-block-sub">Tek tıkla üretime başla</div>
+    </div>
+
+    <a class="chip-btn" href="/fiyatlandirma.html#packs">
+      Kredi Satın Al
+    </a>
+  </div>
+
+  <div class="aivo-quick-grid">
+    <button class="card aivo-quick-card" type="button" data-page-link="music">
+      <div class="aivo-quick-ico">🎵</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Müzik Üret</div>
+        <div class="aivo-quick-sub">Prompt ile müzik oluştur</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~1–3 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+
+    <button class="card aivo-quick-card" type="button" data-page-link="video">
+      <div class="aivo-quick-ico">🎬</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Video Üret</div>
+        <div class="aivo-quick-sub">Prompt ile video job başlat</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~3–8 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+
+    <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+    <button class="card aivo-quick-card" type="button" data-page-link="atmosphere">
+      <div class="aivo-quick-ico">🌫️</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Atmosfer Video</div>
+        <div class="aivo-quick-sub">Loop sahne & atmosfer üret</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~5 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+
+    <button class="card aivo-quick-card" type="button" data-page-link="cover">
+      <div class="aivo-quick-ico">🖼️</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Kapak Üret</div>
+        <div class="aivo-quick-sub">Albüm kapağı / görsel üret</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~1–2 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+
+    <button class="card aivo-quick-card" type="button" data-page-link="sm-pack">
+      <div class="aivo-quick-ico">📦</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">AI Sosyal Medya Paketi</div>
+        <div class="aivo-quick-sub">Hazır post seti üret</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~2–5 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+
+    <button class="card aivo-quick-card" type="button" data-page-link="viral-hook">
+      <div class="aivo-quick-ico">⚡</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Viral Hook</div>
+        <div class="aivo-quick-sub">Kısa kanca varyasyonları</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~1 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+  </div>
+</section>
+<!-- ================= /DASHBOARD: HIZLI KISAYOLLAR ================= -->
+
+
+     <!-- ================= DASHBOARD: SON İŞLER (MVP / TEK SECTION) ================= -->
+<section class="aivo-dash-activity" data-dashboard-recent-jobs>
+  <div class="aivo-dash-block-head">
+    <div>
+      <div class="aivo-dash-block-title">Son İşler</div>
+      <div class="aivo-dash-block-sub">Son 5 çıktı / job durumu</div>
+    </div>
+  </div>
+
+  <div class="card aivo-dash-activity-card">
+    <!-- EMPTY STATE -->
+
+          <div class="aivo-empty" data-recent-jobs-empty>
+            <div class="aivo-empty-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l1.2 6.2L19 9l-5.8 0.8L12 16l-1.2-6.2L5 9l5.8-0.8L12 2z" opacity=".85"/>
+                <path d="M18 13l.6 3.2L22 17l-3.4.5L18 21l-.6-3.5L14 17l3.4-.8L18 13z" opacity=".55"/>
+              </svg>
+            </div>
+
+            <div class="aivo-empty-text">
+              <div class="aivo-empty-title">Henüz bir iş yok</div>
+              <div class="aivo-empty-sub">
+                İlk müzik, kapak veya video üretimini başlattığında burada görünecek.
+              </div>
+            </div>
+          </div>
+
+          <!-- LIST -->
+          <div class="aivo-recent-list" data-recent-jobs-list hidden></div>
+        </div>
+      </section>
+      <!-- ================= /DASHBOARD: SON İŞLER ================= -->
+
+    </section>
+    <!-- /ORTA PANEL (main-panel) -->
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Hızlı Kısayollar</div>
+            <div class="card-subtitle">Sık kullanılan işlemler</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.layout -->
+</div><!-- /PAGE: DASHBOARD -->
+<!-- ================= /PAGE: DASHBOARD ================= -->
+
+
+
+<!-- =========================================================
+     ✅ ÜRETTİKLERİM (tek kopya) — REFERANS BLOK (DOKUNMA)
+     ========================================================= -->
+
+<!-- ================= PAGE: LIBRARY ================= -->
+<div class="page page-library" data-page="library">
+  <div class="layout">
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar" data-sidebar="library">
+
+ <!-- ================= AI ÜRET (ÜST) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+  
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
+
+<div style="height:12px;"></div>
+
+
+<!-- ================= PANELLER ================= -->
+<div class="sidebar-section sidebar-section--panels">
+  <div class="sidebar-title">Paneller</div>
+
+  <button class="sidebar-link" data-page-link="dashboard" type="button">
+    <span>Dashboard</span>
+  </button>
+
+  <button class="sidebar-link is-active" data-page-link="library" type="button">
+    <span>Ürettiklerim</span>
+  </button>
+
+  <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+  <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+    <span>Kredi Satın Al</span>
+  </a>
+
+  <button class="sidebar-link" data-page-link="invoices" type="button">
+    <span>Faturalarım</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="profile" type="button">
+    <span>Profil</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="settings" type="button">
+    <span>Ayarlar</span>
+  </button>
+   <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+
+ 
+
+      <!-- ================= SAYFAYA ÖZEL FİLTRE ================= -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Filtre</div>
+        <div class="preset-chip-row">
+          <button class="preset-chip is-active" type="button">Hepsi</button>
+          <button class="preset-chip" type="button">Müzikler</button>
+          <button class="preset-chip" type="button">Videolar</button>
+          <button class="preset-chip" type="button">Kapaklar</button>
+        </div>
+      </div>
+
+      <!-- ================= İPUCU ================= -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">
+          Tüm müzik, video ve kapak çıktıları tek bir premium galeri altında toplanır.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ================= ANA PANEL ================= -->
+    <section class="main-panel">
+
+      <!-- HEADER -->
+     <div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">Ürettiklerim</h1>
+      <p class="page-head__sub">
+        Oluşturduğun müzik, video ve kapak çalışmalarının tamamı burada listelenir.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+      <!-- ANA GALERİ KARTI -->
+      <div class="card library-card">
+
+        <!-- ÜST ARAÇ ÇUBUĞU -->
+        <div class="library-toolbar">
+          <div class="library-filters-inline">
+            <button class="filter-chip is-active">Hepsi</button>
+            <button class="filter-chip">Müzik</button>
+            <button class="filter-chip">Video</button>
+            <button class="filter-chip">Kapak</button>
+          </div>
+
+          <input
+            class="library-search"
+            type="search"
+            placeholder="Ara… (başlık, tür)"
+          />
+        </div>
+
+        <!-- GALERİ ALANI -->
+        <div class="library-grid">
+          <div class="library-cards">
+
+            <!-- ✅ EMPTY STATE (PROD) — demo kartlar kaldırıldı -->
+         <div class="library-empty">
+  <div class="library-empty__icon">✨</div>
+
+  <div class="library-empty__text">
+    <div class="library-empty__title">Henüz bir üretimin yok</div>
+    <div class="library-empty__sub">
+      İlk müziğini, videonu veya kapağını oluşturduğunda burada görünecek.
+    </div>
+  </div>
+
+  <div class="library-empty__actions">
+    <button class="chip-btn chip-btn--primary" type="button" data-go="music">İlk Müziğini Üret</button>
+    <button class="chip-btn" type="button" data-go="video">Video Üret</button>
+    <button class="chip-btn" type="button" data-go="cover">Kapak Üret</button>
+  </div>
+</div>
+
+
+          </div><!-- /.library-cards -->
+        </div><!-- /.library-grid -->
+
+      </div><!-- /.card library-card -->
+    </section>
+
+    <!-- ================= SAĞ PANEL ================= -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" data-lib-preview-title>Son Üretimler</div>
+            <div class="card-subtitle" data-lib-preview-sub>Ön izleme alanı</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+
+            <!-- ✅ LIBRARY PREVIEW MOUNT (JS buraya basacak) -->
+            <div class="lib-preview" data-lib-preview style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.layout -->
+</div><!-- /.page page-library -->
+
+
+
+
+
+
+
+
+
+
+
+<!-- =========================================================
+     ✅ PASSWORD MODAL (PROFILE) — START
+     ========================================================= -->
+<div class="aivo-modal" data-password-modal aria-hidden="true">
+  <div class="aivo-modal__backdrop" data-password-close></div>
+
+  <div
+    class="aivo-modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pwModalTitle"
+    aria-describedby="pwModalDesc"
+    tabindex="-1"
+  >
+    <div class="aivo-modal__head">
+      <div>
+        <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
+        <div class="aivo-modal__sub" id="pwModalDesc">
+          Hesabını güvende tutmak için güçlü bir şifre kullan.
+        </div>
+      </div>
+
+      <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
+    </div>
+
+    <div class="aivo-modal__body">
+      <div class="aivo-field">
+        <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
+        <input
+          class="aivo-input"
+          id="pwCurrent"
+          name="current_password"
+          type="password"
+          autocomplete="current-password"
+          aria-describedby="pwHint"
+          data-pw-current
+          placeholder="Mevcut şifren"
+        />
+      </div>
+
+      <div class="aivo-row2">
+        <div class="aivo-field">
+          <label class="aivo-label" for="pwNew">Yeni Şifre</label>
+          <input
+            class="aivo-input"
+            id="pwNew"
+            name="new_password"
+            type="password"
+            autocomplete="new-password"
+            aria-describedby="pwHint"
+            data-pw-new
+            placeholder="Yeni şifre"
+          />
+        </div>
+
+        <div class="aivo-field">
+          <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
+          <input
+            class="aivo-input"
+            id="pwNew2"
+            name="new_password_confirm"
+            type="password"
+            autocomplete="new-password"
+            aria-describedby="pwHint"
+            data-pw-new2
+            placeholder="Yeni şifre tekrar"
+          />
+        </div>
+      </div>
+
+      <div class="aivo-hint" id="pwHint" data-pw-hint>
+        En az 8 karakter, mümkünse harf + sayı + sembol.
+      </div>
+    </div>
+
+    <div class="aivo-modal__foot">
+      <button class="chip-btn" type="button" data-password-close>İptal</button>
+      <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
+    </div>
+  </div>
+</div>
+<!-- =========================================================
+     ✅ PASSWORD MODAL (PROFILE) — END
+     ========================================================= -->
+
+
+
+<!-- =================  ✅ PAGE: INVOICES (FIXED STRUCTURE) ================= -->
+
+<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
+  <div class="layout">
+
+    <!-- ================= SOL PANEL ================= -->
+    <aside class="sidebar" data-sidebar="invoices">
+
+   <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
+
+        <!-- Tek satın alma noktası -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
+
+        <button class="sidebar-link is-active" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
+         <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+
+       
+      <!-- ================= FİLTRE / İPUCU ================= -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">Filtre</div>
+        <p class="hint-text">
+          Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ================= ANA PANEL ================= -->
+    <section class="main-panel">
+
+      <div class="panel-header">
+        <div class="page-head">
+          <div class="page-head__box">
+            <h1 class="page-head__title">Faturalarım</h1>
+            <p class="page-head__sub">
+              Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.
+            </p>
+          </div>
+        </div>
+
+        <div class="invoices-actions" style="margin-top:12px;">
+          <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>
+            PDF İndir
+          </button>
+          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+        </div>
+      </div>
+
+      <!-- ✅ invoices-list kartı MAIN-PANEL içinde -->
+      <div class="card">
+        <section class="invoices-list" aria-label="Fatura listesi">
+
+          <!-- ✅ default gizli (JS açar) -->
+          <div class="invoices-empty" data-invoices-empty hidden>
+            Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+          </div>
+
+          <div class="invoices-cards" data-invoices-cards></div>
+
+          <div class="invoices-more">
+            <button class="chip-btn" type="button" data-invoices-more hidden>
+              Daha fazla yükle
+            </button>
+          </div>
+
+        </section>
+      </div>
+
+    </section>
+
+    <!-- ================= SAĞ PANEL ================= -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Özet</div>
+            <div class="card-subtitle">Son işlemler</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+
+<!-- =========================================================
+     ✅ PROFİL (tek kopya) — FINAL BLOK (RIBBON + MAIN + RIGHT)
+     ========================================================= -->
+
+<div class="page page-profile" data-page="profile" aria-label="Profil">
+  <section class="studio-scope">
+    <div class="layout">
+
+      <!-- ================= SOL PANEL ================= -->
+      <aside class="sidebar" data-sidebar="profile">
+
+       <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
+
+        <div style="height:12px;"></div>
+
+        <!-- ================= PANELLER (ALT) ================= -->
+        <div class="sidebar-section sidebar-section--panels">
+          <div class="sidebar-title">Paneller</div>
+
+          <button class="sidebar-link" data-page-link="dashboard" type="button">
+            <span>Dashboard</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="library" type="button">
+            <span>Ürettiklerim</span>
+          </button>
+
+          <!-- Tek commerce hub -->
+          <a class="sidebar-link sidebar-link--external" href="/fiyatlandirma.html#packs">
+            <span>Kredi Satın Al</span>
+          </a>
+
+          <button class="sidebar-link" data-page-link="invoices" type="button">
+            <span>Faturalarım</span>
+          </button>
+
+          <!-- Profil sayfasında aktif -->
+          <button class="sidebar-link is-active" data-page-link="profile" type="button">
+            <span>Profil</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="settings" type="button">
+            <span>Ayarlar</span>
+          </button>
+           <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+
+          
+
+        <!-- ================= İPUCU ================= -->
+        <div class="sidebar-section hint-card">
+          <div class="sidebar-title">İpucu</div>
+          <p class="hint-text">
+            Profil ekranı; hesap bilgileri, plan & kredi durumu ve güvenlik ayarlarının yönetildiği merkezdir.
+          </p>
+        </div>
+
+      </aside>
+
+      <!-- ================= ANA PANEL ================= -->
+      <section class="main-panel">
+<div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">Profil</h1>
+      <p class="page-head__sub">
+        Hesap bilgilerin, planın ve kullanım detayların burada yer alır.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- ===== ACCOUNT RIBBON ===== -->
+        <div class="card profile-ribbon">
+          <div class="profile-ribbon-inner">
+
+            <div class="profile-user">
+              <div class="profile-avatar" data-profile-initial>H</div>
+              <div>
+                <div class="profile-name" data-profile-name>Harun</div>
+                <div class="profile-mail" data-profile-email>harun@example.com</div>
+              </div>
+            </div>
+
+            <div class="profile-actions">
+              <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">Kredi Satın Al</a>
+              <a class="chip-btn" href="/fiyatlandirma.html#packs">Planı Yükselt</a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===== PROFİL BİLGİLERİ ===== -->
+        <div class="card profile-card profile-security">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Profil Bilgileri</div>
+              <div class="card-subtitle">Kişisel hesap bilgilerin</div>
+            </div>
+          </div>
+
+          <div class="profile-form">
+            <div class="form-row">
+              <label>Ad</label>
+              <input type="text" value="Harun" data-profile-input-name>
+            </div>
+
+            <div class="form-row">
+              <label>Soyad</label>
+              <input type="text" value="" data-profile-input-surname>
+            </div>
+
+            <div class="form-row">
+              <label for="profile-email">E-posta</label>
+              <input
+                id="profile-email"
+                class="aivo-input is-readonly"
+                type="email"
+                value="harun@example.com"
+                readonly
+                aria-readonly="true"
+                data-profile-input-email
+              />
+              <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+            </div>
+
+            <button class="chip-btn chip-btn--primary" data-profile-save type="button">
+              Profili Güncelle
+            </button>
+          </div>
+        </div>
+
+        <!-- ===== GÜVENLİK ===== -->
+        <div class="card profile-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Güvenlik</div>
+              <div class="card-subtitle">Şifre ve hesap güvenliği</div>
+            </div>
+          </div>
+
+          <div class="right-list">
+            <div style="font-size:13px; opacity:.8; margin-bottom:10px;">
+              Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.
+            </div>
+
+            <button class="chip-btn" data-open-password type="button">
+              Şifre Değiştir
+            </button>
+          </div>
+        </div>
+
+        <!-- ===== KULLANIM İSTATİSTİKLERİ ===== -->
+<div class="card profile-card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Kullanım İstatistikleri</div>
+      <div class="card-subtitle">Bu ayki özet</div>
+    </div>
+  </div>
+
+  <div class="right-list usage-wrap">
+
+    <div class="usage-grid">
+      <div class="usage-pill">
+        <span class="usage-label">Müzik</span>
+        <span class="usage-value" data-stat="music">0</span>
+      </div>
+
+      <div class="usage-pill">
+        <span class="usage-label">Kapak</span>
+        <span class="usage-value" data-stat="cover">0</span>
+      </div>
+
+      <div class="usage-pill">
+        <span class="usage-label">Video</span>
+        <span class="usage-value" data-stat="video">Henüz yok</span>
+      </div>
+
+      <!-- ✅ YENİ: ATMOSFER -->
+      <div class="usage-pill">
+        <span class="usage-label">Atmosfer</span>
+        <span class="usage-value" data-stat="atmosphere">Henüz yok</span>
+      </div>
+    </div>
+
+    <div class="usage-rows">
+      <div class="usage-row">
+        <span class="usage-label">Harcanan kredi</span>
+        <span class="usage-value" data-stat="spentCredits">0</span>
+      </div>
+
+      <div class="usage-row usage-row--muted">
+        <span class="usage-label">Toplam kredi</span>
+        <span class="usage-value" data-stat="totalCredits">0</span>
+      </div>
+    </div>
+
+    <button class="chip-btn" type="button" data-page-link="library">
+      Ürettiklerime Git
+    </button>
+
+  </div>
+</div>
+
+</section>
+
+
+      <!-- ================= SAĞ PANEL ================= -->
+      <aside class="right-panel">
+        <div class="card right-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Plan & Kredi</div>
+              <div class="card-subtitle">Hesap özeti</div>
+            </div>
+          </div>
+
+          <div class="right-list">
+            <div class="right-item" data-profile-plan>Plan: <strong>Basic</strong></div>
+            <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
+
+            <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">
+              Kredi Satın Al
+            </a>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+</div>
+
+<!-- =========================================================
+     ✅ AYARLAR (tek kopya) — REVIZE (Eita benzeri iskelet)
+     - Sol chip’ler tab değiştirir
+     - Orta panel içerik tab’a göre değişir
+     - Kaydet: localStorage (MVP) + toast
+     ========================================================= -->
+
+<!-- ================= PAGE: SETTINGS ================= -->
+<div class="page page-settings" data-page="settings">
+  <div class="layout">
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
+
+    <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+  
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
+
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
+
+        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link is-active" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
+         <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
+
+
+   </div>
+
+
+      <!-- ================= AYAR KATEGORİLERİ ================= -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Ayar Kategorileri</div>
+
+        <div class="preset-chip-row aivo-settings-tabs" data-settings-tabs>
+          <button class="preset-chip is-active" type="button" data-settings-tab="notifications">Bildirimler</button>
+          <button class="preset-chip" type="button" data-settings-tab="music">Müzik</button>
+          <button class="preset-chip" type="button" data-settings-tab="privacy">Gizlilik</button>
+          <button class="preset-chip" type="button" data-settings-tab="security">Hesap &amp; Güvenlik</button>
+          <button class="preset-chip" type="button" data-settings-tab="data">Veri Hakları</button>
+        </div>
+      </div>
+
+      <!-- ================= SOL ALT İPUCU (DİNAMİK) ================= -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text" data-settings-tip>
+          Ayarlar ekranı Eita benzeri olacak: toggle’lar, bölümler, kaydet butonu.
+          Şimdilik iskelet; kaydetme localStorage.
+        </p>
+      </div>
+
+      <!-- ✅ SOL ALT KAYDET BLOĞU SİLİNDİ (YANLIŞ YERDEYDİ) -->
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+      <div class="panel-header aivo-settings-head">
+        <div class="aivo-sec-head">
+          <div class="aivo-sec-title">Ayarlar</div>
+          <div class="aivo-sec-sub">Uygulama tercihlerini ve hesap ayarlarını yönet.</div>
+        </div>
+
+        <div class="aivo-settings-head-actions">
+          <button class="chip-btn chip-btn--primary" type="button" data-settings-save>
+            Ayarları Kaydet
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SETTINGS: KATEGORİ SEÇ (ÜST) ================= -->
+      <section class="aivo-settings-topnav" aria-label="Ayar Kategorileri">
+        <div class="aivo-settings-topnav-head">
+          <div class="aivo-settings-topnav-text">
+            <div class="aivo-settings-topnav-title">Ayar Kategorileri</div>
+            <div class="aivo-settings-topnav-sub">Bir kategori seç ve ayarlarını düzenle.</div>
+          </div>
+        </div>
+
+        <div class="aivo-settings-topnav-chips">
+          <button class="preset-chip" type="button" data-settings-tab="notifications">Bildirimler</button>
+          <button class="preset-chip" type="button" data-settings-tab="music">Müzik</button>
+          <button class="preset-chip" type="button" data-settings-tab="privacy">Gizlilik</button>
+          <button class="preset-chip" type="button" data-settings-tab="security">Hesap &amp; Güvenlik</button>
+          <button class="preset-chip" type="button" data-settings-tab="data">Veri Hakları</button>
+        </div>
+      </section>
+
+      <!-- TAB: NOTIFICATIONS -->
+      <div class="aivo-settings-pane is-active" data-settings-pane="notifications">
+        <div class="aivo-settings-title">Bildirim Ayarları</div>
+        <div class="aivo-settings-sub">Hangi bildirimleri almak istediğini seç.</div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">✉️</div>
+            <div>
+              <div class="aivo-settings-card-title">E-posta Bildirimleri</div>
+              <div class="aivo-settings-card-sub">Önemli olaylarda e-posta al.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Müzik üretimi tamamlandığında</div>
+              <div class="aivo-settings-row-sub">Şarkın hazır olduğunda e-posta al.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="notify_email_done">
+              <span></span>
+            </label>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Kredi azaldığında</div>
+              <div class="aivo-settings-row-sub">Krediniz belirli bir eşiğin altına düştüğünde uyarı al.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="notify_email_lowcredit">
+              <span></span>
+            </label>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Haftalık rapor</div>
+              <div class="aivo-settings-row-sub">Haftalık aktivite özetini al.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="notify_email_weekly">
+              <span></span>
+            </label>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Promosyonlar ve kampanyalar</div>
+              <div class="aivo-settings-row-sub">Özel tekliflerden haberdar ol.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="notify_email_promos">
+              <span></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🧭</div>
+            <div>
+              <div class="aivo-settings-card-title">Tarayıcı Bildirimleri</div>
+              <div class="aivo-settings-card-sub">Tarayıcı üzerinden anlık bildirim.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-center">
+            <div>
+              <div class="aivo-settings-muted">Tarayıcı bildirimleri kapalı</div>
+              <div class="aivo-settings-micro">
+                İzin gerektirir. İlk kullanımda tarayıcı soracaktır.
+              </div>
+            </div>
+            <button class="chip-btn" type="button" data-settings-browser-enable>
+              Bildirimleri Etkinleştir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MUSIC -->
+      <div class="aivo-settings-pane" data-settings-pane="music">
+        <div class="aivo-settings-title">Müzik Ayarları</div>
+        <div class="aivo-settings-sub">Çalma ve üretim tercihlerini ayarla.</div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🎚️</div>
+            <div>
+              <div class="aivo-settings-card-title">Varsayılan Kalite</div>
+              <div class="aivo-settings-card-sub">
+                Üretim ve indirmelerde kullanılacak varsayılan ses kalitesi.
+              </div>
+            </div>
+          </div>
+
+          <label class="aivo-radio">
+            <input type="radio" name="music_quality" value="low" data-setting="music_quality">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Düşük</b><small>128 kbps – Daha hızlı üretim, daha az veri</small></span>
+          </label>
+
+          <label class="aivo-radio">
+            <input type="radio" name="music_quality" value="high" data-setting="music_quality">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Yüksek</b><small>256 kbps – Dengeli kalite (önerilen)</small></span>
+          </label>
+
+          <label class="aivo-radio">
+            <input type="radio" name="music_quality" value="studio" data-setting="music_quality">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Studio</b><small>320 kbps – En yüksek kalite</small></span>
+          </label>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Otomatik çalma</div>
+              <div class="aivo-settings-row-sub">
+                Üretim tamamlandığında müzik otomatik olarak oynatılsın.
+              </div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="music_autoplay">
+              <span></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🔊</div>
+            <div>
+              <div class="aivo-settings-card-title">Varsayılan Ses Seviyesi</div>
+              <div class="aivo-settings-card-sub">Player açıldığında başlangıç ses seviyesi.</div>
+            </div>
+          </div>
+
+          <div class="aivo-slider">
+            <div class="aivo-slider-top">
+              <span>Sessiz</span>
+              <b data-settings-volume-label>%80</b>
+              <span>Maksimum</span>
+            </div>
+            <input type="range" min="0" max="100" step="1" value="80" data-setting="music_volume">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PRIVACY -->
+      <div class="aivo-settings-pane" data-settings-pane="privacy" style="display:none">
+        <div class="aivo-settings-title">Gizlilik Ayarları</div>
+        <div class="aivo-settings-sub">Verilerinin nasıl kullanıldığını kontrol et.</div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">👁️</div>
+            <div>
+              <div class="aivo-settings-card-title">Profil Görünürlüğü</div>
+              <div class="aivo-settings-card-sub">Profilinin kimler tarafından görülebileceğini seç.</div>
+            </div>
+          </div>
+
+          <label class="aivo-radio">
+            <input type="radio" name="profile_visibility" value="public" data-setting="profile_visibility">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Herkese Açık</b><small>Profilin herkes tarafından görülebilir.</small></span>
+          </label>
+
+          <label class="aivo-radio">
+            <input type="radio" name="profile_visibility" value="private" data-setting="profile_visibility">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Özel</b><small>Sadece sen görebilirsin.</small></span>
+          </label>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Aktivite paylaşımı</div>
+              <div class="aivo-settings-row-sub">Üretim aktiviten (başlık/tür) profilinde görünebilir.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="privacy_activity_share">
+              <span></span>
+            </label>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Anonim veri toplama</div>
+              <div class="aivo-settings-row-sub">Uygulamayı geliştirmek için anonim kullanım verileri.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="privacy_analytics">
+              <span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SECURITY -->
+      <div class="aivo-settings-pane" data-settings-pane="security">
+        <div class="aivo-settings-title">Hesap &amp; Güvenlik</div>
+        <div class="aivo-settings-sub">Oturum süresi ve güvenlik tercihlerini yönet.</div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🛡️</div>
+            <div>
+              <div class="aivo-settings-card-title">Oturum Süresi</div>
+              <div class="aivo-settings-card-sub">Belirli bir süre işlem olmazsa otomatik çıkış.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row" style="align-items:center;">
+            <div>
+              <div class="aivo-settings-row-title">Otomatik çıkış zamanı</div>
+              <div class="aivo-settings-row-sub">MVP: sadece tercih kaydedilir, backend sonra.</div>
+            </div>
+
+            <select class="aivo-select" data-setting="security_session_timeout" style="min-width:180px;">
+              <option value="off">Kapalı (Bu cihazda beni hatırla)</option>
+              <option value="15m">15 dakika</option>
+              <option value="30m">30 dakika</option>
+              <option value="1h">1 saat</option>
+              <option value="6h">6 saat</option>
+              <option value="24h">24 saat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">💻</div>
+            <div>
+              <div class="aivo-settings-card-title">Aktif Cihazlar</div>
+              <div class="aivo-settings-card-sub">Hesabının açık olduğu cihazları kontrol et.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row" style="align-items:flex-start;">
+            <div>
+              <div class="aivo-settings-row-title">Cihaz listesi</div>
+              <div class="aivo-settings-row-sub">
+                MVP: Liste backend ile gelecek. Şimdilik bu bölüm bilgilendirme amaçlıdır.
+              </div>
+            </div>
+
+            <button class="chip-btn" type="button" data-security-devices-refresh disabled style="opacity:.6; cursor:not-allowed;">
+              Yakında
+            </button>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🔒</div>
+            <div>
+              <div class="aivo-settings-card-title">2 Adımlı Doğrulama (2FA)</div>
+              <div class="aivo-settings-card-sub">MVP: iskelet. Kurulum akışı sonra eklenecek.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">2FA’yı etkinleştir</div>
+              <div class="aivo-settings-row-sub">Şimdilik devre dışı (yakında).</div>
+            </div>
+
+            <label class="aivo-toggle" style="opacity:.6; pointer-events:none;">
+              <input type="checkbox" data-setting="security_2fa_enabled" disabled>
+              <span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+<!-- TAB: DATA RIGHTS -->
+<div class="aivo-settings-pane" data-settings-pane="data">
+
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">⬇️</div>
+      <div>
+        <div class="aivo-settings-card-title">Verilerime Erişim</div>
+        <div class="aivo-settings-card-sub">
+          Kişisel verilerinin bir kopyasını indir.
+        </div>
+      </div>
+    </div>
+
+    <div class="aivo-settings-row">
+      <div>
+        <div class="aivo-settings-row-title">Format</div>
+        <div class="aivo-settings-row-sub">
+          Şimdilik sadece JSON (ZIP sonra).
+        </div>
+      </div>
+
+      <select class="aivo-select" data-setting="data_export_format">
+        <option value="json" selected>JSON</option>
+        <option value="zip" disabled>ZIP (yakında)</option>
+      </select>
+    </div>
+
+    <div class="aivo-settings-center" style="margin-top:12px;">
+      <div class="aivo-settings-muted">
+        MVP: API bağlanınca aktif edilecek.
+      </div>
+      <button class="chip-btn chip-btn--primary" type="button" data-action="data-export">
+        Verilerimi İndir
+      </button>
+    </div>
+  </div>
+
+</div>
+
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">✉️</div>
+            <div>
+              <div class="aivo-settings-card-title">Düzeltme Talebi</div>
+              <div class="aivo-settings-card-sub">Yanlış/eksik verilerin için talep oluştur.</div>
+            </div>
+          </div>
+
+          <textarea class="aivo-textarea" rows="3" placeholder="Düzeltme talebini kısaca yaz…" data-setting="data_rectification_note"></textarea>
+
+          <div class="aivo-settings-center" style="margin-top:12px;">
+            <div class="aivo-settings-muted">Gönderim akışı sonra bağlanacak.</div>
+            <button class="chip-btn" type="button" disabled>Düzeltme Talebi Gönder</button>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card aivo-warn">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🧾</div>
+            <div>
+              <div class="aivo-settings-card-title">Silme Talebi (Unutulma Hakkı)</div>
+              <div class="aivo-settings-card-sub">Hesabının ve içeriklerinin silinmesi (ileride).</div>
+            </div>
+          </div>
+
+          <div class="aivo-callout">
+            Uyarı: Bu talep hesabının kapatılmasına ve içeriklerinin kalıcı olarak silinmesine neden olabilir.
+          </div>
+
+          <label class="aivo-toggle" style="margin-top:10px;">
+            <input type="checkbox" data-setting="data_delete_ack">
+            <span></span>
+          </label>
+
+          <div class="aivo-settings-muted" style="margin-top:6px;">
+            “Anladım” onayı (MVP) — silme akışı sonra bağlanacak.
+          </div>
+
+          <div class="aivo-settings-center" style="margin-top:12px;">
+            <button class="chip-btn" type="button" disabled>Silme Talebi Gönder</button>
+          </div>
+        </div>
+
+    </section>
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card aivo-settings-right">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Bilgilendirme</div>
+            <div class="card-subtitle">Ayarlar hakkında</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty aivo-settings-tip">
+            <div class="right-empty-icon">✨</div>
+            <div class="aivo-settings-tip-text">
+              Sağ panel ipucu sonra bağlanacak.
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.layout -->
+</div><!-- /.page-settings -->
+<!-- ================= /PAGE: SETTINGS ================= -->
+
+
+<!-- ========== MEDIA PREVIEW MODAL (Video + Kapak) ========== -->
+<div class="media-modal" id="mediaModal" aria-hidden="true">
+  <div class="media-backdrop" data-media-close></div>
+  <div class="media-dialog" role="dialog" aria-modal="true">
+    <button class="media-close" type="button" data-media-close aria-label="Kapat">✕</button>
+    <div class="media-stage" id="mediaStage">
+      <!-- JS doldurur -->
+    </div>
+  </div>
+</div>
+<!-- ========== /MEDIA PREVIEW MODAL ========== -->
+
+
+
+
+
+<!-- ================= GLOBAL PLAYER (Suno-style) ================= -->
+<div id="globalPlayer" class="global-player is-hidden" aria-hidden="true">
+  <div class="gp-left">
+    <div class="gp-cover" aria-hidden="true"></div>
+    <div class="gp-meta">
+      <div id="gpTitle" class="gp-title">Bir parça seç</div>
+      <div id="gpSub" class="gp-sub">AI Müzik / Ses Kaydı</div>
+    </div>
+  </div>
+
+  <div class="gp-center">
+    <div class="gp-controls">
+      <button id="gpPrev" class="gp-ico" type="button" aria-label="Önceki">⟨⟨</button>
+      <button id="gpPlay" class="gp-play" type="button" aria-label="Oynat/Duraklat">▶</button>
+      <button id="gpNext" class="gp-ico" type="button" aria-label="Sonraki">⟩⟩</button>
+    </div>
+
+    <div class="gp-progress">
+      <span id="gpCur" class="gp-time">0:00</span>
+      <input id="gpSeek" class="gp-seek" type="range" min="0" max="100" value="0" step="0.1" />
+      <span id="gpDur" class="gp-time">0:00</span>
+    </div>
+  </div>
+
+  <div class="gp-right">
+    <input id="gpVol" class="gp-vol" type="range" min="0" max="1" value="0.9" step="0.01" aria-label="Ses" />
+    <button id="gpClose" class="gp-ico" type="button" aria-label="Kapat">✕</button>
+  </div>
+
+  <audio id="gpAudio" preload="metadata"></audio>
+</div>
+    </div>
+    <!-- ================= /GLOBAL PLAYER ================= -->
+
+<script>
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-page-link]");
+  if (!btn) return;
+
+  // ✅ Eğer butonda data-music-tab varsa onu esas al
+  const directTab = btn.getAttribute("data-music-tab");
+  const map = {
+    "music": "geleneksel",
+    "record": "ses-kaydi",
+    "video": "ai-video"
+  };
+
+  const tab = directTab || map[btn.dataset.pageLink];
+  if (!tab) return;
+
+  const view = document.querySelector(`.music-view[data-music-view="${tab}"]`);
+  if (!view) return;
+
+  document.querySelectorAll(".music-view").forEach(v => v.style.display = "none");
+  view.style.display = "block";
+});
+</script>
+<!-- =========================================================
+     🚫 ESKİ STUDIO SCRIPT BLOĞU — TAMAMEN DISABLE
+     ÇAKIŞMA ÖNLEME AMAÇLI
+     ========================================================= -->
+<!--
+<script src="/auth.unify.fix.js?v=2" defer></script>
+<script src="/auth.core.js?v=2" defer></script>
+
+<script src="/studio.guard.js?v=12" defer></script>
+<script src="/store.js?v=2" defer></script>
+
+<script src="/studio.js?v=999" defer></script>
+
+<script src="/studio.app.js?v=3" defer></script>
+<script src="/studio.sidebar.sync.js?v=3" defer></script>
+
+<script src="/panel.manager.js?v=1" defer></script>
+<script src="/panel.audio.js?v=1" defer></script>
+
+<script src="/studio.dashboard.recent.js?v=7" defer></script>
+<script src="/studio.stats.js?v=15" defer></script>
+<script src="/studio.settings.js?v=3" defer></script>
+<script src="/studio.profile.js?v=202601120200" defer></script>
+
+<script src="/studio.modules/viral-hook.js?v=3" defer></script>
+<script src="/studio.modules/socialpack.js?v=3" defer></script>
+
+<script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
+
+<script src="/toast.manager.js?v=1" defer></script>
+<script src="/toast.compat.js?v=1" defer></script>
+
+<script src="/js/aivo.archive.download.js?v=2" defer></script>
+-->
+
+
+
+
+
+<script>
+(function AIVO_USER_MENU_FINAL(){
+  if (window.__AIVO_USER_MENU_FINAL__) return;
+  window.__AIVO_USER_MENU_FINAL__ = true;
+
+  const btn       = document.querySelector('#btnUserMenuTop');
+  const panel     = document.querySelector('#userMenuPanel');
+  const wrap      = document.querySelector('#userMenuWrap');
+
+  const topInitial = document.querySelector('#topUserInitial');
+  const umAvatar   = document.querySelector('#umAvatar');
+  const umName     = document.querySelector('#umName');
+  const umEmail    = document.querySelector('#umEmail');
+
+  if (!btn || !panel) return;
+
+  /* ------------------ STATE ------------------ */
+  const isOpen = () => panel.hidden === false;
+
+  function setOpen(open){
+    if (open) {
+      panel.hidden = false;
+      panel.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+      panel.classList.add('is-open');
+    } else {
+      panel.hidden = true;
+      panel.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+      panel.classList.remove('is-open');
+    }
+  }
+
+  /* ------------------ INITIAL (H) ------------------ */
+  function applyInitial(){
+    const src =
+      (umName && umName.textContent.trim()) ||
+      (umEmail && umEmail.textContent.trim()) ||
+      'H';
+
+    const ch = src.charAt(0).toUpperCase() || 'H';
+
+    if (topInitial) topInitial.textContent = ch;
+    if (umAvatar)   umAvatar.textContent   = ch;
+  }
+
+  applyInitial();
+  setTimeout(applyInitial, 300);   // auth geç dolarsa
+  setTimeout(applyInitial, 1200);  // garanti
+
+  /* ------------------ TOGGLE ------------------ */
+  btn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    setOpen(!isOpen());
+  }, true);
+
+  /* ------------------ INSIDE CLICK ------------------ */
+  panel.addEventListener('click', (e)=>{
+    e.stopPropagation();
+  }, true);
+
+  /* ------------------ OUTSIDE CLICK ------------------ */
+  function outsideClose(e){
+    const t = e.target;
+    if (wrap && wrap.contains(t)) return;
+    setOpen(false);
+  }
+
+  document.addEventListener('pointerdown', outsideClose, true);
+  document.addEventListener('click', outsideClose, true);
+
+  /* ------------------ ESC ------------------ */
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') setOpen(false);
+  }, true);
+
+  /* ------------------ START CLOSED ------------------ */
+  setOpen(false);
+})();
+</script>
+
+
+
+</body>
+</html>
