@@ -1331,19 +1331,24 @@ if (!kvkk) {
         try { data = JSON.parse(text); } catch (_) {}
 
         if (!res.ok) {
-          window.toast.error(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
-return;
+        window.toast.error(
+          safeMsg(data?.error || data?.message || text || "Kayıt başarısız.")
+        );
+        return;
+      }
 
+      window.toast.success(
+        safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin.")
+      );
 
-      window.toast.success(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
+      modal.setAttribute("data-mode", "login");
+      try { qs("registerPass2").value = ""; } catch (_) {}
+      try { qs("kvkkOk").checked = false; } catch (_) {}
 
-
-        modal.setAttribute("data-mode", "login");
-        try { qs("registerPass2").value = ""; } catch(_) {}
-        try { qs("kvkkOk").checked = false; } catch(_) {}
-
-        setBusy(false, "Giriş Yap");
-        setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
+      setBusy(false, "Giriş Yap");
+      setTimeout(() => {
+        try { qs("loginPass")?.focus(); } catch (_) {}
+      }, 50);
 
       } catch (err) {
         window.toast.error("Bağlantı hatası. Tekrar dene.");
