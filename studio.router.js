@@ -252,6 +252,16 @@ console.log("[ROUTER][LOAD] mount:after", {
     const mySeq = ++__goSeq;
 
     const cur = parseHash();
+    const host = document.getElementById("moduleHost");
+const activeKey = host?.getAttribute("data-active-module") || "";
+const loadingKey = host?.getAttribute("data-loading-module") || "";
+
+if (cur.key === key && activeKey === key && loadingKey !== key) {
+  console.log("[ROUTER][GO] skip same active module", { key });
+  setActiveNav(key);
+  window.ensureModuleCSS?.(key);
+  return;
+}
     if (cur.key !== key) {
       setHash(key);
       return;
