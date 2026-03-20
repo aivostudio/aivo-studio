@@ -225,6 +225,16 @@ console.log("[ROUTER][LOAD] mount:after", {
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
+        const host = document.getElementById("moduleHost");
+    const activeKey = host?.getAttribute("data-active-module") || "";
+    const loadingKey = host?.getAttribute("data-loading-module") || "";
+
+    if (activeKey === key || loadingKey === key) {
+      console.log("[ROUTER][GO] skip duplicate", { key, activeKey, loadingKey });
+      setActiveNav(key);
+      window.ensureModuleCSS?.(key);
+      return;
+    }
 
     const mySeq = ++__goSeq;
 
