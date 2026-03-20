@@ -65,9 +65,9 @@ export default async function handler(req, res) {
       return json(res, 403, { ok: false, error: "user_disabled" });
     }
 
-  if (user.verified !== true) {
-      return json(res, 403, { ok: false, error: "email_not_verified" });
-    }
+if (user.verified !== true) {
+  return json(res, 403, { ok: false, error: "email_not_verified" });
+}
 
     const hash = user.passwordHash || user.passHash || user.hash || "";
     if (!hash) {
