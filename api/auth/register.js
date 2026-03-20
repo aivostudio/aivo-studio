@@ -135,6 +135,25 @@ export default async function handler(req, res) {
         { ex: 60 * 60 } // 1h
       );
     } catch (e) {
+          try {
+      await kvSetJson(`user:${email}`, {
+        email,
+        name,
+        role: "user",
+        disabled: false,
+        verified: false,
+        passwordHash,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+    } catch (e) {
+      console.error("[REGISTER_USER_SET_FAIL]", e?.message || e);
+      return sendJson(res, 503, {
+        ok: false,
+        error: "kv_not_available",
+        hint: e?.message || String(e),
+      });
+    }
       console.error("[REGISTER_KV_SET_FAIL]", e?.message || e);
       return sendJson(res, 503, {
         ok: false,
