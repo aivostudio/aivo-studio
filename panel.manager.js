@@ -131,9 +131,6 @@
       if(!host) return;
 
       ensureShell(host);
-            if (currentKey === key && !payload?.__remount) {
-        return;
-      }
 
       // unmount old
       if(currentUnmount){
