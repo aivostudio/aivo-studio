@@ -559,13 +559,16 @@ if (data.status === "completed") {
           "",
       };
 
+      const outputsJson = JSON.stringify(Array.isArray(outputs) ? outputs : []);
+      const mergedMetaJson = JSON.stringify(mergedMeta);
+
       if (internal_job_id) {
         await sql`
           update jobs
           set
             status = ${"completed"},
-            outputs = ${outputs},
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
+            outputs = ${outputsJson}::jsonb,
+            meta = coalesce(meta, '{}'::jsonb) || ${mergedMetaJson}::jsonb,
             updated_at = now()
           where app = ${"music"}
             and deleted_at is null
@@ -579,8 +582,8 @@ if (data.status === "completed") {
           update jobs
           set
             status = ${"completed"},
-            outputs = ${outputs},
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
+            outputs = ${outputsJson}::jsonb,
+            meta = coalesce(meta, '{}'::jsonb) || ${mergedMetaJson}::jsonb,
             updated_at = now()
           where app = ${"music"}
             and deleted_at is null
