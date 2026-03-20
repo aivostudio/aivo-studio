@@ -1482,7 +1482,7 @@ let data = {};
 try { data = JSON.parse(text); } catch (_) {}
 
 const loginErrorMap = {
-  invalid_credentials: "E-posta veya şifre hatalı.",
+  invalid_credentials: "Giriş başarısız. Lütfen şifreni kontrol et.",
   email_not_verified: "Email adresini doğrulamadan giriş yapamazsın.",
   user_not_found: "Bu email ile kayıtlı kullanıcı bulunamadı.",
   user_disabled: "Hesabın pasif durumda.",
