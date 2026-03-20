@@ -1,6 +1,3 @@
-api/auth/forgot.js
-———
-
 // api/auth/forgot.js
 const crypto = require("crypto");
 const { kv } = require("@vercel/kv");
