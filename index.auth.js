@@ -1420,4 +1420,4 @@ return;
   setBusy(false, old || "Giriş Yap");
 }
 } // doLogin BİTTİ
-console.log("[AIVO] index.auth.js fresh build 2026-03-20 17:10");
+
