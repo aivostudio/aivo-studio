@@ -766,7 +766,31 @@ function deactivatePanel() {
   // Panel register (varsa)
   try {
     if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register("atmo", createAtmosPanel);
+     window.RightPanel.register("atmo", {
+  mount(wrapEl, payload, ctx) {
+    const panel = createAtmosPanel(wrapEl);
+    wrapEl.__atmoPanel = panel || null;
+    return () => {
+      try { wrapEl.__atmoPanel?.destroy?.(); } catch {}
+      try { delete wrapEl.__atmoPanel; } catch {}
+    };
+  },
+
+  onShow(payload, ctx) {
+    try { ctx?.setHeader?.({ title: "Atmosfer Video", meta: "", searchEnabled: false }); } catch {}
+    try {
+      const host = document.querySelector('.rpPanelWrap[data-panel-key="atmo"]');
+      host?.__atmoPanel?.onShow?.();
+    } catch {}
+  },
+
+  onHide(payload, ctx) {
+    try {
+      const host = document.querySelector('.rpPanelWrap[data-panel-key="atmo"]');
+      host?.__atmoPanel?.onHide?.();
+    } catch {}
+  }
+});
     } else {
       window.RightPanel.panels = window.RightPanel.panels || {};
       window.RightPanel.panels.atmo = createAtmosPanel;
