@@ -77,7 +77,6 @@ window.ensureModuleCSS = function(routeKey) {
   let __moduleLoadSeq = 0;
   let __moduleLoadCtrl = null;
   let __goSeq = 0;
-  const __moduleHtmlCache = new Map();
 
   // -------------------------------
   // URL HELPERS
@@ -183,34 +182,12 @@ async function loadModuleIntoHost(key) {
   __moduleLoadCtrl = new AbortController();
 
   const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
-  const cachedHtml = __moduleHtmlCache.get(key);
-if (cachedHtml) {
-  host.replaceChildren();
-  const wrap = document.createElement("div");
-  wrap.innerHTML = cachedHtml;
-
-  const incomingRoot =
-    wrap.querySelector("[data-module-root]") ||
-    wrap.firstElementChild ||
-    wrap.firstChild;
-
-  if (!incomingRoot) {
-    throw new Error("module html empty: " + key);
-  }
-
-  host.replaceChildren(incomingRoot);
-  host.setAttribute("data-active-module", key);
-  host.removeAttribute("data-loading-module");
-  console.log("[ROUTER][LOAD] cache:hit", { key, seq });
-  return;
-}
 
   host.setAttribute("data-loading-module", key);
   console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
   
   
   const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
-  __moduleHtmlCache.set(key, html);
   console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
 
   if (seq !== __moduleLoadSeq) return;
@@ -252,16 +229,6 @@ console.log("[ROUTER][LOAD] mount:after", {
     const mySeq = ++__goSeq;
 
     const cur = parseHash();
-    const host = document.getElementById("moduleHost");
-const activeKey = host?.getAttribute("data-active-module") || "";
-const loadingKey = host?.getAttribute("data-loading-module") || "";
-
-if (cur.key === key && activeKey === key && loadingKey !== key) {
-  console.log("[ROUTER][GO] skip same active module", { key });
-  setActiveNav(key);
-  window.ensureModuleCSS?.(key);
-  return;
-}
     if (cur.key !== key) {
       setHash(key);
       return;
