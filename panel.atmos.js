@@ -244,10 +244,11 @@
   function createAtmosPanel(host) {
     ensureStyles();
 
-    let destroyed = false;
+   let destroyed = false;
+let currentDbItems = [];
 
-    // Optimistic overlay store (job_id -> job-like object)
-    const optimistic = new Map(); // key: job_id
+// Optimistic overlay store (job_id -> job-like object)
+const optimistic = new Map(); // key: job_id
 
     // ============================
     // ✅ AUTO LOGO OVERLAY helpers (READY -> /api/atmo/overlay-logo)
@@ -393,6 +394,83 @@
     const elGrid = host.querySelector('[data-grid]');
 
     const setStatus = (t) => { if (elStatus) elStatus.textContent = t; };
+    function toMs(v) {
+  if (v == null) return 0;
+
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+
+  const s = String(v).trim();
+
+  if (/^\d{10,13}$/.test(s)) {
+    const n = Number(s);
+    if (Number.isFinite(n)) return n;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
+    const iso = s.replace(" ", "T") + "Z";
+    const tIso = Date.parse(iso);
+    if (Number.isFinite(tIso)) return tIso;
+  }
+
+  const t = Date.parse(s);
+  return Number.isFinite(t) ? t : 0;
+}
+
+function hasProcessing(items) {
+  return (items || []).some((j) => {
+    const st = norm(j?.db_status || j?.status || j?.state).toUpperCase();
+    return (
+      st.includes("PROCESS") ||
+      st.includes("RUN") ||
+      st.includes("PEND") ||
+      st.includes("QUEUE")
+    );
+  });
+}
+
+function buildMergedItems() {
+  const byId = new Map();
+
+  for (const j of currentDbItems) {
+    const id = String(j?.job_id || "").trim();
+    if (!id) continue;
+
+    byId.set(id, j);
+
+    const st = norm(j?.db_status || j?.status || j?.state);
+    const isTerminal =
+      st.includes("ready") ||
+      st.includes("done") ||
+      st.includes("complet") ||
+      st.includes("succ") ||
+      st.includes("error") ||
+      st.includes("fail");
+
+    if (isTerminal && optimistic.has(id)) {
+      optimistic.delete(id);
+    }
+  }
+
+  for (const [id, j] of optimistic.entries()) {
+    if (!id) continue;
+    if (!byId.has(id)) byId.set(id, j);
+  }
+
+  return Array.from(byId.values()).sort((a, b) => {
+    const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+    const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+
+    if (tb !== ta) return tb - ta;
+
+    const ia = String(a?.job_id || a?.id || "");
+    const ib = String(b?.job_id || b?.id || "");
+    return ib.localeCompare(ia);
+  });
+}
+
+function renderCurrent() {
+  render(buildMergedItems());
+}
 
     // --- DB controller
     const controller = window.DBJobs.create({
@@ -416,274 +494,23 @@
         if (oa && !isAtmoApp(oa)) return false;
         return true;
       },
+onChange: async (items) => {
+  if (destroyed) return;
+  console.debug("[ATMO DEBUG] onChange items:", items);
 
-      onChange: async (items) => {
-        if (destroyed) return;
-        console.debug("[ATMO DEBUG] onChange items:", items);
-
-        const safeItems = (items || []).filter(isJobAtmo);
-        // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
-        // Rule:
-        // - DB’de job varsa: optimistic’i drop/replace
-        // - DB’de yoksa: optimistic’i göster
-        const byId = new Map();
-
-        // 1) DB items first (truth)
-        for (const j of safeItems) {
-          const id = String(j?.job_id || "").trim();
-          if (!id) continue;
-          byId.set(id, j);
-          if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
-        }
-
-        // 2) Remaining optimistic
-        for (const [id, j] of optimistic.entries()) {
-          if (!byId.has(id)) byId.set(id, j);
-        }
-
-        // ✅ newest first (updated_at > created_at > createdAt) — ms-safe + stable tie-break
-        const toMs = (v) => {
-          if (v == null) return 0;
-
-          if (typeof v === "number" && Number.isFinite(v)) return v;
-
-          const s = String(v).trim();
-
-          // numeric ms / seconds-ish string
-          if (/^\d{10,13}$/.test(s)) {
-            const n = Number(s);
-            if (Number.isFinite(n)) return n;
-          }
-
-          // Safari NaN fix for "YYYY-MM-DD HH:mm:ss"
-          if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
-            const iso = s.replace(" ", "T") + "Z";
-            const tIso = Date.parse(iso);
-            if (Number.isFinite(tIso)) return tIso;
-          }
-
-          const t = Date.parse(s);
-          return Number.isFinite(t) ? t : 0;
-        };
-
-        const merged = Array.from(byId.values()).sort((a, b) => {
-          const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
-          const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
-
-          if (tb !== ta) return tb - ta;
-
-          // stable: aynı timestamp’te zıplamasın
-          const ia = String(a?.job_id || a?.id || "");
-          const ib = String(b?.job_id || b?.id || "");
-          return ib.localeCompare(ia);
-        });
-
-        // ✅ AUTO LOGO OVERLAY: READY yakala -> overlay üret -> optimistic'e yaz -> render
-       render(merged);
-
-Promise.resolve()
-  .then(() => applyOverlayToMerged(merged))
-  .then((merged2) => {
-    if (destroyed) return;
-    render(merged2);
-  })
-  .catch((e) => {
-    console.warn("[ATMO] deferred overlay render error:", e);
-  });
-        function hasProcessing(items) {
-          return (items || []).some(j => {
-            const st = norm(j.db_status || j.status || j.state).toUpperCase();
-            return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
-          });
-        }
-
-        // ✅ NO-RELOAD DOM render (keyed) — videoları yeniden yaratmaz
-        const __cardCache = (window.__ATMO_CARD_CACHE__ = window.__ATMO_CARD_CACHE__ || new Map()); // job_id -> el
-
-        function ensureCardEl(job) {
-          const id = String(job?.job_id || "").trim();
-          if (!id) return null;
-
-          let el = __cardCache.get(id);
-          if (el && el.isConnected) return el;
-
-          el = document.createElement("div");
-          el.className = "atmoCard";
-          el.setAttribute("data-job", id);
-
-          // once-only skeleton structure
-          el.innerHTML = `
-            <div class="atmoThumb">
-              <div class="atmoPill mid">İşleniyor</div>
-              <div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>
-            </div>
-
-            <div class="atmoFooter">
-              <div class="atmoMetaLine"></div>
-
-              <div class="atmoActions">
-                <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-                <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-                <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
-              </div>
-            </div>
-          `;
-
-          __cardCache.set(id, el);
-          return el;
-        }
-
-        function patchCard(el, job) {
-          if (!el || !job) return;
-
-          const badge = mapBadge(job);
-          const out = pickBestVideoOutput(job);
-          const url = out?.url || "";
-
-          const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
-          const engine = (job.provider || job.meta?.provider || "Atmos").toString();
-
-          // meta line: engine + duration + dt
-          const dur = String(job.meta?.duration || job.duration || "").trim();
-          const durText = dur ? `${dur}sn` : "";
-          const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
-
-          const ratio = String(
-            job.meta?.aspect_ratio ||
-            job.meta?.ratio ||
-            out?.meta?.aspect_ratio ||
-            out?.meta?.ratio ||
-            ""
-          );
-
-          const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
-          const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
-          const can = !!(ready && url);
-
-          const thumb = el.querySelector(".atmoThumb");
-          if (thumb) {
-            thumb.classList.toggle("isPortrait", !!isPortrait);
-
-            // ✅ loading class (processing/ready kontrolü)
-            thumb.classList.toggle("is-loading", !can); // can = ready + url varsa true
-          }
-
-          const pill = el.querySelector(".atmoPill");
-          if (pill) {
-            pill.textContent = badge.text;
-            pill.classList.remove("ok", "mid", "bad");
-            pill.classList.add(badge.kind);
-          }
-
-          const metaEl = el.querySelector(".atmoMetaLine");
-          if (metaEl) metaEl.textContent = job.meta?.prompt || "";
-
-          const dl = el.querySelector('[data-act="download"]');
-          const sh = el.querySelector('[data-act="share"]');
-          if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
-          if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
-
-          const skel = el.querySelector(".atmoSkel");
-          let vid = el.querySelector("video.atmoThumbVideo");
-
-          if (can) {
-            if (skel) skel.style.display = "none";
-
-            if (!vid) {
-              vid = document.createElement("video");
-              vid.className = "atmoThumbVideo";
-              vid.setAttribute("playsinline", "");
-              vid.setAttribute("webkit-playsinline", "");
-              vid.setAttribute("preload", "metadata");
-              vid.setAttribute("controls", "");
-              vid.muted = true;
-              thumb?.appendChild(vid);
-            }
-
-            const prev = vid.getAttribute("data-src") || "";
-            if (prev !== url) {
-              vid.setAttribute("data-src", url);
-              vid.src = url; // sadece bu kart reload eder, diğerleri etmez
-            }
-            vid.style.display = "";
-          } else {
-            if (skel) skel.style.display = "";
-            if (vid) {
-              // KALDIRMA: kaldırırsan yeniden yaratılır ve reload artar
-              vid.pause?.();
-              vid.style.display = "none";
-            }
-          }
-        }
-
-        function render(items) {
-          if (!elGrid) return;
-
-          setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
-
-          const list = Array.isArray(items) ? items : [];
-
-          // ✅ Empty state: innerHTML kullanma (video reset riskini azaltır)
-          const EMPTY_ID = "atmoEmptyState";
-          let emptyEl = elGrid.querySelector(`#${EMPTY_ID}`);
-
-          if (!list.length) {
-            // gridde kart varsa kaldır, sadece empty kalsın
-            for (const ch of Array.from(elGrid.children)) {
-              if (ch.id !== EMPTY_ID) elGrid.removeChild(ch);
-            }
-            if (!emptyEl) {
-              emptyEl = document.createElement("div");
-              emptyEl.id = EMPTY_ID;
-              emptyEl.style.opacity = ".7";
-              emptyEl.style.fontSize = "12px";
-              emptyEl.style.padding = "4px 2px";
-              emptyEl.textContent = "Henüz atmos üretim yok.";
-              elGrid.appendChild(emptyEl);
-            }
-            return;
-          } else {
-            if (emptyEl) emptyEl.remove();
-          }
-
-          // ✅ Keyed reorder: full wipe YOK, sadece node move
-          const wanted = new Set();
-
-          // anchor: "şu an buraya insertBefore yap" pointer'ı
-          let anchor = elGrid.firstChild;
-
-          for (const job of list) {
-            const id = String(job?.job_id || "").trim();
-            if (!id) continue;
-            wanted.add(id);
-
-            const card = ensureCardEl(job);
-            patchCard(card, job);
-
-            // DOM'da değilse ekle
-            if (!card.isConnected) {
-              elGrid.insertBefore(card, anchor);
-              continue;
-            }
-
-            // yanlış yerdeyse move et
-            if (card !== anchor) {
-              elGrid.insertBefore(card, anchor);
-            } else {
-              // doğru yerdeyse anchor ilerlet
-              anchor = anchor?.nextSibling || null;
-            }
-          }
-
-          // ✅ artık listede olmayan kartları DOM'dan kaldır (cache kalabilir)
-          for (const ch of Array.from(elGrid.children)) {
-            if (ch.id === EMPTY_ID) continue;
-            const jid = ch.getAttribute?.("data-job");
-            if (jid && !wanted.has(jid)) elGrid.removeChild(ch);
-          }
-        }
-      },
+  currentDbItems = (items || [])
+    .filter(isJobAtmo)
+    .filter((j) => {
+      const id = String(j?.job_id || "").trim();
+      return !!id;
     });
+
+  const merged = buildMergedItems();
+  const merged2 = await applyOverlayToMerged(merged);
+
+  currentDbItems = merged2.filter(isJobAtmo);
+  renderCurrent();
+},
 
     // ✅ Optimistic job_created listener (Video hissi)
   const onJobCreated = (e) => {
