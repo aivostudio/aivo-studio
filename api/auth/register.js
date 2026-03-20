@@ -104,7 +104,7 @@ export default async function handler(req, res) {
       return sendJson(res, 400, { ok: false, error: "name_required" });
     }
 
-    // ✅ BAN kontrolü (hard delete sonrası)
+    // ✅ BAN kontrolü
     let banned = null;
     try {
       banned = await kvGetJson(`ban:${email}`);
@@ -119,23 +119,54 @@ export default async function handler(req, res) {
       return sendJson(res, 403, { ok: false, error: "user_banned" });
     }
 
-    // ✅ verify token + payload (1 saat)
+    // Mevcut user var mı?
+    let existingUser = null;
+    try {
+      const u1 = await kvGetJson(`user:${email}`).catch(() => null);
+      const u2 = await kvGetJson(`users:${email}`).catch(() => null);
+      existingUser =
+        (u1 && typeof u1 === "object")
+          ? u1
+          : ((u2 && typeof u2 === "object") ? u2 : null);
+    } catch (e) {
+      return sendJson(res, 503, {
+        ok: false,
+        error: "kv_not_available",
+        hint: e?.message || String(e),
+      });
+    }
+
+    if (existingUser) {
+      return sendJson(res, 409, { ok: false, error: "email_already_registered" });
+    }
+
+    // ✅ verify token + payload
     const token = crypto.randomBytes(32).toString("hex");
+    const now = Date.now();
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
     const verifyUrl = `${appBase}/api/auth/verify?token=${token}`;
 
     // ✅ password hash
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // ✅ KV write MUST SUCCEED (yoksa 201 dönme)
+    // ✅ verify token yaz
     try {
       await kvSetJson(
         `verify:${token}`,
-        { email, name, passwordHash, createdAt: Date.now() },
+        { email, name, passwordHash, createdAt: now },
         { ex: 60 * 60 } // 1h
       );
     } catch (e) {
-          try {
+      console.error("[REGISTER_KV_SET_FAIL]", e?.message || e);
+      return sendJson(res, 503, {
+        ok: false,
+        error: "kv_not_available",
+        hint: e?.message || String(e),
+      });
+    }
+
+    // ✅ kullanıcıyı hemen oluştur (verified:false)
+    try {
       await kvSetJson(`user:${email}`, {
         email,
         name,
@@ -143,8 +174,8 @@ export default async function handler(req, res) {
         disabled: false,
         verified: false,
         passwordHash,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
       });
     } catch (e) {
       console.error("[REGISTER_USER_SET_FAIL]", e?.message || e);
@@ -154,17 +185,9 @@ export default async function handler(req, res) {
         hint: e?.message || String(e),
       });
     }
-      console.error("[REGISTER_KV_SET_FAIL]", e?.message || e);
-      return sendJson(res, 503, {
-        ok: false,
-        error: "kv_not_available",
-        hint: e?.message || String(e),
-      });
-    }
 
-    // ✅ users:list index (admin panel)
+    // ✅ users:list index
     try {
-      const now = Date.now();
       const LIST_KEY = "users:list";
       const list = (await kvGetJson(LIST_KEY)) || [];
       const has =
@@ -176,6 +199,7 @@ export default async function handler(req, res) {
           email,
           role: "user",
           disabled: false,
+          verified: false,
           createdAt: now,
           updatedAt: now,
         });
@@ -183,7 +207,6 @@ export default async function handler(req, res) {
       }
     } catch (e) {
       console.error("[REGISTER_USERS_LIST_FAIL]", e?.message || e);
-      // users:list patlarsa da akışı boz: çünkü KV zaten güvenilir değil
       return sendJson(res, 503, {
         ok: false,
         error: "kv_not_available",
@@ -191,14 +214,14 @@ export default async function handler(req, res) {
       });
     }
 
-    // Mail (opsiyonel: mail gitmese bile kayıt başarılı olabilir)
+    // ✅ mail gönder
     const mailResult = await sendVerifyMailResend({ to: email, verifyUrl });
     if (!mailResult.sent) console.error("[REGISTER_RESEND_FAIL]", mailResult);
 
     return sendJson(res, 201, {
       ok: true,
       email,
-      verifyUrl, // prod'da kaldır
+      verifyUrl,
       mailSent: !!mailResult.sent,
     });
   } catch (e) {
