@@ -768,13 +768,17 @@ function deactivatePanel() {
     if (typeof window.RightPanel.register === "function") {
      window.RightPanel.register("atmo", {
   mount(wrapEl, payload, ctx) {
-    const panel = createAtmosPanel(wrapEl);
-    wrapEl.__atmoPanel = panel || null;
-    return () => {
-      try { wrapEl.__atmoPanel?.destroy?.(); } catch {}
-      try { delete wrapEl.__atmoPanel; } catch {}
-    };
-  },
+   let panel = createAtmosPanel(wrapEl);
+wrapEl.__atmoPanel = panel || null;
+
+this.__getAtmoPanel = () => panel || wrapEl.__atmoPanel || null;
+
+return () => {
+  try { panel?.destroy?.(); } catch {}
+  try { delete wrapEl.__atmoPanel; } catch {}
+  try { delete this.__getAtmoPanel; } catch {}
+  panel = null;
+};
 
   onShow(payload, ctx) {
     try { ctx?.setHeader?.({ title: "Atmosfer Video", meta: "", searchEnabled: false }); } catch {}
