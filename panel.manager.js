@@ -1,7 +1,7 @@
 // panel.manager.js
 (function(){
   const registry = new Map();
-  const panelCache = new Map(); // key -> { wrapEl, mounted, unmount, impl }
+  const panelCache = new Map(); // key -> { wrapEl, mounted, unmount, impl, visible }
 
   let currentKey = null;
   let currentUnmount = null;
@@ -131,7 +131,13 @@
     contentEl.appendChild(wrap);
 
     if(!cached){
-      cached = { wrapEl: wrap, mounted: false, unmount: null, impl: null };
+      cached = {
+        wrapEl: wrap,
+        mounted: false,
+        unmount: null,
+        impl: null,
+        visible: false
+      };
       panelCache.set(key, cached);
     }else{
       cached.wrapEl = wrap;
@@ -140,10 +146,44 @@
     return wrap;
   }
 
-  function hideAllPanelWraps(){
-    if(!contentEl) return;
-    const nodes = contentEl.querySelectorAll(".rpPanelWrap");
-    nodes.forEach((el) => { el.style.display = "none"; });
+  function callPanelHide(key){
+    const cached = panelCache.get(key);
+    if(!cached || !cached.impl || !cached.visible) return;
+
+    cached.visible = false;
+    if(cached.wrapEl) cached.wrapEl.style.display = "none";
+
+    if(typeof cached.impl.onHide === "function"){
+      safeCall(cached.impl.onHide, {
+        key,
+        wrapEl: cached.wrapEl
+      });
+    }
+  }
+
+  function callPanelShow(key, payload){
+    const cached = panelCache.get(key);
+    if(!cached || !cached.impl) return;
+
+    cached.visible = true;
+    if(cached.wrapEl) cached.wrapEl.style.display = "";
+
+    if(typeof cached.impl.onShow === "function"){
+      safeCall(cached.impl.onShow, payload, {
+        key,
+        wrapEl: cached.wrapEl,
+        setHeader,
+        getQuery: () => lastQuery
+      });
+    }
+  }
+
+  function hideAllPanelsExcept(nextKey){
+    for(const [key] of panelCache){
+      if(key !== nextKey){
+        callPanelHide(key);
+      }
+    }
   }
 
   const api = {
@@ -174,11 +214,12 @@
 
       ensureShell(host);
 
+      const prevKey = currentKey;
       currentKey = key;
 
       const impl = registry.get(key);
       if(!impl){
-        hideAllPanelWraps();
+        hideAllPanelsExcept(null);
         if(contentEl) contentEl.innerHTML = "";
         setHeader({
           title: "Panel",
@@ -206,7 +247,10 @@
         resetSearch: (hdr && hdr.resetSearch === true) ? true : false
       });
 
-      hideAllPanelWraps();
+      if(prevKey && prevKey !== key){
+        callPanelHide(prevKey);
+      }
+      hideAllPanelsExcept(key);
 
       const wrapEl = ensurePanelWrap(key);
       if(!wrapEl){
@@ -216,14 +260,18 @@
 
       let cached = panelCache.get(key);
       if(!cached){
-        cached = { wrapEl, mounted: false, unmount: null, impl };
+        cached = {
+          wrapEl,
+          mounted: false,
+          unmount: null,
+          impl,
+          visible: false
+        };
         panelCache.set(key, cached);
       }else{
         cached.wrapEl = wrapEl;
         cached.impl = impl;
       }
-
-      wrapEl.style.display = "";
 
       if(!cached.mounted){
         const unmount = safeCall(impl.mount, wrapEl, payload, {
@@ -235,6 +283,8 @@
         cached.unmount = (typeof unmount === "function") ? unmount : null;
         cached.mounted = true;
       }
+
+      callPanelShow(key, payload);
 
       currentUnmount = cached.unmount || null;
 
@@ -268,6 +318,15 @@
       if(!cached) return;
 
       try {
+        if(cached.impl && typeof cached.impl.onHide === "function" && cached.visible){
+          safeCall(cached.impl.onHide, {
+            key,
+            wrapEl: cached.wrapEl
+          });
+        }
+      } catch(e){}
+
+      try {
         if(cached.unmount) safeCall(cached.unmount);
       } catch(e){}
 
@@ -284,7 +343,7 @@
     },
 
     destroyAll(){
-      for(const key of panelCache.keys()){
+      for(const key of Array.from(panelCache.keys())){
         api.destroyPanel(key);
       }
     }
