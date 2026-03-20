@@ -740,11 +740,9 @@ Promise.resolve()
           return tb - ta;
         });
 
-        // sadece "kart hemen gelsin" hissi
-        // (overlay + gerçek video, onChange'de DB READY olunca)
-        // render(merged) burada çağırmıyoruz; onChange zaten yakında gelecek.
-        // ama istersen anında görmek için aşağıyı aç:
-        // render(merged);
+              // kart hemen gelsin
+        render(merged);
+        setStatus("İşleniyor…");
       } catch {}
     };
 
