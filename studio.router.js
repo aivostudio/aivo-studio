@@ -257,31 +257,8 @@ console.log("[ROUTER][LOAD] mount:after", {
 
     if (mySeq !== __goSeq) return;
 
-     const panelKey = RIGHT_PANEL_KEY[key] || "music";
-    try {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          try {
-            const hostNow = document.getElementById("moduleHost");
-            const activeNow = hostNow?.getAttribute("data-active-module") || "";
-            if (activeNow !== key) {
-              console.log("[ROUTER] RightPanel.force skipped stale route", {
-                key,
-                activeNow,
-                panelKey
-              });
-              return;
-            }
-
-            window.RightPanel?.force?.(panelKey, {});
-          } catch (err) {
-            console.warn("[ROUTER] RightPanel.force delayed failed:", panelKey, err);
-          }
-        }, 0);
-      });
-    } catch (e) {
-      console.warn("[ROUTER] RightPanel.force failed:", panelKey, e);
-    }
+       const panelKey = RIGHT_PANEL_KEY[key] || "music";
+    console.log("[ROUTER] RightPanel TEMP OFF", { key, panelKey });
   }
 
   function onHashChange() {
