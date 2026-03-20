@@ -1481,10 +1481,21 @@ const text = await res.text();
 let data = {};
 try { data = JSON.parse(text); } catch (_) {}
 
+const loginErrorMap = {
+  invalid_credentials: "E-posta veya şifre hatalı.",
+  email_not_verified: "Email adresini doğrulamadan giriş yapamazsın.",
+  user_not_found: "Bu email ile kayıtlı kullanıcı bulunamadı.",
+  user_disabled: "Hesabın pasif durumda.",
+  bad_request: "E-posta ve şifre gir.",
+  server_error: "Sunucu hatası oluştu. Tekrar dene.",
+};
+
+const loginErrorText =
+  loginErrorMap[data?.error] ||
+  safeMsg(data?.message || data?.error || text || "Giriş başarısız.");
+
 if (!res.ok || data?.ok === false) {
-  window.toast.error(
-    safeMsg(data?.error || data?.message || text || "Giriş başarısız.")
-  );
+  window.toast.error(loginErrorText);
   return;
 }
 // ✅ LOGIN SUCCESS — URL TOAST (storage'siz kesin çözüm)
