@@ -1761,7 +1761,7 @@ function setMusicHostForEvents(el){
     render();
   }
 
-  async function hydrateFromDBOnce(){
+   async function hydrateFromDBOnce(){
     try {
       const r = await fetch("/api/jobs/list?app=music", {
         method: "GET",
@@ -1777,6 +1777,54 @@ function setMusicHostForEvents(el){
     } catch (e) {
       console.warn("[panel.music] hydrateFromDBOnce error", e);
     }
+  }
+
+  let panelVisible = false;
+  let panelBooted = false;
+
+  function stopPanelWork(){
+    clearAllPolls();
+
+    if (rehydrateMusicPanel) {
+      window.removeEventListener("focus", rehydrateMusicPanel);
+      window.removeEventListener("pageshow", rehydrateMusicPanel);
+    }
+    if (onMusicVisibilityChange) {
+      document.removeEventListener("visibilitychange", onMusicVisibilityChange);
+    }
+  }
+
+  function startPanelWork(){
+    if (!alive || !panelVisible) return;
+
+    rehydrateMusicPanel = async () => {
+      if (!alive || !panelVisible) return;
+      try { await hydrateFromDBOnce(); } catch {}
+      try { dbCtrl?.hydrate?.(true); } catch {}
+    };
+
+    onMusicVisibilityChange = () => {
+      if (!alive || !panelVisible) return;
+      if (document.visibilityState === "visible") rehydrateMusicPanel?.();
+    };
+
+    window.addEventListener("focus", rehydrateMusicPanel);
+    window.addEventListener("pageshow", rehydrateMusicPanel);
+    document.addEventListener("visibilitychange", onMusicVisibilityChange);
+
+    rehydrateMusicPanel();
+
+    const processingOnly = (jobs || []).filter((j) => {
+      const id = getJobId(j);
+      if (!id || isHiddenJobId(id)) return false;
+      const s = String(j?.__ui_state || "").trim().toLowerCase();
+      return s === "processing";
+    });
+
+    processingOnly.slice(0, 12).forEach((j) => {
+      const id = getJobId(j);
+      if (id) poll(id);
+    });
   }
 
   function mount(contentEl){
@@ -1804,22 +1852,21 @@ function setMusicHostForEvents(el){
       mainAudio.style.display = "none";
     }
 
-   jobs = loadJobs().filter((j) => {
-  const id = getJobId(j);
-  if (!id) return false;
-  if (isHiddenJobId(id)) return false;
+    jobs = loadJobs().filter((j) => {
+      const id = getJobId(j);
+      if (!id) return false;
+      if (isHiddenJobId(id)) return false;
 
-  const uiState = String(j?.__ui_state || "").trim().toLowerCase();
-  const audioSrc = String(j?.__audio_src || "").trim();
-  const providerSongId = String(j?.__provider_song_id || "").trim();
+      const uiState = String(j?.__ui_state || "").trim().toLowerCase();
+      const audioSrc = String(j?.__audio_src || "").trim();
 
-  if (uiState === "ready" && audioSrc) return true;
-  if (audioSrc) return true;
+      if (uiState === "ready" && audioSrc) return true;
+      if (audioSrc) return true;
 
-  return false;
-});
+      return false;
+    });
+
     render();
-    hydrateFromDBOnce();
 
     try { dbCtrl?.destroy?.(); } catch {}
     dbCtrl = null;
@@ -1847,49 +1894,60 @@ function setMusicHostForEvents(el){
         onChange: (items) => {
           if (!alive) return;
           hydrateMergeWithDbRows(items);
-          (jobs || []).slice(0, 60).forEach((j) => {
+
+          if (!panelVisible) return;
+
+          const processingOnly = (jobs || []).filter((j) => {
             const id = getJobId(j);
-            if (id && !isHiddenJobId(id)) poll(id);
+            if (!id || isHiddenJobId(id)) return false;
+            const s = String(j?.__ui_state || "").trim().toLowerCase();
+            return s === "processing";
+          });
+
+          processingOnly.slice(0, 12).forEach((j) => {
+            const id = getJobId(j);
+            if (id) poll(id);
           });
         }
       });
     }
 
-     window.addEventListener("aivo:job", onJob, true);
+    window.addEventListener("aivo:job", onJob, true);
 
-   rehydrateMusicPanel = async () => {
-  try { await hydrateFromDBOnce(); } catch {}
-  try { dbCtrl?.hydrate?.(); } catch {}
-};
-
-onMusicVisibilityChange = () => {
-  if (document.visibilityState === "visible") rehydrateMusicPanel?.();
-};
-
-    window.addEventListener("focus", rehydrateMusicPanel);
-    window.addEventListener("pageshow", rehydrateMusicPanel);
-    document.addEventListener("visibilitychange", onMusicVisibilityChange);
-
-    setTimeout(() => { rehydrateMusicPanel(); }, 350);
-    setTimeout(() => { rehydrateMusicPanel(); }, 1200);
-
-    (jobs || []).slice(0, 60).forEach((j) => {
-      const id = getJobId(j);
-      if (id && !isHiddenJobId(id)) poll(id);
-    });
+    panelBooted = false;
+    panelVisible = false;
     applyMusicSearchFilter();
 
     return () => destroy();
   }
 
+  function onShow(){
+    panelVisible = true;
+
+    if (!panelBooted) {
+      panelBooted = true;
+      startPanelWork();
+      return;
+    }
+
+    startPanelWork();
+  }
+
+  function onHide(){
+    panelVisible = false;
+    stopPanelWork();
+    clearAllPolls();
+  }
+
   function destroy(){
+    panelVisible = false;
+    panelBooted = false;
     alive = false;
+
+    stopPanelWork();
     setMusicHostForEvents(null);
     window.removeEventListener("aivo:job", onJob, true);
-    window.removeEventListener("focus", rehydrateMusicPanel);
-window.removeEventListener("pageshow", rehydrateMusicPanel);
-document.removeEventListener("visibilitychange", onMusicVisibilityChange);
-window.removeEventListener("focus", rehydrateMusicPanel);
+
     clearAllPolls();
     stopRaf();
 
@@ -1902,10 +1960,19 @@ window.removeEventListener("focus", rehydrateMusicPanel);
     eqBarsCache.bars = null;
     hostEl = null;
     listEl = null;
+    rehydrateMusicPanel = null;
+    onMusicVisibilityChange = null;
   }
 
   function register(){
-    window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy, onSearch });
+    window.RightPanel.register(PANEL_KEY, {
+      getHeader,
+      mount,
+      destroy,
+      onSearch,
+      onShow,
+      onHide
+    });
     console.log("[panel.music] registered");
   }
 
