@@ -513,25 +513,22 @@ onChange: async (items) => {
 },
 
     // ✅ Optimistic job_created listener (Video hissi)
-  const onJobCreated = (e) => {
+const onJobCreated = (e) => {
   const d = e?.detail || {};
   if (!d.job_id) return;
   if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
 
-  const job_id = String(d.job_id).trim();
+  const job_id = String(d.job_id || "").trim();
   if (!job_id) return;
 
-  // Dedupe: zaten DB state’te varsa ekleme
-  const existsDb = (controller.state.items || []).some(j => String(j?.job_id) === job_id);
+  const existsDb = currentDbItems.some((j) => String(j?.job_id || "").trim() === job_id);
   if (existsDb) return;
-
-  // Dedupe: optimistic varsa ekleme
   if (optimistic.has(job_id)) return;
 
   const meta = d.meta || {};
   const createdAt = d.createdAt || Date.now();
 
-  const optimisticJob = {
+  optimistic.set(job_id, {
     job_id,
     app: "atmo",
     provider: meta.provider || "Atmos",
@@ -549,41 +546,9 @@ onChange: async (items) => {
       aspect_ratio: meta.aspect_ratio || meta.ratio || ""
     },
     outputs: []
-  };
+  });
 
-  optimistic.set(job_id, optimisticJob);
-
-  // kart hemen gelsin
-  try {
-    const safeDb = (controller.state.items || []).filter(isJobAtmo);
-    const byId = new Map();
-
-    for (const j of safeDb) {
-      const id = String(j?.job_id || "").trim();
-      if (!id) continue;
-      byId.set(id, j);
-    }
-
-    for (const [id, j] of optimistic.entries()) {
-      if (!byId.has(id)) byId.set(id, j);
-    }
-
-    const merged = Array.from(byId.values()).sort((a, b) => {
-      const ta = new Date(a?.updated_at || a?.created_at || a?.createdAt || Date.now()).getTime();
-      const tb = new Date(b?.updated_at || b?.created_at || b?.createdAt || Date.now()).getTime();
-      return tb - ta;
-    });
-
-    render(merged);
-    setStatus("İşleniyor…");
-  } catch {}
-
-  // DB row geldiğinde gerçek kayıt optimistic kartı devralsın
-  setTimeout(() => {
-    try {
-      controller?.hydrate?.();
-    } catch {}
-  }, 1200);
+  renderCurrent();
 };
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
