@@ -1,11 +1,10 @@
 // panel.cartoon.js
-// DB source-of-truth + optimistic cartoon video cards
-// - job_created gelince kart anında görünür
-// - onChange DB item'ları ile merge edilir
-// - ready olunca kart yerinde güncellenir
+// Keep-alive uyumlu cartoon panel
+// - mount hafif
+// - onShow motoru başlatır
+// - onHide motoru durdurur
+// - optimistic kart / ready akışı korunur
 // - character job'ları paneli tetiklemez
-// - FIX: optimistic + DB merge için tek kimlik helper'ı (idOf)
-// - FIX: story kartı ile DB ready kartı aynı job altında birleşir
 
 (function () {
   if (!window.RightPanel) return;
@@ -79,7 +78,6 @@
     return u;
   };
 
-  // ✅ TEK KİMLİK KURALI
   const idOf = (it) => String(it?.job_id || it?.id || "").trim();
 
   const mapBadge = (job) => {
@@ -198,6 +196,15 @@
     const cardCache =
       window.__CARTOON_CARD_CACHE__ ||
       (window.__CARTOON_CARD_CACHE__ = new Map());
+
+    const runtime = {
+      active: false,
+      controller: null,
+      clickBound: false,
+      offJobCreated: null,
+      offJobReady: null,
+      offStoryReady: null,
+    };
 
     host.innerHTML = `
       <div class="cartoonPanelWrap">
@@ -497,142 +504,110 @@
       }
     }
 
-    host.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-svc-act], [data-act]");
-      if (!btn) return;
-
-      const act = btn.dataset.svcAct || btn.dataset.act;
-      const card = btn.closest(".svcCard, .cartoonPanelCard");
-      const id = String(
-        btn.dataset.id ||
-          btn.dataset.job ||
-          card?.dataset?.svcId ||
-          card?.dataset?.job ||
-          ""
-      ).trim();
-
-      if (!act || !id) return;
-
-      const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
-      const job = allItems.find((x) => idOf(x) === id);
-      if (!job) return;
-
-      if (act === "play") {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const video = card?.querySelector("video.svcVideo");
-        if (!video) return;
-
-        if (video.paused) video.play().catch(() => {});
-        else video.pause();
-
-        return;
-      }
-
-      const out = pickBestVideoOutput(job);
-      const url = String(out?.url || "").trim();
-      const directUrl = url.includes("#") ? url.split("#")[0] : url;
-
-      if (act === "open") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!directUrl) return;
-        window.open(directUrl, "_blank", "noopener");
-        return;
-      }
-
-      if (act === "download") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!directUrl) return;
-        download(directUrl);
-        return;
-      }
-
-      if (act === "share") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!directUrl) return;
-        share(directUrl);
-        return;
-      }
-
-      if (act === "delete") {
-        e.preventDefault();
-        e.stopPropagation();
-
-        try {
-          hiddenDeletedIds.add(id);
-          optimistic.delete(id);
-          currentDbItems = currentDbItems.filter((x) => idOf(x) !== id);
-
-          renderCurrent();
-
-          const ok = await controller.deleteJob(id);
-          if (!ok) {
-            hiddenDeletedIds.delete(id);
-            try {
-              await controller?.hydrate?.(true);
-            } catch {}
-            console.error("[CARTOON PANEL] delete failed");
-            return;
-          }
-
-          try {
-            await controller?.hydrate?.(true);
-          } catch {}
-        } catch (err) {
-          hiddenDeletedIds.delete(id);
-          try {
-            await controller?.hydrate?.(true);
-          } catch {}
-          console.error("[CARTOON PANEL] delete failed", err);
-        }
-
-        return;
-      }
-    });
-
-    const controller = window.DBJobs.create({
-      app: "cartoon",
-      debug: false,
-      pollIntervalMs: 4000,
-      hydrateEveryMs: 15000,
-
-      acceptJob: (job) => {
-        if (!job) return false;
-        const ja = getJobApp(job);
-        if (ja && !isCartoonApp(ja)) return false;
-        if (isCharacterMode(job)) return false;
-        return true;
-      },
-
-      acceptOutput: (o) => {
-        if (!o) return false;
-        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
-        if (t && t !== "video") return false;
-        const oa = getOutApp(o);
-        if (oa && !isCartoonApp(oa)) return false;
-        return true;
-      },
-
-      onChange: async (items) => {
-        if (destroyed) return;
-
-        currentDbItems = (items || [])
-          .filter(isJobCartoon)
-          .filter((j) => !isCharacterMode(j))
-          .filter((j) => {
-            const id = idOf(j);
-            return id && !hiddenDeletedIds.has(id);
-          });
+    async function handleDelete(id) {
+      try {
+        hiddenDeletedIds.add(id);
+        optimistic.delete(id);
+        currentDbItems = currentDbItems.filter((x) => idOf(x) !== id);
 
         renderCurrent();
-      },
-    });
 
-    const onJobCreated = (e) => {
+        const ok = await runtime.controller?.deleteJob?.(id);
+        if (!ok) {
+          hiddenDeletedIds.delete(id);
+          try {
+            await runtime.controller?.hydrate?.(true);
+          } catch {}
+          console.error("[CARTOON PANEL] delete failed");
+          return;
+        }
+
+        try {
+          await runtime.controller?.hydrate?.(true);
+        } catch {}
+      } catch (err) {
+        hiddenDeletedIds.delete(id);
+        try {
+          await runtime.controller?.hydrate?.(true);
+        } catch {}
+        console.error("[CARTOON PANEL] delete failed", err);
+      }
+    }
+
+    function bindClickOnce() {
+      if (runtime.clickBound) return;
+      runtime.clickBound = true;
+
+      host.addEventListener("click", async (e) => {
+        const btn = e.target.closest("[data-svc-act], [data-act]");
+        if (!btn) return;
+
+        const act = btn.dataset.svcAct || btn.dataset.act;
+        const card = btn.closest(".svcCard, .cartoonPanelCard");
+        const id = String(
+          btn.dataset.id ||
+            btn.dataset.job ||
+            card?.dataset?.svcId ||
+            card?.dataset?.job ||
+            ""
+        ).trim();
+
+        if (!act || !id) return;
+
+        const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
+        const job = allItems.find((x) => idOf(x) === id);
+        if (!job) return;
+
+        if (act === "play") {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const video = card?.querySelector("video.svcVideo");
+          if (!video) return;
+
+          if (video.paused) video.play().catch(() => {});
+          else video.pause();
+
+          return;
+        }
+
+        const out = pickBestVideoOutput(job);
+        const url = String(out?.url || "").trim();
+        const directUrl = url.includes("#") ? url.split("#")[0] : url;
+
+        if (act === "open") {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!directUrl) return;
+          window.open(directUrl, "_blank", "noopener");
+          return;
+        }
+
+        if (act === "download") {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!directUrl) return;
+          download(directUrl);
+          return;
+        }
+
+        if (act === "share") {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!directUrl) return;
+          share(directUrl);
+          return;
+        }
+
+        if (act === "delete") {
+          e.preventDefault();
+          e.stopPropagation();
+          await handleDelete(id);
+        }
+      });
+    }
+
+    function onJobCreated(e) {
       const d = e?.detail || {};
       if (!d.job_id) return;
       if (!isCartoonApp(d.app || d.meta?.app || "cartoon")) return;
@@ -668,9 +643,9 @@
       });
 
       renderCurrent();
-    };
+    }
 
-    const onJobReady = (e) => {
+    function onJobReady(e) {
       const d = e?.detail || {};
       const job_id = String(d?.job_id || "").trim();
       if (!job_id) return;
@@ -681,7 +656,6 @@
       ).trim();
 
       const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
-
       const existingDb = currentDbItems.find((j) => idOf(j) === job_id);
 
       if (existingDb) {
@@ -701,7 +675,6 @@
           ];
         }
 
-        // DB item geldiyse optimistic aynı key ile düşsün
         if (optimistic.has(job_id)) {
           optimistic.delete(job_id);
         }
@@ -732,31 +705,114 @@
       });
 
       renderCurrent();
-    };
+    }
 
-    controller.start();
-    window.addEventListener("aivo:cartoon:job_created", onJobCreated);
-    window.addEventListener("aivo:cartoon:job_ready", onJobReady);
-    window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
+    function startRuntime() {
+      if (destroyed) return;
+
+      if (runtime.active) {
+        try {
+          runtime.controller?.hydrate?.(true);
+        } catch {}
+        return;
+      }
+
+      runtime.active = true;
+
+      runtime.controller = window.DBJobs.create({
+        app: "cartoon",
+        debug: false,
+        pollIntervalMs: 4000,
+        hydrateEveryMs: 15000,
+
+        acceptJob: (job) => {
+          if (!job) return false;
+          const ja = getJobApp(job);
+          if (ja && !isCartoonApp(ja)) return false;
+          if (isCharacterMode(job)) return false;
+          return true;
+        },
+
+        acceptOutput: (o) => {
+          if (!o) return false;
+          const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+          if (t && t !== "video") return false;
+          const oa = getOutApp(o);
+          if (oa && !isCartoonApp(oa)) return false;
+          return true;
+        },
+
+        onChange: async (items) => {
+          if (destroyed || !runtime.active) return;
+
+          currentDbItems = (items || [])
+            .filter(isJobCartoon)
+            .filter((j) => !isCharacterMode(j))
+            .filter((j) => {
+              const id = idOf(j);
+              return id && !hiddenDeletedIds.has(id);
+            });
+
+          renderCurrent();
+        },
+      });
+
+      runtime.controller.start();
+
+      window.addEventListener("aivo:cartoon:job_created", onJobCreated);
+      window.addEventListener("aivo:cartoon:job_ready", onJobReady);
+      window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
+
+      runtime.offJobCreated = () => {
+        window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
+      };
+      runtime.offJobReady = () => {
+        window.removeEventListener("aivo:cartoon:job_ready", onJobReady);
+      };
+      runtime.offStoryReady = () => {
+        window.removeEventListener("aivo:cartoon:story_scene_ready", onJobReady);
+      };
+
+      try {
+        runtime.controller?.hydrate?.(true);
+      } catch {}
+
+      renderCurrent();
+    }
+
+    function stopRuntime() {
+      runtime.active = false;
+
+      try { runtime.offJobCreated && runtime.offJobCreated(); } catch {}
+      try { runtime.offJobReady && runtime.offJobReady(); } catch {}
+      try { runtime.offStoryReady && runtime.offStoryReady(); } catch {}
+
+      runtime.offJobCreated = null;
+      runtime.offJobReady = null;
+      runtime.offStoryReady = null;
+
+      try {
+        runtime.controller?.destroy?.();
+      } catch {}
+
+      runtime.controller = null;
+    }
+
+    bindClickOnce();
+    renderCurrent();
 
     return {
+      start() {
+        startRuntime();
+      },
+
+      stop() {
+        stopRuntime();
+      },
+
       destroy() {
         destroyed = true;
-        try {
-          window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
-        } catch {}
-        try {
-          window.removeEventListener("aivo:cartoon:job_ready", onJobReady);
-        } catch {}
-        try {
-          window.removeEventListener(
-            "aivo:cartoon:story_scene_ready",
-            onJobReady
-          );
-        } catch {}
-        try {
-          controller?.destroy?.();
-        } catch {}
+        stopRuntime();
         try {
           host.innerHTML = "";
         } catch {}
@@ -778,11 +834,30 @@
 
         mount(host) {
           const api = createCartoonPanel(host);
+          host.__cartoonPanelApi = api;
+
           return () => {
             try {
-              api?.destroy?.();
+              host.__cartoonPanelApi?.destroy?.();
+            } catch {}
+            try {
+              host.__cartoonPanelApi = null;
             } catch {}
           };
+        },
+
+        onShow(_payload, ctx) {
+          const host = ctx?.wrapEl;
+          try {
+            host?.__cartoonPanelApi?.start?.();
+          } catch {}
+        },
+
+        onHide(ctx) {
+          const host = ctx?.wrapEl;
+          try {
+            host?.__cartoonPanelApi?.stop?.();
+          } catch {}
         },
       });
     } else {
