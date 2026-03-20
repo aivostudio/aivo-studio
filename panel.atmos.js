@@ -686,65 +686,78 @@ Promise.resolve()
     });
 
     // ✅ Optimistic job_created listener (Video hissi)
-    const onJobCreated = (e) => {
-      const d = e?.detail || {};
-      if (!d.job_id) return;
-      if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
+  const onJobCreated = (e) => {
+  const d = e?.detail || {};
+  if (!d.job_id) return;
+  if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
 
-      const job_id = String(d.job_id).trim();
-      if (!job_id) return;
+  const job_id = String(d.job_id).trim();
+  if (!job_id) return;
 
-      // Dedupe: zaten DB state’te varsa ekleme
-      const existsDb = (controller.state.items || []).some(j => String(j?.job_id) === job_id);
-      if (existsDb) return;
+  // Dedupe: zaten DB state’te varsa ekleme
+  const existsDb = (controller.state.items || []).some(j => String(j?.job_id) === job_id);
+  if (existsDb) return;
 
-      // Dedupe: optimistic varsa update et
-      if (optimistic.has(job_id)) return;
+  // Dedupe: optimistic varsa ekleme
+  if (optimistic.has(job_id)) return;
 
-      const meta = d.meta || {};
-      const createdAt = d.createdAt || Date.now();
+  const meta = d.meta || {};
+  const createdAt = d.createdAt || Date.now();
 
-      // job-like object (DB’ye benzeyen shape)
-      optimistic.set(job_id, {
-        job_id,
-        app: "atmo",
-        provider: meta.provider || "Atmos",
-        createdAt,
-        created_at: createdAt,
-        db_status: "processing",
-        status: "processing",
-        state: "PROCESSING",
-        meta: {
-          ...(meta || {}),
-          app: "atmo",
-          duration: meta.duration || "",
-          prompt: meta.prompt || "",
-        },
-        outputs: []
-      });
+  const optimisticJob = {
+    job_id,
+    app: "atmo",
+    provider: meta.provider || "Atmos",
+    createdAt,
+    created_at: createdAt,
+    updated_at: createdAt,
+    db_status: "processing",
+    status: "processing",
+    state: "PROCESSING",
+    meta: {
+      ...(meta || {}),
+      app: "atmo",
+      duration: meta.duration || "",
+      prompt: meta.prompt || "",
+      aspect_ratio: meta.aspect_ratio || meta.ratio || ""
+    },
+    outputs: []
+  };
 
-      // NOT: overlay burada YOK. READY yakalama onChange içinde.
-      try {
-        const safeDb = (controller.state.items || []).filter(isJobAtmo);
-        const byId = new Map();
-        for (const j of safeDb) {
-          const id = String(j?.job_id || "").trim();
-          if (!id) continue;
-          byId.set(id, j);
-        }
-        if (!byId.has(job_id)) byId.set(job_id, optimistic.get(job_id));
+  optimistic.set(job_id, optimisticJob);
 
-        const merged = Array.from(byId.values()).sort((a, b) => {
-          const ta = new Date(a?.created_at || a?.createdAt || Date.now()).getTime();
-          const tb = new Date(b?.created_at || b?.createdAt || Date.now()).getTime();
-          return tb - ta;
-        });
+  // kart hemen gelsin
+  try {
+    const safeDb = (controller.state.items || []).filter(isJobAtmo);
+    const byId = new Map();
 
-              // kart hemen gelsin
-        render(merged);
-        setStatus("İşleniyor…");
-      } catch {}
-    };
+    for (const j of safeDb) {
+      const id = String(j?.job_id || "").trim();
+      if (!id) continue;
+      byId.set(id, j);
+    }
+
+    for (const [id, j] of optimistic.entries()) {
+      if (!byId.has(id)) byId.set(id, j);
+    }
+
+    const merged = Array.from(byId.values()).sort((a, b) => {
+      const ta = new Date(a?.updated_at || a?.created_at || a?.createdAt || Date.now()).getTime();
+      const tb = new Date(b?.updated_at || b?.created_at || b?.createdAt || Date.now()).getTime();
+      return tb - ta;
+    });
+
+    render(merged);
+    setStatus("İşleniyor…");
+  } catch {}
+
+  // DB row geldiğinde gerçek kayıt optimistic kartı devralsın
+  setTimeout(() => {
+    try {
+      controller?.hydrate?.();
+    } catch {}
+  }, 1200);
+};
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
 
