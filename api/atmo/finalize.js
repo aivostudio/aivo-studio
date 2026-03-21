@@ -417,7 +417,7 @@ module.exports = async function handler(req, res) {
 
     const sql = neon(conn);
 
-    const rows = await sql`
+       const rows = await sql`
       select *
       from jobs
       where id = ${job_id}::uuid
@@ -427,7 +427,28 @@ module.exports = async function handler(req, res) {
     const job = rows[0] || null;
 
     if (!job) {
-      return res.status(404).json({ ok: false, error: "job_not_found" });
+      const recentAtmoRows = await sql`
+        select id, app, status, created_at
+        from jobs
+        where lower(app) = 'atmo'
+        order by created_at desc
+        limit 5
+      `;
+
+      return res.status(404).json({
+        ok: false,
+        error: "job_not_found",
+        debug: {
+          requested_job_id: job_id,
+          found_rows: rows.length,
+          recent_atmo_job_ids: (recentAtmoRows || []).map((x) => ({
+            id: String(x.id || ""),
+            app: String(x.app || ""),
+            status: String(x.status || ""),
+            created_at: x.created_at || null,
+          })),
+        },
+      });
     }
 
     if (String(job.app || "").toLowerCase() !== "atmo") {
