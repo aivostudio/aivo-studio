@@ -601,7 +601,19 @@ ensureFullscreenBinding();
     const videoUrl = String(opts?.videoUrl || "").trim();
     const posterUrl = String(opts?.posterUrl || "").trim();
     const ratio = String(opts?.ratio || "").trim();
-      const ready = !!opts?.ready;
+   const ready = !!opts?.ready;
+const requestedImmediate = !!opts?.immediate;
+
+window.__AIVO_SVC_BOOT_COUNT__ = window.__AIVO_SVC_BOOT_COUNT__ || 0;
+
+let autoImmediate = false;
+if (ready && videoUrl && window.__AIVO_SVC_BOOT_COUNT__ < 2) {
+  window.__AIVO_SVC_BOOT_COUNT__ += 1;
+  autoImmediate = true;
+}
+
+const immediate = requestedImmediate || autoImmediate;
+const shouldAttachVideoNow = ready && videoUrl && immediate;
     const portrait = false;
 
     const canDownload = !!opts?.canDownload;
@@ -619,7 +631,7 @@ ensureFullscreenBinding();
 
          
           ${
-            ready && videoUrl
+          shouldAttachVideoNow
               ? `
                 <video
                   class="svcVideo"
@@ -657,15 +669,19 @@ ensureFullscreenBinding();
     </button>
   </div>
 </div>
-              `
-              : `
-                <div class="svcSkel"></div>
-                <div class="svcFallback">
-                  <div class="svcFallbackIcon">▶</div>
-                </div>
-              `
-          }
-        </div>
+                           : `
+                  ${
+                    posterUrl
+                      ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}" loading="lazy" decoding="async">`
+                      : `<div class="svcSkel"></div>
+                         <div class="svcFallback">
+                           <div class="svcFallbackIcon">▶</div>
+                         </div>`
+                  }
+                  <div class="svcOverlay">
+                    <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
+                  </div>
+                `
 
                       <div class="svcBody">
           <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
