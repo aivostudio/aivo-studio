@@ -149,6 +149,34 @@ async function uploadFileToR2({ filePath, key, contentType }) {
   return `${String(publicBase).replace(/\/$/, "")}/${key}`;
 }
 
+async function verifyPublicUrl(url, label) {
+  if (!url) throw new Error(`public_url_missing:${label}`);
+
+  const methods = ["HEAD", "GET"];
+
+  for (const method of methods) {
+    try {
+      const r = await fetch(url, {
+        method,
+        cache: "no-store",
+        redirect: "follow",
+      });
+
+      if (r.ok) {
+        return {
+          ok: true,
+          status: r.status,
+          method,
+          contentType: r.headers.get("content-type") || "",
+          contentLength: r.headers.get("content-length") || "",
+        };
+      }
+    } catch {}
+  }
+
+  throw new Error(`public_url_unreachable:${label}:${url}`);
+}
+
 async function downloadToFile(url, outPath) {
   const r = await fetch(url);
   if (!r.ok) {
@@ -521,6 +549,8 @@ module.exports = async function handler(req, res) {
         key: muxKey,
         contentType: "video/mp4",
       });
+
+      await verifyPublicUrl(mux_url, "mux");
     }
 
     const final_url = await uploadFileToR2({
@@ -529,11 +559,15 @@ module.exports = async function handler(req, res) {
       contentType: "video/mp4",
     });
 
+    await verifyPublicUrl(final_url, "final");
+
     const preview_url = await uploadFileToR2({
       filePath: previewPath,
       key: previewKey,
       contentType: "video/mp4",
     });
+
+    await verifyPublicUrl(preview_url, "preview");
 
     let nextOutputs = upsertFinalizedAndPreviewOutputs(
       outputs,
