@@ -366,20 +366,6 @@ const outUrl = previewUrlResolved || finalUrl;
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
           const portrait = isPortrait(job, dummyOut);
 
-        const finalUrl = safeStr(bestVideoFromJob(job));
-
-const previewFromOutputs = safeStr(
-  (Array.isArray(job?.outputs) ? job.outputs : []).find(
-    (o) =>
-      String(o?.type || "").toLowerCase() === "video" &&
-      String(o?.meta?.variant || "").toLowerCase().trim() === "preview"
-  )?.url || ""
-);
-
-const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
-const previewUrlResolved = previewMetaUrl || previewFromOutputs || "";
-const outUrl = previewUrlResolved || finalUrl;
-const hasUrl = !!outUrl;
 
 const thumbInner = hasUrl
   ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(outUrl)}"></video>`
@@ -405,7 +391,7 @@ const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
         return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
   ? (
-     '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">'
+      '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">' +
         window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
           id: safeStr(job.job_id || ""),
           title: promptLine || "—",
