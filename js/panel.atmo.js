@@ -388,29 +388,29 @@ const outUrl = previewUrlResolved || finalUrl;
 
           const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
-          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? (
-               '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">'
-                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                    id: safeStr(job.job_id || ""),
-                    title: promptLine || "—",
-                    sub: metaLine,
-                    badgeText: badge.text,
-                    badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-                    videoUrl: previewUrl,
-                    posterUrl: "",
-                    ratio: portrait ? "9:16" : "16:9",
-                    ready: isPlayableNow,
-                    canDownload: isPlayableNow,
-                    canShare: isPlayableNow,
-                    canDelete: true
-                  }) +
-                '</div>'
-              )
-            : "";
-        })
-        .join("");
-    }
+        return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+  ? (
+      '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">' +
+        window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+          id: safeStr(job.job_id || ""),
+          title: promptLine || "—",
+          sub: metaLine,
+          badgeText: badge.text,
+          badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+          videoUrl: previewUrl,
+          posterUrl: "",
+          ratio: portrait ? "9:16" : "16:9",
+          ready: isPlayableNow,
+          canDownload: isPlayableNow,
+          canShare: isPlayableNow,
+          canDelete: true
+        }) +
+      '</div>'
+    )
+  : "";
+})
+.join("");
+}
 
      async function handleAction(cardEl, act) {
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
