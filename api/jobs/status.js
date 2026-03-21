@@ -1379,6 +1379,7 @@ try {
 
     const outImage =
       outputs.find((x) => normType(x?.type) === "image") || null;
+    
     const responseMeta = {
   ...(job?.meta || {}),
   final_video_url:
