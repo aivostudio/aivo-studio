@@ -1426,6 +1426,7 @@ try {
 
   logo_overlay_done: Boolean(job?.meta?.logo_overlay_done),
   logo_overlay_url: job?.meta?.logo_overlay_url || null,
+   logo_overlay_source_url: job?.meta?.logo_overlay_source_url || null,
 
   outputs_variants: Array.isArray(outputs)
     ? outputs.map((o) => ({
