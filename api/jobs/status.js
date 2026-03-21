@@ -1379,6 +1379,25 @@ try {
 
     const outImage =
       outputs.find((x) => normType(x?.type) === "image") || null;
+    const responseMeta = {
+  ...(job?.meta || {}),
+  final_video_url:
+    job?.meta?.final_video_url ||
+    outVideoUrl ||
+    null,
+  preview_video_url:
+    job?.meta?.preview_video_url ||
+    pickVideoByVariant(outputs, "preview") ||
+    null,
+  muxed_url:
+    job?.meta?.muxed_url ||
+    pickVideoByVariant(outputs, "mux") ||
+    null,
+  logo_overlay_url:
+    job?.meta?.logo_overlay_url ||
+    pickVideoByVariant(outputs, "logo_overlay") ||
+    null,
+};
 
     const failureReason =
       job?.meta?.runway?.failure ||
@@ -1406,6 +1425,7 @@ try {
       image: outImage ? { url: pickUrl(outImage) } : null,
       outputs: outputs || [],
       db_status: job.status,
+      meta: responseMeta,
      debug: {
   provider,
   appKey,
