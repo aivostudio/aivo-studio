@@ -403,7 +403,7 @@ const previewUrl = playbackUrl
 
 const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
-     return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
   ? (
       '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">' +
         window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
