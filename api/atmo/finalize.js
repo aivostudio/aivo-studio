@@ -280,11 +280,14 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const input_url =
-      String(meta?.muxed_url || "").trim() ||
-      pickUrl(muxOut) ||
-      pickUrl(providerOut) ||
-      "";
+    const logoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
+
+const input_url =
+  String(meta?.muxed_url || "").trim() ||
+  pickUrl(muxOut) ||
+  logoOverlayUrl ||
+  pickUrl(providerOut) ||
+  "";
 
     if (!input_url) {
       return res.status(400).json({
