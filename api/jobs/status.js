@@ -700,13 +700,12 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
             let muxedUrl = job?.meta?.muxed_url || null;
 
             // Eğer zaten muxed_url varsa onu kullan
-          if (
+         if (
   !muxedUrl &&
   muxMp4WithAudio &&
   providerVideoUrl &&
   (audioMode === "embed" || audioMode === "upload") &&
-  audioUrl &&
-  !silentCopy
+  audioUrl
 ) {
               let tmpDir = null;
               let muxRes = null;
