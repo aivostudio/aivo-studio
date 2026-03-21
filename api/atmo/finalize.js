@@ -212,7 +212,46 @@ async function runFfmpegPreview(inputPath, outputPath) {
     });
   });
 }
+async function runFfmpegMuxVideoAndAudio({
+  videoPath,
+  audioPath,
+  outputPath,
+}) {
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
 
+      "-i", videoPath,
+      "-i", audioPath,
+
+      "-map", "0:v:0",
+      "-map", "1:a:0",
+
+      "-c:v", "copy",
+      "-c:a", "aac",
+      "-b:a", "192k",
+
+      "-shortest",
+      "-movflags", "+faststart",
+
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`ffmpeg_mux_failed:${code}:${stderr.slice(-1000)}`));
+    });
+  });
+}
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
