@@ -2,8 +2,8 @@
 // CommonJS
 // Atmo finalize:
 // input: provider / mux / final url
-// işlem: ffmpeg remux + faststart
-// output: R2 final mp4 + DB meta.final_video_url
+// işlem: ffmpeg remux + faststart + preview encode
+// output: R2 final mp4 + R2 preview mp4 + DB meta/output patch
 
 const { neon } = require("@neondatabase/serverless");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
@@ -32,12 +32,12 @@ function isUuidLike(id) {
 function pickUrl(o) {
   return String(
     o?.archive_url ||
-    o?.url ||
-    o?.video_url ||
-    o?.meta?.archive_url ||
-    o?.meta?.url ||
-    o?.meta?.video_url ||
-    ""
+      o?.url ||
+      o?.video_url ||
+      o?.meta?.archive_url ||
+      o?.meta?.url ||
+      o?.meta?.video_url ||
+      ""
   ).trim();
 }
 
@@ -63,20 +63,20 @@ function removeFinalFlags(outputs) {
   });
 }
 
-function upsertFinalizedOutput(outputs, finalUrl) {
-  let arr = removeFinalFlags(outputs);
+function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
+  const arr = Array.isArray(outputs) ? outputs.slice() : [];
 
   const idx = arr.findIndex(
-    (o) => isVideo(o) && normVariant(o) === "finalized"
+    (o) => isVideo(o) && normVariant(o) === String(variant || "").toLowerCase()
   );
 
   const item = {
     type: "video",
-    url: finalUrl,
+    url,
     meta: {
       app: "atmo",
-      variant: "finalized",
-      is_final: true,
+      variant,
+      ...(extraMeta || {}),
     },
   };
 
@@ -90,6 +90,22 @@ function upsertFinalizedOutput(outputs, finalUrl) {
   }
 
   arr.unshift(item);
+  return arr;
+}
+
+function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
+  let arr = removeFinalFlags(outputs);
+
+  arr = upsertVideoOutput(arr, "preview", previewUrl, {
+    is_preview: true,
+    is_final: false,
+  });
+
+  arr = upsertVideoOutput(arr, "finalized", finalUrl, {
+    is_final: true,
+    is_preview: false,
+  });
+
   return arr;
 }
 
@@ -150,7 +166,7 @@ async function runFfmpegFaststart(inputPath, outputPath) {
       outputPath,
     ];
 
-   const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
     let stderr = "";
     p.stderr.on("data", (d) => {
@@ -162,6 +178,37 @@ async function runFfmpegFaststart(inputPath, outputPath) {
     p.on("close", (code) => {
       if (code === 0) return resolve();
       reject(new Error(`ffmpeg_failed:${code}:${stderr.slice(-1000)}`));
+    });
+  });
+}
+
+async function runFfmpegPreview(inputPath, outputPath) {
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-i", inputPath,
+      "-vf", "scale='min(540,iw)':-2",
+      "-c:v", "libx264",
+      "-preset", "veryfast",
+      "-crf", "32",
+      "-movflags", "+faststart",
+      "-pix_fmt", "yuv420p",
+      "-an",
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`ffmpeg_preview_failed:${code}:${stderr.slice(-1000)}`));
     });
   });
 }
@@ -212,28 +259,32 @@ module.exports = async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
 
- const muxOut = outputs.find((o) => isVideo(o) && normVariant(o) === "mux");
-const providerOut = outputs.find((o) => isVideo(o) && normVariant(o) === "provider");
-const finalizedOut = outputs.find((o) => isVideo(o) && normVariant(o) === "finalized");
+    const muxOut = outputs.find((o) => isVideo(o) && normVariant(o) === "mux");
+    const providerOut = outputs.find((o) => isVideo(o) && normVariant(o) === "provider");
+    const finalizedOut = outputs.find((o) => isVideo(o) && normVariant(o) === "finalized");
+    const previewOut = outputs.find((o) => isVideo(o) && normVariant(o) === "preview");
 
-const existingFinalized = pickUrl(finalizedOut);
+    const existingFinalized = pickUrl(finalizedOut);
+    const existingPreview =
+      String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
-if (existingFinalized && !body.force) {
-  return res.status(200).json({
-    ok: true,
-    job_id,
-    input_url: null,
-    final_url: existingFinalized,
-    skipped: true,
-    reason: "already_finalized",
-  });
-}
+    if (existingFinalized && existingPreview && !body.force) {
+      return res.status(200).json({
+        ok: true,
+        job_id,
+        input_url: null,
+        final_url: existingFinalized,
+        preview_url: existingPreview,
+        skipped: true,
+        reason: "already_finalized",
+      });
+    }
 
-const input_url =
-  String(meta?.muxed_url || "").trim() ||
-  pickUrl(muxOut) ||
-  pickUrl(providerOut) ||
-  "";
+    const input_url =
+      String(meta?.muxed_url || "").trim() ||
+      pickUrl(muxOut) ||
+      pickUrl(providerOut) ||
+      "";
 
     if (!input_url) {
       return res.status(400).json({
@@ -244,14 +295,18 @@ const input_url =
     }
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-atmo-finalize-"));
+
     const inputPath = path.join(tmpDir, "input.mp4");
     const outputPath = path.join(tmpDir, "finalized.mp4");
+    const previewPath = path.join(tmpDir, "preview.mp4");
 
     await downloadToFile(input_url, inputPath);
     await runFfmpegFaststart(inputPath, outputPath);
+    await runFfmpegPreview(outputPath, previewPath);
 
     const outputId = `finalized-${Date.now()}`;
     const key = `outputs/atmo/${job_id}/${outputId}.mp4`;
+    const previewKey = `outputs/atmo/${job_id}/${outputId}-preview.mp4`;
 
     const final_url = await uploadFileToR2({
       filePath: outputPath,
@@ -259,13 +314,26 @@ const input_url =
       contentType: "video/mp4",
     });
 
-    const nextOutputs = upsertFinalizedOutput(outputs, final_url);
+    const preview_url = await uploadFileToR2({
+      filePath: previewPath,
+      key: previewKey,
+      contentType: "video/mp4",
+    });
+
+    const nextOutputs = upsertFinalizedAndPreviewOutputs(
+      outputs,
+      final_url,
+      preview_url
+    );
+
     const patchMeta = {
       final_video_url: final_url,
+      preview_video_url: preview_url,
       final_variant: "finalized",
       finalized_at: new Date().toISOString(),
       finalized_from_url: input_url,
       finalized_key: key,
+      preview_key: previewKey,
     };
 
     await sql`
@@ -282,6 +350,7 @@ const input_url =
       job_id,
       input_url,
       final_url,
+      preview_url,
       step: "finalized",
     });
   } catch (e) {
