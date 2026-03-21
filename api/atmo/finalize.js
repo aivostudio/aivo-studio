@@ -441,30 +441,22 @@ module.exports = async function handler(req, res) {
       String(meta?.music_url || "").trim();
 
     const muxUrl = String(meta?.muxed_url || "").trim() || pickUrl(muxOut);
-
     const logoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
     const providerUrl = pickUrl(providerOut);
 
     const hasAudio = !!audioUrl;
     const hasMux = !!muxUrl;
 
-    if (hasAudio && !hasMux) {
-      return res.status(409).json({
-        ok: false,
-        error: "audio_mux_required_before_finalize",
-        job_id,
-        has_audio: true,
-        has_mux: false,
-        audio_url: audioUrl,
-        mux_url: null,
-        logo_overlay_url: logoOverlayUrl || null,
-        provider_url: providerUrl || null,
-      });
-    }
+    // KURAL 1:
+    // Preview daima gercek final videodan tureyecek.
+    // Final secim onceligi:
+    // 1) logo overlay final
+    // 2) muxed final
+    // 3) provider video
+    const selectedFinalSourceUrl =
+      logoOverlayUrl || muxUrl || providerUrl || "";
 
-    const input_url = muxUrl || logoOverlayUrl || providerUrl || "";
-
-    if (!input_url) {
+    if (!selectedFinalSourceUrl) {
       return res.status(400).json({
         ok: false,
         error: "finalize_input_missing",
@@ -482,11 +474,15 @@ module.exports = async function handler(req, res) {
     const outputPath = path.join(tmpDir, "finalized.mp4");
     const previewPath = path.join(tmpDir, "preview.mp4");
 
-    await downloadToFile(input_url, inputPath);
+    await downloadToFile(selectedFinalSourceUrl, inputPath);
 
     let effectiveInputPath = inputPath;
 
-    if (hasAudio) {
+    // Sadece gercek final kaynagi henuz mux edilmemisse inline mux yap.
+    // logo overlay veya mux varsa artik onlar final kaynaktir; tekrar mux yapma.
+    const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
+
+    if (needsInlineMux) {
       await downloadToFile(audioUrl, audioPath);
       await runFfmpegMuxVideoAndAudio({
         videoPath: inputPath,
@@ -495,6 +491,8 @@ module.exports = async function handler(req, res) {
       });
       effectiveInputPath = muxedInputPath;
     }
+
+    const input_url = selectedFinalSourceUrl;
 
     await runFfmpegFaststart(effectiveInputPath, outputPath);
 
@@ -517,7 +515,7 @@ module.exports = async function handler(req, res) {
 
     let mux_url = String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
 
-    if (hasAudio) {
+    if (needsInlineMux) {
       mux_url = await uploadFileToR2({
         filePath: muxedInputPath,
         key: muxKey,
@@ -543,7 +541,7 @@ module.exports = async function handler(req, res) {
       preview_url
     );
 
-    if (hasAudio && mux_url) {
+    if (needsInlineMux && mux_url) {
       nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
         is_mux: true,
         is_final: false,
@@ -568,7 +566,8 @@ module.exports = async function handler(req, res) {
       preview_source_final_bytes: finalStat?.size || 0,
       preview_source_duration_sec: durationSec || 0,
       preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
-      ...(hasAudio && mux_url
+      preview_source_url: selectedFinalSourceUrl,
+      ...(needsInlineMux && mux_url
         ? {
             muxed_url: mux_url,
             mux_key: muxKey,
@@ -593,6 +592,8 @@ module.exports = async function handler(req, res) {
       preview_url,
       step: "finalized",
       preview_cfg: previewBitrateCfg,
+      preview_source_url: selectedFinalSourceUrl,
+      needs_inline_mux: needsInlineMux,
     });
   } catch (e) {
     return res.status(500).json({
