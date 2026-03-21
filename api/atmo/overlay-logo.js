@@ -33,6 +33,38 @@ function run(cmd, args) {
   });
 }
 
+async function probeVideoBitrate(inputPath) {
+  return await new Promise((resolve) => {
+    const p = spawn(
+      "ffprobe",
+      [
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=bit_rate",
+        "-of",
+        "default=noprint_wrappers=1:nokey=1",
+        inputPath,
+      ],
+      { stdio: ["ignore", "pipe", "ignore"] }
+    );
+
+    let out = "";
+    p.stdout.on("data", (d) => {
+      out += d.toString();
+    });
+
+    p.on("close", () => {
+      const n = Number(String(out || "").trim());
+      resolve(Number.isFinite(n) && n > 0 ? n : null);
+    });
+
+    p.on("error", () => resolve(null));
+  });
+}
+
 async function download(url, dest) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`download_failed:${res.status}`);
@@ -41,6 +73,8 @@ async function download(url, dest) {
 }
 
 export default async function handler(req, res) {
+  const cleanup = [];
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -61,11 +95,13 @@ export default async function handler(req, res) {
     }
 
     const id = job_id || crypto.randomUUID();
-    const tmp = os.tmpdir();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-atmo-overlay-"));
 
-    const inputVideo = path.join(tmp, `in-${id}.mp4`);
-    const inputLogo = path.join(tmp, `logo-${id}.png`);
-    const outputVideo = path.join(tmp, `out-${id}.mp4`);
+    const inputVideo = path.join(tmpDir, `in-${id}.mp4`);
+    const inputLogo = path.join(tmpDir, `logo-${id}.png`);
+    const outputVideo = path.join(tmpDir, `out-${id}.mp4`);
+
+    cleanup.push(inputVideo, inputLogo, outputVideo, tmpDir);
 
     await download(video_url, inputVideo);
     await download(logo_url, inputLogo);
@@ -74,14 +110,18 @@ export default async function handler(req, res) {
     const sizeRatio = SIZE[logo_size] || SIZE.sm;
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
 
-    // ✅ overlay çıktısını [v] olarak etiketliyoruz ve onu map ediyoruz
-    const filter = `
-      [1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg];
-      [0:v][lg]overlay=${pos}:format=auto[v]
-    `.replace(/\s+/g, "");
+    const sourceBitrate = await probeVideoBitrate(inputVideo);
+    const targetBitrate = sourceBitrate
+      ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
+      : 8000000;
+    const targetBitrateStr = String(targetBitrate);
+    const targetBufsizeStr = String(targetBitrate * 2);
 
-    // ✅ KRİTİK: audio'yu yeniden encode ETME → olduğu gibi taşı (copy)
-    // ✅ audio yoksa patlamasın → 0:a:0?
+    const filter = [
+      `[1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
+      `[0:v][lg]overlay=${pos}:format=auto[v]`,
+    ].join(";");
+
     await run(ffmpegPath, [
       "-y",
       "-i",
@@ -97,9 +137,13 @@ export default async function handler(req, res) {
       "-c:v",
       "libx264",
       "-preset",
-      "veryfast",
-      "-crf",
-      "20",
+      "medium",
+      "-b:v",
+      targetBitrateStr,
+      "-maxrate",
+      targetBitrateStr,
+      "-bufsize",
+      targetBufsizeStr,
       "-pix_fmt",
       "yuv420p",
       "-c:a",
@@ -111,7 +155,6 @@ export default async function handler(req, res) {
     ]);
 
     const buffer = fs.readFileSync(outputVideo);
-
     const key = `outputs/${app}/${id}/logo-overlay-${Date.now()}.mp4`;
 
     const publicUrl = await putObject({
@@ -120,16 +163,12 @@ export default async function handler(req, res) {
       contentType: "video/mp4",
     });
 
-    [inputVideo, inputLogo, outputVideo].forEach((f) => {
-      try {
-        fs.unlinkSync(f);
-      } catch {}
-    });
-
     return res.json({
       ok: true,
       url: publicUrl,
       job_id: id,
+      video_bitrate: sourceBitrate,
+      target_bitrate: targetBitrate,
     });
   } catch (e) {
     return res.status(500).json({
@@ -137,5 +176,16 @@ export default async function handler(req, res) {
       error: "overlay_failed",
       message: e?.message || String(e),
     });
+  } finally {
+    for (const f of cleanup.reverse()) {
+      try {
+        if (!f) continue;
+        if (fs.existsSync(f) && fs.statSync(f).isDirectory()) {
+          fs.rmSync(f, { recursive: true, force: true });
+        } else if (fs.existsSync(f)) {
+          fs.unlinkSync(f);
+        }
+      } catch {}
+    }
   }
 }
