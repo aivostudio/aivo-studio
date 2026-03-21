@@ -1191,26 +1191,38 @@ try {
 
       const baseVideoUrl = muxedUrlNow || finalUrlNow || providerUrlNow || firstVideoUrl || null;
 
-      const alreadyHasOverlay =
-        Array.isArray(outputs) &&
-        outputs.some(
-          (o) =>
-            normType(o?.type) === "video" &&
-            (normVariant(o) === "logo_overlay" ||
-              String(o?.url || "").includes("logo-overlay-"))
-        );
+     const alreadyHasOverlay =
+  Array.isArray(outputs) &&
+  outputs.some(
+    (o) =>
+      normType(o?.type) === "video" &&
+      (normVariant(o) === "logo_overlay" ||
+        String(o?.url || "").includes("logo-overlay-"))
+  );
 
-      // meta guard (DB'de zaten işaretlendiyse hiç deneme)
-      const alreadyDoneFlag = Boolean(job?.meta?.logo_overlay_done);
+// meta guard
+const alreadyDoneFlag = Boolean(job?.meta?.logo_overlay_done);
 
-      if (
-        isAtmo &&
-        isDone &&
-        logoUrl &&
-        baseVideoUrl &&
-        !alreadyHasOverlay &&
-        !alreadyDoneFlag
-      ) {
+// overlay daha önce hangi kaynak videonun üstüne basıldı?
+const currentOverlaySourceUrl =
+  String(job?.meta?.logo_overlay_source_url || "").trim() || null;
+
+// mux geldiyse ve mevcut overlay eski kaynağa aitse yeniden overlay bas
+const needsOverlayRefreshFromMux =
+  Boolean(muxedUrlNow) &&
+  Boolean(logoUrl) &&
+  currentOverlaySourceUrl !== muxedUrlNow;
+
+if (
+  isAtmo &&
+  isDone &&
+  logoUrl &&
+  baseVideoUrl &&
+  (
+    (!alreadyHasOverlay && !alreadyDoneFlag) ||
+    needsOverlayRefreshFromMux
+  )
+) {
         const baseUrl = getBaseUrl(req);
 
         const resp = await fetch(`${baseUrl}/api/atmo/overlay-logo`, {
@@ -1251,12 +1263,13 @@ try {
             source_variant: "logo_overlay",
           });
 
-          const patchMeta = {
-            logo_overlay_done: true,
-            logo_overlay_url: data.url,
-            final_video_url: data.url,
-            final_variant: "logo_overlay",
-          };
+         const patchMeta = {
+  logo_overlay_done: true,
+  logo_overlay_url: data.url,
+  logo_overlay_source_url: baseVideoUrl,
+  final_video_url: data.url,
+  final_variant: "logo_overlay",
+};
 
           await sql`
             update jobs
