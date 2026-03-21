@@ -264,38 +264,65 @@ module.exports = async function handler(req, res) {
     const finalizedOut = outputs.find((o) => isVideo(o) && normVariant(o) === "finalized");
     const previewOut = outputs.find((o) => isVideo(o) && normVariant(o) === "preview");
 
-    const existingFinalized = pickUrl(finalizedOut);
-    const existingPreview =
-      String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
+const existingFinalized = pickUrl(finalizedOut);
+const existingPreview =
+  String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
-    if (existingFinalized && existingPreview && !body.force) {
-      return res.status(200).json({
-        ok: true,
-        job_id,
-        input_url: null,
-        final_url: existingFinalized,
-        preview_url: existingPreview,
-        skipped: true,
-        reason: "already_finalized",
-      });
-    }
+if (existingFinalized && existingPreview && !body.force) {
+  return res.status(200).json({
+    ok: true,
+    job_id,
+    input_url: null,
+    final_url: existingFinalized,
+    preview_url: existingPreview,
+    skipped: true,
+    reason: "already_finalized",
+  });
+}
 
-    const logoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
+const audioUrl =
+  String(meta?.audio_url || "").trim() ||
+  String(meta?.music_url || "").trim();
+
+const muxUrl =
+  String(meta?.muxed_url || "").trim() ||
+  pickUrl(muxOut);
+
+const logoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
+const providerUrl = pickUrl(providerOut);
+
+const hasAudio = !!audioUrl;
+const hasMux = !!muxUrl;
+
+if (hasAudio && !hasMux) {
+  return res.status(409).json({
+    ok: false,
+    error: "audio_mux_required_before_finalize",
+    job_id,
+    has_audio: true,
+    has_mux: false,
+    audio_url: audioUrl,
+    mux_url: null,
+    logo_overlay_url: logoOverlayUrl || null,
+    provider_url: providerUrl || null,
+  });
+}
 
 const input_url =
-  String(meta?.muxed_url || "").trim() ||
-  pickUrl(muxOut) ||
+  muxUrl ||
   logoOverlayUrl ||
-  pickUrl(providerOut) ||
+  providerUrl ||
   "";
 
-    if (!input_url) {
-      return res.status(400).json({
-        ok: false,
-        error: "finalize_input_missing",
-        job_id,
-      });
-    }
+if (!input_url) {
+  return res.status(400).json({
+    ok: false,
+    error: "finalize_input_missing",
+    job_id,
+    has_audio: hasAudio,
+    has_mux: hasMux,
+  });
+}
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-atmo-finalize-"));
 
