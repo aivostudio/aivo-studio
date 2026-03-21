@@ -340,14 +340,17 @@ const probingUrls = new Set();
         .map((job) => {
           const badge = badgeFor(job);
 
-          // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
-      const outUrl = bestVideoFromJob(job);
-          const hasUrl = !!outUrl;
+            // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
+      const finalUrl = safeStr(bestVideoFromJob(job));
+      const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
+      const outUrl = finalUrl;
 
-          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
-          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
-          const promptLine = safeStr(job?.prompt || "");
+      const hasUrl = !!outUrl;
+
+      const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+      const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+      const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+      const promptLine = safeStr(job?.prompt || "");
 
           // kart içi video clamp
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
@@ -378,7 +381,7 @@ const previewUrl = playbackUrl
 const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
 return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-  ? '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '">' +
+'<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewMetaUrl) + '">'
       window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
         id: safeStr(job.job_id || ""),
         title: promptLine || "—",
@@ -401,7 +404,9 @@ return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
 
      async function handleAction(cardEl, act) {
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
-      const url = safeStr(cardEl?.getAttribute("data-url"));
+    const url = safeStr(cardEl?.getAttribute("data-url"));
+const finalUrl = safeStr(cardEl?.getAttribute("data-final-url"));
+const previewUrl = safeStr(cardEl?.getAttribute("data-preview-url"));
 
       if (act === "play") {
         const video = cardEl?.querySelector("video");
@@ -431,14 +436,15 @@ return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
         } catch {}
         return;
       }
-            if (act === "download") {
-        if (!url) return;
+          if (act === "download") {
+  const dlUrl = finalUrl || url;
+  if (!dlUrl) return;
 
-        const proxied =
-          "/api/media/proxy?url=" +
-          encodeURIComponent(url) +
-          "&filename=" +
-          encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
+  const proxied =
+    "/api/media/proxy?url=" +
+    encodeURIComponent(dlUrl) +
+    "&filename=" +
+    encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
 
         const iframe = document.createElement("iframe");
         iframe.style.display = "none";
