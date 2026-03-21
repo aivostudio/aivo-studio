@@ -391,33 +391,63 @@ await runFfmpegPreview(outputPath, previewPath);
     const key = `outputs/atmo/${job_id}/${outputId}.mp4`;
     const previewKey = `outputs/atmo/${job_id}/${outputId}-preview.mp4`;
 
-    const final_url = await uploadFileToR2({
-      filePath: outputPath,
-      key,
-      contentType: "video/mp4",
-    });
+  const muxOutputId = `mux-${Date.now()}`;
+const muxKey = `outputs/atmo/${job_id}/${muxOutputId}.mp4`;
 
-    const preview_url = await uploadFileToR2({
-      filePath: previewPath,
-      key: previewKey,
-      contentType: "video/mp4",
-    });
+let mux_url =
+  String(meta?.muxed_url || "").trim() ||
+  pickUrl(muxOut) ||
+  "";
 
-    const nextOutputs = upsertFinalizedAndPreviewOutputs(
-      outputs,
-      final_url,
-      preview_url
-    );
+if (hasAudio) {
+  mux_url = await uploadFileToR2({
+    filePath: muxedInputPath,
+    key: muxKey,
+    contentType: "video/mp4",
+  });
+}
 
-    const patchMeta = {
-      final_video_url: final_url,
-      preview_video_url: preview_url,
-      final_variant: "finalized",
-      finalized_at: new Date().toISOString(),
-      finalized_from_url: input_url,
-      finalized_key: key,
-      preview_key: previewKey,
-    };
+const final_url = await uploadFileToR2({
+  filePath: outputPath,
+  key,
+  contentType: "video/mp4",
+});
+
+const preview_url = await uploadFileToR2({
+  filePath: previewPath,
+  key: previewKey,
+  contentType: "video/mp4",
+});
+
+let nextOutputs = upsertFinalizedAndPreviewOutputs(
+  outputs,
+  final_url,
+  preview_url
+);
+
+if (hasAudio && mux_url) {
+  nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
+    is_mux: true,
+    is_final: false,
+    source: "finalize_inline_mux",
+  });
+}
+
+const patchMeta = {
+  final_video_url: final_url,
+  preview_video_url: preview_url,
+  final_variant: "finalized",
+  finalized_at: new Date().toISOString(),
+  finalized_from_url: input_url,
+  finalized_key: key,
+  preview_key: previewKey,
+  ...(hasAudio && mux_url
+    ? {
+        muxed_url: mux_url,
+        mux_key: muxKey,
+      }
+    : {}),
+};
 
     await sql`
       update jobs
