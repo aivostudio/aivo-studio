@@ -417,10 +417,14 @@ module.exports = async function handler(req, res) {
 
     const sql = neon(conn);
 
-       const rows = await sql`
+          const rows = await sql`
       select *
       from jobs
-      where id = ${job_id}::uuid
+      where lower(app) = 'atmo'
+        and (
+          id::text = ${job_id}
+          or id = ${job_id}::uuid
+        )
       limit 1
     `;
 
