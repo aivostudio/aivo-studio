@@ -362,16 +362,30 @@ if (!input_url) {
     has_mux: hasMux,
   });
 }
+tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-atmo-finalize-"));
 
-    tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-atmo-finalize-"));
+const inputPath = path.join(tmpDir, "input.mp4");
+const audioPath = path.join(tmpDir, "audio-input");
+const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
+const outputPath = path.join(tmpDir, "finalized.mp4");
+const previewPath = path.join(tmpDir, "preview.mp4");
 
-    const inputPath = path.join(tmpDir, "input.mp4");
-    const outputPath = path.join(tmpDir, "finalized.mp4");
-    const previewPath = path.join(tmpDir, "preview.mp4");
+await downloadToFile(input_url, inputPath);
 
-    await downloadToFile(input_url, inputPath);
-    await runFfmpegFaststart(inputPath, outputPath);
-    await runFfmpegPreview(outputPath, previewPath);
+let effectiveInputPath = inputPath;
+
+if (hasAudio) {
+  await downloadToFile(audioUrl, audioPath);
+  await runFfmpegMuxVideoAndAudio({
+    videoPath: inputPath,
+    audioPath,
+    outputPath: muxedInputPath,
+  });
+  effectiveInputPath = muxedInputPath;
+}
+
+await runFfmpegFaststart(effectiveInputPath, outputPath);
+await runFfmpegPreview(outputPath, previewPath);
 
     const outputId = `finalized-${Date.now()}`;
     const key = `outputs/atmo/${job_id}/${outputId}.mp4`;
