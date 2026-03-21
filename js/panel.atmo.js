@@ -366,27 +366,42 @@ const outUrl = previewUrlResolved || finalUrl;
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
           const portrait = isPortrait(job, dummyOut);
 
-          const thumbInner = hasUrl
-            ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(outUrl)}"></video>`
-            : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
+        const finalUrl = safeStr(bestVideoFromJob(job));
 
-          const playbackUrl = hasUrl
-            ? (
-                /^https?:\/\//i.test(String(outUrl))
-                  ? (
-                      String(outUrl).includes("media.aivo.tr/outputs/atmo/")
-                        ? String(outUrl)
-                        : "/api/media/proxy?url=" + encodeURIComponent(outUrl)
-                    )
-                  : outUrl
-              )
-            : "";
+const previewFromOutputs = safeStr(
+  (Array.isArray(job?.outputs) ? job.outputs : []).find(
+    (o) =>
+      String(o?.type || "").toLowerCase() === "video" &&
+      String(o?.meta?.variant || "").toLowerCase().trim() === "preview"
+  )?.url || ""
+);
 
-          const previewUrl = playbackUrl
-            ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
-            : "";
+const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
+const previewUrlResolved = previewMetaUrl || previewFromOutputs || "";
+const outUrl = previewUrlResolved || finalUrl;
+const hasUrl = !!outUrl;
 
-          const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+const thumbInner = hasUrl
+  ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(outUrl)}"></video>`
+  : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
+
+const playbackUrl = hasUrl
+  ? (
+      /^https?:\/\//i.test(String(outUrl))
+        ? (
+            String(outUrl).includes("media.aivo.tr/outputs/atmo/")
+              ? String(outUrl)
+              : "/api/media/proxy?url=" + encodeURIComponent(outUrl)
+          )
+        : outUrl
+    )
+  : "";
+
+const previewUrl = playbackUrl
+  ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
+  : "";
+
+const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
         return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
   ? (
