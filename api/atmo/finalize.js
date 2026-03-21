@@ -187,13 +187,23 @@ async function runFfmpegPreview(inputPath, outputPath) {
     const args = [
       "-y",
       "-i", inputPath,
-      "-vf", "scale='min(960,iw)':-2",
+
+      // daha küçük çözünürlük + daha hafif encode
+      "-vf", "scale='min(640,iw)':-2",
       "-c:v", "libx264",
       "-preset", "veryfast",
-      "-crf", "22",
+
+      // preview için hedef bitrate
+      "-b:v", "900k",
+      "-maxrate", "1100k",
+      "-bufsize", "1800k",
+
       "-movflags", "+faststart",
       "-pix_fmt", "yuv420p",
+
+      // sessiz preview
       "-an",
+
       outputPath,
     ];
 
