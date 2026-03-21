@@ -190,23 +190,33 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
 
   if (!bytes || !sec) {
     return {
-      targetKbps: 900,
-      maxrateKbps: 1100,
-      bufsizeKbps: 1800,
+      targetKbps: 2600,
+      maxrateKbps: 3200,
+      bufsizeKbps: 6400,
+      targetPreviewBytes: 0,
+      minPreviewBytes: 3 * 1024 * 1024,
+      maxPreviewBytes: 5 * 1024 * 1024,
     };
   }
 
-  // hedef: final dosyanin yaklasik 1/5'i
-  const targetPreviewBytes = Math.max(200 * 1024, Math.floor(bytes / 5));
+  // hedef: final dosyanin 1/4'u
+  const minPreviewBytes = 3 * 1024 * 1024; // 3 MB
+  const maxPreviewBytes = 5 * 1024 * 1024; // 5 MB
+  const rawTargetPreviewBytes = Math.floor(bytes / 4);
+
+  const targetPreviewBytes = Math.max(
+    minPreviewBytes,
+    Math.min(rawTargetPreviewBytes, maxPreviewBytes)
+  );
 
   // bytes -> bits -> kbps
   let targetKbps = Math.floor((targetPreviewBytes * 8) / sec / 1000);
 
-  // cok ezilmesin / gereksiz buyumesin
-  targetKbps = Math.max(450, Math.min(targetKbps, 2200));
+  // kalite çok ezilmesin / ffmpeg gereksiz sıçramasın
+  targetKbps = Math.max(1400, Math.min(targetKbps, 4200));
 
   const maxrateKbps = Math.max(
-    targetKbps + 180,
+    targetKbps + 300,
     Math.floor(targetKbps * 1.2)
   );
   const bufsizeKbps = Math.max(targetKbps * 2, maxrateKbps * 2);
@@ -215,6 +225,9 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
     targetKbps,
     maxrateKbps,
     bufsizeKbps,
+    targetPreviewBytes,
+    minPreviewBytes,
+    maxPreviewBytes,
   };
 }
 
@@ -248,9 +261,9 @@ async function runFfmpegFaststart(inputPath, outputPath) {
 }
 
 async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
-  const targetKbps = Number(bitrateCfg?.targetKbps || 900);
-  const maxrateKbps = Number(bitrateCfg?.maxrateKbps || 1100);
-  const bufsizeKbps = Number(bitrateCfg?.bufsizeKbps || 1800);
+  const targetKbps = Number(bitrateCfg?.targetKbps || 2600);
+  const maxrateKbps = Number(bitrateCfg?.maxrateKbps || 3200);
+  const bufsizeKbps = Number(bitrateCfg?.bufsizeKbps || 6400);
 
   await new Promise((resolve, reject) => {
     const args = [
@@ -258,7 +271,7 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
       "-i",
       inputPath,
 
-      // daha kucuk cozumurluk + daha hafif encode
+      // preview için hafif küçültme
       "-vf",
       "scale='min(640,iw)':-2",
       "-c:v",
@@ -266,7 +279,7 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
       "-preset",
       "veryfast",
 
-      // preview hedef bitrate (dinamik: finalin yaklasik 1/5'i)
+      // dinamik bitrate: final/4, min 3MB, max 5MB
       "-b:v",
       `${targetKbps}k`,
       "-maxrate",
@@ -546,12 +559,15 @@ module.exports = async function handler(req, res) {
       finalized_from_url: input_url,
       finalized_key: key,
       preview_key: previewKey,
-      preview_target_ratio: "1/5",
+      preview_target_ratio: "1/4",
+      preview_min_mb: 3,
+      preview_max_mb: 5,
       preview_target_kbps: previewBitrateCfg.targetKbps,
       preview_maxrate_kbps: previewBitrateCfg.maxrateKbps,
       preview_bufsize_kbps: previewBitrateCfg.bufsizeKbps,
       preview_source_final_bytes: finalStat?.size || 0,
       preview_source_duration_sec: durationSec || 0,
+      preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
       ...(hasAudio && mux_url
         ? {
             muxed_url: mux_url,
