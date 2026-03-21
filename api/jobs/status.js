@@ -1394,21 +1394,36 @@ try {
       image: outImage ? { url: pickUrl(outImage) } : null,
       outputs: outputs || [],
       db_status: job.status,
-      ...(DEBUG
-        ? {
-            debug: {
-              provider,
-              appKey,
-              requestId,
-              has_logo_url: Boolean(job?.meta?.logo_url),
-              muxed_url: job?.meta?.muxed_url || null,
-              final_video_url: job?.meta?.final_video_url || null,
-              final_variant: job?.meta?.final_variant || null,
-              logo_overlay_done: Boolean(job?.meta?.logo_overlay_done),
-              logo_overlay_url: job?.meta?.logo_overlay_url || null,
-            },
-          }
-        : {}),
+     debug: {
+  provider,
+  appKey,
+  requestId,
+  has_logo_url: Boolean(job?.meta?.logo_url),
+
+  audio_url: job?.meta?.audio_url || null,
+  audio_mode: job?.meta?.audio_mode || null,
+  silent_copy: Boolean(job?.meta?.silent_copy),
+
+  muxed_url: job?.meta?.muxed_url || null,
+  mux_done: typeof job?.meta?.mux_done === "boolean" ? job.meta.mux_done : null,
+  mux_key: job?.meta?.mux_key || null,
+
+  final_video_url: job?.meta?.final_video_url || null,
+  preview_video_url: job?.meta?.preview_video_url || null,
+  final_variant: job?.meta?.final_variant || null,
+
+  logo_overlay_done: Boolean(job?.meta?.logo_overlay_done),
+  logo_overlay_url: job?.meta?.logo_overlay_url || null,
+
+  outputs_variants: Array.isArray(outputs)
+    ? outputs.map((o) => ({
+        type: o?.type || null,
+        variant: o?.meta?.variant || null,
+        url: pickUrl(o) || null,
+        is_final: Boolean(o?.meta?.is_final),
+      }))
+    : [],
+},
     });
   } catch (e) {
     console.error("jobs/status fatal:", e);
