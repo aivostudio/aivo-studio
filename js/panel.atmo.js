@@ -341,63 +341,64 @@ const probingUrls = new Set();
           const badge = badgeFor(job);
 
             // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
-     const finalUrl = safeStr(bestVideoFromJob(job));
-const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
-const outUrl = previewMetaUrl || finalUrl;
+         
+          const finalUrl = safeStr(bestVideoFromJob(job));
+          const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
+          const outUrl = previewMetaUrl || finalUrl;
 
-      const hasUrl = !!outUrl;
+          const hasUrl = !!outUrl;
 
-      const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
-      const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-      const metaLine = `${engine}${dt ? " • " + dt : ""}`;
-      const promptLine = safeStr(job?.prompt || "");
+          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+          const promptLine = safeStr(job?.prompt || "");
 
           // kart içi video clamp
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
           const portrait = isPortrait(job, dummyOut);
 
           const thumbInner = hasUrl
-            ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(
-                outUrl
-              )}"></video>`
+            ? `<video class="atmoThumbVideo" playsinline preload="metadata" controls src="${esc(outUrl)}"></video>`
             : `<div class="atmoThumbPlaceholder">Henüz hazır değil</div>`;
-const playbackUrl = hasUrl
-  ? (
-      /^https?:\/\//i.test(String(outUrl))
-        ? (
-            String(outUrl).includes("media.aivo.tr/outputs/atmo/") &&
-            String(outUrl).includes("/finalized-")
-              ? String(outUrl)
-              : "/api/media/proxy?url=" + encodeURIComponent(outUrl)
-          )
-        : outUrl
-    )
-  : "";
 
-const previewUrl = playbackUrl
-  ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
-  : "";
+          const playbackUrl = hasUrl
+            ? (
+                /^https?:\/\//i.test(String(outUrl))
+                  ? (
+                      String(outUrl).includes("media.aivo.tr/outputs/atmo/")
+                        ? String(outUrl)
+                        : "/api/media/proxy?url=" + encodeURIComponent(outUrl)
+                    )
+                  : outUrl
+              )
+            : "";
 
-const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+          const previewUrl = playbackUrl
+            ? (playbackUrl.includes("#") ? playbackUrl : (playbackUrl + "#t=0.001"))
+            : "";
 
-return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-'<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewMetaUrl) + '">'
-      window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-        id: safeStr(job.job_id || ""),
-        title: promptLine || "—",
-        sub: "",
-        badgeText: badge.text,
-        badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
-        videoUrl: previewUrl,
-        posterUrl: "",
-        ratio: portrait ? "9:16" : "16:9",
-        ready: isPlayableNow,
-        canDownload: isPlayableNow,
-        canShare: isPlayableNow,
-        canDelete: true
-      }) +
-    '</div>'
-  : "";
+          const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+
+          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+            ? (
+                '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewMetaUrl) + '">' +
+                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                    id: safeStr(job.job_id || ""),
+                    title: promptLine || "—",
+                    sub: metaLine,
+                    badgeText: badge.text,
+                    badgeKind: isPlayableNow ? "ready" : (badge.kind === "bad" ? "error" : "loading"),
+                    videoUrl: previewUrl,
+                    posterUrl: "",
+                    ratio: portrait ? "9:16" : "16:9",
+                    ready: isPlayableNow,
+                    canDownload: isPlayableNow,
+                    canShare: isPlayableNow,
+                    canDelete: true
+                  }) +
+                '</div>'
+              )
+            : "";
         })
         .join("");
     }
