@@ -403,9 +403,9 @@ const previewUrl = playbackUrl
 
 const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
-return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+        return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
   ? (
-      '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">' +
+     '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">'
         window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
           id: safeStr(job.job_id || ""),
           title: promptLine || "—",
@@ -423,6 +423,9 @@ return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
       '</div>'
     )
   : "";
+})
+.join("");
+}
 
      async function handleAction(cardEl, act) {
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
