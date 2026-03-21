@@ -342,10 +342,19 @@ const probingUrls = new Set();
 
             // ephemeral ise: job.url var; db ise: outputs/meta.final_video_url’dan çek
          
-          const finalUrl = safeStr(bestVideoFromJob(job));
-          const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
-          const outUrl = previewMetaUrl || finalUrl;
+         const finalUrl = safeStr(bestVideoFromJob(job));
 
+const previewFromOutputs = safeStr(
+  (Array.isArray(job?.outputs) ? job.outputs : []).find(
+    (o) =>
+      String(o?.type || "").toLowerCase() === "video" &&
+      String(o?.meta?.variant || "").toLowerCase().trim() === "preview"
+  )?.url || ""
+);
+
+const previewMetaUrl = safeStr(job?.meta?.preview_video_url || "");
+const previewUrlResolved = previewMetaUrl || previewFromOutputs || "";
+const outUrl = previewUrlResolved || finalUrl;
           const hasUrl = !!outUrl;
 
           const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
@@ -381,7 +390,7 @@ const probingUrls = new Set();
 
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? (
-                '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewMetaUrl) + '">' +
+               '<div class="atmoCard" data-job="' + esc(job.job_id || "") + '" data-url="' + esc(outUrl) + '" data-final-url="' + esc(finalUrl) + '" data-preview-url="' + esc(previewUrlResolved) + '">'
                   window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
                     id: safeStr(job.job_id || ""),
                     title: promptLine || "—",
