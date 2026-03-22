@@ -1175,7 +1175,7 @@
   window.RightPanel.register(APP_KEY, {
     header: {
       title: "Atmosfer Video",
-     meta: "",
+      meta: "Hazır",
   searchEnabled: true,
       resetSearch: true,
     },
