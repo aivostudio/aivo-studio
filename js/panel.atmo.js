@@ -1142,7 +1142,7 @@
         header: {
           title: "Atmosfer Video",
           meta: "Hazır",
-          searchEnabled: false,
+       searchEnabled: true,
           resetSearch: true,
         },
 
