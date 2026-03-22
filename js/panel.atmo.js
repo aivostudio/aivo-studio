@@ -99,7 +99,9 @@
       if (u) return u;
     }
 
-    const ov = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay");
+    const ov = outs.find(
+      (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
+    );
     if (ov) {
       const u = pickOutputUrl(ov);
       if (u) return u;
@@ -111,7 +113,9 @@
       if (u) return u;
     }
 
-    const pv = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "provider");
+    const pv = outs.find(
+      (o) => isVideoOutput(o) && outputVariant(o) === "provider"
+    );
     if (pv) {
       const u = pickOutputUrl(pv);
       if (u) return u;
@@ -135,7 +139,9 @@
 
     if (directPreview) return directPreview;
 
-    const prev = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "preview");
+    const prev = outs.find(
+      (o) => isVideoOutput(o) && outputVariant(o) === "preview"
+    );
     if (prev) {
       const u = pickOutputUrl(prev);
       if (u) return u;
@@ -263,7 +269,7 @@
   }
 
   function badgeFor(job) {
-    const st = String(job?.status || job?.state || "").toUpperCase();
+    const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
     if (st.includes("FAIL") || st.includes("ERROR"))
       return { text: "Hata", kind: "bad" };
     if (
@@ -316,9 +322,58 @@
       } catch {}
     };
 
+    function statusUpper(job) {
+      return String(job?.db_status || job?.status || job?.state || "").toUpperCase();
+    }
+
+    function isTerminal(job) {
+      const st = statusUpper(job);
+      return (
+        st.includes("READY") ||
+        st.includes("DONE") ||
+        st.includes("COMPLET") ||
+        st.includes("SUCC") ||
+        st.includes("FAIL") ||
+        st.includes("ERROR")
+      );
+    }
+
+    function isFreshDoneEphemeral(job) {
+      if (!job || job?._fresh !== true) return false;
+      const st = statusUpper(job);
+      return (
+        st.includes("READY") ||
+        st.includes("DONE") ||
+        st.includes("COMPLET") ||
+        st.includes("SUCC")
+      );
+    }
+
+    function matchKeyOf(job) {
+      const jobId = safeStr(job?.job_id);
+      const rid = safeStr(job?.meta?.request_id || job?.request_id);
+      return {
+        jobId,
+        rid,
+        key: jobId || rid || "",
+      };
+    }
+
+    function sameJob(a, b) {
+      const aa = matchKeyOf(a);
+      const bb = matchKeyOf(b);
+      if (!aa.key || !bb.key) return false;
+      if (aa.jobId && bb.jobId && aa.jobId === bb.jobId) return true;
+      if (aa.rid && bb.rid && aa.rid === bb.rid) return true;
+      return false;
+    }
+
     function isPortrait(job, out) {
       const ar = String(
-        job?.meta?.aspect_ratio || job?.meta?.ratio || out?.meta?.aspect_ratio || ""
+        job?.meta?.aspect_ratio ||
+          job?.meta?.ratio ||
+          out?.meta?.aspect_ratio ||
+          ""
       );
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
@@ -331,12 +386,14 @@
         safeStr(payload.fal_request_id) ||
         safeStr(payload.provider_request_id);
       const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
-      const provider = safeStr(payload.provider || payload?.meta?.provider || "Atmos");
+      const provider = safeStr(
+        payload.provider || payload?.meta?.provider || "Atmos"
+      );
       const aspectRatio = safeStr(
         payload?.meta?.aspect_ratio ||
-        payload?.aspect_ratio ||
-        payload?.meta?.ratio ||
-        ""
+          payload?.aspect_ratio ||
+          payload?.meta?.ratio ||
+          ""
       );
 
       if (!jobId && !rid) return;
@@ -379,56 +436,86 @@
       render();
     }
 
+    function cleanupEphemeralsAgainstDb() {
+      const dbItems = Array.isArray(state.items) ? state.items : [];
+      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
+
+      if (!dbItems.length || !eps.length) return;
+
+      state.ephemerals = eps.filter((ep) => {
+        const matchDb = dbItems.find((db) => sameJob(ep, db));
+        if (!matchDb) return true;
+
+        if (!isTerminal(matchDb)) return true;
+
+        if (isFreshDoneEphemeral(ep)) return true;
+
+        return false;
+      });
+    }
+
     function combinedItems() {
       const dbItems = Array.isArray(state.items) ? state.items : [];
       const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
 
-      const ephemeralRequestIds = new Set(
-        eps
-          .map((e) => safeStr(e?.meta?.request_id || e?.request_id))
-          .filter(Boolean)
-      );
+      const picked = [];
+      const consumedDb = new Set();
 
-      const ephemeralJobIds = new Set(
-        eps
-          .map((e) => safeStr(e?.job_id))
-          .filter(Boolean)
-      );
+      for (const ep of eps) {
+        const matchIndex = dbItems.findIndex((db) => sameJob(ep, db));
+        const matchDb = matchIndex >= 0 ? dbItems[matchIndex] : null;
 
-      const filteredDbItems = dbItems.filter((x) => {
-        const rid = safeStr(x?.meta?.request_id || x?.request_id);
-        const jobId = safeStr(x?.job_id);
-        if (rid && ephemeralRequestIds.has(rid)) return false;
-        if (jobId && ephemeralJobIds.has(jobId)) return false;
-        return true;
+        if (!matchDb) {
+          picked.push(ep);
+          continue;
+        }
+
+        if (isTerminal(matchDb)) {
+          if (isFreshDoneEphemeral(ep)) {
+            picked.push(ep);
+          } else {
+            picked.push(matchDb);
+            consumedDb.add(matchIndex);
+          }
+          continue;
+        }
+
+        picked.push(ep);
+        consumedDb.add(matchIndex);
+      }
+
+      dbItems.forEach((db, idx) => {
+        if (!consumedDb.has(idx)) picked.push(db);
       });
 
-      const all = [...eps, ...filteredDbItems];
-
       const rankStatus = (j) => {
-        const st = String(j?.status || j?.state || "").toUpperCase();
+        const st = statusUpper(j);
         if (
           st.includes("PROC") ||
           st.includes("RUN") ||
           st.includes("PEND") ||
           st.includes("QUEUE")
-        ) return 0;
+        )
+          return 0;
         if (
           st.includes("READY") ||
           st.includes("DONE") ||
           st.includes("COMPLET") ||
           st.includes("SUCC")
-        ) return 1;
+        )
+          return 1;
         if (st.includes("FAIL") || st.includes("ERROR")) return 2;
         return 1;
       };
 
       const tsOf = (j) => {
-        const t = new Date(j?.updated_at || j?.created_at || Date.now()).getTime();
+        const t = new Date(
+          j?.updated_at || j?.created_at || Date.now()
+        ).getTime();
         return Number.isFinite(t) ? t : 0;
       };
 
-      return all.sort((a, b) => {
+      return picked.sort((a, b) => {
         const ra = rankStatus(a);
         const rb = rankStatus(b);
         if (ra !== rb) return ra - rb;
@@ -455,7 +542,7 @@
       const items = combinedItems();
 
       const hasProcessing = items.some((j) => {
-        const st = String(j.status || "").toUpperCase();
+        const st = statusUpper(j);
         return (
           st.includes("PROC") ||
           st.includes("RUN") ||
@@ -480,8 +567,8 @@
           const previewUrlResolved = safeStr(previewVideoFromJob(job));
 
           const selectedPlaybackRawUrl = isFreshCard
-            ? (finalUrl || previewUrlResolved)
-            : (previewUrlResolved || finalUrl);
+            ? finalUrl || previewUrlResolved
+            : previewUrlResolved || finalUrl;
 
           const hasUrl = !!selectedPlaybackRawUrl;
 
@@ -490,15 +577,25 @@
           const metaLine = `${engine}${dt ? " • " + dt : ""}`;
           const promptLine = safeStr(job?.prompt || "");
 
-          const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
+          const dummyOut = {
+            meta: { aspect_ratio: job?.meta?.aspect_ratio || "" },
+          };
           const portrait = isPortrait(job, dummyOut);
 
-          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
+          const playbackUrl = hasUrl
+            ? resolvePlaybackUrl(selectedPlaybackRawUrl)
+            : "";
           const videoUrl = playbackUrl
-            ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
+            ? playbackUrl.includes("#")
+              ? playbackUrl
+              : playbackUrl + "#t=0.001"
             : "";
 
-          if (playbackUrl && !playableUrls.has(playbackUrl) && !probingUrls.has(playbackUrl)) {
+          if (
+            playbackUrl &&
+            !playableUrls.has(playbackUrl) &&
+            !probingUrls.has(playbackUrl)
+          ) {
             probePlayableUrl(playbackUrl);
           }
 
@@ -508,32 +605,32 @@
             badge.kind !== "bad";
 
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? (
-                '<div class="atmoCard"' +
-                  ' data-job="' + esc(job.job_id || "") + '"' +
-                  ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-                  ' data-final-url="' + esc(finalUrl) + '"' +
-                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
-                  ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-                '>' +
-                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                    id: safeStr(job.job_id || ""),
-                    title: promptLine || "—",
-                    sub: metaLine,
-                    badgeText: badge.text,
-                    badgeKind: isPlayableNow
-                      ? "ready"
-                      : (badge.kind === "bad" ? "error" : "loading"),
-                    videoUrl,
-                    posterUrl: "",
-                    ratio: portrait ? "9:16" : "16:9",
-                    ready: isPlayableNow,
-                    canDownload: !!finalUrl,
-                    canShare: isPlayableNow,
-                    canDelete: true
-                  }) +
-                '</div>'
-              )
+            ? '<div class="atmoCard"' +
+                ' data-job="' + esc(job.job_id || "") + '"' +
+                ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+                ' data-final-url="' + esc(finalUrl) + '"' +
+                ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+                ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+              ">" +
+                window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                  id: safeStr(job.job_id || ""),
+                  title: promptLine || "—",
+                  sub: metaLine,
+                  badgeText: badge.text,
+                  badgeKind: isPlayableNow
+                    ? "ready"
+                    : badge.kind === "bad"
+                      ? "error"
+                      : "loading",
+                  videoUrl,
+                  posterUrl: "",
+                  ratio: portrait ? "9:16" : "16:9",
+                  ready: isPlayableNow,
+                  canDownload: !!finalUrl,
+                  canShare: isPlayableNow,
+                  canDelete: true,
+                }) +
+              "</div>"
             : "";
         })
         .join("");
@@ -672,6 +769,7 @@
             acceptOutput: acceptAtmoOutput,
             onChange(items) {
               state.items = items || [];
+              cleanupEphemeralsAgainstDb();
               render();
             },
           })
@@ -683,7 +781,9 @@
       const d = e?.detail || {};
       if (!d) return;
 
-      const appKey = safeStr(d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo").toLowerCase();
+      const appKey = safeStr(
+        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
+      ).toLowerCase();
       if (!appKey.includes("atmo")) return;
 
       upsertEphemeralProcessing({
@@ -746,7 +846,11 @@
 
           if (timer) clearInterval(timer);
           timer = setInterval(
-            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
+            () =>
+              pollFalOnce(
+                rid,
+                safeStr(job.prompt || job?.meta?.prompt || "")
+              ),
             2000
           );
           pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
@@ -799,23 +903,37 @@
         v.muted = true;
         v.playsInline = true;
 
-        v.addEventListener("loadeddata", () => {
-          clearTimeout(t);
-          finish(true);
-        }, { once: true });
+        v.addEventListener(
+          "loadeddata",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
 
-        v.addEventListener("canplay", () => {
-          clearTimeout(t);
-          finish(true);
-        }, { once: true });
+        v.addEventListener(
+          "canplay",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
 
-        v.addEventListener("error", () => {
-          clearTimeout(t);
-          finish(false);
-        }, { once: true });
+        v.addEventListener(
+          "error",
+          () => {
+            clearTimeout(t);
+            finish(false);
+          },
+          { once: true }
+        );
 
         v.src = url;
-        try { v.load(); } catch {}
+        try {
+          v.load();
+        } catch {}
       });
     }
 
@@ -833,7 +951,9 @@
         return;
       }
 
-      const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
+      const st = safeStr(
+        data?.status || data?.state || data?.result?.status
+      ).toLowerCase();
 
       if (st.includes("fail") || st === "error") {
         const existing = (state.ephemerals || []).find(
@@ -858,7 +978,11 @@
         return;
       }
 
-      if (st.includes("complete") || st.includes("success") || st === "succeeded") {
+      if (
+        st.includes("complete") ||
+        st.includes("success") ||
+        st === "succeeded"
+      ) {
         let url = pickVideoUrl(data);
 
         if (!url) {
@@ -866,8 +990,9 @@
           return;
         }
 
-        const playable = await waitUntilPlayable(url, 12000);
-        if (playable) playableUrls.add(resolvePlaybackUrl(url));
+        const playbackResolved = resolvePlaybackUrl(url);
+        const playable = await waitUntilPlayable(playbackResolved, 12000);
+        if (playable) playableUrls.add(playbackResolved);
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
@@ -893,10 +1018,14 @@
               app: APP_KEY,
               provider: safeStr(existing?.meta?.provider || "Atmos"),
               request_id: rid,
-              aspect_ratio: safeStr(data?.aspect_ratio || existing?.meta?.aspect_ratio || ""),
+              aspect_ratio: safeStr(
+                data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
+              ),
             },
           },
-          ...(state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== tempId),
+          ...(state.ephemerals || []).filter(
+            (x) => safeStr(x?.job_id) !== tempId
+          ),
         ];
         render();
 
