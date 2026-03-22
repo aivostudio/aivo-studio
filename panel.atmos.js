@@ -736,12 +736,11 @@
         // (overlay + gerçek video, onChange'de DB READY olunca)
         // render(merged) burada çağırmıyoruz; onChange zaten yakında gelecek.
         // ama istersen anında görmek için aşağıyı aç:
-      render(merged);
+        // render(merged);
       } catch {}
     };
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
-    controller.start();
 
     return {
       destroy() {
