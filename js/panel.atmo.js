@@ -479,26 +479,53 @@
       return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
     }
 
-    function renderLoadingCard(job, portrait) {
-      const promptLine = safeStr(job?.prompt || "Video hazırlanıyor...");
-      return (
-        '<div class="atmoCard">' +
-          '<div class="atmoLoadingCard">' +
-            '<div class="atmoLoadingMedia' + (portrait ? ' isPortrait' : '') + '">' +
-              '<div class="atmoLoadingCenter">' +
-                '<div class="atmoLoadingOrb">' +
-                  '<div class="atmoLoadingPlay"></div>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-            '<div class="atmoLoadingFooter">' +
-              '<div class="atmoLoadingTitle">' + esc(promptLine) + '</div>' +
-              '<div class="atmoLoadingDivider"></div>' +
-            '</div>' +
+  function renderLoadingCard(job, portrait) {
+  const promptLine = safeStr(job?.prompt || "Video hazırlanıyor...");
+  const title = promptLine || "Video hazırlanıyor...";
+
+  return (
+    '<div class="atmoCard">' +
+      '<div class="atmoThumb' + (portrait ? ' isPortrait' : '') + '" style="background:#05050a;">' +
+        '<div style="position:absolute;inset:0;' +
+          'background:' +
+            'radial-gradient(55% 45% at 50% 30%, rgba(155,110,255,.30), rgba(90,60,180,.14) 42%, rgba(8,8,14,.10) 68%, rgba(0,0,0,1) 100%),' +
+            'linear-gradient(180deg, rgba(18,14,34,.96), rgba(3,3,8,1));' +
+          '"></div>' +
+
+        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">' +
+          '<div style="' +
+            'position:relative;' +
+            'width:108px;height:108px;border-radius:999px;' +
+            'background:rgba(255,255,255,.08);' +
+            'border:1px solid rgba(255,255,255,.16);' +
+            'box-shadow:0 10px 30px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);' +
+            'backdrop-filter:blur(6px);' +
+          '">' +
+            '<div style="' +
+              'position:absolute;left:50%;top:50%;transform:translate(-38%,-50%);' +
+              'width:0;height:0;' +
+              'border-top:13px solid transparent;' +
+              'border-bottom:13px solid transparent;' +
+              'border-left:21px solid rgba(255,255,255,.96);' +
+              'filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));' +
+            '"></div>' +
           '</div>' +
-        '</div>'
-      );
-    }
+        '</div>' +
+      '</div>' +
+
+      '<div class="atmoFooter" style="padding-top:4px;">' +
+        '<div style="' +
+          'font-size:12px;' +
+          'font-weight:800;' +
+          'opacity:.96;' +
+          'white-space:nowrap;' +
+          'overflow:hidden;' +
+          'text-overflow:ellipsis;' +
+        '">' + esc(title) + '</div>' +
+      '</div>' +
+    '</div>'
+  );
+}
 
     function render() {
       if (destroyed || !$grid) return;
