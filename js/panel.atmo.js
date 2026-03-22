@@ -3,7 +3,8 @@
 // - job_created gelince kart anında görünür
 // - onChange DB item'ları ile merge edilir
 // - ready olunca kart yerinde güncellenir
-// - panel sadece UI/render/DB/event dinler
+// - fresh kartta final/full önceliklidir
+// - DB kartında preview öne geçebilir
 // - create/poll/provider parse/PPE burada YOK
 
 (function () {
@@ -14,6 +15,7 @@
   }
 
   const APP_KEY = "atmo";
+  const MAX_ITEMS = 30;
 
   const norm = (s) =>
     String(s || "")
@@ -41,18 +43,18 @@
   const getJobApp = (job) =>
     String(
       job?.app ||
-      job?.meta?.app ||
-      job?.meta?.module ||
-      job?.meta?.routeKey ||
-      ""
+        job?.meta?.app ||
+        job?.meta?.module ||
+        job?.meta?.routeKey ||
+        ""
     ).trim();
 
   const getOutApp = (o) =>
     String(
       o?.meta?.app ||
-      o?.meta?.module ||
-      o?.meta?.routeKey ||
-      ""
+        o?.meta?.module ||
+        o?.meta?.routeKey ||
+        ""
     ).trim();
 
   const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
@@ -92,24 +94,26 @@
   function pickOutputUrl(o) {
     return safeStr(
       o?.archive_url ||
-      o?.archiveUrl ||
-      o?.url ||
-      o?.video_url ||
-      o?.videoUrl ||
-      o?.raw_url ||
-      o?.rawUrl ||
-      o?.src ||
-      o?.meta?.archive_url ||
-      o?.meta?.archiveUrl ||
-      o?.meta?.url ||
-      o?.meta?.video_url ||
-      o?.meta?.videoUrl ||
-      ""
+        o?.archiveUrl ||
+        o?.url ||
+        o?.video_url ||
+        o?.videoUrl ||
+        o?.raw_url ||
+        o?.rawUrl ||
+        o?.src ||
+        o?.meta?.archive_url ||
+        o?.meta?.archiveUrl ||
+        o?.meta?.url ||
+        o?.meta?.video_url ||
+        o?.meta?.videoUrl ||
+        ""
     );
   }
 
   function isVideoOutput(o) {
-    return norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video";
+    return norm(
+      o?.type || o?.kind || o?.meta?.type || o?.meta?.kind
+    ) === "video";
   }
 
   function outputVariant(o) {
@@ -205,6 +209,28 @@
     }
 
     return "";
+  }
+
+  function directFinalVideoFromJob(job) {
+    return safeStr(
+      job?.final_url ||
+        job?.final_video_url ||
+        job?.meta?.final_url ||
+        job?.meta?.final_video_url ||
+        bestVideoFromJob(job) ||
+        ""
+    );
+  }
+
+  function directPreviewVideoFromJob(job) {
+    return safeStr(
+      job?.preview_url ||
+        job?.preview_video_url ||
+        job?.meta?.preview_url ||
+        job?.meta?.preview_video_url ||
+        previewVideoFromJob(job) ||
+        ""
+    );
   }
 
   function acceptAtmoOutput(o) {
@@ -408,15 +434,19 @@
       const jid = idOf(job);
       const badge = mapBadge(job);
 
-      const finalUrl = safeStr(bestVideoFromJob(job));
-      const previewUrl = safeStr(previewVideoFromJob(job));
-      const rawVideoUrl = finalUrl || previewUrl;
+      const finalUrl = directFinalVideoFromJob(job);
+      const previewUrl = directPreviewVideoFromJob(job);
+      const isFreshCard = job?._fresh === true;
 
-      const ready = badge.kind === "ok" && !!rawVideoUrl;
+      const selectedPlaybackRawUrl = isFreshCard
+        ? finalUrl || previewUrl
+        : previewUrl || finalUrl;
+
+      const ready = badge.kind === "ok" && !!selectedPlaybackRawUrl;
       const previewVideoUrl = ready
-        ? rawVideoUrl.includes("#")
-          ? rawVideoUrl
-          : rawVideoUrl + "#t=0.001"
+        ? selectedPlaybackRawUrl.includes("#")
+          ? selectedPlaybackRawUrl
+          : selectedPlaybackRawUrl + "#t=0.001"
         : "";
 
       const out = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
@@ -425,7 +455,9 @@
       const title = safeStr(job?.prompt || job?.meta?.prompt || "Atmosfer Video");
       const sub = (() => {
         const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-        const dt = formatTs(job?.created_at || job?.updated_at || job?.createdAt || Date.now());
+        const dt = formatTs(
+          job?.created_at || job?.updated_at || job?.createdAt || Date.now()
+        );
         return dt ? `${engine} • ${dt}` : engine;
       })();
 
@@ -512,12 +544,14 @@
 
       const id = job_id || `tmp_${request_id}`;
       const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
-      const provider = safeStr(payload.provider || payload?.meta?.provider || "Atmos");
+      const provider = safeStr(
+        payload.provider || payload?.meta?.provider || "Atmos"
+      );
       const aspect_ratio = safeStr(
         payload?.meta?.aspect_ratio ||
-        payload?.aspect_ratio ||
-        payload?.meta?.ratio ||
-        ""
+          payload?.aspect_ratio ||
+          payload?.meta?.ratio ||
+          ""
       );
 
       const nextItem = {
@@ -531,6 +565,8 @@
         status: "processing",
         state: "PROCESSING",
         _fresh: false,
+        final_url: "",
+        preview_url: "",
         meta: {
           ...(payload?.meta || {}),
           app: APP_KEY,
@@ -558,29 +594,53 @@
         return (job_id && a.jobId === job_id) || (request_id && a.rid === request_id);
       });
 
+      const outputs = Array.isArray(detail?.outputs) ? detail.outputs : [];
+      const rawOutputs = Array.isArray(detail?.raw?.outputs) ? detail.raw.outputs : [];
+
       const finalUrl = safeStr(
         detail?.video?.url ||
-        detail?.url ||
-        ""
+          detail?.url ||
+          bestVideoFromJob({ outputs }) ||
+          bestVideoFromJob({ outputs: rawOutputs }) ||
+          ""
       );
 
-      const outputs = Array.isArray(detail?.outputs) ? detail.outputs : [];
+      const previewUrl = safeStr(
+        previewVideoFromJob({ outputs }) ||
+          previewVideoFromJob({ outputs: rawOutputs }) ||
+          ""
+      );
+
+      const mergedOutputs = outputs.length
+        ? outputs
+        : rawOutputs.length
+          ? rawOutputs
+          : finalUrl
+            ? [
+                {
+                  type: "video",
+                  url: finalUrl,
+                  meta: { app: APP_KEY, is_final: true },
+                },
+              ]
+            : [];
 
       if (existingDb) {
         existingDb.db_status = "ready";
         existingDb.status = "ready";
         existingDb.state = "COMPLETED";
+        existingDb._fresh = true;
 
-        if (outputs.length) {
-          existingDb.outputs = outputs;
-        } else if (finalUrl) {
-          existingDb.outputs = [
-            {
-              type: "video",
-              url: finalUrl,
-              meta: { app: APP_KEY, is_final: true },
-            },
-          ];
+        if (mergedOutputs.length) {
+          existingDb.outputs = mergedOutputs;
+        }
+
+        if (previewUrl && !existingDb.preview_url) {
+          existingDb.preview_url = previewUrl;
+        }
+
+        if (finalUrl && !existingDb.final_url) {
+          existingDb.final_url = finalUrl;
         }
 
         const existingId = idOf(existingDb);
@@ -610,17 +670,21 @@
         status: "ready",
         state: "COMPLETED",
         _fresh: true,
-        outputs: outputs.length
-          ? outputs
-          : finalUrl
-            ? [
-                {
-                  type: "video",
-                  url: finalUrl,
-                  meta: { app: APP_KEY, is_final: true },
-                },
-              ]
-            : optimisticJob.outputs || [],
+        final_url: finalUrl || optimisticJob.final_url || "",
+        preview_url: previewUrl || optimisticJob.preview_url || "",
+        outputs: mergedOutputs.length ? mergedOutputs : optimisticJob.outputs || [],
+        meta: {
+          ...(optimisticJob.meta || {}),
+          ...(detail?.meta || {}),
+          app: APP_KEY,
+          request_id: request_id || optimisticJob?.meta?.request_id || "",
+          prompt: safeStr(
+            detail?.meta?.prompt ||
+              optimisticJob?.meta?.prompt ||
+              optimisticJob?.prompt ||
+              ""
+          ),
+        },
       });
 
       renderCurrent();
@@ -644,11 +708,13 @@
     }
 
     function combinedItems() {
-      const dbItems = (Array.isArray(currentDbItems) ? currentDbItems : []).filter((x) => {
-        const jid = safeStr(x?.job_id || x?.id);
-        if (jid && hiddenDeletedIds.has(jid)) return false;
-        return true;
-      });
+      const dbItems = (Array.isArray(currentDbItems) ? currentDbItems : []).filter(
+        (x) => {
+          const jid = safeStr(x?.job_id || x?.id);
+          if (jid && hiddenDeletedIds.has(jid)) return false;
+          return true;
+        }
+      );
 
       const eps = Array.from(optimistic.values()).filter((x) => {
         const jid = safeStr(x?.job_id || x?.id);
@@ -695,7 +761,7 @@
           if (ap !== bp) return ap - bp;
           return tsOf(b) - tsOf(a);
         })
-        .slice(0, 30);
+        .slice(0, MAX_ITEMS);
     }
 
     function render(items) {
@@ -802,9 +868,7 @@
 
     async function handleAction(cardEl, act) {
       const jobId = safeStr(
-        cardEl?.getAttribute("data-job") ||
-        cardEl?.dataset?.svcId ||
-        ""
+        cardEl?.getAttribute("data-job") || cardEl?.dataset?.svcId || ""
       );
 
       if (!act || !jobId) return;
@@ -839,13 +903,17 @@
         return;
       }
 
-      const finalUrl = safeStr(bestVideoFromJob(job));
-      const previewUrl = safeStr(previewVideoFromJob(job));
+      const finalUrl = directFinalVideoFromJob(job);
+      const previewUrl = directPreviewVideoFromJob(job);
       const directUrl = finalUrl || previewUrl;
 
       if (act === "open") {
         if (!directUrl) return;
-        window.open(directUrl.includes("#") ? directUrl.split("#")[0] : directUrl, "_blank", "noopener");
+        window.open(
+          directUrl.includes("#") ? directUrl.split("#")[0] : directUrl,
+          "_blank",
+          "noopener"
+        );
         return;
       }
 
