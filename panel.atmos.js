@@ -752,15 +752,5 @@
     };
   }
 
-  // Panel register (varsa)
-  try {
-    if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register("atmo", createAtmosPanel);
-    } else {
-      window.RightPanel.panels = window.RightPanel.panels || {};
-      window.RightPanel.panels.atmo = createAtmosPanel;
-    }
-  } catch (e) {
-    console.warn("[ATMO PANEL] register failed", e);
-  }
+
 })();
