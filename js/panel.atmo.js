@@ -841,6 +841,7 @@
       ).toLowerCase();
 
       if (!appKey.includes("atmo")) return;
+      setHeaderMeta("İşleniyor…");
 
       upsertEphemeralProcessing({
         job_id: d?.job_id,
