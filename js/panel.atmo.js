@@ -599,7 +599,7 @@
 
       const items = combinedItems();
 
-    const hasProcessing = items.some((j) => !isReady(j) && !isError(j));
+      const hasProcessing = items.some((j) => isProcessing(j));
       setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
       if (!items.length) {
@@ -865,7 +865,7 @@
       upsertEphemeralReady(d);
     };
 
-      window.addEventListener("aivo:atmo:job_created", onJobCreated);
+    window.addEventListener("aivo:atmo:job_created", onJobCreated);
     window.addEventListener("aivo:atmo:job_ready", onJobReady);
 
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
@@ -905,23 +905,36 @@
             createdAt: job?.createdAt || Date.now(),
             meta: job?.meta || {},
           });
+        const rid =
+  safeStr(d?.request_id) ||
+  safeStr(d?.requestId) ||
+  safeStr(d?.meta?.request_id);
 
+if (rid && rid !== "TEST") {
+  if (timer) clearInterval(timer);
+
+  timer = setInterval(
+    () => pollFalOnce(rid, safeStr(d?.prompt || d?.meta?.prompt || "")),
+    2000
+  );
+
+  pollFalOnce(rid, safeStr(d?.prompt || d?.meta?.prompt || ""));
+}
           const rid =
-            safeStr(job?.request_id) ||
-            safeStr(job?.requestId) ||
-            safeStr(job?.fal_request_id) ||
-            safeStr(job?.provider_request_id);
+            safeStr(job.request_id) ||
+            safeStr(job.requestId) ||
+            safeStr(job.fal_request_id) ||
+            safeStr(job.provider_request_id);
 
-          if (rid && rid !== "TEST") {
-            if (timer) clearInterval(timer);
+          if (!rid || rid === "TEST") return;
 
-            timer = setInterval(
-              () => pollFalOnce(rid, safeStr(job?.prompt || job?.meta?.prompt || "")),
-              2000
-            );
+          if (timer) clearInterval(timer);
+          timer = setInterval(
+            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
+            2000
+          );
 
-            pollFalOnce(rid, safeStr(job?.prompt || job?.meta?.prompt || ""));
-          }
+          pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
         } catch {}
       };
     }
