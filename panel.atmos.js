@@ -752,15 +752,28 @@
     };
   }
 
-  // Panel register (varsa)
-  try {
-    if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register("atmo", createAtmosPanel);
-    } else {
-      window.RightPanel.panels = window.RightPanel.panels || {};
-      window.RightPanel.panels.atmo = createAtmosPanel;
-    }
-  } catch (e) {
-    console.warn("[ATMO PANEL] register failed", e);
-  }
+ try {
+  window.RightPanel.register("atmo", {
+    header: {
+      title: "Atmosfer Video",
+      meta: "Hazır",
+      searchEnabled: true,
+      resetSearch: true,
+    },
+
+    mount(host) {
+      const panel = createAtmosPanel(host);
+      host.__ATMO_PANEL__ = panel;
+    },
+
+    destroy(host) {
+      try {
+        host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy();
+      } catch {}
+      host.__ATMO_PANEL__ = null;
+    },
+  });
+} catch (e) {
+  console.warn("[ATMO PANEL] register failed", e);
+}
 })();
