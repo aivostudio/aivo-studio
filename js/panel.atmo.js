@@ -1062,6 +1062,23 @@
       acceptOutput: acceptAtmoOutput,
 
       onChange: async (items) => {
+        console.log("[ATMO][db_onChange]", (items || []).map((j) => ({
+  panel_key: j?.panel_key || "",
+  job_id: j?.job_id || j?.id || "",
+  request_id:
+    j?.request_id ||
+    j?.requestId ||
+    j?.fal_request_id ||
+    j?.provider_request_id ||
+    j?.meta?.request_id ||
+    "",
+  app: j?.app || j?.meta?.app || j?.meta?.module || j?.meta?.routeKey || "",
+  db_status: j?.db_status || "",
+  status: j?.status || "",
+  state: j?.state || "",
+  final_url: j?.final_url || j?.final_video_url || j?.meta?.final_url || "",
+  preview_url: j?.preview_url || j?.preview_video_url || j?.meta?.preview_url || "",
+})));
         if (destroyed) return;
 
         currentDbItems = (items || [])
@@ -1080,6 +1097,9 @@
     });
 
     const onJobCreated = (e) => {
+      console.log("[ATMO][job_created]", {
+  detail: e?.detail || null,
+});
       const d = e?.detail || {};
       if (!d) return;
 
@@ -1100,6 +1120,9 @@
     };
 
     const onJobReady = (e) => {
+      console.log("[ATMO][job_ready]", {
+  detail: e?.detail || null,
+});
       const d = e?.detail || {};
       if (!d) return;
 
