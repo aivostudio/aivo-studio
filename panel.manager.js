@@ -197,7 +197,10 @@
       }
 
       if(registry.has(key)){
-        console.warn("[RightPanel] duplicate register for key:", key);
+      console.warn("[RightPanel] duplicate register for key:", key, {
+  impl,
+  stack: new Error("[RightPanel duplicate stack]").stack
+});
       }
 
       registry.set(key, impl);
