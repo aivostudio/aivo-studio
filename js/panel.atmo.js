@@ -550,7 +550,7 @@
             : "";
 
           const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
-          const isProcessingCard = badge.kind === "mid" && !isPlayableNow;
+          const isProcessingCard = badge.kind === "mid";
 
           if (isProcessingCard) {
             return renderLoadingCard(job, portrait);
