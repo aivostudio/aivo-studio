@@ -1,5 +1,9 @@
 // /js/panel.atmo.js
 (function () {
+  window.__ATMO_PANEL_EXEC_COUNT__ = (window.__ATMO_PANEL_EXEC_COUNT__ || 0) + 1;
+  console.log("[ATMO PANEL EXEC]", window.__ATMO_PANEL_EXEC_COUNT__, new Error().stack);
+
+  if (!window.RightPanel) return;
   if (!window.RightPanel) return;
 
   const APP_KEY = "atmo";
