@@ -356,7 +356,17 @@
     const elGrid = host.querySelector("[data-grid]");
     const elStatus = null;
 
-   const setStatus = (_t) => {};
+    const setStatus = (t) => {
+      if (elStatus) elStatus.textContent = t;
+      try {
+        if (
+          window.RightPanel &&
+          typeof window.RightPanel.setHeader === "function"
+        ) {
+          window.RightPanel.setHeader({ meta: String(t || "") });
+        }
+      } catch {}
+    };
 
     const toMs = (v) => {
       if (v == null) return 0;
