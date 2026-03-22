@@ -13,6 +13,7 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
 
+  // FAL atmo video status endpoint (app param şart)
   const STATUS_URL = (rid) =>
     `/api/providers/fal/video/status?request_id=${encodeURIComponent(
       rid
@@ -100,9 +101,7 @@
       if (u) return u;
     }
 
-    const ov = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
-    );
+    const ov = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay");
     if (ov) {
       const u = pickOutputUrl(ov);
       if (u) return u;
@@ -114,9 +113,7 @@
       if (u) return u;
     }
 
-    const pv = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "provider"
-    );
+    const pv = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "provider");
     if (pv) {
       const u = pickOutputUrl(pv);
       if (u) return u;
@@ -141,9 +138,7 @@
 
     if (directPreview) return directPreview;
 
-    const prev = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "preview"
-    );
+    const prev = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "preview");
     if (prev) {
       const u = pickOutputUrl(prev);
       if (u) return u;
@@ -198,6 +193,7 @@
         border:1px solid rgba(255,255,255,0.08);
       }
 
+      /* clamp: kart içi video asla paneli büyütmez */
       .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
       .atmoThumb.isPortrait:before{padding-top:140%;}
 
@@ -301,6 +297,9 @@
       items: [],
       ephemerals: [],
     };
+
+    const playableUrls = new Set();
+    const probingUrls = new Set();
 
     host.innerHTML = `
       <div class="atmoWrap">
@@ -419,13 +418,11 @@
 
           const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
           const previewUrlResolved = safeStr(previewVideoFromJob(job));
-
           const selectedPlaybackRawUrl = isFreshCard
             ? (finalUrl || previewUrlResolved)
             : (previewUrlResolved || finalUrl);
 
           const hasUrl = !!selectedPlaybackRawUrl;
-
           const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
           const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
           const metaLine = `${engine}${dt ? " • " + dt : ""}`;
@@ -438,6 +435,10 @@
           const videoUrl = playbackUrl
             ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
             : "";
+
+          if (playbackUrl && !playableUrls.has(playbackUrl) && !probingUrls.has(playbackUrl)) {
+            probePlayableUrl(playbackUrl);
+          }
 
           const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
@@ -656,6 +657,26 @@
       };
     }
 
+    function probePlayableUrl(url) {
+      url = safeStr(url);
+      if (!url) return;
+      if (playableUrls.has(url)) return;
+      if (probingUrls.has(url)) return;
+
+      probingUrls.add(url);
+
+      waitUntilPlayable(url, 12000)
+        .then((ok) => {
+          if (ok) {
+            playableUrls.add(url);
+            render();
+          }
+        })
+        .finally(() => {
+          probingUrls.delete(url);
+        });
+    }
+
     async function waitUntilPlayable(url, timeoutMs = 12000) {
       url = safeStr(url);
       if (!url) return false;
@@ -681,23 +702,37 @@
         v.muted = true;
         v.playsInline = true;
 
-        v.addEventListener("loadeddata", () => {
-          clearTimeout(t);
-          finish(true);
-        }, { once: true });
+        v.addEventListener(
+          "loadeddata",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
 
-        v.addEventListener("canplay", () => {
-          clearTimeout(t);
-          finish(true);
-        }, { once: true });
+        v.addEventListener(
+          "canplay",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
 
-        v.addEventListener("error", () => {
-          clearTimeout(t);
-          finish(false);
-        }, { once: true });
+        v.addEventListener(
+          "error",
+          () => {
+            clearTimeout(t);
+            finish(false);
+          },
+          { once: true }
+        );
 
         v.src = url;
-        try { v.load(); } catch {}
+        try {
+          v.load();
+        } catch {}
       });
     }
 
@@ -733,6 +768,7 @@
         }
 
         const playable = await waitUntilPlayable(url, 12000);
+        if (playable) playableUrls.add(url);
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
