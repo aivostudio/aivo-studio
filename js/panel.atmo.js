@@ -59,7 +59,35 @@
 
   const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
 
-  const idOf = (it) => String(it?.job_id || it?.id || "").trim();
+  function getRequestId(it) {
+    return safeStr(
+      it?.request_id ||
+        it?.requestId ||
+        it?.fal_request_id ||
+        it?.provider_request_id ||
+        it?.meta?.request_id ||
+        it?.meta?.requestId ||
+        it?.meta?.fal_request_id ||
+        it?.meta?.provider_request_id
+    );
+  }
+
+  function panelKeyOf(it) {
+    const explicit = safeStr(it?.panel_key);
+    if (explicit) return explicit;
+
+    const jobId = safeStr(it?.job_id || it?.id);
+    if (jobId) return `job:${jobId}`;
+
+    const rid = getRequestId(it);
+    if (rid) return `req:${rid}`;
+
+    return "";
+  }
+
+  function idOf(it) {
+    return panelKeyOf(it);
+  }
 
   const toMaybeProxyUrl = (url) => {
     const u = String(url || "").trim();
@@ -391,15 +419,17 @@
     }
 
     function getMatchMeta(job) {
+      const panelKey = panelKeyOf(job);
       const jobId = safeStr(job?.job_id || job?.id);
-      const rid = safeStr(job?.meta?.request_id || job?.request_id);
-      return { jobId, rid };
+      const rid = getRequestId(job);
+      return { panelKey, jobId, rid };
     }
 
     function sameJob(a, b) {
       const aa = getMatchMeta(a);
       const bb = getMatchMeta(b);
 
+      if (aa.panelKey && bb.panelKey && aa.panelKey === bb.panelKey) return true;
       if (aa.jobId && bb.jobId && aa.jobId === bb.jobId) return true;
       if (aa.rid && bb.rid && aa.rid === bb.rid) return true;
 
@@ -525,6 +555,11 @@
       const html = renderCard(job);
       if (!html) return;
 
+      const nextId = idOf(job);
+      if (nextId) {
+        el.setAttribute("data-job", nextId);
+      }
+
       if (el.__renderedHtml !== html) {
         el.innerHTML = html;
         el.__renderedHtml = html;
@@ -540,9 +575,11 @@
         safeStr(payload.provider_request_id);
 
       if (!job_id && !request_id) return;
-      if (job_id && hiddenDeletedIds.has(job_id)) return;
 
-      const id = job_id || `tmp_${request_id}`;
+      const panel_key = job_id ? `job:${job_id}` : `req:${request_id}`;
+      if (job_id && hiddenDeletedIds.has(panel_key)) return;
+      if (request_id && hiddenDeletedIds.has(panel_key)) return;
+
       const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
       const provider = safeStr(
         payload.provider || payload?.meta?.provider || "Atmos"
@@ -555,7 +592,9 @@
       );
 
       const nextItem = {
-        job_id: id,
+        panel_key,
+        job_id,
+        request_id,
         app: APP_KEY,
         provider,
         prompt,
@@ -578,7 +617,7 @@
         outputs: [],
       };
 
-      optimistic.set(id, nextItem);
+      optimistic.set(panel_key, nextItem);
       renderCurrent();
     }
 
@@ -589,10 +628,14 @@
         safeStr(detail?.fal_request_id) ||
         safeStr(detail?.meta?.request_id);
 
-      const existingDb = currentDbItems.find((j) => {
-        const a = getMatchMeta(j);
-        return (job_id && a.jobId === job_id) || (request_id && a.rid === request_id);
-      });
+      const incoming = {
+        panel_key: job_id ? `job:${job_id}` : request_id ? `req:${request_id}` : "",
+        job_id,
+        request_id,
+        meta: detail?.meta || {},
+      };
+
+      const existingDb = currentDbItems.find((j) => sameJob(j, incoming));
 
       const outputs = Array.isArray(detail?.outputs) ? detail.outputs : [];
       const rawOutputs = Array.isArray(detail?.raw?.outputs) ? detail.raw.outputs : [];
@@ -626,6 +669,7 @@
             : [];
 
       if (existingDb) {
+        existingDb.panel_key = panelKeyOf(existingDb) || incoming.panel_key;
         existingDb.db_status = "ready";
         existingDb.status = "ready";
         existingDb.state = "COMPLETED";
@@ -635,58 +679,74 @@
           existingDb.outputs = mergedOutputs;
         }
 
-        if (previewUrl && !existingDb.preview_url) {
+        if (previewUrl) {
           existingDb.preview_url = previewUrl;
         }
 
-        if (finalUrl && !existingDb.final_url) {
+        if (finalUrl) {
           existingDb.final_url = finalUrl;
         }
 
-        const existingId = idOf(existingDb);
-        if (existingId && optimistic.has(existingId)) {
-          optimistic.delete(existingId);
+        for (const [k, v] of optimistic.entries()) {
+          if (sameJob(v, existingDb)) {
+            optimistic.delete(k);
+          }
         }
 
         renderCurrent();
         return;
       }
 
-      const optimisticJob =
-        optimistic.get(job_id) ||
-        Array.from(optimistic.values()).find((x) => {
-          const m = getMatchMeta(x);
-          return (job_id && m.jobId === job_id) || (request_id && m.rid === request_id);
-        });
+      let optimisticEntry = null;
+      let optimisticKey = "";
 
-      if (!optimisticJob) return;
+      for (const [k, v] of optimistic.entries()) {
+        if (sameJob(v, incoming)) {
+          optimisticEntry = v;
+          optimisticKey = k;
+          break;
+        }
+      }
 
-      const nextId = idOf(optimisticJob) || job_id || `tmp_${request_id}`;
+      if (!optimisticEntry) return;
 
-      optimistic.set(nextId, {
-        ...optimisticJob,
-        job_id: nextId,
+      const nextPanelKey = job_id ? `job:${job_id}` : optimisticKey || panelKeyOf(optimisticEntry);
+
+      const nextItem = {
+        ...optimisticEntry,
+        panel_key: nextPanelKey,
+        job_id: job_id || optimisticEntry.job_id || "",
+        request_id: request_id || optimisticEntry.request_id || getRequestId(optimisticEntry) || "",
         db_status: "ready",
         status: "ready",
         state: "COMPLETED",
         _fresh: true,
-        final_url: finalUrl || optimisticJob.final_url || "",
-        preview_url: previewUrl || optimisticJob.preview_url || "",
-        outputs: mergedOutputs.length ? mergedOutputs : optimisticJob.outputs || [],
+        final_url: finalUrl || optimisticEntry.final_url || "",
+        preview_url: previewUrl || optimisticEntry.preview_url || "",
+        outputs: mergedOutputs.length ? mergedOutputs : optimisticEntry.outputs || [],
         meta: {
-          ...(optimisticJob.meta || {}),
+          ...(optimisticEntry.meta || {}),
           ...(detail?.meta || {}),
           app: APP_KEY,
-          request_id: request_id || optimisticJob?.meta?.request_id || "",
+          request_id:
+            request_id ||
+            optimisticEntry?.request_id ||
+            optimisticEntry?.meta?.request_id ||
+            "",
           prompt: safeStr(
             detail?.meta?.prompt ||
-              optimisticJob?.meta?.prompt ||
-              optimisticJob?.prompt ||
+              optimisticEntry?.meta?.prompt ||
+              optimisticEntry?.prompt ||
               ""
           ),
         },
-      });
+      };
 
+      if (optimisticKey && optimisticKey !== nextPanelKey) {
+        optimistic.delete(optimisticKey);
+      }
+
+      optimistic.set(nextPanelKey, nextItem);
       renderCurrent();
     }
 
@@ -710,15 +770,15 @@
     function combinedItems() {
       const dbItems = (Array.isArray(currentDbItems) ? currentDbItems : []).filter(
         (x) => {
-          const jid = safeStr(x?.job_id || x?.id);
-          if (jid && hiddenDeletedIds.has(jid)) return false;
+          const key = idOf(x);
+          if (key && hiddenDeletedIds.has(key)) return false;
           return true;
         }
       );
 
       const eps = Array.from(optimistic.values()).filter((x) => {
-        const jid = safeStr(x?.job_id || x?.id);
-        if (jid && hiddenDeletedIds.has(jid)) return false;
+        const key = idOf(x);
+        if (key && hiddenDeletedIds.has(key)) return false;
         return true;
       });
 
@@ -741,7 +801,10 @@
         }
 
         if (isTerminalState(dbMatch)) {
-          picked.push(dbMatch);
+          picked.push({
+            ...dbMatch,
+            panel_key: panelKeyOf(dbMatch) || panelKeyOf(ep),
+          });
           usedDbIndexes.add(dbIndex);
           continue;
         }
@@ -867,14 +930,14 @@
     }
 
     async function handleAction(cardEl, act) {
-      const jobId = safeStr(
+      const panelId = safeStr(
         cardEl?.getAttribute("data-job") || cardEl?.dataset?.svcId || ""
       );
 
-      if (!act || !jobId) return;
+      if (!act || !panelId) return;
 
       const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
-      const job = allItems.find((x) => idOf(x) === jobId);
+      const job = allItems.find((x) => idOf(x) === panelId);
       if (!job) return;
 
       if (act === "play") {
@@ -919,7 +982,7 @@
 
       if (act === "download") {
         if (!directUrl) return;
-        download(directUrl, `atmo-${jobId || "video"}.mp4`);
+        download(directUrl, `atmo-${safeStr(job?.job_id) || "video"}.mp4`);
         return;
       }
 
@@ -931,15 +994,22 @@
 
       if (act === "delete") {
         try {
-          hiddenDeletedIds.add(jobId);
-          optimistic.delete(jobId);
-          currentDbItems = currentDbItems.filter((x) => idOf(x) !== jobId);
+          hiddenDeletedIds.add(panelId);
+          optimistic.delete(panelId);
+          currentDbItems = currentDbItems.filter((x) => idOf(x) !== panelId);
 
           renderCurrent();
 
-          const ok = await controller.deleteJob(jobId);
+          const realJobId = safeStr(job?.job_id || job?.id);
+          if (!realJobId) {
+            hiddenDeletedIds.delete(panelId);
+            renderCurrent();
+            return;
+          }
+
+          const ok = await controller.deleteJob(realJobId);
           if (!ok) {
-            hiddenDeletedIds.delete(jobId);
+            hiddenDeletedIds.delete(panelId);
             try {
               await controller?.hydrate?.(true);
             } catch {}
@@ -951,7 +1021,7 @@
             await controller?.hydrate?.(true);
           } catch {}
         } catch (err) {
-          hiddenDeletedIds.delete(jobId);
+          hiddenDeletedIds.delete(panelId);
           try {
             await controller?.hydrate?.(true);
           } catch {}
@@ -996,9 +1066,13 @@
 
         currentDbItems = (items || [])
           .filter(isJobAtmo)
+          .map((j) => ({
+            ...j,
+            panel_key: panelKeyOf(j),
+          }))
           .filter((j) => {
-            const id = idOf(j);
-            return id && !hiddenDeletedIds.has(id);
+            const key = idOf(j);
+            return key && !hiddenDeletedIds.has(key);
           });
 
         renderCurrent();
