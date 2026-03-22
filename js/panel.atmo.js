@@ -1,113 +1,37 @@
 // /js/panel.atmo.js
-// DB source-of-truth + optimistic atmosphere video cards
-// - job_created gelince kart anında görünür
-// - onChange DB item'ları ile merge edilir
-// - ready olunca kart yerinde güncellenir
-// - fresh kartta final/full önceliklidir
-// - DB kartında preview öne geçebilir
-// - create/poll/provider parse/PPE burada YOK
-
 (function () {
-  if (window.__ATMO_PANEL_BIND__) {
-  console.warn("[PANEL.ATMO] skipped duplicate eval");
-  return;
-}
-window.__ATMO_PANEL_BIND__ = true;
   if (!window.RightPanel) return;
-  if (!window.DBJobs) {
-    console.warn("[ATMO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
-    return;
-  }
 
   const APP_KEY = "atmo";
   const MAX_ITEMS = 30;
 
-  const norm = (s) =>
-    String(s || "")
-      .trim()
-      .toLowerCase()
-      .replaceAll("_", " ")
-      .replace(/\s+/g, " ");
-
   const safeStr = (v) => String(v == null ? "" : v).trim();
-
   const esc = (s) =>
-    String(s ?? "").replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c]));
+    safeStr(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
 
-  const isAtmoApp = (x) => {
-    const a = norm(x);
-    return a === "atmo" || a.includes("atmo") || a.includes("atmos");
-  };
+  const STATUS_URL = (rid) =>
+    `/api/providers/fal/video/status?request_id=${encodeURIComponent(
+      rid
+    )}&app=${APP_KEY}`;
 
-  const getJobApp = (job) =>
-    String(
-      job?.app ||
-        job?.meta?.app ||
-        job?.meta?.module ||
-        job?.meta?.routeKey ||
-        ""
-    ).trim();
-
-  const getOutApp = (o) =>
-    String(
-      o?.meta?.app ||
-        o?.meta?.module ||
-        o?.meta?.routeKey ||
-        ""
-    ).trim();
-
-  const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
-
-  function getRequestId(it) {
-    return safeStr(
-      it?.request_id ||
-        it?.requestId ||
-        it?.fal_request_id ||
-        it?.provider_request_id ||
-        it?.meta?.request_id ||
-        it?.meta?.requestId ||
-        it?.meta?.fal_request_id ||
-        it?.meta?.provider_request_id
+  function pickVideoUrl(data) {
+    return (
+      data?.video?.url ||
+      data?.video_url ||
+      data?.output?.video?.url ||
+      data?.output?.url ||
+      (Array.isArray(data?.outputs) ? data.outputs?.[0]?.url : null) ||
+      (Array.isArray(data?.output) ? data.output?.[0]?.url : null) ||
+      data?.result?.url ||
+      data?.result?.video?.url ||
+      null
     );
   }
-
-  function panelKeyOf(it) {
-    const explicit = safeStr(it?.panel_key);
-    if (explicit) return explicit;
-
-    const jobId = safeStr(it?.job_id || it?.id);
-    if (jobId) return `job:${jobId}`;
-
-    const rid = getRequestId(it);
-    if (rid) return `req:${rid}`;
-
-    return "";
-  }
-
-  function idOf(it) {
-    return panelKeyOf(it);
-  }
-
-  const toMaybeProxyUrl = (url) => {
-    const u = String(url || "").trim();
-    if (!u) return "";
-    if (
-      u.startsWith("/api/media/proxy?url=") ||
-      u.includes("/api/media/proxy?url=")
-    ) {
-      return u;
-    }
-    if (u.startsWith("http://")) {
-      return "/api/media/proxy?url=" + encodeURIComponent(u);
-    }
-    return u;
-  };
 
   function formatTs(ts) {
     try {
@@ -125,28 +49,11 @@ window.__ATMO_PANEL_BIND__ = true;
   }
 
   function pickOutputUrl(o) {
-    return safeStr(
-      o?.archive_url ||
-        o?.archiveUrl ||
-        o?.url ||
-        o?.video_url ||
-        o?.videoUrl ||
-        o?.raw_url ||
-        o?.rawUrl ||
-        o?.src ||
-        o?.meta?.archive_url ||
-        o?.meta?.archiveUrl ||
-        o?.meta?.url ||
-        o?.meta?.video_url ||
-        o?.meta?.videoUrl ||
-        ""
-    );
+    return safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
   }
 
   function isVideoOutput(o) {
-    return norm(
-      o?.type || o?.kind || o?.meta?.type || o?.meta?.kind
-    ) === "video";
+    return String(o?.type || o?.kind || "").toLowerCase() === "video";
   }
 
   function outputVariant(o) {
@@ -165,7 +72,7 @@ window.__ATMO_PANEL_BIND__ = true;
       safeStr(meta?.final_url) ||
       safeStr(meta?.final_video_url);
 
-    if (directFinal) return toMaybeProxyUrl(directFinal);
+    if (directFinal) return directFinal;
 
     const directLogo =
       safeStr(job?.logo) ||
@@ -175,7 +82,7 @@ window.__ATMO_PANEL_BIND__ = true;
       safeStr(meta?.logo_url) ||
       safeStr(meta?.logo_overlay_url);
 
-    if (directLogo) return toMaybeProxyUrl(directLogo);
+    if (directLogo) return directLogo;
 
     const directMux =
       safeStr(job?.mux) ||
@@ -185,12 +92,12 @@ window.__ATMO_PANEL_BIND__ = true;
       safeStr(meta?.mux_url) ||
       safeStr(meta?.muxed_url);
 
-    if (directMux) return toMaybeProxyUrl(directMux);
+    if (directMux) return directMux;
 
     const fin = outs.find((o) => isVideoOutput(o) && o?.meta?.is_final === true);
     if (fin) {
       const u = pickOutputUrl(fin);
-      if (u) return toMaybeProxyUrl(u);
+      if (u) return u;
     }
 
     const ov = outs.find(
@@ -198,13 +105,13 @@ window.__ATMO_PANEL_BIND__ = true;
     );
     if (ov) {
       const u = pickOutputUrl(ov);
-      if (u) return toMaybeProxyUrl(u);
+      if (u) return u;
     }
 
     const mx = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "mux");
     if (mx) {
       const u = pickOutputUrl(mx);
-      if (u) return toMaybeProxyUrl(u);
+      if (u) return u;
     }
 
     const pv = outs.find(
@@ -212,11 +119,11 @@ window.__ATMO_PANEL_BIND__ = true;
     );
     if (pv) {
       const u = pickOutputUrl(pv);
-      if (u) return toMaybeProxyUrl(u);
+      if (u) return u;
     }
 
     const vid = outs.find((o) => isVideoOutput(o)) || outs[0];
-    return toMaybeProxyUrl(pickOutputUrl(vid));
+    return pickOutputUrl(vid);
   }
 
   function previewVideoFromJob(job) {
@@ -231,62 +138,144 @@ window.__ATMO_PANEL_BIND__ = true;
       safeStr(meta?.preview_url) ||
       safeStr(meta?.preview_video_url);
 
-    if (directPreview) return toMaybeProxyUrl(directPreview);
+    if (directPreview) return directPreview;
 
     const prev = outs.find(
       (o) => isVideoOutput(o) && outputVariant(o) === "preview"
     );
     if (prev) {
       const u = pickOutputUrl(prev);
-      if (u) return toMaybeProxyUrl(u);
+      if (u) return u;
     }
 
     return "";
   }
 
-  function directFinalVideoFromJob(job) {
-    return safeStr(
-      job?.final_url ||
-        job?.final_video_url ||
-        job?.meta?.final_url ||
-        job?.meta?.final_video_url ||
-        bestVideoFromJob(job) ||
-        ""
-    );
-  }
-
-  function directPreviewVideoFromJob(job) {
-    return safeStr(
-      job?.preview_url ||
-        job?.preview_video_url ||
-        job?.meta?.preview_url ||
-        job?.meta?.preview_video_url ||
-        previewVideoFromJob(job) ||
-        ""
-    );
-  }
-
   function acceptAtmoOutput(o) {
     if (!o) return false;
-
-    const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+    const t = String(o?.type || "").toLowerCase();
     if (t && t !== "video") return false;
 
-    const oa = getOutApp(o);
-    if (oa && !isAtmoApp(oa)) return false;
+    const app = String(
+      o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || ""
+    )
+      .toLowerCase()
+      .trim();
 
-    return true;
+    if (!app) return true;
+    return app.includes("atmo");
   }
 
-  function mapBadge(job) {
-    const a = norm(job?.db_status);
-    const b = norm(job?.status);
-    const c = norm(job?.state);
-    const st = (a || b || c || "").toUpperCase();
+  function ensureStyles() {
+    if (document.getElementById("atmoMiniPanelStyles")) return;
+
+    const css = `
+      .atmoWrap{display:flex;flex-direction:column;gap:12px;}
+      .atmoGrid{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap:12px;
+      }
+      @media (max-width: 980px){ .atmoGrid{grid-template-columns:1fr;} }
+
+      .atmoEmpty{opacity:.7;font-size:12px;padding:4px 2px;}
+
+      .atmoCard{
+        position:relative;
+        border-radius:18px;
+        background:rgba(255,255,255,0.035);
+        border:1px solid rgba(255,255,255,0.07);
+        overflow:hidden;
+      }
+
+      .atmoThumb{
+        position:relative;
+        border-radius:16px;
+        overflow:hidden;
+        margin:10px;
+        background:#000;
+        border:1px solid rgba(255,255,255,0.08);
+      }
+
+      .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
+      .atmoThumb.isPortrait:before{padding-top:140%;}
+
+      .atmoThumbVideo{
+        position:absolute;inset:0;width:100%;height:100%;
+        object-fit:cover;
+        background:#000;
+      }
+
+      .atmoThumbPlaceholder{
+        position:absolute;inset:0;
+        display:flex;align-items:center;justify-content:center;
+        font-size:12px;opacity:.75;
+        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
+      }
+
+      .atmoPill{
+        position:absolute;left:14px;top:14px;z-index:3;
+        padding:6px 10px;border-radius:999px;
+        font-size:12px;font-weight:700;
+        background:rgba(0,0,0,.35);
+        border:1px solid rgba(255,255,255,0.10);
+        backdrop-filter: blur(10px);
+      }
+      .atmoPill.ok{border-color:rgba(120,255,190,.22);}
+      .atmoPill.mid{border-color:rgba(255,255,255,.10);}
+      .atmoPill.bad{border-color:rgba(255,120,120,.25);}
+
+      .atmoFooter{
+        padding:10px 12px 12px 12px;
+        display:flex;flex-direction:column;gap:8px;
+      }
+      .atmoMetaLine{
+        font-size:12px;opacity:.8;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      }
+      .atmoPromptLine{
+        font-size:12px;opacity:.7;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      }
+
+      .atmoActions{
+        display:flex;gap:8px;
+        padding:10px;border-radius:14px;
+        background:rgba(0,0,0,.20);
+        border:1px solid rgba(255,255,255,0.06);
+      }
+
+      .atmoIconBtn{
+        flex:1;
+        height:38px;
+        border-radius:12px;
+        border:1px solid rgba(255,255,255,0.10);
+        background:rgba(255,255,255,0.04);
+        color:#fff;
+        cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        font-weight:700;font-size:12px;
+      }
+      .atmoIconBtn[disabled]{opacity:.45;cursor:not-allowed;}
+      .atmoIconBtn.danger{
+        border-color:rgba(255,120,120,0.20);
+        background:rgba(255,120,120,0.08);
+      }
+    `;
+
+    const style = document.createElement("style");
+    style.id = "atmoMiniPanelStyles";
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function badgeFor(job) {
+    const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
       return { text: "Hata", kind: "bad" };
     }
+
     if (
       st.includes("READY") ||
       st.includes("DONE") ||
@@ -295,6 +284,7 @@ window.__ATMO_PANEL_BIND__ = true;
     ) {
       return { text: "Hazır", kind: "ok" };
     }
+
     if (
       st.includes("RUN") ||
       st.includes("PROC") ||
@@ -303,66 +293,34 @@ window.__ATMO_PANEL_BIND__ = true;
     ) {
       return { text: "İşleniyor", kind: "mid" };
     }
-    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
+
+    return { text: st || "Hazır", kind: "mid" };
   }
 
-  function ensureStyles() {
-    if (document.getElementById("atmoPanelStyles")) return;
-
-    const css = `
-      .atmoPanelWrap{display:flex;flex-direction:column;gap:12px;}
-      .atmoPanelGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-      .atmoPanelCard{position:relative;border-radius:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);overflow:hidden;}
-      .atmoPanelThumb{position:relative;border-radius:16px;overflow:hidden;margin:10px;background:#000;border:1px solid rgba(255,255,255,0.08);}
-      .atmoPanelThumb:before{content:"";display:block;padding-top:56.25%;}
-      .atmoPanelThumb.isPortrait:before{padding-top:140%;}
-      .atmoPanelVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;}
-      .atmoPanelPill{position:absolute;left:14px;top:14px;z-index:3;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,0.10);backdrop-filter:blur(10px);}
-      .atmoPanelPill.ok{border-color:rgba(120,255,190,.22);}
-      .atmoPanelPill.mid{border-color:rgba(255,255,255,.10);}
-      .atmoPanelPill.bad{border-color:rgba(255,120,120,.25);}
-      .atmoPanelSkel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));overflow:hidden;}
-      .atmoPanelSkel:before{content:"";position:absolute;inset:-40%;background:linear-gradient(90deg,rgba(255,255,255,0.00),rgba(220,170,255,0.14),rgba(255,255,255,0.00));transform:rotate(18deg);animation:atmoPanelShimmer 1.4s linear infinite;}
-      @keyframes atmoPanelShimmer{0%{transform:translateX(-30%) rotate(18deg);}100%{transform:translateX(30%) rotate(18deg);}}
-      .atmoPanelSkelLabel{position:relative;z-index:2;font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);}
-      .atmoPanelFooter{padding:10px 12px 12px 12px;display:flex;flex-direction:column;gap:8px;}
-      .atmoPanelMetaLine{font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-      .atmoPanelActions{display:flex;gap:8px;padding:10px;border-radius:14px;background:rgba(0,0,0,.20);border:1px solid rgba(255,255,255,0.06);}
-      .atmoPanelBtn{flex:1;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}
-      .atmoPanelBtn[disabled]{opacity:.45;cursor:not-allowed;}
-      .atmoPanelBtn.danger{border-color:rgba(255,120,120,0.20);background:rgba(255,120,120,0.08);}
-      @media (max-width: 980px){.atmoPanelGrid{grid-template-columns:1fr;}}
-    `;
-
-    const style = document.createElement("style");
-    style.id = "atmoPanelStyles";
-    style.textContent = css;
-    document.head.appendChild(style);
-  }
-
-  function createAtmoPanel(host) {
+  function createAtmosPanel(host) {
     ensureStyles();
 
     let destroyed = false;
-    let currentDbItems = [];
+    let timer = null;
 
-    const optimistic = new Map();
-    const hiddenDeletedIds = new Set();
-    const cardCache =
-      window.__ATMO_CARD_CACHE__ ||
-      (window.__ATMO_CARD_CACHE__ = new Map());
+    const state = {
+      items: [],
+      ephemerals: [],
+    };
+
+    const playableUrls = new Set();
+    const probingUrls = new Set();
+    const deletedIds = new Set();
 
     host.innerHTML = `
-      <div class="atmoPanelWrap">
-        <div class="atmoPanelGrid" data-grid></div>
+      <div class="atmoWrap">
+        <div class="atmoGrid" data-el="grid"></div>
       </div>
     `;
 
-    const elGrid = host.querySelector("[data-grid]");
-    const elStatus = null;
+    const $grid = host.querySelector('[data-el="grid"]');
 
-    const setStatus = (t) => {
-      if (elStatus) elStatus.textContent = t;
+    const setHeaderMeta = (t) => {
       try {
         if (
           window.RightPanel &&
@@ -373,68 +331,50 @@ window.__ATMO_PANEL_BIND__ = true;
       } catch {}
     };
 
-    const toMs = (v) => {
-      if (v == null) return 0;
-      if (typeof v === "number" && Number.isFinite(v)) return v;
+    function statusUpper(job) {
+      return String(job?.db_status || job?.status || job?.state || "").toUpperCase();
+    }
 
-      const s = String(v).trim();
-
-      if (/^\d{10,13}$/.test(s)) {
-        const n = Number(s);
-        if (Number.isFinite(n)) return n;
-      }
-
-      if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
-        const iso = s.replace(" ", "T") + "Z";
-        const tIso = Date.parse(iso);
-        if (Number.isFinite(tIso)) return tIso;
-      }
-
-      const t = Date.parse(s);
-      return Number.isFinite(t) ? t : 0;
-    };
-
-    const isReadyState = (job) => {
-      const st = norm(job?.db_status || job?.status || job?.state);
+    function isReady(job) {
+      const st = statusUpper(job);
       return (
-        st.includes("ready") ||
-        st.includes("done") ||
-        st.includes("complet") ||
-        st.includes("succ")
+        st.includes("READY") ||
+        st.includes("DONE") ||
+        st.includes("COMPLET") ||
+        st.includes("SUCC")
       );
-    };
+    }
 
-    const isErrorState = (job) => {
-      const st = norm(job?.db_status || job?.status || job?.state);
-      return st.includes("error") || st.includes("fail");
-    };
+    function isError(job) {
+      const st = statusUpper(job);
+      return st.includes("FAIL") || st.includes("ERROR");
+    }
 
-    const isTerminalState = (job) => isReadyState(job) || isErrorState(job);
+    function isProcessing(job) {
+      if (isReady(job) || isError(job)) return false;
+      const st = statusUpper(job);
+      return (
+        st.includes("RUN") ||
+        st.includes("PROC") ||
+        st.includes("PEND") ||
+        st.includes("QUEUE")
+      );
+    }
 
-    function hasProcessing(items) {
-      return (items || []).some((j) => {
-        const st = norm(j?.db_status || j?.status || j?.state).toUpperCase();
-        return (
-          st.includes("PROCESS") ||
-          st.includes("RUN") ||
-          st.includes("PEND") ||
-          st.includes("QUEUE")
-        );
-      });
+    function isTerminal(job) {
+      return isReady(job) || isError(job);
     }
 
     function getMatchMeta(job) {
-      const panelKey = panelKeyOf(job);
       const jobId = safeStr(job?.job_id || job?.id);
-      const rid = getRequestId(job);
-      return { panelKey, jobId, rid };
+      const rid = safeStr(job?.meta?.request_id || job?.request_id);
+      return { jobId, rid };
     }
 
     function sameJob(a, b) {
       const aa = getMatchMeta(a);
       const bb = getMatchMeta(b);
 
-      if (aa.panelKey && bb.panelKey && aa.panelKey === bb.panelKey) return true;
       if (aa.jobId && bb.jobId && aa.jobId === bb.jobId) return true;
       if (aa.rid && bb.rid && aa.rid === bb.rid) return true;
 
@@ -442,16 +382,12 @@ window.__ATMO_PANEL_BIND__ = true;
     }
 
     function isFreshDoneEphemeral(job) {
-      return !!job && job._fresh === true && isReadyState(job);
+      return !!job && job._fresh === true && isReady(job) && !!safeStr(job?.url);
     }
 
     function tsOf(j) {
-      return (
-        toMs(j?.updated_at) ||
-        toMs(j?.created_at) ||
-        toMs(j?.createdAt) ||
-        0
-      );
+      const t = new Date(j?.updated_at || j?.created_at || Date.now()).getTime();
+      return Number.isFinite(t) ? t : 0;
     }
 
     function isPortrait(job, out) {
@@ -459,331 +395,159 @@ window.__ATMO_PANEL_BIND__ = true;
         job?.meta?.aspect_ratio ||
           job?.meta?.ratio ||
           out?.meta?.aspect_ratio ||
-          out?.meta?.ratio ||
           ""
       );
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
 
-    function renderCard(job) {
-      const jid = idOf(job);
-      const badge = mapBadge(job);
+    function resolvePlaybackUrl(rawUrl) {
+      rawUrl = safeStr(rawUrl);
+      if (!rawUrl) return "";
 
-      const finalUrl = directFinalVideoFromJob(job);
-      const previewUrl = directPreviewVideoFromJob(job);
-      const isFreshCard = job?._fresh === true;
+      if (!/^https?:\/\//i.test(rawUrl)) return rawUrl;
 
-      const selectedPlaybackRawUrl = isFreshCard
-        ? finalUrl || previewUrl
-        : previewUrl || finalUrl;
-
-      const ready = badge.kind === "ok" && !!selectedPlaybackRawUrl;
-      const previewVideoUrl = ready
-        ? selectedPlaybackRawUrl.includes("#")
-          ? selectedPlaybackRawUrl
-          : selectedPlaybackRawUrl + "#t=0.001"
-        : "";
-
-      const out = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
-      const ratio = isPortrait(job, out) ? "9:16" : "16:9";
-
-      const title = safeStr(job?.prompt || job?.meta?.prompt || "Atmosfer Video");
-      const sub = (() => {
-        const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-        const dt = formatTs(
-          job?.created_at || job?.updated_at || job?.createdAt || Date.now()
-        );
-        return dt ? `${engine} • ${dt}` : engine;
-      })();
-
-      const badgeText = badge.text;
-      const badgeKind =
-        badge.kind === "ok"
-          ? "ready"
-          : badge.kind === "bad"
-            ? "error"
-            : "loading";
-
-      if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-        return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-          id: jid,
-          title: title || "—",
-          sub,
-          badgeText,
-          badgeKind,
-          videoUrl: previewVideoUrl,
-          posterUrl: "",
-          ratio,
-          ready,
-          canDownload: !!finalUrl,
-          canShare: ready,
-          canDelete: true,
-        });
+      if (rawUrl.includes("media.aivo.tr/outputs/atmo/")) {
+        return rawUrl;
       }
 
-      return "";
-    }
-
-    function ensureCardEl(job) {
-      const id = idOf(job);
-      if (!id) return null;
-
-      let el = cardCache.get(id);
-      if (el && el.isConnected) return el;
-
-      el = document.createElement("div");
-      el.className = "atmoPanelCard";
-      el.setAttribute("data-job", id);
-
-      el.innerHTML = `
-        <div class="atmoPanelThumb">
-          <div class="atmoPanelPill mid">İşleniyor</div>
-          <div class="atmoPanelSkel"><div class="atmoPanelSkelLabel">Hazırlanıyor…</div></div>
-        </div>
-        <div class="atmoPanelFooter">
-          <div class="atmoPanelMetaLine"></div>
-          <div class="atmoPanelActions">
-            <button class="atmoPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-            <button class="atmoPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-            <button class="atmoPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
-          </div>
-        </div>
-      `;
-
-      cardCache.set(id, el);
-      return el;
-    }
-
-    function patchCard(el, job) {
-      if (!el || !job) return;
-
-      const html = renderCard(job);
-      if (!html) return;
-
-      const nextId = idOf(job);
-      if (nextId) {
-        el.setAttribute("data-job", nextId);
-      }
-
-      if (el.__renderedHtml !== html) {
-        el.innerHTML = html;
-        el.__renderedHtml = html;
-      }
+      return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
     }
 
     function upsertEphemeralProcessing(payload = {}) {
-      const job_id = safeStr(payload.job_id);
-      const request_id =
+      const jobId = safeStr(payload.job_id);
+      const rid =
         safeStr(payload.request_id) ||
         safeStr(payload.requestId) ||
         safeStr(payload.fal_request_id) ||
         safeStr(payload.provider_request_id);
 
-      if (!job_id && !request_id) return;
-
-      const panel_key = job_id ? `job:${job_id}` : `req:${request_id}`;
-      if (job_id && hiddenDeletedIds.has(panel_key)) return;
-      if (request_id && hiddenDeletedIds.has(panel_key)) return;
-
       const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
-      const provider = safeStr(
-        payload.provider || payload?.meta?.provider || "Atmos"
-      );
-      const aspect_ratio = safeStr(
+      const provider = safeStr(payload.provider || payload?.meta?.provider || "Atmos");
+      const aspectRatio = safeStr(
         payload?.meta?.aspect_ratio ||
           payload?.aspect_ratio ||
           payload?.meta?.ratio ||
           ""
       );
 
+      if (!jobId && !rid) return;
+      if (jobId && deletedIds.has(jobId)) return;
+
+      const id = jobId || `tmp_${rid}`;
+
       const nextItem = {
-        panel_key,
-        job_id,
-        request_id,
-        app: APP_KEY,
-        provider,
-        prompt,
-        createdAt: payload?.createdAt || payload?.created_at || Date.now(),
-        created_at: payload?.createdAt || payload?.created_at || Date.now(),
+        job_id: id,
+        status: "PROCESSING",
         db_status: "processing",
-        status: "processing",
         state: "PROCESSING",
+        created_at: payload?.createdAt || payload?.created_at || Date.now(),
+        prompt,
         _fresh: false,
-        final_url: "",
-        preview_url: "",
         meta: {
-          ...(payload?.meta || {}),
           app: APP_KEY,
           provider,
-          request_id,
-          aspect_ratio,
-          prompt,
+          request_id: rid,
+          aspect_ratio: aspectRatio,
         },
         outputs: [],
       };
 
-      optimistic.set(panel_key, nextItem);
-      renderCurrent();
+      state.ephemerals = [
+        nextItem,
+        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextItem)),
+      ];
+
+      render();
     }
 
     function upsertEphemeralReady(detail = {}) {
-      const job_id = safeStr(detail?.job_id);
-      const request_id =
+      const jobId = safeStr(detail?.job_id);
+      const rid =
         safeStr(detail?.request_id) ||
         safeStr(detail?.fal_request_id) ||
         safeStr(detail?.meta?.request_id);
 
-      const incoming = {
-        panel_key: job_id ? `job:${job_id}` : request_id ? `req:${request_id}` : "",
-        job_id,
-        request_id,
-        meta: detail?.meta || {},
-      };
+      const existing =
+        (state.ephemerals || []).find((x) => {
+          const xJobId = safeStr(x?.job_id);
+          const xRid = safeStr(x?.meta?.request_id || x?.request_id);
+          return (jobId && xJobId === jobId) || (rid && xRid === rid);
+        }) || null;
 
-      const existingDb = currentDbItems.find((j) => sameJob(j, incoming));
-
-      const outputs = Array.isArray(detail?.outputs) ? detail.outputs : [];
-      const rawOutputs = Array.isArray(detail?.raw?.outputs) ? detail.raw.outputs : [];
-
-      const finalUrl = safeStr(
+      const readyUrl = safeStr(
         detail?.video?.url ||
-          detail?.url ||
-          bestVideoFromJob({ outputs }) ||
-          bestVideoFromJob({ outputs: rawOutputs }) ||
-          ""
+        detail?.url ||
+        pickVideoUrl(detail?.raw || detail) ||
+        (Array.isArray(detail?.outputs) ? detail.outputs?.[0]?.url : "")
       );
 
-      const previewUrl = safeStr(
-        previewVideoFromJob({ outputs }) ||
-          previewVideoFromJob({ outputs: rawOutputs }) ||
-          ""
-      );
+      if (!readyUrl) return;
 
-      const mergedOutputs = outputs.length
-        ? outputs
-        : rawOutputs.length
-          ? rawOutputs
-          : finalUrl
-            ? [
-                {
-                  type: "video",
-                  url: finalUrl,
-                  meta: { app: APP_KEY, is_final: true },
-                },
-              ]
-            : [];
-
-      if (existingDb) {
-        existingDb.panel_key = panelKeyOf(existingDb) || incoming.panel_key;
-        existingDb.db_status = "ready";
-        existingDb.status = "ready";
-        existingDb.state = "COMPLETED";
-        existingDb._fresh = true;
-
-        if (mergedOutputs.length) {
-          existingDb.outputs = mergedOutputs;
-        }
-
-        if (previewUrl) {
-          existingDb.preview_url = previewUrl;
-        }
-
-        if (finalUrl) {
-          existingDb.final_url = finalUrl;
-        }
-
-        for (const [k, v] of optimistic.entries()) {
-          if (sameJob(v, existingDb)) {
-            optimistic.delete(k);
-          }
-        }
-
-        renderCurrent();
-        return;
-      }
-
-      let optimisticEntry = null;
-      let optimisticKey = "";
-
-      for (const [k, v] of optimistic.entries()) {
-        if (sameJob(v, incoming)) {
-          optimisticEntry = v;
-          optimisticKey = k;
-          break;
-        }
-      }
-
-      if (!optimisticEntry) return;
-
-      const nextPanelKey = job_id ? `job:${job_id}` : optimisticKey || panelKeyOf(optimisticEntry);
-
-      const nextItem = {
-        ...optimisticEntry,
-        panel_key: nextPanelKey,
-        job_id: job_id || optimisticEntry.job_id || "",
-        request_id: request_id || optimisticEntry.request_id || getRequestId(optimisticEntry) || "",
-        db_status: "ready",
-        status: "ready",
+      const nextReady = {
+        job_id: jobId || safeStr(existing?.job_id) || `tmp_${rid}`,
+        url: readyUrl,
+        status: "DONE",
+        db_status: "done",
         state: "COMPLETED",
+        created_at: existing?.created_at || Date.now(),
+        prompt: safeStr(detail?.meta?.prompt || existing?.prompt || ""),
         _fresh: true,
-        final_url: finalUrl || optimisticEntry.final_url || "",
-        preview_url: previewUrl || optimisticEntry.preview_url || "",
-        outputs: mergedOutputs.length ? mergedOutputs : optimisticEntry.outputs || [],
         meta: {
-          ...(optimisticEntry.meta || {}),
-          ...(detail?.meta || {}),
           app: APP_KEY,
-          request_id:
-            request_id ||
-            optimisticEntry?.request_id ||
-            optimisticEntry?.meta?.request_id ||
-            "",
-          prompt: safeStr(
-            detail?.meta?.prompt ||
-              optimisticEntry?.meta?.prompt ||
-              optimisticEntry?.prompt ||
+          provider: safeStr(detail?.meta?.provider || existing?.meta?.provider || "Atmos"),
+          request_id: rid || safeStr(existing?.meta?.request_id),
+          aspect_ratio: safeStr(
+            detail?.meta?.aspect_ratio ||
+              detail?.aspect_ratio ||
+              existing?.meta?.aspect_ratio ||
               ""
           ),
         },
+        outputs: Array.isArray(detail?.outputs) ? detail.outputs : [],
       };
 
-      if (optimisticKey && optimisticKey !== nextPanelKey) {
-        optimistic.delete(optimisticKey);
-      }
+      const resolved = resolvePlaybackUrl(readyUrl);
+      if (resolved) playableUrls.add(resolved);
 
-      optimistic.set(nextPanelKey, nextItem);
-      renderCurrent();
+      state.ephemerals = [
+        nextReady,
+        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextReady)),
+      ];
+
+      render();
+
+      try {
+        db && db.hydrate(true);
+      } catch {}
     }
 
     function cleanupEphemeralsAgainstDb() {
-      const dbItems = Array.isArray(currentDbItems) ? currentDbItems : [];
-      const eps = Array.from(optimistic.values());
+      const dbItems = Array.isArray(state.items) ? state.items : [];
+      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
 
       if (!dbItems.length || !eps.length) return;
 
-      for (const ep of eps) {
+      state.ephemerals = eps.filter((ep) => {
         const dbMatch = dbItems.find((db) => sameJob(ep, db));
-        if (!dbMatch) continue;
+        if (!dbMatch) return true;
 
-        if (isFreshDoneEphemeral(ep)) continue;
-        if (isTerminalState(dbMatch)) {
-          optimistic.delete(idOf(ep));
-        }
-      }
+        if (isFreshDoneEphemeral(ep)) return true;
+        if (isTerminal(dbMatch)) return false;
+
+        return true;
+      });
     }
 
     function combinedItems() {
-      const dbItems = (Array.isArray(currentDbItems) ? currentDbItems : []).filter(
-        (x) => {
-          const key = idOf(x);
-          if (key && hiddenDeletedIds.has(key)) return false;
-          return true;
-        }
-      );
+      const dbItems = (Array.isArray(state.items) ? state.items : []).filter((x) => {
+        const jid = safeStr(x?.job_id || x?.id);
+        if (jid && deletedIds.has(jid)) return false;
+        return true;
+      });
 
-      const eps = Array.from(optimistic.values()).filter((x) => {
-        const key = idOf(x);
-        if (key && hiddenDeletedIds.has(key)) return false;
+      const eps = (Array.isArray(state.ephemerals) ? state.ephemerals : []).filter((x) => {
+        const jid = safeStr(x?.job_id || x?.id);
+        if (jid && deletedIds.has(jid)) return false;
         return true;
       });
 
@@ -805,11 +569,8 @@ window.__ATMO_PANEL_BIND__ = true;
           continue;
         }
 
-        if (isTerminalState(dbMatch)) {
-          picked.push({
-            ...dbMatch,
-            panel_key: panelKeyOf(dbMatch) || panelKeyOf(ep),
-          });
+        if (isTerminal(dbMatch)) {
+          picked.push(dbMatch);
           usedDbIndexes.add(dbIndex);
           continue;
         }
@@ -824,139 +585,121 @@ window.__ATMO_PANEL_BIND__ = true;
 
       return picked
         .sort((a, b) => {
-          const ap = !isTerminalState(a) ? 0 : isReadyState(a) ? 1 : 2;
-          const bp = !isTerminalState(b) ? 0 : isReadyState(b) ? 1 : 2;
+          const ap = isProcessing(a) ? 0 : isReady(a) ? 1 : 2;
+          const bp = isProcessing(b) ? 0 : isReady(b) ? 1 : 2;
           if (ap !== bp) return ap - bp;
           return tsOf(b) - tsOf(a);
         })
         .slice(0, MAX_ITEMS);
     }
 
-    function render(items) {
-      if (!elGrid) return;
+    function render() {
+      if (destroyed || !$grid) return;
 
-      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+      const items = combinedItems();
 
-      const list = Array.isArray(items) ? items : [];
-      const EMPTY_ID = "atmoEmptyState";
-      let emptyEl = elGrid.querySelector(`#${EMPTY_ID}`);
+      const hasProcessing = items.some((j) => isProcessing(j));
+      setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
-      if (!list.length) {
-        for (const ch of Array.from(elGrid.children)) {
-          if (ch.id !== EMPTY_ID) elGrid.removeChild(ch);
-        }
-
-        if (!emptyEl) {
-          emptyEl = document.createElement("div");
-          emptyEl.id = EMPTY_ID;
-          emptyEl.style.opacity = ".7";
-          emptyEl.style.fontSize = "12px";
-          emptyEl.style.padding = "4px 2px";
-          emptyEl.textContent = "Henüz atmosfer video yok.";
-          elGrid.appendChild(emptyEl);
-        }
+      if (!items.length) {
+        $grid.innerHTML = `<div class="atmoEmpty">Henüz atmos üretim yok.</div>`;
         return;
-      } else if (emptyEl) {
-        emptyEl.remove();
       }
 
-      const wanted = new Set();
-      let anchor = elGrid.firstChild;
+      $grid.innerHTML = items
+        .map((job) => {
+          const badge = badgeFor(job);
+          const isFreshCard = job?._fresh === true;
 
-      for (const job of list) {
-        const id = idOf(job);
-        if (!id) continue;
+          const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
+          const previewUrlResolved = safeStr(previewVideoFromJob(job));
 
-        wanted.add(id);
+          const selectedPlaybackRawUrl = isFreshCard
+            ? finalUrl || previewUrlResolved
+            : previewUrlResolved || finalUrl;
 
-        const card = ensureCardEl(job);
-        patchCard(card, job);
+          const hasUrl = !!selectedPlaybackRawUrl;
 
-        if (!card.isConnected) {
-          elGrid.insertBefore(card, anchor);
-          continue;
-        }
+          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+          const promptLine = safeStr(job?.prompt || "");
 
-        if (card !== anchor) {
-          elGrid.insertBefore(card, anchor);
-        } else {
-          anchor = anchor?.nextSibling || null;
-        }
-      }
+          const dummyOut = {
+            meta: { aspect_ratio: job?.meta?.aspect_ratio || "" },
+          };
+          const portrait = isPortrait(job, dummyOut);
 
-      for (const ch of Array.from(elGrid.children)) {
-        if (ch.id === EMPTY_ID) continue;
-        const jid = String(ch.getAttribute?.("data-job") || "").trim();
-        if (jid && !wanted.has(jid)) {
-          elGrid.removeChild(ch);
-        }
-      }
-    }
+          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
+          const videoUrl = playbackUrl
+            ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
+            : "";
 
-    function renderCurrent() {
-      cleanupEphemeralsAgainstDb();
-      render(combinedItems());
-    }
+          if (
+            playbackUrl &&
+            !playableUrls.has(playbackUrl) &&
+            !probingUrls.has(playbackUrl)
+          ) {
+            probePlayableUrl(playbackUrl);
+          }
 
-    function download(url, filename = "atmo.mp4") {
-      const cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return;
+          const isPlayableNow =
+            !!playbackUrl &&
+            playableUrls.has(playbackUrl) &&
+            badge.kind !== "bad";
 
-      const directUrl = cleanUrl.includes("#")
-        ? cleanUrl.split("#")[0]
-        : cleanUrl;
-
-      const proxied = directUrl.startsWith("/api/media/proxy?url=")
-        ? directUrl
-        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(filename)}`;
-
-      const a = document.createElement("a");
-      a.href = proxied;
-      a.download = filename;
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-
-    function share(url) {
-      const cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return;
-
-      const directUrl = cleanUrl.includes("#")
-        ? cleanUrl.split("#")[0]
-        : cleanUrl;
-
-      if (navigator.share) {
-        navigator.share({ url: directUrl }).catch(() => {});
-      } else {
-        navigator.clipboard?.writeText(directUrl).catch(() => {});
-      }
+          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+            ? (
+                '<div class="atmoCard"' +
+                  ' data-job="' + esc(job.job_id || "") + '"' +
+                  ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+                  ' data-final-url="' + esc(finalUrl) + '"' +
+                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+                  ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+                '>' +
+                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                    id: safeStr(job.job_id || ""),
+                    title: promptLine || "—",
+                    sub: metaLine,
+                    badgeText: badge.text,
+                    badgeKind: isPlayableNow
+                      ? "ready"
+                      : (badge.kind === "bad" ? "error" : "loading"),
+                    videoUrl,
+                    posterUrl: "",
+                    ratio: portrait ? "9:16" : "16:9",
+                    ready: isPlayableNow,
+                    canDownload: !!finalUrl,
+                    canShare: isPlayableNow,
+                    canDelete: true
+                  }) +
+                '</div>'
+              )
+            : "";
+        })
+        .join("");
     }
 
     async function handleAction(cardEl, act) {
-      const panelId = safeStr(
-        cardEl?.getAttribute("data-job") || cardEl?.dataset?.svcId || ""
-      );
-
-      if (!act || !panelId) return;
-
-      const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
-      const job = allItems.find((x) => idOf(x) === panelId);
-      if (!job) return;
+      const jobId = safeStr(cardEl?.getAttribute("data-job"));
+      const url = safeStr(cardEl?.getAttribute("data-url"));
+      const finalUrl = safeStr(cardEl?.getAttribute("data-final-url"));
+      const previewUrl = safeStr(cardEl?.getAttribute("data-preview-url"));
 
       if (act === "play") {
-        const video = cardEl?.querySelector("video.svcVideo, video");
+        const video = cardEl?.querySelector("video");
         if (!video) return;
 
-        if (video.paused) video.play().catch(() => {});
-        else video.pause();
-
+        if (video.paused) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
         return;
       }
 
       if (act === "fs") {
-        const video = cardEl?.querySelector("video.svcVideo, video");
+        const video = cardEl?.querySelector("video");
         if (!video) return;
 
         try {
@@ -964,6 +707,7 @@ window.__ATMO_PANEL_BIND__ = true;
             await document.exitFullscreen().catch(() => {});
             return;
           }
+
           if (video.requestFullscreen) {
             await video.requestFullscreen().catch(() => {});
           }
@@ -971,128 +715,131 @@ window.__ATMO_PANEL_BIND__ = true;
         return;
       }
 
-      const finalUrl = directFinalVideoFromJob(job);
-      const previewUrl = directPreviewVideoFromJob(job);
-      const directUrl = finalUrl || previewUrl;
-
-      if (act === "open") {
-        if (!directUrl) return;
-        window.open(
-          directUrl.includes("#") ? directUrl.split("#")[0] : directUrl,
-          "_blank",
-          "noopener"
-        );
-        return;
-      }
-
       if (act === "download") {
-        if (!directUrl) return;
-        download(directUrl, `atmo-${safeStr(job?.job_id) || "video"}.mp4`);
+        const dlUrl = finalUrl || url || previewUrl;
+        if (!dlUrl) return;
+
+        const proxied =
+          "/api/media/proxy?url=" +
+          encodeURIComponent(dlUrl) +
+          "&filename=" +
+          encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
+
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.src = proxied;
+
+        document.body.appendChild(iframe);
+
+        setTimeout(() => {
+          try {
+            iframe.remove();
+          } catch {}
+        }, 15000);
+
         return;
       }
 
       if (act === "share") {
-        if (!directUrl) return;
-        share(directUrl);
+        const shareUrl = finalUrl || url || previewUrl;
+        if (!shareUrl) return;
+
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: "Atmosfer Video", url: shareUrl });
+          } else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+          }
+        } catch {}
         return;
       }
 
       if (act === "delete") {
-        try {
-          hiddenDeletedIds.add(panelId);
-          optimistic.delete(panelId);
-          currentDbItems = currentDbItems.filter((x) => idOf(x) !== panelId);
+        if (!jobId) return;
 
-          renderCurrent();
+        deletedIds.add(jobId);
 
-          const realJobId = safeStr(job?.job_id || job?.id);
-          if (!realJobId) {
-            hiddenDeletedIds.delete(panelId);
-            renderCurrent();
-            return;
-          }
+        state.ephemerals = (state.ephemerals || []).filter(
+          (x) => safeStr(x?.job_id) !== jobId
+        );
+        state.items = (state.items || []).filter(
+          (x) => safeStr(x?.job_id) !== jobId
+        );
 
-          const ok = await controller.deleteJob(realJobId);
+        render();
+
+        if (db && typeof db.deleteJob === "function") {
+          const ok = await db.deleteJob(jobId);
           if (!ok) {
-            hiddenDeletedIds.delete(panelId);
-            try {
-              await controller?.hydrate?.(true);
-            } catch {}
-            console.error("[ATMO PANEL] delete failed");
-            return;
+            deletedIds.delete(jobId);
+            db.hydrate(true);
           }
-
-          try {
-            await controller?.hydrate?.(true);
-          } catch {}
-        } catch (err) {
-          hiddenDeletedIds.delete(panelId);
-          try {
-            await controller?.hydrate?.(true);
-          } catch {}
-          console.error("[ATMO PANEL] delete failed", err);
         }
+
+        return;
       }
     }
 
-    host.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-svc-act], [data-act]");
-      if (!btn) return;
+    $grid?.addEventListener(
+      "click",
+      (e) => {
+        const btn = e.target?.closest?.("[data-svc-act], [data-act]");
+        if (!btn) return;
 
-      const act = btn.dataset.svcAct || btn.dataset.act;
-      const card = btn.closest(".svcCard, .atmoPanelCard");
-      if (!card || !act) return;
+        const act =
+          safeStr(btn.getAttribute("data-svc-act")) ||
+          safeStr(btn.getAttribute("data-act"));
+        if (!act) return;
 
-      if (btn.hasAttribute("disabled")) return;
+        if (btn.hasAttribute("disabled")) return;
 
-      e.preventDefault();
-      e.stopPropagation();
+        const wrapperCard = btn.closest(".atmoCard");
+        const sharedCard = btn.closest(".svcCard");
+        const card = wrapperCard || sharedCard;
+        if (!card) return;
 
-      await handleAction(card, act);
-    });
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
-    const controller = window.DBJobs.create({
-      app: APP_KEY,
-      debug: false,
-      pollIntervalMs: 4000,
-      hydrateEveryMs: 15000,
-
-      acceptJob: (job) => {
-        if (!job) return false;
-        const ja = getJobApp(job);
-        if (ja && !isAtmoApp(ja)) return false;
-        return true;
+        handleAction(card, act);
       },
+      true
+    );
 
-      acceptOutput: acceptAtmoOutput,
+    const db =
+      window.DBJobs && typeof window.DBJobs.create === "function"
+        ? window.DBJobs.create({
+            app: APP_KEY,
+            debug: false,
+            pollIntervalMs: 4000,
+            hydrateEveryMs: 15000,
+            acceptOutput: acceptAtmoOutput,
+            onChange(items) {
+              state.items = (items || []).filter((x) => {
+                const jid = safeStr(x?.job_id || x?.id);
+                if (jid && deletedIds.has(jid)) return false;
+                return true;
+              });
 
-      onChange: async (items) => {
-        if (destroyed) return;
+              cleanupEphemeralsAgainstDb();
+              render();
+            },
+          })
+        : null;
 
-        currentDbItems = (items || [])
-          .filter(isJobAtmo)
-          .map((j) => ({
-            ...j,
-            panel_key: panelKeyOf(j),
-          }))
-          .filter((j) => {
-            const key = idOf(j);
-            return key && !hiddenDeletedIds.has(key);
-          });
-
-        renderCurrent();
-      },
-    });
+    if (db) db.start();
 
     const onJobCreated = (e) => {
       const d = e?.detail || {};
       if (!d) return;
 
       const appKey = safeStr(
-        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || APP_KEY
+        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
       ).toLowerCase();
 
-      if (!isAtmoApp(appKey)) return;
+      if (!appKey.includes("atmo")) return;
 
       upsertEphemeralProcessing({
         job_id: d?.job_id,
@@ -1109,61 +856,339 @@ window.__ATMO_PANEL_BIND__ = true;
       if (!d) return;
 
       const appKey = safeStr(
-        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || APP_KEY
+        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
       ).toLowerCase();
 
-      if (!isAtmoApp(appKey)) return;
+      if (!appKey.includes("atmo")) return;
 
       upsertEphemeralReady(d);
     };
 
-    controller.start();
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
     window.addEventListener("aivo:atmo:job_ready", onJobReady);
 
-    return {
-      destroy() {
-        destroyed = true;
-        try {
-          window.removeEventListener("aivo:atmo:job_created", onJobCreated);
-        } catch {}
-        try {
-          window.removeEventListener("aivo:atmo:job_ready", onJobReady);
-        } catch {}
-        try {
-          controller?.destroy?.();
-        } catch {}
-        try {
-          host.innerHTML = "";
-        } catch {}
-      },
-    };
-  }
+    const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
 
-  try {
-    console.log("[PANEL.ATMO] register run");
-    if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register(APP_KEY, {
-        header: {
-          title: "Atmosfer Video",
-          meta: "Hazır",
-       searchEnabled: true,
-          resetSearch: true,
-        },
+    if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
+      window.__AIVO_ATMO_UPSERT_HOOKED__ = true;
 
-        mount(host) {
-          const api = createAtmoPanel(host);
-          return () => {
-            try {
-              api?.destroy?.();
-            } catch {}
-          };
-        },
-      });
-    } else {
-      console.warn("[ATMO PANEL] RightPanel.register yok.");
+      window.AIVO_JOBS.upsert = function (job) {
+        try {
+          originalUpsert.call(this, job);
+        } catch {}
+
+        try {
+          if (!job) return;
+
+          const key = (
+            safeStr(job.routeKey) ||
+            safeStr(job.app) ||
+            safeStr(job.module) ||
+            safeStr(job.type) ||
+            safeStr(job.kind)
+          ).toLowerCase();
+
+          if (!key.includes("atmo")) return;
+
+          setHeaderMeta("İşleniyor…");
+
+          upsertEphemeralProcessing({
+            job_id: job?.job_id || job?.id,
+            request_id:
+              job?.request_id ||
+              job?.requestId ||
+              job?.fal_request_id ||
+              job?.provider_request_id,
+            prompt: job?.prompt || job?.meta?.prompt,
+            provider: job?.provider || job?.meta?.provider || "Atmos",
+            createdAt: job?.createdAt || Date.now(),
+            meta: job?.meta || {},
+          });
+
+          const rid =
+            safeStr(job.request_id) ||
+            safeStr(job.requestId) ||
+            safeStr(job.fal_request_id) ||
+            safeStr(job.provider_request_id);
+
+          if (!rid || rid === "TEST") return;
+
+          if (timer) clearInterval(timer);
+          timer = setInterval(
+            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
+            2000
+          );
+
+          pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
+        } catch {}
+      };
     }
-  } catch (e) {
-    console.warn("[ATMO PANEL] register failed", e);
+
+    function probePlayableUrl(url) {
+      url = safeStr(url);
+      if (!url) return;
+      if (playableUrls.has(url)) return;
+      if (probingUrls.has(url)) return;
+
+      probingUrls.add(url);
+
+      waitUntilPlayable(url, 12000)
+        .then((ok) => {
+          if (ok) {
+            playableUrls.add(url);
+            render();
+          }
+        })
+        .finally(() => {
+          probingUrls.delete(url);
+        });
+    }
+
+    async function waitUntilPlayable(url, timeoutMs = 12000) {
+      url = safeStr(url);
+      if (!url) return false;
+
+      return await new Promise((resolve) => {
+        const v = document.createElement("video");
+        let done = false;
+
+        const finish = (ok) => {
+          if (done) return;
+          done = true;
+          try {
+            v.pause();
+            v.removeAttribute("src");
+            v.load();
+          } catch {}
+          resolve(!!ok);
+        };
+
+        const t = setTimeout(() => finish(false), timeoutMs);
+
+        v.preload = "metadata";
+        v.muted = true;
+        v.playsInline = true;
+
+        v.addEventListener(
+          "loadeddata",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
+
+        v.addEventListener(
+          "canplay",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
+
+        v.addEventListener(
+          "error",
+          () => {
+            clearTimeout(t);
+            finish(false);
+          },
+          { once: true }
+        );
+
+        v.src = url;
+        try {
+          v.load();
+        } catch {}
+      });
+    }
+
+    async function pollFalOnce(rid, promptMaybe) {
+      if (destroyed) return;
+      rid = safeStr(rid);
+      if (!rid) return;
+
+      let data;
+      try {
+        const r = await fetch(STATUS_URL(rid), { credentials: "include" });
+        data = await r.json();
+      } catch {
+        setHeaderMeta("Bağlantı sorunu");
+        return;
+      }
+
+      const st = safeStr(
+        data?.status || data?.state || data?.result?.status
+      ).toLowerCase();
+
+      if (st.includes("fail") || st === "error") {
+        const existing = (state.ephemerals || []).find(
+          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
+        );
+
+        if (existing) {
+          state.ephemerals = [
+            {
+              ...existing,
+              status: "ERROR",
+              db_status: "error",
+              state: "ERROR",
+            },
+            ...(state.ephemerals || []).filter((x) => !sameJob(x, existing)),
+          ];
+          render();
+        }
+
+        setHeaderMeta("Hata");
+        return;
+      }
+
+      if (
+        st.includes("complete") ||
+        st.includes("success") ||
+        st === "succeeded"
+      ) {
+        const url = pickVideoUrl(data);
+
+        if (!url) {
+          setHeaderMeta("Tamamlandı (url yok)");
+          return;
+        }
+
+        const playbackResolved = resolvePlaybackUrl(url);
+        const playable = await waitUntilPlayable(playbackResolved, 12000);
+
+        if (!playable) {
+          setHeaderMeta("İşleniyor…");
+          return;
+        }
+
+        playableUrls.add(playbackResolved);
+        setHeaderMeta("Tamamlandı");
+
+        const existing = (state.ephemerals || []).find(
+          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
+        );
+
+        const nextFresh = {
+          job_id: safeStr(existing?.job_id) || `tmp_${rid}`,
+          url,
+          status: "DONE",
+          db_status: "done",
+          state: "COMPLETED",
+          created_at: existing?.created_at || Date.now(),
+          prompt: safeStr(existing?.prompt || promptMaybe || ""),
+          _fresh: true,
+          meta: {
+            app: APP_KEY,
+            provider: safeStr(existing?.meta?.provider || "Atmos"),
+            request_id: rid,
+            aspect_ratio: safeStr(
+              data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
+            ),
+          },
+          outputs: [],
+        };
+
+        state.ephemerals = [
+          nextFresh,
+          ...(state.ephemerals || []).filter((x) => !sameJob(x, nextFresh)),
+        ];
+
+        render();
+
+        try {
+          window.dispatchEvent(
+            new CustomEvent("aivo:atmo:job_ready", {
+              detail: {
+                app: "atmo",
+                job_id: safeStr(existing?.job_id || data?.job_id),
+                request_id: rid,
+                status: "completed",
+                video: { url },
+                outputs: Array.isArray(data?.outputs)
+                  ? data.outputs
+                  : [{ type: "video", url, meta: { app: "atmo", is_final: true } }],
+                raw: data,
+                meta: {
+                  app: "atmo",
+                  provider: safeStr(existing?.meta?.provider || "Atmos"),
+                  prompt: safeStr(existing?.prompt || promptMaybe || ""),
+                  aspect_ratio: safeStr(
+                    data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
+                  ),
+                },
+              },
+            })
+          );
+        } catch {}
+
+        try {
+          if (window.PPE && typeof window.PPE.apply === "function") {
+            window.PPE.apply({
+              outputs: [{ type: "video", url, src: url, meta: { app: APP_KEY } }],
+              meta: { app: APP_KEY, request_id: rid },
+            });
+          }
+        } catch {}
+
+        try {
+          db && db.hydrate(true);
+        } catch {}
+
+        if (timer) clearInterval(timer);
+        timer = null;
+        return;
+      }
+
+      setHeaderMeta("İşleniyor…");
+    }
+
+    setHeaderMeta("Hazır");
+    render();
+
+    function destroy() {
+      destroyed = true;
+
+      if (timer) clearInterval(timer);
+      timer = null;
+
+      try {
+        window.removeEventListener("aivo:atmo:job_created", onJobCreated);
+      } catch {}
+
+      try {
+        window.removeEventListener("aivo:atmo:job_ready", onJobReady);
+      } catch {}
+
+      try {
+        db && db.destroy();
+      } catch {}
+
+      host.innerHTML = "";
+    }
+
+    return { destroy };
   }
+
+  window.RightPanel.register(APP_KEY, {
+    header: {
+      title: "Atmosfer Video",
+      meta: "Hazır",
+      searchEnabled: false,
+      resetSearch: true,
+    },
+
+    mount(host) {
+      const panel = createAtmosPanel(host);
+      host.__ATMO_PANEL__ = panel;
+    },
+
+    destroy(host) {
+      try {
+        host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy();
+      } catch {}
+      host.__ATMO_PANEL__ = null;
+    },
+  });
 })();
