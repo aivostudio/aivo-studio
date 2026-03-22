@@ -1,8 +1,9 @@
-// atmosphere.panel.js (DB source-of-truth + cover-style cards + optimistic “video hissi”)
+// /js/panel.atmo.js
+// atmosphere.panel.js (DB source-of-truth + cover-style cards + optimistic "video hissi")
 // - Kart anında gelir (aivo:atmo:job_created)
-// - Mor shimmer “hazırlanıyor”
+// - Mor shimmer "hazırlanıyor"
 // - Ready olunca shimmer gider, video görünür
-// - Dedupe: job_id tek kart (2 video sorunu biter)
+// - Dedupe: job_id tek kart
 
 (function () {
   if (!window.RightPanel) return;
@@ -10,10 +11,6 @@
     console.warn("[ATMO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
     return;
   }
-
-  /* =======================
-     Utils
-     ======================= */
 
   const norm = (s) =>
     String(s || "")
@@ -39,8 +36,15 @@
   const toMaybeProxyUrl = (url) => {
     const u = String(url || "").trim();
     if (!u) return "";
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
+    if (
+      u.startsWith("/api/media/proxy?url=") ||
+      u.includes("/api/media/proxy?url=")
+    ) {
+      return u;
+    }
+    if (u.startsWith("http://")) {
+      return "/api/media/proxy?url=" + encodeURIComponent(u);
+    }
     return u;
   };
 
@@ -59,12 +63,25 @@
   };
 
   const getJobApp = (job) =>
-    String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
+    String(
+      job?.app ||
+        job?.meta?.app ||
+        job?.meta?.module ||
+        job?.meta?.routeKey ||
+        ""
+    ).trim();
 
   const getOutApp = (o) =>
-    String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "").trim();
+    String(
+      o?.meta?.app ||
+        o?.meta?.module ||
+        o?.meta?.routeKey ||
+        ""
+    ).trim();
 
   const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
+
+  const idOf = (job) => String(job?.job_id || job?.id || "").trim();
 
   const mapBadge = (job) => {
     const a = norm(job?.db_status);
@@ -72,15 +89,31 @@
     const c = norm(job?.state);
     const st = (a || b || c || "").toUpperCase();
 
-    if (st.includes("FAIL") || st.includes("ERROR")) return { text: "Hata", kind: "bad" };
-    if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) return { text: "Hazır", kind: "ok" };
-    if (st.includes("RUN") || st.includes("PROC") || st.includes("PEND") || st.includes("QUEUE")) return { text: "İşleniyor", kind: "mid" };
+    if (st.includes("FAIL") || st.includes("ERROR")) {
+      return { text: "Hata", kind: "bad" };
+    }
+    if (
+      st.includes("READY") ||
+      st.includes("DONE") ||
+      st.includes("COMPLET") ||
+      st.includes("SUCC")
+    ) {
+      return { text: "Hazır", kind: "ok" };
+    }
+    if (
+      st.includes("RUN") ||
+      st.includes("PROC") ||
+      st.includes("PEND") ||
+      st.includes("QUEUE")
+    ) {
+      return { text: "İşleniyor", kind: "mid" };
+    }
     return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
   const pickBestVideoOutput = (job) => {
-    const outs = (job && job.outputs) || [];
-    if (!Array.isArray(outs) || !outs.length) return null;
+    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+    if (!outs.length) return null;
 
     const outsFiltered = outs.filter((o) => {
       const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
@@ -93,8 +126,11 @@
     });
 
     const pool = outsFiltered.length ? outsFiltered : outs;
-    const videos = pool.filter((o) => norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video");
-    const best = (videos[0] || pool[0]) || null;
+    const videos = pool.filter(
+      (o) =>
+        norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video"
+    );
+    const best = videos[0] || pool[0] || null;
     if (!best) return null;
 
     const raw =
@@ -120,6 +156,7 @@
 
   function ensureStyles() {
     if (document.getElementById("atmoPanelStyles")) return;
+
     const css = `
       .atmoWrap{display:flex;flex-direction:column;gap:12px;}
       .atmoHdr{display:flex;align-items:center;justify-content:space-between;}
@@ -149,9 +186,8 @@
         border:1px solid rgba(255,255,255,0.08);
       }
 
-      /* clamp: kart içi video asla paneli büyütmez */
-      .atmoThumb:before{content:"";display:block;padding-top:56.25%;} /* 16:9 box */
-      .atmoThumb.isPortrait:before{padding-top:140%;} /* 9:16 clamp */
+      .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
+      .atmoThumb.isPortrait:before{padding-top:140%;}
 
       .atmoThumbVideo{
         position:absolute;inset:0;width:100%;height:100%;
@@ -170,7 +206,6 @@
       .atmoPill.mid{border-color:rgba(255,255,255,.10);}
       .atmoPill.bad{border-color:rgba(255,120,120,.25);}
 
-      /* 🔥 Mor shimmer skeleton */
       .atmoSkel{
         position:absolute;inset:0;
         display:flex;align-items:center;justify-content:center;
@@ -235,6 +270,7 @@
         .atmoGrid{grid-template-columns:1fr;}
       }
     `;
+
     const style = document.createElement("style");
     style.id = "atmoPanelStyles";
     style.textContent = css;
@@ -245,32 +281,56 @@
     ensureStyles();
 
     let destroyed = false;
+    let currentDbItems = [];
 
-    // Optimistic overlay store (job_id -> job-like object)
-    const optimistic = new Map(); // key: job_id
-
-    // ============================
-    // ✅ AUTO LOGO OVERLAY helpers (READY -> /api/atmo/overlay-logo)
-    // ============================
+    const optimistic = new Map();
+    const cardCache =
+      window.__ATMO_CARD_CACHE__ ||
+      (window.__ATMO_CARD_CACHE__ = new Map());
 
     window.__ATMO_OVERLAY_DONE__ = window.__ATMO_OVERLAY_DONE__ || new Set();
-    window.__ATMO_OVERLAY_INFLIGHT__ = window.__ATMO_OVERLAY_INFLIGHT__ || new Set();
+    window.__ATMO_OVERLAY_INFLIGHT__ =
+      window.__ATMO_OVERLAY_INFLIGHT__ || new Set();
+
+    host.innerHTML = `
+      <div class="atmoWrap">
+        <div class="atmoHdr">
+          <div class="atmoTitle">Atmosfer Video</div>
+          <div class="atmoStatus">Hazır</div>
+        </div>
+        <div class="atmoGrid" data-grid></div>
+      </div>
+    `;
+
+    const elStatus = host.querySelector(".atmoStatus");
+    const elGrid = host.querySelector("[data-grid]");
+
+    const setStatus = (t) => {
+      if (elStatus) elStatus.textContent = t;
+    };
 
     const getLogoUrl = () => {
       const u = String(
         window.__ATMO_LOGO_PUBLIC_URL__ ||
-        window.__ATM_V2__?.uploads?.logo?.url ||
-        window.__ATMO_STATE__?.logo_public_url ||
-        window.__ATMO_STATE__?.logo_url ||
-        window.__ATMO_STATE__?.logoUrl ||
-        ""
+          window.__ATM_V2__?.uploads?.logo?.url ||
+          window.__ATMO_STATE__?.logo_public_url ||
+          window.__ATMO_STATE__?.logo_url ||
+          window.__ATMO_STATE__?.logoUrl ||
+          ""
       ).trim();
       return u;
     };
 
     const isReady = (job) => {
-      const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
-      return st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC");
+      const st = String(
+        job?.db_status || job?.status || job?.state || ""
+      ).toUpperCase();
+      return (
+        st.includes("READY") ||
+        st.includes("DONE") ||
+        st.includes("COMPLET") ||
+        st.includes("SUCC")
+      );
     };
 
     const hasLogoOverlayOutput = (job) => {
@@ -283,11 +343,11 @@
 
       const videoUrl = String(
         out?.url ||
-        job?.video_url ||
-        job?.videoUrl ||
-        job?.video?.url ||
-        job?.result?.video_url ||
-        ""
+          job?.video_url ||
+          job?.videoUrl ||
+          job?.video?.url ||
+          job?.result?.video_url ||
+          ""
       ).trim();
 
       if (!videoUrl) return "";
@@ -296,21 +356,18 @@
     };
 
     const maybeOverlayOne = async (job) => {
-     const jobId = String(job?.job_id || job?.id || "").trim();
+      const jobId = idOf(job);
       if (!jobId) return false;
-
       if (!isReady(job)) return false;
 
       const logoUrl = getLogoUrl();
       if (!logoUrl || !logoUrl.startsWith("http")) return false;
-
       if (hasLogoOverlayOutput(job)) return false;
 
       const videoUrl = getVideoUrl(job);
       if (!videoUrl) return false;
 
       const key = `${jobId}::logo`;
-
       if (window.__ATMO_OVERLAY_DONE__.has(key)) return false;
       if (window.__ATMO_OVERLAY_INFLIGHT__.has(key)) return false;
 
@@ -340,21 +397,19 @@
 
         if (!j?.ok || !j?.url) {
           console.warn("[ATMO][overlay] failed", j);
-          return false; // fail -> done'a yazma (yeniden denesin)
+          return false;
         }
 
-        // ✅ SADECE başarıdan sonra kilitle (1 kez)
         window.__ATMO_OVERLAY_DONE__.add(key);
 
-        const next = {
+        optimistic.set(jobId, {
           ...job,
           outputs: [
             { type: "video", url: j.url, meta: { app: "atmo", overlay: "logo" } },
-            ...(Array.isArray(job.outputs) ? job.outputs : []),
+            ...(Array.isArray(job?.outputs) ? job.outputs : []),
           ],
-        };
+        });
 
-        optimistic.set(jobId, next);
         return true;
       } catch (e) {
         console.warn("[ATMO] overlay error:", e);
@@ -364,37 +419,273 @@
       }
     };
 
-    const applyOverlayToMerged = async (merged) => {
+    const toMs = (v) => {
+      if (v == null) return 0;
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+
+      const s = String(v).trim();
+
+      if (/^\d{10,13}$/.test(s)) {
+        const n = Number(s);
+        if (Number.isFinite(n)) return n;
+      }
+
+      if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
+        const iso = s.replace(" ", "T") + "Z";
+        const tIso = Date.parse(iso);
+        if (Number.isFinite(tIso)) return tIso;
+      }
+
+      const t = Date.parse(s);
+      return Number.isFinite(t) ? t : 0;
+    };
+
+    function hasProcessing(items) {
+      return (items || []).some((j) => {
+        const st = norm(j?.db_status || j?.status || j?.state).toUpperCase();
+        return (
+          st.includes("PROCESS") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        );
+      });
+    }
+
+    function ensureCardEl(job) {
+      const id = idOf(job);
+      if (!id) return null;
+
+      let el = cardCache.get(id);
+      if (el && el.isConnected) return el;
+
+      el = document.createElement("div");
+      el.className = "atmoCard";
+      el.setAttribute("data-job", id);
+
+      el.innerHTML = `
+        <div class="atmoThumb">
+          <div class="atmoPill mid">İşleniyor</div>
+          <div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>
+        </div>
+
+        <div class="atmoFooter">
+          <div class="atmoMetaLine"></div>
+
+          <div class="atmoActions">
+            <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+            <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+            <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+          </div>
+        </div>
+      `;
+
+      cardCache.set(id, el);
+      return el;
+    }
+
+    function patchCard(el, job) {
+      if (!el || !job) return;
+
+      const badge = mapBadge(job);
+      const out = pickBestVideoOutput(job);
+      const url = String(out?.url || "").trim();
+
+      const dt = fmtDT(job?.created_at || job?.updated_at || job?.createdAt);
+      const engine = String(job?.provider || job?.meta?.provider || "Atmos");
+
+      const ratio = String(
+        job?.meta?.aspect_ratio ||
+          job?.meta?.ratio ||
+          out?.meta?.aspect_ratio ||
+          out?.meta?.ratio ||
+          ""
+      );
+
+      const isPortrait =
+        ratio.includes("9:16") ||
+        ratio.includes("4:5") ||
+        ratio.includes("2:3");
+
+      const ready = badge.kind === "ok";
+      const can = !!(ready && url);
+
+      const thumb = el.querySelector(".atmoThumb");
+      if (thumb) {
+        thumb.classList.toggle("isPortrait", !!isPortrait);
+      }
+
+      const pill = el.querySelector(".atmoPill");
+      if (pill) {
+        pill.textContent = badge.text;
+        pill.classList.remove("ok", "mid", "bad");
+        pill.classList.add(badge.kind);
+      }
+
+      const metaEl = el.querySelector(".atmoMetaLine");
+      if (metaEl) {
+        metaEl.textContent = job?.meta?.prompt || `${engine}${dt ? " • " + dt : ""}`;
+      }
+
+      const dl = el.querySelector('[data-act="download"]');
+      const sh = el.querySelector('[data-act="share"]');
+      if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
+      if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
+
+      const skel = el.querySelector(".atmoSkel");
+      let vid = el.querySelector("video.atmoThumbVideo");
+
+      if (can) {
+        if (skel) skel.style.display = "none";
+
+        if (!vid) {
+          vid = document.createElement("video");
+          vid.className = "atmoThumbVideo";
+          vid.setAttribute("playsinline", "");
+          vid.setAttribute("webkit-playsinline", "");
+          vid.setAttribute("preload", "metadata");
+          vid.setAttribute("controls", "");
+          vid.muted = true;
+          thumb?.appendChild(vid);
+        }
+
+        const prev = vid.getAttribute("data-src") || "";
+        if (prev !== url) {
+          vid.setAttribute("data-src", url);
+          vid.src = url;
+        }
+        vid.style.display = "";
+      } else {
+        if (skel) skel.style.display = "";
+        if (vid) {
+          try {
+            vid.pause();
+          } catch {}
+          vid.style.display = "none";
+        }
+      }
+    }
+
+    function render(items) {
+      if (!elGrid) return;
+
+      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+
+      const list = Array.isArray(items) ? items : [];
+      const EMPTY_ID = "atmoEmptyState";
+      let emptyEl = elGrid.querySelector(`#${EMPTY_ID}`);
+
+      if (!list.length) {
+        for (const ch of Array.from(elGrid.children)) {
+          if (ch.id !== EMPTY_ID) elGrid.removeChild(ch);
+        }
+
+        if (!emptyEl) {
+          emptyEl = document.createElement("div");
+          emptyEl.id = EMPTY_ID;
+          emptyEl.style.opacity = ".7";
+          emptyEl.style.fontSize = "12px";
+          emptyEl.style.padding = "4px 2px";
+          emptyEl.textContent = "Henüz atmos üretim yok.";
+          elGrid.appendChild(emptyEl);
+        }
+        return;
+      } else if (emptyEl) {
+        emptyEl.remove();
+      }
+
+      const wanted = new Set();
+      let anchor = elGrid.firstChild;
+
+      for (const job of list) {
+        const id = idOf(job);
+        if (!id) continue;
+
+        wanted.add(id);
+
+        const card = ensureCardEl(job);
+        patchCard(card, job);
+
+        if (!card.isConnected) {
+          elGrid.insertBefore(card, anchor);
+          continue;
+        }
+
+        if (card !== anchor) {
+          elGrid.insertBefore(card, anchor);
+        } else {
+          anchor = anchor?.nextSibling || null;
+        }
+      }
+
+      for (const ch of Array.from(elGrid.children)) {
+        if (ch.id === EMPTY_ID) continue;
+        const jid = String(ch.getAttribute?.("data-job") || "").trim();
+        if (jid && !wanted.has(jid)) {
+          elGrid.removeChild(ch);
+        }
+      }
+    }
+
+    async function buildMergedItems() {
+      const byId = new Map();
+
+      for (const j of currentDbItems) {
+        const id = idOf(j);
+        if (!id) continue;
+        byId.set(id, j);
+      }
+
+      for (const [id, j] of optimistic.entries()) {
+        if (!byId.has(id)) {
+          byId.set(id, j);
+        }
+      }
+
+      const merged = Array.from(byId.values()).sort((a, b) => {
+        const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+        const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+
+        if (tb !== ta) return tb - ta;
+
+        const ia = idOf(a);
+        const ib = idOf(b);
+        return ib.localeCompare(ia);
+      });
+
       for (const job of merged) {
         try {
-          await maybeOverlayOne(job);
+          const changed = await maybeOverlayOne(job);
+          if (changed) {
+            const id = idOf(job);
+            if (id && optimistic.has(id)) {
+              byId.set(id, optimistic.get(id));
+            }
+          }
         } catch (e) {
           console.warn("[ATMO] overlay loop error:", e);
         }
       }
 
-      return merged.map((jj) => {
-        const id = String(jj?.job_id || "").trim();
-        return id && optimistic.has(id) ? optimistic.get(id) : jj;
+      return Array.from(byId.values()).sort((a, b) => {
+        const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+        const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+
+        if (tb !== ta) return tb - ta;
+
+        const ia = idOf(a);
+        const ib = idOf(b);
+        return ib.localeCompare(ia);
       });
-    };
+    }
 
-    host.innerHTML = `
-      <div class="atmoWrap">
-        <div class="atmoHdr">
-          <div class="atmoTitle">Atmosfer Video</div>
-          <div class="atmoStatus">Hazır</div>
-        </div>
-        <div class="atmoGrid" data-grid></div>
-      </div>
-    `;
+    async function renderCurrent() {
+      if (destroyed) return;
+      const merged = await buildMergedItems();
+      if (destroyed) return;
+      render(merged);
+    }
 
-    const elStatus = host.querySelector(".atmoStatus");
-    const elGrid = host.querySelector('[data-grid]');
-
-    const setStatus = (t) => { if (elStatus) elStatus.textContent = t; };
-
-    // --- DB controller
     const controller = window.DBJobs.create({
       app: "atmo",
       debug: false,
@@ -410,7 +701,7 @@
 
       acceptOutput: (o) => {
         if (!o) return false;
-        const t = norm(o.type || o.kind || o.meta?.type || o.meta?.kind);
+        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
         if (t && t !== "video") return false;
         const oa = getOutApp(o);
         if (oa && !isAtmoApp(oa)) return false;
@@ -419,286 +710,120 @@
 
       onChange: async (items) => {
         if (destroyed) return;
-        console.debug("[ATMO DEBUG] onChange items:", items);
-
-        const safeItems = (items || []).filter(isJobAtmo);
-        // ✅ Merge: DB (truth) + optimistic (overlay) by job_id
-        // Rule:
-        // - DB’de job varsa: optimistic’i drop/replace
-        // - DB’de yoksa: optimistic’i göster
-        const byId = new Map();
-
-        // 1) DB items first (truth)
-        for (const j of safeItems) {
-          const id = String(j?.job_id || "").trim();
-          if (!id) continue;
-          byId.set(id, j);
-          if (optimistic.has(id)) optimistic.delete(id); // DB geldi -> overlay kalk
-        }
-
-        // 2) Remaining optimistic
-        for (const [id, j] of optimistic.entries()) {
-          if (!byId.has(id)) byId.set(id, j);
-        }
-
-        // ✅ newest first (updated_at > created_at > createdAt) — ms-safe + stable tie-break
-        const toMs = (v) => {
-          if (v == null) return 0;
-
-          if (typeof v === "number" && Number.isFinite(v)) return v;
-
-          const s = String(v).trim();
-
-          // numeric ms / seconds-ish string
-          if (/^\d{10,13}$/.test(s)) {
-            const n = Number(s);
-            if (Number.isFinite(n)) return n;
-          }
-
-          // Safari NaN fix for "YYYY-MM-DD HH:mm:ss"
-          if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
-            const iso = s.replace(" ", "T") + "Z";
-            const tIso = Date.parse(iso);
-            if (Number.isFinite(tIso)) return tIso;
-          }
-
-          const t = Date.parse(s);
-          return Number.isFinite(t) ? t : 0;
-        };
-
-        const merged = Array.from(byId.values()).sort((a, b) => {
-          const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
-          const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
-
-          if (tb !== ta) return tb - ta;
-
-          // stable: aynı timestamp’te zıplamasın
-          const ia = String(a?.job_id || a?.id || "");
-          const ib = String(b?.job_id || b?.id || "");
-          return ib.localeCompare(ia);
-        });
-
-        // ✅ AUTO LOGO OVERLAY: READY yakala -> overlay üret -> optimistic'e yaz -> render
-        const merged2 = await applyOverlayToMerged(merged);
-        render(merged2);
-
-        function hasProcessing(items) {
-          return (items || []).some(j => {
-            const st = norm(j.db_status || j.status || j.state).toUpperCase();
-            return (st.includes("PROCESS") || st.includes("RUN") || st.includes("PEND") || st.includes("QUEUE"));
-          });
-        }
-
-        // ✅ NO-RELOAD DOM render (keyed) — videoları yeniden yaratmaz
-        const __cardCache = (window.__ATMO_CARD_CACHE__ = window.__ATMO_CARD_CACHE__ || new Map()); // job_id -> el
-
-        function ensureCardEl(job) {
-          const id = String(job?.job_id || "").trim();
-          if (!id) return null;
-
-          let el = __cardCache.get(id);
-          if (el && el.isConnected) return el;
-
-          el = document.createElement("div");
-          el.className = "atmoCard";
-          el.setAttribute("data-job", id);
-
-          // once-only skeleton structure
-          el.innerHTML = `
-            <div class="atmoThumb">
-              <div class="atmoPill mid">İşleniyor</div>
-              <div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>
-            </div>
-
-            <div class="atmoFooter">
-              <div class="atmoMetaLine"></div>
-
-              <div class="atmoActions">
-                <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-                <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-                <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
-              </div>
-            </div>
-          `;
-
-          __cardCache.set(id, el);
-          return el;
-        }
-
-        function patchCard(el, job) {
-          if (!el || !job) return;
-
-          const badge = mapBadge(job);
-          const out = pickBestVideoOutput(job);
-          const url = out?.url || "";
-
-          const dt = fmtDT(job.created_at || job.updated_at || job.createdAt);
-          const engine = (job.provider || job.meta?.provider || "Atmos").toString();
-
-          // meta line: engine + duration + dt
-          const dur = String(job.meta?.duration || job.duration || "").trim();
-          const durText = dur ? `${dur}sn` : "";
-          const metaLine = `${engine}${durText ? " • " + durText : ""}${dt ? " • " + dt : ""}`;
-
-          const ratio = String(
-            job.meta?.aspect_ratio ||
-            job.meta?.ratio ||
-            out?.meta?.aspect_ratio ||
-            out?.meta?.ratio ||
-            ""
-          );
-
-          const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
-          const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
-          const can = !!(ready && url);
-
-          const thumb = el.querySelector(".atmoThumb");
-          if (thumb) {
-            thumb.classList.toggle("isPortrait", !!isPortrait);
-
-            // ✅ loading class (processing/ready kontrolü)
-            thumb.classList.toggle("is-loading", !can); // can = ready + url varsa true
-          }
-
-          const pill = el.querySelector(".atmoPill");
-          if (pill) {
-            pill.textContent = badge.text;
-            pill.classList.remove("ok", "mid", "bad");
-            pill.classList.add(badge.kind);
-          }
-
-          const metaEl = el.querySelector(".atmoMetaLine");
-          if (metaEl) metaEl.textContent = job.meta?.prompt || "";
-
-          const dl = el.querySelector('[data-act="download"]');
-          const sh = el.querySelector('[data-act="share"]');
-          if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
-          if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
-
-          const skel = el.querySelector(".atmoSkel");
-          let vid = el.querySelector("video.atmoThumbVideo");
-
-          if (can) {
-            if (skel) skel.style.display = "none";
-
-            if (!vid) {
-              vid = document.createElement("video");
-              vid.className = "atmoThumbVideo";
-              vid.setAttribute("playsinline", "");
-              vid.setAttribute("webkit-playsinline", "");
-              vid.setAttribute("preload", "metadata");
-              vid.setAttribute("controls", "");
-              vid.muted = true;
-              thumb?.appendChild(vid);
-            }
-
-            const prev = vid.getAttribute("data-src") || "";
-            if (prev !== url) {
-              vid.setAttribute("data-src", url);
-              vid.src = url; // sadece bu kart reload eder, diğerleri etmez
-            }
-            vid.style.display = "";
-          } else {
-            if (skel) skel.style.display = "";
-            if (vid) {
-              // KALDIRMA: kaldırırsan yeniden yaratılır ve reload artar
-              vid.pause?.();
-              vid.style.display = "none";
-            }
-          }
-        }
-
-        function render(items) {
-          if (!elGrid) return;
-
-          setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
-
-          const list = Array.isArray(items) ? items : [];
-
-          // ✅ Empty state: innerHTML kullanma (video reset riskini azaltır)
-          const EMPTY_ID = "atmoEmptyState";
-          let emptyEl = elGrid.querySelector(`#${EMPTY_ID}`);
-
-          if (!list.length) {
-            // gridde kart varsa kaldır, sadece empty kalsın
-            for (const ch of Array.from(elGrid.children)) {
-              if (ch.id !== EMPTY_ID) elGrid.removeChild(ch);
-            }
-            if (!emptyEl) {
-              emptyEl = document.createElement("div");
-              emptyEl.id = EMPTY_ID;
-              emptyEl.style.opacity = ".7";
-              emptyEl.style.fontSize = "12px";
-              emptyEl.style.padding = "4px 2px";
-              emptyEl.textContent = "Henüz atmos üretim yok.";
-              elGrid.appendChild(emptyEl);
-            }
-            return;
-          } else {
-            if (emptyEl) emptyEl.remove();
-          }
-
-          // ✅ Keyed reorder: full wipe YOK, sadece node move
-          const wanted = new Set();
-
-          // anchor: "şu an buraya insertBefore yap" pointer'ı
-          let anchor = elGrid.firstChild;
-
-          for (const job of list) {
-            const id = String(job?.job_id || "").trim();
-            if (!id) continue;
-            wanted.add(id);
-
-            const card = ensureCardEl(job);
-            patchCard(card, job);
-
-            // DOM'da değilse ekle
-            if (!card.isConnected) {
-              elGrid.insertBefore(card, anchor);
-              continue;
-            }
-
-            // yanlış yerdeyse move et
-            if (card !== anchor) {
-              elGrid.insertBefore(card, anchor);
-            } else {
-              // doğru yerdeyse anchor ilerlet
-              anchor = anchor?.nextSibling || null;
-            }
-          }
-
-          // ✅ artık listede olmayan kartları DOM'dan kaldır (cache kalabilir)
-          for (const ch of Array.from(elGrid.children)) {
-            if (ch.id === EMPTY_ID) continue;
-            const jid = ch.getAttribute?.("data-job");
-            if (jid && !wanted.has(jid)) elGrid.removeChild(ch);
-          }
-        }
+        currentDbItems = (items || []).filter(isJobAtmo);
+        await renderCurrent();
       },
     });
 
-    // ✅ Optimistic job_created listener (Video hissi)
-    const onJobCreated = (e) => {
+    const download = (url, jobId) => {
+      const cleanUrl = String(url || "").trim();
+      if (!cleanUrl) return;
+
+      const directUrl = cleanUrl.includes("#")
+        ? cleanUrl.split("#")[0]
+        : cleanUrl;
+
+      const proxied = directUrl.startsWith("/api/media/proxy?url=")
+        ? directUrl
+        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(`atmo-${jobId || "video"}.mp4`)}`;
+
+      const a = document.createElement("a");
+      a.href = proxied;
+      a.download = `atmo-${jobId || "video"}.mp4`;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    const share = async (url) => {
+      const cleanUrl = String(url || "").trim();
+      if (!cleanUrl) return;
+
+      const directUrl = cleanUrl.includes("#")
+        ? cleanUrl.split("#")[0]
+        : cleanUrl;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "Atmosfer Video", url: directUrl });
+        } else if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(directUrl);
+        }
+      } catch {}
+    };
+
+    host.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+
+      const act = String(btn.dataset.act || "").trim();
+      const card = btn.closest(".atmoCard");
+      const jobId = String(btn.dataset.job || card?.dataset?.job || "").trim();
+      if (!act || !jobId) return;
+
+      const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
+      const job = allItems.find((x) => idOf(x) === jobId);
+      if (!job) return;
+
+      if (act === "download") {
+        e.preventDefault();
+        e.stopPropagation();
+        const out = pickBestVideoOutput(job);
+        const url = String(out?.url || "").trim();
+        if (!url) return;
+        download(url, jobId);
+        return;
+      }
+
+      if (act === "share") {
+        e.preventDefault();
+        e.stopPropagation();
+        const out = pickBestVideoOutput(job);
+        const url = String(out?.url || "").trim();
+        if (!url) return;
+        await share(url);
+        return;
+      }
+
+      if (act === "delete") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        optimistic.delete(jobId);
+        currentDbItems = currentDbItems.filter((x) => idOf(x) !== jobId);
+        await renderCurrent();
+
+        try {
+          const ok = await controller.deleteJob(jobId);
+          if (!ok) {
+            await controller.hydrate(true);
+          }
+        } catch {
+          try {
+            await controller.hydrate(true);
+          } catch {}
+        }
+      }
+    });
+
+    const onJobCreated = async (e) => {
       const d = e?.detail || {};
       if (!d.job_id) return;
       if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
 
-      const job_id = String(d.job_id).trim();
-      if (!job_id) return;
+      const jobId = String(d.job_id || "").trim();
+      if (!jobId) return;
 
-      // Dedupe: zaten DB state’te varsa ekleme
-      const existsDb = (controller.state.items || []).some(j => String(j?.job_id) === job_id);
+      const existsDb = (currentDbItems || []).some((j) => idOf(j) === jobId);
       if (existsDb) return;
-
-      // Dedupe: optimistic varsa update et
-      if (optimistic.has(job_id)) return;
+      if (optimistic.has(jobId)) return;
 
       const meta = d.meta || {};
       const createdAt = d.createdAt || Date.now();
 
-      // job-like object (DB’ye benzeyen shape)
-      optimistic.set(job_id, {
-        job_id,
+      optimistic.set(jobId, {
+        job_id: jobId,
         app: "atmo",
         provider: meta.provider || "Atmos",
         createdAt,
@@ -712,50 +837,52 @@
           duration: meta.duration || "",
           prompt: meta.prompt || "",
         },
-        outputs: []
+        outputs: [],
       });
 
-      // NOT: overlay burada YOK. READY yakalama onChange içinde.
-      try {
-        const safeDb = (controller.state.items || []).filter(isJobAtmo);
-        const byId = new Map();
-        for (const j of safeDb) {
-          const id = String(j?.job_id || "").trim();
-          if (!id) continue;
-          byId.set(id, j);
-        }
-        if (!byId.has(job_id)) byId.set(job_id, optimistic.get(job_id));
-
-        const merged = Array.from(byId.values()).sort((a, b) => {
-          const ta = new Date(a?.created_at || a?.createdAt || Date.now()).getTime();
-          const tb = new Date(b?.created_at || b?.createdAt || Date.now()).getTime();
-          return tb - ta;
-        });
-
-        // sadece "kart hemen gelsin" hissi
-        // (overlay + gerçek video, onChange'de DB READY olunca)
-        // render(merged) burada çağırmıyoruz; onChange zaten yakında gelecek.
-        // ama istersen anında görmek için aşağıyı aç:
-        // render(merged);
-      } catch {}
+      await renderCurrent();
     };
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
+    controller.start();
+    renderCurrent();
 
     return {
       destroy() {
         destroyed = true;
-        try { window.removeEventListener("aivo:atmo:job_created", onJobCreated); } catch {}
-        try { controller?.destroy?.(); } catch {}
-        try { host.innerHTML = ""; } catch {}
+        try {
+          window.removeEventListener("aivo:atmo:job_created", onJobCreated);
+        } catch {}
+        try {
+          controller?.destroy?.();
+        } catch {}
+        try {
+          host.innerHTML = "";
+        } catch {}
       },
     };
   }
 
-  // Panel register (varsa)
   try {
     if (typeof window.RightPanel.register === "function") {
-      window.RightPanel.register("atmo", createAtmosPanel);
+      window.RightPanel.register("atmo", {
+        header: {
+          title: "Atmosfer Video",
+          meta: "Hazır",
+          searchEnabled: false,
+          resetSearch: true,
+        },
+        mount(host) {
+          const api = createAtmosPanel(host);
+          host.__ATMO_PANEL__ = api;
+        },
+        destroy(host) {
+          try {
+            host.__ATMO_PANEL__?.destroy?.();
+          } catch {}
+          host.__ATMO_PANEL__ = null;
+        },
+      });
     } else {
       window.RightPanel.panels = window.RightPanel.panels || {};
       window.RightPanel.panels.atmo = createAtmosPanel;
