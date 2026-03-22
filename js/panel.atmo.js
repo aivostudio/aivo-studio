@@ -905,7 +905,21 @@
             createdAt: job?.createdAt || Date.now(),
             meta: job?.meta || {},
           });
+        const rid =
+  safeStr(d?.request_id) ||
+  safeStr(d?.requestId) ||
+  safeStr(d?.meta?.request_id);
 
+if (rid && rid !== "TEST") {
+  if (timer) clearInterval(timer);
+
+  timer = setInterval(
+    () => pollFalOnce(rid, safeStr(d?.prompt || d?.meta?.prompt || "")),
+    2000
+  );
+
+  pollFalOnce(rid, safeStr(d?.prompt || d?.meta?.prompt || ""));
+}
           const rid =
             safeStr(job.request_id) ||
             safeStr(job.requestId) ||
