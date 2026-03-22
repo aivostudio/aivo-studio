@@ -24,14 +24,14 @@
   function pickVideoUrl(data) {
     return safeStr(
       data?.video?.url ||
-      data?.video_url ||
-      data?.output?.video?.url ||
-      data?.output?.url ||
-      (Array.isArray(data?.outputs) ? data.outputs?.[0]?.url : "") ||
-      (Array.isArray(data?.output) ? data.output?.[0]?.url : "") ||
-      data?.result?.url ||
-      data?.result?.video?.url ||
-      ""
+        data?.video_url ||
+        data?.output?.video?.url ||
+        data?.output?.url ||
+        (Array.isArray(data?.outputs) ? data.outputs?.[0]?.url : "") ||
+        (Array.isArray(data?.output) ? data.output?.[0]?.url : "") ||
+        data?.result?.url ||
+        data?.result?.video?.url ||
+        ""
     );
   }
 
@@ -121,14 +121,16 @@
             meta: {
               ...(detail.meta || {}),
               app: APP_KEY,
-              provider: safeStr(detail.provider || detail?.meta?.provider || "Atmos"),
+              provider: safeStr(
+                detail.provider || detail?.meta?.provider || "Atmos"
+              ),
               request_id: safeStr(detail.request_id),
               prompt: safeStr(detail.prompt || detail?.meta?.prompt),
               aspect_ratio: safeStr(
                 detail?.meta?.aspect_ratio ||
-                detail?.aspect_ratio ||
-                detail?.meta?.ratio ||
-                ""
+                  detail?.aspect_ratio ||
+                  detail?.meta?.ratio ||
+                  ""
               ),
             },
           },
@@ -152,13 +154,13 @@
             meta: {
               ...(detail.meta || {}),
               app: APP_KEY,
-              provider: safeStr(detail?.meta?.provider || detail.provider || "Atmos"),
+              provider: safeStr(
+                detail?.meta?.provider || detail.provider || "Atmos"
+              ),
               request_id: safeStr(detail.request_id),
               prompt: safeStr(detail?.meta?.prompt || detail.prompt),
               aspect_ratio: safeStr(
-                detail?.meta?.aspect_ratio ||
-                detail?.aspect_ratio ||
-                ""
+                detail?.meta?.aspect_ratio || detail?.aspect_ratio || ""
               ),
             },
           },
@@ -182,7 +184,10 @@
 
         let data = null;
         try {
-          const r = await fetch(STATUS_URL(requestId), { credentials: "include" });
+          const r = await fetch(STATUS_URL(requestId), {
+            credentials: "include",
+            cache: "no-store",
+          });
           data = await r.json().catch(() => null);
         } catch {
           await new Promise((r) => setTimeout(r, 2000));
@@ -210,7 +215,7 @@
         ) {
           const url = pickVideoUrl(data);
           if (!url) {
-            await new Promise((r) => setTimeout(r, 2000));
+            await new Promise((r) => setTimeout(r, 1500));
             continue;
           }
 
@@ -218,13 +223,14 @@
           const playable = await waitUntilPlayable(playbackUrl, 12000);
 
           if (!playable) {
-            await new Promise((r) => setTimeout(r, 2000));
+            await new Promise((r) => setTimeout(r, 1500));
             continue;
           }
 
-          const outputs = Array.isArray(data?.outputs) && data.outputs.length
-            ? data.outputs
-            : [{ type: "video", url, meta: { app: APP_KEY, is_final: true } }];
+          const outputs =
+            Array.isArray(data?.outputs) && data.outputs.length
+              ? data.outputs
+              : [{ type: "video", url, meta: { app: APP_KEY, is_final: true } }];
 
           dispatchJobReady({
             job_id: safeStr(ctx.job_id || data?.job_id),
@@ -239,9 +245,9 @@
               prompt: safeStr(ctx.prompt || ctx?.meta?.prompt || ""),
               aspect_ratio: safeStr(
                 data?.aspect_ratio ||
-                ctx?.meta?.aspect_ratio ||
-                ctx?.aspect_ratio ||
-                ""
+                  ctx?.meta?.aspect_ratio ||
+                  ctx?.aspect_ratio ||
+                  ""
               ),
             },
           });
@@ -295,7 +301,8 @@
           safeStr(job.request_id) ||
           safeStr(job.requestId) ||
           safeStr(job.fal_request_id) ||
-          safeStr(job.provider_request_id);
+          safeStr(job.provider_request_id) ||
+          safeStr(job?.meta?.request_id);
 
         const job_id = safeStr(job.job_id || job.id);
         const prompt = safeStr(job.prompt || job?.meta?.prompt || "");
@@ -315,9 +322,9 @@
             prompt,
             aspect_ratio: safeStr(
               job?.meta?.aspect_ratio ||
-              job?.aspect_ratio ||
-              job?.meta?.ratio ||
-              ""
+                job?.aspect_ratio ||
+                job?.meta?.ratio ||
+                ""
             ),
           },
         });
