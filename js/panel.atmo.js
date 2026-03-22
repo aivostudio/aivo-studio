@@ -3,6 +3,7 @@
   if (!window.RightPanel) return;
 
   const APP_KEY = "atmo";
+  const MAX_ITEMS = 30;
 
   const safeStr = (v) => String(v == null ? "" : v).trim();
   const esc = (s) =>
@@ -52,7 +53,7 @@
   }
 
   function isVideoOutput(o) {
-    return String(o?.type || "").toLowerCase() === "video";
+    return String(o?.type || o?.kind || "").toLowerCase() === "video";
   }
 
   function outputVariant(o) {
@@ -270,22 +271,29 @@
 
   function badgeFor(job) {
     const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
-    if (st.includes("FAIL") || st.includes("ERROR"))
+
+    if (st.includes("FAIL") || st.includes("ERROR")) {
       return { text: "Hata", kind: "bad" };
+    }
+
     if (
       st.includes("READY") ||
       st.includes("DONE") ||
       st.includes("COMPLET") ||
       st.includes("SUCC")
-    )
+    ) {
       return { text: "Hazır", kind: "ok" };
+    }
+
     if (
       st.includes("RUN") ||
       st.includes("PROC") ||
       st.includes("PEND") ||
       st.includes("QUEUE")
-    )
+    ) {
       return { text: "İşleniyor", kind: "mid" };
+    }
+
     return { text: st || "Hazır", kind: "mid" };
   }
 
@@ -302,6 +310,7 @@
 
     const playableUrls = new Set();
     const probingUrls = new Set();
+    const deletedIds = new Set();
 
     host.innerHTML = `
       <div class="atmoWrap">
@@ -326,20 +335,7 @@
       return String(job?.db_status || job?.status || job?.state || "").toUpperCase();
     }
 
-    function isTerminal(job) {
-      const st = statusUpper(job);
-      return (
-        st.includes("READY") ||
-        st.includes("DONE") ||
-        st.includes("COMPLET") ||
-        st.includes("SUCC") ||
-        st.includes("FAIL") ||
-        st.includes("ERROR")
-      );
-    }
-
-    function isFreshDoneEphemeral(job) {
-      if (!job || job?._fresh !== true) return false;
+    function isReady(job) {
       const st = statusUpper(job);
       return (
         st.includes("READY") ||
@@ -349,23 +345,49 @@
       );
     }
 
-    function matchKeyOf(job) {
-      const jobId = safeStr(job?.job_id);
+    function isError(job) {
+      const st = statusUpper(job);
+      return st.includes("FAIL") || st.includes("ERROR");
+    }
+
+    function isProcessing(job) {
+      if (isReady(job) || isError(job)) return false;
+      const st = statusUpper(job);
+      return (
+        st.includes("RUN") ||
+        st.includes("PROC") ||
+        st.includes("PEND") ||
+        st.includes("QUEUE")
+      );
+    }
+
+    function isTerminal(job) {
+      return isReady(job) || isError(job);
+    }
+
+    function getMatchMeta(job) {
+      const jobId = safeStr(job?.job_id || job?.id);
       const rid = safeStr(job?.meta?.request_id || job?.request_id);
-      return {
-        jobId,
-        rid,
-        key: jobId || rid || "",
-      };
+      return { jobId, rid };
     }
 
     function sameJob(a, b) {
-      const aa = matchKeyOf(a);
-      const bb = matchKeyOf(b);
-      if (!aa.key || !bb.key) return false;
+      const aa = getMatchMeta(a);
+      const bb = getMatchMeta(b);
+
       if (aa.jobId && bb.jobId && aa.jobId === bb.jobId) return true;
       if (aa.rid && bb.rid && aa.rid === bb.rid) return true;
+
       return false;
+    }
+
+    function isFreshDoneEphemeral(job) {
+      return !!job && job._fresh === true && isReady(job) && !!safeStr(job?.url);
+    }
+
+    function tsOf(j) {
+      const t = new Date(j?.updated_at || j?.created_at || Date.now()).getTime();
+      return Number.isFinite(t) ? t : 0;
     }
 
     function isPortrait(job, out) {
@@ -376,151 +398,6 @@
           ""
       );
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
-    }
-
-    function upsertEphemeralProcessing(payload = {}) {
-      const jobId = safeStr(payload.job_id);
-      const rid =
-        safeStr(payload.request_id) ||
-        safeStr(payload.requestId) ||
-        safeStr(payload.fal_request_id) ||
-        safeStr(payload.provider_request_id);
-      const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
-      const provider = safeStr(
-        payload.provider || payload?.meta?.provider || "Atmos"
-      );
-      const aspectRatio = safeStr(
-        payload?.meta?.aspect_ratio ||
-          payload?.aspect_ratio ||
-          payload?.meta?.ratio ||
-          ""
-      );
-
-      if (!jobId && !rid) return;
-
-      const id = jobId || `tmp_${rid}`;
-      const existsDb = (state.items || []).some((x) => {
-        const dbJobId = safeStr(x?.job_id);
-        const dbRid = safeStr(x?.meta?.request_id || x?.request_id);
-        return (jobId && dbJobId === jobId) || (rid && dbRid === rid);
-      });
-
-      if (existsDb) return;
-
-      const nextItem = {
-        job_id: id,
-        status: "PROCESSING",
-        created_at: payload?.createdAt || payload?.created_at || Date.now(),
-        prompt,
-        _fresh: false,
-        meta: {
-          app: APP_KEY,
-          provider,
-          request_id: rid,
-          aspect_ratio: aspectRatio,
-        },
-        outputs: [],
-      };
-
-      state.ephemerals = [
-        nextItem,
-        ...(state.ephemerals || []).filter((x) => {
-          const xJobId = safeStr(x?.job_id);
-          const xRid = safeStr(x?.meta?.request_id || x?.request_id);
-          if (jobId && xJobId === jobId) return false;
-          if (rid && xRid === rid) return false;
-          return true;
-        }),
-      ];
-
-      render();
-    }
-
-    function cleanupEphemeralsAgainstDb() {
-      const dbItems = Array.isArray(state.items) ? state.items : [];
-      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
-
-      if (!dbItems.length || !eps.length) return;
-
-      state.ephemerals = eps.filter((ep) => {
-        const matchDb = dbItems.find((db) => sameJob(ep, db));
-        if (!matchDb) return true;
-
-        if (!isTerminal(matchDb)) return true;
-
-        if (isFreshDoneEphemeral(ep)) return true;
-
-        return false;
-      });
-    }
-
-    function combinedItems() {
-      const dbItems = Array.isArray(state.items) ? state.items : [];
-      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
-
-      const picked = [];
-      const consumedDb = new Set();
-
-      for (const ep of eps) {
-        const matchIndex = dbItems.findIndex((db) => sameJob(ep, db));
-        const matchDb = matchIndex >= 0 ? dbItems[matchIndex] : null;
-
-        if (!matchDb) {
-          picked.push(ep);
-          continue;
-        }
-
-        if (isTerminal(matchDb)) {
-          if (isFreshDoneEphemeral(ep)) {
-            picked.push(ep);
-          } else {
-            picked.push(matchDb);
-            consumedDb.add(matchIndex);
-          }
-          continue;
-        }
-
-        picked.push(ep);
-        consumedDb.add(matchIndex);
-      }
-
-      dbItems.forEach((db, idx) => {
-        if (!consumedDb.has(idx)) picked.push(db);
-      });
-
-      const rankStatus = (j) => {
-        const st = statusUpper(j);
-        if (
-          st.includes("PROC") ||
-          st.includes("RUN") ||
-          st.includes("PEND") ||
-          st.includes("QUEUE")
-        )
-          return 0;
-        if (
-          st.includes("READY") ||
-          st.includes("DONE") ||
-          st.includes("COMPLET") ||
-          st.includes("SUCC")
-        )
-          return 1;
-        if (st.includes("FAIL") || st.includes("ERROR")) return 2;
-        return 1;
-      };
-
-      const tsOf = (j) => {
-        const t = new Date(
-          j?.updated_at || j?.created_at || Date.now()
-        ).getTime();
-        return Number.isFinite(t) ? t : 0;
-      };
-
-      return picked.sort((a, b) => {
-        const ra = rankStatus(a);
-        const rb = rankStatus(b);
-        if (ra !== rb) return ra - rb;
-        return tsOf(b) - tsOf(a);
-      });
     }
 
     function resolvePlaybackUrl(rawUrl) {
@@ -536,20 +413,192 @@
       return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
     }
 
+    function upsertEphemeralProcessing(payload = {}) {
+      const jobId = safeStr(payload.job_id);
+      const rid =
+        safeStr(payload.request_id) ||
+        safeStr(payload.requestId) ||
+        safeStr(payload.fal_request_id) ||
+        safeStr(payload.provider_request_id);
+
+      const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
+      const provider = safeStr(payload.provider || payload?.meta?.provider || "Atmos");
+      const aspectRatio = safeStr(
+        payload?.meta?.aspect_ratio ||
+          payload?.aspect_ratio ||
+          payload?.meta?.ratio ||
+          ""
+      );
+
+      if (!jobId && !rid) return;
+      if (jobId && deletedIds.has(jobId)) return;
+
+      const id = jobId || `tmp_${rid}`;
+
+      const nextItem = {
+        job_id: id,
+        status: "PROCESSING",
+        db_status: "processing",
+        state: "PROCESSING",
+        created_at: payload?.createdAt || payload?.created_at || Date.now(),
+        prompt,
+        _fresh: false,
+        meta: {
+          app: APP_KEY,
+          provider,
+          request_id: rid,
+          aspect_ratio: aspectRatio,
+        },
+        outputs: [],
+      };
+
+      state.ephemerals = [
+        nextItem,
+        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextItem)),
+      ];
+
+      render();
+    }
+
+    function upsertEphemeralReady(detail = {}) {
+      const jobId = safeStr(detail?.job_id);
+      const rid =
+        safeStr(detail?.request_id) ||
+        safeStr(detail?.fal_request_id) ||
+        safeStr(detail?.meta?.request_id);
+
+      const existing =
+        (state.ephemerals || []).find((x) => {
+          const xJobId = safeStr(x?.job_id);
+          const xRid = safeStr(x?.meta?.request_id || x?.request_id);
+          return (jobId && xJobId === jobId) || (rid && xRid === rid);
+        }) || null;
+
+      const readyUrl = safeStr(
+        detail?.video?.url ||
+        detail?.url ||
+        pickVideoUrl(detail?.raw || detail) ||
+        (Array.isArray(detail?.outputs) ? detail.outputs?.[0]?.url : "")
+      );
+
+      if (!readyUrl) return;
+
+      const nextReady = {
+        job_id: jobId || safeStr(existing?.job_id) || `tmp_${rid}`,
+        url: readyUrl,
+        status: "DONE",
+        db_status: "done",
+        state: "COMPLETED",
+        created_at: existing?.created_at || Date.now(),
+        prompt: safeStr(detail?.meta?.prompt || existing?.prompt || ""),
+        _fresh: true,
+        meta: {
+          app: APP_KEY,
+          provider: safeStr(detail?.meta?.provider || existing?.meta?.provider || "Atmos"),
+          request_id: rid || safeStr(existing?.meta?.request_id),
+          aspect_ratio: safeStr(
+            detail?.meta?.aspect_ratio ||
+              detail?.aspect_ratio ||
+              existing?.meta?.aspect_ratio ||
+              ""
+          ),
+        },
+        outputs: Array.isArray(detail?.outputs) ? detail.outputs : [],
+      };
+
+      const resolved = resolvePlaybackUrl(readyUrl);
+      if (resolved) playableUrls.add(resolved);
+
+      state.ephemerals = [
+        nextReady,
+        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextReady)),
+      ];
+
+      render();
+
+      try {
+        db && db.hydrate(true);
+      } catch {}
+    }
+
+    function cleanupEphemeralsAgainstDb() {
+      const dbItems = Array.isArray(state.items) ? state.items : [];
+      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
+
+      if (!dbItems.length || !eps.length) return;
+
+      state.ephemerals = eps.filter((ep) => {
+        const dbMatch = dbItems.find((db) => sameJob(ep, db));
+        if (!dbMatch) return true;
+
+        if (isFreshDoneEphemeral(ep)) return true;
+        if (isTerminal(dbMatch)) return false;
+
+        return true;
+      });
+    }
+
+    function combinedItems() {
+      const dbItems = (Array.isArray(state.items) ? state.items : []).filter((x) => {
+        const jid = safeStr(x?.job_id || x?.id);
+        if (jid && deletedIds.has(jid)) return false;
+        return true;
+      });
+
+      const eps = (Array.isArray(state.ephemerals) ? state.ephemerals : []).filter((x) => {
+        const jid = safeStr(x?.job_id || x?.id);
+        if (jid && deletedIds.has(jid)) return false;
+        return true;
+      });
+
+      const picked = [];
+      const usedDbIndexes = new Set();
+
+      for (const ep of eps) {
+        const dbIndex = dbItems.findIndex((db) => sameJob(ep, db));
+        const dbMatch = dbIndex >= 0 ? dbItems[dbIndex] : null;
+
+        if (!dbMatch) {
+          picked.push(ep);
+          continue;
+        }
+
+        if (isFreshDoneEphemeral(ep)) {
+          picked.push(ep);
+          usedDbIndexes.add(dbIndex);
+          continue;
+        }
+
+        if (isTerminal(dbMatch)) {
+          picked.push(dbMatch);
+          usedDbIndexes.add(dbIndex);
+          continue;
+        }
+
+        picked.push(ep);
+        usedDbIndexes.add(dbIndex);
+      }
+
+      dbItems.forEach((db, idx) => {
+        if (!usedDbIndexes.has(idx)) picked.push(db);
+      });
+
+      return picked
+        .sort((a, b) => {
+          const ap = isProcessing(a) ? 0 : isReady(a) ? 1 : 2;
+          const bp = isProcessing(b) ? 0 : isReady(b) ? 1 : 2;
+          if (ap !== bp) return ap - bp;
+          return tsOf(b) - tsOf(a);
+        })
+        .slice(0, MAX_ITEMS);
+    }
+
     function render() {
       if (destroyed || !$grid) return;
 
       const items = combinedItems();
 
-      const hasProcessing = items.some((j) => {
-        const st = statusUpper(j);
-        return (
-          st.includes("PROC") ||
-          st.includes("RUN") ||
-          st.includes("PEND") ||
-          st.includes("QUEUE")
-        );
-      });
+      const hasProcessing = items.some((j) => isProcessing(j));
       setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
       if (!items.length) {
@@ -558,7 +607,6 @@
       }
 
       $grid.innerHTML = items
-        .slice(0, 30)
         .map((job) => {
           const badge = badgeFor(job);
           const isFreshCard = job?._fresh === true;
@@ -582,13 +630,9 @@
           };
           const portrait = isPortrait(job, dummyOut);
 
-          const playbackUrl = hasUrl
-            ? resolvePlaybackUrl(selectedPlaybackRawUrl)
-            : "";
+          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
           const videoUrl = playbackUrl
-            ? playbackUrl.includes("#")
-              ? playbackUrl
-              : playbackUrl + "#t=0.001"
+            ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
             : "";
 
           if (
@@ -605,32 +649,32 @@
             badge.kind !== "bad";
 
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? '<div class="atmoCard"' +
-                ' data-job="' + esc(job.job_id || "") + '"' +
-                ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-                ' data-final-url="' + esc(finalUrl) + '"' +
-                ' data-preview-url="' + esc(previewUrlResolved) + '"' +
-                ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-              ">" +
-                window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                  id: safeStr(job.job_id || ""),
-                  title: promptLine || "—",
-                  sub: metaLine,
-                  badgeText: badge.text,
-                  badgeKind: isPlayableNow
-                    ? "ready"
-                    : badge.kind === "bad"
-                      ? "error"
-                      : "loading",
-                  videoUrl,
-                  posterUrl: "",
-                  ratio: portrait ? "9:16" : "16:9",
-                  ready: isPlayableNow,
-                  canDownload: !!finalUrl,
-                  canShare: isPlayableNow,
-                  canDelete: true,
-                }) +
-              "</div>"
+            ? (
+                '<div class="atmoCard"' +
+                  ' data-job="' + esc(job.job_id || "") + '"' +
+                  ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+                  ' data-final-url="' + esc(finalUrl) + '"' +
+                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+                  ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+                '>' +
+                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                    id: safeStr(job.job_id || ""),
+                    title: promptLine || "—",
+                    sub: metaLine,
+                    badgeText: badge.text,
+                    badgeKind: isPlayableNow
+                      ? "ready"
+                      : (badge.kind === "bad" ? "error" : "loading"),
+                    videoUrl,
+                    posterUrl: "",
+                    ratio: portrait ? "9:16" : "16:9",
+                    ready: isPlayableNow,
+                    canDownload: !!finalUrl,
+                    canShare: isPlayableNow,
+                    canDelete: true
+                  }) +
+                '</div>'
+              )
             : "";
         })
         .join("");
@@ -714,20 +758,25 @@
       if (act === "delete") {
         if (!jobId) return;
 
+        deletedIds.add(jobId);
+
         state.ephemerals = (state.ephemerals || []).filter(
           (x) => safeStr(x?.job_id) !== jobId
         );
+        state.items = (state.items || []).filter(
+          (x) => safeStr(x?.job_id) !== jobId
+        );
+
+        render();
 
         if (db && typeof db.deleteJob === "function") {
           const ok = await db.deleteJob(jobId);
-          if (!ok) db.hydrate(true);
-        } else {
-          state.items = (state.items || []).filter(
-            (x) => safeStr(x?.job_id) !== jobId
-          );
+          if (!ok) {
+            deletedIds.delete(jobId);
+            db.hydrate(true);
+          }
         }
 
-        render();
         return;
       }
     }
@@ -768,7 +817,12 @@
             hydrateEveryMs: 15000,
             acceptOutput: acceptAtmoOutput,
             onChange(items) {
-              state.items = items || [];
+              state.items = (items || []).filter((x) => {
+                const jid = safeStr(x?.job_id || x?.id);
+                if (jid && deletedIds.has(jid)) return false;
+                return true;
+              });
+
               cleanupEphemeralsAgainstDb();
               render();
             },
@@ -784,6 +838,7 @@
       const appKey = safeStr(
         d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
       ).toLowerCase();
+
       if (!appKey.includes("atmo")) return;
 
       upsertEphemeralProcessing({
@@ -796,7 +851,21 @@
       });
     };
 
+    const onJobReady = (e) => {
+      const d = e?.detail || {};
+      if (!d) return;
+
+      const appKey = safeStr(
+        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
+      ).toLowerCase();
+
+      if (!appKey.includes("atmo")) return;
+
+      upsertEphemeralReady(d);
+    };
+
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
+    window.addEventListener("aivo:atmo:job_ready", onJobReady);
 
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
 
@@ -846,13 +915,10 @@
 
           if (timer) clearInterval(timer);
           timer = setInterval(
-            () =>
-              pollFalOnce(
-                rid,
-                safeStr(job.prompt || job?.meta?.prompt || "")
-              ),
+            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
             2000
           );
+
           pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
         } catch {}
       };
@@ -965,11 +1031,10 @@
             {
               ...existing,
               status: "ERROR",
+              db_status: "error",
               state: "ERROR",
             },
-            ...(state.ephemerals || []).filter(
-              (x) => safeStr(x?.job_id) !== safeStr(existing?.job_id)
-            ),
+            ...(state.ephemerals || []).filter((x) => !sameJob(x, existing)),
           ];
           render();
         }
@@ -983,7 +1048,7 @@
         st.includes("success") ||
         st === "succeeded"
       ) {
-        let url = pickVideoUrl(data);
+        const url = pickVideoUrl(data);
 
         if (!url) {
           setHeaderMeta("Tamamlandı (url yok)");
@@ -992,42 +1057,71 @@
 
         const playbackResolved = resolvePlaybackUrl(url);
         const playable = await waitUntilPlayable(playbackResolved, 12000);
-        if (playable) playableUrls.add(playbackResolved);
+
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
         }
 
+        playableUrls.add(playbackResolved);
         setHeaderMeta("Tamamlandı");
 
         const existing = (state.ephemerals || []).find(
           (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
         );
 
-        const tempId = safeStr(existing?.job_id) || `tmp_${rid}`;
+        const nextFresh = {
+          job_id: safeStr(existing?.job_id) || `tmp_${rid}`,
+          url,
+          status: "DONE",
+          db_status: "done",
+          state: "COMPLETED",
+          created_at: existing?.created_at || Date.now(),
+          prompt: safeStr(existing?.prompt || promptMaybe || ""),
+          _fresh: true,
+          meta: {
+            app: APP_KEY,
+            provider: safeStr(existing?.meta?.provider || "Atmos"),
+            request_id: rid,
+            aspect_ratio: safeStr(
+              data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
+            ),
+          },
+          outputs: [],
+        };
 
         state.ephemerals = [
-          {
-            job_id: tempId,
-            url,
-            status: "DONE",
-            created_at: existing?.created_at || Date.now(),
-            prompt: safeStr(existing?.prompt || promptMaybe || ""),
-            _fresh: true,
-            meta: {
-              app: APP_KEY,
-              provider: safeStr(existing?.meta?.provider || "Atmos"),
-              request_id: rid,
-              aspect_ratio: safeStr(
-                data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
-              ),
-            },
-          },
-          ...(state.ephemerals || []).filter(
-            (x) => safeStr(x?.job_id) !== tempId
-          ),
+          nextFresh,
+          ...(state.ephemerals || []).filter((x) => !sameJob(x, nextFresh)),
         ];
+
         render();
+
+        try {
+          window.dispatchEvent(
+            new CustomEvent("aivo:atmo:job_ready", {
+              detail: {
+                app: "atmo",
+                job_id: safeStr(existing?.job_id || data?.job_id),
+                request_id: rid,
+                status: "completed",
+                video: { url },
+                outputs: Array.isArray(data?.outputs)
+                  ? data.outputs
+                  : [{ type: "video", url, meta: { app: "atmo", is_final: true } }],
+                raw: data,
+                meta: {
+                  app: "atmo",
+                  provider: safeStr(existing?.meta?.provider || "Atmos"),
+                  prompt: safeStr(existing?.prompt || promptMaybe || ""),
+                  aspect_ratio: safeStr(
+                    data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
+                  ),
+                },
+              },
+            })
+          );
+        } catch {}
 
         try {
           if (window.PPE && typeof window.PPE.apply === "function") {
@@ -1055,14 +1149,22 @@
 
     function destroy() {
       destroyed = true;
+
       if (timer) clearInterval(timer);
       timer = null;
+
       try {
         window.removeEventListener("aivo:atmo:job_created", onJobCreated);
       } catch {}
+
+      try {
+        window.removeEventListener("aivo:atmo:job_ready", onJobReady);
+      } catch {}
+
       try {
         db && db.destroy();
       } catch {}
+
       host.innerHTML = "";
     }
 
