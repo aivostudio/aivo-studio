@@ -1,3 +1,4 @@
+console.error("[PANEL.ATMOS] LOADED", new Date().toISOString());
 // /panel.atmos.js
 // Atmos workflow only
 // - create sonrası request/job yakalar
