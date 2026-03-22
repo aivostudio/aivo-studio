@@ -13,7 +13,6 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
 
-  // FAL atmo video status endpoint (app param şart)
   const STATUS_URL = (rid) =>
     `/api/providers/fal/video/status?request_id=${encodeURIComponent(
       rid
@@ -60,11 +59,12 @@
     return String(o?.meta?.variant || "").toLowerCase().trim();
   }
 
-  // FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
+  // ✅ FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function bestVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
+    // normalized / mapped alanlar
     const directFinal =
       safeStr(job?.final) ||
       safeStr(job?.final_url) ||
@@ -123,7 +123,7 @@
     return pickOutputUrl(vid);
   }
 
-  // PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
+  // ✅ PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
@@ -193,7 +193,6 @@
         border:1px solid rgba(255,255,255,0.08);
       }
 
-      /* clamp: kart içi video asla paneli büyütmez */
       .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
       .atmoThumb.isPortrait:before{padding-top:140%;}
 
@@ -418,11 +417,13 @@
 
           const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
           const previewUrlResolved = safeStr(previewVideoFromJob(job));
+
           const selectedPlaybackRawUrl = isFreshCard
             ? (finalUrl || previewUrlResolved)
             : (previewUrlResolved || finalUrl);
 
           const hasUrl = !!selectedPlaybackRawUrl;
+
           const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
           const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
           const metaLine = `${engine}${dt ? " • " + dt : ""}`;
@@ -702,37 +703,23 @@
         v.muted = true;
         v.playsInline = true;
 
-        v.addEventListener(
-          "loadeddata",
-          () => {
-            clearTimeout(t);
-            finish(true);
-          },
-          { once: true }
-        );
+        v.addEventListener("loadeddata", () => {
+          clearTimeout(t);
+          finish(true);
+        }, { once: true });
 
-        v.addEventListener(
-          "canplay",
-          () => {
-            clearTimeout(t);
-            finish(true);
-          },
-          { once: true }
-        );
+        v.addEventListener("canplay", () => {
+          clearTimeout(t);
+          finish(true);
+        }, { once: true });
 
-        v.addEventListener(
-          "error",
-          () => {
-            clearTimeout(t);
-            finish(false);
-          },
-          { once: true }
-        );
+        v.addEventListener("error", () => {
+          clearTimeout(t);
+          finish(false);
+        }, { once: true });
 
         v.src = url;
-        try {
-          v.load();
-        } catch {}
+        try { v.load(); } catch {}
       });
     }
 
@@ -750,9 +737,7 @@
         return;
       }
 
-      const st = safeStr(
-        data?.status || data?.state || data?.result?.status
-      ).toLowerCase();
+      const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
 
       if (st.includes("fail") || st === "error") {
         setHeaderMeta("Hata");
