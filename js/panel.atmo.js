@@ -59,12 +59,11 @@
     return String(o?.meta?.variant || "").toLowerCase().trim();
   }
 
-  // ✅ FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
+  // FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function bestVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    // normalized / mapped alanlar
     const directFinal =
       safeStr(job?.final) ||
       safeStr(job?.final_url) ||
@@ -101,7 +100,9 @@
       if (u) return u;
     }
 
-    const ov = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay");
+    const ov = outs.find(
+      (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
+    );
     if (ov) {
       const u = pickOutputUrl(ov);
       if (u) return u;
@@ -113,7 +114,9 @@
       if (u) return u;
     }
 
-    const pv = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "provider");
+    const pv = outs.find(
+      (o) => isVideoOutput(o) && outputVariant(o) === "provider"
+    );
     if (pv) {
       const u = pickOutputUrl(pv);
       if (u) return u;
@@ -123,7 +126,7 @@
     return pickOutputUrl(vid);
   }
 
-  // ✅ PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
+  // PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
@@ -138,7 +141,9 @@
 
     if (directPreview) return directPreview;
 
-    const prev = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "preview");
+    const prev = outs.find(
+      (o) => isVideoOutput(o) && outputVariant(o) === "preview"
+    );
     if (prev) {
       const u = pickOutputUrl(prev);
       if (u) return u;
@@ -710,7 +715,9 @@
         return;
       }
 
-      const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
+      const st = safeStr(
+        data?.status || data?.state || data?.result?.status
+      ).toLowerCase();
 
       if (st.includes("fail") || st === "error") {
         setHeaderMeta("Hata");
