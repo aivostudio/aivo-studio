@@ -599,7 +599,7 @@
 
       const items = combinedItems();
 
-      const hasProcessing = items.some((j) => isProcessing(j));
+    const hasProcessing = items.some((j) => !isReady(j) && !isError(j));
       setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
       if (!items.length) {
