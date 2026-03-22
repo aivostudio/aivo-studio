@@ -868,62 +868,54 @@
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
     window.addEventListener("aivo:atmo:job_ready", onJobReady);
 
-    const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
+const onAivoJobsUpsert = (job) => {
+  try {
+    if (!job) return;
 
-    if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
-      window.__AIVO_ATMO_UPSERT_HOOKED__ = true;
+    const key = (
+      safeStr(job.routeKey) ||
+      safeStr(job.app) ||
+      safeStr(job.module) ||
+      safeStr(job.type) ||
+      safeStr(job.kind)
+    ).toLowerCase();
 
-      window.AIVO_JOBS.upsert = function (job) {
-        try {
-          originalUpsert.call(this, job);
-        } catch {}
+    if (!key.includes("atmo")) return;
 
-        try {
-          if (!job) return;
+    setHeaderMeta("İşleniyor…");
 
-          const key = (
-            safeStr(job.routeKey) ||
-            safeStr(job.app) ||
-            safeStr(job.module) ||
-            safeStr(job.type) ||
-            safeStr(job.kind)
-          ).toLowerCase();
+    upsertEphemeralProcessing({
+      job_id: job?.job_id || job?.id,
+      request_id:
+        job?.request_id ||
+        job?.requestId ||
+        job?.fal_request_id ||
+        job?.provider_request_id,
+      prompt: job?.prompt || job?.meta?.prompt,
+      provider: job?.provider || job?.meta?.provider || "Atmos",
+      createdAt: job?.createdAt || Date.now(),
+      meta: job?.meta || {},
+    });
 
-          if (!key.includes("atmo")) return;
+    const rid =
+      safeStr(job.request_id) ||
+      safeStr(job.requestId) ||
+      safeStr(job.fal_request_id) ||
+      safeStr(job.provider_request_id);
 
-          setHeaderMeta("İşleniyor…");
+    if (!rid || rid === "TEST") return;
 
-          upsertEphemeralProcessing({
-            job_id: job?.job_id || job?.id,
-            request_id:
-              job?.request_id ||
-              job?.requestId ||
-              job?.fal_request_id ||
-              job?.provider_request_id,
-            prompt: job?.prompt || job?.meta?.prompt,
-            provider: job?.provider || job?.meta?.provider || "Atmos",
-            createdAt: job?.createdAt || Date.now(),
-            meta: job?.meta || {},
-          });
+    if (timer) clearInterval(timer);
+    timer = setInterval(
+      () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
+      2000
+    );
 
-          const rid =
-            safeStr(job.request_id) ||
-            safeStr(job.requestId) ||
-            safeStr(job.fal_request_id) ||
-            safeStr(job.provider_request_id);
+    pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
+  } catch {}
+};
 
-          if (!rid || rid === "TEST") return;
-
-          if (timer) clearInterval(timer);
-          timer = setInterval(
-            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
-            2000
-          );
-
-          pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
-        } catch {}
-      };
-    }
+window.addEventListener("aivo:jobs:upsert", onAivoJobsUpsert);
 
     function probePlayableUrl(url) {
       url = safeStr(url);
