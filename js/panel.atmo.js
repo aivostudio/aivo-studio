@@ -59,7 +59,6 @@
     return String(o?.meta?.variant || "").toLowerCase().trim();
   }
 
-  // ✅ FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function bestVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
@@ -122,7 +121,6 @@
     return pickOutputUrl(vid);
   }
 
-  // ✅ PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
@@ -256,6 +254,103 @@
         border-color:rgba(255,120,120,0.20);
         background:rgba(255,120,120,0.08);
       }
+
+      /* ✅ sade loading kartı */
+      .atmoLoadingCard{
+        position:relative;
+        border-radius:22px;
+        overflow:hidden;
+        background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+        border:1px solid rgba(255,255,255,.08);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+      }
+
+      .atmoLoadingMedia{
+        position:relative;
+        margin:8px;
+        border-radius:20px 20px 0 0;
+        overflow:hidden;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(55% 45% at 50% 28%, rgba(155,110,255,.28), rgba(90,60,180,.12) 45%, rgba(10,10,16,.06) 70%, rgba(3,3,8,.96) 100%),
+          linear-gradient(180deg, rgba(22,18,38,.95), rgba(4,4,10,1));
+      }
+
+      .atmoLoadingMedia:before{
+        content:"";
+        display:block;
+        padding-top:56.25%;
+      }
+
+      .atmoLoadingMedia.isPortrait:before{padding-top:140%;}
+
+      .atmoLoadingCenter{
+        position:absolute;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+
+      .atmoLoadingOrb{
+        position:relative;
+        width:112px;
+        height:112px;
+        border-radius:999px;
+        background:rgba(255,255,255,.08);
+        border:1px solid rgba(255,255,255,.14);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.03) inset,
+          0 18px 45px rgba(0,0,0,.28);
+        backdrop-filter: blur(8px);
+      }
+
+      .atmoLoadingOrb:before{
+        content:"";
+        position:absolute;
+        inset:-10px;
+        border-radius:999px;
+        border:1px solid rgba(180,140,255,.16);
+        animation: atmoPulse 2s ease-out infinite;
+      }
+
+      .atmoLoadingPlay{
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-42%,-50%);
+        width:0;height:0;
+        border-top:12px solid transparent;
+        border-bottom:12px solid transparent;
+        border-left:20px solid rgba(255,255,255,.96);
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+      }
+
+      .atmoLoadingFooter{
+        padding:12px 16px 14px;
+      }
+
+      .atmoLoadingTitle{
+        font-size:18px;
+        line-height:1.2;
+        font-weight:800;
+        color:#fff;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .atmoLoadingDivider{
+        margin-top:14px;
+        height:1px;
+        background:linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,.12), rgba(255,255,255,.05));
+      }
+
+      @keyframes atmoPulse{
+        0%   { transform:scale(.92); opacity:.0; }
+        30%  { opacity:.32; }
+        100% { transform:scale(1.18); opacity:0; }
+      }
     `;
 
     const style = document.createElement("style");
@@ -295,9 +390,6 @@
       items: [],
       ephemerals: [],
     };
-
-    const playableUrls = new Set();
-    const probingUrls = new Set();
 
     host.innerHTML = `
       <div class="atmoWrap">
@@ -387,6 +479,27 @@
       return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
     }
 
+    function renderLoadingCard(job, portrait) {
+      const promptLine = safeStr(job?.prompt || "Video hazırlanıyor...");
+      return (
+        '<div class="atmoCard">' +
+          '<div class="atmoLoadingCard">' +
+            '<div class="atmoLoadingMedia' + (portrait ? ' isPortrait' : '') + '">' +
+              '<div class="atmoLoadingCenter">' +
+                '<div class="atmoLoadingOrb">' +
+                  '<div class="atmoLoadingPlay"></div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="atmoLoadingFooter">' +
+              '<div class="atmoLoadingTitle">' + esc(promptLine) + '</div>' +
+              '<div class="atmoLoadingDivider"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+
     function render() {
       if (destroyed || !$grid) return;
 
@@ -436,11 +549,12 @@
             ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
             : "";
 
-          if (playbackUrl && !playableUrls.has(playbackUrl) && !probingUrls.has(playbackUrl)) {
-            probePlayableUrl(playbackUrl);
-          }
-
           const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+          const isProcessingCard = badge.kind === "mid" && !isPlayableNow;
+
+          if (isProcessingCard) {
+            return renderLoadingCard(job, portrait);
+          }
 
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? (
@@ -448,7 +562,7 @@
                   ' data-job="' + esc(job.job_id || "") + '"' +
                   ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
                   ' data-final-url="' + esc(finalUrl) + '"' +
-                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+                  ' data-preview-url="' + esc(previewVideoFromJob(job)) + '"' +
                   ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
                 '>' +
                   window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
@@ -657,26 +771,6 @@
       };
     }
 
-    function probePlayableUrl(url) {
-      url = safeStr(url);
-      if (!url) return;
-      if (playableUrls.has(url)) return;
-      if (probingUrls.has(url)) return;
-
-      probingUrls.add(url);
-
-      waitUntilPlayable(url, 12000)
-        .then((ok) => {
-          if (ok) {
-            playableUrls.add(url);
-            render();
-          }
-        })
-        .finally(() => {
-          probingUrls.delete(url);
-        });
-    }
-
     async function waitUntilPlayable(url, timeoutMs = 12000) {
       url = safeStr(url);
       if (!url) return false;
@@ -752,7 +846,6 @@
         }
 
         const playable = await waitUntilPlayable(url, 12000);
-        if (playable) playableUrls.add(url);
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
