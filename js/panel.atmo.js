@@ -59,12 +59,10 @@
     return String(o?.meta?.variant || "").toLowerCase().trim();
   }
 
-  // ✅ FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function bestVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    // normalized / mapped alanlar
     const directFinal =
       safeStr(job?.final) ||
       safeStr(job?.final_url) ||
@@ -123,7 +121,6 @@
     return pickOutputUrl(vid);
   }
 
-  // ✅ PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
@@ -149,7 +146,7 @@
 
   function acceptAtmoOutput(o) {
     if (!o) return false;
-    const t = String(o.type || "").toLowerCase();
+    const t = String(o?.type || "").toLowerCase();
     if (t && t !== "video") return false;
 
     const app = String(
@@ -297,6 +294,9 @@
       ephemerals: [],
     };
 
+    const playableUrls = new Set();
+    const probingUrls = new Set();
+
     host.innerHTML = `
       <div class="atmoWrap">
         <div class="atmoGrid" data-el="grid"></div>
@@ -434,7 +434,14 @@
             ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
             : "";
 
-          const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+          if (playbackUrl && !playableUrls.has(playbackUrl) && !probingUrls.has(playbackUrl)) {
+            probePlayableUrl(playbackUrl);
+          }
+
+          const isPlayableNow =
+            !!playbackUrl &&
+            playableUrls.has(playbackUrl) &&
+            badge.kind !== "bad";
 
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? (
@@ -651,6 +658,26 @@
       };
     }
 
+    function probePlayableUrl(url) {
+      url = safeStr(url);
+      if (!url) return;
+      if (playableUrls.has(url)) return;
+      if (probingUrls.has(url)) return;
+
+      probingUrls.add(url);
+
+      waitUntilPlayable(url, 12000)
+        .then((ok) => {
+          if (ok) {
+            playableUrls.add(url);
+            render();
+          }
+        })
+        .finally(() => {
+          probingUrls.delete(url);
+        });
+    }
+
     async function waitUntilPlayable(url, timeoutMs = 12000) {
       url = safeStr(url);
       if (!url) return false;
@@ -726,6 +753,7 @@
         }
 
         const playable = await waitUntilPlayable(url, 12000);
+        if (playable) playableUrls.add(resolvePlaybackUrl(url));
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
