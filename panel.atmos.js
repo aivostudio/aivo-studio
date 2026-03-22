@@ -1,4 +1,4 @@
-// atmosphere.panel.js (DB source-of-truth + cover-style cards + optimistic “video hissi”)
+// panel.atmos.js (DB source-of-truth + cover-style cards + optimistic “video hissi”)
 // - Kart anında gelir (aivo:atmo:job_created)
 // - Mor shimmer “hazırlanıyor”
 // - Ready olunca shimmer gider, video görünür
