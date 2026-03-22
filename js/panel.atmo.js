@@ -1,642 +1,855 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
+// /js/panel.atmo.js
+(function () {
+  if (!window.RightPanel) return;
 
-  <script
-    src="https://js-de.sentry-cdn.com/1664fa1e98154a90accd11807405e7cd.min.js"
-    crossorigin="anonymous"
-  ></script>
+  const APP_KEY = "atmo";
 
-  <meta charset="UTF-8" />
-  <title>AIVO Studio v2</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  const safeStr = (v) => String(v == null ? "" : v).trim();
+  const esc = (s) =>
+    safeStr(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
 
-<!-- ================= GLOBAL / CORE ================= -->
-<link rel="stylesheet" href="/index.css?v=1002">
+  // FAL atmo video status endpoint (app param şart)
+  const STATUS_URL = (rid) =>
+    `/api/providers/fal/video/status?request_id=${encodeURIComponent(
+      rid
+    )}&app=${APP_KEY}`;
 
-<!-- ================= TOPBAR / DROPDOWN (BASE) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=14">
-<link rel="stylesheet" href="/products.dropdown.override.css?v=9" />
+  function pickVideoUrl(data) {
+    return (
+      data?.video?.url ||
+      data?.video_url ||
+      data?.output?.video?.url ||
+      data?.output?.url ||
+      (Array.isArray(data?.outputs) ? data.outputs?.[0]?.url : null) ||
+      (Array.isArray(data?.output) ? data.output?.[0]?.url : null) ||
+      data?.result?.url ||
+      data?.result?.video?.url ||
+      null
+    );
+  }
 
-<!-- ================= STUDIO — SHELL (LAYOUT / İSKELET) ================= -->
-<link rel="stylesheet" href="/studio.shell.css?v=5">
+  function formatTs(ts) {
+    try {
+      const d = new Date(ts);
+      if (Number.isNaN(+d)) return "";
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yy = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mi = String(d.getMinutes()).padStart(2, "0");
+      return `${dd}.${mm}.${yy} ${hh}:${mi}`;
+    } catch {
+      return "";
+    }
+  }
 
-<!-- ================= STUDIO — UI / PAGES ================= -->
-<link rel="stylesheet" href="/studio.app.css?v=4">
-<link rel="stylesheet" href="/studio.pages.css?v=8">
+  function pickOutputUrl(o) {
+    return safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
+  }
 
-<!-- ================= MODULE CSS (router yönetir) ================= -->
-<link id="studio-module-css" rel="stylesheet" href="/css/mod.dashboard.css?v=3">
+  function isVideoOutput(o) {
+    return String(o?.type || "").toLowerCase() === "video";
+  }
 
-<!-- ================= PAGE CSS (ATMOSPHERE / COVER vs) ================= -->
-<link rel="stylesheet" href="/studio.atmosphere.css?v=11">
+  function outputVariant(o) {
+    return String(o?.meta?.variant || "").toLowerCase().trim();
+  }
 
-<!-- ================= PANEL CSS (video/covers/atmo panel ui) ================= -->
-<link rel="stylesheet" href="/css/mod.video.panel.css?v=2">
-<link rel="stylesheet" href="/css/mod.atmo.panel.css?v=1">
-<link rel="stylesheet" href="/css/mod.cartoon.css?v=1">
-<link rel="stylesheet" href="/css/mod.photofx.css?v=1">
-<link rel="stylesheet" href="/css/cartoon.studio.css?v=1">
+  // FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
+  function bestVideoFromJob(job) {
+    const meta = job?.meta || {};
+    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-<!-- ================= STUDIO V2 (GENEL OVERRIDE KATMANI) ================= -->
-<link rel="stylesheet" href="/studio.v2.css?v=20260223_01" />
+    const directFinal =
+      safeStr(job?.final) ||
+      safeStr(job?.final_url) ||
+      safeStr(job?.final_video_url) ||
+      safeStr(meta?.final) ||
+      safeStr(meta?.final_url) ||
+      safeStr(meta?.final_video_url);
 
-<!-- ================= TOAST (UI üstü, player’a dokunmaz) ================= -->
-<link rel="stylesheet" href="/toast.css?v=3">
+    if (directFinal) return directFinal;
 
-<!-- ================= PLAYER BASE ================= -->
-<link rel="stylesheet" href="/css/player.css?v=4">
+    const directLogo =
+      safeStr(job?.logo) ||
+      safeStr(job?.logo_url) ||
+      safeStr(job?.logo_overlay_url) ||
+      safeStr(meta?.logo) ||
+      safeStr(meta?.logo_url) ||
+      safeStr(meta?.logo_overlay_url);
 
-<!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
-<link rel="stylesheet" href="/css/player.override.css?v=1005">
+    if (directLogo) return directLogo;
 
-  <!-- ✅ STUDIO AUTH GATE (legacy'den aynen) -->
-  <style id="aivo-auth-gate-style">
-    html { visibility: hidden; }
-  </style>
+    const directMux =
+      safeStr(job?.mux) ||
+      safeStr(job?.mux_url) ||
+      safeStr(job?.muxed_url) ||
+      safeStr(meta?.mux) ||
+      safeStr(meta?.mux_url) ||
+      safeStr(meta?.muxed_url);
 
-  <script>
-  (function AIVO_STUDIO_HARD_GATE(){
-    if (window.__AIVO_STUDIO_HARD_GATE__) return;
-    window.__AIVO_STUDIO_HARD_GATE__ = true;
+    if (directMux) return directMux;
 
-    function goIndexLogin(){
-      var from = encodeURIComponent(location.href);
-      location.replace("/?open=login&from=" + from);
+    const fin = outs.find((o) => isVideoOutput(o) && o?.meta?.is_final === true);
+    if (fin) {
+      const u = pickOutputUrl(fin);
+      if (u) return u;
     }
 
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+    const ov = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay");
+    if (ov) {
+      const u = pickOutputUrl(ov);
+      if (u) return u;
+    }
 
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    })
-    .then(async function(r){
-      clearTimeout(t);
+    const mx = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "mux");
+    if (mx) {
+      const u = pickOutputUrl(mx);
+      if (u) return u;
+    }
 
-      if (r.status === 200) {
-        const me = await r.json();
+    const pv = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "provider");
+    if (pv) {
+      const u = pickOutputUrl(pv);
+      if (u) return u;
+    }
 
-        // ✅ Auth OK -> sayfayı göster
-        var st = document.getElementById("aivo-auth-gate-style");
-        if (st) st.remove();
-        document.documentElement.style.visibility = "visible";
+    const vid = outs.find((o) => isVideoOutput(o)) || outs[0];
+    return pickOutputUrl(vid);
+  }
 
-        // 🟢 ONLINE PRESENCE PING
-        if (me && me.email) {
-          fetch("/api/presence/ping", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: me.email })
-          });
+  // PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
+  function previewVideoFromJob(job) {
+    const meta = job?.meta || {};
+    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-          setInterval(function(){
-            fetch("/api/presence/ping", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: me.email })
-            });
-          }, 30000);
+    const directPreview =
+      safeStr(job?.preview) ||
+      safeStr(job?.preview_url) ||
+      safeStr(job?.preview_video_url) ||
+      safeStr(meta?.preview) ||
+      safeStr(meta?.preview_url) ||
+      safeStr(meta?.preview_video_url);
+
+    if (directPreview) return directPreview;
+
+    const prev = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "preview");
+    if (prev) {
+      const u = pickOutputUrl(prev);
+      if (u) return u;
+    }
+
+    return "";
+  }
+
+  function acceptAtmoOutput(o) {
+    if (!o) return false;
+    const t = String(o.type || "").toLowerCase();
+    if (t && t !== "video") return false;
+
+    const app = String(
+      o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || ""
+    )
+      .toLowerCase()
+      .trim();
+
+    if (!app) return true;
+    return app.includes("atmo");
+  }
+
+  function ensureStyles() {
+    if (document.getElementById("atmoMiniPanelStyles")) return;
+
+    const css = `
+      .atmoWrap{display:flex;flex-direction:column;gap:12px;}
+      .atmoGrid{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap:12px;
+      }
+      @media (max-width: 980px){ .atmoGrid{grid-template-columns:1fr;} }
+
+      .atmoEmpty{opacity:.7;font-size:12px;padding:4px 2px;}
+
+      .atmoCard{
+        position:relative;
+        border-radius:18px;
+        background:rgba(255,255,255,0.035);
+        border:1px solid rgba(255,255,255,0.07);
+        overflow:hidden;
+      }
+
+      .atmoThumb{
+        position:relative;
+        border-radius:16px;
+        overflow:hidden;
+        margin:10px;
+        background:#000;
+        border:1px solid rgba(255,255,255,0.08);
+      }
+
+      /* clamp: kart içi video asla paneli büyütmez */
+      .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
+      .atmoThumb.isPortrait:before{padding-top:140%;}
+
+      .atmoThumbVideo{
+        position:absolute;inset:0;width:100%;height:100%;
+        object-fit:cover;
+        background:#000;
+      }
+
+      .atmoThumbPlaceholder{
+        position:absolute;inset:0;
+        display:flex;align-items:center;justify-content:center;
+        font-size:12px;opacity:.75;
+        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
+      }
+
+      .atmoPill{
+        position:absolute;left:14px;top:14px;z-index:3;
+        padding:6px 10px;border-radius:999px;
+        font-size:12px;font-weight:700;
+        background:rgba(0,0,0,.35);
+        border:1px solid rgba(255,255,255,0.10);
+        backdrop-filter: blur(10px);
+      }
+      .atmoPill.ok{border-color:rgba(120,255,190,.22);}
+      .atmoPill.mid{border-color:rgba(255,255,255,.10);}
+      .atmoPill.bad{border-color:rgba(255,120,120,.25);}
+
+      .atmoFooter{
+        padding:10px 12px 12px 12px;
+        display:flex;flex-direction:column;gap:8px;
+      }
+      .atmoMetaLine{
+        font-size:12px;opacity:.8;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      }
+      .atmoPromptLine{
+        font-size:12px;opacity:.7;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      }
+
+      .atmoActions{
+        display:flex;gap:8px;
+        padding:10px;border-radius:14px;
+        background:rgba(0,0,0,.20);
+        border:1px solid rgba(255,255,255,0.06);
+      }
+
+      .atmoIconBtn{
+        flex:1;
+        height:38px;
+        border-radius:12px;
+        border:1px solid rgba(255,255,255,0.10);
+        background:rgba(255,255,255,0.04);
+        color:#fff;
+        cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        font-weight:700;font-size:12px;
+      }
+      .atmoIconBtn[disabled]{opacity:.45;cursor:not-allowed;}
+      .atmoIconBtn.danger{
+        border-color:rgba(255,120,120,0.20);
+        background:rgba(255,120,120,0.08);
+      }
+    `;
+
+    const style = document.createElement("style");
+    style.id = "atmoMiniPanelStyles";
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function badgeFor(job) {
+    const st = String(job?.status || job?.state || "").toUpperCase();
+    if (st.includes("FAIL") || st.includes("ERROR"))
+      return { text: "Hata", kind: "bad" };
+    if (
+      st.includes("READY") ||
+      st.includes("DONE") ||
+      st.includes("COMPLET") ||
+      st.includes("SUCC")
+    )
+      return { text: "Hazır", kind: "ok" };
+    if (
+      st.includes("RUN") ||
+      st.includes("PROC") ||
+      st.includes("PEND") ||
+      st.includes("QUEUE")
+    )
+      return { text: "İşleniyor", kind: "mid" };
+    return { text: st || "Hazır", kind: "mid" };
+  }
+
+  function createAtmosPanel(host) {
+    ensureStyles();
+
+    let destroyed = false;
+    let timer = null;
+
+    const state = {
+      items: [],
+      ephemerals: [],
+    };
+
+    const playableUrls = new Set();
+    const probingUrls = new Set();
+
+    host.innerHTML = `
+      <div class="atmoWrap">
+        <div class="atmoGrid" data-el="grid"></div>
+      </div>
+    `;
+
+    const $grid = host.querySelector('[data-el="grid"]');
+
+    const setHeaderMeta = (t) => {
+      try {
+        if (
+          window.RightPanel &&
+          typeof window.RightPanel.setHeader === "function"
+        ) {
+          window.RightPanel.setHeader({ meta: String(t || "") });
+        }
+      } catch {}
+    };
+
+    function isPortrait(job, out) {
+      const ar = String(
+        job?.meta?.aspect_ratio || job?.meta?.ratio || out?.meta?.aspect_ratio || ""
+      );
+      return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
+    }
+
+    function combinedItems() {
+      const dbItems = Array.isArray(state.items) ? state.items : [];
+      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
+
+      const ephemeralRequestIds = new Set(
+        eps
+          .map((e) => safeStr(e?.meta?.request_id || e?.request_id))
+          .filter(Boolean)
+      );
+
+      const filteredDbItems = dbItems.filter((x) => {
+        const rid = safeStr(x?.meta?.request_id || x?.request_id);
+        if (!rid) return true;
+        return !ephemeralRequestIds.has(rid);
+      });
+
+      const all = [...eps, ...filteredDbItems];
+
+      const rankStatus = (j) => {
+        const st = String(j?.status || j?.state || "").toUpperCase();
+        if (
+          st.includes("PROC") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        ) return 0;
+        if (
+          st.includes("READY") ||
+          st.includes("DONE") ||
+          st.includes("COMPLET") ||
+          st.includes("SUCC")
+        ) return 1;
+        if (st.includes("FAIL") || st.includes("ERROR")) return 2;
+        return 1;
+      };
+
+      const tsOf = (j) => {
+        const t = new Date(j?.updated_at || j?.created_at || Date.now()).getTime();
+        return Number.isFinite(t) ? t : 0;
+      };
+
+      return all.sort((a, b) => {
+        const ra = rankStatus(a);
+        const rb = rankStatus(b);
+        if (ra !== rb) return ra - rb;
+        return tsOf(b) - tsOf(a);
+      });
+    }
+
+    function resolvePlaybackUrl(rawUrl) {
+      rawUrl = safeStr(rawUrl);
+      if (!rawUrl) return "";
+
+      if (!/^https?:\/\//i.test(rawUrl)) return rawUrl;
+
+      if (rawUrl.includes("media.aivo.tr/outputs/atmo/")) {
+        return rawUrl;
+      }
+
+      return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
+    }
+
+    function render() {
+      if (destroyed || !$grid) return;
+
+      const items = combinedItems();
+
+      const hasProcessing = items.some((j) => {
+        const st = String(j.status || "").toUpperCase();
+        return (
+          st.includes("PROC") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        );
+      });
+      setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
+
+      if (!items.length) {
+        $grid.innerHTML = `<div class="atmoEmpty">Henüz atmos üretim yok.</div>`;
+        return;
+      }
+
+      $grid.innerHTML = items
+        .slice(0, 30)
+        .map((job) => {
+          const badge = badgeFor(job);
+          const isFreshCard = job?._fresh === true;
+
+          const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
+          const previewUrlResolved = safeStr(previewVideoFromJob(job));
+          const selectedPlaybackRawUrl = isFreshCard
+            ? (finalUrl || previewUrlResolved)
+            : (previewUrlResolved || finalUrl);
+
+          const hasUrl = !!selectedPlaybackRawUrl;
+          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+          const promptLine = safeStr(job?.prompt || "");
+
+          const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
+          const portrait = isPortrait(job, dummyOut);
+
+          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
+          const videoUrl = playbackUrl
+            ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
+            : "";
+
+          if (playbackUrl && !playableUrls.has(playbackUrl) && !probingUrls.has(playbackUrl)) {
+            probePlayableUrl(playbackUrl);
+          }
+
+          const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
+
+          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+            ? (
+                '<div class="atmoCard"' +
+                  ' data-job="' + esc(job.job_id || "") + '"' +
+                  ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+                  ' data-final-url="' + esc(finalUrl) + '"' +
+                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+                  ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+                '>' +
+                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                    id: safeStr(job.job_id || ""),
+                    title: promptLine || "—",
+                    sub: metaLine,
+                    badgeText: badge.text,
+                    badgeKind: isPlayableNow
+                      ? "ready"
+                      : (badge.kind === "bad" ? "error" : "loading"),
+                    videoUrl,
+                    posterUrl: "",
+                    ratio: portrait ? "9:16" : "16:9",
+                    ready: isPlayableNow,
+                    canDownload: !!finalUrl,
+                    canShare: isPlayableNow,
+                    canDelete: true
+                  }) +
+                '</div>'
+              )
+            : "";
+        })
+        .join("");
+    }
+
+    async function handleAction(cardEl, act) {
+      const jobId = safeStr(cardEl?.getAttribute("data-job"));
+      const url = safeStr(cardEl?.getAttribute("data-url"));
+      const finalUrl = safeStr(cardEl?.getAttribute("data-final-url"));
+      const previewUrl = safeStr(cardEl?.getAttribute("data-preview-url"));
+
+      if (act === "play") {
+        const video = cardEl?.querySelector("video");
+        if (!video) return;
+
+        if (video.paused) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
         }
         return;
       }
 
-      goIndexLogin();
-    })
-    .catch(function(){
-      goIndexLogin();
-    });
-  })();
-  </script>
-
-  <style>
-    /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
-/* #globalPlayer { display: none !important; } */
-
-
-    /* ✅ Footer taşmasını kes (dışarı çıkmayı engelle) */
-    .studioOutputs { overflow: hidden; }
-    .studioOutputs .panelFooter { padding: 12px 14px; }
-    .studioOutputs .miniHint { white-space: normal; word-break: break-word; }
-  </style>
-</head>
-
-<body class="is-studio-v2 pageWithTopbar">
-
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
-
-      <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
-      </a>
-
-      <nav class="aivo-nav" aria-label="Üst menü">
-
-       <!-- ÜRÜNLER -->
-<div class="nav-item has-dropdown" id="navProducts">
-  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-    Ürünler <span class="chevron">▾</span>
-  </button>
-
-  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-    <div class="products-menu">
-
-      <a href="/studio.v2.html#music" data-auth="required" class="product-card" data-product="music">
-        <span class="pc-ico">🎵</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Müzik (Geleneksel)</span>
-          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-        </span>
-      </a>
-
-      <a href="/studio.v2.html#video" data-auth="required" class="product-card" data-product="video">
-        <span class="pc-ico">🎬</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Video Üret</span>
-          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-        </span>
-      </a>
-
-      <a href="/studio.v2.html#atmo" data-auth="required" class="product-card" data-product="atmo">
-        <span class="pc-ico">🌫️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Atmosfer Video</span>
-          <span class="pc-sub">Loop’lanabilir sahne & atmosfer</span>
-        </span>
-      </a>
-
-      <a href="/studio.v2.html#cover" data-auth="required" class="product-card" data-product="cover">
-        <span class="pc-ico">🖼️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Kapak Üret</span>
-          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-        </span>
-      </a>
-
-      <a href="/studio.v2.html#cartoon" data-auth="required" class="product-card sm-card sm-card--a" data-product="cartoon">
-        <span class="pc-ico">🐠</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Çocuk Çizgifilm</span>
-          <span class="pc-sub">Çocuk odaklı çizgifilm üretimi</span>
-        </span>
-      </a>
-
-      <a href="/studio.v2.html#photofx" data-auth="required" class="product-card sm-card sm-card--b" data-product="photofx">
-        <span class="pc-ico">✨</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Foto Efekt Video Clip</span>
-          <span class="pc-sub">Fotoğraftan efektli video klip</span>
-        </span>
-      </a>
-
-    </div>
-  </div>
-</div>
-<!-- /ÜRÜNLER -->
-
-        <!-- KURUMSAL -->
-        <div class="nav-item has-dropdown" id="navCorp">
-          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-            Kurumsal <span class="chevron">▾</span>
-          </button>
-
-          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
-            <div class="corp-menu">
-              <div class="corp-grid">
-                <a href="/kurumsal/hakkimizda.html" class="corp-card">
-                  <span class="cc-ico">ⓘ</span>
-                  <span class="cc-txt"><span class="cc-title">Hakkımızda</span><span class="cc-sub">AIVO’nun hikayesi</span></span>
-                </a>
-                <a href="/kurumsal/ozellikler.html" class="corp-card">
-                  <span class="cc-ico">⚙️</span>
-                  <span class="cc-txt"><span class="cc-title">Özellikler</span><span class="cc-sub">Neler sunuyoruz</span></span>
-                </a>
-                <a href="/kurumsal/gizlilik.html" class="corp-card">
-                  <span class="cc-ico">🔒</span>
-                  <span class="cc-txt"><span class="cc-title">Gizlilik Politikası</span><span class="cc-sub">KVKK / GDPR</span></span>
-                </a>
-                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
-                  <span class="cc-ico">📄</span>
-                  <span class="cc-txt"><span class="cc-title">Mesafeli Satış</span><span class="cc-sub">Sözleşme metni</span></span>
-                </a>
-                <a href="/kurumsal/destek-merkezi.html" class="corp-card">
-                  <span class="cc-ico">❓</span>
-                  <span class="cc-txt"><span class="cc-title">Destek Merkezi</span><span class="cc-sub">Yardım &amp; SSS</span></span>
-                </a>
-                <a href="/kurumsal/destek.html" class="corp-card">
-                  <span class="cc-ico">✉️</span>
-                  <span class="cc-txt"><span class="cc-title">İletişim</span><span class="cc-sub">Destek &amp; bilgi</span></span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
-      </nav>
-
-      <!-- AUTH -->
-      <div class="aivo-auth">
-        <div class="auth-guest" id="authGuest"></div>
-
-        <div class="auth-user" id="authUser" hidden>
-          <div class="top-credits" id="topCredits">
-            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-              Kredi <strong id="topCreditCount">0</strong>
-            </div>
-            <a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">Kredi Al</a>
-          </div>
-
-          <div class="user-menu-wrap" id="userMenuWrap">
-            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-              <span class="user-ava" id="topUserInitial"></span>
-              <span class="user-name" id="topUserName">Hesap</span>
-              <span class="chev">▾</span>
-            </button>
-
-            <div id="userMenuPanel" class="user-menu" aria-hidden="true" hidden>
-              <div class="user-menu-card">
-                <div class="um-head">
-                  <div class="um-ava" id="umAvatar"></div>
-                  <div class="um-meta">
-                    <div class="um-title" id="umName">Hesap</div>
-                    <div class="um-sub" id="umEmail"></div>
-                  </div>
-                </div>
-
-                <div class="um-plan">
-                  <span class="um-plan-ico">💎</span>
-                  <span class="um-plan-txt" id="umPlan">Basic</span>
-                </div>
-
-                <div class="um-sep"></div>
-
-                <a class="um-item" href="/studio.v2.html#dashboard"><span class="um-i">✦</span><span>Dashboard</span></a>
-                <a class="um-item" href="/studio.v2.html#library"><span class="um-i">▦</span><span>Ürettiklerim</span></a>
-                <a class="um-item" href="/studio.v2.html#profile"><span class="um-i">👤</span><span>Profil</span></a>
-                <a class="um-item" href="/studio.v2.html#settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
-
-                <div class="um-sep"></div>
-
-                <button class="um-item um-item-danger" data-action="logout" data-redirect="/" type="button">
-                  <span>Çıkış Yap</span>
-                </button>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </header>
-  <!-- ================= /TOPBAR ================= -->
-
-
-  <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
-  <div class="studioShell" id="studioRoot">
-
-    <!-- SOL MENÜ -->
-    <aside class="studioNav" id="leftMenu">
-      <div class="navScroll">
-
-        <div class="navCard">
-          <div class="navTitle">AI Üret</div>
-
-          <button class="navBtn" data-route="music" data-music-tab="geleneksel">
-            <span class="navDot"></span> AI Müzik (Geleneksel)
-          </button>
-
-          <button class="navBtn" data-route="video">
-            <span class="navDot"></span> AI Video Üret
-          </button>
-
-          <button class="navBtn" data-route="atmo">
-            <span class="navDot"></span> AI Atmosfer Video
-          </button>
-
-          <button class="navBtn" data-route="cover">
-            <span class="navDot"></span> AI Kapak Üret
-          </button>
-
-         <button class="navBtn" data-route="cartoon">
-  <span class="navDot"></span> AI Çocuk Çizgifilm
-</button>
-         <button class="navBtn" data-route="photofx">
-  <span class="navDot"></span> AI Foto Efekt Video Clip
-</button>
-        </div>
-
-        <div class="navCard">
-          <div class="navTitle">Paneller</div>
-
-          <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
-          <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
-
-          <a class="navBtn ghost" href="/fiyatlandirma.html#packs" style="display:block;text-decoration:none;">
-            Kredi Satın Al
-          </a>
-
-          <button class="navBtn ghost" data-route="invoices">Faturalarım</button>
-          <button class="navBtn ghost" data-route="profile">Profil</button>
-          <button class="navBtn ghost" data-route="settings">Ayarlar</button>
-
-          <button class="navBtn ghost danger" data-logout>Çıkış Yap</button>
-        </div>
-
-      </div>
-
-      <div class="navInfo" id="navInfo">
-        <div class="navInfoTitle">İpuçları</div>
-        <div class="navInfoBody">Soldan bir modül seç.</div>
-      </div>
-    </aside>
-
-<!-- ORTA ALAN: 2 PANEL YAN YANA -->
-<main class="studioMain" id="mainWorkspace">
-  <div class="studioTwoPanel" id="twoPanelWrap">
-
-    <section id="moduleHost" class="glassCard studioMotor">
-      <div class="placeholder">
-        <div class="ph-title">Henüz modül yüklenmedi</div>
-        <div class="ph-sub">Soldan bir modül seç.</div>
-      </div>
-    </section>
-
-    <section class="outputsCard studioOutputs" aria-label="Üretilenler">
-      <!-- RIGHT PANEL HOST -->
-      <div id="rightPanelHost"></div>
-    </section>
-
-  </div>
-</main>
-
-  <!-- ================= /studioRoot ================= -->
-
-
-
-  <!-- =========================================================
-       ✅ PASSWORD MODAL (PROFILE) — GLOBAL (tek kopya)
-       ========================================================= -->
-  <div class="aivo-modal" data-password-modal aria-hidden="true">
-    <div class="aivo-modal__backdrop" data-password-close></div>
-
-    <div class="aivo-modal__panel" role="dialog" aria-modal="true"
-         aria-labelledby="pwModalTitle" aria-describedby="pwModalDesc" tabindex="-1">
-
-      <div class="aivo-modal__head">
-        <div>
-          <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
-          <div class="aivo-modal__sub" id="pwModalDesc">
-            Hesabını güvende tutmak için güçlü bir şifre kullan.
-          </div>
-        </div>
-
-        <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
-      </div>
-
-      <div class="aivo-modal__body">
-        <div class="aivo-field">
-          <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
-          <input class="aivo-input" id="pwCurrent" name="current_password" type="password"
-                 autocomplete="current-password" aria-describedby="pwHint"
-                 data-pw-current placeholder="Mevcut şifren" />
-        </div>
-
-        <div class="aivo-row2">
-          <div class="aivo-field">
-            <label class="aivo-label" for="pwNew">Yeni Şifre</label>
-            <input class="aivo-input" id="pwNew" name="new_password" type="password"
-                   autocomplete="new-password" aria-describedby="pwHint"
-                   data-pw-new placeholder="Yeni şifre" />
-          </div>
-
-          <div class="aivo-field">
-            <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
-            <input class="aivo-input" id="pwNew2" name="new_password_confirm" type="password"
-                   autocomplete="new-password" aria-describedby="pwHint"
-                   data-pw-new2 placeholder="Yeni şifre tekrar" />
-          </div>
-        </div>
-
-        <div class="aivo-hint" id="pwHint" data-pw-hint>
-          En az 8 karakter, mümkünse harf + sayı + sembol.
-        </div>
-      </div>
-
-      <div class="aivo-modal__foot">
-        <button class="chip-btn" type="button" data-password-close>İptal</button>
-        <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
-      </div>
-    </div>
-  </div>
-  <!-- ========================================================= -->
-<!-- ================= AUTH / CORE ================= -->
-<script src="/auth.unify.fix.js?v=2" defer></script>
-<script src="/auth.core.js?v=2" defer></script>
-
-<!-- ================= STUDIO GUARD / STORE ================= -->
-<script src="/studio.guard.js?v=12" defer></script>
-<script src="/store.js?v=2" defer></script>
-
-<!-- ================= PARTIALS ================= -->
-<script src="/include.partials.js?v=1" defer></script>
-
-<!-- ================= 🎧 GLOBAL PLAYER (ÖNCE) ================= -->
-<script src="/js/player.js?v=5" defer></script>
-
-<!-- ================= PPE (Player Processing Engine) ================= -->
-<script src="/ppe.js?v=1" defer></script>
-
-<!-- ================= APP / SERVİSLER ================= -->
-<script src="/js/studio.services.js?v=3" defer></script>
-
-<!-- ================= RIGHT PANEL CORE ================= -->
-<script src="/panel.manager.js?v=1" defer></script>
-<script src="/panel.dbjobs.js?v=1" defer></script>
-<script src="/js/shared.video.card.js?v=2" defer></script>
-
-<!-- ================= PANELLER ================= -->
-
-<script src="/panel.music.js?v=6" defer></script>
-<script src="/panel.video.js?v=9999" defer></script>
-<script src="/panel.cover.js?v=2" defer></script>
-
-<!-- ✅ ATMOS PANEL (ORİJİNAL ÇALIŞAN) -->
-<script src="/js/panel.atmo.js?v=8" defer></script>
-
-<script src="/panel.cartoon.js?v=1" defer></script>
-<script src="/panel.photofx.js?v=1" defer></script>
-
-<!-- ================= MODÜLLER (FORM + ACTION) ================= -->
-<script src="/js/music.module.js?v=1" defer></script>
-<script src="/js/studio.music.record.js?v=1" defer></script>
-<script src="/js/studio.music.generate.js?v=1" defer></script>
-
-<script src="/js/video.module.js?v=2" defer></script>
-<script src="/js/cover.module.js?v=2" defer></script>
-
-<!-- ================= ATMOS (FORM HELPERS) ================= -->
-<script src="/js/atmos.js?v=1" defer></script>
-<script src="js/cartoon.character.js"></script>
-<script src="js/cartoon.story.js"></script>
-<script src="js/cartoon.js"></script>
-
-<!-- ================= STUDIO MODULES (GENEL) ================= -->
-<script src="/js/photofx.module.js?v=2" defer></script>
-
-<script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
-
-<!-- ================= DASHBOARD / PROFILE / SETTINGS ================= -->
-<script src="/studio.dashboard.recent.js?v=7" defer></script>
-<script src="/studio.stats.js?v=15" defer></script>
-<script src="/studio.settings.js?v=3" defer></script>
-<script src="/studio.profile.js?v=202601120200" defer></script>
-
-<!-- ================= ARCHIVE DOWNLOAD ================= -->
-<script src="/js/aivo.archive.download.js?v=2" defer></script>
-
-<!-- ================= TOAST ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
-<script src="/toast.compat.js?v=1" defer></script>
-
-<!-- ================= ROUTER + BOOT (EN SON) ================= -->
-<script src="/studio.router.js?v=1" defer></script>
-<script src="/studio.v2.boot.js?v=1" defer></script>
-
-<!-- AIVO PLAYER ROOT -->
-<div id="aivoPlayerRoot" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(920px,96%);z-index:999999;"></div>
-
-
-<script>
-(function(){
-  if (window.__AIVO_STEM_DL__) return;
-  window.__AIVO_STEM_DL__ = true;
-
-  async function downloadViaFetch(url, fallbackName){
-    const r = await fetch(url, { method: "GET" });
-    if (!r.ok) throw new Error("download_failed_" + r.status);
-
-    const blob = await r.blob();
-    const a = document.createElement("a");
-    const obj = URL.createObjectURL(blob);
-
-    // filename: Content-Disposition varsa çoğu tarayıcı zaten alır; yoksa fallback
-    a.href = obj;
-    a.download = fallbackName || "stem.wav";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(obj), 2000);
-  }
-
-  document.addEventListener("click", async (e) => {
-    const a = e.target && e.target.closest && e.target.closest('a[data-fn="aivoDownloadStem"]');
-    if (!a) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const url = a.getAttribute("data-url") || "";
-    if (!url) return;
-
-    const label = (a.textContent || "stem").trim();
-    const name = label.toLowerCase().endsWith(".wav") ? label : (label + ".wav");
-
-    try {
-      a.classList.add("is-downloading");
-      await downloadViaFetch(url, name);
-    } catch (err) {
-      // fallback: eğer fetch engellenirse, eski davranışa dön
-      window.location.href = url;
-    } finally {
-      a.classList.remove("is-downloading");
+      if (act === "fs") {
+        const video = cardEl?.querySelector("video");
+        if (!video) return;
+
+        try {
+          if (document.fullscreenElement) {
+            await document.exitFullscreen().catch(() => {});
+            return;
+          }
+
+          if (video.requestFullscreen) {
+            await video.requestFullscreen().catch(() => {});
+          }
+        } catch {}
+        return;
+      }
+
+      if (act === "download") {
+        const dlUrl = finalUrl || url || previewUrl;
+        if (!dlUrl) return;
+
+        const proxied =
+          "/api/media/proxy?url=" +
+          encodeURIComponent(dlUrl) +
+          "&filename=" +
+          encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
+
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.src = proxied;
+
+        document.body.appendChild(iframe);
+
+        setTimeout(() => {
+          try {
+            iframe.remove();
+          } catch {}
+        }, 15000);
+
+        return;
+      }
+
+      if (act === "share") {
+        const shareUrl = finalUrl || url || previewUrl;
+        if (!shareUrl) return;
+
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: "Atmosfer Video", url: shareUrl });
+          } else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+          }
+        } catch {}
+        return;
+      }
+
+      if (act === "delete") {
+        if (!jobId) return;
+
+        state.ephemerals = (state.ephemerals || []).filter(
+          (x) => safeStr(x?.job_id) !== jobId
+        );
+
+        if (db && typeof db.deleteJob === "function") {
+          const ok = await db.deleteJob(jobId);
+          if (!ok) db.hydrate(true);
+        } else {
+          state.items = (state.items || []).filter(
+            (x) => safeStr(x?.job_id) !== jobId
+          );
+        }
+
+        render();
+        return;
+      }
     }
-  }, true);
-})();
-</script>
 
-<!-- ✅ ESKİ STUDIO'DAN TAŞINAN USER MENU DAVRANIŞI -->
-<script>
-(function AIVO_USER_MENU_FINAL(){
-  if (window.__AIVO_USER_MENU_FINAL__) return;
-  window.__AIVO_USER_MENU_FINAL__ = true;
+    $grid?.addEventListener(
+      "click",
+      (e) => {
+        const btn = e.target?.closest?.("[data-svc-act], [data-act]");
+        if (!btn) return;
 
-  const btn       = document.querySelector('#btnUserMenuTop');
-  const panel     = document.querySelector('#userMenuPanel');
-  const wrap      = document.querySelector('#userMenuWrap');
+        const act =
+          safeStr(btn.getAttribute("data-svc-act")) ||
+          safeStr(btn.getAttribute("data-act"));
+        if (!act) return;
 
-  const topInitial = document.querySelector('#topUserInitial');
-  const umAvatar   = document.querySelector('#umAvatar');
-  const umName     = document.querySelector('#umName');
-  const umEmail    = document.querySelector('#umEmail');
+        if (btn.hasAttribute("disabled")) return;
 
-  if (!btn || !panel) return;
+        const wrapperCard = btn.closest(".atmoCard");
+        const sharedCard = btn.closest(".svcCard");
+        const card = wrapperCard || sharedCard;
+        if (!card) return;
 
-  function isOpen(){
-    return panel.hidden === false;
-  }
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
-  function setOpen(open){
-    if (open) {
-      panel.hidden = false;
-      panel.setAttribute('aria-hidden', 'false');
-      btn.setAttribute('aria-expanded', 'true');
-      panel.classList.add('is-open');
-    } else {
-      panel.hidden = true;
-      panel.setAttribute('aria-hidden', 'true');
-      btn.setAttribute('aria-expanded', 'false');
-      panel.classList.remove('is-open');
+        handleAction(card, act);
+      },
+      true
+    );
+
+    const db =
+      window.DBJobs && typeof window.DBJobs.create === "function"
+        ? window.DBJobs.create({
+            app: APP_KEY,
+            debug: false,
+            pollIntervalMs: 4000,
+            hydrateEveryMs: 15000,
+            acceptOutput: acceptAtmoOutput,
+            onChange(items) {
+              state.items = items || [];
+              render();
+            },
+          })
+        : null;
+
+    if (db) db.start();
+
+    const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
+
+    if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
+      window.__AIVO_ATMO_UPSERT_HOOKED__ = true;
+
+      window.AIVO_JOBS.upsert = function (job) {
+        try {
+          originalUpsert.call(this, job);
+        } catch {}
+
+        try {
+          if (!job) return;
+
+          const key = (
+            safeStr(job.routeKey) ||
+            safeStr(job.app) ||
+            safeStr(job.module) ||
+            safeStr(job.type) ||
+            safeStr(job.kind)
+          ).toLowerCase();
+
+          if (!key.includes("atmo")) return;
+
+          setHeaderMeta("İşleniyor…");
+
+          const rid =
+            safeStr(job.request_id) ||
+            safeStr(job.requestId) ||
+            safeStr(job.fal_request_id) ||
+            safeStr(job.provider_request_id);
+
+          if (!rid || rid === "TEST") return;
+
+          if (timer) clearInterval(timer);
+          timer = setInterval(
+            () => pollFalOnce(rid, safeStr(job.prompt || "")),
+            2000
+          );
+          pollFalOnce(rid, safeStr(job.prompt || ""));
+        } catch {}
+      };
     }
+
+    function probePlayableUrl(url) {
+      url = safeStr(url);
+      if (!url) return;
+      if (playableUrls.has(url)) return;
+      if (probingUrls.has(url)) return;
+
+      probingUrls.add(url);
+
+      waitUntilPlayable(url, 12000)
+        .then((ok) => {
+          if (ok) {
+            playableUrls.add(url);
+            render();
+          }
+        })
+        .finally(() => {
+          probingUrls.delete(url);
+        });
+    }
+
+    async function waitUntilPlayable(url, timeoutMs = 12000) {
+      url = safeStr(url);
+      if (!url) return false;
+
+      return await new Promise((resolve) => {
+        const v = document.createElement("video");
+        let done = false;
+
+        const finish = (ok) => {
+          if (done) return;
+          done = true;
+          try {
+            v.pause();
+            v.removeAttribute("src");
+            v.load();
+          } catch {}
+          resolve(!!ok);
+        };
+
+        const t = setTimeout(() => finish(false), timeoutMs);
+
+        v.preload = "metadata";
+        v.muted = true;
+        v.playsInline = true;
+
+        v.addEventListener(
+          "loadeddata",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
+
+        v.addEventListener(
+          "canplay",
+          () => {
+            clearTimeout(t);
+            finish(true);
+          },
+          { once: true }
+        );
+
+        v.addEventListener(
+          "error",
+          () => {
+            clearTimeout(t);
+            finish(false);
+          },
+          { once: true }
+        );
+
+        v.src = url;
+        try {
+          v.load();
+        } catch {}
+      });
+    }
+
+    async function pollFalOnce(rid, promptMaybe) {
+      if (destroyed) return;
+      rid = safeStr(rid);
+      if (!rid) return;
+
+      let data;
+      try {
+        const r = await fetch(STATUS_URL(rid), { credentials: "include" });
+        data = await r.json();
+      } catch {
+        setHeaderMeta("Bağlantı sorunu");
+        return;
+      }
+
+      const st = safeStr(
+        data?.status || data?.state || data?.result?.status
+      ).toLowerCase();
+
+      if (st.includes("fail") || st === "error") {
+        setHeaderMeta("Hata");
+        return;
+      }
+
+      if (st.includes("complete") || st.includes("success") || st === "succeeded") {
+        let url = pickVideoUrl(data);
+
+        if (!url) {
+          setHeaderMeta("Tamamlandı (url yok)");
+          return;
+        }
+
+        const playable = await waitUntilPlayable(url, 12000);
+        if (playable) playableUrls.add(url);
+        if (!playable) {
+          setHeaderMeta("İşleniyor…");
+          return;
+        }
+
+        setHeaderMeta("Tamamlandı");
+
+        const tempId = `tmp_${rid}`;
+        state.ephemerals = [
+          {
+            job_id: tempId,
+            url,
+            status: "DONE",
+            created_at: Date.now(),
+            prompt: promptMaybe || "",
+            _fresh: true,
+            meta: {
+              app: APP_KEY,
+              request_id: rid,
+              aspect_ratio: safeStr(data?.aspect_ratio || ""),
+            },
+          },
+          ...(state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== tempId),
+        ];
+        render();
+
+        try {
+          if (window.PPE && typeof window.PPE.apply === "function") {
+            window.PPE.apply({
+              outputs: [{ type: "video", url, src: url, meta: { app: APP_KEY } }],
+              meta: { app: APP_KEY, request_id: rid },
+            });
+          }
+        } catch {}
+
+        try {
+          db && db.hydrate(true);
+        } catch {}
+
+        if (timer) clearInterval(timer);
+        timer = null;
+        return;
+      }
+
+      setHeaderMeta("İşleniyor…");
+    }
+
+    setHeaderMeta("Hazır");
+    render();
+
+    function destroy() {
+      destroyed = true;
+      if (timer) clearInterval(timer);
+      timer = null;
+      try {
+        db && db.destroy();
+      } catch {}
+      host.innerHTML = "";
+    }
+
+    return { destroy };
   }
 
-  function applyInitial(){
-    const src =
-      (umName && umName.textContent.trim()) ||
-      (umEmail && umEmail.textContent.trim()) ||
-      'H';
+  window.RightPanel.register(APP_KEY, {
+    header: {
+      title: "Atmosfer Video",
+      meta: "Hazır",
+      searchEnabled: false,
+      resetSearch: true,
+    },
 
-    const ch = src.charAt(0).toUpperCase() || 'H';
+    mount(host) {
+      const panel = createAtmosPanel(host);
+      host.__ATMO_PANEL__ = panel;
+    },
 
-    if (topInitial) topInitial.textContent = ch;
-    if (umAvatar)   umAvatar.textContent   = ch;
-  }
-
-  applyInitial();
-  setTimeout(applyInitial, 300);
-  setTimeout(applyInitial, 1200);
-
-  btn.addEventListener('click', function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    setOpen(!isOpen());
-  }, true);
-
-  panel.addEventListener('click', function(e){
-    e.stopPropagation();
-  }, true);
-
-  function outsideClose(e){
-    const t = e.target;
-    if (wrap && wrap.contains(t)) return;
-    setOpen(false);
-  }
-
-  document.addEventListener('pointerdown', outsideClose, true);
-  document.addEventListener('click', outsideClose, true);
-
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') setOpen(false);
-  }, true);
-
-  setOpen(false);
+    destroy(host) {
+      try {
+        host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy();
+      } catch {}
+      host.__ATMO_PANEL__ = null;
+    },
+  });
 })();
-</script>
-    
-</body>
-</html>
