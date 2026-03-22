@@ -323,6 +323,62 @@
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
 
+    function upsertEphemeralProcessing(payload = {}) {
+      const jobId = safeStr(payload.job_id);
+      const rid =
+        safeStr(payload.request_id) ||
+        safeStr(payload.requestId) ||
+        safeStr(payload.fal_request_id) ||
+        safeStr(payload.provider_request_id);
+      const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
+      const provider = safeStr(payload.provider || payload?.meta?.provider || "Atmos");
+      const aspectRatio = safeStr(
+        payload?.meta?.aspect_ratio ||
+        payload?.aspect_ratio ||
+        payload?.meta?.ratio ||
+        ""
+      );
+
+      if (!jobId && !rid) return;
+
+      const id = jobId || `tmp_${rid}`;
+      const existsDb = (state.items || []).some((x) => {
+        const dbJobId = safeStr(x?.job_id);
+        const dbRid = safeStr(x?.meta?.request_id || x?.request_id);
+        return (jobId && dbJobId === jobId) || (rid && dbRid === rid);
+      });
+
+      if (existsDb) return;
+
+      const nextItem = {
+        job_id: id,
+        status: "PROCESSING",
+        created_at: payload?.createdAt || payload?.created_at || Date.now(),
+        prompt,
+        _fresh: false,
+        meta: {
+          app: APP_KEY,
+          provider,
+          request_id: rid,
+          aspect_ratio: aspectRatio,
+        },
+        outputs: [],
+      };
+
+      state.ephemerals = [
+        nextItem,
+        ...(state.ephemerals || []).filter((x) => {
+          const xJobId = safeStr(x?.job_id);
+          const xRid = safeStr(x?.meta?.request_id || x?.request_id);
+          if (jobId && xJobId === jobId) return false;
+          if (rid && xRid === rid) return false;
+          return true;
+        }),
+      ];
+
+      render();
+    }
+
     function combinedItems() {
       const dbItems = Array.isArray(state.items) ? state.items : [];
       const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
@@ -333,10 +389,18 @@
           .filter(Boolean)
       );
 
+      const ephemeralJobIds = new Set(
+        eps
+          .map((e) => safeStr(e?.job_id))
+          .filter(Boolean)
+      );
+
       const filteredDbItems = dbItems.filter((x) => {
         const rid = safeStr(x?.meta?.request_id || x?.request_id);
-        if (!rid) return true;
-        return !ephemeralRequestIds.has(rid);
+        const jobId = safeStr(x?.job_id);
+        if (rid && ephemeralRequestIds.has(rid)) return false;
+        if (jobId && ephemeralJobIds.has(jobId)) return false;
+        return true;
       });
 
       const all = [...eps, ...filteredDbItems];
@@ -615,6 +679,25 @@
 
     if (db) db.start();
 
+    const onJobCreated = (e) => {
+      const d = e?.detail || {};
+      if (!d) return;
+
+      const appKey = safeStr(d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo").toLowerCase();
+      if (!appKey.includes("atmo")) return;
+
+      upsertEphemeralProcessing({
+        job_id: d?.job_id,
+        request_id: d?.request_id || d?.requestId || d?.meta?.request_id,
+        prompt: d?.prompt || d?.meta?.prompt,
+        provider: d?.provider || d?.meta?.provider || "Atmos",
+        createdAt: d?.createdAt || Date.now(),
+        meta: d?.meta || {},
+      });
+    };
+
+    window.addEventListener("aivo:atmo:job_created", onJobCreated);
+
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
 
     if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
@@ -640,6 +723,19 @@
 
           setHeaderMeta("İşleniyor…");
 
+          upsertEphemeralProcessing({
+            job_id: job?.job_id || job?.id,
+            request_id:
+              job?.request_id ||
+              job?.requestId ||
+              job?.fal_request_id ||
+              job?.provider_request_id,
+            prompt: job?.prompt || job?.meta?.prompt,
+            provider: job?.provider || job?.meta?.provider || "Atmos",
+            createdAt: job?.createdAt || Date.now(),
+            meta: job?.meta || {},
+          });
+
           const rid =
             safeStr(job.request_id) ||
             safeStr(job.requestId) ||
@@ -650,10 +746,10 @@
 
           if (timer) clearInterval(timer);
           timer = setInterval(
-            () => pollFalOnce(rid, safeStr(job.prompt || "")),
+            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
             2000
           );
-          pollFalOnce(rid, safeStr(job.prompt || ""));
+          pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
         } catch {}
       };
     }
@@ -740,6 +836,24 @@
       const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
 
       if (st.includes("fail") || st === "error") {
+        const existing = (state.ephemerals || []).find(
+          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
+        );
+
+        if (existing) {
+          state.ephemerals = [
+            {
+              ...existing,
+              status: "ERROR",
+              state: "ERROR",
+            },
+            ...(state.ephemerals || []).filter(
+              (x) => safeStr(x?.job_id) !== safeStr(existing?.job_id)
+            ),
+          ];
+          render();
+        }
+
         setHeaderMeta("Hata");
         return;
       }
@@ -761,19 +875,25 @@
 
         setHeaderMeta("Tamamlandı");
 
-        const tempId = `tmp_${rid}`;
+        const existing = (state.ephemerals || []).find(
+          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
+        );
+
+        const tempId = safeStr(existing?.job_id) || `tmp_${rid}`;
+
         state.ephemerals = [
           {
             job_id: tempId,
             url,
             status: "DONE",
-            created_at: Date.now(),
-            prompt: promptMaybe || "",
+            created_at: existing?.created_at || Date.now(),
+            prompt: safeStr(existing?.prompt || promptMaybe || ""),
             _fresh: true,
             meta: {
               app: APP_KEY,
+              provider: safeStr(existing?.meta?.provider || "Atmos"),
               request_id: rid,
-              aspect_ratio: safeStr(data?.aspect_ratio || ""),
+              aspect_ratio: safeStr(data?.aspect_ratio || existing?.meta?.aspect_ratio || ""),
             },
           },
           ...(state.ephemerals || []).filter((x) => safeStr(x?.job_id) !== tempId),
@@ -808,6 +928,9 @@
       destroyed = true;
       if (timer) clearInterval(timer);
       timer = null;
+      try {
+        window.removeEventListener("aivo:atmo:job_created", onJobCreated);
+      } catch {}
       try {
         db && db.destroy();
       } catch {}
