@@ -8,6 +8,11 @@
 // - create/poll/provider parse/PPE burada YOK
 
 (function () {
+  if (window.__ATMO_PANEL_BIND__) {
+  console.warn("[PANEL.ATMO] skipped duplicate eval");
+  return;
+}
+window.__ATMO_PANEL_BIND__ = true;
   if (!window.RightPanel) return;
   if (!window.DBJobs) {
     console.warn("[ATMO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
