@@ -299,6 +299,12 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
       "-i",
       inputPath,
 
+      // video + varsa audio map et
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0?",
+
       // preview için hafif küçültme
       "-vf",
       "scale='min(640,iw)':-2",
@@ -315,13 +321,19 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
       "-bufsize",
       `${bufsizeKbps}k`,
 
+      // audio'yu koru
+      "-c:a",
+      "aac",
+      "-b:a",
+      "128k",
+      "-ac",
+      "2",
+
       "-movflags",
       "+faststart",
       "-pix_fmt",
       "yuv420p",
-
-      // sessiz preview
-      "-an",
+      "-shortest",
 
       outputPath,
     ];
