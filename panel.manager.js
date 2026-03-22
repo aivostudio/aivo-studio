@@ -96,19 +96,6 @@
     opts = opts || {};
     if(titleEl && (opts.title != null)) titleEl.textContent = String(opts.title);
     if(metaEl && (opts.meta != null)) metaEl.textContent = String(opts.meta);
-        // ✅ FORCE custom panel meta sync (atmo)
-    try {
-      const forcedMeta = String(opts.meta == null ? "" : opts.meta);
-
-      const customMetaEl =
-        document.querySelector(".atmoStatus") ||
-        document.querySelector("[data-panel-key='atmo'] .atmoStatus") ||
-        document.querySelector(".rpPanelWrap[data-panel-key='atmo'] .atmoStatus");
-
-      if (customMetaEl) {
-        customMetaEl.textContent = forcedMeta;
-      }
-    } catch(e) {}
 
     if(searchEl){
       const enabled = (opts.searchEnabled !== false);
