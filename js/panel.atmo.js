@@ -64,7 +64,6 @@
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    // normalized / mapped alanlar
     const directFinal =
       safeStr(job?.final) ||
       safeStr(job?.final_url) ||
