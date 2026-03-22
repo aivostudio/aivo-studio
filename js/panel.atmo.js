@@ -13,6 +13,7 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
 
+  // FAL atmo video status endpoint (app param şart)
   const STATUS_URL = (rid) =>
     `/api/providers/fal/video/status?request_id=${encodeURIComponent(
       rid
@@ -47,97 +48,69 @@
     }
   }
 
-  function pickOutputUrl(o) {
-    return safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
-  }
-
-  function isVideoOutput(o) {
-    return String(o?.type || "").toLowerCase() === "video";
-  }
-
-  function outputVariant(o) {
-    return String(o?.meta?.variant || "").toLowerCase().trim();
-  }
-
+  // ✅ FINAL video seçimi: meta.final_video_url > outputs.is_final > variant önceliği > fallback
   function bestVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    const directFinal =
-      safeStr(job?.final) ||
-      safeStr(job?.final_url) ||
-      safeStr(job?.final_video_url) ||
-      safeStr(meta?.final) ||
-      safeStr(meta?.final_url) ||
-      safeStr(meta?.final_video_url);
+    const pickUrl = (o) =>
+      safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
 
-    if (directFinal) return directFinal;
+    // 1) DB tek kaynak
+    if (safeStr(meta?.final_video_url)) return safeStr(meta.final_video_url);
 
-    const directLogo =
-      safeStr(job?.logo) ||
-      safeStr(job?.logo_url) ||
-      safeStr(job?.logo_overlay_url) ||
-      safeStr(meta?.logo) ||
-      safeStr(meta?.logo_url) ||
-      safeStr(meta?.logo_overlay_url);
+    const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
+    const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
 
-    if (directLogo) return directLogo;
-
-    const directMux =
-      safeStr(job?.mux) ||
-      safeStr(job?.mux_url) ||
-      safeStr(job?.muxed_url) ||
-      safeStr(meta?.mux) ||
-      safeStr(meta?.mux_url) ||
-      safeStr(meta?.muxed_url);
-
-    if (directMux) return directMux;
-
-    const fin = outs.find((o) => isVideoOutput(o) && o?.meta?.is_final === true);
+    // 2) outputs içinde final işaretli
+    const fin = outs.find((o) => isVideo(o) && o?.meta?.is_final === true);
     if (fin) {
-      const u = pickOutputUrl(fin);
+      const u = pickUrl(fin);
       if (u) return u;
     }
 
-    const ov = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay");
+    // 3) logo_overlay
+    const ov = outs.find((o) => isVideo(o) && variant(o) === "logo_overlay");
     if (ov) {
-      const u = pickOutputUrl(ov);
+      const u = pickUrl(ov);
       if (u) return u;
     }
 
-    const mx = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "mux");
+    // 4) mux
+    const mx = outs.find((o) => isVideo(o) && variant(o) === "mux");
     if (mx) {
-      const u = pickOutputUrl(mx);
+      const u = pickUrl(mx);
       if (u) return u;
     }
 
-    const pv = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "provider");
+    // 5) provider
+    const pv = outs.find((o) => isVideo(o) && variant(o) === "provider");
     if (pv) {
-      const u = pickOutputUrl(pv);
+      const u = pickUrl(pv);
       if (u) return u;
     }
 
-    const vid = outs.find((o) => isVideoOutput(o)) || outs[0];
-    return pickOutputUrl(vid);
+    // 6) fallback ilk video / ilk output
+    const vid = outs.find((o) => isVideo(o)) || outs[0];
+    return pickUrl(vid);
   }
 
+  // ✅ PREVIEW video seçimi
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    const directPreview =
-      safeStr(job?.preview) ||
-      safeStr(job?.preview_url) ||
-      safeStr(job?.preview_video_url) ||
-      safeStr(meta?.preview) ||
-      safeStr(meta?.preview_url) ||
-      safeStr(meta?.preview_video_url);
+    const pickUrl = (o) =>
+      safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
 
-    if (directPreview) return directPreview;
+    if (safeStr(meta?.preview_video_url)) return safeStr(meta.preview_video_url);
 
-    const prev = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "preview");
+    const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
+    const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
+
+    const prev = outs.find((o) => isVideo(o) && variant(o) === "preview");
     if (prev) {
-      const u = pickOutputUrl(prev);
+      const u = pickUrl(prev);
       if (u) return u;
     }
 
@@ -190,8 +163,9 @@
         border:1px solid rgba(255,255,255,0.08);
       }
 
-      .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
-      .atmoThumb.isPortrait:before{padding-top:140%;}
+      /* clamp: kart içi video asla paneli büyütmez */
+      .atmoThumb:before{content:"";display:block;padding-top:56.25%;} /* 16:9 */
+      .atmoThumb.isPortrait:before{padding-top:140%;} /* 9:16 clamp */
 
       .atmoThumbVideo{
         position:absolute;inset:0;width:100%;height:100%;
@@ -202,18 +176,27 @@
       .atmoThumbPlaceholder{
         position:absolute;inset:0;
         display:flex;align-items:center;justify-content:center;
-        font-size:12px;opacity:.82;
-        background:
-          radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.08), rgba(0,0,0,.72)),
-          linear-gradient(180deg, rgba(124,58,237,.14), rgba(236,72,153,.08));
+        font-size:12px;opacity:.75;
+        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
+      }
+
+      .atmoLoadingBox{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
       }
 
       .atmoSpinner{
-        width:42px;height:42px;border-radius:999px;
+        width:42px;
+        height:42px;
+        border-radius:999px;
         border:3px solid rgba(255,255,255,.16);
         border-top-color: rgba(255,255,255,.95);
-        animation: atmoSpin 0.9s linear infinite;
+        animation: atmoSpin .9s linear infinite;
       }
+
       @keyframes atmoSpin{
         to{transform:rotate(360deg);}
       }
@@ -234,12 +217,10 @@
         padding:10px 12px 12px 12px;
         display:flex;flex-direction:column;gap:8px;
       }
-
       .atmoMetaLine{
         font-size:12px;opacity:.8;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
       }
-
       .atmoPromptLine{
         font-size:12px;opacity:.7;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -278,25 +259,22 @@
 
   function badgeFor(job) {
     const st = String(job?.status || job?.state || "").toUpperCase();
-    if (st.includes("FAIL") || st.includes("ERROR")) {
+    if (st.includes("FAIL") || st.includes("ERROR"))
       return { text: "Hata", kind: "bad" };
-    }
     if (
       st.includes("READY") ||
       st.includes("DONE") ||
       st.includes("COMPLET") ||
       st.includes("SUCC")
-    ) {
+    )
       return { text: "Hazır", kind: "ok" };
-    }
     if (
       st.includes("RUN") ||
       st.includes("PROC") ||
       st.includes("PEND") ||
       st.includes("QUEUE")
-    ) {
+    )
       return { text: "İşleniyor", kind: "mid" };
-    }
     return { text: st || "Hazır", kind: "mid" };
   }
 
@@ -308,8 +286,12 @@
 
     const state = {
       items: [],
-      ephemerals: [],
+      // fresh session kartları: final oynar
+      ephemerals: [], // { job_id, url, status, created_at, prompt, meta, _fresh: true }
     };
+
+    const playableUrls = new Set();
+    const probingUrls = new Set();
 
     host.innerHTML = `
       <div class="atmoWrap">
@@ -351,6 +333,8 @@
       const dbItems = Array.isArray(state.items) ? state.items : [];
       const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
 
+      // ✅ request_id bazlı dedupe:
+      // aynı üretimin DB row’u geldiyse, fresh ephemeral kartı tut; DB kartı bu session boyunca gizle
       const ephemeralRequestIds = new Set(
         eps
           .map((e) => safeStr(e?.meta?.request_id || e?.request_id))
@@ -409,27 +393,31 @@
       return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
     }
 
-    function renderProcessingCard(job, badge, metaLine, promptLine, portrait) {
-      const jobId = safeStr(job?.job_id || "");
-      const disabled = "disabled";
+    function renderLoadingCard(job, badge, metaLine, promptLine, portrait) {
+      const fresh = job?._fresh === true ? "1" : "0";
       return `
-        <div class="atmoCard" data-job="${esc(jobId)}" data-url="" data-final-url="" data-preview-url="" data-fresh="${esc(job?._fresh ? "1" : "0")}">
+        <div class="atmoCard"
+          data-job="${esc(job?.job_id || "")}"
+          data-url=""
+          data-final-url=""
+          data-preview-url=""
+          data-fresh="${esc(fresh)}">
           <div class="atmoPill ${esc(badge.kind)}">${esc(badge.text)}</div>
           <div class="atmoThumb ${portrait ? "isPortrait" : ""}">
             <div class="atmoThumbPlaceholder">
-              <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-                <div class="atmoSpinner" aria-hidden="true"></div>
-                <div>Video üretiliyor…</div>
+              <div class="atmoLoadingBox">
+                <div class="atmoSpinner"></div>
+                <div>Video hazırlanıyor…</div>
               </div>
             </div>
           </div>
           <div class="atmoFooter">
             <div class="atmoMetaLine">${esc(metaLine)}</div>
-            <div class="atmoPromptLine">${esc(promptLine || "İşlem devam ediyor")}</div>
+            <div class="atmoPromptLine">${esc(promptLine || "İşlem sürüyor")}</div>
             <div class="atmoActions">
-              <button class="atmoIconBtn" data-act="download" ${disabled}>↓</button>
-              <button class="atmoIconBtn" data-act="share" ${disabled}>↗</button>
-              <button class="atmoIconBtn" data-act="fs" ${disabled}>⛶</button>
+              <button class="atmoIconBtn" data-act="download" disabled>↓</button>
+              <button class="atmoIconBtn" data-act="share" disabled>↗</button>
+              <button class="atmoIconBtn" data-act="fs" disabled>⛶</button>
               <button class="atmoIconBtn danger" data-act="delete">🗑</button>
             </div>
           </div>
@@ -442,7 +430,15 @@
 
       const items = combinedItems();
 
-      const hasProcessing = items.some((j) => isProcessingJob(j));
+      const hasProcessing = items.some((j) => {
+        const st = String(j.status || "").toUpperCase();
+        return (
+          st.includes("PROC") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        );
+      });
       setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
       if (!items.length) {
@@ -456,12 +452,15 @@
           const badge = badgeFor(job);
           const isFreshCard = job?._fresh === true;
 
+          // ✅ fresh kart final oynar
+          // ✅ hydrated / eski kart preview oynar
           const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
           const previewUrlResolved = safeStr(previewVideoFromJob(job));
-
           const selectedPlaybackRawUrl = isFreshCard
             ? (finalUrl || previewUrlResolved)
             : (previewUrlResolved || finalUrl);
+
+          const hasUrl = !!selectedPlaybackRawUrl;
 
           const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
           const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
@@ -471,20 +470,17 @@
           const dummyOut = { meta: { aspect_ratio: job?.meta?.aspect_ratio || "" } };
           const portrait = isPortrait(job, dummyOut);
 
-          const playbackUrl = selectedPlaybackRawUrl
-            ? resolvePlaybackUrl(selectedPlaybackRawUrl)
-            : "";
+          // ✅ işleniyorsa ve henüz video url yoksa loading kartı bas
+          if (!hasUrl && isProcessingJob(job)) {
+            return renderLoadingCard(job, badge, metaLine, promptLine, portrait);
+          }
 
+          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
           const videoUrl = playbackUrl
             ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
             : "";
 
-          const hasPlayableVideo = !!videoUrl && badge.kind !== "bad";
-
-          // ✅ URL yoksa ve job processing ise eski "üretiliyor" efekti dönsün
-          if (!hasPlayableVideo && isProcessingJob(job)) {
-            return renderProcessingCard(job, badge, metaLine, promptLine, portrait);
-          }
+          const isPlayableNow = !!playbackUrl && badge.kind !== "bad";
 
           return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
             ? (
@@ -500,15 +496,15 @@
                     title: promptLine || "—",
                     sub: metaLine,
                     badgeText: badge.text,
-                    badgeKind: hasPlayableVideo
+                    badgeKind: isPlayableNow
                       ? "ready"
                       : (badge.kind === "bad" ? "error" : "loading"),
                     videoUrl,
                     posterUrl: "",
                     ratio: portrait ? "9:16" : "16:9",
-                    ready: hasPlayableVideo,
+                    ready: isPlayableNow,
                     canDownload: !!finalUrl,
-                    canShare: hasPlayableVideo,
+                    canShare: isPlayableNow,
                     canDelete: true
                   }) +
                 '</div>'
@@ -610,6 +606,7 @@
         }
 
         render();
+        return;
       }
     }
 
@@ -640,6 +637,7 @@
       true
     );
 
+    // --- DB controller ---
     const db =
       window.DBJobs && typeof window.DBJobs.create === "function"
         ? window.DBJobs.create({
@@ -657,6 +655,7 @@
 
     if (db) db.start();
 
+    // --- AIVO_JOBS.upsert hook: create->poll->PPE + DB hydrate ---
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
 
     if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
@@ -690,12 +689,13 @@
 
           if (!rid || rid === "TEST") return;
 
+          // ✅ daha en başta loading kartı oluştur
           const tempId = `tmp_${rid}`;
-          const existing = (state.ephemerals || []).find(
+          const exists = (state.ephemerals || []).some(
             (x) => safeStr(x?.job_id) === tempId
           );
 
-          if (!existing) {
+          if (!exists) {
             state.ephemerals = [
               {
                 job_id: tempId,
@@ -722,6 +722,26 @@
           pollFalOnce(rid, safeStr(job.prompt || ""));
         } catch {}
       };
+    }
+
+    function probePlayableUrl(url) {
+      url = safeStr(url);
+      if (!url) return;
+      if (playableUrls.has(url)) return;
+      if (probingUrls.has(url)) return;
+
+      probingUrls.add(url);
+
+      waitUntilPlayable(url, 12000)
+        .then((ok) => {
+          if (ok) {
+            playableUrls.add(url);
+            render();
+          }
+        })
+        .finally(() => {
+          probingUrls.delete(url);
+        });
     }
 
     async function waitUntilPlayable(url, timeoutMs = 12000) {
@@ -803,19 +823,14 @@
 
       if (st.includes("fail") || st === "error") {
         setHeaderMeta("Hata");
-
-        const tempId = `tmp_${rid}`;
-        state.ephemerals = (state.ephemerals || []).map((x) =>
-          safeStr(x?.job_id) === tempId
-            ? { ...x, status: "ERROR" }
-            : x
-        );
-        render();
         return;
       }
 
       if (st.includes("complete") || st.includes("success") || st === "succeeded") {
         let url = pickVideoUrl(data);
+
+        // ✅ NOT: Overlay artık backend'de deterministik yapılıyor (/api/jobs/status).
+        // Burada client-side overlay çağırmıyoruz. Sadece video url’i PPE + geçici karta basıyoruz.
 
         if (!url) {
           setHeaderMeta("Tamamlandı (url yok)");
@@ -823,6 +838,7 @@
         }
 
         const playable = await waitUntilPlayable(url, 12000);
+        if (playable) playableUrls.add(url);
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
@@ -830,6 +846,7 @@
 
         setHeaderMeta("Tamamlandı");
 
+        // ✅ fresh card: final oynat
         const tempId = `tmp_${rid}`;
         state.ephemerals = [
           {
@@ -870,34 +887,15 @@
       setHeaderMeta("İşleniyor…");
 
       const tempId = `tmp_${rid}`;
-      const exists = (state.ephemerals || []).some(
-        (x) => safeStr(x?.job_id) === tempId
+      state.ephemerals = (state.ephemerals || []).map((x) =>
+        safeStr(x?.job_id) === tempId
+          ? {
+              ...x,
+              status: "PROCESSING",
+              prompt: promptMaybe || x?.prompt || "",
+            }
+          : x
       );
-
-      if (!exists) {
-        state.ephemerals = [
-          {
-            job_id: tempId,
-            status: "PROCESSING",
-            created_at: Date.now(),
-            prompt: promptMaybe || "",
-            _fresh: true,
-            meta: {
-              app: APP_KEY,
-              request_id: rid,
-              aspect_ratio: safeStr(data?.aspect_ratio || ""),
-            },
-          },
-          ...(state.ephemerals || []),
-        ];
-      } else {
-        state.ephemerals = (state.ephemerals || []).map((x) =>
-          safeStr(x?.job_id) === tempId
-            ? { ...x, status: "PROCESSING", prompt: promptMaybe || x?.prompt || "" }
-            : x
-        );
-      }
-
       render();
     }
 
