@@ -197,14 +197,9 @@
       }
 
       if(registry.has(key)){
-     console.warn("[RightPanel] duplicate register for key:", key);
-     console.log("[RightPanel duplicate impl]", impl);
-     console.trace("[RightPanel duplicate trace]");
-     }
-     if (key === "atmo" && !registry.has(key)) {
-  console.log("[RightPanel first atmo register]");
-  console.trace("[RightPanel first atmo trace]");
-}
+        console.warn("[RightPanel] duplicate register for key:", key);
+      }
+
       registry.set(key, impl);
 
       const cached = panelCache.get(key);
