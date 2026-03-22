@@ -173,33 +173,66 @@
         background:#000;
       }
 
-      .atmoThumbPlaceholder{
-        position:absolute;inset:0;
-        display:flex;align-items:center;justify-content:center;
-        font-size:12px;opacity:.75;
-        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
-      }
+     .atmoThumbPlaceholder{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(70% 55% at 50% 38%, rgba(168,85,247,.18), rgba(168,85,247,.06) 42%, rgba(0,0,0,0) 72%),
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+}
 
-      .atmoLoadingBox{
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        gap:12px;
-      }
+.atmoLoadingStage{
+  position:absolute; inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-      .atmoSpinner{
-        width:42px;
-        height:42px;
-        border-radius:999px;
-        border:3px solid rgba(255,255,255,.16);
-        border-top-color: rgba(255,255,255,.95);
-        animation: atmoSpin .9s linear infinite;
-      }
+.atmoLoadingPulse{
+  width:112px;
+  height:112px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:
+    0 0 0 0 rgba(168,85,247,.18),
+    0 0 40px rgba(168,85,247,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  animation: atmoPulse 1.8s ease-out infinite;
+}
 
-      @keyframes atmoSpin{
-        to{transform:rotate(360deg);}
-      }
+.atmoLoadingPulse:before{
+  content:"";
+  display:block;
+  width:0;height:0;
+  margin-left:6px;
+  border-left:22px solid rgba(255,255,255,.96);
+  border-top:14px solid transparent;
+  border-bottom:14px solid transparent;
+}
+
+@keyframes atmoPulse{
+  0%{
+    transform:scale(.96);
+    box-shadow:
+      0 0 0 0 rgba(168,85,247,.22),
+      0 0 28px rgba(168,85,247,.10);
+  }
+  70%{
+    transform:scale(1);
+    box-shadow:
+      0 0 0 18px rgba(168,85,247,0),
+      0 0 48px rgba(168,85,247,.16);
+  }
+  100%{
+    transform:scale(.96);
+    box-shadow:
+      0 0 0 0 rgba(168,85,247,0),
+      0 0 28px rgba(168,85,247,.10);
+  }
+}
 
       .atmoPill{
         position:absolute;left:14px;top:14px;z-index:3;
