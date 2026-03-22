@@ -1,184 +1,170 @@
 // /js/panel.atmo.js
 (function () {
   if (!window.RightPanel) return;
-
-  const APP_KEY = "atmo";
-  const MAX_ITEMS = 30;
-
-  const safeStr = (v) => String(v == null ? "" : v).trim();
-  const esc = (s) =>
-    safeStr(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-
-  const STATUS_URL = (rid) =>
-    `/api/providers/fal/video/status?request_id=${encodeURIComponent(
-      rid
-    )}&app=${APP_KEY}`;
-
-  function pickVideoUrl(data) {
-    return (
-      data?.video?.url ||
-      data?.video_url ||
-      data?.output?.video?.url ||
-      data?.output?.url ||
-      (Array.isArray(data?.outputs) ? data.outputs?.[0]?.url : null) ||
-      (Array.isArray(data?.output) ? data.output?.[0]?.url : null) ||
-      data?.result?.url ||
-      data?.result?.video?.url ||
-      null
-    );
+  if (!window.DBJobs) {
+    console.warn("[ATMO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
+    return;
   }
 
-  function formatTs(ts) {
+  const APP_KEY = "atmo";
+
+  const norm = (s) =>
+    String(s || "")
+      .trim()
+      .toLowerCase()
+      .replaceAll("_", " ")
+      .replace(/\s+/g, " ");
+
+  const safeStr = (v) => String(v == null ? "" : v).trim();
+
+  const esc = (s) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[c]));
+
+  const isAtmoApp = (x) => {
+    const a = norm(x);
+    return a === "atmo" || a.includes("atmo");
+  };
+
+  const toMaybeProxyUrl = (url) => {
+    const u = safeStr(url);
+    if (!u) return "";
+    if (
+      u.startsWith("/api/media/proxy?url=") ||
+      u.includes("/api/media/proxy?url=")
+    ) {
+      return u;
+    }
+    if (u.startsWith("http://")) {
+      return "/api/media/proxy?url=" + encodeURIComponent(u);
+    }
+    return u;
+  };
+
+  const fmtDT = (d) => {
     try {
-      const d = new Date(ts);
-      if (Number.isNaN(+d)) return "";
-      const dd = String(d.getDate()).padStart(2, "0");
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const yy = d.getFullYear();
-      const hh = String(d.getHours()).padStart(2, "0");
-      const mi = String(d.getMinutes()).padStart(2, "0");
+      const dt = new Date(d || Date.now());
+      const dd = String(dt.getDate()).padStart(2, "0");
+      const mm = String(dt.getMonth() + 1).padStart(2, "0");
+      const yy = dt.getFullYear();
+      const hh = String(dt.getHours()).padStart(2, "0");
+      const mi = String(dt.getMinutes()).padStart(2, "0");
       return `${dd}.${mm}.${yy} ${hh}:${mi}`;
     } catch {
       return "";
     }
-  }
+  };
 
-  function pickOutputUrl(o) {
-    return safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
-  }
+  const getJobApp = (job) =>
+    String(
+      job?.app ||
+        job?.meta?.app ||
+        job?.meta?.module ||
+        job?.meta?.routeKey ||
+        ""
+    ).trim();
 
-  function isVideoOutput(o) {
-    return String(o?.type || o?.kind || "").toLowerCase() === "video";
-  }
+  const getOutApp = (o) =>
+    String(
+      o?.meta?.app ||
+        o?.meta?.module ||
+        o?.meta?.routeKey ||
+        ""
+    ).trim();
 
-  function outputVariant(o) {
-    return String(o?.meta?.variant || "").toLowerCase().trim();
-  }
+  const isJobAtmo = (job) => isAtmoApp(getJobApp(job));
+  const idOf = (job) => String(job?.job_id || job?.id || "").trim();
 
-  function bestVideoFromJob(job) {
-    const meta = job?.meta || {};
+  const mapBadge = (job) => {
+    const a = norm(job?.db_status);
+    const b = norm(job?.status);
+    const c = norm(job?.state);
+    const st = (a || b || c || "").toUpperCase();
+
+    if (st.includes("FAIL") || st.includes("ERROR")) {
+      return { text: "Hata", kind: "bad" };
+    }
+    if (
+      st.includes("READY") ||
+      st.includes("DONE") ||
+      st.includes("COMPLET") ||
+      st.includes("SUCC")
+    ) {
+      return { text: "Hazır", kind: "ok" };
+    }
+    if (
+      st.includes("RUN") ||
+      st.includes("PROC") ||
+      st.includes("PEND") ||
+      st.includes("QUEUE")
+    ) {
+      return { text: "İşleniyor", kind: "mid" };
+    }
+    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
+  };
+
+  const pickBestVideoOutput = (job) => {
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+    if (!outs.length) return null;
 
-    const directFinal =
-      safeStr(job?.final) ||
-      safeStr(job?.final_url) ||
-      safeStr(job?.final_video_url) ||
-      safeStr(meta?.final) ||
-      safeStr(meta?.final_url) ||
-      safeStr(meta?.final_video_url);
+    const outsFiltered = outs.filter((o) => {
+      const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+      if (t && t !== "video") return false;
 
-    if (directFinal) return directFinal;
+      const oa = getOutApp(o);
+      if (oa && !isAtmoApp(oa)) return false;
 
-    const directLogo =
-      safeStr(job?.logo) ||
-      safeStr(job?.logo_url) ||
-      safeStr(job?.logo_overlay_url) ||
-      safeStr(meta?.logo) ||
-      safeStr(meta?.logo_url) ||
-      safeStr(meta?.logo_overlay_url);
+      return true;
+    });
 
-    if (directLogo) return directLogo;
-
-    const directMux =
-      safeStr(job?.mux) ||
-      safeStr(job?.mux_url) ||
-      safeStr(job?.muxed_url) ||
-      safeStr(meta?.mux) ||
-      safeStr(meta?.mux_url) ||
-      safeStr(meta?.muxed_url);
-
-    if (directMux) return directMux;
-
-    const fin = outs.find((o) => isVideoOutput(o) && o?.meta?.is_final === true);
-    if (fin) {
-      const u = pickOutputUrl(fin);
-      if (u) return u;
-    }
-
-    const ov = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
+    const pool = outsFiltered.length ? outsFiltered : outs;
+    const videos = pool.filter(
+      (o) =>
+        norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video"
     );
-    if (ov) {
-      const u = pickOutputUrl(ov);
-      if (u) return u;
-    }
+    const best = videos[0] || pool[0] || null;
+    if (!best) return null;
 
-    const mx = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "mux");
-    if (mx) {
-      const u = pickOutputUrl(mx);
-      if (u) return u;
-    }
+    const raw =
+      best.archive_url ||
+      best.archiveUrl ||
+      best.url ||
+      best.video_url ||
+      best.videoUrl ||
+      best.raw_url ||
+      best.rawUrl ||
+      best.meta?.archive_url ||
+      best.meta?.archiveUrl ||
+      best.meta?.url ||
+      best.meta?.video_url ||
+      best.meta?.videoUrl ||
+      "";
 
-    const pv = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "provider"
-    );
-    if (pv) {
-      const u = pickOutputUrl(pv);
-      if (u) return u;
-    }
+    const url = toMaybeProxyUrl(raw);
+    if (!url) return null;
 
-    const vid = outs.find((o) => isVideoOutput(o)) || outs[0];
-    return pickOutputUrl(vid);
-  }
-
-  function previewVideoFromJob(job) {
-    const meta = job?.meta || {};
-    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-
-    const directPreview =
-      safeStr(job?.preview) ||
-      safeStr(job?.preview_url) ||
-      safeStr(job?.preview_video_url) ||
-      safeStr(meta?.preview) ||
-      safeStr(meta?.preview_url) ||
-      safeStr(meta?.preview_video_url);
-
-    if (directPreview) return directPreview;
-
-    const prev = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "preview"
-    );
-    if (prev) {
-      const u = pickOutputUrl(prev);
-      if (u) return u;
-    }
-
-    return "";
-  }
-
-  function acceptAtmoOutput(o) {
-    if (!o) return false;
-    const t = String(o?.type || "").toLowerCase();
-    if (t && t !== "video") return false;
-
-    const app = String(
-      o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || ""
-    )
-      .toLowerCase()
-      .trim();
-
-    if (!app) return true;
-    return app.includes("atmo");
-  }
+    return { ...best, url };
+  };
 
   function ensureStyles() {
-    if (document.getElementById("atmoMiniPanelStyles")) return;
+    if (document.getElementById("atmoPanelStyles")) return;
 
     const css = `
       .atmoWrap{display:flex;flex-direction:column;gap:12px;}
+      .atmoHdr{display:flex;align-items:center;justify-content:space-between;}
+      .atmoTitle{font-weight:900;font-size:14px;}
+      .atmoStatus{font-size:12px;opacity:.7;}
+
       .atmoGrid{
         display:grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap:12px;
       }
-      @media (max-width: 980px){ .atmoGrid{grid-template-columns:1fr;} }
-
-      .atmoEmpty{opacity:.7;font-size:12px;padding:4px 2px;}
 
       .atmoCard{
         position:relative;
@@ -202,21 +188,13 @@
 
       .atmoThumbVideo{
         position:absolute;inset:0;width:100%;height:100%;
-        object-fit:cover;
-        background:#000;
-      }
-
-      .atmoThumbPlaceholder{
-        position:absolute;inset:0;
-        display:flex;align-items:center;justify-content:center;
-        font-size:12px;opacity:.75;
-        background:radial-gradient(80% 80% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.65));
+        object-fit:cover;background:#000;
       }
 
       .atmoPill{
         position:absolute;left:14px;top:14px;z-index:3;
         padding:6px 10px;border-radius:999px;
-        font-size:12px;font-weight:700;
+        font-size:12px;font-weight:800;
         background:rgba(0,0,0,.35);
         border:1px solid rgba(255,255,255,0.10);
         backdrop-filter: blur(10px);
@@ -225,16 +203,42 @@
       .atmoPill.mid{border-color:rgba(255,255,255,.10);}
       .atmoPill.bad{border-color:rgba(255,120,120,.25);}
 
+      .atmoSkel{
+        position:absolute;inset:0;
+        display:flex;align-items:center;justify-content:center;
+        background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));
+        overflow:hidden;
+      }
+      .atmoSkel:before{
+        content:"";
+        position:absolute;inset:-40%;
+        background:linear-gradient(90deg,
+          rgba(255,255,255,0.00),
+          rgba(220,170,255,0.14),
+          rgba(255,255,255,0.00)
+        );
+        transform:rotate(18deg);
+        animation: atmoShimmer 1.4s linear infinite;
+      }
+      @keyframes atmoShimmer{
+        0%{transform:translateX(-30%) rotate(18deg);}
+        100%{transform:translateX(30%) rotate(18deg);}
+      }
+      .atmoSkelLabel{
+        position:relative;z-index:2;
+        font-size:12px;font-weight:800;
+        padding:8px 12px;border-radius:999px;
+        background:rgba(0,0,0,.35);
+        border:1px solid rgba(255,255,255,.10);
+      }
+
       .atmoFooter{
         padding:10px 12px 12px 12px;
         display:flex;flex-direction:column;gap:8px;
       }
+
       .atmoMetaLine{
         font-size:12px;opacity:.8;
-        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-      }
-      .atmoPromptLine{
-        font-size:12px;opacity:.7;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
       }
 
@@ -246,949 +250,576 @@
       }
 
       .atmoIconBtn{
-        flex:1;
-        height:38px;
-        border-radius:12px;
+        flex:1;height:38px;border-radius:12px;
         border:1px solid rgba(255,255,255,0.10);
         background:rgba(255,255,255,0.04);
-        color:#fff;
-        cursor:pointer;
+        color:#fff;cursor:pointer;
         display:flex;align-items:center;justify-content:center;
-        font-weight:700;font-size:12px;
+        font-weight:800;font-size:12px;
       }
       .atmoIconBtn[disabled]{opacity:.45;cursor:not-allowed;}
       .atmoIconBtn.danger{
         border-color:rgba(255,120,120,0.20);
         background:rgba(255,120,120,0.08);
       }
+
+      @media (max-width: 980px){
+        .atmoGrid{grid-template-columns:1fr;}
+      }
     `;
 
     const style = document.createElement("style");
-    style.id = "atmoMiniPanelStyles";
+    style.id = "atmoPanelStyles";
     style.textContent = css;
     document.head.appendChild(style);
-  }
-
-  function badgeFor(job) {
-    const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
-
-    if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
-    }
-
-    if (
-      st.includes("READY") ||
-      st.includes("DONE") ||
-      st.includes("COMPLET") ||
-      st.includes("SUCC")
-    ) {
-      return { text: "Hazır", kind: "ok" };
-    }
-
-    if (
-      st.includes("RUN") ||
-      st.includes("PROC") ||
-      st.includes("PEND") ||
-      st.includes("QUEUE")
-    ) {
-      return { text: "İşleniyor", kind: "mid" };
-    }
-
-    return { text: st || "Hazır", kind: "mid" };
   }
 
   function createAtmosPanel(host) {
     ensureStyles();
 
     let destroyed = false;
-    let timer = null;
+    let currentDbItems = [];
 
-    const state = {
-      items: [],
-      ephemerals: [],
-    };
-
-    const playableUrls = new Set();
-    const probingUrls = new Set();
-    const deletedIds = new Set();
+    const optimistic = new Map();
+    const cardCache =
+      window.__ATMO_CARD_CACHE__ ||
+      (window.__ATMO_CARD_CACHE__ = new Map());
 
     host.innerHTML = `
       <div class="atmoWrap">
-        <div class="atmoGrid" data-el="grid"></div>
+        <div class="atmoHdr">
+          <div class="atmoTitle">Atmosfer Video</div>
+          <div class="atmoStatus">Hazır</div>
+        </div>
+        <div class="atmoGrid" data-grid></div>
       </div>
     `;
 
-    const $grid = host.querySelector('[data-el="grid"]');
+    const elStatus = host.querySelector(".atmoStatus");
+    const elGrid = host.querySelector("[data-grid]");
 
-    const setHeaderMeta = (t) => {
+    const setStatus = (t) => {
+      if (elStatus) elStatus.textContent = t;
+    };
+
+    const toMs = (v) => {
+      if (v == null) return 0;
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+
+      const s = String(v).trim();
+
+      if (/^\d{10,13}$/.test(s)) {
+        const n = Number(s);
+        if (Number.isFinite(n)) return n;
+      }
+
+      if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
+        const iso = s.replace(" ", "T") + "Z";
+        const tIso = Date.parse(iso);
+        if (Number.isFinite(tIso)) return tIso;
+      }
+
+      const t = Date.parse(s);
+      return Number.isFinite(t) ? t : 0;
+    };
+
+    function hasProcessing(items) {
+      return (items || []).some((j) => {
+        const st = norm(j?.db_status || j?.status || j?.state).toUpperCase();
+        return (
+          st.includes("PROCESS") ||
+          st.includes("RUN") ||
+          st.includes("PEND") ||
+          st.includes("QUEUE")
+        );
+      });
+    }
+
+    function ensureCardEl(job) {
+      const id = idOf(job);
+      if (!id) return null;
+
+      let el = cardCache.get(id);
+      if (el && el.isConnected) return el;
+
+      el = document.createElement("div");
+      el.className = "atmoCard";
+      el.setAttribute("data-job", id);
+
+      el.innerHTML = `
+        <div class="atmoThumb">
+          <div class="atmoPill mid">İşleniyor</div>
+          <div class="atmoSkel"><div class="atmoSkelLabel">Hazırlanıyor…</div></div>
+        </div>
+
+        <div class="atmoFooter">
+          <div class="atmoMetaLine"></div>
+
+          <div class="atmoActions">
+            <button class="atmoIconBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+            <button class="atmoIconBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+            <button class="atmoIconBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+          </div>
+        </div>
+      `;
+
+      cardCache.set(id, el);
+      return el;
+    }
+
+    function patchCard(el, job) {
+      if (!el || !job) return;
+
+      const badge = mapBadge(job);
+      const out = pickBestVideoOutput(job);
+      const url = String(out?.url || "").trim();
+
+      const dt = fmtDT(job?.created_at || job?.updated_at || job?.createdAt);
+      const engine = String(job?.provider || job?.meta?.provider || "Atmos");
+
+      const ratio = String(
+        job?.meta?.aspect_ratio ||
+          job?.meta?.ratio ||
+          out?.meta?.aspect_ratio ||
+          out?.meta?.ratio ||
+          ""
+      );
+
+      const isPortrait =
+        ratio.includes("9:16") ||
+        ratio.includes("4:5") ||
+        ratio.includes("2:3");
+
+      const ready = badge.kind === "ok";
+      const can = !!(ready && url);
+
+      const thumb = el.querySelector(".atmoThumb");
+      if (thumb) {
+        thumb.classList.toggle("isPortrait", !!isPortrait);
+      }
+
+      const pill = el.querySelector(".atmoPill");
+      if (pill) {
+        pill.textContent = badge.text;
+        pill.classList.remove("ok", "mid", "bad");
+        pill.classList.add(badge.kind);
+      }
+
+      const metaEl = el.querySelector(".atmoMetaLine");
+      if (metaEl) {
+        metaEl.textContent =
+          job?.meta?.prompt || `${engine}${dt ? " • " + dt : ""}`;
+      }
+
+      const dl = el.querySelector('[data-act="download"]');
+      const sh = el.querySelector('[data-act="share"]');
+      if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
+      if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
+
+      const skel = el.querySelector(".atmoSkel");
+      let vid = el.querySelector("video.atmoThumbVideo");
+
+      if (can) {
+        if (skel) skel.style.display = "none";
+
+        if (!vid) {
+          vid = document.createElement("video");
+          vid.className = "atmoThumbVideo";
+          vid.setAttribute("playsinline", "");
+          vid.setAttribute("webkit-playsinline", "");
+          vid.setAttribute("preload", "metadata");
+          vid.setAttribute("controls", "");
+          vid.muted = true;
+          thumb?.appendChild(vid);
+        }
+
+        const prev = vid.getAttribute("data-src") || "";
+        if (prev !== url) {
+          vid.setAttribute("data-src", url);
+          vid.src = url;
+        }
+        vid.style.display = "";
+      } else {
+        if (skel) skel.style.display = "";
+        if (vid) {
+          try {
+            vid.pause();
+          } catch {}
+          vid.style.display = "none";
+        }
+      }
+    }
+
+    function buildMergedItems() {
+      const byId = new Map();
+
+      for (const j of currentDbItems) {
+        const id = idOf(j);
+        if (!id) continue;
+        byId.set(id, j);
+      }
+
+      for (const [id, j] of optimistic.entries()) {
+        if (!byId.has(id)) {
+          byId.set(id, j);
+        }
+      }
+
+      return Array.from(byId.values()).sort((a, b) => {
+        const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+        const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+
+        if (tb !== ta) return tb - ta;
+
+        const ia = idOf(a);
+        const ib = idOf(b);
+        return ib.localeCompare(ia);
+      });
+    }
+
+    function renderCurrent() {
+      if (destroyed) return;
+      render(buildMergedItems());
+    }
+
+    function render(items) {
+      if (!elGrid) return;
+
+      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+
+      const list = Array.isArray(items) ? items : [];
+      const EMPTY_ID = "atmoEmptyState";
+      let emptyEl = elGrid.querySelector(`#${EMPTY_ID}`);
+
+      if (!list.length) {
+        for (const ch of Array.from(elGrid.children)) {
+          if (ch.id !== EMPTY_ID) elGrid.removeChild(ch);
+        }
+
+        if (!emptyEl) {
+          emptyEl = document.createElement("div");
+          emptyEl.id = EMPTY_ID;
+          emptyEl.style.opacity = ".7";
+          emptyEl.style.fontSize = "12px";
+          emptyEl.style.padding = "4px 2px";
+          emptyEl.textContent = "Henüz atmos üretim yok.";
+          elGrid.appendChild(emptyEl);
+        }
+        return;
+      } else if (emptyEl) {
+        emptyEl.remove();
+      }
+
+      const wanted = new Set();
+      let anchor = elGrid.firstChild;
+
+      for (const job of list) {
+        const id = idOf(job);
+        if (!id) continue;
+
+        wanted.add(id);
+
+        const card = ensureCardEl(job);
+        patchCard(card, job);
+
+        if (!card.isConnected) {
+          elGrid.insertBefore(card, anchor);
+          continue;
+        }
+
+        if (card !== anchor) {
+          elGrid.insertBefore(card, anchor);
+        } else {
+          anchor = anchor?.nextSibling || null;
+        }
+      }
+
+      for (const ch of Array.from(elGrid.children)) {
+        if (ch.id === EMPTY_ID) continue;
+        const jid = String(ch.getAttribute?.("data-job") || "").trim();
+        if (jid && !wanted.has(jid)) {
+          elGrid.removeChild(ch);
+        }
+      }
+    }
+
+    const controller = window.DBJobs.create({
+      app: "atmo",
+      debug: false,
+      pollIntervalMs: 4000,
+      hydrateEveryMs: 15000,
+
+      acceptJob: (job) => {
+        if (!job) return false;
+        const ja = getJobApp(job);
+        if (ja && !isAtmoApp(ja)) return false;
+        return true;
+      },
+
+      acceptOutput: (o) => {
+        if (!o) return false;
+        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+        if (t && t !== "video") return false;
+        const oa = getOutApp(o);
+        if (oa && !isAtmoApp(oa)) return false;
+        return true;
+      },
+
+      onChange: (items) => {
+        if (destroyed) return;
+        currentDbItems = (items || []).filter(isJobAtmo);
+        renderCurrent();
+      },
+    });
+
+    const download = (url, jobId) => {
+      const cleanUrl = String(url || "").trim();
+      if (!cleanUrl) return;
+
+      const directUrl = cleanUrl.includes("#")
+        ? cleanUrl.split("#")[0]
+        : cleanUrl;
+
+      const proxied = directUrl.startsWith("/api/media/proxy?url=")
+        ? directUrl
+        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(`atmo-${jobId || "video"}.mp4`)}`;
+
+      const a = document.createElement("a");
+      a.href = proxied;
+      a.download = `atmo-${jobId || "video"}.mp4`;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    const share = async (url) => {
+      const cleanUrl = String(url || "").trim();
+      if (!cleanUrl) return;
+
+      const directUrl = cleanUrl.includes("#")
+        ? cleanUrl.split("#")[0]
+        : cleanUrl;
+
       try {
-        if (
-          window.RightPanel &&
-          typeof window.RightPanel.setHeader === "function"
-        ) {
-          window.RightPanel.setHeader({ meta: String(t || "") });
+        if (navigator.share) {
+          await navigator.share({ title: "Atmosfer Video", url: directUrl });
+        } else if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(directUrl);
         }
       } catch {}
     };
 
-    function statusUpper(job) {
-      return String(job?.db_status || job?.status || job?.state || "").toUpperCase();
-    }
-
-    function isReady(job) {
-      const st = statusUpper(job);
-      return (
-        st.includes("READY") ||
-        st.includes("DONE") ||
-        st.includes("COMPLET") ||
-        st.includes("SUCC")
-      );
-    }
-
-    function isError(job) {
-      const st = statusUpper(job);
-      return st.includes("FAIL") || st.includes("ERROR");
-    }
-
-    function isProcessing(job) {
-      if (isReady(job) || isError(job)) return false;
-      const st = statusUpper(job);
-      return (
-        st.includes("RUN") ||
-        st.includes("PROC") ||
-        st.includes("PEND") ||
-        st.includes("QUEUE")
-      );
-    }
-
-    function isTerminal(job) {
-      return isReady(job) || isError(job);
-    }
-
-    function getMatchMeta(job) {
-      const jobId = safeStr(job?.job_id || job?.id);
-      const rid = safeStr(job?.meta?.request_id || job?.request_id);
-      return { jobId, rid };
-    }
-
-    function sameJob(a, b) {
-      const aa = getMatchMeta(a);
-      const bb = getMatchMeta(b);
-
-      if (aa.jobId && bb.jobId && aa.jobId === bb.jobId) return true;
-      if (aa.rid && bb.rid && aa.rid === bb.rid) return true;
-
-      return false;
-    }
-
-    function isFreshDoneEphemeral(job) {
-      return !!job && job._fresh === true && isReady(job) && !!safeStr(job?.url);
-    }
-
-    function tsOf(j) {
-      const t = new Date(j?.updated_at || j?.created_at || Date.now()).getTime();
-      return Number.isFinite(t) ? t : 0;
-    }
-
-    function isPortrait(job, out) {
-      const ar = String(
-        job?.meta?.aspect_ratio ||
-          job?.meta?.ratio ||
-          out?.meta?.aspect_ratio ||
-          ""
-      );
-      return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
-    }
-
-    function resolvePlaybackUrl(rawUrl) {
-      rawUrl = safeStr(rawUrl);
-      if (!rawUrl) return "";
-
-      if (!/^https?:\/\//i.test(rawUrl)) return rawUrl;
-
-      if (rawUrl.includes("media.aivo.tr/outputs/atmo/")) {
-        return rawUrl;
-      }
-
-      return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
-    }
-
-    function upsertEphemeralProcessing(payload = {}) {
-      const jobId = safeStr(payload.job_id);
-      const rid =
-        safeStr(payload.request_id) ||
-        safeStr(payload.requestId) ||
-        safeStr(payload.fal_request_id) ||
-        safeStr(payload.provider_request_id);
-
-      const prompt = safeStr(payload.prompt || payload?.meta?.prompt);
-      const provider = safeStr(payload.provider || payload?.meta?.provider || "Atmos");
-      const aspectRatio = safeStr(
-        payload?.meta?.aspect_ratio ||
-          payload?.aspect_ratio ||
-          payload?.meta?.ratio ||
-          ""
-      );
-
-      if (!jobId && !rid) return;
-      if (jobId && deletedIds.has(jobId)) return;
-
-      const id = jobId || `tmp_${rid}`;
-
-      const nextItem = {
-        job_id: id,
-        status: "PROCESSING",
-        db_status: "processing",
-        state: "PROCESSING",
-        created_at: payload?.createdAt || payload?.created_at || Date.now(),
-        prompt,
-        _fresh: false,
-        meta: {
-          app: APP_KEY,
-          provider,
-          request_id: rid,
-          aspect_ratio: aspectRatio,
-        },
-        outputs: [],
-      };
-
-      state.ephemerals = [
-        nextItem,
-        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextItem)),
-      ];
-
-      render();
-    }
-
-    function upsertEphemeralReady(detail = {}) {
-      const jobId = safeStr(detail?.job_id);
-      const rid =
-        safeStr(detail?.request_id) ||
-        safeStr(detail?.fal_request_id) ||
-        safeStr(detail?.meta?.request_id);
-
-      const existing =
-        (state.ephemerals || []).find((x) => {
-          const xJobId = safeStr(x?.job_id);
-          const xRid = safeStr(x?.meta?.request_id || x?.request_id);
-          return (jobId && xJobId === jobId) || (rid && xRid === rid);
-        }) || null;
-
-      const readyUrl = safeStr(
-        detail?.video?.url ||
-        detail?.url ||
-        pickVideoUrl(detail?.raw || detail) ||
-        (Array.isArray(detail?.outputs) ? detail.outputs?.[0]?.url : "")
-      );
-
-      if (!readyUrl) return;
-
-      const nextReady = {
-        job_id: jobId || safeStr(existing?.job_id) || `tmp_${rid}`,
-        url: readyUrl,
-        status: "DONE",
-        db_status: "done",
-        state: "COMPLETED",
-        created_at: existing?.created_at || Date.now(),
-        prompt: safeStr(detail?.meta?.prompt || existing?.prompt || ""),
-        _fresh: true,
-        meta: {
-          app: APP_KEY,
-          provider: safeStr(detail?.meta?.provider || existing?.meta?.provider || "Atmos"),
-          request_id: rid || safeStr(existing?.meta?.request_id),
-          aspect_ratio: safeStr(
-            detail?.meta?.aspect_ratio ||
-              detail?.aspect_ratio ||
-              existing?.meta?.aspect_ratio ||
-              ""
-          ),
-        },
-        outputs: Array.isArray(detail?.outputs) ? detail.outputs : [],
-      };
-
-      const resolved = resolvePlaybackUrl(readyUrl);
-      if (resolved) playableUrls.add(resolved);
-
-      state.ephemerals = [
-        nextReady,
-        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextReady)),
-      ];
-
-      render();
-
-      try {
-        db && db.hydrate(true);
-      } catch {}
-    }
-
-    function cleanupEphemeralsAgainstDb() {
-      const dbItems = Array.isArray(state.items) ? state.items : [];
-      const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
-
-      if (!dbItems.length || !eps.length) return;
-
-      state.ephemerals = eps.filter((ep) => {
-        const dbMatch = dbItems.find((db) => sameJob(ep, db));
-        if (!dbMatch) return true;
-
-        if (isFreshDoneEphemeral(ep)) return true;
-        if (isTerminal(dbMatch)) return false;
-
-        return true;
-      });
-    }
-
-    function combinedItems() {
-      const dbItems = (Array.isArray(state.items) ? state.items : []).filter((x) => {
-        const jid = safeStr(x?.job_id || x?.id);
-        if (jid && deletedIds.has(jid)) return false;
-        return true;
-      });
-
-      const eps = (Array.isArray(state.ephemerals) ? state.ephemerals : []).filter((x) => {
-        const jid = safeStr(x?.job_id || x?.id);
-        if (jid && deletedIds.has(jid)) return false;
-        return true;
-      });
-
-      const picked = [];
-      const usedDbIndexes = new Set();
-
-      for (const ep of eps) {
-        const dbIndex = dbItems.findIndex((db) => sameJob(ep, db));
-        const dbMatch = dbIndex >= 0 ? dbItems[dbIndex] : null;
-
-        if (!dbMatch) {
-          picked.push(ep);
-          continue;
-        }
-
-        if (isFreshDoneEphemeral(ep)) {
-          picked.push(ep);
-          usedDbIndexes.add(dbIndex);
-          continue;
-        }
-
-        if (isTerminal(dbMatch)) {
-          picked.push(dbMatch);
-          usedDbIndexes.add(dbIndex);
-          continue;
-        }
-
-        picked.push(ep);
-        usedDbIndexes.add(dbIndex);
-      }
-
-      dbItems.forEach((db, idx) => {
-        if (!usedDbIndexes.has(idx)) picked.push(db);
-      });
-
-      return picked
-        .sort((a, b) => {
-          const ap = isProcessing(a) ? 0 : isReady(a) ? 1 : 2;
-          const bp = isProcessing(b) ? 0 : isReady(b) ? 1 : 2;
-          if (ap !== bp) return ap - bp;
-          return tsOf(b) - tsOf(a);
-        })
-        .slice(0, MAX_ITEMS);
-    }
-
-    function render() {
-      if (destroyed || !$grid) return;
-
-      const items = combinedItems();
-
-      const hasProcessing = items.some((j) => isProcessing(j));
-      setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
-
-      if (!items.length) {
-        $grid.innerHTML = `<div class="atmoEmpty">Henüz atmos üretim yok.</div>`;
-        return;
-      }
-
-      $grid.innerHTML = items
-        .map((job) => {
-          const badge = badgeFor(job);
-          const isFreshCard = job?._fresh === true;
-
-          const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
-          const previewUrlResolved = safeStr(previewVideoFromJob(job));
-
-          const selectedPlaybackRawUrl = isFreshCard
-            ? finalUrl || previewUrlResolved
-            : previewUrlResolved || finalUrl;
-
-          const hasUrl = !!selectedPlaybackRawUrl;
-
-          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
-          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
-          const promptLine = safeStr(job?.prompt || "");
-
-          const dummyOut = {
-            meta: { aspect_ratio: job?.meta?.aspect_ratio || "" },
-          };
-          const portrait = isPortrait(job, dummyOut);
-
-          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
-          const videoUrl = playbackUrl
-            ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
-            : "";
-
-          if (
-            playbackUrl &&
-            !playableUrls.has(playbackUrl) &&
-            !probingUrls.has(playbackUrl)
-          ) {
-            probePlayableUrl(playbackUrl);
-          }
-
-          const isPlayableNow =
-            !!playbackUrl &&
-            playableUrls.has(playbackUrl) &&
-            badge.kind !== "bad";
-
-          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? (
-                '<div class="atmoCard"' +
-                  ' data-job="' + esc(job.job_id || "") + '"' +
-                  ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-                  ' data-final-url="' + esc(finalUrl) + '"' +
-                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
-                  ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-                '>' +
-                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                    id: safeStr(job.job_id || ""),
-                    title: promptLine || "—",
-                    sub: metaLine,
-                    badgeText: badge.text,
-                    badgeKind: isPlayableNow
-                      ? "ready"
-                      : (badge.kind === "bad" ? "error" : "loading"),
-                    videoUrl,
-                    posterUrl: "",
-                    ratio: portrait ? "9:16" : "16:9",
-                    ready: isPlayableNow,
-                    canDownload: !!finalUrl,
-                    canShare: isPlayableNow,
-                    canDelete: true
-                  }) +
-                '</div>'
-              )
-            : "";
-        })
-        .join("");
-    }
-
-    async function handleAction(cardEl, act) {
-      const jobId = safeStr(cardEl?.getAttribute("data-job"));
-      const url = safeStr(cardEl?.getAttribute("data-url"));
-      const finalUrl = safeStr(cardEl?.getAttribute("data-final-url"));
-      const previewUrl = safeStr(cardEl?.getAttribute("data-preview-url"));
-
-      if (act === "play") {
-        const video = cardEl?.querySelector("video");
-        if (!video) return;
-
-        if (video.paused) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-        return;
-      }
-
-      if (act === "fs") {
-        const video = cardEl?.querySelector("video");
-        if (!video) return;
-
-        try {
-          if (document.fullscreenElement) {
-            await document.exitFullscreen().catch(() => {});
-            return;
-          }
-
-          if (video.requestFullscreen) {
-            await video.requestFullscreen().catch(() => {});
-          }
-        } catch {}
-        return;
-      }
+    host.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+
+      const act = String(btn.dataset.act || "").trim();
+      const card = btn.closest(".atmoCard");
+      const jobId = String(btn.dataset.job || card?.dataset?.job || "").trim();
+      if (!act || !jobId) return;
+
+      const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
+      const job = allItems.find((x) => idOf(x) === jobId);
+      if (!job) return;
 
       if (act === "download") {
-        const dlUrl = finalUrl || url || previewUrl;
-        if (!dlUrl) return;
-
-        const proxied =
-          "/api/media/proxy?url=" +
-          encodeURIComponent(dlUrl) +
-          "&filename=" +
-          encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
-
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.setAttribute("aria-hidden", "true");
-        iframe.src = proxied;
-
-        document.body.appendChild(iframe);
-
-        setTimeout(() => {
-          try {
-            iframe.remove();
-          } catch {}
-        }, 15000);
-
+        e.preventDefault();
+        e.stopPropagation();
+        const out = pickBestVideoOutput(job);
+        const url = String(out?.url || "").trim();
+        if (!url) return;
+        download(url, jobId);
         return;
       }
 
       if (act === "share") {
-        const shareUrl = finalUrl || url || previewUrl;
-        if (!shareUrl) return;
-
-        try {
-          if (navigator.share) {
-            await navigator.share({ title: "Atmosfer Video", url: shareUrl });
-          } else if (navigator.clipboard?.writeText) {
-            await navigator.clipboard.writeText(shareUrl);
-          }
-        } catch {}
+        e.preventDefault();
+        e.stopPropagation();
+        const out = pickBestVideoOutput(job);
+        const url = String(out?.url || "").trim();
+        if (!url) return;
+        await share(url);
         return;
       }
 
       if (act === "delete") {
-        if (!jobId) return;
-
-        deletedIds.add(jobId);
-
-        state.ephemerals = (state.ephemerals || []).filter(
-          (x) => safeStr(x?.job_id) !== jobId
-        );
-        state.items = (state.items || []).filter(
-          (x) => safeStr(x?.job_id) !== jobId
-        );
-
-        render();
-
-        if (db && typeof db.deleteJob === "function") {
-          const ok = await db.deleteJob(jobId);
-          if (!ok) {
-            deletedIds.delete(jobId);
-            db.hydrate(true);
-          }
-        }
-
-        return;
-      }
-    }
-
-    $grid?.addEventListener(
-      "click",
-      (e) => {
-        const btn = e.target?.closest?.("[data-svc-act], [data-act]");
-        if (!btn) return;
-
-        const act =
-          safeStr(btn.getAttribute("data-svc-act")) ||
-          safeStr(btn.getAttribute("data-act"));
-        if (!act) return;
-
-        if (btn.hasAttribute("disabled")) return;
-
-        const wrapperCard = btn.closest(".atmoCard");
-        const sharedCard = btn.closest(".svcCard");
-        const card = wrapperCard || sharedCard;
-        if (!card) return;
-
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
 
-        handleAction(card, act);
-      },
-      true
-    );
+        optimistic.delete(jobId);
+        currentDbItems = currentDbItems.filter((x) => idOf(x) !== jobId);
+        renderCurrent();
 
-    const db =
-      window.DBJobs && typeof window.DBJobs.create === "function"
-        ? window.DBJobs.create({
-            app: APP_KEY,
-            debug: false,
-            pollIntervalMs: 4000,
-            hydrateEveryMs: 15000,
-            acceptOutput: acceptAtmoOutput,
-            onChange(items) {
-              state.items = (items || []).filter((x) => {
-                const jid = safeStr(x?.job_id || x?.id);
-                if (jid && deletedIds.has(jid)) return false;
-                return true;
-              });
-
-              cleanupEphemeralsAgainstDb();
-              render();
-            },
-          })
-        : null;
-
-    if (db) db.start();
+        try {
+          const ok = await controller.deleteJob(jobId);
+          if (!ok) {
+            await controller.hydrate(true);
+          }
+        } catch {
+          try {
+            await controller.hydrate(true);
+          } catch {}
+        }
+      }
+    });
 
     const onJobCreated = (e) => {
       const d = e?.detail || {};
-      if (!d) return;
+      if (!d.job_id) return;
+      if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
 
-      const appKey = safeStr(
-        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
-      ).toLowerCase();
+      const jobId = String(d.job_id || "").trim();
+      if (!jobId) return;
 
-      if (!appKey.includes("atmo")) return;
+      const existsDb = (currentDbItems || []).some((j) => idOf(j) === jobId);
+      if (existsDb) return;
+      if (optimistic.has(jobId)) return;
 
-      upsertEphemeralProcessing({
-        job_id: d?.job_id,
-        request_id: d?.request_id || d?.requestId || d?.meta?.request_id,
-        prompt: d?.prompt || d?.meta?.prompt,
-        provider: d?.provider || d?.meta?.provider || "Atmos",
-        createdAt: d?.createdAt || Date.now(),
-        meta: d?.meta || {},
+      const meta = d.meta || {};
+      const createdAt = d.createdAt || Date.now();
+
+      optimistic.set(jobId, {
+        job_id: jobId,
+        app: "atmo",
+        provider: meta.provider || "Atmos",
+        createdAt,
+        created_at: createdAt,
+        db_status: "processing",
+        status: "processing",
+        state: "PROCESSING",
+        meta: {
+          ...(meta || {}),
+          app: "atmo",
+          duration: meta.duration || "",
+          prompt: meta.prompt || "",
+        },
+        outputs: [],
       });
+
+      renderCurrent();
     };
 
     const onJobReady = (e) => {
       const d = e?.detail || {};
       if (!d) return;
+      if (!isAtmoApp(d.app || d.meta?.app || "atmo")) return;
 
-      const appKey = safeStr(
-        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
-      ).toLowerCase();
+      const jobId = String(d.job_id || "").trim();
+      if (!jobId) return;
 
-      if (!appKey.includes("atmo")) return;
+      const meta = d.meta || {};
+      const videoUrl = safeStr(
+        d?.video?.url ||
+          d?.url ||
+          (Array.isArray(d?.outputs) ? d.outputs?.[0]?.url : "")
+      );
 
-      upsertEphemeralReady(d);
+      if (!videoUrl) return;
+
+      const existingDb = currentDbItems.find((j) => idOf(j) === jobId);
+
+      if (existingDb) {
+        existingDb.db_status = "ready";
+        existingDb.status = "ready";
+        existingDb.state = "COMPLETED";
+        existingDb.meta = {
+          ...(existingDb.meta || {}),
+          ...(meta || {}),
+          app: "atmo",
+        };
+        existingDb.outputs = Array.isArray(d.outputs)
+          ? d.outputs
+          : [
+              {
+                type: "video",
+                url: videoUrl,
+                meta: { app: "atmo", is_final: true },
+              },
+            ];
+
+        optimistic.delete(jobId);
+        renderCurrent();
+        return;
+      }
+
+      const optimisticJob = optimistic.get(jobId);
+      if (!optimisticJob) return;
+
+      optimistic.set(jobId, {
+        ...optimisticJob,
+        db_status: "ready",
+        status: "ready",
+        state: "COMPLETED",
+        meta: {
+          ...(optimisticJob.meta || {}),
+          ...(meta || {}),
+          app: "atmo",
+        },
+        outputs: Array.isArray(d.outputs)
+          ? d.outputs
+          : [
+              {
+                type: "video",
+                url: videoUrl,
+                meta: { app: "atmo", is_final: true },
+              },
+            ],
+      });
+
+      renderCurrent();
     };
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
     window.addEventListener("aivo:atmo:job_ready", onJobReady);
 
-    const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
+    controller.start();
+    renderCurrent();
 
-    if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
-      window.__AIVO_ATMO_UPSERT_HOOKED__ = true;
-
-      window.AIVO_JOBS.upsert = function (job) {
+    return {
+      destroy() {
+        destroyed = true;
         try {
-          originalUpsert.call(this, job);
+          window.removeEventListener("aivo:atmo:job_created", onJobCreated);
         } catch {}
-
         try {
-          if (!job) return;
-
-          const key = (
-            safeStr(job.routeKey) ||
-            safeStr(job.app) ||
-            safeStr(job.module) ||
-            safeStr(job.type) ||
-            safeStr(job.kind)
-          ).toLowerCase();
-
-          if (!key.includes("atmo")) return;
-
-          setHeaderMeta("İşleniyor…");
-
-          upsertEphemeralProcessing({
-            job_id: job?.job_id || job?.id,
-            request_id:
-              job?.request_id ||
-              job?.requestId ||
-              job?.fal_request_id ||
-              job?.provider_request_id,
-            prompt: job?.prompt || job?.meta?.prompt,
-            provider: job?.provider || job?.meta?.provider || "Atmos",
-            createdAt: job?.createdAt || Date.now(),
-            meta: job?.meta || {},
-          });
-
-          const rid =
-            safeStr(job.request_id) ||
-            safeStr(job.requestId) ||
-            safeStr(job.fal_request_id) ||
-            safeStr(job.provider_request_id);
-
-          if (!rid || rid === "TEST") return;
-
-          if (timer) clearInterval(timer);
-          timer = setInterval(
-            () => pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || "")),
-            2000
-          );
-
-          pollFalOnce(rid, safeStr(job.prompt || job?.meta?.prompt || ""));
+          window.removeEventListener("aivo:atmo:job_ready", onJobReady);
         } catch {}
-      };
-    }
-
-    function probePlayableUrl(url) {
-      url = safeStr(url);
-      if (!url) return;
-      if (playableUrls.has(url)) return;
-      if (probingUrls.has(url)) return;
-
-      probingUrls.add(url);
-
-      waitUntilPlayable(url, 12000)
-        .then((ok) => {
-          if (ok) {
-            playableUrls.add(url);
-            render();
-          }
-        })
-        .finally(() => {
-          probingUrls.delete(url);
-        });
-    }
-
-    async function waitUntilPlayable(url, timeoutMs = 12000) {
-      url = safeStr(url);
-      if (!url) return false;
-
-      return await new Promise((resolve) => {
-        const v = document.createElement("video");
-        let done = false;
-
-        const finish = (ok) => {
-          if (done) return;
-          done = true;
-          try {
-            v.pause();
-            v.removeAttribute("src");
-            v.load();
-          } catch {}
-          resolve(!!ok);
-        };
-
-        const t = setTimeout(() => finish(false), timeoutMs);
-
-        v.preload = "metadata";
-        v.muted = true;
-        v.playsInline = true;
-
-        v.addEventListener(
-          "loadeddata",
-          () => {
-            clearTimeout(t);
-            finish(true);
-          },
-          { once: true }
-        );
-
-        v.addEventListener(
-          "canplay",
-          () => {
-            clearTimeout(t);
-            finish(true);
-          },
-          { once: true }
-        );
-
-        v.addEventListener(
-          "error",
-          () => {
-            clearTimeout(t);
-            finish(false);
-          },
-          { once: true }
-        );
-
-        v.src = url;
         try {
-          v.load();
+          controller?.destroy?.();
         } catch {}
-      });
-    }
-
-    async function pollFalOnce(rid, promptMaybe) {
-      if (destroyed) return;
-      rid = safeStr(rid);
-      if (!rid) return;
-
-      let data;
-      try {
-        const r = await fetch(STATUS_URL(rid), { credentials: "include" });
-        data = await r.json();
-      } catch {
-        setHeaderMeta("Bağlantı sorunu");
-        return;
-      }
-
-      const st = safeStr(
-        data?.status || data?.state || data?.result?.status
-      ).toLowerCase();
-
-      if (st.includes("fail") || st === "error") {
-        const existing = (state.ephemerals || []).find(
-          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
-        );
-
-        if (existing) {
-          state.ephemerals = [
-            {
-              ...existing,
-              status: "ERROR",
-              db_status: "error",
-              state: "ERROR",
-            },
-            ...(state.ephemerals || []).filter((x) => !sameJob(x, existing)),
-          ];
-          render();
-        }
-
-        setHeaderMeta("Hata");
-        return;
-      }
-
-      if (
-        st.includes("complete") ||
-        st.includes("success") ||
-        st === "succeeded"
-      ) {
-        const url = pickVideoUrl(data);
-
-        if (!url) {
-          setHeaderMeta("Tamamlandı (url yok)");
-          return;
-        }
-
-        const playbackResolved = resolvePlaybackUrl(url);
-        const playable = await waitUntilPlayable(playbackResolved, 12000);
-
-        if (!playable) {
-          setHeaderMeta("İşleniyor…");
-          return;
-        }
-
-        playableUrls.add(playbackResolved);
-        setHeaderMeta("Tamamlandı");
-
-        const existing = (state.ephemerals || []).find(
-          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
-        );
-
-        const nextFresh = {
-          job_id: safeStr(existing?.job_id) || `tmp_${rid}`,
-          url,
-          status: "DONE",
-          db_status: "done",
-          state: "COMPLETED",
-          created_at: existing?.created_at || Date.now(),
-          prompt: safeStr(existing?.prompt || promptMaybe || ""),
-          _fresh: true,
-          meta: {
-            app: APP_KEY,
-            provider: safeStr(existing?.meta?.provider || "Atmos"),
-            request_id: rid,
-            aspect_ratio: safeStr(
-              data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
-            ),
-          },
-          outputs: [],
-        };
-
-        state.ephemerals = [
-          nextFresh,
-          ...(state.ephemerals || []).filter((x) => !sameJob(x, nextFresh)),
-        ];
-
-        render();
-
         try {
-          window.dispatchEvent(
-            new CustomEvent("aivo:atmo:job_ready", {
-              detail: {
-                app: "atmo",
-                job_id: safeStr(existing?.job_id || data?.job_id),
-                request_id: rid,
-                status: "completed",
-                video: { url },
-                outputs: Array.isArray(data?.outputs)
-                  ? data.outputs
-                  : [{ type: "video", url, meta: { app: "atmo", is_final: true } }],
-                raw: data,
-                meta: {
-                  app: "atmo",
-                  provider: safeStr(existing?.meta?.provider || "Atmos"),
-                  prompt: safeStr(existing?.prompt || promptMaybe || ""),
-                  aspect_ratio: safeStr(
-                    data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
-                  ),
-                },
-              },
-            })
-          );
+          host.innerHTML = "";
         } catch {}
-
-        try {
-          if (window.PPE && typeof window.PPE.apply === "function") {
-            window.PPE.apply({
-              outputs: [{ type: "video", url, src: url, meta: { app: APP_KEY } }],
-              meta: { app: APP_KEY, request_id: rid },
-            });
-          }
-        } catch {}
-
-        try {
-          db && db.hydrate(true);
-        } catch {}
-
-        if (timer) clearInterval(timer);
-        timer = null;
-        return;
-      }
-
-      setHeaderMeta("İşleniyor…");
-    }
-
-    setHeaderMeta("Hazır");
-    render();
-
-    function destroy() {
-      destroyed = true;
-
-      if (timer) clearInterval(timer);
-      timer = null;
-
-      try {
-        window.removeEventListener("aivo:atmo:job_created", onJobCreated);
-      } catch {}
-
-      try {
-        window.removeEventListener("aivo:atmo:job_ready", onJobReady);
-      } catch {}
-
-      try {
-        db && db.destroy();
-      } catch {}
-
-      host.innerHTML = "";
-    }
-
-    return { destroy };
+      },
+    };
   }
 
-  window.RightPanel.register(APP_KEY, {
-    header: {
-      title: "Atmosfer Video",
-      meta: "Hazır",
-      searchEnabled: false,
-      resetSearch: true,
-    },
-
-    mount(host) {
-      const panel = createAtmosPanel(host);
-      host.__ATMO_PANEL__ = panel;
-    },
-
-    destroy(host) {
-      try {
-        host.__ATMO_PANEL__ && host.__ATMO_PANEL__.destroy();
-      } catch {}
-      host.__ATMO_PANEL__ = null;
-    },
-  });
+  try {
+    if (typeof window.RightPanel.register === "function") {
+      window.RightPanel.register("atmo", {
+        header: {
+          title: "Atmosfer Video",
+          meta: "Hazır",
+          searchEnabled: false,
+          resetSearch: true,
+        },
+        mount(host) {
+          const api = createAtmosPanel(host);
+          host.__ATMO_PANEL__ = api;
+        },
+        destroy(host) {
+          try {
+            host.__ATMO_PANEL__?.destroy?.();
+          } catch {}
+          host.__ATMO_PANEL__ = null;
+        },
+      });
+    } else {
+      window.RightPanel.panels = window.RightPanel.panels || {};
+      window.RightPanel.panels.atmo = createAtmosPanel;
+    }
+  } catch (e) {
+    console.warn("[ATMO PANEL] register failed", e);
+  }
 })();
