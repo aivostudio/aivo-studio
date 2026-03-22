@@ -1,4 +1,4 @@
-// /panel.atmo.js
+// /panel.atmos.js
 (function () {
   const APP_KEY = "atmo";
 
@@ -39,20 +39,6 @@
   let timer = null;
   const playableUrls = new Set();
   const probingUrls = new Set();
-
-  function markJobError(rid) {
-    try {
-      window.dispatchEvent(
-        new CustomEvent("aivo:atmo:job_error", {
-          detail: {
-            app: "atmo",
-            request_id: rid,
-            status: "error",
-          },
-        })
-      );
-    } catch {}
-  }
 
   async function waitUntilPlayable(url, timeoutMs = 12000) {
     url = safeStr(url);
@@ -148,7 +134,6 @@
     ).toLowerCase();
 
     if (st.includes("fail") || st === "error") {
-      markJobError(rid);
       if (timer) {
         clearInterval(timer);
         timer = null;
@@ -212,8 +197,8 @@
 
   const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
 
-  if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
-    window.__AIVO_ATMO_UPSERT_HOOKED__ = true;
+  if (originalUpsert && !window.__AIVO_ATMOS_UPSERT_HOOKED__) {
+    window.__AIVO_ATMOS_UPSERT_HOOKED__ = true;
 
     window.AIVO_JOBS.upsert = function (job) {
       try {
