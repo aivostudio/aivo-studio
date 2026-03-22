@@ -13,7 +13,6 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
 
-  // FAL atmo video status endpoint (app param şart)
   const STATUS_URL = (rid) =>
     `/api/providers/fal/video/status?request_id=${encodeURIComponent(
       rid
@@ -48,69 +47,100 @@
     }
   }
 
-  // ✅ FINAL video seçimi: meta.final_video_url > outputs.is_final > variant önceliği > fallback
+  function pickOutputUrl(o) {
+    return safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
+  }
+
+  function isVideoOutput(o) {
+    return String(o?.type || "").toLowerCase() === "video";
+  }
+
+  function outputVariant(o) {
+    return String(o?.meta?.variant || "").toLowerCase().trim();
+  }
+
+  // ✅ FINAL resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function bestVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    const pickUrl = (o) =>
-      safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
+    // normalized / mapped alanlar
+    const directFinal =
+      safeStr(job?.final) ||
+      safeStr(job?.final_url) ||
+      safeStr(job?.final_video_url) ||
+      safeStr(meta?.final) ||
+      safeStr(meta?.final_url) ||
+      safeStr(meta?.final_video_url);
 
-    // 1) DB tek kaynak
-    if (safeStr(meta?.final_video_url)) return safeStr(meta.final_video_url);
+    if (directFinal) return directFinal;
 
-    const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
-    const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
+    const directLogo =
+      safeStr(job?.logo) ||
+      safeStr(job?.logo_url) ||
+      safeStr(job?.logo_overlay_url) ||
+      safeStr(meta?.logo) ||
+      safeStr(meta?.logo_url) ||
+      safeStr(meta?.logo_overlay_url);
 
-    // 2) outputs içinde final işaretli
-    const fin = outs.find((o) => isVideo(o) && o?.meta?.is_final === true);
+    if (directLogo) return directLogo;
+
+    const directMux =
+      safeStr(job?.mux) ||
+      safeStr(job?.mux_url) ||
+      safeStr(job?.muxed_url) ||
+      safeStr(meta?.mux) ||
+      safeStr(meta?.mux_url) ||
+      safeStr(meta?.muxed_url);
+
+    if (directMux) return directMux;
+
+    const fin = outs.find((o) => isVideoOutput(o) && o?.meta?.is_final === true);
     if (fin) {
-      const u = pickUrl(fin);
+      const u = pickOutputUrl(fin);
       if (u) return u;
     }
 
-    // 3) logo_overlay
-    const ov = outs.find((o) => isVideo(o) && variant(o) === "logo_overlay");
+    const ov = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay");
     if (ov) {
-      const u = pickUrl(ov);
+      const u = pickOutputUrl(ov);
       if (u) return u;
     }
 
-    // 4) mux
-    const mx = outs.find((o) => isVideo(o) && variant(o) === "mux");
+    const mx = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "mux");
     if (mx) {
-      const u = pickUrl(mx);
+      const u = pickOutputUrl(mx);
       if (u) return u;
     }
 
-    // 5) provider
-    const pv = outs.find((o) => isVideo(o) && variant(o) === "provider");
+    const pv = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "provider");
     if (pv) {
-      const u = pickUrl(pv);
+      const u = pickOutputUrl(pv);
       if (u) return u;
     }
 
-    // 6) fallback ilk video / ilk output
-    const vid = outs.find((o) => isVideo(o)) || outs[0];
-    return pickUrl(vid);
+    const vid = outs.find((o) => isVideoOutput(o)) || outs[0];
+    return pickOutputUrl(vid);
   }
 
-  // ✅ PREVIEW video seçimi
+  // ✅ PREVIEW resolver: raw row + normalized DBJobs shape birlikte desteklenir
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-    const pickUrl = (o) =>
-      safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
+    const directPreview =
+      safeStr(job?.preview) ||
+      safeStr(job?.preview_url) ||
+      safeStr(job?.preview_video_url) ||
+      safeStr(meta?.preview) ||
+      safeStr(meta?.preview_url) ||
+      safeStr(meta?.preview_video_url);
 
-    if (safeStr(meta?.preview_video_url)) return safeStr(meta.preview_video_url);
+    if (directPreview) return directPreview;
 
-    const isVideo = (o) => String(o?.type || "").toLowerCase() === "video";
-    const variant = (o) => String(o?.meta?.variant || "").toLowerCase().trim();
-
-    const prev = outs.find((o) => isVideo(o) && variant(o) === "preview");
+    const prev = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "preview");
     if (prev) {
-      const u = pickUrl(prev);
+      const u = pickOutputUrl(prev);
       if (u) return u;
     }
 
@@ -163,9 +193,8 @@
         border:1px solid rgba(255,255,255,0.08);
       }
 
-      /* clamp: kart içi video asla paneli büyütmez */
-      .atmoThumb:before{content:"";display:block;padding-top:56.25%;} /* 16:9 */
-      .atmoThumb.isPortrait:before{padding-top:140%;} /* 9:16 clamp */
+      .atmoThumb:before{content:"";display:block;padding-top:56.25%;}
+      .atmoThumb.isPortrait:before{padding-top:140%;}
 
       .atmoThumbVideo{
         position:absolute;inset:0;width:100%;height:100%;
@@ -265,12 +294,8 @@
 
     const state = {
       items: [],
-      // fresh session kartları: final oynar
-      ephemerals: [], // { job_id, url, status, created_at, prompt, meta, _fresh: true }
+      ephemerals: [],
     };
-
-    const playableUrls = new Set();
-    const probingUrls = new Set();
 
     host.innerHTML = `
       <div class="atmoWrap">
@@ -302,8 +327,6 @@
       const dbItems = Array.isArray(state.items) ? state.items : [];
       const eps = Array.isArray(state.ephemerals) ? state.ephemerals : [];
 
-      // ✅ request_id bazlı dedupe:
-      // aynı üretimin DB row’u geldiyse, fresh ephemeral kartı tut; DB kartı bu session boyunca gizle
       const ephemeralRequestIds = new Set(
         eps
           .map((e) => safeStr(e?.meta?.request_id || e?.request_id))
@@ -389,10 +412,9 @@
           const badge = badgeFor(job);
           const isFreshCard = job?._fresh === true;
 
-          // ✅ fresh kart final oynar
-          // ✅ hydrated / eski kart preview oynar
           const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
           const previewUrlResolved = safeStr(previewVideoFromJob(job));
+
           const selectedPlaybackRawUrl = isFreshCard
             ? (finalUrl || previewUrlResolved)
             : (previewUrlResolved || finalUrl);
@@ -569,7 +591,6 @@
       true
     );
 
-    // --- DB controller ---
     const db =
       window.DBJobs && typeof window.DBJobs.create === "function"
         ? window.DBJobs.create({
@@ -587,7 +608,6 @@
 
     if (db) db.start();
 
-    // --- AIVO_JOBS.upsert hook: create->poll->PPE + DB hydrate ---
     const originalUpsert = window.AIVO_JOBS && window.AIVO_JOBS.upsert;
 
     if (originalUpsert && !window.__AIVO_ATMO_UPSERT_HOOKED__) {
@@ -631,26 +651,6 @@
       };
     }
 
-    function probePlayableUrl(url) {
-      url = safeStr(url);
-      if (!url) return;
-      if (playableUrls.has(url)) return;
-      if (probingUrls.has(url)) return;
-
-      probingUrls.add(url);
-
-      waitUntilPlayable(url, 12000)
-        .then((ok) => {
-          if (ok) {
-            playableUrls.add(url);
-            render();
-          }
-        })
-        .finally(() => {
-          probingUrls.delete(url);
-        });
-    }
-
     async function waitUntilPlayable(url, timeoutMs = 12000) {
       url = safeStr(url);
       if (!url) return false;
@@ -676,37 +676,23 @@
         v.muted = true;
         v.playsInline = true;
 
-        v.addEventListener(
-          "loadeddata",
-          () => {
-            clearTimeout(t);
-            finish(true);
-          },
-          { once: true }
-        );
+        v.addEventListener("loadeddata", () => {
+          clearTimeout(t);
+          finish(true);
+        }, { once: true });
 
-        v.addEventListener(
-          "canplay",
-          () => {
-            clearTimeout(t);
-            finish(true);
-          },
-          { once: true }
-        );
+        v.addEventListener("canplay", () => {
+          clearTimeout(t);
+          finish(true);
+        }, { once: true });
 
-        v.addEventListener(
-          "error",
-          () => {
-            clearTimeout(t);
-            finish(false);
-          },
-          { once: true }
-        );
+        v.addEventListener("error", () => {
+          clearTimeout(t);
+          finish(false);
+        }, { once: true });
 
         v.src = url;
-        try {
-          v.load();
-        } catch {}
+        try { v.load(); } catch {}
       });
     }
 
@@ -724,9 +710,7 @@
         return;
       }
 
-      const st = safeStr(
-        data?.status || data?.state || data?.result?.status
-      ).toLowerCase();
+      const st = safeStr(data?.status || data?.state || data?.result?.status).toLowerCase();
 
       if (st.includes("fail") || st === "error") {
         setHeaderMeta("Hata");
@@ -736,16 +720,12 @@
       if (st.includes("complete") || st.includes("success") || st === "succeeded") {
         let url = pickVideoUrl(data);
 
-        // ✅ NOT: Overlay artık backend'de deterministik yapılıyor (/api/jobs/status).
-        // Burada client-side overlay çağırmıyoruz. Sadece video url’i PPE + geçici karta basıyoruz.
-
         if (!url) {
           setHeaderMeta("Tamamlandı (url yok)");
           return;
         }
 
         const playable = await waitUntilPlayable(url, 12000);
-        if (playable) playableUrls.add(url);
         if (!playable) {
           setHeaderMeta("İşleniyor…");
           return;
@@ -753,7 +733,6 @@
 
         setHeaderMeta("Tamamlandı");
 
-        // ✅ fresh card: final oynat
         const tempId = `tmp_${rid}`;
         state.ephemerals = [
           {
