@@ -386,9 +386,8 @@ section.outputsCard.studioOutputs,
   box-sizing: border-box !important;
 }
 /* =========================================================
-   SHELL PSEUDO — BOTTOM STROKE CUT
-   Sadece pseudo'nun alt çizgisini keser
-   Scroll katmanlarına dokunmaz
+   SHELL PSEUDO — SOFT BOTTOM FADE
+   Sert kesim yerine alt glow/stroke'u yumuşak eritir
    ========================================================= */
 
 #moduleHost::before,
@@ -405,6 +404,24 @@ section.outputsCard.studioOutputs,
 .rpBody::after,
 .rpContent::before,
 .rpContent::after {
-  -webkit-clip-path: inset(0 0 14px 0) !important;
-  clip-path: inset(0 0 14px 0) !important;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0,0,0,1) 0,
+    rgba(0,0,0,1) calc(100% - 18px),
+    rgba(0,0,0,.72) calc(100% - 12px),
+    rgba(0,0,0,.28) calc(100% - 6px),
+    rgba(0,0,0,0) 100%
+  ) !important;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0,0,0,1) 0,
+    rgba(0,0,0,1) calc(100% - 18px),
+    rgba(0,0,0,.72) calc(100% - 12px),
+    rgba(0,0,0,.28) calc(100% - 6px),
+    rgba(0,0,0,0) 100%
+  ) !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-size: 100% 100% !important;
+  mask-size: 100% 100% !important;
 }
