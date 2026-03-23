@@ -303,6 +303,7 @@
 
     let destroyed = false;
     let timer = null;
+    let searchTimer = null;
 
    const state = {
   items: [],
@@ -330,8 +331,13 @@ const syncSearchFromInput = () => {
   const input = getPanelSearchInput();
   const nextQuery = safeStr(input?.value || "");
   if (state.query === nextQuery) return;
-  state.query = nextQuery;
-  render();
+
+  if (searchTimer) clearTimeout(searchTimer);
+
+  searchTimer = setTimeout(() => {
+    state.query = nextQuery;
+    render();
+  }, 120);
 };
 
 const onSearchInput = (e) => {
@@ -982,6 +988,7 @@ setTimeout(syncSearchFromInput, 0);
 
           if (rid && rid !== "TEST") {
             if (timer) clearInterval(timer);
+            if (searchTimer) clearTimeout(searchTimer);
 
             timer = setInterval(
               () => pollFalOnce(rid, safeStr(job?.prompt || job?.meta?.prompt || "")),
