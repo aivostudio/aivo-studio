@@ -628,8 +628,14 @@ for (const it of incoming) {
 
 function renderCard(it) {
   const jid = idOf(it) || uid();
-  const ready = isReady(it) && !!String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
-  const rawVideoUrl = String(it.playbackUrl || getPlaybackUrl(it) || "").trim();
+ let rawVideoUrl = String(it.playbackUrl || "").trim();
+
+if (!rawVideoUrl) {
+  rawVideoUrl = String(getPlaybackUrl(it) || "").trim();
+  it.playbackUrl = rawVideoUrl; // 🔥 cache et
+}
+
+const ready = isReady(it) && !!rawVideoUrl;
   const previewVideoUrl = ready
     ? (rawVideoUrl.includes("#") ? rawVideoUrl : (rawVideoUrl + "#t=0.001"))
     : "";
