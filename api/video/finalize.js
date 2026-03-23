@@ -306,7 +306,7 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
       "-c:v",
       "libx264",
       "-preset",
-      "veryfast",
+      "medium",
       "-b:v",
       `${targetKbps}k`,
       "-maxrate",
