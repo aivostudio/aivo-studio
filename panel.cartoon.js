@@ -240,6 +240,11 @@
 
     let destroyed = false;
     let currentDbItems = [];
+    let searchTimer = null;
+
+    const state = {
+      query: "",
+    };
 
     const optimistic = new Map();
     const hiddenDeletedIds = new Set();
@@ -260,6 +265,35 @@
       if (elStatus) elStatus.textContent = t;
     };
 
+    const getPanelSearchInput = () =>
+      document.querySelector(
+        'input.rpSearch, [data-right-panel-search], input[type="search"][placeholder*="Ara"]'
+      ) || null;
+
+    const syncSearchFromInput = () => {
+      const input = getPanelSearchInput();
+      const nextQuery = safeStr(input?.value || "");
+      if (state.query === nextQuery) return;
+
+      if (searchTimer) clearTimeout(searchTimer);
+
+      searchTimer = setTimeout(() => {
+        state.query = nextQuery;
+        renderCurrent();
+      }, 120);
+    };
+
+    const onSearchInput = (e) => {
+      const input = getPanelSearchInput();
+      if (!input) return;
+      if (e.target !== input) return;
+      syncSearchFromInput();
+    };
+
+    document.addEventListener("input", onSearchInput, true);
+    document.addEventListener("search", onSearchInput, true);
+    setTimeout(syncSearchFromInput, 0);
+
     const toMs = (v) => {
       if (v == null) return 0;
       if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -279,6 +313,49 @@
 
       const t = Date.parse(s);
       return Number.isFinite(t) ? t : 0;
+    };
+
+    const formatTs = (v) => {
+      try {
+        const t = toMs(v);
+        if (!t) return "";
+        const d = new Date(t);
+        if (Number.isNaN(+d)) return "";
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mi = String(d.getMinutes()).padStart(2, "0");
+        return `${dd}.${mm}.${yy} ${hh}:${mi}`;
+      } catch {
+        return "";
+      }
+    };
+
+    const getCardTitle = (job) =>
+      String(
+        job?.meta?.scene_title ||
+        job?.meta?.title ||
+        job?.title ||
+        job?.meta?.prompt ||
+        job?.prompt ||
+        "Çizgifilm"
+      ).trim();
+
+    const buildSearchHaystack = (job) => {
+      const title = safeStr(getCardTitle(job)).toLowerCase();
+      const prompt = safeStr(job?.prompt || job?.meta?.prompt || "").toLowerCase();
+      const provider = safeStr(job?.provider || job?.meta?.provider || "Cartoon").toLowerCase();
+      const status = safeStr(job?.db_status || job?.status || job?.state).toLowerCase();
+      const created = safeStr(
+        formatTs(job?.updated_at || job?.created_at || job?.createdAt || "")
+      ).toLowerCase();
+      const sceneTitle = safeStr(job?.meta?.scene_title || "").toLowerCase();
+      const rawTitle = safeStr(job?.title || job?.meta?.title || "").toLowerCase();
+
+      return [title, prompt, provider, status, created, sceneTitle, rawTitle]
+        .filter(Boolean)
+        .join(" ");
     };
 
     const isTerminalState = (job) => {
@@ -332,14 +409,7 @@
           "16:9"
       ).trim();
 
-      const title = String(
-        job?.meta?.scene_title ||
-          job?.meta?.title ||
-          job?.title ||
-          job?.meta?.prompt ||
-          job?.prompt ||
-          "Çizgifilm"
-      ).trim();
+      const title = getCardTitle(job);
 
       const sub = "";
       const badgeText = badge.text;
@@ -447,7 +517,7 @@
         }
       }
 
-      return Array.from(byId.values()).sort((a, b) => {
+      const merged = Array.from(byId.values()).sort((a, b) => {
         const ta =
           toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
         const tb =
@@ -459,6 +529,11 @@
         const ib = idOf(b);
         return ib.localeCompare(ia);
       });
+
+      const q = safeStr(state.query).toLowerCase();
+      if (!q) return merged;
+
+      return merged.filter((job) => buildSearchHaystack(job).includes(q));
     }
 
     function render(items) {
@@ -481,9 +556,13 @@
           emptyEl.style.opacity = ".7";
           emptyEl.style.fontSize = "12px";
           emptyEl.style.padding = "4px 2px";
-          emptyEl.textContent = "Henüz çizgifilm üretim yok.";
           elGrid.appendChild(emptyEl);
         }
+
+        emptyEl.textContent = state.query
+          ? "Aramana uygun çizgifilm üretim bulunamadı."
+          : "Henüz çizgifilm üretim yok.";
+
         return;
       } else if (emptyEl) {
         emptyEl.remove();
@@ -814,6 +893,16 @@
     return {
       destroy() {
         destroyed = true;
+
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = null;
+
+        try {
+          document.removeEventListener("input", onSearchInput, true);
+        } catch {}
+        try {
+          document.removeEventListener("search", onSearchInput, true);
+        } catch {}
         try {
           window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
         } catch {}
