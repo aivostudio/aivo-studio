@@ -1,11 +1,9 @@
 // panel.cartoon.js
 // DB source-of-truth + optimistic cartoon video cards
-// - job_created gelince kart anında görünür
-// - onChange DB item'ları ile merge edilir
-// - ready olunca kart yerinde güncellenir
+// - fresh ready kartta final oynatır
+// - refresh / DB hydrate sonrası preview oynatır
+// - download her zaman final url kullanır
 // - character job'ları paneli tetiklemez
-// - FIX: optimistic + DB merge için tek kimlik helper'ı (idOf)
-// - FIX: story kartı ile DB ready kartı aynı job altında birleşir
 
 (function () {
   if (!window.RightPanel) return;
@@ -20,6 +18,8 @@
       .toLowerCase()
       .replaceAll("_", " ")
       .replace(/\s+/g, " ");
+
+  const safeStr = (v) => String(v == null ? "" : v).trim();
 
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -65,7 +65,7 @@
       .toLowerCase() === "character";
 
   const toMaybeProxyUrl = (url) => {
-    const u = String(url || "").trim();
+    const u = safeStr(url);
     if (!u) return "";
     if (
       u.startsWith("/api/media/proxy?url=") ||
@@ -73,13 +73,12 @@
     ) {
       return u;
     }
-    if (u.startsWith("http://")) {
+    if (u.startsWith("http://") || u.startsWith("https://")) {
       return "/api/media/proxy?url=" + encodeURIComponent(u);
     }
     return u;
   };
 
-  // ✅ TEK KİMLİK KURALI
   const idOf = (it) => String(it?.job_id || it?.id || "").trim();
 
   const mapBadge = (job) => {
@@ -110,48 +109,97 @@
     return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
-  const pickBestVideoOutput = (job) => {
+  function pickOutputUrl(o) {
+    return safeStr(
+      o?.archive_url ||
+      o?.archiveUrl ||
+      o?.url ||
+      o?.video_url ||
+      o?.videoUrl ||
+      o?.raw_url ||
+      o?.rawUrl ||
+      o?.meta?.archive_url ||
+      o?.meta?.archiveUrl ||
+      o?.meta?.url ||
+      o?.meta?.video_url ||
+      o?.meta?.videoUrl ||
+      ""
+    );
+  }
+
+  function outputVariant(o) {
+    return safeStr(o?.meta?.variant).toLowerCase();
+  }
+
+  function isVideoOutput(o) {
+    const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+    return !t || t === "video";
+  }
+
+  function filterCartoonOutputs(job) {
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-    if (!outs.length) return null;
-
-    const outsFiltered = outs.filter((o) => {
-      const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
-      if (t && t !== "video") return false;
-
+    return outs.filter((o) => {
+      if (!isVideoOutput(o)) return false;
       const oa = getOutApp(o);
       if (oa && !isCartoonApp(oa)) return false;
-
       return true;
     });
+  }
 
-    const pool = outsFiltered.length ? outsFiltered : outs;
-    const videos = pool.filter(
-      (o) =>
-        norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video"
+  function pickFinalVideoFromJob(job) {
+    const meta = job?.meta || {};
+    const outs = filterCartoonOutputs(job);
+
+    const directFinal =
+      safeStr(job?.final) ||
+      safeStr(job?.final_url) ||
+      safeStr(job?.final_video_url) ||
+      safeStr(meta?.final) ||
+      safeStr(meta?.final_url) ||
+      safeStr(meta?.final_video_url);
+
+    if (directFinal) return directFinal;
+
+    const finalized = outs.find(
+      (o) => outputVariant(o) === "finalized" || o?.meta?.is_final === true
     );
-    const best = videos[0] || pool[0] || null;
-    if (!best) return null;
+    if (finalized) {
+      const u = pickOutputUrl(finalized);
+      if (u) return u;
+    }
 
-    const raw =
-      best.archive_url ||
-      best.archiveUrl ||
-      best.url ||
-      best.video_url ||
-      best.videoUrl ||
-      best.raw_url ||
-      best.rawUrl ||
-      best.meta?.archive_url ||
-      best.meta?.archiveUrl ||
-      best.meta?.url ||
-      best.meta?.video_url ||
-      best.meta?.videoUrl ||
-      "";
+    const provider = outs.find((o) => outputVariant(o) === "provider");
+    if (provider) {
+      const u = pickOutputUrl(provider);
+      if (u) return u;
+    }
 
-    const url = toMaybeProxyUrl(raw);
-    if (!url) return null;
+    const first = outs.find((o) => isVideoOutput(o)) || outs[0];
+    return pickOutputUrl(first);
+  }
 
-    return { ...best, url };
-  };
+  function pickPreviewVideoFromJob(job) {
+    const meta = job?.meta || {};
+    const outs = filterCartoonOutputs(job);
+
+    const directPreview =
+      safeStr(job?.preview) ||
+      safeStr(job?.preview_url) ||
+      safeStr(job?.preview_video_url) ||
+      safeStr(meta?.preview) ||
+      safeStr(meta?.preview_url) ||
+      safeStr(meta?.preview_video_url);
+
+    if (directPreview) return directPreview;
+
+    const preview = outs.find((o) => outputVariant(o) === "preview");
+    if (preview) {
+      const u = pickOutputUrl(preview);
+      if (u) return u;
+    }
+
+    return "";
+  }
 
   function ensureStyles() {
     if (document.getElementById("cartoonPanelStyles")) return;
@@ -260,22 +308,27 @@
     function renderCard(job) {
       const jid = idOf(job);
       const badge = mapBadge(job);
-      const out = pickBestVideoOutput(job);
-      const rawVideoUrl = String(out?.url || "").trim();
+      const isFreshCard = job?._fresh === true;
 
-      const ready = badge.kind === "ok" && !!rawVideoUrl;
+      const finalUrl = pickFinalVideoFromJob(job);
+      const previewUrl = pickPreviewVideoFromJob(job);
+
+      const selectedPlaybackRawUrl = isFreshCard
+        ? finalUrl || previewUrl
+        : previewUrl || finalUrl;
+
+      const playbackUrl = toMaybeProxyUrl(selectedPlaybackRawUrl);
+      const ready = badge.kind === "ok" && !!playbackUrl;
       const previewVideoUrl = ready
-        ? rawVideoUrl.includes("#")
-          ? rawVideoUrl
-          : rawVideoUrl + "#t=0.001"
+        ? playbackUrl.includes("#")
+          ? playbackUrl
+          : playbackUrl + "#t=0.001"
         : "";
 
       const ratio = String(
         job?.meta?.ui_state?.aspect_ratio ||
           job?.meta?.aspect_ratio ||
           job?.meta?.ratio ||
-          out?.meta?.aspect_ratio ||
-          out?.meta?.ratio ||
           "16:9"
       ).trim();
 
@@ -298,20 +351,30 @@
             : "loading";
 
       if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-        return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-          id: jid,
-          title,
-          sub,
-          badgeText,
-          badgeKind,
-          videoUrl: previewVideoUrl,
-          posterUrl: "",
-          ratio,
-          ready,
-          canDownload: ready,
-          canShare: ready,
-          canDelete: true,
-        });
+        return (
+          '<div class="cartoonPanelCardInner"' +
+            ' data-job="' + esc(jid) + '"' +
+            ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+            ' data-final-url="' + esc(finalUrl) + '"' +
+            ' data-preview-url="' + esc(previewUrl) + '"' +
+            ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+          '>' +
+            window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+              id: jid,
+              title,
+              sub,
+              badgeText,
+              badgeKind,
+              videoUrl: previewVideoUrl,
+              posterUrl: "",
+              ratio,
+              ready,
+              canDownload: !!finalUrl,
+              canShare: ready,
+              canDelete: true,
+            }) +
+          '</div>'
+        );
       }
 
       return "";
@@ -357,6 +420,8 @@
         el.innerHTML = html;
         el.__renderedHtml = html;
       }
+
+      el.setAttribute("data-job", idOf(job));
     }
 
     function buildMergedItems() {
@@ -461,7 +526,7 @@
       render(buildMergedItems());
     }
 
-    function download(url) {
+    function download(url, filename = "cartoon.mp4") {
       const cleanUrl = String(url || "").trim();
       if (!cleanUrl) return;
 
@@ -471,11 +536,11 @@
 
       const proxied = directUrl.startsWith("/api/media/proxy?url=")
         ? directUrl
-        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=cartoon.mp4`;
+        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(filename)}`;
 
       const a = document.createElement("a");
       a.href = proxied;
-      a.download = "cartoon.mp4";
+      a.download = filename;
       a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
@@ -530,31 +595,33 @@
         return;
       }
 
-      const out = pickBestVideoOutput(job);
-      const url = String(out?.url || "").trim();
-      const directUrl = url.includes("#") ? url.split("#")[0] : url;
+      const finalUrl = pickFinalVideoFromJob(job);
+      const previewUrl = pickPreviewVideoFromJob(job);
+      const sharePlaybackUrl = safeStr(
+        (job?._fresh === true ? finalUrl || previewUrl : previewUrl || finalUrl)
+      );
 
       if (act === "open") {
         e.preventDefault();
         e.stopPropagation();
-        if (!directUrl) return;
-        window.open(directUrl, "_blank", "noopener");
+        if (!sharePlaybackUrl) return;
+        window.open(sharePlaybackUrl, "_blank", "noopener");
         return;
       }
 
       if (act === "download") {
         e.preventDefault();
         e.stopPropagation();
-        if (!directUrl) return;
-        download(directUrl);
+        if (!finalUrl) return;
+        download(finalUrl, `cartoon-${id}.mp4`);
         return;
       }
 
       if (act === "share") {
         e.preventDefault();
         e.stopPropagation();
-        if (!directUrl) return;
-        share(directUrl);
+        if (!sharePlaybackUrl) return;
+        share(sharePlaybackUrl);
         return;
       }
 
@@ -610,8 +677,7 @@
 
       acceptOutput: (o) => {
         if (!o) return false;
-        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
-        if (t && t !== "video") return false;
+        if (!isVideoOutput(o)) return false;
         const oa = getOutApp(o);
         if (oa && !isCartoonApp(oa)) return false;
         return true;
@@ -626,7 +692,11 @@
           .filter((j) => {
             const id = idOf(j);
             return id && !hiddenDeletedIds.has(id);
-          });
+          })
+          .map((j) => ({
+            ...j,
+            _fresh: false,
+          }));
 
         renderCurrent();
       },
@@ -658,6 +728,7 @@
         db_status: "processing",
         status: "processing",
         state: "PROCESSING",
+        _fresh: false,
         meta: {
           ...(meta || {}),
           app: "cartoon",
@@ -676,9 +747,9 @@
       if (!job_id) return;
       if (hiddenDeletedIds.has(job_id)) return;
 
-      const videoUrl = String(
+      const videoUrl = safeStr(
         d?.video?.url || d?.raw?.video?.url || d?.raw?.video_url || ""
-      ).trim();
+      );
 
       const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
 
@@ -688,6 +759,7 @@
         existingDb.db_status = "ready";
         existingDb.status = "ready";
         existingDb.state = "COMPLETED";
+        existingDb._fresh = true;
 
         if (outputs.length) {
           existingDb.outputs = outputs;
@@ -696,12 +768,11 @@
             {
               type: "video",
               url: videoUrl,
-              meta: { app: "cartoon", is_final: true },
+              meta: { app: "cartoon", variant: "provider", is_final: true },
             },
           ];
         }
 
-        // DB item geldiyse optimistic aynı key ile düşsün
         if (optimistic.has(job_id)) {
           optimistic.delete(job_id);
         }
@@ -715,6 +786,7 @@
 
       optimistic.set(job_id, {
         ...optimisticJob,
+        _fresh: true,
         db_status: "ready",
         status: "ready",
         state: "COMPLETED",
@@ -725,7 +797,7 @@
                 {
                   type: "video",
                   url: videoUrl,
-                  meta: { app: "cartoon", is_final: true },
+                  meta: { app: "cartoon", variant: "provider", is_final: true },
                 },
               ]
             : optimisticJob.outputs || [],
