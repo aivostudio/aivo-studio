@@ -626,13 +626,27 @@ let onMusicVisibilityChange = null;
 
   let __searchQ = "";
 
-  function applyMusicSearchFilter(){
-    const q = String(__searchQ || "").trim();
-    const cards = (listEl || document).querySelectorAll(".aivo-player-card");
-    cards.forEach((card) => {
-      const text = (card.textContent || "").toLowerCase();
-      card.style.display = (!q || text.includes(q)) ? "" : "none";
-    });
+  function getMusicCardTitle(job){
+    return (
+      String(job?.title || "").trim() ||
+      String(job?.lyrics || "")
+        .replace(/\r/g, "")
+        .split("\n")
+        .map((s) => s.trim())
+        .find(Boolean) ||
+      String(job?.prompt || "").trim().split(/\s+/).slice(0, 2).join(" ") ||
+      ""
+    );
+  }
+
+  function getMusicCardSub(job){
+    return String(job?.subtitle || "").trim();
+  }
+
+  function buildMusicSearchHaystack(job){
+    const title = getMusicCardTitle(job).toLowerCase();
+    const sub = getMusicCardSub(job).toLowerCase();
+    return [title, sub].filter(Boolean).join(" ");
   }
 
   function render(){
@@ -663,19 +677,27 @@ let onMusicVisibilityChange = null;
   return ar - br;
 });
 
-    if (!view.length) {
+    const q = String(__searchQ || "").trim().toLowerCase();
+
+    const filteredView = !q
+      ? view
+      : view.filter((job) => buildMusicSearchHaystack(job).includes(q));
+
+    if (!filteredView.length) {
       listEl.innerHTML = `
         <div class="aivo-empty">
-          <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
+          <div class="aivo-empty-sub">${
+            q
+              ? "Aramana uygun müzik bulunamadı."
+              : "Player kartları hazır olunca burada görünecek."
+          }</div>
         </div>`;
       return;
     }
 
-    listEl.innerHTML = view.map(renderCard).join("");
+    listEl.innerHTML = filteredView.map(renderCard).join("");
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
-
-    applyMusicSearchFilter();
 
     if (currentJobId && audioEl && !audioEl.paused) {
       setCardPlaying(currentJobId, true);
@@ -1717,7 +1739,7 @@ function setMusicHostForEvents(el){
 
   function onSearch(q){
     __searchQ = String(q || "").trim().toLowerCase();
-    applyMusicSearchFilter();
+    render();
   }
 
   function getHeader(){
@@ -1877,7 +1899,7 @@ onMusicVisibilityChange = () => {
       const id = getJobId(j);
       if (id && !isHiddenJobId(id)) poll(id);
     });
-    applyMusicSearchFilter();
+
 
     return () => destroy();
   }
