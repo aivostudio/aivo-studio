@@ -399,16 +399,15 @@
       }
     };
 
-    const getCardTitle = (job) =>
-      String(
-        job?.meta?.scene_title ||
-        job?.meta?.title ||
-        job?.title ||
-        job?.meta?.prompt ||
-        job?.prompt ||
-        "Çizgifilm"
-      ).trim();
-
+  const getCardTitle = (job) =>
+  safeStr(
+    job?.meta?.scene_title ||
+    job?.meta?.title ||
+    job?.title ||
+    job?.meta?.prompt ||
+    job?.prompt ||
+    ""
+  );
    const buildSearchHaystack = (job) => {
   return safeStr(getCardTitle(job)).toLowerCase();
 };
