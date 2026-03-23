@@ -1032,7 +1032,49 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
         }
       }
     }
+       // =========================
+    // 2.5) AUTO FINALIZE (VIDEO / RUNWAY)
+    // =========================
+    try {
+      const isVideo =
+        String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "video";
+      const isDone = String(job?.status || "").toLowerCase() === "done";
 
+      const hasFinalizedOutput =
+        Array.isArray(job?.outputs) &&
+        job.outputs.some(
+          (o) =>
+            normType(o?.type) === "video" &&
+            normVariant(o) === "finalized"
+        );
+
+      const hasPreviewOutput =
+        Array.isArray(job?.outputs) &&
+        job.outputs.some(
+          (o) =>
+            normType(o?.type) === "video" &&
+            normVariant(o) === "preview"
+        );
+
+      if (isVideo && isDone && (!hasFinalizedOutput || !hasPreviewOutput)) {
+        const baseUrl = getBaseUrl(req);
+
+        fetch(`${baseUrl}/api/video/finalize`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: req.headers.cookie || "",
+          },
+          body: JSON.stringify({
+            job_id,
+          }),
+        }).catch((e) => {
+          console.warn("AUTO_VIDEO_FINALIZE_FAILED:", e?.message || e);
+        });
+      }
+    } catch (e) {
+      console.warn("AUTO_VIDEO_FINALIZE_BLOCK_FAILED:", e?.message || e);
+    }
     // =========================
     // 3) PERSIST-TO-R2 (REMOTE URL -> R2)
     // =========================
