@@ -304,10 +304,11 @@
     let destroyed = false;
     let timer = null;
 
-    const state = {
-      items: [],
-      ephemerals: [],
-    };
+   const state = {
+  items: [],
+  ephemerals: [],
+  query: "",
+};
 
     const playableUrls = new Set();
     const probingUrls = new Set();
@@ -320,6 +321,19 @@
     `;
 
     const $grid = host.querySelector('[data-el="grid"]');
+    const $search =
+  document.querySelector('[data-right-panel-search]') ||
+  document.querySelector('.right-panel input[type="search"]') ||
+  document.querySelector('.right-panel input[placeholder*="Ara"]') ||
+  null;
+
+if ($search && !$search.__atmoSearchBound) {
+  $search.__atmoSearchBound = true;
+  $search.addEventListener("input", (e) => {
+    state.query = safeStr(e.target?.value || "");
+    render();
+  });
+}
 
     const setHeaderMeta = (t) => {
       try {
@@ -539,61 +553,74 @@
       });
     }
 
-    function combinedItems() {
-      const dbItems = (Array.isArray(state.items) ? state.items : []).filter((x) => {
-        const jid = safeStr(x?.job_id || x?.id);
-        if (jid && deletedIds.has(jid)) return false;
-        return true;
-      });
+ function combinedItems() {
+  const dbItems = (Array.isArray(state.items) ? state.items : []).filter((x) => {
+    const jid = safeStr(x?.job_id || x?.id);
+    if (jid && deletedIds.has(jid)) return false;
+    return true;
+  });
 
-      const eps = (Array.isArray(state.ephemerals) ? state.ephemerals : []).filter((x) => {
-        const jid = safeStr(x?.job_id || x?.id);
-        if (jid && deletedIds.has(jid)) return false;
-        return true;
-      });
+  const eps = (Array.isArray(state.ephemerals) ? state.ephemerals : []).filter((x) => {
+    const jid = safeStr(x?.job_id || x?.id);
+    if (jid && deletedIds.has(jid)) return false;
+    return true;
+  });
 
-      const picked = [];
-      const usedDbIndexes = new Set();
+  const picked = [];
+  const usedDbIndexes = new Set();
 
-      for (const ep of eps) {
-        const dbIndex = dbItems.findIndex((db) => sameJob(ep, db));
-        const dbMatch = dbIndex >= 0 ? dbItems[dbIndex] : null;
+  for (const ep of eps) {
+    const dbIndex = dbItems.findIndex((db) => sameJob(ep, db));
+    const dbMatch = dbIndex >= 0 ? dbItems[dbIndex] : null;
 
-        if (!dbMatch) {
-          picked.push(ep);
-          continue;
-        }
-
-        if (isFreshDoneEphemeral(ep)) {
-          picked.push(ep);
-          usedDbIndexes.add(dbIndex);
-          continue;
-        }
-
-        if (isTerminal(dbMatch)) {
-          picked.push(dbMatch);
-          usedDbIndexes.add(dbIndex);
-          continue;
-        }
-
-        picked.push(ep);
-        usedDbIndexes.add(dbIndex);
-      }
-
-      dbItems.forEach((db, idx) => {
-        if (!usedDbIndexes.has(idx)) picked.push(db);
-      });
-
-      return picked
-        .sort((a, b) => {
-          const ap = isProcessing(a) ? 0 : isReady(a) ? 1 : 2;
-          const bp = isProcessing(b) ? 0 : isReady(b) ? 1 : 2;
-          if (ap !== bp) return ap - bp;
-          return tsOf(b) - tsOf(a);
-        })
-        .slice(0, MAX_ITEMS);
+    if (!dbMatch) {
+      picked.push(ep);
+      continue;
     }
 
+    if (isFreshDoneEphemeral(ep)) {
+      picked.push(ep);
+      usedDbIndexes.add(dbIndex);
+      continue;
+    }
+
+    if (isTerminal(dbMatch)) {
+      picked.push(dbMatch);
+      usedDbIndexes.add(dbIndex);
+      continue;
+    }
+
+    picked.push(ep);
+    usedDbIndexes.add(dbIndex);
+  }
+
+  dbItems.forEach((db, idx) => {
+    if (!usedDbIndexes.has(idx)) picked.push(db);
+  });
+
+  const merged = picked
+    .sort((a, b) => {
+      const ap = isProcessing(a) ? 0 : isReady(a) ? 1 : 2;
+      const bp = isProcessing(b) ? 0 : isReady(b) ? 1 : 2;
+      if (ap !== bp) return ap - bp;
+      return tsOf(b) - tsOf(a);
+    });
+
+  const q = safeStr(state.query).toLowerCase();
+  if (!q) return merged.slice(0, MAX_ITEMS);
+
+  return merged
+    .filter((job) => {
+      const prompt = safeStr(job?.prompt).toLowerCase();
+      const provider = safeStr(job?.provider || job?.meta?.provider || "Atmos").toLowerCase();
+      const status = safeStr(job?.db_status || job?.status || job?.state).toLowerCase();
+      const created = safeStr(formatTs(job?.created_at || job?.updated_at || "")).toLowerCase();
+
+      const haystack = [prompt, provider, status, created].join(" ");
+      return haystack.includes(q);
+    })
+    .slice(0, MAX_ITEMS);
+}
     function render() {
       if (destroyed || !$grid) return;
 
@@ -602,10 +629,12 @@
       const hasProcessing = items.some((j) => isProcessing(j));
       setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
-      if (!items.length) {
-        $grid.innerHTML = `<div class="atmoEmpty">Henüz atmos üretim yok.</div>`;
-        return;
-      }
+     if (!items.length) {
+  $grid.innerHTML = `<div class="atmoEmpty">${
+    state.query ? "Aramana uygun atmos üretim bulunamadı." : "Henüz atmos üretim yok."
+  }</div>`;
+  return;
+}
 
       $grid.innerHTML = items
         .map((job) => {
