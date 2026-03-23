@@ -15,8 +15,10 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
 
- const STATUS_URL = (jobId) =>
-  `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`;
+  const STATUS_URL = (rid) =>
+    `/api/providers/fal/video/status?request_id=${encodeURIComponent(
+      rid
+    )}&app=${APP_KEY}`;
 
   function pickVideoUrl(data) {
     return (
@@ -905,18 +907,22 @@
             meta: job?.meta || {},
           });
 
-     const liveJobId = safeStr(job?.job_id || job?.id);
+          const rid =
+            safeStr(job?.request_id) ||
+            safeStr(job?.requestId) ||
+            safeStr(job?.fal_request_id) ||
+            safeStr(job?.provider_request_id);
 
-if (liveJobId && liveJobId !== "TEST") {
-  if (timer) clearInterval(timer);
+          if (rid && rid !== "TEST") {
+            if (timer) clearInterval(timer);
 
-  timer = setInterval(
-    () => pollFalOnce(liveJobId, safeStr(job?.prompt || job?.meta?.prompt || "")),
-    2000
-  );
+            timer = setInterval(
+              () => pollFalOnce(rid, safeStr(job?.prompt || job?.meta?.prompt || "")),
+              2000
+            );
 
-  pollFalOnce(liveJobId, safeStr(job?.prompt || job?.meta?.prompt || ""));
-}
+            pollFalOnce(rid, safeStr(job?.prompt || job?.meta?.prompt || ""));
+          }
         } catch {}
       };
     }
@@ -1040,13 +1046,11 @@ if (liveJobId && liveJobId !== "TEST") {
         return;
       }
 
-     if (
-  st.includes("complete") ||
-  st.includes("success") ||
-  st === "succeeded" ||
-  st.includes("ready") ||
-  st.includes("done")
-) {
+      if (
+        st.includes("complete") ||
+        st.includes("success") ||
+        st === "succeeded"
+      ) {
         const url = pickVideoUrl(data);
 
         if (!url) {
