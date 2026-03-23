@@ -409,22 +409,9 @@
         "Çizgifilm"
       ).trim();
 
-    const buildSearchHaystack = (job) => {
-      const title = safeStr(getCardTitle(job)).toLowerCase();
-      const prompt = safeStr(job?.prompt || job?.meta?.prompt || "").toLowerCase();
-      const provider = safeStr(job?.provider || job?.meta?.provider || "Cartoon").toLowerCase();
-      const status = safeStr(job?.db_status || job?.status || job?.state).toLowerCase();
-      const created = safeStr(
-        formatTs(job?.updated_at || job?.created_at || job?.createdAt || "")
-      ).toLowerCase();
-      const sceneTitle = safeStr(job?.meta?.scene_title || "").toLowerCase();
-      const rawTitle = safeStr(job?.title || job?.meta?.title || "").toLowerCase();
-
-      return [title, prompt, provider, status, created, sceneTitle, rawTitle]
-        .filter(Boolean)
-        .join(" ");
-    };
-
+   const buildSearchHaystack = (job) => {
+  return safeStr(getCardTitle(job)).toLowerCase();
+};
     const isTerminalState = (job) => {
       const st = norm(job?.db_status || job?.status || job?.state);
       return (
