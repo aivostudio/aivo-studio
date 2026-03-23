@@ -320,30 +320,31 @@
       </div>
     `;
 
-    const $grid = host.querySelector('[data-el="grid"]');
+   const $grid = host.querySelector('[data-el="grid"]');
+
 const getPanelSearchInput = () =>
-  host.closest?.('.right-panel')?.querySelector?.('[data-right-panel-search], input[type="search"], input[placeholder*="Ara"]') ||
-  document.querySelector('[data-right-panel-search], .right-panel input[type="search"], .right-panel input[placeholder*="Ara"]') ||
+  document.querySelector('input.rpSearch, [data-right-panel-search], input[type="search"][placeholder*="Ara"]') ||
   null;
+
+const syncSearchFromInput = () => {
+  const input = getPanelSearchInput();
+  const nextQuery = safeStr(input?.value || "");
+  if (state.query === nextQuery) return;
+  state.query = nextQuery;
+  render();
+};
 
 const onSearchInput = (e) => {
   const input = getPanelSearchInput();
   if (!input) return;
   if (e.target !== input) return;
-
-  state.query = safeStr(input.value || "");
-  render();
+  syncSearchFromInput();
 };
 
 document.addEventListener("input", onSearchInput, true);
+document.addEventListener("search", onSearchInput, true);
 
-setTimeout(() => {
-  const input = getPanelSearchInput();
-  if (!input) return;
-
-  state.query = safeStr(input.value || "");
-  render();
-}, 0);
+setTimeout(syncSearchFromInput, 0);
     const setHeaderMeta = (t) => {
       try {
         if (
