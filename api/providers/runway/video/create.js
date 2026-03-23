@@ -191,11 +191,58 @@ if (!userRow.length) {
 
 const user_id = email;
 const user_uuid = String(userRow[0].id);
+
+// ===============================
+// CREDIT CHECK (DB insert'ten önce)
+// ===============================
+let kvMod;
+try {
+  kvMod = require("../../../_kv.js");
+} catch (e) {
+  return res.status(500).json({
+    ok: false,
+    error: "kv_module_load_failed",
+    message: String(e?.message || e),
+    db_debug,
+  });
+}
+
+const kv = kvMod?.default || kvMod || {};
+const kvGet = kv.kvGet;
+const kvSet = kv.kvSet;
+
+if (typeof kvGet !== "function" || typeof kvSet !== "function") {
+  return res.status(500).json({
+    ok: false,
+    error: "KV_HELPER_MISSING",
+    detail: "kvGet/kvSet not found in api/_kv.js",
+    db_debug,
+  });
+}
+
+// Video üretim kredi maliyeti
+const creditCost = Math.max(0, parseInt(body.cost, 10) || 5);
+const creditKey = `credits:${String(email).trim().toLowerCase()}`;
+const haveCredits = Number(await kvGet(creditKey).catch(() => 0)) || 0;
+
+if (haveCredits < creditCost) {
+  return res.status(402).json({
+    ok: false,
+    error: "insufficient_credits",
+    credits: haveCredits,
+    need: creditCost,
+    db_debug,
+  });
+}
+
+// Krediyi erken düş (job açılmadan önce)
+await kvSet(creditKey, haveCredits - creditCost);
+
 const job_id = randomUUID();
 
-    // ===============================
-    // 1) DB job aç
-    // ===============================
+// ===============================
+// 1) DB job aç
+// ===============================
     try {
       db_debug.tried = true;
 
