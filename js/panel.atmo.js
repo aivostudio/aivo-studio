@@ -832,27 +832,44 @@
 
     if (db) db.start();
 
-    const onJobCreated = (e) => {
-      const d = e?.detail || {};
-      if (!d) return;
+  const onJobCreated = (e) => {
+  const d = e?.detail || {};
+  if (!d) return;
 
-      const appKey = safeStr(
-        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
-      ).toLowerCase();
+  const appKey = safeStr(
+    d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
+  ).toLowerCase();
 
-      if (!appKey.includes("atmo")) return;
-     
+  if (!appKey.includes("atmo")) return;
 
-      upsertEphemeralProcessing({
-        job_id: d?.job_id,
-        request_id: d?.request_id || d?.requestId || d?.meta?.request_id,
-        prompt: d?.prompt || d?.meta?.prompt,
-        provider: d?.provider || d?.meta?.provider || "Atmos",
-        createdAt: d?.createdAt || Date.now(),
-        meta: d?.meta || {},
-      });
-    };
+  upsertEphemeralProcessing({
+    job_id: d?.job_id,
+    request_id: d?.request_id || d?.requestId || d?.meta?.request_id,
+    prompt: d?.prompt || d?.meta?.prompt,
+    provider: d?.provider || d?.meta?.provider || "Atmos",
+    createdAt: d?.createdAt || Date.now(),
+    meta: d?.meta || {},
+  });
 
+  if (db && typeof db.upsert === "function") {
+    db.upsert({
+      job_id: safeStr(d?.job_id),
+      app: APP_KEY,
+      provider: safeStr(d?.provider || d?.meta?.provider || "Atmos"),
+      status: "PROCESSING",
+      prompt: safeStr(d?.prompt || d?.meta?.prompt || ""),
+      created_at: d?.createdAt || Date.now(),
+      updated_at: d?.createdAt || Date.now(),
+      meta: {
+        ...(d?.meta || {}),
+        app: APP_KEY,
+        request_id: safeStr(d?.request_id || d?.requestId || d?.meta?.request_id),
+      },
+      outputs: [],
+    });
+  }
+};
+   
     const onJobReady = (e) => {
       const d = e?.detail || {};
       if (!d) return;
