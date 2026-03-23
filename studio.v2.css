@@ -477,3 +477,42 @@ header#top.aivo-topbar .aivo-topbar-inner{
     inset 0 0 110px rgba(156,118,255,.12),
     0 30px 80px rgba(0,0,0,.46) !important;
 }
+/* =========================================================
+   RIGHT PANEL / MODULE DECORATIVE STROKE CLIP FIX
+   Amaç:
+   - ortak ::before / ::after dekoratif çizgi/glow kutu dışına taşmasın
+   - alttaki section üstüne binmesin
+   - premium hissi kalsın, taşma bitsin
+   ========================================================= */
+
+#moduleHost,
+.studioOutputs,
+.outputsCard,
+.rpShell,
+.rpHeader,
+.rpBody,
+.rpContent {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+#moduleHost::before,
+#moduleHost::after,
+.studioOutputs::before,
+.studioOutputs::after,
+.outputsCard::before,
+.outputsCard::after,
+.rpShell::before,
+.rpShell::after,
+.rpHeader::before,
+.rpHeader::after,
+.rpBody::before,
+.rpBody::after,
+.rpContent::before,
+.rpContent::after {
+  inset: 0 !important;
+  border-radius: inherit !important;
+  -webkit-clip-path: inset(0 round inherit) !important;
+  clip-path: inset(0 round inherit) !important;
+  pointer-events: none !important;
+}
