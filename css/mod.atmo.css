@@ -720,7 +720,7 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
   bottom: 12px !important;
   transform: translateX(-50%) !important;
   z-index: 90 !important;
-  width: min(860px, calc(100vw - 48px)) !important;
+width: min(720px, calc(100vw - 48px)) !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 10px !important;
@@ -752,7 +752,7 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"]{
 @media (max-width: 900px){
   section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
     bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-    width: calc(100vw - 24px) !important;
+ width: min(720px, calc(100vw - 24px)) !important;
     padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
   }
 }
