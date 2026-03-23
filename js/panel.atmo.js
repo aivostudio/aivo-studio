@@ -321,20 +321,36 @@
     `;
 
     const $grid = host.querySelector('[data-el="grid"]');
-    const $search =
-  document.querySelector('[data-right-panel-search]') ||
-  document.querySelector('.right-panel input[type="search"]') ||
-  document.querySelector('.right-panel input[placeholder*="Ara"]') ||
-  null;
+const onSearchInput = (e) => {
+  const t = e.target;
+  if (!t) return;
 
-if ($search && !$search.__atmoSearchBound) {
-  $search.__atmoSearchBound = true;
-  $search.addEventListener("input", (e) => {
-    state.query = safeStr(e.target?.value || "");
+  const input =
+    t.closest?.('[data-right-panel-search]') ||
+    t.closest?.('input[type="search"]') ||
+    t.closest?.('input[placeholder*="Ara"]') ||
+    (t.tagName === "INPUT" ? t : null);
+
+  if (!input) return;
+
+  state.query = safeStr(input.value || "");
+  render();
+};
+
+document.addEventListener("input", onSearchInput, true);
+
+// mount anında search kutusunda yazı varsa onu da uygula
+setTimeout(() => {
+  const existingSearch =
+    document.querySelector('[data-right-panel-search]') ||
+    document.querySelector('input[type="search"]') ||
+    document.querySelector('input[placeholder*="Ara"]');
+
+  if (existingSearch) {
+    state.query = safeStr(existingSearch.value || "");
     render();
-  });
-}
-
+  }
+}, 0);
     const setHeaderMeta = (t) => {
       try {
         if (
@@ -1207,26 +1223,30 @@ if ($search && !$search.__atmoSearchBound) {
    
     render();
 
-    function destroy() {
-      destroyed = true;
+function destroy() {
+  destroyed = true;
 
-      if (timer) clearInterval(timer);
-      timer = null;
+  if (timer) clearInterval(timer);
+  timer = null;
 
-      try {
-        window.removeEventListener("aivo:atmo:job_created", onJobCreated);
-      } catch {}
+  try {
+    window.removeEventListener("aivo:atmo:job_created", onJobCreated);
+  } catch {}
 
-      try {
-        window.removeEventListener("aivo:atmo:job_ready", onJobReady);
-      } catch {}
+  try {
+    window.removeEventListener("aivo:atmo:job_ready", onJobReady);
+  } catch {}
 
-      try {
-        db && db.destroy();
-      } catch {}
+  try {
+    document.removeEventListener("input", onSearchInput, true);
+  } catch {}
 
-      host.innerHTML = "";
-    }
+  try {
+    db && db.destroy();
+  } catch {}
+
+  host.innerHTML = "";
+}
 
     return { destroy };
   }
