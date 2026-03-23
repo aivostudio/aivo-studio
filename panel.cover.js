@@ -49,6 +49,7 @@
       return [title, prompt].filter(Boolean).join(" ");
     }
     const hiddenDeletedIds = new Set();
+        let __coverHost = null;
 
     function norm(s) {
       return String(s || "")
@@ -336,24 +337,19 @@ function download(url) {
           searchPlaceholder: "Kapaklarda ara..."
         };
       },
-           onSearch(q) {
+               onSearch(q) {
         __coverSearchQ = String(q || "").trim().toLowerCase();
+        if (!__coverHost) return;
 
-        const host = document.querySelector(".rightPanel .panelBody, .rpBody, [data-right-panel-body]")?.firstElementChild
-          || document.querySelector(".coverSide")?.parentElement
-          || document.querySelector(".coverSide")?.closest?.("*")
-          || null;
+        const items = Array.isArray(__coverHost.__coverItems)
+          ? __coverHost.__coverItems
+          : [];
 
-        if (host) {
-          const gridHost = host.querySelector?.("[data-cover-grid]") ? host : null;
-          if (gridHost) {
-            const items = Array.isArray(gridHost.__coverItems) ? gridHost.__coverItems : [];
-            render(gridHost, items);
-          }
-        }
+        render(__coverHost, items);
       },
       mount(host) {
         ensureStyles();
+       __coverHost = host;
 
         host.innerHTML = `
           <div class="coverSide">
@@ -494,6 +490,7 @@ function download(url) {
           try { host.removeEventListener("click", onClick, true); } catch {}
           try { window.removeEventListener("aivo:cover:job_created", onCoverJobCreated, true); } catch {}
           try { controller?.destroy?.(); } catch {}
+            __coverHost = null;
         };
       },
     });
