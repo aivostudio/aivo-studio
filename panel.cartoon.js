@@ -4,7 +4,6 @@
 // - refresh / DB hydrate sonrası preview oynatır
 // - download her zaman final url kullanır
 // - character job'ları paneli tetiklemez
-// - RightPanel search support eklendi
 
 (function () {
   if (!window.RightPanel) return;
@@ -241,15 +240,12 @@
 
     let destroyed = false;
     let currentDbItems = [];
-    let searchTimer = null;
 
     const optimistic = new Map();
     const hiddenDeletedIds = new Set();
     const cardCache =
       window.__CARTOON_CARD_CACHE__ ||
       (window.__CARTOON_CARD_CACHE__ = new Map());
-
-    const state = { query: "" };
 
     host.innerHTML = `
       <div class="cartoonPanelWrap">
@@ -263,48 +259,6 @@
     const setStatus = (t) => {
       if (elStatus) elStatus.textContent = t;
     };
-
-    function getPanelSearchInput() {
-      return document.querySelector(
-        'input.rpSearch, [data-right-panel-search], input[type="search"][placeholder*="Ara"]'
-      ) || null;
-    }
-
-    function bindPanelSearch() {
-      if (host.__cartoonSearchBound) return;
-      host.__cartoonSearchBound = true;
-
-      const syncSearchFromInput = () => {
-        const input = getPanelSearchInput();
-        const nextQuery = safeStr(input?.value || "");
-        if (state.query === nextQuery) return;
-
-        if (searchTimer) clearTimeout(searchTimer);
-
-        searchTimer = setTimeout(() => {
-          state.query = nextQuery;
-          renderCurrent();
-        }, 120);
-      };
-
-      const onSearchInput = (e) => {
-        const input = getPanelSearchInput();
-        if (!input) return;
-        if (e.target !== input) return;
-        syncSearchFromInput();
-      };
-
-      document.addEventListener("input", onSearchInput, true);
-      document.addEventListener("search", onSearchInput, true);
-
-      host.__cartoonSearchCleanup = () => {
-        try { document.removeEventListener("input", onSearchInput, true); } catch {}
-        try { document.removeEventListener("search", onSearchInput, true); } catch {}
-        try { if (searchTimer) clearTimeout(searchTimer); } catch {}
-      };
-
-      setTimeout(syncSearchFromInput, 0);
-    }
 
     const toMs = (v) => {
       if (v == null) return 0;
@@ -493,7 +447,7 @@
         }
       }
 
-      const merged = Array.from(byId.values()).sort((a, b) => {
+      return Array.from(byId.values()).sort((a, b) => {
         const ta =
           toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
         const tb =
@@ -504,28 +458,6 @@
         const ia = idOf(a);
         const ib = idOf(b);
         return ib.localeCompare(ia);
-      });
-
-      const q = safeStr(state.query).toLowerCase();
-      if (!q) return merged;
-
-      return merged.filter((job) => {
-        const title = safeStr(
-          job?.meta?.scene_title ||
-          job?.meta?.title ||
-          job?.title
-        ).toLowerCase();
-
-        const prompt = safeStr(job?.meta?.prompt || job?.prompt).toLowerCase();
-        const status = safeStr(job?.db_status || job?.status || job?.state).toLowerCase();
-        const ratio = safeStr(
-          job?.meta?.ui_state?.aspect_ratio ||
-          job?.meta?.aspect_ratio ||
-          job?.meta?.ratio
-        ).toLowerCase();
-
-        const haystack = [title, prompt, status, ratio].join(" ");
-        return haystack.includes(q);
       });
     }
 
@@ -549,14 +481,8 @@
           emptyEl.style.opacity = ".7";
           emptyEl.style.fontSize = "12px";
           emptyEl.style.padding = "4px 2px";
-          emptyEl.textContent = state.query
-            ? "Aramana uygun çizgifilm bulunamadı."
-            : "Henüz çizgifilm üretim yok.";
+          emptyEl.textContent = "Henüz çizgifilm üretim yok.";
           elGrid.appendChild(emptyEl);
-        } else {
-          emptyEl.textContent = state.query
-            ? "Aramana uygun çizgifilm bulunamadı."
-            : "Henüz çizgifilm üretim yok.";
         }
         return;
       } else if (emptyEl) {
@@ -880,8 +806,6 @@
       renderCurrent();
     };
 
-    bindPanelSearch();
-
     controller.start();
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
@@ -901,9 +825,6 @@
             "aivo:cartoon:story_scene_ready",
             onJobReady
           );
-        } catch {}
-        try {
-          host.__cartoonSearchCleanup?.();
         } catch {}
         try {
           controller?.destroy?.();
