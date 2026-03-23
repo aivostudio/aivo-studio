@@ -386,47 +386,14 @@ section.outputsCard.studioOutputs,
   box-sizing: border-box !important;
 }
 /* =========================================================
-   MODULE / RIGHT SHELL — DECORATIVE PSEUDO BOTTOM CLIP FIX
-   Amaç:
-   - taşan alt stroke/glow çizgisini kes
-   - premium görünüm kalsın
-   - pseudo tamamen kapanmasın, sadece kutu dışına taşamasın
+   SHELL STROKE CLIP FIX — scroll'u bozmadan
+   Sadece dış kabukları clip'ler, scroll katmanlarına dokunmaz
    ========================================================= */
 
-#moduleHost,
 .studioOutputs,
 .outputsCard,
-.rpShell,
-.rpHeader,
-.rpBody,
-.rpContent {
+.rpShell {
   position: relative !important;
+  overflow: hidden !important;
   isolation: isolate !important;
-  overflow: hidden !important;
-}
-
-/* pseudo layer'ı gerçek kutu içine zorla */
-#moduleHost::before,
-#moduleHost::after,
-.studioOutputs::before,
-.studioOutputs::after,
-.outputsCard::before,
-.outputsCard::after,
-.rpShell::before,
-.rpShell::after,
-.rpHeader::before,
-.rpHeader::after,
-.rpBody::before,
-.rpBody::after,
-.rpContent::before,
-.rpContent::after {
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  border-radius: inherit !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  pointer-events: none !important;
 }
