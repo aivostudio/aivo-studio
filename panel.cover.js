@@ -19,6 +19,35 @@
 
   waitForRightPanel(() => {
     const PANEL_KEY = "cover";
+        let __coverSearchQ = "";
+
+    function getCoverCardTitle(job) {
+      const quality = inferQuality(job);
+      const label = qualityToLabel(quality);
+
+      const when =
+        formatTR(
+          parseTime(job?.created_at) ||
+          parseTime(job?.updated_at) ||
+          parseTime(job?.createdAt)
+        ) || "";
+
+      return when ? `${label} • ${when}` : label;
+    }
+
+    function getCoverCardPrompt(job) {
+      return String(
+        job?.prompt ||
+        job?.meta?.prompt ||
+        ""
+      ).trim();
+    }
+
+    function buildCoverSearchHaystack(job) {
+      const title = getCoverCardTitle(job).toLowerCase();
+      const prompt = getCoverCardPrompt(job).toLowerCase();
+      return [title, prompt].filter(Boolean).join(" ");
+    }
     const hiddenDeletedIds = new Set();
 
     function norm(s) {
@@ -253,10 +282,17 @@ function download(url) {
       const grid = findGrid(host);
       if (!grid) return;
 
-      const list = Array.isArray(items) ? items : [];
+      const rawList = Array.isArray(items) ? items : [];
+      const q = String(__coverSearchQ || "").trim().toLowerCase();
+
+      const list = !q
+        ? rawList
+        : rawList.filter((job) => buildCoverSearchHaystack(job).includes(q));
 
       if (!list.length) {
-        grid.innerHTML = `<div class="cpEmpty">Henüz kapak yok.</div>`;
+        grid.innerHTML = `<div class="cpEmpty">${
+          q ? "Aramana uygun kapak bulunamadı." : "Henüz kapak yok."
+        }</div>`;
         return;
       }
 
@@ -266,24 +302,10 @@ function download(url) {
         const url = out?.url || "";
         const ready = badge.kind === "ok" && !!url;
 
-        const quality = inferQuality(job);
-        const label = qualityToLabel(quality);
-
-        const when =
-          formatTR(
-            parseTime(job?.created_at) ||
-            parseTime(job?.updated_at) ||
-            parseTime(job?.createdAt)
-          ) || "";
-
-        const name = when ? `${label} • ${when}` : label;
+        const name = getCoverCardTitle(job);
         const thumbStyle = ready ? `style="background-image:url('${esc(url)}')"` : "";
 
-        const promptText = String(
-          job?.prompt ||
-          job?.meta?.prompt ||
-          ""
-        ).trim();
+        const promptText = getCoverCardPrompt(job);
 
         return `
           <div class="cpCard" data-id="${esc(String(job?.job_id || job?.id || ""))}" tabindex="0">
@@ -306,7 +328,6 @@ function download(url) {
         `;
       }).join("");
     }
-
     window.RightPanel.register(PANEL_KEY, {
       getHeader() {
         return {
@@ -315,7 +336,22 @@ function download(url) {
           searchPlaceholder: "Kapaklarda ara..."
         };
       },
+           onSearch(q) {
+        __coverSearchQ = String(q || "").trim().toLowerCase();
 
+        const host = document.querySelector(".rightPanel .panelBody, .rpBody, [data-right-panel-body]")?.firstElementChild
+          || document.querySelector(".coverSide")?.parentElement
+          || document.querySelector(".coverSide")?.closest?.("*")
+          || null;
+
+        if (host) {
+          const gridHost = host.querySelector?.("[data-cover-grid]") ? host : null;
+          if (gridHost) {
+            const items = Array.isArray(gridHost.__coverItems) ? gridHost.__coverItems : [];
+            render(gridHost, items);
+          }
+        }
+      },
       mount(host) {
         ensureStyles();
 
@@ -326,7 +362,7 @@ function download(url) {
             </div>
           </div>
         `;
-
+           host.__coverItems = [];
         const controller = window.DBJobs.create({
           app: "cover",
           debug: false,
@@ -351,11 +387,11 @@ function download(url) {
             return true;
           },
 
-          onChange(items) {
+             onChange(items) {
             const safeItems = (items || [])
-  .filter(isJobCover)
-  .filter((x) => !hiddenDeletedIds.has(String(x?.job_id || x?.id || "")))
-  .sort((a, b) => {
+              .filter(isJobCover)
+              .filter((x) => !hiddenDeletedIds.has(String(x?.job_id || x?.id || "")))
+              .sort((a, b) => {
                 const ta =
                   parseTime(a?.updated_at) ||
                   parseTime(a?.created_at) ||
@@ -375,6 +411,7 @@ function download(url) {
                 return ib.localeCompare(ia);
               });
 
+            host.__coverItems = safeItems;
             render(host, safeItems);
           },
         });
@@ -427,11 +464,12 @@ function download(url) {
 
       hiddenDeletedIds.add(String(id));
 
-      const currentItems = Array.isArray(controller?.state?.items) ? controller.state.items : [];
+          const currentItems = Array.isArray(controller?.state?.items) ? controller.state.items : [];
       const visibleItems = currentItems.filter(
         (x) => !hiddenDeletedIds.has(String(x?.job_id || x?.id || ""))
       );
 
+      host.__coverItems = visibleItems;
       render(host, visibleItems);
       controller?.hydrate?.();
     })
