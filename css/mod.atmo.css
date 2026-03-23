@@ -710,35 +710,31 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"],
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .card{
   overflow: visible !important;
 }
-
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails{
-  position: sticky !important;
+  position: static !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
+  position: fixed !important;
+  left: 50% !important;
   bottom: 12px !important;
-  z-index: 50 !important;
+  transform: translateX(-50%) !important;
+  z-index: 90 !important;
+  width: min(860px, calc(100vw - 48px)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 14px 16px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
   border-radius: 22px !important;
   background:
     linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
     linear-gradient(180deg, rgba(28,18,55,.94), rgba(12,10,34,.96)) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   box-shadow:
     0 -10px 30px rgba(0,0,0,.18),
     inset 0 1px 0 rgba(255,255,255,.04) !important;
-}
-
-section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
-  position: static !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-  margin-top: 14px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
 }
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmBigCtaBtn,
@@ -750,11 +746,13 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
 }
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"]{
-  padding-bottom: 120px !important;
+  padding-bottom: 140px !important;
 }
 
 @media (max-width: 900px){
-  section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails{
+  section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
     bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    width: calc(100vw - 24px) !important;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
   }
 }
