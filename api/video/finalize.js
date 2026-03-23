@@ -240,7 +240,7 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
   );
 
   let targetKbps = Math.floor((targetPreviewBytes * 8) / sec / 1000);
-  targetKbps = Math.max(1400, Math.min(targetKbps, 4200));
+ targetKbps = Math.max(700, Math.min(targetKbps, 4200));
 
   const maxrateKbps = Math.max(
     targetKbps + 300,
