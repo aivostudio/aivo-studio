@@ -524,6 +524,7 @@ function bestVideoFromJob(it) {
         it.db_status = s.db_status || it.db_status;
         it.state = s.state || it.state;
         it.status = "Hazır";
+        it._fresh = true;
         it.playbackUrl = getPlaybackUrl(it) || "";
 
         render(host);
