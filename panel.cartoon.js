@@ -241,6 +241,8 @@
     let destroyed = false;
     let currentDbItems = [];
     let searchTimer = null;
+    let searchInputEl = null;
+    let searchRootEl = null;
 
     const state = {
       query: "",
@@ -265,13 +267,65 @@
       if (elStatus) elStatus.textContent = t;
     };
 
-    const getPanelSearchInput = () =>
-      document.querySelector(
-        'input.rpSearch, [data-right-panel-search], input[type="search"][placeholder*="Ara"]'
-      ) || null;
+    const resolvePanelSearchInput = () => {
+      const candidates = [
+        ...document.querySelectorAll('input.rpSearch'),
+        ...document.querySelectorAll('[data-right-panel-search]'),
+        ...document.querySelectorAll('input[type="search"]'),
+      ];
+
+      const panelRoot =
+        host.closest('[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel') ||
+        host.parentElement ||
+        document;
+
+      for (const input of candidates) {
+        if (!(input instanceof HTMLElement)) continue;
+
+        const root =
+          input.closest('[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel') ||
+          input.parentElement;
+
+        if (root && panelRoot && root === panelRoot) return input;
+      }
+
+      for (const input of candidates) {
+        if (!(input instanceof HTMLElement)) continue;
+        const ph = safeStr(input.getAttribute("placeholder") || "").toLowerCase();
+        const aria = safeStr(input.getAttribute("aria-label") || "").toLowerCase();
+        const cls = safeStr(input.className || "").toLowerCase();
+
+        if (
+          ph.includes("ara") ||
+          ph.includes("search") ||
+          aria.includes("ara") ||
+          aria.includes("search") ||
+          cls.includes("rpsearch")
+        ) {
+          return input;
+        }
+      }
+
+      return candidates[0] || null;
+    };
+
+    const ensureSearchBinding = () => {
+      const nextInput = resolvePanelSearchInput();
+      if (!nextInput) return null;
+
+      if (searchInputEl === nextInput) return searchInputEl;
+
+      searchInputEl = nextInput;
+      searchRootEl =
+        searchInputEl.closest('[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel') ||
+        searchInputEl.parentElement ||
+        null;
+
+      return searchInputEl;
+    };
 
     const syncSearchFromInput = () => {
-      const input = getPanelSearchInput();
+      const input = ensureSearchBinding();
       const nextQuery = safeStr(input?.value || "");
       if (state.query === nextQuery) return;
 
@@ -284,15 +338,28 @@
     };
 
     const onSearchInput = (e) => {
-      const input = getPanelSearchInput();
+      const input = ensureSearchBinding();
       if (!input) return;
-      if (e.target !== input) return;
-      syncSearchFromInput();
+
+      if (e.target === input) {
+        syncSearchFromInput();
+        return;
+      }
+
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      if (searchRootEl && input.contains && searchRootEl.contains(target) && target === input) {
+        syncSearchFromInput();
+      }
     };
 
     document.addEventListener("input", onSearchInput, true);
     document.addEventListener("search", onSearchInput, true);
-    setTimeout(syncSearchFromInput, 0);
+    setTimeout(() => {
+      ensureSearchBinding();
+      syncSearchFromInput();
+    }, 0);
 
     const toMs = (v) => {
       if (v == null) return 0;
@@ -896,6 +963,8 @@
 
         if (searchTimer) clearTimeout(searchTimer);
         searchTimer = null;
+        searchInputEl = null;
+        searchRootEl = null;
 
         try {
           document.removeEventListener("input", onSearchInput, true);
