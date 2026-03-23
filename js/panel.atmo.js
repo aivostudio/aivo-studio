@@ -818,11 +818,22 @@
             hydrateEveryMs: 15000,
             acceptOutput: acceptAtmoOutput,
             onChange(items) {
-              state.items = (items || []).filter((x) => {
-                const jid = safeStr(x?.job_id || x?.id);
-                if (jid && deletedIds.has(jid)) return false;
-                return true;
-              });
+             state.items = (items || [])
+  .filter((x) => {
+    const jid = safeStr(x?.job_id || x?.id);
+    if (jid && deletedIds.has(jid)) return false;
+    return true;
+  })
+  .map((x) => {
+    const jid = safeStr(x?.job_id || x?.id);
+    const prev =
+      (state.items || []).find((p) => safeStr(p?.job_id || p?.id) === jid) || null;
+
+    return {
+      ...x,
+      prompt: safeStr(x?.prompt || prev?.prompt || x?.meta?.prompt || prev?.meta?.prompt || ""),
+    };
+  });
 
               cleanupEphemeralsAgainstDb();
               render();
