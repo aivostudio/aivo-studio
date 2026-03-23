@@ -704,21 +704,23 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
 .atmInlineSelect{
   min-width:120px;
 }
-/* ===== ATMO SUPER MODE — sticky CTA CARD ===== */
+/* ===== ATMO SUPER MODE — sticky CTA (REAL WRAPPER) ===== */
 section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"],
-section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"],
-section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .card{
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"],
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .card{
   overflow: visible !important;
 }
 
-section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta{
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .atmPersCta{
   position: sticky !important;
-  bottom: 0 !important;
-  z-index: 40 !important;
-  margin-top: 10px !important;
-  padding: 16px 18px !important;
+  bottom: 12px !important;
+  z-index: 50 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 14px 16px !important;
   border: 1px solid rgba(255,255,255,.08) !important;
-  border-radius: 24px !important;
+  border-radius: 22px !important;
   background:
     linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
     linear-gradient(180deg, rgba(28,18,55,.94), rgba(12,10,34,.96)) !important;
@@ -729,25 +731,21 @@ section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosp
     inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta .atmPersCta{
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-}
-
-section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta [data-atm-generate]{
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .atmPersCta .atmBigCtaBtn,
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .atmPersCta .atmBigCtaBtn--pro{
   width: 100% !important;
   min-height: 58px !important;
   border-radius: 999px !important;
+  margin: 0 !important;
 }
 
-section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"]{
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"]{
   padding-bottom: 120px !important;
 }
 
 @media (max-width: 900px){
-  section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta{
+  section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .atmPersCta{
     bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
   }
 }
