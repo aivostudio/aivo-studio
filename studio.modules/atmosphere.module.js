@@ -905,12 +905,20 @@ async function handleUpload(root, kind, file) {
 //    ✅ Basic payload: send R2 URL (NOT File)
 // ------------------------------------------------------------
 function buildBasicPayload() {
+   const root = getAtmoPanelRoot();
+const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
+const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
+const basicPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
   return {
     app: "atmo",
     mode: "basic",
     aspect: state.aspect || "16:9",
 
     scene: state.scene || null,
+     prompt: basicPrompt,
+scene_label: sceneTitle,
+scene_desc: sceneDesc,
     effects: (state.effects || []).slice(),
     camera: state.camera || "kenburns_soft",
     duration: state.duration || "8",
