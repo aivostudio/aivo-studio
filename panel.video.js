@@ -50,13 +50,13 @@
   const a = norm(x);
   return a === "video" || a.includes("video");
 }
-  function toMaybeProxyUrl(url) {
-    const u = String(url || "").trim();
-    if (!u) return "";
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
-    return u;
-  }
+ function toMaybeProxyUrl(url) {
+  const u = String(url || "").trim();
+  if (!u) return "";
+  if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
+  if (/^https?:\/\//i.test(u)) return "/api/media/proxy?url=" + encodeURIComponent(u);
+  return u;
+}
 
   function idOf(it) {
     return String(it?.job_id || it?.id || "").trim();
@@ -103,12 +103,99 @@
     if (uo) return uo;
     return "";
   }
+function bestVideoFromJob(it) {
+  if (!it) return "";
 
-  function getPlaybackUrl(it) {
-    const best = pickBestUrl(it);
-    if (!best) return "";
-    return toMaybeProxyUrl(best);
+  const meta = it?.meta || {};
+  const outs = Array.isArray(it?.outputs) ? it.outputs : [];
+
+  const directFinal =
+    String(
+      it?.final ||
+      it?.final_url ||
+      it?.final_video_url ||
+      meta?.final ||
+      meta?.final_url ||
+      meta?.final_video_url ||
+      ""
+    ).trim();
+
+  if (directFinal) return directFinal;
+
+  const finalized = outs.find(
+    (o) =>
+      String(o?.type || "").toLowerCase() === "video" &&
+      String(o?.meta?.variant || "").toLowerCase().trim() === "finalized"
+  );
+  if (finalized) {
+    const u = String(
+      finalized?.archive_url ||
+      finalized?.url ||
+      finalized?.video_url ||
+      finalized?.meta?.archive_url ||
+      finalized?.meta?.url ||
+      finalized?.meta?.video_url ||
+      ""
+    ).trim();
+    if (u) return u;
   }
+
+  return pickBestUrl(it);
+}
+
+  function previewVideoFromJob(it) {
+  if (!it) return "";
+
+  const meta = it?.meta || {};
+  const outs = Array.isArray(it?.outputs) ? it.outputs : [];
+
+  const directPreview =
+    String(
+      it?.preview ||
+      it?.preview_url ||
+      it?.preview_video_url ||
+      meta?.preview ||
+      meta?.preview_url ||
+      meta?.preview_video_url ||
+      ""
+    ).trim();
+
+  if (directPreview) return directPreview;
+
+  const preview = outs.find(
+    (o) =>
+      String(o?.type || "").toLowerCase() === "video" &&
+      String(o?.meta?.variant || "").toLowerCase().trim() === "preview"
+  );
+
+  if (preview) {
+    return String(
+      preview?.archive_url ||
+      preview?.url ||
+      preview?.video_url ||
+      preview?.meta?.archive_url ||
+      preview?.meta?.url ||
+      preview?.meta?.video_url ||
+      ""
+    ).trim();
+  }
+
+  return "";
+}
+ function getPlaybackUrl(it) {
+  if (!it) return "";
+
+  const finalUrl = String(bestVideoFromJob(it) || "").trim();
+  const previewUrl = String(previewVideoFromJob(it) || "").trim();
+  const useFreshFinal = it?._fresh === true;
+
+  const chosen = useFreshFinal
+    ? (finalUrl || previewUrl)
+    : (previewUrl || finalUrl);
+
+  if (!chosen) return "";
+  return toMaybeProxyUrl(chosen);
+}
 
   function bestShareUrl(it) {
     return String(pickBestUrl(it) || "").trim();
@@ -710,19 +797,19 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
           return;
         }
 
-        if (act === "download") {
-          if (!it) return;
-          const u = it.playbackUrl || it.url || getPlaybackUrl(it);
-          if (u) downloadUrl(u);
-          return;
-        }
+       if (act === "download") {
+  if (!it) return;
+  const u = bestVideoFromJob(it) || it.url || pickBestUrl(it);
+  if (u) downloadUrl(u);
+  return;
+}
 
-        if (act === "share") {
-          if (!it) return;
-          const u = it.playbackUrl || it.url || getPlaybackUrl(it);
-          if (u) shareUrl(u);
-          return;
-        }
+      if (act === "share") {
+  if (!it) return;
+  const u = bestVideoFromJob(it) || it.url || pickBestUrl(it);
+  if (u) shareUrl(u);
+  return;
+}
        if (act === "play") {
   if (!card || !it) return;
 
@@ -843,6 +930,7 @@ const id = String(btn.dataset.id || card?.dataset?.id || card?.dataset?.svcId ||
         archive_url: "",
         playbackUrl: "",
         status: "İşleniyor",
+        _fresh: true,
         title,
         createdAt: d.createdAt || Date.now(),
         meta: {
