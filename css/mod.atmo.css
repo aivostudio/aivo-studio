@@ -716,7 +716,7 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
   position: fixed !important;
-left: calc(50% - 130px) !important;
+left: calc(50% - 140px) !important;
   bottom: 6px !important;
   transform: translateX(-50%) !important;
   z-index: 90 !important;
