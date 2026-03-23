@@ -405,14 +405,21 @@ function bestVideoFromJob(it) {
 
       const byId = new Map();
 
-      // 1) Önce mevcut geçici/pending optimistic kartları koy
-      for (const it of (state.items || [])) {
-        const jid = String(idOf(it));
-        if (!jid) continue;
-        if (deletedIds.has(jid)) continue;
-        if (isReady(it) || isError(it)) continue;
-        byId.set(jid, it);
-      }
+    // 1) Önce mevcut kartları koy
+// _fresh kartlar mutlaka korunmalı; yoksa interval hydrate ikinci izlemeyi preview'e düşürür
+for (const it of (state.items || [])) {
+  const jid = String(idOf(it));
+  if (!jid) continue;
+  if (deletedIds.has(jid)) continue;
+
+  if (it?._fresh === true) {
+    byId.set(jid, it);
+    continue;
+  }
+
+  if (isReady(it) || isError(it)) continue;
+  byId.set(jid, it);
+}
 
      // 2) Sonra DB kayıtlarını bas: aynı job_id varsa normalde DB kazanır
 // ama mevcut kart _fresh ise onu koru
