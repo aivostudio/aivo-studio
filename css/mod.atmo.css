@@ -704,36 +704,50 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
 .atmInlineSelect{
   min-width:120px;
 }
-/* ===== ATMO SUPER MODE — sticky generate CTA ===== */
-.mode-shell[data-mode-shell="atmosphere"],
-.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"],
-.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .card{
+/* ===== ATMO SUPER MODE — sticky CTA CARD ===== */
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"],
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"],
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .card{
   overflow: visible !important;
 }
 
-.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] [data-atm-generate]{
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta{
   position: sticky !important;
-  bottom: 18px !important;
+  bottom: 0 !important;
   z-index: 40 !important;
-  display: block !important;
-  width: 100% !important;
-  min-height: 58px !important;
-  border-radius: 18px !important;
+  margin-top: 10px !important;
+  padding: 16px 18px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(28,18,55,.94), rgba(12,10,34,.96)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   box-shadow:
-    0 18px 40px rgba(0,0,0,.28),
-    0 10px 28px rgba(191,86,255,.20) !important;
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"]{
-  padding-bottom: 110px !important;
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta .atmPersCta{
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta [data-atm-generate]{
+  width: 100% !important;
+  min-height: 58px !important;
+  border-radius: 999px !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"]{
+  padding-bottom: 120px !important;
 }
 
 @media (max-width: 900px){
-  .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] [data-atm-generate]{
-    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"]{
-    padding-bottom: 120px !important;
+  section.main-panel[data-module="atmosphere"] .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .smpack-card--cta{
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
   }
 }
