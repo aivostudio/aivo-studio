@@ -717,14 +717,14 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
   position: fixed !important;
   left: 50% !important;
-  bottom: 12px !important;
+  bottom: 6px !important;
   transform: translateX(-50%) !important;
   z-index: 90 !important;
-width: min(720px, calc(100vw - 48px)) !important;
+  width: min(720px, calc(100vw - 48px)) !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 10px !important;
-  padding: 14px 16px !important;
+  padding: 10px 12px !important;
   border: 1px solid rgba(255,255,255,.08) !important;
   border-radius: 22px !important;
   background:
