@@ -414,13 +414,29 @@ function bestVideoFromJob(it) {
         byId.set(jid, it);
       }
 
-      // 2) Sonra DB kayıtlarını bas: aynı job_id varsa DB her zaman kazanır
-      for (const it of incoming) {
-        const jid = String(idOf(it));
-        if (!jid) continue;
-        if (deletedIds.has(jid)) continue;
-        byId.set(jid, it);
-      }
+     // 2) Sonra DB kayıtlarını bas: aynı job_id varsa normalde DB kazanır
+// ama mevcut kart _fresh ise onu koru
+for (const it of incoming) {
+  const jid = String(idOf(it));
+  if (!jid) continue;
+  if (deletedIds.has(jid)) continue;
+
+  const prev = byId.get(jid);
+
+  if (prev?._fresh === true) {
+    byId.set(jid, {
+      ...it,
+      _fresh: true,
+      playbackUrl: getPlaybackUrl({
+        ...it,
+        _fresh: true,
+      }) || "",
+    });
+    continue;
+  }
+
+  byId.set(jid, it);
+}
 
       state.items = Array.from(byId.values())
         .sort((a, b) => {
