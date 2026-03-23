@@ -143,7 +143,7 @@
     aspect: "16:9", // "16:9" | "1:1" | "9:16"
 
     // basic
-    scene: "winter_cafe",
+    scene: "",
     effects: [],
     camera: "kenburns_soft",
     duration: "8",
