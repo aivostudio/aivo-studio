@@ -1,9 +1,9 @@
 // /api/cartoon/finalize.js
 // CommonJS
 // Cartoon finalize:
-// input: provider final video url
-// işlem: ffmpeg remux + faststart
-// output: R2 final mp4 + DB meta.final_video_url
+// input: provider / final video url
+// işlem: ffmpeg remux + faststart + preview encode
+// output: R2 final mp4 + R2 preview mp4 + DB meta/output patch
 
 const { neon } = require("@neondatabase/serverless");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
@@ -32,12 +32,12 @@ function isUuidLike(id) {
 function pickUrl(o) {
   return String(
     o?.archive_url ||
-    o?.url ||
-    o?.video_url ||
-    o?.meta?.archive_url ||
-    o?.meta?.url ||
-    o?.meta?.video_url ||
-    ""
+      o?.url ||
+      o?.video_url ||
+      o?.meta?.archive_url ||
+      o?.meta?.url ||
+      o?.meta?.video_url ||
+      ""
   ).trim();
 }
 
@@ -63,20 +63,20 @@ function removeFinalFlags(outputs) {
   });
 }
 
-function upsertFinalizedOutput(outputs, finalUrl) {
-  let arr = removeFinalFlags(outputs);
+function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
+  const arr = Array.isArray(outputs) ? outputs.slice() : [];
 
   const idx = arr.findIndex(
-    (o) => isVideo(o) && normVariant(o) === "finalized"
+    (o) => isVideo(o) && normVariant(o) === String(variant || "").toLowerCase()
   );
 
   const item = {
     type: "video",
-    url: finalUrl,
+    url,
     meta: {
       app: "cartoon",
-      variant: "finalized",
-      is_final: true,
+      variant,
+      ...(extraMeta || {}),
     },
   };
 
@@ -93,10 +93,28 @@ function upsertFinalizedOutput(outputs, finalUrl) {
   return arr;
 }
 
+function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
+  let arr = removeFinalFlags(outputs);
+
+  arr = upsertVideoOutput(arr, "preview", previewUrl, {
+    is_preview: true,
+    is_final: false,
+  });
+
+  arr = upsertVideoOutput(arr, "finalized", finalUrl, {
+    is_final: true,
+    is_preview: false,
+  });
+
+  return arr;
+}
+
 function getR2Client() {
   if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+  if (!process.env.R2_ACCESS_KEY_ID)
+    throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_SECRET_ACCESS_KEY)
+    throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
 
   return new S3Client({
     region: "auto",
@@ -131,6 +149,34 @@ async function uploadFileToR2({ filePath, key, contentType }) {
   return `${String(publicBase).replace(/\/$/, "")}/${key}`;
 }
 
+async function verifyPublicUrl(url, label) {
+  if (!url) throw new Error(`public_url_missing:${label}`);
+
+  const methods = ["HEAD", "GET"];
+
+  for (const method of methods) {
+    try {
+      const r = await fetch(url, {
+        method,
+        cache: "no-store",
+        redirect: "follow",
+      });
+
+      if (r.ok) {
+        return {
+          ok: true,
+          status: r.status,
+          method,
+          contentType: r.headers.get("content-type") || "",
+          contentLength: r.headers.get("content-length") || "",
+        };
+      }
+    } catch {}
+  }
+
+  throw new Error(`public_url_unreachable:${label}:${url}`);
+}
+
 async function downloadToFile(url, outPath) {
   const r = await fetch(url);
   if (!r.ok) {
@@ -140,13 +186,85 @@ async function downloadToFile(url, outPath) {
   await fsp.writeFile(outPath, buf);
 }
 
+async function probeVideoDurationSec(inputPath) {
+  return await new Promise((resolve, reject) => {
+    const args = ["-i", inputPath];
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", () => {
+      const m = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/i);
+      if (!m) return resolve(0);
+
+      const hh = Number(m[1] || 0);
+      const mm = Number(m[2] || 0);
+      const ss = Number(m[3] || 0);
+      const total = hh * 3600 + mm * 60 + ss;
+
+      resolve(Number.isFinite(total) ? total : 0);
+    });
+  });
+}
+
+function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
+  const bytes = Number(finalBytes || 0);
+  const sec = Number(durationSec || 0);
+
+  if (!bytes || !sec) {
+    return {
+      targetKbps: 2600,
+      maxrateKbps: 3200,
+      bufsizeKbps: 6400,
+      targetPreviewBytes: 0,
+      minPreviewBytes: 3 * 1024 * 1024,
+      maxPreviewBytes: 5 * 1024 * 1024,
+    };
+  }
+
+  const minPreviewBytes = 3 * 1024 * 1024;
+  const maxPreviewBytes = 5 * 1024 * 1024;
+  const rawTargetPreviewBytes = Math.floor(bytes / 4);
+
+  const targetPreviewBytes = Math.max(
+    minPreviewBytes,
+    Math.min(rawTargetPreviewBytes, maxPreviewBytes)
+  );
+
+  let targetKbps = Math.floor((targetPreviewBytes * 8) / sec / 1000);
+  targetKbps = Math.max(1400, Math.min(targetKbps, 4200));
+
+  const maxrateKbps = Math.max(
+    targetKbps + 300,
+    Math.floor(targetKbps * 1.2)
+  );
+  const bufsizeKbps = Math.max(targetKbps * 2, maxrateKbps * 2);
+
+  return {
+    targetKbps,
+    maxrateKbps,
+    bufsizeKbps,
+    targetPreviewBytes,
+    minPreviewBytes,
+    maxPreviewBytes,
+  };
+}
+
 async function runFfmpegFaststart(inputPath, outputPath) {
   await new Promise((resolve, reject) => {
     const args = [
       "-y",
-      "-i", inputPath,
-      "-c", "copy",
-      "-movflags", "+faststart",
+      "-i",
+      inputPath,
+      "-c",
+      "copy",
+      "-movflags",
+      "+faststart",
       outputPath,
     ];
 
@@ -162,6 +280,68 @@ async function runFfmpegFaststart(inputPath, outputPath) {
     p.on("close", (code) => {
       if (code === 0) return resolve();
       reject(new Error(`ffmpeg_failed:${code}:${stderr.slice(-1000)}`));
+    });
+  });
+}
+
+async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
+  const targetKbps = Number(bitrateCfg?.targetKbps || 2600);
+  const maxrateKbps = Number(bitrateCfg?.maxrateKbps || 3200);
+  const bufsizeKbps = Number(bitrateCfg?.bufsizeKbps || 6400);
+
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-i",
+      inputPath,
+
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0?",
+
+      "-vf",
+      "scale='min(640,iw)':-2",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+
+      "-b:v",
+      `${targetKbps}k`,
+      "-maxrate",
+      `${maxrateKbps}k`,
+      "-bufsize",
+      `${bufsizeKbps}k`,
+
+      "-c:a",
+      "aac",
+      "-b:a",
+      "128k",
+      "-ac",
+      "2",
+
+      "-movflags",
+      "+faststart",
+      "-pix_fmt",
+      "yuv420p",
+      "-shortest",
+
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`ffmpeg_preview_failed:${code}:${stderr.slice(-1000)}`));
     });
   });
 }
@@ -212,16 +392,27 @@ module.exports = async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
 
-    const finalizedOut = outputs.find((o) => isVideo(o) && normVariant(o) === "finalized");
-    const providerOut = outputs.find((o) => isVideo(o) && normVariant(o) === "provider");
-    const existingFinalized = pickUrl(finalizedOut);
+    const finalizedOut = outputs.find(
+      (o) => isVideo(o) && normVariant(o) === "finalized"
+    );
+    const previewOut = outputs.find(
+      (o) => isVideo(o) && normVariant(o) === "preview"
+    );
+    const providerOut = outputs.find(
+      (o) => isVideo(o) && normVariant(o) === "provider"
+    );
 
-    if (existingFinalized && !body.force) {
+    const existingFinalized = pickUrl(finalizedOut);
+    const existingPreview =
+      String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
+
+    if (existingFinalized && existingPreview && !body.force) {
       return res.status(200).json({
         ok: true,
         job_id,
         input_url: null,
         final_url: existingFinalized,
+        preview_url: existingPreview,
         skipped: true,
         reason: "already_finalized",
       });
@@ -242,14 +433,27 @@ module.exports = async function handler(req, res) {
     }
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-cartoon-finalize-"));
+
     const inputPath = path.join(tmpDir, "input.mp4");
     const outputPath = path.join(tmpDir, "finalized.mp4");
+    const previewPath = path.join(tmpDir, "preview.mp4");
 
     await downloadToFile(input_url, inputPath);
     await runFfmpegFaststart(inputPath, outputPath);
 
+    const finalStat = await fsp.stat(outputPath);
+    const durationSec = await probeVideoDurationSec(outputPath);
+
+    const previewBitrateCfg = calcPreviewVideoBitrateKbps({
+      finalBytes: finalStat?.size || 0,
+      durationSec,
+    });
+
+    await runFfmpegPreview(outputPath, previewPath, previewBitrateCfg);
+
     const outputId = `finalized-${Date.now()}`;
     const key = `outputs/cartoon/${job_id}/${outputId}.mp4`;
+    const previewKey = `outputs/cartoon/${job_id}/${outputId}-preview.mp4`;
 
     const final_url = await uploadFileToR2({
       filePath: outputPath,
@@ -257,13 +461,40 @@ module.exports = async function handler(req, res) {
       contentType: "video/mp4",
     });
 
-    const nextOutputs = upsertFinalizedOutput(outputs, final_url);
+    await verifyPublicUrl(final_url, "final");
+
+    const preview_url = await uploadFileToR2({
+      filePath: previewPath,
+      key: previewKey,
+      contentType: "video/mp4",
+    });
+
+    await verifyPublicUrl(preview_url, "preview");
+
+    const nextOutputs = upsertFinalizedAndPreviewOutputs(
+      outputs,
+      final_url,
+      preview_url
+    );
+
     const patchMeta = {
       final_video_url: final_url,
+      preview_video_url: preview_url,
       final_variant: "finalized",
       finalized_at: new Date().toISOString(),
       finalized_from_url: input_url,
       finalized_key: key,
+      preview_key: previewKey,
+      preview_target_ratio: "1/4",
+      preview_min_mb: 3,
+      preview_max_mb: 5,
+      preview_target_kbps: previewBitrateCfg.targetKbps,
+      preview_maxrate_kbps: previewBitrateCfg.maxrateKbps,
+      preview_bufsize_kbps: previewBitrateCfg.bufsizeKbps,
+      preview_source_final_bytes: finalStat?.size || 0,
+      preview_source_duration_sec: durationSec || 0,
+      preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
+      preview_source_url: input_url,
     };
 
     await sql`
@@ -280,7 +511,10 @@ module.exports = async function handler(req, res) {
       job_id,
       input_url,
       final_url,
+      preview_url,
       step: "finalized",
+      preview_cfg: previewBitrateCfg,
+      preview_source_url: input_url,
     });
   } catch (e) {
     return res.status(500).json({
