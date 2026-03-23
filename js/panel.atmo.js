@@ -321,17 +321,15 @@
     `;
 
     const $grid = host.querySelector('[data-el="grid"]');
+const getPanelSearchInput = () =>
+  host.closest?.('.right-panel')?.querySelector?.('[data-right-panel-search], input[type="search"], input[placeholder*="Ara"]') ||
+  document.querySelector('[data-right-panel-search], .right-panel input[type="search"], .right-panel input[placeholder*="Ara"]') ||
+  null;
+
 const onSearchInput = (e) => {
-  const t = e.target;
-  if (!t) return;
-
-  const input =
-    t.closest?.('[data-right-panel-search]') ||
-    t.closest?.('input[type="search"]') ||
-    t.closest?.('input[placeholder*="Ara"]') ||
-    (t.tagName === "INPUT" ? t : null);
-
+  const input = getPanelSearchInput();
   if (!input) return;
+  if (e.target !== input) return;
 
   state.query = safeStr(input.value || "");
   render();
@@ -339,17 +337,12 @@ const onSearchInput = (e) => {
 
 document.addEventListener("input", onSearchInput, true);
 
-// mount anında search kutusunda yazı varsa onu da uygula
 setTimeout(() => {
-  const existingSearch =
-    document.querySelector('[data-right-panel-search]') ||
-    document.querySelector('input[type="search"]') ||
-    document.querySelector('input[placeholder*="Ara"]');
+  const input = getPanelSearchInput();
+  if (!input) return;
 
-  if (existingSearch) {
-    state.query = safeStr(existingSearch.value || "");
-    render();
-  }
+  state.query = safeStr(input.value || "");
+  render();
 }, 0);
     const setHeaderMeta = (t) => {
       try {
