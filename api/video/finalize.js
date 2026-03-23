@@ -414,9 +414,15 @@ module.exports = async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
 
-    const providerOut = outputs.find(
-      (o) => isVideo(o) && normVariant(o) === "provider"
-    );
+  const providerOut =
+  outputs.find((o) => isVideo(o) && normVariant(o) === "provider") ||
+  outputs.find(
+    (o) =>
+      isVideo(o) &&
+      String(o?.meta?.provider || "").toLowerCase().trim() === "runway"
+  ) ||
+  outputs.find((o) => isVideo(o)) ||
+  null;
     const finalizedOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "finalized"
     );
