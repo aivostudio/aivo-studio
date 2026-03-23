@@ -595,6 +595,12 @@ async function handleUpload(root, kind, file) {
 
       const mode = tab.dataset.mode || "basic";
       state.mode = mode;
+       if (mode === "pro" && !String(state.prompt || "").trim()) {
+  try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
+  const ta = document.getElementById("atmSuperPrompt");
+  if (ta) ta.focus();
+  return;
+}
 
       qsa('.mode-tab[data-mode]', shell).forEach((t) => {
         const on = t.dataset.mode === mode;
