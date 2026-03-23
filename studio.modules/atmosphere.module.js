@@ -595,6 +595,7 @@ async function handleUpload(root, kind, file) {
 
       const mode = tab.dataset.mode || "basic";
       state.mode = mode;
+       
 
       qsa('.mode-tab[data-mode]', shell).forEach((t) => {
         const on = t.dataset.mode === mode;
@@ -971,75 +972,93 @@ function buildProPayload() {
   };
 }
 
-  // ------------------------------------------------------------
-  // 14) Generate (delegated) — CAPTURE
-  // ------------------------------------------------------------
-  async function onGenerate(btn) {
+ // ------------------------------------------------------------
+// 14) Generate (delegated) — CAPTURE
+// ------------------------------------------------------------
+async function onGenerate(btn) {
+  const root = getAtmoPanelRoot();
+  if (!root) return;
+
+  if (isUploadingAny()) {
+    try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
+    return;
+  }
+
+  const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
+  state.mode = mode;
+
+  if (mode === "pro" && !String(state.prompt || "").trim()) {
+    try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
+    const ta = document.getElementById("atmSuperPrompt");
+    if (ta) ta.focus();
+    return;
+  }
+
+  if (mode === "basic") {
+    const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+    const sceneKey = String(state.scene || "").trim();
+
+    if (!activeSceneBtn || !sceneKey) {
+      try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
+      const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
+      if (firstScene) firstScene.focus();
+      return;
+    }
+  }
+
+  const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
+
+  const hook =
+    window.ATM_CREATE ||
+    window.atmoGenerate ||
+    window.ATMOSPHERE_CREATE ||
+    null;
+
+  if (typeof hook === "function") {
+    console.log("[ATM] generate -> hook()", { mode, payload });
+
+    return withGenerateLoading(
+      btn,
+      async () => {
+        // hook job create yapıp aivo:atmo:job_created emit etmeli
+        return await hook(payload);
+      },
+      root
+    );
+  }
+
+  console.log("[ATM] generate payload =", payload);
+}
+
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
+    const btn = closestWithin(e.target, "[data-atm-generate]", root);
+    if (!btn) return;
+
+    if (root.dataset?.atmBusy === "1") {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    // upload sırasında tıklamayı yut
     if (isUploadingAny()) {
+      e.preventDefault();
+      e.stopPropagation();
       try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
       return;
     }
 
-    const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
-    state.mode = mode;
-
-    const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
-
-    const hook =
-      window.ATM_CREATE ||
-      window.atmoGenerate ||
-      window.ATMOSPHERE_CREATE ||
-      null;
-
-    if (typeof hook === "function") {
-      console.log("[ATM] generate -> hook()", { mode, payload });
-
-      return withGenerateLoading(
-        btn,
-        async () => {
-          // hook job create yapıp aivo:atmo:job_created emit etmeli
-          return await hook(payload);
-        },
-        root
-      );
-    }
-
-    console.log("[ATM] generate payload =", payload);
-  }
-
-  document.addEventListener(
-    "click",
-    (e) => {
-      const root = getAtmoPanelRoot();
-      if (!root) return;
-
-      const btn = closestWithin(e.target, "[data-atm-generate]", root);
-      if (!btn) return;
-
-      if (root.dataset?.atmBusy === "1") {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
-      // upload sırasında tıklamayı yut
-      if (isUploadingAny()) {
-        e.preventDefault();
-        e.stopPropagation();
-        try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
-        return;
-      }
-
-      e.preventDefault();
-      e.stopPropagation();
-      onGenerate(btn);
-    },
-    true
-  );
-
+    e.preventDefault();
+    e.stopPropagation();
+    onGenerate(btn);
+  },
+  true
+);
   // ------------------------------------------------------------
   // 15) Init sync (best effort)
   // ------------------------------------------------------------
