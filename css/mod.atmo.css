@@ -705,29 +705,35 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
   min-width:120px;
 }
 /* ===== ATMO SUPER MODE — sticky generate CTA ===== */
-.mode-panel[data-mode-panel="pro"] [data-atm-generate]{
-  position: sticky;
-  bottom: 18px;
-  z-index: 30;
+.mode-shell[data-mode-shell="atmosphere"],
+.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"],
+.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] .card{
+  overflow: visible !important;
+}
+
+.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] [data-atm-generate]{
+  position: sticky !important;
+  bottom: 18px !important;
+  z-index: 40 !important;
   display: block !important;
   width: 100% !important;
-  min-height: 58px;
+  min-height: 58px !important;
   border-radius: 18px !important;
   box-shadow:
     0 18px 40px rgba(0,0,0,.28),
-    0 10px 28px rgba(191,86,255,.20);
+    0 10px 28px rgba(191,86,255,.20) !important;
 }
 
-.mode-panel[data-mode-panel="pro"]{
+.mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"]{
   padding-bottom: 110px !important;
 }
 
 @media (max-width: 900px){
-  .mode-panel[data-mode-panel="pro"] [data-atm-generate]{
-    bottom: calc(14px + env(safe-area-inset-bottom));
+  .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"] [data-atm-generate]{
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
   }
 
-  .mode-panel[data-mode-panel="pro"]{
+  .mode-shell[data-mode-shell="atmosphere"] .mode-panel[data-mode-panel="pro"]{
     padding-bottom: 120px !important;
   }
 }
