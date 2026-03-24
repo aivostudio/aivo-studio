@@ -778,7 +778,7 @@ document.addEventListener("click", async (e) => {
     const map = { music: "music", cover: "cover", video: "video" };
     const page = map[product] || product;
 
-  if (!isStudio && !(await safeIsLoggedInServer())) {
+   if (!isStudio && !safeIsLoggedIn()) {
    try { sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page)); } catch(_) {}
       safeOpenLogin();
       return;
