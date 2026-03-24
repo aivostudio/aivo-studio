@@ -610,33 +610,12 @@
   grid-row: 4;
 }
 
-
-/* CTA: basic normal kalsın, advanced sticky olsun */
-#moduleHost section[data-module="music"][data-mode="basic"] #musicGenerateBtn{
+/* CTA: eski gibi uzun (tam genişlik) */
+#moduleHost section[data-module="music"] #musicGenerateBtn{
   width: 100%;
   max-width: none;
   display: flex;
   justify-content: center;
-}
-
-#moduleHost section[data-module="music"][data-mode="advanced"] #musicGenerateBtn{
-  position: sticky;
-  bottom: calc(14px + env(safe-area-inset-bottom));
-  z-index: 8;
-  width: 100%;
-  max-width: none;
-  display: flex;
-  justify-content: center;
-  margin-top: 18px;
-  padding: 0;
-  border-radius: 22px;
-}
-
-@media (max-width: 920px){
-  #moduleHost section[data-module="music"][data-mode="advanced"] #musicGenerateBtn{
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    margin-top: 16px;
-  }
 }
 
 /* Mobile fallback */
