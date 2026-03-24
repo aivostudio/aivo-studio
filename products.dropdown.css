@@ -2506,6 +2506,7 @@
   max-width: 300px !important;
   padding: 6px !important;
   border-radius: 16px !important;
+  border: 1px solid rgba(168, 140, 255, .18) !important;
 }
 /* Üst başlık: daha az boşluk */
 #userMenuPanel .user-menu-card{
