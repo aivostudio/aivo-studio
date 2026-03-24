@@ -937,20 +937,22 @@
     syncUI();
   });
 
-  document.addEventListener("click", function(e){
-    var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
-    if (!btn) return;
+ document.addEventListener("click", function(e){
+  var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
+  if (!btn) return;
 
-    if (!ok()) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      if (hint) hint.style.display = "block";
-      attention();
-      scrollToKVKK();
-      return false;
-    }
-  }, true);
+  var loggedIn = !!(localStorage.getItem("aivo_logged_in") === "1" || (localStorage.getItem("aivo_user_email") || "").trim());
+
+  if (loggedIn && !ok()) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (hint) hint.style.display = "block";
+    attention();
+    scrollToKVKK();
+    return false;
+  }
+}, true);
 
   window.__AIVO_KVKK_OK__ = ok;
   syncUI();
