@@ -810,3 +810,27 @@
     min-height: 58px !important;
   }
 }
+/* ============================= */
+/* MUSIC – SINGLE SCROLL FIX    */
+/* Scroll sadece #moduleHost'ta */
+/* ============================= */
+
+#moduleHost [data-module="music"]{
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+#moduleHost [data-module="music"] .music-view,
+#moduleHost [data-module="music"] .musicPage,
+#moduleHost [data-module="music"] .card,
+#moduleHost [data-module="music"] .form-grid,
+#moduleHost [data-module="music"] .form-field{
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
