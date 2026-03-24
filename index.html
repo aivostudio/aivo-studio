@@ -1624,6 +1624,44 @@
   line-height: 1.2;
   color: rgba(255,255,255,.88);
 }
+  #child-cartoon .cartoon-bar,
+#child-cartoon .cartoon-bottom{
+  width: min(1040px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 14px 20px;
+  border-radius: 999px;
+  text-align: center;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 60px rgba(0,0,0,.28);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  color: rgba(255,255,255,.88);
+}
+
+#child-cartoon .cartoon-bar{
+  margin-top: 14px;
+  margin-bottom: 22px;
+}
+
+#child-cartoon .cartoon-bottom{
+  margin-top: 16px;
+}
+
+#child-cartoon .cartoon-bar strong,
+#child-cartoon .cartoon-bottom strong{
+  font-weight: 800;
+  color: rgba(255,255,255,.98);
+}
+
+@media (max-width: 900px){
+  #child-cartoon .cartoon-bar,
+  #child-cartoon .cartoon-bottom{
+    border-radius: 22px;
+    text-align: left;
+  }
+}
 #child-cartoon .cartoon-thumbs .cartoon-thumb:first-child{
   border: 2px solid rgba(255,255,255,.34);
   box-shadow:
