@@ -964,15 +964,14 @@
   window.__AIVO_PRICING_HUB_SINGLE__ = true;
 
   // ✅ A) isAuthed() revize (async): class is-auth + /api/auth/me fallback
-  async function isAuthed(){
-    try {
-      if (document.documentElement.classList.contains('is-auth')) return true;
-      var r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      return r && r.status === 200;
-    } catch(e){
-      return false;
-    }
+ async function isAuthed(){
+  try {
+    var r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+    return !!(r && r.status === 200);
+  } catch(e){
+    return false;
   }
+}
 
   // ✅ B) getUserEmail() revize (async): #umEmail + /api/auth/me fallback
   async function getUserEmail(){
