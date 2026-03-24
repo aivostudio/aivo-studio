@@ -390,9 +390,11 @@
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
 
-       function applyMode(mode) {
+         function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
       const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
+      const generateBtn = module.querySelector('#musicGenerateBtn');
+      const generateCard = generateBtn ? generateBtn.closest('.card') : null;
 
       module.setAttribute("data-mode", m);
       if (viewEl) viewEl.setAttribute("data-mode", m);
@@ -410,6 +412,50 @@
       advFields.forEach((el) => {
         el.style.display = showAdv ? "" : "none";
       });
+
+      if (viewEl) {
+        viewEl.style.paddingBottom = showAdv ? "120px" : "";
+      }
+
+      if (generateCard) {
+        if (showAdv) {
+          generateCard.style.position = "sticky";
+          generateCard.style.bottom = "0px";
+          generateCard.style.zIndex = "8";
+          generateCard.style.marginTop = "10px";
+          generateCard.style.padding = "16px 18px calc(16px + env(safe-area-inset-bottom))";
+          generateCard.style.border = "1px solid rgba(255,255,255,.08)";
+          generateCard.style.borderRadius = "24px";
+          generateCard.style.background =
+            "linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), linear-gradient(180deg, rgba(12,10,34,.94), rgba(8,8,24,.96))";
+          generateCard.style.backdropFilter = "blur(12px)";
+          generateCard.style.webkitBackdropFilter = "blur(12px)";
+          generateCard.style.boxShadow =
+            "0 -10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.04)";
+        } else {
+          generateCard.style.position = "";
+          generateCard.style.bottom = "";
+          generateCard.style.zIndex = "";
+          generateCard.style.marginTop = "";
+          generateCard.style.padding = "";
+          generateCard.style.border = "";
+          generateCard.style.borderRadius = "";
+          generateCard.style.background = "";
+          generateCard.style.backdropFilter = "";
+          generateCard.style.webkitBackdropFilter = "";
+          generateCard.style.boxShadow = "";
+        }
+      }
+
+      if (generateBtn) {
+        if (showAdv) {
+          generateBtn.style.minHeight = "64px";
+          generateBtn.style.borderRadius = "999px";
+        } else {
+          generateBtn.style.minHeight = "";
+          generateBtn.style.borderRadius = "";
+        }
+      }
     }
 
     // default
