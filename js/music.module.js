@@ -414,7 +414,7 @@
       });
 
       if (viewEl) {
-        viewEl.style.paddingBottom = showAdv ? "120px" : "";
+        viewEl.style.paddingBottom = showAdv ? "120px" : "0px";
       }
 
       if (generateCard) {
