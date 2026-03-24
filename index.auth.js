@@ -880,7 +880,7 @@ document.addEventListener("click", async (e) => {
 
   function getAuthUser(){ return document.getElementById("authUser"); }
   function getBtn(){ return document.getElementById("btnUserMenuTop"); }
-  function getMenu(){ return document.getElementById("topUserMenu"); }
+function getMenu(){ return document.getElementById("userMenuPanel"); }
 
   function setOpen(open){
     const authUser = getAuthUser();
