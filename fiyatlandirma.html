@@ -993,17 +993,17 @@ document.addEventListener("click", function(e){
     }
   }
 
-  function openAuth(mode){
-    // auth.core.js “tek otorite” — varsa onu kullan
-    if (typeof window.openAuthModal === "function") { window.openAuthModal(mode); return; }
-    // fallback
-    var modal = document.getElementById("loginModal");
-    if (!modal) { location.href = "/login.html"; return; }
-    modal.dataset.mode = (mode === "register") ? "register" : "login";
-    modal.classList.add("is-open");
-    modal.style.display = "block";
-    modal.setAttribute("aria-hidden", "false");
-  }
+ function openAuth(mode){
+  var modal = document.getElementById("loginModal");
+  if (!modal) { location.href = "/login.html"; return; }
+
+  modal.dataset.mode = (mode === "register") ? "register" : "login";
+  modal.classList.add("is-open");
+  modal.style.display = "block";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  document.documentElement.classList.add("modal-open");
+}
 
   function scrollToPacks(){
     var el = document.getElementById("packs");
