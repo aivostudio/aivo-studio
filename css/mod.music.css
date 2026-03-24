@@ -610,7 +610,7 @@
   grid-row: 4;
 }
 
-/* CTA: eski gibi uzun (tam genişlik) */
+/* CTA: basic normal, advanced final card sticky */
 #moduleHost section[data-module="music"] #musicGenerateBtn{
   width: 100%;
   max-width: none;
@@ -618,6 +618,33 @@
   justify-content: center;
 }
 
+#moduleHost section[data-module="music"][data-mode="advanced"] .music-view[data-music-view="geleneksel"] .card:last-of-type{
+  position: sticky;
+  bottom: 0;
+  z-index: 8;
+  margin-top: 10px !important;
+  padding: 16px 18px calc(16px + env(safe-area-inset-bottom)) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(12,10,34,.94), rgba(8,8,24,.96)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+#moduleHost section[data-module="music"][data-mode="advanced"] .music-view[data-music-view="geleneksel"] .card:last-of-type #musicGenerateBtn{
+  margin-top: 0 !important;
+}
+
+@media (max-width: 920px){
+  #moduleHost section[data-module="music"][data-mode="advanced"] .music-view[data-music-view="geleneksel"] .card:last-of-type{
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+}
 /* Mobile fallback */
 @media (max-width: 920px){
   #moduleHost section[data-module="music"][data-mode="advanced"] .form-grid{
