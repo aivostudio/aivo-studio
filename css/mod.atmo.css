@@ -715,15 +715,16 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
 }
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] #atmProDetails .atmPersCta{
-  position: fixed !important;
-  left: 50% !important;
-  bottom: 6px !important;
-  transform: translateX(-50%) !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  left: auto !important;
+  transform: none !important;
   z-index: 90 !important;
-  width: min(720px, calc(100vw - 48px)) !important;
+  width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 10px !important;
+  margin-top: 10px !important;
   padding: 10px 12px !important;
   border: 1px solid rgba(255,255,255,.08) !important;
   border-radius: 22px !important;
