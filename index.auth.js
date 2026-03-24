@@ -868,7 +868,8 @@ document.addEventListener("click", async (e) => {
 
 /* =========================================================
    ✅ TOPBAR USER MENU — BULLETPROOF (Kurumsal + Index)
-   - btnUserMenuTop tık/pointerdown ile menü aç/kapa
+   - Desktop: hover ile açılır/kapanır
+   - Mobile / touch: pointerdown ile aç/kapa
    - dışarı tık + ESC kapatır
    - başka document click closer'ları menüyü anında kapatmasın diye:
      capture + stopImmediatePropagation kullanır
@@ -880,7 +881,7 @@ document.addEventListener("click", async (e) => {
 
   function getAuthUser(){ return document.getElementById("authUser"); }
   function getBtn(){ return document.getElementById("btnUserMenuTop"); }
-function getMenu(){ return document.getElementById("userMenuPanel"); }
+  function getMenu(){ return document.getElementById("userMenuPanel"); }
 
   function setOpen(open){
     const authUser = getAuthUser();
@@ -890,14 +891,14 @@ function getMenu(){ return document.getElementById("userMenuPanel"); }
 
     if (open){
       authUser.classList.add("is-open");
-      btn.setAttribute("aria-expanded","true");
+      btn.setAttribute("aria-expanded", "true");
       menu.style.display = "block";
-      menu.setAttribute("aria-hidden","false");
+      menu.setAttribute("aria-hidden", "false");
     } else {
       authUser.classList.remove("is-open");
-      btn.setAttribute("aria-expanded","false");
+      btn.setAttribute("aria-expanded", "false");
       menu.style.display = "none";
-      menu.setAttribute("aria-hidden","true");
+      menu.setAttribute("aria-hidden", "true");
     }
   }
 
@@ -910,26 +911,65 @@ function getMenu(){ return document.getElementById("userMenuPanel"); }
     setOpen(!isOpen());
   }
 
-  // ✅ iPad/Safari: click yerine pointerdown daha stabil (menü “anında kapanma” bug’ını keser)
+  const hoverCapable = () =>
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  // Desktop hover
+  document.addEventListener("mouseover", function(e){
+    if (!hoverCapable()) return;
+
+    const wrap = e.target && e.target.closest
+      ? e.target.closest("#userMenuWrap")
+      : null;
+
+    if (wrap) setOpen(true);
+  }, true);
+
+  document.addEventListener("mouseout", function(e){
+    if (!hoverCapable()) return;
+
+    const wrap = e.target && e.target.closest
+      ? e.target.closest("#userMenuWrap")
+      : null;
+
+    if (!wrap) return;
+
+    const to = e.relatedTarget;
+    if (to && wrap.contains(to)) return;
+
+    setOpen(false);
+  }, true);
+
+  // Mobile / touch
   document.addEventListener("pointerdown", function(e){
-    const btn = e.target && e.target.closest ? e.target.closest("#btnUserMenuTop") : null;
-    const menu = e.target && e.target.closest ? e.target.closest("#topUserMenu") : null;
+    const btn = e.target && e.target.closest
+      ? e.target.closest("#btnUserMenuTop")
+      : null;
+
+    const menu = e.target && e.target.closest
+      ? e.target.closest("#userMenuPanel")
+      : null;
 
     // Buton
     if (btn){
+      if (hoverCapable()) return; // desktop'ta hover yönetsin
+
       e.preventDefault();
       e.stopPropagation();
-      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+      if (typeof e.stopImmediatePropagation === "function") {
+        e.stopImmediatePropagation();
+      }
+
       toggle();
       return;
     }
 
-    // Menü içi tık -> kapatma
+    // Menü içi tık
     if (menu) return;
 
-    // Dışarı -> kapat
+    // Dışarı tık
     if (isOpen()) setOpen(false);
-  }, true); // capture
+  }, true);
 
   // ESC kapatır
   document.addEventListener("keydown", function(e){
@@ -941,10 +981,11 @@ function getMenu(){ return document.getElementById("userMenuPanel"); }
     const menu = getMenu();
     if (menu){
       menu.style.display = "none";
-      menu.setAttribute("aria-hidden","true");
+      menu.setAttribute("aria-hidden", "true");
     }
+
     const btn = getBtn();
-    if (btn) btn.setAttribute("aria-expanded","false");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   });
 })();
 /* =========================================================
