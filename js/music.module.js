@@ -390,9 +390,13 @@
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
 
-    function applyMode(mode) {
+       function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
+      const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
+
       module.setAttribute("data-mode", m);
+      if (viewEl) viewEl.setAttribute("data-mode", m);
+
       switchEl.dataset.active = m;
       try { sessionStorage.setItem(MODE_KEY, m); } catch(e) {}
 
