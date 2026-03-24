@@ -5,7 +5,7 @@ window.ensureModuleCSS = function(routeKey) {
   const link = document.getElementById("studio-module-css");
   if (!link) return;
 
-  const v = "1";
+  const v = "2";
   const primary = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
