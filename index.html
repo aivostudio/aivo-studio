@@ -1175,7 +1175,7 @@
     #atmosphere-video .sm-pack__grid--single{ margin-top: 0; }
   #atmosphere-video .sm-card--atmo{
   display: grid;
-  grid-template-columns: 1.08fr .92fr;
+grid-template-columns: .92fr 1.08fr;
   gap: clamp(18px, 2.4vw, 28px);
   align-items: stretch;
   padding: clamp(18px, 2.2vw, 28px);
@@ -1204,7 +1204,9 @@
 }
 
 #atmosphere-video .atmo-preview__frame{
-  min-height: 320px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: unset;
   border-radius: 24px;
   padding: 0;
 }
