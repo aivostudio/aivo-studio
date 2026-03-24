@@ -145,8 +145,9 @@ html, body {
 /* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
 #mainWorkspace,
 #twoPanelWrap {
-  height: 100%;
+  flex: 1 1 auto;
   min-height: 0;
+  height: auto;
   display: flex;
   align-items: stretch;
 }
