@@ -1411,9 +1411,287 @@
 </section>
 
 
+<style>
+  #child-cartoon{
+    position: relative;
+    padding: clamp(36px, 6vw, 84px) 0;
+    overflow: hidden;
+    isolation: isolate;
+  }
 
+  #child-cartoon::before{
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(1100px 680px at 18% 30%, rgba(139,92,246,.20), transparent 62%),
+      radial-gradient(1000px 640px at 82% 24%, rgba(59,130,246,.14), transparent 62%),
+      radial-gradient(900px 540px at 60% 82%, rgba(236,72,153,.10), transparent 66%);
+    filter: blur(34px);
+    opacity: .95;
+    pointer-events: none;
+    z-index: 0;
+  }
 
+  #child-cartoon .cartoon-wrap{
+    position: relative;
+    z-index: 1;
+  }
 
+  #child-cartoon .cartoon-head{
+    text-align: center;
+    max-width: 920px;
+    margin: 0 auto 26px;
+  }
+
+  #child-cartoon .cartoon-title{
+    margin: 0 0 10px;
+    font-size: clamp(34px, 4.5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  #child-cartoon .cartoon-slogan{
+    margin: 0 0 10px;
+    font-size: clamp(20px, 2.1vw, 30px);
+    line-height: 1.2;
+    font-weight: 800;
+    color: rgba(255,255,255,.96);
+  }
+
+  #child-cartoon .cartoon-sub{
+    margin: 0 auto;
+    max-width: 720px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255,255,255,.70);
+  }
+
+  #child-cartoon .cartoon-card{
+    display: grid;
+    grid-template-columns: 1.08fr .92fr;
+    gap: clamp(18px, 2.4vw, 28px);
+    align-items: stretch;
+    padding: clamp(18px, 2.2vw, 28px);
+    border-radius: 28px;
+    background:
+      radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.36) 0%, transparent 62%),
+      radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.22) 0%, transparent 62%),
+      radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.12) 0%, transparent 62%),
+      linear-gradient(135deg, rgba(139,92,246,.10) 0%, rgba(59,130,246,.08) 55%, transparent 100%),
+      rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 28px 80px rgba(0,0,0,.45);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+  }
+
+  #child-cartoon .cartoon-left,
+  #child-cartoon .cartoon-right{
+    min-width: 0;
+  }
+
+  #child-cartoon .cartoon-badges{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  #child-cartoon .cartoon-badge{
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    color: rgba(255,255,255,.92);
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  #child-cartoon .cartoon-card-title{
+    margin: 0 0 14px;
+    font-size: clamp(26px, 2.4vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+
+  #child-cartoon .cartoon-card-text{
+    margin: 0 0 18px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255,255,255,.78);
+  }
+
+  #child-cartoon .cartoon-features{
+    margin: 0;
+    padding-left: 18px;
+    color: rgba(255,255,255,.88);
+  }
+
+  #child-cartoon .cartoon-features li + li{
+    margin-top: 8px;
+  }
+
+  #child-cartoon .cartoon-actions{
+    margin-top: 20px;
+  }
+
+  #child-cartoon .cartoon-cta{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 22px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    box-shadow: 0 18px 40px rgba(139,92,246,.30);
+  }
+
+  #child-cartoon .cartoon-right{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  #child-cartoon .cartoon-preview{
+    min-height: 320px;
+    border-radius: 24px;
+    overflow: hidden;
+    background:
+      radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.18) 0%, transparent 62%),
+      radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.14) 0%, transparent 62%),
+      rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 18px 50px rgba(0,0,0,.35);
+  }
+
+  #child-cartoon .cartoon-preview-video{
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    object-fit: cover;
+  }
+
+  #child-cartoon .cartoon-thumbs{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  #child-cartoon .cartoon-thumb{
+    height: 88px;
+    border-radius: 18px;
+    background:
+      linear-gradient(135deg, rgba(139,92,246,.18), rgba(59,130,246,.12)),
+      rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+
+  @media (max-width: 980px){
+    #child-cartoon .cartoon-card{
+      grid-template-columns: 1fr;
+    }
+
+    #child-cartoon .cartoon-head{
+      text-align: left;
+      margin-bottom: 22px;
+    }
+  }
+
+  @media (max-width: 640px){
+    #child-cartoon .cartoon-thumbs{
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    #child-cartoon .cartoon-preview,
+    #child-cartoon .cartoon-preview-video{
+      min-height: 240px;
+    }
+  }
+</style>
+
+<!-- ================= AI COCUK CIZGIFILM ================= -->
+<section id="child-cartoon" class="cartoon-section" aria-label="AI Çocuk Çizgifilm">
+  <div class="container cartoon-wrap">
+
+    <div class="cartoon-head">
+      <h2 class="cartoon-title">AI Çocuk Çizgifilm</h2>
+
+      <p class="cartoon-slogan">
+        Karakterini yarat, hikâyeni kur, çizgifilmini üret.
+      </p>
+
+      <p class="cartoon-sub">
+        Bir fikirden sahnelere, sahnelerden çizgifilme.
+      </p>
+    </div>
+
+    <div class="cartoon-card">
+      <div class="cartoon-left">
+
+        <div class="cartoon-badges">
+          <span class="cartoon-badge">Karakter Yarat</span>
+          <span class="cartoon-badge">Tek Sahne</span>
+          <span class="cartoon-badge">Hikâye Modu</span>
+          <span class="cartoon-badge">3–6 Dakika Akış</span>
+        </div>
+
+        <h3 class="cartoon-card-title">
+          Aynı karakterlerle sahne sahne ilerleyen çizgifilm akışı oluştur.
+        </h3>
+
+        <p class="cartoon-card-text">
+          Preset ya da kendi karakterlerinle kısa sahneler üret, hikâyeni akışa dönüştür,
+          aynı karakter bütünlüğünü koruyarak 3–6 dakikaya kadar çizgifilm kurgusu hazırla.
+        </p>
+
+        <ul class="cartoon-features">
+          <li>Karakter oluştur veya preset karakterle başla</li>
+          <li>Tek sahne ya da çok sahneli hikâye akışı kur</li>
+          <li>Aynı karakterlerle tutarlı çizgifilm üretimi</li>
+        </ul>
+
+        <div class="cartoon-actions">
+          <a class="cartoon-cta" href="/studio.v2.html#cartoon" data-auth="required">
+            Çizgifilmini Oluştur →
+          </a>
+        </div>
+
+      </div>
+
+      <div class="cartoon-right" aria-hidden="true">
+        <div class="cartoon-preview">
+          <video
+            class="cartoon-preview-video"
+            src="/media/cartoon-preview.mp4"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="none"
+            poster="/media/cartoon-preview-poster.jpg">
+          </video>
+        </div>
+
+        <div class="cartoon-thumbs">
+          <div class="cartoon-thumb"></div>
+          <div class="cartoon-thumb"></div>
+          <div class="cartoon-thumb"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<!-- ================= /AI COCUK CIZGIFILM ================= -->
 
 <!-- ================= FIYATLAR (ANCHOR) ================= -->
 <section id="fiyatlar" aria-label="Fiyatlar">
