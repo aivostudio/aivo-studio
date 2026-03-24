@@ -911,34 +911,53 @@ document.addEventListener("click", async (e) => {
     setOpen(!isOpen());
   }
 
-  const hoverCapable = () =>
-    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+ const hoverCapable = () =>
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-  // Desktop hover
-  document.addEventListener("mouseover", function(e){
-    if (!hoverCapable()) return;
+let hoverCloseTimer = null;
 
-    const wrap = e.target && e.target.closest
-      ? e.target.closest("#userMenuWrap")
-      : null;
+function clearHoverCloseTimer(){
+  if (hoverCloseTimer){
+    clearTimeout(hoverCloseTimer);
+    hoverCloseTimer = null;
+  }
+}
 
-    if (wrap) setOpen(true);
-  }, true);
-
-  document.addEventListener("mouseout", function(e){
-    if (!hoverCapable()) return;
-
-    const wrap = e.target && e.target.closest
-      ? e.target.closest("#userMenuWrap")
-      : null;
-
-    if (!wrap) return;
-
-    const to = e.relatedTarget;
-    if (to && wrap.contains(to)) return;
-
+function scheduleHoverClose(){
+  clearHoverCloseTimer();
+  hoverCloseTimer = setTimeout(() => {
     setOpen(false);
-  }, true);
+  }, 180);
+}
+
+// Desktop hover
+document.addEventListener("mouseover", function(e){
+  if (!hoverCapable()) return;
+
+  const wrap = e.target && e.target.closest
+    ? e.target.closest("#userMenuWrap")
+    : null;
+
+  if (wrap){
+    clearHoverCloseTimer();
+    setOpen(true);
+  }
+}, true);
+
+document.addEventListener("mouseout", function(e){
+  if (!hoverCapable()) return;
+
+  const wrap = e.target && e.target.closest
+    ? e.target.closest("#userMenuWrap")
+    : null;
+
+  if (!wrap) return;
+
+  const to = e.relatedTarget;
+  if (to && wrap.contains(to)) return;
+
+  scheduleHoverClose();
+}, true);
 
   // Mobile / touch
   document.addEventListener("pointerdown", function(e){
