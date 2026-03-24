@@ -937,13 +937,11 @@
     syncUI();
   });
 
- document.addEventListener("click", function(e){
+document.addEventListener("click", function(e){
   var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
   if (!btn) return;
 
-  var loggedIn = !!(localStorage.getItem("aivo_logged_in") === "1" || (localStorage.getItem("aivo_user_email") || "").trim());
-
-  if (loggedIn && !ok()) {
+  if (document.documentElement.classList.contains('is-auth') && !ok()) {
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
