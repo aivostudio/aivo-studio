@@ -1585,14 +1585,16 @@
     gap: 12px;
   }
 
-  #child-cartoon .cartoon-thumb{
-    height: 88px;
-    border-radius: 18px;
-    background:
-      linear-gradient(135deg, rgba(139,92,246,.18), rgba(59,130,246,.12)),
-      rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.10);
-  }
+#child-cartoon .cartoon-thumb{
+  display: block;
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  background: rgba(255,255,255,.04);
+}
 
   @media (max-width: 980px){
     #child-cartoon .cartoon-card{
@@ -1679,11 +1681,11 @@
   </video>
 </div>
 
-        <div class="cartoon-thumbs">
-          <div class="cartoon-thumb"></div>
-          <div class="cartoon-thumb"></div>
-          <div class="cartoon-thumb"></div>
-        </div>
+       <div class="cartoon-thumbs">
+  <img class="cartoon-thumb" src="/media/cartoon-thumb-1.jpg" alt="Çizgifilm sahne önizleme 1" loading="lazy" />
+  <img class="cartoon-thumb" src="/media/cartoon-thumb-2.jpg" alt="Çizgifilm sahne önizleme 2" loading="lazy" />
+  <img class="cartoon-thumb" src="/media/cartoon-thumb-3.jpg" alt="Çizgifilm sahne önizleme 3" loading="lazy" />
+</div>
       </div>
     </div>
 
