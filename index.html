@@ -1443,12 +1443,33 @@
   margin: 0 auto 18px;
 }
 
-  #child-cartoon .cartoon-title{
-    margin: 0 0 10px;
-    font-size: clamp(34px, 4.5vw, 56px);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-  }
+ #child-cartoon .cartoon-title{
+  margin: 0 0 10px;
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 900;
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #9bd4ff 18%,
+    #8b5cf6 42%,
+    #ec4899 68%,
+    #ffffff 100%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: cartoonTitleFlow 8s linear infinite;
+  text-shadow: 0 0 18px rgba(139,92,246,.10);
+}
+
+@keyframes cartoonTitleFlow{
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 240% 50%; }
+}
 
   #child-cartoon .cartoon-slogan{
     margin: 0 0 10px;
