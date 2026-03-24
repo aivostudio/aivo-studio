@@ -770,7 +770,7 @@
   padding-bottom: 120px;
 }
 
-#moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] > .card:last-of-type{
+#moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] .musicGenerateCard{
   position: sticky !important;
   bottom: 0 !important;
   z-index: 8 !important;
@@ -788,11 +788,11 @@
     inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-#moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] > .card:last-of-type .form-field{
+#moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] .musicGenerateCard .form-field{
   margin: 0 !important;
 }
 
-#moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] > .card:last-of-type #musicGenerateBtn{
+#moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] .musicGenerateCard #musicGenerateBtn{
   min-height: 64px !important;
   border-radius: 999px !important;
 }
@@ -802,11 +802,11 @@
     padding-bottom: 104px;
   }
 
-  #moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] > .card:last-of-type{
+  #moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] .musicGenerateCard{
     padding: 14px 14px calc(14px + env(safe-area-inset-bottom)) !important;
   }
 
-  #moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] > .card:last-of-type #musicGenerateBtn{
+  #moduleHost .music-view[data-music-view="geleneksel"][data-mode="advanced"] .musicGenerateCard #musicGenerateBtn{
     min-height: 58px !important;
   }
 }
