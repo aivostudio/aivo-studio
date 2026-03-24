@@ -1082,6 +1082,13 @@
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
     var pack = (packBtn.getAttribute("data-pack") || "").trim();
+    console.log("[PRICING PACK CLICK]", {
+  pack,
+  htmlIsAuth: document.documentElement.classList.contains("is-auth"),
+  localLoggedIn: localStorage.getItem("aivo_logged_in"),
+  localEmail: localStorage.getItem("aivo_user_email"),
+  kvkkOk: typeof window.__AIVO_KVKK_OK__ === "function" ? window.__AIVO_KVKK_OK__() : "no-fn"
+});
     if (!pack) return;
 
     if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
