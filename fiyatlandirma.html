@@ -941,7 +941,7 @@
     var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
     if (!btn) return;
 
-    if (!ok()) {
+if (document.documentElement.classList.contains('is-auth') && !ok()) {
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
