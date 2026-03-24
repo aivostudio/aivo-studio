@@ -456,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // 1) Sayfa açılır açılmaz ilk kart seçili
-  setActive(cards[0]);
+setActive(null);
 
   // 2) Tap ile seç (iPad)
   cards.forEach(card => {
