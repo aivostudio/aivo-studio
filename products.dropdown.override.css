@@ -124,7 +124,7 @@ body:not(.page-pricing) .aivo-topbar .dropdown--products{
   top: 86px !important;          /* gerekirse 76-96 arası ayarla */
   transform: translateX(-50%) !important;
 
-  width: min(1220px, calc(100vw - 56px)) !important;
+width: min(980px, calc(100vw - 48px)) !important;
   max-width: none !important;
 
   z-index: 9999 !important;
