@@ -177,13 +177,14 @@ body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--pro
   min-width: 0 !important;
 }
 /* =========================================================
-   STUDIO — PRODUCTS DROPDOWN SIZE = PRICING
-   Amaç: Studio topbar ürün kartlarını pricing ile aynı ölçüye çekmek
+   STUDIO ONLY — PRODUCTS DROPDOWN SIZE = PRICING
+   Amaç:
+   - Sadece Studio’da çalışsın
+   - Fiyatlandırmadaki küçük kare kart ölçüsünü kullansın
+   - Index / Pricing / Corp tarafını bozmasın
    ========================================================= */
 
-body[data-page="studio"],
-body.studio,
-body.is-studio-v2{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"]){
   --pd-gap: 12px;
   --pd-radius: 22px;
   --pd-pad: 14px;
@@ -194,9 +195,8 @@ body.is-studio-v2{
   --pd-text-top: 54px;
 }
 
-body[data-page="studio"] .dropdown--products .products-menu,
-body.studio .dropdown--products .products-menu,
-body.is-studio-v2 .dropdown--products .products-menu{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
+.dropdown--products .products-menu{
   display: grid !important;
   grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
   gap: var(--pd-gap) !important;
@@ -204,22 +204,23 @@ body.is-studio-v2 .dropdown--products .products-menu{
   align-items: stretch !important;
 }
 
-body[data-page="studio"] .dropdown--products .products-menu > a.product-card,
-body.studio .dropdown--products .products-menu > a.product-card,
-body.is-studio-v2 .dropdown--products .products-menu > a.product-card{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
+.dropdown--products .products-menu > a.product-card{
   aspect-ratio: 1 / 1 !important;
   min-height: var(--pd-card) !important;
   height: auto !important;
+
   position: relative !important;
   padding: var(--pd-pad) !important;
   border-radius: var(--pd-radius) !important;
   overflow: hidden !important;
+
   display: block !important;
+  transform: translateY(0) !important;
 }
 
-body[data-page="studio"] .dropdown--products .products-menu > a.product-card .pc-ico,
-body.studio .dropdown--products .products-menu > a.product-card .pc-ico,
-body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-ico{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
+.dropdown--products .products-menu > a.product-card .pc-ico{
   position: absolute !important;
   top: var(--pd-ico-top) !important;
   left: var(--pd-ico-left) !important;
@@ -232,9 +233,8 @@ body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-ico{
   justify-content: center !important;
 }
 
-body[data-page="studio"] .dropdown--products .products-menu > a.product-card .pc-txt,
-body.studio .dropdown--products .products-menu > a.product-card .pc-txt,
-body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-txt{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
+.dropdown--products .products-menu > a.product-card .pc-txt{
   display: flex !important;
   flex-direction: column !important;
   gap: 6px !important;
@@ -242,9 +242,8 @@ body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-txt{
   min-width: 0 !important;
 }
 
-body[data-page="studio"] .dropdown--products .products-menu > a.product-card .pc-title,
-body.studio .dropdown--products .products-menu > a.product-card .pc-title,
-body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-title{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
+.dropdown--products .products-menu > a.product-card .pc-title{
   font-size: 16px !important;
   line-height: 1.12 !important;
   letter-spacing: -0.2px !important;
@@ -255,9 +254,8 @@ body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-title{
   overflow: hidden !important;
 }
 
-body[data-page="studio"] .dropdown--products .products-menu > a.product-card .pc-sub,
-body.studio .dropdown--products .products-menu > a.product-card .pc-sub,
-body.is-studio-v2 .dropdown--products .products-menu > a.product-card .pc-sub{
+body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
+.dropdown--products .products-menu > a.product-card .pc-sub{
   font-size: 13px !important;
   line-height: 1.32 !important;
   opacity: .78 !important;
