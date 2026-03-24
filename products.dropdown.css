@@ -2504,10 +2504,9 @@
 #userMenuPanel{
   width: min(300px, calc(100vw - 14px)) !important;
   max-width: 300px !important;
-  padding: 10px !important;
+  padding: 6px !important;
   border-radius: 16px !important;
 }
-
 /* Üst başlık: daha az boşluk */
 #userMenuPanel .user-menu-card{
   padding: 10px !important;
