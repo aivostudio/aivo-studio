@@ -937,20 +937,20 @@
     syncUI();
   });
 
-document.addEventListener("click", function(e){
-  var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
-  if (!btn) return;
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
+    if (!btn) return;
 
-  if (document.documentElement.classList.contains('is-auth') && !ok()) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    if (hint) hint.style.display = "block";
-    attention();
-    scrollToKVKK();
-    return false;
-  }
-}, true);
+    if (!ok()) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      if (hint) hint.style.display = "block";
+      attention();
+      scrollToKVKK();
+      return false;
+    }
+  }, true);
 
   window.__AIVO_KVKK_OK__ = ok;
   syncUI();
@@ -964,14 +964,15 @@ document.addEventListener("click", function(e){
   window.__AIVO_PRICING_HUB_SINGLE__ = true;
 
   // ✅ A) isAuthed() revize (async): class is-auth + /api/auth/me fallback
- async function isAuthed(){
-  try {
-    var r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-    return !!(r && r.status === 200);
-  } catch(e){
-    return false;
+  async function isAuthed(){
+    try {
+      if (document.documentElement.classList.contains('is-auth')) return true;
+      var r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+      return r && r.status === 200;
+    } catch(e){
+      return false;
+    }
   }
-}
 
   // ✅ B) getUserEmail() revize (async): #umEmail + /api/auth/me fallback
   async function getUserEmail(){
@@ -993,17 +994,17 @@ document.addEventListener("click", function(e){
     }
   }
 
- function openAuth(mode){
-  var modal = document.getElementById("loginModal");
-  if (!modal) { location.href = "/login.html"; return; }
-
-  modal.dataset.mode = (mode === "register") ? "register" : "login";
-  modal.classList.add("is-open");
-  modal.style.display = "block";
-  modal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
-  document.documentElement.classList.add("modal-open");
-}
+  function openAuth(mode){
+    // auth.core.js “tek otorite” — varsa onu kullan
+    if (typeof window.openAuthModal === "function") { window.openAuthModal(mode); return; }
+    // fallback
+    var modal = document.getElementById("loginModal");
+    if (!modal) { location.href = "/login.html"; return; }
+    modal.dataset.mode = (mode === "register") ? "register" : "login";
+    modal.classList.add("is-open");
+    modal.style.display = "block";
+    modal.setAttribute("aria-hidden", "false");
+  }
 
   function scrollToPacks(){
     var el = document.getElementById("packs");
@@ -1080,13 +1081,6 @@ document.addEventListener("click", function(e){
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
     var pack = (packBtn.getAttribute("data-pack") || "").trim();
-    console.log("[PRICING PACK CLICK]", {
-  pack,
-  htmlIsAuth: document.documentElement.classList.contains("is-auth"),
-  localLoggedIn: localStorage.getItem("aivo_logged_in"),
-  localEmail: localStorage.getItem("aivo_user_email"),
-  kvkkOk: typeof window.__AIVO_KVKK_OK__ === "function" ? window.__AIVO_KVKK_OK__() : "no-fn"
-});
     if (!pack) return;
 
     if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
