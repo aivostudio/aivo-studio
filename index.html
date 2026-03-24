@@ -1615,23 +1615,6 @@
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
   background: rgba(255,255,255,.04);
-  cursor: pointer;
-  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease;
-  opacity: .88;
-}
-
-#child-cartoon .cartoon-thumb:hover{
-  opacity: 1;
-  transform: translateY(-2px);
-}
-
-#child-cartoon .cartoon-thumb.is-active{
-  opacity: 1;
-  border: 2px solid rgba(255,255,255,.34);
-  box-shadow:
-    0 0 0 2px rgba(139,92,246,.22),
-    0 14px 28px rgba(59,130,246,.18);
-  transform: translateY(-2px);
 }
   #child-cartoon .cartoon-shot-label{
   margin-top: 8px;
@@ -1720,68 +1703,39 @@
 
       </div>
 
-<div class="cartoon-right" aria-hidden="true">
-  <div class="cartoon-preview">
-    <img
-      id="cartoonMainPreview"
-      class="cartoon-preview-video"
-      src="/media/cartoon-thumb-1.jpg"
-      alt="AI Çocuk Çizgifilm ana sahne önizleme"
-      loading="eager" />
-  </div>
-
-  <div class="cartoon-thumbs">
-    <div class="cartoon-shot">
-      <img
-        class="cartoon-thumb is-active"
-        src="/media/cartoon-thumb-1.jpg"
-        data-preview-src="/media/cartoon-thumb-1.jpg"
-        alt="Nova yaklaşır"
-        loading="lazy" />
-      <div class="cartoon-shot-label">Yaklaşır</div>
-    </div>
-
-    <div class="cartoon-shot">
-      <img
-        class="cartoon-thumb"
-        src="/media/cartoon-thumb-2.jpg"
-        data-preview-src="/media/cartoon-thumb-2.jpg"
-        alt="Nova küreyi bulur"
-        loading="lazy" />
-      <div class="cartoon-shot-label">Küreyi bulur</div>
-    </div>
-
-    <div class="cartoon-shot">
-      <img
-        class="cartoon-thumb"
-        src="/media/cartoon-thumb-3.jpg"
-        data-preview-src="/media/cartoon-thumb-3.jpg"
-        alt="Nova gücünü salar"
-        loading="lazy" />
-      <div class="cartoon-shot-label">Gücünü salar</div>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      const main = document.getElementById("cartoonMainPreview");
-      const thumbs = document.querySelectorAll("#child-cartoon .cartoon-thumb");
-      if (!main || !thumbs.length) return;
-
-      thumbs.forEach((thumb) => {
-        thumb.addEventListener("click", function () {
-          const nextSrc = this.getAttribute("data-preview-src");
-          if (!nextSrc) return;
-
-          main.src = nextSrc;
-
-          thumbs.forEach((item) => item.classList.remove("is-active"));
-          this.classList.add("is-active");
-        });
-      });
-    })();
-  </script>
+      <div class="cartoon-right" aria-hidden="true">
+       <div class="cartoon-preview">
+  <video
+    class="cartoon-preview-video"
+    src="/media/cartoon-preview.mp4"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto">
+  </video>
 </div>
+
+      <div class="cartoon-thumbs">
+  <div class="cartoon-shot">
+    <img class="cartoon-thumb" src="/media/cartoon-thumb-1.jpg" alt="Nova yaklaşır" loading="lazy" />
+    <div class="cartoon-shot-label">Yaklaşır</div>
+  </div>
+
+  <div class="cartoon-shot">
+    <img class="cartoon-thumb" src="/media/cartoon-thumb-2.jpg" alt="Nova küreyi bulur" loading="lazy" />
+    <div class="cartoon-shot-label">Küreyi bulur</div>
+  </div>
+
+  <div class="cartoon-shot">
+    <img class="cartoon-thumb" src="/media/cartoon-thumb-3.jpg" alt="Nova gücünü salar" loading="lazy" />
+    <div class="cartoon-shot-label">Gücünü salar</div>
+  </div>
+</div>
+      </div>
+    </div>
+
+  </div>
 </section>
 <!-- ================= /AI COCUK CIZGIFILM ================= -->
 
