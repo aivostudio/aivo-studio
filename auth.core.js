@@ -497,5 +497,77 @@ if (!kvkk) {
     })();
   })();
 })();
+/* =========================================================
+   PRODUCTS dropdown click (GLOBAL GATE / ROUTE)
+   - Pricing + Kurumsal + diğer vitrinde çalışsın
+   - login yoksa modal açsın
+   - login varsa studio target'a gitsin
+   ========================================================= */
+(function bindProductsNav(){
+  if (window.__AIVO_PRODUCTS_NAV_GATE__) return;
+  window.__AIVO_PRODUCTS_NAV_GATE__ = true;
 
+  function safeOpenLogin(){
+    try{
+      if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
+      if (typeof window.openAuthModal  === "function") { window.openAuthModal("login"); return; }
+      if (typeof window.openModal      === "function") { window.openModal("login"); return; }
+      const btn = document.getElementById("btnLoginTop");
+      if (btn) { btn.click(); return; }
+    }catch(_){}
+  }
+
+  function safeIsLoggedIn(){
+    try{
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if ((localStorage.getItem("aivo_user_email") || "").trim()) return true;
+      if ((localStorage.getItem("aivo_token") || "").trim()) return true;
+      if ((localStorage.getItem("aivo_user") || "").trim()) return true;
+      return false;
+    }catch(_){
+      return false;
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
+    if (!card) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+
+    const product = (card.getAttribute("data-product") || "").trim();
+    if (!product) return;
+
+    const isStudio =
+      /\/studio(\.html)?$/i.test(location.pathname) ||
+      /\/studio\.v2\.html$/i.test(location.pathname) ||
+      /studio\.html/i.test(location.href) ||
+      /studio\.v2\.html/i.test(location.href);
+
+    const map = { music: "music", cover: "cover", video: "video" };
+    const page = map[product] || product;
+
+    if (!isStudio && !safeIsLoggedIn()) {
+      try {
+        sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page));
+      } catch(_) {}
+      safeOpenLogin();
+      return;
+    }
+
+    try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
+
+    if (!isStudio) {
+      location.href = "/studio.v2.html#" + encodeURIComponent(page);
+      return;
+    }
+
+    if (typeof window.AIVO_SWITCH_PAGE === "function") {
+      window.AIVO_SWITCH_PAGE(page);
+      try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
+    }
+  }, true);
+})();
 
