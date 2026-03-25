@@ -867,19 +867,18 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         const nextRoot = getRoot();
         if (!nextRoot) return;
 
-        const clearBtn = e.target.closest("[data-clear-upload]");
-        if (clearBtn && nextRoot.contains(clearBtn)) {
-          
-          e.preventDefault();
-          e.stopPropagation();
-          const clearKey = String(
-            clearBtn.getAttribute("data-clear-upload") || ""
-          ).trim();
-          if (clearKey) {
-            clearFileSelection(nextRoot, clearKey);
-          }
-          return;
-        }
+       const clearBtn = e.target.closest("[data-clear-upload]");
+if (clearBtn && nextRoot.contains(clearBtn)) {
+  e.preventDefault();
+  e.stopPropagation();
+  const clearKey = String(
+    clearBtn.getAttribute("data-clear-upload") || ""
+  ).trim();
+  if (clearKey) {
+    clearFileSelection(nextRoot, clearKey);
+  }
+  return;
+}
 
         const qualityCard = e.target.closest(".pfxChoiceCard[data-quality]");
         if (qualityCard && nextRoot.contains(qualityCard)) {
