@@ -698,3 +698,53 @@ section[data-module="photofx"] .pfxPresetBlock::before,
 section[data-module="photofx"] .pfxClipBlock::before{
   opacity: .82 !important;
 }
+/* PHOTOFX HERO — cover başlığı gibi */
+
+section[data-module="photofx"] .pfxHero,
+section.pfxPage[data-module="photofx"] .pfxHero,
+section[data-module="photofx"] .page-hero-card,
+section.pfxPage[data-module="photofx"] .page-hero-card{
+  margin-bottom: 14px;
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 600px at 15% 10%, rgba(170, 120, 255, .22), transparent 55%),
+    radial-gradient(900px 600px at 85% 20%, rgba(80, 140, 255, .18), transparent 55%),
+    linear-gradient(180deg, rgba(22, 24, 44, .60), rgba(18, 19, 38, .60));
+  border: 1px solid rgba(160, 110, 255, .22);
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+}
+
+section[data-module="photofx"] .pfxHeroInner,
+section.pfxPage[data-module="photofx"] .pfxHeroInner,
+section[data-module="photofx"] .page-hero-inner,
+section.pfxPage[data-module="photofx"] .page-hero-inner{
+  padding: 18px 18px 16px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+section[data-module="photofx"] .pfxHeroTitle,
+section.pfxPage[data-module="photofx"] .pfxHeroTitle,
+section[data-module="photofx"] .page-title,
+section.pfxPage[data-module="photofx"] .page-title{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+  text-align: center;
+}
+
+section[data-module="photofx"] .pfxHeroSub,
+section.pfxPage[data-module="photofx"] .pfxHeroSub,
+section[data-module="photofx"] .page-subtitle,
+section.pfxPage[data-module="photofx"] .page-subtitle{
+  margin: 6px 0 0;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(255,255,255,.62);
+  text-align: center;
+}
