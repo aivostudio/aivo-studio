@@ -7,19 +7,21 @@
       </p>
     </div>
   </div>
- <div class="pfxField pfxPromptField">
-  <span class="pfxLabel"></span>
-  <textarea
-    class="pfxPromptInput"
-    id="pfxPrompt"
-    rows="5"
-    maxlength="5000"
-    placeholder="Klibin havasını, enerjisini ve motion stilini yaz... Örn: neon ışıklı, hızlı geçişli, karanlık şehir atmosferinde sinematik clip"
-  ></textarea>
-  <div class="pfxPromptCount">
-    <span id="pfxPromptCount">0</span> / 5000
+
+  <div class="pfxField pfxPromptField">
+    <span class="pfxLabel"></span>
+    <textarea
+      class="pfxPromptInput"
+      id="pfxPrompt"
+      rows="5"
+      maxlength="5000"
+      placeholder="Klibin havasını, enerjisini ve motion stilini yaz... Örn: neon ışıklı, hızlı geçişli, karanlık şehir atmosferinde sinematik clip"
+    ></textarea>
+    <div class="pfxPromptCount">
+      <span id="pfxPromptCount">0</span> / 5000
+    </div>
   </div>
-</div>
+
   <div class="pfxBlock glassCard pfxQualityBlock">
     <div class="pfxBlockHead">
       <div class="pfxBlockTitle">Kalite Seviyesi</div>
@@ -94,95 +96,131 @@
     </div>
   </div>
 
-<div class="pfxBlock glassCard pfxClipBlock">
-  <div class="pfxBlockHead">
-    <div class="pfxBlockTitle">Klip Ayarları</div>
-    <div class="pfxBlockSub">Çıkış süresi, oran ve efekt yoğunluğunu belirle.</div>
-  </div>
-
-  <div class="pfxUploadToolsGrid">
-    <div class="pfxField">
-      <span class="pfxLabel">Ana Görsel</span>
-      <div class="pfxUploadTool">
-        <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxInlineUploadBtn">Resim Seç</button>
-      </div>
+  <div class="pfxBlock glassCard pfxClipBlock">
+    <div class="pfxBlockHead">
+      <div class="pfxBlockTitle">Klip Ayarları</div>
+      <div class="pfxBlockSub">Çıkış süresi, oran, çözünürlük, FPS ve efekt yoğunluğunu belirle.</div>
     </div>
 
-    <div class="pfxField">
-      <span class="pfxLabel">Audio Yükle</span>
-      <div class="pfxUploadTool">
-        <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxAudioUploadBtn">Audio Seç</button>
+    <div class="pfxUploadToolsGrid">
+      <div class="pfxField">
+        <span class="pfxLabel">Ana Görsel</span>
+        <div class="pfxUploadTool">
+          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxInlineUploadBtn">Resim Seç</button>
+        </div>
       </div>
+
+      <div class="pfxField">
+        <span class="pfxLabel">Bitiş Görseli</span>
+        <div class="pfxUploadTool">
+          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxEndImageUploadBtn">Bitiş Görseli Seç</button>
+        </div>
+      </div>
+
+      <div class="pfxField">
+        <span class="pfxLabel">Audio Yükle</span>
+        <div class="pfxUploadTool">
+          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxAudioUploadBtn">Audio Seç</button>
+        </div>
+      </div>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Müziği Videoya Dahil Et</span>
+        <select class="pfxSelect" id="pfxIncludeMusic">
+          <option value="no" selected>Hayır</option>
+          <option value="yes">Evet</option>
+        </select>
+      </label>
     </div>
 
-    <label class="pfxField">
-      <span class="pfxLabel">Müziği Videoya Dahil Et</span>
-      <select class="pfxSelect" id="pfxIncludeMusic">
-        <option value="no" selected>Hayır</option>
-        <option value="yes">Evet</option>
-      </select>
-    </label>
+    <div class="pfxFormGrid">
+      <label class="pfxField">
+        <span class="pfxLabel">Klip Süresi</span>
+        <select class="pfxSelect" id="pfxDuration">
+          <option value="6" selected>6 saniye</option>
+          <option value="8">8 saniye</option>
+          <option value="10">10 saniye</option>
+          <option value="12">12 saniye</option>
+          <option value="14">14 saniye</option>
+          <option value="16">16 saniye</option>
+          <option value="18">18 saniye</option>
+          <option value="20">20 saniye</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">En / Boy Oranı</span>
+        <select class="pfxSelect" id="pfxAspect">
+          <option value="auto">Otomatik</option>
+          <option value="9:16" selected>Dikey (9:16)</option>
+          <option value="16:9">Yatay (16:9)</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Çözünürlük</span>
+        <select class="pfxSelect" id="pfxResolution">
+          <option value="1080p" selected>1080p</option>
+          <option value="1440p">1440p</option>
+          <option value="2160p">2160p</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">FPS</span>
+        <select class="pfxSelect" id="pfxFps">
+          <option value="24">24 FPS</option>
+          <option value="25" selected>25 FPS</option>
+          <option value="48">48 FPS</option>
+          <option value="50">50 FPS</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Hareket Seviyesi</span>
+        <select class="pfxSelect" id="pfxMotionLevel">
+          <option value="soft">Yumuşak</option>
+          <option value="balanced" selected>Dengeli</option>
+          <option value="strong">Güçlü</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Efekt Gücü</span>
+        <select class="pfxSelect" id="pfxEffectPower">
+          <option value="light">Hafif</option>
+          <option value="medium" selected>Orta</option>
+          <option value="high">Yüksek</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Renk Havası</span>
+        <select class="pfxSelect" id="pfxColorMood">
+          <option value="original" selected>Orijinal</option>
+          <option value="cold">Soğuk</option>
+          <option value="warm">Sıcak</option>
+          <option value="neon">Neon</option>
+          <option value="dark">Karanlık</option>
+          <option value="cinematic">Sinematik</option>
+        </select>
+      </label>
+
+      <label class="pfxField">
+        <span class="pfxLabel">Geçiş Hızı</span>
+        <select class="pfxSelect" id="pfxTransitionSpeed">
+          <option value="slow">Yavaş</option>
+          <option value="normal" selected>Normal</option>
+          <option value="fast">Hızlı</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="pfxInlineNote">
+      12 saniye ve üzeri sürelerde en stabil sonuç için 1080p ve 25 FPS önerilir.
+    </div>
   </div>
 
-  <div class="pfxFormGrid">
-    <label class="pfxField">
-      <span class="pfxLabel">Klip Süresi</span>
-      <select class="pfxSelect" id="pfxDuration">
-         <option value="5">5 saniye</option>
-        <option value="10">10 saniye</option>
-        <option value="15">15 saniye</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">En / Boy Oranı</span>
-      <select class="pfxSelect" id="pfxAspect">
-        <option value="9:16">Dikey (9:16)</option>
-        <option value="1:1">Kare (1:1)</option>
-        <option value="16:9">Yatay (16:9)</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Hareket Seviyesi</span>
-      <select class="pfxSelect" id="pfxMotionLevel">
-        <option value="soft">Yumuşak</option>
-        <option value="balanced" selected>Dengeli</option>
-        <option value="strong">Güçlü</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Efekt Gücü</span>
-      <select class="pfxSelect" id="pfxEffectPower">
-        <option value="light">Hafif</option>
-        <option value="medium" selected>Orta</option>
-        <option value="high">Yüksek</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Renk Havası</span>
-      <select class="pfxSelect" id="pfxColorMood">
-        <option value="original">Orijinal</option>
-        <option value="cold">Soğuk</option>
-        <option value="warm">Sıcak</option>
-        <option value="neon">Neon</option>
-        <option value="dark">Karanlık</option>
-        <option value="cinematic">Sinematik</option>
-      </select>
-    </label>
-
-    <label class="pfxField">
-      <span class="pfxLabel">Geçiş Hızı</span>
-      <select class="pfxSelect" id="pfxTransitionSpeed">
-        <option value="slow">Yavaş</option>
-        <option value="normal" selected>Normal</option>
-        <option value="fast">Hızlı</option>
-      </select>
-    </label>
-  </div>
-</div>
   <div class="pfxEngine glassCard">
     <div class="pfxEngineText">
       <div class="pfxEngineTitle">AIVO Foto Efekt Motoru</div>
