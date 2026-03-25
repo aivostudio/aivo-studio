@@ -780,3 +780,115 @@ section.pfxPage[data-module="photofx"] .pfxSub{
     font-size: 12px;
   }
 }
+/* === PHOTOFX upload alanlarini cartoon compact duzenine cek === */
+section[data-module="photofx"] .pfxUploadGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  align-items:start;
+}
+
+section[data-module="photofx"] .pfxUploadTool{
+  min-width:0;
+}
+
+section[data-module="photofx"] .pfxUploadLabel{
+  display:block;
+  margin:0 0 6px;
+  font-size:11px;
+  line-height:1.1;
+  font-weight:800;
+  color:rgba(255,255,255,.82);
+}
+
+section[data-module="photofx"] .pfxUploadRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:36px;
+  min-width:0;
+  flex-wrap:nowrap;
+}
+
+section[data-module="photofx"] .pfxUploadBtn{
+  flex:0 0 auto;
+  min-width:92px;
+  height:36px;
+  padding:0 12px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:800;
+}
+
+section[data-module="photofx"] .pfxUploadMeta,
+section[data-module="photofx"] .pfxUploadToolName{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.68);
+}
+
+section[data-module="photofx"] .pfxUploadChip{
+  flex:1 1 auto;
+  min-width:0;
+  max-width:100%;
+  height:36px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 6px 0 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+
+section[data-module="photofx"] .pfxUploadChipName{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  line-height:1;
+  font-weight:600;
+  color:rgba(255,255,255,.72);
+}
+
+section[data-module="photofx"] .pfxUploadChipClear{
+  flex:0 0 26px;
+  width:26px;
+  height:26px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:15px;
+  line-height:1;
+  font-weight:800;
+  cursor:pointer;
+}
+
+section[data-module="photofx"] .pfxUploadChipClear:hover{
+  background:rgba(255,255,255,.14);
+}
+
+@media (max-width: 900px){
+  section[data-module="photofx"] .pfxUploadGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media (max-width: 640px){
+  section[data-module="photofx"] .pfxUploadGrid{
+    grid-template-columns:1fr;
+  }
+}
