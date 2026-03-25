@@ -1,8 +1,8 @@
 // /api/photofx/finalize.js
 // CommonJS
 // PhotoFX finalize:
-// input: provider / mux / final url
-// işlem: ffmpeg remux + faststart + preview encode
+// input: provider / logo-overlay / mux / final url
+// işlem: optional inline mux + optional compositing scaffold + faststart + preview encode
 // output: R2 final mp4 + R2 preview mp4 + DB meta/output patch
 
 const { neon } = require("@neondatabase/serverless");
@@ -111,10 +111,12 @@ function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
 
 function getR2Client() {
   if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID)
+  if (!process.env.R2_ACCESS_KEY_ID) {
     throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY)
+  }
+  if (!process.env.R2_SECRET_ACCESS_KEY) {
     throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+  }
 
   return new S3Client({
     region: "auto",
@@ -527,12 +529,18 @@ module.exports = async function handler(req, res) {
       String(meta?.music_url || "").trim();
 
     const muxUrl = String(meta?.muxed_url || "").trim() || pickUrl(muxOut);
+    const logoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
     const providerUrl = pickUrl(providerOut);
 
     const hasAudio = !!audioUrl;
     const hasMux = !!muxUrl;
 
-    const selectedFinalSourceUrl = muxUrl || providerUrl || "";
+    // Final secim onceligi:
+    // 1) logo overlay final
+    // 2) muxed final
+    // 3) provider video
+    const selectedFinalSourceUrl =
+      logoOverlayUrl || muxUrl || providerUrl || "";
 
     if (!selectedFinalSourceUrl) {
       return res.status(400).json({
@@ -541,6 +549,7 @@ module.exports = async function handler(req, res) {
         job_id,
         has_audio: hasAudio,
         has_mux: hasMux,
+        has_logo_overlay: !!logoOverlayUrl,
       });
     }
 
@@ -559,7 +568,8 @@ module.exports = async function handler(req, res) {
 
     let effectiveInputPath = inputPath;
 
-    const needsInlineMux = hasAudio && !muxUrl;
+    // logo overlay veya mux varsa onlar zaten gerçek final kaynaktır; tekrar mux yapma.
+    const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
 
     if (needsInlineMux) {
       await downloadToFile(audioUrl, audioPath);
@@ -596,6 +606,11 @@ module.exports = async function handler(req, res) {
       input_path_before_composite: effectiveInputPath,
       output_path_after_composite: compositedPath,
       stage: "pre_faststart",
+      source_variant: logoOverlayUrl
+        ? "logo_overlay"
+        : muxUrl
+          ? "mux"
+          : "provider",
     };
 
     if (compositingPlan.enabled) {
@@ -688,9 +703,15 @@ module.exports = async function handler(req, res) {
       preview_source_duration_sec: durationSec || 0,
       preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
       preview_source_url: selectedFinalSourceUrl,
+      selected_final_source_variant: compositingPlan.source_variant,
       compositing_enabled: compositingPlan.enabled,
       compositing_preset: compositingPlan.preset || "",
       compositing_styles: compositingPlan.styles,
+      ...(logoOverlayUrl
+        ? {
+            logo_overlay_url: logoOverlayUrl,
+          }
+        : {}),
       ...(needsInlineMux && mux_url
         ? {
             muxed_url: mux_url,
@@ -717,6 +738,7 @@ module.exports = async function handler(req, res) {
       step: "finalized",
       preview_cfg: previewBitrateCfg,
       preview_source_url: selectedFinalSourceUrl,
+      selected_final_source_variant: compositingPlan.source_variant,
       needs_inline_mux: needsInlineMux,
       compositing: {
         enabled: compositingPlan.enabled,
