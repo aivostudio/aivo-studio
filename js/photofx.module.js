@@ -593,18 +593,31 @@ function bindEvents(root) {
     });
   }
 }
-
- function retryBoot(attempt = 0) {
+function retryBoot(attempt = 0) {
   const root = getRoot();
+  const qualityCards = root ? qsa(".pfxChoiceCard[data-quality]", root) : [];
+  const presetCards = root ? qsa(".pfxPresetCard[data-preset]", root) : [];
+  const createBtn = root ? qs(".pfxCreateBtn", root) : null;
 
-  if (root) {
+  const domReady =
+    !!root &&
+    qualityCards.length > 0 &&
+    presetCards.length > 0 &&
+    !!createBtn;
+
+  if (domReady) {
     boot();
     console.log("[PHOTOFX] module READY ✅");
     return;
   }
 
   if (attempt >= 40) {
-    console.warn("[PHOTOFX] root not found after retry limit");
+    console.warn("[PHOTOFX] root/children not ready after retry limit", {
+      hasRoot: !!root,
+      qualityCards: qualityCards.length,
+      presetCards: presetCards.length,
+      hasCreateBtn: !!createBtn,
+    });
     return;
   }
 
