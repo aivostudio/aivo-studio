@@ -1824,31 +1824,46 @@
     padding:0;
   }
 #photofx-clip .photofx-title{
+  position: relative;
   margin: 0 0 8px 0;
   font-size: clamp(36px, 4.6vw, 60px);
   line-height: 1.05;
   letter-spacing: -0.02em;
   font-weight: 900;
+  color: rgba(255,255,255,.96);
+  text-shadow:
+    0 0 18px rgba(139,92,246,.10),
+    0 0 34px rgba(59,130,246,.06);
+}
+
+#photofx-clip .photofx-title::after{
+  content: "";
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
-    90deg,
-    #ffffff 0%,
-    #9bd4ff 18%,
-    #8b5cf6 42%,
-    #ec4899 68%,
-    #ffffff 100%
+    105deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255,255,255,.10) 46%,
+    rgba(255,255,255,.62) 50%,
+    rgba(255,255,255,.12) 54%,
+    transparent 62%,
+    transparent 100%
   );
-  background-size: 240% 100%;
+  background-size: 220% 100%;
+  background-position: -140% 50%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: photofxTitleFlow 8s linear infinite;
-  text-shadow: 0 0 18px rgba(139,92,246,.10);
+  animation: photofxTitleSweep 4.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
-@keyframes photofxTitleFlow{
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 240% 50%; }
+@keyframes photofxTitleSweep{
+  0%, 18%   { background-position: -140% 50%; }
+  42%       { background-position: 140% 50%; }
+  100%      { background-position: 140% 50%; }
 }
 
   #photofx-clip .photofx-sub{
