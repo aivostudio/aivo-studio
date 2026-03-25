@@ -74,6 +74,34 @@ function mapDuration(v, isPro = false) {
   return 10;
 }
 
+function rewriteToFalFetchableUrl(rawUrl) {
+  const input = String(rawUrl || "").trim();
+  if (!input) return "";
+
+  const falBase = String(
+    process.env.R2_PUBLIC_BASE_FAL || process.env.R2_PUBLIC_BASE || ""
+  )
+    .trim()
+    .replace(/\/$/, "");
+
+  if (!falBase) return input;
+
+  try {
+    const u = new URL(input);
+
+    if (u.hostname === "media.aivo.tr" && u.pathname.startsWith("/uploads/")) {
+      return `${falBase}${u.pathname}`;
+    }
+
+    return input;
+  } catch {
+    if (input.startsWith("/uploads/")) {
+      return `${falBase}${input}`;
+    }
+    return input;
+  }
+}
+
 function buildPrompt({
   prompt,
   preset,
@@ -175,13 +203,15 @@ export default async function handler(req, res) {
   const incomingJobId = body.job_id ? String(body.job_id) : null;
   const app = "photofx";
 
-  const image_url =
+  const image_url_raw =
     pick(body, ["image_url", "imageUrl", "input.image_url", "input.imageUrl"]) ||
     null;
 
-  if (!image_url || !String(image_url).trim()) {
+  if (!image_url_raw || !String(image_url_raw).trim()) {
     return res.status(400).json({ ok: false, error: "missing_image_url" });
   }
+
+  const image_url = rewriteToFalFetchableUrl(String(image_url_raw).trim());
 
   // ---- MOTOR SEÇİMİ ----
   // standard => Fast
@@ -293,6 +323,8 @@ export default async function handler(req, res) {
       provider: "fal",
       error: "fal_error",
       fal_status: r.status,
+      image_url: String(image_url_raw).trim(),
+      image_url_fal: String(image_url).trim(),
       fal_response: data,
     });
   }
@@ -311,7 +343,8 @@ export default async function handler(req, res) {
     quality,
     request_id,
     preset,
-    image_url: String(image_url).trim(),
+    image_url: String(image_url_raw).trim(),
+    image_url_fal: String(image_url).trim(),
     aspect_ratio,
     duration,
     motion_level,
@@ -348,6 +381,8 @@ export default async function handler(req, res) {
       request_id,
       status_url: status_url || null,
       job_id: incomingJobId,
+      image_url: String(image_url_raw).trim(),
+      image_url_fal: String(image_url).trim(),
       raw: data,
       updated: true,
     });
@@ -381,6 +416,8 @@ export default async function handler(req, res) {
     request_id,
     status_url: status_url || null,
     job_id: rows?.[0]?.id || null,
+    image_url: String(image_url_raw).trim(),
+    image_url_fal: String(image_url).trim(),
     raw: data,
     inserted: true,
   });
