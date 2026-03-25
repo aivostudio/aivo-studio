@@ -801,44 +801,54 @@
       },
     });
 
-    const onJobCreated = (e) => {
-      const d = e?.detail || {};
-      if (!d.job_id) return;
-      if (!isPhotoFxApp(d.app || d.meta?.app || "photofx")) return;
+const onJobCreated = (e) => {
+  const d = e?.detail || {};
+  if (!d.job_id) return;
+  if (!isPhotoFxApp(d.app || d.meta?.app || "photofx")) return;
 
-      const job_id = String(d.job_id || "").trim();
-      if (!job_id) return;
-      if (hiddenDeletedIds.has(job_id)) return;
+  const job_id = String(d.job_id || "").trim();
+  if (!job_id) return;
+  if (hiddenDeletedIds.has(job_id)) return;
 
-      const existsDb = currentDbItems.some((j) => idOf(j) === job_id);
-      if (existsDb) return;
-      if (optimistic.has(job_id)) return;
+  const existsDb = currentDbItems.some((j) => idOf(j) === job_id);
+  if (existsDb) return;
 
-      const meta = d.meta || {};
-      const createdAt = d.createdAt || Date.now();
+  const meta = d.meta || {};
+  const createdAt = d.createdAt || Date.now();
 
-      optimistic.set(job_id, {
-        job_id,
-        app: "photofx",
-        provider: meta.provider || "PhotoFX",
-        createdAt,
-        created_at: createdAt,
-        db_status: "processing",
-        status: "processing",
-        state: "PROCESSING",
-        _fresh: false,
-        meta: {
-          ...(meta || {}),
-          app: "photofx",
-          prompt: meta.prompt || "",
-          duration: meta.duration || "",
-          ratio: meta.ratio || meta.aspect_ratio || "9:16",
-        },
-        outputs: [],
-      });
+  const optimisticJob = {
+    job_id,
+    app: "photofx",
+    provider: meta.provider || "PhotoFX",
+    createdAt,
+    created_at: createdAt,
+    updated_at: createdAt,
+    db_status: "processing",
+    status: "PROCESSING",
+    state: "PROCESSING",
+    _fresh: false,
+    meta: {
+      ...(meta || {}),
+      app: "photofx",
+      prompt: meta.prompt || "",
+      duration: meta.duration || "",
+      ratio: meta.ratio || meta.aspect_ratio || "9:16",
+      request_id: meta.request_id || "",
+      status_url: meta.status_url || "",
+    },
+    outputs: [],
+  };
 
-      renderCurrent();
-    };
+  optimistic.set(job_id, optimisticJob);
+
+  try {
+    controller.upsert(optimisticJob);
+  } catch (err) {
+    console.warn("[PHOTOFX PANEL] controller.upsert failed", err);
+  }
+
+  renderCurrent();
+};
 
     const onJobReady = (e) => {
       const d = e?.detail || {};
