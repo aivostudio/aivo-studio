@@ -1,3 +1,4 @@
+// FILE: js/photofx.module.js
 console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
 (function () {
@@ -32,6 +33,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         presets: [],
         imageFile: null,
         endImageFile: null,
+        logoFile: null,
         audioFile: null,
       };
     }
@@ -60,7 +62,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return input;
   }
 
-  function ensureFileNameNode(root, btnId, infoId, emptyText) {
+  function ensureUploadMetaNode(root, btnId, infoId) {
     const btn = qs(`#${btnId}`, root);
     if (!btn) return null;
 
@@ -71,11 +73,81 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     info = document.createElement("div");
     info.id = infoId;
-    info.className = "pfxUploadFileName";
-    info.textContent = emptyText;
+    info.className = "pfxUploadMeta";
 
     wrap.appendChild(info);
     return info;
+  }
+
+  function truncateName(name, max = 28) {
+    const safe = String(name || "").trim();
+    if (!safe) return "";
+    if (safe.length <= max) return safe;
+    return `${safe.slice(0, max - 1)}…`;
+  }
+
+  function renderUploadBadge(node, file, emptyText, clearKey) {
+    if (!node) return;
+
+    node.innerHTML = "";
+
+    if (!file) {
+      const empty = document.createElement("div");
+      empty.className = "pfxUploadEmpty";
+      empty.textContent = emptyText || "Dosya seçilmedi";
+      node.appendChild(empty);
+      return;
+    }
+
+    const chip = document.createElement("div");
+    chip.className = "pfxUploadChip";
+
+    const name = document.createElement("div");
+    name.className = "pfxUploadChipName";
+    name.title = file.name || "";
+    name.textContent = truncateName(file.name || "");
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "pfxUploadChipClear";
+    clearBtn.setAttribute("data-clear-upload", clearKey);
+    clearBtn.setAttribute("aria-label", "Seçili dosyayı kaldır");
+    clearBtn.textContent = "×";
+
+    chip.appendChild(name);
+    chip.appendChild(clearBtn);
+    node.appendChild(chip);
+  }
+
+  function clearFileSelection(root, key) {
+    const state = getState(root);
+    if (!state) return;
+
+    if (key === "image") {
+      state.imageFile = null;
+      const input = qs("#pfxImageInput", root);
+      if (input) input.value = "";
+    }
+
+    if (key === "end-image") {
+      state.endImageFile = null;
+      const input = qs("#pfxEndImageInput", root);
+      if (input) input.value = "";
+    }
+
+    if (key === "logo") {
+      state.logoFile = null;
+      const input = qs("#pfxLogoInput", root);
+      if (input) input.value = "";
+    }
+
+    if (key === "audio") {
+      state.audioFile = null;
+      const input = qs("#pfxAudioInput", root);
+      if (input) input.value = "";
+    }
+
+    renderUploads(root);
   }
 
   function getSelectedPresets(root) {
@@ -128,44 +200,57 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   function renderUploads(root) {
     const state = getState(root);
 
-    const imageName = ensureFileNameNode(
+    const imageMeta = ensureUploadMetaNode(
       root,
       "pfxInlineUploadBtn",
-      "pfxImageName",
-      "Dosya seçilmedi"
+      "pfxImageMeta"
     );
 
-    const endImageName = ensureFileNameNode(
+    const endImageMeta = ensureUploadMetaNode(
       root,
       "pfxEndImageUploadBtn",
-      "pfxEndImageName",
-      "Dosya seçilmedi"
+      "pfxEndImageMeta"
     );
 
-    const audioName = ensureFileNameNode(
+    const logoMeta = ensureUploadMetaNode(
+      root,
+      "pfxLogoUploadBtn",
+      "pfxLogoMeta"
+    );
+
+    const audioMeta = ensureUploadMetaNode(
       root,
       "pfxAudioUploadBtn",
-      "pfxAudioName",
-      "Dosya seçilmedi"
+      "pfxAudioMeta"
     );
 
-    if (imageName) {
-      imageName.textContent = state.imageFile
-        ? state.imageFile.name
-        : "Dosya seçilmedi";
-    }
+    renderUploadBadge(
+      imageMeta,
+      state.imageFile,
+      "Dosya seçilmedi",
+      "image"
+    );
 
-    if (endImageName) {
-      endImageName.textContent = state.endImageFile
-        ? state.endImageFile.name
-        : "Dosya seçilmedi";
-    }
+    renderUploadBadge(
+      endImageMeta,
+      state.endImageFile,
+      "Dosya seçilmedi",
+      "end-image"
+    );
 
-    if (audioName) {
-      audioName.textContent = state.audioFile
-        ? state.audioFile.name
-        : "Dosya seçilmedi";
-    }
+    renderUploadBadge(
+      logoMeta,
+      state.logoFile,
+      "Dosya seçilmedi",
+      "logo"
+    );
+
+    renderUploadBadge(
+      audioMeta,
+      state.audioFile,
+      "Dosya seçilmedi",
+      "audio"
+    );
   }
 
   function syncIncludeMusic(root) {
@@ -263,7 +348,9 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     for (let i = 0; i < POLL_MAX; i++) {
       await sleep(POLL_MS);
 
-      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
+      const r = await fetch(
+        `/api/jobs/status?job_id=${encodeURIComponent(job_id)}`
+      );
       const text = await r.text().catch(() => "");
       let j = null;
 
@@ -280,11 +367,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       const ready = isReadyStatus(j.status);
       const outs = pickPhotoFxVideoOutputs(j.outputs);
 
-      const directVideoUrl = String(
-        j?.video?.url ||
-          j?.video_url ||
-          ""
-      ).trim();
+      const directVideoUrl = String(j?.video?.url || j?.video_url || "").trim();
 
       if (ready && (outs.length || directVideoUrl)) {
         const finalOutputs = outs.length
@@ -409,6 +492,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
       imageFile: state.imageFile || null,
       endImageFile: state.endImageFile || null,
+      logoFile: state.logoFile || null,
       audioFile: state.audioFile || null,
     };
   }
@@ -445,7 +529,9 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     const endImageUrl = form.endImageFile
       ? await uploadFile(form.endImageFile, "end-image")
       : "";
-
+    const logoUrl = form.logoFile
+      ? await uploadFile(form.logoFile, "logo")
+      : "";
     const audioUrl =
       form.includeAudio && form.audioFile
         ? await uploadFile(form.audioFile, "audio")
@@ -485,10 +571,16 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         fps: Number(form.fps || 25),
         aspect_ratio: form.ratio,
         end_image_url: endImageUrl || "",
+        logo_enabled: !!logoUrl,
+        logo_name: form.logoFile?.name || "",
+        logo_url: logoUrl || "",
       },
     };
 
-    const provider = await postJSON("/api/providers/fal/photofx/create", providerPayload);
+    const provider = await postJSON(
+      "/api/providers/fal/photofx/create",
+      providerPayload
+    );
 
     const finalJobId = String(provider?.job_id || "").trim();
     const statusUrl = String(provider?.status_url || "").trim();
@@ -522,12 +614,15 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
             includeAudio: form.includeAudio,
             imageUrl,
             endImageUrl,
+            logoUrl,
             audioUrl,
             provider: "fal",
             provider_variant: providerVariant,
             provider_model: providerModel,
             request_id: requestId,
             status_url: statusUrl,
+            logo_enabled: !!logoUrl,
+            logo_name: form.logoFile?.name || "",
           },
         },
       })
@@ -543,6 +638,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       fps: form.fps,
       ratio: form.ratio,
       endImageUrl,
+      logoUrl,
     });
 
     pollPhotoFxJob(finalJobId).catch((err) => {
@@ -575,28 +671,13 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     ensureHiddenInput(root, "pfxImageInput", "image/*");
     ensureHiddenInput(root, "pfxEndImageInput", "image/*");
+    ensureHiddenInput(root, "pfxLogoInput", "image/*");
     ensureHiddenInput(root, "pfxAudioInput", "audio/*");
 
-    ensureFileNameNode(
-      root,
-      "pfxInlineUploadBtn",
-      "pfxImageName",
-      "Dosya seçilmedi"
-    );
-
-    ensureFileNameNode(
-      root,
-      "pfxEndImageUploadBtn",
-      "pfxEndImageName",
-      "Dosya seçilmedi"
-    );
-
-    ensureFileNameNode(
-      root,
-      "pfxAudioUploadBtn",
-      "pfxAudioName",
-      "Dosya seçilmedi"
-    );
+    ensureUploadMetaNode(root, "pfxInlineUploadBtn", "pfxImageMeta");
+    ensureUploadMetaNode(root, "pfxEndImageUploadBtn", "pfxEndImageMeta");
+    ensureUploadMetaNode(root, "pfxLogoUploadBtn", "pfxLogoMeta");
+    ensureUploadMetaNode(root, "pfxAudioUploadBtn", "pfxAudioMeta");
 
     setPromptCounter(root);
     renderQuality(root);
@@ -654,6 +735,14 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         return;
       }
 
+      if (e.target.matches("#pfxLogoInput")) {
+        const file = e.target.files?.[0] || null;
+        state.logoFile = file;
+        renderUploads(root);
+        console.log("[photofx] logo selected =", file?.name || null);
+        return;
+      }
+
       if (e.target.matches("#pfxAudioInput")) {
         const file = e.target.files?.[0] || null;
         state.audioFile = file;
@@ -675,10 +764,14 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     const durationEl = qs("#pfxDuration", root);
     const imageInput = qs("#pfxImageInput", root);
     const endImageInput = qs("#pfxEndImageInput", root);
+    const logoInput = qs("#pfxLogoInput", root);
     const audioInput = qs("#pfxAudioInput", root);
+
     const imageBtn = qs("#pfxInlineUploadBtn", root);
     const endImageBtn = qs("#pfxEndImageUploadBtn", root);
+    const logoBtn = qs("#pfxLogoUploadBtn", root);
     const audioBtn = qs("#pfxAudioUploadBtn", root);
+
     const createBtn = qs(".pfxCreateBtn", root);
 
     if (includeMusic && !includeMusic.__bound) {
@@ -711,6 +804,14 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       });
     }
 
+    if (logoBtn && logoInput && !logoBtn.__bound) {
+      logoBtn.__bound = true;
+      logoBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        logoInput.click();
+      });
+    }
+
     if (audioBtn && audioInput && !audioBtn.__bound) {
       audioBtn.__bound = true;
       audioBtn.addEventListener("click", (e) => {
@@ -740,6 +841,16 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       });
     }
 
+    if (logoInput && !logoInput.__bound) {
+      logoInput.__bound = true;
+      logoInput.addEventListener("change", () => {
+        const file = logoInput.files?.[0] || null;
+        state.logoFile = file;
+        renderUploads(root);
+        console.log("[photofx] logo selected =", file?.name || null);
+      });
+    }
+
     if (audioInput && !audioInput.__bound) {
       audioInput.__bound = true;
       audioInput.addEventListener("change", () => {
@@ -755,6 +866,18 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       (e) => {
         const nextRoot = getRoot();
         if (!nextRoot) return;
+
+        const clearBtn = e.target.closest("[data-clear-upload]");
+        if (clearBtn && nextRoot.contains(clearBtn)) {
+          e.preventDefault();
+          const clearKey = String(
+            clearBtn.getAttribute("data-clear-upload") || ""
+          ).trim();
+          if (clearKey) {
+            clearFileSelection(nextRoot, clearKey);
+          }
+          return;
+        }
 
         const qualityCard = e.target.closest(".pfxChoiceCard[data-quality]");
         if (qualityCard && nextRoot.contains(qualityCard)) {
