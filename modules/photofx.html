@@ -32,7 +32,7 @@
       <button type="button" class="pfxChoiceCard is-active" data-quality="standard">
         <div class="pfxChoiceTop">
           <div class="pfxChoiceTitle">Standart</div>
-          <div class="pfxChoiceCredit">X Kredi</div>
+          <div class="pfxChoiceCredit">8 Kredi</div>
         </div>
         <div class="pfxChoiceDesc">Hızlı üretim, dengeli efekt kalitesi</div>
       </button>
@@ -40,7 +40,7 @@
       <button type="button" class="pfxChoiceCard" data-quality="premium">
         <div class="pfxChoiceTop">
           <div class="pfxChoiceTitle">Premium Clip</div>
-          <div class="pfxChoiceCredit">Y Kredi</div>
+          <div class="pfxChoiceCredit">12 Kredi</div>
         </div>
         <div class="pfxChoiceDesc">Daha güçlü motion, daha zengin efekt katmanı</div>
       </button>
@@ -99,31 +99,66 @@
   <div class="pfxBlock glassCard pfxClipBlock">
     <div class="pfxBlockHead">
       <div class="pfxBlockTitle">Klip Ayarları</div>
-      <div class="pfxBlockSub">Çıkış süresi, oran, çözünürlük, FPS ve efekt yoğunluğunu belirle.</div>
+      <div class="pfxBlockSub">
+        Çıkış süresi, oran, çözünürlük, FPS ve efekt yoğunluğunu belirle.
+      </div>
     </div>
 
-    <div class="pfxUploadToolsGrid">
+    <div class="pfxUploadToolsGrid pfxUploadToolsGrid--four">
       <div class="pfxField">
         <span class="pfxLabel">Ana Görsel</span>
         <div class="pfxUploadTool">
-          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxInlineUploadBtn">Resim Seç</button>
+          <button
+            type="button"
+            class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost"
+            id="pfxInlineUploadBtn"
+          >
+            Resim Seç
+          </button>
         </div>
       </div>
 
       <div class="pfxField">
         <span class="pfxLabel">Bitiş Görseli</span>
         <div class="pfxUploadTool">
-          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxEndImageUploadBtn">Bitiş Görseli Seç</button>
+          <button
+            type="button"
+            class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost"
+            id="pfxEndImageUploadBtn"
+          >
+            Bitiş Görseli Seç
+          </button>
+        </div>
+      </div>
+
+      <div class="pfxField">
+        <span class="pfxLabel">Logo Yükle</span>
+        <div class="pfxUploadTool">
+          <button
+            type="button"
+            class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost"
+            id="pfxLogoUploadBtn"
+          >
+            Logo Seç
+          </button>
         </div>
       </div>
 
       <div class="pfxField">
         <span class="pfxLabel">Audio Yükle</span>
         <div class="pfxUploadTool">
-          <button type="button" class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost" id="pfxAudioUploadBtn">Audio Seç</button>
+          <button
+            type="button"
+            class="pfxUploadMiniBtn pfxUploadMiniBtn--ghost"
+            id="pfxAudioUploadBtn"
+          >
+            Audio Seç
+          </button>
         </div>
       </div>
+    </div>
 
+    <div class="pfxFormGrid">
       <label class="pfxField">
         <span class="pfxLabel">Müziği Videoya Dahil Et</span>
         <select class="pfxSelect" id="pfxIncludeMusic">
@@ -131,9 +166,7 @@
           <option value="yes">Evet</option>
         </select>
       </label>
-    </div>
 
-    <div class="pfxFormGrid">
       <label class="pfxField">
         <span class="pfxLabel">Klip Süresi</span>
         <select class="pfxSelect" id="pfxDuration">
@@ -231,13 +264,13 @@
 
     <div class="pfxEngineMeta">
       <div class="pfxEngineCreditLabel">Gerekli Kredi</div>
-      <div class="pfxEngineCreditValue">X</div>
+      <div class="pfxEngineCreditValue">8</div>
     </div>
   </div>
 
   <div class="pfxActions">
     <button type="button" class="btn btn-primary btn-lg pfxCreateBtn">
-      🎬 Klip Oluştur
+      🎬 Klip Oluştur (8 Kredi)
     </button>
   </div>
 </section>
