@@ -540,6 +540,31 @@
       }
 
       const merged = Array.from(byId.values()).sort((a, b) => {
+        const STALE_PROCESSING_MS = 2 * 60 * 1000;
+
+const visibleMerged = merged.filter((job) => {
+  const finalUrl = pickFinalVideoFromJob(job);
+  const previewUrl = pickPreviewVideoFromJob(job);
+
+  if (finalUrl || previewUrl) return true;
+
+  const st = norm(job?.db_status || job?.status || job?.state);
+  const isProcessing =
+    st.includes("process") ||
+    st.includes("run") ||
+    st.includes("pend") ||
+    st.includes("queue");
+
+  if (!isProcessing) return false;
+
+  const ts =
+    toMs(job?.updated_at) ||
+    toMs(job?.created_at) ||
+    toMs(job?.createdAt) ||
+    0;
+
+  return ts && (Date.now() - ts) < STALE_PROCESSING_MS;
+});
         const ta =
           toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
         const tb =
@@ -553,9 +578,9 @@
       });
 
       const q = safeStr(state.query).toLowerCase();
-      if (!q) return merged;
+    if (!q) return visibleMerged;
 
-      return merged.filter((job) => buildSearchHaystack(job).includes(q));
+  return visibleMerged.filter((job) => buildSearchHaystack(job).includes(q));
     }
 
     function render(items) {
