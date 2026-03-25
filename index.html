@@ -1202,65 +1202,14 @@
     }
 
     /* CHIP ROW */
-    #atmosphere-video .sm-card__top{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom: 10px;
-    }
-    #atmosphere-video .sm-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-      font-weight: 800;
-      font-size: 12px;
-      letter-spacing: .02em;
-      white-space: nowrap;
-    }
-    #atmosphere-video .sm-badge.sm-badge--mini{
-      padding: 7px 10px;
-      font-weight: 700;
-      opacity: .92;
-    }
+#atmosphere-video .sm-card__top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin: 16px 0 0;
+}
 
-    /* premium kutu içi paragraf */
-    #atmosphere-video .atmo-premiumcopy{
-      margin: 10px 0 12px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(0,0,0,.28);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-      backdrop-filter: blur(12px) saturate(120%);
-      -webkit-backdrop-filter: blur(12px) saturate(120%);
-      opacity: .96;
-    }
-    #atmosphere-video .atmo-premiumcopy p{
-      margin: 0;
-      line-height: 1.45;
-      opacity: .96;
-      font-weight: 500;
-    }
-
-    #atmosphere-video .sm-card__cta{
-      margin-top: 12px;
-      padding: 14px 16px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.10);
-      font-weight: 700;
-      width: fit-content;
-    }
-
-    /* PREVIEW */
-   /* PREVIEW */
-/* PREVIEW */
 #atmosphere-video .atmo-preview{
   min-width: 0;
   display: flex;
@@ -1292,12 +1241,13 @@
 }
 
 #atmosphere-video .atmo-preview-band{
-  margin-top: 16px;
+  margin-top: 14px;
   width: 100%;
   min-height: 74px;
   padding: 0 28px;
   display: flex;
   align-items: center;
+  justify-content: center;
   border-radius: 999px;
   background: rgba(5,10,24,.72);
   border: 1px solid rgba(255,255,255,.08);
@@ -1310,7 +1260,8 @@
   line-height: 1;
   letter-spacing: -0.02em;
 }
-    #atmosphere-video .atmo-preview::before,
+
+#atmosphere-video .atmo-preview::before,
 #atmosphere-video .atmo-preview::after,
 #atmosphere-video .atmo-preview__frame::before,
 #atmosphere-video .atmo-preview__frame::after,
@@ -1320,8 +1271,12 @@
   display: none !important;
 }
 
-#atmosphere-video .atmo-preview > :not(.atmo-preview__frame),
 #atmosphere-video .atmo-preview__frame > :not(.atmo-preview-video){
+  display: none !important;
+}
+
+#atmosphere-video .atmo-left .sm-card__top,
+#atmosphere-video .atmo-left .sm-card__cta{
   display: none !important;
 }
     /* ALT BAR: IŞIK EFEKTİ KAPALI */
@@ -1406,8 +1361,7 @@
          radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
          linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
          rgba(255,255,255,.03);">
-
-  <div class="atmo-preview" aria-hidden="true">
+<div class="atmo-preview" aria-hidden="true">
   <div class="atmo-preview__frame">
     <video
       class="atmo-preview-video"
@@ -1420,39 +1374,36 @@
     </video>
   </div>
 
+  <div class="sm-card__top">
+    <span class="sm-badge">🔥 SICAK</span>
+    <span class="sm-badge sm-badge--mini">🌧️ YAĞMUR</span>
+    <span class="sm-badge sm-badge--mini">❄️ KAR</span>
+    <span class="sm-badge sm-badge--mini">🍂 YAPRAK</span>
+    <span class="sm-badge sm-badge--mini">✨ IŞIK</span>
+    <span class="sm-badge sm-badge--mini">🌬️ RÜZGAR</span>
+  </div>
+
   <div class="atmo-preview-band">
     Atmosfer Video Oluştur →
   </div>
 </div>
 
 <div class="atmo-left">
-        <div class="sm-card__top">
-          <span class="sm-badge">🔥 SICAK</span>
-          <span class="sm-badge sm-badge--mini">🌧️ YAĞMUR</span>
-          <span class="sm-badge sm-badge--mini">❄️ KAR</span>
-          <span class="sm-badge sm-badge--mini">🍂 YAPRAK</span>
-          <span class="sm-badge sm-badge--mini">✨ IŞIK</span>
-          <span class="sm-badge sm-badge--mini">🌬️ RÜZGAR</span>
-        </div>
+  <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
 
-        <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
+  <div class="atmo-premiumcopy">
+    <p>
+      Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
+      AIVO otomatik olarak kusursuz döngülü video üretir.
+    </p>
+  </div>
 
-        <div class="atmo-premiumcopy">
-          <p>
-            Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
-            AIVO otomatik olarak kusursuz döngülü video üretir.
-          </p>
-        </div>
-
-        <ul class="sm-card__bullets">
-          <li>🔁 6–8 sn seamless loop</li>
-          <li>🎛️ Basit Mod + Süper Mod (yakında)</li>
-          <li>🎵 Müzik yükleyip “klip alternatifi” olarak kullan</li>
-        </ul>
-
-        <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
-      </div>
-
+  <ul class="sm-card__bullets">
+    <li>🔁 6–8 sn seamless loop</li>
+    <li>🎛️ Basit Mod + Süper Mod (yakında)</li>
+    <li>🎵 Müzik yükleyip “klip alternatifi” olarak kullan</li>
+  </ul>
+</div>
     </a>
   </div>
 
