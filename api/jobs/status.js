@@ -1405,7 +1405,7 @@ try {
     } catch (e) {
       console.warn("AUTO_CARTOON_FINALIZE_BLOCK_FAILED:", e?.message || e);
     }
-    // =========================
+// =========================
 // 4.7) AUTO FINALIZE (PHOTOFX)
 // =========================
 try {
@@ -1430,6 +1430,21 @@ try {
     );
 
   if (isPhotoFx && isDone && (!hasFinalizedOutput || !hasPreviewOutput)) {
+    console.log("[AUTO_PHOTOFX_FINALIZE_TRIGGER]", JSON.stringify({
+      job_id,
+      isPhotoFx,
+      isDone,
+      hasFinalizedOutput,
+      hasPreviewOutput,
+      outputs_variants: Array.isArray(outputs)
+        ? outputs.map((o) => ({
+            type: o?.type || null,
+            variant: o?.meta?.variant || null,
+            url: pickUrl(o) || null,
+          }))
+        : [],
+    }, null, 2));
+
     const baseUrl = getBaseUrl(req);
 
     fetch(`${baseUrl}/api/photofx/finalize`, {
