@@ -62,9 +62,15 @@ function mapAspectRatio(v) {
   return "9:16";
 }
 
-function mapDuration(v) {
+function mapDuration(v, isPro = false) {
   const n = Number(v);
-  if (n === 15) return 15;
+
+  if (isPro) {
+    if ([6, 8, 10].includes(n)) return n;
+    return 10;
+  }
+
+  if ([6, 8, 10, 12, 14, 16, 18, 20].includes(n)) return n;
   return 10;
 }
 
@@ -180,7 +186,7 @@ export default async function handler(req, res) {
 
   const preset = String(body.preset || "neon_pulse").trim();
   const aspect_ratio = mapAspectRatio(body.aspect_ratio || body.aspectRatio);
-  const duration = mapDuration(body.duration);
+ const duration = mapDuration(body.duration, isPro);
   const motion_level = String(body.motion_level || body.motionLevel || "balanced").trim();
   const effect_strength = String(
     body.effect_strength || body.effectStrength || "medium"
@@ -215,23 +221,23 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
-  // Motor seçimi:
-  // standard => Fast
-  // premium  => Pro
-  const quality = String(
-    body.quality || body.tier || body.plan || "standard"
-  ).toLowerCase();
+ // Motor seçimi:
+// standard => Fast
+// premium  => Pro
+const quality = String(
+  body.quality || body.tier || body.plan || "standard"
+).toLowerCase();
 
-  const isPro =
-    quality === "premium" ||
-    quality === "pro" ||
-    quality === "premium_clip";
+const isPro =
+  quality === "premium" ||
+  quality === "pro" ||
+  quality === "premium_clip";
 
-  const falUrl = isPro
-    ? "https://queue.fal.run/fal-ai/ltx-video-v095/image-to-video"
-    : "https://queue.fal.run/fal-ai/ltx-video-v095/image-to-video";
+const falUrl = isPro
+  ? "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video"
+  : "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
 
-  const engineLabel = isPro ? "pro" : "fast";
+const engineLabel = isPro ? "pro" : "fast";
 
   const falBody = {
     prompt,
