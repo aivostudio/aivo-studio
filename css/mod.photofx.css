@@ -706,9 +706,10 @@ section.pfxPage[data-module="photofx"]{
 }
 
 section.pfxPage[data-module="photofx"] .pfxHero{
-  margin: 22px 0 14px;
-  padding: 14px;
-  border-radius: 28px;
+  margin: 22px auto 14px;
+  width: min(100%, 860px);
+  padding: 10px;
+  border-radius: 24px;
   background:
     radial-gradient(1200px 600px at 15% 10%, rgba(170, 120, 255, .16), transparent 55%),
     radial-gradient(900px 600px at 85% 20%, rgba(80, 140, 255, .12), transparent 55%),
