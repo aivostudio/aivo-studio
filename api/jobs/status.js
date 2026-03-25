@@ -1447,18 +1447,29 @@ try {
 
     const baseUrl = getBaseUrl(req);
 
-    fetch(`${baseUrl}/api/photofx/finalize`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        cookie: req.headers.cookie || "",
-      },
-      body: JSON.stringify({
-        job_id,
-      }),
-    }).catch((e) => {
-      console.warn("AUTO_PHOTOFX_FINALIZE_FAILED:", e?.message || e);
-    });
+try {
+  const finalizeResp = await fetch(`${baseUrl}/api/photofx/finalize`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      cookie: req.headers.cookie || "",
+    },
+    body: JSON.stringify({
+      job_id,
+    }),
+  });
+
+  const finalizeText = await finalizeResp.text().catch(() => "");
+
+  console.log("[AUTO_PHOTOFX_FINALIZE_RESPONSE]", JSON.stringify({
+    job_id,
+    status: finalizeResp.status,
+    ok: finalizeResp.ok,
+    body: finalizeText,
+  }, null, 2));
+} catch (e) {
+  console.warn("AUTO_PHOTOFX_FINALIZE_FAILED:", e?.message || e);
+}
   }
 } catch (e) {
   console.warn("AUTO_PHOTOFX_FINALIZE_BLOCK_FAILED:", e?.message || e);
