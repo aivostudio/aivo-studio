@@ -929,3 +929,53 @@ section[data-module="photofx"] .pfxUploadMiniBtn:active,
 section[data-module="photofx"] .pfxUploadMiniBtn--ghost:active{
   transform: translateY(1px);
 }
+section[data-module="photofx"] .pfxEngine{
+  position: relative;
+  min-height: 126px;
+  padding: 18px 22px;
+  justify-content: center;
+}
+
+section[data-module="photofx"] .pfxEngineText{
+  width: 100%;
+  text-align: center;
+}
+
+section[data-module="photofx"] .pfxEngineTitle{
+  width: 100%;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 800;
+  color: rgba(255,255,255,.96);
+}
+
+section[data-module="photofx"] .pfxEngineSub{
+  width: 100%;
+  max-width: none;
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.78);
+  padding: 0 110px 0 0;
+}
+
+section[data-module="photofx"] .pfxEngineMeta{
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: right;
+}
+
+section[data-module="photofx"] .pfxEngineCreditLabel{
+  display: none;
+}
+
+section[data-module="photofx"] .pfxEngineCreditValue{
+  margin-top: 0;
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 900;
+  color: rgba(255,255,255,.96);
+}
