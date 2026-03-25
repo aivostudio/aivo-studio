@@ -706,7 +706,7 @@ section.pfxPage[data-module="photofx"]{
 }
 section.pfxPage[data-module="photofx"] .pfxHero{
   margin: 18px auto 12px;
-  width: min(100%, 720px);
+width: min(100%, 560px);
   padding: 8px;
   border-radius: 20px;
   background:
