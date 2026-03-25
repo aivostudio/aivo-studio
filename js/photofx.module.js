@@ -533,30 +533,29 @@ function bindEvents(root) {
     });
   }
 
-  qsa(".pfxChoiceCard[data-quality]", root).forEach((btn) => {
-    if (btn.__bound) return;
-    btn.__bound = true;
+document.addEventListener(
+  "click",
+  (e) => {
+    const root = getRoot();
+    if (!root) return;
 
-    btn.addEventListener("click", (e) => {
+    const qualityCard = e.target.closest(".pfxChoiceCard[data-quality]");
+    if (qualityCard && root.contains(qualityCard)) {
       e.preventDefault();
-
+      const state = getState(root);
       state.quality =
-        btn.getAttribute("data-quality") === "premium"
+        qualityCard.getAttribute("data-quality") === "premium"
           ? "premium"
           : "standard";
-
       renderQuality(root);
-    });
-  });
+      return;
+    }
 
-  qsa(".pfxPresetCard[data-preset]", root).forEach((btn) => {
-    if (btn.__bound) return;
-    btn.__bound = true;
-
-    btn.addEventListener("click", (e) => {
+    const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
+    if (presetCard && root.contains(presetCard)) {
       e.preventDefault();
-
-      const preset = String(btn.getAttribute("data-preset") || "").trim();
+      const state = getState(root);
+      const preset = String(presetCard.getAttribute("data-preset") || "").trim();
       if (!preset) return;
 
       if (state.presets.includes(preset)) {
@@ -566,8 +565,10 @@ function bindEvents(root) {
       }
 
       renderPresets(root);
-    });
-  });
+    }
+  },
+  true
+);
 
   if (createBtn && !createBtn.__bound) {
     createBtn.__bound = true;
