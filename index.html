@@ -1269,19 +1269,17 @@
 
 #atmosphere-video .atmo-preview__frame{
   position: relative;
-  min-height: 520px;
-  height: 520px;
-  align-self: stretch;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  height: auto;
+  align-self: start;
   border-radius: 28px;
   overflow: hidden;
-  background: #0b1020;
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.04) inset,
-    0 24px 60px rgba(0,0,0,.34),
-    0 0 32px rgba(139,92,246,.16);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
-
 #atmosphere-video .atmo-preview__frame::before{
   content: "";
   position: absolute;
