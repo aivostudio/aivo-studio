@@ -1823,13 +1823,33 @@
     margin:0;
     padding:0;
   }
+#photofx-clip .photofx-title{
+  margin: 0 0 8px 0;
+  font-size: clamp(36px, 4.6vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 900;
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #9bd4ff 18%,
+    #8b5cf6 42%,
+    #ec4899 68%,
+    #ffffff 100%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: photofxTitleFlow 8s linear infinite;
+  text-shadow: 0 0 18px rgba(139,92,246,.10);
+}
 
-  #photofx-clip .photofx-title{
-    margin: 0 0 8px 0;
-    font-size: clamp(36px, 4.6vw, 60px);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-  }
+@keyframes photofxTitleFlow{
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 240% 50%; }
+}
 
   #photofx-clip .photofx-sub{
     margin: 0 auto;
