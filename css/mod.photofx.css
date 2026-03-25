@@ -908,3 +908,24 @@ section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four{
     grid-template-columns: 1fr;
   }
 }
+section[data-module="photofx"] .pfxUploadMiniBtn,
+section[data-module="photofx"] .pfxUploadMiniBtn--ghost{
+  border: 1px solid rgba(214, 132, 255, .34);
+  background: linear-gradient(90deg, rgba(140,110,255,.30), rgba(255,120,190,.22));
+  color: rgba(255,255,255,.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 8px 22px rgba(140,110,255,.14);
+}
+
+section[data-module="photofx"] .pfxUploadMiniBtn:hover,
+section[data-module="photofx"] .pfxUploadMiniBtn--ghost:hover{
+  background: linear-gradient(90deg, rgba(140,110,255,.38), rgba(255,120,190,.28));
+  border-color: rgba(228, 145, 255, .48);
+  transform: translateY(-1px);
+}
+
+section[data-module="photofx"] .pfxUploadMiniBtn:active,
+section[data-module="photofx"] .pfxUploadMiniBtn--ghost:active{
+  transform: translateY(1px);
+}
