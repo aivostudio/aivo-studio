@@ -254,7 +254,45 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
     maxPreviewBytes,
   };
 }
+async function runPhotofxCompositingScaffold({
+  inputPath,
+  outputPath,
+  preset,
+  styles = [],
+}) {
+  const safePreset = String(preset || "").trim().toLowerCase();
+  const safeStyles = Array.isArray(styles)
+    ? styles.map((x) => String(x || "").trim().toLowerCase()).filter(Boolean)
+    : [];
 
+  const shouldProcess = !!safePreset || safeStyles.length > 0;
+
+  if (!shouldProcess) {
+    await fsp.copyFile(inputPath, outputPath);
+    return {
+      ok: true,
+      applied: false,
+      preset: safePreset,
+      styles: safeStyles,
+      mode: "passthrough_copy",
+      outputPath,
+    };
+  }
+
+  // ŞİMDİLİK SCAFFOLD:
+  // Gerçek overlay / LUT / motion zinciri burada çalışacak.
+  // İlk aşamada pipeline kırılmasın diye yine outputPath'e düz kopya atıyoruz.
+  await fsp.copyFile(inputPath, outputPath);
+
+  return {
+    ok: true,
+    applied: false,
+    preset: safePreset,
+    styles: safeStyles,
+    mode: "scaffold_copy",
+    outputPath,
+  };
+}
 async function runFfmpegFaststart(inputPath, outputPath) {
   await new Promise((resolve, reject) => {
     const args = [
@@ -531,7 +569,41 @@ module.exports = async function handler(req, res) {
     }
 
     const input_url = selectedFinalSourceUrl;
+   const compositedPath = path.join(tmpDir, "composited-input.mp4");
 
+const presetKey = String(
+  meta?.preset ||
+    meta?.preset_key ||
+    meta?.effect ||
+    meta?.effect_key ||
+    ""
+).trim().toLowerCase();
+
+const styleKeys = Array.isArray(meta?.styles)
+  ? meta.styles
+      .map((x) => String(x || "").trim().toLowerCase())
+      .filter(Boolean)
+  : [];
+
+const compositingPlan = {
+  enabled: !!presetKey || styleKeys.length > 0,
+  preset: presetKey,
+  styles: styleKeys,
+  input_path_before_composite: effectiveInputPath,
+  output_path_after_composite: compositedPath,
+  stage: "pre_faststart",
+};
+
+if (compositingPlan.enabled) {
+  const compositingResult = await runPhotofxCompositingScaffold({
+    inputPath: effectiveInputPath,
+    outputPath: compositedPath,
+    preset: compositingPlan.preset,
+    styles: compositingPlan.styles,
+  });
+
+  effectiveInputPath = compositingResult.outputPath;
+}
     await runFfmpegFaststart(effectiveInputPath, outputPath);
 
     const finalStat = await fsp.stat(outputPath);
@@ -611,6 +683,9 @@ module.exports = async function handler(req, res) {
       preview_source_duration_sec: durationSec || 0,
       preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
       preview_source_url: selectedFinalSourceUrl,
+      compositing_enabled: compositingPlan.enabled,
+      compositing_preset: compositingPlan.preset || "",
+      compositing_styles: compositingPlan.styles,
       ...(needsInlineMux && mux_url
         ? {
             muxed_url: mux_url,
