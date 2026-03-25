@@ -415,6 +415,7 @@
 
       const finalUrl = pickFinalVideoFromJob(job);
       const previewUrl = pickPreviewVideoFromJob(job);
+      if (!finalUrl && !previewUrl) return "";
 
       const selectedPlaybackRawUrl = isFreshCard
         ? finalUrl || previewUrl
