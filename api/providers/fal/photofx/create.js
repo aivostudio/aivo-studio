@@ -215,10 +215,23 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
-  // V1 motor kararı:
-  // fal / ltx image-to-video fast
-  const falUrl =
-    "https://queue.fal.run/fal-ai/ltx-video-v095/image-to-video";
+  // Motor seçimi:
+  // standard => Fast
+  // premium  => Pro
+  const quality = String(
+    body.quality || body.tier || body.plan || "standard"
+  ).toLowerCase();
+
+  const isPro =
+    quality === "premium" ||
+    quality === "pro" ||
+    quality === "premium_clip";
+
+  const falUrl = isPro
+    ? "https://queue.fal.run/fal-ai/ltx-video-v095/image-to-video"
+    : "https://queue.fal.run/fal-ai/ltx-video-v095/image-to-video";
+
+  const engineLabel = isPro ? "pro" : "fast";
 
   const falBody = {
     prompt,
@@ -282,7 +295,7 @@ export default async function handler(req, res) {
     app,
     kind: "photo_fx_clip",
     provider: "fal",
-    engine: "ltx_image_to_video",
+      engine: `ltx_image_to_video_${engineLabel}`,
     request_id,
     preset,
     image_url: String(image_url).trim(),
