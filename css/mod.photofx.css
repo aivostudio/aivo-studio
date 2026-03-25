@@ -718,11 +718,11 @@ section.pfxPage[data-module="photofx"] .pfxHero{
 }
 
 section.pfxPage[data-module="photofx"] .pfxHeroText{
-  min-height: 74px;
+  min-height: 52px;
   width: min(100%, 820px);
   margin: 0 auto;
   border-radius: 18px;
-  padding: 14px 20px 12px;
+  padding: 10px 20px 9px;
   display: flex;
   flex-direction: column;
   align-items: center;
