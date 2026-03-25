@@ -187,108 +187,111 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     return j;
   }
+
   function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-function isReadyStatus(s) {
-  const v = String(s || "").toLowerCase();
-  return (
-    v === "ready" ||
-    v === "done" ||
-    v === "completed" ||
-    v === "complete" ||
-    v === "success" ||
-    v === "succeeded"
-  );
-}
-
-function pickPhotoFxVideoOutputs(outputs) {
-  if (!Array.isArray(outputs)) return [];
-  return outputs.filter((o) => {
-    if (!o) return false;
-
-    const type = String(
-      o.type || o.kind || o?.meta?.type || ""
-    ).toLowerCase();
-
-    if (type && type !== "video") return false;
-
-    const app = String(
-      o?.meta?.app || o?.app || o?.module || ""
-    ).toLowerCase();
-
-    return !app || app === "photofx";
-  });
-}
-
-async function pollPhotoFxJob(job_id) {
-  const POLL_MS = 2000;
-  const POLL_MAX = 120;
-
-  for (let i = 0; i < POLL_MAX; i++) {
-    await sleep(POLL_MS);
-
-    const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
-    const text = await r.text().catch(() => "");
-    let j = null;
-
-    try {
-      j = text ? JSON.parse(text) : null;
-    } catch (_) {
-      j = null;
-    }
-
-    console.log("[photofx] poll =", j);
-
-    if (!j || !j.ok) continue;
-
-    const ready = isReadyStatus(j.status);
-    const outs = pickPhotoFxVideoOutputs(j.outputs);
-
-    const directVideoUrl = String(
-      j?.video?.url ||
-      j?.video_url ||
-      ""
-    ).trim();
-
-    if (ready && (outs.length || directVideoUrl)) {
-      const finalOutputs = outs.length
-        ? outs.map((o) => ({
-            ...o,
-            meta: { ...(o.meta || {}), app: "photofx" },
-          }))
-        : [
-            {
-              type: "video",
-              url: directVideoUrl,
-              meta: { app: "photofx", variant: "provider", is_final: true },
-            },
-          ];
-
-      window.dispatchEvent(
-        new CustomEvent("aivo:photofx:job_ready", {
-          detail: {
-            app: "photofx",
-            job_id,
-            status: String(j.status || "").toLowerCase(),
-            video: directVideoUrl ? { url: directVideoUrl } : null,
-            outputs: finalOutputs,
-            raw: j,
-          },
-        })
-      );
-
-      return;
-    }
-
-    if (String(j.status || "").toLowerCase() === "error") {
-      throw new Error(j.error || "photofx_job_error");
-    }
+    return new Promise((r) => setTimeout(r, ms));
   }
 
-  throw new Error("photofx_poll_timeout");
-}
+  function isReadyStatus(s) {
+    const v = String(s || "").toLowerCase();
+    return (
+      v === "ready" ||
+      v === "done" ||
+      v === "completed" ||
+      v === "complete" ||
+      v === "success" ||
+      v === "succeeded"
+    );
+  }
+
+  function pickPhotoFxVideoOutputs(outputs) {
+    if (!Array.isArray(outputs)) return [];
+
+    return outputs.filter((o) => {
+      if (!o) return false;
+
+      const type = String(
+        o.type || o.kind || o?.meta?.type || ""
+      ).toLowerCase();
+
+      if (type && type !== "video") return false;
+
+      const app = String(
+        o?.meta?.app || o?.app || o?.module || ""
+      ).toLowerCase();
+
+      return !app || app === "photofx";
+    });
+  }
+
+  async function pollPhotoFxJob(job_id) {
+    const POLL_MS = 2000;
+    const POLL_MAX = 120;
+
+    for (let i = 0; i < POLL_MAX; i++) {
+      await sleep(POLL_MS);
+
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
+      const text = await r.text().catch(() => "");
+      let j = null;
+
+      try {
+        j = text ? JSON.parse(text) : null;
+      } catch (_) {
+        j = null;
+      }
+
+      console.log("[photofx] poll =", j);
+
+      if (!j || !j.ok) continue;
+
+      const ready = isReadyStatus(j.status);
+      const outs = pickPhotoFxVideoOutputs(j.outputs);
+
+      const directVideoUrl = String(
+        j?.video?.url ||
+        j?.video_url ||
+        ""
+      ).trim();
+
+      if (ready && (outs.length || directVideoUrl)) {
+        const finalOutputs = outs.length
+          ? outs.map((o) => ({
+              ...o,
+              meta: { ...(o.meta || {}), app: "photofx" },
+            }))
+          : [
+              {
+                type: "video",
+                url: directVideoUrl,
+                meta: { app: "photofx", variant: "provider", is_final: true },
+              },
+            ];
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:photofx:job_ready", {
+            detail: {
+              app: "photofx",
+              job_id,
+              status: String(j.status || "").toLowerCase(),
+              video: directVideoUrl ? { url: directVideoUrl } : null,
+              outputs: finalOutputs,
+              raw: j,
+            },
+          })
+        );
+
+        return;
+      }
+
+      if (String(j.status || "").toLowerCase() === "error") {
+        throw new Error(j.error || "photofx_job_error");
+      }
+    }
+
+    throw new Error("photofx_poll_timeout");
+  }
+
   async function uploadViaPresign(file, kind = "asset") {
     if (!file) {
       throw new Error("photofx_missing_file");
@@ -479,10 +482,12 @@ async function pollPhotoFxJob(job_id) {
       statusUrl,
       styles: form.styles,
     });
-  }
-     pollPhotoFxJob(finalJobId).catch((err) => {
+
+    pollPhotoFxJob(finalJobId).catch((err) => {
       console.error("[photofx] poll error:", err);
     });
+  }
+
   function initStateFromDOM(root) {
     const state = getState(root);
     if (!state) return;
@@ -635,37 +640,38 @@ async function pollPhotoFxJob(job_id) {
     document.addEventListener(
       "click",
       (e) => {
-        const root = getRoot();
-        if (!root) return;
+        const nextRoot = getRoot();
+        if (!nextRoot) return;
 
         const qualityCard = e.target.closest(".pfxChoiceCard[data-quality]");
-        if (qualityCard && root.contains(qualityCard)) {
+        if (qualityCard && nextRoot.contains(qualityCard)) {
           e.preventDefault();
-          const state = getState(root);
-          state.quality =
+          const nextState = getState(nextRoot);
+          nextState.quality =
             qualityCard.getAttribute("data-quality") === "premium"
               ? "premium"
               : "standard";
-          renderQuality(root);
+          renderQuality(nextRoot);
           return;
         }
 
         const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
-        if (presetCard && root.contains(presetCard)) {
+        if (presetCard && nextRoot.contains(presetCard)) {
           e.preventDefault();
-          const state = getState(root);
+          const nextState = getState(nextRoot);
           const preset = String(
             presetCard.getAttribute("data-preset") || ""
           ).trim();
+
           if (!preset) return;
 
-          if (state.presets.includes(preset)) {
-            state.presets = state.presets.filter((x) => x !== preset);
+          if (nextState.presets.includes(preset)) {
+            nextState.presets = nextState.presets.filter((x) => x !== preset);
           } else {
-            state.presets = [...state.presets, preset];
+            nextState.presets = [...nextState.presets, preset];
           }
 
-          renderPresets(root);
+          renderPresets(nextRoot);
         }
       },
       true
