@@ -254,6 +254,7 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
     maxPreviewBytes,
   };
 }
+
 async function runPhotofxCompositingScaffold({
   inputPath,
   outputPath,
@@ -293,6 +294,7 @@ async function runPhotofxCompositingScaffold({
     outputPath,
   };
 }
+
 async function runFfmpegFaststart(inputPath, outputPath) {
   await new Promise((resolve, reject) => {
     const args = [
@@ -551,6 +553,7 @@ module.exports = async function handler(req, res) {
     const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
     const outputPath = path.join(tmpDir, "finalized.mp4");
     const previewPath = path.join(tmpDir, "preview.mp4");
+    const compositedPath = path.join(tmpDir, "composited-input.mp4");
 
     await downloadToFile(selectedFinalSourceUrl, inputPath);
 
@@ -569,41 +572,43 @@ module.exports = async function handler(req, res) {
     }
 
     const input_url = selectedFinalSourceUrl;
-   const compositedPath = path.join(tmpDir, "composited-input.mp4");
 
-const presetKey = String(
-  meta?.preset ||
-    meta?.preset_key ||
-    meta?.effect ||
-    meta?.effect_key ||
-    ""
-).trim().toLowerCase();
+    const presetKey = String(
+      meta?.preset ||
+        meta?.preset_key ||
+        meta?.effect ||
+        meta?.effect_key ||
+        ""
+    )
+      .trim()
+      .toLowerCase();
 
-const styleKeys = Array.isArray(meta?.styles)
-  ? meta.styles
-      .map((x) => String(x || "").trim().toLowerCase())
-      .filter(Boolean)
-  : [];
+    const styleKeys = Array.isArray(meta?.styles)
+      ? meta.styles
+          .map((x) => String(x || "").trim().toLowerCase())
+          .filter(Boolean)
+      : [];
 
-const compositingPlan = {
-  enabled: !!presetKey || styleKeys.length > 0,
-  preset: presetKey,
-  styles: styleKeys,
-  input_path_before_composite: effectiveInputPath,
-  output_path_after_composite: compositedPath,
-  stage: "pre_faststart",
-};
+    const compositingPlan = {
+      enabled: !!presetKey || styleKeys.length > 0,
+      preset: presetKey,
+      styles: styleKeys,
+      input_path_before_composite: effectiveInputPath,
+      output_path_after_composite: compositedPath,
+      stage: "pre_faststart",
+    };
 
-if (compositingPlan.enabled) {
-  const compositingResult = await runPhotofxCompositingScaffold({
-    inputPath: effectiveInputPath,
-    outputPath: compositedPath,
-    preset: compositingPlan.preset,
-    styles: compositingPlan.styles,
-  });
+    if (compositingPlan.enabled) {
+      const compositingResult = await runPhotofxCompositingScaffold({
+        inputPath: effectiveInputPath,
+        outputPath: compositedPath,
+        preset: compositingPlan.preset,
+        styles: compositingPlan.styles,
+      });
 
-  effectiveInputPath = compositingResult.outputPath;
-}
+      effectiveInputPath = compositingResult.outputPath;
+    }
+
     await runFfmpegFaststart(effectiveInputPath, outputPath);
 
     const finalStat = await fsp.stat(outputPath);
@@ -713,6 +718,11 @@ if (compositingPlan.enabled) {
       preview_cfg: previewBitrateCfg,
       preview_source_url: selectedFinalSourceUrl,
       needs_inline_mux: needsInlineMux,
+      compositing: {
+        enabled: compositingPlan.enabled,
+        preset: compositingPlan.preset || "",
+        styles: compositingPlan.styles,
+      },
     });
   } catch (e) {
     return res.status(500).json({
