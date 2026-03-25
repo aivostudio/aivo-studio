@@ -35,6 +35,11 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         endImageFile: null,
         logoFile: null,
         audioFile: null,
+        audioFileName: "",
+        audioFileUrl: "",
+        audioFileUploadPromise: null,
+        audioFileUploadStatus: "idle",
+        audioFileUploadError: "",
       };
     }
 
