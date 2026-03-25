@@ -12,6 +12,8 @@
       .replaceAll("_", " ")
       .replace(/\s+/g, " ");
 
+  const safeStr = (v) => String(v == null ? "" : v).trim();
+
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -47,7 +49,7 @@
   const idOf = (it) => String(it?.job_id || it?.id || "").trim();
 
   const toMaybeProxyUrl = (url) => {
-    const u = String(url || "").trim();
+    const u = safeStr(url);
     if (!u) return "";
     if (
       u.startsWith("/api/media/proxy?url=") ||
@@ -55,7 +57,7 @@
     ) {
       return u;
     }
-    if (u.startsWith("http://")) {
+    if (u.startsWith("http://") || u.startsWith("https://")) {
       return "/api/media/proxy?url=" + encodeURIComponent(u);
     }
     return u;
@@ -89,48 +91,99 @@
     return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
-  const pickBestVideoOutput = (job) => {
+  function pickOutputUrl(o) {
+    return safeStr(
+      o?.archive_url ||
+      o?.archiveUrl ||
+      o?.url ||
+      o?.video_url ||
+      o?.videoUrl ||
+      o?.raw_url ||
+      o?.rawUrl ||
+      o?.meta?.archive_url ||
+      o?.meta?.archiveUrl ||
+      o?.meta?.url ||
+      o?.meta?.video_url ||
+      o?.meta?.videoUrl ||
+      ""
+    );
+  }
+
+  function outputVariant(o) {
+    return safeStr(o?.meta?.variant).toLowerCase();
+  }
+
+  function isVideoOutput(o) {
+    const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+    return !t || t === "video";
+  }
+
+  function filterPhotoFxOutputs(job) {
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-    if (!outs.length) return null;
-
-    const outsFiltered = outs.filter((o) => {
-      const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
-      if (t && t !== "video") return false;
-
+    return outs.filter((o) => {
+      if (!isVideoOutput(o)) return false;
       const oa = getOutApp(o);
       if (oa && !isPhotoFxApp(oa)) return false;
-
       return true;
     });
+  }
 
-    const pool = outsFiltered.length ? outsFiltered : outs;
-    const videos = pool.filter(
-      (o) =>
-        norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind) === "video"
+  function pickFinalVideoFromJob(job) {
+    const meta = job?.meta || {};
+    const outs = filterPhotoFxOutputs(job);
+
+    const directFinal =
+      safeStr(job?.final) ||
+      safeStr(job?.final_url) ||
+      safeStr(job?.final_video_url) ||
+      safeStr(meta?.final) ||
+      safeStr(meta?.final_url) ||
+      safeStr(meta?.final_video_url);
+
+    if (directFinal) return directFinal;
+
+    const finalized = outs.find(
+      (o) => outputVariant(o) === "finalized" || o?.meta?.is_final === true
     );
-    const best = videos[0] || pool[0] || null;
-    if (!best) return null;
+    if (finalized) {
+      const u = pickOutputUrl(finalized);
+      if (u) return u;
+    }
 
-    const raw =
-      best.archive_url ||
-      best.archiveUrl ||
-      best.url ||
-      best.video_url ||
-      best.videoUrl ||
-      best.raw_url ||
-      best.rawUrl ||
-      best.meta?.archive_url ||
-      best.meta?.archiveUrl ||
-      best.meta?.url ||
-      best.meta?.video_url ||
-      best.meta?.videoUrl ||
-      "";
+    const provider = outs.find(
+      (o) => outputVariant(o) === "provider" || outputVariant(o) === "final"
+    );
+    if (provider) {
+      const u = pickOutputUrl(provider);
+      if (u) return u;
+    }
 
-    const url = toMaybeProxyUrl(raw);
-    if (!url) return null;
+    const first = outs.find((o) => isVideoOutput(o)) || outs[0];
+    return pickOutputUrl(first);
+  }
 
-    return { ...best, url };
-  };
+  function pickPreviewVideoFromJob(job) {
+    const meta = job?.meta || {};
+    const outs = filterPhotoFxOutputs(job);
+
+    const directPreview =
+      safeStr(job?.preview) ||
+      safeStr(job?.preview_url) ||
+      safeStr(job?.preview_video_url) ||
+      safeStr(meta?.preview) ||
+      safeStr(meta?.preview_url) ||
+      safeStr(meta?.preview_video_url);
+
+    if (directPreview) return directPreview;
+
+    const preview = outs.find((o) => outputVariant(o) === "preview");
+    if (preview) {
+      const u = pickOutputUrl(preview);
+      if (u) return u;
+    }
+
+    return "";
+  }
 
   function ensureStyles() {
     if (document.getElementById("photofxPanelStyles")) return;
@@ -138,26 +191,8 @@
     const css = `
       .photofxPanelWrap{display:flex;flex-direction:column;gap:12px;}
       .photofxPanelGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-      .photofxPanelCard{position:relative;border-radius:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);overflow:hidden;}
-      .photofxPanelThumb{position:relative;border-radius:16px;overflow:hidden;margin:10px;background:#000;border:1px solid rgba(255,255,255,0.08);}
-      .photofxPanelThumb:before{content:"";display:block;padding-top:56.25%;}
-      .photofxPanelThumb.isPortrait:before{padding-top:140%;}
-      .photofxPanelVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;}
-      .photofxPanelPill{position:absolute;left:14px;top:14px;z-index:3;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,0.10);backdrop-filter:blur(10px);}
-      .photofxPanelPill.ok{border-color:rgba(120,255,190,.22);}
-      .photofxPanelPill.mid{border-color:rgba(255,255,255,.10);}
-      .photofxPanelPill.bad{border-color:rgba(255,120,120,.25);}
-      .photofxPanelSkel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));overflow:hidden;}
-      .photofxPanelSkel:before{content:"";position:absolute;inset:-40%;background:linear-gradient(90deg,rgba(255,255,255,0.00),rgba(220,170,255,0.14),rgba(255,255,255,0.00));transform:rotate(18deg);animation:photofxPanelShimmer 1.4s linear infinite;}
-      @keyframes photofxPanelShimmer{0%{transform:translateX(-30%) rotate(18deg);}100%{transform:translateX(30%) rotate(18deg);}}
-      .photofxPanelSkelLabel{position:relative;z-index:2;font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);}
-      .photofxPanelFooter{padding:10px 12px 12px 12px;display:flex;flex-direction:column;gap:8px;}
-      .photofxPanelMetaLine{font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-      .photofxPanelActions{display:flex;gap:8px;padding:10px;border-radius:14px;background:rgba(0,0,0,.20);border:1px solid rgba(255,255,255,0.06);}
-      .photofxPanelBtn{flex:1;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}
-      .photofxPanelBtn[disabled]{opacity:.45;cursor:not-allowed;}
-      .photofxPanelBtn.danger{border-color:rgba(255,120,120,0.20);background:rgba(255,120,120,0.08);}
-      @media (max-width: 980px){.photofxPanelGrid{grid-template-columns:1fr;}}
+      .photofxPanelCard{position:relative;}
+      @media (max-width:980px){.photofxPanelGrid{grid-template-columns:1fr;}}
     `;
 
     const style = document.createElement("style");
@@ -171,6 +206,13 @@
 
     let destroyed = false;
     let currentDbItems = [];
+    let searchTimer = null;
+    let searchInputEl = null;
+    let searchRootEl = null;
+
+    const state = {
+      query: "",
+    };
 
     const optimistic = new Map();
     const hiddenDeletedIds = new Set();
@@ -191,6 +233,113 @@
       if (elStatus) elStatus.textContent = t;
     };
 
+    const resolvePanelSearchInput = () => {
+      const candidates = [
+        ...document.querySelectorAll("input.rpSearch"),
+        ...document.querySelectorAll("[data-right-panel-search]"),
+        ...document.querySelectorAll('input[type="search"]'),
+      ];
+
+      const panelRoot =
+        host.closest(
+          '[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel'
+        ) ||
+        host.parentElement ||
+        document;
+
+      for (const input of candidates) {
+        if (!(input instanceof HTMLElement)) continue;
+
+        const root =
+          input.closest(
+            '[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel'
+          ) ||
+          input.parentElement;
+
+        if (root && panelRoot && root === panelRoot) return input;
+      }
+
+      for (const input of candidates) {
+        if (!(input instanceof HTMLElement)) continue;
+
+        const ph = safeStr(input.getAttribute("placeholder") || "").toLowerCase();
+        const aria = safeStr(input.getAttribute("aria-label") || "").toLowerCase();
+        const cls = safeStr(input.className || "").toLowerCase();
+
+        if (
+          ph.includes("ara") ||
+          ph.includes("search") ||
+          aria.includes("ara") ||
+          aria.includes("search") ||
+          cls.includes("rpsearch")
+        ) {
+          return input;
+        }
+      }
+
+      return candidates[0] || null;
+    };
+
+    const ensureSearchBinding = () => {
+      const nextInput = resolvePanelSearchInput();
+      if (!nextInput) return null;
+
+      if (searchInputEl === nextInput) return searchInputEl;
+
+      searchInputEl = nextInput;
+      searchRootEl =
+        searchInputEl.closest(
+          '[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel'
+        ) ||
+        searchInputEl.parentElement ||
+        null;
+
+      return searchInputEl;
+    };
+
+    const syncSearchFromInput = () => {
+      const input = ensureSearchBinding();
+      const nextQuery = safeStr(input?.value || "");
+      if (state.query === nextQuery) return;
+
+      if (searchTimer) clearTimeout(searchTimer);
+
+      searchTimer = setTimeout(() => {
+        state.query = nextQuery;
+        renderCurrent();
+      }, 120);
+    };
+
+    const onSearchInput = (e) => {
+      const input = ensureSearchBinding();
+      if (!input) return;
+
+      if (e.target === input) {
+        syncSearchFromInput();
+        return;
+      }
+
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      if (
+        searchRootEl &&
+        input.contains &&
+        searchRootEl.contains(target) &&
+        target === input
+      ) {
+        syncSearchFromInput();
+      }
+    };
+
+    document.addEventListener("input", onSearchInput, true);
+    document.addEventListener("search", onSearchInput, true);
+
+    setTimeout(() => {
+      ensureSearchBinding();
+      syncSearchFromInput();
+    }, 0);
+
     const toMs = (v) => {
       if (v == null) return 0;
       if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -210,6 +359,29 @@
 
       const t = Date.parse(s);
       return Number.isFinite(t) ? t : 0;
+    };
+
+    const getCardTitle = (job) =>
+      safeStr(
+        job?.meta?.scene_title ||
+        job?.meta?.title ||
+        job?.title ||
+        job?.meta?.prompt ||
+        job?.prompt ||
+        "PhotoFX Klip"
+      );
+
+    const buildSearchHaystack = (job) => {
+      return safeStr(
+        [
+          getCardTitle(job),
+          job?.meta?.prompt,
+          job?.prompt,
+          job?.db_status,
+          job?.status,
+          job?.state,
+        ].join(" ")
+      ).toLowerCase();
     };
 
     const isTerminalState = (job) => {
@@ -236,6 +408,74 @@
       });
     }
 
+    function renderCard(job) {
+      const jid = idOf(job);
+      const badge = mapBadge(job);
+      const isFreshCard = job?._fresh === true;
+
+      const finalUrl = pickFinalVideoFromJob(job);
+      const previewUrl = pickPreviewVideoFromJob(job);
+
+      const selectedPlaybackRawUrl = isFreshCard
+        ? finalUrl || previewUrl
+        : previewUrl || finalUrl;
+
+      const playbackUrl = toMaybeProxyUrl(selectedPlaybackRawUrl);
+      const ready = badge.kind === "ok" && !!playbackUrl;
+
+      const previewVideoUrl = ready
+        ? playbackUrl.includes("#")
+          ? playbackUrl
+          : playbackUrl + "#t=0.001"
+        : "";
+
+      const ratio = String(
+        job?.meta?.ui_state?.aspect_ratio ||
+          job?.meta?.aspect_ratio ||
+          job?.meta?.ratio ||
+          "9:16"
+      ).trim();
+
+      const title = getCardTitle(job);
+      const sub = "";
+      const badgeText = badge.text;
+      const badgeKind =
+        badge.kind === "ok"
+          ? "ready"
+          : badge.kind === "bad"
+            ? "error"
+            : "loading";
+
+      if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+        return (
+          '<div class="photofxPanelCardInner"' +
+            ' data-job="' + esc(jid) + '"' +
+            ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+            ' data-final-url="' + esc(finalUrl) + '"' +
+            ' data-preview-url="' + esc(previewUrl) + '"' +
+            ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+          '>' +
+            window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+              id: jid,
+              title,
+              sub,
+              badgeText,
+              badgeKind,
+              videoUrl: previewVideoUrl,
+              posterUrl: "",
+              ratio,
+              ready,
+              canDownload: !!finalUrl,
+              canShare: ready,
+              canDelete: true,
+            }) +
+          '</div>'
+        );
+      }
+
+      return "";
+    }
+
     function ensureCardEl(job) {
       const id = idOf(job);
       if (!id) return null;
@@ -248,16 +488,12 @@
       el.setAttribute("data-job", id);
 
       el.innerHTML = `
-        <div class="photofxPanelThumb">
-          <div class="photofxPanelPill mid">İşleniyor</div>
-          <div class="photofxPanelSkel"><div class="photofxPanelSkelLabel">Hazırlanıyor…</div></div>
-        </div>
-        <div class="photofxPanelFooter">
-          <div class="photofxPanelMetaLine"></div>
-          <div class="photofxPanelActions">
-            <button class="photofxPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-            <button class="photofxPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-            <button class="photofxPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+        <div style="border-radius:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
+          <div style="position:relative;background:#000;">
+            <div style="padding-top:140%;"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));">
+              <div style="font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);">Hazırlanıyor…</div>
+            </div>
           </div>
         </div>
       `;
@@ -269,77 +505,15 @@
     function patchCard(el, job) {
       if (!el || !job) return;
 
-      const badge = mapBadge(job);
-      const out = pickBestVideoOutput(job);
-      const rawVideoUrl = String(out?.url || "").trim();
+      const html = renderCard(job);
+      if (!html) return;
 
-      const ready = badge.kind === "ok" && !!rawVideoUrl;
-      const ratio = String(
-        job?.meta?.aspect_ratio ||
-        job?.meta?.ratio ||
-        out?.meta?.aspect_ratio ||
-        out?.meta?.ratio ||
-        "9:16"
-      ).trim();
-
-      const isPortrait =
-        ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
-
-      const title = String(
-        job?.meta?.prompt ||
-        job?.prompt ||
-        "PhotoFX Klip"
-      ).trim();
-
-      const thumb = el.querySelector(".photofxPanelThumb");
-      const pill = el.querySelector(".photofxPanelPill");
-      const skel = el.querySelector(".photofxPanelSkel");
-      const metaEl = el.querySelector(".photofxPanelMetaLine");
-      const dl = el.querySelector('[data-act="download"]');
-      const sh = el.querySelector('[data-act="share"]');
-
-      if (thumb) thumb.classList.toggle("isPortrait", !!isPortrait);
-
-      if (pill) {
-        pill.textContent = badge.text;
-        pill.classList.remove("ok", "mid", "bad");
-        pill.classList.add(badge.kind);
+      if (el.__renderedHtml !== html) {
+        el.innerHTML = html;
+        el.__renderedHtml = html;
       }
 
-      if (metaEl) metaEl.textContent = title;
-
-      if (dl) ready ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
-      if (sh) ready ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
-
-      let vid = el.querySelector("video.photofxPanelVideo");
-
-      if (ready) {
-        if (skel) skel.style.display = "none";
-
-        if (!vid) {
-          vid = document.createElement("video");
-          vid.className = "photofxPanelVideo";
-          vid.setAttribute("playsinline", "");
-          vid.setAttribute("webkit-playsinline", "");
-          vid.setAttribute("preload", "metadata");
-          vid.setAttribute("controls", "");
-          vid.muted = true;
-          thumb?.appendChild(vid);
-        }
-
-        if (vid.getAttribute("data-src") !== rawVideoUrl) {
-          vid.setAttribute("data-src", rawVideoUrl);
-          vid.src = rawVideoUrl;
-        }
-
-        vid.style.display = "";
-      } else {
-        if (skel) skel.style.display = "";
-        if (vid) {
-          vid.pause?.();
-          vid.style.display = "none";
-        }
-      }
+      el.setAttribute("data-job", idOf(job));
     }
 
     function buildMergedItems() {
@@ -365,7 +539,7 @@
         }
       }
 
-      return Array.from(byId.values()).sort((a, b) => {
+      const merged = Array.from(byId.values()).sort((a, b) => {
         const ta =
           toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
         const tb =
@@ -377,6 +551,11 @@
         const ib = idOf(b);
         return ib.localeCompare(ia);
       });
+
+      const q = safeStr(state.query).toLowerCase();
+      if (!q) return merged;
+
+      return merged.filter((job) => buildSearchHaystack(job).includes(q));
     }
 
     function render(items) {
@@ -399,9 +578,13 @@
           emptyEl.style.opacity = ".7";
           emptyEl.style.fontSize = "12px";
           emptyEl.style.padding = "4px 2px";
-          emptyEl.textContent = "Henüz PhotoFX üretim yok.";
           elGrid.appendChild(emptyEl);
         }
+
+        emptyEl.textContent = state.query
+          ? "Aramana uygun PhotoFX klip bulunamadı."
+          : "Henüz PhotoFX üretim yok.";
+
         return;
       } else if (emptyEl) {
         emptyEl.remove();
@@ -444,7 +627,7 @@
       render(buildMergedItems());
     }
 
-    function download(url) {
+    function download(url, filename = "photofx.mp4") {
       const cleanUrl = String(url || "").trim();
       if (!cleanUrl) return;
 
@@ -454,11 +637,11 @@
 
       const proxied = directUrl.startsWith("/api/media/proxy?url=")
         ? directUrl
-        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=photofx.mp4`;
+        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(filename)}`;
 
       const a = document.createElement("a");
       a.href = proxied;
-      a.download = "photofx.mp4";
+      a.download = filename;
       a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
@@ -481,12 +664,18 @@
     }
 
     host.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-act]");
+      const btn = e.target.closest("[data-svc-act], [data-act]");
       if (!btn) return;
 
-      const act = btn.dataset.act;
-      const card = btn.closest(".photofxPanelCard");
-      const id = String(btn.dataset.job || card?.dataset?.job || "").trim();
+      const act = btn.dataset.svcAct || btn.dataset.act;
+      const card = btn.closest(".svcCard, .photofxPanelCard");
+      const id = String(
+        btn.dataset.id ||
+          btn.dataset.job ||
+          card?.dataset?.svcId ||
+          card?.dataset?.job ||
+          ""
+      ).trim();
 
       if (!act || !id) return;
 
@@ -494,23 +683,46 @@
       const job = allItems.find((x) => idOf(x) === id);
       if (!job) return;
 
-      const out = pickBestVideoOutput(job);
-      const url = String(out?.url || "").trim();
-      const directUrl = url.includes("#") ? url.split("#")[0] : url;
+      if (act === "play") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const video = card?.querySelector("video.svcVideo");
+        if (!video) return;
+
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+
+        return;
+      }
+
+      const finalUrl = pickFinalVideoFromJob(job);
+      const previewUrl = pickPreviewVideoFromJob(job);
+      const sharePlaybackUrl = safeStr(
+        job?._fresh === true ? finalUrl || previewUrl : previewUrl || finalUrl
+      );
+
+      if (act === "open") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!sharePlaybackUrl) return;
+        window.open(sharePlaybackUrl, "_blank", "noopener");
+        return;
+      }
 
       if (act === "download") {
         e.preventDefault();
         e.stopPropagation();
-        if (!directUrl) return;
-        download(directUrl);
+        if (!finalUrl) return;
+        download(finalUrl, `photofx-${id}.mp4`);
         return;
       }
 
       if (act === "share") {
         e.preventDefault();
         e.stopPropagation();
-        if (!directUrl) return;
-        share(directUrl);
+        if (!sharePlaybackUrl) return;
+        share(sharePlaybackUrl);
         return;
       }
 
@@ -565,8 +777,7 @@
 
       acceptOutput: (o) => {
         if (!o) return false;
-        const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
-        if (t && t !== "video") return false;
+        if (!isVideoOutput(o)) return false;
         const oa = getOutApp(o);
         if (oa && !isPhotoFxApp(oa)) return false;
         return true;
@@ -580,7 +791,11 @@
           .filter((j) => {
             const id = idOf(j);
             return id && !hiddenDeletedIds.has(id);
-          });
+          })
+          .map((j) => ({
+            ...j,
+            _fresh: false,
+          }));
 
         renderCurrent();
       },
@@ -611,12 +826,13 @@
         db_status: "processing",
         status: "processing",
         state: "PROCESSING",
+        _fresh: false,
         meta: {
           ...(meta || {}),
           app: "photofx",
           prompt: meta.prompt || "",
           duration: meta.duration || "",
-          ratio: meta.ratio || "9:16",
+          ratio: meta.ratio || meta.aspect_ratio || "9:16",
         },
         outputs: [],
       });
@@ -630,9 +846,14 @@
       if (!job_id) return;
       if (hiddenDeletedIds.has(job_id)) return;
 
-      const videoUrl = String(
-        d?.video?.url || d?.raw?.video?.url || d?.raw?.video_url || d?.videoUrl || d?.video_url || ""
-      ).trim();
+      const videoUrl = safeStr(
+        d?.video?.url ||
+        d?.raw?.video?.url ||
+        d?.raw?.video_url ||
+        d?.videoUrl ||
+        d?.video_url ||
+        ""
+      );
 
       const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
       const existingDb = currentDbItems.find((j) => idOf(j) === job_id);
@@ -641,6 +862,7 @@
         existingDb.db_status = "ready";
         existingDb.status = "ready";
         existingDb.state = "COMPLETED";
+        existingDb._fresh = true;
 
         if (outputs.length) {
           existingDb.outputs = outputs;
@@ -649,7 +871,7 @@
             {
               type: "video",
               url: videoUrl,
-              meta: { app: "photofx", is_final: true },
+              meta: { app: "photofx", variant: "provider", is_final: true },
             },
           ];
         }
@@ -667,6 +889,7 @@
 
       optimistic.set(job_id, {
         ...optimisticJob,
+        _fresh: true,
         db_status: "ready",
         status: "ready",
         state: "COMPLETED",
@@ -677,7 +900,7 @@
                 {
                   type: "video",
                   url: videoUrl,
-                  meta: { app: "photofx", is_final: true },
+                  meta: { app: "photofx", variant: "provider", is_final: true },
                 },
               ]
             : optimisticJob.outputs || [],
@@ -693,6 +916,18 @@
     return {
       destroy() {
         destroyed = true;
+
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = null;
+        searchInputEl = null;
+        searchRootEl = null;
+
+        try {
+          document.removeEventListener("input", onSearchInput, true);
+        } catch {}
+        try {
+          document.removeEventListener("search", onSearchInput, true);
+        } catch {}
         try {
           window.removeEventListener("aivo:photofx:job_created", onJobCreated);
         } catch {}
@@ -711,6 +946,7 @@
 
   try {
     console.log("[PANEL.PHOTOFX] register run");
+
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("photofx", {
         header: {
