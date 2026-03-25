@@ -76,6 +76,17 @@ function extractVideoUrl(anyJson) {
   return null;
 }
 
+function requestUrlFromStatusUrl(statusUrl) {
+  if (!statusUrl) return null;
+
+  const s = String(statusUrl);
+  const base = s.replace(/\/status\/?$/i, "");
+
+  if (base.includes("/requests/")) return base;
+
+  return base;
+}
+
 function pickConn() {
   return (
     process.env.POSTGRES_URL_NON_POOLING ||
@@ -212,7 +223,44 @@ export default async function handler(req, res) {
         "result.state",
       ]) || null;
 
-    const video_url = extractVideoUrl(fal);
+    let video_url = extractVideoUrl(fal);
+    const stUpper = String(rawStatus || "").toUpperCase();
+
+    if (
+      !video_url &&
+      ["COMPLETED", "COMPLETE", "SUCCEEDED", "READY", "DONE"].includes(stUpper)
+    ) {
+      const reqUrl = requestUrlFromStatusUrl(status_url);
+
+      if (reqUrl) {
+        const rr = await fetch(reqUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Key ${FAL_KEY}`,
+            Accept: "application/json",
+          },
+        });
+
+        const t2 = await rr.text().catch(() => "");
+        let j2;
+        try {
+          j2 = t2 ? JSON.parse(t2) : {};
+        } catch {
+          j2 = { raw: t2 };
+        }
+
+        const u2 = extractVideoUrl(j2);
+        if (u2) video_url = u2;
+
+        fal = {
+          ...fal,
+          resolved_from: reqUrl,
+          resolved_http_status: rr.status,
+          resolved_payload: j2,
+        };
+      }
+    }
+
     const status = normalizeStatus(rawStatus, video_url);
 
     const outputs = video_url
