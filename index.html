@@ -1290,6 +1290,20 @@
   object-fit: contain;
   object-position: center center;
 }
+    #atmosphere-video .atmo-preview::before,
+#atmosphere-video .atmo-preview::after,
+#atmosphere-video .atmo-preview__frame::before,
+#atmosphere-video .atmo-preview__frame::after,
+#atmosphere-video .atmo-preview-video::before,
+#atmosphere-video .atmo-preview-video::after{
+  content: none !important;
+  display: none !important;
+}
+
+#atmosphere-video .atmo-preview > :not(.atmo-preview__frame),
+#atmosphere-video .atmo-preview__frame > :not(.atmo-preview-video){
+  display: none !important;
+}
     /* ALT BAR: IŞIK EFEKTİ KAPALI */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
