@@ -630,7 +630,7 @@ module.exports = async (req, res) => {
      // =========================
     // 1) FAL POLL (ATMO + CARTOON)
     // =========================
-    if (provider === "fal" && (appKey === "atmo" || appKey === "cartoon")) {
+ if (provider === "fal" && (appKey === "atmo" || appKey === "cartoon" || appKey === "photofx")) {
       const current = String(job.status || "").toLowerCase();
       const outputsNow = Array.isArray(job.outputs) ? job.outputs : [];
 
