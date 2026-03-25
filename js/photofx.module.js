@@ -855,16 +855,79 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         console.log("[photofx] logo selected =", file?.name || null);
       });
     }
+if (audioInput && !audioInput.__bound) {
+  audioInput.__bound = true;
+  audioInput.addEventListener("change", async () => {
+    const file = audioInput.files?.[0] || null;
+    const audioMeta = ensureUploadMetaNode(root, "pfxAudioUploadBtn", "pfxAudioMeta");
 
-    if (audioInput && !audioInput.__bound) {
-      audioInput.__bound = true;
-      audioInput.addEventListener("change", () => {
-        const file = audioInput.files?.[0] || null;
-        state.audioFile = file;
-        renderUploads(root);
-        console.log("[photofx] audio selected =", file?.name || null);
-      });
+    state.audioFile = null;
+    state.audioFileName = file ? file.name : "";
+    state.audioFileUrl = "";
+    state.audioFileUploadPromise = null;
+    state.audioFileUploadStatus = file ? "uploading" : "idle";
+    state.audioFileUploadError = "";
+
+    if (!file) {
+      renderUploads(root);
+      console.log("[photofx] audio selected =", null);
+      return;
     }
+
+    if (audioMeta) {
+      audioMeta.innerHTML = "";
+      const chip = document.createElement("div");
+      chip.className = "pfxUploadChip";
+
+      const name = document.createElement("div");
+      name.className = "pfxUploadChipName";
+      name.title = file.name || "";
+      name.textContent = `${truncateName(file.name || "", 22)} · Yükleniyor...`;
+
+      chip.appendChild(name);
+      audioMeta.appendChild(chip);
+    }
+
+    console.log("[photofx] audio uploading =", file?.name || null);
+
+    state.audioFileUploadPromise = uploadFile(file, "audio")
+      .then((publicUrl) => {
+        state.audioFile = file;
+        state.audioFileUrl = String(publicUrl || "").trim();
+        state.audioFileUploadStatus = "ready";
+        state.audioFileUploadError = "";
+        renderUploads(root);
+        console.log("[photofx] audio ready =", state.audioFileUrl);
+        return state.audioFileUrl;
+      })
+      .catch((err) => {
+        state.audioFile = null;
+        state.audioFileUrl = "";
+        state.audioFileUploadStatus = "error";
+        state.audioFileUploadError = String(
+          err?.message || err || "photofx_audio_upload_failed"
+        );
+
+        if (audioMeta) {
+          audioMeta.innerHTML = "";
+          const chip = document.createElement("div");
+          chip.className = "pfxUploadChip";
+
+          const name = document.createElement("div");
+          name.className = "pfxUploadChipName";
+          name.title = file.name || "";
+          name.textContent = `${truncateName(file.name || "", 20)} · Yükleme hatası`;
+
+          chip.appendChild(name);
+          audioMeta.appendChild(chip);
+        }
+
+        console.error("[photofx] audio upload error =", err);
+        alert(state.audioFileUploadError);
+        throw err;
+      });
+  });
+}
 
     document.addEventListener(
       "click",
