@@ -1,4 +1,3 @@
-// FILE: js/photofx.module.js
 console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
 (function () {
@@ -9,6 +8,8 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     standard: 8,
     premium: 12,
   };
+
+  const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
@@ -30,6 +31,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         quality: "standard",
         presets: [],
         imageFile: null,
+        endImageFile: null,
         audioFile: null,
       };
     }
@@ -125,12 +127,21 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
   function renderUploads(root) {
     const state = getState(root);
+
     const imageName = ensureFileNameNode(
       root,
       "pfxInlineUploadBtn",
       "pfxImageName",
       "Dosya seçilmedi"
     );
+
+    const endImageName = ensureFileNameNode(
+      root,
+      "pfxEndImageUploadBtn",
+      "pfxEndImageName",
+      "Dosya seçilmedi"
+    );
+
     const audioName = ensureFileNameNode(
       root,
       "pfxAudioUploadBtn",
@@ -141,6 +152,12 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     if (imageName) {
       imageName.textContent = state.imageFile
         ? state.imageFile.name
+        : "Dosya seçilmedi";
+    }
+
+    if (endImageName) {
+      endImageName.textContent = state.endImageFile
+        ? state.endImageFile.name
         : "Dosya seçilmedi";
     }
 
@@ -166,6 +183,21 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     audioBtn.dataset.includeMusicEnabled = enabled ? "yes" : "no";
     audioInput.dataset.includeMusicEnabled = enabled ? "yes" : "no";
+  }
+
+  function syncDurationRules(root) {
+    const durationEl = qs("#pfxDuration", root);
+    const resolutionEl = qs("#pfxResolution", root);
+    const fpsEl = qs("#pfxFps", root);
+
+    if (!durationEl || !resolutionEl || !fpsEl) return;
+
+    const duration = String(durationEl.value || "6");
+
+    if (LONG_DURATION_VALUES.has(duration)) {
+      resolutionEl.value = "1080p";
+      fpsEl.value = "25";
+    }
   }
 
   async function postJSON(url, payload) {
@@ -250,8 +282,8 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
       const directVideoUrl = String(
         j?.video?.url ||
-        j?.video_url ||
-        ""
+          j?.video_url ||
+          ""
       ).trim();
 
       if (ready && (outs.length || directVideoUrl)) {
@@ -365,8 +397,10 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       quality: state.quality || "standard",
       styles: selectedPresets,
       style: selectedPresets[0] || "",
-      duration: qs("#pfxDuration", root)?.value || "10",
+      duration: qs("#pfxDuration", root)?.value || "6",
       ratio: qs("#pfxAspect", root)?.value || "9:16",
+      resolution: qs("#pfxResolution", root)?.value || "1080p",
+      fps: qs("#pfxFps", root)?.value || "25",
       motionLevel: qs("#pfxMotionLevel", root)?.value || "balanced",
       effectStrength: qs("#pfxEffectPower", root)?.value || "medium",
       colorMood: qs("#pfxColorMood", root)?.value || "original",
@@ -374,6 +408,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       includeAudio:
         String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
       imageFile: state.imageFile || null,
+      endImageFile: state.endImageFile || null,
       audioFile: state.audioFile || null,
     };
   }
@@ -401,7 +436,16 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       return;
     }
 
+    if (LONG_DURATION_VALUES.has(String(form.duration || ""))) {
+      form.resolution = "1080p";
+      form.fps = "25";
+    }
+
     const imageUrl = await uploadFile(form.imageFile, "image");
+    const endImageUrl = form.endImageFile
+      ? await uploadFile(form.endImageFile, "end-image")
+      : "";
+
     const audioUrl =
       form.includeAudio && form.audioFile
         ? await uploadFile(form.audioFile, "audio")
@@ -413,15 +457,18 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         ? "fal-ai/ltx-2.3/image-to-video"
         : "fal-ai/ltx-2.3/image-to-video/fast";
 
-    const provider = await postJSON("/api/providers/fal/photofx/create", {
+    const providerPayload = {
       prompt: form.prompt,
       quality: form.quality,
       preset: form.style,
       styles: form.styles,
       image_url: imageUrl,
+      end_image_url: endImageUrl || undefined,
       audio_url: audioUrl || undefined,
       aspect_ratio: form.ratio,
-      duration: Number(form.duration || 10),
+      duration: Number(form.duration || 6),
+      resolution: form.resolution,
+      fps: Number(form.fps || 25),
       motion_level: form.motionLevel,
       effect_strength: form.effectStrength,
       color_mood: form.colorMood,
@@ -433,8 +480,15 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         provider_model: providerModel,
         styles: form.styles,
         include_audio: form.includeAudio,
+        duration: Number(form.duration || 6),
+        resolution: form.resolution,
+        fps: Number(form.fps || 25),
+        aspect_ratio: form.ratio,
+        end_image_url: endImageUrl || "",
       },
-    });
+    };
+
+    const provider = await postJSON("/api/providers/fal/photofx/create", providerPayload);
 
     const finalJobId = String(provider?.job_id || "").trim();
     const statusUrl = String(provider?.status_url || "").trim();
@@ -459,12 +513,15 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
             quality: form.quality,
             ratio: form.ratio,
             duration: form.duration,
+            resolution: form.resolution,
+            fps: form.fps,
             motionLevel: form.motionLevel,
             effectStrength: form.effectStrength,
             colorMood: form.colorMood,
             transitionSpeed: form.transitionSpeed,
             includeAudio: form.includeAudio,
             imageUrl,
+            endImageUrl,
             audioUrl,
             provider: "fal",
             provider_variant: providerVariant,
@@ -481,6 +538,11 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       requestId,
       statusUrl,
       styles: form.styles,
+      duration: form.duration,
+      resolution: form.resolution,
+      fps: form.fps,
+      ratio: form.ratio,
+      endImageUrl,
     });
 
     pollPhotoFxJob(finalJobId).catch((err) => {
@@ -512,6 +574,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     initStateFromDOM(root);
 
     ensureHiddenInput(root, "pfxImageInput", "image/*");
+    ensureHiddenInput(root, "pfxEndImageInput", "image/*");
     ensureHiddenInput(root, "pfxAudioInput", "audio/*");
 
     ensureFileNameNode(
@@ -520,6 +583,14 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       "pfxImageName",
       "Dosya seçilmedi"
     );
+
+    ensureFileNameNode(
+      root,
+      "pfxEndImageUploadBtn",
+      "pfxEndImageName",
+      "Dosya seçilmedi"
+    );
+
     ensureFileNameNode(
       root,
       "pfxAudioUploadBtn",
@@ -532,6 +603,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     renderPresets(root);
     renderUploads(root);
     syncIncludeMusic(root);
+    syncDurationRules(root);
     bindEvents(root);
   }
 
@@ -561,11 +633,24 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         return;
       }
 
+      if (e.target.matches("#pfxDuration")) {
+        syncDurationRules(root);
+        return;
+      }
+
       if (e.target.matches("#pfxImageInput")) {
         const file = e.target.files?.[0] || null;
         state.imageFile = file;
         renderUploads(root);
         console.log("[photofx] image selected =", file?.name || null);
+        return;
+      }
+
+      if (e.target.matches("#pfxEndImageInput")) {
+        const file = e.target.files?.[0] || null;
+        state.endImageFile = file;
+        renderUploads(root);
+        console.log("[photofx] end image selected =", file?.name || null);
         return;
       }
 
@@ -587,9 +672,12 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     const state = getState(root);
 
     const includeMusic = qs("#pfxIncludeMusic", root);
+    const durationEl = qs("#pfxDuration", root);
     const imageInput = qs("#pfxImageInput", root);
+    const endImageInput = qs("#pfxEndImageInput", root);
     const audioInput = qs("#pfxAudioInput", root);
     const imageBtn = qs("#pfxInlineUploadBtn", root);
+    const endImageBtn = qs("#pfxEndImageUploadBtn", root);
     const audioBtn = qs("#pfxAudioUploadBtn", root);
     const createBtn = qs(".pfxCreateBtn", root);
 
@@ -600,11 +688,26 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       });
     }
 
+    if (durationEl && !durationEl.__bound) {
+      durationEl.__bound = true;
+      durationEl.addEventListener("change", () => {
+        syncDurationRules(root);
+      });
+    }
+
     if (imageBtn && imageInput && !imageBtn.__bound) {
       imageBtn.__bound = true;
       imageBtn.addEventListener("click", (e) => {
         e.preventDefault();
         imageInput.click();
+      });
+    }
+
+    if (endImageBtn && endImageInput && !endImageBtn.__bound) {
+      endImageBtn.__bound = true;
+      endImageBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        endImageInput.click();
       });
     }
 
@@ -624,6 +727,16 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         state.imageFile = file;
         renderUploads(root);
         console.log("[photofx] image selected =", file?.name || null);
+      });
+    }
+
+    if (endImageInput && !endImageInput.__bound) {
+      endImageInput.__bound = true;
+      endImageInput.addEventListener("change", () => {
+        const file = endImageInput.files?.[0] || null;
+        state.endImageFile = file;
+        renderUploads(root);
+        console.log("[photofx] end image selected =", file?.name || null);
       });
     }
 
