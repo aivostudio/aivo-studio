@@ -698,53 +698,83 @@ section[data-module="photofx"] .pfxPresetBlock::before,
 section[data-module="photofx"] .pfxClipBlock::before{
   opacity: .82 !important;
 }
-/* PHOTOFX HERO — cover başlığı gibi */
+/* PHOTOFX HERO — cover başlığıyla aynı kutu hissi */
 
-section[data-module="photofx"] .pfxHero,
-section.pfxPage[data-module="photofx"] .pfxHero,
-section[data-module="photofx"] .page-hero-card,
-section.pfxPage[data-module="photofx"] .page-hero-card{
+section.pfxPage[data-module="photofx"]{
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+section.pfxPage[data-module="photofx"] .pfxHero{
   margin-bottom: 14px;
-  border-radius: 22px;
-  overflow: hidden;
+  padding: 18px;
+  border-radius: 32px;
   background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(170, 120, 255, .22), transparent 55%),
-    radial-gradient(900px 600px at 85% 20%, rgba(80, 140, 255, .18), transparent 55%),
-    linear-gradient(180deg, rgba(22, 24, 44, .60), rgba(18, 19, 38, .60));
-  border: 1px solid rgba(160, 110, 255, .22);
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+    radial-gradient(1200px 600px at 15% 10%, rgba(170, 120, 255, .16), transparent 55%),
+    radial-gradient(900px 600px at 85% 20%, rgba(80, 140, 255, .12), transparent 55%),
+    linear-gradient(180deg, rgba(22, 24, 44, .58), rgba(18, 19, 38, .58));
+  border: 1px solid rgba(160, 110, 255, .16);
+  box-shadow: 0 18px 60px rgba(0,0,0,.38);
 }
 
-section[data-module="photofx"] .pfxHeroInner,
-section.pfxPage[data-module="photofx"] .pfxHeroInner,
-section[data-module="photofx"] .page-hero-inner,
-section.pfxPage[data-module="photofx"] .page-hero-inner{
-  padding: 18px 18px 16px;
+section.pfxPage[data-module="photofx"] .pfxHeroText{
+  min-height: 168px;
+  border-radius: 28px;
+  padding: 34px 28px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  display: grid;
-  justify-items: center;
-  gap: 6px;
+
+  background:
+    radial-gradient(900px 320px at 18% 8%, rgba(170, 120, 255, .18), transparent 60%),
+    radial-gradient(700px 260px at 82% 18%, rgba(80, 140, 255, .14), transparent 60%),
+    linear-gradient(180deg, rgba(104, 84, 170, .38), rgba(45, 52, 102, .34));
+
+  border: 1px solid rgba(128, 102, 220, .42);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 30px rgba(0,0,0,.18);
 }
 
-section[data-module="photofx"] .pfxHeroTitle,
-section.pfxPage[data-module="photofx"] .pfxHeroTitle,
-section[data-module="photofx"] .page-title,
-section.pfxPage[data-module="photofx"] .page-title{
+section.pfxPage[data-module="photofx"] .pfxTitle{
   margin: 0;
-  font-size: 18px;
+  font-size: 28px;
+  line-height: 1.08;
   font-weight: 800;
-  color: rgba(255,255,255,.92);
+  letter-spacing: -.02em;
+  color: rgba(255,255,255,.96);
   text-align: center;
 }
 
-section[data-module="photofx"] .pfxHeroSub,
-section.pfxPage[data-module="photofx"] .pfxHeroSub,
-section[data-module="photofx"] .page-subtitle,
-section.pfxPage[data-module="photofx"] .page-subtitle{
-  margin: 6px 0 0;
-  max-width: 720px;
+section.pfxPage[data-module="photofx"] .pfxSub{
+  margin: 14px 0 0;
+  max-width: 760px;
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.45;
+  font-weight: 500;
   color: rgba(255,255,255,.62);
   text-align: center;
+}
+
+@media (max-width: 768px){
+  section.pfxPage[data-module="photofx"] .pfxHero{
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  section.pfxPage[data-module="photofx"] .pfxHeroText{
+    min-height: 136px;
+    border-radius: 20px;
+    padding: 26px 18px 22px;
+  }
+
+  section.pfxPage[data-module="photofx"] .pfxTitle{
+    font-size: 22px;
+  }
+
+  section.pfxPage[data-module="photofx"] .pfxSub{
+    font-size: 12px;
+  }
 }
