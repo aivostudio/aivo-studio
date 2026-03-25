@@ -58,7 +58,7 @@ function extractFalStatusUrl(data) {
 
 function mapAspectRatio(v) {
   const s = String(v || "").trim();
-  if (["9:16", "1:1", "16:9"].includes(s)) return s;
+  if (["9:16", "1:1", "16:9", "auto"].includes(s)) return s;
   return "9:16";
 }
 
@@ -173,7 +173,6 @@ export default async function handler(req, res) {
   // ---- INPUT ----
   const body = safeJson(req);
   const incomingJobId = body.job_id ? String(body.job_id) : null;
-
   const app = "photofx";
 
   const image_url =
@@ -184,14 +183,36 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: "missing_image_url" });
   }
 
+  // ---- MOTOR SEÇİMİ ----
+  // standard => Fast
+  // premium  => Pro
+  const quality = String(
+    body.quality || body.tier || body.plan || "standard"
+  ).toLowerCase();
+
+  const isPro =
+    quality === "premium" ||
+    quality === "pro" ||
+    quality === "premium_clip";
+
+  const falUrl = isPro
+    ? "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video"
+    : "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
+
+  const engineLabel = isPro ? "pro" : "fast";
+
   const preset = String(body.preset || "neon_pulse").trim();
   const aspect_ratio = mapAspectRatio(body.aspect_ratio || body.aspectRatio);
- const duration = mapDuration(body.duration, isPro);
-  const motion_level = String(body.motion_level || body.motionLevel || "balanced").trim();
+  const duration = mapDuration(body.duration, isPro);
+  const motion_level = String(
+    body.motion_level || body.motionLevel || "balanced"
+  ).trim();
   const effect_strength = String(
     body.effect_strength || body.effectStrength || "medium"
   ).trim();
-  const color_mood = String(body.color_mood || body.colorMood || "original").trim();
+  const color_mood = String(
+    body.color_mood || body.colorMood || "original"
+  ).trim();
 
   const prompt = buildPrompt({
     prompt: body.prompt,
@@ -221,29 +242,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
   }
 
- // Motor seçimi:
-// standard => Fast
-// premium  => Pro
-const quality = String(
-  body.quality || body.tier || body.plan || "standard"
-).toLowerCase();
-
-const isPro =
-  quality === "premium" ||
-  quality === "pro" ||
-  quality === "premium_clip";
-
-const falUrl = isPro
-  ? "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video"
-  : "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
-
-const engineLabel = isPro ? "pro" : "fast";
-
   const falBody = {
-    prompt,
     image_url: String(image_url).trim(),
-    aspect_ratio,
+    prompt,
     duration,
+    aspect_ratio,
+    resolution: "1080p",
+    fps: 25,
+    generate_audio: false,
   };
 
   const ctrl = new AbortController();
@@ -301,7 +307,8 @@ const engineLabel = isPro ? "pro" : "fast";
     app,
     kind: "photo_fx_clip",
     provider: "fal",
-      engine: `ltx_image_to_video_${engineLabel}`,
+    engine: `ltx_image_to_video_${engineLabel}`,
+    quality,
     request_id,
     preset,
     image_url: String(image_url).trim(),
