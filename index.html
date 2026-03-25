@@ -1280,33 +1280,6 @@
   border: 0;
   box-shadow: none;
 }
-#atmosphere-video .atmo-preview__frame::before{
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.06),
-    inset 0 0 40px rgba(99,102,241,.10),
-    inset 0 -28px 40px rgba(0,0,0,.14);
-}
-
-#atmosphere-video .atmo-preview__frame::after{
-  content: "";
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: inherit;
-  background: linear-gradient(135deg,
-    rgba(168,85,247,.22) 0%,
-    rgba(59,130,246,.12) 38%,
-    rgba(236,72,153,.12) 100%);
-  opacity: .55;
-  mix-blend-mode: screen;
-}
 
 #atmosphere-video .atmo-preview-video{
   position: absolute;
@@ -1314,24 +1287,9 @@
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: right bottom;
+  object-fit: contain;
+  object-position: center center;
 }
-    #atmosphere-video .atmo-preview__frame::before,
-#atmosphere-video .atmo-preview__frame::after{
-  display: none !important;
-  content: none !important;
-}
-
-#atmosphere-video .atmo-preview [class*="label"],
-#atmosphere-video .atmo-preview [class*="caption"],
-#atmosphere-video .atmo-preview [class*="note"],
-#atmosphere-video .atmo-preview .live-badge,
-#atmosphere-video .atmo-preview .preview-badge,
-#atmosphere-video .atmo-preview .preview-note{
-  display: none !important;
-}
-
     /* ALT BAR: IŞIK EFEKTİ KAPALI */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
