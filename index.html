@@ -1313,13 +1313,30 @@
     #atmosphere-video .atmo-bottom strong{ opacity:.98; font-weight: 800; }
     #atmosphere-video .atmo-bottom::after{ display:none !important; }
 
-    @media (max-width: 900px){
-      #atmosphere-video .sm-card--atmo{ grid-template-columns: 1fr; }
-      #atmosphere-video .atmo-head{ text-align:left; }
-      #atmosphere-video .atmo-bar{ text-align:left; border-radius: 22px; width: 100%; }
-      #atmosphere-video .atmo-bottom{ text-align:left; border-radius: 22px; }
-      #atmosphere-video .atmo-preview{ min-height: 220px; }
-    }
+  @media (max-width: 900px){
+  #atmosphere-video .sm-card--atmo{
+    grid-template-columns: 1fr;
+  }
+
+  #atmosphere-video .atmo-head{
+    text-align:left;
+  }
+
+  #atmosphere-video .atmo-bar{
+    text-align:left;
+    border-radius: 22px;
+    width: 100%;
+  }
+
+  #atmosphere-video .atmo-bottom{
+    text-align:left;
+    border-radius: 22px;
+  }
+
+  #atmosphere-video .atmo-preview__frame{
+    min-height: 240px;
+  }
+}
   </style>
 
 <div class="atmo-wrap">
