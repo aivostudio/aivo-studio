@@ -253,9 +253,9 @@ export default async function handler(req, res) {
     await download(video_url, inputVideo);
     await download(logo_url, inputLogo);
 
-    const pos = POS[String(logo_pos || "").trim()] || POS.br;
-    const sizeRatio = SIZE[String(logo_size || "").trim()] || SIZE.sm;
-    const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
+ const pos = POS.c;
+   const sizeRatio = SIZE.lg;
+const opacity = 1;
 
     const sourceBitrate = await probeVideoBitrate(inputVideo);
     const targetBitrate = sourceBitrate
