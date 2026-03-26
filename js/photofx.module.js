@@ -346,7 +346,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     });
   }
 
-  async function pollPhotoFxJob(job_id) {
+async function pollPhotoFxJob(job_id, opts = {}) {
     const POLL_MS = 2000;
     const POLL_MAX = 120;
 
@@ -387,16 +387,15 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
                 meta: { app: "photofx", variant: "provider", is_final: true },
               },
             ];
-         const rawMeta = j?.raw?.meta || j?.meta || {};
-const wantsLogo = !!(
-  rawMeta?.logo_enabled &&
-  String(rawMeta?.logo_url || "").trim()
-);
+const rawMeta = j?.raw?.meta || j?.meta || {};
+const wantsLogo =
+  opts.wantsLogo === true ||
+  !!(rawMeta?.logo_enabled && String(rawMeta?.logo_url || "").trim());
+
 const hasLogoOverlay = finalOutputs.some((o) => {
   const variant = String(o?.meta?.variant || "").toLowerCase().trim();
   return variant === "logo_overlay";
 });
-
 if (wantsLogo && !hasLogoOverlay) {
   const finalizeRes = await fetch("/api/photofx/finalize", {
     method: "POST",
@@ -722,7 +721,9 @@ if (wantsLogo && !hasLogoOverlay) {
       logoUrl,
     });
 
-    pollPhotoFxJob(finalJobId).catch((err) => {
+pollPhotoFxJob(finalJobId, {
+  wantsLogo: !!logoUrl,
+}).catch((err) => {
       console.error("[photofx] poll error:", err);
     });
   }
