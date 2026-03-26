@@ -387,7 +387,81 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
                 meta: { app: "photofx", variant: "provider", is_final: true },
               },
             ];
+         const rawMeta = j?.raw?.meta || j?.meta || {};
+const wantsLogo = !!(
+  rawMeta?.logo_enabled &&
+  String(rawMeta?.logo_url || "").trim()
+);
+const hasLogoOverlay = finalOutputs.some((o) => {
+  const variant = String(o?.meta?.variant || "").toLowerCase().trim();
+  return variant === "logo_overlay";
+});
 
+if (wantsLogo && !hasLogoOverlay) {
+  const finalizeRes = await fetch("/api/photofx/finalize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      job_id,
+      force: true,
+    }),
+  });
+
+  const finalizeJson = await finalizeRes.json().catch(() => null);
+  console.log("[photofx] forced finalize =", finalizeJson);
+
+  if (finalizeRes.ok && finalizeJson?.ok) {
+    const forcedFinalUrl = String(
+      finalizeJson.final_url || finalizeJson.video_url || ""
+    ).trim();
+    const forcedPreviewUrl = String(finalizeJson.preview_url || "").trim();
+    const forcedLogoOverlayUrl = String(
+      finalizeJson.logo_overlay_url || ""
+    ).trim();
+
+    const forcedOutputs = [];
+
+    if (forcedFinalUrl) {
+      forcedOutputs.push({
+        type: "video",
+        url: forcedFinalUrl,
+        meta: { app: "photofx", variant: "finalized", is_final: true },
+      });
+    }
+
+    if (forcedPreviewUrl) {
+      forcedOutputs.push({
+        type: "video",
+        url: forcedPreviewUrl,
+        meta: { app: "photofx", variant: "preview", is_preview: true },
+      });
+    }
+
+    if (forcedLogoOverlayUrl) {
+      forcedOutputs.push({
+        type: "video",
+        url: forcedLogoOverlayUrl,
+        meta: { app: "photofx", variant: "logo_overlay", is_logo_overlay: true },
+      });
+    }
+
+    if (forcedOutputs.length) {
+      window.dispatchEvent(
+        new CustomEvent("aivo:photofx:job_ready", {
+          detail: {
+            app: "photofx",
+            job_id,
+            status: "ready",
+            video: forcedFinalUrl ? { url: forcedFinalUrl } : null,
+            outputs: forcedOutputs,
+            raw: finalizeJson,
+          },
+        })
+      );
+      return;
+    }
+  }
+}
         window.dispatchEvent(
           new CustomEvent("aivo:photofx:job_ready", {
             detail: {
