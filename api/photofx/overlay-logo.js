@@ -200,18 +200,16 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
 
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-photofx-overlay-"));
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "aivo-photofx-overlay-")
+    );
     const inputVideo = path.join(tmpDir, `in-${job_id}.mp4`);
-    const inputLogo = path.join(tmpDir, `logo-${job_id}.png`);
     const outputVideo = path.join(tmpDir, `out-${job_id}.mp4`);
 
-    cleanup.push(inputVideo, inputLogo, outputVideo, tmpDir);
+    cleanup.push(inputVideo, outputVideo, tmpDir);
 
     await download(video_url, inputVideo);
-    await download(logo_url, inputLogo);
 
-    const pos = POS[String(logo_pos || "").trim()] || POS.br;
-    const sizeRatio = SIZE[String(logo_size || "").trim()] || SIZE.sm;
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
 
     const sourceBitrate = await probeVideoBitrate(inputVideo);
@@ -219,18 +217,19 @@ export default async function handler(req, res) {
       ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
       : 8000000;
 
+    // DEBUG MODE:
+    // Gercek logo yerine cok bariz kutular basiyoruz.
+    // Ama amac ffmpeg filter'in nihai mp4'e gercekten islenip islenmedigini kanitlamak.
     const filter = [
-      `[1:v][0:v]scale2ref=w=main_w*${sizeRatio}:h=ow/mdar[lg][base]`,
-      `[lg]format=rgba,colorchannelmixer=aa=${opacity}[lg2]`,
-      `[base][lg2]overlay=${pos}:format=auto[v]`,
-    ].join(";");
+      `[0:v]drawbox=x=0:y=0:w=iw:h=120:color=red@0.95:t=fill,`,
+      `drawbox=x=iw*0.25:y=ih*0.22:w=iw*0.50:h=ih*0.56:color=yellow@0.90:t=fill,`,
+      `drawbox=x=20:y=20:w=iw-40:h=ih-40:color=lime@1.0:t=10[v]`,
+    ].join("");
 
     await run(ffmpegPath, [
       "-y",
       "-i",
       inputVideo,
-      "-i",
-      inputLogo,
       "-filter_complex",
       filter,
       "-map",
@@ -258,7 +257,7 @@ export default async function handler(req, res) {
     ]);
 
     const buffer = fs.readFileSync(outputVideo);
-    const key = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
+    const key = `outputs/photofx/${job_id}/logo-overlay-debug-${Date.now()}.mp4`;
 
     const publicUrl = await putObject({
       key,
@@ -271,6 +270,7 @@ export default async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const nextOutputs = upsertVideoOutput(outputs, "logo_overlay", publicUrl, {
       is_logo_overlay: true,
+      is_logo_overlay_debug: true,
       is_final: false,
       logo_url,
       logo_pos: String(logo_pos || "br").trim(),
@@ -290,6 +290,9 @@ export default async function handler(req, res) {
       logo_overlay_source_url: String(video_url || "").trim(),
       logo_overlay_source_bitrate: sourceBitrate,
       logo_overlay_target_bitrate: targetBitrate,
+      logo_overlay_debug_mode: true,
+      logo_overlay_debug_note:
+        "real logo disabled; ffmpeg drawbox visibility test applied",
     };
 
     await sql`
@@ -308,6 +311,7 @@ export default async function handler(req, res) {
       video_bitrate: sourceBitrate,
       target_bitrate: targetBitrate,
       variant: "logo_overlay",
+      debug_mode: true,
     });
   } catch (e) {
     return res.status(500).json({
