@@ -637,7 +637,18 @@ const logoEnabled = !!meta?.logo_enabled;
 const logoUrl = String(meta?.logo_url || "").trim();
 const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
 const hasLogoRequest = !!(logoEnabled && logoUrl);
-const needsLogoFinalize = !!(hasLogoRequest && !existingLogoOverlayUrl);
+
+const finalizedFromVariant = String(
+  meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
+)
+  .trim()
+  .toLowerCase();
+
+const finalizedHasLogoApplied =
+  finalizedFromVariant === "logo_overlay" &&
+  !!existingLogoOverlayUrl;
+
+const needsLogoFinalize = !!(hasLogoRequest && !finalizedHasLogoApplied);
 
 if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
   return res.status(200).json({
