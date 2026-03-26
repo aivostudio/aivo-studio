@@ -314,9 +314,6 @@ async function runPhotofxCompositingScaffold({
     };
   }
 
-  // ŞİMDİLİK SCAFFOLD:
-  // Gerçek overlay / LUT / motion zinciri burada çalışacak.
-  // İlk aşamada pipeline kırılmasın diye yine outputPath'e düz kopya atıyoruz.
   await fsp.copyFile(inputPath, outputPath);
 
   return {
@@ -474,25 +471,26 @@ async function runFfmpegOverlayLogo({
     c: "(W-w)/2:(H-h)/2",
   };
 
-const SIZE = {
-  sm: 140,
-  md: 200,
-  lg: 280,
-};
+  const SIZE = {
+    sm: 140,
+    md: 200,
+    lg: 280,
+  };
 
-const pos = POS[String(logoPos || "").trim()] || POS.br;
-const logoWidth = SIZE[String(logoSize || "").trim()] || SIZE.sm;
-const opacity = Math.max(0, Math.min(1, Number(logoOpacity)));
+  const pos = POS[String(logoPos || "").trim()] || POS.br;
+  const logoWidth = SIZE[String(logoSize || "").trim()] || SIZE.sm;
+  const opacity = Math.max(0, Math.min(1, Number(logoOpacity)));
 
-const sourceBitrate = await probeVideoBitrate(videoPath);
-const targetBitrate = sourceBitrate
-  ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
-  : 8000000;
+  const sourceBitrate = await probeVideoBitrate(videoPath);
+  const targetBitrate = sourceBitrate
+    ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
+    : 8000000;
 
-const filter = [
-  `[1:v]scale=${logoWidth}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
-  `[0:v][lg]overlay=${pos}:format=auto[v]`,
-].join(";");
+  const filter = [
+    `[1:v]scale=${logoWidth}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
+    `[0:v][lg]overlay=${pos}:format=auto[v]`,
+  ].join(";");
+
   await new Promise((resolve, reject) => {
     const args = [
       "-y",
@@ -537,7 +535,9 @@ const filter = [
 
     p.on("close", (code) => {
       if (code === 0) return resolve();
-      reject(new Error(`ffmpeg_logo_overlay_failed:${code}:${stderr.slice(-1000)}`));
+      reject(
+        new Error(`ffmpeg_logo_overlay_failed:${code}:${stderr.slice(-1000)}`)
+      );
     });
   });
 
@@ -628,38 +628,38 @@ module.exports = async function handler(req, res) {
     const previewOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "preview"
     );
-const existingFinalized = pickUrl(finalizedOut);
-const existingPreview =
-  String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
-const logoEnabled = !!meta?.logo_enabled;
-const logoUrl = String(meta?.logo_url || "").trim();
-const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
-const hasLogoRequest = !!(logoEnabled && logoUrl);
+    const existingFinalized = pickUrl(finalizedOut);
+    const existingPreview =
+      String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
-const finalizedFromVariant = String(
-  meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
-)
-  .trim()
-  .toLowerCase();
+    const logoEnabled = !!meta?.logo_enabled;
+    const logoUrl = String(meta?.logo_url || "").trim();
+    const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
+    const hasLogoRequest = !!(logoEnabled && logoUrl);
 
-const finalizedHasLogoApplied =
-  finalizedFromVariant === "logo_overlay" &&
-  !!existingLogoOverlayUrl;
+    const finalizedFromVariant = String(
+      meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
+    )
+      .trim()
+      .toLowerCase();
 
-const needsLogoFinalize = !!(hasLogoRequest && !finalizedHasLogoApplied);
+    const finalizedHasLogoApplied =
+      finalizedFromVariant === "logo_overlay" && !!existingLogoOverlayUrl;
 
-if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
-  return res.status(200).json({
-    ok: true,
-    job_id,
-    input_url: null,
-    final_url: existingFinalized,
-    preview_url: existingPreview,
-    skipped: true,
-    reason: "already_finalized",
-  });
-}
+    const needsLogoFinalize = !!(hasLogoRequest && !finalizedHasLogoApplied);
+
+    if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
+      return res.status(200).json({
+        ok: true,
+        job_id,
+        input_url: null,
+        final_url: existingFinalized,
+        preview_url: existingPreview,
+        skipped: true,
+        reason: "already_finalized",
+      });
+    }
 
     const audioUrl =
       String(meta?.audio_url || "").trim() ||
@@ -732,21 +732,11 @@ if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
       });
 
       await verifyPublicUrl(logo_overlay_url, "logo_overlay");
-      return res.status(200).json({
-  ok: true,
-  job_id,
-  debug_stage: "logo_overlay_only",
-  logo_overlay_url,
-  selectedFinalSourceVariant,
-  logoOverlayMeta,
-});
 
       effectiveInputPath = logoOverlaidPath;
       selectedFinalSourceVariant = "logo_overlay";
     }
 
-    // Logo basılmış video varsa üstüne sadece audio mux yapılır.
-    // Hazır mux varsa onu source alıp logo üstüne basmış olduk.
     const needsInlineMux = hasAudio && !hasMux;
 
     if (needsInlineMux) {
@@ -817,7 +807,8 @@ if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
     const muxOutputId = `mux-${Date.now()}`;
     const muxKey = `outputs/photofx/${job_id}/${muxOutputId}.mp4`;
 
-    let mux_url = String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
+    let mux_url =
+      String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
 
     if (needsInlineMux) {
       mux_url = await uploadFileToR2({
@@ -889,13 +880,13 @@ if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
       preview_source_duration_sec: durationSec || 0,
       preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
       preview_source_url: selectedFinalSourceUrl,
-      selected_final_source_variant: compositingPlan.source_variant,
+      selected_final_source_variant: selectedFinalSourceVariant,
       compositing_enabled: compositingPlan.enabled,
       compositing_preset: compositingPlan.preset || "",
       compositing_styles: compositingPlan.styles,
       ...(logo_overlay_url
         ? {
-            logo_overlay_url: logo_overlay_url,
+            logo_overlay_url,
             logo_name: logoName,
             logo_url: logoUrl,
             logo_pos: logoPos,
@@ -933,7 +924,7 @@ if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
       step: "finalized",
       preview_cfg: previewBitrateCfg,
       preview_source_url: selectedFinalSourceUrl,
-      selected_final_source_variant: compositingPlan.source_variant,
+      selected_final_source_variant: selectedFinalSourceVariant,
       needs_inline_mux: needsInlineMux,
       has_logo: hasLogo,
       logo_overlay_url: logo_overlay_url || "",
