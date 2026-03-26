@@ -696,32 +696,6 @@ module.exports = async function handler(req, res) {
     let selectedFinalSourceVariant = muxUrl ? "mux" : "provider";
     let logo_overlay_url = "";
     let logoOverlayMeta = null;
-    if (hasLogo) {
-  await downloadToFile(logoUrl, logoPath);
-
-  logoOverlayMeta = await runFfmpegOverlayLogo({
-    videoPath: effectiveInputPath,
-    logoPath,
-    outputPath: logoOverlaidPath,
-    logoPos,
-    logoSize,
-    logoOpacity,
-  });
-
-  const logoOverlayOutputId = `logo-overlay-${Date.now()}`;
-  const logoOverlayKey = `outputs/photofx/${job_id}/${logoOverlayOutputId}.mp4`;
-
-  logo_overlay_url = await uploadFileToR2({
-    filePath: logoOverlaidPath,
-    key: logoOverlayKey,
-    contentType: "video/mp4",
-  });
-
-  await verifyPublicUrl(logo_overlay_url, "logo_overlay");
-
-  effectiveInputPath = logoOverlaidPath;
-  selectedFinalSourceVariant = "logo_overlay";
-}
 
     if (hasLogo) {
       await downloadToFile(logoUrl, logoPath);
