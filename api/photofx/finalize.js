@@ -629,22 +629,27 @@ module.exports = async function handler(req, res) {
     const previewOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "preview"
     );
+const existingFinalized = pickUrl(finalizedOut);
+const existingPreview =
+  String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
-    const existingFinalized = pickUrl(finalizedOut);
-    const existingPreview =
-      String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
+const logoEnabled = !!meta?.logo_enabled;
+const logoUrl = String(meta?.logo_url || "").trim();
+const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
+const hasLogoRequest = !!(logoEnabled && logoUrl);
+const needsLogoFinalize = !!(hasLogoRequest && !existingLogoOverlayUrl);
 
-    if (existingFinalized && existingPreview && !body.force) {
-      return res.status(200).json({
-        ok: true,
-        job_id,
-        input_url: null,
-        final_url: existingFinalized,
-        preview_url: existingPreview,
-        skipped: true,
-        reason: "already_finalized",
-      });
-    }
+if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
+  return res.status(200).json({
+    ok: true,
+    job_id,
+    input_url: null,
+    final_url: existingFinalized,
+    preview_url: existingPreview,
+    skipped: true,
+    reason: "already_finalized",
+  });
+}
 
     const audioUrl =
       String(meta?.audio_url || "").trim() ||
@@ -653,8 +658,6 @@ module.exports = async function handler(req, res) {
     const muxUrl = String(meta?.muxed_url || "").trim() || pickUrl(muxOut);
     const providerUrl = pickUrl(providerOut);
 
-    const logoEnabled = !!meta?.logo_enabled;
-    const logoUrl = String(meta?.logo_url || "").trim();
     const logoName = String(meta?.logo_name || "").trim();
     const logoPos = String(meta?.logo_pos || "br").trim();
     const logoSize = String(meta?.logo_size || "sm").trim();
