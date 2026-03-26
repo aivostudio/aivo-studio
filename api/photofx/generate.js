@@ -121,6 +121,8 @@ export default async function handler(req, res) {
       includeAudio,
       imageUrl,
       audioUrl,
+      audio_url: audioUrl,
+      music_url: audioUrl,
     };
 
     const inserted = await sql`
