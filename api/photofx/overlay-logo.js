@@ -3,11 +3,10 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import crypto from "crypto";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { neon } from "@neondatabase/serverless";
-import { putObject } from "../_lib/r2.js";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const POS = {
   br: "W-w-24:H-h-24",
@@ -50,6 +49,70 @@ function isUuidLike(id) {
   );
 }
 
+function getR2Client() {
+  if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
+  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+
+  return new S3Client({
+    region: "auto",
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+  });
+}
+
+async function uploadFileToR2({ filePath, key, contentType }) {
+  if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
+
+  const publicBase =
+    process.env.R2_PUBLIC_BASE_URL ||
+    process.env.R2_PUBLIC_BASE ||
+    "https://media.aivo.tr";
+
+  const r2 = getR2Client();
+
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: key,
+      Body: fs.createReadStream(filePath),
+      ContentType: contentType || "video/mp4",
+      CacheControl: "public, max-age=31536000, immutable",
+    })
+  );
+
+  return `${String(publicBase).replace(/\/$/, "")}/${key}`;
+}
+
+async function verifyPublicUrl(url, label) {
+  if (!url) throw new Error(`public_url_missing:${label}`);
+
+  const methods = ["HEAD", "GET"];
+
+  for (const method of methods) {
+    try {
+      const r = await fetch(url, {
+        method,
+        cache: "no-store",
+        redirect: "follow",
+      });
+
+      if (r.ok) {
+        return {
+          ok: true,
+          status: r.status,
+          method,
+        };
+      }
+    } catch {}
+  }
+
+  throw new Error(`public_url_unreachable:${label}:${url}`);
+}
+
 async function download(url, dest) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`download_failed:${res.status}`);
@@ -89,19 +152,7 @@ async function probeVideoBitrate(inputPath) {
   });
 }
 
-function pickUrl(o) {
-  return String(
-    o?.archive_url ||
-      o?.url ||
-      o?.video_url ||
-      o?.meta?.archive_url ||
-      o?.meta?.url ||
-      o?.meta?.video_url ||
-      ""
-  ).trim();
-}
-
-function normVariant(o) {
+function pickVariant(o) {
   return String(o?.meta?.variant || "").toLowerCase().trim();
 }
 
@@ -113,7 +164,7 @@ function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
   const arr = Array.isArray(outputs) ? outputs.slice() : [];
 
   const idx = arr.findIndex(
-    (o) => isVideo(o) && normVariant(o) === String(variant || "").toLowerCase()
+    (o) => isVideo(o) && pickVariant(o) === String(variant || "").toLowerCase()
   );
 
   const item = {
@@ -154,7 +205,6 @@ export default async function handler(req, res) {
       logo_pos = "br",
       logo_size = "sm",
       logo_opacity = 0.85,
-      app = "photofx",
     } = req.body || {};
 
     if (!job_id) {
@@ -193,12 +243,10 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
 
-    const id = String(job_id || crypto.randomUUID()).trim();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-photofx-overlay-"));
-
-    const inputVideo = path.join(tmpDir, `in-${id}.mp4`);
-    const inputLogo = path.join(tmpDir, `logo-${id}.png`);
-    const outputVideo = path.join(tmpDir, `out-${id}.mp4`);
+    const inputVideo = path.join(tmpDir, `in-${job_id}.mp4`);
+    const inputLogo = path.join(tmpDir, `logo-${job_id}.png`);
+    const outputVideo = path.join(tmpDir, `out-${job_id}.mp4`);
 
     cleanup.push(inputVideo, inputLogo, outputVideo, tmpDir);
 
@@ -251,19 +299,18 @@ export default async function handler(req, res) {
       outputVideo,
     ]);
 
-    const buffer = fs.readFileSync(outputVideo);
-    const key = `outputs/${app}/${id}/logo-overlay-${Date.now()}.mp4`;
+    const key = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
 
-    const publicUrl = await putObject({
+    const publicUrl = await uploadFileToR2({
+      filePath: outputVideo,
       key,
-      body: buffer,
       contentType: "video/mp4",
     });
 
-    const outputs = Array.isArray(job.outputs) ? job.outputs : [];
-    const meta = job.meta || {};
+    await verifyPublicUrl(publicUrl, "logo_overlay");
 
-    let nextOutputs = upsertVideoOutput(outputs, "logo_overlay", publicUrl, {
+    const outputs = Array.isArray(job.outputs) ? job.outputs : [];
+    const nextOutputs = upsertVideoOutput(outputs, "logo_overlay", publicUrl, {
       is_logo_overlay: true,
       is_final: false,
       logo_url,
@@ -272,26 +319,7 @@ export default async function handler(req, res) {
       logo_opacity: opacity,
     });
 
-    const finalizedOut = nextOutputs.find(
-      (o) => isVideo(o) && normVariant(o) === "finalized"
-    );
-
-    if (finalizedOut) {
-      nextOutputs = nextOutputs.map((o) => {
-        if (!o || !o.meta) return o;
-        if (normVariant(o) !== "finalized") return o;
-        return {
-          ...o,
-          meta: {
-            ...(o.meta || {}),
-            is_final: false,
-          },
-        };
-      });
-    }
-
     const patchMeta = {
-      ...meta,
       logo_enabled: true,
       logo_url: String(logo_url || "").trim(),
       logo_overlay_url: publicUrl,
@@ -309,7 +337,7 @@ export default async function handler(req, res) {
       update jobs
       set
         outputs = ${JSON.stringify(nextOutputs)}::jsonb,
-        meta = ${JSON.stringify(patchMeta)}::jsonb,
+        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
         updated_at = now()
       where id = ${job_id}::uuid
     `;
@@ -317,7 +345,7 @@ export default async function handler(req, res) {
     return res.json({
       ok: true,
       url: publicUrl,
-      job_id: id,
+      job_id,
       video_bitrate: sourceBitrate,
       target_bitrate: targetBitrate,
       variant: "logo_overlay",
