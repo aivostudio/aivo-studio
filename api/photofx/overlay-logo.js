@@ -6,6 +6,7 @@ import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { neon } from "@neondatabase/serverless";
+import { putObject } from "../_lib/r2.js";
 
 const POS = {
   br: "W-w-24:H-h-24",
@@ -16,9 +17,9 @@ const POS = {
 };
 
 const SIZE = {
-  sm: 0.18,
-  md: 0.28,
-  lg: 0.38,
+  sm: 0.16,
+  md: 0.22,
+  lg: 0.30,
 };
 
 function run(cmd, args) {
@@ -48,60 +49,6 @@ function isUuidLike(id) {
   );
 }
 
-async function uploadFileToR2({ filePath, key, contentType }) {
-  const pres = await fetch("https://aivo.tr/api/r2/presign-put", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      filename: path.basename(key || "logo-overlay.mp4"),
-      contentType: contentType || "video/mp4",
-      key,
-    }),
-  });
-
-  const presJ = await pres.json().catch(() => null);
-
-  if (!pres.ok || !presJ || !presJ.ok) {
-    throw new Error(
-      `presign_failed:${pres.status}:${JSON.stringify(presJ || null)}`
-    );
-  }
-
-  const uploadUrl = String(presJ.upload_url || "");
-  const publicUrl = String(presJ.public_url || "");
-  const finalKey = String(presJ.key || key || "");
-
-  if (!uploadUrl || !publicUrl || !finalKey) {
-    throw new Error(`presign_missing_urls:${JSON.stringify(presJ || null)}`);
-  }
-
-  const body = fs.readFileSync(filePath);
-
-  const putResp = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": contentType || "video/mp4",
-      "Content-Length": String(body.length),
-    },
-    body,
-  });
-
-  if (!putResp.ok) {
-    const t = await putResp.text().catch(() => "");
-    throw new Error(
-      `r2_put_failed:${putResp.status}:${String(t || "").slice(0, 600)}`
-    );
-  }
-
-  return {
-    publicUrl,
-    finalKey,
-  };
-}
-
 async function verifyPublicUrl(url, label) {
   if (!url) throw new Error(`public_url_missing:${label}`);
 
@@ -114,13 +61,8 @@ async function verifyPublicUrl(url, label) {
         cache: "no-store",
         redirect: "follow",
       });
-
       if (r.ok) {
-        return {
-          ok: true,
-          status: r.status,
-          method,
-        };
+        return { ok: true, status: r.status, method };
       }
     } catch {}
   }
@@ -315,11 +257,12 @@ export default async function handler(req, res) {
       outputVideo,
     ]);
 
-    const requestedKey = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
+    const buffer = fs.readFileSync(outputVideo);
+    const key = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
 
-    const { publicUrl, finalKey } = await uploadFileToR2({
-      filePath: outputVideo,
-      key: requestedKey,
+    const publicUrl = await putObject({
+      key,
+      body: buffer,
       contentType: "video/mp4",
     });
 
@@ -339,7 +282,7 @@ export default async function handler(req, res) {
       logo_enabled: true,
       logo_url: String(logo_url || "").trim(),
       logo_overlay_url: publicUrl,
-      logo_overlay_key: finalKey,
+      logo_overlay_key: key,
       logo_overlay_applied_at: new Date().toISOString(),
       logo_pos: String(logo_pos || "br").trim(),
       logo_size: String(logo_size || "sm").trim(),
