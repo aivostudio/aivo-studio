@@ -526,12 +526,14 @@ module.exports = async function handler(req, res) {
       String(meta?.music_url || "").trim();
 
     const muxUrl = String(meta?.muxed_url || "").trim() || pickUrl(muxOut);
+    const logoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
     const providerUrl = pickUrl(providerOut);
 
     const hasAudio = !!audioUrl;
     const hasMux = !!muxUrl;
 
-    const selectedFinalSourceUrl = muxUrl || providerUrl || "";
+ const selectedFinalSourceUrl = logoOverlayUrl || muxUrl || providerUrl || "";
+    
 
     if (!selectedFinalSourceUrl) {
       return res.status(400).json({
@@ -557,9 +559,13 @@ module.exports = async function handler(req, res) {
     await downloadToFile(selectedFinalSourceUrl, inputPath);
 
     let effectiveInputPath = inputPath;
-    let selectedFinalSourceVariant = muxUrl ? "mux" : "provider";
+ let selectedFinalSourceVariant = logoOverlayUrl
+  ? "logo_overlay"
+  : muxUrl
+    ? "mux"
+    : "provider";
 
-    const needsInlineMux = hasAudio && !hasMux;
+  const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
 
     if (needsInlineMux) {
       await downloadToFile(audioUrl, audioPath);
