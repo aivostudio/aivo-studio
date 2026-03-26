@@ -16,9 +16,9 @@ const POS = {
 };
 
 const SIZE = {
-  sm: 0.16,
-  md: 0.22,
-  lg: 0.30,
+  sm: 0.18,
+  md: 0.28,
+  lg: 0.38,
 };
 
 function run(cmd, args) {
@@ -278,8 +278,9 @@ export default async function handler(req, res) {
       : 8000000;
 
     const filter = [
-      `[1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
-      `[0:v][lg]overlay=${pos}:format=auto[v]`,
+      `[1:v][0:v]scale2ref=w=main_w*${sizeRatio}:h=ow/mdar[lg][base]`,
+      `[lg]format=rgba,colorchannelmixer=aa=${opacity}[lg2]`,
+      `[base][lg2]overlay=${pos}:format=auto[v]`,
     ].join(";");
 
     await run(ffmpegPath, [
