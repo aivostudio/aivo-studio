@@ -397,7 +397,7 @@ async function pollPhotoFxJob(job_id, opts = {}) {
         return variant === "logo_overlay";
       });
 
-   if (wantsLogo && !hasLogoOverlay) {
+ if (wantsLogo && !hasLogoOverlay) {
   const overlaySource =
     finalOutputs.find((o) => {
       const variant = String(o?.meta?.variant || "").toLowerCase().trim();
@@ -474,7 +474,6 @@ async function pollPhotoFxJob(job_id, opts = {}) {
     }
   }
 }
-
       window.dispatchEvent(
         new CustomEvent("aivo:photofx:job_ready", {
           detail: {
