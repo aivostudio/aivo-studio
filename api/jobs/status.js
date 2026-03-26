@@ -685,6 +685,30 @@ module.exports = async (req, res) => {
 
 const providerVideoUrl = isCharacterJob ? null : pickFalVideoUrl(body);
 const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
+            if (appKey === "photofx" && !providerVideoUrl) {
+  const failMeta = {
+    ...patchMeta,
+    failure: "provider_done_but_no_video_url",
+    provider_error:
+      body?.error ||
+      body?.message ||
+      body?.detail ||
+      body?.fal_response?.error ||
+      "provider_done_but_no_video_url",
+    provider_body: body,
+  };
+
+  await sql`
+    update jobs
+    set status = 'error',
+        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(failMeta)}::jsonb,
+        updated_at = now()
+    where id = ${job_id}::uuid
+  `;
+
+  job.status = "error";
+  job.meta = { ...(job.meta || {}), ...(failMeta || {}) };
+} else
 
             const providerOutputId =
               body?.outputs?.[0]?.id ||
@@ -757,7 +781,7 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
             // ---- outputs MERGE (NO OVERWRITE) ----
             const existingOutputs = Array.isArray(job.outputs) ? job.outputs : [];
             let merged = existingOutputs;
-                       if (isCharacterJob && providerImageUrl) {
+                      if (isCharacterJob && providerImageUrl) {
               merged = mergeOutputs(
                 (Array.isArray(merged) ? merged : []).map((o) => {
                   if (
