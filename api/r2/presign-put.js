@@ -59,14 +59,7 @@ export default async function handler(req, res) {
       "audio/x-m4a",
     ]);
 
-    const ALLOWED_VIDEO = new Set([
-      "video/mp4",
-    ]);
-
-    const isAllowed =
-      ALLOWED_IMAGE.has(ct) ||
-      ALLOWED_AUDIO.has(ct) ||
-      ALLOWED_VIDEO.has(ct);
+    const isAllowed = ALLOWED_IMAGE.has(ct) || ALLOWED_AUDIO.has(ct);
 
     if (!isAllowed) {
       return res.status(400).json({
@@ -75,7 +68,6 @@ export default async function handler(req, res) {
         allowed: {
           image: Array.from(ALLOWED_IMAGE),
           audio: Array.from(ALLOWED_AUDIO),
-          video: Array.from(ALLOWED_VIDEO),
         },
       });
     }
