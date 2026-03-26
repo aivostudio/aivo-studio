@@ -1,5 +1,4 @@
-// /api/photofx/overlay-logo.js
-
+// api/photofx/overlay-logo.js
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -34,13 +33,6 @@ function run(cmd, args) {
   });
 }
 
-async function download(url, dest) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`download_failed:${res.status}`);
-  const ab = await res.arrayBuffer();
-  fs.writeFileSync(dest, Buffer.from(ab));
-}
-
 async function probeVideoBitrate(inputPath) {
   return await new Promise((resolve) => {
     const p = spawn(
@@ -60,13 +52,24 @@ async function probeVideoBitrate(inputPath) {
     );
 
     let out = "";
-    p.stdout.on("data", (d) => (out += d.toString()));
+    p.stdout.on("data", (d) => {
+      out += d.toString();
+    });
+
     p.on("close", () => {
       const n = Number(String(out || "").trim());
       resolve(Number.isFinite(n) && n > 0 ? n : null);
     });
+
     p.on("error", () => resolve(null));
   });
+}
+
+async function download(url, dest) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`download_failed:${res.status}`);
+  const ab = await res.arrayBuffer();
+  fs.writeFileSync(dest, Buffer.from(ab));
 }
 
 export default async function handler(req, res) {
@@ -92,9 +95,7 @@ export default async function handler(req, res) {
     }
 
     const id = job_id || crypto.randomUUID();
-    const tmpDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), "aivo-photofx-overlay-")
-    );
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-photofx-overlay-"));
 
     const inputVideo = path.join(tmpDir, `in-${id}.mp4`);
     const inputLogo = path.join(tmpDir, `logo-${id}.png`);
@@ -113,6 +114,9 @@ export default async function handler(req, res) {
     const targetBitrate = sourceBitrate
       ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
       : 8000000;
+
+    const targetBitrateStr = String(targetBitrate);
+    const targetBufsizeStr = String(targetBitrate * 2);
 
     const filter = [
       `[1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
@@ -136,11 +140,11 @@ export default async function handler(req, res) {
       "-preset",
       "medium",
       "-b:v",
-      String(targetBitrate),
+      targetBitrateStr,
       "-maxrate",
-      String(targetBitrate),
+      targetBitrateStr,
       "-bufsize",
-      String(targetBitrate * 2),
+      targetBufsizeStr,
       "-pix_fmt",
       "yuv420p",
       "-c:a",
