@@ -508,18 +508,34 @@ module.exports = async function handler(req, res) {
     const existingFinalized = pickUrl(finalizedOut);
     const existingPreview =
       String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
+    const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
 
-    if (existingFinalized && existingPreview && !body.force) {
-      return res.status(200).json({
-        ok: true,
-        job_id,
-        input_url: null,
-        final_url: existingFinalized,
-        preview_url: existingPreview,
-        skipped: true,
-        reason: "already_finalized",
-      });
-    }
+const finalizedFromVariant = String(
+  meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
+)
+  .trim()
+  .toLowerCase();
+
+const finalizedMatchesCurrentSource = existingLogoOverlayUrl
+  ? finalizedFromVariant === "logo_overlay"
+  : true;
+
+   if (
+  existingFinalized &&
+  existingPreview &&
+  !body.force &&
+  finalizedMatchesCurrentSource
+) {
+  return res.status(200).json({
+    ok: true,
+    job_id,
+    input_url: null,
+    final_url: existingFinalized,
+    preview_url: existingPreview,
+    skipped: true,
+    reason: "already_finalized",
+  });
+}
 
     const audioUrl =
       String(meta?.audio_url || "").trim() ||
