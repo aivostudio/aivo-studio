@@ -474,25 +474,24 @@ async function runFfmpegOverlayLogo({
     c: "(W-w)/2:(H-h)/2",
   };
 
-  const SIZE = {
-    sm: 0.16,
-    md: 0.22,
-    lg: 0.30,
-  };
+const SIZE = {
+  sm: 140,
+  md: 200,
+  lg: 280,
+};
 
-  const pos = POS[String(logoPos || "").trim()] || POS.br;
-  const sizeRatio = SIZE[String(logoSize || "").trim()] || SIZE.sm;
-  const opacity = Math.max(0, Math.min(1, Number(logoOpacity)));
+const pos = POS[String(logoPos || "").trim()] || POS.br;
+const logoWidth = SIZE[String(logoSize || "").trim()] || SIZE.sm;
+const opacity = Math.max(0, Math.min(1, Number(logoOpacity)));
 
-  const sourceBitrate = await probeVideoBitrate(videoPath);
-  const targetBitrate = sourceBitrate
-    ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
-    : 8000000;
+const sourceBitrate = await probeVideoBitrate(videoPath);
+const targetBitrate = sourceBitrate
+  ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
+  : 8000000;
 
 const filter = [
-  `[1:v]format=rgba,colorchannelmixer=aa=${opacity}[logo]`,
-  `[logo][0:v]scale2ref=w=iw*${sizeRatio}:h=-1[lg][base]`,
-  `[base][lg]overlay=${pos}:format=auto[v]`,
+  `[1:v]scale=${logoWidth}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
+  `[0:v][lg]overlay=${pos}:format=auto[v]`,
 ].join(";");
   await new Promise((resolve, reject) => {
     const args = [
