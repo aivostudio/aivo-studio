@@ -956,3 +956,22 @@ section[data-module="photofx"] .pfxEngineSub{
   text-align: center;
   color: rgba(255,255,255,.78);
 }
+.pfxPromptHintRow{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:8px;
+  margin:0 0 18px;
+}
+
+.pfxPromptHintTitle{
+  width:100%;
+  text-align:center;
+}
+
+.pfxPromptHintNote{
+  width:100%;
+  text-align:center;
+}
