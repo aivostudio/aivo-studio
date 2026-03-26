@@ -579,6 +579,8 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         logo_enabled: !!logoUrl,
         logo_name: form.logoFile?.name || "",
         logo_url: logoUrl || "",
+        audio_url: audioUrl || "",
+        music_url: audioUrl || "",
       },
     };
 
