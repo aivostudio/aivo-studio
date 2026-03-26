@@ -7,6 +7,7 @@ import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { neon } from "@neondatabase/serverless";
 import { putObject } from "../_lib/r2.js";
+console.log("[photofx overlay] DEBUG BUILD 2026-03-27 v1");
 
 const POS = {
   br: "W-w-24:H-h-24",
