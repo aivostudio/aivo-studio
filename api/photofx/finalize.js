@@ -2,7 +2,7 @@
 // CommonJS
 // PhotoFX finalize:
 // input: provider / mux / final url
-// işlem: optional inline logo overlay + optional inline mux + optional compositing scaffold + faststart + preview encode
+// işlem: optional inline mux + optional compositing scaffold + faststart + preview encode
 // output: R2 final mp4 + R2 preview mp4 + DB meta/output patch
 
 const { neon } = require("@neondatabase/serverless");
@@ -211,38 +211,6 @@ async function probeVideoDurationSec(inputPath) {
 
       resolve(Number.isFinite(total) ? total : 0);
     });
-  });
-}
-
-async function probeVideoBitrate(inputPath) {
-  return await new Promise((resolve) => {
-    const p = spawn(
-      "ffprobe",
-      [
-        "-v",
-        "error",
-        "-select_streams",
-        "v:0",
-        "-show_entries",
-        "stream=bit_rate",
-        "-of",
-        "default=noprint_wrappers=1:nokey=1",
-        inputPath,
-      ],
-      { stdio: ["ignore", "pipe", "ignore"] }
-    );
-
-    let out = "";
-    p.stdout.on("data", (d) => {
-      out += d.toString();
-    });
-
-    p.on("close", () => {
-      const n = Number(String(out || "").trim());
-      resolve(Number.isFinite(n) && n > 0 ? n : null);
-    });
-
-    p.on("error", () => resolve(null));
   });
 }
 
@@ -455,98 +423,6 @@ async function runFfmpegMuxVideoAndAudio({
   });
 }
 
-async function runFfmpegOverlayLogo({
-  videoPath,
-  logoPath,
-  outputPath,
-  logoPos = "br",
-  logoSize = "sm",
-  logoOpacity = 0.85,
-}) {
-  const POS = {
-    br: "W-w-24:H-h-24",
-    bl: "24:H-h-24",
-    tr: "W-w-24:24",
-    tl: "24:24",
-    c: "(W-w)/2:(H-h)/2",
-  };
-
-  const SIZE = {
-    sm: 140,
-    md: 200,
-    lg: 280,
-  };
-
-  const pos = POS[String(logoPos || "").trim()] || POS.br;
-  const logoWidth = SIZE[String(logoSize || "").trim()] || SIZE.sm;
-  const opacity = Math.max(0, Math.min(1, Number(logoOpacity)));
-
-  const sourceBitrate = await probeVideoBitrate(videoPath);
-  const targetBitrate = sourceBitrate
-    ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
-    : 8000000;
-
-  const filter = [
-    `[1:v]scale=${logoWidth}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
-    `[0:v][lg]overlay=${pos}:format=auto[v]`,
-  ].join(";");
-
-  await new Promise((resolve, reject) => {
-    const args = [
-      "-y",
-      "-i",
-      videoPath,
-      "-i",
-      logoPath,
-      "-filter_complex",
-      filter,
-      "-map",
-      "[v]",
-      "-map",
-      "0:a:0?",
-      "-c:v",
-      "libx264",
-      "-preset",
-      "medium",
-      "-b:v",
-      String(targetBitrate),
-      "-maxrate",
-      String(targetBitrate),
-      "-bufsize",
-      String(targetBitrate * 2),
-      "-pix_fmt",
-      "yuv420p",
-      "-c:a",
-      "copy",
-      "-shortest",
-      "-movflags",
-      "+faststart",
-      outputPath,
-    ];
-
-    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
-
-    let stderr = "";
-    p.stderr.on("data", (d) => {
-      stderr += String(d || "");
-    });
-
-    p.on("error", reject);
-
-    p.on("close", (code) => {
-      if (code === 0) return resolve();
-      reject(
-        new Error(`ffmpeg_logo_overlay_failed:${code}:${stderr.slice(-1000)}`)
-      );
-    });
-  });
-
-  return {
-    sourceBitrate,
-    targetBitrate,
-  };
-}
-
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -633,23 +509,7 @@ module.exports = async function handler(req, res) {
     const existingPreview =
       String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
-    const logoEnabled = !!meta?.logo_enabled;
-    const logoUrl = String(meta?.logo_url || "").trim();
-    const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
-    const hasLogoRequest = !!(logoEnabled && logoUrl);
-
-    const finalizedFromVariant = String(
-      meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
-    )
-      .trim()
-      .toLowerCase();
-
-    const finalizedHasLogoApplied =
-      finalizedFromVariant === "logo_overlay" && !!existingLogoOverlayUrl;
-
-    const needsLogoFinalize = !!(hasLogoRequest && !finalizedHasLogoApplied);
-
-    if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
+    if (existingFinalized && existingPreview && !body.force) {
       return res.status(200).json({
         ok: true,
         job_id,
@@ -668,14 +528,8 @@ module.exports = async function handler(req, res) {
     const muxUrl = String(meta?.muxed_url || "").trim() || pickUrl(muxOut);
     const providerUrl = pickUrl(providerOut);
 
-    const logoName = String(meta?.logo_name || "").trim();
-    const logoPos = String(meta?.logo_pos || "br").trim();
-    const logoSize = String(meta?.logo_size || "sm").trim();
-    const logoOpacity = Number(meta?.logo_opacity ?? 0.85);
-
     const hasAudio = !!audioUrl;
     const hasMux = !!muxUrl;
-    const hasLogo = !!(logoEnabled && logoUrl);
 
     const selectedFinalSourceUrl = muxUrl || providerUrl || "";
 
@@ -686,7 +540,6 @@ module.exports = async function handler(req, res) {
         job_id,
         has_audio: hasAudio,
         has_mux: hasMux,
-        has_logo: hasLogo,
       });
     }
 
@@ -695,8 +548,6 @@ module.exports = async function handler(req, res) {
     );
 
     const inputPath = path.join(tmpDir, "input.mp4");
-    const logoPath = path.join(tmpDir, "logo-input");
-    const logoOverlaidPath = path.join(tmpDir, "logo-overlaid.mp4");
     const audioPath = path.join(tmpDir, "audio-input");
     const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
     const outputPath = path.join(tmpDir, "finalized.mp4");
@@ -707,35 +558,6 @@ module.exports = async function handler(req, res) {
 
     let effectiveInputPath = inputPath;
     let selectedFinalSourceVariant = muxUrl ? "mux" : "provider";
-    let logo_overlay_url = "";
-    let logoOverlayMeta = null;
-
-    if (hasLogo) {
-      await downloadToFile(logoUrl, logoPath);
-
-      logoOverlayMeta = await runFfmpegOverlayLogo({
-        videoPath: effectiveInputPath,
-        logoPath,
-        outputPath: logoOverlaidPath,
-        logoPos,
-        logoSize,
-        logoOpacity,
-      });
-
-      const logoOverlayOutputId = `logo-overlay-${Date.now()}`;
-      const logoOverlayKey = `outputs/photofx/${job_id}/${logoOverlayOutputId}.mp4`;
-
-      logo_overlay_url = await uploadFileToR2({
-        filePath: logoOverlaidPath,
-        key: logoOverlayKey,
-        contentType: "video/mp4",
-      });
-
-      await verifyPublicUrl(logo_overlay_url, "logo_overlay");
-
-      effectiveInputPath = logoOverlaidPath;
-      selectedFinalSourceVariant = "logo_overlay";
-    }
 
     const needsInlineMux = hasAudio && !hasMux;
 
@@ -747,6 +569,7 @@ module.exports = async function handler(req, res) {
         outputPath: muxedInputPath,
       });
       effectiveInputPath = muxedInputPath;
+      selectedFinalSourceVariant = "mux";
     }
 
     const input_url = selectedFinalSourceUrl;
@@ -842,18 +665,6 @@ module.exports = async function handler(req, res) {
       preview_url
     );
 
-    if (logo_overlay_url) {
-      nextOutputs = upsertVideoOutput(nextOutputs, "logo_overlay", logo_overlay_url, {
-        is_logo_overlay: true,
-        is_final: false,
-        logo_name: logoName,
-        logo_url: logoUrl,
-        logo_pos: logoPos,
-        logo_size: logoSize,
-        logo_opacity: logoOpacity,
-      });
-    }
-
     if (needsInlineMux && mux_url) {
       nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
         is_mux: true,
@@ -884,20 +695,6 @@ module.exports = async function handler(req, res) {
       compositing_enabled: compositingPlan.enabled,
       compositing_preset: compositingPlan.preset || "",
       compositing_styles: compositingPlan.styles,
-      ...(logo_overlay_url
-        ? {
-            logo_overlay_url,
-            logo_name: logoName,
-            logo_url: logoUrl,
-            logo_pos: logoPos,
-            logo_size: logoSize,
-            logo_opacity: logoOpacity,
-            logo_overlay_source_bitrate:
-              logoOverlayMeta?.sourceBitrate || null,
-            logo_overlay_target_bitrate:
-              logoOverlayMeta?.targetBitrate || null,
-          }
-        : {}),
       ...(needsInlineMux && mux_url
         ? {
             muxed_url: mux_url,
@@ -926,8 +723,6 @@ module.exports = async function handler(req, res) {
       preview_source_url: selectedFinalSourceUrl,
       selected_final_source_variant: selectedFinalSourceVariant,
       needs_inline_mux: needsInlineMux,
-      has_logo: hasLogo,
-      logo_overlay_url: logo_overlay_url || "",
       compositing: {
         enabled: compositingPlan.enabled,
         preset: compositingPlan.preset || "",
