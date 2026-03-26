@@ -397,7 +397,83 @@ async function pollPhotoFxJob(job_id, opts = {}) {
         return variant === "logo_overlay";
       });
 
+   if (wantsLogo && !hasLogoOverlay) {
+  const overlaySource =
+    finalOutputs.find((o) => {
+      const variant = String(o?.meta?.variant || "").toLowerCase().trim();
+      return variant === "mux" || variant === "provider";
+    })?.url || directVideoUrl;
 
+  const logoUrl = String(rawMeta?.logo_url || "").trim();
+
+  if (overlaySource && logoUrl) {
+    const overlayRes = await fetch("/api/photofx/overlay-logo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id,
+        video_url: overlaySource,
+        logo_url: logoUrl,
+        logo_pos: String(rawMeta?.logo_pos || "br").trim(),
+        logo_size: String(rawMeta?.logo_size || "sm").trim(),
+        logo_opacity: Number(rawMeta?.logo_opacity ?? 0.85),
+      }),
+    });
+
+    const overlayJson = await overlayRes.json().catch(() => null);
+    console.log("[photofx] overlay logo =", overlayJson);
+
+    if (overlayRes.ok && overlayJson?.ok) {
+      const rr = await fetch(
+        `/api/jobs/status?job_id=${encodeURIComponent(job_id)}&t=${Date.now()}`
+      );
+      const rtext = await rr.text().catch(() => "");
+      let refreshed = null;
+
+      try {
+        refreshed = rtext ? JSON.parse(rtext) : null;
+      } catch (_) {
+        refreshed = null;
+      }
+
+      console.log("[photofx] refreshed after overlay =", refreshed);
+
+      if (refreshed?.ok) {
+        const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
+        const refreshedDirectVideoUrl = String(
+          refreshed?.video?.url || refreshed?.video_url || overlayJson.url || ""
+        ).trim();
+
+        const refreshedFinalOutputs = refreshedOuts.length
+          ? refreshedOuts.map((o) => ({
+              ...o,
+              meta: { ...(o.meta || {}), app: "photofx" },
+            }))
+          : [
+              {
+                type: "video",
+                url: refreshedDirectVideoUrl,
+                meta: { app: "photofx", variant: "logo_overlay", is_final: false },
+              },
+            ];
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:photofx:job_ready", {
+            detail: {
+              app: "photofx",
+              job_id,
+              status: String(refreshed.status || "ready").toLowerCase(),
+              video: refreshedDirectVideoUrl ? { url: refreshedDirectVideoUrl } : null,
+              outputs: refreshedFinalOutputs,
+              raw: refreshed,
+            },
+          })
+        );
+        return;
+      }
+    }
+  }
+}
 
       window.dispatchEvent(
         new CustomEvent("aivo:photofx:job_ready", {
