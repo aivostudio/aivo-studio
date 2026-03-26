@@ -732,6 +732,14 @@ if (existingFinalized && existingPreview && !body.force && !needsLogoFinalize) {
       });
 
       await verifyPublicUrl(logo_overlay_url, "logo_overlay");
+      return res.status(200).json({
+  ok: true,
+  job_id,
+  debug_stage: "logo_overlay_only",
+  logo_overlay_url,
+  selectedFinalSourceVariant,
+  logoOverlayMeta,
+});
 
       effectiveInputPath = logoOverlaidPath;
       selectedFinalSourceVariant = "logo_overlay";
