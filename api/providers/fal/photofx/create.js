@@ -74,30 +74,39 @@ function mapDuration(v, isPro = false) {
   return 10;
 }
 
-function rewriteToFalFetchableUrl(rawUrl) {
-  const input = String(rawUrl || "").trim();
+function normalizePublicMediaUrl(raw) {
+  const input = String(raw || "").trim();
   if (!input) return "";
 
-  const falBase = String(
-    process.env.R2_PUBLIC_BASE_FAL || process.env.R2_PUBLIC_BASE || ""
+  const publicBase = String(
+    process.env.R2_PUBLIC_BASE_URL ||
+      process.env.R2_PUBLIC_BASE ||
+      "https://media.aivo.tr"
   )
     .trim()
     .replace(/\/$/, "");
 
-  if (!falBase) return input;
-
   try {
     const u = new URL(input);
 
-    if (u.hostname === "media.aivo.tr" && u.pathname.startsWith("/uploads/")) {
-      return `${falBase}${u.pathname}`;
+    if (/^pub-[^.]+\.r2\.dev$/i.test(u.hostname)) {
+      return `${publicBase}${u.pathname}`;
+    }
+
+    if (u.hostname === "media.aivo.tr") {
+      return `${publicBase}${u.pathname}`;
     }
 
     return input;
   } catch {
     if (input.startsWith("/uploads/")) {
-      return `${falBase}${input}`;
+      return `${publicBase}${input}`;
     }
+
+    if (input.startsWith("uploads/")) {
+      return `${publicBase}/${input}`;
+    }
+
     return input;
   }
 }
@@ -211,7 +220,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: "missing_image_url" });
   }
 
-  const image_url = rewriteToFalFetchableUrl(String(image_url_raw).trim());
+  const image_url = normalizePublicMediaUrl(String(image_url_raw).trim());
 
   // ---- MOTOR SEÇİMİ ----
   // standard => Fast
