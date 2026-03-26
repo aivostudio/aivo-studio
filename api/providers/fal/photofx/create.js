@@ -254,6 +254,42 @@ export default async function handler(req, res) {
 
   const metaInput = body.meta && typeof body.meta === "object" ? body.meta : {};
 
+  const logo_url =
+    pick(body, ["logo_url", "logoUrl"]) ||
+    pick(metaInput, ["logo_url", "logoUrl"]) ||
+    null;
+
+  const logo_enabled_raw =
+    pick(body, ["logo_enabled", "logoEnabled"]) ??
+    pick(metaInput, ["logo_enabled", "logoEnabled"]) ??
+    null;
+
+  const logo_pos =
+    pick(body, ["logo_pos", "logoPos"]) ||
+    pick(metaInput, ["logo_pos", "logoPos"]) ||
+    null;
+
+  const logo_size =
+    pick(body, ["logo_size", "logoSize"]) ||
+    pick(metaInput, ["logo_size", "logoSize"]) ||
+    null;
+
+  const logo_opacity =
+    pick(body, ["logo_opacity", "logoOpacity"]) ||
+    pick(metaInput, ["logo_opacity", "logoOpacity"]) ||
+    null;
+
+  const audio_url_raw =
+    pick(body, ["audio_url", "audioUrl", "audio.url"]) ||
+    pick(metaInput, ["audio_url", "audioUrl", "audio.url"]) ||
+    null;
+
+  const audio_url = audio_url_raw ? String(audio_url_raw).trim() : null;
+  const audio_mode = audio_url ? "embed" : null;
+  const silent_copy = audio_url ? false : null;
+  const logo_enabled =
+    logo_enabled_raw == null ? Boolean(logo_url) : Boolean(logo_enabled_raw);
+
   // ---- canonical user_uuid resolve ----
   const userRow = await sql`
     select id
@@ -350,6 +386,26 @@ export default async function handler(req, res) {
     motion_level,
     effect_strength,
     color_mood,
+
+    ...(logo_url
+      ? {
+          logo_url,
+          logo_enabled,
+          ...(logo_pos ? { logo_pos } : {}),
+          ...(logo_size ? { logo_size } : {}),
+          ...(logo_opacity ? { logo_opacity } : {}),
+        }
+      : {}),
+
+    ...(audio_url
+      ? {
+          audio_mode,
+          audio_url,
+          music_url: audio_url,
+          silent_copy,
+        }
+      : {}),
+
     provider_response: {
       status_url: status_url || null,
       response_url: status_url || null,
