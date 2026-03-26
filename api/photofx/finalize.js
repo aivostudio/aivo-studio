@@ -489,11 +489,11 @@ async function runFfmpegOverlayLogo({
     ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
     : 8000000;
 
-  const filter = [
-    `[1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
-    `[0:v][lg]overlay=${pos}:format=auto[v]`,
-  ].join(";");
-
+const filter = [
+  `[1:v]format=rgba,colorchannelmixer=aa=${opacity}[logo]`,
+  `[logo][0:v]scale2ref=w=iw*${sizeRatio}:h=-1[lg][base]`,
+  `[base][lg]overlay=${pos}:format=auto[v]`,
+].join(";");
   await new Promise((resolve, reject) => {
     const args = [
       "-y",
