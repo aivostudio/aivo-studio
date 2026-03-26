@@ -6,7 +6,6 @@ import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { neon } from "@neondatabase/serverless";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const POS = {
   br: "W-w-24:H-h-24",
@@ -49,42 +48,58 @@ function isUuidLike(id) {
   );
 }
 
-function getR2Client() {
-  if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
-
-  return new S3Client({
-    region: "auto",
-    endpoint: process.env.R2_ENDPOINT,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    },
-  });
-}
-
 async function uploadFileToR2({ filePath, key, contentType }) {
-  if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
+  const pres = await fetch("https://aivo.tr/api/r2/presign-put", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      filename: path.basename(key || "logo-overlay.mp4"),
+      contentType: contentType || "video/mp4",
+      key,
+    }),
+  });
 
-  const publicBase =
-    process.env.R2_PUBLIC_BASE_URL ||
-    process.env.R2_PUBLIC_BASE ||
-    "https://media.aivo.tr";
+  const presJ = await pres.json().catch(() => null);
 
-  const r2 = getR2Client();
+  if (!pres.ok || !presJ || !presJ.ok) {
+    throw new Error(
+      `presign_failed:${pres.status}:${JSON.stringify(presJ || null)}`
+    );
+  }
 
-  await r2.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET,
-      Key: key,
-      Body: fs.createReadStream(filePath),
-      ContentType: contentType || "video/mp4",
-      CacheControl: "public, max-age=31536000, immutable",
-    })
-  );
+  const uploadUrl = String(presJ.upload_url || "");
+  const publicUrl = String(presJ.public_url || "");
+  const finalKey = String(presJ.key || key || "");
 
-  return `${String(publicBase).replace(/\/$/, "")}/${key}`;
+  if (!uploadUrl || !publicUrl || !finalKey) {
+    throw new Error(`presign_missing_urls:${JSON.stringify(presJ || null)}`);
+  }
+
+  const body = fs.readFileSync(filePath);
+
+  const putResp = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType || "video/mp4",
+      "Content-Length": String(body.length),
+    },
+    body,
+  });
+
+  if (!putResp.ok) {
+    const t = await putResp.text().catch(() => "");
+    throw new Error(
+      `r2_put_failed:${putResp.status}:${String(t || "").slice(0, 600)}`
+    );
+  }
+
+  return {
+    publicUrl,
+    finalKey,
+  };
 }
 
 async function verifyPublicUrl(url, label) {
@@ -299,11 +314,11 @@ export default async function handler(req, res) {
       outputVideo,
     ]);
 
-    const key = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
+    const requestedKey = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
 
-    const publicUrl = await uploadFileToR2({
+    const { publicUrl, finalKey } = await uploadFileToR2({
       filePath: outputVideo,
-      key,
+      key: requestedKey,
       contentType: "video/mp4",
     });
 
@@ -323,7 +338,7 @@ export default async function handler(req, res) {
       logo_enabled: true,
       logo_url: String(logo_url || "").trim(),
       logo_overlay_url: publicUrl,
-      logo_overlay_key: key,
+      logo_overlay_key: finalKey,
       logo_overlay_applied_at: new Date().toISOString(),
       logo_pos: String(logo_pos || "br").trim(),
       logo_size: String(logo_size || "sm").trim(),
