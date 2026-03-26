@@ -222,27 +222,18 @@ export default async function handler(req, res) {
 
   const image_url = normalizePublicMediaUrl(String(image_url_raw).trim());
 
-  // ---- MOTOR SEÇİMİ ----
-  // standard => Fast
-  // premium  => Pro
-  const quality = String(
-    body.quality || body.tier || body.plan || "standard"
-  ).toLowerCase();
+  // ---- TEK MOTOR: FAST ----
+  const quality = "fast";
 
-  const isPro =
-    quality === "premium" ||
-    quality === "pro" ||
-    quality === "premium_clip";
+  const falUrl =
+    "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
 
-  const falUrl = isPro
-    ? "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video"
-    : "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
-
-  const engineLabel = isPro ? "pro" : "fast";
+  const engineLabel = "fast"; 
+  
 
   const preset = String(body.preset || "neon_pulse").trim();
   const aspect_ratio = mapAspectRatio(body.aspect_ratio || body.aspectRatio);
-  const duration = mapDuration(body.duration, isPro);
+  const duration = mapDuration(body.duration, false);
   const motion_level = String(
     body.motion_level || body.motionLevel || "balanced"
   ).trim();
