@@ -397,71 +397,7 @@ async function pollPhotoFxJob(job_id, opts = {}) {
         return variant === "logo_overlay";
       });
 
-      if (wantsLogo && !hasLogoOverlay) {
-        const finalizeRes = await fetch("/api/photofx/finalize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            job_id,
-            force: true,
-          }),
-        });
 
-        const finalizeJson = await finalizeRes.json().catch(() => null);
-        console.log("[photofx] forced finalize =", finalizeJson);
-
-        if (finalizeRes.ok && finalizeJson?.ok) {
-          const rr = await fetch(
-            `/api/jobs/status?job_id=${encodeURIComponent(job_id)}&t=${Date.now()}`
-          );
-          const rtext = await rr.text().catch(() => "");
-          let refreshed = null;
-
-          try {
-            refreshed = rtext ? JSON.parse(rtext) : null;
-          } catch (_) {
-            refreshed = null;
-          }
-
-          console.log("[photofx] refreshed after finalize =", refreshed);
-
-          if (refreshed?.ok) {
-            const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
-            const refreshedDirectVideoUrl = String(
-              refreshed?.video?.url || refreshed?.video_url || finalizeJson.final_url || ""
-            ).trim();
-
-            const refreshedFinalOutputs = refreshedOuts.length
-              ? refreshedOuts.map((o) => ({
-                  ...o,
-                  meta: { ...(o.meta || {}), app: "photofx" },
-                }))
-              : [
-                  {
-                    type: "video",
-                    url: refreshedDirectVideoUrl,
-                    meta: { app: "photofx", variant: "finalized", is_final: true },
-                  },
-                ];
-
-            window.dispatchEvent(
-              new CustomEvent("aivo:photofx:job_ready", {
-                detail: {
-                  app: "photofx",
-                  job_id,
-                  status: String(refreshed.status || "ready").toLowerCase(),
-                  video: refreshedDirectVideoUrl
-                    ? { url: refreshedDirectVideoUrl }
-                    : null,
-                  outputs: refreshedFinalOutputs,
-                  raw: refreshed,
-                },
-              })
-            );
-            return;
-          }
-        }
-      }
 
       window.dispatchEvent(
         new CustomEvent("aivo:photofx:job_ready", {
