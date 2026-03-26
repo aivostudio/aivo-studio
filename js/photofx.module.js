@@ -347,143 +347,145 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   }
 
 async function pollPhotoFxJob(job_id, opts = {}) {
-    const POLL_MS = 2000;
-    const POLL_MAX = 120;
+  const POLL_MS = 2000;
+  const POLL_MAX = 120;
 
-    for (let i = 0; i < POLL_MAX; i++) {
-      await sleep(POLL_MS);
+  for (let i = 0; i < POLL_MAX; i++) {
+    await sleep(POLL_MS);
 
-      const r = await fetch(
-        `/api/jobs/status?job_id=${encodeURIComponent(job_id)}`
-      );
-      const text = await r.text().catch(() => "");
-      let j = null;
+    const r = await fetch(
+      `/api/jobs/status?job_id=${encodeURIComponent(job_id)}&t=${Date.now()}`
+    );
+    const text = await r.text().catch(() => "");
+    let j = null;
 
-      try {
-        j = text ? JSON.parse(text) : null;
-      } catch (_) {
-        j = null;
+    try {
+      j = text ? JSON.parse(text) : null;
+    } catch (_) {
+      j = null;
+    }
+
+    console.log("[photofx] poll =", j);
+
+    if (!j || !j.ok) continue;
+
+    const ready = isReadyStatus(j.status);
+    const outs = pickPhotoFxVideoOutputs(j.outputs);
+    const directVideoUrl = String(j?.video?.url || j?.video_url || "").trim();
+
+    if (ready && (outs.length || directVideoUrl)) {
+      const finalOutputs = outs.length
+        ? outs.map((o) => ({
+            ...o,
+            meta: { ...(o.meta || {}), app: "photofx" },
+          }))
+        : [
+            {
+              type: "video",
+              url: directVideoUrl,
+              meta: { app: "photofx", variant: "provider", is_final: true },
+            },
+          ];
+
+      const rawMeta = j?.raw?.meta || j?.meta || {};
+      const wantsLogo =
+        opts.wantsLogo === true ||
+        !!(rawMeta?.logo_enabled && String(rawMeta?.logo_url || "").trim());
+
+      const hasLogoOverlay = finalOutputs.some((o) => {
+        const variant = String(o?.meta?.variant || "").toLowerCase().trim();
+        return variant === "logo_overlay";
+      });
+
+      if (wantsLogo && !hasLogoOverlay) {
+        const finalizeRes = await fetch("/api/photofx/finalize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            job_id,
+            force: true,
+          }),
+        });
+
+        const finalizeJson = await finalizeRes.json().catch(() => null);
+        console.log("[photofx] forced finalize =", finalizeJson);
+
+        if (finalizeRes.ok && finalizeJson?.ok) {
+          const rr = await fetch(
+            `/api/jobs/status?job_id=${encodeURIComponent(job_id)}&t=${Date.now()}`
+          );
+          const rtext = await rr.text().catch(() => "");
+          let refreshed = null;
+
+          try {
+            refreshed = rtext ? JSON.parse(rtext) : null;
+          } catch (_) {
+            refreshed = null;
+          }
+
+          console.log("[photofx] refreshed after finalize =", refreshed);
+
+          if (refreshed?.ok) {
+            const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
+            const refreshedDirectVideoUrl = String(
+              refreshed?.video?.url || refreshed?.video_url || finalizeJson.final_url || ""
+            ).trim();
+
+            const refreshedFinalOutputs = refreshedOuts.length
+              ? refreshedOuts.map((o) => ({
+                  ...o,
+                  meta: { ...(o.meta || {}), app: "photofx" },
+                }))
+              : [
+                  {
+                    type: "video",
+                    url: refreshedDirectVideoUrl,
+                    meta: { app: "photofx", variant: "finalized", is_final: true },
+                  },
+                ];
+
+            window.dispatchEvent(
+              new CustomEvent("aivo:photofx:job_ready", {
+                detail: {
+                  app: "photofx",
+                  job_id,
+                  status: String(refreshed.status || "ready").toLowerCase(),
+                  video: refreshedDirectVideoUrl
+                    ? { url: refreshedDirectVideoUrl }
+                    : null,
+                  outputs: refreshedFinalOutputs,
+                  raw: refreshed,
+                },
+              })
+            );
+            return;
+          }
+        }
       }
 
-      console.log("[photofx] poll =", j);
-
-      if (!j || !j.ok) continue;
-
-      const ready = isReadyStatus(j.status);
-      const outs = pickPhotoFxVideoOutputs(j.outputs);
-
-      const directVideoUrl = String(j?.video?.url || j?.video_url || "").trim();
-
-      if (ready && (outs.length || directVideoUrl)) {
-        const finalOutputs = outs.length
-          ? outs.map((o) => ({
-              ...o,
-              meta: { ...(o.meta || {}), app: "photofx" },
-            }))
-          : [
-              {
-                type: "video",
-                url: directVideoUrl,
-                meta: { app: "photofx", variant: "provider", is_final: true },
-              },
-            ];
-const rawMeta = j?.raw?.meta || j?.meta || {};
-const wantsLogo =
-  opts.wantsLogo === true ||
-  !!(rawMeta?.logo_enabled && String(rawMeta?.logo_url || "").trim());
-
-const hasLogoOverlay = finalOutputs.some((o) => {
-  const variant = String(o?.meta?.variant || "").toLowerCase().trim();
-  return variant === "logo_overlay";
-});
-if (wantsLogo && !hasLogoOverlay) {
-  const finalizeRes = await fetch("/api/photofx/finalize", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      job_id,
-      force: true,
-    }),
-  });
-
-  const finalizeJson = await finalizeRes.json().catch(() => null);
-  console.log("[photofx] forced finalize =", finalizeJson);
-
-  if (finalizeRes.ok && finalizeJson?.ok) {
-    const forcedFinalUrl = String(
-      finalizeJson.final_url || finalizeJson.video_url || ""
-    ).trim();
-    const forcedPreviewUrl = String(finalizeJson.preview_url || "").trim();
-    const forcedLogoOverlayUrl = String(
-      finalizeJson.logo_overlay_url || ""
-    ).trim();
-
-    const forcedOutputs = [];
-
-    if (forcedFinalUrl) {
-      forcedOutputs.push({
-        type: "video",
-        url: forcedFinalUrl,
-        meta: { app: "photofx", variant: "finalized", is_final: true },
-      });
-    }
-
-    if (forcedPreviewUrl) {
-      forcedOutputs.push({
-        type: "video",
-        url: forcedPreviewUrl,
-        meta: { app: "photofx", variant: "preview", is_preview: true },
-      });
-    }
-
-    if (forcedLogoOverlayUrl) {
-      forcedOutputs.push({
-        type: "video",
-        url: forcedLogoOverlayUrl,
-        meta: { app: "photofx", variant: "logo_overlay", is_logo_overlay: true },
-      });
-    }
-
-    if (forcedOutputs.length) {
       window.dispatchEvent(
         new CustomEvent("aivo:photofx:job_ready", {
           detail: {
             app: "photofx",
             job_id,
-            status: "ready",
-            video: forcedFinalUrl ? { url: forcedFinalUrl } : null,
-            outputs: forcedOutputs,
-            raw: finalizeJson,
+            status: String(j.status || "").toLowerCase(),
+            video: directVideoUrl ? { url: directVideoUrl } : null,
+            outputs: finalOutputs,
+            raw: j,
           },
         })
       );
+
       return;
     }
-  }
-}
-        window.dispatchEvent(
-          new CustomEvent("aivo:photofx:job_ready", {
-            detail: {
-              app: "photofx",
-              job_id,
-              status: String(j.status || "").toLowerCase(),
-              video: directVideoUrl ? { url: directVideoUrl } : null,
-              outputs: finalOutputs,
-              raw: j,
-            },
-          })
-        );
 
-        return;
-      }
-
-      if (String(j.status || "").toLowerCase() === "error") {
-        throw new Error(j.error || "photofx_job_error");
-      }
+    if (String(j.status || "").toLowerCase() === "error") {
+      throw new Error(j.error || "photofx_job_error");
     }
-
-    throw new Error("photofx_poll_timeout");
   }
+
+  throw new Error("photofx_poll_timeout");
+}
 
   async function uploadViaPresign(file, kind = "asset") {
     if (!file) {
