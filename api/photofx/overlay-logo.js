@@ -1,10 +1,12 @@
-// api/photofx/overlay-logo.js
+// /api/photofx/overlay-logo.js
+
 import fs from "fs";
 import os from "os";
 import path from "path";
 import crypto from "crypto";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
+import { neon } from "@neondatabase/serverless";
 import { putObject } from "../_lib/r2.js";
 
 const POS = {
@@ -31,6 +33,28 @@ function run(cmd, args) {
       reject(new Error(err || `process_failed:${code}`));
     });
   });
+}
+
+function getConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED
+  );
+}
+
+function isUuidLike(id) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    String(id || "")
+  );
+}
+
+async function download(url, dest) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`download_failed:${res.status}`);
+  const ab = await res.arrayBuffer();
+  fs.writeFileSync(dest, Buffer.from(ab));
 }
 
 async function probeVideoBitrate(inputPath) {
@@ -65,11 +89,54 @@ async function probeVideoBitrate(inputPath) {
   });
 }
 
-async function download(url, dest) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`download_failed:${res.status}`);
-  const ab = await res.arrayBuffer();
-  fs.writeFileSync(dest, Buffer.from(ab));
+function pickUrl(o) {
+  return String(
+    o?.archive_url ||
+      o?.url ||
+      o?.video_url ||
+      o?.meta?.archive_url ||
+      o?.meta?.url ||
+      o?.meta?.video_url ||
+      ""
+  ).trim();
+}
+
+function normVariant(o) {
+  return String(o?.meta?.variant || "").toLowerCase().trim();
+}
+
+function isVideo(o) {
+  return String(o?.type || "").toLowerCase().trim() === "video";
+}
+
+function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
+  const arr = Array.isArray(outputs) ? outputs.slice() : [];
+
+  const idx = arr.findIndex(
+    (o) => isVideo(o) && normVariant(o) === String(variant || "").toLowerCase()
+  );
+
+  const item = {
+    type: "video",
+    url,
+    meta: {
+      app: "photofx",
+      variant,
+      ...(extraMeta || {}),
+    },
+  };
+
+  if (idx >= 0) {
+    arr[idx] = {
+      ...(arr[idx] || {}),
+      ...item,
+      meta: { ...((arr[idx] || {}).meta || {}), ...(item.meta || {}) },
+    };
+    return arr;
+  }
+
+  arr.unshift(item);
+  return arr;
 }
 
 export default async function handler(req, res) {
@@ -90,11 +157,43 @@ export default async function handler(req, res) {
       app = "photofx",
     } = req.body || {};
 
+    if (!job_id) {
+      return res.status(400).json({ ok: false, error: "job_id_required" });
+    }
+
+    if (!isUuidLike(job_id)) {
+      return res.status(400).json({ ok: false, error: "job_id_invalid" });
+    }
+
     if (!video_url || !logo_url) {
       return res.status(400).json({ ok: false, error: "missing_inputs" });
     }
 
-    const id = job_id || crypto.randomUUID();
+    const conn = getConn();
+    if (!conn) {
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
+    }
+
+    const sql = neon(conn);
+
+    const rows = await sql`
+      select id, app, outputs, meta
+      from jobs
+      where lower(app) = 'photofx'
+        and (
+          id::text = ${job_id}
+          or id = ${job_id}::uuid
+        )
+      limit 1
+    `;
+
+    const job = rows[0] || null;
+
+    if (!job) {
+      return res.status(404).json({ ok: false, error: "job_not_found" });
+    }
+
+    const id = String(job_id || crypto.randomUUID()).trim();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-photofx-overlay-"));
 
     const inputVideo = path.join(tmpDir, `in-${id}.mp4`);
@@ -106,17 +205,14 @@ export default async function handler(req, res) {
     await download(video_url, inputVideo);
     await download(logo_url, inputLogo);
 
-    const pos = POS[logo_pos] || POS.br;
-    const sizeRatio = SIZE[logo_size] || SIZE.sm;
+    const pos = POS[String(logo_pos || "").trim()] || POS.br;
+    const sizeRatio = SIZE[String(logo_size || "").trim()] || SIZE.sm;
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
 
     const sourceBitrate = await probeVideoBitrate(inputVideo);
     const targetBitrate = sourceBitrate
       ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
       : 8000000;
-
-    const targetBitrateStr = String(targetBitrate);
-    const targetBufsizeStr = String(targetBitrate * 2);
 
     const filter = [
       `[1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
@@ -140,11 +236,11 @@ export default async function handler(req, res) {
       "-preset",
       "medium",
       "-b:v",
-      targetBitrateStr,
+      String(targetBitrate),
       "-maxrate",
-      targetBitrateStr,
+      String(targetBitrate),
       "-bufsize",
-      targetBufsizeStr,
+      String(targetBitrate * 2),
       "-pix_fmt",
       "yuv420p",
       "-c:a",
@@ -164,12 +260,67 @@ export default async function handler(req, res) {
       contentType: "video/mp4",
     });
 
+    const outputs = Array.isArray(job.outputs) ? job.outputs : [];
+    const meta = job.meta || {};
+
+    let nextOutputs = upsertVideoOutput(outputs, "logo_overlay", publicUrl, {
+      is_logo_overlay: true,
+      is_final: false,
+      logo_url,
+      logo_pos: String(logo_pos || "br").trim(),
+      logo_size: String(logo_size || "sm").trim(),
+      logo_opacity: opacity,
+    });
+
+    const finalizedOut = nextOutputs.find(
+      (o) => isVideo(o) && normVariant(o) === "finalized"
+    );
+
+    if (finalizedOut) {
+      nextOutputs = nextOutputs.map((o) => {
+        if (!o || !o.meta) return o;
+        if (normVariant(o) !== "finalized") return o;
+        return {
+          ...o,
+          meta: {
+            ...(o.meta || {}),
+            is_final: false,
+          },
+        };
+      });
+    }
+
+    const patchMeta = {
+      ...meta,
+      logo_enabled: true,
+      logo_url: String(logo_url || "").trim(),
+      logo_overlay_url: publicUrl,
+      logo_overlay_key: key,
+      logo_overlay_applied_at: new Date().toISOString(),
+      logo_pos: String(logo_pos || "br").trim(),
+      logo_size: String(logo_size || "sm").trim(),
+      logo_opacity: opacity,
+      logo_overlay_source_url: String(video_url || "").trim(),
+      logo_overlay_source_bitrate: sourceBitrate,
+      logo_overlay_target_bitrate: targetBitrate,
+    };
+
+    await sql`
+      update jobs
+      set
+        outputs = ${JSON.stringify(nextOutputs)}::jsonb,
+        meta = ${JSON.stringify(patchMeta)}::jsonb,
+        updated_at = now()
+      where id = ${job_id}::uuid
+    `;
+
     return res.json({
       ok: true,
       url: publicUrl,
       job_id: id,
       video_bitrate: sourceBitrate,
       target_bitrate: targetBitrate,
+      variant: "logo_overlay",
     });
   } catch (e) {
     return res.status(500).json({
