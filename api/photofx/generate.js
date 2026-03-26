@@ -59,6 +59,7 @@ export default async function handler(req, res) {
   const includeAudio = !!body.includeAudio;
   const imageUrl = String(body.imageUrl || "").trim();
   const audioUrl = String(body.audioUrl || "").trim();
+  const persistedAudioUrl = audio_url || audioUrl || null;
   const providerJobId = String(body.providerJobId || "").trim();
   const providerName = String(body.providerName || "fal").trim();
   const providerVariant = String(body.providerVariant || "").trim();
@@ -120,9 +121,9 @@ export default async function handler(req, res) {
       transitionSpeed,
       includeAudio,
       imageUrl,
-      audioUrl,
-      audio_url: audioUrl,
-      music_url: audioUrl,
+       audioUrl: persistedAudioUrl,
+      audio_url: persistedAudioUrl,
+      music_url: persistedAudioUrl,
     };
 
     const inserted = await sql`
