@@ -1009,25 +1009,7 @@ module.exports = async function handler(req, res) {
       source_variant: selectedFinalSourceVariant,
     };
 
-    let compositingResult = {
-      ok: true,
-      applied: false,
-      mode: "disabled",
-      outputPath: effectiveInputPath,
-      overlay_assets_used: [],
-      overlay_assets_found: [],
-      lut_assets_found: [],
-    };
-
-  compositingResult = await runPhotofxCompositingScaffold({
-  inputPath: effectiveInputPath,
-  outputPath: compositedPath,
-  preset: effectMeta.preset,
-  styles: effectMeta.styles,
-});
-
-      effectiveInputPath = compositingResult.outputPath;
-    }
+    await runFfmpegFaststart(effectiveInputPath, faststartPath);
 
     await runFfmpegFaststart(effectiveInputPath, faststartPath);
 
