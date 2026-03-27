@@ -1,8 +1,8 @@
-// /api/photofx/finalize.js
+// /pages/api/photofx/finalize.js
 // CommonJS
 // PhotoFX finalize:
-// input: provider / mux / final url
-// işlem: optional inline mux + optional compositing scaffold + faststart + preview encode
+// input: provider / mux / logo_overlay url
+// process: optional inline mux + real compositing + faststart + preview encode
 // output: R2 final mp4 + R2 preview mp4 + DB meta/output patch
 
 const { neon } = require("@neondatabase/serverless");
@@ -257,56 +257,321 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
   };
 }
 
-async function runPhotofxCompositingScaffold({
-  inputPath,
-  outputPath,
-  preset,
-  styles = [],
-}) {
-  const safePreset = String(preset || "").trim().toLowerCase();
-  const safeStyles = Array.isArray(styles)
-    ? styles.map((x) => String(x || "").trim().toLowerCase()).filter(Boolean)
-    : [];
+function toArray(v) {
+  return Array.isArray(v) ? v : [];
+}
 
-  const shouldProcess = !!safePreset || safeStyles.length > 0;
+function uniqStrings(arr = []) {
+  return [...new Set(arr.map((x) => String(x || "").trim()).filter(Boolean))];
+}
 
-  if (!shouldProcess) {
-    await fsp.copyFile(inputPath, outputPath);
-    return {
-      ok: true,
-      applied: false,
-      preset: safePreset,
-      styles: safeStyles,
-      mode: "passthrough_copy",
-      outputPath,
-    };
+function ensureAbsoluteAssetPath(relPath) {
+  const clean = String(relPath || "").trim().replace(/^\/+/, "");
+  if (!clean) return "";
+  return path.join(process.cwd(), clean);
+}
+
+async function statSafe(p) {
+  try {
+    return await fsp.stat(p);
+  } catch {
+    return null;
+  }
+}
+
+async function collectFilesFromPaths(pathsInput = [], exts = []) {
+  const out = [];
+  const seen = new Set();
+
+  for (const raw of uniqStrings(pathsInput)) {
+    const abs = ensureAbsoluteAssetPath(raw);
+    if (!abs) continue;
+
+    const st = await statSafe(abs);
+    if (!st) continue;
+
+    if (st.isFile()) {
+      const ext = path.extname(abs).toLowerCase();
+      if (!exts.length || exts.includes(ext)) {
+        if (!seen.has(abs)) {
+          seen.add(abs);
+          out.push(abs);
+        }
+      }
+      continue;
+    }
+
+    if (!st.isDirectory()) continue;
+
+    const names = await fsp.readdir(abs).catch(() => []);
+    for (const name of names) {
+      const file = path.join(abs, name);
+      const fst = await statSafe(file);
+      if (!fst || !fst.isFile()) continue;
+      const ext = path.extname(file).toLowerCase();
+      if (exts.length && !exts.includes(ext)) continue;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      out.push(file);
+    }
   }
 
-  await fsp.copyFile(inputPath, outputPath);
+  out.sort();
+  return out;
+}
+
+function seededHash(input) {
+  const s = String(input || "");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h >>> 0);
+}
+
+function pickDeterministic(list = [], seed = "", count = 1) {
+  const arr = Array.isArray(list) ? list.slice() : [];
+  if (!arr.length || count <= 0) return [];
+
+  const out = [];
+  const used = new Set();
+  let h = seededHash(seed);
+
+  while (out.length < Math.min(count, arr.length)) {
+    const idx = h % arr.length;
+    const item = arr[idx];
+    if (!used.has(item)) {
+      used.add(item);
+      out.push(item);
+    }
+    h = seededHash(`${seed}:${h}:${out.length}`);
+  }
+
+  return out;
+}
+
+function normalizeNumber(v, fallback, min, max) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+
+function resolveEffectMeta(meta = {}) {
+  const effects = meta?.effects || {};
+  const effectConfig = effects?.effectConfig || {};
+  const doseProfile = effectConfig?.doseProfile || {};
+  const runtime = effectConfig?.runtime || {};
+
+  const preset = String(
+    meta?.preset ||
+      effects?.preset ||
+      effectConfig?.preset ||
+      ""
+  ).trim().toLowerCase();
+
+  const styles = uniqStrings(
+    []
+      .concat(toArray(meta?.styles))
+      .concat(toArray(effects?.styles))
+  ).map((x) => x.toLowerCase());
+
+  const overlayPaths = uniqStrings(effectConfig?.overlayPaths || []);
+  const lutPaths = uniqStrings(effectConfig?.lutPaths || []);
+  const overlayGroups = uniqStrings(effectConfig?.overlayGroups || []);
 
   return {
-    ok: true,
-    applied: false,
-    preset: safePreset,
-    styles: safeStyles,
-    mode: "scaffold_copy",
-    outputPath,
+    preset,
+    styles,
+    overlayPaths,
+    lutPaths,
+    overlayGroups,
+    category: String(effectConfig?.category || "").trim().toLowerCase(),
+    title: String(effectConfig?.title || "").trim(),
+    description: String(effectConfig?.description || "").trim(),
+    usage: String(effectConfig?.usage || "").trim(),
+    coreEffects: uniqStrings(effectConfig?.coreEffects || []).map((x) =>
+      x.toLowerCase()
+    ),
+    runtime: {
+      colorMood: String(
+        runtime?.colorMood || meta?.color_mood || "original"
+      ).trim().toLowerCase(),
+      motionLevel: String(
+        runtime?.motionLevel || meta?.motion_level || "balanced"
+      ).trim().toLowerCase(),
+      effectStrength: String(
+        runtime?.effectStrength || meta?.effect_strength || "medium"
+      ).trim().toLowerCase(),
+      transitionSpeed: String(
+        runtime?.transitionSpeed || meta?.transition_speed || "normal"
+      ).trim().toLowerCase(),
+    },
+    doseProfile: {
+      overlayOpacity: normalizeNumber(doseProfile?.overlayOpacity, 0.18, 0.03, 0.65),
+      secondaryOpacity: normalizeNumber(doseProfile?.secondaryOpacity, 0.08, 0.00, 0.35),
+      lutIntensity: normalizeNumber(doseProfile?.lutIntensity, 0.30, 0.00, 0.90),
+      zoomAmount: normalizeNumber(doseProfile?.zoomAmount, 0.05, 0.00, 0.25),
+      shakeAmount: normalizeNumber(doseProfile?.shakeAmount, 0.02, 0.00, 0.20),
+      blurAmount: normalizeNumber(doseProfile?.blurAmount, 0.04, 0.00, 0.20),
+      glowAmount: normalizeNumber(doseProfile?.glowAmount, 0.08, 0.00, 0.50),
+      introBurstMs: normalizeNumber(doseProfile?.introBurstMs, 180, 0, 2000),
+      sustainLevel: normalizeNumber(doseProfile?.sustainLevel, 0.70, 0.10, 1.00),
+      outroFlashMs: normalizeNumber(doseProfile?.outroFlashMs, 120, 0, 1200),
+      overlayStartOffsetMs: normalizeNumber(doseProfile?.overlayStartOffsetMs, 40, 0, 1500),
+      maxOverlayCount: Math.max(
+        1,
+        Math.min(4, Math.round(normalizeNumber(doseProfile?.maxOverlayCount, 1, 1, 4)))
+      ),
+      randomization: normalizeNumber(doseProfile?.randomization, 0.10, 0.00, 0.50),
+      blendMode: String(doseProfile?.blendMode || "screen").trim().toLowerCase(),
+      placement: String(doseProfile?.placement || "full-frame").trim().toLowerCase(),
+      maskBias: String(doseProfile?.maskBias || "center-safe").trim().toLowerCase(),
+    },
   };
 }
 
-async function runFfmpegFaststart(inputPath, outputPath) {
-  await new Promise((resolve, reject) => {
-    const args = [
-      "-y",
-      "-i",
-      inputPath,
-      "-c",
-      "copy",
-      "-movflags",
-      "+faststart",
-      outputPath,
-    ];
+function buildColorEq(effectMeta) {
+  const { runtime, doseProfile, preset, styles, category } = effectMeta;
 
+  let saturation = 1.0 + doseProfile.glowAmount * 0.35;
+  let contrast = 1.0 + doseProfile.blurAmount * 0.12;
+  let brightness = 0.0;
+  let gamma = 1.0;
+
+  if (runtime.colorMood === "dark") {
+    brightness -= 0.03;
+    contrast += 0.08;
+    saturation -= 0.04;
+  }
+
+  if (runtime.colorMood === "neon") {
+    saturation += 0.12;
+    brightness += 0.01;
+  }
+
+  if (runtime.colorMood === "cinematic") {
+    contrast += 0.05;
+    gamma = 0.98;
+  }
+
+  if (preset.includes("neon") || styles.includes("neon-pulse") || category === "neon") {
+    saturation += 0.16;
+    brightness += 0.01;
+  }
+
+  if (preset.includes("dark") || styles.includes("dark-trap-motion")) {
+    contrast += 0.10;
+    brightness -= 0.02;
+    saturation -= 0.03;
+  }
+
+  if (preset.includes("cinematic") || styles.includes("cinematic-zoom")) {
+    gamma = 0.97;
+    contrast += 0.04;
+  }
+
+  return {
+    saturation: Math.max(0.7, Math.min(saturation, 1.7)),
+    contrast: Math.max(0.8, Math.min(contrast, 1.4)),
+    brightness: Math.max(-0.10, Math.min(brightness, 0.10)),
+    gamma: Math.max(0.85, Math.min(gamma, 1.15)),
+  };
+}
+
+function buildBaseVisualFilter(effectMeta) {
+  const { doseProfile, runtime, preset, styles } = effectMeta;
+  const eq = buildColorEq(effectMeta);
+
+  const zoom = Math.max(0, doseProfile.zoomAmount);
+  const shake = Math.max(0, doseProfile.shakeAmount);
+  const blur = Math.max(0, doseProfile.blurAmount);
+  const glow = Math.max(0, doseProfile.glowAmount);
+
+  const xExpr =
+    shake > 0.001
+      ? `(${shake.toFixed(4)}*iw*sin(2*PI*t*1.9))`
+      : "0";
+  const yExpr =
+    shake > 0.001
+      ? `(${(shake * 0.65).toFixed(4)}*ih*cos(2*PI*t*1.3))`
+      : "0";
+
+  const zoomScale = 1 + Math.min(0.18, zoom);
+  const cropW = `iw/${zoomScale.toFixed(4)}`;
+  const cropH = `ih/${zoomScale.toFixed(4)}`;
+  const cropX = `(iw-${cropW})/2+${xExpr}`;
+  const cropY = `(ih-${cropH})/2+${yExpr}`;
+
+  const blurSigma = Math.max(0, Math.min(24, blur * 140));
+  const glowSigma = Math.max(0, Math.min(30, glow * 90));
+  const sharpen = Math.max(0.0, Math.min(1.2, 0.25 + glow * 0.8));
+
+  const parts = [];
+
+  parts.push(`crop=${cropW}:${cropH}:${cropX}:${cropY}`);
+  parts.push(`scale=iw:ih`);
+  parts.push(
+    `eq=contrast=${eq.contrast.toFixed(3)}:brightness=${eq.brightness.toFixed(
+      3
+    )}:saturation=${eq.saturation.toFixed(3)}:gamma=${eq.gamma.toFixed(3)}`
+  );
+
+  if (blurSigma > 0.25) {
+    parts.push(`gblur=sigma=${blurSigma.toFixed(2)}`);
+  }
+
+  if (
+    preset === "neon-pulse" ||
+    styles.includes("neon-pulse") ||
+    styles.includes("aura-glow")
+  ) {
+    parts.push(`unsharp=5:5:${sharpen.toFixed(2)}:5:5:0.0`);
+  }
+
+  if (
+    preset === "glitch-scan" ||
+    styles.includes("glitch-scan") ||
+    styles.includes("shake-edit") ||
+    styles.includes("split-flash")
+  ) {
+    parts.push("noise=alls=8:allf=t");
+  }
+
+  if (glowSigma > 0.35) {
+    parts.push(
+      `split=2[base1][base2]`
+    );
+    parts.push(
+      `[base2]gblur=sigma=${glowSigma.toFixed(2)}[glow]`
+    );
+    parts.push(
+      `[base1][glow]blend=all_mode=screen:all_opacity=${Math.min(
+        0.35,
+        0.10 + glow * 0.45
+      ).toFixed(3)}`
+    );
+    return parts.join(",");
+  }
+
+  return parts.join(",");
+}
+
+function buildOverlayEnableExpr(durationSec, effectMeta, index) {
+  const { doseProfile } = effectMeta;
+  const total = Math.max(0.5, Number(durationSec || 6));
+  const startOffset = Math.min(total - 0.15, doseProfile.overlayStartOffsetMs / 1000);
+  const intro = Math.min(total * 0.35, doseProfile.introBurstMs / 1000);
+  const outro = Math.min(total * 0.35, doseProfile.outroFlashMs / 1000);
+  const randomJitter = Math.min(0.8, doseProfile.randomization * 1.5 * index);
+  const start = Math.max(0, startOffset + randomJitter);
+  const end = Math.max(start + 0.15, total - outro + index * 0.03);
+
+  return `between(t,${start.toFixed(3)},${Math.min(total, end).toFixed(3)})`;
+}
+
+async function runFfmpegWithArgs(args, errorPrefix) {
+  await new Promise((resolve, reject) => {
     const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
     let stderr = "";
@@ -318,9 +583,146 @@ async function runFfmpegFaststart(inputPath, outputPath) {
 
     p.on("close", (code) => {
       if (code === 0) return resolve();
-      reject(new Error(`ffmpeg_failed:${code}:${stderr.slice(-1000)}`));
+      reject(new Error(`${errorPrefix}:${code}:${stderr.slice(-1600)}`));
     });
   });
+}
+
+async function runPhotofxCompositing({
+  inputPath,
+  outputPath,
+  effectMeta,
+  durationSec,
+  jobId,
+}) {
+  const shouldProcess =
+    !!effectMeta.preset ||
+    effectMeta.styles.length > 0 ||
+    effectMeta.overlayPaths.length > 0 ||
+    effectMeta.lutPaths.length > 0;
+
+  if (!shouldProcess) {
+    await fsp.copyFile(inputPath, outputPath);
+    return {
+      ok: true,
+      applied: false,
+      mode: "passthrough_copy",
+      outputPath,
+      overlay_assets_used: [],
+      lut_assets_found: [],
+    };
+  }
+
+  const overlayFiles = await collectFilesFromPaths(effectMeta.overlayPaths, [
+    ".mp4",
+    ".mov",
+    ".mkv",
+    ".webm",
+  ]);
+
+  const lutFiles = await collectFilesFromPaths(effectMeta.lutPaths, [
+    ".cube",
+    ".3dl",
+    ".look",
+  ]);
+
+  const selectedOverlayFiles = pickDeterministic(
+    overlayFiles,
+    `${jobId}:${effectMeta.preset}:${effectMeta.styles.join(",")}`,
+    Math.max(1, effectMeta.doseProfile.maxOverlayCount)
+  );
+
+  const args = ["-y", "-i", inputPath];
+
+  for (const file of selectedOverlayFiles) {
+    args.push("-stream_loop", "-1", "-i", file);
+  }
+
+  const chains = [];
+  const baseOut = selectedOverlayFiles.length ? "[v0]" : "[vout]";
+  const baseFilter = buildBaseVisualFilter(effectMeta);
+
+  if (baseFilter.includes("split=2[base1][base2]")) {
+    const replaced = baseFilter
+      .replace("split=2[base1][base2],", "split=2[base1][base2],")
+      .replace(/\[base1\]\[glow\]blend=all_mode=screen:all_opacity=([0-9.]+)/, `[base1][glow]blend=all_mode=screen:all_opacity=$1${selectedOverlayFiles.length ? `[v0]` : `[vout]`}`);
+
+    chains.push(`[0:v]${replaced}`);
+  } else {
+    chains.push(`[0:v]${baseFilter}${baseOut}`);
+  }
+
+  let current = selectedOverlayFiles.length ? "[v0]" : "[vout]";
+
+  for (let i = 0; i < selectedOverlayFiles.length; i++) {
+    const inputIdx = i + 1;
+    const prepared = `[ov${i}]`;
+    const next = i === selectedOverlayFiles.length - 1 ? "[vout]" : `[v${i + 1}]`;
+
+    const opacity =
+      i === 0
+        ? effectMeta.doseProfile.overlayOpacity
+        : effectMeta.doseProfile.secondaryOpacity || effectMeta.doseProfile.overlayOpacity * 0.6;
+
+    const enableExpr = buildOverlayEnableExpr(durationSec, effectMeta, i);
+    const blendMode =
+      effectMeta.doseProfile.blendMode === "soft-light"
+        ? "overlay"
+        : "screen";
+
+    chains.push(
+      `[${inputIdx}:v]scale=iw:ih,format=rgba,colorchannelmixer=aa=${Math.max(
+        0.02,
+        Math.min(opacity, 0.80)
+      ).toFixed(3)}${prepared}`
+    );
+
+    chains.push(
+      `${current}${prepared}blend=all_mode=${blendMode}:all_opacity=1:enable='${enableExpr}'${next}`
+    );
+
+    current = next;
+  }
+
+  args.push("-filter_complex", chains.join(";"));
+  args.push("-map", "[vout]");
+  args.push("-map", "0:a:0?");
+  args.push("-c:v", "libx264");
+  args.push("-preset", "veryfast");
+  args.push("-crf", "18");
+  args.push("-pix_fmt", "yuv420p");
+  args.push("-c:a", "aac");
+  args.push("-b:a", "192k");
+  args.push("-movflags", "+faststart");
+  args.push("-shortest", outputPath);
+
+  await runFfmpegWithArgs(args, "photofx_composite_failed");
+
+  return {
+    ok: true,
+    applied: true,
+    mode: selectedOverlayFiles.length ? "ffmpeg_overlay_composite" : "ffmpeg_base_grade",
+    outputPath,
+    overlay_assets_used: selectedOverlayFiles,
+    overlay_assets_found: overlayFiles,
+    lut_assets_found: lutFiles,
+  };
+}
+
+async function runFfmpegFaststart(inputPath, outputPath) {
+  await runFfmpegWithArgs(
+    [
+      "-y",
+      "-i",
+      inputPath,
+      "-c",
+      "copy",
+      "-movflags",
+      "+faststart",
+      outputPath,
+    ],
+    "ffmpeg_failed"
+  );
 }
 
 async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
@@ -328,8 +730,8 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
   const maxrateKbps = Number(bitrateCfg?.maxrateKbps || 3200);
   const bufsizeKbps = Number(bitrateCfg?.bufsizeKbps || 6400);
 
-  await new Promise((resolve, reject) => {
-    const args = [
+  await runFfmpegWithArgs(
+    [
       "-y",
       "-i",
       inputPath,
@@ -361,22 +763,9 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
       "yuv420p",
       "-shortest",
       outputPath,
-    ];
-
-    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
-
-    let stderr = "";
-    p.stderr.on("data", (d) => {
-      stderr += String(d || "");
-    });
-
-    p.on("error", reject);
-
-    p.on("close", (code) => {
-      if (code === 0) return resolve();
-      reject(new Error(`ffmpeg_preview_failed:${code}:${stderr.slice(-1000)}`));
-    });
-  });
+    ],
+    "ffmpeg_preview_failed"
+  );
 }
 
 async function runFfmpegMuxVideoAndAudio({
@@ -384,8 +773,8 @@ async function runFfmpegMuxVideoAndAudio({
   audioPath,
   outputPath,
 }) {
-  await new Promise((resolve, reject) => {
-    const args = [
+  await runFfmpegWithArgs(
+    [
       "-y",
       "-i",
       videoPath,
@@ -405,22 +794,9 @@ async function runFfmpegMuxVideoAndAudio({
       "-movflags",
       "+faststart",
       outputPath,
-    ];
-
-    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
-
-    let stderr = "";
-    p.stderr.on("data", (d) => {
-      stderr += String(d || "");
-    });
-
-    p.on("error", reject);
-
-    p.on("close", (code) => {
-      if (code === 0) return resolve();
-      reject(new Error(`ffmpeg_mux_failed:${code}:${stderr.slice(-1000)}`));
-    });
-  });
+    ],
+    "ffmpeg_mux_failed"
+  );
 }
 
 module.exports = async function handler(req, res) {
@@ -510,32 +886,32 @@ module.exports = async function handler(req, res) {
       String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
     const existingLogoOverlayUrl = String(meta?.logo_overlay_url || "").trim();
 
-const finalizedFromVariant = String(
-  meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
-)
-  .trim()
-  .toLowerCase();
+    const finalizedFromVariant = String(
+      meta?.selected_final_source_variant || meta?.finalized_from_variant || ""
+    )
+      .trim()
+      .toLowerCase();
 
-const finalizedMatchesCurrentSource = existingLogoOverlayUrl
-  ? finalizedFromVariant === "logo_overlay"
-  : true;
+    const finalizedMatchesCurrentSource = existingLogoOverlayUrl
+      ? finalizedFromVariant === "logo_overlay"
+      : true;
 
-   if (
-  existingFinalized &&
-  existingPreview &&
-  !body.force &&
-  finalizedMatchesCurrentSource
-) {
-  return res.status(200).json({
-    ok: true,
-    job_id,
-    input_url: null,
-    final_url: existingFinalized,
-    preview_url: existingPreview,
-    skipped: true,
-    reason: "already_finalized",
-  });
-}
+    if (
+      existingFinalized &&
+      existingPreview &&
+      !body.force &&
+      finalizedMatchesCurrentSource
+    ) {
+      return res.status(200).json({
+        ok: true,
+        job_id,
+        input_url: null,
+        final_url: existingFinalized,
+        preview_url: existingPreview,
+        skipped: true,
+        reason: "already_finalized",
+      });
+    }
 
     const audioUrl =
       String(meta?.audio_url || "").trim() ||
@@ -548,8 +924,7 @@ const finalizedMatchesCurrentSource = existingLogoOverlayUrl
     const hasAudio = !!audioUrl;
     const hasMux = !!muxUrl;
 
- const selectedFinalSourceUrl = logoOverlayUrl || muxUrl || providerUrl || "";
-    
+    const selectedFinalSourceUrl = logoOverlayUrl || muxUrl || providerUrl || "";
 
     if (!selectedFinalSourceUrl) {
       return res.status(400).json({
@@ -568,20 +943,20 @@ const finalizedMatchesCurrentSource = existingLogoOverlayUrl
     const inputPath = path.join(tmpDir, "input.mp4");
     const audioPath = path.join(tmpDir, "audio-input");
     const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
-    const outputPath = path.join(tmpDir, "finalized.mp4");
-    const previewPath = path.join(tmpDir, "preview.mp4");
     const compositedPath = path.join(tmpDir, "composited-input.mp4");
+    const faststartPath = path.join(tmpDir, "finalized-faststart.mp4");
+    const previewPath = path.join(tmpDir, "preview.mp4");
 
     await downloadToFile(selectedFinalSourceUrl, inputPath);
 
     let effectiveInputPath = inputPath;
- let selectedFinalSourceVariant = logoOverlayUrl
-  ? "logo_overlay"
-  : muxUrl
-    ? "mux"
-    : "provider";
+    let selectedFinalSourceVariant = logoOverlayUrl
+      ? "logo_overlay"
+      : muxUrl
+      ? "mux"
+      : "provider";
 
-  const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
+    const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
 
     if (needsInlineMux) {
       await downloadToFile(audioUrl, audioPath);
@@ -596,54 +971,58 @@ const finalizedMatchesCurrentSource = existingLogoOverlayUrl
 
     const input_url = selectedFinalSourceUrl;
 
-    const presetKey = String(
-      meta?.preset ||
-        meta?.preset_key ||
-        meta?.effect ||
-        meta?.effect_key ||
-        ""
-    )
-      .trim()
-      .toLowerCase();
-
-    const styleKeys = Array.isArray(meta?.styles)
-      ? meta.styles
-          .map((x) => String(x || "").trim().toLowerCase())
-          .filter(Boolean)
-      : [];
+    const effectMeta = resolveEffectMeta(meta);
+    const inputDurationSec = await probeVideoDurationSec(effectiveInputPath);
 
     const compositingPlan = {
-      enabled: !!presetKey || styleKeys.length > 0,
-      preset: presetKey,
-      styles: styleKeys,
+      enabled:
+        !!effectMeta.preset ||
+        effectMeta.styles.length > 0 ||
+        effectMeta.overlayPaths.length > 0 ||
+        effectMeta.lutPaths.length > 0,
+      preset: effectMeta.preset,
+      styles: effectMeta.styles,
+      overlayPaths: effectMeta.overlayPaths,
+      lutPaths: effectMeta.lutPaths,
       input_path_before_composite: effectiveInputPath,
       output_path_after_composite: compositedPath,
       stage: "pre_faststart",
       source_variant: selectedFinalSourceVariant,
     };
 
+    let compositingResult = {
+      ok: true,
+      applied: false,
+      mode: "disabled",
+      outputPath: effectiveInputPath,
+      overlay_assets_used: [],
+      overlay_assets_found: [],
+      lut_assets_found: [],
+    };
+
     if (compositingPlan.enabled) {
-      const compositingResult = await runPhotofxCompositingScaffold({
+      compositingResult = await runPhotofxCompositing({
         inputPath: effectiveInputPath,
         outputPath: compositedPath,
-        preset: compositingPlan.preset,
-        styles: compositingPlan.styles,
+        effectMeta,
+        durationSec: inputDurationSec || Number(meta?.duration || 6) || 6,
+        jobId: job_id,
       });
 
       effectiveInputPath = compositingResult.outputPath;
     }
 
-    await runFfmpegFaststart(effectiveInputPath, outputPath);
+    await runFfmpegFaststart(effectiveInputPath, faststartPath);
 
-    const finalStat = await fsp.stat(outputPath);
-    const durationSec = await probeVideoDurationSec(outputPath);
+    const finalStat = await fsp.stat(faststartPath);
+    const durationSec = await probeVideoDurationSec(faststartPath);
 
     const previewBitrateCfg = calcPreviewVideoBitrateKbps({
       finalBytes: finalStat?.size || 0,
       durationSec,
     });
 
-    await runFfmpegPreview(outputPath, previewPath, previewBitrateCfg);
+    await runFfmpegPreview(faststartPath, previewPath, previewBitrateCfg);
 
     const outputId = `finalized-${Date.now()}`;
     const key = `outputs/photofx/${job_id}/${outputId}.mp4`;
@@ -666,7 +1045,7 @@ const finalizedMatchesCurrentSource = existingLogoOverlayUrl
     }
 
     const final_url = await uploadFileToR2({
-      filePath: outputPath,
+      filePath: faststartPath,
       key,
       contentType: "video/mp4",
     });
@@ -717,6 +1096,13 @@ const finalizedMatchesCurrentSource = existingLogoOverlayUrl
       compositing_enabled: compositingPlan.enabled,
       compositing_preset: compositingPlan.preset || "",
       compositing_styles: compositingPlan.styles,
+      compositing_overlay_paths: compositingPlan.overlayPaths,
+      compositing_lut_paths: compositingPlan.lutPaths,
+      compositing_mode: compositingResult.mode || "disabled",
+      compositing_applied: Boolean(compositingResult.applied),
+      compositing_overlay_assets_found: compositingResult.overlay_assets_found || [],
+      compositing_overlay_assets_used: compositingResult.overlay_assets_used || [],
+      compositing_lut_assets_found: compositingResult.lut_assets_found || [],
       ...(needsInlineMux && mux_url
         ? {
             muxed_url: mux_url,
@@ -749,18 +1135,26 @@ const finalizedMatchesCurrentSource = existingLogoOverlayUrl
         enabled: compositingPlan.enabled,
         preset: compositingPlan.preset || "",
         styles: compositingPlan.styles,
+        mode: compositingResult.mode || "disabled",
+        applied: Boolean(compositingResult.applied),
+        overlay_assets_found: compositingResult.overlay_assets_found || [],
+        overlay_assets_used: compositingResult.overlay_assets_used || [],
+        lut_assets_found: compositingResult.lut_assets_found || [],
       },
     });
   } catch (e) {
     return res.status(500).json({
       ok: false,
-      error: "server_error",
-      message: String(e?.message || e),
+      error: String(e?.message || e || "photofx_finalize_failed"),
+      stack:
+        process.env.NODE_ENV !== "production"
+          ? String(e?.stack || "")
+          : undefined,
     });
   } finally {
     if (tmpDir) {
       try {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
+        await fsp.rm(tmpDir, { recursive: true, force: true });
       } catch {}
     }
   }
