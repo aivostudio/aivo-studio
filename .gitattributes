@@ -8,3 +8,4 @@ assets/photofx/overlays/dust-particles/*.mp4 filter=lfs diff=lfs merge=lfs -text
 assets/photofx/overlays/film-burns-flash/*.mov filter=lfs diff=lfs merge=lfs -text
 assets/photofx/overlays/scribble/**/*.mov filter=lfs diff=lfs merge=lfs -text
 assets/photofx/overlays/prism-lens/*.mov filter=lfs diff=lfs merge=lfs -text
+assets/photofx/overlays/glitch-noise/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
