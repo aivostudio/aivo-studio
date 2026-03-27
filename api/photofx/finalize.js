@@ -1020,7 +1020,7 @@ module.exports = async function handler(req, res) {
     };
 
     if (compositingPlan.enabled) {
-      compositingResult = await runPhotofxCompositing({
+      compositingResult = await runPhotofxCompositingScaffold({
         inputPath: effectiveInputPath,
         outputPath: compositedPath,
         effectMeta,
