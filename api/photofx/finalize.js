@@ -445,6 +445,95 @@ function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
 
   return `between(t,${startBase.toFixed(3)},${endBase.toFixed(3)})`;
 }
+  function buildColorEq(effectMeta = {}) {
+  const mood = String(effectMeta?.runtime?.colorMood || "original").toLowerCase();
+  const strength = String(effectMeta?.runtime?.effectStrength || "medium").toLowerCase();
+
+  let saturation = 1.0;
+  let contrast = 1.0;
+  let brightness = 0.0;
+  let gamma = 1.0;
+
+  if (mood === "warm") {
+    saturation += 0.08;
+    contrast += 0.04;
+    brightness += 0.01;
+  } else if (mood === "cold") {
+    saturation -= 0.04;
+    contrast += 0.03;
+    gamma += 0.02;
+  } else if (mood === "dark") {
+    saturation -= 0.08;
+    contrast += 0.10;
+    brightness -= 0.03;
+    gamma -= 0.02;
+  }
+
+  if (strength === "low") {
+    saturation *= 1.03;
+    contrast *= 1.02;
+  } else if (strength === "high") {
+    saturation *= 1.12;
+    contrast *= 1.10;
+    brightness += 0.01;
+  }
+
+  return `eq=saturation=${saturation.toFixed(3)}:contrast=${contrast.toFixed(3)}:brightness=${brightness.toFixed(3)}:gamma=${gamma.toFixed(3)}`;
+}
+
+function buildBaseVisualFilter(effectMeta = {}) {
+  const parts = [];
+  const preset = String(effectMeta?.preset || "").toLowerCase();
+  const styles = Array.isArray(effectMeta?.styles) ? effectMeta.styles : [];
+  const has = (name) => preset === name || styles.includes(name);
+
+  parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  parts.push(buildColorEq(effectMeta));
+
+  if (has("shake-edit") || has("split-flash") || has("dark-trap-motion")) {
+    parts.push(
+      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
+    );
+    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  }
+
+  if (has("cinematic-zoom")) {
+    parts.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
+    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  }
+
+  if (has("neon-pulse")) {
+    parts.push("gblur=sigma=0.8");
+    parts.push("unsharp=5:5:1.15:5:5:0.0");
+  }
+
+  if (has("glitch-scan")) {
+    parts.push("noise=alls=12:allf=t");
+  }
+
+  parts.push("fps=25");
+  parts.push("format=yuv420p");
+
+  return parts.join(",");
+}
+
+function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
+  const total = Math.max(0.5, Number(durationSec || 6));
+  const startBase = Math.max(0, 0.15 + index * 0.18);
+  const endBase = Math.min(total, total - 0.12 + index * 0.03);
+
+  if (
+    String(effectMeta?.preset || "").toLowerCase() === "split-flash" ||
+    (Array.isArray(effectMeta?.styles) && effectMeta.styles.includes("split-flash"))
+  ) {
+    const burst = Math.min(total * 0.22, 0.9);
+    const start = Math.max(0, startBase);
+    const end = Math.min(total, start + burst);
+    return `between(t,${start.toFixed(3)},${end.toFixed(3)})+between(t,${(total * 0.72).toFixed(3)},${(Math.min(total, total * 0.72 + burst)).toFixed(3)})`;
+  }
+
+  return `between(t,${startBase.toFixed(3)},${endBase.toFixed(3)})`;
+}
   const effects = meta?.effects || {};
   const effectConfig = effects?.effectConfig || {};
   const doseProfile = effectConfig?.doseProfile || {};
