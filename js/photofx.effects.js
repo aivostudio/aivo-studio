@@ -92,6 +92,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "medium",
         colorMood: "neon",
         transitionSpeed: "normal"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.22,
+        secondaryOpacity: 0.12,
+        lutIntensity: 0.42,
+        zoomAmount: 0.07,
+        shakeAmount: 0.04,
+        blurAmount: 0.06,
+        glowAmount: 0.30,
+        introBurstMs: 420,
+        sustainLevel: 0.76,
+        outroFlashMs: 160,
+        overlayStartOffsetMs: 80,
+        overlayTrimStrategy: "center-weighted",
+        randomization: 0.18,
+        blendMode: "screen",
+        placement: "subject-around",
+        maskBias: "face-safe"
       }
     },
 
@@ -109,6 +128,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "high",
         colorMood: "dark",
         transitionSpeed: "fast"
+      },
+      doseProfile: {
+        maxOverlayCount: 1,
+        overlayOpacity: 0.20,
+        secondaryOpacity: 0.00,
+        lutIntensity: 0.26,
+        zoomAmount: 0.10,
+        shakeAmount: 0.18,
+        blurAmount: 0.05,
+        glowAmount: 0.08,
+        introBurstMs: 240,
+        sustainLevel: 0.84,
+        outroFlashMs: 220,
+        overlayStartOffsetMs: 20,
+        overlayTrimStrategy: "front-loaded",
+        randomization: 0.14,
+        blendMode: "add",
+        placement: "full-frame",
+        maskBias: "center-safe"
       }
     },
 
@@ -126,6 +164,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "high",
         colorMood: "dark",
         transitionSpeed: "fast"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.26,
+        secondaryOpacity: 0.14,
+        lutIntensity: 0.36,
+        zoomAmount: 0.06,
+        shakeAmount: 0.10,
+        blurAmount: 0.04,
+        glowAmount: 0.12,
+        introBurstMs: 300,
+        sustainLevel: 0.82,
+        outroFlashMs: 140,
+        overlayStartOffsetMs: 0,
+        overlayTrimStrategy: "staggered",
+        randomization: 0.24,
+        blendMode: "screen",
+        placement: "full-frame",
+        maskBias: "center-safe"
       }
     },
 
@@ -143,6 +200,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "medium",
         colorMood: "original",
         transitionSpeed: "fast"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.24,
+        secondaryOpacity: 0.10,
+        lutIntensity: 0.24,
+        zoomAmount: 0.05,
+        shakeAmount: 0.08,
+        blurAmount: 0.03,
+        glowAmount: 0.10,
+        introBurstMs: 220,
+        sustainLevel: 0.66,
+        outroFlashMs: 260,
+        overlayStartOffsetMs: 0,
+        overlayTrimStrategy: "burst-cuts",
+        randomization: 0.16,
+        blendMode: "screen",
+        placement: "full-frame",
+        maskBias: "center-safe"
       }
     },
 
@@ -160,6 +236,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "light",
         colorMood: "cinematic",
         transitionSpeed: "slow"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.12,
+        secondaryOpacity: 0.07,
+        lutIntensity: 0.48,
+        zoomAmount: 0.09,
+        shakeAmount: 0.01,
+        blurAmount: 0.08,
+        glowAmount: 0.06,
+        introBurstMs: 120,
+        sustainLevel: 0.58,
+        outroFlashMs: 90,
+        overlayStartOffsetMs: 140,
+        overlayTrimStrategy: "long-tail",
+        randomization: 0.08,
+        blendMode: "soft-light",
+        placement: "edges",
+        maskBias: "face-safe"
       }
     },
 
@@ -177,6 +272,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "medium",
         colorMood: "neon",
         transitionSpeed: "normal"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.18,
+        secondaryOpacity: 0.10,
+        lutIntensity: 0.38,
+        zoomAmount: 0.04,
+        shakeAmount: 0.02,
+        blurAmount: 0.07,
+        glowAmount: 0.34,
+        introBurstMs: 260,
+        sustainLevel: 0.72,
+        outroFlashMs: 130,
+        overlayStartOffsetMs: 60,
+        overlayTrimStrategy: "halo-biased",
+        randomization: 0.12,
+        blendMode: "screen",
+        placement: "subject-around",
+        maskBias: "face-safe"
       }
     },
 
@@ -194,6 +308,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "high",
         colorMood: "warm",
         transitionSpeed: "fast"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.24,
+        secondaryOpacity: 0.13,
+        lutIntensity: 0.34,
+        zoomAmount: 0.08,
+        shakeAmount: 0.09,
+        blurAmount: 0.04,
+        glowAmount: 0.20,
+        introBurstMs: 280,
+        sustainLevel: 0.80,
+        outroFlashMs: 170,
+        overlayStartOffsetMs: 0,
+        overlayTrimStrategy: "edge-heavy",
+        randomization: 0.15,
+        blendMode: "add",
+        placement: "edges",
+        maskBias: "center-safe"
       }
     },
 
@@ -211,6 +344,25 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         effectStrength: "high",
         colorMood: "dark",
         transitionSpeed: "fast"
+      },
+      doseProfile: {
+        maxOverlayCount: 2,
+        overlayOpacity: 0.19,
+        secondaryOpacity: 0.11,
+        lutIntensity: 0.40,
+        zoomAmount: 0.09,
+        shakeAmount: 0.12,
+        blurAmount: 0.05,
+        glowAmount: 0.05,
+        introBurstMs: 260,
+        sustainLevel: 0.86,
+        outroFlashMs: 120,
+        overlayStartOffsetMs: 40,
+        overlayTrimStrategy: "low-end-ramp",
+        randomization: 0.20,
+        blendMode: "overlay",
+        placement: "full-frame",
+        maskBias: "center-safe"
       }
     }
   };
@@ -237,9 +389,128 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
     return LUT_LIBRARY[String(group || "").trim()] || [];
   }
 
+  function normalizeRange(value, min, max, fallback) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return fallback;
+    return Math.max(min, Math.min(max, num));
+  }
+
+  function resolveRuntime(options = {}, preset = null) {
+    return {
+      motionLevel: options.motionLevel || preset?.defaults?.motionLevel || "balanced",
+      effectStrength: options.effectStrength || preset?.defaults?.effectStrength || "medium",
+      colorMood: options.colorMood || preset?.defaults?.colorMood || "original",
+      transitionSpeed: options.transitionSpeed || preset?.defaults?.transitionSpeed || "normal"
+    };
+  }
+
+  function applyRuntimeToDoseProfile(baseDoseProfile = {}, runtime = {}) {
+    const profile = { ...baseDoseProfile };
+
+    const strengthMap = {
+      light: 0.85,
+      medium: 1.0,
+      high: 1.18
+    };
+
+    const motionMap = {
+      soft: 0.9,
+      balanced: 1.0,
+      strong: 1.12
+    };
+
+    const speedMap = {
+      slow: 0.9,
+      normal: 1.0,
+      fast: 1.1
+    };
+
+    const strengthFactor = strengthMap[runtime.effectStrength] || 1.0;
+    const motionFactor = motionMap[runtime.motionLevel] || 1.0;
+    const speedFactor = speedMap[runtime.transitionSpeed] || 1.0;
+
+    profile.overlayOpacity = normalizeRange(
+      profile.overlayOpacity * strengthFactor,
+      0.05,
+      0.40,
+      profile.overlayOpacity
+    );
+
+    profile.secondaryOpacity = normalizeRange(
+      profile.secondaryOpacity * strengthFactor,
+      0.00,
+      0.25,
+      profile.secondaryOpacity
+    );
+
+    profile.lutIntensity = normalizeRange(
+      profile.lutIntensity * (runtime.colorMood === "original" ? 0.92 : 1.0),
+      0.10,
+      0.70,
+      profile.lutIntensity
+    );
+
+    profile.zoomAmount = normalizeRange(
+      profile.zoomAmount * motionFactor,
+      0.00,
+      0.20,
+      profile.zoomAmount
+    );
+
+    profile.shakeAmount = normalizeRange(
+      profile.shakeAmount * motionFactor,
+      0.00,
+      0.25,
+      profile.shakeAmount
+    );
+
+    profile.blurAmount = normalizeRange(
+      profile.blurAmount * speedFactor,
+      0.00,
+      0.18,
+      profile.blurAmount
+    );
+
+    profile.glowAmount = normalizeRange(
+      profile.glowAmount * (runtime.colorMood === "dark" ? 0.92 : 1.0),
+      0.00,
+      0.45,
+      profile.glowAmount
+    );
+
+    profile.introBurstMs = Math.round(
+      normalizeRange(profile.introBurstMs / speedFactor, 80, 1200, profile.introBurstMs)
+    );
+
+    profile.outroFlashMs = Math.round(
+      normalizeRange(profile.outroFlashMs / speedFactor, 60, 600, profile.outroFlashMs)
+    );
+
+    profile.overlayStartOffsetMs = Math.round(
+      normalizeRange(profile.overlayStartOffsetMs / speedFactor, 0, 1000, profile.overlayStartOffsetMs)
+    );
+
+    profile.sustainLevel = normalizeRange(
+      profile.sustainLevel * strengthFactor,
+      0.40,
+      1.00,
+      profile.sustainLevel
+    );
+
+    profile.randomization = normalizeRange(
+      profile.randomization * speedFactor,
+      0.00,
+      0.40,
+      profile.randomization
+    );
+
+    return profile;
+  }
+
   function buildEffectConfig(options = {}) {
     const presetKey = String(options.preset || "").trim();
     const preset = getPreset(presetKey);
+    const runtime = resolveRuntime(options, preset);
 
     if (!preset) {
       return {
@@ -254,21 +525,30 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         lutGroup: "",
         lutPaths: [],
         defaults: {},
-        runtime: {
-          motionLevel: options.motionLevel || "balanced",
-          effectStrength: options.effectStrength || "medium",
-          colorMood: options.colorMood || "original",
-          transitionSpeed: options.transitionSpeed || "normal"
-        }
+        doseProfile: {
+          maxOverlayCount: 1,
+          overlayOpacity: 0.18,
+          secondaryOpacity: 0.08,
+          lutIntensity: 0.30,
+          zoomAmount: 0.05,
+          shakeAmount: 0.04,
+          blurAmount: 0.04,
+          glowAmount: 0.08,
+          introBurstMs: 240,
+          sustainLevel: 0.70,
+          outroFlashMs: 120,
+          overlayStartOffsetMs: 40,
+          overlayTrimStrategy: "balanced",
+          randomization: 0.10,
+          blendMode: "screen",
+          placement: "full-frame",
+          maskBias: "center-safe"
+        },
+        runtime
       };
     }
 
-    const runtime = {
-      motionLevel: options.motionLevel || preset.defaults.motionLevel,
-      effectStrength: options.effectStrength || preset.defaults.effectStrength,
-      colorMood: options.colorMood || preset.defaults.colorMood,
-      transitionSpeed: options.transitionSpeed || preset.defaults.transitionSpeed
-    };
+    const doseProfile = applyRuntimeToDoseProfile(preset.doseProfile || {}, runtime);
 
     return {
       preset: preset.key,
@@ -282,6 +562,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       lutGroup: preset.lutGroup,
       lutPaths: getLutPaths(preset.lutGroup),
       defaults: { ...preset.defaults },
+      doseProfile,
       runtime
     };
   }
