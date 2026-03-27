@@ -943,135 +943,162 @@ module.exports = async function handler(req, res) {
     const hasAudio = !!audioUrl;
     const hasMux = !!muxUrl;
 
-    const selectedFinalSourceUrl = logoOverlayUrl || muxUrl || providerUrl || "";
 
-    if (!selectedFinalSourceUrl) {
-      return res.status(400).json({
-        ok: false,
-        error: "finalize_input_missing",
-        job_id,
-        has_audio: hasAudio,
-        has_mux: hasMux,
-      });
-    }
 
-    tmpDir = await fsp.mkdtemp(
-      path.join(os.tmpdir(), "aivo-photofx-finalize-")
-    );
+const selectedFinalSourceUrl = logoOverlayUrl || muxUrl || providerUrl || "";
 
-    const inputPath = path.join(tmpDir, "input.mp4");
-    const audioPath = path.join(tmpDir, "audio-input");
-    const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
-    const compositedPath = path.join(tmpDir, "composited-input.mp4");
-    const faststartPath = path.join(tmpDir, "finalized-faststart.mp4");
-    const previewPath = path.join(tmpDir, "preview.mp4");
+if (!selectedFinalSourceUrl) {
+  return res.status(400).json({
+    ok: false,
+    error: "finalize_input_missing",
+    job_id,
+    has_audio: hasAudio,
+    has_mux: hasMux,
+  });
+}
 
-    await downloadToFile(selectedFinalSourceUrl, inputPath);
+tmpDir = await fsp.mkdtemp(
+  path.join(os.tmpdir(), "aivo-photofx-finalize-")
+);
 
-    let effectiveInputPath = inputPath;
-    let selectedFinalSourceVariant = logoOverlayUrl
-      ? "logo_overlay"
-      : muxUrl
-      ? "mux"
-      : "provider";
+const inputPath = path.join(tmpDir, "input.mp4");
+const audioPath = path.join(tmpDir, "audio-input");
+const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
+const compositedPath = path.join(tmpDir, "composited-input.mp4");
+const faststartPath = path.join(tmpDir, "finalized-faststart.mp4");
+const previewPath = path.join(tmpDir, "preview.mp4");
 
-    const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
+await downloadToFile(selectedFinalSourceUrl, inputPath);
 
-    if (needsInlineMux) {
-      await downloadToFile(audioUrl, audioPath);
-      await runFfmpegMuxVideoAndAudio({
-        videoPath: effectiveInputPath,
-        audioPath,
-        outputPath: muxedInputPath,
-      });
-      effectiveInputPath = muxedInputPath;
-      selectedFinalSourceVariant = "mux";
-    }
+let effectiveInputPath = inputPath;
+let selectedFinalSourceVariant = logoOverlayUrl
+  ? "logo_overlay"
+  : muxUrl
+  ? "mux"
+  : "provider";
 
-    const input_url = selectedFinalSourceUrl;
+const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
 
-    const effectMeta = resolveEffectMeta(meta);
-    const inputDurationSec = await probeVideoDurationSec(effectiveInputPath);
+if (needsInlineMux) {
+  await downloadToFile(audioUrl, audioPath);
+  await runFfmpegMuxVideoAndAudio({
+    videoPath: effectiveInputPath,
+    audioPath,
+    outputPath: muxedInputPath,
+  });
+  effectiveInputPath = muxedInputPath;
+  selectedFinalSourceVariant = "mux";
+}
 
-    const compositingPlan = {
-      enabled:
-        !!effectMeta.preset ||
-        effectMeta.styles.length > 0 ||
-        effectMeta.overlayPaths.length > 0 ||
-        effectMeta.lutPaths.length > 0,
-      preset: effectMeta.preset,
-      styles: effectMeta.styles,
-      overlayPaths: effectMeta.overlayPaths,
-      lutPaths: effectMeta.lutPaths,
-      input_path_before_composite: effectiveInputPath,
-      output_path_after_composite: compositedPath,
-      stage: "pre_faststart",
-      source_variant: selectedFinalSourceVariant,
-    };
+const input_url = selectedFinalSourceUrl;
 
-    await runFfmpegFaststart(effectiveInputPath, faststartPath);
+const effectMeta = resolveEffectMeta(meta);
+const inputDurationSec = await probeVideoDurationSec(effectiveInputPath);
 
-    await runFfmpegFaststart(effectiveInputPath, faststartPath);
+const compositingPlan = {
+  enabled:
+    !!effectMeta.preset ||
+    effectMeta.styles.length > 0 ||
+    effectMeta.overlayPaths.length > 0 ||
+    effectMeta.lutPaths.length > 0,
+  preset: effectMeta.preset,
+  styles: effectMeta.styles,
+  overlayPaths: effectMeta.overlayPaths,
+  lutPaths: effectMeta.lutPaths,
+  input_path_before_composite: effectiveInputPath,
+  output_path_after_composite: compositedPath,
+  stage: "pre_faststart",
+  source_variant: selectedFinalSourceVariant,
+  input_duration_sec: inputDurationSec,
+};
 
-    const finalStat = await fsp.stat(faststartPath);
-    const durationSec = await probeVideoDurationSec(faststartPath);
+let compositingResult = {
+  ok: true,
+  applied: false,
+  mode: "disabled",
+  outputPath: effectiveInputPath,
+  overlay_assets_used: [],
+  overlay_assets_found: [],
+  lut_assets_found: [],
+};
 
-    const previewBitrateCfg = calcPreviewVideoBitrateKbps({
-      finalBytes: finalStat?.size || 0,
-      durationSec,
-    });
+if (compositingPlan.enabled) {
+  compositingResult = await runPhotofxCompositingScaffold({
+    inputPath: effectiveInputPath,
+    outputPath: compositedPath,
+    preset: effectMeta.preset,
+    styles: effectMeta.styles,
+  });
 
-    await runFfmpegPreview(faststartPath, previewPath, previewBitrateCfg);
+  if (!compositingResult || !compositingResult.outputPath) {
+    throw new Error("photofx_compositing_output_missing");
+  }
 
-    const outputId = `finalized-${Date.now()}`;
-    const key = `outputs/photofx/${job_id}/${outputId}.mp4`;
-    const previewKey = `outputs/photofx/${job_id}/${outputId}-preview.mp4`;
+  effectiveInputPath = compositingResult.outputPath;
+}
 
-    const muxOutputId = `mux-${Date.now()}`;
-    const muxKey = `outputs/photofx/${job_id}/${muxOutputId}.mp4`;
+await runFfmpegFaststart(effectiveInputPath, faststartPath);
 
-    let mux_url =
-      String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
+const finalStat = await fsp.stat(faststartPath);
+const durationSec = await probeVideoDurationSec(faststartPath);
 
-    if (needsInlineMux) {
-      mux_url = await uploadFileToR2({
-        filePath: muxedInputPath,
-        key: muxKey,
-        contentType: "video/mp4",
-      });
+const previewBitrateCfg = calcPreviewVideoBitrateKbps({
+  finalBytes: finalStat?.size || 0,
+  durationSec,
+});
 
-      await verifyPublicUrl(mux_url, "mux");
-    }
+await runFfmpegPreview(faststartPath, previewPath, previewBitrateCfg);
 
-    const final_url = await uploadFileToR2({
-      filePath: faststartPath,
-      key,
-      contentType: "video/mp4",
-    });
+const outputId = `finalized-${Date.now()}`;
+const key = `outputs/photofx/${job_id}/${outputId}.mp4`;
+const previewKey = `outputs/photofx/${job_id}/${outputId}-preview.mp4`;
 
-    await verifyPublicUrl(final_url, "final");
+const muxOutputId = `mux-${Date.now()}`;
+const muxKey = `outputs/photofx/${job_id}/${muxOutputId}.mp4`;
 
-    const preview_url = await uploadFileToR2({
-      filePath: previewPath,
-      key: previewKey,
-      contentType: "video/mp4",
-    });
+let mux_url =
+  String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
 
-    await verifyPublicUrl(preview_url, "preview");
+if (needsInlineMux) {
+  mux_url = await uploadFileToR2({
+    filePath: muxedInputPath,
+    key: muxKey,
+    contentType: "video/mp4",
+  });
 
-    let nextOutputs = upsertFinalizedAndPreviewOutputs(
-      outputs,
-      final_url,
-      preview_url
-    );
+  await verifyPublicUrl(mux_url, "mux");
+}
 
-    if (needsInlineMux && mux_url) {
-      nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
-        is_mux: true,
-        is_final: false,
-        source: "finalize_inline_mux",
-      });
-    }
+const final_url = await uploadFileToR2({
+  filePath: faststartPath,
+  key,
+  contentType: "video/mp4",
+});
+
+await verifyPublicUrl(final_url, "final");
+
+const preview_url = await uploadFileToR2({
+  filePath: previewPath,
+  key: previewKey,
+  contentType: "video/mp4",
+});
+
+await verifyPublicUrl(preview_url, "preview");
+
+let nextOutputs = upsertFinalizedAndPreviewOutputs(
+  outputs,
+  final_url,
+  preview_url
+);
+
+if (needsInlineMux && mux_url) {
+  nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
+    is_mux: true,
+    is_final: false,
+    source: "finalize_inline_mux",
+  });
+}
+
 
     const patchMeta = {
       final_video_url: final_url,
