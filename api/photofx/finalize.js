@@ -56,6 +56,7 @@ function toArray(v) {
 function uniqStrings(arr = []) {
   return [...new Set(arr.map((x) => String(x || "").trim()).filter(Boolean))];
 }
+
 function ensureAbsoluteAssetPath(relPath) {
   const clean = String(relPath || "").trim().replace(/^\/+/, "");
   if (!clean) return "";
@@ -141,6 +142,7 @@ function pickDeterministic(list = [], seed = "", count = 1) {
 
   return out;
 }
+
 function removeFinalFlags(outputs) {
   const arr = Array.isArray(outputs) ? outputs.slice() : [];
   return arr.map((o) => {
@@ -355,195 +357,118 @@ function normalizeNumber(v, fallback, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
+function buildColorEq(effectMeta = {}) {
+  const mood = String(
+    effectMeta?.runtime?.colorMood || "original"
+  ).toLowerCase();
+  const strength = String(
+    effectMeta?.runtime?.effectStrength || "medium"
+  ).toLowerCase();
+
+  let saturation = 1.0;
+  let contrast = 1.0;
+  let brightness = 0.0;
+  let gamma = 1.0;
+
+  if (mood === "warm") {
+    saturation += 0.08;
+    contrast += 0.04;
+    brightness += 0.01;
+  } else if (mood === "cold") {
+    saturation -= 0.04;
+    contrast += 0.03;
+    gamma += 0.02;
+  } else if (mood === "dark") {
+    saturation -= 0.08;
+    contrast += 0.1;
+    brightness -= 0.03;
+    gamma -= 0.02;
+  }
+
+  if (strength === "low") {
+    saturation *= 1.03;
+    contrast *= 1.02;
+  } else if (strength === "high") {
+    saturation *= 1.12;
+    contrast *= 1.1;
+    brightness += 0.01;
+  }
+
+  return `eq=saturation=${saturation.toFixed(
+    3
+  )}:contrast=${contrast.toFixed(3)}:brightness=${brightness.toFixed(
+    3
+  )}:gamma=${gamma.toFixed(3)}`;
+}
+
+function buildBaseVisualFilter(effectMeta = {}) {
+  const parts = [];
+  const preset = String(effectMeta?.preset || "").toLowerCase();
+  const styles = Array.isArray(effectMeta?.styles) ? effectMeta.styles : [];
+  const has = (name) => preset === name || styles.includes(name);
+
+  parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  parts.push(buildColorEq(effectMeta));
+
+  if (has("shake-edit") || has("split-flash") || has("dark-trap-motion")) {
+    parts.push(
+      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
+    );
+    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  }
+
+  if (has("cinematic-zoom")) {
+    parts.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
+    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  }
+
+  if (has("neon-pulse")) {
+    parts.push("gblur=sigma=0.8");
+    parts.push("unsharp=5:5:1.15:5:5:0.0");
+  }
+
+  if (has("glitch-scan")) {
+    parts.push("noise=alls=12:allf=t");
+  }
+
+  parts.push("fps=25");
+  parts.push("format=yuv420p");
+
+  return parts.join(",");
+}
+
+function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
+  const total = Math.max(0.5, Number(durationSec || 6));
+  const startBase = Math.max(0, 0.15 + index * 0.18);
+  const endBase = Math.min(total, total - 0.12 + index * 0.03);
+
+  if (
+    String(effectMeta?.preset || "").toLowerCase() === "split-flash" ||
+    (Array.isArray(effectMeta?.styles) &&
+      effectMeta.styles.includes("split-flash"))
+  ) {
+    const burst = Math.min(total * 0.22, 0.9);
+    const start = Math.max(0, startBase);
+    const end = Math.min(total, start + burst);
+    return `between(t,${start.toFixed(3)},${end.toFixed(
+      3
+    )})+between(t,${(total * 0.72).toFixed(3)},${Math.min(
+      total,
+      total * 0.72 + burst
+    ).toFixed(3)})`;
+  }
+
+  return `between(t,${startBase.toFixed(3)},${endBase.toFixed(3)})`;
+}
+
 function resolveEffectMeta(meta = {}) {
-  function buildColorEq(effectMeta = {}) {
-  const mood = String(effectMeta?.runtime?.colorMood || "original").toLowerCase();
-  const strength = String(effectMeta?.runtime?.effectStrength || "medium").toLowerCase();
-
-  let saturation = 1.0;
-  let contrast = 1.0;
-  let brightness = 0.0;
-  let gamma = 1.0;
-
-  if (mood === "warm") {
-    saturation += 0.08;
-    contrast += 0.04;
-    brightness += 0.01;
-  } else if (mood === "cold") {
-    saturation -= 0.04;
-    contrast += 0.03;
-    gamma += 0.02;
-  } else if (mood === "dark") {
-    saturation -= 0.08;
-    contrast += 0.10;
-    brightness -= 0.03;
-    gamma -= 0.02;
-  }
-
-  if (strength === "low") {
-    saturation *= 1.03;
-    contrast *= 1.02;
-  } else if (strength === "high") {
-    saturation *= 1.12;
-    contrast *= 1.10;
-    brightness += 0.01;
-  }
-
-  return `eq=saturation=${saturation.toFixed(3)}:contrast=${contrast.toFixed(3)}:brightness=${brightness.toFixed(3)}:gamma=${gamma.toFixed(3)}`;
-}
-
-function buildBaseVisualFilter(effectMeta = {}) {
-  const parts = [];
-  const preset = String(effectMeta?.preset || "").toLowerCase();
-  const styles = Array.isArray(effectMeta?.styles) ? effectMeta.styles : [];
-  const has = (name) => preset === name || styles.includes(name);
-
-  parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
-  parts.push(buildColorEq(effectMeta));
-
-  if (has("shake-edit") || has("split-flash") || has("dark-trap-motion")) {
-    parts.push(
-      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
-    );
-    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
-  }
-
-  if (has("cinematic-zoom")) {
-    parts.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
-    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
-  }
-
-  if (has("neon-pulse")) {
-    parts.push("gblur=sigma=0.8");
-    parts.push("unsharp=5:5:1.15:5:5:0.0");
-  }
-
-  if (has("glitch-scan")) {
-    parts.push("noise=alls=12:allf=t");
-  }
-
-  parts.push("fps=25");
-  parts.push("format=yuv420p");
-
-  return parts.join(",");
-}
-
-function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
-  const total = Math.max(0.5, Number(durationSec || 6));
-  const startBase = Math.max(0, 0.15 + index * 0.18);
-  const endBase = Math.min(total, total - 0.12 + index * 0.03);
-
-  if (
-    String(effectMeta?.preset || "").toLowerCase() === "split-flash" ||
-    (Array.isArray(effectMeta?.styles) && effectMeta.styles.includes("split-flash"))
-  ) {
-    const burst = Math.min(total * 0.22, 0.9);
-    const start = Math.max(0, startBase);
-    const end = Math.min(total, start + burst);
-    return `between(t,${start.toFixed(3)},${end.toFixed(3)})+between(t,${(total * 0.72).toFixed(3)},${(Math.min(total, total * 0.72 + burst)).toFixed(3)})`;
-  }
-
-  return `between(t,${startBase.toFixed(3)},${endBase.toFixed(3)})`;
-}
-  function buildColorEq(effectMeta = {}) {
-  const mood = String(effectMeta?.runtime?.colorMood || "original").toLowerCase();
-  const strength = String(effectMeta?.runtime?.effectStrength || "medium").toLowerCase();
-
-  let saturation = 1.0;
-  let contrast = 1.0;
-  let brightness = 0.0;
-  let gamma = 1.0;
-
-  if (mood === "warm") {
-    saturation += 0.08;
-    contrast += 0.04;
-    brightness += 0.01;
-  } else if (mood === "cold") {
-    saturation -= 0.04;
-    contrast += 0.03;
-    gamma += 0.02;
-  } else if (mood === "dark") {
-    saturation -= 0.08;
-    contrast += 0.10;
-    brightness -= 0.03;
-    gamma -= 0.02;
-  }
-
-  if (strength === "low") {
-    saturation *= 1.03;
-    contrast *= 1.02;
-  } else if (strength === "high") {
-    saturation *= 1.12;
-    contrast *= 1.10;
-    brightness += 0.01;
-  }
-
-  return `eq=saturation=${saturation.toFixed(3)}:contrast=${contrast.toFixed(3)}:brightness=${brightness.toFixed(3)}:gamma=${gamma.toFixed(3)}`;
-}
-
-function buildBaseVisualFilter(effectMeta = {}) {
-  const parts = [];
-  const preset = String(effectMeta?.preset || "").toLowerCase();
-  const styles = Array.isArray(effectMeta?.styles) ? effectMeta.styles : [];
-  const has = (name) => preset === name || styles.includes(name);
-
-  parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
-  parts.push(buildColorEq(effectMeta));
-
-  if (has("shake-edit") || has("split-flash") || has("dark-trap-motion")) {
-    parts.push(
-      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
-    );
-    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
-  }
-
-  if (has("cinematic-zoom")) {
-    parts.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
-    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
-  }
-
-  if (has("neon-pulse")) {
-    parts.push("gblur=sigma=0.8");
-    parts.push("unsharp=5:5:1.15:5:5:0.0");
-  }
-
-  if (has("glitch-scan")) {
-    parts.push("noise=alls=12:allf=t");
-  }
-
-  parts.push("fps=25");
-  parts.push("format=yuv420p");
-
-  return parts.join(",");
-}
-
-function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
-  const total = Math.max(0.5, Number(durationSec || 6));
-  const startBase = Math.max(0, 0.15 + index * 0.18);
-  const endBase = Math.min(total, total - 0.12 + index * 0.03);
-
-  if (
-    String(effectMeta?.preset || "").toLowerCase() === "split-flash" ||
-    (Array.isArray(effectMeta?.styles) && effectMeta.styles.includes("split-flash"))
-  ) {
-    const burst = Math.min(total * 0.22, 0.9);
-    const start = Math.max(0, startBase);
-    const end = Math.min(total, start + burst);
-    return `between(t,${start.toFixed(3)},${end.toFixed(3)})+between(t,${(total * 0.72).toFixed(3)},${(Math.min(total, total * 0.72 + burst)).toFixed(3)})`;
-  }
-
-  return `between(t,${startBase.toFixed(3)},${endBase.toFixed(3)})`;
-}
   const effects = meta?.effects || {};
   const effectConfig = effects?.effectConfig || {};
   const doseProfile = effectConfig?.doseProfile || {};
   const runtime = effectConfig?.runtime || {};
 
   const preset = String(
-    meta?.preset ||
-      effects?.preset ||
-      effectConfig?.preset ||
-      ""
+    meta?.preset || effects?.preset || effectConfig?.preset || ""
   )
     .trim()
     .toLowerCase();
@@ -561,12 +486,31 @@ function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
     lutPaths: uniqStrings(effectConfig?.lutPaths || []),
     doseProfile: {
       zoomAmount: normalizeNumber(doseProfile?.zoomAmount, 0.05, 0.0, 0.25),
-      shakeAmount: normalizeNumber(doseProfile?.shakeAmount, 0.02, 0.0, 0.20),
-      blurAmount: normalizeNumber(doseProfile?.blurAmount, 0.04, 0.0, 0.30),
-      glowAmount: normalizeNumber(doseProfile?.glowAmount, 0.08, 0.0, 0.60),
-      overlayOpacity: normalizeNumber(doseProfile?.overlayOpacity, 0.18, 0.0, 0.70),
-      secondaryOpacity: normalizeNumber(doseProfile?.secondaryOpacity, 0.08, 0.0, 0.35),
-      lutIntensity: normalizeNumber(doseProfile?.lutIntensity, 0.30, 0.0, 1.0),
+      shakeAmount: normalizeNumber(doseProfile?.shakeAmount, 0.02, 0.0, 0.2),
+      blurAmount: normalizeNumber(doseProfile?.blurAmount, 0.04, 0.0, 0.3),
+      glowAmount: normalizeNumber(doseProfile?.glowAmount, 0.08, 0.0, 0.6),
+      overlayOpacity: normalizeNumber(
+        doseProfile?.overlayOpacity,
+        0.18,
+        0.0,
+        0.7
+      ),
+      secondaryOpacity: normalizeNumber(
+        doseProfile?.secondaryOpacity,
+        0.08,
+        0.0,
+        0.35
+      ),
+      lutIntensity: normalizeNumber(doseProfile?.lutIntensity, 0.3, 0.0, 1.0),
+      maxOverlayCount: normalizeNumber(
+        doseProfile?.maxOverlayCount,
+        1,
+        1,
+        4
+      ),
+      blendMode: String(doseProfile?.blendMode || "screen")
+        .trim()
+        .toLowerCase(),
     },
     runtime: {
       colorMood: String(runtime?.colorMood || meta?.color_mood || "original")
@@ -619,7 +563,9 @@ async function runPhotofxCompositingScaffold({
   const safeMeta = effectMeta || resolveEffectMeta({});
   const safePreset = String(safeMeta?.preset || "").trim().toLowerCase();
   const safeStyles = Array.isArray(safeMeta?.styles)
-    ? safeMeta.styles.map((x) => String(x || "").trim().toLowerCase()).filter(Boolean)
+    ? safeMeta.styles
+        .map((x) => String(x || "").trim().toLowerCase())
+        .filter(Boolean)
     : [];
 
   const overlayFilesAll = await collectFilesFromPaths(
@@ -627,17 +573,14 @@ async function runPhotofxCompositingScaffold({
     [".mp4", ".mov", ".webm"]
   );
 
-  const lutFilesAll = await collectFilesFromPaths(
-    safeMeta?.lutPaths || [],
-    [".cube", ".3dl"]
-  );
+  const lutFilesAll = await collectFilesFromPaths(safeMeta?.lutPaths || [], [
+    ".cube",
+    ".3dl",
+  ]);
 
   const maxOverlayCount = Math.max(
     1,
-    Math.min(
-      4,
-      Number(safeMeta?.doseProfile?.maxOverlayCount || 1)
-    )
+    Math.min(4, Number(safeMeta?.doseProfile?.maxOverlayCount || 1))
   );
 
   const overlayFiles = pickDeterministic(
@@ -670,6 +613,7 @@ async function runPhotofxCompositingScaffold({
       overlay_assets_found: overlayFilesAll,
       overlay_assets_used: [],
       lut_assets_found: lutFilesAll,
+      lut_assets_used: [],
     };
   }
 
@@ -730,17 +674,13 @@ async function runPhotofxCompositingScaffold({
   let finalVideoLabel = currentLabel;
 
   if (lutFiles.length > 0) {
-    const lutPath = lutFiles[0]
-      .replace(/\\/g, "/")
-      .replace(/:/g, "\\:");
+    const lutPath = lutFiles[0].replace(/\\/g, "/").replace(/:/g, "\\:");
     const lutOut = "[vlut]";
-    graph.push(
-      `${currentLabel}lut3d=file='${lutPath}'${lutOut}`
-    );
+    graph.push(`${currentLabel}lut3d=file='${lutPath}'${lutOut}`);
 
     const intensity = Math.max(
       0,
-      Math.min(1, Number(safeMeta?.doseProfile?.lutIntensity || 0.30))
+      Math.min(1, Number(safeMeta?.doseProfile?.lutIntensity || 0.3))
     );
 
     if (intensity >= 0.999) {
@@ -794,6 +734,7 @@ async function runPhotofxCompositingScaffold({
     overlay_assets_found: overlayFilesAll,
     overlay_assets_used: overlayFiles,
     lut_assets_found: lutFilesAll,
+    lut_assets_used: lutFiles,
   };
 }
 
@@ -1086,17 +1027,18 @@ module.exports = async function handler(req, res) {
       outputPath: effectiveInputPath,
       overlay_assets_used: [],
       overlay_assets_found: [],
+      lut_assets_used: [],
       lut_assets_found: [],
     };
 
     if (compositingPlan.enabled) {
-     compositingResult = await runPhotofxCompositingScaffold({
-  inputPath: effectiveInputPath,
-  outputPath: compositedPath,
-  effectMeta,
-  durationSec: inputDurationSec,
-  seed: job_id,
-});
+      compositingResult = await runPhotofxCompositingScaffold({
+        inputPath: effectiveInputPath,
+        outputPath: compositedPath,
+        effectMeta,
+        durationSec: inputDurationSec,
+        seed: job_id,
+      });
 
       if (!compositingResult || !compositingResult.outputPath) {
         throw new Error("photofx_compositing_output_missing");
@@ -1190,6 +1132,7 @@ module.exports = async function handler(req, res) {
         overlay_assets_found: compositingResult.overlay_assets_found || [],
         overlay_assets_used: compositingResult.overlay_assets_used || [],
         lut_assets_found: compositingResult.lut_assets_found || [],
+        lut_assets_used: compositingResult.lut_assets_used || [],
       },
     };
 
