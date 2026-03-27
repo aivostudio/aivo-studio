@@ -4,6 +4,79 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
   if (window.__AIVO_PHOTOFX_EFFECTS__) return;
   window.__AIVO_PHOTOFX_EFFECTS__ = true;
 
+  const ASSET_BASE = "assets/photofx";
+  const OVERLAY_BASE = `${ASSET_BASE}/overlays`;
+  const LUT_BASE = `${ASSET_BASE}/luts`;
+
+  const OVERLAY_LIBRARY = {
+    "light-leaks": [
+      `${OVERLAY_BASE}/light-leaks/`
+    ],
+
+    "prism-lens": [
+      `${OVERLAY_BASE}/prism-lens/`
+    ],
+
+    "film-burns-flash": [
+      `${OVERLAY_BASE}/film-burns-flash/`
+    ],
+
+    "dust-particles": [
+      `${OVERLAY_BASE}/dust-particles/`
+    ],
+
+    "vhs-glitch": [
+      `${OVERLAY_BASE}/vhs-glitch/`
+    ],
+
+    "glitch-noise": [
+      `${OVERLAY_BASE}/glitch-noise/`
+    ],
+
+    "smoke-fog": [
+      `${OVERLAY_BASE}/smoke-fog/`
+    ],
+
+    "sparks-fire": [
+      `${OVERLAY_BASE}/sparks-fire/`
+    ],
+
+    "scribble": [
+      `${OVERLAY_BASE}/scribble/`
+    ],
+
+    "hud-graphic-overlay": [
+      `${OVERLAY_BASE}/hud-graphic-overlay/`
+    ]
+  };
+
+  const LUT_LIBRARY = {
+    neon: [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    contrast: [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    cyber: [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    "clean-pop": [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    cinematic: [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    dreamy: [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    "warm-burn": [
+      `${LUT_BASE}/cinema-style/`
+    ],
+    "dark-trap": [
+      `${LUT_BASE}/cinema-style/`
+    ]
+  };
+
   const PRESET_EFFECTS = {
     "neon-pulse": {
       key: "neon-pulse",
@@ -12,7 +85,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Gece, stil, havalı portre.",
       category: "neon",
       coreEffects: ["glow", "light-flicker", "micro-zoom"],
-      overlayGroups: ["light-leaks", "optical-flares"],
+      overlayGroups: ["light-leaks", "prism-lens"],
       lutGroup: "neon",
       defaults: {
         motionLevel: "balanced",
@@ -29,7 +102,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Rap, trap, sert edit videolar.",
       category: "impact",
       coreEffects: ["micro-shake", "punch-zoom", "flash-hit"],
-      overlayGroups: [],
+      overlayGroups: ["film-burns-flash"],
       lutGroup: "contrast",
       defaults: {
         motionLevel: "strong",
@@ -46,7 +119,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Karanlık, teknoloji, agresif hava.",
       category: "glitch",
       coreEffects: ["rgb-shift", "scan-jitter", "glitch-cut"],
-      overlayGroups: ["vhs-glitch", "grain-particles"],
+      overlayGroups: ["vhs-glitch", "glitch-noise", "hud-graphic-overlay"],
       lutGroup: "cyber",
       defaults: {
         motionLevel: "balanced",
@@ -63,7 +136,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Dikkat çekici reels girişleri.",
       category: "flash",
       coreEffects: ["split", "flash", "strobe-cut"],
-      overlayGroups: ["film-burns"],
+      overlayGroups: ["film-burns-flash", "light-leaks"],
       lutGroup: "clean-pop",
       defaults: {
         motionLevel: "balanced",
@@ -80,7 +153,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Duygusal, kaliteli, ağır akan videolar.",
       category: "cinematic",
       coreEffects: ["slow-zoom", "soft-pan", "depth-blur"],
-      overlayGroups: ["grain-particles"],
+      overlayGroups: ["dust-particles", "light-leaks"],
       lutGroup: "cinematic",
       defaults: {
         motionLevel: "soft",
@@ -97,7 +170,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Dreamy, estetik, manevi editler.",
       category: "aura",
       coreEffects: ["glow", "soft-bloom", "halo-pulse"],
-      overlayGroups: ["optical-flares", "light-leaks"],
+      overlayGroups: ["prism-lens", "light-leaks", "dust-particles"],
       lutGroup: "dreamy",
       defaults: {
         motionLevel: "soft",
@@ -114,7 +187,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Güçlü, öfkeli, epik görünüm.",
       category: "fire",
       coreEffects: ["edge-heat", "hot-glow", "impact-flash"],
-      overlayGroups: ["sparks-fire", "smoke-fog"],
+      overlayGroups: ["sparks-fire", "smoke-fog", "film-burns-flash"],
       lutGroup: "warm-burn",
       defaults: {
         motionLevel: "strong",
@@ -131,7 +204,7 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: "Trap müzik, sert profil videoları.",
       category: "dark",
       coreEffects: ["hard-zoom", "micro-shake", "shadow-pulse"],
-      overlayGroups: ["smoke-fog", "grain-particles"],
+      overlayGroups: ["smoke-fog", "dust-particles", "glitch-noise"],
       lutGroup: "dark-trap",
       defaults: {
         motionLevel: "strong",
@@ -140,29 +213,6 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
         transitionSpeed: "fast"
       }
     }
-  };
-
-  const OVERLAY_LIBRARY = {
-    "light-leaks": [],
-    "optical-flares": [],
-    "film-burns": [],
-    "grain-particles": [],
-    "vhs-glitch": [],
-    "smoke-fog": [],
-    "sparks-fire": [],
-    "scribble-lines": [],
-    "hud-graphics": []
-  };
-
-  const LUT_LIBRARY = {
-    neon: [],
-    contrast: [],
-    cyber: [],
-    "clean-pop": [],
-    cinematic: [],
-    dreamy: [],
-    "warm-burn": [],
-    "dark-trap": []
   };
 
   function getPreset(key) {
@@ -177,6 +227,16 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
     return Object.keys(PRESET_EFFECTS);
   }
 
+  function getOverlayPaths(groups = []) {
+    return (Array.isArray(groups) ? groups : [])
+      .flatMap((group) => OVERLAY_LIBRARY[group] || [])
+      .filter(Boolean);
+  }
+
+  function getLutPaths(group = "") {
+    return LUT_LIBRARY[String(group || "").trim()] || [];
+  }
+
   function buildEffectConfig(options = {}) {
     const presetKey = String(options.preset || "").trim();
     const preset = getPreset(presetKey);
@@ -185,9 +245,14 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       return {
         preset: "",
         title: "",
+        category: "",
+        description: "",
+        usage: "",
         coreEffects: [],
         overlayGroups: [],
+        overlayPaths: [],
         lutGroup: "",
+        lutPaths: [],
         defaults: {},
         runtime: {
           motionLevel: options.motionLevel || "balanced",
@@ -198,6 +263,13 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       };
     }
 
+    const runtime = {
+      motionLevel: options.motionLevel || preset.defaults.motionLevel,
+      effectStrength: options.effectStrength || preset.defaults.effectStrength,
+      colorMood: options.colorMood || preset.defaults.colorMood,
+      transitionSpeed: options.transitionSpeed || preset.defaults.transitionSpeed
+    };
+
     return {
       preset: preset.key,
       title: preset.title,
@@ -206,30 +278,28 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
       usage: preset.usage,
       coreEffects: [...preset.coreEffects],
       overlayGroups: [...preset.overlayGroups],
+      overlayPaths: getOverlayPaths(preset.overlayGroups),
       lutGroup: preset.lutGroup,
+      lutPaths: getLutPaths(preset.lutGroup),
       defaults: { ...preset.defaults },
-      runtime: {
-        motionLevel: options.motionLevel || preset.defaults.motionLevel,
-        effectStrength: options.effectStrength || preset.defaults.effectStrength,
-        colorMood: options.colorMood || preset.defaults.colorMood,
-        transitionSpeed: options.transitionSpeed || preset.defaults.transitionSpeed
-      }
+      runtime
     };
   }
 
   function buildEffectsPayload(form = {}) {
     const preset = String(form.style || form.preset || "").trim();
+    const effectConfig = buildEffectConfig({
+      preset,
+      motionLevel: form.motionLevel,
+      effectStrength: form.effectStrength,
+      colorMood: form.colorMood,
+      transitionSpeed: form.transitionSpeed
+    });
 
     return {
       preset,
       styles: Array.isArray(form.styles) ? [...form.styles] : [],
-      effectConfig: buildEffectConfig({
-        preset,
-        motionLevel: form.motionLevel,
-        effectStrength: form.effectStrength,
-        colorMood: form.colorMood,
-        transitionSpeed: form.transitionSpeed
-      })
+      effectConfig
     };
   }
 
@@ -237,6 +307,8 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
     getPreset,
     getAllPresets,
     getPresetKeys,
+    getOverlayPaths,
+    getLutPaths,
     buildEffectConfig,
     buildEffectsPayload,
     OVERLAY_LIBRARY,
