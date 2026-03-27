@@ -1019,14 +1019,12 @@ module.exports = async function handler(req, res) {
       lut_assets_found: [],
     };
 
-    if (compositingPlan.enabled) {
-      compositingResult = await runPhotofxCompositingScaffold({
-        inputPath: effectiveInputPath,
-        outputPath: compositedPath,
-        effectMeta,
-        durationSec: inputDurationSec || Number(meta?.duration || 6) || 6,
-        jobId: job_id,
-      });
+  compositingResult = await runPhotofxCompositingScaffold({
+  inputPath: effectiveInputPath,
+  outputPath: compositedPath,
+  preset: effectMeta.preset,
+  styles: effectMeta.styles,
+});
 
       effectiveInputPath = compositingResult.outputPath;
     }
