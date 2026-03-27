@@ -588,124 +588,143 @@ async function runFfmpegWithArgs(args, errorPrefix) {
   });
 }
 
-async function runPhotofxCompositing({
+async function runPhotofxCompositingScaffold({
   inputPath,
   outputPath,
-  effectMeta,
-  durationSec,
-  jobId,
+  preset,
+  styles = [],
 }) {
-  const shouldProcess =
-    !!effectMeta.preset ||
-    effectMeta.styles.length > 0 ||
-    effectMeta.overlayPaths.length > 0 ||
-    effectMeta.lutPaths.length > 0;
+  const safePreset = String(preset || "").trim().toLowerCase();
+  const safeStyles = Array.isArray(styles)
+    ? styles.map((x) => String(x || "").trim().toLowerCase()).filter(Boolean)
+    : [];
+
+  const shouldProcess = !!safePreset || safeStyles.length > 0;
 
   if (!shouldProcess) {
     await fsp.copyFile(inputPath, outputPath);
     return {
       ok: true,
       applied: false,
+      preset: safePreset,
+      styles: safeStyles,
       mode: "passthrough_copy",
       outputPath,
-      overlay_assets_used: [],
-      lut_assets_found: [],
     };
   }
 
-  const overlayFiles = await collectFilesFromPaths(effectMeta.overlayPaths, [
-    ".mp4",
-    ".mov",
-    ".mkv",
-    ".webm",
-  ]);
+  const isNeon =
+    safePreset === "neon-pulse" || safeStyles.includes("neon-pulse");
+  const isSplit =
+    safePreset === "split-flash" || safeStyles.includes("split-flash");
+  const isShake =
+    safePreset === "shake-edit" || safeStyles.includes("shake-edit");
+  const isFire =
+    safePreset === "fire-edge" || safeStyles.includes("fire-edge");
+  const isGlitch =
+    safePreset === "glitch-scan" || safeStyles.includes("glitch-scan");
+  const isCine =
+    safePreset === "cinematic-zoom" || safeStyles.includes("cinematic-zoom");
+  const isAura =
+    safePreset === "aura-glow" || safeStyles.includes("aura-glow");
+  const isDark =
+    safePreset === "dark-trap-motion" || safeStyles.includes("dark-trap-motion");
 
-  const lutFiles = await collectFilesFromPaths(effectMeta.lutPaths, [
-    ".cube",
-    ".3dl",
-    ".look",
-  ]);
+  const vf = [];
 
-  const selectedOverlayFiles = pickDeterministic(
-    overlayFiles,
-    `${jobId}:${effectMeta.preset}:${effectMeta.styles.join(",")}`,
-    Math.max(1, effectMeta.doseProfile.maxOverlayCount)
-  );
+  vf.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
 
-  const args = ["-y", "-i", inputPath];
-
-  for (const file of selectedOverlayFiles) {
-    args.push("-stream_loop", "-1", "-i", file);
-  }
-
-  const chains = [];
-  const baseOut = selectedOverlayFiles.length ? "[v0]" : "[vout]";
-  const baseFilter = buildBaseVisualFilter(effectMeta);
-
-  if (baseFilter.includes("split=2[base1][base2]")) {
-    const replaced = baseFilter
-      .replace("split=2[base1][base2],", "split=2[base1][base2],")
-      .replace(/\[base1\]\[glow\]blend=all_mode=screen:all_opacity=([0-9.]+)/, `[base1][glow]blend=all_mode=screen:all_opacity=$1${selectedOverlayFiles.length ? `[v0]` : `[vout]`}`);
-
-    chains.push(`[0:v]${replaced}`);
-  } else {
-    chains.push(`[0:v]${baseFilter}${baseOut}`);
-  }
-
-  let current = selectedOverlayFiles.length ? "[v0]" : "[vout]";
-
-  for (let i = 0; i < selectedOverlayFiles.length; i++) {
-    const inputIdx = i + 1;
-    const prepared = `[ov${i}]`;
-    const next = i === selectedOverlayFiles.length - 1 ? "[vout]" : `[v${i + 1}]`;
-
-    const opacity =
-      i === 0
-        ? effectMeta.doseProfile.overlayOpacity
-        : effectMeta.doseProfile.secondaryOpacity || effectMeta.doseProfile.overlayOpacity * 0.6;
-
-    const enableExpr = buildOverlayEnableExpr(durationSec, effectMeta, i);
-    const blendMode =
-      effectMeta.doseProfile.blendMode === "soft-light"
-        ? "overlay"
-        : "screen";
-
-    chains.push(
-      `[${inputIdx}:v]scale=iw:ih,format=rgba,colorchannelmixer=aa=${Math.max(
-        0.02,
-        Math.min(opacity, 0.80)
-      ).toFixed(3)}${prepared}`
+  if (isShake || isSplit || isDark) {
+    vf.push(
+      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
     );
-
-    chains.push(
-      `${current}${prepared}blend=all_mode=${blendMode}:all_opacity=1:enable='${enableExpr}'${next}`
-    );
-
-    current = next;
+    vf.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
   }
 
-  args.push("-filter_complex", chains.join(";"));
-  args.push("-map", "[vout]");
-  args.push("-map", "0:a:0?");
-  args.push("-c:v", "libx264");
-  args.push("-preset", "veryfast");
-  args.push("-crf", "18");
-  args.push("-pix_fmt", "yuv420p");
-  args.push("-c:a", "aac");
-  args.push("-b:a", "192k");
-  args.push("-movflags", "+faststart");
-  args.push("-shortest", outputPath);
+  if (isCine) {
+    vf.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
+    vf.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  }
 
-  await runFfmpegWithArgs(args, "photofx_composite_failed");
+  if (isNeon) {
+    vf.push("eq=saturation=1.35:contrast=1.10:brightness=0.02");
+    vf.push("gblur=sigma=1.2");
+  }
+
+  if (isAura) {
+    vf.push("eq=saturation=1.18:contrast=1.06:brightness=0.03");
+  }
+
+  if (isDark) {
+    vf.push("eq=saturation=0.92:contrast=1.18:brightness=-0.02");
+  }
+
+  if (isFire) {
+    vf.push("colorbalance=rs=0.10:gs=0.02:bs=-0.04");
+    vf.push("eq=saturation=1.18:contrast=1.08");
+  }
+
+  if (isGlitch || isSplit) {
+    vf.push("noise=alls=12:allf=t");
+  }
+
+  vf.push("unsharp=5:5:0.8:5:5:0.0");
+  vf.push("fps=25");
+  vf.push("format=yuv420p");
+
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-i",
+      inputPath,
+      "-vf",
+      vf.join(","),
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0?",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "18",
+      "-pix_fmt",
+      "yuv420p",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-movflags",
+      "+faststart",
+      "-shortest",
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(
+        new Error(`photofx_composite_failed:${code}:${stderr.slice(-1200)}`)
+      );
+    });
+  });
 
   return {
     ok: true,
     applied: true,
-    mode: selectedOverlayFiles.length ? "ffmpeg_overlay_composite" : "ffmpeg_base_grade",
+    preset: safePreset,
+    styles: safeStyles,
+    mode: "ffmpeg_visible_test_composite",
     outputPath,
-    overlay_assets_used: selectedOverlayFiles,
-    overlay_assets_found: overlayFiles,
-    lut_assets_found: lutFiles,
   };
 }
 
