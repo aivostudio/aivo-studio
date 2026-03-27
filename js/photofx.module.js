@@ -639,6 +639,7 @@ const builtEffects = effectsApi?.buildEffectsPayload
         provider_variant: providerVariant,
         provider_model: providerModel,
         styles: form.styles,
+        effects: builtEffects,
         include_audio: form.includeAudio,
         duration: Number(form.duration || 6),
         resolution: form.resolution,
