@@ -412,9 +412,19 @@ function buildBaseVisualFilter(effectMeta = {}) {
 
   if (has("shake-edit") || has("split-flash") || has("dark-trap-motion")) {
     parts.push(
-      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
+      "crop=iw*0.955:ih*0.955:(iw-iw*0.955)/2+sin(t*13)*20:(ih-ih*0.955)/2+cos(t*17)*12"
     );
     parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  }
+
+  if (has("split-flash")) {
+    parts.push("eq=contrast=1.18:saturation=1.10:brightness=0.015");
+    parts.push("unsharp=5:5:1.2:5:5:0.0");
+  }
+
+  if (has("fire-edge")) {
+    parts.push("drawbox=x=0:y=0:w=iw:h=ih:t=20:color=orange@0.20");
+    parts.push("drawbox=x=0:y=0:w=iw:h=ih:t=8:color=yellow@0.10");
   }
 
   if (has("cinematic-zoom")) {
@@ -436,7 +446,6 @@ function buildBaseVisualFilter(effectMeta = {}) {
 
   return parts.join(",");
 }
-
 function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
   const total = Math.max(0.5, Number(durationSec || 6));
   const startBase = Math.max(0, 0.15 + index * 0.18);
