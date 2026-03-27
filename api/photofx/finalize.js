@@ -610,25 +610,22 @@ async function runPhotofxCompositingScaffold({
       styles: safeStyles,
       mode: "passthrough_copy",
       outputPath,
+      overlay_assets_found: [],
+      overlay_assets_used: [],
+      lut_assets_found: [],
     };
   }
 
-  const isNeon =
-    safePreset === "neon-pulse" || safeStyles.includes("neon-pulse");
-  const isSplit =
-    safePreset === "split-flash" || safeStyles.includes("split-flash");
-  const isShake =
-    safePreset === "shake-edit" || safeStyles.includes("shake-edit");
-  const isFire =
-    safePreset === "fire-edge" || safeStyles.includes("fire-edge");
-  const isGlitch =
-    safePreset === "glitch-scan" || safeStyles.includes("glitch-scan");
-  const isCine =
-    safePreset === "cinematic-zoom" || safeStyles.includes("cinematic-zoom");
-  const isAura =
-    safePreset === "aura-glow" || safeStyles.includes("aura-glow");
-  const isDark =
-    safePreset === "dark-trap-motion" || safeStyles.includes("dark-trap-motion");
+  const has = (name) => safePreset === name || safeStyles.includes(name);
+
+  const isSplit = has("split-flash");
+  const isFire = has("fire-edge");
+  const isNeon = has("neon-pulse");
+  const isShake = has("shake-edit");
+  const isGlitch = has("glitch-scan");
+  const isCine = has("cinematic-zoom");
+  const isAura = has("aura-glow");
+  const isDark = has("dark-trap-motion");
 
   const vf = [];
 
@@ -636,39 +633,60 @@ async function runPhotofxCompositingScaffold({
 
   if (isShake || isSplit || isDark) {
     vf.push(
-      "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
+      "crop=iw*0.955:ih*0.955:(iw-iw*0.955)/2+sin(t*10.5)*22:(ih-ih*0.955)/2+cos(t*13.0)*12"
     );
     vf.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
   }
 
   if (isCine) {
-    vf.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
+    vf.push("crop=iw*0.93:ih*0.93:(iw-iw*0.93)/2:(ih-ih*0.93)/2");
     vf.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
   }
 
   if (isNeon) {
-    vf.push("eq=saturation=1.35:contrast=1.10:brightness=0.02");
-    vf.push("gblur=sigma=1.2");
+    vf.push("eq=saturation=1.42:contrast=1.12:brightness=0.018");
+    vf.push("gblur=sigma=1.0");
+    vf.push("unsharp=5:5:1.15:5:5:0.0");
   }
 
   if (isAura) {
-    vf.push("eq=saturation=1.18:contrast=1.06:brightness=0.03");
+    vf.push("eq=saturation=1.22:contrast=1.08:brightness=0.028");
+    vf.push("gblur=sigma=0.55");
   }
 
   if (isDark) {
-    vf.push("eq=saturation=0.92:contrast=1.18:brightness=-0.02");
+    vf.push("eq=saturation=0.88:contrast=1.22:brightness=-0.03:gamma=0.96");
+    vf.push("vignette=PI/5");
   }
 
   if (isFire) {
-    vf.push("colorbalance=rs=0.10:gs=0.02:bs=-0.04");
-    vf.push("eq=saturation=1.18:contrast=1.08");
+    vf.push("colorbalance=rs=0.18:gs=0.03:bs=-0.08");
+    vf.push("eq=saturation=1.24:contrast=1.12:brightness=0.01");
+    vf.push("curves=r='0/0 0.55/0.72 1/1':g='0/0 0.65/0.70 1/0.96':b='0/0 0.60/0.48 1/0.90'");
   }
 
-  if (isGlitch || isSplit) {
-    vf.push("noise=alls=12:allf=t");
+  if (isGlitch) {
+    vf.push("noise=alls=18:allf=t");
+    vf.push("hue=h='2.5*sin(t*9)':s=1.06");
   }
 
-  vf.push("unsharp=5:5:0.8:5:5:0.0");
+  if (isSplit) {
+    vf.push("noise=alls=26:allf=t");
+    vf.push("eq=contrast=1.20:brightness=0.025:saturation=1.18");
+    vf.push("tblend=all_mode=lighten");
+    vf.push("tmix=frames=2:weights='1 1'");
+  }
+
+  if (isSplit && isFire) {
+    vf.push("hue=h=8:s=1.08");
+    vf.push("eq=contrast=1.26:brightness=0.03:saturation=1.30");
+    vf.push("unsharp=7:7:1.35:7:7:0.0");
+  }
+
+  if (!isSplit && !isGlitch) {
+    vf.push("unsharp=5:5:0.9:5:5:0.0");
+  }
+
   vf.push("fps=25");
   vf.push("format=yuv420p");
 
@@ -677,18 +695,18 @@ async function runPhotofxCompositingScaffold({
       "-y",
       "-i",
       inputPath,
-      "-vf",
-      vf.join(","),
       "-map",
       "0:v:0",
       "-map",
       "0:a:0?",
+      "-vf",
+      vf.join(","),
       "-c:v",
       "libx264",
       "-preset",
-      "veryfast",
+      "medium",
       "-crf",
-      "18",
+      "17",
       "-pix_fmt",
       "yuv420p",
       "-c:a",
@@ -713,7 +731,7 @@ async function runPhotofxCompositingScaffold({
     p.on("close", (code) => {
       if (code === 0) return resolve();
       reject(
-        new Error(`photofx_composite_failed:${code}:${stderr.slice(-1200)}`)
+        new Error(`photofx_composite_failed:${code}:${stderr.slice(-1600)}`)
       );
     });
   });
@@ -723,8 +741,11 @@ async function runPhotofxCompositingScaffold({
     applied: true,
     preset: safePreset,
     styles: safeStyles,
-    mode: "ffmpeg_visible_test_composite",
+    mode: "ffmpeg_stylized_composite_v2",
     outputPath,
+    overlay_assets_found: [],
+    overlay_assets_used: [],
+    lut_assets_found: [],
   };
 }
 
