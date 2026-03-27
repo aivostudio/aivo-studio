@@ -1519,6 +1519,49 @@ try {
   console.warn("AUTO_PHOTOFX_FINALIZE_BLOCK_FAILED:", e?.message || e);
 }
     // =========================
+// 4.7) AUTO FINALIZE (PHOTOFX)
+// =========================
+try {
+  const isPhotoFx =
+    String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "photofx";
+  const isDone = String(job?.status || "").toLowerCase() === "done";
+
+  const hasFinalizedOutput =
+    Array.isArray(outputs) &&
+    outputs.some(
+      (o) =>
+        normType(o?.type) === "video" &&
+        normVariant(o) === "finalized"
+    );
+
+  const hasPreviewOutput =
+    Array.isArray(outputs) &&
+    outputs.some(
+      (o) =>
+        normType(o?.type) === "video" &&
+        normVariant(o) === "preview"
+    );
+
+  if (isPhotoFx && isDone && (!hasFinalizedOutput || !hasPreviewOutput)) {
+    const baseUrl = getBaseUrl(req);
+
+    fetch(`${baseUrl}/api/photofx/finalize`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.cookie || "",
+      },
+      body: JSON.stringify({
+        job_id,
+      }),
+    }).catch((e) => {
+      console.warn("AUTO_PHOTOFX_FINALIZE_FAILED:", e?.message || e);
+    });
+  }
+} catch (e) {
+  console.warn("AUTO_PHOTOFX_FINALIZE_BLOCK_FAILED:", e?.message || e);
+}
+    // =========================
     // 5) RESPONSE NORMALIZE (tek sefer)
     // =========================
     const finalMetaUrl = job?.meta?.final_video_url || null;
