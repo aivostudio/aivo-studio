@@ -317,6 +317,7 @@ export default async function handler(req, res) {
     fps: 25,
     generate_audio: false,
   };
+  console.log("[photofx:create] falBody =", JSON.stringify(falBody, null, 2));
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
