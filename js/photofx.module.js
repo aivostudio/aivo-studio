@@ -569,6 +569,14 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
   async function createPhotoFx(root) {
     const form = collectForm(root);
+    const effectsApi = window.AIVOPhotoFxEffects || null;
+const builtEffects = effectsApi?.buildEffectsPayload
+  ? effectsApi.buildEffectsPayload(form)
+  : {
+      preset: String(form.style || "").trim(),
+      styles: Array.isArray(form.styles) ? [...form.styles] : [],
+      effectConfig: null,
+    };
 
     if (!form.prompt) {
       alert("Lütfen klip açıklamasını yaz.");
