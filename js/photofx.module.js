@@ -621,6 +621,7 @@ const builtEffects = effectsApi?.buildEffectsPayload
       quality: "fast",
       preset: form.style,
       styles: form.styles,
+      effects: builtEffects,
       image_url: imageUrl,
       end_image_url: endImageUrl || undefined,
       audio_url: audioUrl || undefined,
