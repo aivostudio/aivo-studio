@@ -56,7 +56,91 @@ function toArray(v) {
 function uniqStrings(arr = []) {
   return [...new Set(arr.map((x) => String(x || "").trim()).filter(Boolean))];
 }
+function ensureAbsoluteAssetPath(relPath) {
+  const clean = String(relPath || "").trim().replace(/^\/+/, "");
+  if (!clean) return "";
+  return path.join(process.cwd(), clean);
+}
 
+async function statSafe(p) {
+  try {
+    return await fsp.stat(p);
+  } catch {
+    return null;
+  }
+}
+
+async function collectFilesFromPaths(pathsInput = [], exts = []) {
+  const out = [];
+  const seen = new Set();
+
+  for (const raw of uniqStrings(pathsInput)) {
+    const abs = ensureAbsoluteAssetPath(raw);
+    if (!abs) continue;
+
+    const st = await statSafe(abs);
+    if (!st) continue;
+
+    if (st.isFile()) {
+      const ext = path.extname(abs).toLowerCase();
+      if (!exts.length || exts.includes(ext)) {
+        if (!seen.has(abs)) {
+          seen.add(abs);
+          out.push(abs);
+        }
+      }
+      continue;
+    }
+
+    if (!st.isDirectory()) continue;
+
+    const names = await fsp.readdir(abs).catch(() => []);
+    for (const name of names) {
+      const file = path.join(abs, name);
+      const fst = await statSafe(file);
+      if (!fst || !fst.isFile()) continue;
+      const ext = path.extname(file).toLowerCase();
+      if (exts.length && !exts.includes(ext)) continue;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      out.push(file);
+    }
+  }
+
+  out.sort();
+  return out;
+}
+
+function seededHash(input) {
+  const s = String(input || "");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h >>> 0);
+}
+
+function pickDeterministic(list = [], seed = "", count = 1) {
+  const arr = Array.isArray(list) ? list.slice() : [];
+  if (!arr.length || count <= 0) return [];
+
+  const out = [];
+  const used = new Set();
+  let h = seededHash(seed);
+
+  while (out.length < Math.min(count, arr.length)) {
+    const idx = h % arr.length;
+    const item = arr[idx];
+    if (!used.has(item)) {
+      used.add(item);
+      out.push(item);
+    }
+    h = seededHash(`${seed}:${h}:${out.length}`);
+  }
+
+  return out;
+}
 function removeFinalFlags(outputs) {
   const arr = Array.isArray(outputs) ? outputs.slice() : [];
   return arr.map((o) => {
