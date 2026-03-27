@@ -2,3 +2,4 @@ assets/photofx/overlays/light-leaks/*.mov filter=lfs diff=lfs merge=lfs -text
 assets/photofx/overlays/light-leaks/*.mp4 filter=lfs diff=lfs merge=lfs -text
 assets/photofx/overlays/vhs-glitch/*.mov filter=lfs diff=lfs merge=lfs -text
 assets/photofx/overlays/vhs-glitch/*.mp4 filter=lfs diff=lfs merge=lfs -text
+assets/photofx/overlays/smoke-fog/*.mov filter=lfs diff=lfs merge=lfs -text
