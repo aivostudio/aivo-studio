@@ -920,6 +920,12 @@ console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
     const effectMeta = resolveEffectMeta(meta);
+    console.log("[photofx/apply-effects] resolved effect meta =", {
+  preset: effectMeta?.preset || "",
+  styles: effectMeta?.styles || [],
+  overlayPaths: effectMeta?.overlayPaths || [],
+  lutPaths: effectMeta?.lutPaths || [],
+});
 
     const existingEffectsOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "effects_applied"
