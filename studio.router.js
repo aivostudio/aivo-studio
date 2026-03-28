@@ -1,49 +1,8 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function (routeKey) {
-  return new Promise((resolve) => {
-    const link = document.getElementById("studio-module-css");
-    if (!link) return resolve();
-
-    const v = "2";
-    const primary = `/css/mod.${routeKey}.css?v=${v}`;
-    const fallback = `/mod.${routeKey}.css?v=${v}`;
-    const currentHref = link.getAttribute("href") || "";
-
-    if (
-      currentHref.includes(`/mod.${routeKey}.css?v=${v}`) ||
-      currentHref.includes(`/css/mod.${routeKey}.css?v=${v}`)
-    ) {
-      return resolve();
-    }
-
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      link.onload = null;
-      link.onerror = null;
-      resolve();
-    };
-
-    const failToFallback = () => {
-      if (link.__fellBackOnce) return finish();
-      link.__fellBackOnce = true;
-      console.warn("[ensureModuleCSS] fallback:", fallback);
-      link.onload = finish;
-      link.onerror = finish;
-      link.href = fallback;
-      setTimeout(finish, 1200);
-    };
-
-    link.__fellBackOnce = false;
-    link.onload = finish;
-    link.onerror = failToFallback;
-    link.href = primary;
-
-    setTimeout(finish, 1200);
-  });
+window.ensureModuleCSS = function () {
+  return Promise.resolve();
 };
 
 // ===============================
