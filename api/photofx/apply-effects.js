@@ -678,7 +678,8 @@ if (lutFiles.length > 0) {
     styles: safeStyles,
     outputPath,
     overlay_assets_found: overlayFilesAll,
-    overlay_assets_used: safeOverlayFiles,
+     overlay_assets_used: safeOverlayFiles,
+    overlay_assets_rejected: rejectedOverlayFiles,
     lut_assets_found: lutFilesAll,
     lut_assets_used: lutFiles,
   };
