@@ -409,7 +409,7 @@ if (wantsEffects && !hasEffectsApplied) {
     console.log("[photofx] refreshed after apply-effects =", refreshed);
 
     if (refreshed?.ok) {
- const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
+const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
 
 const refreshedEffectsOutput = refreshedOuts.find((o) => {
   const variant = String(o?.meta?.variant || "").toLowerCase().trim();
