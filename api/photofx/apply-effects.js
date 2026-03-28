@@ -202,24 +202,21 @@ function resolveEffectMeta(meta = {}) {
       .concat(toArray(effects?.styles))
   ).map((x) => x.toLowerCase());
 
+  const presetAssets =
+    PHOTOFX_STYLE_ASSET_MAP[String(preset || "").toLowerCase()] || {};
+
   const mergedOverlayPaths = uniqStrings(
-    []
-      .concat(effectConfig?.overlayPaths || [])
-      .concat(
-        styles.flatMap(
-          (style) => PHOTOFX_STYLE_ASSET_MAP[String(style || "").toLowerCase()]?.overlayPaths || []
-        )
-      )
+    (effectConfig?.overlayPaths && effectConfig.overlayPaths.length
+      ? effectConfig.overlayPaths
+      : presetAssets.overlayPaths || []
+    ).filter(Boolean)
   );
 
   const mergedLutPaths = uniqStrings(
-    []
-      .concat(effectConfig?.lutPaths || [])
-      .concat(
-        styles.flatMap(
-          (style) => PHOTOFX_STYLE_ASSET_MAP[String(style || "").toLowerCase()]?.lutPaths || []
-        )
-      )
+    (effectConfig?.lutPaths && effectConfig.lutPaths.length
+      ? effectConfig.lutPaths
+      : presetAssets.lutPaths || []
+    ).filter(Boolean)
   );
 
   return {
