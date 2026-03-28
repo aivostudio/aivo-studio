@@ -425,6 +425,11 @@ async function runPhotofxEffectsApply({
     maxOverlayCount
   );
 
+  const safeOverlayFiles = overlayFiles.filter((file) => {
+    const base = String(file || "").toLowerCase();
+    return !base.includes("light leaks and film burns 02.mov");
+  });
+
   const lutFiles = pickDeterministic(
     lutFilesAll,
     `${seed}:${safePreset}:${safeStyles.join(",")}:lut`,
@@ -464,8 +469,8 @@ async function runPhotofxEffectsApply({
     currentLabel = "[v0]";
   }
 
-  for (let i = 0; i < overlayFiles.length; i++) {
-    const overlayFile = overlayFiles[i];
+  for (let i = 0; i < safeOverlayFiles.length; i++) {
+    const overlayFile = safeOverlayFiles[i];
     inputs.push("-stream_loop", "-1", "-i", overlayFile);
 
     const overlayInput = `[${inputIndex}:v]`;
@@ -571,7 +576,7 @@ if (lutFiles.length > 0) {
     styles: safeStyles,
     outputPath,
     overlay_assets_found: overlayFilesAll,
-    overlay_assets_used: overlayFiles,
+    overlay_assets_used: safeOverlayFiles,
     lut_assets_found: lutFilesAll,
     lut_assets_used: lutFiles,
   };
