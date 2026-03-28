@@ -1,7 +1,7 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function(routeKey) {
+window.ensureModuleCSS = function (routeKey) {
   const link = document.getElementById("studio-module-css");
   if (!link) return;
 
@@ -186,7 +186,7 @@ window.ensureModuleCSS = function(routeKey) {
       console.log("[ROUTER][LOAD] cache:hit", {
         key,
         seq,
-        htmlLength: (html || "").length
+        htmlLength: (html || "").length,
       });
     } else {
       console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
@@ -195,7 +195,7 @@ window.ensureModuleCSS = function(routeKey) {
       console.log("[ROUTER][LOAD] fetch:done", {
         key,
         seq,
-        htmlLength: (html || "").length
+        htmlLength: (html || "").length,
       });
     }
 
@@ -219,7 +219,7 @@ window.ensureModuleCSS = function(routeKey) {
       key,
       seq,
       currentActive: host.getAttribute("data-active-module"),
-      incomingTag: incomingRoot && incomingRoot.nodeName
+      incomingTag: incomingRoot && incomingRoot.nodeName,
     });
 
     host.replaceChildren(incomingRoot);
@@ -230,7 +230,7 @@ window.ensureModuleCSS = function(routeKey) {
       key,
       seq,
       activeNow: host.getAttribute("data-active-module"),
-      childCount: host.childNodes.length
+      childCount: host.childNodes.length,
     });
   }
 
@@ -280,7 +280,7 @@ window.ensureModuleCSS = function(routeKey) {
               console.log("[ROUTER] RightPanel.force skipped stale route", {
                 key,
                 activeNow,
-                panelKey
+                panelKey,
               });
               return;
             }
