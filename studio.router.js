@@ -157,12 +157,11 @@ const __moduleHtmlCache = new Map();
     __moduleLoadSeq += 1;
     const seq = __moduleLoadSeq;
 
-  try {
-  __moduleLoadCtrl?.abort();
-  host.removeAttribute("data-loading-module");
-} catch (_) {}
+    try {
+      __moduleLoadCtrl?.abort();
+    } catch (_) {}
 
-__moduleLoadCtrl = new AbortController();
+    __moduleLoadCtrl = new AbortController();
 
     const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
