@@ -19,6 +19,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return document.querySelector('section.pfxPage[data-module="photofx"]');
   }
 
+
   function getState(root) {
     if (!root) return null;
 
