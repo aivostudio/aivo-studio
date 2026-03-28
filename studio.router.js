@@ -149,7 +149,7 @@ window.ensureModuleCSS = function(routeKey) {
 
     for (const url of urls) {
       try {
-        const r = await fetch(url, { cache: "no-store", signal });
+      const r = await fetch(url, { signal });
         if (r.ok) return await r.text();
         lastErr = new Error("HTTP " + r.status);
       } catch (e) {
