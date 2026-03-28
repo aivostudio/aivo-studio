@@ -43,7 +43,7 @@ window.ensureModuleCSS = function () {
     "settings",
   ]);
 
-  const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
+const MODULE_BASE_CANDIDATES = ["/"];
 
   const MODULE_FILES = {
     music: "music.html",
