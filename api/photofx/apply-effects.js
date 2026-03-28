@@ -916,25 +916,26 @@ console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
       });
     }
 
-    const sourceFromMeta =
-      String(meta?.logo_overlay_url || "").trim() ||
-      String(meta?.muxed_url || "").trim() ||
-      String(meta?.final_video_url || "").trim() ||
-      String(meta?.preview_video_url || "").trim();
+   const sourceOutput = pickBestSourceOutput(outputs);
 
-    const sourceOutput = pickBestSourceOutput(outputs);
-    const sourceUrl = sourceFromMeta || sourceOutput?.url || "";
-    const sourceVariant =
-      sourceOutput?.variant ||
-      (meta?.logo_overlay_url
-        ? "logo_overlay"
-        : meta?.muxed_url
-        ? "mux"
-        : meta?.final_video_url
-        ? "finalized"
-        : meta?.preview_video_url
-        ? "preview"
-        : "provider");
+const sourceFromMeta =
+  String(meta?.logo_overlay_url || "").trim() ||
+  String(meta?.muxed_url || "").trim() ||
+  String(meta?.preview_video_url || "").trim() ||
+  String(meta?.final_video_url || "").trim();
+
+const sourceUrl = sourceOutput?.url || sourceFromMeta || "";
+const sourceVariant =
+  sourceOutput?.variant ||
+  (meta?.logo_overlay_url
+    ? "logo_overlay"
+    : meta?.muxed_url
+    ? "mux"
+    : meta?.preview_video_url
+    ? "preview"
+    : meta?.final_video_url
+    ? "finalized"
+    : "provider");
 
     if (!sourceUrl) {
       return res.status(400).json({
