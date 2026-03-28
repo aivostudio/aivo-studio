@@ -905,6 +905,7 @@ console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
         lut_assets_found: effectResult.lut_assets_found || [],
         lut_assets_used: effectResult.lut_assets_used || [],
       },
+      asset_debug: photofxAssetDebug,
     };
 
     await sql`
