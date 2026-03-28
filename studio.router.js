@@ -43,7 +43,7 @@ window.ensureModuleCSS = function () {
     "settings",
   ]);
 
-const MODULE_BASE = "/modules/";
+const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
 
   const MODULE_FILES = {
     music: "music.html",
@@ -163,7 +163,7 @@ const __moduleHtmlCache = new Map();
 
     __moduleLoadCtrl = new AbortController();
 
- const urls = [MODULE_BASE + file];
+    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
     host.setAttribute("data-loading-module", key);
     console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
