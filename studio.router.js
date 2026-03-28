@@ -89,9 +89,6 @@ window.ensureModuleCSS = function(routeKey) {
     if (p === "social") return "cartoon";
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
-
-    if (p === "hook") return "photofx";
-    if (p === "viral-hook") return "photofx";
     if (p === "photofx") return "photofx";
 
     return p;
@@ -114,9 +111,6 @@ window.ensureModuleCSS = function(routeKey) {
     if (key === "social") key = "cartoon";
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
-
-    if (key === "hook") key = "photofx";
-    if (key === "viral-hook") key = "photofx";
     if (key === "photofx") key = "photofx";
 
     if (!ROUTES.has(key)) key = "music";
@@ -129,17 +123,18 @@ window.ensureModuleCSS = function(routeKey) {
     if (location.hash === nextHash) return;
     location.hash = nextHash;
   }
-function normalizeInitialRoute() {
-  const qp = parseQueryRouteKey();
-  if (qp && ROUTES.has(qp)) {
-    setHash(qp);
-    return;
+
+  function normalizeInitialRoute() {
+    const qp = parseQueryRouteKey();
+    if (qp && ROUTES.has(qp)) {
+      setHash(qp);
+      return;
+    }
+
+    if (hasHashKey()) return;
+
+    setHash("music");
   }
-
-  if (hasHashKey()) return;
-
-  setHash("music");
-}
 
   function setActiveNav(key) {
     document.querySelectorAll(".navBtn[data-route]").forEach((btn) => {
@@ -165,67 +160,67 @@ function normalizeInitialRoute() {
 
     throw lastErr || new Error("fetch failed");
   }
-async function loadModuleIntoHost(key) {
-  const host = document.getElementById("moduleHost");
-  if (!host) return;
 
-  const file = MODULE_FILES[key];
-  if (!file) return;
+  async function loadModuleIntoHost(key) {
+    const host = document.getElementById("moduleHost");
+    if (!host) return;
 
-  __moduleLoadSeq += 1;
-  const seq = __moduleLoadSeq;
+    const file = MODULE_FILES[key];
+    if (!file) return;
 
-  try {
-    __moduleLoadCtrl?.abort();
-  } catch (_) {}
+    __moduleLoadSeq += 1;
+    const seq = __moduleLoadSeq;
 
-  __moduleLoadCtrl = new AbortController();
+    try {
+      __moduleLoadCtrl?.abort();
+    } catch (_) {}
 
-  const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+    __moduleLoadCtrl = new AbortController();
 
-  host.setAttribute("data-loading-module", key);
-  console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
-  
-  
-  const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
-  console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
+    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
-  if (seq !== __moduleLoadSeq) return;
+    host.setAttribute("data-loading-module", key);
+    console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
 
-  const wrap = document.createElement("div");
-  wrap.innerHTML = html;
+    const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+    console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
 
-  const incomingRoot =
-    wrap.querySelector("[data-module-root]") ||
-    wrap.firstElementChild ||
-    wrap.firstChild;
+    if (seq !== __moduleLoadSeq) return;
 
-  if (!incomingRoot) {
-    throw new Error("module html empty: " + key);
+    const wrap = document.createElement("div");
+    wrap.innerHTML = html;
+
+    const incomingRoot =
+      wrap.querySelector("[data-module-root]") ||
+      wrap.firstElementChild ||
+      wrap.firstChild;
+
+    if (!incomingRoot) {
+      throw new Error("module html empty: " + key);
+    }
+
+    if (seq !== __moduleLoadSeq) return;
+    console.log("[ROUTER][LOAD] mount:before", {
+      key,
+      seq,
+      currentActive: host.getAttribute("data-active-module"),
+      incomingTag: incomingRoot && incomingRoot.nodeName
+    });
+
+    host.replaceChildren(incomingRoot);
+    host.setAttribute("data-active-module", key);
+    host.removeAttribute("data-loading-module");
+    console.log("[ROUTER][LOAD] mount:after", {
+      key,
+      seq,
+      activeNow: host.getAttribute("data-active-module"),
+      childCount: host.childNodes.length
+    });
   }
-
-  if (seq !== __moduleLoadSeq) return;
-  console.log("[ROUTER][LOAD] mount:before", {
-  key,
-  seq,
-  currentActive: host.getAttribute("data-active-module"),
-  incomingTag: incomingRoot && incomingRoot.nodeName
-});
-
- host.replaceChildren(incomingRoot);
-host.setAttribute("data-active-module", key);
-host.removeAttribute("data-loading-module");
-console.log("[ROUTER][LOAD] mount:after", {
-  key,
-  seq,
-  activeNow: host.getAttribute("data-active-module"),
-  childCount: host.childNodes.length
-});
-}
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
-        const host = document.getElementById("moduleHost");
+    const host = document.getElementById("moduleHost");
     const activeKey = host?.getAttribute("data-active-module") || "";
     const loadingKey = host?.getAttribute("data-loading-module") || "";
 
@@ -257,7 +252,7 @@ console.log("[ROUTER][LOAD] mount:after", {
 
     if (mySeq !== __goSeq) return;
 
-     const panelKey = RIGHT_PANEL_KEY[key] || "music";
+    const panelKey = RIGHT_PANEL_KEY[key] || "music";
     try {
       requestAnimationFrame(() => {
         setTimeout(() => {
