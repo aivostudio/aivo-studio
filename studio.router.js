@@ -1,24 +1,71 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function(routeKey) {
-  const link = document.getElementById("studio-module-css");
-  if (!link) return;
+async function go(key) {
+  if (!ROUTES.has(key)) key = "music";
+  const host = document.getElementById("moduleHost");
+  const activeKey = host?.getAttribute("data-active-module") || "";
+  const loadingKey = host?.getAttribute("data-loading-module") || "";
 
-  const v = "2";
-  const primary = `/css/mod.${routeKey}.css?v=${v}`;
-  const fallback = `/mod.${routeKey}.css?v=${v}`;
+  if (activeKey === key || loadingKey === key) {
+    console.log("[ROUTER][GO] skip duplicate", { key, activeKey, loadingKey });
+    setActiveNav(key);
+    await window.ensureModuleCSS?.(key);
+    return;
+  }
 
-  link.onerror = () => {
-    if (link.__fellBackOnce) return;
-    link.__fellBackOnce = true;
-    console.warn("[ensureModuleCSS] fallback:", fallback);
-    link.href = fallback;
-  };
+  const mySeq = ++__goSeq;
 
-  link.__fellBackOnce = false;
-  link.href = primary;
-};
+  const cur = parseHash();
+  if (cur.key !== key) {
+    setHash(key);
+    return;
+  }
+
+  setActiveNav(key);
+
+  try {
+    await window.ensureModuleCSS?.(key);
+  } catch (e) {
+    console.warn("[ROUTER] ensureModuleCSS failed:", key, e);
+  }
+
+  try {
+    await loadModuleIntoHost(key);
+  } catch (e) {
+    if (e?.name === "AbortError") return;
+    console.warn("[ROUTER] loadModuleIntoHost failed:", key, e);
+    return;
+  }
+
+  if (mySeq !== __goSeq) return;
+
+  const panelKey = RIGHT_PANEL_KEY[key] || "music";
+  try {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        try {
+          const hostNow = document.getElementById("moduleHost");
+          const activeNow = hostNow?.getAttribute("data-active-module") || "";
+          if (activeNow !== key) {
+            console.log("[ROUTER] RightPanel.force skipped stale route", {
+              key,
+              activeNow,
+              panelKey
+            });
+            return;
+          }
+
+          window.RightPanel?.force?.(panelKey, {});
+        } catch (err) {
+          console.warn("[ROUTER] RightPanel.force delayed failed:", panelKey, err);
+        }
+      }, 0);
+    });
+  } catch (e) {
+    console.warn("[ROUTER] RightPanel.force failed:", panelKey, e);
+  }
+}
 
 // ===============================
 // ROUTER
