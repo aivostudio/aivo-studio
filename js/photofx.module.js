@@ -410,29 +410,35 @@ if (wantsEffects && !hasEffectsApplied) {
 
     if (refreshed?.ok) {
       const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
-      const refreshedDirectVideoUrl = String(
-        refreshed?.video?.url ||
-          refreshed?.video_url ||
-          effectsJson?.effects_url ||
-          ""
-      ).trim();
+   const refreshedEffectsOutput = refreshedOuts.find((o) => {
+  const variant = String(o?.meta?.variant || "").toLowerCase().trim();
+  return variant === "effects_applied";
+});
 
-      const refreshedFinalOutputs = refreshedOuts.length
-        ? refreshedOuts.map((o) => ({
-            ...o,
-            meta: { ...(o.meta || {}), app: "photofx" },
-          }))
-        : [
-            {
-              type: "video",
-              url: refreshedDirectVideoUrl,
-              meta: {
-                app: "photofx",
-                variant: "effects_applied",
-                is_final: false,
-              },
-            },
-          ];
+const refreshedDirectVideoUrl = String(
+  refreshedEffectsOutput?.url ||
+    refreshed?.video?.url ||
+    refreshed?.video_url ||
+    effectsJson?.effects_url ||
+    ""
+).trim();
+
+const refreshedFinalOutputs = refreshedOuts.length
+  ? refreshedOuts.map((o) => ({
+      ...o,
+      meta: { ...(o.meta || {}), app: "photofx" },
+    }))
+  : [
+      {
+        type: "video",
+        url: refreshedDirectVideoUrl,
+        meta: {
+          app: "photofx",
+          variant: "effects_applied",
+          is_final: false,
+        },
+      },
+    ];
 
       window.dispatchEvent(
         new CustomEvent("aivo:photofx:job_ready", {
