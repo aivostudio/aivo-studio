@@ -77,7 +77,7 @@ window.ensureModuleCSS = function(routeKey) {
   let __moduleLoadSeq = 0;
   let __moduleLoadCtrl = null;
   let __goSeq = 0;
-
+  const __moduleHtmlCache = new Map();
   // -------------------------------
   // URL HELPERS
   // -------------------------------
@@ -179,11 +179,22 @@ window.ensureModuleCSS = function(routeKey) {
 
     const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
-    host.setAttribute("data-loading-module", key);
-    console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
+  host.setAttribute("data-loading-module", key);
 
-    const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+  let html = __moduleHtmlCache.get(key);
+
+  if (html) {
+    console.log("[ROUTER][LOAD] cache:hit", {
+      key,
+      seq,
+      htmlLength: (html || "").length
+    });
+  } else {
+    console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
+    html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+    __moduleHtmlCache.set(key, html);
     console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
+  }
 
     if (seq !== __moduleLoadSeq) return;
 
