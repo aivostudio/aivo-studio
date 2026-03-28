@@ -1056,7 +1056,7 @@ const sourceVariant =
       where id = ${job_id}::uuid
     `;
 
-    return res.status(200).json({
+     return res.status(200).json({
       ok: true,
       job_id,
       step: "effects_applied",
@@ -1068,11 +1068,17 @@ const sourceVariant =
         mode: effectResult.mode || "",
         preset: effectMeta.preset || "",
         styles: effectMeta.styles || [],
-       overlay_assets_found: effectResult.overlay_assets_found || [],
-       overlay_assets_used: effectResult.overlay_assets_used || [],
-       overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
-      lut_assets_found: effectResult.lut_assets_found || [],
-      lut_assets_used: effectResult.lut_assets_used || [],
+        overlay_assets_found: effectResult.overlay_assets_found || [],
+        overlay_assets_used: effectResult.overlay_assets_used || [],
+        overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
+        lut_assets_found: effectResult.lut_assets_found || [],
+        lut_assets_used: effectResult.lut_assets_used || [],
+      },
+      debug_effect_meta: {
+        preset: effectMeta.preset || "",
+        styles: effectMeta.styles || [],
+        overlayPaths: effectMeta.overlayPaths || [],
+        lutPaths: effectMeta.lutPaths || [],
       },
     });
   } catch (e) {
