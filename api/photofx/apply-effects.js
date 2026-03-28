@@ -148,7 +148,42 @@ function normalizeNumber(v, fallback, min, max) {
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, n));
 }
-
+const PHOTOFX_STYLE_ASSET_MAP = {
+  "fire-edge": {
+    overlayPaths: [
+      "assets/photofx/overlays/sparks-fire/",
+      "assets/photofx/overlays/smoke-fog/",
+      "assets/photofx/overlays/film-burns-flash/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+  "neon-pulse": {
+    overlayPaths: [
+      "assets/photofx/overlays/light-leaks/",
+      "assets/photofx/overlays/prism-lens/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+  "aura-glow": {
+    overlayPaths: [
+      "assets/photofx/overlays/light-leaks/",
+      "assets/photofx/overlays/prism-lens/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+  "split-flash": {
+    overlayPaths: ["assets/photofx/overlays/film-burns-flash/"],
+    lutPaths: [],
+  },
+  "glitch-scan": {
+    overlayPaths: ["assets/photofx/overlays/prism-lens/"],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+  "dark-trap-motion": {
+    overlayPaths: ["assets/photofx/overlays/smoke-fog/"],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+};
 function resolveEffectMeta(meta = {}) {
   const effects = meta?.effects || {};
   const effectConfig = effects?.effectConfig || {};
@@ -167,11 +202,31 @@ function resolveEffectMeta(meta = {}) {
       .concat(toArray(effects?.styles))
   ).map((x) => x.toLowerCase());
 
+  const mergedOverlayPaths = uniqStrings(
+    []
+      .concat(effectConfig?.overlayPaths || [])
+      .concat(
+        styles.flatMap(
+          (style) => PHOTOFX_STYLE_ASSET_MAP[String(style || "").toLowerCase()]?.overlayPaths || []
+        )
+      )
+  );
+
+  const mergedLutPaths = uniqStrings(
+    []
+      .concat(effectConfig?.lutPaths || [])
+      .concat(
+        styles.flatMap(
+          (style) => PHOTOFX_STYLE_ASSET_MAP[String(style || "").toLowerCase()]?.lutPaths || []
+        )
+      )
+  );
+
   return {
     preset,
     styles,
-    overlayPaths: uniqStrings(effectConfig?.overlayPaths || []),
-    lutPaths: uniqStrings(effectConfig?.lutPaths || []),
+    overlayPaths: mergedOverlayPaths,
+    lutPaths: mergedLutPaths,
     doseProfile: {
       zoomAmount: normalizeNumber(doseProfile?.zoomAmount, 0.05, 0.0, 0.25),
       shakeAmount: normalizeNumber(doseProfile?.shakeAmount, 0.02, 0.0, 0.2),
@@ -192,7 +247,7 @@ function resolveEffectMeta(meta = {}) {
       lutIntensity: normalizeNumber(doseProfile?.lutIntensity, 0.3, 0.0, 1.0),
       maxOverlayCount: normalizeNumber(
         doseProfile?.maxOverlayCount,
-        1,
+        2,
         1,
         4
       ),
@@ -215,13 +270,11 @@ function resolveEffectMeta(meta = {}) {
         .trim()
         .toLowerCase(),
       transitionSpeed: String(
-        runtime?.transitionSpeed || meta?.transition_speed || "normal"
-      )
+        runtime?.transitionSpeed || meta?.transition_speed || "normal")
         .trim()
         .toLowerCase(),
     },
   };
-}
 
 function buildColorEq(effectMeta = {}) {
   const mood = String(
