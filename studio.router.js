@@ -306,7 +306,8 @@ if (html) {
       navRoot.addEventListener("click", onNavClick, true);
     }
 
+       const hadHash = hasHashKey();
     normalizeInitialRoute();
-    onHashChange();
+    if (hadHash) onHashChange();
   });
 })();
