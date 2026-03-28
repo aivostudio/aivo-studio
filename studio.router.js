@@ -74,9 +74,10 @@ window.ensureModuleCSS = function(routeKey) {
     settings: "settings.html",
   };
 
-  let __moduleLoadSeq = 0;
-  let __moduleLoadCtrl = null;
-  let __goSeq = 0;
+let __moduleLoadSeq = 0;
+let __moduleLoadCtrl = null;
+let __goSeq = 0;
+const __moduleHtmlCache = new Map();
 
   // -------------------------------
   // URL HELPERS
@@ -182,9 +183,23 @@ window.ensureModuleCSS = function(routeKey) {
     host.setAttribute("data-loading-module", key);
     console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
 
-    const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
-    console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
+    let html = __moduleHtmlCache.get(key);
 
+if (html) {
+  console.log("[ROUTER][LOAD] cache:hit", {
+    key,
+    seq,
+    htmlLength: (html || "").length
+  });
+} else {
+  html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+  __moduleHtmlCache.set(key, html);
+  console.log("[ROUTER][LOAD] fetch:done", {
+    key,
+    seq,
+    htmlLength: (html || "").length
+  });
+}
     if (seq !== __moduleLoadSeq) return;
 
     const wrap = document.createElement("div");
