@@ -160,26 +160,27 @@ window.ensureModuleCSS = function (routeKey) {
     throw lastErr || new Error("fetch failed");
   }
 
-  async function loadModuleIntoHost(key) {
-    const host = document.getElementById("moduleHost");
-    if (!host) return;
+async function loadModuleIntoHost(key) {
+  const host = document.getElementById("moduleHost");
+  if (!host) return;
 
-    const file = MODULE_FILES[key];
-    if (!file) return;
+  const file = MODULE_FILES[key];
+  if (!file) return;
 
-    __moduleLoadSeq += 1;
-    const seq = __moduleLoadSeq;
+  __moduleLoadSeq += 1;
+  const seq = __moduleLoadSeq;
 
-    try {
-      __moduleLoadCtrl?.abort();
-    } catch (_) {}
+  try {
+    __moduleLoadCtrl?.abort();
+  } catch (_) {}
 
-    __moduleLoadCtrl = new AbortController();
+  __moduleLoadCtrl = new AbortController();
 
-    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+  const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
-    host.setAttribute("data-loading-module", key);
+  host.setAttribute("data-loading-module", key);
 
+  try {
     let html = __moduleHtmlCache.get(key);
 
     if (html) {
@@ -224,7 +225,6 @@ window.ensureModuleCSS = function (routeKey) {
 
     host.replaceChildren(incomingRoot);
     host.setAttribute("data-active-module", key);
-    host.removeAttribute("data-loading-module");
 
     console.log("[ROUTER][LOAD] mount:after", {
       key,
@@ -232,7 +232,12 @@ window.ensureModuleCSS = function (routeKey) {
       activeNow: host.getAttribute("data-active-module"),
       childCount: host.childNodes.length,
     });
+  } finally {
+    if (host.getAttribute("data-loading-module") === key) {
+      host.removeAttribute("data-loading-module");
+    }
   }
+}
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
