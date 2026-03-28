@@ -274,7 +274,8 @@ function resolveEffectMeta(meta = {}) {
         .trim()
         .toLowerCase(),
     },
-  };
+   };
+ }
 
 function buildColorEq(effectMeta = {}) {
   const mood = String(
