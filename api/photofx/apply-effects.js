@@ -478,10 +478,22 @@ async function runPhotofxEffectsApply({
     `${seed}:${safePreset}:${safeStyles.join(",")}:overlay`,
     maxOverlayCount
   );
-const safeOverlayFiles = overlayFiles.filter((file) => {
-  const base = String(file || "").toLowerCase();
-  return !base.includes("light leaks and film burns 02.mov");
-});
+
+  const overlayValidation = await Promise.all(
+    overlayFiles.map(async (file) => {
+      const ok = await canOpenMediaInput(file);
+      return { file, ok };
+    })
+  );
+
+  const safeOverlayFiles = overlayValidation
+    .filter((x) => x.ok)
+    .map((x) => x.file);
+
+  const rejectedOverlayFiles = overlayValidation
+    .filter((x) => !x.ok)
+    .map((x) => x.file);
+
   const lutFiles = pickDeterministic(
     lutFilesAll,
     `${seed}:${safePreset}:${safeStyles.join(",")}:lut`,
