@@ -864,21 +864,53 @@ module.exports = async function handler(req, res) {
 
   let tmpDir = null;
   const photofxAssetDebug = {
-  cwd: process.cwd(),
-  overlay_sparks_fire_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/overlays/sparks-fire")
-  ),
-  overlay_smoke_fog_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/overlays/smoke-fog")
-  ),
-  overlay_film_burns_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/overlays/film-burns-flash")
-  ),
-  lut_cinema_style_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/luts/cinema-style")
-  ),
-};
+    cwd: process.cwd(),
 
+    overlay_light_leaks_path: path.join(
+      process.cwd(),
+      "assets/photofx/overlays/light-leaks"
+    ),
+    overlay_prism_lens_path: path.join(
+      process.cwd(),
+      "assets/photofx/overlays/prism-lens"
+    ),
+
+    overlay_light_leaks_exists: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/light-leaks")
+    ),
+    overlay_prism_lens_exists: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/prism-lens")
+    ),
+
+    overlay_light_leaks_entries: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/light-leaks")
+    )
+      ? fs.readdirSync(
+          path.join(process.cwd(), "assets/photofx/overlays/light-leaks")
+        )
+      : [],
+
+    overlay_prism_lens_entries: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/prism-lens")
+    )
+      ? fs.readdirSync(
+          path.join(process.cwd(), "assets/photofx/overlays/prism-lens")
+        )
+      : [],
+
+    overlay_sparks_fire_exists: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/sparks-fire")
+    ),
+    overlay_smoke_fog_exists: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/smoke-fog")
+    ),
+    overlay_film_burns_exists: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/overlays/film-burns-flash")
+    ),
+    lut_cinema_style_exists: fs.existsSync(
+      path.join(process.cwd(), "assets/photofx/luts/cinema-style")
+    ),
+  };
 console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
 
   try {
