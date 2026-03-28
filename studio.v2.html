@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <!-- ================= GLOBAL / CORE ================= -->
 <link rel="stylesheet" href="/index.css?v=1002">
 
@@ -19,15 +20,8 @@
 <link rel="stylesheet" href="/studio.app.css?v=4">
 <link rel="stylesheet" href="/studio.pages.css?v=8">
 
-<!-- ================= MODULE CSS (STATIK / PRELOADED) ================= -->
-<link rel="stylesheet" href="/css/mod.dashboard.css?v=3">
-<link rel="stylesheet" href="/css/mod.music.css?v=3">
-<link rel="stylesheet" href="/css/mod.video.css?v=3">
-<link rel="stylesheet" href="/css/mod.cover.css?v=3">
-<link rel="stylesheet" href="/css/mod.library.css?v=3">
-<link rel="stylesheet" href="/css/mod.invoices.css?v=3">
-<link rel="stylesheet" href="/css/mod.profile.css?v=3">
-<link rel="stylesheet" href="/css/mod.settings.css?v=3">
+<!-- ================= MODULE CSS (router yönetir) ================= -->
+<link id="studio-module-css" rel="stylesheet" href="/css/mod.dashboard.css?v=3">
 
 <!-- ================= PAGE CSS (ATMOSPHERE / COVER vs) ================= -->
 <link rel="stylesheet" href="/studio.atmosphere.css?v=11">
@@ -35,7 +29,6 @@
 <!-- ================= PANEL CSS (video/covers/atmo panel ui) ================= -->
 <link rel="stylesheet" href="/css/mod.video.panel.css?v=2">
 <link rel="stylesheet" href="/css/mod.atmo.panel.css?v=1">
-  <link rel="stylesheet" href="/css/mod.atmo.css?v=1">
 <link rel="stylesheet" href="/css/mod.cartoon.css?v=1">
 <link rel="stylesheet" href="/css/mod.photofx.css?v=1">
 <link rel="stylesheet" href="/css/cartoon.studio.css?v=1">
@@ -48,6 +41,7 @@
 
 <!-- ================= PLAYER BASE ================= -->
 <link rel="stylesheet" href="/css/player.css?v=4">
+
 <!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
 <link rel="stylesheet" href="/css/player.override.css?v=1005">
 
@@ -481,9 +475,9 @@
 
 <!-- ================= ATMOS (FORM HELPERS) ================= -->
 <script src="/js/atmos.js?v=1" defer></script>
-<script src="/js/cartoon.character.js" defer></script>
-<script src="/js/cartoon.story.js" defer></script>
-<script src="/js/cartoon.js" defer></script>
+<script src="js/cartoon.character.js"></script>
+<script src="js/cartoon.story.js"></script>
+<script src="js/cartoon.js"></script>
 
 <!-- ================= STUDIO MODULES (GENEL) ================= -->
 <script src="/js/photofx.effects.js?v=1" defer></script>
