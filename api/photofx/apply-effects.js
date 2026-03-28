@@ -1014,8 +1014,9 @@ const sourceVariant =
         lutPaths: effectMeta.lutPaths || [],
         overlay_assets_found: effectResult.overlay_assets_found || [],
         overlay_assets_used: effectResult.overlay_assets_used || [],
-        lut_assets_found: effectResult.lut_assets_found || [],
-        lut_assets_used: effectResult.lut_assets_used || [],
+        overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
+       lut_assets_found: effectResult.lut_assets_found || [],
+       lut_assets_used: effectResult.lut_assets_used || [],
       },
       asset_debug: photofxAssetDebug,
     };
@@ -1041,10 +1042,11 @@ const sourceVariant =
         mode: effectResult.mode || "",
         preset: effectMeta.preset || "",
         styles: effectMeta.styles || [],
-        overlay_assets_found: effectResult.overlay_assets_found || [],
-        overlay_assets_used: effectResult.overlay_assets_used || [],
-        lut_assets_found: effectResult.lut_assets_found || [],
-        lut_assets_used: effectResult.lut_assets_used || [],
+       overlay_assets_found: effectResult.overlay_assets_found || [],
+       overlay_assets_used: effectResult.overlay_assets_used || [],
+       overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
+      lut_assets_found: effectResult.lut_assets_found || [],
+      lut_assets_used: effectResult.lut_assets_used || [],
       },
     });
   } catch (e) {
