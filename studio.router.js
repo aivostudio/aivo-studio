@@ -29,6 +29,7 @@ window.ensureModuleCSS = function () {
     settings: "settings",
   };
 
+  
   const ROUTES = new Set([
     "music",
     "video",
