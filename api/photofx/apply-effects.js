@@ -508,29 +508,32 @@ async function runPhotofxEffectsApply({
   }
 
   let finalVideoLabel = currentLabel;
+if (lutFiles.length > 0) {
+  const lutPath = lutFiles[0].replace(/\\/g, "/").replace(/:/g, "\\:");
+  const splitA = "[vprelut]";
+  const splitB = "[vbase]";
+  const lutOut = "[vlut]";
 
-  if (lutFiles.length > 0) {
-    const lutPath = lutFiles[0].replace(/\\/g, "/").replace(/:/g, "\\:");
-    const lutOut = "[vlut]";
-    graph.push(`${currentLabel}lut3d=file='${lutPath}'${lutOut}`);
+  graph.push(`${currentLabel}split=2${splitA}${splitB}`);
+  graph.push(`${splitA}lut3d=file='${lutPath}'${lutOut}`);
 
-    const intensity = Math.max(
-      0,
-      Math.min(1, Number(safeMeta?.doseProfile?.lutIntensity || 0.3))
+  const intensity = Math.max(
+    0,
+    Math.min(1, Number(safeMeta?.doseProfile?.lutIntensity || 0.3))
+  );
+
+  if (intensity >= 0.999) {
+    finalVideoLabel = lutOut;
+  } else {
+    const mixOut = "[vfinal]";
+    graph.push(
+      `${splitB}${lutOut}blend=all_mode=normal:all_opacity=${intensity.toFixed(
+        3
+      )}${mixOut}`
     );
-
-    if (intensity >= 0.999) {
-      finalVideoLabel = lutOut;
-    } else {
-      const mixOut = "[vfinal]";
-      graph.push(
-        `${currentLabel}${lutOut}blend=all_mode=normal:all_opacity=${intensity.toFixed(
-          3
-        )}${mixOut}`
-      );
-      finalVideoLabel = mixOut;
-    }
+    finalVideoLabel = mixOut;
   }
+}
 
   const args = [
     ...inputs,
