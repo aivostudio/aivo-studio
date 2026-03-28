@@ -1,7 +1,7 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function (routeKey) {
+window.ensureModuleCSS = function(routeKey) {
   const link = document.getElementById("studio-module-css");
   if (!link) return;
 
@@ -77,7 +77,6 @@ window.ensureModuleCSS = function (routeKey) {
   let __moduleLoadSeq = 0;
   let __moduleLoadCtrl = null;
   let __goSeq = 0;
-  const __moduleHtmlCache = new Map();
 
   // -------------------------------
   // URL HELPERS
@@ -87,6 +86,7 @@ window.ensureModuleCSS = function (routeKey) {
     const p = (sp.get("page") || "").trim();
     if (!p) return null;
 
+    if (p === "social") return "cartoon";
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
     if (p === "photofx") return "photofx";
@@ -108,6 +108,7 @@ window.ensureModuleCSS = function (routeKey) {
     const [keyPart] = raw.split("?");
     let key = (keyPart || "music").trim();
 
+    if (key === "social") key = "cartoon";
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
     if (key === "photofx") key = "photofx";
@@ -148,7 +149,7 @@ window.ensureModuleCSS = function (routeKey) {
 
     for (const url of urls) {
       try {
-        const r = await fetch(url, { signal });
+      const r = await fetch(url, { signal });
         if (r.ok) return await r.text();
         lastErr = new Error("HTTP " + r.status);
       } catch (e) {
@@ -160,45 +161,29 @@ window.ensureModuleCSS = function (routeKey) {
     throw lastErr || new Error("fetch failed");
   }
 
-async function loadModuleIntoHost(key) {
-  const host = document.getElementById("moduleHost");
-  if (!host) return;
+  async function loadModuleIntoHost(key) {
+    const host = document.getElementById("moduleHost");
+    if (!host) return;
 
-  const file = MODULE_FILES[key];
-  if (!file) return;
+    const file = MODULE_FILES[key];
+    if (!file) return;
 
-  __moduleLoadSeq += 1;
-  const seq = __moduleLoadSeq;
+    __moduleLoadSeq += 1;
+    const seq = __moduleLoadSeq;
 
-  try {
-    __moduleLoadCtrl?.abort();
-  } catch (_) {}
+    try {
+      __moduleLoadCtrl?.abort();
+    } catch (_) {}
 
-  __moduleLoadCtrl = new AbortController();
+    __moduleLoadCtrl = new AbortController();
 
-  const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
-  host.setAttribute("data-loading-module", key);
+    host.setAttribute("data-loading-module", key);
+    console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
 
-  try {
-    let html = __moduleHtmlCache.get(key);
-
-    if (html) {
-      console.log("[ROUTER][LOAD] cache:hit", {
-        key,
-        seq,
-        htmlLength: (html || "").length,
-      });
-    } else {
-      console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
-      html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
-      __moduleHtmlCache.set(key, html);
-      console.log("[ROUTER][LOAD] fetch:done", {
-        key,
-        seq,
-        htmlLength: (html || "").length,
-      });
-    }
+    const html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+    console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
 
     if (seq !== __moduleLoadSeq) return;
 
@@ -215,33 +200,26 @@ async function loadModuleIntoHost(key) {
     }
 
     if (seq !== __moduleLoadSeq) return;
-
     console.log("[ROUTER][LOAD] mount:before", {
       key,
       seq,
       currentActive: host.getAttribute("data-active-module"),
-      incomingTag: incomingRoot && incomingRoot.nodeName,
+      incomingTag: incomingRoot && incomingRoot.nodeName
     });
 
     host.replaceChildren(incomingRoot);
     host.setAttribute("data-active-module", key);
-
+    host.removeAttribute("data-loading-module");
     console.log("[ROUTER][LOAD] mount:after", {
       key,
       seq,
       activeNow: host.getAttribute("data-active-module"),
-      childCount: host.childNodes.length,
+      childCount: host.childNodes.length
     });
-  } finally {
-    if (host.getAttribute("data-loading-module") === key) {
-      host.removeAttribute("data-loading-module");
-    }
   }
-}
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
-
     const host = document.getElementById("moduleHost");
     const activeKey = host?.getAttribute("data-active-module") || "";
     const loadingKey = host?.getAttribute("data-loading-module") || "";
@@ -285,7 +263,7 @@ async function loadModuleIntoHost(key) {
               console.log("[ROUTER] RightPanel.force skipped stale route", {
                 key,
                 activeNow,
-                panelKey,
+                panelKey
               });
               return;
             }
