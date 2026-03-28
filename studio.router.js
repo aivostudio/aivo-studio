@@ -86,7 +86,7 @@ window.ensureModuleCSS = function(routeKey) {
     const p = (sp.get("page") || "").trim();
     if (!p) return null;
 
-    if (p === "social") return "cartoon";
+ 
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
     if (p === "photofx") return "photofx";
@@ -108,7 +108,7 @@ window.ensureModuleCSS = function(routeKey) {
     const [keyPart] = raw.split("?");
     let key = (keyPart || "music").trim();
 
-    if (key === "social") key = "cartoon";
+ 
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
     if (key === "photofx") key = "photofx";
