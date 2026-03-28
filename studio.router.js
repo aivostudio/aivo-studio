@@ -45,19 +45,19 @@ window.ensureModuleCSS = function () {
 
 const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
 
-  const MODULE_FILES = {
-    music: "music.html",
-    video: "video.html",
-    cover: "cover.html",
-    atmo: "atmosphere.html",
-    cartoon: "child-cartoon.html",
-    photofx: "photofx.html",
-    dashboard: "dashboard.html",
-    library: "library.html",
-    invoices: "invoices.html",
-    profile: "profile.html",
-    settings: "settings.html",
-  };
+ const MODULE_FILES = {
+  music: "/modules/music.html",
+  video: "/modules/video.html",
+  cover: "/modules/cover.html",
+  atmo: "/modules/atmosphere.html",
+  cartoon: "/modules/child-cartoon.html",
+  photofx: "/modules/photofx.html",
+  dashboard: "/modules/dashboard.html",
+  library: "/modules/library.html",
+  invoices: "/modules/invoices.html",
+  profile: "/modules/profile.html",
+  settings: "/modules/settings.html",
+};
 
 let __moduleLoadSeq = 0;
 let __moduleLoadCtrl = null;
@@ -163,7 +163,7 @@ const __moduleHtmlCache = new Map();
 
     __moduleLoadCtrl = new AbortController();
 
-    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+  const urls = [file];
 
     host.setAttribute("data-loading-module", key);
     console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
