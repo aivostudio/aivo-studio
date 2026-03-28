@@ -512,26 +512,49 @@ async function runPhotofxEffectsApply({
     Math.min(4, Number(safeMeta?.doseProfile?.maxOverlayCount || 1))
   );
 
-  const overlayFiles = pickDeterministic(
-    overlayFilesAll,
-    `${seed}:${safePreset}:${safeStyles.join(",")}:overlay`,
-    maxOverlayCount
+const overlayFiles = pickDeterministic(
+  overlayFilesAll,
+  `${seed}:${safePreset}:${safeStyles.join(",")}:overlay`,
+  maxOverlayCount
+);
+
+const overlayValidation = await Promise.all(
+  overlayFiles.map(async (file) => {
+    const ok = await canOpenMediaInput(file);
+    return { file, ok };
+  })
+);
+
+const safeOverlayFiles = overlayValidation
+  .filter((x) => x.ok)
+  .map((x) => x.file);
+
+const rejectedOverlayFiles = overlayValidation
+  .filter((x) => !x.ok)
+  .map((x) => x.file);
+
+if (safeOverlayFiles.length < maxOverlayCount) {
+  const fallbackCandidates = overlayFilesAll.filter(
+    (file) =>
+      !safeOverlayFiles.includes(file) &&
+      !rejectedOverlayFiles.includes(file)
   );
 
-  const overlayValidation = await Promise.all(
-    overlayFiles.map(async (file) => {
-      const ok = await canOpenMediaInput(file);
-      return { file, ok };
-    })
-  );
+  for (const file of fallbackCandidates) {
+    const ok = await canOpenMediaInput(file);
 
-  const safeOverlayFiles = overlayValidation
-    .filter((x) => x.ok)
-    .map((x) => x.file);
+    if (!ok) {
+      rejectedOverlayFiles.push(file);
+      continue;
+    }
 
-  const rejectedOverlayFiles = overlayValidation
-    .filter((x) => !x.ok)
-    .map((x) => x.file);
+    safeOverlayFiles.push(file);
+
+    if (safeOverlayFiles.length >= maxOverlayCount) {
+      break;
+    }
+  }
+}
 
   const lutFiles = pickDeterministic(
     lutFilesAll,
