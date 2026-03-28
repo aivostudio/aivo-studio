@@ -442,7 +442,46 @@ async function probeVideoDurationSec(inputPath) {
     });
   });
 }
+async function canOpenMediaInput(inputPath) {
+  return await new Promise((resolve) => {
+    const args = [
+      "-v",
+      "error",
+      "-i",
+      inputPath,
+      "-t",
+      "0.1",
+      "-f",
+      "null",
+      "-",
+    ];
 
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", () => resolve(false));
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve(true);
+
+      const errText = String(stderr || "").toLowerCase();
+      if (
+        errText.includes("moov atom not found") ||
+        errText.includes("invalid data found when processing input") ||
+        errText.includes("error opening input") ||
+        errText.includes("cannot determine format")
+      ) {
+        return resolve(false);
+      }
+
+      return resolve(false);
+    });
+  });
+}
 async function runPhotofxEffectsApply({
   inputPath,
   outputPath,
