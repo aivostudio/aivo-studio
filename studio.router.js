@@ -1,23 +1,49 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function(routeKey) {
-  const link = document.getElementById("studio-module-css");
-  if (!link) return;
+window.ensureModuleCSS = function (routeKey) {
+  return new Promise((resolve) => {
+    const link = document.getElementById("studio-module-css");
+    if (!link) return resolve();
 
-  const v = "2";
-  const primary = `/css/mod.${routeKey}.css?v=${v}`;
-  const fallback = `/mod.${routeKey}.css?v=${v}`;
+    const v = "2";
+    const primary = `/css/mod.${routeKey}.css?v=${v}`;
+    const fallback = `/mod.${routeKey}.css?v=${v}`;
+    const currentHref = link.getAttribute("href") || "";
 
-  link.onerror = () => {
-    if (link.__fellBackOnce) return;
-    link.__fellBackOnce = true;
-    console.warn("[ensureModuleCSS] fallback:", fallback);
-    link.href = fallback;
-  };
+    if (
+      currentHref.includes(`/mod.${routeKey}.css?v=${v}`) ||
+      currentHref.includes(`/css/mod.${routeKey}.css?v=${v}`)
+    ) {
+      return resolve();
+    }
 
-  link.__fellBackOnce = false;
-  link.href = primary;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      link.onload = null;
+      link.onerror = null;
+      resolve();
+    };
+
+    const failToFallback = () => {
+      if (link.__fellBackOnce) return finish();
+      link.__fellBackOnce = true;
+      console.warn("[ensureModuleCSS] fallback:", fallback);
+      link.onload = finish;
+      link.onerror = finish;
+      link.href = fallback;
+      setTimeout(finish, 1200);
+    };
+
+    link.__fellBackOnce = false;
+    link.onload = finish;
+    link.onerror = failToFallback;
+    link.href = primary;
+
+    setTimeout(finish, 1200);
+  });
 };
 
 // ===============================
@@ -255,8 +281,7 @@ if (html) {
     }
 
     setActiveNav(key);
-    window.ensureModuleCSS?.(key);
-
+  await window.ensureModuleCSS?.(key);
     try {
       await loadModuleIntoHost(key);
     } catch (e) {
