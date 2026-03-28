@@ -374,7 +374,15 @@ const hasEffectsApplied = finalOutputs.some((o) => {
   const variant = String(o?.meta?.variant || "").toLowerCase().trim();
   return variant === "effects_applied";
 });
-
+console.log("[photofx] effects gate =", {
+  job_id,
+  ready,
+  wantsEffects,
+  hasEffectsApplied,
+  status: j?.status,
+  rawMeta,
+  finalOutputs,
+});
 if (wantsEffects && !hasEffectsApplied) {
   const effectsRes = await fetch("/api/photofx/apply-effects", {
     method: "POST",
