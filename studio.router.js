@@ -43,26 +43,24 @@ window.ensureModuleCSS = function () {
     "settings",
   ]);
 
-const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
+  const MODULE_FILES = {
+    music: "/modules/music.html",
+    video: "/modules/video.html",
+    cover: "/modules/cover.html",
+    atmo: "/modules/atmosphere.html",
+    cartoon: "/modules/child-cartoon.html",
+    photofx: "/modules/photofx.html",
+    dashboard: "/modules/dashboard.html",
+    library: "/modules/library.html",
+    invoices: "/modules/invoices.html",
+    profile: "/modules/profile.html",
+    settings: "/modules/settings.html",
+  };
 
- const MODULE_FILES = {
-  music: "/modules/music.html",
-  video: "/modules/video.html",
-  cover: "/modules/cover.html",
-  atmo: "/modules/atmosphere.html",
-  cartoon: "/modules/child-cartoon.html",
-  photofx: "/modules/photofx.html",
-  dashboard: "/modules/dashboard.html",
-  library: "/modules/library.html",
-  invoices: "/modules/invoices.html",
-  profile: "/modules/profile.html",
-  settings: "/modules/settings.html",
-};
-
-let __moduleLoadSeq = 0;
-let __moduleLoadCtrl = null;
-let __goSeq = 0;
-const __moduleHtmlCache = new Map();
+  let __moduleLoadSeq = 0;
+  let __moduleLoadCtrl = null;
+  let __goSeq = 0;
+  const __moduleHtmlCache = new Map();
 
   // -------------------------------
   // URL HELPERS
@@ -71,7 +69,6 @@ const __moduleHtmlCache = new Map();
     const sp = new URLSearchParams(location.search || "");
     const p = (sp.get("page") || "").trim();
     if (!p) return null;
-
 
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
@@ -94,7 +91,6 @@ const __moduleHtmlCache = new Map();
     const [keyPart] = raw.split("?");
     let key = (keyPart || "music").trim();
 
- 
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
     if (key === "photofx") key = "photofx";
@@ -135,7 +131,7 @@ const __moduleHtmlCache = new Map();
 
     for (const url of urls) {
       try {
-      const r = await fetch(url, { signal });
+        const r = await fetch(url, { signal });
         if (r.ok) return await r.text();
         lastErr = new Error("HTTP " + r.status);
       } catch (e) {
@@ -145,6 +141,19 @@ const __moduleHtmlCache = new Map();
     }
 
     throw lastErr || new Error("fetch failed");
+  }
+
+  function warmModuleCache() {
+    Object.entries(MODULE_FILES).forEach(([key, file]) => {
+      if (__moduleHtmlCache.has(key)) return;
+
+      fetch(file, { credentials: "same-origin" })
+        .then((r) => (r.ok ? r.text() : null))
+        .then((html) => {
+          if (html) __moduleHtmlCache.set(key, html);
+        })
+        .catch(() => {});
+    });
   }
 
   async function loadModuleIntoHost(key) {
@@ -163,28 +172,29 @@ const __moduleHtmlCache = new Map();
 
     __moduleLoadCtrl = new AbortController();
 
-  const urls = [file];
+    const urls = [file];
 
     host.setAttribute("data-loading-module", key);
     console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
 
     let html = __moduleHtmlCache.get(key);
 
-if (html) {
-  console.log("[ROUTER][LOAD] cache:hit", {
-    key,
-    seq,
-    htmlLength: (html || "").length
-  });
-} else {
-  html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
-  __moduleHtmlCache.set(key, html);
-  console.log("[ROUTER][LOAD] fetch:done", {
-    key,
-    seq,
-    htmlLength: (html || "").length
-  });
-}
+    if (html) {
+      console.log("[ROUTER][LOAD] cache:hit", {
+        key,
+        seq,
+        htmlLength: (html || "").length
+      });
+    } else {
+      html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+      __moduleHtmlCache.set(key, html);
+      console.log("[ROUTER][LOAD] fetch:done", {
+        key,
+        seq,
+        htmlLength: (html || "").length
+      });
+    }
+
     if (seq !== __moduleLoadSeq) return;
 
     const wrap = document.createElement("div");
@@ -200,6 +210,7 @@ if (html) {
     }
 
     if (seq !== __moduleLoadSeq) return;
+
     console.log("[ROUTER][LOAD] mount:before", {
       key,
       seq,
@@ -210,6 +221,7 @@ if (html) {
     host.replaceChildren(incomingRoot);
     host.setAttribute("data-active-module", key);
     host.removeAttribute("data-loading-module");
+
     console.log("[ROUTER][LOAD] mount:after", {
       key,
       seq,
@@ -220,6 +232,7 @@ if (html) {
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
+
     const host = document.getElementById("moduleHost");
     const activeKey = host?.getAttribute("data-active-module") || "";
     const loadingKey = host?.getAttribute("data-loading-module") || "";
@@ -232,15 +245,16 @@ if (html) {
     }
 
     const mySeq = ++__goSeq;
-
     const cur = parseHash();
+
     if (cur.key !== key) {
       setHash(key);
       return;
     }
 
     setActiveNav(key);
-  await window.ensureModuleCSS?.(key);
+    await window.ensureModuleCSS?.(key);
+
     try {
       await loadModuleIntoHost(key);
     } catch (e) {
@@ -252,12 +266,14 @@ if (html) {
     if (mySeq !== __goSeq) return;
 
     const panelKey = RIGHT_PANEL_KEY[key] || "music";
+
     try {
       requestAnimationFrame(() => {
         setTimeout(() => {
           try {
             const hostNow = document.getElementById("moduleHost");
             const activeNow = hostNow?.getAttribute("data-active-module") || "";
+
             if (activeNow !== key) {
               console.log("[ROUTER] RightPanel.force skipped stale route", {
                 key,
@@ -306,8 +322,9 @@ if (html) {
       navRoot.addEventListener("click", onNavClick, true);
     }
 
-       const hadHash = hasHashKey();
+    const hadHash = hasHashKey();
     normalizeInitialRoute();
     if (hadHash) onHashChange();
+    setTimeout(warmModuleCache, 0);
   });
 })();
