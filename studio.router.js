@@ -1,71 +1,24 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-async function go(key) {
-  if (!ROUTES.has(key)) key = "music";
-  const host = document.getElementById("moduleHost");
-  const activeKey = host?.getAttribute("data-active-module") || "";
-  const loadingKey = host?.getAttribute("data-loading-module") || "";
+window.ensureModuleCSS = function(routeKey) {
+  const link = document.getElementById("studio-module-css");
+  if (!link) return;
 
-  if (activeKey === key || loadingKey === key) {
-    console.log("[ROUTER][GO] skip duplicate", { key, activeKey, loadingKey });
-    setActiveNav(key);
-    await window.ensureModuleCSS?.(key);
-    return;
-  }
+  const v = "2";
+  const primary = `/css/mod.${routeKey}.css?v=${v}`;
+  const fallback = `/mod.${routeKey}.css?v=${v}`;
 
-  const mySeq = ++__goSeq;
+  link.onerror = () => {
+    if (link.__fellBackOnce) return;
+    link.__fellBackOnce = true;
+    console.warn("[ensureModuleCSS] fallback:", fallback);
+    link.href = fallback;
+  };
 
-  const cur = parseHash();
-  if (cur.key !== key) {
-    setHash(key);
-    return;
-  }
-
-  setActiveNav(key);
-
-  try {
-    await window.ensureModuleCSS?.(key);
-  } catch (e) {
-    console.warn("[ROUTER] ensureModuleCSS failed:", key, e);
-  }
-
-  try {
-    await loadModuleIntoHost(key);
-  } catch (e) {
-    if (e?.name === "AbortError") return;
-    console.warn("[ROUTER] loadModuleIntoHost failed:", key, e);
-    return;
-  }
-
-  if (mySeq !== __goSeq) return;
-
-  const panelKey = RIGHT_PANEL_KEY[key] || "music";
-  try {
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        try {
-          const hostNow = document.getElementById("moduleHost");
-          const activeNow = hostNow?.getAttribute("data-active-module") || "";
-          if (activeNow !== key) {
-            console.log("[ROUTER] RightPanel.force skipped stale route", {
-              key,
-              activeNow,
-              panelKey
-            });
-            return;
-          }
-
-          window.RightPanel?.force?.(panelKey, {});
-        } catch (err) {
-          console.warn("[ROUTER] RightPanel.force delayed failed:", panelKey, err);
-        }
-      }, 0);
-    });
-  } catch (e) {
-    console.warn("[ROUTER] RightPanel.force failed:", panelKey, e);
-  }
-}
+  link.__fellBackOnce = false;
+  link.href = primary;
+};
 
 // ===============================
 // ROUTER
@@ -125,6 +78,7 @@ async function go(key) {
   let __moduleLoadCtrl = null;
   let __goSeq = 0;
   const __moduleHtmlCache = new Map();
+
   // -------------------------------
   // URL HELPERS
   // -------------------------------
@@ -133,7 +87,6 @@ async function go(key) {
     const p = (sp.get("page") || "").trim();
     if (!p) return null;
 
-    if (p === "social") return "cartoon";
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
     if (p === "photofx") return "photofx";
@@ -155,7 +108,6 @@ async function go(key) {
     const [keyPart] = raw.split("?");
     let key = (keyPart || "music").trim();
 
-    if (key === "social") key = "cartoon";
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
     if (key === "photofx") key = "photofx";
@@ -196,7 +148,7 @@ async function go(key) {
 
     for (const url of urls) {
       try {
-      const r = await fetch(url, { signal });
+        const r = await fetch(url, { signal });
         if (r.ok) return await r.text();
         lastErr = new Error("HTTP " + r.status);
       } catch (e) {
@@ -226,22 +178,26 @@ async function go(key) {
 
     const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
 
-  host.setAttribute("data-loading-module", key);
+    host.setAttribute("data-loading-module", key);
 
-  let html = __moduleHtmlCache.get(key);
+    let html = __moduleHtmlCache.get(key);
 
-  if (html) {
-    console.log("[ROUTER][LOAD] cache:hit", {
-      key,
-      seq,
-      htmlLength: (html || "").length
-    });
-  } else {
-    console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
-    html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
-    __moduleHtmlCache.set(key, html);
-    console.log("[ROUTER][LOAD] fetch:done", { key, seq, htmlLength: (html || "").length });
-  }
+    if (html) {
+      console.log("[ROUTER][LOAD] cache:hit", {
+        key,
+        seq,
+        htmlLength: (html || "").length
+      });
+    } else {
+      console.log("[ROUTER][LOAD] fetch:start", { key, seq, urls });
+      html = await fetchFirstOk(urls, __moduleLoadCtrl.signal);
+      __moduleHtmlCache.set(key, html);
+      console.log("[ROUTER][LOAD] fetch:done", {
+        key,
+        seq,
+        htmlLength: (html || "").length
+      });
+    }
 
     if (seq !== __moduleLoadSeq) return;
 
@@ -258,6 +214,7 @@ async function go(key) {
     }
 
     if (seq !== __moduleLoadSeq) return;
+
     console.log("[ROUTER][LOAD] mount:before", {
       key,
       seq,
@@ -268,6 +225,7 @@ async function go(key) {
     host.replaceChildren(incomingRoot);
     host.setAttribute("data-active-module", key);
     host.removeAttribute("data-loading-module");
+
     console.log("[ROUTER][LOAD] mount:after", {
       key,
       seq,
@@ -278,6 +236,7 @@ async function go(key) {
 
   async function go(key) {
     if (!ROUTES.has(key)) key = "music";
+
     const host = document.getElementById("moduleHost");
     const activeKey = host?.getAttribute("data-active-module") || "";
     const loadingKey = host?.getAttribute("data-loading-module") || "";
