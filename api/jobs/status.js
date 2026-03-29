@@ -879,60 +879,20 @@ const providerImageUrl = isCharacterJob ? pickFalImageUrl(body) : null;
             const finalVariant = picked.variant;
 
             if (finalUrl) {
-         // overlay başka bir request içinde yazılmış olabilir.
-// Bu yüzden DB'deki en güncel row'u tekrar çekip onun üstüne merge ediyoruz.
-const freshRows = await sql`
-  select outputs, meta
-  from jobs
-  where id = ${job_id}::uuid
-  limit 1
-`;
+              merged = upsertFinalOutput(merged, finalUrl, {
+                source_variant: finalVariant,
+              });
 
-const freshJob = freshRows[0] || {};
-const freshOutputs = Array.isArray(freshJob.outputs) ? freshJob.outputs : [];
-const freshMeta = freshJob?.meta || {};
+              patchMeta.final_video_url = finalUrl;
+              patchMeta.final_variant = finalVariant;
+            }
 
-// stale merged yerine, DB'deki en güncel outputs üstüne provider/mux değişimlerini merge et
-let mergedFinal = mergeOutputs(freshOutputs, merged);
-
-// overlay varsa (daha önce yazılmış olabilir) onu da final seçimine dahil et
-const overlayUrlExisting =
-  freshMeta?.logo_overlay_url ||
-  pickVideoByVariant(mergedFinal, "logo_overlay") ||
-  null;
-
-// ---- FINAL seçimi (tek kural) ----
-const picked = pickFinalVideoUrl({
-  providerUrl: providerVideoUrl,
-  muxUrl: muxedUrl,
-  overlayUrl: overlayUrlExisting,
-});
-
-const finalUrl = picked.url;
-const finalVariant = picked.variant;
-
-if (finalUrl) {
-  mergedFinal = upsertFinalOutput(mergedFinal, finalUrl, {
-    source_variant: finalVariant,
-  });
-
-  patchMeta.final_video_url = finalUrl;
-  patchMeta.final_variant = finalVariant;
-}
-
-// DB update
-await sql`
-  update jobs
-  set status = 'done',
-      outputs = ${JSON.stringify(mergedFinal)}::jsonb,
-      meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-      updated_at = now()
-  where id = ${job_id}::uuid
-`;
-
-job.status = "done";
-job.outputs = mergedFinal;
-job.meta = { ...(freshMeta || {}), ...(patchMeta || {}) };
+            // DB update
+            await sql`
+              update jobs
+              set status = 'done',
+                  outputs = ${JSON.stringify(merged)}::jsonb,
+                  meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
                   updated_at = now()
               where id = ${job_id}::uuid
             `;
