@@ -552,25 +552,37 @@ function buildColorEq(effectMeta = {}) {
   )}:gamma=${gamma.toFixed(3)}`;
 }
 
-function buildBaseVisualFilter(effectMeta = {}) {
+function buildTargetScaleExpr(targetWidth = 0, targetHeight = 0) {
+  const w = Math.max(2, Math.floor(Number(targetWidth || 0) / 2) * 2);
+  const h = Math.max(2, Math.floor(Number(targetHeight || 0) / 2) * 2);
+
+  if (!w || !h) {
+    return "scale=trunc(iw/2)*2:trunc(ih/2)*2";
+  }
+
+  return `scale=${w}:${h}`;
+}
+
+function buildBaseVisualFilter(effectMeta = {}, targetWidth = 0, targetHeight = 0) {
   const parts = [];
   const preset = String(effectMeta?.preset || "").toLowerCase();
   const styles = Array.isArray(effectMeta?.styles) ? effectMeta.styles : [];
   const has = (name) => preset === name || styles.includes(name);
+  const targetScale = buildTargetScaleExpr(targetWidth, targetHeight);
 
-  parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+  parts.push(targetScale);
   parts.push(buildColorEq(effectMeta));
 
   if (has("shake-edit") || has("split-flash") || has("dark-trap-motion")) {
     parts.push(
       "crop=iw*0.965:ih*0.965:(iw-iw*0.965)/2+sin(t*12)*18:(ih-ih*0.965)/2+cos(t*15)*10"
     );
-    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+    parts.push(targetScale);
   }
 
   if (has("cinematic-zoom")) {
     parts.push("crop=iw*0.94:ih*0.94:(iw-iw*0.94)/2:(ih-ih*0.94)/2");
-    parts.push("scale=trunc(iw/2)*2:trunc(ih/2)*2");
+    parts.push(targetScale);
   }
 
   if (has("neon-pulse") || has("aura-glow")) {
@@ -582,6 +594,7 @@ function buildBaseVisualFilter(effectMeta = {}) {
     parts.push("noise=alls=12:allf=t");
   }
 
+  parts.push(targetScale);
   parts.push("fps=25");
   parts.push("format=yuv420p");
 
@@ -834,7 +847,15 @@ async function runPhotofxEffectsApply({
     throw new Error("base_video_dimensions_missing");
   }
 
-  const baseFilter = buildBaseVisualFilter(safeMeta);
+  const normalizedBaseWidth = Math.max(2, Math.floor(Number(baseWidth || 0) / 2) * 2);
+  const normalizedBaseHeight = Math.max(2, Math.floor(Number(baseHeight || 0) / 2) * 2);
+
+  const baseFilter = buildBaseVisualFilter(
+    safeMeta,
+    normalizedBaseWidth,
+    normalizedBaseHeight
+  );
+
   const inputs = ["-y", "-i", inputPath];
   const graph = [];
   let currentLabel = "[0:v]";
@@ -854,7 +875,7 @@ async function runPhotofxEffectsApply({
     const enabled = buildOverlayEnableExpr(durationSec, safeMeta, i);
 
     graph.push(
-      `${overlayInput}scale=${baseWidth}:${baseHeight}:force_original_aspect_ratio=increase,crop=${baseWidth}:${baseHeight},format=rgba,colorchannelmixer=aa=${Number(
+      `${overlayInput}scale=${normalizedBaseWidth}:${normalizedBaseHeight}:force_original_aspect_ratio=increase,crop=${normalizedBaseWidth}:${normalizedBaseHeight},format=rgba,colorchannelmixer=aa=${Number(
         i === 0
           ? safeMeta?.doseProfile?.overlayOpacity || 0.18
           : safeMeta?.doseProfile?.secondaryOpacity || 0.08
