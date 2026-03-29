@@ -250,9 +250,14 @@ async function collectFilesFromPaths(pathsInput = [], exts = []) {
     const keyOrPrefix = stripLeadingSlashes(clean);
 
     if (isDirectoryLikeAssetPath(clean)) {
-      const keys = await listR2KeysForPrefix(keyOrPrefix, exts);
+     const keys = await listR2KeysForPrefix(keyOrPrefix, exts);
+const pickedKeys = pickDeterministic(
+  keys,
+  `collect:${clean}:${exts.join(",")}`,
+  4
+);
 
-      for (const key of keys) {
+for (const key of pickedKeys) {
         if (seen.has(key)) continue;
 
         const ext = path.extname(key).toLowerCase();
