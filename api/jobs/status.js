@@ -1335,6 +1335,106 @@ if (
     } catch (e) {
       console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
     }
+        // =========================
+    // 4.1) AUTO LOGO OVERLAY (PHOTOFX) (DONE sonrası)
+    // =========================
+    try {
+      const isPhotoFx =
+        String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "photofx";
+      const isDone = String(job?.status || "").toLowerCase() === "done";
+
+      const logoUrl = job?.meta?.logo_url || null;
+
+      const finalizedUrlNow =
+        pickVideoByVariant(outputs, "finalized") ||
+        job?.meta?.finalized_from_url ||
+        null;
+
+      const providerUrlNow =
+        pickVideoByVariant(outputs, "provider") || null;
+
+      const firstVideoUrl =
+        (outputs.find((x) => normType(x?.type) === "video") || null)?.url || null;
+
+      const baseVideoUrl = finalizedUrlNow || providerUrlNow || firstVideoUrl || null;
+
+      const alreadyHasOverlay =
+        Array.isArray(outputs) &&
+        outputs.some(
+          (o) =>
+            normType(o?.type) === "video" &&
+            (normVariant(o) === "logo_overlay" ||
+              String(o?.url || "").includes("logo-overlay-"))
+        );
+
+      const alreadyDoneFlag = Boolean(job?.meta?.logo_overlay_done);
+
+      if (isPhotoFx && isDone && logoUrl && baseVideoUrl && !alreadyHasOverlay && !alreadyDoneFlag) {
+        const baseUrl = getBaseUrl(req);
+
+        const resp = await fetch(`${baseUrl}/api/photofx/overlay-logo`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: req.headers.cookie || "",
+          },
+          body: JSON.stringify({
+            app: "photofx",
+            job_id,
+            video_url: baseVideoUrl,
+            logo_url: logoUrl,
+            logo_pos: job?.meta?.logo_pos || "br",
+            logo_size: job?.meta?.logo_size || "sm",
+            logo_opacity:
+              typeof job?.meta?.logo_opacity === "number"
+                ? job.meta.logo_opacity
+                : 0.85,
+          }),
+        });
+
+        const data = await resp.json().catch(() => null);
+
+        if (data?.ok && data?.url) {
+          const overlayItem = {
+            type: "video",
+            url: data.url,
+            meta: { app: "photofx", variant: "logo_overlay" },
+          };
+
+          let merged = mergeOutputs(outputs, [overlayItem]);
+
+          merged = upsertFinalOutput(merged, data.url, {
+            source_variant: "logo_overlay",
+          });
+
+          const patchMeta = {
+            logo_overlay_done: true,
+            logo_overlay_url: data.url,
+            logo_overlay_source_url: baseVideoUrl,
+            final_video_url: data.url,
+            final_variant: "logo_overlay",
+          };
+
+          await sql`
+            update jobs
+            set
+              outputs = ${JSON.stringify(merged)}::jsonb,
+              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+              updated_at = now()
+            where id = ${job_id}::uuid
+          `;
+
+          outputs = merged;
+          job.outputs = outputs;
+          job.meta = {
+            ...(job.meta || {}),
+            ...patchMeta,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("AUTO_PHOTOFX_LOGO_OVERLAY_FAILED:", e?.message || e);
+    }
 // =========================
 // 4.5) AUTO FINALIZE (ATMO)
 // =========================
