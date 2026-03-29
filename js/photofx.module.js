@@ -1031,10 +1031,10 @@ const builtEffects = {
           e.preventDefault();
           e.stopPropagation();
 
-          const imageInputEl = qs("#pfxImageInput", nextRoot);
-          const endImageInputEl = qs("#pfxEndImageInput", nextRoot);
-          const logoInputEl = qs("#pfxLogoInput", nextRoot);
-          const audioInputEl = qs("#pfxAudioInput", nextRoot);
+       const imageInputEl = ensureHiddenInput(nextRoot, "pfxImageInput", "image/*");
+      const endImageInputEl = ensureHiddenInput(nextRoot, "pfxEndImageInput", "image/*");
+       const logoInputEl = ensureHiddenInput(nextRoot, "pfxLogoInput", "image/*");
+        const audioInputEl = ensureHiddenInput(nextRoot, "pfxAudioInput", "audio/*");
 
           if (uploadBtn.matches("#pfxInlineUploadBtn") && imageInputEl) {
             imageInputEl.click();
