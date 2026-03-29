@@ -1228,6 +1228,7 @@ module.exports = async function handler(req, res) {
     photofxAssetDebug.lut_source_paths = effectMeta?.lutPaths || [];
 
     console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
+    console.log("[photofx/apply-effects] DEPLOY_MARKER_2026_03_29_B");
     console.log("[photofx/apply-effects] resolved effect meta =", {
       preset: effectMeta?.preset || "",
       styles: effectMeta?.styles || [],
