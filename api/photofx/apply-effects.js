@@ -379,6 +379,55 @@ function normalizeNumber(v, fallback, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 const PHOTOFX_STYLE_ASSET_MAP = {
+  "neon-pulse": {
+    overlayPaths: [
+      "assets/photofx/overlays/light-leaks/",
+      "assets/photofx/overlays/prism-lens/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+
+  "shake-edit": {
+    overlayPaths: [
+      "assets/photofx/overlays/film-burns-flash/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+
+  "glitch-scan": {
+    overlayPaths: [
+      "assets/photofx/overlays/vhs-glitch/",
+      "assets/photofx/overlays/glitch-noise/",
+      "assets/photofx/overlays/hud-graphic-overlay/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+
+  "split-flash": {
+    overlayPaths: [
+      "assets/photofx/overlays/film-burns-flash/",
+      "assets/photofx/overlays/light-leaks/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+
+  "cinematic-zoom": {
+    overlayPaths: [
+      "assets/photofx/overlays/dust-particles/",
+      "assets/photofx/overlays/light-leaks/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+
+  "aura-glow": {
+    overlayPaths: [
+      "assets/photofx/overlays/prism-lens/",
+      "assets/photofx/overlays/light-leaks/",
+      "assets/photofx/overlays/dust-particles/",
+    ],
+    lutPaths: ["assets/photofx/luts/cinema-style/"],
+  },
+
   "fire-edge": {
     overlayPaths: [
       "assets/photofx/overlays/sparks-fire/",
@@ -387,30 +436,13 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-  "neon-pulse": {
-    overlayPaths: [
-      "assets/photofx/overlays/light-leaks/",
-      "assets/photofx/overlays/prism-lens/",
-    ],
-    lutPaths: ["assets/photofx/luts/cinema-style/"],
-  },
-  "aura-glow": {
-    overlayPaths: [
-      "assets/photofx/overlays/light-leaks/",
-      "assets/photofx/overlays/prism-lens/",
-    ],
-    lutPaths: ["assets/photofx/luts/cinema-style/"],
-  },
-  "split-flash": {
-    overlayPaths: ["assets/photofx/overlays/film-burns-flash/"],
-    lutPaths: [],
-  },
-  "glitch-scan": {
-    overlayPaths: ["assets/photofx/overlays/prism-lens/"],
-    lutPaths: ["assets/photofx/luts/cinema-style/"],
-  },
+
   "dark-trap-motion": {
-    overlayPaths: ["assets/photofx/overlays/smoke-fog/"],
+    overlayPaths: [
+      "assets/photofx/overlays/smoke-fog/",
+      "assets/photofx/overlays/dust-particles/",
+      "assets/photofx/overlays/glitch-noise/",
+    ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
 };
