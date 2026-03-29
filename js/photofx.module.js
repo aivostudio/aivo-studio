@@ -6,8 +6,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
   const FIXED_CREDIT_COST = 8;
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
-  const BOOT_RETRY_MAX = 60;
-  const BOOT_RETRY_MS = 250;
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
@@ -19,35 +17,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
   function getRoot() {
     return document.querySelector('section.pfxPage[data-module="photofx"]');
-  }
-
-  function isRootConnected(root) {
-    return !!(root && root.isConnected);
-  }
-
-  function isVisible(root) {
-    if (!root) return false;
-    if (!root.isConnected) return false;
-    if (root.hidden) return false;
-    if (root.getAttribute("aria-hidden") === "true") return false;
-    return true;
-  }
-
-  function ensureStateShape(state) {
-    if (!state || typeof state !== "object") return state;
-
-    if (!Array.isArray(state.presets)) state.presets = [];
-    if (!("imageFile" in state)) state.imageFile = null;
-    if (!("endImageFile" in state)) state.endImageFile = null;
-    if (!("logoFile" in state)) state.logoFile = null;
-    if (!("audioFile" in state)) state.audioFile = null;
-    if (!("audioFileName" in state)) state.audioFileName = "";
-    if (!("audioFileUrl" in state)) state.audioFileUrl = "";
-    if (!("audioFileUploadPromise" in state)) state.audioFileUploadPromise = null;
-    if (!("audioFileUploadStatus" in state)) state.audioFileUploadStatus = "idle";
-    if (!("audioFileUploadError" in state)) state.audioFileUploadError = "";
-
-    return state;
   }
 
   function getState(root) {
@@ -68,7 +37,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       };
     }
 
-    return ensureStateShape(root.__photofxState);
+    return root.__photofxState;
   }
 
   function ensureHiddenInput(root, id, accept) {
@@ -116,7 +85,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return `${safe.slice(0, max - 1)}…`;
   }
 
-  function renderUploadBadge(node, file, emptyText, clearKey, statusText = "") {
+  function renderUploadBadge(node, file, emptyText, clearKey) {
     if (!node) return;
 
     node.innerHTML = "";
@@ -135,9 +104,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     const name = document.createElement("div");
     name.className = "pfxUploadChipName";
     name.title = file.name || "";
-    name.textContent = statusText
-      ? `${truncateName(file.name || "", 22)} · ${statusText}`
-      : truncateName(file.name || "");
+    name.textContent = truncateName(file.name || "");
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
@@ -205,10 +172,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     if (!createBtn) return;
 
     createBtn.setAttribute("data-credit-cost", String(FIXED_CREDIT_COST));
-
-    if (!createBtn.disabled || !createBtn.classList.contains("is-loading")) {
-      createBtn.textContent = `🎬 Klip Oluştur (${FIXED_CREDIT_COST} Kredi)`;
-    }
+    createBtn.textContent = `🎬 Klip Oluştur (${FIXED_CREDIT_COST} Kredi)`;
   }
 
   function renderPresets(root) {
@@ -224,26 +188,41 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
   function renderUploads(root) {
     const state = getState(root);
-    if (!state) return;
 
-    const imageMeta = ensureUploadMetaNode(root, "pfxInlineUploadBtn", "pfxImageMeta");
-    const endImageMeta = ensureUploadMetaNode(root, "pfxEndImageUploadBtn", "pfxEndImageMeta");
-    const logoMeta = ensureUploadMetaNode(root, "pfxLogoUploadBtn", "pfxLogoMeta");
-    const audioMeta = ensureUploadMetaNode(root, "pfxAudioUploadBtn", "pfxAudioMeta");
+    const imageMeta = ensureUploadMetaNode(
+      root,
+      "pfxInlineUploadBtn",
+      "pfxImageMeta"
+    );
+
+    const endImageMeta = ensureUploadMetaNode(
+      root,
+      "pfxEndImageUploadBtn",
+      "pfxEndImageMeta"
+    );
+
+    const logoMeta = ensureUploadMetaNode(
+      root,
+      "pfxLogoUploadBtn",
+      "pfxLogoMeta"
+    );
+
+    const audioMeta = ensureUploadMetaNode(
+      root,
+      "pfxAudioUploadBtn",
+      "pfxAudioMeta"
+    );
 
     renderUploadBadge(imageMeta, state.imageFile, "Dosya seçilmedi", "image");
-    renderUploadBadge(endImageMeta, state.endImageFile, "Dosya seçilmedi", "end-image");
+
+    renderUploadBadge(
+      endImageMeta,
+      state.endImageFile,
+      "Dosya seçilmedi",
+      "end-image"
+    );
+
     renderUploadBadge(logoMeta, state.logoFile, "Dosya seçilmedi", "logo");
-
-    if (state.audioFileUploadStatus === "uploading") {
-      renderUploadBadge(audioMeta, state.audioFile, "Dosya seçilmedi", "audio", "Yükleniyor...");
-      return;
-    }
-
-    if (state.audioFileUploadStatus === "error") {
-      renderUploadBadge(audioMeta, state.audioFile, "Dosya seçilmedi", "audio", "Yükleme hatası");
-      return;
-    }
 
     renderUploadBadge(audioMeta, state.audioFile, "Dosya seçilmedi", "audio");
   }
@@ -301,7 +280,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   }
 
   function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((r) => setTimeout(r, ms));
   }
 
   function isReadyStatus(s) {
@@ -322,42 +301,18 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return outputs.filter((o) => {
       if (!o) return false;
 
-      const type = String(o.type || o.kind || o?.meta?.type || "").toLowerCase();
+      const type = String(
+        o.type || o.kind || o?.meta?.type || ""
+      ).toLowerCase();
+
       if (type && type !== "video") return false;
 
-      const app = String(o?.meta?.app || o?.app || o?.module || "").toLowerCase();
+      const app = String(
+        o?.meta?.app || o?.app || o?.module || ""
+      ).toLowerCase();
+
       return !app || app === "photofx";
     });
-  }
-
-  function pickBestReadyVideoUrl(statusJson, outputs) {
-    const outs = Array.isArray(outputs) ? outputs : [];
-
-    const preferredVariants = ["logo_overlay", "mux", "provider", "finalized", "preview"];
-    for (const variant of preferredVariants) {
-      const found = outs.find((o) => {
-        const v = String(o?.meta?.variant || "").toLowerCase().trim();
-        const url = String(o?.url || o?.video_url || o?.archive_url || "").trim();
-        return v === variant && !!url;
-      });
-      if (found) {
-        return String(found.url || found.video_url || found.archive_url || "").trim();
-      }
-    }
-
-    const anyVideo = outs.find((o) => {
-      const url = String(o?.url || o?.video_url || o?.archive_url || "").trim();
-      return !!url;
-    });
-
-    return String(
-      anyVideo?.url ||
-        anyVideo?.video_url ||
-        anyVideo?.archive_url ||
-        statusJson?.video?.url ||
-        statusJson?.video_url ||
-        ""
-    ).trim();
   }
 
   async function pollPhotoFxJob(job_id, opts = {}) {
@@ -385,7 +340,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
       const ready = isReadyStatus(j.status);
       const outs = pickPhotoFxVideoOutputs(j.outputs);
-      const directVideoUrl = pickBestReadyVideoUrl(j, outs);
+      const directVideoUrl = String(j?.video?.url || j?.video_url || "").trim();
 
       if (ready && (outs.length || directVideoUrl)) {
         const finalOutputs = outs.length
@@ -411,6 +366,99 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
           return variant === "logo_overlay";
         });
 
+const wantsEffects =
+  !!rawMeta?.effects ||
+  (Array.isArray(rawMeta?.styles) && rawMeta.styles.length > 0);
+
+const hasEffectsApplied = finalOutputs.some((o) => {
+  const variant = String(o?.meta?.variant || "").toLowerCase().trim();
+  return variant === "effects_applied";
+});
+console.log("[photofx] effects gate =", {
+  job_id,
+  ready,
+  wantsEffects,
+  hasEffectsApplied,
+  status: j?.status,
+  rawMeta,
+  finalOutputs,
+});
+if (wantsEffects && !hasEffectsApplied) {
+  const effectsRes = await fetch("/api/photofx/apply-effects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id }),
+  });
+
+  const effectsJson = await effectsRes.json().catch(() => null);
+  console.log("[photofx] apply effects =", effectsJson);
+
+  if (effectsRes.ok && effectsJson?.ok) {
+    const rr = await fetch(
+      `/api/jobs/status?job_id=${encodeURIComponent(job_id)}&t=${Date.now()}`
+    );
+    const rtext = await rr.text().catch(() => "");
+    let refreshed = null;
+
+    try {
+      refreshed = rtext ? JSON.parse(rtext) : null;
+    } catch (_) {
+      refreshed = null;
+    }
+
+    console.log("[photofx] refreshed after apply-effects =", refreshed);
+
+    if (refreshed?.ok) {
+const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
+
+const refreshedEffectsOutput = refreshedOuts.find((o) => {
+  const variant = String(o?.meta?.variant || "").toLowerCase().trim();
+  return variant === "effects_applied";
+});
+
+const refreshedDirectVideoUrl = String(
+  refreshedEffectsOutput?.url ||
+    refreshed?.video?.url ||
+    refreshed?.video_url ||
+    effectsJson?.effects_url ||
+    ""
+).trim();
+
+const refreshedFinalOutputs = refreshedOuts.length
+  ? refreshedOuts.map((o) => ({
+      ...o,
+      meta: { ...(o.meta || {}), app: "photofx" },
+    }))
+  : [
+      {
+        type: "video",
+        url: refreshedDirectVideoUrl,
+        meta: {
+          app: "photofx",
+          variant: "effects_applied",
+          is_final: false,
+        },
+      },
+    ];
+
+      window.dispatchEvent(
+        new CustomEvent("aivo:photofx:job_ready", {
+          detail: {
+            app: "photofx",
+            job_id,
+            status: String(refreshed.status || "ready").toLowerCase(),
+            video: refreshedDirectVideoUrl
+              ? { url: refreshedDirectVideoUrl }
+              : null,
+            outputs: refreshedFinalOutputs,
+            raw: refreshed,
+          },
+        })
+      );
+      return;
+    }
+  }
+}
         if (wantsLogo && !hasLogoOverlay) {
           const overlaySource =
             finalOutputs.find((o) => {
@@ -454,7 +502,12 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
               if (refreshed?.ok) {
                 const refreshedOuts = pickPhotoFxVideoOutputs(refreshed.outputs);
-                const refreshedDirectVideoUrl = pickBestReadyVideoUrl(refreshed, refreshedOuts);
+                const refreshedDirectVideoUrl = String(
+                  refreshed?.video?.url ||
+                    refreshed?.video_url ||
+                    overlayJson.url ||
+                    ""
+                ).trim();
 
                 const refreshedFinalOutputs = refreshedOuts.length
                   ? refreshedOuts.map((o) => ({
@@ -581,28 +634,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     return await uploadViaPresign(file, kind);
   }
 
-  async function resolveAudioUrl(root, form) {
-    const state = getState(root);
-
-    if (!form.includeAudio) return "";
-    if (!form.audioFile) return "";
-
-    const readyUrl = String(state?.audioFileUrl || "").trim();
-    if (readyUrl) return readyUrl;
-
-    if (state?.audioFileUploadPromise) {
-      return await state.audioFileUploadPromise;
-    }
-
-    const uploaded = await uploadFile(form.audioFile, "audio");
-    state.audioFile = form.audioFile;
-    state.audioFileUrl = String(uploaded || "").trim();
-    state.audioFileUploadStatus = "ready";
-    state.audioFileUploadError = "";
-    renderUploads(root);
-    return state.audioFileUrl;
-  }
-
   function collectForm(root) {
     const state = getState(root);
     const selectedPresets = getSelectedPresets(root);
@@ -620,7 +651,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       effectStrength: qs("#pfxEffectPower", root)?.value || "medium",
       colorMood: qs("#pfxColorMood", root)?.value || "original",
       transitionSpeed: qs("#pfxTransitionSpeed", root)?.value || "normal",
-      zoomLevel: qs("#pfxZoomLevel", root)?.value || "normal",
       includeAudio:
         String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
       imageFile: state.imageFile || null,
@@ -633,13 +663,13 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
   async function createPhotoFx(root) {
     const form = collectForm(root);
     const effectsApi = window.AIVOPhotoFxEffects || null;
-
-    const builtEffects = effectsApi?.buildEffectsPayload
-      ? effectsApi.buildEffectsPayload(form)
-      : {
-          preset: String(form.style || "").trim(),
-          styles: Array.isArray(form.styles) ? [...form.styles] : [],
-        };
+const builtEffects = effectsApi?.buildEffectsPayload
+  ? effectsApi.buildEffectsPayload(form)
+  : {
+      preset: String(form.style || "").trim(),
+      styles: Array.isArray(form.styles) ? [...form.styles] : [],
+      effectConfig: null,
+    };
 
     if (!form.prompt) {
       alert("Lütfen klip açıklamasını yaz.");
@@ -671,7 +701,10 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       ? await uploadFile(form.endImageFile, "end-image")
       : "";
     const logoUrl = form.logoFile ? await uploadFile(form.logoFile, "logo") : "";
-    const audioUrl = await resolveAudioUrl(root, form);
+    const audioUrl =
+      form.includeAudio && form.audioFile
+        ? statefulAudioUrlOrUploaded(root, form.audioFile)
+        : "";
 
     const providerVariant = "fast";
     const providerModel = "fal-ai/ltx-2.3/image-to-video/fast";
@@ -693,7 +726,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       effect_strength: form.effectStrength,
       color_mood: form.colorMood,
       transition_speed: form.transitionSpeed,
-      zoom_level: form.zoomLevel,
       include_audio: form.includeAudio,
       meta: {
         app: "photofx",
@@ -706,11 +738,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         resolution: form.resolution,
         fps: Number(form.fps || 25),
         aspect_ratio: form.ratio,
-        motion_level: form.motionLevel,
-        effect_strength: form.effectStrength,
-        color_mood: form.colorMood,
-        transition_speed: form.transitionSpeed,
-        zoom_level: form.zoomLevel,
         end_image_url: endImageUrl || "",
         logo_enabled: !!logoUrl,
         logo_name: form.logoFile?.name || "",
@@ -754,7 +781,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
             effectStrength: form.effectStrength,
             colorMood: form.colorMood,
             transitionSpeed: form.transitionSpeed,
-            zoomLevel: form.zoomLevel,
             includeAudio: form.includeAudio,
             imageUrl,
             endImageUrl,
@@ -783,7 +809,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       ratio: form.ratio,
       endImageUrl,
       logoUrl,
-      zoomLevel: form.zoomLevel,
     });
 
     pollPhotoFxJob(finalJobId, {
@@ -791,6 +816,13 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     }).catch((err) => {
       console.error("[photofx] poll error:", err);
     });
+  }
+
+  function statefulAudioUrlOrUploaded(root, audioFile) {
+    const state = getState(root);
+    const readyUrl = String(state?.audioFileUrl || "").trim();
+    if (readyUrl) return readyUrl;
+    return uploadFile(audioFile, "audio");
   }
 
   function initStateFromDOM(root) {
@@ -804,29 +836,28 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     state.presets = Array.from(new Set(activePresets));
   }
 
-  function syncRootUI(root) {
+  function boot() {
+    const root = getRoot();
     if (!root) return;
+
     initStateFromDOM(root);
+
     ensureHiddenInput(root, "pfxImageInput", "image/*");
     ensureHiddenInput(root, "pfxEndImageInput", "image/*");
     ensureHiddenInput(root, "pfxLogoInput", "image/*");
     ensureHiddenInput(root, "pfxAudioInput", "audio/*");
+
     ensureUploadMetaNode(root, "pfxInlineUploadBtn", "pfxImageMeta");
     ensureUploadMetaNode(root, "pfxEndImageUploadBtn", "pfxEndImageMeta");
     ensureUploadMetaNode(root, "pfxLogoUploadBtn", "pfxLogoMeta");
     ensureUploadMetaNode(root, "pfxAudioUploadBtn", "pfxAudioMeta");
+
     setPromptCounter(root);
     syncCreateButton(root);
     renderPresets(root);
     renderUploads(root);
     syncIncludeMusic(root);
     syncDurationRules(root);
-  }
-
-  function boot() {
-    const root = getRoot();
-    if (!root) return;
-    syncRootUI(root);
     bindEvents(root);
   }
 
@@ -934,7 +965,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       imageBtn.__bound = true;
       imageBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation();
         imageInput.click();
       });
     }
@@ -943,7 +973,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       endImageBtn.__bound = true;
       endImageBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation();
         endImageInput.click();
       });
     }
@@ -952,7 +981,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       logoBtn.__bound = true;
       logoBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation();
         logoInput.click();
       });
     }
@@ -961,7 +989,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       audioBtn.__bound = true;
       audioBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation();
         if (audioBtn.disabled) return;
         audioInput.click();
       });
@@ -999,10 +1026,15 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
 
     if (audioInput && !audioInput.__bound) {
       audioInput.__bound = true;
-      audioInput.addEventListener("change", () => {
+      audioInput.addEventListener("change", async () => {
         const file = audioInput.files?.[0] || null;
+        const audioMeta = ensureUploadMetaNode(
+          root,
+          "pfxAudioUploadBtn",
+          "pfxAudioMeta"
+        );
 
-        state.audioFile = file;
+        state.audioFile = null;
         state.audioFileName = file ? file.name : "";
         state.audioFileUrl = "";
         state.audioFileUploadPromise = null;
@@ -1015,7 +1047,23 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
           return;
         }
 
-        renderUploads(root);
+        if (audioMeta) {
+          audioMeta.innerHTML = "";
+          const chip = document.createElement("div");
+          chip.className = "pfxUploadChip";
+
+          const name = document.createElement("div");
+          name.className = "pfxUploadChipName";
+          name.title = file.name || "";
+          name.textContent = `${truncateName(
+            file.name || "",
+            22
+          )} · Yükleniyor...`;
+
+          chip.appendChild(name);
+          audioMeta.appendChild(chip);
+        }
+
         console.log("[photofx] audio uploading =", file?.name || null);
 
         state.audioFileUploadPromise = uploadFile(file, "audio")
@@ -1029,13 +1077,30 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
             return state.audioFileUrl;
           })
           .catch((err) => {
-            state.audioFile = file;
+            state.audioFile = null;
             state.audioFileUrl = "";
             state.audioFileUploadStatus = "error";
             state.audioFileUploadError = String(
               err?.message || err || "photofx_audio_upload_failed"
             );
-            renderUploads(root);
+
+            if (audioMeta) {
+              audioMeta.innerHTML = "";
+              const chip = document.createElement("div");
+              chip.className = "pfxUploadChip";
+
+              const name = document.createElement("div");
+              name.className = "pfxUploadChipName";
+              name.title = file.name || "";
+              name.textContent = `${truncateName(
+                file.name || "",
+                20
+              )} · Yükleme hatası`;
+
+              chip.appendChild(name);
+              audioMeta.appendChild(chip);
+            }
+
             console.error("[photofx] audio upload error =", err);
             alert(state.audioFileUploadError);
             throw err;
@@ -1053,7 +1118,9 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         if (clearBtn && nextRoot.contains(clearBtn)) {
           e.preventDefault();
           e.stopPropagation();
-          const clearKey = String(clearBtn.getAttribute("data-clear-upload") || "").trim();
+          const clearKey = String(
+            clearBtn.getAttribute("data-clear-upload") || ""
+          ).trim();
           if (clearKey) {
             clearFileSelection(nextRoot, clearKey);
           }
@@ -1064,7 +1131,9 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
         if (presetCard && nextRoot.contains(presetCard)) {
           e.preventDefault();
           const nextState = getState(nextRoot);
-          const preset = String(presetCard.getAttribute("data-preset") || "").trim();
+          const preset = String(
+            presetCard.getAttribute("data-preset") || ""
+          ).trim();
 
           if (!preset) return;
 
@@ -1109,6 +1178,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     const root = getRoot();
     const presetCards = root ? qsa(".pfxPresetCard[data-preset]", root) : [];
     const createBtn = root ? qs(".pfxCreateBtn", root) : null;
+
     const domReady = !!root && presetCards.length > 0 && !!createBtn;
 
     if (domReady) {
@@ -1117,7 +1187,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       return;
     }
 
-    if (attempt >= BOOT_RETRY_MAX) {
+    if (attempt >= 40) {
       console.warn("[PHOTOFX] root/children not ready after retry limit", {
         hasRoot: !!root,
         presetCards: presetCards.length,
@@ -1126,38 +1196,8 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       return;
     }
 
-    setTimeout(() => retryBoot(attempt + 1), BOOT_RETRY_MS);
+    setTimeout(() => retryBoot(attempt + 1), 250);
   }
-
-  function refreshPhotofxBindings() {
-    const root = getRoot();
-    if (!root || !isRootConnected(root)) return;
-    syncRootUI(root);
-    bindEvents(root);
-  }
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      setTimeout(refreshPhotofxBindings, 50);
-    }
-  });
-
-  window.addEventListener("focus", () => {
-    setTimeout(refreshPhotofxBindings, 50);
-  });
-
-  const observer = new MutationObserver(() => {
-    const root = getRoot();
-    if (!root || !isVisible(root)) return;
-    refreshPhotofxBindings();
-  });
-
-  observer.observe(document.documentElement || document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["class", "style", "hidden", "aria-hidden"],
-  });
 
   retryBoot();
 })();
