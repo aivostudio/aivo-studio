@@ -143,8 +143,8 @@ const PHOTOFX_HIDDEN_STYLE_PROMPTS = {
     "premium neon glow lines, rhythmic electric pulse energy, clean futuristic light streaks, vibrant nightclub color contrast, stylish high-end music video atmosphere, no smoke explosion, no fire, no messy particles",
   "shake-edit":
     "strong rhythmic micro camera shake, punch-in impact hits, fast edit energy, aggressive frame vibration, music-video-style page shake, sharp motion accents, intense visual hit feeling, no face distortion, no body warping, no identity change",
-  "glitch-scan":
-    "strong RGB split, digital screen tearing, scanline interference, corrupted signal texture, harsh glitch bursts, cyber visual breakdown, aggressive electronic distortion, screen jitter, broken transmission feeling, no fire, no smoke, no fantasy particles",
+   "glitch-scan":
+    "sharp glitch impact flashes, sudden electric screen crack feeling, aggressive frame tearing, strong horizontal and vertical split-screen distortion, brief RGB channel separation, harsh digital shock bursts, fast stutter cuts, intense screen jitter, lightning-like glitch strikes, cinematic signal break effect, keep the subject visible and recognizable, do not turn the whole frame into abstract noise, no fire, no smoke, no fantasy particles",
   "split-flash":
     "hard flash bursts, split-frame edit feeling, sharp white exposure hits, fast contrast pops, punchy transition impact, premium commercial edit energy, aggressive visual emphasis, no smoke, no fire, no extra objects",
   "cinematic-zoom":
