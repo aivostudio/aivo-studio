@@ -155,6 +155,10 @@ const PHOTOFX_HIDDEN_STYLE_PROMPTS = {
     "heated edge highlights, ember-like energy, subtle flame-inspired intensity, aggressive cinematic warmth, powerful visual tension",
   "dark-trap-motion":
     "dark moody atmosphere, trap-inspired visual tone, shadow-heavy cinematic motion, gritty nocturnal energy, bold attitude",
+  "smoke-fog":
+    "dense smoke haze, atmospheric fog layers, moody cinematic mist, mysterious stage-like depth, soft drifting visual texture",
+  "festival-laser":
+    "large concert laser beams, powerful festival stage energy, sweeping backlight rays, vivid nightlife atmosphere, high-energy performance feel",
 };
 
 const MOTION_LEVEL_PROMPTS = {
