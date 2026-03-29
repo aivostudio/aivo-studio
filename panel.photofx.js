@@ -428,10 +428,7 @@ function pickPreviewVideoFromJob(job) {
       const finalUrl = pickFinalVideoFromJob(job);
       const previewUrl = pickPreviewVideoFromJob(job);
 
-      const selectedPlaybackRawUrl = isFreshCard
-        ? finalUrl || previewUrl
-        : previewUrl || finalUrl;
-
+    const selectedPlaybackRawUrl = finalUrl || previewUrl;
       const playbackUrl = toMaybeProxyUrl(selectedPlaybackRawUrl);
       const ready = badge.kind === "ok" && !!playbackUrl;
 
