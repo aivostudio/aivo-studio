@@ -305,25 +305,7 @@ async function collectFilesFromPaths(pathsInput = [], exts = []) {
       continue;
     }
 
-    if (!st.isDirectory()) continue;
-
-    const names = await fsp.readdir(abs).catch(() => []);
-    for (const name of names) {
-      const file = path.join(abs, name);
-      const fst = await statSafe(file);
-      if (!fst || !fst.isFile()) continue;
-      const ext = path.extname(file).toLowerCase();
-      if (exts.length && !exts.includes(ext)) continue;
-      if (seen.has(file)) continue;
-      seen.add(file);
-      out.push(file);
-    }
-  }
-
-  out.sort();
-  return out;
-}
-
+   
 function seededHash(input) {
   const s = String(input || "");
   let h = 2166136261;
