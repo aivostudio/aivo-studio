@@ -129,38 +129,49 @@
   }
 
   function pickFinalVideoFromJob(job) {
-    const meta = job?.meta || {};
-    const outs = filterPhotoFxOutputs(job);
+const meta = job?.meta || {};
+const outs = filterPhotoFxOutputs(job);
 
-    const directFinal =
-      safeStr(job?.final) ||
-      safeStr(job?.final_url) ||
-      safeStr(job?.final_video_url) ||
-      safeStr(meta?.final) ||
-      safeStr(meta?.final_url) ||
-      safeStr(meta?.final_video_url);
+const directFinal =
+  safeStr(job?.final) ||
+  safeStr(job?.final_url) ||
+  safeStr(job?.final_video_url) ||
+  safeStr(meta?.final) ||
+  safeStr(meta?.final_url) ||
+  safeStr(meta?.final_video_url);
 
-    if (directFinal) return directFinal;
+if (directFinal) return directFinal;
 
-    const finalized = outs.find(
-      (o) => outputVariant(o) === "finalized" || o?.meta?.is_final === true
-    );
-    if (finalized) {
-      const u = pickOutputUrl(finalized);
-      if (u) return u;
-    }
+const directLogoOverlay =
+  safeStr(job?.logo_overlay_url) ||
+  safeStr(meta?.logo_overlay_url);
 
-    const provider = outs.find(
-      (o) => outputVariant(o) === "provider" || outputVariant(o) === "final"
-    );
-    if (provider) {
-      const u = pickOutputUrl(provider);
-      if (u) return u;
-    }
+if (directLogoOverlay) return directLogoOverlay;
 
-    const first = outs.find((o) => isVideoOutput(o)) || outs[0];
-    return pickOutputUrl(first);
-  }
+const finalized = outs.find(
+  (o) => outputVariant(o) === "finalized" || o?.meta?.is_final === true
+);
+if (finalized) {
+  const u = pickOutputUrl(finalized);
+  if (u) return u;
+}
+
+const overlay = outs.find((o) => outputVariant(o) === "logo_overlay");
+if (overlay) {
+  const u = pickOutputUrl(overlay);
+  if (u) return u;
+}
+
+const provider = outs.find(
+  (o) => outputVariant(o) === "provider" || outputVariant(o) === "final"
+);
+if (provider) {
+  const u = pickOutputUrl(provider);
+  if (u) return u;
+}
+
+const first = outs.find((o) => isVideoOutput(o)) || outs[0];
+return pickOutputUrl(first);
 
   function pickPreviewVideoFromJob(job) {
     const meta = job?.meta || {};
