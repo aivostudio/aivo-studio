@@ -302,9 +302,6 @@ async function collectFilesFromPaths(pathsInput = [], exts = []) {
   return out;
 }
 
-      continue;
-    }
-
    
 function seededHash(input) {
   const s = String(input || "");
