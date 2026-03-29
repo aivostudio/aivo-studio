@@ -301,25 +301,7 @@ async function collectFilesFromPaths(pathsInput = [], exts = []) {
   out.sort();
   return out;
 }
-async function collectFilesFromPaths(pathsInput = [], exts = []) {
-  const out = [];
-  const seen = new Set();
 
-  for (const raw of uniqStrings(pathsInput)) {
-    const abs = ensureAbsoluteAssetPath(raw);
-    if (!abs) continue;
-
-    const st = await statSafe(abs);
-    if (!st) continue;
-
-    if (st.isFile()) {
-      const ext = path.extname(abs).toLowerCase();
-      if (!exts.length || exts.includes(ext)) {
-        if (!seen.has(abs)) {
-          seen.add(abs);
-          out.push(abs);
-        }
-      }
       continue;
     }
 
