@@ -636,6 +636,7 @@ const builtEffects = {
       effect_strength: form.effectStrength,
       color_mood: form.colorMood,
       transition_speed: form.transitionSpeed,
+      zoom_level: form.zoomLevel,
       include_audio: form.includeAudio,
       meta: {
         app: "photofx",
