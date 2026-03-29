@@ -839,13 +839,13 @@ for (let i = 0; i < safeOverlayFiles.length; i++) {
     const scaled = `[ov${i}s]`;
     const enabled = buildOverlayEnableExpr(durationSec, safeMeta, i);
 
-    graph.push(
-      `${overlayInput}scale=iw:ih,format=rgba,colorchannelmixer=aa=${Number(
-        i === 0
-          ? safeMeta?.doseProfile?.overlayOpacity || 0.18
-          : safeMeta?.doseProfile?.secondaryOpacity || 0.08
-      ).toFixed(3)}${scaled}`
-    );
+   graph.push(
+  `${overlayInput}scale=main_w:main_h:force_original_aspect_ratio=increase,crop=main_w:main_h,format=rgba,colorchannelmixer=aa=${Number(
+    i === 0
+      ? safeMeta?.doseProfile?.overlayOpacity || 0.18
+      : safeMeta?.doseProfile?.secondaryOpacity || 0.08
+  ).toFixed(3)}${scaled}`
+);
 
     const nextLabel = `[v${i + 1}]`;
     const blendMode = String(
