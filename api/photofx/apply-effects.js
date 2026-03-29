@@ -626,23 +626,54 @@ function buildOverlayEnableExpr(durationSec, effectMeta = {}, index = 0) {
 }
 
 async function runFfmpegWithArgs(args, errorPrefix) {
+  const startedAt = Date.now();
+  console.log("[photofx/ffmpeg] start", {
+    errorPrefix,
+    argsPreview: Array.isArray(args) ? args.slice(0, 20) : [],
+    startedAt,
+  });
+
   await new Promise((resolve, reject) => {
     const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
     let stderr = "";
+
     p.stderr.on("data", (d) => {
       stderr += String(d || "");
     });
 
-    p.on("error", reject);
+    p.on("error", (err) => {
+      console.log("[photofx/ffmpeg] process_error", {
+        errorPrefix,
+        elapsedMs: Date.now() - startedAt,
+        message: String(err?.message || err || ""),
+      });
+      reject(err);
+    });
 
     p.on("close", (code) => {
-      if (code === 0) return resolve();
+      const elapsedMs = Date.now() - startedAt;
+
+      if (code === 0) {
+        console.log("[photofx/ffmpeg] done", {
+          errorPrefix,
+          code,
+          elapsedMs,
+        });
+        return resolve();
+      }
+
+      console.log("[photofx/ffmpeg] failed", {
+        errorPrefix,
+        code,
+        elapsedMs,
+        stderrTail: stderr.slice(-1600),
+      });
+
       reject(new Error(`${errorPrefix}:${code}:${stderr.slice(-1600)}`));
     });
   });
 }
-
 async function downloadToFile(url, outPath) {
   const r = await fetch(url);
   if (!r.ok) {
