@@ -1275,7 +1275,7 @@ const sourceVariant =
       effects_applied_preset: effectMeta.preset || "",
       effects_applied_styles: effectMeta.styles || [],
       effects: {
-        ...(meta?.effects || {}),
+      ...(meta?.effects || {}),
         applied: true,
         applied_at: new Date().toISOString(),
         source_variant: sourceVariant,
