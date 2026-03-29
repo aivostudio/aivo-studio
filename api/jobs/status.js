@@ -416,11 +416,12 @@ async function fetchFalAtmoStatus(req, { job_id, status_url, app }) {
     qs.set("job_id", String(job_id || "").trim());
   }
 
- const providerStatusPath =
+const providerStatusPath =
   String(app || "").toLowerCase() === "cartoon"
     ? "/api/providers/fal/cartoon/status"
+    : String(app || "").toLowerCase() === "photofx"
+    ? "/api/providers/fal/photofx/status"
     : "/api/providers/fal/video/status";
-
 const url = `${baseUrl}${providerStatusPath}?${qs.toString()}`;
 
   const r = await fetch(url, {
