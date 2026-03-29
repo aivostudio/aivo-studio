@@ -246,14 +246,21 @@ async function run() {
 
     const sql = neon(conn);
 
-    const rows = await sql`
-      select *
-      from jobs
-      where lower(app) = 'photofx'
-        andlower(coalesce(status::text, '')) = 'queued'
-      order by updated_at asc, created_at asc
-      limit 1
-    `;
+   const rows = await sql`
+  select *
+  from jobs
+  where lower(app) = 'photofx'
+    and lower(coalesce(status::text, '')) = 'queued'
+    and (
+      coalesce(meta->>'logo_overlay_url', '') <> ''
+      or coalesce(meta->>'muxed_url', '') <> ''
+      or coalesce(meta->>'preview_video_url', '') <> ''
+      or coalesce(meta->>'final_video_url', '') <> ''
+      or coalesce(outputs::text, '') ilike '%https://%'
+    )
+  order by updated_at asc, created_at asc
+  limit 1
+`;
 
     const job = rows[0] || null;
 
