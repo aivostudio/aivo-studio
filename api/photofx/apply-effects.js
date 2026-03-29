@@ -5,7 +5,6 @@
 // process: overlay + lut + color eq + optional stylized composite
 // output: R2 effects_applied mp4 + DB meta/output patch
 
-
 const { neon } = require("@neondatabase/serverless");
 const {
   S3Client,
@@ -62,6 +61,7 @@ function toArray(v) {
 function uniqStrings(arr = []) {
   return [...new Set(arr.map((x) => String(x || "").trim()).filter(Boolean))];
 }
+
 function ensureAbsoluteAssetPath(relPath) {
   const clean = String(relPath || "").trim().replace(/^\/+/, "");
   if (!clean) return "";
@@ -108,7 +108,6 @@ async function statSafe(p) {
 
 async function streamToBuffer(body) {
   if (!body) return Buffer.from([]);
-
   if (Buffer.isBuffer(body)) return body;
   if (body instanceof Uint8Array) return Buffer.from(body);
 
@@ -188,7 +187,38 @@ async function listR2KeysForPrefix(prefix, exts = []) {
   return out;
 }
 
-async function collectFilesFromPaths(pathsInput = [], exts = []) {
+function seededHash(input) {
+  const s = String(input || "");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h >>> 0);
+}
+
+function pickDeterministic(list = [], seed = "", count = 1) {
+  const arr = Array.isArray(list) ? list.slice() : [];
+  if (!arr.length || count <= 0) return [];
+
+  const out = [];
+  const used = new Set();
+  let h = seededHash(seed);
+
+  while (out.length < Math.min(count, arr.length)) {
+    const idx = h % arr.length;
+    const item = arr[idx];
+    if (!used.has(item)) {
+      used.add(item);
+      out.push(item);
+    }
+    h = seededHash(`${seed}:${h}:${out.length}`);
+  }
+
+  return out;
+}
+
+async function collectFilesFromPaths(pathsInput = [], exts = [], maxFilesPerDir = 4) {
   const out = [];
   const seen = new Set();
 
@@ -212,7 +242,13 @@ async function collectFilesFromPaths(pathsInput = [], exts = []) {
 
     if (localStat?.isDirectory()) {
       const names = await fsp.readdir(abs).catch(() => []);
-      for (const name of names) {
+      const pickedLocalNames = pickDeterministic(
+        names,
+        `local:${clean}:${exts.join(",")}`,
+        maxFilesPerDir
+      );
+
+      for (const name of pickedLocalNames) {
         const file = path.join(abs, name);
         const fst = await statSafe(file);
         if (!fst || !fst.isFile()) continue;
@@ -250,17 +286,16 @@ async function collectFilesFromPaths(pathsInput = [], exts = []) {
     const keyOrPrefix = stripLeadingSlashes(clean);
 
     if (isDirectoryLikeAssetPath(clean)) {
-     const keys = await listR2KeysForPrefix(keyOrPrefix, exts);
-const pickedKeys = pickDeterministic(
-  keys,
-  `collect:${clean}:${exts.join(",")}`,
-  4
-);
+      const keys = await listR2KeysForPrefix(keyOrPrefix, exts);
+      const pickedKeys = pickDeterministic(
+        keys,
+        `collect:${clean}:${exts.join(",")}`,
+        maxFilesPerDir
+      );
 
-for (const key of pickedKeys) {
+      for (const key of pickedKeys) {
         if (seen.has(key)) continue;
 
-        const ext = path.extname(key).toLowerCase();
         const tmpFile = path.join(
           os.tmpdir(),
           `aivo-asset-${Date.now()}-${Math.random()
@@ -307,43 +342,12 @@ for (const key of pickedKeys) {
   return out;
 }
 
-   
-function seededHash(input) {
-  const s = String(input || "");
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return Math.abs(h >>> 0);
-}
-
-function pickDeterministic(list = [], seed = "", count = 1) {
-  const arr = Array.isArray(list) ? list.slice() : [];
-  if (!arr.length || count <= 0) return [];
-
-  const out = [];
-  const used = new Set();
-  let h = seededHash(seed);
-
-  while (out.length < Math.min(count, arr.length)) {
-    const idx = h % arr.length;
-    const item = arr[idx];
-    if (!used.has(item)) {
-      used.add(item);
-      out.push(item);
-    }
-    h = seededHash(`${seed}:${h}:${out.length}`);
-  }
-
-  return out;
-}
-
 function normalizeNumber(v, fallback, min, max) {
   const n = Number(v);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, n));
 }
+
 const PHOTOFX_STYLE_ASSET_MAP = {
   "neon-pulse": {
     overlayPaths: [
@@ -354,9 +358,7 @@ const PHOTOFX_STYLE_ASSET_MAP = {
   },
 
   "shake-edit": {
-    overlayPaths: [
-      "assets/photofx/overlays/film-burns-flash/",
-    ],
+    overlayPaths: ["assets/photofx/overlays/film-burns-flash/"],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
 
@@ -412,6 +414,7 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
 };
+
 function resolveEffectMeta(meta = {}) {
   const effects = meta?.effects || {};
   const effectConfig = effects?.effectConfig || {};
@@ -495,12 +498,13 @@ function resolveEffectMeta(meta = {}) {
         .trim()
         .toLowerCase(),
       transitionSpeed: String(
-        runtime?.transitionSpeed || meta?.transition_speed || "normal")
+        runtime?.transitionSpeed || meta?.transition_speed || "normal"
+      )
         .trim()
         .toLowerCase(),
     },
-   };
- }
+  };
+}
 
 function buildColorEq(effectMeta = {}) {
   const mood = String(
@@ -642,7 +646,7 @@ async function downloadToFile(url, outPath) {
   await fsp.writeFile(outPath, buf);
 }
 
-async function probeVideoDurationSec(inputPath) {
+async function probeVideoInfo(inputPath) {
   return await new Promise((resolve, reject) => {
     const args = ["-i", inputPath];
     const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
@@ -655,18 +659,29 @@ async function probeVideoDurationSec(inputPath) {
     p.on("error", reject);
 
     p.on("close", () => {
-      const m = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/i);
-      if (!m) return resolve(0);
+      const durationMatch = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/i);
+      const videoMatch = stderr.match(/Video:.*?(\d{2,5})x(\d{2,5})/i);
 
-      const hh = Number(m[1] || 0);
-      const mm = Number(m[2] || 0);
-      const ss = Number(m[3] || 0);
-      const total = hh * 3600 + mm * 60 + ss;
+      let durationSec = 0;
+      if (durationMatch) {
+        const hh = Number(durationMatch[1] || 0);
+        const mm = Number(durationMatch[2] || 0);
+        const ss = Number(durationMatch[3] || 0);
+        durationSec = hh * 3600 + mm * 60 + ss;
+      }
 
-      resolve(Number.isFinite(total) ? total : 0);
+      const width = Number(videoMatch?.[1] || 0);
+      const height = Number(videoMatch?.[2] || 0);
+
+      resolve({
+        durationSec: Number.isFinite(durationSec) ? durationSec : 0,
+        width: Number.isFinite(width) ? width : 0,
+        height: Number.isFinite(height) ? height : 0,
+      });
     });
   });
 }
+
 async function canOpenMediaInput(inputPath) {
   return await new Promise((resolve) => {
     const args = [
@@ -707,11 +722,14 @@ async function canOpenMediaInput(inputPath) {
     });
   });
 }
+
 async function runPhotofxEffectsApply({
   inputPath,
   outputPath,
   effectMeta,
   durationSec = 6,
+  baseWidth = 0,
+  baseHeight = 0,
   seed = "",
 }) {
   const safeMeta = effectMeta || resolveEffectMeta({});
@@ -722,77 +740,83 @@ async function runPhotofxEffectsApply({
         .filter(Boolean)
     : [];
 
- const overlayFilesAll = await collectFilesFromPaths(
-  safeMeta?.overlayPaths || [],
-  [".mp4", ".mov", ".webm"]
-);
+  const overlayFilesAll = await collectFilesFromPaths(
+    safeMeta?.overlayPaths || [],
+    [".mp4", ".mov", ".webm"],
+    4
+  );
 
-const lutFilesAll = await collectFilesFromPaths(safeMeta?.lutPaths || [], [
-  ".cube",
-  ".3dl",
-]);
+  const lutFilesAll = await collectFilesFromPaths(
+    safeMeta?.lutPaths || [],
+    [".cube", ".3dl"],
+    2
+  );
 
-const overlaySourcePaths = uniqStrings(safeMeta?.overlayPaths || []);
-const lutSourcePaths = uniqStrings(safeMeta?.lutPaths || []);
+  const overlaySourcePaths = uniqStrings(safeMeta?.overlayPaths || []);
+  const lutSourcePaths = uniqStrings(safeMeta?.lutPaths || []);
 
   const maxOverlayCount = Math.max(
     1,
     Math.min(4, Number(safeMeta?.doseProfile?.maxOverlayCount || 1))
   );
 
-const overlayFiles = pickDeterministic(
-  overlayFilesAll,
-  `${seed}:${safePreset}:${safeStyles.join(",")}:overlay`,
-  maxOverlayCount
-);
-
-const overlayValidation = await Promise.all(
-  overlayFiles.map(async (file) => {
-    const ok = await canOpenMediaInput(file);
-    return { file, ok };
-  })
-);
-
-const safeOverlayFiles = overlayValidation
-  .filter((x) => x.ok)
-  .map((x) => x.file);
-
-const rejectedOverlayFiles = overlayValidation
-  .filter((x) => !x.ok)
-  .map((x) => x.file);
-
-if (safeOverlayFiles.length < maxOverlayCount) {
-  const fallbackCandidates = overlayFilesAll.filter(
-    (file) =>
-      !safeOverlayFiles.includes(file) &&
-      !rejectedOverlayFiles.includes(file)
+  const overlayFiles = pickDeterministic(
+    overlayFilesAll,
+    `${seed}:${safePreset}:${safeStyles.join(",")}:overlay`,
+    maxOverlayCount
   );
 
-  for (const file of fallbackCandidates) {
-    const ok = await canOpenMediaInput(file);
+  const overlayValidation = await Promise.all(
+    overlayFiles.map(async (file) => {
+      const ok = await canOpenMediaInput(file);
+      return { file, ok };
+    })
+  );
 
-    if (!ok) {
-      rejectedOverlayFiles.push(file);
-      continue;
-    }
+  const safeOverlayFiles = overlayValidation
+    .filter((x) => x.ok)
+    .map((x) => x.file);
 
-    safeOverlayFiles.push(file);
+  const rejectedOverlayFiles = overlayValidation
+    .filter((x) => !x.ok)
+    .map((x) => x.file);
 
-    if (safeOverlayFiles.length >= maxOverlayCount) {
-      break;
+  if (safeOverlayFiles.length < maxOverlayCount) {
+    const fallbackCandidates = overlayFilesAll.filter(
+      (file) =>
+        !safeOverlayFiles.includes(file) &&
+        !rejectedOverlayFiles.includes(file)
+    );
+
+    for (const file of fallbackCandidates) {
+      const ok = await canOpenMediaInput(file);
+
+      if (!ok) {
+        rejectedOverlayFiles.push(file);
+        continue;
+      }
+
+      safeOverlayFiles.push(file);
+
+      if (safeOverlayFiles.length >= maxOverlayCount) {
+        break;
+      }
     }
   }
-}
-console.log("[photofx/runPhotofxEffectsApply] asset collect debug =", {
-  preset: safePreset,
-  styles: safeStyles,
-  overlaySourcePaths,
-  lutSourcePaths,
-  overlayFilesAllCount: overlayFilesAll.length,
-  lutFilesAllCount: lutFilesAll.length,
-  overlayFilesAllSample: overlayFilesAll.slice(0, 10),
-  lutFilesAllSample: lutFilesAll.slice(0, 10),
-});
+
+  console.log("[photofx/runPhotofxEffectsApply] asset collect debug =", {
+    preset: safePreset,
+    styles: safeStyles,
+    overlaySourcePaths,
+    lutSourcePaths,
+    overlayFilesAllCount: overlayFilesAll.length,
+    lutFilesAllCount: lutFilesAll.length,
+    overlayFilesAllSample: overlayFilesAll.slice(0, 10),
+    lutFilesAllSample: lutFilesAll.slice(0, 10),
+    baseWidth,
+    baseHeight,
+  });
+
   const lutFiles = pickDeterministic(
     lutFilesAll,
     `${seed}:${safePreset}:${safeStyles.join(",")}:lut`,
@@ -800,10 +824,10 @@ console.log("[photofx/runPhotofxEffectsApply] asset collect debug =", {
   );
 
   const shouldProcess =
-  !!safePreset ||
-  safeStyles.length > 0 ||
-  overlaySourcePaths.length > 0 ||
-  lutSourcePaths.length > 0;
+    !!safePreset ||
+    safeStyles.length > 0 ||
+    overlaySourcePaths.length > 0 ||
+    lutSourcePaths.length > 0;
 
   if (!shouldProcess) {
     await fsp.copyFile(inputPath, outputPath);
@@ -821,6 +845,10 @@ console.log("[photofx/runPhotofxEffectsApply] asset collect debug =", {
     };
   }
 
+  if (!baseWidth || !baseHeight) {
+    throw new Error("base_video_dimensions_missing");
+  }
+
   const baseFilter = buildBaseVisualFilter(safeMeta);
   const inputs = ["-y", "-i", inputPath];
   const graph = [];
@@ -831,21 +859,22 @@ console.log("[photofx/runPhotofxEffectsApply] asset collect debug =", {
     graph.push(`${currentLabel}${baseFilter}[v0]`);
     currentLabel = "[v0]";
   }
-for (let i = 0; i < safeOverlayFiles.length; i++) {
-   const overlayFile = safeOverlayFiles[i];
+
+  for (let i = 0; i < safeOverlayFiles.length; i++) {
+    const overlayFile = safeOverlayFiles[i];
     inputs.push("-stream_loop", "-1", "-i", overlayFile);
 
     const overlayInput = `[${inputIndex}:v]`;
     const scaled = `[ov${i}s]`;
     const enabled = buildOverlayEnableExpr(durationSec, safeMeta, i);
 
-   graph.push(
-  `${overlayInput}scale=main_w:main_h:force_original_aspect_ratio=increase,crop=main_w:main_h,format=rgba,colorchannelmixer=aa=${Number(
-    i === 0
-      ? safeMeta?.doseProfile?.overlayOpacity || 0.18
-      : safeMeta?.doseProfile?.secondaryOpacity || 0.08
-  ).toFixed(3)}${scaled}`
-);
+    graph.push(
+      `${overlayInput}scale=${baseWidth}:${baseHeight}:force_original_aspect_ratio=increase,crop=${baseWidth}:${baseHeight},format=rgba,colorchannelmixer=aa=${Number(
+        i === 0
+          ? safeMeta?.doseProfile?.overlayOpacity || 0.18
+          : safeMeta?.doseProfile?.secondaryOpacity || 0.08
+      ).toFixed(3)}${scaled}`
+    );
 
     const nextLabel = `[v${i + 1}]`;
     const blendMode = String(
@@ -875,32 +904,33 @@ for (let i = 0; i < safeOverlayFiles.length; i++) {
   }
 
   let finalVideoLabel = currentLabel;
-if (lutFiles.length > 0) {
-  const lutPath = lutFiles[0].replace(/\\/g, "/").replace(/:/g, "\\:");
-  const splitA = "[vprelut]";
-  const splitB = "[vbase]";
-  const lutOut = "[vlut]";
 
-  graph.push(`${currentLabel}split=2${splitA}${splitB}`);
-  graph.push(`${splitA}lut3d=file='${lutPath}'${lutOut}`);
+  if (lutFiles.length > 0) {
+    const lutPath = lutFiles[0].replace(/\\/g, "/").replace(/:/g, "\\:");
+    const splitA = "[vprelut]";
+    const splitB = "[vbase]";
+    const lutOut = "[vlut]";
 
-  const intensity = Math.max(
-    0,
-    Math.min(1, Number(safeMeta?.doseProfile?.lutIntensity || 0.3))
-  );
+    graph.push(`${currentLabel}split=2${splitA}${splitB}`);
+    graph.push(`${splitA}lut3d=file='${lutPath}'${lutOut}`);
 
-  if (intensity >= 0.999) {
-    finalVideoLabel = lutOut;
-  } else {
-    const mixOut = "[vfinal]";
-    graph.push(
-      `${splitB}${lutOut}blend=all_mode=normal:all_opacity=${intensity.toFixed(
-        3
-      )}${mixOut}`
+    const intensity = Math.max(
+      0,
+      Math.min(1, Number(safeMeta?.doseProfile?.lutIntensity || 0.3))
     );
-    finalVideoLabel = mixOut;
+
+    if (intensity >= 0.999) {
+      finalVideoLabel = lutOut;
+    } else {
+      const mixOut = "[vfinal]";
+      graph.push(
+        `${splitB}${lutOut}blend=all_mode=normal:all_opacity=${intensity.toFixed(
+          3
+        )}${mixOut}`
+      );
+      finalVideoLabel = mixOut;
+    }
   }
-}
 
   const args = [
     ...inputs,
@@ -933,12 +963,12 @@ if (lutFiles.length > 0) {
   return {
     ok: true,
     applied: true,
-    mode: "ffmpeg_overlay_lut_composite_v1",
+    mode: "ffmpeg_overlay_lut_composite_v2",
     preset: safePreset,
     styles: safeStyles,
     outputPath,
     overlay_assets_found: overlayFilesAll,
-     overlay_assets_used: safeOverlayFiles,
+    overlay_assets_used: safeOverlayFiles,
     overlay_assets_rejected: rejectedOverlayFiles,
     lut_assets_found: lutFilesAll,
     lut_assets_used: lutFiles,
@@ -1059,17 +1089,20 @@ function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
   return arr;
 }
 
-function pickBestSourceOutput(outputs = []) {
+function pickBestSourceOutput(outputs = [], options = {}) {
   const arr = Array.isArray(outputs) ? outputs : [];
+  const excludeVariants = new Set(
+    toArray(options?.excludeVariants).map((v) => String(v || "").toLowerCase())
+  );
 
   const variants = [
     "logo_overlay",
-    "effects_applied",
     "mux",
     "provider",
     "finalized",
     "preview",
-  ];
+    "effects_applied",
+  ].filter((variant) => !excludeVariants.has(variant));
 
   for (const variant of variants) {
     const found = arr.find(
@@ -1084,7 +1117,13 @@ function pickBestSourceOutput(outputs = []) {
     }
   }
 
-  const anyVideo = arr.find((o) => isVideo(o) && pickUrl(o));
+  const anyVideo = arr.find(
+    (o) =>
+      isVideo(o) &&
+      pickUrl(o) &&
+      !excludeVariants.has(normVariant(o) || "video")
+  );
+
   if (anyVideo) {
     return {
       variant: normVariant(anyVideo) || "video",
@@ -1102,12 +1141,13 @@ module.exports = async function handler(req, res) {
   }
 
   let tmpDir = null;
- const photofxAssetDebug = {
-  cwd: process.cwd(),
-  asset_mode: "r2_or_public_url",
-  overlay_source_paths: [],
-  lut_source_paths: [],
-};
+
+  const photofxAssetDebug = {
+    cwd: process.cwd(),
+    asset_mode: "r2_or_public_url",
+    overlay_source_paths: [],
+    lut_source_paths: [],
+  };
 
   try {
     const body = req.body || {};
@@ -1149,16 +1189,17 @@ module.exports = async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
     const effectMeta = resolveEffectMeta(meta);
-    photofxAssetDebug.overlay_source_paths = effectMeta?.overlayPaths || [];
-photofxAssetDebug.lut_source_paths = effectMeta?.lutPaths || [];
 
-console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
+    photofxAssetDebug.overlay_source_paths = effectMeta?.overlayPaths || [];
+    photofxAssetDebug.lut_source_paths = effectMeta?.lutPaths || [];
+
+    console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
     console.log("[photofx/apply-effects] resolved effect meta =", {
-  preset: effectMeta?.preset || "",
-  styles: effectMeta?.styles || [],
-  overlayPaths: effectMeta?.overlayPaths || [],
-  lutPaths: effectMeta?.lutPaths || [],
-});
+      preset: effectMeta?.preset || "",
+      styles: effectMeta?.styles || [],
+      overlayPaths: effectMeta?.overlayPaths || [],
+      lutPaths: effectMeta?.lutPaths || [],
+    });
 
     const existingEffectsOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "effects_applied"
@@ -1175,26 +1216,28 @@ console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
       });
     }
 
-   const sourceOutput = pickBestSourceOutput(outputs);
+    const sourceOutput = pickBestSourceOutput(outputs, {
+      excludeVariants: force ? ["effects_applied"] : [],
+    });
 
-const sourceFromMeta =
-  String(meta?.logo_overlay_url || "").trim() ||
-  String(meta?.muxed_url || "").trim() ||
-  String(meta?.preview_video_url || "").trim() ||
-  String(meta?.final_video_url || "").trim();
+    const sourceFromMeta =
+      String(meta?.logo_overlay_url || "").trim() ||
+      String(meta?.muxed_url || "").trim() ||
+      String(meta?.preview_video_url || "").trim() ||
+      String(meta?.final_video_url || "").trim();
 
-const sourceUrl = sourceOutput?.url || sourceFromMeta || "";
-const sourceVariant =
-  sourceOutput?.variant ||
-  (meta?.logo_overlay_url
-    ? "logo_overlay"
-    : meta?.muxed_url
-    ? "mux"
-    : meta?.preview_video_url
-    ? "preview"
-    : meta?.final_video_url
-    ? "finalized"
-    : "provider");
+    const sourceUrl = sourceOutput?.url || sourceFromMeta || "";
+    const sourceVariant =
+      sourceOutput?.variant ||
+      (meta?.logo_overlay_url
+        ? "logo_overlay"
+        : meta?.muxed_url
+        ? "mux"
+        : meta?.preview_video_url
+        ? "preview"
+        : meta?.final_video_url
+        ? "finalized"
+        : "provider");
 
     if (!sourceUrl) {
       return res.status(400).json({
@@ -1216,13 +1259,18 @@ const sourceVariant =
 
     await downloadToFile(sourceUrl, inputPath);
 
-    const inputDurationSec = await probeVideoDurationSec(inputPath);
+    const videoInfo = await probeVideoInfo(inputPath);
+    const inputDurationSec = Number(videoInfo?.durationSec || 0);
+    const baseWidth = Number(videoInfo?.width || 0);
+    const baseHeight = Number(videoInfo?.height || 0);
 
     const effectResult = await runPhotofxEffectsApply({
       inputPath,
       outputPath,
       effectMeta,
       durationSec: inputDurationSec,
+      baseWidth,
+      baseHeight,
       seed: job_id,
     });
 
@@ -1242,13 +1290,18 @@ const sourceVariant =
     await verifyPublicUrl(effects_url, "effects_applied");
 
     let nextOutputs = removeFinalFlags(outputs);
-    nextOutputs = upsertVideoOutput(nextOutputs, "effects_applied", effects_url, {
-      is_effects_applied: true,
-      is_final: false,
-      source_variant: sourceVariant,
-      preset: effectMeta.preset || "",
-      styles: effectMeta.styles || [],
-    });
+    nextOutputs = upsertVideoOutput(
+      nextOutputs,
+      "effects_applied",
+      effects_url,
+      {
+        is_effects_applied: true,
+        is_final: false,
+        source_variant: sourceVariant,
+        preset: effectMeta.preset || "",
+        styles: effectMeta.styles || [],
+      }
+    );
 
     const patchMeta = {
       effects_applied_url: effects_url,
@@ -1259,7 +1312,7 @@ const sourceVariant =
       effects_applied_preset: effectMeta.preset || "",
       effects_applied_styles: effectMeta.styles || [],
       effects: {
-      ...(meta?.effects || {}),
+        ...(meta?.effects || {}),
         applied: true,
         applied_at: new Date().toISOString(),
         source_variant: sourceVariant,
@@ -1274,8 +1327,8 @@ const sourceVariant =
         overlay_assets_found: effectResult.overlay_assets_found || [],
         overlay_assets_used: effectResult.overlay_assets_used || [],
         overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
-       lut_assets_found: effectResult.lut_assets_found || [],
-       lut_assets_used: effectResult.lut_assets_used || [],
+        lut_assets_found: effectResult.lut_assets_found || [],
+        lut_assets_used: effectResult.lut_assets_used || [],
       },
       asset_debug: photofxAssetDebug,
     };
@@ -1289,7 +1342,7 @@ const sourceVariant =
       where id = ${job_id}::uuid
     `;
 
-     return res.status(200).json({
+    return res.status(200).json({
       ok: true,
       job_id,
       step: "effects_applied",
