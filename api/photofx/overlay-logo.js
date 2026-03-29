@@ -231,18 +231,20 @@ export default async function handler(req, res) {
       ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
       : 8000000;
 
- const filter = [
-  `[1:v]scale=iw*${sizeFactor}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
-  `[0:v][lg]overlay=${overlayPos}:format=auto[v]`,
+const filter = [
+  `[1:v][0:v]scale2ref=w=main_w*${sizeFactor}:h=ow/mdar[lg][base]`,
+  `[lg]format=rgba,colorchannelmixer=aa=${opacity}[lg2]`,
+  `[base][lg2]overlay=${overlayPos}:format=auto[v]`,
 ].join(";");
 
     await run(ffmpegPath, [
       "-y",
       "-i",
    "-i",
+"-i",
 inputVideo,
-"-stream_loop",
-"-1",
+"-loop",
+"1",
 "-i",
 inputLogo,
       "-filter_complex",
