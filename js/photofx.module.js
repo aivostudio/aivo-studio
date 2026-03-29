@@ -578,7 +578,7 @@ const builtEffects = {
     effectStrength: String(form.effectStrength || "medium").trim(),
     colorMood: String(form.colorMood || "original").trim(),
     transitionSpeed: String(form.transitionSpeed || "normal").trim(),
-    zoomLevel: String(qs("#pfxZoomLevel", root)?.value || "normal").trim(),
+    zoomLevel: String(form.zoomLevel || "normal").trim(),
   },
 };
     if (!form.prompt) {
