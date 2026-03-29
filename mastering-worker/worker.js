@@ -250,7 +250,7 @@ async function run() {
       select *
       from jobs
       where lower(app) = 'photofx'
-        and lower(coalesce(status, '')) = 'queued'
+        andlower(coalesce(status::text, '')) = 'queued'
       order by updated_at asc, created_at asc
       limit 1
     `;
