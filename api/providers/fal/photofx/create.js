@@ -140,25 +140,25 @@ function normalizeStyleKey(v) {
 
 const PHOTOFX_HIDDEN_STYLE_PROMPTS = {
   "neon-pulse":
-    "subtle neon glow, rhythmic pulse energy, vibrant electric atmosphere, cinematic light accents, sleek futuristic motion",
+    "premium neon glow lines, rhythmic electric pulse energy, clean futuristic light streaks, vibrant nightclub color contrast, stylish high-end music video atmosphere, no smoke explosion, no fire, no messy particles",
   "shake-edit":
-    "micro camera shake feeling, punchy motion accents, sharp rhythmic energy, aggressive social edit tone, fast-impact movement style",
+    "strong rhythmic micro camera shake, punch-in impact hits, fast edit energy, aggressive frame vibration, music-video-style page shake, sharp motion accents, intense visual hit feeling, no face distortion, no body warping, no identity change",
   "glitch-scan":
-    "digital glitch texture, scanline distortion feel, signal interference aesthetic, edgy cyber movement, controlled visual chaos",
+    "strong RGB split, digital screen tearing, scanline interference, corrupted signal texture, harsh glitch bursts, cyber visual breakdown, aggressive electronic distortion, screen jitter, broken transmission feeling, no fire, no smoke, no fantasy particles",
   "split-flash":
-    "sharp strobe-like energy, fast contrast bursts, dynamic flash accents, punchy cinematic transitions, high-impact motion feel",
+    "hard flash bursts, split-frame edit feeling, sharp white exposure hits, fast contrast pops, punchy transition impact, premium commercial edit energy, aggressive visual emphasis, no smoke, no fire, no extra objects",
   "cinematic-zoom":
-    "cinematic camera intensity, dramatic push-in feeling, immersive framing, polished film-like motion, strong visual focus",
+    "premium cinematic push-in, dramatic focus pull, immersive framing, elegant camera pressure, polished film-trailer motion, high-end visual tension, clean luxury video feel, no chaotic movement, no distortion",
   "aura-glow":
-    "soft luminous aura, dreamy glow, ethereal light bloom, elegant atmospheric energy, smooth cinematic softness",
+    "soft luminous aura around the subject, dreamy bloom light, elegant ethereal glow, premium mystical atmosphere, smooth cinematic softness, high-end fantasy portrait motion, no fire, no heavy smoke, no glitch artifacts",
   "fire-edge":
-    "heated edge highlights, ember-like energy, subtle flame-inspired intensity, aggressive cinematic warmth, powerful visual tension",
+    "intense edge fire glow, ember-lit contour highlights, aggressive cinematic heat energy, premium flame rim light, powerful dramatic warmth, high-impact visual tension, no random explosions, no laser beams, no smoke cloud blocking the face",
   "dark-trap-motion":
-    "dark moody atmosphere, trap-inspired visual tone, shadow-heavy cinematic motion, gritty nocturnal energy, bold attitude",
+    "dark luxury trap atmosphere, shadow-heavy music video tone, bold cinematic darkness, moody contrast, gritty premium nightlife energy, dramatic attitude, subtle menace, no fantasy glow, no cheerful colors, no soft dreamy haze",
   "smoke-fog":
-    "dense smoke haze, atmospheric fog layers, moody cinematic mist, mysterious stage-like depth, soft drifting visual texture",
+    "cinematic low-lying smoke, controlled drifting fog layers, moody stage haze behind and around the subject, soft atmospheric depth, clean premium mist, luxury nightclub smoke feeling, keep the face visible, no heavy white cloud, no smoke explosion, no fire",
   "festival-laser":
-    "large concert laser beams, powerful festival stage energy, sweeping backlight rays, vivid nightlife atmosphere, high-energy performance feel",
+    "powerful clean concert laser beams behind the subject, sharp parallel laser rays, sweeping nightclub backlight, premium festival stage look, intense beam geometry, high-energy performance atmosphere, luxury concert visual, no flames, no fireballs, no pyrotechnics, no smoke explosion",
 };
 
 const MOTION_LEVEL_PROMPTS = {
