@@ -1967,28 +1967,29 @@
     object-fit: cover;
     object-position: center center;
   }
- #photofx-clip .photofx-thumbs{
+#photofx-clip .photofx-thumbs{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 14px;
+  grid-template-columns: repeat(3, minmax(0, 170px));
+  justify-content: start;
+  gap: 18px;
+  margin-top: 16px;
 }
 
 #photofx-clip .photofx-shot{
   min-width: 0;
+  width: 170px;
 }
 
 #photofx-clip .photofx-thumb{
   display: block;
   width: 100%;
-  height: 88px;
+  height: 74px;
   object-fit: cover;
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
   background: rgba(255,255,255,.04);
 }
-
 #photofx-clip .photofx-shot-label{
   margin-top: 8px;
   text-align: center;
@@ -2174,17 +2175,17 @@
 
 <div class="photofx-thumbs">
   <div class="photofx-shot">
-    <img class="photofx-thumb" src="/media/photofx-original.jpg" alt="" loading="lazy" />
+    <div class="photofx-thumb photofx-thumb--original" aria-hidden="true"></div>
     <div class="photofx-shot-label">Orijinal</div>
   </div>
 
   <div class="photofx-shot">
-    <img class="photofx-thumb" src="/media/photofx-glow.jpg" alt="" loading="lazy" />
+    <div class="photofx-thumb photofx-thumb--glow" aria-hidden="true"></div>
     <div class="photofx-shot-label">Glow</div>
   </div>
 
   <div class="photofx-shot">
-    <img class="photofx-thumb" src="/media/photofx-shake.jpg" alt="" loading="lazy" />
+    <div class="photofx-thumb photofx-thumb--shake" aria-hidden="true"></div>
     <div class="photofx-shot-label">Shake</div>
   </div>
 </div>
