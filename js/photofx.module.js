@@ -254,7 +254,6 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
     const duration = String(durationEl.value || "6");
 
     if (LONG_DURATION_VALUES.has(duration)) {
-      resolutionEl.value = "1080p";
       fpsEl.value = "25";
     }
   }
