@@ -270,27 +270,36 @@ const rows = await sql`
     const meta = job.meta || {};
     const effectMeta = resolveEffectMeta(meta);
 
-    const sourceOutput = pickBestSourceOutput(outputs);
+ const sourceOutput = pickBestSourceOutput(outputs);
 
-    const sourceFromMeta =
-      String(meta?.logo_overlay_url || "").trim() ||
-      String(meta?.muxed_url || "").trim() ||
-      String(meta?.preview_video_url || "").trim() ||
-      String(meta?.final_video_url || "").trim();
+const queuedSourceUrl =
+  String(meta?.effects_queue?.source_url || "").trim() ||
+  String(meta?.effects?.source_url || "").trim();
 
-    const sourceUrl = sourceOutput?.url || sourceFromMeta || "";
-    const sourceVariant =
-      sourceOutput?.variant ||
-      (meta?.logo_overlay_url
-        ? "logo_overlay"
-        : meta?.muxed_url
-        ? "mux"
-        : meta?.preview_video_url
-        ? "preview"
-        : meta?.final_video_url
-        ? "finalized"
-        : "provider");
+const queuedSourceVariant =
+  String(meta?.effects_queue?.source_variant || "").trim() ||
+  String(meta?.effects?.source_variant || "").trim();
 
+const sourceFromMeta =
+  String(meta?.logo_overlay_url || "").trim() ||
+  String(meta?.muxed_url || "").trim() ||
+  String(meta?.preview_video_url || "").trim() ||
+  String(meta?.final_video_url || "").trim();
+
+const sourceUrl = queuedSourceUrl || sourceOutput?.url || sourceFromMeta || "";
+
+const sourceVariant =
+  queuedSourceVariant ||
+  sourceOutput?.variant ||
+  (meta?.logo_overlay_url
+    ? "logo_overlay"
+    : meta?.muxed_url
+    ? "mux"
+    : meta?.preview_video_url
+    ? "preview"
+    : meta?.final_video_url
+    ? "finalized"
+    : "provider");
     if (!sourceUrl) {
       throw new Error(`photofx_source_missing:${job.id}`);
     }
