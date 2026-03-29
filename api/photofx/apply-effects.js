@@ -756,15 +756,18 @@ async function runPhotofxEffectsApply({
         .filter(Boolean)
     : [];
 
-  const overlayFilesAll = await collectFilesFromPaths(
-    safeMeta?.overlayPaths || [],
-    [".mp4", ".mov", ".webm"]
-  );
+ const overlayFilesAll = await collectFilesFromPaths(
+  safeMeta?.overlayPaths || [],
+  [".mp4", ".mov", ".webm"]
+);
 
-  const lutFilesAll = await collectFilesFromPaths(safeMeta?.lutPaths || [], [
-    ".cube",
-    ".3dl",
-  ]);
+const lutFilesAll = await collectFilesFromPaths(safeMeta?.lutPaths || [], [
+  ".cube",
+  ".3dl",
+]);
+
+const overlaySourcePaths = uniqStrings(safeMeta?.overlayPaths || []);
+const lutSourcePaths = uniqStrings(safeMeta?.lutPaths || []);
 
   const maxOverlayCount = Math.max(
     1,
@@ -822,10 +825,10 @@ if (safeOverlayFiles.length < maxOverlayCount) {
   );
 
   const shouldProcess =
-    !!safePreset ||
-    safeStyles.length > 0 ||
-    overlayFiles.length > 0 ||
-    lutFiles.length > 0;
+  !!safePreset ||
+  safeStyles.length > 0 ||
+  overlaySourcePaths.length > 0 ||
+  lutSourcePaths.length > 0;
 
   if (!shouldProcess) {
     await fsp.copyFile(inputPath, outputPath);
