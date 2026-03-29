@@ -1,19 +1,18 @@
-// /api/photofx/overlay-logo.js
-
 import fs from "fs";
 import os from "os";
 import path from "path";
+import crypto from "crypto";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { neon } from "@neondatabase/serverless";
 import { putObject } from "../_lib/r2.js";
 
 const POS = {
-  br: "main_w-overlay_w-24:main_h-overlay_h-24",
-  bl: "24:main_h-overlay_h-24",
-  tr: "main_w-overlay_w-24:24",
+  br: "W-w-24:H-h-24",
+  bl: "24:H-h-24",
+  tr: "W-w-24:24",
   tl: "24:24",
-  c: "(main_w-overlay_w)/2:(main_h-overlay_h)/2",
+  c: "(W-w)/2:(H-h)/2",
 };
 
 const SIZE = {
@@ -26,19 +25,12 @@ function run(cmd, args) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args, { stdio: ["ignore", "ignore", "pipe"] });
     let err = "";
-
-    p.stderr.on("data", (d) => {
-      err += d.toString();
-    });
-
+    p.stderr.on("data", (d) => (err += d.toString()));
     p.on("close", (code) => {
       if (code === 0) return resolve();
       reject(new Error(err || `process_failed:${code}`));
     });
-
-    p.on("error", (e) => {
-      reject(e);
-    });
+    p.on("error", (e) => reject(e));
   });
 }
 
@@ -55,6 +47,38 @@ function isUuidLike(id) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
     String(id || "")
   );
+}
+
+async function probeVideoBitrate(inputPath) {
+  return await new Promise((resolve) => {
+    const p = spawn(
+      "ffprobe",
+      [
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=bit_rate",
+        "-of",
+        "default=noprint_wrappers=1:nokey=1",
+        inputPath,
+      ],
+      { stdio: ["ignore", "pipe", "ignore"] }
+    );
+
+    let out = "";
+    p.stdout.on("data", (d) => {
+      out += d.toString();
+    });
+
+    p.on("close", () => {
+      const n = Number(String(out || "").trim());
+      resolve(Number.isFinite(n) && n > 0 ? n : null);
+    });
+
+    p.on("error", () => resolve(null));
+  });
 }
 
 async function verifyPublicUrl(url, label) {
@@ -84,39 +108,6 @@ async function download(url, dest) {
   if (!res.ok) throw new Error(`download_failed:${res.status}`);
   const ab = await res.arrayBuffer();
   fs.writeFileSync(dest, Buffer.from(ab));
-}
-
-async function probeVideoBitrate(inputPath) {
-  return await new Promise((resolve) => {
-    const p = spawn(
-      "ffprobe",
-      [
-        "-v",
-        "error",
-        "-select_streams",
-        "v:0",
-        "-show_entries",
-        "stream=bit_rate",
-        "-of",
-        "default=noprint_wrappers=1:nokey=1",
-        inputPath,
-      ],
-      { stdio: ["ignore", "pipe", "ignore"] }
-    );
-
-    let out = "";
-
-    p.stdout.on("data", (d) => {
-      out += d.toString();
-    });
-
-    p.on("close", () => {
-      const n = Number(String(out || "").trim());
-      resolve(Number.isFinite(n) && n > 0 ? n : null);
-    });
-
-    p.on("error", () => resolve(null));
-  });
 }
 
 function pickVariant(o) {
@@ -172,6 +163,7 @@ export default async function handler(req, res) {
       logo_pos = "br",
       logo_size = "sm",
       logo_opacity = 0.85,
+      app = "photofx",
     } = req.body || {};
 
     if (!job_id) {
@@ -210,43 +202,40 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
 
-    const tmpDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), "aivo-photofx-overlay-")
-    );
-    const inputVideo = path.join(tmpDir, `in-${job_id}.mp4`);
-    const inputLogo = path.join(tmpDir, `logo-${job_id}.png`);
-    const outputVideo = path.join(tmpDir, `out-${job_id}.mp4`);
+    const id = job_id || crypto.randomUUID();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-photofx-overlay-"));
+
+    const inputVideo = path.join(tmpDir, `in-${id}.mp4`);
+    const inputLogo = path.join(tmpDir, `logo-${id}.png`);
+    const outputVideo = path.join(tmpDir, `out-${id}.mp4`);
 
     cleanup.push(inputVideo, inputLogo, outputVideo, tmpDir);
 
     await download(video_url, inputVideo);
     await download(logo_url, inputLogo);
 
+    const pos = POS[logo_pos] || POS.br;
+    const sizeRatio = SIZE[logo_size] || SIZE.sm;
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
-    const sizeFactor = SIZE[String(logo_size || "sm").trim()] || SIZE.sm;
-    const overlayPos = POS[String(logo_pos || "br").trim()] || POS.br;
 
     const sourceBitrate = await probeVideoBitrate(inputVideo);
     const targetBitrate = sourceBitrate
       ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
       : 8000000;
+    const targetBitrateStr = String(targetBitrate);
+    const targetBufsizeStr = String(targetBitrate * 2);
 
-const filter = [
-  `[1:v][0:v]scale2ref=w=main_w*${sizeFactor}:h=ow/mdar[lg][base]`,
-  `[lg]format=rgba,colorchannelmixer=aa=${opacity}[lg2]`,
-  `[base][lg2]overlay=${overlayPos}:format=auto[v]`,
-].join(";");
+    const filter = [
+      `[1:v]scale=iw*${sizeRatio}:-1,format=rgba,colorchannelmixer=aa=${opacity}[lg]`,
+      `[0:v][lg]overlay=${pos}:format=auto[v]`,
+    ].join(";");
 
     await run(ffmpegPath, [
       "-y",
       "-i",
-   "-i",
-"-i",
-inputVideo,
-"-loop",
-"1",
-"-i",
-inputLogo,
+      inputVideo,
+      "-i",
+      inputLogo,
       "-filter_complex",
       filter,
       "-map",
@@ -258,11 +247,11 @@ inputLogo,
       "-preset",
       "medium",
       "-b:v",
-      String(targetBitrate),
+      targetBitrateStr,
       "-maxrate",
-      String(targetBitrate),
+      targetBitrateStr,
       "-bufsize",
-      String(targetBitrate * 2),
+      targetBufsizeStr,
       "-pix_fmt",
       "yuv420p",
       "-c:a",
@@ -274,7 +263,7 @@ inputLogo,
     ]);
 
     const buffer = fs.readFileSync(outputVideo);
-    const key = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
+    const key = `outputs/${app}/${id}/logo-overlay-${Date.now()}.mp4`;
 
     const publicUrl = await putObject({
       key,
@@ -320,7 +309,7 @@ inputLogo,
     return res.json({
       ok: true,
       url: publicUrl,
-      job_id,
+      job_id: id,
       video_bitrate: sourceBitrate,
       target_bitrate: targetBitrate,
       variant: "logo_overlay",
