@@ -759,10 +759,7 @@ async function runPhotofxEffectsApply({
   const overlaySourcePaths = uniqStrings(safeMeta?.overlayPaths || []);
   const lutSourcePaths = uniqStrings(safeMeta?.lutPaths || []);
 
-  const maxOverlayCount = Math.max(
-    1,
-    Math.min(4, Number(safeMeta?.doseProfile?.maxOverlayCount || 1))
-  );
+ const maxOverlayCount = 1;
 
   const overlayFiles = pickDeterministic(
     overlayFilesAll,
