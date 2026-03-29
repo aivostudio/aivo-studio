@@ -744,11 +744,11 @@ async function runPhotofxEffectsApply({
     ? safeMeta.styles.map((x) => String(x || "").trim().toLowerCase()).filter(Boolean)
     : [];
 
-  const overlayFilesAll = await collectFilesFromPaths(
-    safeMeta?.overlayPaths || [],
-    [".mp4", ".mov", ".webm"],
-    4
-  );
+ const overlayFilesAll = await collectFilesFromPaths(
+  safeMeta?.overlayPaths || [],
+  [".mp4", ".mov", ".webm"],
+  1
+);
 
   const lutFilesAll = await collectFilesFromPaths(
     safeMeta?.lutPaths || [],
