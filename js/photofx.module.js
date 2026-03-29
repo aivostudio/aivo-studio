@@ -559,6 +559,7 @@ console.log("[photofx.module] loaded ✅", new Date().toISOString());
       effectStrength: qs("#pfxEffectPower", root)?.value || "medium",
       colorMood: qs("#pfxColorMood", root)?.value || "original",
       transitionSpeed: qs("#pfxTransitionSpeed", root)?.value || "normal",
+      zoomLevel: qs("#pfxZoomLevel", root)?.value || "normal",
       includeAudio:
         String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
       imageFile: state.imageFile || null,
