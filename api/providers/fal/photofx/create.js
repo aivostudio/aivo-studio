@@ -74,6 +74,18 @@ function mapDuration(v, isPro = false) {
   return 10;
 }
 
+function mapResolution(v) {
+  const s = String(v || "").trim().toLowerCase();
+  if (["1080p", "1440p", "2160p"].includes(s)) return s;
+  return "1080p";
+}
+
+function mapFps(v) {
+  const n = Number(v);
+  if ([24, 25, 48, 50].includes(n)) return n;
+  return 25;
+}
+
 function normalizePublicMediaUrl(raw) {
   const input = String(raw || "").trim();
   if (!input) return "";
@@ -110,77 +122,118 @@ function normalizePublicMediaUrl(raw) {
     return input;
   }
 }
+
+function toArray(v) {
+  return Array.isArray(v) ? v : [];
+}
+
+function uniqStrings(arr = []) {
+  return [...new Set(arr.map((x) => String(x || "").trim()).filter(Boolean))];
+}
+
+function normalizeStyleKey(v) {
+  return String(v || "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-");
+}
+
 const PHOTOFX_HIDDEN_STYLE_PROMPTS = {
-  "neon-pulse": "subtle neon glow, rhythmic pulse energy, vibrant electric atmosphere, cinematic light accents, sleek futuristic motion",
-  "glitch-scan": "digital glitch texture, scanline distortion feel, signal interference aesthetic, edgy cyber movement, controlled visual chaos",
-  "split-flash": "sharp strobe-like energy, fast contrast bursts, dynamic flash accents, punchy cinematic transitions, high-impact motion feel",
-  "cinematic-zoom": "cinematic camera intensity, dramatic push-in feeling, immersive framing, polished film-like motion, strong visual focus",
-  "aura-glow": "soft luminous aura, dreamy glow, ethereal light bloom, elegant atmospheric energy, smooth cinematic softness",
-  "fire-edge": "heated edge highlights, ember-like energy, subtle flame-inspired intensity, aggressive cinematic warmth, powerful visual tension",
-  "dark-trap-motion": "dark moody atmosphere, trap-inspired visual tone, shadow-heavy cinematic motion, gritty nocturnal energy, bold attitude",
-  "motion-flow": "smooth flowing movement, clean kinetic rhythm, graceful camera motion feel, refined visual continuity, polished modern energy"
+  "neon-pulse":
+    "subtle neon glow, rhythmic pulse energy, vibrant electric atmosphere, cinematic light accents, sleek futuristic motion",
+  "shake-edit":
+    "micro camera shake feeling, punchy motion accents, sharp rhythmic energy, aggressive social edit tone, fast-impact movement style",
+  "glitch-scan":
+    "digital glitch texture, scanline distortion feel, signal interference aesthetic, edgy cyber movement, controlled visual chaos",
+  "split-flash":
+    "sharp strobe-like energy, fast contrast bursts, dynamic flash accents, punchy cinematic transitions, high-impact motion feel",
+  "cinematic-zoom":
+    "cinematic camera intensity, dramatic push-in feeling, immersive framing, polished film-like motion, strong visual focus",
+  "aura-glow":
+    "soft luminous aura, dreamy glow, ethereal light bloom, elegant atmospheric energy, smooth cinematic softness",
+  "fire-edge":
+    "heated edge highlights, ember-like energy, subtle flame-inspired intensity, aggressive cinematic warmth, powerful visual tension",
+  "dark-trap-motion":
+    "dark moody atmosphere, trap-inspired visual tone, shadow-heavy cinematic motion, gritty nocturnal energy, bold attitude",
 };
+
+const MOTION_LEVEL_PROMPTS = {
+  soft: "keep movement soft, minimal, smooth, and natural",
+  balanced: "use balanced motion with clear but controlled animation",
+  strong: "use stronger motion with dynamic camera energy and more visible movement",
+};
+
+const EFFECT_STRENGTH_PROMPTS = {
+  low: "keep the overall stylization light, clean, and restrained",
+  medium: "make the stylization clearly visible but controlled and tasteful",
+  high: "make the stylization stronger, more noticeable, and more impactful",
+};
+
+const COLOR_MOOD_PROMPTS = {
+  original: "keep colors close to the original image with a clean premium finish",
+  cool: "use slightly cool cinematic tones",
+  warm: "use slightly warm cinematic tones",
+  neon: "use vivid neon-inspired colors with stylish contrast",
+  dark: "use darker contrast-heavy grading with moody shadows",
+  cinematic: "use polished cinematic color grading",
+};
+
+const TRANSITION_SPEED_PROMPTS = {
+  slow: "use slower transition pacing and calmer visual rhythm",
+  normal: "use normal transition pacing with smooth continuity",
+  fast: "use faster transition pacing with punchier visual rhythm",
+};
+
+const ZOOM_LEVEL_PROMPTS = {
+  none: "avoid dramatic zoom behavior and keep framing stable",
+  low: "use very subtle zoom movement",
+  normal: "use moderate cinematic zoom movement",
+  high: "use stronger zoom emphasis with more dramatic push-in feeling",
+};
+
 function buildPrompt({
   prompt,
   preset,
+  styles,
   motion_level,
   effect_strength,
   color_mood,
+  transition_speed,
+  zoom_level,
 }) {
-  if (prompt && String(prompt).trim()) return String(prompt).trim();
+  const userPrompt = String(prompt || "").trim();
 
-  const presetMap = {
-    neon_pulse:
-      "Neon light streaks, subtle glow, rhythmic energy, stylish social media edit.",
-    shake_edit:
-      "Micro camera shakes, punchy motion accents, aggressive rhythmic edit style.",
-    glitch_scan:
-      "Digital distortion, RGB split, glitch pulses, dark tech atmosphere.",
-    split_flash:
-      "Split-frame transitions, quick white flashes, attention-grabbing edit rhythm.",
-    cinematic_zoom:
-      "Slow cinematic zoom, subtle pan, elegant movement, emotional premium look.",
-    aura_glow:
-      "Soft glowing aura around the subject, dreamy energy halo, aesthetic motion.",
-    fire_edge:
-      "Hot glowing edges, ember energy, powerful dramatic look around the subject.",
-    dark_trap_motion:
-      "Dark contrast, hard motion language, sharp zoom accents, trap-style visual mood.",
-  };
+  const normalizedPreset = normalizeStyleKey(preset);
+  const normalizedStyles = uniqStrings(
+    []
+      .concat(normalizedPreset ? [normalizedPreset] : [])
+      .concat(toArray(styles).map(normalizeStyleKey))
+  );
 
-  const motionMap = {
-    soft: "Soft and minimal movement.",
-    balanced: "Balanced movement with clear motion feel.",
-    strong: "Strong movement with more dynamic camera energy.",
-  };
-
-  const effectMap = {
-    low: "Effects should stay light and clean.",
-    medium: "Effects should be clearly visible but controlled.",
-    high: "Effects should feel stronger and more noticeable.",
-  };
-
-  const colorMap = {
-    original: "Keep colors close to original.",
-    cool: "Use slightly cool cinematic tones.",
-    warm: "Use slightly warm tones.",
-    neon: "Use vivid neon-inspired colors.",
-    dark: "Use darker contrast-heavy grading.",
-    cinematic: "Use polished cinematic color grading.",
-  };
+  const hiddenStyleParts = normalizedStyles
+    .map((key) => PHOTOFX_HIDDEN_STYLE_PROMPTS[key])
+    .filter(Boolean);
 
   const parts = [
     "Animate a single still photo into a short social-media-ready video clip.",
-    presetMap[String(preset || "").trim()] || "Stylized short motion clip.",
-    motionMap[String(motion_level || "").trim()] || "Balanced movement.",
-    effectMap[String(effect_strength || "").trim()] ||
-      "Effects should be visible but tasteful.",
-    colorMap[String(color_mood || "").trim()] || "Keep the overall look premium.",
-    "Preserve subject identity and facial consistency.",
+    userPrompt || "Create a short stylized motion clip from the source image.",
+    MOTION_LEVEL_PROMPTS[String(motion_level || "").trim()] ||
+      "use balanced motion with clear but controlled animation",
+    EFFECT_STRENGTH_PROMPTS[String(effect_strength || "").trim()] ||
+      "make the stylization clearly visible but controlled and tasteful",
+    COLOR_MOOD_PROMPTS[String(color_mood || "").trim()] ||
+      "keep colors close to the original image with a clean premium finish",
+    TRANSITION_SPEED_PROMPTS[String(transition_speed || "").trim()] ||
+      "use normal transition pacing with smooth continuity",
+    ZOOM_LEVEL_PROMPTS[String(zoom_level || "").trim()] ||
+      "use moderate cinematic zoom movement",
+    ...hiddenStyleParts,
+    "Preserve subject identity, facial consistency, and overall likeness.",
+    "Keep motion believable, clean, and visually coherent.",
     "No text, no subtitles, no logo, no watermark.",
   ];
 
-  return parts.join(" ");
+  return uniqStrings(parts).join(" ");
 }
 
 export default async function handler(req, res) {
@@ -190,7 +243,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  // ---- AUTH ----
   let auth;
   try {
     auth = await requireAuth(req);
@@ -209,14 +261,12 @@ export default async function handler(req, res) {
       .json({ ok: false, error: "unauthorized", message: "missing_email" });
   }
 
-  // ---- DB ----
   const conn = pickConn();
   if (!conn) {
     return res.status(500).json({ ok: false, error: "missing_db_env" });
   }
   const sql = neon(conn);
 
-  // ---- INPUT ----
   const body = safeJson(req);
   const incomingJobId = body.job_id ? String(body.job_id) : null;
   const app = "photofx";
@@ -231,37 +281,76 @@ export default async function handler(req, res) {
 
   const image_url = normalizePublicMediaUrl(String(image_url_raw).trim());
 
-  // ---- TEK MOTOR: FAST ----
   const quality = "fast";
+  const falUrl = "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
+  const engineLabel = "fast";
 
-  const falUrl =
-    "https://queue.fal.run/fal-ai/ltx-2.3/image-to-video/fast";
+  const metaInput = body.meta && typeof body.meta === "object" ? body.meta : {};
 
-  const engineLabel = "fast"; 
-  
+  const preset = String(
+    body.preset || pick(metaInput, ["preset"]) || "neon-pulse"
+  ).trim();
 
-  const preset = String(body.preset || "neon_pulse").trim();
+  const styles = uniqStrings(
+    []
+      .concat(toArray(body.styles))
+      .concat(toArray(body.selected_styles))
+      .concat(toArray(body.selectedStyles))
+      .concat(toArray(pick(body, ["effects.styles"])))
+      .concat(toArray(pick(metaInput, ["styles"])))
+      .concat(toArray(pick(metaInput, ["effects.styles"])))
+  ).map(normalizeStyleKey);
+
   const aspect_ratio = mapAspectRatio(body.aspect_ratio || body.aspectRatio);
   const duration = mapDuration(body.duration, false);
+  const resolution = mapResolution(body.resolution || body.output_resolution);
+  const fps = mapFps(body.fps);
+
   const motion_level = String(
-    body.motion_level || body.motionLevel || "balanced"
+    body.motion_level ||
+      body.motionLevel ||
+      pick(metaInput, ["motion_level", "motionLevel"]) ||
+      "balanced"
   ).trim();
+
   const effect_strength = String(
-    body.effect_strength || body.effectStrength || "medium"
+    body.effect_strength ||
+      body.effectStrength ||
+      pick(metaInput, ["effect_strength", "effectStrength"]) ||
+      "medium"
   ).trim();
+
   const color_mood = String(
-    body.color_mood || body.colorMood || "original"
+    body.color_mood ||
+      body.colorMood ||
+      pick(metaInput, ["color_mood", "colorMood"]) ||
+      "original"
+  ).trim();
+
+  const transition_speed = String(
+    body.transition_speed ||
+      body.transitionSpeed ||
+      pick(metaInput, ["transition_speed", "transitionSpeed"]) ||
+      "normal"
+  ).trim();
+
+  const zoom_level = String(
+    body.zoom_level ||
+      body.zoomLevel ||
+      pick(metaInput, ["zoom_level", "zoomLevel"]) ||
+      "normal"
   ).trim();
 
   const prompt = buildPrompt({
     prompt: body.prompt,
     preset,
+    styles,
     motion_level,
     effect_strength,
     color_mood,
+    transition_speed,
+    zoom_level,
   });
-
-  const metaInput = body.meta && typeof body.meta === "object" ? body.meta : {};
 
   const logo_url =
     pick(body, ["logo_url", "logoUrl"]) ||
@@ -299,7 +388,6 @@ export default async function handler(req, res) {
   const logo_enabled =
     logo_enabled_raw == null ? Boolean(logo_url) : Boolean(logo_enabled_raw);
 
-  // ---- canonical user_uuid resolve ----
   const userRow = await sql`
     select id
     from users
@@ -311,7 +399,6 @@ export default async function handler(req, res) {
   }
   const user_uuid = String(userRow[0].id);
 
-  // ---- FAL KEY ----
   const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY;
   if (!FAL_KEY) {
     return res.status(500).json({ ok: false, error: "missing_fal_key" });
@@ -322,10 +409,11 @@ export default async function handler(req, res) {
     prompt,
     duration,
     aspect_ratio,
-    resolution: "1080p",
-    fps: 25,
+    resolution,
+    fps,
     generate_audio: false,
   };
+
   console.log("[photofx:create] falBody =", JSON.stringify(falBody, null, 2));
 
   const ctrl = new AbortController();
@@ -389,13 +477,19 @@ export default async function handler(req, res) {
     quality,
     request_id,
     preset,
+    styles,
     image_url: String(image_url_raw).trim(),
     image_url_fal: String(image_url).trim(),
     aspect_ratio,
     duration,
+    resolution,
+    fps,
     motion_level,
     effect_strength,
     color_mood,
+    transition_speed,
+    zoom_level,
+    final_prompt: prompt,
 
     ...(logo_url
       ? {
@@ -428,7 +522,6 @@ export default async function handler(req, res) {
     },
   };
 
-  // mevcut job update
   if (incomingJobId) {
     await sql`
       update jobs
@@ -454,7 +547,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // fallback insert
   const now = new Date().toISOString();
   const rows = await sql`
     insert into jobs (
