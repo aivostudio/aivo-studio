@@ -602,7 +602,6 @@ const builtEffects = {
     }
 
     if (LONG_DURATION_VALUES.has(String(form.duration || ""))) {
-      form.resolution = "1080p";
       form.fps = "25";
     }
 
