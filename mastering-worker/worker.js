@@ -255,7 +255,7 @@ const rows = await sql`
       coalesce(meta->'effects_queue'->>'source_url', '') <> ''
       or coalesce(meta->'effects'->>'source_url', '') <> ''
     )
-  order by updated_at asc, created_at asc
+order by updated_at desc, created_at desc
   limit 1
 `;
 
