@@ -110,7 +110,16 @@ function normalizePublicMediaUrl(raw) {
     return input;
   }
 }
-
+const PHOTOFX_HIDDEN_STYLE_PROMPTS = {
+  "neon-pulse": "subtle neon glow, rhythmic pulse energy, vibrant electric atmosphere, cinematic light accents, sleek futuristic motion",
+  "glitch-scan": "digital glitch texture, scanline distortion feel, signal interference aesthetic, edgy cyber movement, controlled visual chaos",
+  "split-flash": "sharp strobe-like energy, fast contrast bursts, dynamic flash accents, punchy cinematic transitions, high-impact motion feel",
+  "cinematic-zoom": "cinematic camera intensity, dramatic push-in feeling, immersive framing, polished film-like motion, strong visual focus",
+  "aura-glow": "soft luminous aura, dreamy glow, ethereal light bloom, elegant atmospheric energy, smooth cinematic softness",
+  "fire-edge": "heated edge highlights, ember-like energy, subtle flame-inspired intensity, aggressive cinematic warmth, powerful visual tension",
+  "dark-trap-motion": "dark moody atmosphere, trap-inspired visual tone, shadow-heavy cinematic motion, gritty nocturnal energy, bold attitude",
+  "motion-flow": "smooth flowing movement, clean kinetic rhythm, graceful camera motion feel, refined visual continuity, polished modern energy"
+};
 function buildPrompt({
   prompt,
   preset,
