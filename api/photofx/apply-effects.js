@@ -356,12 +356,10 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "shake-edit": {
     overlayPaths: ["assets/photofx/overlays/film-burns-flash/"],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "glitch-scan": {
     overlayPaths: [
       "assets/photofx/overlays/vhs-glitch/",
@@ -370,7 +368,6 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "split-flash": {
     overlayPaths: [
       "assets/photofx/overlays/film-burns-flash/",
@@ -378,7 +375,6 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "cinematic-zoom": {
     overlayPaths: [
       "assets/photofx/overlays/dust-particles/",
@@ -386,7 +382,6 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "aura-glow": {
     overlayPaths: [
       "assets/photofx/overlays/prism-lens/",
@@ -395,7 +390,6 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "fire-edge": {
     overlayPaths: [
       "assets/photofx/overlays/sparks-fire/",
@@ -404,7 +398,6 @@ const PHOTOFX_STYLE_ASSET_MAP = {
     ],
     lutPaths: ["assets/photofx/luts/cinema-style/"],
   },
-
   "dark-trap-motion": {
     overlayPaths: [
       "assets/photofx/overlays/smoke-fog/",
@@ -735,9 +728,7 @@ async function runPhotofxEffectsApply({
   const safeMeta = effectMeta || resolveEffectMeta({});
   const safePreset = String(safeMeta?.preset || "").trim().toLowerCase();
   const safeStyles = Array.isArray(safeMeta?.styles)
-    ? safeMeta.styles
-        .map((x) => String(x || "").trim().toLowerCase())
-        .filter(Boolean)
+    ? safeMeta.styles.map((x) => String(x || "").trim().toLowerCase()).filter(Boolean)
     : [];
 
   const overlayFilesAll = await collectFilesFromPaths(
@@ -773,13 +764,8 @@ async function runPhotofxEffectsApply({
     })
   );
 
-  const safeOverlayFiles = overlayValidation
-    .filter((x) => x.ok)
-    .map((x) => x.file);
-
-  const rejectedOverlayFiles = overlayValidation
-    .filter((x) => !x.ok)
-    .map((x) => x.file);
+  const safeOverlayFiles = overlayValidation.filter((x) => x.ok).map((x) => x.file);
+  const rejectedOverlayFiles = overlayValidation.filter((x) => !x.ok).map((x) => x.file);
 
   if (safeOverlayFiles.length < maxOverlayCount) {
     const fallbackCandidates = overlayFilesAll.filter(
@@ -790,7 +776,6 @@ async function runPhotofxEffectsApply({
 
     for (const file of fallbackCandidates) {
       const ok = await canOpenMediaInput(file);
-
       if (!ok) {
         rejectedOverlayFiles.push(file);
         continue;
