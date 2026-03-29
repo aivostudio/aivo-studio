@@ -1967,7 +1967,44 @@
     object-fit: cover;
     object-position: center center;
   }
+ #photofx-clip .photofx-thumbs{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
 
+#photofx-clip .photofx-shot{
+  min-width: 0;
+}
+
+#photofx-clip .photofx-thumb{
+  display: block;
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  background: rgba(255,255,255,.04);
+}
+
+#photofx-clip .photofx-shot-label{
+  margin-top: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgba(255,255,255,.88);
+}
+
+#photofx-clip .photofx-thumbs .photofx-shot:first-child .photofx-thumb{
+  border: 2px solid rgba(255,255,255,.34);
+  box-shadow:
+    0 0 0 2px rgba(139,92,246,.22),
+    0 14px 28px rgba(59,130,246,.18);
+  transform: translateY(-2px);
+}
   #photofx-clip .photofx-tags{
     display:flex;
     align-items:center;
