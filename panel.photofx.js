@@ -172,8 +172,9 @@ if (provider) {
 
 const first = outs.find((o) => isVideoOutput(o)) || outs[0];
 return pickOutputUrl(first);
+}
 
-  function pickPreviewVideoFromJob(job) {
+function pickPreviewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = filterPhotoFxOutputs(job);
 
