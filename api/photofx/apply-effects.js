@@ -7,7 +7,12 @@
 
 
 const { neon } = require("@neondatabase/serverless");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+} = require("@aws-sdk/client-s3");
 const { spawn } = require("node:child_process");
 const ffmpegPath = require("ffmpeg-static");
 const fs = require("node:fs");
@@ -57,11 +62,40 @@ function toArray(v) {
 function uniqStrings(arr = []) {
   return [...new Set(arr.map((x) => String(x || "").trim()).filter(Boolean))];
 }
-
 function ensureAbsoluteAssetPath(relPath) {
   const clean = String(relPath || "").trim().replace(/^\/+/, "");
   if (!clean) return "";
   return path.join(process.cwd(), clean);
+}
+
+function stripLeadingSlashes(v) {
+  return String(v || "").trim().replace(/^\/+/, "");
+}
+
+function isHttpUrl(v) {
+  return /^https?:\/\//i.test(String(v || "").trim());
+}
+
+function getAssetPublicBase() {
+  return String(
+    process.env.R2_PUBLIC_BASE_URL ||
+      process.env.R2_PUBLIC_BASE ||
+      "https://media.aivo.tr"
+  ).replace(/\/$/, "");
+}
+
+function buildAssetPublicUrl(assetPath) {
+  const raw = String(assetPath || "").trim();
+  if (!raw) return "";
+  if (isHttpUrl(raw)) return raw;
+  return `${getAssetPublicBase()}/${stripLeadingSlashes(raw)}`;
+}
+
+function isDirectoryLikeAssetPath(v) {
+  const s = String(v || "").trim();
+  if (!s) return false;
+  if (s.endsWith("/")) return true;
+  return !path.extname(s);
 }
 
 async function statSafe(p) {
@@ -72,6 +106,201 @@ async function statSafe(p) {
   }
 }
 
+async function streamToBuffer(body) {
+  if (!body) return Buffer.from([]);
+
+  if (Buffer.isBuffer(body)) return body;
+  if (body instanceof Uint8Array) return Buffer.from(body);
+
+  if (typeof body.transformToByteArray === "function") {
+    const arr = await body.transformToByteArray();
+    return Buffer.from(arr);
+  }
+
+  const chunks = [];
+  for await (const chunk of body) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}
+
+async function downloadPublicUrlToFile(url, outPath) {
+  const r = await fetch(url, { cache: "no-store", redirect: "follow" });
+  if (!r.ok) {
+    throw new Error(`asset_public_download_failed:${r.status}:${url}`);
+  }
+  const buf = Buffer.from(await r.arrayBuffer());
+  await fsp.writeFile(outPath, buf);
+}
+
+async function downloadR2KeyToFile(key, outPath) {
+  if (!process.env.R2_BUCKET) {
+    throw new Error("missing_env:R2_BUCKET");
+  }
+
+  const r2 = getR2Client();
+  const obj = await r2.send(
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: key,
+    })
+  );
+
+  const buf = await streamToBuffer(obj.Body);
+  await fsp.writeFile(outPath, buf);
+}
+
+async function listR2KeysForPrefix(prefix, exts = []) {
+  if (!process.env.R2_BUCKET) return [];
+
+  const cleanPrefix = stripLeadingSlashes(prefix);
+  if (!cleanPrefix) return [];
+
+  const r2 = getR2Client();
+  const out = [];
+  let token = undefined;
+
+  do {
+    const res = await r2.send(
+      new ListObjectsV2Command({
+        Bucket: process.env.R2_BUCKET,
+        Prefix: cleanPrefix,
+        ContinuationToken: token,
+      })
+    );
+
+    const items = Array.isArray(res?.Contents) ? res.Contents : [];
+    for (const item of items) {
+      const key = String(item?.Key || "").trim();
+      if (!key) continue;
+      if (key.endsWith("/")) continue;
+
+      const ext = path.extname(key).toLowerCase();
+      if (exts.length && !exts.includes(ext)) continue;
+
+      out.push(key);
+    }
+
+    token = res?.IsTruncated ? res?.NextContinuationToken : undefined;
+  } while (token);
+
+  out.sort();
+  return out;
+}
+
+async function collectFilesFromPaths(pathsInput = [], exts = []) {
+  const out = [];
+  const seen = new Set();
+
+  for (const raw of uniqStrings(pathsInput)) {
+    const clean = String(raw || "").trim();
+    if (!clean) continue;
+
+    const abs = ensureAbsoluteAssetPath(clean);
+    const localStat = await statSafe(abs);
+
+    if (localStat?.isFile()) {
+      const ext = path.extname(abs).toLowerCase();
+      if (!exts.length || exts.includes(ext)) {
+        if (!seen.has(abs)) {
+          seen.add(abs);
+          out.push(abs);
+        }
+      }
+      continue;
+    }
+
+    if (localStat?.isDirectory()) {
+      const names = await fsp.readdir(abs).catch(() => []);
+      for (const name of names) {
+        const file = path.join(abs, name);
+        const fst = await statSafe(file);
+        if (!fst || !fst.isFile()) continue;
+
+        const ext = path.extname(file).toLowerCase();
+        if (exts.length && !exts.includes(ext)) continue;
+        if (seen.has(file)) continue;
+
+        seen.add(file);
+        out.push(file);
+      }
+      continue;
+    }
+
+    if (isHttpUrl(clean) && !isDirectoryLikeAssetPath(clean)) {
+      const ext = path.extname(clean).toLowerCase();
+      if (exts.length && !exts.includes(ext)) continue;
+
+      const tmpFile = path.join(
+        os.tmpdir(),
+        `aivo-asset-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2)}${ext || ".bin"}`
+      );
+
+      await downloadPublicUrlToFile(clean, tmpFile);
+
+      if (!seen.has(tmpFile)) {
+        seen.add(tmpFile);
+        out.push(tmpFile);
+      }
+      continue;
+    }
+
+    const keyOrPrefix = stripLeadingSlashes(clean);
+
+    if (isDirectoryLikeAssetPath(clean)) {
+      const keys = await listR2KeysForPrefix(keyOrPrefix, exts);
+
+      for (const key of keys) {
+        if (seen.has(key)) continue;
+
+        const ext = path.extname(key).toLowerCase();
+        const tmpFile = path.join(
+          os.tmpdir(),
+          `aivo-asset-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2)}-${path.basename(key)}`
+        );
+
+        try {
+          await downloadR2KeyToFile(key, tmpFile);
+        } catch {
+          await downloadPublicUrlToFile(buildAssetPublicUrl(key), tmpFile);
+        }
+
+        seen.add(key);
+        out.push(tmpFile);
+      }
+
+      continue;
+    }
+
+    const ext = path.extname(keyOrPrefix).toLowerCase();
+    if (exts.length && !exts.includes(ext)) continue;
+
+    const tmpFile = path.join(
+      os.tmpdir(),
+      `aivo-asset-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}-${path.basename(keyOrPrefix)}`
+    );
+
+    try {
+      await downloadR2KeyToFile(keyOrPrefix, tmpFile);
+    } catch {
+      await downloadPublicUrlToFile(buildAssetPublicUrl(keyOrPrefix), tmpFile);
+    }
+
+    if (!seen.has(keyOrPrefix)) {
+      seen.add(keyOrPrefix);
+      out.push(tmpFile);
+    }
+  }
+
+  out.sort();
+  return out;
+}
 async function collectFilesFromPaths(pathsInput = [], exts = []) {
   const out = [];
   const seen = new Set();
