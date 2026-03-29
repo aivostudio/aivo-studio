@@ -428,14 +428,18 @@ function pickPreviewVideoFromJob(job) {
       const finalUrl = pickFinalVideoFromJob(job);
       const previewUrl = pickPreviewVideoFromJob(job);
 
-    const selectedPlaybackRawUrl = finalUrl || previewUrl;
-      const playbackUrl = toMaybeProxyUrl(selectedPlaybackRawUrl);
-      const ready = badge.kind === "ok" && !!playbackUrl;
+      const hasFinal = !!safeStr(finalUrl);
+      const hasPreview = !!safeStr(previewUrl);
+      const hasPlayableSource = hasFinal || hasPreview;
 
-      const previewVideoUrl = ready
-        ? playbackUrl.includes("#")
-          ? playbackUrl
-          : playbackUrl + "#t=0.001"
+      const selectedPlaybackRawUrl = hasFinal ? finalUrl : previewUrl;
+      const playbackUrl = hasPlayableSource
+        ? toMaybeProxyUrl(selectedPlaybackRawUrl)
+        : "";
+
+      const ready = !!playbackUrl;
+      const previewVideoUrl = playbackUrl
+        ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
         : "";
 
       const ratio = String(
