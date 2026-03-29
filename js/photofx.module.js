@@ -1,5 +1,3 @@
-console.log("[photofx.module] loaded ✅", new Date().toISOString());
-
 (function () {
   if (window.__AIVO_PHOTOFX_MODULE__) return;
   window.__AIVO_PHOTOFX_MODULE__ = true;
