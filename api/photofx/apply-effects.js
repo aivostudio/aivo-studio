@@ -1251,158 +1251,88 @@ module.exports = async function handler(req, res) {
         effects_url: existingEffectsUrl,
       });
     }
+const sourceOutput = pickBestSourceOutput(outputs, {
+  excludeVariants: force ? ["effects_applied"] : [],
+});
 
-    const sourceOutput = pickBestSourceOutput(outputs, {
-      excludeVariants: force ? ["effects_applied"] : [],
-    });
+const sourceFromMeta =
+  String(meta?.logo_overlay_url || "").trim() ||
+  String(meta?.muxed_url || "").trim() ||
+  String(meta?.preview_video_url || "").trim() ||
+  String(meta?.final_video_url || "").trim();
 
-    const sourceFromMeta =
-      String(meta?.logo_overlay_url || "").trim() ||
-      String(meta?.muxed_url || "").trim() ||
-      String(meta?.preview_video_url || "").trim() ||
-      String(meta?.final_video_url || "").trim();
+const sourceUrl = sourceOutput?.url || sourceFromMeta || "";
+const sourceVariant =
+  sourceOutput?.variant ||
+  (meta?.logo_overlay_url
+    ? "logo_overlay"
+    : meta?.muxed_url
+    ? "mux"
+    : meta?.preview_video_url
+    ? "preview"
+    : meta?.final_video_url
+    ? "finalized"
+    : "provider");
 
-    const sourceUrl = sourceOutput?.url || sourceFromMeta || "";
-    const sourceVariant =
-      sourceOutput?.variant ||
-      (meta?.logo_overlay_url
-        ? "logo_overlay"
-        : meta?.muxed_url
-        ? "mux"
-        : meta?.preview_video_url
-        ? "preview"
-        : meta?.final_video_url
-        ? "finalized"
-        : "provider");
+if (!sourceUrl) {
+  return res.status(400).json({
+    ok: false,
+    error: "effects_input_missing",
+    debug: {
+      outputs_count: outputs.length,
+      source_variant: sourceVariant,
+    },
+  });
+}
 
-    if (!sourceUrl) {
-      return res.status(400).json({
-        ok: false,
-        error: "effects_input_missing",
-        debug: {
-          outputs_count: outputs.length,
-          source_variant: sourceVariant,
-        },
-      });
-    }
+const queuedAt = new Date().toISOString();
 
-    tmpDir = await fsp.mkdtemp(
-      path.join(os.tmpdir(), "aivo-photofx-apply-effects-")
-    );
+const queuePatchMeta = {
+  effects: {
+    ...(meta?.effects || {}),
+    queued: true,
+    queued_at: queuedAt,
+    applied: false,
+    source_variant: sourceVariant,
+    source_url: sourceUrl,
+    preset: effectMeta.preset || "",
+    styles: effectMeta.styles || [],
+    overlayPaths: effectMeta.overlayPaths || [],
+    lutPaths: effectMeta.lutPaths || [],
+  },
+  effects_queue: {
+    status: "queued",
+    queued_at: queuedAt,
+    source_variant: sourceVariant,
+    source_url: sourceUrl,
+    force: !!force,
+  },
+  asset_debug: photofxAssetDebug,
+};
 
-    const inputPath = path.join(tmpDir, "input.mp4");
-    const outputPath = path.join(tmpDir, "effects-applied.mp4");
+await sql`
+  update jobs
+  set
+    status = 'queued',
+    meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(queuePatchMeta)}::jsonb,
+    updated_at = now()
+  where id = ${job_id}::uuid
+`;
 
-    await downloadToFile(sourceUrl, inputPath);
-
-    const videoInfo = await probeVideoInfo(inputPath);
-    const inputDurationSec = Number(videoInfo?.durationSec || 0);
-    const baseWidth = Number(videoInfo?.width || 0);
-    const baseHeight = Number(videoInfo?.height || 0);
-
-    const effectResult = await runPhotofxEffectsApply({
-      inputPath,
-      outputPath,
-      effectMeta,
-      durationSec: inputDurationSec,
-      baseWidth,
-      baseHeight,
-      seed: job_id,
-    });
-
-    if (!effectResult?.outputPath) {
-      throw new Error("effects_output_missing");
-    }
-
-    const outputId = `effects-${Date.now()}`;
-    const key = `outputs/photofx/${job_id}/${outputId}.mp4`;
-
-    const effects_url = await uploadFileToR2({
-      filePath: effectResult.outputPath,
-      key,
-      contentType: "video/mp4",
-    });
-
-    await verifyPublicUrl(effects_url, "effects_applied");
-
-    let nextOutputs = removeFinalFlags(outputs);
-    nextOutputs = upsertVideoOutput(
-      nextOutputs,
-      "effects_applied",
-      effects_url,
-      {
-        is_effects_applied: true,
-        is_final: false,
-        source_variant: sourceVariant,
-        preset: effectMeta.preset || "",
-        styles: effectMeta.styles || [],
-      }
-    );
-
-    const patchMeta = {
-      effects_applied_url: effects_url,
-      effects_applied_at: new Date().toISOString(),
-      effects_applied_key: key,
-      effects_applied_from_url: sourceUrl,
-      effects_applied_from_variant: sourceVariant,
-      effects_applied_preset: effectMeta.preset || "",
-      effects_applied_styles: effectMeta.styles || [],
-      effects: {
-        ...(meta?.effects || {}),
-        applied: true,
-        applied_at: new Date().toISOString(),
-        source_variant: sourceVariant,
-        source_url: sourceUrl,
-        output_url: effects_url,
-        output_key: key,
-        mode: effectResult.mode || "unknown",
-        preset: effectMeta.preset || "",
-        styles: effectMeta.styles || [],
-        overlayPaths: effectMeta.overlayPaths || [],
-        lutPaths: effectMeta.lutPaths || [],
-        overlay_assets_found: effectResult.overlay_assets_found || [],
-        overlay_assets_used: effectResult.overlay_assets_used || [],
-        overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
-        lut_assets_found: effectResult.lut_assets_found || [],
-        lut_assets_used: effectResult.lut_assets_used || [],
-      },
-      asset_debug: photofxAssetDebug,
-    };
-
-    await sql`
-      update jobs
-      set
-        outputs = ${JSON.stringify(nextOutputs)}::jsonb,
-        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
-        updated_at = now()
-      where id = ${job_id}::uuid
-    `;
-
-    return res.status(200).json({
-      ok: true,
-      job_id,
-      step: "effects_applied",
-      input_url: sourceUrl,
-      input_variant: sourceVariant,
-      effects_url,
-      effect_result: {
-        applied: !!effectResult.applied,
-        mode: effectResult.mode || "",
-        preset: effectMeta.preset || "",
-        styles: effectMeta.styles || [],
-        overlay_assets_found: effectResult.overlay_assets_found || [],
-        overlay_assets_used: effectResult.overlay_assets_used || [],
-        overlay_assets_rejected: effectResult.overlay_assets_rejected || [],
-        lut_assets_found: effectResult.lut_assets_found || [],
-        lut_assets_used: effectResult.lut_assets_used || [],
-      },
-      debug_effect_meta: {
-        preset: effectMeta.preset || "",
-        styles: effectMeta.styles || [],
-        overlayPaths: effectMeta.overlayPaths || [],
-        lutPaths: effectMeta.lutPaths || [],
-      },
-    });
+return res.status(200).json({
+  ok: true,
+  job_id,
+  status: "queued",
+  step: "effects_queued",
+  input_url: sourceUrl,
+  input_variant: sourceVariant,
+  debug_effect_meta: {
+    preset: effectMeta.preset || "",
+    styles: effectMeta.styles || [],
+    overlayPaths: effectMeta.overlayPaths || [],
+    lutPaths: effectMeta.lutPaths || [],
+  },
+});
   } catch (e) {
     return res.status(500).json({
       ok: false,
