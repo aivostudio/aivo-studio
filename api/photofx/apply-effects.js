@@ -817,7 +817,16 @@ if (safeOverlayFiles.length < maxOverlayCount) {
     }
   }
 }
-
+console.log("[photofx/runPhotofxEffectsApply] asset collect debug =", {
+  preset: safePreset,
+  styles: safeStyles,
+  overlaySourcePaths,
+  lutSourcePaths,
+  overlayFilesAllCount: overlayFilesAll.length,
+  lutFilesAllCount: lutFilesAll.length,
+  overlayFilesAllSample: overlayFilesAll.slice(0, 10),
+  lutFilesAllSample: lutFilesAll.slice(0, 10),
+});
   const lutFiles = pickDeterministic(
     lutFilesAll,
     `${seed}:${safePreset}:${safeStyles.join(",")}:lut`,
