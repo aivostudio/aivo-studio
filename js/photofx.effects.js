@@ -4,7 +4,6 @@ console.log("[photofx.effects] loaded ✅", new Date().toISOString());
   if (window.__AIVO_PHOTOFX_EFFECTS__) return;
   window.__AIVO_PHOTOFX_EFFECTS__ = true;
 
-
   const ASSET_BASE = "assets/photofx";
   const OVERLAY_BASE = `${ASSET_BASE}/overlays`;
   const LUT_BASE = `${ASSET_BASE}/luts`;
