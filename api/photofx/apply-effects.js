@@ -1127,23 +1127,12 @@ module.exports = async function handler(req, res) {
   }
 
   let tmpDir = null;
-  const photofxAssetDebug = {
+ const photofxAssetDebug = {
   cwd: process.cwd(),
-  overlay_sparks_fire_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/overlays/sparks-fire")
-  ),
-  overlay_smoke_fog_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/overlays/smoke-fog")
-  ),
-  overlay_film_burns_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/overlays/film-burns-flash")
-  ),
-  lut_cinema_style_exists: fs.existsSync(
-    path.join(process.cwd(), "assets/photofx/luts/cinema-style")
-  ),
+  asset_mode: "r2_or_public_url",
+  overlay_source_paths: [],
+  lut_source_paths: [],
 };
-
-console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
 
   try {
     const body = req.body || {};
@@ -1185,6 +1174,10 @@ console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const meta = job.meta || {};
     const effectMeta = resolveEffectMeta(meta);
+    photofxAssetDebug.overlay_source_paths = effectMeta?.overlayPaths || [];
+photofxAssetDebug.lut_source_paths = effectMeta?.lutPaths || [];
+
+console.log("[photofx/apply-effects] asset debug =", photofxAssetDebug);
     console.log("[photofx/apply-effects] resolved effect meta =", {
   preset: effectMeta?.preset || "",
   styles: effectMeta?.styles || [],
