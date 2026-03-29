@@ -246,17 +246,14 @@ async function run() {
 
     const sql = neon(conn);
 
-   const rows = await sql`
+const rows = await sql`
   select *
   from jobs
   where lower(app) = 'photofx'
     and lower(coalesce(status::text, '')) = 'queued'
     and (
-      coalesce(meta->>'logo_overlay_url', '') <> ''
-      or coalesce(meta->>'muxed_url', '') <> ''
-      or coalesce(meta->>'preview_video_url', '') <> ''
-      or coalesce(meta->>'final_video_url', '') <> ''
-      or coalesce(outputs::text, '') ilike '%https://%'
+      coalesce(meta->'effects_queue'->>'source_url', '') <> ''
+      or coalesce(meta->'effects'->>'source_url', '') <> ''
     )
   order by updated_at asc, created_at asc
   limit 1
