@@ -7,14 +7,13 @@ import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { neon } from "@neondatabase/serverless";
 import { putObject } from "../_lib/r2.js";
-console.log("[photofx overlay] DEBUG BUILD 2026-03-27 v1");
 
 const POS = {
-  br: "W-w-24:H-h-24",
-  bl: "24:H-h-24",
-  tr: "W-w-24:24",
+  br: "main_w-overlay_w-24:main_h-overlay_h-24",
+  bl: "24:main_h-overlay_h-24",
+  tr: "main_w-overlay_w-24:24",
   tl: "24:24",
-  c: "(W-w)/2:(H-h)/2",
+  c: "(main_w-overlay_w)/2:(main_h-overlay_h)/2",
 };
 
 const SIZE = {
@@ -27,10 +26,18 @@ function run(cmd, args) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args, { stdio: ["ignore", "ignore", "pipe"] });
     let err = "";
-    p.stderr.on("data", (d) => (err += d.toString()));
+
+    p.stderr.on("data", (d) => {
+      err += d.toString();
+    });
+
     p.on("close", (code) => {
       if (code === 0) return resolve();
       reject(new Error(err || `process_failed:${code}`));
+    });
+
+    p.on("error", (e) => {
+      reject(e);
     });
   });
 }
@@ -62,6 +69,7 @@ async function verifyPublicUrl(url, label) {
         cache: "no-store",
         redirect: "follow",
       });
+
       if (r.ok) {
         return { ok: true, status: r.status, method };
       }
@@ -97,6 +105,7 @@ async function probeVideoBitrate(inputPath) {
     );
 
     let out = "";
+
     p.stdout.on("data", (d) => {
       out += d.toString();
     });
@@ -205,32 +214,34 @@ export default async function handler(req, res) {
       path.join(os.tmpdir(), "aivo-photofx-overlay-")
     );
     const inputVideo = path.join(tmpDir, `in-${job_id}.mp4`);
+    const inputLogo = path.join(tmpDir, `logo-${job_id}.png`);
     const outputVideo = path.join(tmpDir, `out-${job_id}.mp4`);
 
-    cleanup.push(inputVideo, outputVideo, tmpDir);
+    cleanup.push(inputVideo, inputLogo, outputVideo, tmpDir);
 
     await download(video_url, inputVideo);
+    await download(logo_url, inputLogo);
 
     const opacity = Math.max(0, Math.min(1, Number(logo_opacity)));
+    const sizeFactor = SIZE[String(logo_size || "sm").trim()] || SIZE.sm;
+    const overlayPos = POS[String(logo_pos || "br").trim()] || POS.br;
 
     const sourceBitrate = await probeVideoBitrate(inputVideo);
     const targetBitrate = sourceBitrate
       ? Math.max(1200000, Math.round(sourceBitrate * 0.98))
       : 8000000;
 
-    // DEBUG MODE:
-    // Gercek logo yerine cok bariz kutular basiyoruz.
-    // Ama amac ffmpeg filter'in nihai mp4'e gercekten islenip islenmedigini kanitlamak.
     const filter = [
-      `[0:v]drawbox=x=0:y=0:w=iw:h=120:color=red@0.95:t=fill,`,
-      `drawbox=x=iw*0.25:y=ih*0.22:w=iw*0.50:h=ih*0.56:color=yellow@0.90:t=fill,`,
-      `drawbox=x=20:y=20:w=iw-40:h=ih-40:color=lime@1.0:t=10[v]`,
-    ].join("");
+      `[1:v]format=rgba,scale=iw*${sizeFactor}:-1,colorchannelmixer=aa=${opacity}[logo]`,
+      `[0:v][logo]overlay=${overlayPos}:format=auto[v]`,
+    ].join(";");
 
     await run(ffmpegPath, [
       "-y",
       "-i",
       inputVideo,
+      "-i",
+      inputLogo,
       "-filter_complex",
       filter,
       "-map",
@@ -258,7 +269,7 @@ export default async function handler(req, res) {
     ]);
 
     const buffer = fs.readFileSync(outputVideo);
-    const key = `outputs/photofx/${job_id}/logo-overlay-debug-${Date.now()}.mp4`;
+    const key = `outputs/photofx/${job_id}/logo-overlay-${Date.now()}.mp4`;
 
     const publicUrl = await putObject({
       key,
@@ -271,9 +282,8 @@ export default async function handler(req, res) {
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const nextOutputs = upsertVideoOutput(outputs, "logo_overlay", publicUrl, {
       is_logo_overlay: true,
-      is_logo_overlay_debug: true,
       is_final: false,
-      logo_url,
+      logo_url: String(logo_url || "").trim(),
       logo_pos: String(logo_pos || "br").trim(),
       logo_size: String(logo_size || "sm").trim(),
       logo_opacity: opacity,
@@ -291,9 +301,6 @@ export default async function handler(req, res) {
       logo_overlay_source_url: String(video_url || "").trim(),
       logo_overlay_source_bitrate: sourceBitrate,
       logo_overlay_target_bitrate: targetBitrate,
-      logo_overlay_debug_mode: true,
-      logo_overlay_debug_note:
-        "real logo disabled; ffmpeg drawbox visibility test applied",
     };
 
     await sql`
@@ -312,7 +319,6 @@ export default async function handler(req, res) {
       video_bitrate: sourceBitrate,
       target_bitrate: targetBitrate,
       variant: "logo_overlay",
-      debug_mode: true,
     });
   } catch (e) {
     return res.status(500).json({
