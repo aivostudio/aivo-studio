@@ -1335,7 +1335,7 @@ if (
     } catch (e) {
       console.warn("AUTO_LOGO_OVERLAY_FAILED:", e?.message || e);
     }
-        // =========================
+    // =========================
     // 4.1) AUTO LOGO OVERLAY (PHOTOFX) (DONE sonrası)
     // =========================
     try {
@@ -1345,10 +1345,22 @@ if (
 
       const logoUrl = job?.meta?.logo_url || null;
 
+      // ✅ Overlay her zaman en güncel video üstüne basılsın:
+      // 1) muxed_url
+      // 2) finalized output / finalized_from_url
+      // 3) final_video_url
+      // 4) provider variant
+      // 5) ilk video fallback
+      const muxedUrlNow =
+        job?.meta?.muxed_url || pickVideoByVariant(outputs, "mux") || null;
+
       const finalizedUrlNow =
         pickVideoByVariant(outputs, "finalized") ||
         job?.meta?.finalized_from_url ||
         null;
+
+      const finalUrlNow =
+        job?.meta?.final_video_url || pickFinalFromOutputs(outputs) || null;
 
       const providerUrlNow =
         pickVideoByVariant(outputs, "provider") || null;
@@ -1356,7 +1368,8 @@ if (
       const firstVideoUrl =
         (outputs.find((x) => normType(x?.type) === "video") || null)?.url || null;
 
-      const baseVideoUrl = finalizedUrlNow || providerUrlNow || firstVideoUrl || null;
+      const baseVideoUrl =
+        muxedUrlNow || finalizedUrlNow || finalUrlNow || providerUrlNow || firstVideoUrl || null;
 
       const alreadyHasOverlay =
         Array.isArray(outputs) &&
@@ -1369,7 +1382,26 @@ if (
 
       const alreadyDoneFlag = Boolean(job?.meta?.logo_overlay_done);
 
-      if (isPhotoFx && isDone && logoUrl && baseVideoUrl && !alreadyHasOverlay && !alreadyDoneFlag) {
+      // overlay daha önce hangi kaynak videonun üstüne basıldı?
+      const currentOverlaySourceUrl =
+        String(job?.meta?.logo_overlay_source_url || "").trim() || null;
+
+      // mux geldiyse ve mevcut overlay eski kaynağa aitse yeniden overlay bas
+      const needsOverlayRefreshFromMux =
+        Boolean(muxedUrlNow) &&
+        Boolean(logoUrl) &&
+        currentOverlaySourceUrl !== muxedUrlNow;
+
+      if (
+        isPhotoFx &&
+        isDone &&
+        logoUrl &&
+        baseVideoUrl &&
+        (
+          (!alreadyHasOverlay && !alreadyDoneFlag) ||
+          needsOverlayRefreshFromMux
+        )
+      ) {
         const baseUrl = getBaseUrl(req);
 
         const resp = await fetch(`${baseUrl}/api/photofx/overlay-logo`, {
