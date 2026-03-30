@@ -773,20 +773,7 @@ async function handleUpload(root, kind, file) {
 
   return;
 }
-     if (closestWithin(e.target, "#atmProRefImageClear", root)) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  const imageInput = document.getElementById("atmProRefImageFile");
-  if (imageInput) imageInput.value = "";
-
-  state.refImageFile = null;
-
-  const panel = e.target.closest('[data-mode-panel="pro"]') || qs('[data-mode-panel="pro"]', root) || root;
-  setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
-
-  return;
-}
+   
     if (closestWithin(e.target, "#atmProAudioFile", root)) {
       state.audioFile = file;
 
@@ -1064,7 +1051,25 @@ document.addEventListener(
   (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
+     
+   const clearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
+if (clearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
 
+  const imageInput = document.getElementById("atmProRefImageFile");
+  if (imageInput) imageInput.value = "";
+
+  state.refImageFile = null;
+
+  const panel =
+    clearBtn.closest('[data-mode-panel="pro"]') ||
+    qs('[data-mode-panel="pro"]', root) ||
+    root;
+
+  setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
+  return;
+}
     const btn = closestWithin(e.target, "[data-atm-generate]", root);
     if (!btn) return;
 
