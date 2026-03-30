@@ -653,7 +653,23 @@
     state.audioAsset = createEmptyStoryAssetState();
     updateStoryAudioUploadUI(root);
   }
+ function resetStoryCharacterImage(root, slot) {
+  const key = String(slot || "").trim();
+  if (!key) return;
 
+  const input = qs(`[data-story-character-file="${key}"]`, root);
+  if (input) input.value = "";
+
+  setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
+
+  updateStoryCharacterUploadUI(root, key);
+
+  const scene = getSceneById(state.editingSceneId);
+  if (scene) {
+    renderSceneCharacterPicker(root, scene);
+    syncSceneRows(root);
+  }
+}
   function updateStoryLogoUploadUI(root) {
     const textEl = qs("[data-story-logo-upload-text]", root);
     const clearBtn = qs("[data-story-logo-upload-clear]", root);
