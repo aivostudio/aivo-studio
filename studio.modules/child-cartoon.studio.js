@@ -49,7 +49,96 @@
       ]
     };
   }
+function getStudioVideoDuration(file) {
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve(15);
+      return;
+    }
 
+    const objectUrl = URL.createObjectURL(file);
+    const video = document.createElement('video');
+
+    const cleanup = () => {
+      try { URL.revokeObjectURL(objectUrl); } catch {}
+      video.removeAttribute('src');
+      video.load();
+    };
+
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      const seconds = Math.max(1, Math.round(Number(video.duration) || 15));
+      cleanup();
+      resolve(seconds);
+    };
+
+    video.onerror = () => {
+      cleanup();
+      resolve(15);
+    };
+
+    video.src = objectUrl;
+  });
+}
+
+async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
+  const files = Array.from(fileList || []).filter((file) => {
+    return file && String(file.type || '').toLowerCase().startsWith('video/');
+  });
+
+  if (!files.length) return;
+
+  const nextScenes = [];
+
+  for (let i = 0; i < files.length; i += 1) {
+    const file = files[i];
+    const duration = await getStudioVideoDuration(file);
+    const objectUrl = URL.createObjectURL(file);
+    const fileName = String(file.name || `video-${Date.now()}-${i + 1}`).trim();
+    const title = fileName.replace(/\.[^.]+$/, '');
+
+    nextScenes.push({
+      id: `upload-${Date.now()}-${i + 1}`,
+      title,
+      duration,
+      included: true,
+      videoUrl: objectUrl,
+      fileName
+    });
+  }
+
+  rootState.scenes.push(...nextScenes);
+  renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+}
+
+function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
+  const input = studioRoot.querySelector('[data-studio-video-upload]');
+  const text = studioRoot.querySelector('[data-studio-video-upload-text]');
+
+  if (!input) return;
+  if (input.getAttribute('data-studio-upload-bound') === 'true') return;
+
+  input.setAttribute('data-studio-upload-bound', 'true');
+
+  input.addEventListener('change', async () => {
+    const files = Array.from(input.files || []);
+    const count = files.length;
+
+    if (text) {
+      text.textContent = count
+        ? `${count} video seçildi`
+        : 'Henüz video seçilmedi';
+    }
+
+    await appendUploadedStudioVideos(
+      rootState,
+      studioRoot,
+      sceneList,
+      sceneTemplate,
+      files
+    );
+  });
+}
   function moveScene(array, fromIndex, toIndex) {
     if (fromIndex === toIndex) return;
     if (fromIndex < 0 || toIndex < 0) return;
@@ -180,6 +269,12 @@ function initCartoonStudio() {
   const studioState = createStudioState();
 
   renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+  bindStudioVideoUpload(
+  studioState,
+  studioRoot,
+  studioSceneList,
+  studioSceneTemplate
+);
 
   studioRoot.setAttribute('data-studio-bound', 'true');
   window.__CARTOON_STUDIO__ = studioState;
