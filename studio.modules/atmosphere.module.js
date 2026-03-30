@@ -265,15 +265,17 @@ function setUploadUI(root, kind, patch) {
   //   Audio: #atmProAudioFileName + #atmProAudioStatus
   // ------------------------------------------------------------
   if (isPro) {
-    const proNameId =
-      kind === "logo"  ? "atmProLogoFileName" :
-      kind === "audio" ? "atmProAudioFileName" :
-      ""; // pro’da image yok
+   const proNameId =
+  kind === "logo"  ? "atmProLogoFileName" :
+  kind === "image" ? "atmProRefImageFileName" :
+  kind === "audio" ? "atmProAudioFileName" :
+  "";
 
-    const proStatusId =
-      kind === "logo"  ? "atmProLogoStatus" :
-      kind === "audio" ? "atmProAudioStatus" :
-      "";
+const proStatusId =
+  kind === "logo"  ? "atmProLogoStatus" :
+  kind === "image" ? "atmProRefImageStatus" :
+  kind === "audio" ? "atmProAudioStatus" :
+  "";
 
     const nameEl = proNameId ? document.getElementById(proNameId) : null;
     const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
@@ -754,7 +756,14 @@ async function handleUpload(root, kind, file) {
 
       return;
     }
+    if (closestWithin(e.target, "#atmProRefImageFile", root)) {
+  state.refImageFile = file;
 
+  const panel = e.target.closest('[data-mode-panel="pro"]');
+  await handleUpload(panel || root, "image", file);
+
+  return;
+}
     if (closestWithin(e.target, "#atmProAudioFile", root)) {
       state.audioFile = file;
 
@@ -948,16 +957,14 @@ function buildProPayload() {
     light: state.light || null,
     mood: state.mood || null,
 
-    // (opsiyonel) pro refs — şu an File (istersen sonra R2)
-    ref_image_file: state.refImageFile || null,
-    ref_audio_file: state.refAudioFile || null,
+    image_url: state.uploads?.image?.url || "",
 
     fps: state.fps || "24",
     format: state.format || "mp4",
     duration: state.proDuration || undefined,
     seam_fix: !!state.seamFix,
 
-    // ✅ Pro’da da R2 logo/audio URL’lerini gönder (video bind için şart)
+    // ✅ Pro’da da R2 logo/audio URL’lerini gönder
     logo_url: state.uploads?.logo?.url || "",
     logo_pos: state.logoPos || "br",
     logo_size: state.logoSize || "sm",
@@ -966,12 +973,11 @@ function buildProPayload() {
     audio_url: state.uploads?.audio?.url || "",
     audio_mode: state.audioMode || "none",
     audio_trim: state.audioTrim || "loop_to_fit",
-   silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
+    silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
 
     details: { ...(state.details || {}) }
   };
 }
-
  // ------------------------------------------------------------
 // 14) Generate (delegated) — CAPTURE
 // ------------------------------------------------------------
