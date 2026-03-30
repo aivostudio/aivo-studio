@@ -1,4 +1,10 @@
 (function () {
+  const root = document.querySelector('section.pfxPage[data-module="photofx"]');
+  if (!root) {
+    console.warn('[PHOTOFX] root yok -> skip');
+    return;
+  }
+
   if (window.__AIVO_PHOTOFX_MODULE__) return;
   window.__AIVO_PHOTOFX_MODULE__ = true;
 
@@ -16,7 +22,6 @@
   function getRoot() {
     return document.querySelector('section.pfxPage[data-module="photofx"]');
   }
-
   function getState(root) {
     if (!root) return null;
 
