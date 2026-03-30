@@ -279,6 +279,7 @@ const proStatusId =
 
     const nameEl = proNameId ? document.getElementById(proNameId) : null;
     const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
+     const proImageClearBtn = kind === "image" ? document.getElementById("atmProRefImageClear") : null;
 
     // Name label (PRO)
     if (nameEl) {
@@ -287,12 +288,20 @@ const proStatusId =
       else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
       else nameEl.textContent = next.name || "Dosya seçilmedi";
     }
+// Hazır etiketi (PRO) — sadece ready’de göster
+if (statusEl) {
+  if (next.status === "ready") statusEl.style.display = "";
+  else statusEl.style.display = "none";
+}
 
-    // Hazır etiketi (PRO) — sadece ready’de göster
-    if (statusEl) {
-      if (next.status === "ready") statusEl.style.display = "";
-      else statusEl.style.display = "none";
-    }
+// PRO image clear button
+if (proImageClearBtn) {
+  if (next.status === "ready") {
+    proImageClearBtn.style.display = "inline-flex";
+  } else {
+    proImageClearBtn.style.display = "none";
+  }
+}
 
     // Generate buttons lock while uploading (PRO içinde de çalışsın)
     const genBtns = qsa('[data-atm-generate]', r);
@@ -761,6 +770,20 @@ async function handleUpload(root, kind, file) {
 
   const panel = e.target.closest('[data-mode-panel="pro"]');
   await handleUpload(panel || root, "image", file);
+
+  return;
+}
+     if (closestWithin(e.target, "#atmProRefImageClear", root)) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const imageInput = document.getElementById("atmProRefImageFile");
+  if (imageInput) imageInput.value = "";
+
+  state.refImageFile = null;
+
+  const panel = e.target.closest('[data-mode-panel="pro"]') || qs('[data-mode-panel="pro"]', root) || root;
+  setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
 
   return;
 }
