@@ -376,21 +376,11 @@
 
     <div class="cartoon-form-grid-2 cartoon-form-grid-2--personalize cartoon-field--full">
       <div class="cartoon-field">
-        <label class="cartoon-field-label">Logo Yükle</label>
-        <label class="cartoon-upload-row cartoon-upload-row--compact">
-          <input type="file" accept="image/*" hidden data-basic-logo-upload>
-          <span class="cartoon-upload-btn">Logo Seç</span>
-          <span class="cartoon-upload-text" data-basic-logo-upload-text>Dosya seçilmedi</span>
-          <button
-            type="button"
-            class="cartoon-upload-clear"
-            data-basic-logo-upload-clear
-            aria-label="Yüklenen logoyu kaldır"
-            title="Logoyu kaldır"
-            style="display:none;">
-            ×
-          </button>
-        </label>
+        <label class="cartoon-field-label" for="cartoon-audio-source">Ses Kaynağı</label>
+        <select id="cartoon-audio-source" class="cartoon-select" data-audio-source>
+          <option value="none" selected>Ses yok</option>
+          <option value="upload">Kendi sesimi yükle</option>
+        </select>
       </div>
 
       <div class="cartoon-field">
@@ -407,11 +397,21 @@
 
     <div class="cartoon-form-grid-3 cartoon-form-grid-3--personalize cartoon-field--full">
       <div class="cartoon-field">
-        <label class="cartoon-field-label" for="cartoon-audio-source">Ses Kaynağı</label>
-        <select id="cartoon-audio-source" class="cartoon-select" data-audio-source>
-          <option value="none" selected>Ses yok</option>
-          <option value="upload">Kendi sesimi yükle</option>
-        </select>
+        <label class="cartoon-field-label">Logo Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="image/*" hidden data-basic-logo-upload>
+          <span class="cartoon-upload-btn">Logo Seç</span>
+          <span class="cartoon-upload-text" data-basic-logo-upload-text>Dosya seçilmedi</span>
+          <button
+            type="button"
+            class="cartoon-upload-clear"
+            data-basic-logo-upload-clear
+            aria-label="Yüklenen logoyu kaldır"
+            title="Logoyu kaldır"
+            style="display:none;">
+            ×
+          </button>
+        </label>
       </div>
 
       <div class="cartoon-field">
