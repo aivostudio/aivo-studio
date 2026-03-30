@@ -121,14 +121,13 @@
         });
       }
 
-    if (moveUpBtn) {
+if (moveUpBtn) {
   if (index === 0) {
     moveUpBtn.disabled = true;
   }
 
   moveUpBtn.addEventListener('click', () => {
- 
-
+    moveScene(rootState.scenes, index, index - 1);
     renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
   });
 }
