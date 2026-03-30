@@ -985,6 +985,47 @@ if (audioSource && root.contains(audioSource)) {
   updateSummary(root);
   return;
 }
+
+const logoUpload = e.target.closest("[data-basic-logo-upload]");
+if (logoUpload && root.contains(logoUpload)) {
+  const file = logoUpload.files && logoUpload.files[0] ? logoUpload.files[0] : null;
+
+  state.logoFile = file;
+  state.logoFileName = file ? file.name : "";
+  state.logoFileUrl = "";
+  state.logoFileUploadPromise = null;
+  state.logoFileUploadError = "";
+  state.logoFileUploadStatus = file ? "uploading" : "idle";
+
+  updateBasicLogoUploadStatusUI(root);
+  updateSummary(root);
+
+  if (!file) return;
+
+  state.logoFileUploadPromise = uploadCartoonLogoToR2(file)
+    .then((publicUrl) => {
+      state.logoFileUrl = String(publicUrl || "").trim();
+      state.logoFileUploadStatus = "ready";
+      state.logoFileUploadError = "";
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
+      console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
+      return state.logoFileUrl;
+    })
+    .catch((err) => {
+      state.logoFileUrl = "";
+      state.logoFileUploadStatus = "error";
+      state.logoFileUploadError = String(err?.message || err || "basic_logo_upload_failed");
+      console.error("[CARTOON][BASIC_LOGO_UPLOAD_ERROR]", err);
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
+      alert(state.logoFileUploadError);
+      throw err;
+    });
+
+  return;
+}
+
      const audioUpload = e.target.closest("[data-audio-upload]");
 if (audioUpload && root.contains(audioUpload)) {
   const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
