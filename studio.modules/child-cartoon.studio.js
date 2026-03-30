@@ -127,19 +127,7 @@
   }
 
   moveUpBtn.addEventListener('click', () => {
-    console.log('[CARTOON_STUDIO] move up click', {
-      index,
-      sceneId: scene.id,
-      before: rootState.scenes.map((s) => s.title)
-    });
-
-    moveScene(rootState.scenes, index, index - 1);
-
-    console.log('[CARTOON_STUDIO] after move up', {
-      index,
-      sceneId: scene.id,
-      after: rootState.scenes.map((s) => s.title)
-    });
+ 
 
     renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
   });
