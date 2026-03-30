@@ -1479,6 +1479,148 @@ if (
     } catch (e) {
       console.warn("AUTO_PHOTOFX_LOGO_OVERLAY_FAILED:", e?.message || e);
     }
+
+        // =========================
+    // 4.2) AUTO LOGO OVERLAY (CARTOON) (DONE sonrası)
+    // =========================
+    try {
+      const isCartoon =
+        String(job?.app || job?.type || job?.meta?.app || "").toLowerCase() === "cartoon";
+      const isDone = String(job?.status || "").toLowerCase() === "done";
+      const isCharacterMode =
+        String(job?.meta?.mode || "").toLowerCase() === "character";
+
+      const logoUrl = job?.meta?.logo_url || null;
+      const logoPos = String(job?.meta?.logo_pos || "br").trim();
+      const logoSize = String(job?.meta?.logo_size || "sm").trim();
+      const logoOpacity =
+        typeof job?.meta?.logo_opacity === "number"
+          ? job.meta.logo_opacity
+          : 0.85;
+
+      // Cartoon için overlay kaynağı sırası:
+      // 1) muxed_url
+      // 2) finalized output / finalized_from_url
+      // 3) final_video_url
+      // 4) provider variant
+      // 5) ilk video fallback
+      const muxedUrlNow =
+        job?.meta?.muxed_url || pickVideoByVariant(outputs, "mux") || null;
+
+      const finalizedUrlNow =
+        pickVideoByVariant(outputs, "finalized") ||
+        job?.meta?.finalized_from_url ||
+        null;
+
+      const finalUrlNow =
+        job?.meta?.final_video_url || pickFinalFromOutputs(outputs) || null;
+
+      const providerUrlNow =
+        pickVideoByVariant(outputs, "provider") || null;
+
+      const firstVideoUrl =
+        (outputs.find((x) => normType(x?.type) === "video") || null)?.url || null;
+
+      const baseVideoUrl =
+        muxedUrlNow || finalizedUrlNow || finalUrlNow || providerUrlNow || firstVideoUrl || null;
+
+      const alreadyHasOverlay =
+        Array.isArray(outputs) &&
+        outputs.some(
+          (o) =>
+            normType(o?.type) === "video" &&
+            (normVariant(o) === "logo_overlay" ||
+              String(o?.url || "").includes("logo-overlay-"))
+        );
+
+      const alreadyDoneFlag = Boolean(job?.meta?.logo_overlay_done);
+
+      const currentOverlaySourceUrl =
+        String(job?.meta?.logo_overlay_source_url || "").trim() || null;
+
+      const needsOverlayRefreshFromMux =
+        Boolean(muxedUrlNow) &&
+        Boolean(logoUrl) &&
+        currentOverlaySourceUrl !== muxedUrlNow;
+
+      if (
+        isCartoon &&
+        isDone &&
+        !isCharacterMode &&
+        logoUrl &&
+        baseVideoUrl &&
+        (
+          (!alreadyHasOverlay && !alreadyDoneFlag) ||
+          needsOverlayRefreshFromMux
+        )
+      ) {
+        const baseUrl = getBaseUrl(req);
+
+        const resp = await fetch(`${baseUrl}/api/cartoon/overlay-logo`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: req.headers.cookie || "",
+          },
+          body: JSON.stringify({
+            app: "cartoon",
+            job_id,
+            video_url: baseVideoUrl,
+            logo_url: logoUrl,
+            logo_pos: logoPos,
+            logo_size: logoSize,
+            logo_opacity: logoOpacity,
+          }),
+        });
+
+        const data = await resp.json().catch(() => null);
+
+        if (data?.ok && data?.url) {
+          const overlayItem = {
+            type: "video",
+            url: data.url,
+            meta: { app: "cartoon", variant: "logo_overlay" },
+          };
+
+          let merged = mergeOutputs(outputs, [overlayItem]);
+
+          merged = upsertFinalOutput(merged, data.url, {
+            source_variant: "logo_overlay",
+          });
+
+          const patchMeta = {
+            logo_enabled: true,
+            logo_url: logoUrl,
+            logo_pos: logoPos,
+            logo_size: logoSize,
+            logo_opacity: logoOpacity,
+            logo_overlay_done: true,
+            logo_overlay_url: data.url,
+            logo_overlay_source_url: baseVideoUrl,
+            final_video_url: data.url,
+            final_variant: "logo_overlay",
+          };
+
+          await sql`
+            update jobs
+            set
+              outputs = ${JSON.stringify(merged)}::jsonb,
+              meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+              updated_at = now()
+            where id = ${job_id}::uuid
+          `;
+
+          outputs = merged;
+          job.outputs = outputs;
+          job.meta = {
+            ...(job.meta || {}),
+            ...patchMeta,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("AUTO_CARTOON_LOGO_OVERLAY_FAILED:", e?.message || e);
+    }
 // =========================
 // 4.5) AUTO FINALIZE (ATMO)
 // =========================
