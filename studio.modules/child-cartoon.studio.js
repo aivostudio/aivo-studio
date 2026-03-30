@@ -149,31 +149,41 @@
     updateStudioSummary(rootState, studioRoot);
   }
 
-  function initCartoonStudio() {
-    const studioRoot = document.querySelector('[data-cartoon-view="studio"]');
-    const studioSceneList = document.querySelector('[data-studio-scene-list]');
-    const studioSceneTemplate = document.getElementById('studioSceneRowTemplate');
+function initCartoonStudio() {
+  const cartoonPanel = document.querySelector('.main-panel[data-module="cartoon"]');
+  if (!cartoonPanel) {
+    return false;
+  }
 
-    if (!studioRoot || !studioSceneList || !studioSceneTemplate) {
-      return false;
-    }
+  const studioRoot = cartoonPanel.querySelector('[data-cartoon-view="studio"]');
+  if (!studioRoot) {
+    return false;
+  }
 
-    const alreadyBound = studioRoot.getAttribute('data-studio-bound') === 'true';
-    if (alreadyBound) {
-      return true;
-    }
+  const studioSceneList = studioRoot.querySelector('[data-studio-scene-list]');
+  const studioSceneTemplate = studioRoot.querySelector('#studioSceneRowTemplate');
 
-    const studioState = createStudioState();
+  if (!studioSceneList || !studioSceneTemplate) {
+    return false;
+  }
 
-    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-
-    studioRoot.setAttribute('data-studio-bound', 'true');
-    window.__CARTOON_STUDIO__ = studioState;
-
-    console.log('[CARTOON_STUDIO] ready', studioState);
-
+  const alreadyBound = studioRoot.getAttribute('data-studio-bound') === 'true';
+  if (alreadyBound) {
+    window.__CARTOON_STUDIO__ = window.__CARTOON_STUDIO__ || createStudioState();
     return true;
   }
+
+  const studioState = createStudioState();
+
+  renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+
+  studioRoot.setAttribute('data-studio-bound', 'true');
+  window.__CARTOON_STUDIO__ = studioState;
+
+  console.log('[CARTOON_STUDIO] ready', studioState);
+
+  return true;
+}
 
   function bootCartoonStudio() {
     if (initCartoonStudio()) return;
