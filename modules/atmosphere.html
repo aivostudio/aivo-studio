@@ -405,9 +405,23 @@
     🎵 Audio Seç
   </label>
 </div>
-  <!-- ✅ meta (thumbnail yok) -->
+   <!-- ✅ meta (thumbnail yok) -->
   <div class="atmProRefsMeta">
     <div class="atmFileName" id="atmProLogoFileName">Dosya seçilmedi</div>
+
+    <div class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+      <div class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</div>
+      <button
+        type="button"
+        id="atmProRefImageClear"
+        aria-label="Yüklenen resmi kaldır"
+        title="Resmi kaldır"
+        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;"
+      >
+        ×
+      </button>
+    </div>
+
     <div class="atmFileName" id="atmProAudioFileName">Dosya seçilmedi</div>
   </div>
 
