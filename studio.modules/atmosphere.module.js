@@ -1095,11 +1095,6 @@ if (imageClearBtn) {
   e.preventDefault();
   e.stopPropagation();
 
-const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
-if (imageClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
-
   const imageInput = document.getElementById("atmProRefImageFile");
   if (imageInput) imageInput.value = "";
 
