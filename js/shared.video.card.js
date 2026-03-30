@@ -48,7 +48,13 @@
         display:block;
         padding-top:76%;
       }
+      .svcMedia.is-landscape::before{
+  padding-top:56.25%;
+}
 
+.svcMedia.is-square::before{
+  padding-top:100%;
+}
       .svcMedia.is-portrait::before{
         padding-top:140%;
       }
@@ -602,7 +608,19 @@ ensureFullscreenBinding();
     const posterUrl = String(opts?.posterUrl || "").trim();
     const ratio = String(opts?.ratio || "").trim();
       const ready = !!opts?.ready;
-    const portrait = false;
+  const portrait =
+  ratio === "9:16" ||
+  ratio === "portrait" ||
+  ratio === "4:5";
+
+const landscape =
+  ratio === "16:9" ||
+  ratio === "horizontal" ||
+  ratio === "landscape";
+
+const square =
+  ratio === "1:1" ||
+  ratio === "square";
 
     const canDownload = !!opts?.canDownload;
     const canShare = !!opts?.canShare;
@@ -610,7 +628,7 @@ ensureFullscreenBinding();
 
    return `
       <div class="svcCard" data-svc-id="${esc(id)}">
-        <div class="svcMedia ${portrait ? "is-portrait" : ""}">
+       <div class="svcMedia ${portrait ? "is-portrait" : ""} ${square ? "is-square" : ""} ${landscape ? "is-landscape" : ""}">
          <div
   class="svcBadgeDot ${badgeClass(badgeKind)}"
   title="${esc(badgeText)}"
