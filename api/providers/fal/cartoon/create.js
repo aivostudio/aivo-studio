@@ -112,10 +112,10 @@ function buildBasicPrompt(body) {
   const extraPrompt = String(body.extraPrompt || "").trim();
   const hasCustomCharacterImage = !!String(
     body.characterImageUrl ||
-    body.character_image_url ||
-    body.image_url ||
-    body.start_image_url ||
-    ""
+      body.character_image_url ||
+      body.image_url ||
+      body.start_image_url ||
+      ""
   ).trim();
 
   const mainCharacterText = hasCustomCharacterImage
@@ -124,7 +124,9 @@ function buildBasicPrompt(body) {
 
   const helperCharactersText = hasCustomCharacterImage
     ? ""
-    : (helpers.length ? `Helper characters: ${helpers.join(", ")}.` : "");
+    : helpers.length
+      ? `Helper characters: ${helpers.join(", ")}.`
+      : "";
 
   const parts = [
     "Cute kids cartoon style.",
@@ -246,8 +248,10 @@ module.exports = async function handler(req, res) {
           "Centered composition.",
           "Clean simple background.",
           "Child-friendly, adorable, expressive design.",
-          "No text, no watermark."
-        ].filter(Boolean).join(" ")
+          "No text, no watermark.",
+        ]
+          .filter(Boolean)
+          .join(" ")
       : mode === "story"
         ? `${String(body.extraPrompt || "").trim()} Unique shot token: ${requestNonce}.`
         : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
@@ -261,10 +265,54 @@ module.exports = async function handler(req, res) {
       : "none";
 
   const audio_url =
-    String(body.audioFileUrl || body.audio_url || "").trim() || null;
+    String(
+      pick(body, [
+        "audioFileUrl",
+        "audio_url",
+        "meta.audio_url",
+        "settings.audioFileUrl",
+      ]) || ""
+    ).trim() || null;
+
+  const include_audio_raw = pick(body, [
+    "include_audio",
+    "includeAudio",
+    "meta.include_audio",
+    "settings.includeMusic",
+  ]);
+
+  const include_audio =
+    typeof include_audio_raw === "boolean"
+      ? include_audio_raw
+      : String(include_audio_raw || "").toLowerCase() === "true"
+        ? true
+        : audio_mode === "upload" && !!audio_url;
 
   const silent_copy = audio_mode !== "upload";
   const generate_audio = false;
+
+  const logo_url =
+    String(
+      pick(body, [
+        "logoFileUrl",
+        "logo_url",
+        "meta.logo_url",
+        "settings.logoFileUrl",
+      ]) || ""
+    ).trim() || null;
+
+  const logo_pos_raw =
+    pick(body, [
+      "logoPos",
+      "logo_pos",
+      "logoPosition",
+      "meta.logo_pos",
+      "meta.logoPosition",
+      "settings.logoPos",
+      "settings.logoPosition",
+    ]) || null;
+
+  const logo_pos = logo_pos_raw ? String(logo_pos_raw).trim() : null;
 
   const characterImageUrl =
     pick(body, [
@@ -292,12 +340,13 @@ module.exports = async function handler(req, res) {
     storyImageUrls.push(String(characterImageUrl).trim());
   }
 
-const falModel =
-  mode === "character"
-    ? "fal-ai/nano-banana-pro"
-    : mode === "story"
-      ? "fal-ai/kling-video/o3/standard/reference-to-video"
-      : "fal-ai/kling-video/o3/standard/reference-to-video";
+  const falModel =
+    mode === "character"
+      ? "fal-ai/nano-banana-pro"
+      : mode === "story"
+        ? "fal-ai/kling-video/o3/standard/reference-to-video"
+        : "fal-ai/kling-video/o3/standard/reference-to-video";
+
   const falUrl = `https://queue.fal.run/${falModel}`;
 
   const falInput =
@@ -312,48 +361,59 @@ const falModel =
           output_format: "png",
           safety_tolerance: "4",
           resolution: "1K",
-          ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {})
+          ...(referenceImageUrl ? { image_urls: [String(referenceImageUrl)] } : {}),
         }
-   : mode === "story"
-  ? {
-      prompt,
-      duration,
-      aspect_ratio,
-      generate_audio: false,
-      ...(Array.isArray(body.elements) && body.elements.length
+      : mode === "story"
         ? {
-            elements: body.elements.map((el) => ({
-              frontal_image_url: String(el?.frontal_image_url || "").trim(),
-              reference_image_urls: Array.isArray(el?.reference_image_urls)
-                ? el.reference_image_urls.map((x) => String(x || "").trim()).filter(Boolean)
-                : []
-            }))
+            prompt,
+            duration,
+            aspect_ratio,
+            generate_audio: false,
+            ...(Array.isArray(body.elements) && body.elements.length
+              ? {
+                  elements: body.elements.map((el) => ({
+                    frontal_image_url: String(el?.frontal_image_url || "").trim(),
+                    reference_image_urls: Array.isArray(el?.reference_image_urls)
+                      ? el.reference_image_urls.map((x) => String(x || "").trim()).filter(Boolean)
+                      : [],
+                  })),
+                }
+              : {}),
+            ...(!Array.isArray(body.elements) || !body.elements.length
+              ? storyImageUrls.length
+                ? { image_urls: storyImageUrls }
+                : {}
+              : {}),
           }
-        : {}),
-      ...(!Array.isArray(body.elements) || !body.elements.length
-        ? (storyImageUrls.length ? { image_urls: storyImageUrls } : {})
-        : {})
-    }
         : {
             prompt,
             duration,
             aspect_ratio,
             generate_audio,
             shot_type: "customize",
-            ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {})
+            ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
           };
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
- console.log("[FAL_CREATE_DEBUG]", JSON.stringify({
-  mode,
-  model: falModel,
-  body_duration: body.duration,
-  fal_input_duration: falInput?.duration,
-  aspect_ratio,
-  body_elements_count: Array.isArray(body.elements) ? body.elements.length : 0,
-  fal_input: falInput
-}, null, 2));
+
+  console.log(
+    "[FAL_CREATE_DEBUG]",
+    JSON.stringify(
+      {
+        mode,
+        model: falModel,
+        body_duration: body.duration,
+        fal_input_duration: falInput?.duration,
+        aspect_ratio,
+        body_elements_count: Array.isArray(body.elements) ? body.elements.length : 0,
+        fal_input: falInput,
+      },
+      null,
+      2
+    )
+  );
+
   let r;
   try {
     r = await fetch(falUrl, {
@@ -396,7 +456,7 @@ const falModel =
       fal_response: data,
       mode,
       model: falModel,
-      fal_input: falInput
+      fal_input: falInput,
     });
   }
 
@@ -404,72 +464,90 @@ const falModel =
     data?.request_id || data?.requestId || data?.id || data?._id || null;
 
   const status_url = extractFalStatusUrl(data);
+
   const reference_image_url =
-  pick(body, ["image_url", "imageUrl", "reference_image_url", "referenceImageUrl"]) ||
-  pick(body, ["characterImageUrl", "character_image_url", "start_image_url"]) ||
-  null;
+    pick(body, ["image_url", "imageUrl", "reference_image_url", "referenceImageUrl"]) ||
+    pick(body, ["characterImageUrl", "character_image_url", "start_image_url"]) ||
+    null;
 
-const metaObj = {
-  app,
-  mode,
-  kind: mode === "character" ? "cartoon_character" : "cartoon_video",
-  provider: "fal",
+  const metaObj = {
+    app,
+    mode,
+    kind: mode === "character" ? "cartoon_character" : "cartoon_video",
+    provider: "fal",
 
-  scene_id: String(body?.meta?.scene_id || ""),
-  scene_title: String(body?.meta?.scene_title || ""),
-  title: String(body?.meta?.scene_title || body?.meta?.title || ""),
-  scene_description: String(body?.meta?.scene_description || body?.description || ""),
-  scene_duration: String(body?.meta?.scene_duration || duration || ""),
-  story_flow_duration: String(body?.meta?.story_flow_duration || ""),
+    scene_id: String(body?.meta?.scene_id || ""),
+    scene_title: String(body?.meta?.scene_title || ""),
+    title: String(body?.meta?.scene_title || body?.meta?.title || ""),
+    scene_description: String(body?.meta?.scene_description || body?.description || ""),
+    scene_duration: String(body?.meta?.scene_duration || duration || ""),
+    story_flow_duration: String(body?.meta?.story_flow_duration || ""),
 
-  audio_mode,
-  audio_url,
-  silent_copy,
-  model: falModel,
-  request_id,
-
-    ...(reference_image_url
-    ? {
-        reference_image_url: String(reference_image_url).trim(),
-      }
-    : {}),
-
-  ui_state: {
-    name: characterName || null,
-    type: characterType || null,
-    style: characterStyle || null,
-    prompt: characterPromptRaw || "",
-    hairType: characterHairType || "",
-    hairColor: characterHairColor || "",
-    outfit: characterOutfit || "",
-    glasses: characterGlasses || "",
-    accessory: characterAccessory || "",
-    expression: characterExpression || "",
-    mainCharacter: body.mainCharacter || null,
-    helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
-    scene: body.scene || null,
-    action: body.action || null,
-    extraPrompt: body.extraPrompt || "",
-    duration,
-    aspect_ratio,
-    generate_audio,
     audio_mode,
     audio_url,
+    include_audio,
     silent_copy,
-    characterImageUrl: characterImageUrl || null,
-    referenceImageUrl: referenceImageUrl || null,
-    storyImageUrls,
-    requestNonce: requestNonce || null,
-    story_meta: body.meta || null
-  },
 
-  fal_input: falInput,
-  provider_response: {
-    status_url: status_url || null,
-    response_url: status_url || null,
-    raw: data,
-  },
-};
+    ...(logo_url
+      ? {
+          logo_url,
+        }
+      : {}),
+
+    ...(logo_pos
+      ? {
+          logo_pos,
+        }
+      : {}),
+
+    model: falModel,
+    request_id,
+
+    ...(reference_image_url
+      ? {
+          reference_image_url: String(reference_image_url).trim(),
+        }
+      : {}),
+
+    ui_state: {
+      name: characterName || null,
+      type: characterType || null,
+      style: characterStyle || null,
+      prompt: characterPromptRaw || "",
+      hairType: characterHairType || "",
+      hairColor: characterHairColor || "",
+      outfit: characterOutfit || "",
+      glasses: characterGlasses || "",
+      accessory: characterAccessory || "",
+      expression: characterExpression || "",
+      mainCharacter: body.mainCharacter || null,
+      helperCharacters: Array.isArray(body.helperCharacters) ? body.helperCharacters : [],
+      scene: body.scene || null,
+      action: body.action || null,
+      extraPrompt: body.extraPrompt || "",
+      duration,
+      aspect_ratio,
+      generate_audio,
+      audio_mode,
+      audio_url,
+      include_audio,
+      silent_copy,
+      logo_url,
+      logo_pos,
+      characterImageUrl: characterImageUrl || null,
+      referenceImageUrl: referenceImageUrl || null,
+      storyImageUrls,
+      requestNonce: requestNonce || null,
+      story_meta: body.meta || null,
+    },
+
+    fal_input: falInput,
+    provider_response: {
+      status_url: status_url || null,
+      response_url: status_url || null,
+      raw: data,
+    },
+  };
 
   const now = new Date().toISOString();
 
