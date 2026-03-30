@@ -641,51 +641,69 @@
       const imageStatus = qs("#atmProRefImageStatus");
       const audioStatus = qs("#atmProAudioStatus");
 
-      const imageClearBtn = qs("#atmProRefImageClear");
+    const logoClearBtn  = qs("#atmProLogoClear");
+const imageClearBtn = qs("#atmProRefImageClear");
+const audioClearBtn = qs("#atmProAudioClear");
 
-      // Pos -> global state’e yaz
-      const posSel = qs("#atmProLogoPos");
-      if (posSel) {
-        posSel.addEventListener("change", () => {
-          try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
-        });
-        try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
-      }
+// Pos -> global state’e yaz
+const posSel = qs("#atmProLogoPos");
+if (posSel) {
+  posSel.addEventListener("change", () => {
+    try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+  });
+  try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+}
 
-      function syncImageClearBtn() {
-        if (!imageClearBtn) return;
-        imageClearBtn.style.display = uploads.image?.status === "ready" ? "inline-grid" : "none";
-        imageClearBtn.style.placeItems = "center";
-      }
+function syncLogoClearBtn() {
+  if (!logoClearBtn) return;
+  logoClearBtn.style.display = uploads.logo?.status === "ready" ? "inline-grid" : "none";
+  logoClearBtn.style.placeItems = "center";
+}
+
+function syncImageClearBtn() {
+  if (!imageClearBtn) return;
+  imageClearBtn.style.display = uploads.image?.status === "ready" ? "inline-grid" : "none";
+  imageClearBtn.style.placeItems = "center";
+}
+
+function syncAudioClearBtn() {
+  if (!audioClearBtn) return;
+  audioClearBtn.style.display = uploads.audio?.status === "ready" ? "inline-grid" : "none";
+  audioClearBtn.style.placeItems = "center";
+}
 
       async function onLogoChange() {
-        const f = logoInput && logoInput.files && logoInput.files[0];
-        if (!f) {
-          if (logoName) logoName.textContent = "Dosya seçilmedi";
-          uploads.logo = { status:"empty", url:"", name:"" };
-          setStatus(logoStatus, "empty");
-          try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-          return;
-        }
+  const f = logoInput && logoInput.files && logoInput.files[0];
+  if (!f) {
+    if (logoName) logoName.textContent = "Dosya seçilmedi";
+    uploads.logo = { status:"empty", url:"", name:"" };
+    setStatus(logoStatus, "empty");
+    syncLogoClearBtn();
+    try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+    return;
+  }
 
-        if (logoName) logoName.textContent = "Yükleniyor…";
-        uploads.logo = { status:"uploading", url:"", name: f.name || "" };
-        setStatus(logoStatus, "uploading");
+  if (logoName) logoName.textContent = "Yükleniyor…";
+  uploads.logo = { status:"uploading", url:"", name: f.name || "" };
+  setStatus(logoStatus, "uploading");
+  syncLogoClearBtn();
 
-        try {
-          const out = await uploadToR2(f, { app:"atmo", kind:"logo" });
-          uploads.logo = { status:"ready", url: out.url, name: out.name || f.name || "" };
-          if (logoName) logoName.textContent = uploads.logo.name;
-          setStatus(logoStatus, "ready");
-          window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
-        } catch (e) {
-          console.error("[ATM][PRO] logo upload error:", e);
-          uploads.logo = { status:"error", url:"", name: f.name || "" };
-          if (logoName) logoName.textContent = "Yükleme hatası";
-          setStatus(logoStatus, "error");
-          try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
-        }
-      }
+  try {
+    const out = await uploadToR2(f, { app:"atmo", kind:"logo" });
+    uploads.logo = { status:"ready", url: out.url, name: out.name || f.name || "" };
+    if (logoName) logoName.textContent = uploads.logo.name;
+    setStatus(logoStatus, "ready");
+    syncLogoClearBtn();
+    window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
+  } catch (e) {
+    console.error("[ATM][PRO] logo upload error:", e);
+    uploads.logo = { status:"error", url:"", name: f.name || "" };
+    if (logoName) logoName.textContent = "Yükleme hatası";
+    setStatus(logoStatus, "error");
+    syncLogoClearBtn();
+    try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
+  }
+}
 
       async function onImageChange() {
         const f = imageInput && imageInput.files && imageInput.files[0];
@@ -718,32 +736,36 @@
         }
       }
 
-      async function onAudioChange() {
-        const f = audioInput && audioInput.files && audioInput.files[0];
-        if (!f) {
-          if (audioName) audioName.textContent = "Dosya seçilmedi";
-          uploads.audio = { status:"empty", url:"", name:"" };
-          setStatus(audioStatus, "empty");
-          return;
-        }
+   async function onAudioChange() {
+  const f = audioInput && audioInput.files && audioInput.files[0];
+  if (!f) {
+    if (audioName) audioName.textContent = "Dosya seçilmedi";
+    uploads.audio = { status:"empty", url:"", name:"" };
+    setStatus(audioStatus, "empty");
+    syncAudioClearBtn();
+    return;
+  }
 
-        if (audioName) audioName.textContent = "Yükleniyor…";
-        uploads.audio = { status:"uploading", url:"", name: f.name || "" };
-        setStatus(audioStatus, "uploading");
+  if (audioName) audioName.textContent = "Yükleniyor…";
+  uploads.audio = { status:"uploading", url:"", name: f.name || "" };
+  setStatus(audioStatus, "uploading");
+  syncAudioClearBtn();
 
-        try {
-          const out = await uploadToR2(f, { app:"atmo", kind:"audio" });
-          uploads.audio = { status:"ready", url: out.url, name: out.name || f.name || "" };
-          if (audioName) audioName.textContent = uploads.audio.name;
-          setStatus(audioStatus, "ready");
-        } catch (e) {
-          console.error("[ATM][PRO] audio upload error:", e);
-          uploads.audio = { status:"error", url:"", name: f.name || "" };
-          if (audioName) audioName.textContent = "Yükleme hatası";
-          setStatus(audioStatus, "error");
-          try { window.toast?.error?.("Audio yükleme hatası"); } catch {}
-        }
-      }
+  try {
+    const out = await uploadToR2(f, { app:"atmo", kind:"audio" });
+    uploads.audio = { status:"ready", url: out.url, name: out.name || f.name || "" };
+    if (audioName) audioName.textContent = uploads.audio.name;
+    setStatus(audioStatus, "ready");
+    syncAudioClearBtn();
+  } catch (e) {
+    console.error("[ATM][PRO] audio upload error:", e);
+    uploads.audio = { status:"error", url:"", name: f.name || "" };
+    if (audioName) audioName.textContent = "Yükleme hatası";
+    setStatus(audioStatus, "error");
+    syncAudioClearBtn();
+    try { window.toast?.error?.("Audio yükleme hatası"); } catch {}
+  }
+}
 
       if (logoInput) {
         logoInput.addEventListener("change", onLogoChange);
@@ -754,31 +776,68 @@
       if (audioInput) {
         audioInput.addEventListener("change", onAudioChange);
       }
-      if (imageClearBtn) {
-        imageClearBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+     if (logoClearBtn) {
+  logoClearBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-          if (imageInput) imageInput.value = "";
-          uploads.image = { status:"empty", url:"", name:"" };
+    if (logoInput) logoInput.value = "";
+    uploads.logo = { status:"empty", url:"", name:"" };
 
-          if (imageName) imageName.textContent = "Dosya seçilmedi";
-          setStatus(imageStatus, "empty");
-          syncImageClearBtn();
-        });
-      }
-      // İlk render: state’ten doldur (sayfa refresh’te)
-      try {
-        if (uploads.logo?.status === "ready" && uploads.logo?.name && logoName) {
-          logoName.textContent = uploads.logo.name;
-          setStatus(logoStatus, "ready");
-        }
-       if (uploads.image?.status === "ready" && uploads.image?.name && imageName) {
-  imageName.textContent = uploads.image.name;
-  setStatus(imageStatus, "ready");
-  syncImageClearBtn(); // 🔥 KRİTİK
+    if (logoName) logoName.textContent = "Dosya seçilmedi";
+    setStatus(logoStatus, "empty");
+    syncLogoClearBtn();
+    try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+  });
 }
-      } catch {}
+
+if (imageClearBtn) {
+  imageClearBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (imageInput) imageInput.value = "";
+    uploads.image = { status:"empty", url:"", name:"" };
+
+    if (imageName) imageName.textContent = "Dosya seçilmedi";
+    setStatus(imageStatus, "empty");
+    syncImageClearBtn();
+  });
+}
+
+if (audioClearBtn) {
+  audioClearBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (audioInput) audioInput.value = "";
+    uploads.audio = { status:"empty", url:"", name:"" };
+
+    if (audioName) audioName.textContent = "Dosya seçilmedi";
+    setStatus(audioStatus, "empty");
+    syncAudioClearBtn();
+  });
+}
+      // İlk render: state’ten doldur (sayfa refresh’te)
+ try {
+  if (uploads.logo?.status === "ready" && uploads.logo?.name && logoName) {
+    logoName.textContent = uploads.logo.name;
+    setStatus(logoStatus, "ready");
+    syncLogoClearBtn();
+  }
+
+  if (uploads.image?.status === "ready" && uploads.image?.name && imageName) {
+    imageName.textContent = uploads.image.name;
+    setStatus(imageStatus, "ready");
+    syncImageClearBtn();
+  }
+
+  if (uploads.audio?.status === "ready" && uploads.audio?.name && audioName) {
+    audioName.textContent = uploads.audio.name;
+    setStatus(audioStatus, "ready");
+    syncAudioClearBtn();
+  }
+} catch {}
     })();
   </script>
 
