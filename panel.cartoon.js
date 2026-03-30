@@ -226,6 +226,9 @@
       .cartoonPanelBtn{flex:1;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}
       .cartoonPanelBtn[disabled]{opacity:.45;cursor:not-allowed;}
       .cartoonPanelBtn.danger{border-color:rgba(255,120,120,0.20);background:rgba(255,120,120,0.08);}
+      .cartoonPanelCardInner[data-ratio="16:9"] .svcMedia::before{padding-top:56.25% !important;}
+      .cartoonPanelCardInner[data-ratio="1:1"] .svcMedia::before{padding-top:100% !important;}
+      .cartoonPanelCardInner[data-ratio="9:16"] .svcMedia::before{padding-top:140% !important;}
       @media (max-width: 980px){.cartoonPanelGrid{grid-template-columns:1fr;}}
     `;
 
@@ -474,30 +477,31 @@
             : "loading";
 
       if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-        return (
-          '<div class="cartoonPanelCardInner"' +
-            ' data-job="' + esc(jid) + '"' +
-            ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-            ' data-final-url="' + esc(finalUrl) + '"' +
-            ' data-preview-url="' + esc(previewUrl) + '"' +
-            ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-          '>' +
-            window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-              id: jid,
-              title,
-              sub,
-              badgeText,
-              badgeKind,
-              videoUrl: previewVideoUrl,
-              posterUrl: "",
-              ratio,
-              ready,
-              canDownload: !!finalUrl,
-              canShare: ready,
-              canDelete: true,
-            }) +
-          '</div>'
-        );
+   return (
+  '<div class="cartoonPanelCardInner"' +
+    ' data-job="' + esc(jid) + '"' +
+    ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+    ' data-final-url="' + esc(finalUrl) + '"' +
+    ' data-preview-url="' + esc(previewUrl) + '"' +
+    ' data-ratio="' + esc(ratio) + '"' +
+    ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+  '>' +
+    window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+      id: jid,
+      title,
+      sub,
+      badgeText,
+      badgeKind,
+      videoUrl: previewVideoUrl,
+      posterUrl: "",
+      ratio,
+      ready,
+      canDownload: !!finalUrl,
+      canShare: ready,
+      canDelete: true,
+    }) +
+  '</div>'
+);
       }
 
       return "";
