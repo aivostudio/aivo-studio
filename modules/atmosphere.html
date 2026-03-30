@@ -606,22 +606,33 @@
       }
 
       // UI refs
-      const logoInput  = qs("#atmProLogoFile");
-      const audioInput = qs("#atmProAudioFile");
+      const logoInput   = qs("#atmProLogoFile");
+      const imageInput  = qs("#atmProRefImageFile");
+      const audioInput  = qs("#atmProAudioFile");
 
-      const logoName   = qs("#atmProLogoFileName");
-      const audioName  = qs("#atmProAudioFileName");
+      const logoName    = qs("#atmProLogoFileName");
+      const imageName   = qs("#atmProRefImageFileName");
+      const audioName   = qs("#atmProAudioFileName");
 
-      const logoStatus = qs("#atmProLogoStatus");
-      const audioStatus= qs("#atmProAudioStatus");
+      const logoStatus  = qs("#atmProLogoStatus");
+      const imageStatus = qs("#atmProRefImageStatus");
+      const audioStatus = qs("#atmProAudioStatus");
 
-      // Pos -> global state’e yaz (payload senin buildProPayload içinde state.logoPos’a bakıyorsa)
+      const imageClearBtn = qs("#atmProRefImageClear");
+
+      // Pos -> global state’e yaz
       const posSel = qs("#atmProLogoPos");
       if (posSel) {
         posSel.addEventListener("change", () => {
           try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
         });
         try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+      }
+
+      function syncImageClearBtn() {
+        if (!imageClearBtn) return;
+        imageClearBtn.style.display = uploads.image?.status === "ready" ? "inline-grid" : "none";
+        imageClearBtn.style.placeItems = "center";
       }
 
       async function onLogoChange() {
@@ -643,16 +654,44 @@
           uploads.logo = { status:"ready", url: out.url, name: out.name || f.name || "" };
           if (logoName) logoName.textContent = uploads.logo.name;
           setStatus(logoStatus, "ready");
-
-          // global logo url (overlay/pipeline için)
           window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
-
         } catch (e) {
           console.error("[ATM][PRO] logo upload error:", e);
           uploads.logo = { status:"error", url:"", name: f.name || "" };
           if (logoName) logoName.textContent = "Yükleme hatası";
           setStatus(logoStatus, "error");
           try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
+        }
+      }
+
+      async function onImageChange() {
+        const f = imageInput && imageInput.files && imageInput.files[0];
+        if (!f) {
+          if (imageName) imageName.textContent = "Dosya seçilmedi";
+          uploads.image = { status:"empty", url:"", name:"" };
+          setStatus(imageStatus, "empty");
+          syncImageClearBtn();
+          return;
+        }
+
+        if (imageName) imageName.textContent = "Yükleniyor…";
+        uploads.image = { status:"uploading", url:"", name: f.name || "" };
+        setStatus(imageStatus, "uploading");
+        syncImageClearBtn();
+
+        try {
+          const out = await uploadToR2(f, { app:"atmo", kind:"image" });
+          uploads.image = { status:"ready", url: out.url, name: out.name || f.name || "" };
+          if (imageName) imageName.textContent = uploads.image.name;
+          setStatus(imageStatus, "ready");
+          syncImageClearBtn();
+        } catch (e) {
+          console.error("[ATM][PRO] image upload error:", e);
+          uploads.image = { status:"error", url:"", name: f.name || "" };
+          if (imageName) imageName.textContent = "Yükleme hatası";
+          setStatus(imageStatus, "error");
+          syncImageClearBtn();
+          try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
         }
       }
 
@@ -686,10 +725,25 @@
       if (logoInput) {
         logoInput.addEventListener("change", onLogoChange);
       }
+      if (imageInput) {
+        imageInput.addEventListener("change", onImageChange);
+      }
       if (audioInput) {
         audioInput.addEventListener("change", onAudioChange);
       }
+      if (imageClearBtn) {
+        imageClearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
 
+          if (imageInput) imageInput.value = "";
+          uploads.image = { status:"empty", url:"", name:"" };
+
+          if (imageName) imageName.textContent = "Dosya seçilmedi";
+          setStatus(imageStatus, "empty");
+          syncImageClearBtn();
+        });
+      }
       // İlk render: state’ten doldur (sayfa refresh’te)
       try {
         if (uploads.logo?.status === "ready" && uploads.logo?.name && logoName) {
