@@ -256,9 +256,14 @@ function setUploadUI(root, kind, patch) {
   // ✅ Pro’da preview/badge istemiyoruz: ensureAtmUploadUI çağırmıyoruz
   if (!isPro) ensureAtmUploadUI(r, kind);
 
-  const st = state.uploads[kind] || { status: "empty", url: "", name: "" };
-  const next = { ...st, ...(patch || {}) };
-  state.uploads[kind] = next;
+ const uploadKey =
+  kind === "image"
+    ? (isPro ? "proImage" : "basicImage")
+    : kind;
+
+const st = state.uploads[uploadKey] || { status: "empty", url: "", name: "" };
+const next = { ...st, ...(patch || {}) };
+state.uploads[uploadKey] = next;
 
   // ------------------------------------------------------------
   // ✅ PRO UI bağları (Süper Mod)
@@ -583,13 +588,20 @@ async function handleUpload(root, kind, file) {
     syncAspectUI(root, root);
 
     // ensure upload UIs exist
-    ensureAtmUploadUI(root, "image");
-    ensureAtmUploadUI(root, "logo");
-    ensureAtmUploadUI(root, "audio");
-    // reflect any persisted state.uploads (if any)
-    setUploadUI(root, "image", state.uploads.image);
-    setUploadUI(root, "logo", state.uploads.logo);
-    setUploadUI(root, "audio", state.uploads.audio);
+   // ensure upload UIs exist
+ensureAtmUploadUI(root, "image");
+ensureAtmUploadUI(root, "logo");
+ensureAtmUploadUI(root, "audio");
+
+// reflect persisted state.uploads
+const basicPanelRef = shell ? qs('.mode-panel[data-mode-panel="basic"]', shell) : null;
+const proPanelRef   = shell ? qs('.mode-panel[data-mode-panel="pro"]', shell) : null;
+
+if (basicPanelRef) setUploadUI(basicPanelRef, "image", state.uploads.basicImage);
+if (proPanelRef)   setUploadUI(proPanelRef, "image", state.uploads.proImage);
+
+setUploadUI(root, "logo", state.uploads.logo);
+setUploadUI(root, "audio", state.uploads.audio);
   }
 
   // ------------------------------------------------------------
@@ -735,14 +747,14 @@ async function handleUpload(root, kind, file) {
     const file = e.target?.files?.[0] || null;
 
     // BASIC files (R2)
-    if (closestWithin(e.target, "#atmImageFile", root)) {
-      state.imageFile = file;
+   if (closestWithin(e.target, "#atmImageFile", root)) {
+  state.imageFile = file;
 
-      const panel = e.target.closest('[data-mode-panel="basic"]');
-      await handleUpload(panel || root, "image", file);
+  const panel = e.target.closest('[data-mode-panel="basic"]');
+  await handleUpload(panel || root, "image", file);
 
-      return;
-    }
+  return;
+}
 
     if (closestWithin(e.target, "#atmLogoFile", root)) {
       state.logoFile = file;
@@ -771,7 +783,7 @@ async function handleUpload(root, kind, file) {
 
       return;
     }
-    if (closestWithin(e.target, "#atmProRefImageFile", root)) {
+  if (closestWithin(e.target, "#atmProRefImageFile", root)) {
   state.refImageFile = file;
 
   const panel = e.target.closest('[data-mode-panel="pro"]');
@@ -1077,6 +1089,11 @@ if (logoClearBtn) {
   try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
   return;
 }
+
+const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
+if (imageClearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
 
 const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
 if (imageClearBtn) {
