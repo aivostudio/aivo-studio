@@ -1112,6 +1112,29 @@
       <h4>Sahneleri Birleştir</h4>
       <p class="story-card-helper">Final videoya girecek sahneleri seç ve sırala.</p>
     </div>
+    <div class="studio-upload-box">
+  <div class="story-grid story-grid-2">
+    <div class="story-field">
+      <label>Video Yükle</label>
+      <label class="cartoon-upload-row cartoon-upload-row--compact">
+        <input type="file" accept="video/*" multiple hidden data-studio-video-upload>
+        <span class="cartoon-upload-btn">Videoları Seç</span>
+        <span class="cartoon-upload-text" data-studio-video-upload-text>
+          Henüz video seçilmedi
+        </span>
+      </label>
+    </div>
+
+    <div class="story-field">
+      <label>Not</label>
+      <div class="cartoon-upload-row cartoon-upload-row--compact" style="pointer-events:none;">
+        <span class="cartoon-upload-text">
+          Yüklediğin her video ayrı sahne olarak listeye eklenecek.
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="studio-scene-list" data-studio-scene-list></div>
 
