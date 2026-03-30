@@ -750,10 +750,11 @@
           logoName.textContent = uploads.logo.name;
           setStatus(logoStatus, "ready");
         }
-        if (uploads.audio?.status === "ready" && uploads.audio?.name && audioName) {
-          audioName.textContent = uploads.audio.name;
-          setStatus(audioStatus, "ready");
-        }
+       if (uploads.image?.status === "ready" && uploads.image?.name && imageName) {
+  imageName.textContent = uploads.image.name;
+  setStatus(imageStatus, "ready");
+  syncImageClearBtn(); // 🔥 KRİTİK
+}
       } catch {}
     })();
   </script>
