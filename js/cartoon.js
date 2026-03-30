@@ -568,6 +568,7 @@ function buildBasicPayload() {
 action: (state.actions || []).join(", "),
     duration: state.duration,
     aspectRatio: state.ratio,
+        style: state.style || "soft-cartoon",
     audioSource: state.audioSource || "none",
 audioMode: state.audioSource === "upload" ? "upload" : "none",
 audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
