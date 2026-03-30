@@ -4,6 +4,23 @@
     return `${value} sn`;
   }
 
+  function formatSummaryDuration(totalSeconds) {
+    const value = Number(totalSeconds) || 0;
+
+    if (value < 60) {
+      return `${value} sn`;
+    }
+
+    const minutes = Math.floor(value / 60);
+    const seconds = value % 60;
+
+    if (!seconds) {
+      return `${minutes} dk`;
+    }
+
+    return `${minutes} dk ${seconds} sn`;
+  }
+
   function createStudioState() {
     return {
       format: '16:9',
@@ -33,7 +50,24 @@
     };
   }
 
-  function renderStudioScenes(rootState, sceneList, sceneTemplate) {
+  function updateStudioSummary(rootState, studioRoot) {
+    const summary = studioRoot.querySelector('.studio-inline-summary');
+    if (!summary) return;
+
+    const items = summary.querySelectorAll('span');
+    if (!items.length || items.length < 3) return;
+
+    const selectedCount = rootState.scenes.filter((scene) => scene.included).length;
+    const totalDuration = rootState.scenes
+      .filter((scene) => scene.included)
+      .reduce((sum, scene) => sum + (Number(scene.duration) || 0), 0);
+
+    items[0].textContent = `Seçilen Sahne: ${selectedCount}`;
+    items[1].textContent = `Toplam Süre: ${formatSummaryDuration(totalDuration)}`;
+    items[2].textContent = `Format: ${rootState.format}`;
+  }
+
+  function renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate) {
     if (!sceneList || !sceneTemplate) return;
 
     sceneList.innerHTML = '';
@@ -45,13 +79,30 @@
       const titleEl = fragment.querySelector('[data-scene-title]');
       const durationEl = fragment.querySelector('[data-scene-duration]');
 
-      if (row) row.setAttribute('data-scene-id', scene.id);
-      if (includeInput) includeInput.checked = !!scene.included;
-      if (titleEl) titleEl.textContent = scene.title || 'Sahne';
-      if (durationEl) durationEl.textContent = formatSceneDuration(scene.duration);
+      if (row) {
+        row.setAttribute('data-scene-id', scene.id);
+      }
+
+      if (includeInput) {
+        includeInput.checked = !!scene.included;
+        includeInput.addEventListener('change', () => {
+          scene.included = !!includeInput.checked;
+          updateStudioSummary(rootState, studioRoot);
+        });
+      }
+
+      if (titleEl) {
+        titleEl.textContent = scene.title || 'Sahne';
+      }
+
+      if (durationEl) {
+        durationEl.textContent = formatSceneDuration(scene.duration);
+      }
 
       sceneList.appendChild(fragment);
     });
+
+    updateStudioSummary(rootState, studioRoot);
   }
 
   function initCartoonStudio() {
@@ -70,7 +121,7 @@
 
     const studioState = createStudioState();
 
-    renderStudioScenes(studioState, studioSceneList, studioSceneTemplate);
+    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
     studioRoot.setAttribute('data-studio-bound', 'true');
     window.__CARTOON_STUDIO__ = studioState;
