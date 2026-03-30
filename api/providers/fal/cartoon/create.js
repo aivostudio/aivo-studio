@@ -382,15 +382,15 @@ module.exports = async function handler(req, res) {
                 : {}
               : {}),
           }
-        : {
-            prompt,
-            duration,
-            aspect_ratio,
-            generate_audio,
-            shot_type: "customize",
-            ...(characterImageUrl ? { start_image_url: String(characterImageUrl) } : {}),
-          };
-
+       : {
+  prompt,
+  duration,
+  aspect_ratio,
+  generate_audio,
+  ...(characterImageUrl
+    ? { image_urls: [String(characterImageUrl).trim()] }
+    : {}),
+};
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
 
