@@ -559,7 +559,7 @@ function buildBasicPayload() {
     mode: "basic",
     extraPrompt: state.extraPrompt,
     mainCharacter: state.mainCharacter,
-    helperCharacters: [...state.helpers],
+   helperCharacters: state.characterImageUrl ? [] : [...state.helpers],
     scene: state.scene,
    actions: [...(state.actions || [])],
 action: (state.actions || []).join(", "),
