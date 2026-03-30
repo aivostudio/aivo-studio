@@ -5,9 +5,9 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  const STORY_MAX_POLLS = 240;          // 240 * 3000ms = 12 dk
+  const STORY_MAX_POLLS = 240;
   const STORY_POLL_INTERVAL = 3000;
-  const STORY_READY_RECHECK_LIMIT = 20; // ready oldu ama output yoksa ekstra bekleme
+  const STORY_READY_RECHECK_LIMIT = 20;
   const STORY_READY_RECHECK_INTERVAL = 1500;
 
   const STORY_FLOW_PRESETS = {
@@ -96,12 +96,14 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
- function getStorySceneEditor(root) {
-  return (
-    qs("[data-story-scene-editor]", root || document) ||
-    qs("[data-story-scene-editor]", document)
-  );
-}
+
+  function getStorySceneEditor(root) {
+    return (
+      qs("[data-story-scene-editor]", root || document) ||
+      qs("[data-story-scene-editor]", document)
+    );
+  }
+
   function safeText(value) {
     return String(value || "").trim();
   }
@@ -128,6 +130,15 @@
 
   function toSceneDurationNumber(value) {
     return Number(normalizeStorySceneDuration(value));
+  }
+
+  function mapLogoPositionToShort(value) {
+    const v = safeText(value || "bottom-right").toLowerCase();
+    if (v === "top-left") return "tl";
+    if (v === "top-right") return "tr";
+    if (v === "bottom-left") return "bl";
+    if (v === "center") return "c";
+    return "br";
   }
 
   function getStoryFlowPreset(flowDuration) {
@@ -221,7 +232,114 @@
     return publicUrl;
   }
 
+  async function presignStoryAudio(file) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "story-audio",
+        filename: file?.name || `story-audio-${Date.now()}.mp3`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "story_audio_presign_failed");
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ""
+    };
+  }
+
+  async function uploadStoryAudioToR2(file) {
+    if (!file) throw new Error("missing_story_audio_file");
+
+    const { uploadUrl, publicUrl } = await presignStoryAudio(file);
+
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("story_audio_missing_upload_urls");
+    }
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("story_audio_r2_put_failed");
+    }
+
+    return publicUrl;
+  }
+
+  async function presignStoryLogo(file) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "story-logo",
+        filename: file?.name || `story-logo-${Date.now()}.png`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "story_logo_presign_failed");
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ""
+    };
+  }
+
+  async function uploadStoryLogoToR2(file) {
+    if (!file) throw new Error("missing_story_logo_file");
+
+    const { uploadUrl, publicUrl } = await presignStoryLogo(file);
+
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("story_logo_missing_upload_urls");
+    }
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("story_logo_r2_put_failed");
+    }
+
+    return publicUrl;
+  }
+
   function createEmptyStoryCharacterImageState() {
+    return {
+      file: null,
+      fileName: "",
+      fileUrl: "",
+      uploadPromise: null,
+      uploadStatus: "idle",
+      uploadError: ""
+    };
+  }
+
+  function createEmptyStoryAssetState() {
     return {
       file: null,
       fileName: "",
@@ -252,6 +370,8 @@
       ratio: "16:9",
       style: "",
       audio: "none",
+      includeMusic: "no",
+      logoPosition: "bottom-right",
       extraPrompt: "",
       openSection: "intro",
       editingSceneId: "",
@@ -262,6 +382,8 @@
         helper2: createEmptyStoryCharacterImageState(),
         extra: createEmptyStoryCharacterImageState()
       },
+      logoAsset: createEmptyStoryAssetState(),
+      audioAsset: createEmptyStoryAssetState(),
       scenes: createDefaultScenes("3"),
       characterOptions: []
     });
@@ -458,85 +580,6 @@
     return "";
   }
 
-  function getStoryCharacterEntries() {
-    return STORY_CHARACTER_SLOT_CONFIG
-      .map((config) => {
-        const label = getStoryCharacterLabelBySlot(config.slot);
-        const image = getStoryCharacterImage(config.slot) || createEmptyStoryCharacterImageState();
-
-        return {
-          slot: config.slot,
-          label,
-          fileName: safeText(image.fileName),
-          fileUrl: safeText(image.fileUrl),
-          hasImage: !!safeText(image.fileName)
-        };
-      })
-      .filter((item) => !!item.label);
-  }
-
-  function resetStoryCharacterImage(root, slot) {
-    const key = String(slot || "").trim();
-    if (!key) return;
-
-    const input = qs(`[data-story-character-file="${key}"]`, root);
-    if (input) input.value = "";
-
-    setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
-    updateStoryCharacterUploadUI(root, key);
-
-    const scene = getSceneById(state.editingSceneId);
-    if (scene) {
-      renderSceneCharacterPicker(root, scene);
-      syncSceneRows(root);
-    }
-  }
-
-  function updateStoryCharacterUploadUI(root, slot) {
-    const key = String(slot || "").trim();
-    if (!key) return;
-
-    const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
-    const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
-    const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
-    const imageState = getStoryCharacterImage(key);
-
-    if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
-
-    if (!imageState.file) {
-      uploadBtn.hidden = false;
-      stateBox.hidden = true;
-      nameEl.textContent = "Dosya seçilmedi";
-      return;
-    }
-
-    uploadBtn.hidden = true;
-    stateBox.hidden = false;
-
-    if (imageState.uploadStatus === "uploading") {
-      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
-      return;
-    }
-
-    if (imageState.uploadStatus === "ready") {
-      nameEl.textContent = getShortFileName(imageState.fileName);
-      return;
-    }
-
-    if (imageState.uploadStatus === "error") {
-      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
-      return;
-    }
-
-    nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
-  }
-
-  function syncAllStoryCharacterUploadUI(root) {
-    STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
-      updateStoryCharacterUploadUI(root, config.slot);
-    });
-  }
-
   function getSceneById(sceneId) {
     return state.scenes.find((scene) => scene.id === sceneId) || null;
   }
@@ -556,13 +599,6 @@
     };
   }
 
-  function getAvailableStoryCharacterSlots() {
-    const slotMap = getStoryCharacterSlotMap();
-    return Object.entries(slotMap)
-      .filter(([, value]) => !!value)
-      .map(([slot]) => slot);
-  }
-
   function getSceneCharacterLabels(scene) {
     const slotMap = getStoryCharacterSlotMap();
     const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
@@ -578,6 +614,119 @@
 
     if (labels.length) return labels;
     return [];
+  }
+
+  function getStoryLogoAsset() {
+    return state.logoAsset || createEmptyStoryAssetState();
+  }
+
+  function getStoryAudioAsset() {
+    return state.audioAsset || createEmptyStoryAssetState();
+  }
+
+  function setStoryLogoAsset(patch) {
+    state.logoAsset = {
+      ...getStoryLogoAsset(),
+      ...patch
+    };
+  }
+
+  function setStoryAudioAsset(patch) {
+    state.audioAsset = {
+      ...getStoryAudioAsset(),
+      ...patch
+    };
+  }
+
+  function resetStoryLogoAsset(root) {
+    const input = qs("[data-story-logo-upload]", root);
+    if (input) input.value = "";
+
+    state.logoAsset = createEmptyStoryAssetState();
+    updateStoryLogoUploadUI(root);
+  }
+
+  function resetStoryAudioAsset(root) {
+    const input = qs("[data-story-audio-upload]", root);
+    if (input) input.value = "";
+
+    state.audioAsset = createEmptyStoryAssetState();
+    updateStoryAudioUploadUI(root);
+  }
+
+  function updateStoryLogoUploadUI(root) {
+    const textEl = qs("[data-story-logo-upload-text]", root);
+    const clearBtn = qs("[data-story-logo-upload-clear]", root);
+    const asset = getStoryLogoAsset();
+
+    if (!textEl) return;
+
+    if (!asset.file) {
+      textEl.textContent = "Dosya seçilmedi";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (asset.uploadStatus === "uploading") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (asset.uploadStatus === "ready") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      return;
+    }
+
+    if (asset.uploadStatus === "error") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      return;
+    }
+
+    textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
+    if (clearBtn) clearBtn.style.display = "none";
+  }
+
+  function updateStoryAudioUploadUI(root) {
+    const textEl = qs("[data-story-audio-upload-text]", root);
+    const clearBtn = qs("[data-story-audio-upload-clear]", root);
+    const asset = getStoryAudioAsset();
+
+    if (!textEl) return;
+
+    if (!asset.file) {
+      textEl.textContent = "Dosya seçilmedi";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (asset.uploadStatus === "uploading") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (asset.uploadStatus === "ready") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      return;
+    }
+
+    if (asset.uploadStatus === "error") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      return;
+    }
+
+    textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
+    if (clearBtn) clearBtn.style.display = "none";
+  }
+
+  function syncStorySettingsUploadUI(root) {
+    updateStoryLogoUploadUI(root);
+    updateStoryAudioUploadUI(root);
   }
 
   function ensureSceneCharacterPicker(editor) {
@@ -645,7 +794,7 @@
   }
 
   function renderSceneCharacterPicker(root, scene) {
-  const editor = getStorySceneEditor(root);
+    const editor = getStorySceneEditor(root);
     if (!editor || !scene) return;
 
     const wrap = ensureSceneCharacterPicker(editor);
@@ -720,7 +869,7 @@
   }
 
   function getSceneCharacterPickerValues(root) {
-  const editor = getStorySceneEditor(root);
+    const editor = getStorySceneEditor(root);
     if (!editor) return [];
 
     return qsa('.story-scene-character-item[data-selected="true"]', editor)
@@ -893,6 +1042,8 @@
     const style = qs("[data-story-style]", root);
     const audio = qs("[data-story-audio]", root);
     const extraPrompt = qs("[data-story-extra-prompt]", root);
+    const logoPosition = qs("[data-story-logo-position]", root);
+    const includeMusic = qs("[data-story-include-music]", root);
 
     if (storyIdea && storyIdea.value !== state.storyIdea) storyIdea.value = state.storyIdea;
     if (theme && theme.value !== state.theme) theme.value = state.theme;
@@ -901,6 +1052,8 @@
     if (style && style.value !== state.style) style.value = state.style;
     if (audio && audio.value !== state.audio) audio.value = state.audio;
     if (extraPrompt && extraPrompt.value !== state.extraPrompt) extraPrompt.value = state.extraPrompt;
+    if (logoPosition && logoPosition.value !== state.logoPosition) logoPosition.value = state.logoPosition;
+    if (includeMusic && includeMusic.value !== state.includeMusic) includeMusic.value = state.includeMusic;
   }
 
   function createSceneRow(scene) {
@@ -1005,7 +1158,7 @@
   }
 
   function fillSceneEditor(root, sceneId) {
-  const editor = getStorySceneEditor(root);
+    const editor = getStorySceneEditor(root);
     const scene = getSceneById(sceneId);
     if (!editor || !scene) return;
 
@@ -1028,18 +1181,20 @@
     if (type) type.value = scene.type || "";
     if (note) note.value = scene.directorNote || "";
   }
- function ensureStorySceneEditorPortal(root) {
-  const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
-  if (!editor) return null;
 
-  if (editor.parentElement !== document.body) {
-    document.body.appendChild(editor);
+  function ensureStorySceneEditorPortal(root) {
+    const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
+    if (!editor) return null;
+
+    if (editor.parentElement !== document.body) {
+      document.body.appendChild(editor);
+    }
+
+    return editor;
   }
 
-  return editor;
-}
   function syncSceneEditor(root) {
-   const editor = ensureStorySceneEditorPortal(root);
+    const editor = ensureStorySceneEditorPortal(root);
     if (!editor) return;
 
     const isOpen = !!state.editingSceneId;
@@ -1059,6 +1214,8 @@
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
     const totalSeconds = getSelectedTotalSeconds();
+    const logoAsset = getStoryLogoAsset();
+    const audioAsset = getStoryAudioAsset();
 
     return {
       app: "cartoon",
@@ -1099,6 +1256,13 @@
         aspectRatio: state.ratio,
         style: state.style,
         audio: state.audio,
+        includeMusic: state.includeMusic,
+        logoPosition: state.logoPosition,
+        logoPos: mapLogoPositionToShort(state.logoPosition),
+        logoFileName: logoAsset.fileName || "",
+        logoFileUrl: logoAsset.fileUrl || "",
+        audioFileName: audioAsset.fileName || "",
+        audioFileUrl: audioAsset.fileUrl || "",
         extraPrompt: state.extraPrompt
       },
       scenes: state.scenes.map((scene) => ({ ...scene }))
@@ -1207,6 +1371,11 @@
       "Clean frame, no text, no subtitles, no watermark."
     ].filter(Boolean);
 
+    const includeMusic = safeText(storyPayload?.settings?.includeMusic).toLowerCase() === "yes";
+    const audioFileUrl = safeText(storyPayload?.settings?.audioFileUrl);
+    const logoFileUrl = safeText(storyPayload?.settings?.logoFileUrl);
+    const logoPosition = safeText(storyPayload?.settings?.logoPosition || "bottom-right");
+
     return {
       app: "cartoon",
       mode: "basic",
@@ -1218,10 +1387,14 @@
       action: "acting naturally in the scene",
       duration: normalizeStorySceneDuration(scene?.duration),
       aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
-      audioSource: "none",
-      audioMode: "none",
-      audioFileName: "",
-      audioFileUrl: "",
+      audioSource: includeMusic && audioFileUrl ? "upload" : "none",
+      audioMode: includeMusic && audioFileUrl ? "upload" : "none",
+      audioFileName: includeMusic ? safeText(storyPayload?.settings?.audioFileName) : "",
+      audioFileUrl: includeMusic ? audioFileUrl : "",
+      logoFileName: safeText(storyPayload?.settings?.logoFileName),
+      logoFileUrl: logoFileUrl,
+      logoPosition: logoPosition,
+      logoPos: mapLogoPositionToShort(logoPosition),
       characterImage: null,
       characterImageName: "",
       characterImageUrl: resolved.characterImageUrl,
@@ -1240,6 +1413,10 @@
         scene_slots: resolved.slots,
         story_idea: String(storyPayload?.summary?.idea || ""),
         story_flow_duration: String(storyPayload?.summary?.flowDuration || ""),
+        logo_url: logoFileUrl || "",
+        logo_pos: mapLogoPositionToShort(logoPosition),
+        include_audio: includeMusic,
+        audio_url: includeMusic ? audioFileUrl : "",
         fal_elements_debug: elements.map((el) => ({
           token: el.token,
           slot: el.slot,
@@ -1273,16 +1450,16 @@
         selected: scene?.selected,
         duration: scene?.duration,
         normalized_duration: body?.duration,
-
         scene_characterSlots_raw: scene?.characterSlots || [],
         body_mainCharacter: body?.mainCharacter,
         body_helperCharacters: body?.helperCharacters || [],
-
         body_elements: body?.elements || [],
         body_meta_scene_slots: body?.meta?.scene_slots || [],
         body_fal_elements_debug: body?.meta?.fal_elements_debug || [],
-
         body_characterImageUrl: body?.characterImageUrl || "",
+        body_logoFileUrl: body?.logoFileUrl || "",
+        body_audioFileUrl: body?.audioFileUrl || "",
+        body_logoPos: body?.logoPos || "",
         body_extraPrompt: body?.extraPrompt || ""
       });
 
@@ -1475,7 +1652,7 @@
   function saveSceneEditor(root) {
     if (!state.editingSceneId) return;
 
-  const editor = getStorySceneEditor(root);
+    const editor = getStorySceneEditor(root);
     if (!editor) return;
 
     const title = safeText(qs("[data-scene-editor-title]", editor)?.value);
@@ -1526,6 +1703,7 @@
     syncSceneEditor(root);
     updateStoryIdeaCount(root);
     syncAllStoryCharacterUploadUI(root);
+    syncStorySettingsUploadUI(root);
     syncStoryDurationSummary(root);
   }
 
@@ -1572,7 +1750,7 @@
       }
 
       const sceneCharacterItem = e.target.closest(".story-scene-character-item");
-    if (sceneCharacterItem && getStorySceneEditor(root)?.contains(sceneCharacterItem)) {
+      if (sceneCharacterItem && getStorySceneEditor(root)?.contains(sceneCharacterItem)) {
         e.preventDefault();
 
         const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
@@ -1603,7 +1781,7 @@
       }
 
       const cancelBtn = e.target.closest("[data-scene-cancel]");
-    if (cancelBtn && getStorySceneEditor(root)?.contains(cancelBtn)) {
+      if (cancelBtn && getStorySceneEditor(root)?.contains(cancelBtn)) {
         e.preventDefault();
         state.editingSceneId = "";
         render(root);
@@ -1611,7 +1789,7 @@
       }
 
       const saveBtn = e.target.closest("[data-scene-save]");
-   if (saveBtn && getStorySceneEditor(root)?.contains(saveBtn)) {
+      if (saveBtn && getStorySceneEditor(root)?.contains(saveBtn)) {
         e.preventDefault();
         saveSceneEditor(root);
         return;
@@ -1635,6 +1813,20 @@
         if (!slot) return;
 
         resetStoryCharacterImage(root, slot);
+        return;
+      }
+
+      const storyLogoClear = e.target.closest("[data-story-logo-upload-clear]");
+      if (storyLogoClear && root.contains(storyLogoClear)) {
+        e.preventDefault();
+        resetStoryLogoAsset(root);
+        return;
+      }
+
+      const storyAudioClear = e.target.closest("[data-story-audio-upload-clear]");
+      if (storyAudioClear && root.contains(storyAudioClear)) {
+        e.preventDefault();
+        resetStoryAudioAsset(root);
         return;
       }
 
@@ -1668,6 +1860,43 @@
 
           if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
             alert("Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
+        const logoAsset = getStoryLogoAsset();
+        if (logoAsset.file) {
+          if (logoAsset.uploadStatus === "uploading" && logoAsset.uploadPromise) {
+            try {
+              await logoAsset.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!logoAsset.fileUrl || logoAsset.uploadStatus !== "ready") {
+            alert("Logo henüz yüklenmedi. Lütfen logo yüklemesi tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
+        const audioAsset = getStoryAudioAsset();
+        if (safeText(state.includeMusic).toLowerCase() === "yes") {
+          if (!audioAsset.file) {
+            alert("Müziği videoya dahil etmek için önce bir ses dosyası yüklemelisin.");
+            return;
+          }
+
+          if (audioAsset.uploadStatus === "uploading" && audioAsset.uploadPromise) {
+            try {
+              await audioAsset.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!audioAsset.fileUrl || audioAsset.uploadStatus !== "ready") {
+            alert("Müzik henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
             return;
           }
         }
@@ -1819,6 +2048,130 @@
         return;
       }
 
+      const includeMusic = e.target.closest("[data-story-include-music]");
+      if (includeMusic && root.contains(includeMusic)) {
+        state.includeMusic = includeMusic.value || "no";
+        render(root);
+        return;
+      }
+
+      const logoPosition = e.target.closest("[data-story-logo-position]");
+      if (logoPosition && root.contains(logoPosition)) {
+        state.logoPosition = logoPosition.value || "bottom-right";
+        render(root);
+        return;
+      }
+
+      const storyLogoUpload = e.target.closest("[data-story-logo-upload]");
+      if (storyLogoUpload && root.contains(storyLogoUpload)) {
+        const file =
+          storyLogoUpload.files && storyLogoUpload.files[0]
+            ? storyLogoUpload.files[0]
+            : null;
+
+        setStoryLogoAsset({
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
+
+        updateStoryLogoUploadUI(root);
+
+        if (!file) return;
+
+        const uploadPromise = uploadStoryLogoToR2(file)
+          .then((publicUrl) => {
+            setStoryLogoAsset({
+              fileUrl: safeText(publicUrl),
+              uploadStatus: "ready",
+              uploadError: "",
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+
+            console.log("[CARTOON][STORY_LOGO_UPLOAD_OK]", publicUrl);
+            return publicUrl;
+          })
+          .catch((err) => {
+            setStoryLogoAsset({
+              fileUrl: "",
+              uploadStatus: "error",
+              uploadError: String(err?.message || err || "story_logo_upload_failed"),
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+
+            console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
+            alert(String(err?.message || err || "story_logo_upload_failed"));
+            throw err;
+          });
+
+        setStoryLogoAsset({ uploadPromise });
+        return;
+      }
+
+      const storyAudioUpload = e.target.closest("[data-story-audio-upload]");
+      if (storyAudioUpload && root.contains(storyAudioUpload)) {
+        const file =
+          storyAudioUpload.files && storyAudioUpload.files[0]
+            ? storyAudioUpload.files[0]
+            : null;
+
+        setStoryAudioAsset({
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
+
+        updateStoryAudioUploadUI(root);
+
+        if (!file) return;
+
+        const uploadPromise = uploadStoryAudioToR2(file)
+          .then((publicUrl) => {
+            setStoryAudioAsset({
+              fileUrl: safeText(publicUrl),
+              uploadStatus: "ready",
+              uploadError: "",
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+
+            console.log("[CARTOON][STORY_AUDIO_UPLOAD_OK]", publicUrl);
+            return publicUrl;
+          })
+          .catch((err) => {
+            setStoryAudioAsset({
+              fileUrl: "",
+              uploadStatus: "error",
+              uploadError: String(err?.message || err || "story_audio_upload_failed"),
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+
+            console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
+            alert(String(err?.message || err || "story_audio_upload_failed"));
+            throw err;
+          });
+
+        setStoryAudioAsset({ uploadPromise });
+        return;
+      }
+
       const characterFileInput = e.target.closest("[data-story-character-file]");
       if (characterFileInput && root.contains(characterFileInput)) {
         const slot = safeText(characterFileInput.dataset.storyCharacterFile);
@@ -1935,6 +2288,8 @@
     state.ratio = qs("[data-story-ratio]", root)?.value || "16:9";
     state.style = qs("[data-story-style]", root)?.value || "";
     state.audio = qs("[data-story-audio]", root)?.value || "none";
+    state.includeMusic = qs("[data-story-include-music]", root)?.value || "no";
+    state.logoPosition = qs("[data-story-logo-position]", root)?.value || "bottom-right";
     state.extraPrompt = clampText(qs("[data-story-extra-prompt]", root)?.value, 5000);
 
     state.scenes = createDefaultScenes(state.flowDuration);
@@ -1948,6 +2303,51 @@
     state.settingsOpen = settingsBody ? !settingsBody.hidden : false;
 
     render(root);
+  }
+
+  function syncAllStoryCharacterUploadUI(root) {
+    STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
+      updateStoryCharacterUploadUI(root, config.slot);
+    });
+  }
+
+  function updateStoryCharacterUploadUI(root, slot) {
+    const key = String(slot || "").trim();
+    if (!key) return;
+
+    const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
+    const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
+    const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
+    const imageState = getStoryCharacterImage(key);
+
+    if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
+
+    if (!imageState.file) {
+      uploadBtn.hidden = false;
+      stateBox.hidden = true;
+      nameEl.textContent = "Dosya seçilmedi";
+      return;
+    }
+
+    uploadBtn.hidden = true;
+    stateBox.hidden = false;
+
+    if (imageState.uploadStatus === "uploading") {
+      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+      return;
+    }
+
+    if (imageState.uploadStatus === "ready") {
+      nameEl.textContent = getShortFileName(imageState.fileName);
+      return;
+    }
+
+    if (imageState.uploadStatus === "error") {
+      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+      return;
+    }
+
+    nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
   }
 
   function tryInit() {
