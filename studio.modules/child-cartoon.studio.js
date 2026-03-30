@@ -121,17 +121,29 @@
         });
       }
 
-      if (moveUpBtn) {
-        if (index === 0) {
-          moveUpBtn.disabled = true;
-        }
+    if (moveUpBtn) {
+  if (index === 0) {
+    moveUpBtn.disabled = true;
+  }
 
-        moveUpBtn.addEventListener('click', () => {
-          moveScene(rootState.scenes, index, index - 1);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
+  moveUpBtn.addEventListener('click', () => {
+    console.log('[CARTOON_STUDIO] move up click', {
+      index,
+      sceneId: scene.id,
+      before: rootState.scenes.map((s) => s.title)
+    });
 
+    moveScene(rootState.scenes, index, index - 1);
+
+    console.log('[CARTOON_STUDIO] after move up', {
+      index,
+      sceneId: scene.id,
+      after: rootState.scenes.map((s) => s.title)
+    });
+
+    renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+  });
+}
       if (moveDownBtn) {
         if (index === rootState.scenes.length - 1) {
           moveDownBtn.disabled = true;
