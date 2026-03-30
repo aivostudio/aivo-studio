@@ -803,69 +803,71 @@ if (actionBtn && root.contains(actionBtn)) {
   return;
 }
 
-      const generateBtn = e.target.closest("[data-cartoon-generate]");
-      if (generateBtn && root.contains(generateBtn)) {
-        e.preventDefault();
+const generateBtn = e.target.closest("[data-cartoon-generate]");
+if (generateBtn && root.contains(generateBtn)) {
+  e.preventDefault();
 
-        if (state.mode !== "basic") return;
-        if (state.isGenerating) return;
+  if (state.mode !== "basic") return;
+  if (state.isGenerating) return;
 
-        if (state.characterImage) {
-          if (
-            state.characterImageUploadStatus === "uploading" &&
-            state.characterImageUploadPromise
-          ) {
-            try {
-              await state.characterImageUploadPromise;
-            } catch {
-              return;
-            }
-          }
+  if (state.characterImage) {
+    if (
+      state.characterImageUploadStatus === "uploading" &&
+      state.characterImageUploadPromise
+    ) {
+      try {
+        await state.characterImageUploadPromise;
+      } catch {
+        return;
+      }
+    }
 
-          if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
-            alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
-            return;
-          }
-        }
-if (state.audioSource === "upload") {
+    if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
+      alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
+      return;
+    }
+  }
+
   if (state.logoFile) {
-  if (
-    state.logoFileUploadStatus === "uploading" &&
-    state.logoFileUploadPromise
-  ) {
-    try {
-      await state.logoFileUploadPromise;
-    } catch {
+    if (
+      state.logoFileUploadStatus === "uploading" &&
+      state.logoFileUploadPromise
+    ) {
+      try {
+        await state.logoFileUploadPromise;
+      } catch {
+        return;
+      }
+    }
+
+    if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
+      alert("Logo henüz yüklenmedi. Lütfen 'Hazır ✓' olmasını bekleyin.");
       return;
     }
   }
 
-  if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
-    alert("Logo henüz yüklenmedi. Lütfen 'Hazır ✓' olmasını bekleyin.");
-    return;
-  }
-}
-  if (!state.audioFile) {
-    alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
-    return;
-  }
+  if (state.audioSource === "upload") {
+    if (!state.audioFile) {
+      alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
+      return;
+    }
 
-  if (
-    state.audioFileUploadStatus === "uploading" &&
-    state.audioFileUploadPromise
-  ) {
-    try {
-      await state.audioFileUploadPromise;
-    } catch {
+    if (
+      state.audioFileUploadStatus === "uploading" &&
+      state.audioFileUploadPromise
+    ) {
+      try {
+        await state.audioFileUploadPromise;
+      } catch {
+        return;
+      }
+    }
+
+    if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
+      alert("Ses dosyası henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
       return;
     }
   }
-
-  if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
-    alert("Ses dosyası henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
-    return;
-  }
-}
         const payload = buildBasicPayload();
         console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
