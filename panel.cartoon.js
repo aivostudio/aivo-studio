@@ -474,13 +474,12 @@
             : "loading";
 
       if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-   return (
+ return (
   '<div class="cartoonPanelCardInner"' +
     ' data-job="' + esc(jid) + '"' +
     ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
     ' data-final-url="' + esc(finalUrl) + '"' +
     ' data-preview-url="' + esc(previewUrl) + '"' +
-    ' data-ratio="' + esc(ratio) + '"' +
     ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
   '>' +
     window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
