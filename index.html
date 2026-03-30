@@ -1979,19 +1979,28 @@
 #photofx-clip .photofx-shot{
   min-width: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 #photofx-clip .photofx-thumb{
   display: block;
   width: 100%;
-  height: 120px;
+  aspect-ratio: 16 / 9;
+  height: auto;
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-  background: rgba(255,255,255,.04);
+  background-color: rgba(255,255,255,.04);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  transform: none;
+}
+  #photofx-clip .photofx-thumbs .photofx-shot:first-child .photofx-thumb{
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  transform: none;
 }
   #photofx-clip .photofx-thumb--original{
   background-image: url('/media/photofx-original.jpg');
