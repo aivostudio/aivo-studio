@@ -1113,55 +1113,30 @@
       <p class="story-card-helper">Final videoya girecek sahneleri seç ve sırala.</p>
     </div>
 
-    <div class="studio-scene-list">
-      <div class="studio-scene-row">
-        <label class="studio-scene-check">
-          <input type="checkbox" checked>
-          <span>Dahil</span>
-        </label>
-        <div class="studio-scene-thumb">Önizleme</div>
-        <div class="studio-scene-copy">
-          <strong>Sahne 1 · Açılış</strong>
-          <small>15 sn</small>
-        </div>
-        <div class="studio-scene-actions">
-          <button type="button">↑</button>
-          <button type="button">↓</button>
-        </div>
-      </div>
+<div class="studio-scene-list" data-studio-scene-list></div>
 
-      <div class="studio-scene-row">
-        <label class="studio-scene-check">
-          <input type="checkbox" checked>
-          <span>Dahil</span>
-        </label>
-        <div class="studio-scene-thumb">Önizleme</div>
-        <div class="studio-scene-copy">
-          <strong>Sahne 2 · Karakter Girişi</strong>
-          <small>15 sn</small>
-        </div>
-        <div class="studio-scene-actions">
-          <button type="button">↑</button>
-          <button type="button">↓</button>
-        </div>
-      </div>
+<template id="studioSceneRowTemplate">
+  <div class="studio-scene-row" data-studio-scene-row data-scene-id="">
+    <label class="studio-scene-check">
+      <input type="checkbox" data-scene-include>
+      <span>Dahil</span>
+    </label>
 
-      <div class="studio-scene-row">
-        <label class="studio-scene-check">
-          <input type="checkbox">
-          <span>Dahil</span>
-        </label>
-        <div class="studio-scene-thumb">Önizleme</div>
-        <div class="studio-scene-copy">
-          <strong>Sahne 3 · Geçiş</strong>
-          <small>10 sn</small>
-        </div>
-        <div class="studio-scene-actions">
-          <button type="button">↑</button>
-          <button type="button">↓</button>
-        </div>
-      </div>
+    <button type="button" class="studio-scene-thumb" data-scene-preview>
+      Önizleme
+    </button>
+
+    <div class="studio-scene-copy">
+      <strong data-scene-title>Sahne</strong>
+      <small data-scene-duration>0 sn</small>
     </div>
+
+    <div class="studio-scene-actions">
+      <button type="button" data-scene-move="up">↑</button>
+      <button type="button" data-scene-move="down">↓</button>
+    </div>
+  </div>
+</template>
 
     <div class="studio-inline-summary">
       <span>Seçilen Sahne: 2</span>
