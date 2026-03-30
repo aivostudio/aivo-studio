@@ -345,3 +345,31 @@
     width:100%;
   }
 }
+.story-card-collapse{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.story-card-collapse > span{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.story-card-collapse > span strong,
+.story-card-collapse > span small{
+  width: 100%;
+  text-align: center;
+}
+
+.story-card-collapse i{
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
