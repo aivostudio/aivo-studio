@@ -404,6 +404,10 @@ const falModel =
     data?.request_id || data?.requestId || data?.id || data?._id || null;
 
   const status_url = extractFalStatusUrl(data);
+  const reference_image_url =
+  pick(body, ["image_url", "imageUrl", "reference_image_url", "referenceImageUrl"]) ||
+  pick(body, ["characterImageUrl", "character_image_url", "start_image_url"]) ||
+  null;
 
 const metaObj = {
   app,
@@ -423,6 +427,12 @@ const metaObj = {
   silent_copy,
   model: falModel,
   request_id,
+
+    ...(reference_image_url
+    ? {
+        reference_image_url: String(reference_image_url).trim(),
+      }
+    : {}),
 
   ui_state: {
     name: characterName || null,
