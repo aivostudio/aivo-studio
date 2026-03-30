@@ -271,11 +271,11 @@ const falUrl = hasImageRef
   ...(Array.isArray(voice_ids) ? { voice_ids } : {}),
 
   // 🔥 EKLE
-  ...(body.image_url ? { image_url: body.image_url } : {}),
-  ...(body.logo_url ? { logo_url: body.logo_url } : {}),
-  ...(body.logo_pos ? { logo_pos: body.logo_pos } : {}),
-  ...(body.logo_size ? { logo_size: body.logo_size } : {}),
-  ...(body.logo_opacity ? { logo_opacity: body.logo_opacity } : {}),
+ ...(body.image_url ? { start_image_url: body.image_url } : {}),
+...(body.logo_url ? { logo_url: body.logo_url } : {}),
+...(body.logo_pos ? { logo_pos: body.logo_pos } : {}),
+...(body.logo_size ? { logo_size: body.logo_size } : {}),
+...(body.logo_opacity ? { logo_opacity: body.logo_opacity } : {}),
 }),
       signal: ctrl.signal,
     });
