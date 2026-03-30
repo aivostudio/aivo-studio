@@ -379,6 +379,86 @@ function updateBasicAudioUploadStatusUI(root) {
   textEl.textContent = state.audioFileName || "Dosya seçilmedi";
   if (clearBtn) clearBtn.style.display = "none";
 }
+function clearBasicLogoFile(root) {
+  const input = qs("[data-basic-logo-upload]", root);
+
+  state.logoFile = null;
+  state.logoFileName = "";
+  state.logoFileUrl = "";
+  state.logoFileUploadPromise = null;
+  state.logoFileUploadStatus = "idle";
+  state.logoFileUploadError = "";
+
+  if (input) input.value = "";
+
+  updateBasicLogoUploadStatusUI(root);
+  updateSummary(root);
+}
+
+function ensureBasicLogoUploadClearButton(root) {
+  const clearBtn = qs("[data-basic-logo-upload-clear]", root);
+  if (!clearBtn || clearBtn.dataset.bound === "1") return;
+
+  clearBtn.dataset.bound = "1";
+  clearBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const nextRoot = getCartoonRoot();
+    if (!nextRoot) return;
+    clearBasicLogoFile(nextRoot);
+  });
+}
+
+function updateBasicLogoUploadStatusUI(root) {
+  const textEl = qs("[data-basic-logo-upload-text]", root);
+  const clearBtn = qs("[data-basic-logo-upload-clear]", root);
+
+  ensureBasicLogoUploadClearButton(root);
+
+  if (!textEl) return;
+
+  if (!state.logoFile) {
+    textEl.textContent = "Dosya seçilmedi";
+    if (clearBtn) clearBtn.style.display = "none";
+    return;
+  }
+
+  if (state.logoFileUploadStatus === "uploading") {
+    textEl.textContent = `${state.logoFileName} · Yükleniyor...`;
+    if (clearBtn) clearBtn.style.display = "none";
+    return;
+  }
+
+  if (state.logoFileUploadStatus === "ready") {
+    textEl.textContent = `${state.logoFileName} · Hazır ✓`;
+    if (clearBtn) {
+      clearBtn.style.display = "inline-grid";
+      clearBtn.style.placeItems = "center";
+      clearBtn.style.marginLeft = "8px";
+      clearBtn.style.width = "22px";
+      clearBtn.style.height = "22px";
+      clearBtn.style.borderRadius = "999px";
+      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+      clearBtn.style.background = "rgba(255,255,255,.08)";
+      clearBtn.style.color = "#fff";
+      clearBtn.style.cursor = "pointer";
+    }
+    return;
+  }
+
+  if (state.logoFileUploadStatus === "error") {
+    textEl.textContent = `${state.logoFileName} · Yükleme hatası`;
+    if (clearBtn) {
+      clearBtn.style.display = "inline-grid";
+      clearBtn.style.placeItems = "center";
+    }
+    return;
+  }
+
+  textEl.textContent = state.logoFileName || "Dosya seçilmedi";
+  if (clearBtn) clearBtn.style.display = "none";
+}
+  
   function updateSummary(root) {
     const el = qs("[data-cartoon-summary]", root);
     if (!el) return;
@@ -465,10 +545,11 @@ function updateBasicAudioUploadStatusUI(root) {
     syncSceneSelection(root);
     syncActionSelection(root);
     syncFormValues(root);
-    updatePromptCount(root);
+      updatePromptCount(root);
     updateHelperCount(root);
     updateBasicUploadStatusUI(root);
     updateBasicAudioUploadStatusUI(root);
+    updateBasicLogoUploadStatusUI(root);
     updateSummary(root);
   }
 
