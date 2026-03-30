@@ -103,6 +103,53 @@ async function uploadCartoonAudioToR2(file) {
 
   return publicUrl;
 }
+  async function presignCartoonLogo(file) {
+  const res = await fetch("/api/r2/presign-put", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: "cartoon",
+      kind: "logo",
+      filename: file?.name || `logo-${Date.now()}.png`,
+      contentType: file?.type || "application/octet-stream"
+    })
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data || data.ok === false) {
+    throw new Error(data?.error || "cartoon_logo_presign_failed");
+  }
+
+  return {
+    uploadUrl: data.uploadUrl || data.upload_url,
+    publicUrl: data.publicUrl || data.public_url || data.url || "",
+  };
+}
+
+async function uploadCartoonLogoToR2(file) {
+  if (!file) throw new Error("missing_logo_file");
+
+  const { uploadUrl, publicUrl } = await presignCartoonLogo(file);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error("cartoon_logo_missing_upload_urls");
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream"
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error("cartoon_logo_r2_put_failed");
+  }
+
+  return publicUrl;
+}
  const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
   mode: "character",
     extraPrompt: "",
