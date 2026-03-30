@@ -186,9 +186,10 @@
 // ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
 // ------------------------------------------------------------
 state.uploads = state.uploads || {
-  image: { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
-  logo:  { status: "empty", url: "", name: "" },
-  audio: { status: "empty", url: "", name: "" }
+  basicImage: { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
+  proImage:   { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
+  logo:       { status: "empty", url: "", name: "" },
+  audio:      { status: "empty", url: "", name: "" }
 };
 
 function isUploadingAny() {
@@ -948,7 +949,7 @@ scene_desc: sceneDesc,
     camera: state.camera || "kenburns_soft",
     duration: state.duration || "8",
 
-    image_url: state.uploads?.image?.url || "",
+  image_url: state.uploads?.basicImage?.url || "",
 
     logo_url: state.uploads?.logo?.url || "",
     logo_pos: state.logoPos || "br",
@@ -972,7 +973,7 @@ function buildProPayload() {
     light: state.light || null,
     mood: state.mood || null,
 
-    image_url: state.uploads?.image?.url || "",
+  image_url: state.uploads?.proImage?.url || "",
 
     fps: state.fps || "24",
     format: state.format || "mp4",
