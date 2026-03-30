@@ -234,13 +234,20 @@ export default async function handler(req, res) {
   }
 
   // ✅ MODE'A GÖRE MOTOR SEÇİMİ (Basit = standard, Süper = pro)
-  const mode = String(body?.mode || body?.meta?.mode || "").toLowerCase();
+ const mode = String(body?.mode || body?.meta?.mode || "").toLowerCase();
+const hasImageRef = !!String(body?.image_url || "").trim();
 
-  const falUrl =
-    mode === "basic"
-      ? "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video"
-      : "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video";
-
+const falUrl = hasImageRef
+  ? (
+      mode === "basic"
+        ? "https://queue.fal.run/fal-ai/kling-video/v3/standard/image-to-video"
+        : "https://queue.fal.run/fal-ai/kling-video/v3/pro/image-to-video"
+    )
+  : (
+      mode === "basic"
+        ? "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video"
+        : "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video"
+    );
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
 
