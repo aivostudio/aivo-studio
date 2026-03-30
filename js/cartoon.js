@@ -553,28 +553,42 @@ function updateBasicLogoUploadStatusUI(root) {
     updateSummary(root);
   }
 
-  function buildBasicPayload() {
-    return {
-      app: "cartoon",
-      mode: "basic",
-      extraPrompt: state.extraPrompt,
-      mainCharacter: state.mainCharacter,
-      helperCharacters: [...state.helpers],
-      scene: state.scene,
-     actions: [...(state.actions || [])],
+function buildBasicPayload() {
+  return {
+    app: "cartoon",
+    mode: "basic",
+    extraPrompt: state.extraPrompt,
+    mainCharacter: state.mainCharacter,
+    helperCharacters: [...state.helpers],
+    scene: state.scene,
+   actions: [...(state.actions || [])],
 action: (state.actions || []).join(", "),
-      duration: state.duration,
-      aspectRatio: state.ratio,
-      audioSource: state.audioSource || "none",
+    duration: state.duration,
+    aspectRatio: state.ratio,
+    audioSource: state.audioSource || "none",
 audioMode: state.audioSource === "upload" ? "upload" : "none",
 audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
 audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
-      characterImage: state.characterImage,
-      characterImageName: state.characterImageName,
-      characterImageUrl: state.characterImageUrl || "",
-      estimatedCredits: getEstimatedCredits()
-    };
-  }
+      logoFileName: state.logoFileName || "",
+      logoFileUrl: state.logoFileUrl || "",
+      logoPosition:
+        qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right",
+      logoPos:
+        (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "top-left"
+          ? "tl"
+          : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "top-right"
+            ? "tr"
+            : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "bottom-left"
+              ? "bl"
+              : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "center"
+                ? "c"
+                : "br",
+    characterImage: state.characterImage,
+    characterImageName: state.characterImageName,
+    characterImageUrl: state.characterImageUrl || "",
+    estimatedCredits: getEstimatedCredits()
+  };
+}
 
   async function pollCartoonJob(jobId, tries = 0, pollToken = 0) {
     try {
