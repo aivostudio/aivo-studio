@@ -157,8 +157,9 @@ async function uploadCartoonLogoToR2(file) {
     helpers: [],
     scene: "underwater",
   actions: ["swimming"],
-    duration: "5",
+      duration: "5",
     ratio: "16:9",
+    style: "soft-cartoon",
    audioSource: "none",
     audioFile: null,
 audioFileName: "",
@@ -525,11 +526,13 @@ function updateBasicLogoUploadStatusUI(root) {
     const prompt = qs("[data-cartoon-prompt-input]", root);
     const duration = qs("#cartoon-duration", root);
     const ratio = qs("#cartoon-ratio", root);
+    const basicStyle = qs("[data-basic-style]", root);
    const audioSource = qs("[data-audio-source]", root);
 
     if (prompt && prompt.value !== state.extraPrompt) prompt.value = state.extraPrompt;
     if (duration && duration.value !== state.duration) duration.value = state.duration;
     if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
+    if (basicStyle && basicStyle.value !== state.style) basicStyle.value = state.style;
    if (audioSource && audioSource.value !== state.audioSource) {
   audioSource.value = state.audioSource;
 }
@@ -992,7 +995,12 @@ if (generateBtn && root.contains(generateBtn)) {
         updateSummary(root);
         return;
       }
-
+   const basicStyle = e.target.closest("[data-basic-style]");
+if (basicStyle && root.contains(basicStyle)) {
+  state.style = basicStyle.value || "soft-cartoon";
+  updateSummary(root);
+  return;
+}
     const audioSource = e.target.closest("[data-audio-source]");
 if (audioSource && root.contains(audioSource)) {
   state.audioSource = audioSource.value || "none";
@@ -1145,6 +1153,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     const prompt = qs("[data-cartoon-prompt-input]", root);
     const duration = qs("#cartoon-duration", root);
     const ratio = qs("#cartoon-ratio", root);
+    const basicStyle = qs("[data-basic-style]", root);
    const audioSource = qs("[data-audio-source]", root);
 
   state.mode = "character";
@@ -1162,6 +1171,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     if (prompt) state.extraPrompt = String(prompt.value || "");
     if (duration?.value) state.duration = duration.value;
     if (ratio?.value) state.ratio = ratio.value;
+    if (basicStyle?.value) state.style = basicStyle.value;
    if (audioSource?.value) state.audioSource = audioSource.value;
 
     render(root);
