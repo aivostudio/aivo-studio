@@ -117,16 +117,13 @@ function buildBasicPrompt(body) {
       body.start_image_url ||
       ""
   ).trim();
+const mainCharacterText = hasCustomCharacterImage
+  ? `Main character: ${mainCharacter}. Use the uploaded custom character as the main subject.`
+  : `Main character: ${mainCharacter}.`;
 
-  const mainCharacterText = hasCustomCharacterImage
-    ? "Use the uploaded custom character as the main subject."
-    : `Main character: ${mainCharacter}.`;
-
-  const helperCharactersText = hasCustomCharacterImage
-    ? ""
-    : helpers.length
-      ? `Helper characters: ${helpers.join(", ")}.`
-      : "";
+const helperCharactersText = helpers.length
+  ? `Helper characters: ${helpers.join(", ")}.`
+  : "";
 
   const parts = [
     "Cute kids cartoon style.",
