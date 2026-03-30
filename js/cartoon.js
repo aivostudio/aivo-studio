@@ -554,38 +554,65 @@ function updateBasicLogoUploadStatusUI(root) {
   }
 
 function buildBasicPayload() {
+  const logoPosition =
+    qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right";
+
+  const elements = state.characterImageUrl
+    ? [
+        {
+          token: "@Element1",
+          frontal_image_url: state.characterImageUrl,
+          reference_image_urls: [state.characterImageUrl]
+        }
+      ]
+    : [];
+
+  const helperCharacters = [...state.helpers];
+
+  const helperPromptLine = helperCharacters.length
+    ? `Helper characters in scene: ${helperCharacters.join(", ")}.`
+    : "";
+
+  const referencePromptLine = elements.length
+    ? "Use the uploaded reference character as the main character and keep that identity exactly consistent."
+    : "";
+
   return {
     app: "cartoon",
     mode: "basic",
-    extraPrompt: state.extraPrompt,
+    extraPrompt: [
+      state.extraPrompt,
+      helperPromptLine,
+      referencePromptLine
+    ].filter(Boolean).join(" "),
     mainCharacter: state.mainCharacter,
-   helperCharacters: state.characterImageUrl ? [] : [...state.helpers],
+    helperCharacters,
     scene: state.scene,
-   actions: [...(state.actions || [])],
-action: (state.actions || []).join(", "),
+    actions: [...(state.actions || [])],
+    action: (state.actions || []).join(", "),
     duration: state.duration,
     aspectRatio: state.ratio,
     audioSource: state.audioSource || "none",
-audioMode: state.audioSource === "upload" ? "upload" : "none",
-audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
-audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
-      logoFileName: state.logoFileName || "",
-      logoFileUrl: state.logoFileUrl || "",
-      logoPosition:
-        qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right",
-      logoPos:
-        (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "top-left"
-          ? "tl"
-          : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "top-right"
-            ? "tr"
-            : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "bottom-left"
-              ? "bl"
-              : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "center"
-                ? "c"
-                : "br",
+    audioMode: state.audioSource === "upload" ? "upload" : "none",
+    audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
+    audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
+    logoFileName: state.logoFileName || "",
+    logoFileUrl: state.logoFileUrl || "",
+    logoPosition,
+    logoPos:
+      logoPosition === "top-left"
+        ? "tl"
+        : logoPosition === "top-right"
+          ? "tr"
+          : logoPosition === "bottom-left"
+            ? "bl"
+            : logoPosition === "center"
+              ? "c"
+              : "br",
     characterImage: state.characterImage,
     characterImageName: state.characterImageName,
     characterImageUrl: state.characterImageUrl || "",
+    elements,
     estimatedCredits: getEstimatedCredits()
   };
 }
