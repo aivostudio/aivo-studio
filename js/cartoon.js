@@ -828,6 +828,23 @@ if (actionBtn && root.contains(actionBtn)) {
           }
         }
 if (state.audioSource === "upload") {
+  if (state.logoFile) {
+  if (
+    state.logoFileUploadStatus === "uploading" &&
+    state.logoFileUploadPromise
+  ) {
+    try {
+      await state.logoFileUploadPromise;
+    } catch {
+      return;
+    }
+  }
+
+  if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
+    alert("Logo henüz yüklenmedi. Lütfen 'Hazır ✓' olmasını bekleyin.");
+    return;
+  }
+}
   if (!state.audioFile) {
     alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
     return;
