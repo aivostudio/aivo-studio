@@ -1,7 +1,7 @@
 (function () {
   const root = document.querySelector('section.pfxPage[data-module="photofx"]');
   if (!root) {
-    console.warn('[PHOTOFX] root yok -> skip');
+   console.log('[PHOTOFX] root yok -> skip');
     return;
   }
 
