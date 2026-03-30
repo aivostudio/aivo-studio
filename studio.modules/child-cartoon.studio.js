@@ -1,4 +1,3 @@
-<script>
 (() => {
   const studioSceneList = document.querySelector('[data-studio-scene-list]');
   const studioSceneTemplate = document.getElementById('studioSceneRowTemplate');
@@ -60,4 +59,3 @@
 
   window.__CARTOON_STUDIO__ = studioState;
 })();
-</script>
