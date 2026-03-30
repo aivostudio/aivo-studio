@@ -592,12 +592,14 @@
               thumb?.appendChild(vid);
             }
 
-            const prev = vid.getAttribute("data-src") || "";
-            if (prev !== url) {
-              vid.setAttribute("data-src", url);
-              vid.src = url; // sadece bu kart reload eder, diğerleri etmez
-            }
-            vid.style.display = "";
+          const prev = vid.getAttribute("data-src") || "";
+         const current = String(vid.currentSrc || vid.src || "").trim();
+
+          if (prev !== url && current !== url) {
+         vid.setAttribute("data-src", url);
+         vid.src = url;
+         }
+         vid.style.display = "";
           } else {
             if (skel) skel.style.display = "";
             if (vid) {
