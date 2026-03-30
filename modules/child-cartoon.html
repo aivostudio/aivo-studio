@@ -839,6 +839,7 @@
   </button>
 
   <div class="story-settings-body" data-story-settings-body hidden>
+    <!-- 1. sıra -->
     <div class="story-grid story-grid-2">
       <div class="story-field">
         <label for="storyAspectRatio">En / Boy Oranı</label>
@@ -860,6 +861,29 @@
       </div>
     </div>
 
+    <!-- 2. sıra -->
+    <div class="story-grid story-grid-2" style="margin-top:16px;">
+      <div class="story-field">
+        <label for="storyLogoPosition">Logo Yönü</label>
+        <select id="storyLogoPosition" name="storyLogoPosition" data-story-logo-position>
+          <option value="bottom-right" selected>Sağ Alt</option>
+          <option value="bottom-left">Sol Alt</option>
+          <option value="top-right">Sağ Üst</option>
+          <option value="top-left">Sol Üst</option>
+          <option value="center">Orta</option>
+        </select>
+      </div>
+
+      <div class="story-field">
+        <label for="storyIncludeMusic">Müziği Videoya Dahil Et</label>
+        <select id="storyIncludeMusic" name="storyIncludeMusic" data-story-include-music>
+          <option value="no" selected>Hayır</option>
+          <option value="yes">Evet</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 3. sıra -->
     <div class="story-grid story-grid-2" style="margin-top:16px;">
       <div class="story-field">
         <label>Logo Yükle</label>
@@ -880,19 +904,6 @@
       </div>
 
       <div class="story-field">
-        <label for="storyLogoPosition">Logo Yönü</label>
-        <select id="storyLogoPosition" name="storyLogoPosition" data-story-logo-position>
-          <option value="bottom-right" selected>Sağ Alt</option>
-          <option value="bottom-left">Sol Alt</option>
-          <option value="top-right">Sağ Üst</option>
-          <option value="top-left">Sol Üst</option>
-          <option value="center">Orta</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="story-grid story-grid-2" style="margin-top:16px;">
-      <div class="story-field">
         <label>Müzik Yükle</label>
         <label class="cartoon-upload-row cartoon-upload-row--compact">
           <input type="file" accept="audio/*" hidden data-story-audio-upload>
@@ -908,14 +919,6 @@
             ×
           </button>
         </label>
-      </div>
-
-      <div class="story-field">
-        <label for="storyIncludeMusic">Müziği Videoya Dahil Et</label>
-        <select id="storyIncludeMusic" name="storyIncludeMusic" data-story-include-music>
-          <option value="no" selected>Hayır</option>
-          <option value="yes">Evet</option>
-        </select>
       </div>
     </div>
   </div>
