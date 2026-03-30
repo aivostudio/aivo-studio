@@ -50,6 +50,19 @@
     };
   }
 
+  function moveScene(array, fromIndex, toIndex) {
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || toIndex < 0) return;
+    if (fromIndex >= array.length || toIndex >= array.length) return;
+
+    const copied = array.slice();
+    const [item] = copied.splice(fromIndex, 1);
+    copied.splice(toIndex, 0, item);
+
+    array.length = 0;
+    copied.forEach((entry) => array.push(entry));
+  }
+
   function updateStudioSummary(rootState, studioRoot) {
     const summary = studioRoot.querySelector('.studio-inline-summary');
     if (!summary) return;
@@ -72,12 +85,15 @@
 
     sceneList.innerHTML = '';
 
-    rootState.scenes.forEach((scene) => {
+    rootState.scenes.forEach((scene, index) => {
       const fragment = sceneTemplate.content.cloneNode(true);
       const row = fragment.querySelector('[data-studio-scene-row]');
       const includeInput = fragment.querySelector('[data-scene-include]');
       const titleEl = fragment.querySelector('[data-scene-title]');
       const durationEl = fragment.querySelector('[data-scene-duration]');
+      const previewBtn = fragment.querySelector('[data-scene-preview]');
+      const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
+      const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
 
       if (row) {
         row.setAttribute('data-scene-id', scene.id);
@@ -97,6 +113,34 @@
 
       if (durationEl) {
         durationEl.textContent = formatSceneDuration(scene.duration);
+      }
+
+      if (previewBtn) {
+        previewBtn.addEventListener('click', () => {
+          console.log('[CARTOON_STUDIO] preview', scene);
+        });
+      }
+
+      if (moveUpBtn) {
+        if (index === 0) {
+          moveUpBtn.disabled = true;
+        }
+
+        moveUpBtn.addEventListener('click', () => {
+          moveScene(rootState.scenes, index, index - 1);
+          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+        });
+      }
+
+      if (moveDownBtn) {
+        if (index === rootState.scenes.length - 1) {
+          moveDownBtn.disabled = true;
+        }
+
+        moveDownBtn.addEventListener('click', () => {
+          moveScene(rootState.scenes, index, index + 1);
+          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+        });
       }
 
       sceneList.appendChild(fragment);
