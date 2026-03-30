@@ -277,30 +277,35 @@ const proStatusId =
   kind === "audio" ? "atmProAudioStatus" :
   "";
 
-    const nameEl = proNameId ? document.getElementById(proNameId) : null;
-    const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
-     const proImageClearBtn = kind === "image" ? document.getElementById("atmProRefImageClear") : null;
+const nameEl = proNameId ? document.getElementById(proNameId) : null;
+const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
+const proLogoClearBtn  = kind === "logo"  ? document.getElementById("atmProLogoClear") : null;
+const proImageClearBtn = kind === "image" ? document.getElementById("atmProRefImageClear") : null;
+const proAudioClearBtn = kind === "audio" ? document.getElementById("atmProAudioClear") : null;
 
-    // Name label (PRO)
-    if (nameEl) {
-      if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
-      else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
-      else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
-      else nameEl.textContent = next.name || "Dosya seçilmedi";
-    }
+// Name label (PRO)
+if (nameEl) {
+  if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
+  else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
+  else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
+  else nameEl.textContent = next.name || "Dosya seçilmedi";
+}
+
 // Hazır etiketi (PRO) — sadece ready’de göster
 if (statusEl) {
   if (next.status === "ready") statusEl.style.display = "";
   else statusEl.style.display = "none";
 }
 
-// PRO image clear button
+// PRO clear buttons
+if (proLogoClearBtn) {
+  proLogoClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
+}
 if (proImageClearBtn) {
-  if (next.status === "ready") {
-    proImageClearBtn.style.display = "inline-flex";
-  } else {
-    proImageClearBtn.style.display = "none";
-  }
+  proImageClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
+}
+if (proAudioClearBtn) {
+  proAudioClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
 }
 
     // Generate buttons lock while uploading (PRO içinde de çalışsın)
@@ -1052,8 +1057,28 @@ document.addEventListener(
     const root = getAtmoPanelRoot();
     if (!root) return;
      
-   const clearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
-if (clearBtn) {
+const logoClearBtn = closestWithin(e.target, "#atmProLogoClear", root);
+if (logoClearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const logoInput = document.getElementById("atmProLogoFile");
+  if (logoInput) logoInput.value = "";
+
+  state.logoFile = null;
+
+  const panel =
+    logoClearBtn.closest('[data-mode-panel="pro"]') ||
+    qs('[data-mode-panel="pro"]', root) ||
+    root;
+
+  setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
+  try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+  return;
+}
+
+const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
+if (imageClearBtn) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -1063,11 +1088,30 @@ if (clearBtn) {
   state.refImageFile = null;
 
   const panel =
-    clearBtn.closest('[data-mode-panel="pro"]') ||
+    imageClearBtn.closest('[data-mode-panel="pro"]') ||
     qs('[data-mode-panel="pro"]', root) ||
     root;
 
   setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
+  return;
+}
+
+const audioClearBtn = closestWithin(e.target, "#atmProAudioClear", root);
+if (audioClearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const audioInput = document.getElementById("atmProAudioFile");
+  if (audioInput) audioInput.value = "";
+
+  state.audioFile = null;
+
+  const panel =
+    audioClearBtn.closest('[data-mode-panel="pro"]') ||
+    qs('[data-mode-panel="pro"]', root) ||
+    root;
+
+  setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
   return;
 }
     const btn = closestWithin(e.target, "[data-atm-generate]", root);
