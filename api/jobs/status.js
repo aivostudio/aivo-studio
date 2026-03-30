@@ -1,12 +1,16 @@
 // /pages/api/jobs/status.js
 // CommonJS
-// ✅ FAL (ATMO) poll FIX: providers/fal/video/status endpoint’ine request_id değil,
+// ✅ FAL poll: provider status endpoint’ine request_id değil,
 //    job_id (veya status_url) ile gidiyoruz.
-// ✅ DONE anında (opsiyonel) MP4 içine audio embed (mux) yapıp R2'ye upload ediyoruz.
-// ✅ DONE olduktan sonra (ATMO) AUTO LOGO OVERLAY çağırıp outputs'a logo_overlay ekliyoruz.
+// ✅ DONE anında (opsiyonel) MP4 içine audio embed (mux) yapıp R2’ye upload ediyoruz.
+// ✅ DONE olduktan sonra AUTO LOGO OVERLAY çağırıyoruz.
 // ✅ AUTO OVERLAY internal çağrıda cookie forward + same-host baseUrl kullanır (auth kırılmasın)
-// ✅ FINAL deterministik: provider -> mux (varsa) -> overlay (varsa) ve DB meta.final_video_url tek kaynak
+// ✅ FINAL deterministik:
+//    provider -> mux (varsa) -> overlay (varsa)
+// ✅ Overlay source sırası:
+//    muxed_url -> finalized/final_video_url -> provider -> first video fallback
 // ✅ outputs overwrite yok: her zaman merge + variant bazlı upsert
+// ✅ DB meta.final_video_url tek kaynak
 
 const { neon } = require("@neondatabase/serverless");
 const fs = require("node:fs");
