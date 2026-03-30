@@ -1333,21 +1333,24 @@
       .map((slot) => safeText(slot))
       .filter(Boolean);
 
-    const elements = activeSlots
-      .map((slot, index) => {
-        const label = slotLabelMap[slot];
-        const imageUrl = slotImageMap[slot];
-        if (!label || !imageUrl) return null;
+ const validElementSlots = activeSlots.filter((slot) => {
+  const label = slotLabelMap[slot];
+  const imageUrl = slotImageMap[slot];
+  return !!label && !!imageUrl;
+});
 
-        return {
-          token: `@Element${index + 1}`,
-          slot,
-          name: label,
-          frontal_image_url: imageUrl,
-          reference_image_urls: [imageUrl]
-        };
-      })
-      .filter(Boolean);
+const elements = validElementSlots.map((slot, index) => {
+  const label = slotLabelMap[slot];
+  const imageUrl = slotImageMap[slot];
+
+  return {
+    token: `@Element${index + 1}`,
+    slot,
+    name: label,
+    frontal_image_url: imageUrl,
+    reference_image_urls: [imageUrl]
+  };
+});
 
     const characterPromptLine = elements.length
       ? `Characters: ${elements.map((el) => `${el.token} = ${el.name}`).join(", ")}.`
