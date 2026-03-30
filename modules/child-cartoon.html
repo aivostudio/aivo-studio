@@ -350,69 +350,99 @@
             </section>
 
             <!-- Kişiselleştirme -->
-            <section class="cartoon-block cartoon-block--compact">
-              <div class="cartoon-block-head">
-                <h3>Kişiselleştirme <span class="cartoon-muted">(opsiyonel)</span></h3>
-              </div>
-
-              <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
-                <div class="cartoon-field">
-                  <label class="cartoon-field-label" for="cartoon-duration">Süre</label>
-                  <select id="cartoon-duration" class="cartoon-select">
-                    <option value="5" selected>5 Saniye</option>
-                    <option value="10">10 Saniye</option>
-                    <option value="15">15 Saniye</option>
-                  </select>
-                </div>
-
-                <div class="cartoon-field">
-                  <label class="cartoon-field-label" for="cartoon-ratio">En / Boy Oranı</label>
-                  <select id="cartoon-ratio" class="cartoon-select">
-                    <option value="16:9" selected>Geniş (16:9)</option>
-                    <option value="1:1">Kare (1:1)</option>
-                    <option value="9:16">Dikey (9:16)</option>
-                  </select>
-                </div>
-
- <div class="cartoon-form-grid-3 cartoon-form-grid-3--personalize cartoon-field--full">
-  <div class="cartoon-field">
-    <label class="cartoon-field-label" for="cartoon-audio-source">Ses Kaynağı</label>
-    <select id="cartoon-audio-source" class="cartoon-select" data-audio-source>
-      <option value="none" selected>Ses yok</option>
-      <option value="upload">Kendi sesimi yükle</option>
-    </select>
+<section class="cartoon-block cartoon-block--compact">
+  <div class="cartoon-block-head">
+    <h3>Kişiselleştirme <span class="cartoon-muted">(opsiyonel)</span></h3>
   </div>
 
-  <div class="cartoon-field">
-    <label class="cartoon-field-label">Kendi Sesini Yükle</label>
-    <label class="cartoon-upload-row cartoon-upload-row--compact">
-      <input type="file" accept="audio/*" hidden data-audio-upload>
-      <span class="cartoon-upload-btn">Audio Seç</span>
-      <span class="cartoon-upload-text" data-basic-audio-upload-text>Dosya seçilmedi</span>
-      <button
-        type="button"
-        class="cartoon-upload-clear"
-        data-basic-audio-upload-clear
-        aria-label="Yüklenen sesi kaldır"
-        title="Sesi kaldır"
-        style="display:none;">
-        ×
-      </button>
-    </label>
-  </div>
+  <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
+    <div class="cartoon-field">
+      <label class="cartoon-field-label" for="cartoon-duration">Süre</label>
+      <select id="cartoon-duration" class="cartoon-select">
+        <option value="5" selected>5 Saniye</option>
+        <option value="10">10 Saniye</option>
+        <option value="15">15 Saniye</option>
+      </select>
+    </div>
 
-  <div class="cartoon-field">
-    <label class="cartoon-field-label">Kendi Karakterini Koy</label>
-    <label class="cartoon-upload-row cartoon-upload-row--compact">
-      <input type="file" accept="image/*" hidden data-character-upload>
-      <span class="cartoon-upload-btn">Resim Seç</span>
-      <span class="cartoon-upload-text" data-basic-upload-text>Dosya seçilmedi</span>
-    </label>
+    <div class="cartoon-field">
+      <label class="cartoon-field-label" for="cartoon-ratio">En / Boy Oranı</label>
+      <select id="cartoon-ratio" class="cartoon-select">
+        <option value="16:9" selected>Geniş (16:9)</option>
+        <option value="1:1">Kare (1:1)</option>
+        <option value="9:16">Dikey (9:16)</option>
+      </select>
+    </div>
+
+    <div class="cartoon-form-grid-2 cartoon-form-grid-2--personalize cartoon-field--full">
+      <div class="cartoon-field">
+        <label class="cartoon-field-label">Logo Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="image/*" hidden data-basic-logo-upload>
+          <span class="cartoon-upload-btn">Logo Seç</span>
+          <span class="cartoon-upload-text" data-basic-logo-upload-text>Dosya seçilmedi</span>
+          <button
+            type="button"
+            class="cartoon-upload-clear"
+            data-basic-logo-upload-clear
+            aria-label="Yüklenen logoyu kaldır"
+            title="Logoyu kaldır"
+            style="display:none;">
+            ×
+          </button>
+        </label>
+      </div>
+
+      <div class="cartoon-field">
+        <label class="cartoon-field-label" for="cartoon-logo-position">Logo Yönü</label>
+        <select id="cartoon-logo-position" class="cartoon-select" data-basic-logo-position>
+          <option value="bottom-right" selected>Sağ Alt</option>
+          <option value="bottom-left">Sol Alt</option>
+          <option value="top-right">Sağ Üst</option>
+          <option value="top-left">Sol Üst</option>
+          <option value="center">Orta</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="cartoon-form-grid-3 cartoon-form-grid-3--personalize cartoon-field--full">
+      <div class="cartoon-field">
+        <label class="cartoon-field-label" for="cartoon-audio-source">Ses Kaynağı</label>
+        <select id="cartoon-audio-source" class="cartoon-select" data-audio-source>
+          <option value="none" selected>Ses yok</option>
+          <option value="upload">Kendi sesimi yükle</option>
+        </select>
+      </div>
+
+      <div class="cartoon-field">
+        <label class="cartoon-field-label">Kendi Sesini Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="audio/*" hidden data-audio-upload>
+          <span class="cartoon-upload-btn">Audio Seç</span>
+          <span class="cartoon-upload-text" data-basic-audio-upload-text>Dosya seçilmedi</span>
+          <button
+            type="button"
+            class="cartoon-upload-clear"
+            data-basic-audio-upload-clear
+            aria-label="Yüklenen sesi kaldır"
+            title="Sesi kaldır"
+            style="display:none;">
+            ×
+          </button>
+        </label>
+      </div>
+
+      <div class="cartoon-field">
+        <label class="cartoon-field-label">Kendi Karakterini Koy</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="image/*" hidden data-character-upload>
+          <span class="cartoon-upload-btn">Resim Seç</span>
+          <span class="cartoon-upload-text" data-basic-upload-text>Dosya seçilmedi</span>
+        </label>
+      </div>
+    </div>
   </div>
-</div>
-              </div>
-            </section>
-            </div>
+</section>
             <!-- CTA -->
             <div class="cartoon-cta">
               <button type="button" class="cartoon-generate-btn" data-cartoon-generate>
@@ -803,7 +833,7 @@
   <button type="button" class="story-card-collapse" data-story-settings-toggle>
     <span>
       <strong>Üretim Ayarları</strong>
-      <small>Oran ve stil</small>
+      <small>Oran, stil, logo ve müzik</small>
     </span>
     <i data-story-settings-icon>⌄</i>
   </button>
@@ -826,6 +856,65 @@
           <option value="cute-3d">Sevimli 3D</option>
           <option value="soft-cartoon">Yumuşak Cartoon</option>
           <option value="bright-kids">Parlak Çocuk Stili</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="story-grid story-grid-2" style="margin-top:16px;">
+      <div class="story-field">
+        <label>Logo Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="image/*" hidden data-story-logo-upload>
+          <span class="cartoon-upload-btn">Logo Seç</span>
+          <span class="cartoon-upload-text" data-story-logo-upload-text>Dosya seçilmedi</span>
+          <button
+            type="button"
+            class="cartoon-upload-clear"
+            data-story-logo-upload-clear
+            aria-label="Yüklenen logoyu kaldır"
+            title="Logoyu kaldır"
+            style="display:none;">
+            ×
+          </button>
+        </label>
+      </div>
+
+      <div class="story-field">
+        <label for="storyLogoPosition">Logo Yönü</label>
+        <select id="storyLogoPosition" name="storyLogoPosition" data-story-logo-position>
+          <option value="bottom-right" selected>Sağ Alt</option>
+          <option value="bottom-left">Sol Alt</option>
+          <option value="top-right">Sağ Üst</option>
+          <option value="top-left">Sol Üst</option>
+          <option value="center">Orta</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="story-grid story-grid-2" style="margin-top:16px;">
+      <div class="story-field">
+        <label>Müzik Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="audio/*" hidden data-story-audio-upload>
+          <span class="cartoon-upload-btn">Audio Seç</span>
+          <span class="cartoon-upload-text" data-story-audio-upload-text>Dosya seçilmedi</span>
+          <button
+            type="button"
+            class="cartoon-upload-clear"
+            data-story-audio-upload-clear
+            aria-label="Yüklenen müziği kaldır"
+            title="Müziği kaldır"
+            style="display:none;">
+            ×
+          </button>
+        </label>
+      </div>
+
+      <div class="story-field">
+        <label for="storyIncludeMusic">Müziği Videoya Dahil Et</label>
+        <select id="storyIncludeMusic" name="storyIncludeMusic" data-story-include-music>
+          <option value="no" selected>Hayır</option>
+          <option value="yes">Evet</option>
         </select>
       </div>
     </div>
