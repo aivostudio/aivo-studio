@@ -448,7 +448,7 @@
         : previewUrl || finalUrl;
 
       const playbackUrl = toMaybeProxyUrl(selectedPlaybackRawUrl);
-      const ready = badge.kind === "ok" && !!playbackUrl;
+   const ready = !!playbackUrl;
       const previewVideoUrl = ready
         ? playbackUrl.includes("#")
           ? playbackUrl
