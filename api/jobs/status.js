@@ -1348,6 +1348,12 @@ if (
       const isDone = String(job?.status || "").toLowerCase() === "done";
 
       const logoUrl = job?.meta?.logo_url || null;
+      const logoPos = String(job?.meta?.logo_pos || "br").trim();
+      const logoSize = String(job?.meta?.logo_size || "sm").trim();
+      const logoOpacity =
+        typeof job?.meta?.logo_opacity === "number"
+          ? job.meta.logo_opacity
+          : 0.85;
 
       // ✅ Overlay her zaman en güncel video üstüne basılsın:
       // 1) muxed_url
@@ -1419,12 +1425,9 @@ if (
             job_id,
             video_url: baseVideoUrl,
             logo_url: logoUrl,
-            logo_pos: job?.meta?.logo_pos || "br",
-            logo_size: job?.meta?.logo_size || "sm",
-            logo_opacity:
-              typeof job?.meta?.logo_opacity === "number"
-                ? job.meta.logo_opacity
-                : 0.85,
+            logo_pos: logoPos,
+            logo_size: logoSize,
+            logo_opacity: logoOpacity,
           }),
         });
 
@@ -1444,6 +1447,11 @@ if (
           });
 
           const patchMeta = {
+            logo_enabled: true,
+            logo_url: logoUrl,
+            logo_pos: logoPos,
+            logo_size: logoSize,
+            logo_opacity: logoOpacity,
             logo_overlay_done: true,
             logo_overlay_url: data.url,
             logo_overlay_source_url: baseVideoUrl,
