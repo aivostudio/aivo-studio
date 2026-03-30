@@ -115,11 +115,16 @@
         durationEl.textContent = formatSceneDuration(scene.duration);
       }
 
-      if (previewBtn) {
-        previewBtn.addEventListener('click', () => {
-          console.log('[CARTOON_STUDIO] preview', scene);
-        });
-      }
+     if (previewBtn) {
+  previewBtn.addEventListener('click', () => {
+    if (scene.videoUrl) {
+      window.open(scene.videoUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    alert(`Bu sahne için henüz video yok: ${scene.title}`);
+  });
+}
 
 if (moveUpBtn) {
   if (index === 0) {
