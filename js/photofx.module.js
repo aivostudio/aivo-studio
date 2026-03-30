@@ -554,9 +554,10 @@
       fps: qs("#pfxFps", root)?.value || "25",
       motionLevel: qs("#pfxMotionLevel", root)?.value || "balanced",
       effectStrength: qs("#pfxEffectPower", root)?.value || "medium",
-      colorMood: qs("#pfxColorMood", root)?.value || "original",
+         colorMood: qs("#pfxColorMood", root)?.value || "original",
       transitionSpeed: qs("#pfxTransitionSpeed", root)?.value || "normal",
       zoomLevel: qs("#pfxZoomLevel", root)?.value || "normal",
+      logoPosition: qs("#pfxLogoPosition", root)?.value || "bottom-right",
       includeAudio:
         String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
       imageFile: state.imageFile || null,
@@ -634,6 +635,16 @@ const builtEffects = {
       color_mood: form.colorMood,
       transition_speed: form.transitionSpeed,
       zoom_level: form.zoomLevel,
+            logo_pos:
+        form.logoPosition === "top-left"
+          ? "tl"
+          : form.logoPosition === "top-right"
+            ? "tr"
+            : form.logoPosition === "bottom-left"
+              ? "bl"
+              : form.logoPosition === "bottom-right"
+                ? "br"
+                : "br",
       include_audio: form.includeAudio,
       meta: {
         app: "photofx",
@@ -647,11 +658,21 @@ const builtEffects = {
         fps: Number(form.fps || 25),
         aspect_ratio: form.ratio,
         end_image_url: endImageUrl || "",
-        logo_enabled: !!logoUrl,
+              logo_enabled: !!logoUrl,
         logo_name: form.logoFile?.name || "",
         logo_url: logoUrl || "",
         audio_url: audioUrl || "",
         music_url: audioUrl || "",
+        logo_pos:
+          form.logoPosition === "top-left"
+            ? "tl"
+            : form.logoPosition === "top-right"
+              ? "tr"
+              : form.logoPosition === "bottom-left"
+                ? "bl"
+                : form.logoPosition === "bottom-right"
+                  ? "br"
+                  : "br",
       },
     };
 
