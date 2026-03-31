@@ -711,7 +711,7 @@ const previewPath = path.join(tmpDir, "preview.mp4");
     
   await runFfmpegConcat(concatListPath, concatOutputPath);
 
-if (voiceFileUrl && voiceFileUploadStatus === "ready") {
+if (audioMode === "on" && voiceFileUrl && voiceFileUploadStatus === "ready") {
   await downloadToFile(voiceFileUrl, voiceInputPath);
   await runFfmpegMixVoiceAudio(
     concatOutputPath,
