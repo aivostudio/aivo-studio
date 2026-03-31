@@ -487,234 +487,269 @@
     items[1].textContent = `Toplam Süre: ${formatSummaryDuration(totalDuration)}`;
     items[2].textContent = `Format: ${rootState.format}`;
   }
+
   function qsAny(root, selectors) {
-  for (const selector of selectors) {
-    const el = root.querySelector(selector);
-    if (el) return el;
-  }
-  return null;
-}
-
-function getValue(root, selectors, fallback = '') {
-  const el = qsAny(root, selectors);
-  if (!el) return fallback;
-
-  if (el.type === 'checkbox') {
-    return !!el.checked;
+    for (const selector of selectors) {
+      const el = root.querySelector(selector);
+      if (el) return el;
+    }
+    return null;
   }
 
-  return String(el.value ?? fallback).trim();
-}
+  function getValue(root, selectors, fallback = '') {
+    const el = qsAny(root, selectors);
+    if (!el) return fallback;
 
-function getFileMeta(root, selectors) {
-  const input = qsAny(root, selectors);
-  const file = input?.files?.[0];
+    if (el.type === 'checkbox') {
+      return !!el.checked;
+    }
 
-  if (!file) {
+    return String(el.value ?? fallback).trim();
+  }
+
+  function getFileMeta(root, selectors) {
+    const input = qsAny(root, selectors);
+    const file = input?.files?.[0];
+
+    if (!file) {
+      return {
+        hasFile: false,
+        name: '',
+        type: '',
+        size: 0
+      };
+    }
+
     return {
-      hasFile: false,
-      name: '',
-      type: '',
-      size: 0
+      hasFile: true,
+      name: String(file.name || ''),
+      type: String(file.type || ''),
+      size: Number(file.size || 0)
     };
   }
 
-  return {
-    hasFile: true,
-    name: String(file.name || ''),
-    type: String(file.type || ''),
-    size: Number(file.size || 0)
-  };
-}
+  function collectCartoonStudioPayload(rootState, studioRoot) {
+    const selectedScenes = Array.isArray(rootState?.scenes)
+      ? rootState.scenes
+          .filter((scene) => !!scene?.included)
+          .map((scene, index) => ({
+            order: index + 1,
+            id: String(scene?.id || ''),
+            title: String(scene?.title || 'Sahne'),
+            duration: Number(scene?.duration) || 0,
+            videoUrl: String(scene?.videoUrl || ''),
+            fileName: String(scene?.fileName || '')
+          }))
+      : [];
 
-function collectCartoonStudioPayload(rootState, studioRoot) {
-  const selectedScenes = Array.isArray(rootState?.scenes)
-    ? rootState.scenes
-        .filter((scene) => !!scene?.included)
-        .map((scene, index) => ({
-          order: index + 1,
-          id: String(scene?.id || ''),
-          title: String(scene?.title || 'Sahne'),
-          duration: Number(scene?.duration) || 0,
-          videoUrl: String(scene?.videoUrl || ''),
-          fileName: String(scene?.fileName || '')
-        }))
-    : [];
+    const totalDuration = selectedScenes.reduce((sum, scene) => {
+      return sum + (Number(scene.duration) || 0);
+    }, 0);
 
-  const totalDuration = selectedScenes.reduce((sum, scene) => {
-    return sum + (Number(scene.duration) || 0);
-  }, 0);
+    return {
+      export: {
+        format: String(rootState?.format || '16:9'),
+        sceneCount: selectedScenes.length,
+        totalDuration,
+        scenes: selectedScenes
+      },
 
-  const payload = {
-    export: {
-      format: String(rootState?.format || '16:9'),
-      sceneCount: selectedScenes.length,
-      totalDuration,
-      scenes: selectedScenes
-    },
+      audio: {
+        readyMusic: getValue(studioRoot, [
+          '#cartoonReadyMusic',
+          '#studioReadyMusic',
+          '[data-studio-ready-music]',
+          'select[name="readyMusic"]',
+          'select[name="hazirMuzik"]'
+        ], ''),
 
-    audio: {
-      readyMusic: getValue(studioRoot, [
-        '#cartoonReadyMusic',
-        '#studioReadyMusic',
-        '[data-studio-ready-music]',
-        'select[name="readyMusic"]',
-        'select[name="hazirMuzik"]'
-      ], ''),
+        voiceFile: getFileMeta(studioRoot, [
+          '#cartoonVoiceFile',
+          '#studioVoiceFile',
+          '[data-studio-voice-upload]',
+          'input[name="voiceFile"]',
+          'input[name="kendiSesin"]'
+        ]),
 
-      voiceFile: getFileMeta(studioRoot, [
-        '#cartoonVoiceFile',
-        '#studioVoiceFile',
-        '[data-studio-voice-upload]',
-        'input[name="voiceFile"]',
-        'input[name="kendiSesin"]'
-      ]),
+        mode: getValue(studioRoot, [
+          '#cartoonAudioMode',
+          '#studioAudioMode',
+          '[data-studio-audio-mode]',
+          'select[name="audioMode"]',
+          'select[name="ses"]'
+        ], ''),
 
-      mode: getValue(studioRoot, [
-        '#cartoonAudioMode',
-        '#studioAudioMode',
-        '[data-studio-audio-mode]',
-        'select[name="audioMode"]',
-        'select[name="ses"]'
-      ], ''),
+        musicLevel: getValue(studioRoot, [
+          '#cartoonMusicLevel',
+          '#studioMusicLevel',
+          '[data-studio-music-level]',
+          'input[name="musicLevel"]',
+          'input[name="muzikSeviyesi"]'
+        ], '')
+      },
 
-      musicLevel: getValue(studioRoot, [
-        '#cartoonMusicLevel',
-        '#studioMusicLevel',
-        '[data-studio-music-level]',
-        'input[name="musicLevel"]',
-        'input[name="muzikSeviyesi"]'
-      ], '')
-    },
+      text: {
+        title: getValue(studioRoot, [
+          '#cartoonVideoTitle',
+          '#studioVideoTitle',
+          '[data-studio-video-title]',
+          'input[name="videoTitle"]',
+          'input[name="baslik"]'
+        ], ''),
 
-    text: {
-      title: getValue(studioRoot, [
-        '#cartoonVideoTitle',
-        '#studioVideoTitle',
-        '[data-studio-video-title]',
-        'input[name="videoTitle"]',
-        'input[name="baslik"]'
-      ], ''),
+        subtitleMode: getValue(studioRoot, [
+          '#cartoonSubtitleMode',
+          '#studioSubtitleMode',
+          '[data-studio-subtitle-mode]',
+          'select[name="subtitleMode"]',
+          'select[name="altyazi"]'
+        ], ''),
 
-      subtitleMode: getValue(studioRoot, [
-        '#cartoonSubtitleMode',
-        '#studioSubtitleMode',
-        '[data-studio-subtitle-mode]',
-        'select[name="subtitleMode"]',
-        'select[name="altyazi"]'
-      ], ''),
+        description: getValue(studioRoot, [
+          '#cartoonDescription',
+          '#studioDescription',
+          '[data-studio-description]',
+          'textarea[name="description"]',
+          'textarea[name="kisaAciklama"]'
+        ], '')
+      },
 
-      description: getValue(studioRoot, [
-        '#cartoonDescription',
-        '#studioDescription',
-        '[data-studio-description]',
-        'textarea[name="description"]',
-        'textarea[name="kisaAciklama"]'
-      ], '')
-    },
+      branding: {
+        logoFile: getFileMeta(studioRoot, [
+          '#cartoonLogoFile',
+          '#studioLogoFile',
+          '[data-studio-logo-upload]',
+          'input[name="logoFile"]',
+          'input[name="logo"]'
+        ]),
 
-    branding: {
-      logoFile: getFileMeta(studioRoot, [
-        '#cartoonLogoFile',
-        '#studioLogoFile',
-        '[data-studio-logo-upload]',
-        'input[name="logoFile"]',
-        'input[name="logo"]'
-      ]),
+        watermarkMode: getValue(studioRoot, [
+          '#cartoonWatermarkMode',
+          '#studioWatermarkMode',
+          '[data-studio-watermark-mode]',
+          'select[name="watermarkMode"]',
+          'select[name="filigran"]'
+        ], '')
+      },
 
-      watermarkMode: getValue(studioRoot, [
-        '#cartoonWatermarkMode',
-        '#studioWatermarkMode',
-        '[data-studio-watermark-mode]',
-        'select[name="watermarkMode"]',
-        'select[name="filigran"]'
-      ], '')
-    },
+      cover: {
+        videoFrame: getValue(studioRoot, [
+          '#cartoonCoverFrame',
+          '#studioCoverFrame',
+          '[data-studio-cover-frame]',
+          'select[name="coverFrame"]',
+          'select[name="videodanKare"]'
+        ], ''),
 
-    cover: {
-      videoFrame: getValue(studioRoot, [
-        '#cartoonCoverFrame',
-        '#studioCoverFrame',
-        '[data-studio-cover-frame]',
-        'select[name="coverFrame"]',
-        'select[name="videodanKare"]'
-      ], ''),
+        customCoverFile: getFileMeta(studioRoot, [
+          '#cartoonCoverFile',
+          '#studioCoverFile',
+          '[data-studio-cover-upload]',
+          'input[name="coverFile"]',
+          'input[name="ayriKapak"]'
+        ])
+      },
 
-      customCoverFile: getFileMeta(studioRoot, [
-        '#cartoonCoverFile',
-        '#studioCoverFile',
-        '[data-studio-cover-upload]',
-        'input[name="coverFile"]',
-        'input[name="ayriKapak"]'
-      ])
-    },
-
-    summary: {
-      sceneCount: selectedScenes.length,
-      totalDuration,
-      format: String(rootState?.format || '16:9'),
-      hasLogo: !!getFileMeta(studioRoot, [
-        '#cartoonLogoFile',
-        '#studioLogoFile',
-        '[data-studio-logo-upload]',
-        'input[name="logoFile"]',
-        'input[name="logo"]'
-      ]).hasFile,
-      hasVoiceFile: !!getFileMeta(studioRoot, [
-        '#cartoonVoiceFile',
-        '#studioVoiceFile',
-        '[data-studio-voice-upload]',
-        'input[name="voiceFile"]',
-        'input[name="kendiSesin"]'
-      ]).hasFile,
-      hasCustomCover: !!getFileMeta(studioRoot, [
-        '#cartoonCoverFile',
-        '#studioCoverFile',
-        '[data-studio-cover-upload]',
-        'input[name="coverFile"]',
-        'input[name="ayriKapak"]'
-      ]).hasFile
-    }
-  };
-
-  return payload;
-}
-
-function bindStudioExportPayloadDebug(rootState, studioRoot) {
-  const button = qsAny(studioRoot, [
-    '[data-studio-export]',
-    '[data-studio-final-output]',
-    '[data-studio-generate-final]',
-    '#cartoonStudioExportBtn',
-    '#studioExportBtn',
-    'button[type="button"][data-role="studio-export"]'
-  ]);
-
-  if (!button) {
-    console.warn('[CARTOON][STUDIO_EXPORT_BUTTON_NOT_FOUND]');
-    return;
+      summary: {
+        sceneCount: selectedScenes.length,
+        totalDuration,
+        format: String(rootState?.format || '16:9'),
+        hasLogo: !!getFileMeta(studioRoot, [
+          '#cartoonLogoFile',
+          '#studioLogoFile',
+          '[data-studio-logo-upload]',
+          'input[name="logoFile"]',
+          'input[name="logo"]'
+        ]).hasFile,
+        hasVoiceFile: !!getFileMeta(studioRoot, [
+          '#cartoonVoiceFile',
+          '#studioVoiceFile',
+          '[data-studio-voice-upload]',
+          'input[name="voiceFile"]',
+          'input[name="kendiSesin"]'
+        ]).hasFile,
+        hasCustomCover: !!getFileMeta(studioRoot, [
+          '#cartoonCoverFile',
+          '#studioCoverFile',
+          '[data-studio-cover-upload]',
+          'input[name="coverFile"]',
+          'input[name="ayriKapak"]'
+        ]).hasFile
+      }
+    };
   }
 
-  if (button.getAttribute('data-studio-export-bound') === 'true') {
-    return;
-  }
+  function bindStudioExportPayloadDebug(rootState, studioRoot) {
+    const button = qsAny(studioRoot, [
+      '[data-studio-export]',
+      '[data-studio-final-output]',
+      '[data-studio-generate-final]',
+      '#cartoonStudioExportBtn',
+      '#studioExportBtn',
+      'button[type="button"][data-role="studio-export"]'
+    ]);
 
-  button.setAttribute('data-studio-export-bound', 'true');
-
-  button.addEventListener('click', () => {
-    const payload = collectCartoonStudioPayload(rootState, studioRoot);
-    window.__CARTOON_STUDIO_EXPORT_PAYLOAD__ = payload;
-
-    console.log('[CARTOON][STUDIO_EXPORT_PAYLOAD]', payload);
-
-    if (!payload.export.scenes.length) {
-      alert('Export için en az 1 sahne seçmelisin.');
+    if (!button) {
+      console.warn('[CARTOON][STUDIO_EXPORT_BUTTON_NOT_FOUND]');
       return;
     }
 
-    alert('Payload hazır. Console -> [CARTOON][STUDIO_EXPORT_PAYLOAD]');
-  });
-}
+    if (button.getAttribute('data-studio-export-bound') === 'true') {
+      return;
+    }
+
+    button.setAttribute('data-studio-export-bound', 'true');
+
+    button.addEventListener('click', async () => {
+      const originalText = String(button.textContent || 'Paylaşmaya Hazır Çıktı Al');
+
+      try {
+        const payload = collectCartoonStudioPayload(rootState, studioRoot);
+        window.__CARTOON_STUDIO_EXPORT_PAYLOAD__ = payload;
+
+        console.log('[CARTOON][STUDIO_EXPORT_PAYLOAD]', payload);
+
+        if (!payload.export.scenes.length) {
+          alert('Export için en az 1 sahne seçmelisin.');
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Çıktı hazırlanıyor...';
+        button.classList.add('is-loading');
+
+        const res = await fetch('/api/cartoon/studio/export-create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => null);
+
+        console.log('[CARTOON][STUDIO_EXPORT_CREATE_RESPONSE]', {
+          status: res.status,
+          ok: res.ok,
+          data
+        });
+
+        if (!res.ok || !data || data.ok === false) {
+          throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
+        }
+
+        window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
+
+        alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
+      } catch (err) {
+        console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
+        alert(String(err?.message || err || 'studio_export_create_failed'));
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+        button.classList.remove('is-loading');
+      }
+    });
+  }
+
   function renderEmptyStudioState(sceneList) {
     if (!sceneList) return;
 
@@ -888,10 +923,12 @@ function bindStudioExportPayloadDebug(rootState, studioRoot) {
       studioState,
       studioRoot
     );
-   bindStudioExportPayloadDebug(
-  studioState,
-  studioRoot
-);
+
+    bindStudioExportPayloadDebug(
+      studioState,
+      studioRoot
+    );
+
     studioRoot.setAttribute('data-studio-bound', 'true');
     window.__CARTOON_STUDIO__ = studioState;
 
