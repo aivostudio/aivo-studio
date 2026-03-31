@@ -105,11 +105,13 @@ export default async function handler(req, res) {
   const audioMode = safeText(audioBlock?.mode);
   const musicLevel = safeText(audioBlock?.musicLevel);
 
-  const voiceFile = {
+   const voiceFile = {
     hasFile: !!audioBlock?.voiceFile?.hasFile,
     name: safeText(audioBlock?.voiceFile?.name),
     type: safeText(audioBlock?.voiceFile?.type),
-    size: safeNumber(audioBlock?.voiceFile?.size, 0)
+    size: safeNumber(audioBlock?.voiceFile?.size, 0),
+    url: safeText(audioBlock?.voiceFile?.url),
+    uploadStatus: safeText(audioBlock?.voiceFile?.uploadStatus)
   };
 
   const logoFile = {
