@@ -681,19 +681,14 @@ function collectCartoonStudioPayload(rootState, studioRoot) {
 }
 
 function bindStudioExportPayloadDebug(rootState, studioRoot) {
- const button =
-  qsAny(studioRoot, [
+  const button = qsAny(studioRoot, [
     '[data-studio-export]',
     '[data-studio-final-output]',
     '[data-studio-generate-final]',
     '#cartoonStudioExportBtn',
     '#studioExportBtn',
     'button[type="button"][data-role="studio-export"]'
-  ]) ||
-  Array.from(studioRoot.querySelectorAll('button')).find((btn) => {
-    const text = String(btn.textContent || '').trim().toLowerCase();
-    return text.includes('paylaşmaya hazır çıktı al');
-  });
+  ]);
 
   if (!button) {
     console.warn('[CARTOON][STUDIO_EXPORT_BUTTON_NOT_FOUND]');
