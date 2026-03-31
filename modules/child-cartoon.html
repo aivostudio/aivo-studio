@@ -1096,98 +1096,97 @@
 <div class="cartoon-mode-view" data-cartoon-view="studio" hidden>
  
 
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Sahneleri Birleştir</h4>
-      <p class="story-card-helper">Final videoya girecek sahneleri seç ve sırala.</p>
+<section class="story-card studio-card studio-card--compact">
+  <div class="story-card-head">
+    <h4>Sahneleri Birleştir</h4>
+    <p class="story-card-helper">
+      Final videoya girecek sahneleri seç ve sırala.<br>
+      Yüklediğin her video ayrı sahne olarak listeye eklenecek.
+    </p>
+  </div>
+
+  <div class="studio-upload-box">
+    <div class="story-grid story-grid-2">
+      <div class="story-field">
+        <label>Video Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="video/*" multiple hidden data-studio-video-upload>
+          <span class="cartoon-upload-btn">Videoları Seç</span>
+          <span class="cartoon-upload-text" data-studio-video-upload-text>
+            Henüz video seçilmedi
+          </span>
+        </label>
+      </div>
     </div>
-    <div class="studio-upload-box">
-  <div class="story-grid story-grid-2">
-    <div class="story-field">
-      <label>Video Yükle</label>
-      <label class="cartoon-upload-row cartoon-upload-row--compact">
-        <input type="file" accept="video/*" multiple hidden data-studio-video-upload>
-        <span class="cartoon-upload-btn">Videoları Seç</span>
-        <span class="cartoon-upload-text" data-studio-video-upload-text>
-          Henüz video seçilmedi
-        </span>
+  </div>
+
+  <div class="studio-scene-list" data-studio-scene-list></div>
+
+  <template id="studioSceneRowTemplate">
+    <div class="studio-scene-row" data-studio-scene-row data-scene-id="">
+      <label class="studio-scene-check">
+        <input type="checkbox" data-scene-include>
+        <span>Dahil</span>
       </label>
-    </div>
 
-   <p class="story-card-helper">
-  Final videoya girecek sahneleri seç ve sırala.<br>
-  Yüklediğin her video ayrı sahne olarak listeye eklenecek.
-</p>
+      <button type="button" class="studio-scene-thumb" data-scene-preview>
+        Önizleme
+      </button>
+
+      <div class="studio-scene-copy">
+        <strong data-scene-title>Sahne</strong>
+        <small data-scene-duration>0 sn</small>
+      </div>
+
+      <div class="studio-scene-actions">
+        <button type="button" data-scene-move="up">↑</button>
+        <button type="button" data-scene-move="down">↓</button>
+        <button type="button"
+                data-scene-edit
+                title="Başlığı düzenle"
+                aria-label="Başlığı düzenle"
+                style="
+                  width:36px;
+                  height:36px;
+                  border:none;
+                  border-radius:10px;
+                  background:rgba(255,255,255,.08);
+                  color:#fff;
+                  cursor:pointer;
+                  display:inline-flex;
+                  align-items:center;
+                  justify-content:center;
+                  font-size:16px;
+                  line-height:1;
+                ">✎</button>
+        <button type="button"
+                data-scene-remove
+                title="Sahneyi sil"
+                aria-label="Sahneyi sil"
+                style="
+                  width:36px;
+                  height:36px;
+                  border:none;
+                  border-radius:10px;
+                  background:rgba(255,255,255,.08);
+                  color:#fff;
+                  cursor:pointer;
+                  display:inline-flex;
+                  align-items:center;
+                  justify-content:center;
+                  font-size:16px;
+                  line-height:1;
+                ">🗑</button>
+      </div>
+    </div>
+  </template>
+
+  <div class="studio-inline-summary">
+    <span>Seçilen Sahne: 2</span>
+    <span>Toplam Süre: 30 sn</span>
+    <span>Format: 16:9</span>
   </div>
-</div>
-
-<div class="studio-scene-list" data-studio-scene-list></div>
-
-<template id="studioSceneRowTemplate">
-  <div class="studio-scene-row" data-studio-scene-row data-scene-id="">
-    <label class="studio-scene-check">
-      <input type="checkbox" data-scene-include>
-      <span>Dahil</span>
-    </label>
-
-    <button type="button" class="studio-scene-thumb" data-scene-preview>
-      Önizleme
-    </button>
-
-    <div class="studio-scene-copy">
-      <strong data-scene-title>Sahne</strong>
-      <small data-scene-duration>0 sn</small>
-    </div>
-
- <div class="studio-scene-actions">
-  <button type="button" data-scene-move="up">↑</button>
-  <button type="button" data-scene-move="down">↓</button>
-  <button type="button"
-          data-scene-edit
-          title="Başlığı düzenle"
-          aria-label="Başlığı düzenle"
-          style="
-            width:36px;
-            height:36px;
-            border:none;
-            border-radius:10px;
-            background:rgba(255,255,255,.08);
-            color:#fff;
-            cursor:pointer;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            font-size:16px;
-            line-height:1;
-          ">✎</button>
-  <button type="button"
-          data-scene-remove
-          title="Sahneyi sil"
-          aria-label="Sahneyi sil"
-          style="
-            width:36px;
-            height:36px;
-            border:none;
-            border-radius:10px;
-            background:rgba(255,255,255,.08);
-            color:#fff;
-            cursor:pointer;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            font-size:16px;
-            line-height:1;
-          ">🗑</button>
-</div>
-  </div>
-</template>
-
-    <div class="studio-inline-summary">
-      <span>Seçilen Sahne: 2</span>
-      <span>Toplam Süre: 30 sn</span>
-      <span>Format: 16:9</span>
-    </div>
-  </section>
+</section>
 
 <section class="story-card studio-card studio-card--compact">
   <div class="story-card-head">
