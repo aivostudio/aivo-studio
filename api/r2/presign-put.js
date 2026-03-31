@@ -13,11 +13,59 @@ function safeName(name = "upload") {
 
 function safePrefix(p) {
   const s = String(p || "uploads/tmp/");
-  // sadece basit folder path: a-zA-Z0-9/_- ve mutlaka "/" ile bitsin
   const cleaned = s.replace(/[^a-zA-Z0-9/_-]+/g, "");
   const withSlash = cleaned.endsWith("/") ? cleaned : cleaned + "/";
-  // çok kısa/boş kalırsa fallback
   return withSlash.length >= 3 ? withSlash : "uploads/tmp/";
+}
+
+const ALLOWED_IMAGE = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
+
+const ALLOWED_AUDIO = new Set([
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/ogg",
+  "audio/webm",
+  "audio/mp4",
+  "audio/aac",
+  "audio/flac",
+  "audio/x-m4a",
+]);
+
+const ALLOWED_VIDEO = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+
+function normalizeContentType(value) {
+  const ct = String(value || "").toLowerCase().trim();
+
+  if (!ct) return "";
+
+  if (ct === "audio/mp3") return "audio/mpeg";
+  if (ct === "audio/x-wav") return "audio/wav";
+  if (ct === "video/x-matroska") return "video/webm";
+
+  return ct;
+}
+
+function getAllowedSet(app, kind) {
+  const appValue = String(app || "").toLowerCase().trim();
+  const kindValue = String(kind || "").toLowerCase().trim();
+
+  if (appValue === "cartoon" && kindValue === "studio-video") {
+    return ALLOWED_VIDEO;
+  }
+
+  return new Set([...ALLOWED_IMAGE, ...ALLOWED_AUDIO]);
 }
 
 export default async function handler(req, res) {
@@ -26,7 +74,15 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const { filename, contentType, key: keyFromBody, prefix } = req.body || {};
+    const {
+      filename,
+      contentType,
+      key: keyFromBody,
+      prefix,
+      app,
+      kind,
+    } = req.body || {};
+
     const finalName = String(keyFromBody || filename || "").trim();
 
     if (!finalName || !contentType) {
@@ -35,31 +91,9 @@ export default async function handler(req, res) {
         .json({ ok: false, error: "missing_filename_or_contentType" });
     }
 
-    const ct = String(contentType).toLowerCase();
-
-    // ✅ allowlist (güvenlik)
-    const ALLOWED_IMAGE = new Set([
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/gif",
-      "image/avif",
-    ]);
-
-    const ALLOWED_AUDIO = new Set([
-      "audio/mpeg", // mp3 çoğunlukla bunu verir
-      "audio/mp3",
-      "audio/wav",
-      "audio/x-wav",
-      "audio/ogg",
-      "audio/webm",
-      "audio/mp4",
-      "audio/aac",
-      "audio/flac",
-      "audio/x-m4a",
-    ]);
-
-    const isAllowed = ALLOWED_IMAGE.has(ct) || ALLOWED_AUDIO.has(ct);
+    const ct = normalizeContentType(contentType);
+    const allowedSet = getAllowedSet(app, kind);
+    const isAllowed = allowedSet.has(ct);
 
     if (!isAllowed) {
       return res.status(400).json({
@@ -68,6 +102,7 @@ export default async function handler(req, res) {
         allowed: {
           image: Array.from(ALLOWED_IMAGE),
           audio: Array.from(ALLOWED_AUDIO),
+          video: Array.from(ALLOWED_VIDEO),
         },
       });
     }
@@ -89,14 +124,21 @@ export default async function handler(req, res) {
       },
     });
 
-    // ✅ key: body’den gelirse aynen kullan; gelmezse uploads/tmp/ altında üret
     let key = finalName;
 
     if (!keyFromBody) {
-      const basePrefix = safePrefix(prefix || "uploads/tmp/");
+      const basePrefix = safePrefix(
+        prefix ||
+          (String(app || "").toLowerCase() === "cartoon" &&
+          String(kind || "").toLowerCase() === "studio-video"
+            ? "uploads/cartoon/studio-video/"
+            : "uploads/tmp/")
+      );
+
       const id = crypto.randomUUID
         ? crypto.randomUUID()
         : crypto.randomBytes(16).toString("hex");
+
       key = `${basePrefix}${Date.now()}-${id}-${safeName(filename || "upload")}`;
     }
 
@@ -104,10 +146,8 @@ export default async function handler(req, res) {
       Bucket: bucket,
       Key: key,
       ContentType: ct,
-      // CacheControl: "public, max-age=31536000, immutable",
     });
 
-    // 10 dk geçerli upload linki
     const upload_url = await getSignedUrl(client, cmd, { expiresIn: 60 * 10 });
     const public_url = `${publicBase.replace(/\/$/, "")}/${key}`;
 
