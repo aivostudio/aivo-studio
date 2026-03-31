@@ -1282,7 +1282,7 @@ if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && 
   const studioState = window.__CARTOON_STUDIO__ || null;
   const logoUrl = String(studioState?.logoFileUrl || '').trim();
 
-  if (resolvedFinalVideoUrl && logoUrl && !j?.meta?.logo_overlay_url) {
+if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__)
     button.disabled = true;
     button.textContent = 'Logo işleniyor...';
     button.classList.add('is-loading');
@@ -1325,6 +1325,7 @@ if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && 
     }
 
     resolvedFinalVideoUrl = String(overlayData?.url || resolvedFinalVideoUrl || '').trim();
+    window.__CARTOON_STUDIO_LOGO_DONE__ = true;
   }
 
   window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
