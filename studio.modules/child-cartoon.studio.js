@@ -1352,18 +1352,18 @@ if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && 
     button.textContent = 'Logo işleniyor...';
     button.classList.add('is-loading');
 
-    const logoPosRaw = String(
-      document
-        .querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] [data-studio-logo-position]')?.value ||
-      'bottom-right'
-    ).trim().toLowerCase();
+  const logoPosRaw = String(
+  document
+    .querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] [data-studio-logo-position]')?.value ||
+  'bottom-right'
+).trim().toLowerCase();
 
-    const logoPos =
-      logoPosRaw === 'top-left' ? 'tl' :
-      logoPosRaw === 'top-right' ? 'tr' :
-      logoPosRaw === 'bottom-left' ? 'bl' :
-      logoPosRaw === 'center' ? 'c' :
-      'br';
+const logoPos =
+  ['top-left', 'sol-ust', 'sol üst', 'solüst'].includes(logoPosRaw) ? 'tl' :
+  ['top-right', 'sag-ust', 'sağ-üst', 'sağ üst', 'sağüst'].includes(logoPosRaw) ? 'tr' :
+  ['bottom-left', 'sol-alt', 'sol alt', 'solalt'].includes(logoPosRaw) ? 'bl' :
+  ['center', 'orta'].includes(logoPosRaw) ? 'c' :
+  'br';
 
     console.log('[CARTOON][STUDIO_LOGO_OVERLAY_REQUEST]', {
       jobId,
