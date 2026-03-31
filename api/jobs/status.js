@@ -1849,6 +1849,86 @@ try {
   console.warn("AUTO_PHOTOFX_FINALIZE_BLOCK_FAILED:", e?.message || e);
 }
     // =========================
+// 4.8) AUTO FINALIZE (CARTOON STUDIO EXPORT)
+// =========================
+try {
+  const appKeyNow =
+    String(job?.app || job?.type || job?.meta?.app || "").toLowerCase();
+  const modeNow =
+    String(job?.meta?.mode || job?.mode || "").toLowerCase();
+
+  const isStudioExport =
+    appKeyNow === "cartoon" && modeNow === "studio_export";
+
+  const hasScenes =
+    Array.isArray(job?.meta?.scenes) &&
+    job.meta.scenes.some((scene) => String(scene?.videoUrl || "").trim());
+
+  const hasFinalizedOutput =
+    Array.isArray(outputs) &&
+    outputs.some(
+      (o) =>
+        normType(o?.type) === "video" &&
+        normVariant(o) === "finalized"
+    );
+
+  const hasPreviewOutput =
+    Array.isArray(outputs) &&
+    outputs.some(
+      (o) =>
+        normType(o?.type) === "video" &&
+        normVariant(o) === "preview"
+    );
+
+  const alreadyStarted = Boolean(job?.meta?.studio_finalize_started);
+  const finalVideoUrlNow = String(job?.meta?.final_video_url || "").trim();
+
+  if (
+    isStudioExport &&
+    hasScenes &&
+    !finalVideoUrlNow &&
+    (!hasFinalizedOutput || !hasPreviewOutput) &&
+    !alreadyStarted
+  ) {
+    const baseUrl = getBaseUrl(req);
+
+    const patchMeta = {
+      studio_finalize_started: true,
+      studio_finalize_started_at: new Date().toISOString(),
+    };
+
+    await sql`
+      update jobs
+      set
+        status = 'processing',
+        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+        updated_at = now()
+      where id = ${job_id}::uuid
+    `;
+
+    job.status = "processing";
+    job.meta = {
+      ...(job.meta || {}),
+      ...patchMeta,
+    };
+
+    fetch(`${baseUrl}/api/cartoon/studio/finalize`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.cookie || "",
+      },
+      body: JSON.stringify({
+        job_id,
+      }),
+    }).catch((e) => {
+      console.warn("AUTO_CARTOON_STUDIO_FINALIZE_FAILED:", e?.message || e);
+    });
+  }
+} catch (e) {
+  console.warn("AUTO_CARTOON_STUDIO_FINALIZE_BLOCK_FAILED:", e?.message || e);
+}
+    // =========================
     // 5) RESPONSE NORMALIZE (tek sefer)
     // =========================
     const finalMetaUrl = job?.meta?.final_video_url || null;
