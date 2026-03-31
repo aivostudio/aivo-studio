@@ -266,7 +266,63 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
     maxPreviewBytes,
   };
 }
+async function runFfmpegNormalizeScene(inputPath, outputPath) {
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-i",
+      inputPath,
 
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0?",
+
+      "-vf",
+      "scale=1280:-2",
+      "-r",
+      "30",
+
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "18",
+      "-pix_fmt",
+      "yuv420p",
+
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-ac",
+      "2",
+      "-ar",
+      "48000",
+
+      "-movflags",
+      "+faststart",
+      "-shortest",
+
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`ffmpeg_normalize_scene_failed:${code}:${stderr.slice(-1500)}`));
+    });
+  });
+}
 async function runFfmpegConcat(listPath, outputPath) {
   await new Promise((resolve, reject) => {
     const args = [
@@ -506,18 +562,22 @@ module.exports = async function handler(req, res) {
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-cartoon-studio-finalize-"));
 
-    const downloadedPaths = [];
-    for (let i = 0; i < scenes.length; i += 1) {
-      const ext = path.extname(scenes[i].fileName || "").trim() || ".mp4";
-      const filePath = path.join(tmpDir, `scene-${String(i + 1).padStart(3, "0")}${ext}`);
-      await downloadToFile(scenes[i].videoUrl, filePath);
-      downloadedPaths.push(filePath);
-    }
+ const normalizedPaths = [];
+for (let i = 0; i < scenes.length; i += 1) {
+  const ext = path.extname(scenes[i].fileName || "").trim() || ".mp4";
+  const sourcePath = path.join(tmpDir, `scene-${String(i + 1).padStart(3, "0")}${ext}`);
+  const normalizedPath = path.join(tmpDir, `scene-${String(i + 1).padStart(3, "0")}-normalized.mp4`);
 
-    const concatListPath = path.join(tmpDir, "concat.txt");
-    const concatBody = downloadedPaths
-      .map((filePath) => `file '${String(filePath).replace(/'/g, "'\\''")}'`)
-      .join("\n");
+  await downloadToFile(scenes[i].videoUrl, sourcePath);
+  await runFfmpegNormalizeScene(sourcePath, normalizedPath);
+
+  normalizedPaths.push(normalizedPath);
+}
+
+const concatListPath = path.join(tmpDir, "concat.txt");
+const concatBody = normalizedPaths
+  .map((filePath) => `file '${String(filePath).replace(/'/g, "'\\''")}'`)
+  .join("\n");
     await fsp.writeFile(concatListPath, concatBody, "utf8");
 
     const concatOutputPath = path.join(tmpDir, "concat-output.mp4");
