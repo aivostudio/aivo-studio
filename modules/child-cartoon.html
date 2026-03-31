@@ -1204,22 +1204,36 @@
     </div>
   </section>
 
-  <section class="story-card studio-card studio-card--compact">
+   <section class="story-card studio-card studio-card--compact">
     <div class="story-card-head">
       <h4>Ses Ekle</h4>
-      <p class="story-card-helper">Müzik veya kendi sesini ekle.</p>
+      <p class="story-card-helper">Kendi sesini yükle ve ses seviyesini ayarla.</p>
     </div>
 
     <div class="story-grid story-grid-2">
       <div class="story-field">
-        <label>Hazır Müzik</label>
-        <select>
-          <option>Seçiniz</option>
-          <option>Neşeli</option>
-          <option>Yumuşak</option>
-          <option>Macera</option>
+        <label>Kendi Sesini Yükle</label>
+        <label class="cartoon-upload-row cartoon-upload-row--compact">
+          <input type="file" accept="audio/*" hidden data-studio-voice-upload>
+          <span class="cartoon-upload-btn">Dosya Seç</span>
+          <span class="cartoon-upload-text" data-studio-voice-upload-text>Dosya seçilmedi</span>
+        </label>
+      </div>
+
+      <div class="story-field">
+        <label>Ses</label>
+        <select name="ses" data-studio-audio-mode>
+          <option value="off" selected>Kapalı</option>
+          <option value="on">Açık</option>
         </select>
       </div>
+
+      <div class="story-field story-field--full">
+        <label>Müzik Seviyesi</label>
+        <input type="range" min="0" max="100" value="60" name="muzikSeviyesi" data-studio-music-level>
+      </div>
+    </div>
+  </section>
 
       <div class="story-field">
         <label>Kendi Sesini Yükle</label>
