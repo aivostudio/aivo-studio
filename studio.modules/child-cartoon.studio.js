@@ -329,69 +329,82 @@ function ensureStudioPreviewModal(studioRoot) {
       updateStudioSummary(rootState, studioRoot);
       return;
     }
+rootState.scenes.forEach((scene, index) => {
+  const fragment = sceneTemplate.content.cloneNode(true);
+  const row = fragment.querySelector('[data-studio-scene-row]');
+  const includeInput = fragment.querySelector('[data-scene-include]');
+  const titleEl = fragment.querySelector('[data-scene-title]');
+  const durationEl = fragment.querySelector('[data-scene-duration]');
+  const previewBtn = fragment.querySelector('[data-scene-preview]');
+  const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
+  const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
+  const removeBtn =
+    fragment.querySelector('[data-scene-remove]') ||
+    fragment.querySelector('[data-scene-action="remove"]') ||
+    fragment.querySelector('[data-studio-scene-remove]');
 
-    rootState.scenes.forEach((scene, index) => {
-      const fragment = sceneTemplate.content.cloneNode(true);
-      const row = fragment.querySelector('[data-studio-scene-row]');
-      const includeInput = fragment.querySelector('[data-scene-include]');
-      const titleEl = fragment.querySelector('[data-scene-title]');
-      const durationEl = fragment.querySelector('[data-scene-duration]');
-      const previewBtn = fragment.querySelector('[data-scene-preview]');
-      const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
-      const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
+  if (row) {
+    row.setAttribute('data-scene-id', scene.id);
+  }
 
-      if (row) {
-        row.setAttribute('data-scene-id', scene.id);
-      }
-
-      if (includeInput) {
-        includeInput.checked = !!scene.included;
-        includeInput.addEventListener('change', () => {
-          scene.included = !!includeInput.checked;
-          updateStudioSummary(rootState, studioRoot);
-        });
-      }
-
-      if (titleEl) {
-        titleEl.textContent = scene.title || 'Sahne';
-      }
-
-      if (durationEl) {
-        durationEl.textContent = formatSceneDuration(scene.duration);
-      }
-
-      if (previewBtn) {
-        previewBtn.addEventListener('click', () => {
-          openStudioPreview(studioRoot, scene);
-        });
-      }
-
-      if (moveUpBtn) {
-        if (index === 0) {
-          moveUpBtn.disabled = true;
-        }
-
-        moveUpBtn.addEventListener('click', () => {
-          moveScene(rootState.scenes, index, index - 1);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
-
-      if (moveDownBtn) {
-        if (index === rootState.scenes.length - 1) {
-          moveDownBtn.disabled = true;
-        }
-
-        moveDownBtn.addEventListener('click', () => {
-          moveScene(rootState.scenes, index, index + 1);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
-
-      sceneList.appendChild(fragment);
+  if (includeInput) {
+    includeInput.checked = !!scene.included;
+    includeInput.addEventListener('change', () => {
+      scene.included = !!includeInput.checked;
+      updateStudioSummary(rootState, studioRoot);
     });
+  }
 
-    updateStudioSummary(rootState, studioRoot);
+  if (titleEl) {
+    titleEl.textContent = scene.title || 'Sahne';
+  }
+
+  if (durationEl) {
+    durationEl.textContent = formatSceneDuration(scene.duration);
+  }
+
+  if (previewBtn) {
+    previewBtn.addEventListener('click', () => {
+      openStudioPreview(studioRoot, scene);
+    });
+  }
+
+  if (moveUpBtn) {
+    if (index === 0) {
+      moveUpBtn.disabled = true;
+    }
+
+    moveUpBtn.addEventListener('click', () => {
+      moveScene(rootState.scenes, index, index - 1);
+      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+    });
+  }
+
+  if (moveDownBtn) {
+    if (index === rootState.scenes.length - 1) {
+      moveDownBtn.disabled = true;
+    }
+
+    moveDownBtn.addEventListener('click', () => {
+      moveScene(rootState.scenes, index, index + 1);
+      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+    });
+  }
+
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
+      if (!ok) return;
+
+      rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
+      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+    });
+  }
+
+  sceneList.appendChild(fragment);
+});
+
+updateStudioSummary(rootState, studioRoot);
   }
 
   function initCartoonStudio() {
