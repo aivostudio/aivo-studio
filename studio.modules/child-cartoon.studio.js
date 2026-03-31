@@ -808,6 +808,7 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
 
     button.addEventListener('click', async () => {
       const originalText = String(button.textContent || 'Paylaşmaya Hazır Çıktı Al');
+      let startedPolling = false;
 
       try {
         const payload = collectCartoonStudioPayload(rootState, studioRoot);
@@ -843,7 +844,28 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
         }
 
         window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
-      if (data?.job_id) {
+     if (data?.job_id) {
+  window.dispatchEvent(
+    new CustomEvent('aivo:cartoon:job_created', {
+      detail: {
+        app: 'cartoon',
+        mode: 'studio_export',
+        job_id: String(data.job_id || ''),
+        prompt: payload?.text?.title || payload?.text?.description || 'studio export',
+        createdAt: Date.now(),
+        meta: {
+          app: 'cartoon',
+          mode: 'studio_export',
+          provider: 'studio',
+          prompt: payload?.text?.title || payload?.text?.description || 'studio export',
+          scene_count: Number(payload?.export?.sceneCount || 0),
+          total_duration: Number(payload?.export?.totalDuration || 0),
+          aspect_ratio: String(payload?.export?.format || '16:9')
+        }
+      }
+    })
+  );
+
   startedPolling = true;
   pollStudioExportJob(String(data.job_id), button, originalText, 0);
   return;
