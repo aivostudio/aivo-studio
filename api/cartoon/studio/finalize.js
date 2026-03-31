@@ -277,8 +277,34 @@ async function runFfmpegConcat(listPath, outputPath) {
       "0",
       "-i",
       listPath,
-      "-c",
-      "copy",
+
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0?",
+
+      "-vsync",
+      "vfr",
+      "-pix_fmt",
+      "yuv420p",
+
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "18",
+
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-ac",
+      "2",
+
+      "-movflags",
+      "+faststart",
+
       outputPath,
     ];
 
