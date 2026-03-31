@@ -1386,6 +1386,21 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
         if (rootState?.voiceFile && String(rootState?.voiceFileUploadStatus || '') !== 'ready') {
           throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
         }
+        if (rootState?.logoFileUploadPromise) {
+  button.disabled = true;
+  button.textContent = 'Logo yükleniyor...';
+  button.classList.add('is-loading');
+
+  try {
+    await rootState.logoFileUploadPromise;
+  } catch {
+    throw new Error(rootState?.logoFileUploadError || 'studio_logo_upload_failed');
+  }
+}
+
+if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 'ready') {
+  throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
+}
 
         button.disabled = true;
         button.textContent = 'Çıktı hazırlanıyor...';
