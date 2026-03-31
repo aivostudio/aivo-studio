@@ -1189,21 +1189,25 @@ if (data?.job_id) {
     studioState.format = String(savedState?.format || '16:9');
     studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
 
-    ensureStudioPreviewModal(studioRoot);
-    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+   ensureStudioPreviewModal(studioRoot);
+renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
-  bindStudioVoiceUpload(
+bindStudioVideoUpload(
+  studioState,
+  studioRoot,
+  studioSceneList,
+  studioSceneTemplate
+);
+
+bindStudioVoiceUpload(
   studioState,
   studioRoot
 );
-     bindStudioVoiceUpload(
+
+bindStudioFormatPills(
   studioState,
   studioRoot
 );
-    bindStudioFormatPills(
-      studioState,
-      studioRoot
-    );
 
     bindStudioExportPayloadDebug(
       studioState,
