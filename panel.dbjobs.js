@@ -212,7 +212,17 @@
       return tb - ta;
     });
   }
+function hasRenderableOutput(job){
+  const outs = Array.isArray(job && job.outputs) ? job.outputs : [];
+  if (!outs.length) return false;
 
+  return outs.some(o => {
+    const url = normalizeUrl(
+      (o && (o.archive_url || o.archiveUrl || o.url)) || ""
+    );
+    return !!url;
+  });
+}
   async function fetchList(appKey){
     const url = `/api/jobs/list?app=${encodeURIComponent(appKey)}`;
     const res = await fetch(url, { credentials: "include" });
@@ -330,7 +340,7 @@
         const list = await fetchList(state.app);
 
         // 1) strict job filter (prevents cross-app list/render bugs)
-        let final = list;
+ let final = list.filter(hasRenderableOutput);
         if(state.acceptJob){
           final = final.filter(state.acceptJob);
         }
