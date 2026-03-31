@@ -703,13 +703,14 @@ function bindStudioVoiceUpload(rootState, studioRoot) {
           'select[name="hazirMuzik"]'
         ], ''),
 
-        voiceFile: getFileMeta(studioRoot, [
-          '#cartoonVoiceFile',
-          '#studioVoiceFile',
-          '[data-studio-voice-upload]',
-          'input[name="voiceFile"]',
-          'input[name="kendiSesin"]'
-        ]),
+      voiceFile: {
+  hasFile: !!rootState?.voiceFile,
+  name: String(rootState?.voiceFileName || ''),
+  type: String(rootState?.voiceFile?.type || ''),
+  size: Number(rootState?.voiceFile?.size || 0),
+  url: String(rootState?.voiceFileUrl || ''),
+  uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
+},
 
         mode: getValue(studioRoot, [
           '#cartoonAudioMode',
