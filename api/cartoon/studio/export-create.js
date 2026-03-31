@@ -114,11 +114,13 @@ export default async function handler(req, res) {
     uploadStatus: safeText(audioBlock?.voiceFile?.uploadStatus)
   };
 
-  const logoFile = {
+   const logoFile = {
     hasFile: !!brandingBlock?.logoFile?.hasFile,
     name: safeText(brandingBlock?.logoFile?.name),
     type: safeText(brandingBlock?.logoFile?.type),
-    size: safeNumber(brandingBlock?.logoFile?.size, 0)
+    size: safeNumber(brandingBlock?.logoFile?.size, 0),
+    url: safeText(brandingBlock?.logoFile?.url),
+    uploadStatus: safeText(brandingBlock?.logoFile?.uploadStatus)
   };
 
   const watermarkMode = safeText(brandingBlock?.watermarkMode);
