@@ -459,7 +459,87 @@
 
     return publicUrl;
   }
+ function getStudioLogoExtension(fileName) {
+  const name = String(fileName || '').toLowerCase().trim();
+  const match = name.match(/\.([a-z0-9]+)$/i);
+  return match ? match[1] : '';
+}
 
+function resolveStudioLogoContentType(file) {
+  const rawType = String(file?.type || '').toLowerCase().trim();
+  const ext = getStudioLogoExtension(file?.name || '');
+
+  const allowedTypes = new Set([
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/webp',
+    'image/svg+xml'
+  ]);
+
+  if (allowedTypes.has(rawType)) {
+    if (rawType === 'image/jpg') return 'image/jpeg';
+    return rawType;
+  }
+
+  if (ext === 'png') return 'image/png';
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'svg') return 'image/svg+xml';
+
+  return 'image/png';
+}
+
+async function presignStudioLogoFile(file) {
+  const safeContentType = resolveStudioLogoContentType(file);
+
+  const res = await fetch('/api/r2/presign-put', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      app: 'cartoon',
+      kind: 'studio-logo',
+      filename: file?.name || `studio-logo-${Date.now()}.png`,
+      contentType: safeContentType
+    })
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data || data.ok === false) {
+    throw new Error(data?.error || 'studio_logo_presign_failed');
+  }
+
+  return {
+    uploadUrl: data.uploadUrl || data.upload_url,
+    publicUrl: data.publicUrl || data.public_url || data.url || '',
+    contentType: safeContentType
+  };
+}
+
+async function uploadStudioLogoFileToR2(file) {
+  if (!file) throw new Error('missing_studio_logo_file');
+
+  const { uploadUrl, publicUrl, contentType } = await presignStudioLogoFile(file);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error('studio_logo_missing_upload_urls');
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': contentType || 'image/png'
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error('studio_logo_r2_put_failed');
+  }
+
+  return publicUrl;
+}
   function clearStudioVoiceFile(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
       '#cartoonVoiceFile',
