@@ -1118,13 +1118,14 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
           uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
         },
 
-        mode: getValue(studioRoot, [
-          '#cartoonAudioMode',
-          '#studioAudioMode',
-          '[data-studio-audio-mode]',
-          'select[name="audioMode"]',
-          'select[name="ses"]'
-        ], ''),
+       mode: getValue(studioRoot, [
+  '[data-studio-voice-enabled]',
+  '#cartoonAudioMode',
+  '#studioAudioMode',
+  '[data-studio-audio-mode]',
+  'select[name="audioMode"]',
+  'select[name="ses"]'
+], 'off'),
 
         musicLevel: getValue(studioRoot, [
           '#cartoonMusicLevel',
