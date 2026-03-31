@@ -123,8 +123,9 @@ export default async function handler(req, res) {
     uploadStatus: safeText(brandingBlock?.logoFile?.uploadStatus)
   };
 
-  const watermarkMode = safeText(brandingBlock?.watermarkMode);
-
+ const watermarkMode = safeText(brandingBlock?.watermarkMode);
+const logoPosition = safeText(brandingBlock?.logoPosition || "bottom-right");
+const logoPos = safeText(brandingBlock?.logoPos || "br");
   const customCoverFile = {
     hasFile: !!coverBlock?.customCoverFile?.hasFile,
     name: safeText(coverBlock?.customCoverFile?.name),
@@ -165,9 +166,11 @@ export default async function handler(req, res) {
       audioMode,
       musicLevel,
       voiceFile,
-      logoFile,
-      watermarkMode,
-      videoFrame,
+     logoFile,
+     watermarkMode,
+     logoPosition,
+     logo_pos: logoPos,
+     videoFrame,
       customCoverFile,
       summary: {
         sceneCount: safeNumber(summaryBlock?.sceneCount, sceneCount),
