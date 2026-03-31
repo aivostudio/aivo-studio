@@ -338,6 +338,7 @@ rootState.scenes.forEach((scene, index) => {
   const previewBtn = fragment.querySelector('[data-scene-preview]');
   const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
   const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
+  const editBtn = fragment.querySelector('[data-scene-edit]');
   const removeBtn = fragment.querySelector('[data-scene-remove]');
 
   if (row) {
@@ -384,6 +385,26 @@ rootState.scenes.forEach((scene, index) => {
 
     moveDownBtn.addEventListener('click', () => {
       moveScene(rootState.scenes, index, index + 1);
+      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+    });
+  }
+
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      const nextTitle = window.prompt(
+        'Yeni sahne başlığını yaz:',
+        String(scene.title || '')
+      );
+
+      if (nextTitle === null) return;
+
+      const cleaned = String(nextTitle || '').trim();
+      if (!cleaned) {
+        alert('Sahne başlığı boş olamaz.');
+        return;
+      }
+
+      scene.title = cleaned;
       renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
     });
   }
