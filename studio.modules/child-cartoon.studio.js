@@ -562,6 +562,187 @@ async function uploadStudioLogoFileToR2(file) {
 
     updateStudioVoiceUploadStatusUI(rootState, studioRoot);
   }
+  function clearStudioLogoFile(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonLogoFile',
+    '#studioLogoFile',
+    '[data-studio-logo-upload]',
+    'input[name="logoFile"]',
+    'input[name="logo"]'
+  ]);
+
+  rootState.logoFile = null;
+  rootState.logoFileName = '';
+  rootState.logoFileUrl = '';
+  rootState.logoFileUploadPromise = null;
+  rootState.logoFileUploadStatus = 'idle';
+  rootState.logoFileUploadError = '';
+
+  if (input) {
+    input.value = '';
+  }
+
+  updateStudioLogoUploadStatusUI(rootState, studioRoot);
+}
+
+function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonLogoFile',
+    '#studioLogoFile',
+    '[data-studio-logo-upload]',
+    'input[name="logoFile"]',
+    'input[name="logo"]'
+  ]);
+
+  if (!input) return null;
+
+  const row = input.closest('.cartoon-upload-row') || input.parentElement;
+  if (!row) return null;
+
+  let clearBtn = row.querySelector('[data-studio-logo-upload-clear]');
+
+  if (!clearBtn) {
+    clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.setAttribute('data-studio-logo-upload-clear', '');
+    clearBtn.setAttribute('aria-label', 'Yüklenen logoyu kaldır');
+    clearBtn.title = 'Logoyu kaldır';
+    clearBtn.textContent = '×';
+    clearBtn.style.marginLeft = '8px';
+    clearBtn.style.width = '22px';
+    clearBtn.style.height = '22px';
+    clearBtn.style.borderRadius = '999px';
+    clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
+    clearBtn.style.background = 'rgba(255,255,255,.08)';
+    clearBtn.style.color = '#fff';
+    clearBtn.style.cursor = 'pointer';
+    clearBtn.style.display = 'none';
+    clearBtn.style.verticalAlign = 'middle';
+    row.appendChild(clearBtn);
+  }
+
+  if (clearBtn.dataset.bound === '1') {
+    return clearBtn;
+  }
+
+  clearBtn.dataset.bound = '1';
+  clearBtn.type = 'button';
+
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    clearStudioLogoFile(rootState, studioRoot);
+  });
+
+  return clearBtn;
+}
+
+function updateStudioLogoUploadStatusUI(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonLogoFile',
+    '#studioLogoFile',
+    '[data-studio-logo-upload]',
+    'input[name="logoFile"]',
+    'input[name="logo"]'
+  ]);
+
+  if (!input) return;
+
+  const row = input.closest('.cartoon-upload-row') || input.parentElement;
+  if (!row) return;
+
+  const textEl =
+    row.querySelector('[data-studio-logo-upload-text]') ||
+    row.querySelector('.cartoon-upload-text');
+
+  const clearBtn = ensureStudioLogoUploadClearButton(rootState, studioRoot);
+
+  if (!textEl) return;
+
+  const status = String(rootState?.logoFileUploadStatus || 'idle');
+  const fileName = String(rootState?.logoFileName || '').trim();
+
+  if (!fileName) {
+    textEl.textContent = 'Dosya seçilmedi';
+    if (clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+
+  if (status === 'uploading') {
+    textEl.textContent = `${fileName} · Yükleniyor...`;
+    if (clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+
+  if (status === 'ready') {
+    textEl.textContent = `${fileName} · Hazır ✓`;
+    if (clearBtn) {
+      clearBtn.style.display = 'inline-grid';
+      clearBtn.style.placeItems = 'center';
+    }
+    return;
+  }
+
+  if (status === 'error') {
+    textEl.textContent = `${fileName} · Yükleme hatası`;
+    if (clearBtn) {
+      clearBtn.style.display = 'inline-grid';
+      clearBtn.style.placeItems = 'center';
+    }
+    return;
+  }
+
+  textEl.textContent = fileName;
+  if (clearBtn) clearBtn.style.display = 'none';
+}
+
+function bindStudioLogoUpload(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonLogoFile',
+    '#studioLogoFile',
+    '[data-studio-logo-upload]',
+    'input[name="logoFile"]',
+    'input[name="logo"]'
+  ]);
+
+  if (!input) return;
+  if (input.getAttribute('data-studio-logo-bound') === 'true') return;
+
+  input.setAttribute('data-studio-logo-bound', 'true');
+
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0] || null;
+
+    rootState.logoFile = file;
+    rootState.logoFileName = file ? String(file.name || '') : '';
+    rootState.logoFileUrl = '';
+    rootState.logoFileUploadPromise = null;
+    rootState.logoFileUploadError = '';
+    rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
+    updateStudioLogoUploadStatusUI(rootState, studioRoot);
+
+    if (!file) return;
+
+    rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
+      .then((publicUrl) => {
+        rootState.logoFileUrl = String(publicUrl || '').trim();
+        rootState.logoFileUploadStatus = 'ready';
+        rootState.logoFileUploadError = '';
+        updateStudioLogoUploadStatusUI(rootState, studioRoot);
+        console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
+        return rootState.logoFileUrl;
+      })
+      .catch((err) => {
+        rootState.logoFileUrl = '';
+        rootState.logoFileUploadStatus = 'error';
+        rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
+        updateStudioLogoUploadStatusUI(rootState, studioRoot);
+        console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
+        alert(rootState.logoFileUploadError);
+        throw err;
+      });
+  });
+}
 function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
   const input = qsAny(studioRoot, [
     '#cartoonVoiceFile',
@@ -1441,16 +1622,20 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
       studioSceneList,
       studioSceneTemplate
     );
+bindStudioVoiceUpload(
+  studioState,
+  studioRoot
+);
 
-    bindStudioVoiceUpload(
-      studioState,
-      studioRoot
-    );
+bindStudioLogoUpload(
+  studioState,
+  studioRoot
+);
 
-    bindStudioFormatPills(
-      studioState,
-      studioRoot
-    );
+bindStudioFormatPills(
+  studioState,
+  studioRoot
+);
 
     bindStudioExportPayloadDebug(
       studioState,
