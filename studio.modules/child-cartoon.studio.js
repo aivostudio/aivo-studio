@@ -21,14 +21,20 @@
     return `${minutes} dk ${seconds} sn`;
   }
 
-  function createStudioState() {
-    return {
-      format: '16:9',
-      scenes: [],
-      previewUrl: '',
-      previewTitle: ''
-    };
-  }
+function createStudioState() {
+  return {
+    format: '16:9',
+    scenes: [],
+    previewUrl: '',
+    previewTitle: '',
+    voiceFile: null,
+    voiceFileName: '',
+    voiceFileUrl: '',
+    voiceFileUploadPromise: null,
+    voiceFileUploadStatus: 'idle',
+    voiceFileUploadError: ''
+  };
+}
 
   const STUDIO_STORAGE_KEY = 'aivo_cartoon_studio_scenes_v1';
   const STUDIO_FORMAT_STORAGE_KEY = 'aivo_cartoon_studio_format_v1';
