@@ -30,141 +30,198 @@
     };
   }
 
-function ensureStudioPreviewModal(studioRoot) {
-  let modal = document.querySelector('[data-studio-preview-modal]');
+  const STUDIO_STORAGE_KEY = 'aivo_cartoon_studio_scenes_v1';
+  const STUDIO_FORMAT_STORAGE_KEY = 'aivo_cartoon_studio_format_v1';
 
-  if (modal) return modal;
+  function saveStudioState(rootState) {
+    try {
+      const safeScenes = Array.isArray(rootState?.scenes)
+        ? rootState.scenes.map((scene) => ({
+            id: String(scene?.id || ''),
+            title: String(scene?.title || 'Sahne'),
+            duration: Number(scene?.duration) || 0,
+            included: !!scene?.included,
+            videoUrl: String(scene?.videoUrl || ''),
+            fileName: String(scene?.fileName || '')
+          }))
+        : [];
 
-  modal = document.createElement('div');
-  modal.setAttribute('data-studio-preview-modal', '');
-  modal.hidden = true;
-  modal.innerHTML = `
-    <div data-studio-preview-backdrop
-         style="
-           position:fixed;
-           inset:0;
-           background:rgba(0,0,0,.78);
-           z-index:999999;
-           display:flex;
-           align-items:center;
-           justify-content:center;
-           padding:24px;
-         ">
-      <div data-studio-preview-dialog
-           style="
-             position:relative;
-             width:min(1100px, 92vw);
-             max-height:90vh;
-             border-radius:22px;
-             overflow:hidden;
-             background:#05060f;
-             border:1px solid rgba(255,255,255,.12);
-             box-shadow:0 30px 80px rgba(0,0,0,.55);
-           ">
-        <button type="button"
-                data-studio-preview-close
-                aria-label="Önizlemeyi kapat"
-                title="Kapat"
-                style="
-                  position:absolute;
-                  top:14px;
-                  right:14px;
-                  width:42px;
-                  height:42px;
-                  border:none;
-                  border-radius:999px;
-                  background:rgba(255,255,255,.14);
-                  color:#fff;
-                  font-size:24px;
-                  line-height:1;
-                  cursor:pointer;
-                  z-index:2;
-                ">×</button>
-
-        <div style="padding:18px 18px 10px 18px;">
-          <div data-studio-preview-title
-               style="
-                 color:#fff;
-                 font-weight:800;
-                 font-size:18px;
-                 line-height:1.3;
-                 padding-right:56px;
-               "></div>
-        </div>
-
-        <div style="padding:0 18px 18px 18px;">
-          <video data-studio-preview-video
-                 controls
-                 playsinline
-                 preload="metadata"
-                 style="
-                   width:100%;
-                   max-height:72vh;
-                   display:block;
-                   background:#000;
-                   border-radius:16px;
-                 "></video>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  const backdrop = modal.querySelector('[data-studio-preview-backdrop]');
-  const dialog = modal.querySelector('[data-studio-preview-dialog]');
-  const closeBtn = modal.querySelector('[data-studio-preview-close]');
-  const video = modal.querySelector('[data-studio-preview-video]');
-
-  function closeStudioPreview() {
-    modal.hidden = true;
-
-    if (video) {
-      video.pause();
-      video.removeAttribute('src');
-      video.load();
+      localStorage.setItem(STUDIO_STORAGE_KEY, JSON.stringify(safeScenes));
+      localStorage.setItem(
+        STUDIO_FORMAT_STORAGE_KEY,
+        String(rootState?.format || '16:9')
+      );
+    } catch (err) {
+      console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
     }
   }
 
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeStudioPreview);
+  function loadStudioState() {
+    try {
+      const rawScenes = localStorage.getItem(STUDIO_STORAGE_KEY);
+      const rawFormat = localStorage.getItem(STUDIO_FORMAT_STORAGE_KEY);
+
+      const parsedScenes = rawScenes ? JSON.parse(rawScenes) : [];
+      const scenes = Array.isArray(parsedScenes)
+        ? parsedScenes.map((scene, index) => ({
+            id: String(scene?.id || `saved-${Date.now()}-${index + 1}`),
+            title: String(scene?.title || 'Sahne'),
+            duration: Number(scene?.duration) || 0,
+            included: !!scene?.included,
+            videoUrl: String(scene?.videoUrl || ''),
+            fileName: String(scene?.fileName || '')
+          }))
+        : [];
+
+      return {
+        format: String(rawFormat || '16:9'),
+        scenes
+      };
+    } catch (err) {
+      console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
+      return {
+        format: '16:9',
+        scenes: []
+      };
+    }
   }
 
-  if (backdrop) {
-    backdrop.addEventListener('click', (event) => {
-      if (!dialog) return;
-      if (!dialog.contains(event.target)) {
+  function ensureStudioPreviewModal(studioRoot) {
+    let modal = document.querySelector('[data-studio-preview-modal]');
+
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.setAttribute('data-studio-preview-modal', '');
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div data-studio-preview-backdrop
+           style="
+             position:fixed;
+             inset:0;
+             background:rgba(0,0,0,.78);
+             z-index:999999;
+             display:flex;
+             align-items:center;
+             justify-content:center;
+             padding:24px;
+           ">
+        <div data-studio-preview-dialog
+             style="
+               position:relative;
+               width:min(1100px, 92vw);
+               max-height:90vh;
+               border-radius:22px;
+               overflow:hidden;
+               background:#05060f;
+               border:1px solid rgba(255,255,255,.12);
+               box-shadow:0 30px 80px rgba(0,0,0,.55);
+             ">
+          <button type="button"
+                  data-studio-preview-close
+                  aria-label="Önizlemeyi kapat"
+                  title="Kapat"
+                  style="
+                    position:absolute;
+                    top:14px;
+                    right:14px;
+                    width:42px;
+                    height:42px;
+                    border:none;
+                    border-radius:999px;
+                    background:rgba(255,255,255,.14);
+                    color:#fff;
+                    font-size:24px;
+                    line-height:1;
+                    cursor:pointer;
+                    z-index:2;
+                  ">×</button>
+
+          <div style="padding:18px 18px 10px 18px;">
+            <div data-studio-preview-title
+                 style="
+                   color:#fff;
+                   font-weight:800;
+                   font-size:18px;
+                   line-height:1.3;
+                   padding-right:56px;
+                 "></div>
+          </div>
+
+          <div style="padding:0 18px 18px 18px;">
+            <video data-studio-preview-video
+                   controls
+                   playsinline
+                   preload="metadata"
+                   style="
+                     width:100%;
+                     max-height:72vh;
+                     display:block;
+                     background:#000;
+                     border-radius:16px;
+                   "></video>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const backdrop = modal.querySelector('[data-studio-preview-backdrop]');
+    const dialog = modal.querySelector('[data-studio-preview-dialog]');
+    const closeBtn = modal.querySelector('[data-studio-preview-close]');
+    const video = modal.querySelector('[data-studio-preview-video]');
+
+    function closeStudioPreview() {
+      modal.hidden = true;
+
+      if (video) {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+      }
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeStudioPreview);
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', (event) => {
+        if (!dialog) return;
+        if (!dialog.contains(event.target)) {
+          closeStudioPreview();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modal.hidden) {
         closeStudioPreview();
       }
     });
+
+    modal.__openStudioPreview = ({ url, title }) => {
+      const titleEl = modal.querySelector('[data-studio-preview-title]');
+      const videoEl = modal.querySelector('[data-studio-preview-video]');
+
+      if (!videoEl) return;
+
+      if (titleEl) {
+        titleEl.textContent = String(title || 'Video Önizleme');
+      }
+
+      modal.hidden = false;
+      videoEl.src = String(url || '');
+      videoEl.load();
+      videoEl.play().catch(() => {});
+    };
+
+    modal.__closeStudioPreview = closeStudioPreview;
+
+    return modal;
   }
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !modal.hidden) {
-      closeStudioPreview();
-    }
-  });
-
-  modal.__openStudioPreview = ({ url, title }) => {
-    const titleEl = modal.querySelector('[data-studio-preview-title]');
-    const videoEl = modal.querySelector('[data-studio-preview-video]');
-
-    if (!videoEl) return;
-
-    if (titleEl) {
-      titleEl.textContent = String(title || 'Video Önizleme');
-    }
-
-    modal.hidden = false;
-    videoEl.src = String(url || '');
-    videoEl.load();
-    videoEl.play().catch(() => {});
-  };
-
-  modal.__closeStudioPreview = closeStudioPreview;
-
-  return modal;
-}
   function openStudioPreview(studioRoot, scene) {
     if (!scene?.videoUrl) {
       alert(`Bu sahne için henüz video yok: ${scene?.title || 'Sahne'}`);
@@ -212,139 +269,151 @@ function ensureStudioPreviewModal(studioRoot) {
       video.src = objectUrl;
     });
   }
+
   async function presignStudioVideo(file) {
-  const res = await fetch('/api/r2/presign-put', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      app: 'cartoon',
-      kind: 'studio-video',
-      filename: file?.name || `studio-video-${Date.now()}.mp4`,
-      contentType: file?.type || 'application/octet-stream'
-    })
-  });
-
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || 'studio_video_presign_failed');
-  }
-
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || ''
-  };
-}
-
-async function uploadStudioVideoToR2(file) {
-  if (!file) throw new Error('missing_studio_video_file');
-
-  const { uploadUrl, publicUrl } = await presignStudioVideo(file);
-
-  if (!uploadUrl || !publicUrl) {
-    throw new Error('studio_video_missing_upload_urls');
-  }
-
-  const put = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': file.type || 'application/octet-stream'
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error('studio_video_r2_put_failed');
-  }
-
-  return publicUrl;
-}
-async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
-  const files = Array.from(fileList || []).filter((file) => {
-    return file && String(file.type || '').toLowerCase().startsWith('video/');
-  });
-
-  if (!files.length) return;
-
-  const nextScenes = [];
-
-  for (let i = 0; i < files.length; i += 1) {
-    const file = files[i];
-    const duration = await getStudioVideoDuration(file);
-    const publicUrl = await uploadStudioVideoToR2(file);
-    const fileName = String(file.name || `video-${Date.now()}-${i + 1}`).trim();
-    const title = fileName.replace(/\.[^.]+$/, '');
-
-    nextScenes.push({
-      id: `upload-${Date.now()}-${i + 1}`,
-      title,
-      duration,
-      included: true,
-      videoUrl: publicUrl,
-      fileName
+    const res = await fetch('/api/r2/presign-put', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app: 'cartoon',
+        kind: 'studio-video',
+        filename: file?.name || `studio-video-${Date.now()}.mp4`,
+        contentType: file?.type || 'application/octet-stream'
+      })
     });
-  }
 
-  rootState.scenes.push(...nextScenes);
-  renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-}
+    const data = await res.json().catch(() => null);
 
-function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
-  const input = studioRoot.querySelector('[data-studio-video-upload]');
-  const text = studioRoot.querySelector('[data-studio-video-upload-text]');
-
-  if (!input) return;
-  if (input.getAttribute('data-studio-upload-bound') === 'true') return;
-
-  input.setAttribute('data-studio-upload-bound', 'true');
-
-  input.addEventListener('change', async () => {
-    const files = Array.from(input.files || []);
-    const count = files.length;
-
-    if (text) {
-      text.textContent = count
-        ? `${count} video seçildi`
-        : 'Henüz video seçilmedi';
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || 'studio_video_presign_failed');
     }
 
-    await appendUploadedStudioVideos(
-      rootState,
-      studioRoot,
-      sceneList,
-      sceneTemplate,
-      files
-    );
-  });
-}
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ''
+    };
+  }
 
-function bindStudioFormatPills(rootState, studioRoot) {
-  const pills = Array.from(studioRoot.querySelectorAll('[data-studio-format]'));
-  if (!pills.length) return;
-  if (studioRoot.getAttribute('data-studio-format-bound') === 'true') return;
+  async function uploadStudioVideoToR2(file) {
+    if (!file) throw new Error('missing_studio_video_file');
 
-  studioRoot.setAttribute('data-studio-format-bound', 'true');
+    const { uploadUrl, publicUrl } = await presignStudioVideo(file);
 
-  function syncActiveFormat() {
-    pills.forEach((btn) => {
-      const value = String(btn.getAttribute('data-studio-format') || '');
-      const isActive = value === String(rootState.format || '16:9');
+    if (!uploadUrl || !publicUrl) {
+      throw new Error('studio_video_missing_upload_urls');
+    }
 
-      btn.classList.toggle('is-active', isActive);
-      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    const put = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type || 'application/octet-stream'
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error('studio_video_r2_put_failed');
+    }
+
+    return publicUrl;
+  }
+
+  async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
+    const files = Array.from(fileList || []).filter((file) => {
+      return file && String(file.type || '').toLowerCase().startsWith('video/');
+    });
+
+    if (!files.length) return;
+
+    const nextScenes = [];
+
+    for (let i = 0; i < files.length; i += 1) {
+      const file = files[i];
+      const duration = await getStudioVideoDuration(file);
+      const publicUrl = await uploadStudioVideoToR2(file);
+      const fileName = String(file.name || `video-${Date.now()}-${i + 1}`).trim();
+      const title = fileName.replace(/\.[^.]+$/, '');
+
+      nextScenes.push({
+        id: `upload-${Date.now()}-${i + 1}`,
+        title,
+        duration,
+        included: true,
+        videoUrl: publicUrl,
+        fileName
+      });
+    }
+
+    rootState.scenes.push(...nextScenes);
+    saveStudioState(rootState);
+    renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+  }
+
+  function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
+    const input = studioRoot.querySelector('[data-studio-video-upload]');
+    const text = studioRoot.querySelector('[data-studio-video-upload-text]');
+
+    if (!input) return;
+    if (input.getAttribute('data-studio-upload-bound') === 'true') return;
+
+    input.setAttribute('data-studio-upload-bound', 'true');
+
+    input.addEventListener('change', async () => {
+      const files = Array.from(input.files || []);
+      const count = files.length;
+
+      if (text) {
+        text.textContent = count
+          ? `${count} video seçildi`
+          : 'Henüz video seçilmedi';
+      }
+
+      try {
+        await appendUploadedStudioVideos(
+          rootState,
+          studioRoot,
+          sceneList,
+          sceneTemplate,
+          files
+        );
+      } catch (err) {
+        console.error('[CARTOON][STUDIO_UPLOAD_ERROR]', err);
+        alert(String(err?.message || err || 'studio_video_upload_failed'));
+      } finally {
+        input.value = '';
+      }
     });
   }
 
-  pills.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      rootState.format = String(btn.getAttribute('data-studio-format') || '16:9');
-      syncActiveFormat();
-      updateStudioSummary(rootState, studioRoot);
-    });
-  });
+  function bindStudioFormatPills(rootState, studioRoot) {
+    const pills = Array.from(studioRoot.querySelectorAll('[data-studio-format]'));
+    if (!pills.length) return;
+    if (studioRoot.getAttribute('data-studio-format-bound') === 'true') return;
 
-  syncActiveFormat();
-}
+    studioRoot.setAttribute('data-studio-format-bound', 'true');
+
+    function syncActiveFormat() {
+      pills.forEach((btn) => {
+        const value = String(btn.getAttribute('data-studio-format') || '');
+        const isActive = value === String(rootState.format || '16:9');
+
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    pills.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        rootState.format = String(btn.getAttribute('data-studio-format') || '16:9');
+        saveStudioState(rootState);
+        syncActiveFormat();
+        updateStudioSummary(rootState, studioRoot);
+      });
+    });
+
+    syncActiveFormat();
+  }
+
   function moveScene(array, fromIndex, toIndex) {
     if (fromIndex === toIndex) return;
     if (fromIndex < 0 || toIndex < 0) return;
@@ -402,100 +471,106 @@ function bindStudioFormatPills(rootState, studioRoot) {
       updateStudioSummary(rootState, studioRoot);
       return;
     }
-rootState.scenes.forEach((scene, index) => {
-  const fragment = sceneTemplate.content.cloneNode(true);
-  const row = fragment.querySelector('[data-studio-scene-row]');
-  const includeInput = fragment.querySelector('[data-scene-include]');
-  const titleEl = fragment.querySelector('[data-scene-title]');
-  const durationEl = fragment.querySelector('[data-scene-duration]');
-  const previewBtn = fragment.querySelector('[data-scene-preview]');
-  const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
-  const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
-  const editBtn = fragment.querySelector('[data-scene-edit]');
-  const removeBtn = fragment.querySelector('[data-scene-remove]');
 
-  if (row) {
-    row.setAttribute('data-scene-id', scene.id);
-  }
+    rootState.scenes.forEach((scene, index) => {
+      const fragment = sceneTemplate.content.cloneNode(true);
+      const row = fragment.querySelector('[data-studio-scene-row]');
+      const includeInput = fragment.querySelector('[data-scene-include]');
+      const titleEl = fragment.querySelector('[data-scene-title]');
+      const durationEl = fragment.querySelector('[data-scene-duration]');
+      const previewBtn = fragment.querySelector('[data-scene-preview]');
+      const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
+      const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
+      const editBtn = fragment.querySelector('[data-scene-edit]');
+      const removeBtn = fragment.querySelector('[data-scene-remove]');
 
-  if (includeInput) {
-    includeInput.checked = !!scene.included;
-    includeInput.addEventListener('change', () => {
-      scene.included = !!includeInput.checked;
-      updateStudioSummary(rootState, studioRoot);
-    });
-  }
-
-  if (titleEl) {
-    titleEl.textContent = scene.title || 'Sahne';
-  }
-
-  if (durationEl) {
-    durationEl.textContent = formatSceneDuration(scene.duration);
-  }
-
-  if (previewBtn) {
-    previewBtn.addEventListener('click', () => {
-      openStudioPreview(studioRoot, scene);
-    });
-  }
-
-  if (moveUpBtn) {
-    if (index === 0) {
-      moveUpBtn.disabled = true;
-    }
-
-    moveUpBtn.addEventListener('click', () => {
-      moveScene(rootState.scenes, index, index - 1);
-      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-    });
-  }
-
-  if (moveDownBtn) {
-    if (index === rootState.scenes.length - 1) {
-      moveDownBtn.disabled = true;
-    }
-
-    moveDownBtn.addEventListener('click', () => {
-      moveScene(rootState.scenes, index, index + 1);
-      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-    });
-  }
-
-  if (editBtn) {
-    editBtn.addEventListener('click', () => {
-      const nextTitle = window.prompt(
-        'Yeni sahne başlığını yaz:',
-        String(scene.title || '')
-      );
-
-      if (nextTitle === null) return;
-
-      const cleaned = String(nextTitle || '').trim();
-      if (!cleaned) {
-        alert('Sahne başlığı boş olamaz.');
-        return;
+      if (row) {
+        row.setAttribute('data-scene-id', scene.id);
       }
 
-      scene.title = cleaned;
-      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+      if (includeInput) {
+        includeInput.checked = !!scene.included;
+        includeInput.addEventListener('change', () => {
+          scene.included = !!includeInput.checked;
+          saveStudioState(rootState);
+          updateStudioSummary(rootState, studioRoot);
+        });
+      }
+
+      if (titleEl) {
+        titleEl.textContent = scene.title || 'Sahne';
+      }
+
+      if (durationEl) {
+        durationEl.textContent = formatSceneDuration(scene.duration);
+      }
+
+      if (previewBtn) {
+        previewBtn.addEventListener('click', () => {
+          openStudioPreview(studioRoot, scene);
+        });
+      }
+
+      if (moveUpBtn) {
+        if (index === 0) {
+          moveUpBtn.disabled = true;
+        }
+
+        moveUpBtn.addEventListener('click', () => {
+          moveScene(rootState.scenes, index, index - 1);
+          saveStudioState(rootState);
+          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+        });
+      }
+
+      if (moveDownBtn) {
+        if (index === rootState.scenes.length - 1) {
+          moveDownBtn.disabled = true;
+        }
+
+        moveDownBtn.addEventListener('click', () => {
+          moveScene(rootState.scenes, index, index + 1);
+          saveStudioState(rootState);
+          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+        });
+      }
+
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          const nextTitle = window.prompt(
+            'Yeni sahne başlığını yaz:',
+            String(scene.title || '')
+          );
+
+          if (nextTitle === null) return;
+
+          const cleaned = String(nextTitle || '').trim();
+          if (!cleaned) {
+            alert('Sahne başlığı boş olamaz.');
+            return;
+          }
+
+          scene.title = cleaned;
+          saveStudioState(rootState);
+          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+        });
+      }
+
+      if (removeBtn) {
+        removeBtn.addEventListener('click', () => {
+          const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
+          if (!ok) return;
+
+          rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
+          saveStudioState(rootState);
+          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+        });
+      }
+
+      sceneList.appendChild(fragment);
     });
-  }
 
-  if (removeBtn) {
-    removeBtn.addEventListener('click', () => {
-      const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
-      if (!ok) return;
-
-      rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
-      renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-    });
-  }
-
-  sceneList.appendChild(fragment);
-});
-
-updateStudioSummary(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
   }
 
   function initCartoonStudio() {
@@ -523,21 +598,25 @@ updateStudioSummary(rootState, studioRoot);
     }
 
     const studioState = createStudioState();
+    const savedState = loadStudioState();
+
+    studioState.format = String(savedState?.format || '16:9');
+    studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
 
     ensureStudioPreviewModal(studioRoot);
     renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
-   bindStudioVideoUpload(
-  studioState,
-  studioRoot,
-  studioSceneList,
-  studioSceneTemplate
-);
+    bindStudioVideoUpload(
+      studioState,
+      studioRoot,
+      studioSceneList,
+      studioSceneTemplate
+    );
 
-bindStudioFormatPills(
-  studioState,
-  studioRoot
-);
+    bindStudioFormatPills(
+      studioState,
+      studioRoot
+    );
 
     studioRoot.setAttribute('data-studio-bound', 'true');
     window.__CARTOON_STUDIO__ = studioState;
