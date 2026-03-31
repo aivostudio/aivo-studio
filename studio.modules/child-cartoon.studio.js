@@ -1411,6 +1411,7 @@ if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__)
       let startedPolling = false;
 
       try {
+        window.__CARTOON_STUDIO_LOGO_DONE__ = false;
         const payload = collectCartoonStudioPayload(rootState, studioRoot);
         window.__CARTOON_STUDIO_EXPORT_PAYLOAD__ = payload;
 
