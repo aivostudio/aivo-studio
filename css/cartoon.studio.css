@@ -457,3 +457,31 @@
     min-width: 100%;
   }
 }
+/* ===== Studio / kart başlıklarını ortala ===== */
+.story-card.studio-card .story-card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.story-card.studio-card .story-card-head h4 {
+  width: 100%;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.story-card.studio-card .story-card-head p,
+.story-card.studio-card .story-card-head .story-card-helper,
+.story-card.studio-card .story-card-head .story-card-note,
+.story-card.studio-card .story-card-head small {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+
+/* Başlık altındaki form alanları düzenli kalsın */
+.story-card.studio-card .story-grid.story-grid-2 {
+  align-items: end;
+}
