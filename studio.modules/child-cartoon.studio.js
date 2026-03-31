@@ -21,20 +21,20 @@
     return `${minutes} dk ${seconds} sn`;
   }
 
-function createStudioState() {
-  return {
-    format: '16:9',
-    scenes: [],
-    previewUrl: '',
-    previewTitle: '',
-    voiceFile: null,
-    voiceFileName: '',
-    voiceFileUrl: '',
-    voiceFileUploadPromise: null,
-    voiceFileUploadStatus: 'idle',
-    voiceFileUploadError: ''
-  };
-}
+  function createStudioState() {
+    return {
+      format: '16:9',
+      scenes: [],
+      previewUrl: '',
+      previewTitle: '',
+      voiceFile: null,
+      voiceFileName: '',
+      voiceFileUrl: '',
+      voiceFileUploadPromise: null,
+      voiceFileUploadStatus: 'idle',
+      voiceFileUploadError: ''
+    };
+  }
 
   const STUDIO_STORAGE_KEY = 'aivo_cartoon_studio_scenes_v1';
   const STUDIO_FORMAT_STORAGE_KEY = 'aivo_cartoon_studio_format_v1';
@@ -360,260 +360,273 @@ function createStudioState() {
 
     return publicUrl;
   }
-function getStudioAudioExtension(fileName) {
-  const name = String(fileName || '').toLowerCase().trim();
-  const match = name.match(/\.([a-z0-9]+)$/i);
-  return match ? match[1] : '';
-}
 
-function resolveStudioAudioContentType(file) {
-  const rawType = String(file?.type || '').toLowerCase().trim();
-  const ext = getStudioAudioExtension(file?.name || '');
-
-  const allowedTypes = new Set([
-    'audio/mpeg',
-    'audio/mp3',
-    'audio/wav',
-    'audio/x-wav',
-    'audio/wave',
-    'audio/aac',
-    'audio/mp4',
-    'audio/x-m4a',
-    'audio/ogg',
-    'audio/webm'
-  ]);
-
-  if (allowedTypes.has(rawType)) {
-    if (rawType === 'audio/mp3') return 'audio/mpeg';
-    if (rawType === 'audio/x-wav' || rawType === 'audio/wave') return 'audio/wav';
-    if (rawType === 'audio/x-m4a') return 'audio/mp4';
-    return rawType;
+  function getStudioAudioExtension(fileName) {
+    const name = String(fileName || '').toLowerCase().trim();
+    const match = name.match(/\.([a-z0-9]+)$/i);
+    return match ? match[1] : '';
   }
 
-  if (ext === 'mp3') return 'audio/mpeg';
-  if (ext === 'wav') return 'audio/wav';
-  if (ext === 'aac') return 'audio/aac';
-  if (ext === 'm4a') return 'audio/mp4';
-  if (ext === 'ogg' || ext === 'oga') return 'audio/ogg';
-  if (ext === 'webm') return 'audio/webm';
+  function resolveStudioAudioContentType(file) {
+    const rawType = String(file?.type || '').toLowerCase().trim();
+    const ext = getStudioAudioExtension(file?.name || '');
 
-  return 'audio/mpeg';
-}
+    const allowedTypes = new Set([
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/x-wav',
+      'audio/wave',
+      'audio/aac',
+      'audio/mp4',
+      'audio/x-m4a',
+      'audio/ogg',
+      'audio/webm'
+    ]);
 
-async function presignStudioVoiceFile(file) {
-  const safeContentType = resolveStudioAudioContentType(file);
+    if (allowedTypes.has(rawType)) {
+      if (rawType === 'audio/mp3') return 'audio/mpeg';
+      if (rawType === 'audio/x-wav' || rawType === 'audio/wave') return 'audio/wav';
+      if (rawType === 'audio/x-m4a') return 'audio/mp4';
+      return rawType;
+    }
 
-  const res = await fetch('/api/r2/presign-put', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      app: 'cartoon',
-      kind: 'studio-voice',
-      filename: file?.name || `studio-voice-${Date.now()}.mp3`,
+    if (ext === 'mp3') return 'audio/mpeg';
+    if (ext === 'wav') return 'audio/wav';
+    if (ext === 'aac') return 'audio/aac';
+    if (ext === 'm4a') return 'audio/mp4';
+    if (ext === 'ogg' || ext === 'oga') return 'audio/ogg';
+    if (ext === 'webm') return 'audio/webm';
+
+    return 'audio/mpeg';
+  }
+
+  async function presignStudioVoiceFile(file) {
+    const safeContentType = resolveStudioAudioContentType(file);
+
+    const res = await fetch('/api/r2/presign-put', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app: 'cartoon',
+        kind: 'studio-voice',
+        filename: file?.name || `studio-voice-${Date.now()}.mp3`,
+        contentType: safeContentType
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || 'studio_voice_presign_failed');
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || '',
       contentType: safeContentType
-    })
-  });
-
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || 'studio_voice_presign_failed');
+    };
   }
 
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || '',
-    contentType: safeContentType
-  };
-}
+  async function uploadStudioVoiceFileToR2(file) {
+    if (!file) throw new Error('missing_studio_voice_file');
 
-async function uploadStudioVoiceFileToR2(file) {
-  if (!file) throw new Error('missing_studio_voice_file');
+    const { uploadUrl, publicUrl, contentType } = await presignStudioVoiceFile(file);
 
-  const { uploadUrl, publicUrl, contentType } = await presignStudioVoiceFile(file);
+    if (!uploadUrl || !publicUrl) {
+      throw new Error('studio_voice_missing_upload_urls');
+    }
 
-  if (!uploadUrl || !publicUrl) {
-    throw new Error('studio_voice_missing_upload_urls');
+    const put = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': contentType || 'audio/mpeg'
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error('studio_voice_r2_put_failed');
+    }
+
+    return publicUrl;
   }
 
-  const put = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': contentType || 'audio/mpeg'
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error('studio_voice_r2_put_failed');
-  }
-
-  return publicUrl;
-}
-function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
-
-  if (!input) return;
-
-  const row = input.closest('.cartoon-upload-row') || input.parentElement;
-  if (!row) return;
-
-  const textEl =
-    row.querySelector('[data-studio-voice-upload-text]') ||
-    row.querySelector('.cartoon-upload-text');
   function clearStudioVoiceFile(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
+    const input = qsAny(studioRoot, [
+      '#cartoonVoiceFile',
+      '#studioVoiceFile',
+      '[data-studio-voice-upload]',
+      'input[name="voiceFile"]',
+      'input[name="kendiSesin"]'
+    ]);
 
-  rootState.voiceFile = null;
-  rootState.voiceFileName = '';
-  rootState.voiceFileUrl = '';
-  rootState.voiceFileUploadPromise = null;
-  rootState.voiceFileUploadStatus = 'idle';
-  rootState.voiceFileUploadError = '';
+    rootState.voiceFile = null;
+    rootState.voiceFileName = '';
+    rootState.voiceFileUrl = '';
+    rootState.voiceFileUploadPromise = null;
+    rootState.voiceFileUploadStatus = 'idle';
+    rootState.voiceFileUploadError = '';
 
-  if (input) {
-    input.value = '';
+    if (input) {
+      input.value = '';
+    }
+
+    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
   }
 
-  updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-}
+  function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonVoiceFile',
+      '#studioVoiceFile',
+      '[data-studio-voice-upload]',
+      'input[name="voiceFile"]',
+      'input[name="kendiSesin"]'
+    ]);
 
-function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
+    if (!input) return null;
 
-  if (!input) return null;
+    const row = input.closest('.cartoon-upload-row') || input.parentElement;
+    if (!row) return null;
 
-  const row = input.closest('.cartoon-upload-row') || input.parentElement;
-  if (!row) return null;
+    let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
 
-  let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
+    if (!clearBtn) {
+      clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.setAttribute('data-studio-voice-upload-clear', '');
+      clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
+      clearBtn.title = 'Sesi kaldır';
+      clearBtn.textContent = '×';
+      clearBtn.style.marginLeft = '8px';
+      clearBtn.style.width = '22px';
+      clearBtn.style.height = '22px';
+      clearBtn.style.borderRadius = '999px';
+      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
+      clearBtn.style.background = 'rgba(255,255,255,.08)';
+      clearBtn.style.color = '#fff';
+      clearBtn.style.cursor = 'pointer';
+      clearBtn.style.display = 'none';
+      clearBtn.style.verticalAlign = 'middle';
+      row.appendChild(clearBtn);
 
-  if (!clearBtn) {
-    clearBtn = document.createElement('button');
-    clearBtn.type = 'button';
-    clearBtn.setAttribute('data-studio-voice-upload-clear', '');
-    clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
-    clearBtn.title = 'Sesi kaldır';
-    clearBtn.textContent = '×';
-    clearBtn.style.marginLeft = '8px';
-    clearBtn.style.width = '22px';
-    clearBtn.style.height = '22px';
-    clearBtn.style.borderRadius = '999px';
-    clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-    clearBtn.style.background = 'rgba(255,255,255,.08)';
-    clearBtn.style.color = '#fff';
-    clearBtn.style.cursor = 'pointer';
-    clearBtn.style.display = 'none';
-    clearBtn.style.verticalAlign = 'middle';
-    row.appendChild(clearBtn);
+      clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        clearStudioVoiceFile(rootState, studioRoot);
+      });
+    }
 
-    clearBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearStudioVoiceFile(rootState, studioRoot);
+    return clearBtn;
+  }
+
+  function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonVoiceFile',
+      '#studioVoiceFile',
+      '[data-studio-voice-upload]',
+      'input[name="voiceFile"]',
+      'input[name="kendiSesin"]'
+    ]);
+
+    if (!input) return;
+
+    const row = input.closest('.cartoon-upload-row') || input.parentElement;
+    if (!row) return;
+
+    const textEl =
+      row.querySelector('[data-studio-voice-upload-text]') ||
+      row.querySelector('.cartoon-upload-text');
+
+    const clearBtn = ensureStudioVoiceUploadClearButton(rootState, studioRoot);
+
+    if (!textEl) return;
+
+    const status = String(rootState?.voiceFileUploadStatus || 'idle');
+    const fileName = String(rootState?.voiceFileName || '').trim();
+
+    if (!fileName) {
+      textEl.textContent = 'Dosya seçilmedi';
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+
+    if (status === 'uploading') {
+      textEl.textContent = `${fileName} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+
+    if (status === 'ready') {
+      textEl.textContent = `${fileName} · Hazır ✓`;
+      if (clearBtn) {
+        clearBtn.style.display = 'inline-grid';
+        clearBtn.style.placeItems = 'center';
+      }
+      return;
+    }
+
+    if (status === 'error') {
+      textEl.textContent = `${fileName} · Yükleme hatası`;
+      if (clearBtn) {
+        clearBtn.style.display = 'inline-grid';
+        clearBtn.style.placeItems = 'center';
+      }
+      return;
+    }
+
+    textEl.textContent = fileName;
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
+
+  function bindStudioVoiceUpload(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonVoiceFile',
+      '#studioVoiceFile',
+      '[data-studio-voice-upload]',
+      'input[name="voiceFile"]',
+      'input[name="kendiSesin"]'
+    ]);
+
+    if (!input) return;
+    if (input.getAttribute('data-studio-voice-bound') === 'true') return;
+
+    input.setAttribute('data-studio-voice-bound', 'true');
+
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0] || null;
+
+      rootState.voiceFile = file;
+      rootState.voiceFileName = file ? String(file.name || '') : '';
+      rootState.voiceFileUrl = '';
+      rootState.voiceFileUploadPromise = null;
+      rootState.voiceFileUploadError = '';
+      rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
+      updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+
+      if (!file) return;
+
+      rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
+        .then((publicUrl) => {
+          rootState.voiceFileUrl = String(publicUrl || '').trim();
+          rootState.voiceFileUploadStatus = 'ready';
+          rootState.voiceFileUploadError = '';
+          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+          console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
+          return rootState.voiceFileUrl;
+        })
+        .catch((err) => {
+          rootState.voiceFileUrl = '';
+          rootState.voiceFileUploadStatus = 'error';
+          rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
+          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+          console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
+          alert(rootState.voiceFileUploadError);
+          throw err;
+        });
     });
   }
 
-  return clearBtn;
-}
-  const clearBtn = ensureStudioVoiceUploadClearButton(rootState, studioRoot);
-
-  if (!textEl) return;
-
-  const status = String(rootState?.voiceFileUploadStatus || 'idle');
-  const fileName = String(rootState?.voiceFileName || '').trim();
-  const errorText = String(rootState?.voiceFileUploadError || '').trim();
-
- if (!fileName) {
-  textEl.textContent = 'Dosya seçilmedi';
-  if (clearBtn) clearBtn.style.display = 'none';
-  return;
-}
-
-  if (status === 'uploading') {
-    textEl.textContent = `${fileName} · Yükleniyor...`;
-    return;
-  }
-
-  if (status === 'ready') {
-    textEl.textContent = `${fileName} · Hazır ✓`;
-    return;
-  }
-
-  if (status === 'error') {
-    textEl.textContent = errorText
-      ? `${fileName} · Yükleme hatası`
-      : `${fileName} · Yükleme hatası`;
-    return;
-  }
-
-  textEl.textContent = fileName;
-}
-function bindStudioVoiceUpload(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
-
-  if (!input) return;
-  if (input.getAttribute('data-studio-voice-bound') === 'true') return;
-
-  input.setAttribute('data-studio-voice-bound', 'true');
-
-  input.addEventListener('change', async () => {
-    const file = input.files?.[0] || null;
-
-    rootState.voiceFile = file;
-    rootState.voiceFileName = file ? String(file.name || '') : '';
-    rootState.voiceFileUrl = '';
-    rootState.voiceFileUploadPromise = null;
-    rootState.voiceFileUploadError = '';
-    rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-
-    if (!file) return;
-
-    rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
-      .then((publicUrl) => {
-        rootState.voiceFileUrl = String(publicUrl || '').trim();
-        rootState.voiceFileUploadStatus = 'ready';
-        rootState.voiceFileUploadError = '';
-        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-        console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-        return rootState.voiceFileUrl;
-      })
-      .catch((err) => {
-        rootState.voiceFileUrl = '';
-        rootState.voiceFileUploadStatus = 'error';
-        rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
-        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-        console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-        alert(rootState.voiceFileUploadError);
-        throw err;
-      });
-  });
-}
   async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
     const files = Array.from(fileList || []).filter((file) => {
       if (!file) return false;
@@ -822,14 +835,14 @@ function bindStudioVoiceUpload(rootState, studioRoot) {
           'select[name="hazirMuzik"]'
         ], ''),
 
-      voiceFile: {
-  hasFile: !!rootState?.voiceFile,
-  name: String(rootState?.voiceFileName || ''),
-  type: String(rootState?.voiceFile?.type || ''),
-  size: Number(rootState?.voiceFile?.size || 0),
-  url: String(rootState?.voiceFileUrl || ''),
-  uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
-},
+        voiceFile: {
+          hasFile: !!rootState?.voiceFile,
+          name: String(rootState?.voiceFileName || ''),
+          type: String(rootState?.voiceFile?.type || ''),
+          size: Number(rootState?.voiceFile?.size || 0),
+          url: String(rootState?.voiceFileUrl || ''),
+          uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
+        },
 
         mode: getValue(studioRoot, [
           '#cartoonAudioMode',
@@ -938,113 +951,115 @@ function bindStudioVoiceUpload(rootState, studioRoot) {
       }
     };
   }
-async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
-  try {
-    const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1&t=${Date.now()}`, {
-      cache: 'no-store'
-    });
 
-    const j = await r.json().catch(() => null);
+  async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
+    try {
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1&t=${Date.now()}`, {
+        cache: 'no-store'
+      });
 
-    console.log('[CARTOON][STUDIO_EXPORT_POLL]', {
-      jobId,
-      tries,
-      response: j
-    });
+      const j = await r.json().catch(() => null);
 
-    if (!j || j.ok === false) {
+      console.log('[CARTOON][STUDIO_EXPORT_POLL]', {
+        jobId,
+        tries,
+        response: j
+      });
+
+      if (!j || j.ok === false) {
+        if (tries < 240) {
+          setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
+          return;
+        }
+
+        throw new Error(j?.error || 'studio_export_poll_failed');
+      }
+
+      const status = String(
+        j?.status ||
+        j?.db_status ||
+        j?.state ||
+        ''
+      ).trim().toLowerCase();
+
+      const finalVideoUrl = String(
+        j?.meta?.final_video_url ||
+        j?.video?.url ||
+        ''
+      ).trim();
+
+      const previewVideoUrl = String(
+        j?.meta?.preview_video_url ||
+        ''
+      ).trim();
+
+      const hasReadyVideo =
+        !!finalVideoUrl ||
+        (Array.isArray(j?.outputs) && j.outputs.some((o) => {
+          const type = String(o?.type || '').toLowerCase().trim();
+          const variant = String(o?.meta?.variant || '').toLowerCase().trim();
+          const url = String(o?.url || '').trim();
+          return !!url && type === 'video' && (variant === 'finalized' || variant === 'preview');
+        }));
+
+      if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
+        window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
+        window.dispatchEvent(
+          new CustomEvent('aivo:cartoon:job_ready', {
+            detail: {
+              app: 'cartoon',
+              mode: 'studio_export',
+              job_id: String(jobId || ''),
+              status,
+              video: finalVideoUrl ? { url: finalVideoUrl } : null,
+              outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+              raw: j,
+              meta: {
+                app: 'cartoon',
+                mode: 'studio_export',
+                final_video_url: finalVideoUrl,
+                preview_video_url: previewVideoUrl
+              }
+            }
+          })
+        );
+        button.disabled = false;
+        button.textContent = originalText;
+        button.classList.remove('is-loading');
+
+        alert(`Çıktı hazır. Final video: ${finalVideoUrl || '-'}`);
+        return;
+      }
+
+      if (status === 'error') {
+        button.disabled = false;
+        button.textContent = originalText;
+        button.classList.remove('is-loading');
+
+        throw new Error(j?.error_reason || 'studio_export_failed');
+      }
+
       if (tries < 240) {
         setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
         return;
       }
 
-      throw new Error(j?.error || 'studio_export_poll_failed');
-    }
-
-    const status = String(
-      j?.status ||
-      j?.db_status ||
-      j?.state ||
-      ''
-    ).trim().toLowerCase();
-
-    const finalVideoUrl = String(
-      j?.meta?.final_video_url ||
-      j?.video?.url ||
-      ''
-    ).trim();
-
-    const previewVideoUrl = String(
-      j?.meta?.preview_video_url ||
-      ''
-    ).trim();
-
-    const hasReadyVideo =
-      !!finalVideoUrl ||
-      (Array.isArray(j?.outputs) && j.outputs.some((o) => {
-        const type = String(o?.type || '').toLowerCase().trim();
-        const variant = String(o?.meta?.variant || '').toLowerCase().trim();
-        const url = String(o?.url || '').trim();
-        return !!url && type === 'video' && (variant === 'finalized' || variant === 'preview');
-      }));
-
-    if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
-      window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-    window.dispatchEvent(
-  new CustomEvent('aivo:cartoon:job_ready', {
-    detail: {
-      app: 'cartoon',
-      mode: 'studio_export',
-      job_id: String(jobId || ''),
-      status,
-      video: finalVideoUrl ? { url: finalVideoUrl } : null,
-      outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-      raw: j,
-      meta: {
-        app: 'cartoon',
-        mode: 'studio_export',
-        final_video_url: finalVideoUrl,
-        preview_video_url: previewVideoUrl
-      }
-    }
-  })
-);
       button.disabled = false;
       button.textContent = originalText;
       button.classList.remove('is-loading');
 
-      alert(`Çıktı hazır. Final video: ${finalVideoUrl || '-'}`);
-      return;
-    }
+      throw new Error('studio_export_timeout');
+    } catch (err) {
+      console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
 
-    if (status === 'error') {
       button.disabled = false;
       button.textContent = originalText;
       button.classList.remove('is-loading');
 
-      throw new Error(j?.error_reason || 'studio_export_failed');
+      alert(String(err?.message || err || 'studio_export_poll_failed'));
     }
-
-    if (tries < 240) {
-      setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
-      return;
-    }
-
-    button.disabled = false;
-    button.textContent = originalText;
-    button.classList.remove('is-loading');
-
-    throw new Error('studio_export_timeout');
-  } catch (err) {
-    console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
-
-    button.disabled = false;
-    button.textContent = originalText;
-    button.classList.remove('is-loading');
-
-    alert(String(err?.message || err || 'studio_export_poll_failed'));
   }
-}
+
   function bindStudioExportPayloadDebug(rootState, studioRoot) {
     const button = qsAny(studioRoot, [
       '[data-studio-export]',
@@ -1080,21 +1095,23 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
           alert('Export için en az 1 sahne seçmelisin.');
           return;
         }
-       if (rootState?.voiceFileUploadPromise) {
-  button.disabled = true;
-  button.textContent = 'Ses yükleniyor...';
-  button.classList.add('is-loading');
 
-  try {
-    await rootState.voiceFileUploadPromise;
-  } catch {
-    throw new Error(rootState?.voiceFileUploadError || 'studio_voice_upload_failed');
-  }
-}
+        if (rootState?.voiceFileUploadPromise) {
+          button.disabled = true;
+          button.textContent = 'Ses yükleniyor...';
+          button.classList.add('is-loading');
 
-if (rootState?.voiceFile && String(rootState?.voiceFileUploadStatus || '') !== 'ready') {
-  throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
-}
+          try {
+            await rootState.voiceFileUploadPromise;
+          } catch {
+            throw new Error(rootState?.voiceFileUploadError || 'studio_voice_upload_failed');
+          }
+        }
+
+        if (rootState?.voiceFile && String(rootState?.voiceFileUploadStatus || '') !== 'ready') {
+          throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
+        }
+
         button.disabled = true;
         button.textContent = 'Çıktı hazırlanıyor...';
         button.classList.add('is-loading');
@@ -1118,42 +1135,42 @@ if (rootState?.voiceFile && String(rootState?.voiceFileUploadStatus || '') !== '
         }
 
         window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
-if (data?.job_id) {
-  const createdDetail = {
-    app: 'cartoon',
-    mode: 'studio_export',
-    job_id: String(data.job_id || ''),
-    prompt: payload?.text?.title || payload?.text?.description || 'studio export',
-    createdAt: Date.now(),
-    meta: {
-      app: 'cartoon',
-      mode: 'studio_export',
-      provider: 'studio',
-      prompt: payload?.text?.title || payload?.text?.description || 'studio export',
-      scene_count: Number(payload?.export?.sceneCount || 0),
-      total_duration: Number(payload?.export?.totalDuration || 0),
-      aspect_ratio: String(payload?.export?.format || '16:9')
-    }
-  };
+        if (data?.job_id) {
+          const createdDetail = {
+            app: 'cartoon',
+            mode: 'studio_export',
+            job_id: String(data.job_id || ''),
+            prompt: payload?.text?.title || payload?.text?.description || 'studio export',
+            createdAt: Date.now(),
+            meta: {
+              app: 'cartoon',
+              mode: 'studio_export',
+              provider: 'studio',
+              prompt: payload?.text?.title || payload?.text?.description || 'studio export',
+              scene_count: Number(payload?.export?.sceneCount || 0),
+              total_duration: Number(payload?.export?.totalDuration || 0),
+              aspect_ratio: String(payload?.export?.format || '16:9')
+            }
+          };
 
-  setTimeout(() => {
-    window.dispatchEvent(
-      new CustomEvent('aivo:cartoon:job_created', {
-        detail: createdDetail
-      })
-    );
-  }, 3500);
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent('aivo:cartoon:job_created', {
+                detail: createdDetail
+              })
+            );
+          }, 3500);
 
-  startedPolling = true;
-  pollStudioExportJob(String(data.job_id), button, originalText, 0);
-  return;
-}
+          startedPolling = true;
+          pollStudioExportJob(String(data.job_id), button, originalText, 0);
+          return;
+        }
 
         alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
       } catch (err) {
         console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
         alert(String(err?.message || err || 'studio_export_create_failed'));
-           } finally {
+      } finally {
         if (!startedPolling) {
           button.disabled = false;
           button.textContent = originalText;
@@ -1322,25 +1339,25 @@ if (data?.job_id) {
     studioState.format = String(savedState?.format || '16:9');
     studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
 
-   ensureStudioPreviewModal(studioRoot);
-renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+    ensureStudioPreviewModal(studioRoot);
+    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
-bindStudioVideoUpload(
-  studioState,
-  studioRoot,
-  studioSceneList,
-  studioSceneTemplate
-);
+    bindStudioVideoUpload(
+      studioState,
+      studioRoot,
+      studioSceneList,
+      studioSceneTemplate
+    );
 
-bindStudioVoiceUpload(
-  studioState,
-  studioRoot
-);
+    bindStudioVoiceUpload(
+      studioState,
+      studioRoot
+    );
 
-bindStudioFormatPills(
-  studioState,
-  studioRoot
-);
+    bindStudioFormatPills(
+      studioState,
+      studioRoot
+    );
 
     bindStudioExportPayloadDebug(
       studioState,
