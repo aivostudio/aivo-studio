@@ -1276,35 +1276,84 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
           const url = String(o?.url || '').trim();
           return !!url && type === 'video' && (variant === 'finalized' || variant === 'preview');
         }));
+if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
+  let resolvedFinalVideoUrl = finalVideoUrl || '';
 
-      if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
-        window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-        window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:job_ready', {
-            detail: {
-              app: 'cartoon',
-              mode: 'studio_export',
-              job_id: String(jobId || ''),
-              status,
-              video: finalVideoUrl ? { url: finalVideoUrl } : null,
-              outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-              raw: j,
-              meta: {
-                app: 'cartoon',
-                mode: 'studio_export',
-                final_video_url: finalVideoUrl,
-                preview_video_url: previewVideoUrl
-              }
-            }
-          })
-        );
-        button.disabled = false;
-        button.textContent = originalText;
-        button.classList.remove('is-loading');
+  const studioState = window.__CARTOON_STUDIO__ || null;
+  const logoUrl = String(studioState?.logoFileUrl || '').trim();
 
-        alert(`Çıktı hazır. Final video: ${finalVideoUrl || '-'}`);
-        return;
+  if (resolvedFinalVideoUrl && logoUrl && !j?.meta?.logo_overlay_url) {
+    button.disabled = true;
+    button.textContent = 'Logo işleniyor...';
+    button.classList.add('is-loading');
+
+    const logoPosRaw = String(
+      document
+        .querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] [data-studio-logo-position]')?.value ||
+      'bottom-right'
+    ).trim().toLowerCase();
+
+    const logoPos =
+      logoPosRaw === 'top-left' ? 'tl' :
+      logoPosRaw === 'top-right' ? 'tr' :
+      logoPosRaw === 'bottom-left' ? 'bl' :
+      logoPosRaw === 'center' ? 'c' :
+      'br';
+
+    const overlayRes = await fetch('/api/cartoon/overlay-logo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        job_id: String(jobId || ''),
+        video_url: resolvedFinalVideoUrl,
+        logo_url: logoUrl,
+        logo_pos: logoPos,
+        app: 'cartoon'
+      })
+    });
+
+    const overlayData = await overlayRes.json().catch(() => null);
+
+    console.log('[CARTOON][STUDIO_LOGO_OVERLAY_RESPONSE]', {
+      status: overlayRes.status,
+      ok: overlayRes.ok,
+      overlayData
+    });
+
+    if (!overlayRes.ok || !overlayData || overlayData.ok === false) {
+      throw new Error(overlayData?.message || overlayData?.error || 'studio_logo_overlay_failed');
+    }
+
+    resolvedFinalVideoUrl = String(overlayData?.url || resolvedFinalVideoUrl || '').trim();
+  }
+
+  window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
+  window.dispatchEvent(
+    new CustomEvent('aivo:cartoon:job_ready', {
+      detail: {
+        app: 'cartoon',
+        mode: 'studio_export',
+        job_id: String(jobId || ''),
+        status,
+        video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
+        outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+        raw: j,
+        meta: {
+          app: 'cartoon',
+          mode: 'studio_export',
+          final_video_url: resolvedFinalVideoUrl,
+          preview_video_url: previewVideoUrl
+        }
       }
+    })
+  );
+  button.disabled = false;
+  button.textContent = originalText;
+  button.classList.remove('is-loading');
+
+  alert(`Çıktı hazır. Final video: ${resolvedFinalVideoUrl || '-'}`);
+  return;
+}
 
       if (status === 'error') {
         button.disabled = false;
