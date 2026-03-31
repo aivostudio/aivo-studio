@@ -1339,11 +1339,11 @@ branding: {
         !!previewOutputUrl;
 
 if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
-  let resolvedFinalVideoUrl =
-    finalVideoUrl ||
-    finalizedOutputUrl ||
-    previewOutputUrl ||
-    '';
+ let resolvedFinalVideoUrl =
+  finalizedOutputUrl ||
+  previewOutputUrl ||
+  finalVideoUrl ||
+  '';
 
   const studioState = window.__CARTOON_STUDIO__ || null;
   const logoUrl = String(studioState?.logoFileUrl || '').trim();
