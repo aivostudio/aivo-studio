@@ -243,35 +243,62 @@ function ensureStudioPreviewModal(studioRoot) {
     renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
   }
 
-  function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
-    const input = studioRoot.querySelector('[data-studio-video-upload]');
-    const text = studioRoot.querySelector('[data-studio-video-upload-text]');
+function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
+  const input = studioRoot.querySelector('[data-studio-video-upload]');
+  const text = studioRoot.querySelector('[data-studio-video-upload-text]');
 
-    if (!input) return;
-    if (input.getAttribute('data-studio-upload-bound') === 'true') return;
+  if (!input) return;
+  if (input.getAttribute('data-studio-upload-bound') === 'true') return;
 
-    input.setAttribute('data-studio-upload-bound', 'true');
+  input.setAttribute('data-studio-upload-bound', 'true');
 
-    input.addEventListener('change', async () => {
-      const files = Array.from(input.files || []);
-      const count = files.length;
+  input.addEventListener('change', async () => {
+    const files = Array.from(input.files || []);
+    const count = files.length;
 
-      if (text) {
-        text.textContent = count
-          ? `${count} video seçildi`
-          : 'Henüz video seçilmedi';
-      }
+    if (text) {
+      text.textContent = count
+        ? `${count} video seçildi`
+        : 'Henüz video seçilmedi';
+    }
 
-      await appendUploadedStudioVideos(
-        rootState,
-        studioRoot,
-        sceneList,
-        sceneTemplate,
-        files
-      );
+    await appendUploadedStudioVideos(
+      rootState,
+      studioRoot,
+      sceneList,
+      sceneTemplate,
+      files
+    );
+  });
+}
+
+function bindStudioFormatPills(rootState, studioRoot) {
+  const pills = Array.from(studioRoot.querySelectorAll('[data-studio-format]'));
+  if (!pills.length) return;
+  if (studioRoot.getAttribute('data-studio-format-bound') === 'true') return;
+
+  studioRoot.setAttribute('data-studio-format-bound', 'true');
+
+  function syncActiveFormat() {
+    pills.forEach((btn) => {
+      const value = String(btn.getAttribute('data-studio-format') || '');
+      const isActive = value === String(rootState.format || '16:9');
+
+      btn.classList.toggle('is-active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
   }
 
+  pills.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      rootState.format = String(btn.getAttribute('data-studio-format') || '16:9');
+      syncActiveFormat();
+      updateStudioSummary(rootState, studioRoot);
+    });
+  });
+
+  syncActiveFormat();
+}
   function moveScene(array, fromIndex, toIndex) {
     if (fromIndex === toIndex) return;
     if (fromIndex < 0 || toIndex < 0) return;
@@ -454,12 +481,17 @@ updateStudioSummary(rootState, studioRoot);
     ensureStudioPreviewModal(studioRoot);
     renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
-    bindStudioVideoUpload(
-      studioState,
-      studioRoot,
-      studioSceneList,
-      studioSceneTemplate
-    );
+   bindStudioVideoUpload(
+  studioState,
+  studioRoot,
+  studioSceneList,
+  studioSceneTemplate
+);
+
+bindStudioFormatPills(
+  studioState,
+  studioRoot
+);
 
     studioRoot.setAttribute('data-studio-bound', 'true');
     window.__CARTOON_STUDIO__ = studioState;
