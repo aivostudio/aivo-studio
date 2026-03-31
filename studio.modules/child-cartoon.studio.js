@@ -30,141 +30,141 @@
     };
   }
 
-  function ensureStudioPreviewModal(studioRoot) {
-    let modal = studioRoot.querySelector('[data-studio-preview-modal]');
+function ensureStudioPreviewModal(studioRoot) {
+  let modal = studioRoot.querySelector('[data-studio-preview-modal]');
 
-    if (modal) return modal;
+  if (modal) return modal;
 
-    modal = document.createElement('div');
-    modal.setAttribute('data-studio-preview-modal', '');
-    modal.hidden = true;
-    modal.innerHTML = `
-      <div data-studio-preview-backdrop
+  modal = document.createElement('div');
+  modal.setAttribute('data-studio-preview-modal', '');
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div data-studio-preview-backdrop
+         style="
+           position:fixed;
+           inset:0;
+           background:rgba(0,0,0,.78);
+           z-index:9998;
+           display:flex;
+           align-items:center;
+           justify-content:center;
+           padding:24px;
+         ">
+      <div data-studio-preview-dialog
            style="
-             position:fixed;
-             inset:0;
-             background:rgba(0,0,0,.78);
-             z-index:9998;
-             display:flex;
-             align-items:center;
-             justify-content:center;
-             padding:24px;
+             position:relative;
+             width:min(1100px, 92vw);
+             max-height:90vh;
+             border-radius:22px;
+             overflow:hidden;
+             background:#05060f;
+             border:1px solid rgba(255,255,255,.12);
+             box-shadow:0 30px 80px rgba(0,0,0,.55);
            ">
-        <div data-studio-preview-dialog
-             style="
-               position:relative;
-               width:min(1100px, 92vw);
-               max-height:90vh;
-               border-radius:22px;
-               overflow:hidden;
-               background:#05060f;
-               border:1px solid rgba(255,255,255,.12);
-               box-shadow:0 30px 80px rgba(0,0,0,.55);
-             ">
-          <button type="button"
-                  data-studio-preview-close
-                  aria-label="Önizlemeyi kapat"
-                  title="Kapat"
-                  style="
-                    position:absolute;
-                    top:14px;
-                    right:14px;
-                    width:42px;
-                    height:42px;
-                    border:none;
-                    border-radius:999px;
-                    background:rgba(255,255,255,.14);
-                    color:#fff;
-                    font-size:24px;
-                    line-height:1;
-                    cursor:pointer;
-                    z-index:2;
-                  ">×</button>
+        <button type="button"
+                data-studio-preview-close
+                aria-label="Önizlemeyi kapat"
+                title="Kapat"
+                style="
+                  position:absolute;
+                  top:14px;
+                  right:14px;
+                  width:42px;
+                  height:42px;
+                  border:none;
+                  border-radius:999px;
+                  background:rgba(255,255,255,.14);
+                  color:#fff;
+                  font-size:24px;
+                  line-height:1;
+                  cursor:pointer;
+                  z-index:2;
+                ">×</button>
 
-          <div style="padding:18px 18px 10px 18px;">
-            <div data-studio-preview-title
+        <div style="padding:18px 18px 10px 18px;">
+          <div data-studio-preview-title
+               style="
+                 color:#fff;
+                 font-weight:800;
+                 font-size:18px;
+                 line-height:1.3;
+                 padding-right:56px;
+               "></div>
+        </div>
+
+        <div style="padding:0 18px 18px 18px;">
+          <video data-studio-preview-video
+                 controls
+                 playsinline
+                 preload="metadata"
                  style="
-                   color:#fff;
-                   font-weight:800;
-                   font-size:18px;
-                   line-height:1.3;
-                   padding-right:56px;
-                 "></div>
-          </div>
-
-          <div style="padding:0 18px 18px 18px;">
-            <video data-studio-preview-video
-                   controls
-                   playsinline
-                   preload="metadata"
-                   style="
-                     width:100%;
-                     max-height:72vh;
-                     display:block;
-                     background:#000;
-                     border-radius:16px;
-                   "></video>
-          </div>
+                   width:100%;
+                   max-height:72vh;
+                   display:block;
+                   background:#000;
+                   border-radius:16px;
+                 "></video>
         </div>
       </div>
-    `;
+    </div>
+  `;
 
-    studioRoot.appendChild(modal);
+  studioRoot.appendChild(modal);
 
-    const backdrop = modal.querySelector('[data-studio-preview-backdrop]');
-    const dialog = modal.querySelector('[data-studio-preview-dialog]');
-    const closeBtn = modal.querySelector('[data-studio-preview-close]');
-    const video = modal.querySelector('[data-studio-preview-video]');
+  const backdrop = modal.querySelector('[data-studio-preview-backdrop]');
+  const dialog = modal.querySelector('[data-studio-preview-dialog]');
+  const closeBtn = modal.querySelector('[data-studio-preview-close]');
+  const video = modal.querySelector('[data-studio-preview-video]');
 
-    function closeStudioPreview() {
-      modal.hidden = true;
+  function closeStudioPreview() {
+    modal.hidden = true;
 
-      if (video) {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-      }
+    if (video) {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
     }
+  }
 
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeStudioPreview);
-    }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeStudioPreview);
+  }
 
-    if (backdrop) {
-      backdrop.addEventListener('click', (event) => {
-        if (!dialog) return;
-        if (!dialog.contains(event.target)) {
-          closeStudioPreview();
-        }
-      });
-    }
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !modal.hidden) {
+  if (backdrop) {
+    backdrop.addEventListener('click', (event) => {
+      if (!dialog) return;
+      if (!dialog.contains(event.target)) {
         closeStudioPreview();
       }
     });
-
-    modal.__openStudioPreview = ({ url, title }) => {
-      const titleEl = modal.querySelector('[data-studio-preview-title]');
-      const videoEl = modal.querySelector('[data-studio-preview-video]');
-
-      if (!videoEl) return;
-
-      if (titleEl) {
-        titleEl.textContent = String(title || 'Video Önizleme');
-      }
-
-      modal.hidden = false;
-      videoEl.src = String(url || '');
-      videoEl.load();
-      videoEl.play().catch(() => {});
-    };
-
-    modal.__closeStudioPreview = closeStudioPreview;
-
-    return modal;
   }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !modal.hidden) {
+      closeStudioPreview();
+    }
+  });
+
+  modal.__openStudioPreview = ({ url, title }) => {
+    const titleEl = modal.querySelector('[data-studio-preview-title]');
+    const videoEl = modal.querySelector('[data-studio-preview-video]');
+
+    if (!videoEl) return;
+
+    if (titleEl) {
+      titleEl.textContent = String(title || 'Video Önizleme');
+    }
+
+    modal.hidden = false;
+    videoEl.src = String(url || '');
+    videoEl.load();
+    videoEl.play().catch(() => {});
+  };
+
+  modal.__closeStudioPreview = closeStudioPreview;
+
+  return modal;
+}
 
   function openStudioPreview(studioRoot, scene) {
     if (!scene?.videoUrl) {
