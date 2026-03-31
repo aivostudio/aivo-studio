@@ -467,6 +467,74 @@ function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
   const textEl =
     row.querySelector('[data-studio-voice-upload-text]') ||
     row.querySelector('.cartoon-upload-text');
+  function clearStudioVoiceFile(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
+
+  rootState.voiceFile = null;
+  rootState.voiceFileName = '';
+  rootState.voiceFileUrl = '';
+  rootState.voiceFileUploadPromise = null;
+  rootState.voiceFileUploadStatus = 'idle';
+  rootState.voiceFileUploadError = '';
+
+  if (input) {
+    input.value = '';
+  }
+
+  updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+}
+
+function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
+
+  if (!input) return null;
+
+  const row = input.closest('.cartoon-upload-row') || input.parentElement;
+  if (!row) return null;
+
+  let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
+
+  if (!clearBtn) {
+    clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.setAttribute('data-studio-voice-upload-clear', '');
+    clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
+    clearBtn.title = 'Sesi kaldır';
+    clearBtn.textContent = '×';
+    clearBtn.style.marginLeft = '8px';
+    clearBtn.style.width = '22px';
+    clearBtn.style.height = '22px';
+    clearBtn.style.borderRadius = '999px';
+    clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
+    clearBtn.style.background = 'rgba(255,255,255,.08)';
+    clearBtn.style.color = '#fff';
+    clearBtn.style.cursor = 'pointer';
+    clearBtn.style.display = 'none';
+    clearBtn.style.verticalAlign = 'middle';
+    row.appendChild(clearBtn);
+
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearStudioVoiceFile(rootState, studioRoot);
+    });
+  }
+
+  return clearBtn;
+}
+  const clearBtn = ensureStudioVoiceUploadClearButton(rootState, studioRoot);
 
   if (!textEl) return;
 
@@ -474,10 +542,11 @@ function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
   const fileName = String(rootState?.voiceFileName || '').trim();
   const errorText = String(rootState?.voiceFileUploadError || '').trim();
 
-  if (!fileName) {
-    textEl.textContent = 'Dosya seçilmedi';
-    return;
-  }
+ if (!fileName) {
+  textEl.textContent = 'Dosya seçilmedi';
+  if (clearBtn) clearBtn.style.display = 'none';
+  return;
+}
 
   if (status === 'uploading') {
     textEl.textContent = `${fileName} · Yükleniyor...`;
