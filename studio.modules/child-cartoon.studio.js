@@ -1161,23 +1161,24 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
         ], '')
       },
 
-      branding: {
-        logoFile: getFileMeta(studioRoot, [
-          '#cartoonLogoFile',
-          '#studioLogoFile',
-          '[data-studio-logo-upload]',
-          'input[name="logoFile"]',
-          'input[name="logo"]'
-        ]),
+    branding: {
+  logoFile: {
+    hasFile: !!rootState?.logoFile,
+    name: String(rootState?.logoFileName || ''),
+    type: String(rootState?.logoFile?.type || ''),
+    size: Number(rootState?.logoFile?.size || 0),
+    url: String(rootState?.logoFileUrl || ''),
+    uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
+  },
 
-        watermarkMode: getValue(studioRoot, [
-          '#cartoonWatermarkMode',
-          '#studioWatermarkMode',
-          '[data-studio-watermark-mode]',
-          'select[name="watermarkMode"]',
-          'select[name="filigran"]'
-        ], '')
-      },
+  watermarkMode: getValue(studioRoot, [
+    '#cartoonWatermarkMode',
+    '#studioWatermarkMode',
+    '[data-studio-watermark-mode]',
+    'select[name="watermarkMode"]',
+    'select[name="filigran"]'
+  ], '')
+},
 
       cover: {
         videoFrame: getValue(studioRoot, [
