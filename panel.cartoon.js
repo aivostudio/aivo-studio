@@ -914,7 +914,45 @@
       }
 
       const optimisticJob = optimistic.get(job_id);
-      if (!optimisticJob) return;
+
+      const nextOutputs = outputs.length
+        ? outputs
+        : videoUrl
+          ? [
+              {
+                type: "video",
+                url: videoUrl,
+                meta: { app: "cartoon", variant: "provider", is_final: true },
+              },
+            ]
+          : optimisticJob?.outputs || [];
+
+      if (!optimisticJob) {
+        optimistic.set(job_id, {
+          job_id,
+          app: "cartoon",
+          provider: "Cartoon",
+          createdAt: Date.now(),
+          created_at: Date.now(),
+          db_status: "ready",
+          status: "ready",
+          state: "COMPLETED",
+          _fresh: true,
+          meta: {
+            ...(d?.meta || {}),
+            ...(d?.raw?.meta || {}),
+            app: "cartoon",
+            title:
+              d?.raw?.meta?.title ||
+              d?.meta?.title ||
+              "cartoon studio export",
+          },
+          outputs: nextOutputs,
+        });
+
+        renderCurrent();
+        return;
+      }
 
       optimistic.set(job_id, {
         ...optimisticJob,
@@ -922,17 +960,7 @@
         db_status: "ready",
         status: "ready",
         state: "COMPLETED",
-        outputs: outputs.length
-          ? outputs
-          : videoUrl
-            ? [
-                {
-                  type: "video",
-                  url: videoUrl,
-                  meta: { app: "cartoon", variant: "provider", is_final: true },
-                },
-              ]
-            : optimisticJob.outputs || [],
+        outputs: nextOutputs,
       });
 
       renderCurrent();
