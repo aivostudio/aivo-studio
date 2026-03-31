@@ -1,12 +1,15 @@
 (function () {
-  const root = document.querySelector('section.pfxPage[data-module="photofx"]');
-  if (!root) {
-   console.log('[PHOTOFX] root yok -> skip');
-    return;
-  }
+const root = document.querySelector('section.pfxPage[data-module="photofx"]');
+if (!root) {
+  console.log('[PHOTOFX] root yok -> skip');
+  return;
+}
 
-  if (window.__AIVO_PHOTOFX_MODULE__) return;
-  window.__AIVO_PHOTOFX_MODULE__ = true;
+if (window.__AIVO_PHOTOFX_ACTIVE_ROOT__ === root) {
+  console.log('[PHOTOFX] same root already active -> skip');
+  return;
+}
+window.__AIVO_PHOTOFX_ACTIVE_ROOT__ = root;
 
   const FIXED_CREDIT_COST = 8;
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
