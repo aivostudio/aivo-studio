@@ -1192,12 +1192,10 @@ if (data?.job_id) {
     ensureStudioPreviewModal(studioRoot);
     renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
-    bindStudioVideoUpload(
-      studioState,
-      studioRoot,
-      studioSceneList,
-      studioSceneTemplate
-    );
+  bindStudioVoiceUpload(
+  studioState,
+  studioRoot
+);
      bindStudioVoiceUpload(
   studioState,
   studioRoot
