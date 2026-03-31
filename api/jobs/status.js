@@ -1490,13 +1490,30 @@ if (
       const isCharacterMode =
         String(job?.meta?.mode || "").toLowerCase() === "character";
 
-      const logoUrl = job?.meta?.logo_url || null;
-      const logoPos = String(job?.meta?.logo_pos || "br").trim();
-      const logoSize = String(job?.meta?.logo_size || "sm").trim();
-      const logoOpacity =
-        typeof job?.meta?.logo_opacity === "number"
-          ? job.meta.logo_opacity
-          : 0.85;
+     const logoUrl =
+  job?.meta?.logo_url ||
+  job?.meta?.logoFile?.url ||
+  job?.meta?.branding?.logoFile?.url ||
+  null;
+
+const logoPos = String(
+  job?.meta?.logo_pos ||
+  job?.meta?.branding?.logo_pos ||
+  "br"
+).trim();
+
+const logoSize = String(
+  job?.meta?.logo_size ||
+  job?.meta?.branding?.logo_size ||
+  "sm"
+).trim();
+
+const logoOpacity =
+  typeof job?.meta?.logo_opacity === "number"
+    ? job.meta.logo_opacity
+    : typeof job?.meta?.branding?.logo_opacity === "number"
+    ? job.meta.branding.logo_opacity
+    : 0.85;
 
       // Cartoon için overlay kaynağı sırası:
       // 1) muxed_url
