@@ -338,10 +338,7 @@ rootState.scenes.forEach((scene, index) => {
   const previewBtn = fragment.querySelector('[data-scene-preview]');
   const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
   const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
-  const removeBtn =
-    fragment.querySelector('[data-scene-remove]') ||
-    fragment.querySelector('[data-scene-action="remove"]') ||
-    fragment.querySelector('[data-studio-scene-remove]');
+  const removeBtn = fragment.querySelector('[data-scene-remove]');
 
   if (row) {
     row.setAttribute('data-scene-id', scene.id);
