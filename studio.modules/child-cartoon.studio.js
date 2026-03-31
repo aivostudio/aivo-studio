@@ -678,7 +678,95 @@
       }
     };
   }
+async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
+  try {
+    const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1&t=${Date.now()}`, {
+      cache: 'no-store'
+    });
 
+    const j = await r.json().catch(() => null);
+
+    console.log('[CARTOON][STUDIO_EXPORT_POLL]', {
+      jobId,
+      tries,
+      response: j
+    });
+
+    if (!j || j.ok === false) {
+      if (tries < 240) {
+        setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
+        return;
+      }
+
+      throw new Error(j?.error || 'studio_export_poll_failed');
+    }
+
+    const status = String(
+      j?.status ||
+      j?.db_status ||
+      j?.state ||
+      ''
+    ).trim().toLowerCase();
+
+    const finalVideoUrl = String(
+      j?.meta?.final_video_url ||
+      j?.video?.url ||
+      ''
+    ).trim();
+
+    const previewVideoUrl = String(
+      j?.meta?.preview_video_url ||
+      ''
+    ).trim();
+
+    const hasReadyVideo =
+      !!finalVideoUrl ||
+      (Array.isArray(j?.outputs) && j.outputs.some((o) => {
+        const type = String(o?.type || '').toLowerCase().trim();
+        const variant = String(o?.meta?.variant || '').toLowerCase().trim();
+        const url = String(o?.url || '').trim();
+        return !!url && type === 'video' && (variant === 'finalized' || variant === 'preview');
+      }));
+
+    if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
+      window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
+
+      button.disabled = false;
+      button.textContent = originalText;
+      button.classList.remove('is-loading');
+
+      alert(`Çıktı hazır. Final video: ${finalVideoUrl || '-'}`);
+      return;
+    }
+
+    if (status === 'error') {
+      button.disabled = false;
+      button.textContent = originalText;
+      button.classList.remove('is-loading');
+
+      throw new Error(j?.error_reason || 'studio_export_failed');
+    }
+
+    if (tries < 240) {
+      setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
+      return;
+    }
+
+    button.disabled = false;
+    button.textContent = originalText;
+    button.classList.remove('is-loading');
+
+    throw new Error('studio_export_timeout');
+  } catch (err) {
+    console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
+
+    button.disabled = false;
+    button.textContent = originalText;
+    button.classList.remove('is-loading');
+
+    alert(String(err?.message || err || 'studio_export_poll_failed'));
+  }
+}
   function bindStudioExportPayloadDebug(rootState, studioRoot) {
     const button = qsAny(studioRoot, [
       '[data-studio-export]',
@@ -737,6 +825,10 @@
         }
 
         window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
+        if (data?.job_id) {
+  pollStudioExportJob(String(data.job_id), button, originalText, 0);
+  return;
+}
 
         alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
       } catch (err) {
