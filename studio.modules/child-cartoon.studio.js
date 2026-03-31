@@ -31,7 +31,7 @@
   }
 
 function ensureStudioPreviewModal(studioRoot) {
-  let modal = studioRoot.querySelector('[data-studio-preview-modal]');
+  let modal = document.querySelector('[data-studio-preview-modal]');
 
   if (modal) return modal;
 
@@ -44,7 +44,7 @@ function ensureStudioPreviewModal(studioRoot) {
            position:fixed;
            inset:0;
            background:rgba(0,0,0,.78);
-           z-index:9998;
+           z-index:999999;
            display:flex;
            align-items:center;
            justify-content:center;
@@ -109,7 +109,7 @@ function ensureStudioPreviewModal(studioRoot) {
     </div>
   `;
 
-  studioRoot.appendChild(modal);
+  document.body.appendChild(modal);
 
   const backdrop = modal.querySelector('[data-studio-preview-backdrop]');
   const dialog = modal.querySelector('[data-studio-preview-dialog]');
@@ -165,7 +165,6 @@ function ensureStudioPreviewModal(studioRoot) {
 
   return modal;
 }
-
   function openStudioPreview(studioRoot, scene) {
     if (!scene?.videoUrl) {
       alert(`Bu sahne için henüz video yok: ${scene?.title || 'Sahne'}`);
