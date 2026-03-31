@@ -961,7 +961,21 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
           alert('Export için en az 1 sahne seçmelisin.');
           return;
         }
+       if (rootState?.voiceFileUploadPromise) {
+  button.disabled = true;
+  button.textContent = 'Ses yükleniyor...';
+  button.classList.add('is-loading');
 
+  try {
+    await rootState.voiceFileUploadPromise;
+  } catch {
+    throw new Error(rootState?.voiceFileUploadError || 'studio_voice_upload_failed');
+  }
+}
+
+if (rootState?.voiceFile && String(rootState?.voiceFileUploadStatus || '') !== 'ready') {
+  throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
+}
         button.disabled = true;
         button.textContent = 'Çıktı hazırlanıyor...';
         button.classList.add('is-loading');
