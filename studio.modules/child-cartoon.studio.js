@@ -270,7 +270,43 @@
     });
   }
 
+  function getStudioVideoExtension(fileName) {
+    const name = String(fileName || '').toLowerCase().trim();
+    const match = name.match(/\.([a-z0-9]+)$/i);
+    return match ? match[1] : '';
+  }
+
+  function resolveStudioVideoContentType(file) {
+    const rawType = String(file?.type || '').toLowerCase().trim();
+    const ext = getStudioVideoExtension(file?.name || '');
+
+    const allowedTypes = new Set([
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+      'video/x-matroska',
+      'video/mpeg',
+      'video/ogg'
+    ]);
+
+    if (allowedTypes.has(rawType)) {
+      if (rawType === 'video/x-matroska') return 'video/webm';
+      return rawType;
+    }
+
+    if (ext === 'mp4' || ext === 'm4v') return 'video/mp4';
+    if (ext === 'webm') return 'video/webm';
+    if (ext === 'mov' || ext === 'qt') return 'video/quicktime';
+    if (ext === 'mkv') return 'video/webm';
+    if (ext === 'mpeg' || ext === 'mpg') return 'video/mpeg';
+    if (ext === 'ogv') return 'video/ogg';
+
+    return 'video/mp4';
+  }
+
   async function presignStudioVideo(file) {
+    const safeContentType = resolveStudioVideoContentType(file);
+
     const res = await fetch('/api/r2/presign-put', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -278,7 +314,7 @@
         app: 'cartoon',
         kind: 'studio-video',
         filename: file?.name || `studio-video-${Date.now()}.mp4`,
-        contentType: file?.type || 'application/octet-stream'
+        contentType: safeContentType
       })
     });
 
@@ -290,14 +326,15 @@
 
     return {
       uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || ''
+      publicUrl: data.publicUrl || data.public_url || data.url || '',
+      contentType: safeContentType
     };
   }
 
   async function uploadStudioVideoToR2(file) {
     if (!file) throw new Error('missing_studio_video_file');
 
-    const { uploadUrl, publicUrl } = await presignStudioVideo(file);
+    const { uploadUrl, publicUrl, contentType } = await presignStudioVideo(file);
 
     if (!uploadUrl || !publicUrl) {
       throw new Error('studio_video_missing_upload_urls');
@@ -306,7 +343,7 @@
     const put = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': file.type || 'application/octet-stream'
+        'Content-Type': contentType || 'video/mp4'
       },
       body: file
     });
@@ -320,7 +357,14 @@
 
   async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
     const files = Array.from(fileList || []).filter((file) => {
-      return file && String(file.type || '').toLowerCase().startsWith('video/');
+      if (!file) return false;
+
+      const type = String(file.type || '').toLowerCase();
+      const ext = getStudioVideoExtension(file.name || '');
+
+      if (type.startsWith('video/')) return true;
+
+      return ['mp4', 'm4v', 'mov', 'webm', 'mkv', 'mpeg', 'mpg', 'ogv'].includes(ext);
     });
 
     if (!files.length) return;
