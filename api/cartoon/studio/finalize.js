@@ -528,7 +528,61 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
     });
   });
 }
+async function runFfmpegMixVoiceAudio(videoInputPath, audioInputPath, outputPath, musicLevel = "") {
+  const levelRaw = String(musicLevel || "").trim().toLowerCase();
 
+  let volume = 1.0;
+  if (levelRaw === "low" || levelRaw === "dusuk" || levelRaw === "az") volume = 0.6;
+  if (levelRaw === "medium" || levelRaw === "orta") volume = 1.0;
+  if (levelRaw === "high" || levelRaw === "yuksek" || levelRaw === "çok" || levelRaw === "cok") volume = 1.4;
+
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-i",
+      videoInputPath,
+      "-i",
+      audioInputPath,
+
+      "-filter_complex",
+      `[1:a]volume=${String(volume)}[voice];[0:a][voice]amix=inputs=2:duration=first:dropout_transition=2[aout]`,
+
+      "-map",
+      "0:v:0",
+      "-map",
+      "[aout]",
+
+      "-c:v",
+      "copy",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-ac",
+      "2",
+      "-ar",
+      "48000",
+      "-movflags",
+      "+faststart",
+      "-shortest",
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`ffmpeg_mix_voice_failed:${code}:${stderr.slice(-1500)}`));
+    });
+  });
+}
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -574,6 +628,11 @@ module.exports = async function handler(req, res) {
     }
 
     const meta = job.meta || {};
+    const audioMeta = meta?.audio || {};
+const voiceFileMeta = audioMeta?.voiceFile || {};
+const voiceFileUrl = safeText(voiceFileMeta?.url);
+const voiceFileUploadStatus = safeText(voiceFileMeta?.uploadStatus).toLowerCase();
+const musicLevel = safeText(audioMeta?.musicLevel);
     const outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
     const finalizedOut = outputs.find(
@@ -644,12 +703,26 @@ const concatBody = normalizedPaths
   .join("\n");
     await fsp.writeFile(concatListPath, concatBody, "utf8");
 
-    const concatOutputPath = path.join(tmpDir, "concat-output.mp4");
-    const finalOutputPath = path.join(tmpDir, "finalized.mp4");
-    const previewPath = path.join(tmpDir, "preview.mp4");
+  const concatOutputPath = path.join(tmpDir, "concat-output.mp4");
+const mixedOutputPath = path.join(tmpDir, "mixed-output.mp4");
+const voiceInputPath = path.join(tmpDir, "voice-input");
+const finalOutputPath = path.join(tmpDir, "finalized.mp4");
+const previewPath = path.join(tmpDir, "preview.mp4");
+    
+  await runFfmpegConcat(concatListPath, concatOutputPath);
 
-    await runFfmpegConcat(concatListPath, concatOutputPath);
-    await runFfmpegFaststart(concatOutputPath, finalOutputPath);
+if (voiceFileUrl && voiceFileUploadStatus === "ready") {
+  await downloadToFile(voiceFileUrl, voiceInputPath);
+  await runFfmpegMixVoiceAudio(
+    concatOutputPath,
+    voiceInputPath,
+    mixedOutputPath,
+    musicLevel
+  );
+  await runFfmpegFaststart(mixedOutputPath, finalOutputPath);
+} else {
+  await runFfmpegFaststart(concatOutputPath, finalOutputPath);
+}
 
     const finalStat = await fsp.stat(finalOutputPath);
     const durationSec = await probeVideoDurationSec(finalOutputPath);
