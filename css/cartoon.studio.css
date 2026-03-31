@@ -851,3 +851,81 @@
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:hover{
   filter: brightness(1.02);
 }
+/* ===== Studio / Ses-Logo kartı eşit hizalama ===== */
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .story-grid.story-grid-2{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  align-items: end;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .story-field{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .story-field > label{
+  margin: 0 0 12px;
+  min-height: 28px;
+  display: flex;
+  align-items: flex-end;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .cartoon-upload-row--compact{
+  width: 100%;
+  min-height: 58px;
+  height: 58px;
+  padding: 0 16px;
+  border-radius: 18px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) select[data-studio-voice-enabled],
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) select[data-studio-logo-position]{
+  width: 100%;
+  min-height: 58px;
+  height: 58px;
+  padding: 0 18px;
+  border-radius: 18px;
+  box-sizing: border-box;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .cartoon-upload-btn{
+  min-width: 132px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 14px;
+  justify-content: center;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .cartoon-upload-text,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) [data-studio-voice-upload-text],
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) [data-studio-logo-upload-text]{
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+@media (max-width: 900px){
+  .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .story-grid.story-grid-2{
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .story-field > label{
+    min-height: auto;
+    margin-bottom: 10px;
+  }
+}
