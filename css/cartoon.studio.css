@@ -837,3 +837,17 @@
     min-width: 0;
   }
 }
+/* ===== Studio / gradientleri matlaştır ===== */
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
+  background: linear-gradient(90deg, rgba(139,92,246,.78) 0%, rgba(236,72,153,.78) 100%) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow: 0 6px 18px rgba(191,86,255,.12) !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn:hover,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:hover,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:hover{
+  filter: brightness(1.02);
+}
