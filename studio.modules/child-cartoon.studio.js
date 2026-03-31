@@ -474,52 +474,57 @@
 
     updateStudioVoiceUploadStatusUI(rootState, studioRoot);
   }
+function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
 
-  function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonVoiceFile',
-      '#studioVoiceFile',
-      '[data-studio-voice-upload]',
-      'input[name="voiceFile"]',
-      'input[name="kendiSesin"]'
-    ]);
+  if (!input) return null;
 
-    if (!input) return null;
+  const row = input.closest('.cartoon-upload-row') || input.parentElement;
+  if (!row) return null;
 
-    const row = input.closest('.cartoon-upload-row') || input.parentElement;
-    if (!row) return null;
+  let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
 
-    let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
+  if (!clearBtn) {
+    clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.setAttribute('data-studio-voice-upload-clear', '');
+    clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
+    clearBtn.title = 'Sesi kaldır';
+    clearBtn.textContent = '×';
+    clearBtn.style.marginLeft = '8px';
+    clearBtn.style.width = '22px';
+    clearBtn.style.height = '22px';
+    clearBtn.style.borderRadius = '999px';
+    clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
+    clearBtn.style.background = 'rgba(255,255,255,.08)';
+    clearBtn.style.color = '#fff';
+    clearBtn.style.cursor = 'pointer';
+    clearBtn.style.display = 'none';
+    clearBtn.style.verticalAlign = 'middle';
+    row.appendChild(clearBtn);
+  }
 
-    if (!clearBtn) {
-      clearBtn = document.createElement('button');
-      clearBtn.type = 'button';
-      clearBtn.setAttribute('data-studio-voice-upload-clear', '');
-      clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
-      clearBtn.title = 'Sesi kaldır';
-      clearBtn.textContent = '×';
-      clearBtn.style.marginLeft = '8px';
-      clearBtn.style.width = '22px';
-      clearBtn.style.height = '22px';
-      clearBtn.style.borderRadius = '999px';
-      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-      clearBtn.style.background = 'rgba(255,255,255,.08)';
-      clearBtn.style.color = '#fff';
-      clearBtn.style.cursor = 'pointer';
-      clearBtn.style.display = 'none';
-      clearBtn.style.verticalAlign = 'middle';
-      row.appendChild(clearBtn);
-
-      clearBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        clearStudioVoiceFile(rootState, studioRoot);
-      });
-    }
-
+  if (clearBtn.dataset.bound === '1') {
     return clearBtn;
   }
 
+  clearBtn.dataset.bound = '1';
+  clearBtn.type = 'button';
+
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    clearStudioVoiceFile(rootState, studioRoot);
+  });
+
+  return clearBtn;
+}
   function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
       '#cartoonVoiceFile',
