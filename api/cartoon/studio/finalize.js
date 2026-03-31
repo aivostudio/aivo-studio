@@ -755,10 +755,14 @@ if (voiceFileUrl && voiceFileUploadStatus === "ready") {
 
     const nextOutputs = upsertFinalizedAndPreviewOutputs(outputs, final_url, preview_url);
 
+       const existingLogoOverlayUrl = safeText(meta?.logo_overlay_url);
+    const finalVideoUrlToStore = existingLogoOverlayUrl || final_url;
+    const finalVariantToStore = existingLogoOverlayUrl ? "logo_overlay" : "finalized";
+
     const patchMeta = {
-      final_video_url: final_url,
+      final_video_url: finalVideoUrlToStore,
       preview_video_url: preview_url,
-      final_variant: "finalized",
+      final_variant: finalVariantToStore,
       finalized_at: new Date().toISOString(),
       finalized_from_scene_count: scenes.length,
       finalized_total_duration: durationSec || scenes.reduce((sum, scene) => sum + safeNumber(scene.duration, 0), 0),
