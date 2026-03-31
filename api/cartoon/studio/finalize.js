@@ -266,47 +266,111 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
     maxPreviewBytes,
   };
 }
+async function probeHasAudioStream(inputPath) {
+  return await new Promise((resolve, reject) => {
+    const args = ["-i", inputPath];
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", () => {
+      resolve(/Audio:\s/i.test(stderr));
+    });
+  });
+}
+
 async function runFfmpegNormalizeScene(inputPath, outputPath) {
+  const hasAudio = await probeHasAudioStream(inputPath);
+
   await new Promise((resolve, reject) => {
-    const args = [
-      "-y",
-      "-i",
-      inputPath,
+    const args = hasAudio
+      ? [
+          "-y",
+          "-i",
+          inputPath,
 
-      "-map",
-      "0:v:0",
-      "-map",
-      "0:a:0?",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a:0",
 
-      "-vf",
-      "scale=1280:-2",
-      "-r",
-      "30",
+          "-vf",
+          "scale=1280:-2",
+          "-r",
+          "30",
 
-      "-c:v",
-      "libx264",
-      "-preset",
-      "veryfast",
-      "-crf",
-      "18",
-      "-pix_fmt",
-      "yuv420p",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "18",
+          "-pix_fmt",
+          "yuv420p",
 
-      "-c:a",
-      "aac",
-      "-b:a",
-      "192k",
-      "-ac",
-      "2",
-      "-ar",
-      "48000",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "192k",
+          "-ac",
+          "2",
+          "-ar",
+          "48000",
 
-      "-movflags",
-      "+faststart",
-      "-shortest",
+          "-movflags",
+          "+faststart",
+          "-shortest",
 
-      outputPath,
-    ];
+          outputPath,
+        ]
+      : [
+          "-y",
+          "-i",
+          inputPath,
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=channel_layout=stereo:sample_rate=48000",
+
+          "-map",
+          "0:v:0",
+          "-map",
+          "1:a:0",
+
+          "-vf",
+          "scale=1280:-2",
+          "-r",
+          "30",
+
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "18",
+          "-pix_fmt",
+          "yuv420p",
+
+          "-c:a",
+          "aac",
+          "-b:a",
+          "192k",
+          "-ac",
+          "2",
+          "-ar",
+          "48000",
+
+          "-movflags",
+          "+faststart",
+          "-shortest",
+
+          outputPath,
+        ];
 
     const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
