@@ -1268,21 +1268,44 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
         ''
       ).trim();
 
+      const finalizedOutputUrl = Array.isArray(j?.outputs)
+        ? String(
+            j.outputs.find((o) => {
+              const type = String(o?.type || '').toLowerCase().trim();
+              const variant = String(o?.meta?.variant || '').toLowerCase().trim();
+              const url = String(o?.url || '').trim();
+              return !!url && type === 'video' && variant === 'finalized';
+            })?.url || ''
+          ).trim()
+        : '';
+
+      const previewOutputUrl = Array.isArray(j?.outputs)
+        ? String(
+            j.outputs.find((o) => {
+              const type = String(o?.type || '').toLowerCase().trim();
+              const variant = String(o?.meta?.variant || '').toLowerCase().trim();
+              const url = String(o?.url || '').trim();
+              return !!url && type === 'video' && variant === 'preview';
+            })?.url || ''
+          ).trim()
+        : '';
+
       const hasReadyVideo =
         !!finalVideoUrl ||
-        (Array.isArray(j?.outputs) && j.outputs.some((o) => {
-          const type = String(o?.type || '').toLowerCase().trim();
-          const variant = String(o?.meta?.variant || '').toLowerCase().trim();
-          const url = String(o?.url || '').trim();
-          return !!url && type === 'video' && (variant === 'finalized' || variant === 'preview');
-        }));
+        !!finalizedOutputUrl ||
+        !!previewOutputUrl;
+
 if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
-  let resolvedFinalVideoUrl = finalVideoUrl || '';
+  let resolvedFinalVideoUrl =
+    finalVideoUrl ||
+    finalizedOutputUrl ||
+    previewOutputUrl ||
+    '';
 
   const studioState = window.__CARTOON_STUDIO__ || null;
   const logoUrl = String(studioState?.logoFileUrl || '').trim();
 
-if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
+  if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
     button.disabled = true;
     button.textContent = 'Logo işleniyor...';
     button.classList.add('is-loading');
@@ -1299,6 +1322,13 @@ if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
       logoPosRaw === 'bottom-left' ? 'bl' :
       logoPosRaw === 'center' ? 'c' :
       'br';
+
+    console.log('[CARTOON][STUDIO_LOGO_OVERLAY_REQUEST]', {
+      jobId,
+      resolvedFinalVideoUrl,
+      logoUrl,
+      logoPos
+    });
 
     const overlayRes = await fetch('/api/cartoon/overlay-logo', {
       method: 'POST',
@@ -1343,7 +1373,7 @@ if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
           app: 'cartoon',
           mode: 'studio_export',
           final_video_url: resolvedFinalVideoUrl,
-          preview_video_url: previewVideoUrl
+          preview_video_url: previewVideoUrl || previewOutputUrl
         }
       }
     })
