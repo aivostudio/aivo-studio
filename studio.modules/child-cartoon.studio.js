@@ -730,7 +730,25 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
 
     if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
       window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-
+    window.dispatchEvent(
+  new CustomEvent('aivo:cartoon:job_ready', {
+    detail: {
+      app: 'cartoon',
+      mode: 'studio_export',
+      job_id: String(jobId || ''),
+      status,
+      video: finalVideoUrl ? { url: finalVideoUrl } : null,
+      outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+      raw: j,
+      meta: {
+        app: 'cartoon',
+        mode: 'studio_export',
+        final_video_url: finalVideoUrl,
+        preview_video_url: previewVideoUrl
+      }
+    }
+  })
+);
       button.disabled = false;
       button.textContent = originalText;
       button.classList.remove('is-loading');
