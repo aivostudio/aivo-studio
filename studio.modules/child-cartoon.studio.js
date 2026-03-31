@@ -21,14 +21,20 @@
     return `${minutes} dk ${seconds} sn`;
   }
 
-  function createStudioState() {
-    return {
-      format: '16:9',
-      scenes: [],
-      previewUrl: '',
-      previewTitle: ''
-    };
-  }
+function createStudioState() {
+  return {
+    format: '16:9',
+    scenes: [],
+    previewUrl: '',
+    previewTitle: '',
+    voiceFile: null,
+    voiceFileName: '',
+    voiceFileUrl: '',
+    voiceFileUploadPromise: null,
+    voiceFileUploadStatus: 'idle',
+    voiceFileUploadError: ''
+  };
+}
 
   const STUDIO_STORAGE_KEY = 'aivo_cartoon_studio_scenes_v1';
   const STUDIO_FORMAT_STORAGE_KEY = 'aivo_cartoon_studio_format_v1';
@@ -354,7 +360,141 @@
 
     return publicUrl;
   }
+  function getStudioAudioExtension(fileName) {
+  const name = String(fileName || '').toLowerCase().trim();
+  const match = name.match(/\.([a-z0-9]+)$/i);
+  return match ? match[1] : '';
+}
 
+function resolveStudioAudioContentType(file) {
+  const rawType = String(file?.type || '').toLowerCase().trim();
+  const ext = getStudioAudioExtension(file?.name || '');
+
+  const allowedTypes = new Set([
+    'audio/mpeg',
+    'audio/mp3',
+    'audio/wav',
+    'audio/x-wav',
+    'audio/wave',
+    'audio/aac',
+    'audio/mp4',
+    'audio/x-m4a',
+    'audio/ogg',
+    'audio/webm'
+  ]);
+
+  if (allowedTypes.has(rawType)) {
+    if (rawType === 'audio/mp3') return 'audio/mpeg';
+    if (rawType === 'audio/x-wav' || rawType === 'audio/wave') return 'audio/wav';
+    if (rawType === 'audio/x-m4a') return 'audio/mp4';
+    return rawType;
+  }
+
+  if (ext === 'mp3') return 'audio/mpeg';
+  if (ext === 'wav') return 'audio/wav';
+  if (ext === 'aac') return 'audio/aac';
+  if (ext === 'm4a') return 'audio/mp4';
+  if (ext === 'ogg' || ext === 'oga') return 'audio/ogg';
+  if (ext === 'webm') return 'audio/webm';
+
+  return 'audio/mpeg';
+}
+
+async function presignStudioVoiceFile(file) {
+  const safeContentType = resolveStudioAudioContentType(file);
+
+  const res = await fetch('/api/r2/presign-put', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      app: 'cartoon',
+      kind: 'studio-voice',
+      filename: file?.name || `studio-voice-${Date.now()}.mp3`,
+      contentType: safeContentType
+    })
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data || data.ok === false) {
+    throw new Error(data?.error || 'studio_voice_presign_failed');
+  }
+
+  return {
+    uploadUrl: data.uploadUrl || data.upload_url,
+    publicUrl: data.publicUrl || data.public_url || data.url || '',
+    contentType: safeContentType
+  };
+}
+
+async function uploadStudioVoiceFileToR2(file) {
+  if (!file) throw new Error('missing_studio_voice_file');
+
+  const { uploadUrl, publicUrl, contentType } = await presignStudioVoiceFile(file);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error('studio_voice_missing_upload_urls');
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': contentType || 'audio/mpeg'
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error('studio_voice_r2_put_failed');
+  }
+
+  return publicUrl;
+}
+
+function bindStudioVoiceUpload(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
+
+  if (!input) return;
+  if (input.getAttribute('data-studio-voice-bound') === 'true') return;
+
+  input.setAttribute('data-studio-voice-bound', 'true');
+
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0] || null;
+
+    rootState.voiceFile = file;
+    rootState.voiceFileName = file ? String(file.name || '') : '';
+    rootState.voiceFileUrl = '';
+    rootState.voiceFileUploadPromise = null;
+    rootState.voiceFileUploadError = '';
+    rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
+
+    if (!file) return;
+
+    rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
+      .then((publicUrl) => {
+        rootState.voiceFileUrl = String(publicUrl || '').trim();
+        rootState.voiceFileUploadStatus = 'ready';
+        rootState.voiceFileUploadError = '';
+        console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
+        return rootState.voiceFileUrl;
+      })
+      .catch((err) => {
+        rootState.voiceFileUrl = '';
+        rootState.voiceFileUploadStatus = 'error';
+        rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
+        console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
+        alert(rootState.voiceFileUploadError);
+        throw err;
+      });
+  });
+}
   async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
     const files = Array.from(fileList || []).filter((file) => {
       if (!file) return false;
@@ -563,14 +703,14 @@
           'select[name="hazirMuzik"]'
         ], ''),
 
-        voiceFile: getFileMeta(studioRoot, [
-          '#cartoonVoiceFile',
-          '#studioVoiceFile',
-          '[data-studio-voice-upload]',
-          'input[name="voiceFile"]',
-          'input[name="kendiSesin"]'
-        ]),
-
+        voiceFile: {
+  hasFile: !!rootState?.voiceFile,
+  name: String(rootState?.voiceFileName || ''),
+  type: String(rootState?.voiceFile?.type || ''),
+  size: Number(rootState?.voiceFile?.size || 0),
+  url: String(rootState?.voiceFileUrl || ''),
+  uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
+},
         mode: getValue(studioRoot, [
           '#cartoonAudioMode',
           '#studioAudioMode',
