@@ -1204,42 +1204,40 @@
     </div>
   </section>
 
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Ses Ekle</h4>
-      <p class="story-card-helper">Müzik veya kendi sesini ekle.</p>
+<section class="story-card studio-card studio-card--compact">
+  <div class="story-card-head">
+    <h4>Ses Ekle</h4>
+    <p class="story-card-helper">Kendi ses dosyanı yükleyip final videoya ekle.</p>
+  </div>
+
+  <div class="story-grid story-grid-2">
+    <div class="story-field">
+      <label>Kendi Sesini Yükle</label>
+      <label class="cartoon-upload-row cartoon-upload-row--compact">
+        <input type="file" accept="audio/*" hidden data-studio-voice-upload>
+        <span class="cartoon-upload-btn">Ses Seç</span>
+        <span class="cartoon-upload-text" data-studio-voice-upload-text>Dosya seçilmedi</span>
+        <button
+          type="button"
+          class="cartoon-upload-clear"
+          data-studio-voice-upload-clear
+          aria-label="Yüklenen sesi kaldır"
+          title="Sesi kaldır"
+          style="display:none;">
+          ×
+        </button>
+      </label>
     </div>
 
-    <div class="story-grid story-grid-2">
-      <div class="story-field">
-        <label>Hazır Müzik</label>
-        <select>
-          <option>Seçiniz</option>
-          <option>Neşeli</option>
-          <option>Yumuşak</option>
-          <option>Macera</option>
-        </select>
-      </div>
-
-      <div class="story-field">
-        <label>Kendi Sesini Yükle</label>
-        <input type="file" accept="audio/*">
-      </div>
-
-      <div class="story-field">
-        <label>Ses</label>
-        <select>
-          <option>Açık</option>
-          <option>Kapalı</option>
-        </select>
-      </div>
-
-      <div class="story-field">
-        <label>Müzik Seviyesi</label>
-        <input type="range" min="0" max="100" value="60">
-      </div>
+    <div class="story-field">
+      <label>Ses</label>
+      <select data-studio-voice-enabled>
+        <option value="off" selected>Kapalı</option>
+        <option value="on">Açık</option>
+      </select>
     </div>
-  </section>
+  </div>
+</section>
 
   <section class="story-card studio-card studio-card--compact">
     <div class="story-card-head">
