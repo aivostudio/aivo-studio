@@ -259,35 +259,35 @@ async function uploadStudioVideoToR2(file) {
 
   return publicUrl;
 }
-  async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
-    const files = Array.from(fileList || []).filter((file) => {
-      return file && String(file.type || '').toLowerCase().startsWith('video/');
+async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
+  const files = Array.from(fileList || []).filter((file) => {
+    return file && String(file.type || '').toLowerCase().startsWith('video/');
+  });
+
+  if (!files.length) return;
+
+  const nextScenes = [];
+
+  for (let i = 0; i < files.length; i += 1) {
+    const file = files[i];
+    const duration = await getStudioVideoDuration(file);
+    const publicUrl = await uploadStudioVideoToR2(file);
+    const fileName = String(file.name || `video-${Date.now()}-${i + 1}`).trim();
+    const title = fileName.replace(/\.[^.]+$/, '');
+
+    nextScenes.push({
+      id: `upload-${Date.now()}-${i + 1}`,
+      title,
+      duration,
+      included: true,
+      videoUrl: publicUrl,
+      fileName
     });
-
-    if (!files.length) return;
-
-    const nextScenes = [];
-
-    for (let i = 0; i < files.length; i += 1) {
-      const file = files[i];
-      const duration = await getStudioVideoDuration(file);
-      const objectUrl = URL.createObjectURL(file);
-      const fileName = String(file.name || `video-${Date.now()}-${i + 1}`).trim();
-      const title = fileName.replace(/\.[^.]+$/, '');
-
-      nextScenes.push({
-        id: `upload-${Date.now()}-${i + 1}`,
-        title,
-        duration,
-        included: true,
-        videoUrl: objectUrl,
-        fileName
-      });
-    }
-
-    rootState.scenes.push(...nextScenes);
-    renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
   }
+
+  rootState.scenes.push(...nextScenes);
+  renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+}
 
 function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
   const input = studioRoot.querySelector('[data-studio-video-upload]');
