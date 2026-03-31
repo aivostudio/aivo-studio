@@ -1237,103 +1237,112 @@
       </select>
     </div>
   </div>
-</section>
 
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Yazı / Başlık</h4>
-      <p class="story-card-helper">Final video başlığı ve kısa açıklama.</p>
-    </div>
-
-    <div class="story-grid story-grid-2">
-      <div class="story-field">
-        <label>Video Başlığı</label>
-        <input type="text" placeholder="Örn: Mini Tavşan’ın Macerası">
-      </div>
-
-      <div class="story-field">
-        <label>Altyazı</label>
-        <select>
-          <option>Açık</option>
-          <option>Kapalı</option>
-        </select>
-      </div>
+  <div class="story-grid story-grid-2" style="margin-top:16px;">
+    <div class="story-field">
+      <label>Logo Yükle</label>
+      <label class="cartoon-upload-row cartoon-upload-row--compact">
+        <input type="file" accept="image/*" hidden data-studio-logo-upload>
+        <span class="cartoon-upload-btn">Logo Seç</span>
+        <span class="cartoon-upload-text" data-studio-logo-upload-text>Dosya seçilmedi</span>
+        <button
+          type="button"
+          class="cartoon-upload-clear"
+          data-studio-logo-upload-clear
+          aria-label="Yüklenen logoyu kaldır"
+          title="Logoyu kaldır"
+          style="display:none;">
+          ×
+        </button>
+      </label>
     </div>
 
     <div class="story-field">
-      <label>Kısa Açıklama</label>
-      <textarea rows="3" placeholder="Paylaşım metni veya kısa açıklama"></textarea>
+      <label>Logo Yönü</label>
+      <select data-studio-logo-position>
+        <option value="bottom-right" selected>Sağ Alt</option>
+        <option value="bottom-left">Sol Alt</option>
+        <option value="top-right">Sağ Üst</option>
+        <option value="top-left">Sol Üst</option>
+        <option value="center">Orta</option>
+      </select>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Marka Ekle</h4>
-      <p class="story-card-helper">Logo ve filigran ayarları.</p>
-    </div>
+<section class="story-card studio-card studio-card--compact">
+  <div class="story-card-head">
+    <h4>Yazı / Başlık</h4>
+    <p class="story-card-helper">Final video başlığı ve kısa açıklama.</p>
+  </div>
 
-    <div class="story-grid story-grid-2">
-      <div class="story-field">
-        <label>Logo Yükle</label>
-        <input type="file" accept="image/*">
-      </div>
-
-      <div class="story-field">
-        <label>Filigran</label>
-        <select>
-          <option>Açık</option>
-          <option>Kapalı</option>
-        </select>
-      </div>
-    </div>
-  </section>
-
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Kapak Seç</h4>
-      <p class="story-card-helper">Videodan kare seç veya özel kapak yükle.</p>
+  <div class="story-grid story-grid-2">
+    <div class="story-field">
+      <label>Video Başlığı</label>
+      <input type="text" placeholder="Örn: Mini Tavşan’ın Macerası">
     </div>
 
-    <div class="story-grid story-grid-2">
-      <div class="story-field">
-        <label>Videodan Kare</label>
-        <select>
-          <option>Seçiniz</option>
-          <option>Sahne 1 / Kare 1</option>
-          <option>Sahne 2 / Kare 3</option>
-          <option>Sahne 4 / Kare 2</option>
-        </select>
-      </div>
-
-      <div class="story-field">
-        <label>Ayrı Kapak Yükle</label>
-        <input type="file" accept="image/*">
-      </div>
+    <div class="story-field">
+      <label>Altyazı</label>
+      <select>
+        <option>Açık</option>
+        <option>Kapalı</option>
+      </select>
     </div>
-  </section>
+  </div>
 
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Montaj Özeti</h4>
-      <p class="story-card-helper">Export öncesi son kontrol.</p>
-    </div>
+  <div class="story-field">
+    <label>Kısa Açıklama</label>
+    <textarea rows="3" placeholder="Paylaşım metni veya kısa açıklama"></textarea>
+  </div>
+</section>
 
-    <div class="studio-inline-summary">
-      <span>8 sahne seçildi</span>
-      <span>Toplam süre: 2 dk 10 sn</span>
-      <span>Format: 9:16</span>
-      <span>Kapak: seçildi</span>
-    </div>
-  </section>
+<section class="story-card studio-card studio-card--compact">
+  <div class="story-card-head">
+    <h4>Kapak Seç</h4>
+    <p class="story-card-helper">Videodan kare seç veya özel kapak yükle.</p>
+  </div>
 
-  <section class="story-card studio-card studio-card--compact">
-    <div class="story-card-head">
-      <h4>Final Çıktı</h4>
-      <p class="story-card-helper">Paylaşmaya hazır final çıktıyı oluştur.</p>
+  <div class="story-grid story-grid-2">
+    <div class="story-field">
+      <label>Videodan Kare</label>
+      <select>
+        <option>Seçiniz</option>
+        <option>Sahne 1 / Kare 1</option>
+        <option>Sahne 2 / Kare 3</option>
+        <option>Sahne 4 / Kare 2</option>
+      </select>
     </div>
 
-    <div class="studio-final-actions">
-  <button type="button" class="story-primary-btn" data-studio-export>Paylaşmaya Hazır Çıktı Al</button>
-</div>
-  </section>
+    <div class="story-field">
+      <label>Ayrı Kapak Yükle</label>
+      <input type="file" accept="image/*">
+    </div>
+  </div>
+</section>
+
+<section class="story-card studio-card studio-card--compact">
+  <div class="story-card-head">
+    <h4>Montaj Özeti</h4>
+    <p class="story-card-helper">Export öncesi son kontrol.</p>
+  </div>
+
+  <div class="studio-inline-summary">
+    <span>8 sahne seçildi</span>
+    <span>Toplam süre: 2 dk 10 sn</span>
+    <span>Format: 9:16</span>
+    <span>Kapak: seçildi</span>
+  </div>
+</section>
+
+<section class="story-card studio-card studio-card--compact">
+  <div class="story-card-head">
+    <h4>Final Çıktı</h4>
+    <p class="story-card-helper">Paylaşmaya hazır final çıktıyı oluştur.</p>
+  </div>
+
+  <div class="studio-final-actions">
+    <button type="button" class="story-primary-btn" data-studio-export>Paylaşmaya Hazır Çıktı Al</button>
+  </div>
+</section>
 </div>
