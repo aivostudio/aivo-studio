@@ -953,10 +953,8 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
       const count = files.length;
 
       if (text) {
-        text.textContent = count
-          ? `${count} video seçildi`
-          : 'Henüz video seçilmedi';
-      }
+  text.textContent = '';
+}
 
       try {
         await appendUploadedStudioVideos(
