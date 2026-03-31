@@ -450,7 +450,54 @@ async function uploadStudioVoiceFileToR2(file) {
 
   return publicUrl;
 }
+function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
 
+  if (!input) return;
+
+  const row = input.closest('.cartoon-upload-row') || input.parentElement;
+  if (!row) return;
+
+  const textEl =
+    row.querySelector('[data-studio-voice-upload-text]') ||
+    row.querySelector('.cartoon-upload-text');
+
+  if (!textEl) return;
+
+  const status = String(rootState?.voiceFileUploadStatus || 'idle');
+  const fileName = String(rootState?.voiceFileName || '').trim();
+  const errorText = String(rootState?.voiceFileUploadError || '').trim();
+
+  if (!fileName) {
+    textEl.textContent = 'Dosya seçilmedi';
+    return;
+  }
+
+  if (status === 'uploading') {
+    textEl.textContent = `${fileName} · Yükleniyor...`;
+    return;
+  }
+
+  if (status === 'ready') {
+    textEl.textContent = `${fileName} · Hazır ✓`;
+    return;
+  }
+
+  if (status === 'error') {
+    textEl.textContent = errorText
+      ? `${fileName} · Yükleme hatası`
+      : `${fileName} · Yükleme hatası`;
+    return;
+  }
+
+  textEl.textContent = fileName;
+}
 function bindStudioVoiceUpload(rootState, studioRoot) {
   const input = qsAny(studioRoot, [
     '#cartoonVoiceFile',
@@ -474,6 +521,7 @@ function bindStudioVoiceUpload(rootState, studioRoot) {
     rootState.voiceFileUploadPromise = null;
     rootState.voiceFileUploadError = '';
     rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
+    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
 
     if (!file) return;
 
@@ -482,6 +530,7 @@ function bindStudioVoiceUpload(rootState, studioRoot) {
         rootState.voiceFileUrl = String(publicUrl || '').trim();
         rootState.voiceFileUploadStatus = 'ready';
         rootState.voiceFileUploadError = '';
+        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
         console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
         return rootState.voiceFileUrl;
       })
@@ -489,6 +538,7 @@ function bindStudioVoiceUpload(rootState, studioRoot) {
         rootState.voiceFileUrl = '';
         rootState.voiceFileUploadStatus = 'error';
         rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
+        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
         console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
         alert(rootState.voiceFileUploadError);
         throw err;
