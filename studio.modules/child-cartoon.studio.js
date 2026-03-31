@@ -497,28 +497,47 @@
       clearBtn.setAttribute('data-studio-voice-upload-clear', '');
       clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
       clearBtn.title = 'Sesi kaldır';
-      clearBtn.textContent = '×';
-      clearBtn.style.marginLeft = '8px';
-      clearBtn.style.width = '22px';
-      clearBtn.style.height = '22px';
-      clearBtn.style.borderRadius = '999px';
-      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-      clearBtn.style.background = 'rgba(255,255,255,.08)';
-      clearBtn.style.color = '#fff';
-      clearBtn.style.cursor = 'pointer';
-      clearBtn.style.display = 'none';
-      clearBtn.style.verticalAlign = 'middle';
-      row.appendChild(clearBtn);
+function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
 
-      clearBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        clearStudioVoiceFile(rootState, studioRoot);
-      });
-    }
+  if (!input) return null;
 
-    return clearBtn;
+  const row = input.closest('.cartoon-upload-row') || input.parentElement;
+  if (!row) return null;
+
+  let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
+
+  if (!clearBtn) {
+    clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.setAttribute('data-studio-voice-upload-clear', '');
+    clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
+    clearBtn.title = 'Sesi kaldır';
+    clearBtn.textContent = '×';
+    clearBtn.style.display = 'none';
+    row.appendChild(clearBtn);
   }
+
+  clearBtn.type = 'button';
+
+  if (clearBtn.getAttribute('data-studio-voice-clear-bound') !== 'true') {
+    clearBtn.setAttribute('data-studio-voice-clear-bound', 'true');
+
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearStudioVoiceFile(rootState, studioRoot);
+    });
+  }
+
+  return clearBtn;
+}
 
   function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
