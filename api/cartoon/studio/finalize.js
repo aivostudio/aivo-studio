@@ -627,10 +627,11 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "job_not_cartoon" });
     }
 
-   const meta = job.meta || {};
+ const meta = job.meta || {};
 const voiceFileMeta = meta?.voiceFile || {};
 const voiceFileUrl = safeText(voiceFileMeta?.url);
 const voiceFileUploadStatus = safeText(voiceFileMeta?.uploadStatus).toLowerCase();
+const audioMode = safeText(meta?.audioMode).toLowerCase();
 const musicLevel = safeText(meta?.musicLevel);
 const outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
