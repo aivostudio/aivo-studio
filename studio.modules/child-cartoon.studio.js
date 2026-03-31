@@ -1282,7 +1282,7 @@ if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && 
   const studioState = window.__CARTOON_STUDIO__ || null;
   const logoUrl = String(studioState?.logoFileUrl || '').trim();
 
-if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__)
+if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
     button.disabled = true;
     button.textContent = 'Logo işleniyor...';
     button.classList.add('is-loading');
