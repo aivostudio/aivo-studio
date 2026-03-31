@@ -512,13 +512,12 @@
 .story-card.studio-card [data-studio-voice-upload-clear]:hover {
   background: rgba(255,255,255,.16) !important;
 }
-/* studio / ses + logo aynı kart düzeni */
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-row--compact {
   min-height: 64px;
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 12px 14px;
   border-radius: 18px;
 }
@@ -527,9 +526,13 @@
   flex: 0 0 auto;
 }
 
-.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-text {
-  flex: 1 1 220px;
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-text,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-voice-upload-text],
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-logo-upload-text] {
+  flex: 1 1 auto;
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -537,10 +540,27 @@
 
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-voice-upload-clear],
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-logo-upload-clear] {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  margin-left: 2px;
+  flex: 0 0 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  padding: 0 !important;
+  margin-left: 6px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.10) !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card select[data-studio-voice-enabled],
@@ -558,12 +578,14 @@
   }
 
   .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-row--compact {
-    align-items: flex-start;
+    align-items: center;
   }
 
-  .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-text {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: initial;
+  .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-text,
+  .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-voice-upload-text],
+  .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-logo-upload-text] {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
