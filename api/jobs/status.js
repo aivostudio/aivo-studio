@@ -1499,9 +1499,10 @@ if (
 const logoPos = String(
   job?.meta?.logo_pos ||
   job?.meta?.branding?.logo_pos ||
+  job?.meta?.branding?.logoPos ||
   "br"
 ).trim();
-
+      
 const logoSize = String(
   job?.meta?.logo_size ||
   job?.meta?.branding?.logo_size ||
