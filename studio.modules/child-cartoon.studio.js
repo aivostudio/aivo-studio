@@ -1161,7 +1161,7 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
         ], '')
       },
 
-    branding: {
+branding: {
   logoFile: {
     hasFile: !!rootState?.logoFile,
     name: String(rootState?.logoFileName || ''),
@@ -1171,6 +1171,49 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
   },
 
+  logoPosition: getValue(studioRoot, [
+    '#cartoonLogoPosition',
+    '#studioLogoPosition',
+    '[data-studio-logo-position]',
+    'select[name="logoPosition"]',
+    'select[name="logoYonu"]'
+  ], 'bottom-right'),
+
+  logoPos:
+    getValue(studioRoot, [
+      '#cartoonLogoPosition',
+      '#studioLogoPosition',
+      '[data-studio-logo-position]',
+      'select[name="logoPosition"]',
+      'select[name="logoYonu"]'
+    ], 'bottom-right') === 'top-left'
+      ? 'tl'
+      : getValue(studioRoot, [
+          '#cartoonLogoPosition',
+          '#studioLogoPosition',
+          '[data-studio-logo-position]',
+          'select[name="logoPosition"]',
+          'select[name="logoYonu"]'
+        ], 'bottom-right') === 'top-right'
+        ? 'tr'
+        : getValue(studioRoot, [
+            '#cartoonLogoPosition',
+            '#studioLogoPosition',
+            '[data-studio-logo-position]',
+            'select[name="logoPosition"]',
+            'select[name="logoYonu"]'
+          ], 'bottom-right') === 'bottom-left'
+          ? 'bl'
+          : getValue(studioRoot, [
+              '#cartoonLogoPosition',
+              '#studioLogoPosition',
+              '[data-studio-logo-position]',
+              'select[name="logoPosition"]',
+              'select[name="logoYonu"]'
+            ], 'bottom-right') === 'center'
+            ? 'c'
+            : 'br',
+
   watermarkMode: getValue(studioRoot, [
     '#cartoonWatermarkMode',
     '#studioWatermarkMode',
@@ -1179,7 +1222,6 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     'select[name="filigran"]'
   ], '')
 },
-
       cover: {
         videoFrame: getValue(studioRoot, [
           '#cartoonCoverFrame',
