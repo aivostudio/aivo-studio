@@ -843,7 +843,8 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
         }
 
         window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
-        if (data?.job_id) {
+      if (data?.job_id) {
+  startedPolling = true;
   pollStudioExportJob(String(data.job_id), button, originalText, 0);
   return;
 }
@@ -852,10 +853,12 @@ async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
       } catch (err) {
         console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
         alert(String(err?.message || err || 'studio_export_create_failed'));
-      } finally {
-        button.disabled = false;
-        button.textContent = originalText;
-        button.classList.remove('is-loading');
+           } finally {
+        if (!startedPolling) {
+          button.disabled = false;
+          button.textContent = originalText;
+          button.classList.remove('is-loading');
+        }
       }
     });
   }
