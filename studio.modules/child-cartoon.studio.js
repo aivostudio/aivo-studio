@@ -701,7 +701,10 @@ function bindStudioExportPayloadDebug(rootState, studioRoot) {
 
   button.setAttribute('data-studio-export-bound', 'true');
 
-  button.addEventListener('click', () => {
+button.addEventListener('click', async () => {
+  const originalText = String(button.textContent || 'Paylaşmaya Hazır Çıktı Al');
+
+  try {
     const payload = collectCartoonStudioPayload(rootState, studioRoot);
     window.__CARTOON_STUDIO_EXPORT_PAYLOAD__ = payload;
 
@@ -712,9 +715,40 @@ function bindStudioExportPayloadDebug(rootState, studioRoot) {
       return;
     }
 
-    alert('Payload hazır. Console -> [CARTOON][STUDIO_EXPORT_PAYLOAD]');
-  });
-}
+    button.disabled = true;
+    button.textContent = 'Çıktı hazırlanıyor...';
+    button.classList.add('is-loading');
+
+    const res = await fetch('/api/cartoon/studio/export-create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => null);
+
+    console.log('[CARTOON][STUDIO_EXPORT_CREATE_RESPONSE]', {
+      status: res.status,
+      ok: res.ok,
+      data
+    });
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
+    }
+
+    window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
+
+    alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
+  } catch (err) {
+    console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
+    alert(String(err?.message || err || 'studio_export_create_failed'));
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+    button.classList.remove('is-loading');
+  }
+});
   function renderEmptyStudioState(sceneList) {
     if (!sceneList) return;
 
