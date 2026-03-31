@@ -485,3 +485,31 @@
 .story-card.studio-card .story-grid.story-grid-2 {
   align-items: end;
 }
+/* ===== Studio / Ses kaldır X butonu - referans boyut ===== */
+.story-card.studio-card [data-studio-voice-upload-clear] {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  padding: 0 !important;
+  margin-left: 6px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.10) !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 16px !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+.story-card.studio-card [data-studio-voice-upload-clear]:hover {
+  background: rgba(255,255,255,.16) !important;
+}
