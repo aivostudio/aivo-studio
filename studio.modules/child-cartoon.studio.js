@@ -1057,7 +1057,10 @@ if (data?.job_id) {
       studioSceneList,
       studioSceneTemplate
     );
-
+     bindStudioVoiceUpload(
+  studioState,
+  studioRoot
+);
     bindStudioFormatPills(
       studioState,
       studioRoot
