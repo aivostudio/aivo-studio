@@ -145,46 +145,111 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     };
   }
 
-  async function createText() {
-    const root = getRoot();
+async function createText() {
+  const root = getRoot();
 
-    const prompt = (qs("#videoPrompt", root)?.value || "").trim();
-    if (!prompt) {
-      alert("Lütfen video açıklaması yaz.");
-      return;
-    }
-
-    const payload = {
-      ...buildCommonPayload(root),
-      mode: "text",
-      prompt,
-    };
-
-    const j = await postJSON("/api/providers/runway/video/create", payload);
-    const job = j.job || j;
-
-    // jobs store
-    job.app = "video";
-    window.AIVO_JOBS?.upsert?.(job);
-
-    const job_id = job.job_id || job.id;
-    console.log("[video] created(text)", { job_id, job });
-
-    emitVideoJobCreated({
-      app: "video",
-      job_id,
-      createdAt: Date.now(),
-      mode: "text",
-      prompt,
-      model: payload.model,
-      ratio: payload.ratio,
-      duration: payload.duration,
-      resolution: payload.resolution,
-      audio: payload.audio,
-    });
-
-    pollJob(job_id).catch(console.error);
+  const prompt = (qs("#videoPrompt", root)?.value || "").trim();
+  if (!prompt) {
+    alert("Lütfen video açıklaması yaz.");
+    return;
   }
+
+  const payload = {
+    ...buildCommonPayload(root),
+    mode: "text",
+    prompt,
+  };
+
+  const j = await postJSON("/api/providers/runway/video/create", payload);
+  const job = j.job || j;
+
+  // jobs store
+  job.app = "video";
+  window.AIVO_JOBS?.upsert?.(job);
+
+  const job_id = job.job_id || job.id;
+  console.log("[video] created(text)", { job_id, job });
+
+  emitVideoJobCreated({
+    app: "video",
+    job_id,
+    createdAt: Date.now(),
+    mode: "text",
+    prompt,
+    model: payload.model,
+    ratio: payload.ratio,
+    duration: payload.duration,
+    resolution: payload.resolution,
+    audio: payload.audio,
+  });
+
+  await pollJob(job_id);
+}
+
+async function createImage() {
+  const root = getRoot();
+
+  const file = qs("#videoImageInput", root)?.files?.[0];
+  if (!file) {
+    alert("Lütfen bir resim seç.");
+    return;
+  }
+
+  const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
+
+  const payload = {
+    ...buildCommonPayload(root),
+    mode: "image",
+    prompt,
+  };
+
+  console.log("[video] file selected:", file.name);
+
+  // --- R2 PRESIGN + UPLOAD ---
+  const presign = await postJSON("/api/r2/presign-put", {
+    filename: file.name,
+    contentType: file.type || "image/jpeg",
+    prefix: "files/runway/input-images/",
+    app: "video",
+    kind: "runway-input-image",
+  });
+
+  const up = await fetch(presign.upload_url, {
+    method: "PUT",
+    headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
+    body: file,
+  });
+
+  if (!up.ok) throw "r2_upload_failed_" + up.status;
+
+  payload.image_url = presign.public_url;
+  console.log("[video] uploaded to R2:", payload.image_url);
+
+  const j = await postJSON("/api/providers/runway/video/create", payload);
+  const job = j.job || j;
+
+  job.app = "video";
+  window.AIVO_JOBS?.upsert?.(job);
+
+  const job_id = job.job_id || job.id;
+  console.log("[video] created(image)", { job_id, job });
+
+  emitVideoJobCreated({
+    app: "video",
+    job_id,
+    createdAt: Date.now(),
+    mode: "image",
+    model: payload.model,
+    prompt: payload.prompt || "",
+    image_url: payload.image_url,
+    ratio: payload.ratio,
+    duration: payload.duration,
+    resolution: payload.resolution,
+    audio: payload.audio,
+  });
+
+  await pollJob(job_id);
+}
 
   async function createImage() {
     const root = getRoot();
