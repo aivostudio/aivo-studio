@@ -381,9 +381,9 @@
 
     host.innerHTML = `
       <div class="atmoWrap">
-           <div class="atmoHdr">
+        <div class="atmoHdr">
           <div class="atmoTitle">Atmosfer Video</div>
-          <div class="atmoStatus">Ön İzleme</div>
+          <div class="atmoStatus">Hazır</div>
         </div>
         <div class="atmoGrid" data-grid></div>
       </div>
@@ -613,7 +613,8 @@
         function render(items) {
           if (!elGrid) return;
 
-       setStatus(hasProcessing(items) ? "İşleniyor…" : "Ön İzleme");
+          setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+
           const list = Array.isArray(items) ? items : [];
 
           // ✅ Empty state: innerHTML kullanma (video reset riskini azaltır)
