@@ -591,22 +591,24 @@ if (generateBtn) {
 }
 
     // default
-    let saved = "basic";
-    try { saved = sessionStorage.getItem(MODE_KEY) || "basic"; } catch(e) {}
-    applyMode(saved);
+  if (!generateBtn.__aivoPolicyClickBound) {
+    generateBtn.__aivoPolicyClickBound = true;
+    generateBtn.addEventListener("click", (e) => {
+      evaluateMusicPolicyUI();
+      if (generateBtn.disabled) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+  }
 
-    // bind mode click once
-    if (!module.__aivo_mode_bound) {
-      module.__aivo_mode_bound = true;
-      module.addEventListener("click", (e) => {
-        const btn = e.target.closest(".mode-toggle [data-mode-button]");
-        if (!btn) return;
-        applyMode(btn.dataset.modeButton);
-      });
+  evaluateMusicPolicyUI();
+}
+
     }
-
-    // counters
-    initMusicCharCounters(module);
+    
+    // default
+    let saved = "basic";
 
     // Record button -> modal (advanced only)
     // We bind once and gate by current mode at click time.
