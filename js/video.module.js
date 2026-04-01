@@ -410,14 +410,16 @@ async function createImage() {
 
       input.__uxBound = true;
 
-      if (clearBtn && !clearBtn.__bound) {
+        if (clearBtn && !clearBtn.__bound) {
         clearBtn.__bound = true;
 
         clearBtn.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
+          e.stopImmediatePropagation?.();
 
           input.value = "";
+          input.style.pointerEvents = "auto";
 
           if (fb) fb.style.display = "none";
           if (name) name.textContent = "";
@@ -431,6 +433,7 @@ async function createImage() {
         const f = input.files?.[0];
 
         if (!f) {
+          input.style.pointerEvents = "auto";
           if (fb) fb.style.display = "none";
           if (name) name.textContent = "";
           if (bar) bar.style.width = "0%";
@@ -438,6 +441,8 @@ async function createImage() {
           if (clearBtn) clearBtn.style.display = "none";
           return;
         }
+
+        input.style.pointerEvents = "none";
 
         if (fb) fb.style.display = "block";
         if (name) {
@@ -470,7 +475,7 @@ async function createImage() {
           if (pct) pct.textContent = p + "%";
         }, 80);
       });
-    }
+      
     function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
