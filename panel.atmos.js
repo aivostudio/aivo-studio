@@ -381,9 +381,9 @@
 
     host.innerHTML = `
       <div class="atmoWrap">
-        <div class="atmoHdr">
+           <div class="atmoHdr">
           <div class="atmoTitle">Atmosfer Video</div>
-          <div class="atmoStatus">Hazır</div>
+          <div class="atmoStatus">Ön İzleme</div>
         </div>
         <div class="atmoGrid" data-grid></div>
       </div>
