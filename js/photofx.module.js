@@ -1127,7 +1127,7 @@ const builtEffects = {
     }
 
     if (attempt >= 40) {
-      console.warn("[PHOTOFX] root/children not ready after retry limit", {
+     console.log("[PHOTOFX] root/children not ready after retry limit", {
         hasRoot: !!root,
         presetCards: presetCards.length,
         hasCreateBtn: !!createBtn,
