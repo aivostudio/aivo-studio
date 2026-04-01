@@ -1049,40 +1049,7 @@ const builtEffects = {
       (e) => {
         const nextRoot = getRoot();
         if (!nextRoot) return;
-                const uploadBtn = e.target.closest(
-          "#pfxInlineUploadBtn, #pfxEndImageUploadBtn, #pfxLogoUploadBtn, #pfxAudioUploadBtn"
-        );
 
-        if (uploadBtn && nextRoot.contains(uploadBtn)) {
-          e.preventDefault();
-          e.stopPropagation();
-
-       const imageInputEl = ensureHiddenInput(nextRoot, "pfxImageInput", "image/*");
-      const endImageInputEl = ensureHiddenInput(nextRoot, "pfxEndImageInput", "image/*");
-       const logoInputEl = ensureHiddenInput(nextRoot, "pfxLogoInput", "image/*");
-        const audioInputEl = ensureHiddenInput(nextRoot, "pfxAudioInput", "audio/*");
-
-          if (uploadBtn.matches("#pfxInlineUploadBtn") && imageInputEl) {
-            imageInputEl.click();
-            return;
-          }
-
-          if (uploadBtn.matches("#pfxEndImageUploadBtn") && endImageInputEl) {
-            endImageInputEl.click();
-            return;
-          }
-
-          if (uploadBtn.matches("#pfxLogoUploadBtn") && logoInputEl) {
-            logoInputEl.click();
-            return;
-          }
-
-          if (uploadBtn.matches("#pfxAudioUploadBtn") && audioInputEl) {
-            if (uploadBtn.disabled) return;
-            audioInputEl.click();
-            return;
-          }
-        }
         const clearBtn = e.target.closest("[data-clear-upload]");
         if (clearBtn && nextRoot.contains(clearBtn)) {
           e.preventDefault();
