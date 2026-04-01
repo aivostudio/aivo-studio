@@ -690,21 +690,34 @@
       generateBtn.style.opacity = blocked ? "0.55" : "";
       generateBtn.style.cursor = blocked ? "not-allowed" : "";
 
-      if (promptEl) {
-        promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
-        promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
-      }
-
-      if (lyricsEl) {
-        lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
-        lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
-      }
+       generateBtn.style.background = blocked
+        ? "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))"
+        : "";
+      generateBtn.style.borderColor = blocked
+        ? "rgba(255,110,140,.95)"
+        : "";
+      generateBtn.style.boxShadow = blocked
+        ? "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)"
+        : "";
+      generateBtn.style.opacity = "1";
+      generateBtn.style.cursor = blocked ? "not-allowed" : "";
+      generateBtn.style.transform = "";
+      generateBtn.style.filter = blocked ? "saturate(1.05)" : "";
 
       if (policyNote) {
         if (blocked) {
           policyNote.style.display = "block";
+          policyNote.style.marginTop = "12px";
+          policyNote.style.padding = "12px 14px";
+          policyNote.style.borderRadius = "16px";
+          policyNote.style.background = "rgba(255,90,120,.10)";
+          policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+          policyNote.style.color = "rgba(255,210,220,.96)";
+          policyNote.style.fontSize = "13px";
+          policyNote.style.lineHeight = "1.5";
+          policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
           policyNote.textContent =
-            "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
+            "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
         } else {
           policyNote.style.display = "none";
           policyNote.textContent = "";
