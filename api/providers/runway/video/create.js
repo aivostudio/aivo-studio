@@ -88,7 +88,13 @@ module.exports = async function handler(req, res) {
     if (mode === "image" && !image_url) {
       return res.status(400).json({ ok: false, error: "missing_image_url" });
     }
-
+   if (mode === "image" && /\/files\/tmp\//i.test(String(image_url || ""))) {
+  return res.status(400).json({
+    ok: false,
+    error: "image_url_must_be_permanent_public",
+    message: "Runway için tmp URL kullanma; kalıcı public URL gönder."
+  });
+}
     // -------------------------------
     // Normalize
     // -------------------------------
