@@ -35,7 +35,7 @@
 <!-- ================= PANEL CSS (video/covers/atmo panel ui) ================= -->
 <link rel="stylesheet" href="/css/mod.video.panel.css?v=2">
 <link rel="stylesheet" href="/css/mod.atmo.panel.css?v=1">
-  <link rel="stylesheet" href="/css/mod.atmo.css?v=1">
+<link rel="stylesheet" href="/css/mod.atmo.css?v=1">
 <link rel="stylesheet" href="/css/mod.cartoon.css?v=1">
 <link rel="stylesheet" href="/css/mod.photofx.css?v=1">
 <link rel="stylesheet" href="/css/cartoon.studio.css?v=1">
@@ -114,8 +114,7 @@
 
   <style>
     /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
-/* #globalPlayer { display: none !important; } */
-
+    /* #globalPlayer { display: none !important; } */
 
     /* ✅ Footer taşmasını kes (dışarı çıkmayı engelle) */
     .studioOutputs { overflow: hidden; }
@@ -152,28 +151,20 @@
           <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
         </span>
       </a>
-      
-<a href="/studio.v2.html#video" data-auth="required" class="product-card" data-product="video">
-  <span class="pc-ico">🎬</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Resimden Video Üret</span>
-    <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-  </span>
-</a>
-
-      <a href="/studio.v2.html#atmo" data-auth="required" class="product-card" data-product="atmo">
-        <span class="pc-ico">🌫️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Atmosfer Video</span>
-          <span class="pc-sub">Loop’lanabilir sahne & atmosfer</span>
-        </span>
-      </a>
 
       <a href="/studio.v2.html#cover" data-auth="required" class="product-card" data-product="cover">
         <span class="pc-ico">🖼️</span>
         <span class="pc-txt">
           <span class="pc-title">AI Kapak Üret</span>
           <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+        </span>
+      </a>
+
+      <a href="/studio.v2.html#atmo" data-auth="required" class="product-card" data-product="atmo">
+        <span class="pc-ico">🌫️</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Atmosfer Video</span>
+          <span class="pc-sub">Loop’lanabilir sahne & atmosfer</span>
         </span>
       </a>
 
@@ -190,6 +181,14 @@
         <span class="pc-txt">
           <span class="pc-title">AI Foto Efekt Video Clip</span>
           <span class="pc-sub">Fotoğraftan efektli video klip</span>
+        </span>
+      </a>
+
+      <a href="/studio.v2.html#video" data-auth="required" class="product-card" data-product="video">
+        <span class="pc-ico">🎬</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Resimden Video Üret</span>
+          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
         </span>
       </a>
 
@@ -311,24 +310,25 @@
             <span class="navDot"></span> AI Müzik (Geleneksel)
           </button>
 
-        <button class="navBtn" data-route="video">
-        <span class="navDot"></span> AI Resimden Video Üret
-      </button>
+          <button class="navBtn" data-route="cover">
+            <span class="navDot"></span> AI Kapak Üret
+          </button>
 
           <button class="navBtn" data-route="atmo">
             <span class="navDot"></span> AI Atmosfer Video
           </button>
 
-          <button class="navBtn" data-route="cover">
-            <span class="navDot"></span> AI Kapak Üret
+          <button class="navBtn" data-route="cartoon">
+            <span class="navDot"></span> AI Çocuk Çizgifilm
           </button>
 
-         <button class="navBtn" data-route="cartoon">
-  <span class="navDot"></span> AI Çocuk Çizgifilm
-</button>
-         <button class="navBtn" data-route="photofx">
-  <span class="navDot"></span> AI Foto Efekt Video Clip
-</button>
+          <button class="navBtn" data-route="photofx">
+            <span class="navDot"></span> AI Foto Efekt Video Clip
+          </button>
+
+          <button class="navBtn" data-route="video">
+            <span class="navDot"></span> AI Resimden Video Üret
+          </button>
         </div>
 
         <div class="navCard">
