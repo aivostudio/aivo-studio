@@ -153,13 +153,17 @@ if (policy.decision === "block") {
     const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
     // Provider payload (NO reference_audio_url forward)
-    const providerPayload = { prompt };
-    if (title) providerPayload.title = title;
-    if (lyrics) providerPayload.lyrics = lyrics;
-    if (mode) providerPayload.mode = mode;
-    if (vocal) providerPayload.vocal = vocal;
-    if (mood) providerPayload.mood = mood;
+  const safePrompt =
+  policy.decision === "rewrite"
+    ? String(policy.rewrittenPrompt || prompt || "").trim()
+    : prompt;
 
+const providerPayload = { prompt: safePrompt };
+if (title) providerPayload.title = title;
+if (lyrics) providerPayload.lyrics = lyrics;
+if (mode) providerPayload.mode = mode;
+if (vocal) providerPayload.vocal = vocal;
+if (mood) providerPayload.mood = mood;
     let pr;
     try {
       pr = await fetchFn(providerCreateUrl, {
