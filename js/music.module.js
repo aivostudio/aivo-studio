@@ -721,16 +721,56 @@
 
       ensureMusicPolicyNote(generateBtn);
 
-      if (promptEl && !promptEl.__aivoPolicyInputBound) {
+           if (promptEl && !promptEl.__aivoPolicyInputBound) {
         promptEl.__aivoPolicyInputBound = true;
-        promptEl.addEventListener("input", evaluateMusicPolicyUI);
-        promptEl.addEventListener("change", evaluateMusicPolicyUI);
+        promptEl.addEventListener("input", () => {
+          if (promptEl) {
+            promptEl.style.borderColor = "";
+            promptEl.style.boxShadow = "";
+          }
+          if (lyricsEl) {
+            lyricsEl.style.borderColor = "";
+            lyricsEl.style.boxShadow = "";
+          }
+          if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.style.opacity = "";
+            generateBtn.style.cursor = "";
+            generateBtn.style.background = "";
+            generateBtn.style.borderColor = "";
+          }
+          const policyNote = module.querySelector("#musicPolicyNote");
+          if (policyNote) {
+            policyNote.style.display = "none";
+            policyNote.textContent = "";
+          }
+        });
       }
 
       if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
         lyricsEl.__aivoPolicyInputBound = true;
-        lyricsEl.addEventListener("input", evaluateMusicPolicyUI);
-        lyricsEl.addEventListener("change", evaluateMusicPolicyUI);
+        lyricsEl.addEventListener("input", () => {
+          if (promptEl) {
+            promptEl.style.borderColor = "";
+            promptEl.style.boxShadow = "";
+          }
+          if (lyricsEl) {
+            lyricsEl.style.borderColor = "";
+            lyricsEl.style.boxShadow = "";
+          }
+          if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.style.opacity = "";
+            generateBtn.style.cursor = "";
+            generateBtn.style.background = "";
+            generateBtn.style.borderColor = "";
+          }
+          const policyNote = module.querySelector("#musicPolicyNote");
+          if (policyNote) {
+            policyNote.style.display = "none";
+            policyNote.textContent = "";
+          }
+        });
       }
 
       if (generateBtn && !generateBtn.__aivoPolicyClickBound) {
