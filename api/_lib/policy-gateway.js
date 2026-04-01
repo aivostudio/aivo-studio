@@ -1,34 +1,36 @@
 const ARTISTS_TR_SEED = require('./policy-data/artists-tr.seed.json');
 const PUBLIC_FIGURES_TR_SEED = require('./policy-data/public_figures_tr.seed.json');
 
-const PUBLIC_FIGURE_TERMS = [
-  ...PUBLIC_FIGURES_TR_SEED,
-  'cumhurbaskani',
-  'cumhurbaşkanı',
-  'reisicumhur',
-  'bakan',
-  'milletvekili',
-  'siyasetci',
-  'siyasetçi',
-  'belediye baskani',
-  'belediye başkanı',
-  'vali',
-  'kaymakam',
-  'devlet buyugu',
-  'devlet büyüğü',
-  'kamu figuru',
-  'kamu figürü',
-  'politikaci',
-  'politikacı',
-  'unlu',
-  'ünlü',
-  'famous',
-  'celebrity',
-  'president',
-  'politician',
-];
+const PUBLIC_FIGURE_TERMS = Array.from(
+  new Set([
+    ...PUBLIC_FIGURES_TR_SEED,
+    'cumhurbaskani',
+    'cumhurbaşkanı',
+    'reisicumhur',
+    'bakan',
+    'milletvekili',
+    'siyasetci',
+    'siyasetçi',
+    'belediye baskani',
+    'belediye başkanı',
+    'vali',
+    'kaymakam',
+    'devlet buyugu',
+    'devlet büyüğü',
+    'kamu figuru',
+    'kamu figürü',
+    'politikaci',
+    'politikacı',
+    'unlu',
+    'ünlü',
+    'famous',
+    'celebrity',
+    'president',
+    'politician',
+  ])
+);
 
-const ARTIST_NAME_TERMS = [...ARTISTS_TR_SEED];
+const ARTIST_NAME_TERMS = Array.from(new Set([...ARTISTS_TR_SEED]));
 
 const MUSIC_STYLE_TERMS = [
   'gibi',
@@ -78,7 +80,6 @@ const DEFAMATION_TERMS = [
   'rezil',
   'aptal',
   'sahtekar',
-  'sahtekar',
   'ahlaksiz',
   'ahlaksız',
   'asalak',
@@ -102,7 +103,6 @@ const DEFAMATION_TERMS = [
 ];
 
 const PROTECTED_WORK_TERMS = [
-  'aynisini yap',
   'aynisini yap',
   'birebir yap',
   'birebir üret',
@@ -132,6 +132,10 @@ function normalizeText(value) {
     .trim();
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function containsAny(text, terms) {
   return terms.some((term) => text.includes(normalizeText(term)));
 }
@@ -144,6 +148,17 @@ function pickMatchedTerms(text, terms, limit = 6) {
     if (hits.length >= limit) break;
   }
   return hits;
+}
+
+function replaceTermsCaseInsensitive(source, terms, replacement) {
+  let output = String(source || '');
+  for (const term of terms) {
+    const clean = String(term || '').trim();
+    if (!clean) continue;
+    const pattern = new RegExp(`\\b${escapeRegex(clean)}\\b`, 'gi');
+    output = output.replace(pattern, replacement);
+  }
+  return output;
 }
 
 function joinInput(fields) {
@@ -170,7 +185,7 @@ function buildSafeAlternative(app) {
   if (app === 'cover' || app === 'image' || app === 'cartoon') {
     return 'Gerçek kişi veya kamu figürü yerine anonim karakter, genel stil ve güvenli sahne tanımı kullan.';
   }
-  return 'Belirli kişi/sanatçı/eser yerine genel tür, duygu, dönem ve anonim karakter tanımları kullan.';
+  return 'Belirli kişi, sanatçı veya eser yerine genel tür, duygu, dönem ve anonim karakter tanımları kullan.';
 }
 
 function rewritePrompt(app, original) {
@@ -192,14 +207,27 @@ function rewritePrompt(app, original) {
   );
 
   if (app === 'music') {
-    return output.trim() || 'Özgün, ticari olarak güvenli, belirli bir sanatçıyı taklit etmeyen müzik üret.';
+    output = replaceTermsCaseInsensitive(output, ARTIST_NAME_TERMS, 'özgün bir sanatçı kimliğiyle');
+  }
+
+  if (app === 'video' || app === 'cover' || app === 'image' || app === 'cartoon') {
+    output = replaceTermsCaseInsensitive(output, PUBLIC_FIGURE_TERMS, 'anonim bir karakter');
+  }
+
+  output = output
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .trim();
+
+  if (app === 'music') {
+    return output || 'Özgün, ticari olarak güvenli, belirli bir sanatçıyı taklit etmeyen müzik üret.';
   }
 
   if (app === 'video') {
-    return output.trim() || 'Özgün, anonim karakterlerle, gerçek kişiyi taklit etmeyen güvenli video üret.';
+    return output || 'Özgün, anonim karakterlerle, gerçek kişiyi taklit etmeyen güvenli video üret.';
   }
 
-  return output.trim() || 'Özgün, belirli kişiyi veya korunan eseri taklit etmeyen güvenli içerik üret.';
+  return output || 'Özgün, belirli kişiyi veya korunan eseri taklit etmeyen güvenli içerik üret.';
 }
 
 function makeResult({
@@ -213,7 +241,7 @@ function makeResult({
 }) {
   return {
     ok: decision !== 'block',
-    decision, // allow | rewrite | block
+    decision,
     code,
     message,
     rewrittenPrompt,
@@ -273,9 +301,9 @@ function enforceMusicPolicy(text) {
 }
 
 function enforcePersonPolicy(app, text) {
-  const hitsPublic = pickMatchedTerms(text, PUBLIC_FIGURE_TERMS);
-  const hitsDefamation = pickMatchedTerms(text, DEFAMATION_TERMS);
-  const hitsDeepfake = pickMatchedTerms(text, DEEPFAKE_TERMS);
+  const hitsPublic = pickMatchedTerms(text, PUBLIC_FIGURE_TERMS, 8);
+  const hitsDefamation = pickMatchedTerms(text, DEFAMATION_TERMS, 8);
+  const hitsDeepfake = pickMatchedTerms(text, DEEPFAKE_TERMS, 8);
 
   const hasPublicFigure = hitsPublic.length > 0;
   const hasDefamation = hitsDefamation.length > 0;
@@ -311,7 +339,7 @@ function enforcePersonPolicy(app, text) {
       code: 'PUBLIC_FIGURE_REWRITE',
       severity: 'medium',
       message:
-        'Gerçek kişi veya kamu figürü yerine anonim/kurgu karakterle devam edilmelidir.',
+        'Gerçek kişi veya kamu figürü yerine anonim veya kurgu karakterle devam edilmelidir.',
       rewrittenPrompt: null,
       reasons: ['public-figure-rewrite'],
       matchedTerms: hitsPublic,
@@ -340,6 +368,12 @@ function enforcePolicy(input = {}) {
 
   const musicDecision = enforceMusicPolicy(text);
   if (musicDecision) {
+    if (musicDecision.decision === 'rewrite') {
+      return {
+        ...musicDecision,
+        rewrittenPrompt: rewritePrompt(app, raw),
+      };
+    }
     return musicDecision;
   }
 
@@ -390,9 +424,9 @@ function policyErrorResponse(result) {
     error: result.code || 'POLICY_BLOCKED',
     message:
       result.message ||
-      'Belirli sanatçı, kamu figürü veya gerçek kişiyi taklit eden / aşağılayan içerik üretemem.',
+      'Belirli sanatçı, kamu figürü veya gerçek kişiyi taklit eden veya aşağılayan içerik üretemem.',
     safe_alternative:
-      'Sanatçı adı yerine tür/duygu, kişi adı yerine kurgu karakter, gerçek kişi yerine anonim stil kullan.',
+      'Sanatçı adı yerine tür ve duygu, kişi adı yerine kurgu karakter, gerçek kişi yerine anonim stil kullan.',
     policy: result,
   };
 }
