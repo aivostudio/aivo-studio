@@ -447,7 +447,7 @@
         }
       }
 
-      if (generateBtn) {
+if (generateBtn) {
   if (showAdv) {
     generateBtn.style.minHeight = "64px";
     generateBtn.style.borderRadius = "999px";
@@ -457,6 +457,7 @@
   }
 
   const promptEl = module.querySelector("#prompt");
+  const lyricsEl = module.querySelector("#lyrics");
   let policyNote = module.querySelector("#musicPolicyNote");
 
   if (!policyNote && generateBtn.parentElement) {
@@ -523,7 +524,11 @@
       .trim();
 
   const evaluateMusicPolicyUI = () => {
-    const raw = String(promptEl?.value || "").trim();
+    const raw = [
+      String(promptEl?.value || "").trim(),
+      String(lyricsEl?.value || "").trim()
+    ].filter(Boolean).join(" ");
+
     const text = normalizePolicyText(raw);
 
     const hasBlockedTerm = HARD_BLOCK_TERMS.some((term) =>
@@ -540,6 +545,11 @@
     if (promptEl) {
       promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
       promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
+    }
+
+    if (lyricsEl) {
+      lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+      lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
     }
 
     if (policyNote) {
@@ -560,6 +570,12 @@
     promptEl.addEventListener("change", evaluateMusicPolicyUI);
   }
 
+  if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
+    lyricsEl.__aivoPolicyInputBound = true;
+    lyricsEl.addEventListener("input", evaluateMusicPolicyUI);
+    lyricsEl.addEventListener("change", evaluateMusicPolicyUI);
+  }
+
   if (!generateBtn.__aivoPolicyClickBound) {
     generateBtn.__aivoPolicyClickBound = true;
     generateBtn.addEventListener("click", (e) => {
@@ -573,7 +589,6 @@
 
   evaluateMusicPolicyUI();
 }
-    }
 
     // default
     let saved = "basic";
