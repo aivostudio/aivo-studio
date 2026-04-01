@@ -4,6 +4,7 @@
 // Fix 1: eski render/state/hydrate/poll mimarisi tamamen kaldırıldı
 // Fix 2: same-page ready için aivo:video:job_ready zinciri korundu
 // Fix 3: shared video card ile tek kart akışı
+// Fix 4: play handler doğru yere taşındı
 
 (function () {
   if (!window.RightPanel) return;
@@ -745,6 +746,19 @@
       const allItems = [...currentDbItems, ...Array.from(optimistic.values())];
       const job = allItems.find((x) => idOf(x) === id);
       if (!job) return;
+
+      if (act === "play") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const video = card?.querySelector("video.svcVideo");
+        if (!video) return;
+
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+
+        return;
+      }
 
       const finalUrl = pickFinalVideoFromJob(job);
       const previewUrl = pickPreviewVideoFromJob(job);
