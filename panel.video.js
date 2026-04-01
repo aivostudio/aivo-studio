@@ -562,39 +562,46 @@
 
     if (!pending.length) return;
 
-    for (const it of pending) {
-      const jid = String(it.job_id || it.id || "").trim();
-      if (!jid) continue;
-      if (deletedIds.has(jid)) continue;
+ for (const it of pending) {
+  const jid = String(it.job_id || it.id || "").trim();
+  if (!jid) continue;
+  if (deletedIds.has(jid)) continue;
 
-      const s = await fetchStatus(jid);
-      if (!s) continue;
+  const s = await fetchStatus(jid);
+  if (!s) continue;
 
-      const st = norm(s.status);
-      const ready = st === "ready" || st === "done" || st === "completed";
-      const url = pickStatusVideoUrl(s);
-      const hasUrl = !!String(url || "").trim();
+  const st = norm(s.status);
+  const ready = st === "ready" || st === "done" || st === "completed";
+  const url = pickStatusVideoUrl(s);
+  const hasUrl = !!String(url || "").trim();
 
-      const err = st === "error" || st === "failed";
-      if (err) {
-        it.status = "Hata";
-        render(host);
-        continue;
-      }
+  const err = st === "error" || st === "failed";
+  if (err) {
+    it.status = "Hata";
+    it.db_status = s.db_status || s.status || it.db_status;
+    it.state = s.state || it.state;
+    render(host);
+    continue;
+  }
 
-      if (ready || hasUrl) {
-        if (hasUrl) it.url = url;
-        if (Array.isArray(s.outputs)) it.outputs = s.outputs;
+  if (Array.isArray(s.outputs)) it.outputs = s.outputs;
+  if (hasUrl) it.url = url;
 
-        it.db_status = s.db_status || it.db_status;
-        it.state = s.state || it.state;
-        it.status = "Hazır";
-        it._fresh = true;
-        it.playbackUrl = getPlaybackUrl(it) || "";
+  it.db_status = s.db_status || s.status || it.db_status;
+  it.state = s.state || it.state;
 
-        render(host);
-      }
-    }
+  if (ready) {
+    it.status = "Hazır";
+    it._fresh = true;
+    it.playbackUrl = getPlaybackUrl(it) || "";
+  } else {
+    it.status = "İşleniyor";
+    it._fresh = false;
+    it.playbackUrl = "";
+  }
+
+  render(host);
+}
   }
 
   /* =======================
@@ -995,59 +1002,58 @@
      Job created bridge
      ======================= */
 
-  function attachJobCreated(host) {
-    const onJob = (e) => {
-      const d = e?.detail || {};
-      if (!isVideoApp(d.app) || !d.job_id) return;
+function attachJobCreated(host) {
+  const onJob = (e) => {
+    const d = e?.detail || {};
+    if (!isVideoApp(d.app) || !d.job_id) return;
 
-      const job_id = String(d.job_id).trim();
-      if (!job_id) return;
+    const job_id = String(d.job_id).trim();
+    if (!job_id) return;
 
-      if (deletedIds.has(job_id)) return;
+    if (deletedIds.has(job_id)) return;
 
-      const exists = state.items.some(x => String(idOf(x)) === job_id);
-      if (exists) return;
+    const exists = state.items.some(x => String(idOf(x)) === job_id);
+    if (exists) return;
 
-      const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
-      const prompt = (d.prompt && String(d.prompt).trim()) ? String(d.prompt).trim() : "";
-      const title = prompt ? `${modeLabel}: ${prompt}` : modeLabel;
+    const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
+    const prompt = (d.prompt && String(d.prompt).trim()) ? String(d.prompt).trim() : "";
+    const title = prompt ? `${modeLabel}: ${prompt}` : modeLabel;
 
-      state.items.unshift({
-        id: job_id,
-        job_id,
-        url: "",
-        archive_url: "",
-        playbackUrl: "",
-        status: "İşleniyor",
-        _fresh: true,
-        title,
-        createdAt: d.createdAt || Date.now(),
-        meta: {
-          mode: d.mode || "",
-          prompt: prompt,
-          image_url: d.image_url || "",
-          app: "video",
-        },
-        outputs: [],
-        state: "PENDING",
-        db_status: "pending",
+    state.items.unshift({
+      id: job_id,
+      job_id,
+      url: "",
+      archive_url: "",
+      playbackUrl: "",
+      status: "İşleniyor",
+      _fresh: false,
+      title,
+      createdAt: d.createdAt || Date.now(),
+      meta: {
+        mode: d.mode || "",
+        prompt: prompt,
+        image_url: d.image_url || "",
         app: "video",
-      });
+      },
+      outputs: [],
+      state: "PENDING",
+      db_status: "pending",
+      app: "video",
+    });
 
-      state.items = state.items.slice(0, MAX_ITEMS);
-      render(host);
+    state.items = state.items.slice(0, MAX_ITEMS);
+    render(host);
 
-      setTimeout(() => {
-        hydrateFromDB(host).catch?.(() => {});
-      }, 1200);
+    setTimeout(() => {
+      hydrateFromDB(host).catch?.(() => {});
+    }, 1200);
 
-      pollPendingStatuses(host).catch(() => {});
-    };
+    pollPendingStatuses(host).catch(() => {});
+  };
 
-    window.addEventListener("aivo:video:job_created", onJob);
-    return () => window.removeEventListener("aivo:video:job_created", onJob);
-  }
-
+  window.addEventListener("aivo:video:job_created", onJob);
+  return () => window.removeEventListener("aivo:video:job_created", onJob);
+}
   /* =======================
      Panel register
      ======================= */
