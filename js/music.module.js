@@ -713,76 +713,96 @@
 
       return blocked;
     }
-
     function bindMusicPolicyUI() {
       const generateBtn = module.querySelector("#musicGenerateBtn");
       const promptEl = module.querySelector("#prompt");
       const lyricsEl = module.querySelector("#lyrics");
 
-      ensureMusicPolicyNote(generateBtn);
+      if (!generateBtn || generateBtn.__aivoPolicyClickBound) return;
 
-           if (promptEl && !promptEl.__aivoPolicyInputBound) {
-        promptEl.__aivoPolicyInputBound = true;
-        promptEl.addEventListener("input", () => {
-          if (promptEl) {
-            promptEl.style.borderColor = "";
-            promptEl.style.boxShadow = "";
-          }
-          if (lyricsEl) {
-            lyricsEl.style.borderColor = "";
-            lyricsEl.style.boxShadow = "";
-          }
-          if (generateBtn) {
-            generateBtn.disabled = false;
-            generateBtn.style.opacity = "";
-            generateBtn.style.cursor = "";
-            generateBtn.style.background = "";
-            generateBtn.style.borderColor = "";
-          }
-          const policyNote = module.querySelector("#musicPolicyNote");
-          if (policyNote) {
-            policyNote.style.display = "none";
-            policyNote.textContent = "";
-          }
-        });
+      generateBtn.__aivoPolicyClickBound = true;
+
+      const resetPolicyUI = () => {
+        const policyNote = module.querySelector("#musicPolicyNote");
+
+        if (promptEl) {
+          promptEl.style.borderColor = "";
+          promptEl.style.boxShadow = "";
+        }
+
+        if (lyricsEl) {
+          lyricsEl.style.borderColor = "";
+          lyricsEl.style.boxShadow = "";
+        }
+
+        generateBtn.style.background = "";
+        generateBtn.style.borderColor = "";
+        generateBtn.style.opacity = "";
+        generateBtn.style.cursor = "";
+
+        if (policyNote) {
+          policyNote.style.display = "none";
+          policyNote.textContent = "";
+        }
+      };
+
+      if (promptEl && !promptEl.__aivoPolicyResetBound) {
+        promptEl.__aivoPolicyResetBound = true;
+        promptEl.addEventListener("input", resetPolicyUI);
       }
 
-      if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
-        lyricsEl.__aivoPolicyInputBound = true;
-        lyricsEl.addEventListener("input", () => {
-          if (promptEl) {
-            promptEl.style.borderColor = "";
-            promptEl.style.boxShadow = "";
-          }
-          if (lyricsEl) {
-            lyricsEl.style.borderColor = "";
-            lyricsEl.style.boxShadow = "";
-          }
-          if (generateBtn) {
-            generateBtn.disabled = false;
-            generateBtn.style.opacity = "";
-            generateBtn.style.cursor = "";
-            generateBtn.style.background = "";
-            generateBtn.style.borderColor = "";
-          }
-          const policyNote = module.querySelector("#musicPolicyNote");
-          if (policyNote) {
-            policyNote.style.display = "none";
-            policyNote.textContent = "";
-          }
-        });
+      if (lyricsEl && !lyricsEl.__aivoPolicyResetBound) {
+        lyricsEl.__aivoPolicyResetBound = true;
+        lyricsEl.addEventListener("input", resetPolicyUI);
       }
 
-      if (generateBtn && !generateBtn.__aivoPolicyClickBound) {
-        generateBtn.__aivoPolicyClickBound = true;
-        generateBtn.addEventListener("click", (e) => {
-          const blocked = evaluateMusicPolicyUI();
-          if (blocked) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }, true);
-      }
+      generateBtn.addEventListener("click", (e) => {
+        resetPolicyUI();
+
+        const raw = [
+          String(promptEl?.value || "").trim(),
+          String(lyricsEl?.value || "").trim()
+        ].filter(Boolean).join(" ");
+
+        const text = normalizePolicyText(raw);
+
+        const hasBlockedTerm =
+          HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+          PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+          ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+
+        const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+        const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
+
+        if (!blocked) return;
+
+        const policyNote = ensureMusicPolicyNote(generateBtn);
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (promptEl) {
+          promptEl.style.borderColor = "rgba(255,77,109,.9)";
+          promptEl.style.boxShadow = "0 0 0 1px rgba(255,77,109,.35)";
+        }
+
+        if (lyricsEl) {
+          lyricsEl.style.borderColor = "rgba(255,77,109,.9)";
+          lyricsEl.style.boxShadow = "0 0 0 1px rgba(255,77,109,.35)";
+        }
+
+        generateBtn.style.background = "rgba(255,77,109,.18)";
+        generateBtn.style.borderColor = "rgba(255,77,109,.65)";
+        generateBtn.style.opacity = "1";
+        generateBtn.style.cursor = "not-allowed";
+
+        if (policyNote) {
+          policyNote.style.display = "block";
+          policyNote.textContent =
+            "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
+        }
+      }, true);
+    }
 
       evaluateMusicPolicyUI();
     }
