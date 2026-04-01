@@ -799,25 +799,32 @@
         e.preventDefault();
         e.stopPropagation();
 
-        if (promptEl) {
-          promptEl.style.borderColor = "rgba(255,77,109,.9)";
-          promptEl.style.boxShadow = "0 0 0 1px rgba(255,77,109,.35)";
-        }
-
-        if (lyricsEl) {
-          lyricsEl.style.borderColor = "rgba(255,77,109,.9)";
-          lyricsEl.style.boxShadow = "0 0 0 1px rgba(255,77,109,.35)";
-        }
-
-        generateBtn.style.background = "rgba(255,77,109,.18)";
-        generateBtn.style.borderColor = "rgba(255,77,109,.65)";
+             generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+        generateBtn.style.borderColor = "rgba(255,110,140,.95)";
+        generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
         generateBtn.style.opacity = "1";
         generateBtn.style.cursor = "not-allowed";
+        generateBtn.style.transform = "";
+        generateBtn.style.filter = "saturate(1.05)";
 
         if (policyNote) {
           policyNote.style.display = "block";
+          policyNote.style.marginTop = "12px";
+          policyNote.style.padding = "12px 14px";
+          policyNote.style.borderRadius = "16px";
+          policyNote.style.background = "rgba(255,90,120,.10)";
+          policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+          policyNote.style.color = "rgba(255,210,220,.96)";
+          policyNote.style.fontSize = "13px";
+          policyNote.style.lineHeight = "1.5";
+          policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+          policyNote.style.backdropFilter = "blur(10px)";
+          policyNote.style.webkitBackdropFilter = "blur(10px)";
+          policyNote.style.position = "relative";
+          policyNote.style.overflow = "hidden";
+          policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
           policyNote.textContent =
-            "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
+            "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
         }
       }, true);
     }
