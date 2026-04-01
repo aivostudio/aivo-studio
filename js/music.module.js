@@ -804,9 +804,6 @@
       }, true);
     }
 
-      evaluateMusicPolicyUI();
-    }
-
          function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
       const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
