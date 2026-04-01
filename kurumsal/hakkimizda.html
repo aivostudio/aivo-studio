@@ -841,5 +841,23 @@
   }, true);
 })();
 </script>
+  <script>
+(function () {
+  function scrollToHashSection() {
+    if (window.location.hash !== "#icerik-kullanim-kurallari") return;
+
+    var el = document.getElementById("icerik-kullanim-kurallari");
+    if (!el) return;
+
+    var top = el.getBoundingClientRect().top + window.pageYOffset - 110;
+    window.scrollTo({ top: top, behavior: "auto" });
+  }
+
+  window.addEventListener("load", function () {
+    setTimeout(scrollToHashSection, 120);
+    setTimeout(scrollToHashSection, 350);
+  });
+})();
+</script>
 </body>
 </html>
