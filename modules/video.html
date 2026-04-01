@@ -139,15 +139,23 @@
 
       <!-- UX feedback alanı -->
       <div class="upload-feedback" id="videoImageFeedback" style="display:none;">
-        <div class="upload-fileline">
-  <div class="upload-filename" id="videoImageName"></div>
+<div
+  class="upload-fileline"
+  style="display:flex;align-items:center;gap:10px;position:relative;z-index:5;pointer-events:auto;"
+>
+  <div
+    class="upload-filename"
+    id="videoImageName"
+    style="display:flex;align-items:center;min-width:0;"
+  ></div>
+
   <button
     type="button"
     id="videoImageClearBtn"
     data-video-image-clear
     aria-label="Yüklenen resmi kaldır"
     title="Resmi kaldır"
-    style="display:none;margin-left:8px;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;"
+    style="display:none;flex:0 0 auto;width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;position:relative;z-index:6;pointer-events:auto;"
   >
     ×
   </button>
