@@ -206,11 +206,13 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     console.log("[video] file selected:", file.name);
 
     // --- R2 PRESIGN + UPLOAD ---
-    const presign = await postJSON("/api/r2/presign-put", {
-      filename: file.name,
-      contentType: file.type || "image/jpeg",
-      prefix: "files/tmp/",
-    });
+   const presign = await postJSON("/api/r2/presign-put", {
+  filename: file.name,
+  contentType: file.type || "image/jpeg",
+  prefix: "files/runway/input-images/",
+  app: "video",
+  kind: "runway-input-image",
+});
 
     const up = await fetch(presign.upload_url, {
       method: "PUT",
