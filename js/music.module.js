@@ -832,7 +832,7 @@
 
     // counters
     initMusicCharCounters(module);
-
+       bindMusicPolicyUI();
     // Record button -> modal (advanced only)
     // We bind once and gate by current mode at click time.
     if (!module.__aivo_record_bound) {
