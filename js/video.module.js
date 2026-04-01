@@ -403,6 +403,7 @@ async function createImage() {
       const input = root.querySelector("#videoImageInput");
       const fb = root.querySelector("#videoImageFeedback");
       const name = root.querySelector("#videoImageName");
+       const clearBtn = root.querySelector("#videoImageClearBtn");
       const bar = root.querySelector("#videoImageBar");
       const pct = root.querySelector("#videoImagePct");
       if (!input || input.__uxBound) return;
