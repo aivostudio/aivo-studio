@@ -399,7 +399,6 @@ async function createImage() {
     if (!tabText || !tabImage || !viewText || !viewImage) return;
 
     root.__videoTabsBound = true;
-
     function bindImageUploadUX() {
       const input = root.querySelector("#videoImageInput");
       const fb = root.querySelector("#videoImageFeedback");
@@ -408,23 +407,89 @@ async function createImage() {
       const pct = root.querySelector("#videoImagePct");
       if (!input || input.__uxBound) return;
 
+      function ensureClearButton() {
+        if (!name) return null;
+
+        let clearBtn = root.querySelector("[data-video-image-clear]");
+        if (clearBtn) return clearBtn;
+
+        clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.setAttribute("data-video-image-clear", "");
+        clearBtn.setAttribute("aria-label", "Yüklenen resmi kaldır");
+        clearBtn.title = "Resmi kaldır";
+        clearBtn.textContent = "×";
+
+        clearBtn.style.display = "none";
+        clearBtn.style.marginLeft = "8px";
+        clearBtn.style.width = "22px";
+        clearBtn.style.height = "22px";
+        clearBtn.style.borderRadius = "999px";
+        clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+        clearBtn.style.background = "rgba(255,255,255,.08)";
+        clearBtn.style.color = "#fff";
+        clearBtn.style.cursor = "pointer";
+        clearBtn.style.verticalAlign = "middle";
+
+        clearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          input.value = "";
+
+          if (fb) fb.style.display = "none";
+          if (name) name.textContent = "";
+          if (bar) bar.style.width = "0%";
+          if (pct) pct.textContent = "0%";
+
+          clearBtn.style.display = "none";
+        });
+
+        name.insertAdjacentElement("afterend", clearBtn);
+        return clearBtn;
+      }
+
       input.__uxBound = true;
 
       input.addEventListener("change", () => {
         const f = input.files?.[0];
-        if (!f) return;
+        const clearBtn = ensureClearButton();
+
+        if (!f) {
+          if (fb) fb.style.display = "none";
+          if (name) name.textContent = "";
+          if (bar) bar.style.width = "0%";
+          if (pct) pct.textContent = "0%";
+          if (clearBtn) clearBtn.style.display = "none";
+          return;
+        }
 
         if (fb) fb.style.display = "block";
-        if (name) name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`;
-
-        // Fake progress (sadece UI)
-        let p = 0;
+        if (name) {
+          name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Yükleniyor...`;
+        }
         if (bar) bar.style.width = "0%";
         if (pct) pct.textContent = "0%";
+        if (clearBtn) clearBtn.style.display = "none";
+
+        let p = 0;
 
         const t = setInterval(() => {
           p += 10;
-          if (p >= 100) { p = 100; clearInterval(t); }
+
+          if (p >= 100) {
+            p = 100;
+            clearInterval(t);
+
+            if (name) {
+              name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Hazır ✓`;
+            }
+            if (clearBtn) {
+              clearBtn.style.display = "inline-grid";
+              clearBtn.style.placeItems = "center";
+            }
+          }
+
           if (bar) bar.style.width = p + "%";
           if (pct) pct.textContent = p + "%";
         }, 80);
