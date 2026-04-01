@@ -549,60 +549,117 @@
     }
   }
 
-  async function pollPendingStatuses(host) {
-    const pending = state.items
-      .filter(it => it && (it.job_id || it.id))
-      .filter(it => {
-        const jid = String(it.job_id || it.id || "").trim();
-        return jid && !deletedIds.has(jid);
-      })
-      .filter(it => !isReady(it) || !String(it.playbackUrl || "").trim())
-      .filter(it => !isError(it))
-      .slice(0, STATUS_POLL_BATCH);
+async function pollPendingStatuses(host) {
+  const pending = state.items
+    .filter((it) => it && (it.job_id || it.id))
+    .filter((it) => {
+      const jid = String(it.job_id || it.id || "").trim();
+      return jid && !deletedIds.has(jid);
+    })
+    .filter((it) => !isReady(it) || !String(it.playbackUrl || "").trim())
+    .filter((it) => !isError(it))
+    .slice(0, STATUS_POLL_BATCH);
 
-    if (!pending.length) return;
+  if (!pending.length) return;
 
- for (const it of pending) {
-  const jid = String(it.job_id || it.id || "").trim();
-  if (!jid) continue;
-  if (deletedIds.has(jid)) continue;
+  let changed = false;
 
-  const s = await fetchStatus(jid);
-  if (!s) continue;
+  for (const it of pending) {
+    const jid = String(it.job_id || it.id || "").trim();
+    if (!jid) continue;
+    if (deletedIds.has(jid)) continue;
 
-  const st = norm(s.status);
-  const ready = st === "ready" || st === "done" || st === "completed";
-  const url = pickStatusVideoUrl(s);
-  const hasUrl = !!String(url || "").trim();
+    const s = await fetchStatus(jid);
+    if (!s) continue;
 
-  const err = st === "error" || st === "failed";
-  if (err) {
-    it.status = "Hata";
-    it.db_status = s.db_status || s.status || it.db_status;
-    it.state = s.state || it.state;
+    const st = norm(s.status);
+    const ready = st === "ready" || st === "done" || st === "completed";
+    const url = pickStatusVideoUrl(s);
+    const hasUrl = !!String(url || "").trim();
+
+    const nextDbStatus = s.db_status || s.status || it.db_status;
+    const nextState = s.state || it.state;
+
+    const err = st === "error" || st === "failed";
+    if (err) {
+      if (it.status !== "Hata") {
+        it.status = "Hata";
+        changed = true;
+      }
+      if (it.db_status !== nextDbStatus) {
+        it.db_status = nextDbStatus;
+        changed = true;
+      }
+      if (it.state !== nextState) {
+        it.state = nextState;
+        changed = true;
+      }
+      continue;
+    }
+
+    if (Array.isArray(s.outputs)) {
+      const prev = JSON.stringify(it.outputs || []);
+      const next = JSON.stringify(s.outputs || []);
+      if (prev !== next) {
+        it.outputs = s.outputs;
+        changed = true;
+      }
+    }
+
+    if (hasUrl && it.url !== url) {
+      it.url = url;
+      changed = true;
+    }
+
+    if (it.db_status !== nextDbStatus) {
+      it.db_status = nextDbStatus;
+      changed = true;
+    }
+
+    if (it.state !== nextState) {
+      it.state = nextState;
+      changed = true;
+    }
+
+    if (ready) {
+      const nextPlaybackUrl =
+        getPlaybackUrl({
+          ...it,
+          _fresh: true,
+        }) || "";
+
+      if (it.status !== "Hazır") {
+        it.status = "Hazır";
+        changed = true;
+      }
+      if (it._fresh !== true) {
+        it._fresh = true;
+        changed = true;
+      }
+      if (it.playbackUrl !== nextPlaybackUrl) {
+        it.playbackUrl = nextPlaybackUrl;
+        changed = true;
+      }
+    } else {
+      if (it.status !== "İşleniyor") {
+        it.status = "İşleniyor";
+        changed = true;
+      }
+      if (it._fresh !== false) {
+        it._fresh = false;
+        changed = true;
+      }
+      if (it.playbackUrl !== "") {
+        it.playbackUrl = "";
+        changed = true;
+      }
+    }
+  }
+
+  if (changed) {
     render(host);
-    continue;
   }
-
-  if (Array.isArray(s.outputs)) it.outputs = s.outputs;
-  if (hasUrl) it.url = url;
-
-  it.db_status = s.db_status || s.status || it.db_status;
-  it.state = s.state || it.state;
-
-  if (ready) {
-    it.status = "Hazır";
-    it._fresh = true;
-    it.playbackUrl = getPlaybackUrl(it) || "";
-  } else {
-    it.status = "İşleniyor";
-    it._fresh = false;
-    it.playbackUrl = "";
-  }
-
-  render(host);
 }
-  }
 
   /* =======================
      Render
