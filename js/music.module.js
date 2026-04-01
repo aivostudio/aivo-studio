@@ -377,151 +377,6 @@
     });
   }
 
-  function bindMusicPolicyUI(module, generateBtn, showAdv) {
-    if (!generateBtn) return;
-
-    if (showAdv) {
-      generateBtn.style.minHeight = "64px";
-      generateBtn.style.borderRadius = "999px";
-    } else {
-      generateBtn.style.minHeight = "";
-      generateBtn.style.borderRadius = "";
-    }
-
-    const promptEl = module.querySelector("#prompt");
-    const lyricsEl = module.querySelector("#lyrics");
-    let policyNote = module.querySelector("#musicPolicyNote");
-
-    if (!policyNote && generateBtn.parentElement) {
-      policyNote = document.createElement("div");
-      policyNote.id = "musicPolicyNote";
-      policyNote.style.display = "none";
-      policyNote.style.marginTop = "10px";
-      policyNote.style.padding = "10px 12px";
-      policyNote.style.borderRadius = "12px";
-      policyNote.style.fontSize = "13px";
-      policyNote.style.lineHeight = "1.4";
-      policyNote.style.background = "rgba(255,77,109,.12)";
-      policyNote.style.border = "1px solid rgba(255,77,109,.35)";
-      policyNote.style.color = "#ff8aa0";
-      generateBtn.parentElement.appendChild(policyNote);
-    }
-
-    const HARD_BLOCK_TERMS = [
-      "tarkan",
-      "sezen aksu",
-      "ajda pekkan",
-      "drake",
-      "taylor swift",
-      "recep tayyip erdogan",
-      "recep tayyip erdoğan",
-      "cumhurbaşkanı",
-      "cumhurbaskani",
-      "deepfake",
-      "sesini kopyala",
-      "voice clone",
-      "dudak senkronu",
-      "lip sync"
-    ];
-
-    const HARD_BLOCK_PATTERNS = [
-      /\bgibi\b/i,
-      /\btarzında\b/i,
-      /\btarzinda\b/i,
-      /\bstilinde\b/i,
-      /\bin the style of\b/i,
-      /\blike\b/i,
-      /\bbirebir\b/i,
-      /\baynısı\b/i,
-      /\baynisi\b/i,
-      /\bsesini taklit et\b/i,
-      /\bvokalini taklit et\b/i,
-      /\bmelodisini kullan\b/i,
-      /\bnakaratini kullan\b/i,
-      /\bsözlerini kullan\b/i,
-      /\bsozlerini kullan\b/i,
-      /\brezil\b/i,
-      /\bdalga geç\b/i,
-      /\bdalga gec\b/i,
-      /\başağıla\b/i,
-      /\basagila\b/i
-    ];
-
-    const normalizePolicyText = (value) =>
-      String(value || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    const evaluateMusicPolicyUI = () => {
-      const raw = [
-        String(promptEl?.value || "").trim(),
-        String(lyricsEl?.value || "").trim()
-      ].filter(Boolean).join(" ");
-
-      const text = normalizePolicyText(raw);
-
-      const hasBlockedTerm = HARD_BLOCK_TERMS.some((term) =>
-        text.includes(normalizePolicyText(term))
-      );
-      const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-
-      const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
-
-      generateBtn.disabled = blocked;
-      generateBtn.style.opacity = blocked ? "0.55" : "";
-      generateBtn.style.cursor = blocked ? "not-allowed" : "";
-
-      if (promptEl) {
-        promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
-        promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
-      }
-
-      if (lyricsEl) {
-        lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
-        lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
-      }
-
-      if (policyNote) {
-        if (blocked) {
-          policyNote.style.display = "block";
-          policyNote.textContent =
-            "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
-        } else {
-          policyNote.style.display = "none";
-          policyNote.textContent = "";
-        }
-      }
-    };
-
-    if (promptEl && !promptEl.__aivoPolicyInputBound) {
-      promptEl.__aivoPolicyInputBound = true;
-      promptEl.addEventListener("input", evaluateMusicPolicyUI);
-      promptEl.addEventListener("change", evaluateMusicPolicyUI);
-    }
-
-    if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
-      lyricsEl.__aivoPolicyInputBound = true;
-      lyricsEl.addEventListener("input", evaluateMusicPolicyUI);
-      lyricsEl.addEventListener("change", evaluateMusicPolicyUI);
-    }
-
-    if (!generateBtn.__aivoPolicyClickBound) {
-      generateBtn.__aivoPolicyClickBound = true;
-      generateBtn.addEventListener("click", (e) => {
-        evaluateMusicPolicyUI();
-        if (generateBtn.disabled) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }, true);
-    }
-
-    evaluateMusicPolicyUI();
-  }
-
   /* =========================
    * Main init
    * ========================= */
@@ -535,7 +390,7 @@
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
 
-    function applyMode(mode) {
+         function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
       const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
       const generateBtn = module.querySelector('#musicGenerateBtn');
@@ -592,27 +447,291 @@
         }
       }
 
-      bindMusicPolicyUI(module, generateBtn, showAdv);
+if (generateBtn) {
+  if (showAdv) {
+    generateBtn.style.minHeight = "64px";
+    generateBtn.style.borderRadius = "999px";
+  } else {
+    generateBtn.style.minHeight = "";
+    generateBtn.style.borderRadius = "";
+  }
+
+  const promptEl = module.querySelector("#prompt");
+  const lyricsEl = module.querySelector("#lyrics");
+  let policyNote = module.querySelector("#musicPolicyNote");
+
+  if (!policyNote && generateBtn.parentElement) {
+    policyNote = document.createElement("div");
+    policyNote.id = "musicPolicyNote";
+    policyNote.style.display = "none";
+    policyNote.style.marginTop = "10px";
+    policyNote.style.padding = "10px 12px";
+    policyNote.style.borderRadius = "12px";
+    policyNote.style.fontSize = "13px";
+    policyNote.style.lineHeight = "1.4";
+    policyNote.style.background = "rgba(255,77,109,.12)";
+    policyNote.style.border = "1px solid rgba(255,77,109,.35)";
+    policyNote.style.color = "#ff8aa0";
+    generateBtn.parentElement.appendChild(policyNote);
+  }
+
+  const HARD_BLOCK_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "drake",
+    "taylor swift",
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "cumhurbaşkanı",
+    "cumhurbaskani",
+    "deepfake",
+    "sesini kopyala",
+    "voice clone",
+    "dudak senkronu",
+    "lip sync"
+  ];
+
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bsesini taklit et\b/i,
+    /\bvokalini taklit et\b/i,
+    /\bmelodisini kullan\b/i,
+    /\bnakaratini kullan\b/i,
+    /\bsözlerini kullan\b/i,
+    /\bsozlerini kullan\b/i,
+    /\brezil\b/i,
+    /\bdalga geç\b/i,
+    /\bdalga gec\b/i,
+    /\başağıla\b/i,
+    /\basagila\b/i
+  ];
+
+  const normalizePolicyText = (value) =>
+    String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const evaluateMusicPolicyUI = () => {
+    const raw = [
+      String(promptEl?.value || "").trim(),
+      String(lyricsEl?.value || "").trim()
+    ].filter(Boolean).join(" ");
+
+    const text = normalizePolicyText(raw);
+
+    const hasBlockedTerm = HARD_BLOCK_TERMS.some((term) =>
+      text.includes(normalizePolicyText(term))
+    );
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+
+    const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
+
+    generateBtn.disabled = blocked;
+    generateBtn.style.opacity = blocked ? "0.55" : "";
+    generateBtn.style.cursor = blocked ? "not-allowed" : "";
+
+    if (promptEl) {
+      promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+      promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
     }
 
-    if (!switchEl.__aivoModeBound) {
-      switchEl.__aivoModeBound = true;
-      modeButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const nextMode = btn.dataset.modeButton === "advanced" ? "advanced" : "basic";
-          applyMode(nextMode);
-        });
-      });
+    if (lyricsEl) {
+      lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+      lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
     }
 
-    initMusicCharCounters(module);
+    if (policyNote) {
+      if (blocked) {
+        policyNote.style.display = "block";
+        policyNote.textContent =
+          "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
+      } else {
+        policyNote.style.display = "none";
+        policyNote.textContent = "";
+      }
+    }
+  };
 
+  if (promptEl && !promptEl.__aivoPolicyInputBound) {
+    promptEl.__aivoPolicyInputBound = true;
+    promptEl.addEventListener("input", evaluateMusicPolicyUI);
+    promptEl.addEventListener("change", evaluateMusicPolicyUI);
+  }
+
+      if (generateBtn) {
+        if (showAdv) {
+          generateBtn.style.minHeight = "64px";
+          generateBtn.style.borderRadius = "999px";
+        } else {
+          generateBtn.style.minHeight = "";
+          generateBtn.style.borderRadius = "";
+        }
+
+        const promptEl = module.querySelector("#prompt");
+        const lyricsEl = module.querySelector("#lyrics");
+        let policyNote = module.querySelector("#musicPolicyNote");
+
+        if (!policyNote && generateBtn.parentElement) {
+          policyNote = document.createElement("div");
+          policyNote.id = "musicPolicyNote";
+          policyNote.style.display = "none";
+          policyNote.style.marginTop = "10px";
+          policyNote.style.padding = "10px 12px";
+          policyNote.style.borderRadius = "12px";
+          policyNote.style.fontSize = "13px";
+          policyNote.style.lineHeight = "1.4";
+          policyNote.style.background = "rgba(255,77,109,.12)";
+          policyNote.style.border = "1px solid rgba(255,77,109,.35)";
+          policyNote.style.color = "#ff8aa0";
+          generateBtn.parentElement.appendChild(policyNote);
+        }
+
+        const HARD_BLOCK_TERMS = [
+          "tarkan",
+          "sezen aksu",
+          "ajda pekkan",
+          "drake",
+          "taylor swift",
+          "recep tayyip erdogan",
+          "recep tayyip erdoğan",
+          "cumhurbaşkanı",
+          "cumhurbaskani",
+          "deepfake",
+          "sesini kopyala",
+          "voice clone",
+          "dudak senkronu",
+          "lip sync"
+        ];
+
+        const HARD_BLOCK_PATTERNS = [
+          /\bgibi\b/i,
+          /\btarzında\b/i,
+          /\btarzinda\b/i,
+          /\bstilinde\b/i,
+          /\bin the style of\b/i,
+          /\blike\b/i,
+          /\bbirebir\b/i,
+          /\baynısı\b/i,
+          /\baynisi\b/i,
+          /\bsesini taklit et\b/i,
+          /\bvokalini taklit et\b/i,
+          /\bmelodisini kullan\b/i,
+          /\bnakaratini kullan\b/i,
+          /\bsözlerini kullan\b/i,
+          /\bsozlerini kullan\b/i,
+          /\brezil\b/i,
+          /\bdalga geç\b/i,
+          /\bdalga gec\b/i,
+          /\başağıla\b/i,
+          /\basagila\b/i
+        ];
+
+        const normalizePolicyText = (value) =>
+          String(value || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const evaluateMusicPolicyUI = () => {
+          const raw = [
+            String(promptEl?.value || "").trim(),
+            String(lyricsEl?.value || "").trim()
+          ].filter(Boolean).join(" ");
+
+          const text = normalizePolicyText(raw);
+
+          const hasBlockedTerm = HARD_BLOCK_TERMS.some((term) =>
+            text.includes(normalizePolicyText(term))
+          );
+          const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+
+          const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
+
+          generateBtn.disabled = blocked;
+          generateBtn.style.opacity = blocked ? "0.55" : "";
+          generateBtn.style.cursor = blocked ? "not-allowed" : "";
+
+          if (promptEl) {
+            promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+            promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
+          }
+
+          if (lyricsEl) {
+            lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+            lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
+          }
+
+          if (policyNote) {
+            if (blocked) {
+              policyNote.style.display = "block";
+              policyNote.textContent =
+                "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
+            } else {
+              policyNote.style.display = "none";
+              policyNote.textContent = "";
+            }
+          }
+        };
+
+        if (promptEl && !promptEl.__aivoPolicyInputBound) {
+          promptEl.__aivoPolicyInputBound = true;
+          promptEl.addEventListener("input", evaluateMusicPolicyUI);
+          promptEl.addEventListener("change", evaluateMusicPolicyUI);
+        }
+
+        if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
+          lyricsEl.__aivoPolicyInputBound = true;
+          lyricsEl.addEventListener("input", evaluateMusicPolicyUI);
+          lyricsEl.addEventListener("change", evaluateMusicPolicyUI);
+        }
+
+        if (!generateBtn.__aivoPolicyClickBound) {
+          generateBtn.__aivoPolicyClickBound = true;
+          generateBtn.addEventListener("click", (e) => {
+            evaluateMusicPolicyUI();
+            if (generateBtn.disabled) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }, true);
+        }
+
+        evaluateMusicPolicyUI();
+      }
+    }
+    // default
+  if (!generateBtn.__aivoPolicyClickBound) {
+    generateBtn.__aivoPolicyClickBound = true;
+    generateBtn.addEventListener("click", (e) => {
+      evaluateMusicPolicyUI();
+      if (generateBtn.disabled) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+  }
+
+  evaluateMusicPolicyUI();
+}
+
+    }
+    
+    // default
     let saved = "basic";
-    try {
-      saved = sessionStorage.getItem(MODE_KEY) || "basic";
-    } catch(e) {}
-
-    applyMode(saved);
 
     // Record button -> modal (advanced only)
     // We bind once and gate by current mode at click time.
@@ -636,18 +755,17 @@
     return true;
   }
 
-  // Her zaman dene (ilk load)
-  tryInit();
+// Her zaman dene (ilk load)
+tryInit();
 
-  // Router/partials DOM'u yeniden render ederse init tekrar çalışsın
-  const obs = new MutationObserver(() => {
-    tryInit();
-  });
+// 🔥 FIX: Router/partials DOM'u yeniden render ederse init tekrar çalışsın
+const obs = new MutationObserver(() => {
+  tryInit(); // DİKKAT: artık disconnect YOK
+});
 
-  // document root'u izle (moduleHost / music section replace edilse bile yakalar)
-  obs.observe(document.documentElement, { childList: true, subtree: true });
+// document root'u izle (moduleHost / music section replace edilse bile yakalar)
+obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
-
 /* ============================================================================
    MUSIC — Reference Audio Upload (R2) ✅ single-bind + single-upload
    - Fixes: 2x presign-put → 1x (double bind / double upload engeli)
