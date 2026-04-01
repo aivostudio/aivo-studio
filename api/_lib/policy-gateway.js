@@ -1,4 +1,8 @@
+const ARTISTS_TR_SEED = require('./policy-data/artists-tr.seed.json');
+const PUBLIC_FIGURES_TR_SEED = require('./policy-data/public_figures_tr.seed.json');
+
 const PUBLIC_FIGURE_TERMS = [
+  ...PUBLIC_FIGURES_TR_SEED,
   'cumhurbaskani',
   'cumhurbaşkanı',
   'reisicumhur',
@@ -23,6 +27,8 @@ const PUBLIC_FIGURE_TERMS = [
   'president',
   'politician',
 ];
+
+const ARTIST_NAME_TERMS = [...ARTISTS_TR_SEED];
 
 const MUSIC_STYLE_TERMS = [
   'gibi',
@@ -218,10 +224,12 @@ function makeResult({
 }
 
 function enforceMusicPolicy(text) {
+  const hitsArtistNames = pickMatchedTerms(text, ARTIST_NAME_TERMS, 8);
   const hitsStyle = pickMatchedTerms(text, MUSIC_STYLE_TERMS);
   const hitsProtected = pickMatchedTerms(text, PROTECTED_WORK_TERMS);
 
-  const hasArtistImitation = hitsStyle.length > 0;
+  const hasArtistName = hitsArtistNames.length > 0;
+  const hasStyleIntent = hitsStyle.length > 0;
   const hasProtectedWork = hitsProtected.length > 0;
 
   if (hasProtectedWork) {
@@ -232,19 +240,32 @@ function enforceMusicPolicy(text) {
       message:
         'Belirli bir şarkıyı, sözleri, melodiyi, vokal kimliğini veya düzenlemeyi taklit eden müzik üretilemez.',
       reasons: ['protected-work-music'],
-      matchedTerms: hitsProtected,
+      matchedTerms: [...hitsArtistNames, ...hitsProtected].slice(0, 8),
     });
   }
 
-  if (hasArtistImitation) {
+  if (hasArtistName && hasStyleIntent) {
     return makeResult({
       decision: 'block',
       code: 'ARTIST_STYLE_MUSIC',
       severity: 'high',
       message:
-        'Belirli bir sanatçıyı veya yaşayan/tanınan bir vokal kimliğini taklit eden müzik üretilemez.',
+        'Belirli bir sanatçıyı veya tanınan vokal kimliğini taklit eden müzik üretilemez.',
       reasons: ['artist-imitation-music'],
-      matchedTerms: hitsStyle,
+      matchedTerms: [...hitsArtistNames, ...hitsStyle].slice(0, 8),
+    });
+  }
+
+  if (hasArtistName) {
+    return makeResult({
+      decision: 'rewrite',
+      code: 'ARTIST_NAME_REWRITE',
+      severity: 'medium',
+      message:
+        'Sanatçı adı güvenli genel dile dönüştürülmelidir; tür, dönem, duygu ve enstrüman bazlı ifade kullanılmalı.',
+      rewrittenPrompt: null,
+      reasons: ['artist-name-rewrite'],
+      matchedTerms: hitsArtistNames,
     });
   }
 
