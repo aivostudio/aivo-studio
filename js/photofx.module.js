@@ -1162,13 +1162,7 @@ const builtEffects = {
     });
   }
 
-  window.addEventListener("pageshow", scheduleRetryBoot);
-  window.addEventListener("hashchange", scheduleRetryBoot);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      scheduleRetryBoot();
-    }
-  });
-
-  scheduleRetryBoot();
+  window.__AIVO_PHOTOFX_INIT__ = function () {
+    scheduleRetryBoot();
+  };
 })();
