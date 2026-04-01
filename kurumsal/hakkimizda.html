@@ -18,566 +18,553 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=20260117" />
+  <!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=20260117" />
 
-<!-- ================= TOAST (GLOBAL) ================= -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <!-- ================= TOAST (GLOBAL) ================= -->
+  <link rel="stylesheet" href="/toast.css?v=1" />
 
-<!-- ================= SAYFAYA ÖZEL ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=20260117" />
+  <!-- ================= SAYFAYA ÖZEL ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=20260117" />
 
-<!-- ================= TOPBAR / DROPDOWN (ANA) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=104" />
+  <!-- ================= TOPBAR / DROPDOWN (ANA) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=104" />
 
-<!-- ================= TOPBAR / DROPDOWN (OVERRIDE) ================= -->
-<link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
+  <!-- ================= TOPBAR / DROPDOWN (OVERRIDE) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
 
-<!-- ================= MODAL (EN SON) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=20260117" />
+  <!-- ================= MODAL (EN SON) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=20260117" />
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
+  <!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+  <script src="/toast.manager.js?v=1" defer></script>
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <!-- ================= PARTIALS (topbar inject) ================= -->
+  <script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
-<script src="/auth.core.js?v=20260115x" defer></script>
+  <!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
 
-<!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=2" defer></script>
 </head>
-
 
 <body class="page-corp page-about" data-skin="corp" style="background:#070A14;">
 
   <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
   <div data-include="topbar"></div>
-<!-- AIVO Cookie Banner (Premium) -->
-<style>
-  :root{
-    --cc-bg: rgba(8,12,24,.72);
-    --cc-stroke: rgba(255,255,255,.10);
-    --cc-text: rgba(235,240,255,.92);
-    --cc-sub: rgba(235,240,255,.70);
-    --cc-purple: #7c3aed;
-    --cc-purple2: #a855f7;
-  }
 
-  .aivo-cc{
-    position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-    z-index: 999999;
-    display: none;
-    transform: translateY(18px);
-    opacity: 0;
-    transition: transform .28s ease, opacity .28s ease;
-  }
-  .aivo-cc.is-open{
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .aivo-cc__card{
-    margin: 0 auto;
-    max-width: 1180px;
-    background: var(--cc-bg);
-    border: 1px solid var(--cc-stroke);
-    border-radius: 16px;
-    padding: 14px 14px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 60px rgba(0,0,0,.45);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 12px;
-    align-items: center;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .aivo-cc__card:before{
-    content:"";
-    position:absolute;
-    inset:-40px -60px auto -60px;
-    height: 120px;
-    background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
-    pointer-events:none;
-    filter: blur(2px);
-  }
-
-  .aivo-cc__left{
-    min-width: 0;
-    display: grid;
-    gap: 6px;
-  }
-  .aivo-cc__title{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight: 700;
-    color: var(--cc-text);
-    letter-spacing: .2px;
-    font-size: 14px;
-  }
-  .aivo-cc__dot{
-    width: 10px; height: 10px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    box-shadow: 0 0 0 4px rgba(124,58,237,.18);
-    flex: 0 0 auto;
-  }
-  .aivo-cc__msg{
-    color: var(--cc-sub);
-    font-size: 13px;
-    line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .aivo-cc__links{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    font-size: 12px;
-  }
-  .aivo-cc__links a{
-    color: rgba(220,225,255,.85);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    opacity: .9;
-  }
-  .aivo-cc__links a:hover{ opacity: 1; }
-
-  .aivo-cc__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .aivo-cc__btn{
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.92);
-    font-weight: 650;
-    font-size: 13px;
-    cursor: pointer;
-    transition: transform .15s ease, background .15s ease, border-color .15s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .aivo-cc__btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.09);
-    border-color: rgba(255,255,255,.22);
-  }
-
-  .aivo-cc__btn--primary{
-    border: 0;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    color: #fff;
-    box-shadow: 0 14px 30px rgba(124,58,237,.28);
-  }
-  .aivo-cc__btn--primary:hover{
-    background: linear-gradient(135deg, #6d28d9, #9333ea);
-  }
-
-  .aivo-cc__textlink{
-    background: none;
-    border: none;
-    color: rgba(220,225,255,.9);
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 0 6px;
-    opacity: .9;
-  }
-  .aivo-cc__textlink:hover{ opacity: 1; }
-
-  @media (max-width: 720px){
-    .aivo-cc__card{
-      grid-template-columns: 1fr;
+  <!-- AIVO Cookie Banner (Premium) -->
+  <style>
+    :root{
+      --cc-bg: rgba(8,12,24,.72);
+      --cc-stroke: rgba(255,255,255,.10);
+      --cc-text: rgba(235,240,255,.92);
+      --cc-sub: rgba(235,240,255,.70);
+      --cc-purple: #7c3aed;
+      --cc-purple2: #a855f7;
     }
-    .aivo-cc__actions{
-      justify-content: flex-start;
+
+    .aivo-cc{
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 999999;
+      display: none;
+      transform: translateY(18px);
+      opacity: 0;
+      transition: transform .28s ease, opacity .28s ease;
+    }
+    .aivo-cc.is-open{
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .aivo-cc__card{
+      margin: 0 auto;
+      max-width: 1180px;
+      background: var(--cc-bg);
+      border: 1px solid var(--cc-stroke);
+      border-radius: 16px;
+      padding: 14px 14px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .aivo-cc__card:before{
+      content:"";
+      position:absolute;
+      inset:-40px -60px auto -60px;
+      height: 120px;
+      background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
+      pointer-events:none;
+      filter: blur(2px);
+    }
+
+    .aivo-cc__left{
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+    .aivo-cc__title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 700;
+      color: var(--cc-text);
+      letter-spacing: .2px;
+      font-size: 14px;
+    }
+    .aivo-cc__dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
+      box-shadow: 0 0 0 4px rgba(124,58,237,.18);
+      flex: 0 0 auto;
     }
     .aivo-cc__msg{
-      -webkit-line-clamp: 3;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
+      color: var(--cc-sub);
+      font-size: 13px;
+      line-height: 1.35;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-  }
+    .aivo-cc__links{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .aivo-cc__links a{
+      color: rgba(220,225,255,.85);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: .9;
+    }
+    .aivo-cc__links a:hover{ opacity: 1; }
 
-  /* ===== Modal ===== */
-  .aivo-ccm{
-    position: fixed;
-    inset: 0;
-    z-index: 1000000;
-    display: none;
-  }
-  .aivo-ccm.is-open{ display:block; }
+    .aivo-cc__actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
 
-  .aivo-ccm__backdrop{
-    position:absolute;
-    inset:0;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
+    .aivo-cc__btn{
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(235,240,255,.92);
+      font-weight: 650;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .aivo-cc__btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.09);
+      border-color: rgba(255,255,255,.22);
+    }
 
-  .aivo-ccm__card{
-    position: relative;
-    width: min(720px, calc(100vw - 28px));
-    margin: 0 auto;
-    top: 10vh;
-    background: rgba(8,12,24,.86);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 18px;
-    box-shadow: 0 20px 80px rgba(0,0,0,.55);
-    overflow: hidden;
-  }
+    .aivo-cc__btn--primary{
+      border: 0;
+      background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(124,58,237,.28);
+    }
+    .aivo-cc__btn--primary:hover{
+      background: linear-gradient(135deg, #6d28d9, #9333ea);
+    }
 
-  .aivo-ccm__head{
-    display:flex;
-    align-items:flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 16px 16px 12px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-  }
-  .aivo-ccm__title{
-    font-weight: 800;
-    font-size: 16px;
-    color: rgba(235,240,255,.95);
-    letter-spacing: .2px;
-  }
-  .aivo-ccm__sub{
-    margin-top: 6px;
-    font-size: 13px;
-    color: rgba(235,240,255,.72);
-    line-height: 1.45;
-  }
-  .aivo-ccm__x{
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.9);
-    cursor: pointer;
-  }
-  .aivo-ccm__x:hover{ background: rgba(255,255,255,.10); }
+    .aivo-cc__textlink{
+      background: none;
+      border: none;
+      color: rgba(220,225,255,.9);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0 6px;
+      opacity: .9;
+    }
+    .aivo-cc__textlink:hover{ opacity: 1; }
 
-  .aivo-ccm__rows{ padding: 10px 16px 6px; }
-  .aivo-ccm__row{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-  }
-  .aivo-ccm__row:last-child{ border-bottom: 0; }
+    @media (max-width: 720px){
+      .aivo-cc__card{
+        grid-template-columns: 1fr;
+      }
+      .aivo-cc__actions{
+        justify-content: flex-start;
+      }
+      .aivo-cc__msg{
+        -webkit-line-clamp: 3;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+      }
+    }
 
-  .aivo-ccm__meta{ min-width:0; }
-  .aivo-ccm__label{
-    font-weight: 750;
-    color: rgba(235,240,255,.92);
-    font-size: 14px;
-  }
-  .aivo-ccm__desc{
-    margin-top: 4px;
-    color: rgba(235,240,255,.68);
-    font-size: 12.5px;
-    line-height: 1.35;
-  }
+    /* ===== Modal ===== */
+    .aivo-ccm{
+      position: fixed;
+      inset: 0;
+      z-index: 1000000;
+      display: none;
+    }
+    .aivo-ccm.is-open{ display:block; }
 
-  .aivo-ccm__foot{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px 16px;
-    border-top: 1px solid rgba(255,255,255,.08);
-  }
-  .aivo-ccm__link{
-    color: rgba(220,225,255,.88);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    font-size: 13px;
-    opacity: .9;
-  }
-  .aivo-ccm__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-  }
+    .aivo-ccm__backdrop{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
 
-  /* Switch */
-  .aivo-switch{
-    position: relative;
-    width: 48px;
-    height: 28px;
-    display:inline-block;
-    flex: 0 0 auto;
-  }
-  .aivo-switch input{
-    position:absolute;
-    opacity:0;
-    width:0;
-    height:0;
-  }
-  .aivo-switch__track{
-    position:absolute;
-    inset:0;
-    border-radius: 999px;
-    background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.14);
-    transition: background .18s ease, border-color .18s ease;
-  }
-  .aivo-switch__track:after{
-    content:"";
-    position:absolute;
-    top: 3px; left: 3px;
-    width: 20px; height: 20px;
-    border-radius: 999px;
-    background: rgba(235,240,255,.92);
-    transform: translateX(0);
-    transition: transform .18s ease;
-    box-shadow: 0 8px 18px rgba(0,0,0,.35);
-  }
-  .aivo-switch input:checked + .aivo-switch__track{
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
-    border-color: rgba(255,255,255,.08);
-  }
-  .aivo-switch input:checked + .aivo-switch__track:after{
-    transform: translateX(20px);
-  }
-  .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
-</style>
+    .aivo-ccm__card{
+      position: relative;
+      width: min(720px, calc(100vw - 28px));
+      margin: 0 auto;
+      top: 10vh;
+      background: rgba(8,12,24,.86);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      box-shadow: 0 20px 80px rgba(0,0,0,.55);
+      overflow: hidden;
+    }
 
-<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
-  <div class="aivo-cc__card">
-    <div class="aivo-cc__left">
-      <div class="aivo-cc__title">
-        <span class="aivo-cc__dot"></span>
-        Çerez Tercihleri
+    .aivo-ccm__head{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .aivo-ccm__title{
+      font-weight: 800;
+      font-size: 16px;
+      color: rgba(235,240,255,.95);
+      letter-spacing: .2px;
+    }
+    .aivo-ccm__sub{
+      margin-top: 6px;
+      font-size: 13px;
+      color: rgba(235,240,255,.72);
+      line-height: 1.45;
+    }
+    .aivo-ccm__x{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(235,240,255,.9);
+      cursor: pointer;
+    }
+    .aivo-ccm__x:hover{ background: rgba(255,255,255,.10); }
+
+    .aivo-ccm__rows{ padding: 10px 16px 6px; }
+    .aivo-ccm__row{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .aivo-ccm__row:last-child{ border-bottom: 0; }
+
+    .aivo-ccm__meta{ min-width:0; }
+    .aivo-ccm__label{
+      font-weight: 750;
+      color: rgba(235,240,255,.92);
+      font-size: 14px;
+    }
+    .aivo-ccm__desc{
+      margin-top: 4px;
+      color: rgba(235,240,255,.68);
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    .aivo-ccm__foot{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 16px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .aivo-ccm__link{
+      color: rgba(220,225,255,.88);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-size: 13px;
+      opacity: .9;
+    }
+    .aivo-ccm__actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+
+    /* Switch */
+    .aivo-switch{
+      position: relative;
+      width: 48px;
+      height: 28px;
+      display:inline-block;
+      flex: 0 0 auto;
+    }
+    .aivo-switch input{
+      position:absolute;
+      opacity:0;
+      width:0;
+      height:0;
+    }
+    .aivo-switch__track{
+      position:absolute;
+      inset:0;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
+      transition: background .18s ease, border-color .18s ease;
+    }
+    .aivo-switch__track:after{
+      content:"";
+      position:absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      border-radius: 999px;
+      background: rgba(235,240,255,.92);
+      transform: translateX(0);
+      transition: transform .18s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }
+    .aivo-switch input:checked + .aivo-switch__track{
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border-color: rgba(255,255,255,.08);
+    }
+    .aivo-switch input:checked + .aivo-switch__track:after{
+      transform: translateX(20px);
+    }
+    .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
+  </style>
+
+  <div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
+    <div class="aivo-cc__card">
+      <div class="aivo-cc__left">
+        <div class="aivo-cc__title">
+          <span class="aivo-cc__dot"></span>
+          Çerez Tercihleri
+        </div>
+        <div class="aivo-cc__msg">
+          Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
+          Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+        </div>
+        <div class="aivo-cc__links">
+          <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
+          <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
+        </div>
       </div>
-      <div class="aivo-cc__msg">
-        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
-        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
-      </div>
-      <div class="aivo-cc__links">
-        <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
-      </div>
-    </div>
 
-    <div class="aivo-cc__actions">
-      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
-      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      <div class="aivo-cc__actions">
+        <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
+        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- AIVO Cookie Preferences Modal -->
-<div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
-  <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
+  <!-- AIVO Cookie Preferences Modal -->
+  <div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
+    <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
 
-  <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
-    <div class="aivo-ccm__head">
-      <div>
-        <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
-        <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
-      </div>
-      <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
-    </div>
-
-    <div class="aivo-ccm__rows">
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Zorunlu</div>
-          <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+    <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
+      <div class="aivo-ccm__head">
+        <div>
+          <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
+          <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
         </div>
-        <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
-          <input type="checkbox" checked disabled />
-          <span class="aivo-switch__track"></span>
-        </label>
+        <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
       </div>
 
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Analitik</div>
-          <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+      <div class="aivo-ccm__rows">
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div class="aivo-ccm__label">Zorunlu</div>
+            <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+          </div>
+          <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
+            <input type="checkbox" checked disabled />
+            <span class="aivo-switch__track"></span>
+          </label>
         </div>
-        <label class="aivo-switch" aria-label="Analitik çerezler">
-          <input type="checkbox" id="aivoPrefAnalytics" />
-          <span class="aivo-switch__track"></span>
-        </label>
-      </div>
 
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Pazarlama</div>
-          <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div class="aivo-ccm__label">Analitik</div>
+            <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+          </div>
+          <label class="aivo-switch" aria-label="Analitik çerezler">
+            <input type="checkbox" id="aivoPrefAnalytics" />
+            <span class="aivo-switch__track"></span>
+          </label>
         </div>
-        <label class="aivo-switch" aria-label="Pazarlama çerezler">
-          <input type="checkbox" id="aivoPrefMarketing" />
-          <span class="aivo-switch__track"></span>
-        </label>
-      </div>
-    </div>
 
-    <div class="aivo-ccm__foot">
-      <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-      <div class="aivo-ccm__actions">
-        <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
-        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div class="aivo-ccm__label">Pazarlama</div>
+            <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+          </div>
+          <label class="aivo-switch" aria-label="Pazarlama çerezler">
+            <input type="checkbox" id="aivoPrefMarketing" />
+            <span class="aivo-switch__track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="aivo-ccm__foot">
+        <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
+        <div class="aivo-ccm__actions">
+          <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
+          <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<!-- /AIVO Cookie Preferences Modal -->
+  <!-- /AIVO Cookie Preferences Modal -->
 
-<script>
-(function(){
-  // V2: kategori bazlı tercih
-  var PREF_KEY = "aivo_cookie_prefs_v1"; // JSON {necessary:true, analytics:boolean, marketing:boolean}
-  var LEGACY_KEY = "aivo_cookie_consent_v1"; // eski allow/deny (geri uyum)
+  <script>
+  (function(){
+    var PREF_KEY = "aivo_cookie_prefs_v1";
+    var LEGACY_KEY = "aivo_cookie_consent_v1";
 
-  var banner = document.getElementById("aivoCookieBanner");
-  var modal  = document.getElementById("aivoCookieModal");
-  if (!banner) return;
+    var banner = document.getElementById("aivoCookieBanner");
+    var modal  = document.getElementById("aivoCookieModal");
+    if (!banner) return;
 
-  var $ = function(id){ return document.getElementById(id); };
+    var $ = function(id){ return document.getElementById(id); };
 
-  function safeParse(json){
-    try { return JSON.parse(json); } catch(e){ return null; }
-  }
-
-  function getPrefs(){
-    // Yeni tercih varsa onu kullan
-    var raw = null;
-    try { raw = localStorage.getItem(PREF_KEY); } catch(e){}
-    var p = raw ? safeParse(raw) : null;
-    if (p && typeof p === "object") {
-      return { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
+    function safeParse(json){
+      try { return JSON.parse(json); } catch(e){ return null; }
     }
 
-    // Eski allow/deny varsa migrate et
-    var legacy = null;
-    try { legacy = localStorage.getItem(LEGACY_KEY); } catch(e){}
-    if (legacy === "allow") return { necessary:true, analytics:true, marketing:true };
-    if (legacy === "deny")  return { necessary:true, analytics:false, marketing:false };
+    function getPrefs(){
+      var raw = null;
+      try { raw = localStorage.getItem(PREF_KEY); } catch(e){}
+      var p = raw ? safeParse(raw) : null;
+      if (p && typeof p === "object") {
+        return { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
+      }
 
-    return null; // hiç seçim yok
-  }
+      var legacy = null;
+      try { legacy = localStorage.getItem(LEGACY_KEY); } catch(e){}
+      if (legacy === "allow") return { necessary:true, analytics:true, marketing:true };
+      if (legacy === "deny")  return { necessary:true, analytics:false, marketing:false };
 
-  function setPrefs(p){
-    var prefs = { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
-    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch(e){}
-    // legacy uyum
-    try { localStorage.setItem(LEGACY_KEY, (prefs.analytics || prefs.marketing) ? "allow" : "deny"); } catch(e){}
-  }
-
-  function openBanner(){
-    banner.style.display = "block";
-    requestAnimationFrame(function(){ banner.classList.add("is-open"); });
-  }
-  function closeBanner(){
-    banner.classList.remove("is-open");
-    setTimeout(function(){ banner.style.display = "none"; }, 220);
-  }
-
-  function openModal(){
-    if (!modal) return;
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.documentElement.style.overflow = "hidden";
-  }
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.documentElement.style.overflow = "";
-  }
-
-  function syncModalUI(){
-    if (!modal) return;
-    var p = getPrefs() || { necessary:true, analytics:false, marketing:false };
-    var a = $("aivoPrefAnalytics");
-    var m = $("aivoPrefMarketing");
-    if (a) a.checked = !!p.analytics;
-    if (m) m.checked = !!p.marketing;
-  }
-
-  // İlk yükleme: seçim yoksa banner göster
-  var prefs = getPrefs();
-  if (!prefs) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function(){ requestAnimationFrame(openBanner); }, { once:true });
-    } else {
-      requestAnimationFrame(openBanner);
+      return null;
     }
-  }
 
-  // Kabul / Reddet
-  $("aivoCcAllow")?.addEventListener("click", function(){
-    setPrefs({ analytics:true, marketing:true });
-    closeBanner();
-  });
+    function setPrefs(p){
+      var prefs = { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
+      try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch(e){}
+      try { localStorage.setItem(LEGACY_KEY, (prefs.analytics || prefs.marketing) ? "allow" : "deny"); } catch(e){}
+    }
 
-  $("aivoCcDeny")?.addEventListener("click", function(){
-    setPrefs({ analytics:false, marketing:false });
-    closeBanner();
-  });
+    function openBanner(){
+      banner.style.display = "block";
+      requestAnimationFrame(function(){ banner.classList.add("is-open"); });
+    }
+    function closeBanner(){
+      banner.classList.remove("is-open");
+      setTimeout(function(){ banner.style.display = "none"; }, 220);
+    }
 
-  // Özelleştir: modal aç
-  $("aivoCcCustomize")?.addEventListener("click", function(){
-    syncModalUI();
-    openModal();
-  });
+    function openModal(){
+      if (!modal) return;
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.documentElement.style.overflow = "hidden";
+    }
+    function closeModal(){
+      if (!modal) return;
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.documentElement.style.overflow = "";
+    }
 
-  // Modal close: backdrop / x / vazgeç
-  modal?.addEventListener("click", function(e){
-    var t = e.target;
-    if (t && t.getAttribute && t.getAttribute("data-ccm-close") === "1") closeModal();
-  });
+    function syncModalUI(){
+      if (!modal) return;
+      var p = getPrefs() || { necessary:true, analytics:false, marketing:false };
+      var a = $("aivoPrefAnalytics");
+      var m = $("aivoPrefMarketing");
+      if (a) a.checked = !!p.analytics;
+      if (m) m.checked = !!p.marketing;
+    }
 
-  // ESC ile kapat
-  document.addEventListener("keydown", function(e){
-    if (e.key === "Escape" && modal && modal.classList.contains("is-open")) closeModal();
-  });
+    var prefs = getPrefs();
+    if (!prefs) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function(){ requestAnimationFrame(openBanner); }, { once:true });
+      } else {
+        requestAnimationFrame(openBanner);
+      }
+    }
 
-  // Kaydet
-  $("aivoCcmSave")?.addEventListener("click", function(){
-    var a = $("aivoPrefAnalytics")?.checked;
-    var m = $("aivoPrefMarketing")?.checked;
-    setPrefs({ analytics: !!a, marketing: !!m });
-    closeModal();
-    closeBanner();
-  });
+    $("aivoCcAllow")?.addEventListener("click", function(){
+      setPrefs({ analytics:true, marketing:true });
+      closeBanner();
+    });
 
-})();
-</script>
-<!-- /AIVO Cookie Banner (Premium) -->
+    $("aivoCcDeny")?.addEventListener("click", function(){
+      setPrefs({ analytics:false, marketing:false });
+      closeBanner();
+    });
 
+    $("aivoCcCustomize")?.addEventListener("click", function(){
+      syncModalUI();
+      openModal();
+    });
 
+    modal?.addEventListener("click", function(e){
+      var t = e.target;
+      if (t && t.getAttribute && t.getAttribute("data-ccm-close") === "1") closeModal();
+    });
+
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape" && modal && modal.classList.contains("is-open")) closeModal();
+    });
+
+    $("aivoCcmSave")?.addEventListener("click", function(){
+      var a = $("aivoPrefAnalytics")?.checked;
+      var m = $("aivoPrefMarketing")?.checked;
+      setPrefs({ analytics: !!a, marketing: !!m });
+      closeModal();
+      closeBanner();
+    });
+  })();
+  </script>
+  <!-- /AIVO Cookie Banner (Premium) -->
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
@@ -637,6 +624,39 @@
       </ul>
     </section>
 
+    <section class="k-sec" id="icerik-kullanim-kurallari" style="scroll-margin-top:120px;">
+      <h2>İçerik Kullanım Kuralları</h2>
+      <p>
+        AIVO içinde güvenli kullanım ve içerik kuralları uygulanır. Platform; kişi, eser veya kamu figürü
+        taklidine değil, genel tarz, duygu, dönem, tür ve teknik niteliklere dayalı üretimi destekler.
+      </p>
+
+      <h3>Müzik</h3>
+      <ul>
+        <li>Belirli bir sanatçıyı doğrudan taklit eden üretim taleplerine izin verilmez.</li>
+        <li>Mevcut bir şarkının söz, melodi, vokal tarzı veya düzenleme yapısını kopyalayan istekler engellenir.</li>
+        <li>Kullanıcı, kişi/eser taklidi yerine genel müzikal yönlendirmeler kullanmalıdır.</li>
+      </ul>
+
+      <h3>Görsel / Karikatür / Foto</h3>
+      <ul>
+        <li>Gerçek kişiler, siyasetçiler ve kamu figürleri için aşağılayıcı, küçük düşürücü veya alay amaçlı üretimlere izin verilmez.</li>
+        <li>İtibar zedeleyici, manipülatif, hakaret içeren veya dalga geçme amacı taşıyan içerikler yasaktır.</li>
+      </ul>
+
+      <h3>Video</h3>
+      <ul>
+        <li>Deepfake, sahte konuşma, sahte görüntü veya bir kişiyi yapmadığı bir şeyi yapıyormuş gibi gösteren içerikler yasaktır.</li>
+        <li>Kamu figürleri veya gerçek kişiler üzerinden yanıltıcı ya da zarar verici üretimlere izin verilmez.</li>
+      </ul>
+
+      <h3>Genel İlke</h3>
+      <p>
+        Üretimler; doğrudan taklit, kimlik kopyalama veya telif ihlali doğuracak benzerlikler yerine;
+        yaratıcı, güvenli ve özgün kullanım yaklaşımıyla yapılmalıdır.
+      </p>
+    </section>
+
   </main>
 
   <!-- ================= FOOTER (INDEX/VITRIN) ================= -->
@@ -663,14 +683,14 @@
       </div>
 
       <div class="aivo-footer-col">
-  <h4>Kurumsal</h4>
-  <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-  <a href="/kurumsal/ozellikler.html">Özellikler</a>
-  <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-  <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-  <a href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari">Güvenli Kullanım</a>
-  <a href="/kurumsal/iletisim.html">İletişim</a>
-</div>
+        <h4>Kurumsal</h4>
+        <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
+        <a href="/kurumsal/ozellikler.html">Özellikler</a>
+        <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
+        <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari">Güvenli Kullanım</a>
+        <a href="/kurumsal/iletisim.html">İletişim</a>
+      </div>
 
       <div class="aivo-footer-right">
         <div class="aivo-badges">
@@ -756,121 +776,121 @@
     </div>
   </div>
   <!-- ================= /LOGIN MODAL ================= -->
-<script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  const $ = (s)=>document.querySelector(s);
+  <script>
+  (function AIVO_PAGE_AUTH_SINGLE(){
+    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
+    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
+    const $ = (s)=>document.querySelector(s);
 
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
+    function setText(sel, val){
+      const el = $(sel);
+      if (!el) return;
+      el.textContent = val;
+    }
 
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
+    function showAuth(ok){
+      const g = document.getElementById('authGuest');
+      const u = document.getElementById('authUser');
+      const c = document.getElementById('topCredits');
+      if (g) g.hidden = !!ok;
+      if (u) u.hidden = !ok;
+      if (c) c.hidden = !ok;
+    }
 
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
+    function compute(user){
+      const email = (user && user.email ? String(user.email) : '').trim();
+      const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
+      const src = (name || email || 'H').trim();
+      const ch  = (src[0] ? src[0].toUpperCase() : 'H');
+      return { ch, name: (name || 'Hesap'), email: (email || '—') };
+    }
 
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
+    function apply(user){
+      const v = compute(user);
+      setText('#topUserInitial', v.ch);
+      setText('#topUserName', v.name);
+      setText('#umAvatar', v.ch);
+      setText('#umName', v.name);
+      setText('#umEmail', v.email);
+    }
 
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
+    function enforce(user){
+      let i = 0;
+      const t = setInterval(()=>{
+        i++;
+        apply(user);
+        if (i >= 40) clearInterval(t);
+      }, 150);
+    }
+
+    async function run(){
+      try{
+        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+        if (r.status !== 200){
+          showAuth(false);
+          apply({ name:'Hesap', email:'' });
+          return;
+        }
+        const user = await r.json().catch(()=>({}));
+        showAuth(true);
+        apply(user);
+        enforce(user);
+      }catch(e){
         showAuth(false);
         apply({ name:'Hesap', email:'' });
-        return;
       }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
+    }
+
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', run, { once:true });
+    } else {
+      run();
+    }
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
+      if (!btn) return;
+      e.preventDefault();
+      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
       showAuth(false);
       apply({ name:'Hesap', email:'' });
+      location.assign(btn.getAttribute('data-redirect') || '/');
+    }, true);
+  })();
+  </script>
+
+  <script>
+  (function () {
+    var HASH = "#icerik-kullanim-kurallari";
+    var TARGET_ID = "icerik-kullanim-kurallari";
+    var OFFSET = 120;
+    var tries = 0;
+    var maxTries = 30;
+
+    function jumpToTarget() {
+      if (window.location.hash !== HASH) return true;
+
+      var el = document.getElementById(TARGET_ID);
+      if (!el) return false;
+
+      var y = el.getBoundingClientRect().top + window.pageYOffset - OFFSET;
+      window.scrollTo(0, y);
+      return true;
     }
-  }
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
+    function retryJump() {
+      tries++;
+      jumpToTarget();
+      if (tries >= maxTries) return;
+      setTimeout(retryJump, 150);
+    }
 
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
-<script>
-(function () {
-  var HASH = "#icerik-kullanim-kurallari";
-  var TARGET_ID = "icerik-kullanim-kurallari";
-  var OFFSET = 120;
-  var tries = 0;
-  var maxTries = 30;
-
-  function jumpToTarget() {
-    if (window.location.hash !== HASH) return true;
-
-    var el = document.getElementById(TARGET_ID);
-    if (!el) return false;
-
-    var y = el.getBoundingClientRect().top + window.pageYOffset - OFFSET;
-    window.scrollTo(0, y);
-    return true;
-  }
-
-  function retryJump() {
-    tries++;
-    jumpToTarget();
-    if (tries >= maxTries) return;
-    setTimeout(retryJump, 150);
-  }
-
-  window.addEventListener("DOMContentLoaded", retryJump);
-  window.addEventListener("load", retryJump);
-  window.addEventListener("hashchange", retryJump);
-})();
-</script>
+    window.addEventListener("DOMContentLoaded", retryJump);
+    window.addEventListener("load", retryJump);
+    window.addEventListener("hashchange", retryJump);
+  })();
+  </script>
 </body>
 </html>
