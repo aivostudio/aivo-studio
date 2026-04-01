@@ -475,7 +475,7 @@ async function createImage() {
           if (pct) pct.textContent = p + "%";
         }, 80);
       });
-      
+     }
     function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
