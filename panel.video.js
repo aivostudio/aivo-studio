@@ -738,53 +738,70 @@ async function pollPendingStatuses(host) {
       </div>
     `;
   }
+function renderCard(it) {
+  const jid = idOf(it) || uid();
+  const isFreshCard = it?._fresh === true;
 
-  function renderCard(it) {
-    const jid = idOf(it) || uid();
-    let rawVideoUrl = String(it.playbackUrl || "").trim();
+  const finalUrl = String(bestVideoFromJob(it) || "").trim();
+  const previewUrl = String(previewVideoFromJob(it) || "").trim();
 
-    if (!rawVideoUrl) {
-      rawVideoUrl = String(getPlaybackUrl(it) || "").trim();
-      it.playbackUrl = rawVideoUrl;
-    }
+  const selectedPlaybackRawUrl = isFreshCard
+    ? (finalUrl || previewUrl)
+    : (previewUrl || finalUrl);
 
-    const ready = isReady(it) && !!rawVideoUrl;
-    const previewVideoUrl = ready
-      ? (rawVideoUrl.includes("#") ? rawVideoUrl : (rawVideoUrl + "#t=0.001"))
-      : "";
+  const playbackUrl = toMaybeProxyUrl(selectedPlaybackRawUrl);
+  const ready = isReady(it) && !!playbackUrl;
+  const previewVideoUrl = ready
+    ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
+    : "";
 
-    const ratio = "16:9";
+  const ratio = String(
+    it?.meta?.ui_state?.aspect_ratio ||
+    it?.meta?.aspect_ratio ||
+    it?.meta?.ratio ||
+    "16:9"
+  ).trim();
 
-    const title = String(it?.meta?.prompt || it?.title || formatKind(it) || "").trim();
-    const sub = "";
+  const title = String(it?.meta?.prompt || it?.title || formatKind(it) || "").trim();
+  const sub = "";
 
-    const badgeText = normalizeBadge(it);
-    const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
+  const badgeText = normalizeBadge(it);
+  const badgeKind = ready ? "ready" : (isError(it) ? "error" : "loading");
 
-    if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-      return window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-        id: jid,
-        title,
-        sub,
-        badgeText,
-        badgeKind,
-        videoUrl: previewVideoUrl,
-        posterUrl: "",
-        ratio,
-        ready,
-        canDownload: ready,
-        canShare: ready,
-        canDelete: true
-      });
-    }
-
-    return `
-      <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
-        ${renderThumb(it)}
-        ${renderMeta(it)}
-      </div>
-    `;
+  if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+    return (
+      '<div class="videoPanelCardInner"' +
+        ' data-job="' + esc(jid) + '"' +
+        ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+        ' data-final-url="' + esc(finalUrl) + '"' +
+        ' data-preview-url="' + esc(previewUrl) + '"' +
+        ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+      '>' +
+        window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+          id: jid,
+          title,
+          sub,
+          badgeText,
+          badgeKind,
+          videoUrl: previewVideoUrl,
+          posterUrl: "",
+          ratio,
+          ready,
+          canDownload: !!finalUrl,
+          canShare: ready,
+          canDelete: true,
+        }) +
+      '</div>'
+    );
   }
+
+  return `
+    <div class="vpCard" data-id="${esc(jid)}" role="button" tabindex="0">
+      ${renderThumb(it)}
+      ${renderMeta(it)}
+    </div>
+  `;
+}
 
   function render(host) {
     const grid = findGrid(host);
