@@ -929,3 +929,45 @@
     margin-bottom: 10px;
   }
 }
+/* ===== Studio / butonlara gerçek basılma hissi ===== */
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
+  transition:
+    transform .14s ease,
+    box-shadow .18s ease,
+    filter .18s ease,
+    opacity .18s ease;
+  will-change: transform;
+  transform: translateY(0) scale(1);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn:hover,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:hover{
+  transform: translateY(-1px) scale(1.01);
+  filter: brightness(1.04);
+  box-shadow: 0 10px 24px rgba(191,86,255,.18) !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn:active,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:active{
+  transform: translateY(1px) scale(.985);
+  filter: brightness(.96);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.22), 0 4px 10px rgba(191,86,255,.10) !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn:focus-visible,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.16),
+    0 0 0 5px rgba(236,72,153,.22),
+    0 10px 24px rgba(191,86,255,.18) !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn[disabled],
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn[disabled]{
+  transform: none !important;
+  filter: grayscale(.08);
+  opacity: .72;
+  cursor: not-allowed;
+}
