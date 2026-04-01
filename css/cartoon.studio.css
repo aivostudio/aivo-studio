@@ -971,3 +971,45 @@
   opacity: .72;
   cursor: not-allowed;
 }
+/* ===== Studio / sahne içi önizleme ve mini aksiyon butonları ===== */
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-actions button{
+  transition:
+    transform .14s ease,
+    box-shadow .18s ease,
+    filter .18s ease,
+    background-color .18s ease,
+    border-color .18s ease;
+  will-change: transform;
+  transform: translateY(0) scale(1);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:hover,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-actions button:hover{
+  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.05);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:active,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-actions button:active{
+  transform: translateY(1px) scale(.97);
+  filter: brightness(.96);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:active{
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.22), 0 4px 10px rgba(191,86,255,.10) !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-actions button:active{
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.20);
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.16);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:focus-visible,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-actions button:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.14),
+    0 0 0 5px rgba(236,72,153,.18);
+}
