@@ -716,6 +716,11 @@
           policyNote.style.fontSize = "13px";
           policyNote.style.lineHeight = "1.5";
           policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+                    policyNote.style.backdropFilter = "blur(10px)";
+          policyNote.style.webkitBackdropFilter = "blur(10px)";
+          policyNote.style.position = "relative";
+          policyNote.style.overflow = "hidden";
+          policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
           policyNote.textContent =
             "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
         } else {
@@ -816,7 +821,33 @@
         }
       }, true);
     }
-
+         if (!document.getElementById("aivoPolicyPulseStyle")) {
+      const style = document.createElement("style");
+      style.id = "aivoPolicyPulseStyle";
+      style.textContent = `
+        @keyframes aivoPolicyPulse {
+          0% {
+            box-shadow:
+              inset 0 1px 0 rgba(255,255,255,.04),
+              0 0 0 1px rgba(255,120,150,.18),
+              0 8px 24px rgba(255,70,110,.10);
+          }
+          50% {
+            box-shadow:
+              inset 0 1px 0 rgba(255,255,255,.05),
+              0 0 0 1px rgba(255,120,150,.30),
+              0 12px 34px rgba(255,70,110,.18);
+          }
+          100% {
+            box-shadow:
+              inset 0 1px 0 rgba(255,255,255,.04),
+              0 0 0 1px rgba(255,120,150,.18),
+              0 8px 24px rgba(255,70,110,.10);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
          function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
       const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
