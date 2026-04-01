@@ -841,22 +841,35 @@
   }, true);
 })();
 </script>
-  <script>
+<script>
 (function () {
-  function scrollToHashSection() {
-    if (window.location.hash !== "#icerik-kullanim-kurallari") return;
+  var HASH = "#icerik-kullanim-kurallari";
+  var TARGET_ID = "icerik-kullanim-kurallari";
+  var OFFSET = 120;
+  var tries = 0;
+  var maxTries = 30;
 
-    var el = document.getElementById("icerik-kullanim-kurallari");
-    if (!el) return;
+  function jumpToTarget() {
+    if (window.location.hash !== HASH) return true;
 
-    var top = el.getBoundingClientRect().top + window.pageYOffset - 110;
-    window.scrollTo({ top: top, behavior: "auto" });
+    var el = document.getElementById(TARGET_ID);
+    if (!el) return false;
+
+    var y = el.getBoundingClientRect().top + window.pageYOffset - OFFSET;
+    window.scrollTo(0, y);
+    return true;
   }
 
-  window.addEventListener("load", function () {
-    setTimeout(scrollToHashSection, 120);
-    setTimeout(scrollToHashSection, 350);
-  });
+  function retryJump() {
+    tries++;
+    jumpToTarget();
+    if (tries >= maxTries) return;
+    setTimeout(retryJump, 150);
+  }
+
+  window.addEventListener("DOMContentLoaded", retryJump);
+  window.addEventListener("load", retryJump);
+  window.addEventListener("hashchange", retryJump);
 })();
 </script>
 </body>
