@@ -515,21 +515,6 @@
       const jid = idOf(job) || uid();
       const badge = mapBadge(job);
       const isFreshCard = job?._fresh === true;
-            if (act === "play") {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const video = card?.querySelector("video.svcVideo");
-        if (!video) return;
-
-        if (video.paused) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-
-        return;
-      }
 
       const finalUrl = pickFinalVideoFromJob(job);
       const previewUrl = pickPreviewVideoFromJob(job);
