@@ -713,14 +713,20 @@
           policyNote.style.background = "rgba(255,90,120,.10)";
           policyNote.style.border = "1px solid rgba(255,120,150,.24)";
           policyNote.style.color = "rgba(255,210,220,.96)";
-          policyNote.style.fontSize = "13px";
-          policyNote.style.lineHeight = "1.5";
+                   policyNote.style.fontSize = "14px";
+          policyNote.style.fontWeight = "700";
+          policyNote.style.lineHeight = "1.6";
+          policyNote.style.textAlign = "center";
+          policyNote.style.letterSpacing = ".01em";
           policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
-                    policyNote.style.backdropFilter = "blur(10px)";
+          policyNote.style.backdropFilter = "blur(10px)";
           policyNote.style.webkitBackdropFilter = "blur(10px)";
           policyNote.style.position = "relative";
           policyNote.style.overflow = "hidden";
           policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+          policyNote.style.backgroundImage = "linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.10) 35%, rgba(255,255,255,0) 70%)";
+          policyNote.style.backgroundSize = "220% 100%";
+          policyNote.style.backgroundPosition = "200% 0";
           policyNote.textContent =
             "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
         } else {
