@@ -389,8 +389,365 @@
 
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
+        const HARD_BLOCK_TERMS = [
+      "deepfake",
+      "sesini kopyala",
+      "voice clone",
+      "dudak senkronu",
+      "lip sync"
+    ];
 
-    function applyMode(mode) {
+    const HARD_BLOCK_PATTERNS = [
+      /\bgibi\b/i,
+      /\btarzında\b/i,
+      /\btarzinda\b/i,
+      /\bstilinde\b/i,
+      /\bin the style of\b/i,
+      /\blike\b/i,
+      /\bbirebir\b/i,
+      /\baynısı\b/i,
+      /\baynisi\b/i,
+      /\bsesini taklit et\b/i,
+      /\bvokalini taklit et\b/i,
+      /\bmelodisini kullan\b/i,
+      /\bnakaratini kullan\b/i,
+      /\bsözlerini kullan\b/i,
+      /\bsozlerini kullan\b/i,
+      /\brezil\b/i,
+      /\bdalga geç\b/i,
+      /\bdalga gec\b/i,
+      /\başağıla\b/i,
+      /\basagila\b/i
+    ];
+
+    const PUBLIC_FIGURE_TERMS = [
+      "recep tayyip erdogan",
+      "recep tayyip erdoğan",
+      "erdogan",
+      "erdoğan",
+      "kemal kilicdaroglu",
+      "kemal kılıçdaroğlu",
+      "kilicdaroglu",
+      "kılıçdaroğlu",
+      "ekrem imamoglu",
+      "ekrem imamoğlu",
+      "imamoglu",
+      "imamoğlu",
+      "mansur yavas",
+      "mansur yavaş",
+      "devlet bahceli",
+      "devlet bahçeli",
+      "bahceli",
+      "bahçeli",
+      "meral aksener",
+      "meral akşener",
+      "aksener",
+      "akşener",
+      "ozgur ozel",
+      "özgür özel",
+      "ozel",
+      "özel",
+      "selahattin demirtas",
+      "selahattin demirtaş",
+      "demirtas",
+      "demirtaş",
+      "umit ozdag",
+      "ümit özdağ",
+      "ozdag",
+      "özdağ",
+      "fatih erbakan",
+      "temel karamollaoglu",
+      "temel karamollaoğlu",
+      "muharrem ince",
+      "sinan ogan",
+      "sinan oğan",
+      "ali babacan",
+      "ahmet davutoglu",
+      "ahmet davutoğlu",
+      "davutoglu",
+      "davutoğlu",
+      "hulusi akar",
+      "hakan fidan",
+      "mehmet simsek",
+      "mehmet şimşek",
+      "simsek",
+      "şimşek",
+      "suleyman soylu",
+      "süleyman soylu",
+      "soylu",
+      "bekir bozdag",
+      "bekir bozdağ",
+      "bozdag",
+      "bozdağ",
+      "numan kurtulmus",
+      "numan kurtulmuş",
+      "kurtulmus",
+      "kurtulmuş",
+      "omer celik",
+      "ömer çelik",
+      "celik",
+      "çelik",
+      "binali yildirim",
+      "binali yıldırım",
+      "abdullah gul",
+      "abdullah gül",
+      "gul",
+      "gül",
+      "ahmet necdet sezer",
+      "turgut ozal",
+      "turgut özal",
+      "ismet inonu",
+      "ismet inönü",
+      "inonu",
+      "inönü",
+      "mustafa kemal ataturk",
+      "mustafa kemal atatürk",
+      "ataturk",
+      "atatürk",
+      "kemal ataturk",
+      "cumhurbaskani",
+      "cumhurbaşkanı",
+      "cumhurbaskani yardimcisi",
+      "cumhurbaşkanı yardımcısı",
+      "bakan",
+      "milletvekili",
+      "belediye baskani",
+      "belediye başkanı",
+      "vali",
+      "kaymakam",
+      "siyasetci",
+      "siyasetçi",
+      "politikaci",
+      "politikacı",
+      "kamu figuru",
+      "kamu figürü",
+      "devlet buyugu",
+      "devlet büyüğü"
+    ];
+
+    const ARTIST_NAME_TERMS = [
+      "tarkan",
+      "sezen aksu",
+      "ajda pekkan",
+      "sertab erener",
+      "mustafa sandal",
+      "kenan dogulu",
+      "kenan doğulu",
+      "handa yener",
+      "demet akalin",
+      "demet akalın",
+      "gülşen",
+      "gulsen",
+      "hadise",
+      "aleyna tilki",
+      "edis",
+      "murat boz",
+      "simge",
+      "simge sagin",
+      "simge sağın",
+      "sila",
+      "sıla",
+      "sila gencoglu",
+      "sıla gençoglu",
+      "özcan deniz",
+      "ozcan deniz",
+      "ebru gundes",
+      "ebru gündeş",
+      "özgün",
+      "ferhat gocer",
+      "ferhat göçer",
+      "gokhan turkmen",
+      "gökhan türkmen",
+      "bengu",
+      "bengü",
+      "ziynet sali",
+      "zeynep bastik",
+      "zeynep bastık",
+      "mabel matiz",
+      "yildiz tilbe",
+      "yıldız tilbe",
+      "sibel can",
+      "linet",
+      "duman",
+      "mor ve otesi",
+      "mor ve ötesi",
+      "teoman",
+      "oguzhan koc",
+      "oğuzhan koç",
+      "cem adrian",
+      "ceylan ertem",
+      "haluk levent",
+      "levent yuksel",
+      "levent yüksel",
+      "baris manco",
+      "barış manço",
+      "mfö",
+      "mfo",
+      "athena",
+      "manga",
+      "sagopa kajmer",
+      "ceza",
+      "ezhel",
+      "ben fero",
+      "gazapizm",
+      "lvbel c5",
+      "uzi",
+      "reckol",
+      "cakal",
+      "çakal",
+      "semicenk",
+      "canozan",
+      "motive",
+      "khontkar",
+      "norm ender",
+      "contra",
+      "sansar salvo",
+      "şam",
+      "selda bagcan",
+      "selda bağcan",
+      "müslüm gürses",
+      "muslum gurses",
+      "ibrahim tatlises",
+      "ibrahim tatlıses",
+      "orhan gencebay",
+      "ferdi tayfur",
+      "volkan konak",
+      "candan ercetin",
+      "nazan oncel",
+      "nazan öncel",
+      "fatma teyze",
+      "yesim salkim",
+      "yeşim salkım",
+      "buray",
+      "irem derici",
+      "melek mosso",
+      "koray avci",
+      "koray avcı",
+      "madrigal",
+      "dedubluman",
+      "yalin",
+      "yalın",
+      "emre aydin",
+      "emre aydın",
+      "mabel",
+      "sefo",
+      "fero",
+      "sertab"
+    ];
+
+    function normalizePolicyText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function ensureMusicPolicyNote(generateBtn) {
+      let policyNote = module.querySelector("#musicPolicyNote");
+      if (!policyNote && generateBtn && generateBtn.parentElement) {
+        policyNote = document.createElement("div");
+        policyNote.id = "musicPolicyNote";
+        policyNote.style.display = "none";
+        policyNote.style.marginTop = "10px";
+        policyNote.style.padding = "10px 12px";
+        policyNote.style.borderRadius = "12px";
+        policyNote.style.fontSize = "13px";
+        policyNote.style.lineHeight = "1.4";
+        policyNote.style.background = "rgba(255,77,109,.12)";
+        policyNote.style.border = "1px solid rgba(255,77,109,.35)";
+        policyNote.style.color = "#ff8aa0";
+        generateBtn.parentElement.appendChild(policyNote);
+      }
+      return policyNote;
+    }
+
+    function evaluateMusicPolicyUI() {
+      const generateBtn = module.querySelector("#musicGenerateBtn");
+      const promptEl = module.querySelector("#prompt");
+      const lyricsEl = module.querySelector("#lyrics");
+      const policyNote = ensureMusicPolicyNote(generateBtn);
+
+      if (!generateBtn) return false;
+
+      const raw = [
+        String(promptEl?.value || "").trim(),
+        String(lyricsEl?.value || "").trim()
+      ].filter(Boolean).join(" ");
+
+      const text = normalizePolicyText(raw);
+
+      const hasBlockedTerm =
+        HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+        PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+        ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+
+      const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+      const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
+
+      generateBtn.disabled = blocked;
+      generateBtn.style.opacity = blocked ? "0.55" : "";
+      generateBtn.style.cursor = blocked ? "not-allowed" : "";
+
+      if (promptEl) {
+        promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+        promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
+      }
+
+      if (lyricsEl) {
+        lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
+        lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
+      }
+
+      if (policyNote) {
+        if (blocked) {
+          policyNote.style.display = "block";
+          policyNote.textContent =
+            "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
+        } else {
+          policyNote.style.display = "none";
+          policyNote.textContent = "";
+        }
+      }
+
+      return blocked;
+    }
+
+    function bindMusicPolicyUI() {
+      const generateBtn = module.querySelector("#musicGenerateBtn");
+      const promptEl = module.querySelector("#prompt");
+      const lyricsEl = module.querySelector("#lyrics");
+
+      ensureMusicPolicyNote(generateBtn);
+
+      if (promptEl && !promptEl.__aivoPolicyInputBound) {
+        promptEl.__aivoPolicyInputBound = true;
+        promptEl.addEventListener("input", evaluateMusicPolicyUI);
+        promptEl.addEventListener("change", evaluateMusicPolicyUI);
+      }
+
+      if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
+        lyricsEl.__aivoPolicyInputBound = true;
+        lyricsEl.addEventListener("input", evaluateMusicPolicyUI);
+        lyricsEl.addEventListener("change", evaluateMusicPolicyUI);
+      }
+
+      if (generateBtn && !generateBtn.__aivoPolicyClickBound) {
+        generateBtn.__aivoPolicyClickBound = true;
+        generateBtn.addEventListener("click", (e) => {
+          const blocked = evaluateMusicPolicyUI();
+          if (blocked) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, true);
+      }
+
+      evaluateMusicPolicyUI();
+    }
+
+         function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
       const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
       const generateBtn = module.querySelector('#musicGenerateBtn');
@@ -455,158 +812,25 @@
           generateBtn.style.minHeight = "";
           generateBtn.style.borderRadius = "";
         }
-
-        const promptEl = module.querySelector("#prompt");
-        const lyricsEl = module.querySelector("#lyrics");
-        let policyNote = module.querySelector("#musicPolicyNote");
-
-        if (!policyNote && generateBtn.parentElement) {
-          policyNote = document.createElement("div");
-          policyNote.id = "musicPolicyNote";
-          policyNote.style.display = "none";
-          policyNote.style.marginTop = "10px";
-          policyNote.style.padding = "10px 12px";
-          policyNote.style.borderRadius = "12px";
-          policyNote.style.fontSize = "13px";
-          policyNote.style.lineHeight = "1.4";
-          policyNote.style.background = "rgba(255,77,109,.12)";
-          policyNote.style.border = "1px solid rgba(255,77,109,.35)";
-          policyNote.style.color = "#ff8aa0";
-          generateBtn.parentElement.appendChild(policyNote);
-        }
-
-        const HARD_BLOCK_TERMS = [
-          "tarkan",
-          "sezen aksu",
-          "ajda pekkan",
-          "drake",
-          "taylor swift",
-          "recep tayyip erdogan",
-          "recep tayyip erdoğan",
-          "cumhurbaşkanı",
-          "cumhurbaskani",
-          "deepfake",
-          "sesini kopyala",
-          "voice clone",
-          "dudak senkronu",
-          "lip sync"
-        ];
-
-        const HARD_BLOCK_PATTERNS = [
-          /gibi/i,
-          /tarzında/i,
-          /tarzinda/i,
-          /stilinde/i,
-          /in the style of/i,
-          /like/i,
-          /birebir/i,
-          /aynısı/i,
-          /aynisi/i,
-          /sesini taklit et/i,
-          /vokalini taklit et/i,
-          /melodisini kullan/i,
-          /nakaratini kullan/i,
-          /sözlerini kullan/i,
-          /sozlerini kullan/i,
-          /rezil/i,
-          /dalga geç/i,
-          /dalga gec/i,
-          /aşağıla/i,
-          /asagila/i
-        ];
-
-        const normalizePolicyText = (value) =>
-          String(value || "")
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[̀-ͯ]/g, "")
-            .replace(/\s+/g, " ")
-            .trim();
-
-        const evaluateMusicPolicyUI = () => {
-          const raw = [
-            String(promptEl?.value || "").trim(),
-            String(lyricsEl?.value || "").trim()
-          ].filter(Boolean).join(" ");
-
-          const text = normalizePolicyText(raw);
-
-          const hasBlockedTerm = HARD_BLOCK_TERMS.some((term) =>
-            text.includes(normalizePolicyText(term))
-          );
-          const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-
-          const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
-
-          generateBtn.disabled = blocked;
-          generateBtn.style.opacity = blocked ? "0.55" : "";
-          generateBtn.style.cursor = blocked ? "not-allowed" : "";
-
-          if (promptEl) {
-            promptEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
-            promptEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
-          }
-
-          if (lyricsEl) {
-            lyricsEl.style.borderColor = blocked ? "rgba(255,77,109,.9)" : "";
-            lyricsEl.style.boxShadow = blocked ? "0 0 0 1px rgba(255,77,109,.35)" : "";
-          }
-
-          if (policyNote) {
-            if (blocked) {
-              policyNote.style.display = "block";
-              policyNote.textContent =
-                "Bu istek mevcut güvenlik ve hak politikası nedeniyle üretilemez. Sanatçı adı yerine tür/duygu, gerçek kişi yerine kurgu karakter kullan.";
-            } else {
-              policyNote.style.display = "none";
-              policyNote.textContent = "";
-            }
-          }
-        };
-
-        if (promptEl && !promptEl.__aivoPolicyInputBound) {
-          promptEl.__aivoPolicyInputBound = true;
-          promptEl.addEventListener("input", evaluateMusicPolicyUI);
-          promptEl.addEventListener("change", evaluateMusicPolicyUI);
-        }
-
-        if (lyricsEl && !lyricsEl.__aivoPolicyInputBound) {
-          lyricsEl.__aivoPolicyInputBound = true;
-          lyricsEl.addEventListener("input", evaluateMusicPolicyUI);
-          lyricsEl.addEventListener("change", evaluateMusicPolicyUI);
-        }
-
-        if (!generateBtn.__aivoPolicyClickBound) {
-          generateBtn.__aivoPolicyClickBound = true;
-          generateBtn.addEventListener("click", (e) => {
-            evaluateMusicPolicyUI();
-            if (generateBtn.disabled) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          }, true);
-        }
-
-        evaluateMusicPolicyUI();
       }
     }
 
+    // default
     let saved = "basic";
-    try {
-      const stored = sessionStorage.getItem(MODE_KEY);
-      if (stored === "advanced" || stored === "basic") saved = stored;
-    } catch(e) {}
+    try { saved = sessionStorage.getItem(MODE_KEY) || "basic"; } catch(e) {}
+    applyMode(saved);
 
-    if (!switchEl.__aivoModeBound) {
-      switchEl.__aivoModeBound = true;
-      modeButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          applyMode(btn.dataset.modeButton === "advanced" ? "advanced" : "basic");
-        });
+    // bind mode click once
+    if (!module.__aivo_mode_bound) {
+      module.__aivo_mode_bound = true;
+      module.addEventListener("click", (e) => {
+        const btn = e.target.closest(".mode-toggle [data-mode-button]");
+        if (!btn) return;
+        applyMode(btn.dataset.modeButton);
       });
     }
 
-    applyMode(saved);
+    // counters
     initMusicCharCounters(module);
 
     // Record button -> modal (advanced only)
