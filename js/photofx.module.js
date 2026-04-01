@@ -1,8 +1,14 @@
 (function () {
-if (window.__AIVO_PHOTOFX_MODULE__) return;
-window.__AIVO_PHOTOFX_MODULE__ = true;
+  if (window.__AIVO_PHOTOFX_MODULE_LOADED__) {
+    if (typeof window.__AIVO_PHOTOFX_RETRY_BOOT__ === "function") {
+      window.__AIVO_PHOTOFX_RETRY_BOOT__();
+    }
+    return;
+  }
 
-console.log("[PHOTOFX] module script loaded, waiting for root...");
+  window.__AIVO_PHOTOFX_MODULE_LOADED__ = true;
+
+  console.log("[PHOTOFX] module script loaded, waiting for root...");
 
   const FIXED_CREDIT_COST = 8;
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
@@ -1137,7 +1143,7 @@ const builtEffects = {
     }
   }
 
-  function retryBoot(attempt = 0) {
+   function retryBoot(attempt = 0) {
     const root = getRoot();
     const presetCards = root ? qsa(".pfxPresetCard[data-preset]", root) : [];
     const createBtn = root ? qs(".pfxCreateBtn", root) : null;
@@ -1145,9 +1151,12 @@ const builtEffects = {
     const domReady = !!root && presetCards.length > 0 && !!createBtn;
 
     if (domReady) {
-      boot();
-      console.log("[PHOTOFX] module READY ✅");
-      return;
+      if (!root.__photofxBooted) {
+        root.__photofxBooted = true;
+        boot();
+        console.log("[PHOTOFX] module READY ✅");
+      }
+      return true;
     }
 
     if (attempt >= 40) {
@@ -1156,8 +1165,46 @@ const builtEffects = {
         presetCards: presetCards.length,
         hasCreateBtn: !!createBtn,
       });
-      return;
+      return false;
     }
+
+    setTimeout(() => retryBoot(attempt + 1), 250);
+    return false;
+  }
+
+  function scheduleRetryBoot() {
+    setTimeout(() => retryBoot(), 0);
+    setTimeout(() => retryBoot(), 150);
+    setTimeout(() => retryBoot(), 400);
+    setTimeout(() => retryBoot(), 900);
+  }
+
+  window.__AIVO_PHOTOFX_RETRY_BOOT__ = scheduleRetryBoot;
+
+  if (!window.__AIVO_PHOTOFX_DOM_OBSERVER__) {
+    window.__AIVO_PHOTOFX_DOM_OBSERVER__ = new MutationObserver(() => {
+      const root = getRoot();
+      if (!root) return;
+      if (root.__photofxBooted) return;
+      scheduleRetryBoot();
+    });
+
+    window.__AIVO_PHOTOFX_DOM_OBSERVER__.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  window.addEventListener("pageshow", scheduleRetryBoot);
+  window.addEventListener("hashchange", scheduleRetryBoot);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      scheduleRetryBoot();
+    }
+  });
+
+  scheduleRetryBoot();
+})();
 
     setTimeout(() => retryBoot(attempt + 1), 250);
   }
