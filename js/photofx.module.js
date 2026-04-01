@@ -1205,9 +1205,3 @@ const builtEffects = {
 
   scheduleRetryBoot();
 })();
-
-    setTimeout(() => retryBoot(attempt + 1), 250);
-  }
-
-  retryBoot();
-})();
