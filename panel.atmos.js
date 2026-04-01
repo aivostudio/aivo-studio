@@ -613,8 +613,7 @@
         function render(items) {
           if (!elGrid) return;
 
-          setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
-
+       setStatus(hasProcessing(items) ? "İşleniyor…" : "Ön İzleme");
           const list = Array.isArray(items) ? items : [];
 
           // ✅ Empty state: innerHTML kullanma (video reset riskini azaltır)
