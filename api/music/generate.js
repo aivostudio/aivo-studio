@@ -14,6 +14,7 @@ export const config = { runtime: "nodejs" };
 const { getRedis } = require("../_kv");
 const fetchFn = globalThis.fetch || require("node-fetch");
 const { neon } = require("@neondatabase/serverless");
+const { enforcePolicy, policyErrorResponse } = require("../_lib/policy-gateway");
 
 // NOTE: auth modülü sende bazı endpointlerde ESM, bazı yerde CJS görünüyor.
 // Burada CJS require ile güvenli alıyoruz:
@@ -121,6 +122,20 @@ module.exports = async (req, res) => {
     const lyrics = String(body.lyrics || "").trim();
     const vocal = String(body.vocal || "").trim();
     const mood = String(body.mood || "").trim();
+    const policy = enforcePolicy({
+  app: "music",
+  prompt,
+  title,
+  lyrics,
+  vocal,
+  mood,
+  referenceArtist: String(body.referenceArtist || body.artist || "").trim(),
+  personName: String(body.personName || "").trim(),
+});
+
+if (policy.decision === "block") {
+  return safeJson(res, policyErrorResponse(policy), 403);
+}
 
     // ✅ NOTE: UI request'te gelse bile burada intentionally ignore ediyoruz.
     // const reference_audio_url = String(body.reference_audio_url || "").trim();
