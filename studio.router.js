@@ -256,6 +256,18 @@ window.ensureModuleCSS = function () {
 
     try {
       await loadModuleIntoHost(key);
+          try {
+      const activeNow =
+        document.getElementById("moduleHost")?.getAttribute("data-active-module") || "";
+
+      if (activeNow === key) {
+        if (key === "photofx" && typeof window.__AIVO_PHOTOFX_INIT__ === "function") {
+          window.__AIVO_PHOTOFX_INIT__();
+        }
+      }
+    } catch (e) {
+      console.warn("[ROUTER] module init failed:", key, e);
+    }
     } catch (e) {
       if (e?.name === "AbortError") return;
       console.warn("[ROUTER] loadModuleIntoHost failed:", key, e);
