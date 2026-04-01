@@ -1047,115 +1047,539 @@ async function pollPendingStatuses(host) {
     };
   }
 
-  /* =======================
-     PPE bridge
-     ======================= */
+/* =======================
+   Video panel (DBJobs + optimistic + keyed render)
+   ======================= */
 
-  function attachPPE(host) {
-    return () => {};
+function createVideoPanel(host) {
+  if (!window.DBJobs) {
+    console.warn("[VIDEO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
+    host.innerHTML = `
+      <div class="videoSide">
+        <div class="videoSideCard">
+          <div class="vpEmpty">DBJobs bulunamadı.</div>
+        </div>
+      </div>
+    `;
+    return {
+      destroy() {
+        try { host.innerHTML = ""; } catch {}
+      },
+    };
   }
 
-  /* =======================
-     Job created bridge
-     ======================= */
+  let destroyed = false;
+  let currentDbItems = [];
+  let searchTimer = null;
+  let searchInputEl = null;
+  let searchRootEl = null;
 
-function attachJobCreated(host) {
-  const onJob = (e) => {
+  const localState = {
+    query: "",
+  };
+
+  const optimistic = new Map();
+  const hiddenDeletedIds = new Set();
+
+  const cardCache =
+    window.__VIDEO_CARD_CACHE__ ||
+    (window.__VIDEO_CARD_CACHE__ = new Map());
+
+  host.innerHTML = `
+    <div class="videoSide">
+      <div class="videoSideCard">
+        <div class="vpGrid" data-video-grid></div>
+      </div>
+    </div>
+  `;
+
+  const grid = findGrid(host);
+
+  function safeStr(v) {
+    return String(v == null ? "" : v).trim();
+  }
+
+  function toMs(v) {
+    if (v == null) return 0;
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+
+    const s = String(v).trim();
+
+    if (/^\d{10,13}$/.test(s)) {
+      const n = Number(s);
+      if (Number.isFinite(n)) return n;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
+      const iso = s.replace(" ", "T") + "Z";
+      const tIso = Date.parse(iso);
+      if (Number.isFinite(tIso)) return tIso;
+    }
+
+    const t = Date.parse(s);
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  function resolvePanelSearchInput() {
+    const candidates = [
+      ...document.querySelectorAll("input.rpSearch"),
+      ...document.querySelectorAll("[data-right-panel-search]"),
+      ...document.querySelectorAll('input[type="search"]'),
+    ];
+
+    const panelRoot =
+      host.closest('[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel') ||
+      host.parentElement ||
+      document;
+
+    for (const input of candidates) {
+      if (!(input instanceof HTMLElement)) continue;
+
+      const root =
+        input.closest('[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel') ||
+        input.parentElement;
+
+      if (root && panelRoot && root === panelRoot) return input;
+    }
+
+    for (const input of candidates) {
+      if (!(input instanceof HTMLElement)) continue;
+
+      const ph = safeStr(input.getAttribute("placeholder") || "").toLowerCase();
+      const aria = safeStr(input.getAttribute("aria-label") || "").toLowerCase();
+      const cls = safeStr(input.className || "").toLowerCase();
+
+      if (
+        ph.includes("ara") ||
+        ph.includes("search") ||
+        aria.includes("ara") ||
+        aria.includes("search") ||
+        cls.includes("rpsearch")
+      ) {
+        return input;
+      }
+    }
+
+    return candidates[0] || null;
+  }
+
+  function ensureSearchBinding() {
+    const nextInput = resolvePanelSearchInput();
+    if (!nextInput) return null;
+
+    if (searchInputEl === nextInput) return searchInputEl;
+
+    searchInputEl = nextInput;
+    searchRootEl =
+      searchInputEl.closest('[data-right-panel-root], .rightPanel, .rpShell, .rpWrap, .rpPanel, .RightPanel') ||
+      searchInputEl.parentElement ||
+      null;
+
+    return searchInputEl;
+  }
+
+  function renderKeyed(items) {
+    if (!grid) return;
+
+    const list = Array.isArray(items) ? items : [];
+    const EMPTY_ID = "videoEmptyState";
+    let emptyEl = grid.querySelector(`#${EMPTY_ID}`);
+
+    if (!list.length) {
+      for (const ch of Array.from(grid.children)) {
+        if (ch.id !== EMPTY_ID) grid.removeChild(ch);
+      }
+
+      if (!emptyEl) {
+        emptyEl = document.createElement("div");
+        emptyEl.id = EMPTY_ID;
+        emptyEl.className = "vpEmpty";
+        grid.appendChild(emptyEl);
+      }
+
+      emptyEl.textContent = localState.query
+        ? "Aramana uygun video bulunamadı."
+        : "Henüz video yok.";
+
+      return;
+    } else if (emptyEl) {
+      emptyEl.remove();
+    }
+
+    const wanted = new Set();
+    let anchor = grid.firstChild;
+
+    for (const it of list) {
+      const jid = idOf(it);
+      if (!jid) continue;
+
+      wanted.add(jid);
+
+      let card = cardCache.get(jid);
+      if (!card) {
+        card = document.createElement("div");
+        card.className = "vpCard";
+        card.setAttribute("data-id", jid);
+        card.setAttribute("role", "button");
+        card.setAttribute("tabindex", "0");
+        cardCache.set(jid, card);
+      }
+
+      const html = renderCard(it);
+      if (card.__renderedHtml !== html) {
+        card.innerHTML = html;
+        card.__renderedHtml = html;
+      }
+
+      card.setAttribute("data-id", jid);
+
+      if (!card.isConnected) {
+        grid.insertBefore(card, anchor);
+        continue;
+      }
+
+      if (card !== anchor) {
+        grid.insertBefore(card, anchor);
+      } else {
+        anchor = anchor?.nextSibling || null;
+      }
+    }
+
+    for (const ch of Array.from(grid.children)) {
+      if (ch.id === EMPTY_ID) continue;
+      const jid = String(ch.getAttribute?.("data-id") || "").trim();
+      if (jid && !wanted.has(jid)) {
+        grid.removeChild(ch);
+      }
+    }
+  }
+
+  function buildMergedItems() {
+    const byId = new Map();
+
+    for (const j of currentDbItems) {
+      const id = idOf(j);
+      if (!id) continue;
+      if (hiddenDeletedIds.has(id)) continue;
+
+      byId.set(id, j);
+
+      if (optimistic.has(id)) {
+        const st = norm(j?.db_status || j?.status || j?.state);
+        const isTerminal =
+          st.includes("ready") ||
+          st.includes("done") ||
+          st.includes("complet") ||
+          st.includes("succ") ||
+          st.includes("error") ||
+          st.includes("fail");
+
+        if (isTerminal) optimistic.delete(id);
+      }
+    }
+
+    for (const [id, j] of optimistic.entries()) {
+      if (!id) continue;
+      if (hiddenDeletedIds.has(id)) continue;
+      if (!byId.has(id)) byId.set(id, j);
+    }
+
+    const merged = Array.from(byId.values()).sort((a, b) => {
+      const ta = toMs(a?.updated_at) || toMs(a?.created_at) || toMs(a?.createdAt) || 0;
+      const tb = toMs(b?.updated_at) || toMs(b?.created_at) || toMs(b?.createdAt) || 0;
+      if (tb !== ta) return tb - ta;
+      return String(idOf(b)).localeCompare(String(idOf(a)));
+    });
+
+    const q = safeStr(localState.query).toLowerCase();
+    if (!q) return merged;
+
+    return merged.filter((it) => {
+      const haystack = [
+        it?.title,
+        it?.meta?.prompt,
+        it?.meta?.title,
+        it?.status,
+        it?.db_status,
+        it?.state,
+      ]
+        .map((x) => String(x || "").toLowerCase())
+        .join(" ");
+
+      return haystack.includes(q);
+    });
+  }
+
+  function renderCurrent() {
+    renderKeyed(buildMergedItems());
+  }
+
+  const onSearchInput = (e) => {
+    const input = ensureSearchBinding();
+    if (!input) return;
+
+    if (e.target === input) {
+      const nextQuery = safeStr(input.value || "");
+      if (localState.query === nextQuery) return;
+
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        localState.query = nextQuery;
+        renderCurrent();
+      }, 120);
+      return;
+    }
+
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    if (
+      searchRootEl &&
+      input.contains &&
+      searchRootEl.contains(target) &&
+      target === input
+    ) {
+      const nextQuery = safeStr(input.value || "");
+      if (localState.query === nextQuery) return;
+
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        localState.query = nextQuery;
+        renderCurrent();
+      }, 120);
+    }
+  };
+
+  document.addEventListener("input", onSearchInput, true);
+  document.addEventListener("search", onSearchInput, true);
+
+  setTimeout(() => {
+    ensureSearchBinding();
+    const input = ensureSearchBinding();
+    localState.query = safeStr(input?.value || "");
+    renderCurrent();
+  }, 0);
+
+  bindActions(host);
+  const offEvents = attachEvents(host);
+
+  const controller = window.DBJobs.create({
+    app: "video",
+    debug: false,
+    pollIntervalMs: 4000,
+    hydrateEveryMs: 15000,
+
+    acceptJob: (job) => {
+      if (!job) return false;
+      const appGuess = String(job?.app || job?.meta?.app || "").trim();
+      if (appGuess && !isVideoApp(appGuess)) return false;
+      return true;
+    },
+
+    acceptOutput: (o) => {
+      if (!o) return false;
+
+      const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind);
+      if (t && t !== "video") return false;
+
+      const oa = String(o?.meta?.app || o?.meta?.module || o?.meta?.routeKey || "").trim();
+      if (oa && !isVideoApp(oa)) return false;
+
+      return true;
+    },
+
+    onChange: async (items) => {
+      if (destroyed) return;
+
+      currentDbItems = (items || [])
+        .filter((j) => {
+          const appGuess = String(j?.app || j?.meta?.app || "").trim();
+          if (appGuess && !isVideoApp(appGuess)) return false;
+          const id = idOf(j);
+          return id && !hiddenDeletedIds.has(id);
+        })
+        .map((j) => {
+          const mapped = mapDbItemToPanelItem(j) || j;
+          return {
+            ...mapped,
+            _fresh: false,
+          };
+        });
+
+      renderCurrent();
+    },
+  });
+
+  const onJobCreated = (e) => {
     const d = e?.detail || {};
-    if (!isVideoApp(d.app) || !d.job_id) return;
+    if (!d.job_id) return;
+    if (!isVideoApp(d.app || d.meta?.app || "video")) return;
 
-    const job_id = String(d.job_id).trim();
+    const job_id = String(d.job_id || "").trim();
     if (!job_id) return;
+    if (hiddenDeletedIds.has(job_id)) return;
 
-    if (deletedIds.has(job_id)) return;
-
-    const exists = state.items.some(x => String(idOf(x)) === job_id);
-    if (exists) return;
+    const existsDb = currentDbItems.some((j) => idOf(j) === job_id);
+    if (existsDb) return;
+    if (optimistic.has(job_id)) return;
 
     const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
-    const prompt = (d.prompt && String(d.prompt).trim()) ? String(d.prompt).trim() : "";
+    const prompt = safeStr(d.prompt || "");
     const title = prompt ? `${modeLabel}: ${prompt}` : modeLabel;
+    const createdAt = d.createdAt || Date.now();
+    const meta = d.meta || {};
 
-    state.items.unshift({
+    const optimisticJob = {
       id: job_id,
       job_id,
+      app: "video",
+      provider: meta.provider || "runway",
+      createdAt,
+      created_at: createdAt,
+      updated_at: createdAt,
+      title,
       url: "",
       archive_url: "",
       playbackUrl: "",
       status: "İşleniyor",
+      db_status: "processing",
+      state: "PROCESSING",
       _fresh: false,
-      title,
-      createdAt: d.createdAt || Date.now(),
       meta: {
-        mode: d.mode || "",
-        prompt: prompt,
-        image_url: d.image_url || "",
+        ...(meta || {}),
+        mode: d.mode || meta.mode || "",
+        prompt: prompt || meta.prompt || "",
+        image_url: d.image_url || meta.image_url || "",
         app: "video",
       },
       outputs: [],
-      state: "PENDING",
-      db_status: "pending",
-      app: "video",
-    });
+    };
 
-    state.items = state.items.slice(0, MAX_ITEMS);
-    render(host);
+    optimistic.set(job_id, optimisticJob);
 
-    setTimeout(() => {
-      hydrateFromDB(host).catch?.(() => {});
-    }, 1200);
+    try {
+      controller.upsert(optimisticJob);
+    } catch (err) {
+      console.warn("[VIDEO PANEL] controller.upsert failed", err);
+    }
 
-    pollPendingStatuses(host).catch(() => {});
+    renderCurrent();
   };
 
-  window.addEventListener("aivo:video:job_created", onJob);
-  return () => window.removeEventListener("aivo:video:job_created", onJob);
+  const onJobReady = (e) => {
+    const d = e?.detail || {};
+    const job_id = String(d?.job_id || "").trim();
+    if (!job_id) return;
+    if (hiddenDeletedIds.has(job_id)) return;
+
+    const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
+    const videoUrl = safeStr(
+      d?.video?.url ||
+      d?.raw?.video?.url ||
+      d?.raw?.video_url ||
+      d?.videoUrl ||
+      d?.video_url ||
+      ""
+    );
+
+    const existingDb = currentDbItems.find((j) => idOf(j) === job_id);
+
+    if (existingDb) {
+      existingDb.db_status = "ready";
+      existingDb.status = "ready";
+      existingDb.state = "COMPLETED";
+      existingDb._fresh = true;
+
+      if (outputs.length) {
+        existingDb.outputs = outputs;
+      } else if (videoUrl) {
+        existingDb.outputs = [
+          {
+            type: "video",
+            url: videoUrl,
+            meta: { app: "video", variant: "provider", is_final: true },
+          },
+        ];
+      }
+
+      existingDb.playbackUrl = getPlaybackUrl(existingDb) || "";
+
+      if (optimistic.has(job_id)) optimistic.delete(job_id);
+
+      renderCurrent();
+      return;
+    }
+
+    const optimisticJob = optimistic.get(job_id);
+    if (!optimisticJob) return;
+
+    const next = {
+      ...optimisticJob,
+      _fresh: true,
+      db_status: "ready",
+      status: "ready",
+      state: "COMPLETED",
+      outputs: outputs.length
+        ? outputs
+        : videoUrl
+          ? [
+              {
+                type: "video",
+                url: videoUrl,
+                meta: { app: "video", variant: "provider", is_final: true },
+              },
+            ]
+          : optimisticJob.outputs || [],
+    };
+
+    next.playbackUrl = getPlaybackUrl(next) || "";
+    optimistic.set(job_id, next);
+
+    renderCurrent();
+  };
+
+  controller.start();
+  window.addEventListener("aivo:video:job_created", onJobCreated);
+  window.addEventListener("aivo:video:job_ready", onJobReady);
+
+  return {
+    destroy() {
+      destroyed = true;
+
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = null;
+      searchInputEl = null;
+      searchRootEl = null;
+
+      try { document.removeEventListener("input", onSearchInput, true); } catch {}
+      try { document.removeEventListener("search", onSearchInput, true); } catch {}
+      try { window.removeEventListener("aivo:video:job_created", onJobCreated); } catch {}
+      try { window.removeEventListener("aivo:video:job_ready", onJobReady); } catch {}
+      try { controller?.destroy?.(); } catch {}
+      try { offEvents?.(); } catch {}
+      try { host.innerHTML = ""; } catch {}
+    },
+  };
 }
-  /* =======================
-     Panel register
-     ======================= */
 
-  window.RightPanel.register("video", {
-    getHeader() {
-      return {
-        title: "Videolarım",
-        meta: "",
-        searchPlaceholder: "Videolarda ara..."
-      };
-    },
+/* =======================
+   Panel register
+   ======================= */
 
-    mount(host) {
-      host.innerHTML = `
-        <div class="videoSide">
-          <div class="videoSideCard">
-            <div class="vpGrid" data-video-grid></div>
-          </div>
-        </div>
-      `;
+window.RightPanel.register("video", {
+  getHeader() {
+    return {
+      title: "Videolarım",
+      meta: "",
+      searchPlaceholder: "Videolarda ara..."
+    };
+  },
 
-      state.items = [];
-      render(host);
-
-      bindActions(host);
-      bindPanelSearch(host);
-
-      hydrateFromDB(host);
-
-      const tList = setInterval(() => hydrateFromDB(host), 15000);
-      const tStatus = setInterval(() => pollPendingStatuses(host).catch(() => {}), STATUS_POLL_EVERY_MS);
-
-      const offEvents = attachEvents(host);
-      const offPPE = () => {};
-      const offJobs = attachJobCreated(host);
-
-      return () => {
-        try { clearInterval(tList); } catch {}
-        try { clearInterval(tStatus); } catch {}
-        try { offEvents(); } catch {}
-        try { offPPE(); } catch {}
-        try { offJobs(); } catch {}
-        try { host.__vpSearchCleanup?.(); } catch {}
-      };
-    },
-  });
+  mount(host) {
+    const api = createVideoPanel(host);
+    return () => {
+      try { api?.destroy?.(); } catch {}
+    };
+  },
+});
 })();
