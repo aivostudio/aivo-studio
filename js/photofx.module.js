@@ -1044,46 +1044,53 @@ const builtEffects = {
       });
     }
 
-    document.addEventListener(
-      "click",
-      (e) => {
-        const nextRoot = getRoot();
-        if (!nextRoot) return;
+if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
+  window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__ = true;
 
-        const clearBtn = e.target.closest("[data-clear-upload]");
-        if (clearBtn && nextRoot.contains(clearBtn)) {
-          e.preventDefault();
-          e.stopPropagation();
-          const clearKey = String(
-            clearBtn.getAttribute("data-clear-upload") || ""
-          ).trim();
-          if (clearKey) {
-            clearFileSelection(nextRoot, clearKey);
-          }
-          return;
+  document.addEventListener(
+    "click",
+    (e) => {
+      const nextRoot = getRoot();
+      if (!nextRoot) return;
+
+      const clearBtn = e.target.closest("[data-clear-upload]");
+      if (clearBtn && nextRoot.contains(clearBtn)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const clearKey = String(
+          clearBtn.getAttribute("data-clear-upload") || ""
+        ).trim();
+
+        if (clearKey) {
+          clearFileSelection(nextRoot, clearKey);
+        }
+        return;
+      }
+
+      const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
+      if (presetCard && nextRoot.contains(presetCard)) {
+        e.preventDefault();
+
+        const nextState = getState(nextRoot);
+        const preset = String(
+          presetCard.getAttribute("data-preset") || ""
+        ).trim();
+
+        if (!preset) return;
+
+        if (nextState.presets.includes(preset)) {
+          nextState.presets = nextState.presets.filter((x) => x !== preset);
+        } else {
+          nextState.presets = [...nextState.presets, preset];
         }
 
-        const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
-        if (presetCard && nextRoot.contains(presetCard)) {
-          e.preventDefault();
-          const nextState = getState(nextRoot);
-          const preset = String(
-            presetCard.getAttribute("data-preset") || ""
-          ).trim();
-
-          if (!preset) return;
-
-          if (nextState.presets.includes(preset)) {
-            nextState.presets = nextState.presets.filter((x) => x !== preset);
-          } else {
-            nextState.presets = [...nextState.presets, preset];
-          }
-
-          renderPresets(nextRoot);
-        }
-      },
-      true
-    );
+        renderPresets(nextRoot);
+      }
+    },
+    true
+  );
+}
 
     if (createBtn && !createBtn.__bound) {
       createBtn.__bound = true;
