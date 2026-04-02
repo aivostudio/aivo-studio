@@ -1,5 +1,9 @@
 const { neon } = require("@neondatabase/serverless");
 const authModule = require("../../../_lib/auth.js");
+const {
+  enforcePolicy,
+  policyErrorResponse,
+} = require("../../../_lib/policy-gateway.js");
 
 const requireAuth =
   authModule?.requireAuth ||
@@ -220,6 +224,27 @@ module.exports = async function handler(req, res) {
   const characterGlasses = String(body.glasses || "").trim();
   const characterAccessory = String(body.accessory || "").trim();
   const characterExpression = String(body.expression || "").trim();
+
+    const policy = enforcePolicy({
+    app: "cartoon",
+    prompt: [
+      body?.prompt,
+      body?.name,
+      body?.style,
+      body?.type,
+      body?.hairType,
+      body?.hairColor,
+      body?.outfit,
+      body?.glasses,
+      body?.accessory,
+      body?.expression
+    ].filter(Boolean).join(" "),
+    personName: String(body?.name || "").trim()
+  });
+
+  if (policy.decision === "block") {
+    return res.status(403).json(policyErrorResponse(policy));
+  }
 
   const requestNonce =
     mode === "character"
