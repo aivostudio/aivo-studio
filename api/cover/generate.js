@@ -2,6 +2,7 @@ export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
 import authModule from "../_lib/auth.js";
+import { enforcePolicy, policyErrorResponse } from "../_lib/policy-gateway.js";
 const { requireAuth } = authModule;
 
 export default async function handler(req, res) {
@@ -42,7 +43,9 @@ export default async function handler(req, res) {
   }
 
   const body = req.body || {};
-  const prompt = String(body.prompt || "").trim();
+  const prompt = String(body.prompt || body.text || "").trim();
+  const title = String(body.title || "").trim();
+  const artist = String(body.artist || body.referenceArtist || "").trim();
   const style = body.style ?? null;
   const quality = String(body.quality || "artist").trim();
   const ratio = String(body.ratio || "1:1").trim();
@@ -50,6 +53,21 @@ export default async function handler(req, res) {
 
   if (!prompt) {
     return res.status(400).json({ ok: false, error: "prompt_empty" });
+  }
+
+  const policy = enforcePolicy({
+    app: "cover",
+    prompt,
+    title,
+    style: style == null ? "" : String(style).trim(),
+    quality,
+    ratio,
+    referenceArtist: artist,
+    personName: String(body.personName || "").trim(),
+  });
+
+  if (policy.decision === "block") {
+    return res.status(403).json(policyErrorResponse(policy));
   }
 
   if (!imageUrl) {
@@ -76,26 +94,40 @@ export default async function handler(req, res) {
 
     const user_uuid = String(userRow[0].id);
 
-    const metaSafe = {
+       const metaSafe = {
       app: "cover",
       kind: "cover_image",
       provider: "fal",
-      prompt,
+      prompt:
+        policy.decision === "rewrite"
+          ? String(policy.rewrittenPrompt || prompt || "").trim()
+          : prompt,
+      original_prompt: prompt,
+      title: title || null,
+      artist: artist || null,
       style,
       quality,
       ratio,
+      policy_decision: policy.decision || "allow",
     };
 
-    const outputsSafe = [
+       const outputsSafe = [
       {
         type: "image",
         url: imageUrl,
         meta: {
           app: "cover",
-          prompt,
+          prompt:
+            policy.decision === "rewrite"
+              ? String(policy.rewrittenPrompt || prompt || "").trim()
+              : prompt,
+          original_prompt: prompt,
+          title: title || null,
+          artist: artist || null,
           style,
           quality,
           ratio,
+          policy_decision: policy.decision || "allow",
         },
       },
     ];
