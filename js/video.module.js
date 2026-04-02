@@ -103,7 +103,7 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     "mustafa sandal",
     "kenan dogulu",
     "kenan doğulu",
-    "handa yener",
+    "hande yener",
     "demet akalin",
     "demet akalın",
     "gulsen",
