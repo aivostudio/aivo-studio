@@ -750,6 +750,17 @@
     if (!root) return;
 
     const characterDesc = e.target.closest("[data-character-desc]");
+        const policyNote = qs("#cartoonCharacterPolicyNote", root);
+
+    if (characterDesc && root.contains(characterDesc)) {
+      characterDesc.style.borderColor = "";
+      characterDesc.style.boxShadow = "";
+
+      if (policyNote) {
+        policyNote.style.display = "none";
+        policyNote.textContent = "";
+      }
+    }
     if (characterDesc && root.contains(characterDesc)) {
       updateCharacterDescCount(root);
     }
