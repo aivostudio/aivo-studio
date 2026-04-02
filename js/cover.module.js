@@ -631,9 +631,59 @@ function buildCoverPrompt(prompt, quality) {
         return;
       }
 
-      const gen = e.target.closest("#coverGenerateBtn");
+          const gen = e.target.closest("#coverGenerateBtn");
       if (gen && root.contains(gen)) {
         e.preventDefault();
+
+        const promptEl = qs("#coverPrompt", root);
+        const raw = String(promptEl?.value || "").trim();
+
+        resetCoverPolicyUI(root, promptEl, gen);
+
+        if (isCoverPolicyBlocked(raw)) {
+          const policyNote = ensureCoverPolicyNote(gen);
+
+          e.stopPropagation();
+
+          if (promptEl) {
+            promptEl.style.borderColor = "rgba(255,110,140,.92)";
+            promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+            promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+          }
+
+          gen.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+          gen.style.borderColor = "rgba(255,110,140,.95)";
+          gen.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+          gen.style.cursor = "not-allowed";
+          gen.style.filter = "saturate(1.05)";
+          gen.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+
+          if (policyNote) {
+            policyNote.style.display = "block";
+            policyNote.innerHTML = `
+              <span style="
+                display:inline-block;
+                width:100%;
+                margin:0;
+                padding:0;
+                border:none;
+                outline:none;
+                box-shadow:none;
+                background:none;
+                text-align:center;
+                font-size:14px;
+                font-weight:800;
+                line-height:1.65;
+                letter-spacing:.01em;
+                color:rgba(255,245,248,.96);
+                text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
+                animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
+              ">Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve görsel hissi tarif et.</span>
+            `;
+          }
+
+          return;
+        }
 
         gen.disabled = true;
         const prev = gen.textContent;
