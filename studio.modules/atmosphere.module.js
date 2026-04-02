@@ -296,14 +296,27 @@
     "sertab"
   ];
 
-  function normalizeAtmoPolicyText(value) {
-    return String(value || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+function normalizeAtmoPolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildAtmoPolicyPhraseRegex(term) {
+  const normalized = normalizeAtmoPolicyText(term);
+  if (!normalized) return null;
+
+  const pattern = normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("\\s+");
+
+  return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+}
 
   function getAtmoProPanel(root) {
     const r = root || getAtmoPanelRoot();
