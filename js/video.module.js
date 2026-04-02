@@ -42,7 +42,7 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     /\bimpersonat(e|ion)\b/i
   ];
 
-  const PUBLIC_FIGURE_TERMS = [
+const VIDEO_PUBLIC_FIGURE_TERMS = [
   "recep tayyip erdogan",
   "recep tayyip erdoğan",
   "erdogan",
