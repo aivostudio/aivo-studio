@@ -185,19 +185,19 @@ if (!consumeRes.ok || !consumeData?.ok) {
   return;
 }
 try {
-  window.dispatchEvent(new CustomEvent("aivo:credits:refresh"));
-} catch (_) {}
+  const cr = await fetch("/api/credits/get", { credentials: "include" });
+  const cj = await cr.json();
 
-try {
-  if (window.AIVO_APP?.refreshCredits) {
-    await window.AIVO_APP.refreshCredits();
-  } else if (window.refreshCredits) {
-    await window.refreshCredits();
+  if (cr.ok && cj?.ok) {
+    const topCreditsEl = document.getElementById("topCredits");
+    if (topCreditsEl) {
+      topCreditsEl.textContent = `Kredi ${cj.credits}`;
+    }
   }
 } catch (e) {
-  console.warn("[music.generate] credits refresh failed:", e);
+  console.warn("[music.generate] credits badge refresh failed:", e);
 }
-        result = await callGenerateAPI(prompt);
+   result = await callGenerateAPI(prompt);
  } catch (apiErr) {
   console.warn("[music.generate] /api/music/generate failed:", apiErr);
   toastError("Müzik üretiminde hata oluştu. Lütfen tekrar dene.");
