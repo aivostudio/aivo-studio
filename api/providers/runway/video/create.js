@@ -56,6 +56,36 @@ module.exports = async function handler(req, res) {
     // ✅ Single destructure (tek sefer)
     // -------------------------------
     const body = req.body || {};
+let enforcePolicy;
+let policyErrorResponse;
+
+try {
+  ({ enforcePolicy, policyErrorResponse } = require("../../../_lib/policy-gateway.js"));
+} catch (e) {
+  return res.status(500).json({
+    ok: false,
+    error: "policy_module_load_failed",
+    message: String(e?.message || e),
+    db_debug,
+  });
+}
+
+const policy = enforcePolicy({
+  app: "video",
+  prompt: [
+    body?.prompt,
+    body?.scene,
+    ...(Array.isArray(body?.effects) ? body.effects : []),
+    body?.camera,
+    body?.mode,
+    body?.aspect_ratio,
+    body?.duration,
+  ].filter(Boolean).join(" "),
+});
+
+if (policy.decision === "block") {
+  return res.status(403).json(policyErrorResponse(policy));
+}
     const prompt = body.prompt;
     const mode = body.mode || "text"; // "text" | "image"
     const image_url = body.image_url ?? null;
