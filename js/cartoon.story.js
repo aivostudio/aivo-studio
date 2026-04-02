@@ -328,6 +328,270 @@
     return publicUrl;
   }
 
+  // ------------------------------------------------------------
+  // Policy helpers (Story)
+  // ------------------------------------------------------------
+  const HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
+
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizeStoryPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isStoryPolicyBlocked(raw) {
+    const text = normalizeStoryPolicyText(raw);
+
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
+      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
+      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term)));
+
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+
+  function ensureStoryPolicyNote(root, generateBtn) {
+    if (!root || !generateBtn || !generateBtn.parentElement) return null;
+
+    let policyNote = qs("#cartoonStoryPolicyNote", root);
+    if (!policyNote) {
+      policyNote = document.createElement("div");
+      policyNote.id = "cartoonStoryPolicyNote";
+      policyNote.style.display = "none";
+      policyNote.style.marginTop = "14px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.textAlign = "center";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "800";
+      policyNote.style.lineHeight = "1.65";
+      policyNote.style.color = "rgba(255,245,248,.96)";
+      generateBtn.parentElement.appendChild(policyNote);
+    }
+
+    return policyNote;
+  }
+
+  function resetStoryPolicyUI(root) {
+    if (!root) return;
+
+    const storyIdeaEl = qs("[data-story-idea]", root);
+    const extraPromptEl = qs("[data-story-extra-prompt]", root);
+    const generateBtn = qs("[data-story-generate]", root);
+    const policyNote = qs("#cartoonStoryPolicyNote", root);
+
+    if (storyIdeaEl) {
+      storyIdeaEl.style.borderColor = "";
+      storyIdeaEl.style.boxShadow = "";
+    }
+
+    if (extraPromptEl) {
+      extraPromptEl.style.borderColor = "";
+      extraPromptEl.style.boxShadow = "";
+    }
+
+    if (generateBtn) {
+      generateBtn.style.background = "";
+      generateBtn.style.borderColor = "";
+      generateBtn.style.boxShadow = "";
+      generateBtn.style.cursor = "";
+      generateBtn.style.filter = "";
+    }
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+    }
+  }
+
+  function buildStoryPolicyText() {
+    const selectedScenes = getSelectedScenes();
+
+    const sceneText = selectedScenes.flatMap((scene) => [
+      scene?.title,
+      scene?.description,
+      scene?.mood,
+      scene?.type,
+      scene?.directorNote
+    ]);
+
+    return [
+      state.storyIdea,
+      state.theme,
+      state.ageGroup,
+      state.mainCharacter,
+      state.helperCharacter1,
+      state.helperCharacter2,
+      state.extraCharacter,
+      state.style,
+      state.extraPrompt,
+      ...sceneText
+    ].filter(Boolean).join(" ");
+  }
+
   function createEmptyStoryCharacterImageState() {
     return {
       file: null,
@@ -653,23 +917,25 @@
     state.audioAsset = createEmptyStoryAssetState();
     updateStoryAudioUploadUI(root);
   }
- function resetStoryCharacterImage(root, slot) {
-  const key = String(slot || "").trim();
-  if (!key) return;
 
-  const input = qs(`[data-story-character-file="${key}"]`, root);
-  if (input) input.value = "";
+  function resetStoryCharacterImage(root, slot) {
+    const key = String(slot || "").trim();
+    if (!key) return;
 
-  setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
+    const input = qs(`[data-story-character-file="${key}"]`, root);
+    if (input) input.value = "";
 
-  updateStoryCharacterUploadUI(root, key);
+    setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
 
-  const scene = getSceneById(state.editingSceneId);
-  if (scene) {
-    renderSceneCharacterPicker(root, scene);
-    syncSceneRows(root);
+    updateStoryCharacterUploadUI(root, key);
+
+    const scene = getSceneById(state.editingSceneId);
+    if (scene) {
+      renderSceneCharacterPicker(root, scene);
+      syncSceneRows(root);
+    }
   }
-}
+
   function updateStoryLogoUploadUI(root) {
     const textEl = qs("[data-story-logo-upload-text]", root);
     const clearBtn = qs("[data-story-logo-upload-clear]", root);
@@ -1349,24 +1615,24 @@
       .map((slot) => safeText(slot))
       .filter(Boolean);
 
- const validElementSlots = activeSlots.filter((slot) => {
-  const label = slotLabelMap[slot];
-  const imageUrl = slotImageMap[slot];
-  return !!label && !!imageUrl;
-});
+    const validElementSlots = activeSlots.filter((slot) => {
+      const label = slotLabelMap[slot];
+      const imageUrl = slotImageMap[slot];
+      return !!label && !!imageUrl;
+    });
 
-const elements = validElementSlots.map((slot, index) => {
-  const label = slotLabelMap[slot];
-  const imageUrl = slotImageMap[slot];
+    const elements = validElementSlots.map((slot, index) => {
+      const label = slotLabelMap[slot];
+      const imageUrl = slotImageMap[slot];
 
-  return {
-    token: `@Element${index + 1}`,
-    slot,
-    name: label,
-    frontal_image_url: imageUrl,
-    reference_image_urls: [imageUrl]
-  };
-});
+      return {
+        token: `@Element${index + 1}`,
+        slot,
+        name: label,
+        frontal_image_url: imageUrl,
+        reference_image_urls: [imageUrl]
+      };
+    });
 
     const characterPromptLine = elements.length
       ? `Characters: ${elements.map((el) => `${el.token} = ${el.name}`).join(", ")}.`
@@ -1702,6 +1968,7 @@ const elements = validElementSlots.map((slot, index) => {
     });
 
     state.editingSceneId = "";
+    resetStoryPolicyUI(root);
     render(root);
   }
 
@@ -1735,6 +2002,7 @@ const elements = validElementSlots.map((slot, index) => {
       if (modeBtn && root.contains(modeBtn)) {
         e.preventDefault();
         state.mode = modeBtn.dataset.cartoonMode || "story";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -1746,6 +2014,7 @@ const elements = validElementSlots.map((slot, index) => {
         const sectionId = sectionEl?.dataset.storySection || "";
         if (!sectionId) return;
         state.openSection = state.openSection === sectionId ? "" : sectionId;
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -1754,6 +2023,7 @@ const elements = validElementSlots.map((slot, index) => {
       if (settingsToggle && root.contains(settingsToggle)) {
         e.preventDefault();
         state.settingsOpen = !state.settingsOpen;
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -1796,6 +2066,7 @@ const elements = validElementSlots.map((slot, index) => {
           ? "none"
           : "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)";
 
+        resetStoryPolicyUI(root);
         return;
       }
 
@@ -1832,6 +2103,7 @@ const elements = validElementSlots.map((slot, index) => {
         if (!slot) return;
 
         resetStoryCharacterImage(root, slot);
+        resetStoryPolicyUI(root);
         return;
       }
 
@@ -1839,6 +2111,7 @@ const elements = validElementSlots.map((slot, index) => {
       if (storyLogoClear && root.contains(storyLogoClear)) {
         e.preventDefault();
         resetStoryLogoAsset(root);
+        resetStoryPolicyUI(root);
         return;
       }
 
@@ -1846,6 +2119,7 @@ const elements = validElementSlots.map((slot, index) => {
       if (storyAudioClear && root.contains(storyAudioClear)) {
         e.preventDefault();
         resetStoryAudioAsset(root);
+        resetStoryPolicyUI(root);
         return;
       }
 
@@ -1920,6 +2194,36 @@ const elements = validElementSlots.map((slot, index) => {
           }
         }
 
+        const policyText = buildStoryPolicyText();
+        if (isStoryPolicyBlocked(policyText)) {
+          const storyIdeaEl = qs("[data-story-idea]", root);
+          const extraPromptEl = qs("[data-story-extra-prompt]", root);
+          const policyNote = ensureStoryPolicyNote(root, generateBtn);
+
+          if (storyIdeaEl) {
+            storyIdeaEl.style.borderColor = "rgba(255,110,140,.92)";
+            storyIdeaEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          }
+
+          if (extraPromptEl) {
+            extraPromptEl.style.borderColor = "rgba(255,110,140,.92)";
+            extraPromptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          }
+
+          generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+          generateBtn.style.borderColor = "rgba(255,110,140,.95)";
+          generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+          generateBtn.style.cursor = "not-allowed";
+          generateBtn.style.filter = "saturate(1.05)";
+
+          if (policyNote) {
+            policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine hikayeyi, sahneleri ve karakter davranışlarını tarif et.";
+            policyNote.style.display = "block";
+          }
+
+          return;
+        }
+
         const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nDevam edilsin mi?`;
         if (!window.confirm(summaryText)) {
           return;
@@ -1976,6 +2280,7 @@ const elements = validElementSlots.map((slot, index) => {
       const storyIdea = e.target.closest("[data-story-idea]");
       if (storyIdea && root.contains(storyIdea)) {
         state.storyIdea = clampText(storyIdea.value, 5000);
+        resetStoryPolicyUI(root);
         updateStoryIdeaCount(root);
         return;
       }
@@ -1983,6 +2288,7 @@ const elements = validElementSlots.map((slot, index) => {
       const extraPrompt = e.target.closest("[data-story-extra-prompt]");
       if (extraPrompt && root.contains(extraPrompt)) {
         state.extraPrompt = clampText(extraPrompt.value, 5000);
+        resetStoryPolicyUI(root);
       }
     });
   }
@@ -1995,12 +2301,14 @@ const elements = validElementSlots.map((slot, index) => {
       const theme = e.target.closest("[data-story-theme]");
       if (theme && root.contains(theme)) {
         state.theme = theme.value || "";
+        resetStoryPolicyUI(root);
         return;
       }
 
       const ageGroup = e.target.closest("[data-story-age-group]");
       if (ageGroup && root.contains(ageGroup)) {
         state.ageGroup = ageGroup.value || "";
+        resetStoryPolicyUI(root);
         return;
       }
 
@@ -2010,6 +2318,7 @@ const elements = validElementSlots.map((slot, index) => {
         state.scenes = createDefaultScenes(state.flowDuration);
         state.openSection = "intro";
         state.editingSceneId = "";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2017,6 +2326,7 @@ const elements = validElementSlots.map((slot, index) => {
       const duration = e.target.closest("[data-story-duration]");
       if (duration && root.contains(duration)) {
         state.duration = duration.value || "180";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2024,6 +2334,7 @@ const elements = validElementSlots.map((slot, index) => {
       const mainCharacter = e.target.closest("[data-story-main-character]");
       if (mainCharacter && root.contains(mainCharacter)) {
         state.mainCharacter = mainCharacter.value || "";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2031,6 +2342,7 @@ const elements = validElementSlots.map((slot, index) => {
       const helper1 = e.target.closest("[data-story-helper-1]");
       if (helper1 && root.contains(helper1)) {
         state.helperCharacter1 = helper1.value || "";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2038,6 +2350,7 @@ const elements = validElementSlots.map((slot, index) => {
       const helper2 = e.target.closest("[data-story-helper-2]");
       if (helper2 && root.contains(helper2)) {
         state.helperCharacter2 = helper2.value || "";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2045,6 +2358,7 @@ const elements = validElementSlots.map((slot, index) => {
       const helper3 = e.target.closest("[data-story-helper-3], [data-story-extra-character]");
       if (helper3 && root.contains(helper3)) {
         state.extraCharacter = helper3.value || "";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2052,24 +2366,28 @@ const elements = validElementSlots.map((slot, index) => {
       const ratio = e.target.closest("[data-story-ratio]");
       if (ratio && root.contains(ratio)) {
         state.ratio = ratio.value || "16:9";
+        resetStoryPolicyUI(root);
         return;
       }
 
       const style = e.target.closest("[data-story-style]");
       if (style && root.contains(style)) {
         state.style = style.value || "";
+        resetStoryPolicyUI(root);
         return;
       }
 
       const audio = e.target.closest("[data-story-audio]");
       if (audio && root.contains(audio)) {
         state.audio = audio.value || "none";
+        resetStoryPolicyUI(root);
         return;
       }
 
       const includeMusic = e.target.closest("[data-story-include-music]");
       if (includeMusic && root.contains(includeMusic)) {
         state.includeMusic = includeMusic.value || "no";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2077,6 +2395,7 @@ const elements = validElementSlots.map((slot, index) => {
       const logoPosition = e.target.closest("[data-story-logo-position]");
       if (logoPosition && root.contains(logoPosition)) {
         state.logoPosition = logoPosition.value || "bottom-right";
+        resetStoryPolicyUI(root);
         render(root);
         return;
       }
@@ -2281,6 +2600,7 @@ const elements = validElementSlots.map((slot, index) => {
           });
 
         setStoryCharacterImage(slot, { uploadPromise });
+        resetStoryPolicyUI(root);
         return;
       }
     });
