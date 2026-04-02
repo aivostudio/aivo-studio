@@ -755,6 +755,14 @@
     if (characterDesc && root.contains(characterDesc)) {
       characterDesc.style.borderColor = "";
       characterDesc.style.boxShadow = "";
+            const createBtn = qs("[data-cartoon-character-create]", root);
+      if (createBtn) {
+        createBtn.style.background = "";
+        createBtn.style.borderColor = "";
+        createBtn.style.boxShadow = "";
+        createBtn.style.cursor = "";
+        createBtn.style.filter = "";
+      }
 
       if (policyNote) {
         policyNote.style.display = "none";
