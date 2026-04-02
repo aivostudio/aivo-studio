@@ -843,7 +843,8 @@
               
           policyNote.innerHTML = `
             <span style="
-              display:block;
+             display:inline-block;
+             white-space:nowrap;
               width:100%;
               margin:0;
               padding:0;
