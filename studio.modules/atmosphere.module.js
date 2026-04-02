@@ -98,9 +98,9 @@
     const startedAt = Date.now();
 
     try {
+      const eventWaiter = waitForAtmoJobCreated(GEN_MAX_MS);
       const res = await Promise.resolve().then(run);
-      const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
-      const evt = await waitForAtmoJobCreated(remainingForEvent);
+      const evt = await eventWaiter;
 
       const elapsed = Date.now() - startedAt;
       if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
@@ -122,7 +122,6 @@
       btn.__atmBusy = false;
     }
   }
-
    // ------------------------------------------------------------
   // 1) Scope finder
   // ------------------------------------------------------------
