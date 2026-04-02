@@ -840,10 +840,16 @@
           policyNote.style.overflow = "hidden";
           policyNote.style.textAlign = "center";
           policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-          policyNote.innerHTML = `
+                policyNote.innerHTML = `
             <span style="
               display:block;
               width:100%;
+              margin:0;
+              padding:0;
+              border:none;
+              outline:none;
+              box-shadow:none;
+              background-color:transparent;
               text-align:center;
               font-size:14px;
               font-weight:800;
@@ -852,6 +858,7 @@
               background-image:linear-gradient(120deg, rgba(255,210,220,.82) 0%, rgba(255,255,255,1) 24%, rgba(255,210,220,.82) 48%, rgba(255,255,255,1) 62%, rgba(255,210,220,.82) 100%);
               background-size:220% 100%;
               background-position:200% 0;
+              background-repeat:no-repeat;
               -webkit-background-clip:text;
               background-clip:text;
               color:transparent;
