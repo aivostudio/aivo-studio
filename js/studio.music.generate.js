@@ -141,7 +141,6 @@ async function generateMusic(payload) {
       btn.textContent = "Üretiliyor...";
       btn.setAttribute("aria-busy", "true");
     }
-
     try {
       const prompt = getPrompt();
       if (!prompt){
@@ -156,13 +155,45 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
+      // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
+      try {
+        const creditRes = await fetch("/api/credits/consume", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            cost: 5,
+            reason: "studio_music_generate"
+          })
+        });
+
+        let creditData = null;
+        try { creditData = await creditRes.json(); }
+        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+
+        if (!creditRes.ok || !creditData?.ok) {
+          const msg =
+            creditData?.error ||
+            creditData?.message ||
+            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+          toastError(msg);
+          return;
+        }
+      } catch (creditErr) {
+        console.error("[music.generate] credits consume failed:", creditErr);
+        toastError("Kredi düşümünde bağlantı hatası oluştu.");
+        return;
+      }
+
       // 1) Direkt API
       let result = null;
       try {
         result = await callGenerateAPI(prompt);
       } catch (apiErr) {
         console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
-
         // 2) Fallback: eski service
         const svc =
           window.StudioServices ||
