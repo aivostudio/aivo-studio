@@ -35,10 +35,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
-return res.status(418).json({
-  ok: false,
-  error: "runway_video_create_live_test",
-});
+
   const db_debug = {
     tried: false,
     hasConn: false,
