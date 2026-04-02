@@ -1036,6 +1036,23 @@
     e.preventDefault();
 
     const payload = buildCharacterCreatePayload(root);
+        const policyText = [
+      payload.name,
+      payload.prompt,
+      payload.style,
+      payload.type,
+      payload.hairType,
+      payload.hairColor,
+      payload.outfit,
+      payload.glasses,
+      payload.accessory,
+      payload.expression
+    ].filter(Boolean).join(" ");
+
+    if (isCharacterPolicyBlocked(policyText)) {
+      alert("Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.");
+      return;
+    }
     console.log("[CARTOON][CHARACTER] payload =", payload);
 
     state.characterCreatePending = true;
