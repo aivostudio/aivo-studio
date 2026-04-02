@@ -2,6 +2,12 @@ export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
 import authModule from "../_lib/auth.js";
+import { enforcePolicy, policyErrorResponse } from "../_lib/policy-gateway.js";
+
+const { requireAuth } = authModule;
+
+import { neon } from "@neondatabase/serverless";
+import authModule from "../_lib/auth.js";
 const { requireAuth } = authModule;
 
 // küçük helper: bu deployment’da aynı host üzerinden iç endpoint çağırmak için
