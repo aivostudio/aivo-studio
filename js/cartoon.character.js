@@ -964,6 +964,11 @@
 
         const nameInput = qs("#cartoon-character-name", root);
         const descInput = qs("#cartoon-character-desc", root);
+              characterCreateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      characterCreateBtn.style.borderColor = "rgba(255,110,140,.95)";
+      characterCreateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      characterCreateBtn.style.cursor = "not-allowed";
+      characterCreateBtn.style.filter = "saturate(1.05)";
         const styleSelect = qs("#cartoon-character-style", root);
 
         if (nameInput) nameInput.value = selectedItem.name || "";
