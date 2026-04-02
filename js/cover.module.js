@@ -1044,21 +1044,79 @@ function buildCoverPrompt(prompt, quality) {
           return;
         }
 
-        gen.disabled = true;
+              gen.disabled = true;
         const prev = gen.textContent;
         gen.textContent = "Üretiliyor...";
         gen.classList.add("is-loading");
 
-        createCover()
-          .catch((err) => {
+        (async () => {
+          try {
+            const creditCost =
+              Number(gen.getAttribute("data-credit-cost") || (root.dataset.coverQuality === "ultra" ? 9 : 6)) ||
+              (root.dataset.coverQuality === "ultra" ? 9 : 6);
+
+            const creditReason =
+              root.dataset.coverQuality === "ultra"
+                ? "studio_cover_generate_ultra"
+                : "studio_cover_generate_artist";
+
+            const creditRes = await fetch("/api/credits/consume", {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "content-type": "application/json",
+                "accept": "application/json"
+              },
+              body: JSON.stringify({
+                cost: creditCost,
+                reason: creditReason
+              })
+            });
+
+            let creditData = null;
+            try { creditData = await creditRes.json(); }
+            catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+
+            if (!creditRes.ok || !creditData?.ok) {
+              const msg =
+                creditData?.error ||
+                creditData?.message ||
+                "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+              alert(String(msg));
+              return;
+            }
+
+            try {
+              const creditGetRes = await fetch("/api/credits/get", {
+                credentials: "include",
+                cache: "no-store",
+                headers: { "accept": "application/json" }
+              });
+
+              const creditGetData = await creditGetRes.json().catch(() => null);
+
+              if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+                const topCreditCountEl = document.getElementById("topCreditCount");
+                if (topCreditCountEl) {
+                  topCreditCountEl.textContent = String(creditGetData.credits);
+                }
+
+                if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                  window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+                }
+              }
+            } catch (_) {}
+
+            await createCover();
+          } catch (err) {
             console.error("[cover] createCover error:", err);
             alert(String(err));
-          })
-          .finally(() => {
+          } finally {
             gen.disabled = false;
             gen.textContent = prev;
             gen.classList.remove("is-loading");
-          });
+          }
+        })();
 
         return;
       }
