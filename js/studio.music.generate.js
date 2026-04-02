@@ -174,14 +174,40 @@ async function generateMusic(payload) {
         try { creditData = await creditRes.json(); }
         catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
 
-        if (!creditRes.ok || !creditData?.ok) {
-          const msg =
-            creditData?.error ||
-            creditData?.message ||
-            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-          toastError(msg);
-          return;
+           if (!creditRes.ok || !creditData?.ok) {
+        const msg =
+          creditData?.error ||
+          creditData?.message ||
+          "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+        toastError(msg);
+        return;
+      }
+
+      try {
+        const creditGetRes = await fetch("/api/credits/get", {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "accept": "application/json" }
+        });
+
+        const creditGetData = await creditGetRes.json().catch(() => null);
+
+        if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+          const topCreditCountEl = document.getElementById("topCreditCount");
+          if (topCreditCountEl) {
+            topCreditCountEl.textContent = String(creditGetData.credits);
+          }
+
+          if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+            window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+          }
         }
+      } catch (_) {}
+    } catch (creditErr) {
+      console.error("[music.generate] credits consume failed:", creditErr);
+      toastError("Kredi düşümünde bağlantı hatası oluştu.");
+      return;
+    }
       } catch (creditErr) {
         console.error("[music.generate] credits consume failed:", creditErr);
         toastError("Kredi düşümünde bağlantı hatası oluştu.");
