@@ -10,6 +10,278 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   const ROOT_SEL = 'section[data-module="video"]';
   const POLL_MS = 2000;
   const POLL_MAX = 120; // 4 dk
+    // ===============================
+  // Policy helpers (Video)
+  // ===============================
+  const VIDEO_HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
+
+  const VIDEO_HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const VIDEO_PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const VIDEO_ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizeVideoPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isVideoPolicyBlocked(raw) {
+    const text = normalizeVideoPolicyText(raw);
+
+    const hasBlockedTerm =
+      VIDEO_HARD_BLOCK_TERMS.some((term) =>
+        text.includes(normalizeVideoPolicyText(term))
+      ) ||
+      VIDEO_PUBLIC_FIGURE_TERMS.some((term) =>
+        text.includes(normalizeVideoPolicyText(term))
+      ) ||
+      VIDEO_ARTIST_NAME_TERMS.some((term) =>
+        text.includes(normalizeVideoPolicyText(term))
+      );
+
+    const hasBlockedPattern = VIDEO_HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+
+  function getVideoCreateButton(root) {
+    return (
+      qs("#videoGenerateTextBtn", root) ||
+      qs("#videoGenerateImageBtn", root) ||
+      null
+    );
+  }
+
+  function ensureVideoPolicyNote(root, btn) {
+    if (!root || !btn) return null;
+
+    let note = qs("#videoPolicyNote", root);
+    if (note) return note;
+
+    note = document.createElement("div");
+    note.id = "videoPolicyNote";
+    note.style.display = "none";
+    note.style.marginTop = "14px";
+    note.style.padding = "14px 16px";
+    note.style.borderRadius = "18px";
+    note.style.background = "rgba(255,90,120,.10)";
+    note.style.border = "1px solid rgba(255,120,150,.24)";
+    note.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+    note.style.textAlign = "center";
+    note.style.fontSize = "14px";
+    note.style.fontWeight = "800";
+    note.style.lineHeight = "1.65";
+    note.style.color = "rgba(255,245,248,.96)";
+
+    const mountPoint = btn.parentElement || root;
+    mountPoint.appendChild(note);
+    return note;
+  }
+
+  function resetVideoPolicyUI(root) {
+    if (!root) return;
+
+    const promptEls = [
+      qs("#videoPrompt", root),
+      qs("#videoImagePrompt", root)
+    ].filter(Boolean);
+
+    const buttons = [
+      qs("#videoGenerateTextBtn", root),
+      qs("#videoGenerateImageBtn", root)
+    ].filter(Boolean);
+
+    const note = qs("#videoPolicyNote", root);
+
+    promptEls.forEach((el) => {
+      el.style.borderColor = "";
+      el.style.boxShadow = "";
+    });
+
+    buttons.forEach((btn) => {
+      btn.style.background = "";
+      btn.style.borderColor = "";
+      btn.style.boxShadow = "";
+      btn.style.cursor = "";
+      btn.style.filter = "";
+    });
+
+    if (note) {
+      note.style.display = "none";
+      note.textContent = "";
+    }
+  }
+
+  function buildVideoPolicyText(root, mode = "text") {
+    const common = buildCommonPayload(root);
+
+    const textPrompt = String(qs("#videoPrompt", root)?.value || "").trim();
+    const imagePrompt = String(qs("#videoImagePrompt", root)?.value || "").trim();
+
+    return [
+      mode === "image" ? imagePrompt : textPrompt,
+      common?.model,
+      common?.ratio,
+      common?.duration,
+      common?.resolution
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
@@ -149,6 +421,38 @@ async function createText() {
   const root = getRoot();
 
   const prompt = (qs("#videoPrompt", root)?.value || "").trim();
+    const policyText = buildVideoPolicyText(root, "text");
+  const createBtn = qs("#videoGenerateTextBtn", root);
+  const policyNote = ensureVideoPolicyNote(root, createBtn);
+
+  if (isVideoPolicyBlocked(policyText)) {
+    const promptEl = qs("#videoPrompt", root);
+
+    if (promptEl) {
+      promptEl.style.borderColor = "rgba(255,110,140,.92)";
+      promptEl.style.boxShadow =
+        "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      promptEl.focus();
+    }
+
+    if (createBtn) {
+      createBtn.style.background =
+        "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      createBtn.style.borderColor = "rgba(255,110,140,.95)";
+      createBtn.style.boxShadow =
+        "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      createBtn.style.cursor = "not-allowed";
+      createBtn.style.filter = "saturate(1.05)";
+    }
+
+    if (policyNote) {
+      policyNote.textContent =
+        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+      policyNote.style.display = "block";
+    }
+
+    return;
+  }
   if (!prompt) {
     alert("Lütfen video açıklaması yaz.");
     return;
@@ -186,75 +490,43 @@ async function createText() {
   await pollJob(job_id);
 }
 
-async function createImage() {
-  const root = getRoot();
-
-  const file = qs("#videoImageInput", root)?.files?.[0];
-  if (!file) {
-    alert("Lütfen bir resim seç.");
-    return;
-  }
-
-  const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
-
-  const payload = {
-    ...buildCommonPayload(root),
-    mode: "image",
-    prompt,
-  };
-
-  console.log("[video] file selected:", file.name);
-
-  // --- R2 PRESIGN + UPLOAD ---
-  const presign = await postJSON("/api/r2/presign-put", {
-    filename: file.name,
-    contentType: file.type || "image/jpeg",
-    prefix: "files/runway/input-images/",
-    app: "video",
-    kind: "runway-input-image",
-  });
-
-  const up = await fetch(presign.upload_url, {
-    method: "PUT",
-    headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
-    body: file,
-  });
-
-  if (!up.ok) throw "r2_upload_failed_" + up.status;
-
-  payload.image_url = presign.public_url;
-  console.log("[video] uploaded to R2:", payload.image_url);
-
-  const j = await postJSON("/api/providers/runway/video/create", payload);
-  const job = j.job || j;
-
-  job.app = "video";
-  window.AIVO_JOBS?.upsert?.(job);
-
-  const job_id = job.job_id || job.id;
-  console.log("[video] created(image)", { job_id, job });
-
-  emitVideoJobCreated({
-    app: "video",
-    job_id,
-    createdAt: Date.now(),
-    mode: "image",
-    model: payload.model,
-    prompt: payload.prompt || "",
-    image_url: payload.image_url,
-    ratio: payload.ratio,
-    duration: payload.duration,
-    resolution: payload.resolution,
-    audio: payload.audio,
-  });
-
-  await pollJob(job_id);
-}
 
   async function createImage() {
     const root = getRoot();
 
     const file = qs("#videoImageInput", root)?.files?.[0];
+      const policyText = buildVideoPolicyText(root, "image");
+  const createBtn = qs("#videoGenerateImageBtn", root);
+  const policyNote = ensureVideoPolicyNote(root, createBtn);
+
+  if (isVideoPolicyBlocked(policyText)) {
+    const promptEl = qs("#videoImagePrompt", root);
+
+    if (promptEl) {
+      promptEl.style.borderColor = "rgba(255,110,140,.92)";
+      promptEl.style.boxShadow =
+        "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      promptEl.focus();
+    }
+
+    if (createBtn) {
+      createBtn.style.background =
+        "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      createBtn.style.borderColor = "rgba(255,110,140,.95)";
+      createBtn.style.boxShadow =
+        "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      createBtn.style.cursor = "not-allowed";
+      createBtn.style.filter = "saturate(1.05)";
+    }
+
+    if (policyNote) {
+      policyNote.textContent =
+        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+      policyNote.style.display = "block";
+    }
+
+    return;
+  }
     if (!file) {
       alert("Lütfen bir resim seç.");
       return;
@@ -358,31 +630,51 @@ async function createImage() {
   );
 
   // ===============================
-  // Prompt char count (bind once)
+  // Prompt counters + policy reset (bind once)
   // ===============================
   function bindPromptCounter(root) {
-    const promptEl = qs("#videoPrompt", root);
-    if (!promptEl || promptEl.__countBound) return;
+    const textPromptEl = qs("#videoPrompt", root);
+    const imagePromptEl = qs("#videoImagePrompt", root);
 
-    const counterEl =
+    const textCounterEl =
       qs("#videoPromptCount", root) ||
       qs('[data-role="videoPromptCount"]', root) ||
       Array.from(root.querySelectorAll("*")).find((el) =>
         (el.textContent || "").trim() === "0 / 1000"
       );
 
-    if (!counterEl) return;
+    if (textPromptEl && textCounterEl && !textPromptEl.__countBound) {
+      textPromptEl.__countBound = true;
 
-    promptEl.__countBound = true;
+      function updateText() {
+        const n = (textPromptEl.value || "").length;
+        textCounterEl.textContent = `${n} / 1000`;
+      }
 
-    function update() {
-      const n = (promptEl.value || "").length;
-      counterEl.textContent = `${n} / 1000`;
+      textPromptEl.addEventListener("input", () => {
+        resetVideoPolicyUI(root);
+        updateText();
+      });
+
+      textPromptEl.addEventListener("change", () => {
+        resetVideoPolicyUI(root);
+        updateText();
+      });
+
+      updateText();
     }
 
-    promptEl.addEventListener("input", update);
-    promptEl.addEventListener("change", update);
-    update();
+    if (imagePromptEl && !imagePromptEl.__countBound) {
+      imagePromptEl.__countBound = true;
+
+      imagePromptEl.addEventListener("input", () => {
+        resetVideoPolicyUI(root);
+      });
+
+      imagePromptEl.addEventListener("change", () => {
+        resetVideoPolicyUI(root);
+      });
+    }
   }
 
   // ===============================
@@ -399,6 +691,7 @@ async function createImage() {
     if (!tabText || !tabImage || !viewText || !viewImage) return;
 
     root.__videoTabsBound = true;
+
     function bindImageUploadUX() {
       const input = root.querySelector("#videoImageInput");
       const fb = root.querySelector("#videoImageFeedback");
@@ -410,7 +703,7 @@ async function createImage() {
 
       input.__uxBound = true;
 
-        if (clearBtn && !clearBtn.__bound) {
+      if (clearBtn && !clearBtn.__bound) {
         clearBtn.__bound = true;
 
         clearBtn.addEventListener("click", (e) => {
@@ -420,6 +713,8 @@ async function createImage() {
 
           input.value = "";
           input.style.pointerEvents = "auto";
+
+          resetVideoPolicyUI(root);
 
           if (fb) fb.style.display = "none";
           if (name) name.textContent = "";
@@ -431,6 +726,8 @@ async function createImage() {
 
       input.addEventListener("change", () => {
         const f = input.files?.[0];
+
+        resetVideoPolicyUI(root);
 
         if (!f) {
           input.style.pointerEvents = "auto";
@@ -475,7 +772,8 @@ async function createImage() {
           if (pct) pct.textContent = p + "%";
         }, 80);
       });
-     }
+    }
+
     function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
@@ -484,9 +782,10 @@ async function createImage() {
       viewText.classList.toggle("is-active", isText);
       viewImage.classList.toggle("is-active", !isText);
 
-      // CSS bozulsa bile garanti
       viewText.style.display = isText ? "" : "none";
       viewImage.style.display = !isText ? "" : "none";
+
+      resetVideoPolicyUI(root);
 
       if (mode === "image") bindImageUploadUX();
 
@@ -494,14 +793,20 @@ async function createImage() {
       console.log("[video.tabs] mode =", mode);
     }
 
-    tabText.addEventListener("click", (e) => { e.preventDefault(); setMode("text"); });
-    tabImage.addEventListener("click", (e) => { e.preventDefault(); setMode("image"); });
+    tabText.addEventListener("click", (e) => {
+      e.preventDefault();
+      setMode("text");
+    });
+
+    tabImage.addEventListener("click", (e) => {
+      e.preventDefault();
+      setMode("image");
+    });
 
     setMode(root.dataset.videoMode || "text");
     bindImageUploadUX();
     console.log("[video.tabs] bound ✅");
   }
-
   // ===============================
   // Single observer: root geldiğinde bind et, sonra hafif çalışsın
   // ===============================
