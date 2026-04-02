@@ -159,31 +159,6 @@ async function generateMusic(payload) {
       // 1) Direkt API
       let result = null;
       try {
-         const consumeRes = await fetch("/api/credits/consume", {
-  method: "POST",
-  headers: { "content-type": "application/json" },
-  credentials: "include",
-  body: JSON.stringify({
-    cost: 5,
-    reason: "studio_music_generate"
-  }),
-});
-
-let consumeData = null;
-try {
-  consumeData = await consumeRes.json();
-} catch {
-  consumeData = { ok: false, error: "non_json_consume_response", status: consumeRes.status };
-}
-
-if (!consumeRes.ok || !consumeData?.ok) {
-  const msg =
-    consumeData?.error === "insufficient_credits"
-      ? "Yetersiz kredi. Lütfen kredi yükleyin."
-      : "Kredi düşme işlemi başarısız oldu.";
-  toastError(msg);
-  return;
-}
         result = await callGenerateAPI(prompt);
       } catch (apiErr) {
         console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
