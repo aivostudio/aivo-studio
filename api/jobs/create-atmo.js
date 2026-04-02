@@ -4,6 +4,8 @@ import { neon } from "@neondatabase/serverless";
 import authModule from "../_lib/auth.js";
 const { requireAuth } = authModule;
 
+import { enforcePolicy, policyErrorResponse } from "../_lib/policy-gateway.js";
+
 // küçük helper: bu deployment’da aynı host üzerinden iç endpoint çağırmak için
 function getBaseUrl(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";
@@ -79,9 +81,18 @@ export default async function handler(req, res) {
 
     // body normalize
     const body = req.body || {};
-    const prompt = body.prompt ? String(body.prompt) : null;
+    const prompt = body.prompt ? String(body.prompt).trim() : null;
     const metaIn = body.meta || null;
 
+    const policy = enforcePolicy({
+      app: "atmo",
+      prompt: prompt || "",
+      personName: String(body.personName || "").trim(),
+    });
+
+    if (policy.decision === "block") {
+      return res.status(403).json(policyErrorResponse(policy));
+    }
     // meta garanti: atmo kimliği
     // ✅ status.js / overlay otomasyonu için gerekli alanları meta'ya kaydediyoruz
     const metaSafe = {
