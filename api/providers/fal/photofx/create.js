@@ -3,6 +3,10 @@ export const config = { runtime: "nodejs" };
 // /pages/api/providers/fal/photofx/create.js
 import { neon } from "@neondatabase/serverless";
 import authModule from "../../../_lib/auth.js";
+import {
+  enforcePolicy,
+  policyErrorResponse,
+} from "../../../_lib/policy-gateway.js";
 const { requireAuth } = authModule;
 
 function pickConn() {
@@ -272,6 +276,30 @@ export default async function handler(req, res) {
   const sql = neon(conn);
 
   const body = safeJson(req);
+    const policy = enforcePolicy({
+    app: "photofx",
+    prompt: [
+      body?.prompt,
+      body?.preset,
+      ...(Array.isArray(body?.styles) ? body.styles : []),
+      ...(Array.isArray(body?.selected_styles) ? body.selected_styles : []),
+      ...(Array.isArray(body?.selectedStyles) ? body.selectedStyles : []),
+      body?.motion_level,
+      body?.motionLevel,
+      body?.effect_strength,
+      body?.effectStrength,
+      body?.color_mood,
+      body?.colorMood,
+      body?.transition_speed,
+      body?.transitionSpeed,
+      body?.zoom_level,
+      body?.zoomLevel
+    ].filter(Boolean).join(" ")
+  });
+
+  if (policy.decision === "block") {
+    return res.status(403).json(policyErrorResponse(policy));
+  }
   const incomingJobId = body.job_id ? String(body.job_id) : null;
   const app = "photofx";
 
