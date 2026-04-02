@@ -493,28 +493,49 @@ function isAtmoPolicyBlocked(raw) {
     audioTrim: "loop_to_fit",
     silentCopy: true,
 
-    // pro
-    prompt: "",
-    refImageFile: null,
-    refAudioFile: null,
-    light: null,
-    mood: null,
-    fps: "24",
-    format: "mp4",
-    seamFix: false,
-    proDuration: "8",
+   const state = (window.__ATM_V2__ = window.__ATM_V2__ || {
+  mode: "basic",
+  aspect: "16:9",
 
-    details: {
-      grain: false,
-      glow: false,
-      vignette: false,
-      sharpen: false,
-      motionBlur: false,
-      dust: false,
-      lut: ""
-    }
-  });
+  // basic
+  scene: "",
+  effects: [],
+  camera: "kenburns_soft",
+  duration: "4",
 
+  // personalization (basic)
+  imageFile: null,
+  logoFile: null,
+  audioFile: null,
+
+  logoPos: "br",
+  logoSize: "sm",
+  logoOpacity: 0.9,
+  audioMode: "none",
+  audioTrim: "loop_to_fit",
+  silentCopy: true,
+
+  // pro
+  prompt: "",
+  refImageFile: null,
+  refAudioFile: null,
+  light: null,
+  mood: null,
+  fps: "24",
+  format: "mp4",
+  seamFix: false,
+  proDuration: "4",
+
+  details: {
+    grain: false,
+    glow: false,
+    vignette: false,
+    sharpen: false,
+    motionBlur: false,
+    dust: false,
+    lut: ""
+  }
+});
   // ------------------------------------------------------------
   // ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
   // ------------------------------------------------------------
