@@ -184,6 +184,19 @@ if (!consumeRes.ok || !consumeData?.ok) {
   toastError(msg);
   return;
 }
+try {
+  window.dispatchEvent(new CustomEvent("aivo:credits:refresh"));
+} catch (_) {}
+
+try {
+  if (window.AIVO_APP?.refreshCredits) {
+    await window.AIVO_APP.refreshCredits();
+  } else if (window.refreshCredits) {
+    await window.refreshCredits();
+  }
+} catch (e) {
+  console.warn("[music.generate] credits refresh failed:", e);
+}
         result = await callGenerateAPI(prompt);
  } catch (apiErr) {
   console.warn("[music.generate] /api/music/generate failed:", apiErr);
