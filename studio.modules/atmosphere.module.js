@@ -493,49 +493,28 @@ function isAtmoPolicyBlocked(raw) {
     audioTrim: "loop_to_fit",
     silentCopy: true,
 
-   const state = (window.__ATM_V2__ = window.__ATM_V2__ || {
-  mode: "basic",
-  aspect: "16:9",
+    // pro
+    prompt: "",
+    refImageFile: null,
+    refAudioFile: null,
+    light: null,
+    mood: null,
+    fps: "24",
+    format: "mp4",
+    seamFix: false,
+    proDuration: "8",
 
-  // basic
-  scene: "",
-  effects: [],
-  camera: "kenburns_soft",
-  duration: "4",
+    details: {
+      grain: false,
+      glow: false,
+      vignette: false,
+      sharpen: false,
+      motionBlur: false,
+      dust: false,
+      lut: ""
+    }
+  });
 
-  // personalization (basic)
-  imageFile: null,
-  logoFile: null,
-  audioFile: null,
-
-  logoPos: "br",
-  logoSize: "sm",
-  logoOpacity: 0.9,
-  audioMode: "none",
-  audioTrim: "loop_to_fit",
-  silentCopy: true,
-
-  // pro
-  prompt: "",
-  refImageFile: null,
-  refAudioFile: null,
-  light: null,
-  mood: null,
-  fps: "24",
-  format: "mp4",
-  seamFix: false,
-  proDuration: "4",
-
-  details: {
-    grain: false,
-    glow: false,
-    vignette: false,
-    sharpen: false,
-    motionBlur: false,
-    dust: false,
-    lut: ""
-  }
-});
   // ------------------------------------------------------------
   // ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
   // ------------------------------------------------------------
@@ -560,12 +539,12 @@ function isAtmoPolicyBlocked(raw) {
     "15": 10
   };
 
- function getAtmoSelectedDuration(mode) {
-  if (mode === "pro") {
-    return String(state.proDuration || "4");
+  function getAtmoSelectedDuration(mode) {
+    if (mode === "pro") {
+      return String(state.proDuration || "8");
+    }
+    return String(state.duration || "8");
   }
-  return String(state.duration || "4");
-}
 
   function computeAtmoCredit(mode) {
     const m = String(mode || state.mode || "basic").toLowerCase();
@@ -914,28 +893,18 @@ function isAtmoPolicyBlocked(raw) {
     });
   }
 
-function readInitialFromDOM(root) {
-  if (root && !root.dataset.atmoDurationDefaultApplied) {
-    const basicDurEl = qs("#atmDuration", root);
-    const proDurEl = qs("#atmProDuration", root);
+  function readInitialFromDOM(root) {
+    const activeScene = qs("#atmScenes .smpack-choice.is-active", root);
+    if (activeScene?.dataset?.atmScene) state.scene = activeScene.dataset.atmScene;
 
-    if (basicDurEl) basicDurEl.value = "4";
-    if (proDurEl) proDurEl.value = "4";
+    const effBtns = qsa("#atmEffects [data-atm-eff].is-active", root);
+    const eff = effBtns.map((b) => b.dataset.atmEff).filter(Boolean);
+    if (eff.length) state.effects = eff;
 
-    root.dataset.atmoDurationDefaultApplied = "1";
-  }
-
-  const activeScene = qs("#atmScenes .smpack-choice.is-active", root);
-  if (activeScene?.dataset?.atmScene) state.scene = activeScene.dataset.atmScene;
-
-  const effBtns = qsa("#atmEffects [data-atm-eff].is-active", root);
-  const eff = effBtns.map((b) => b.dataset.atmEff).filter(Boolean);
-  if (eff.length) state.effects = eff;
-
-  const cam = qs("#atmCamera", root)?.value;
-  const dur = qs("#atmDuration", root)?.value;
-  if (cam) state.camera = cam;
-  if (dur) state.duration = dur;
+    const cam = qs("#atmCamera", root)?.value;
+    const dur = qs("#atmDuration", root)?.value;
+    if (cam) state.camera = cam;
+    if (dur) state.duration = dur;
 
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
     const basicPanel = shell ? qs('.mode-panel[data-mode-panel="basic"]', shell) : null;
