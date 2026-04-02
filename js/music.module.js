@@ -805,32 +805,60 @@
         e.preventDefault();
         e.stopPropagation();
 
-             generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+                 if (promptEl) {
+          promptEl.style.borderColor = "rgba(255,110,140,.92)";
+          promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+        }
+
+        if (lyricsEl) {
+          lyricsEl.style.borderColor = "rgba(255,110,140,.92)";
+          lyricsEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          lyricsEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+        }
+
+        generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
         generateBtn.style.borderColor = "rgba(255,110,140,.95)";
         generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
         generateBtn.style.opacity = "1";
         generateBtn.style.cursor = "not-allowed";
         generateBtn.style.transform = "";
         generateBtn.style.filter = "saturate(1.05)";
+        generateBtn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
 
         if (policyNote) {
           policyNote.style.display = "block";
           policyNote.style.marginTop = "12px";
-          policyNote.style.padding = "12px 14px";
-          policyNote.style.borderRadius = "16px";
+          policyNote.style.padding = "14px 16px";
+          policyNote.style.borderRadius = "18px";
           policyNote.style.background = "rgba(255,90,120,.10)";
           policyNote.style.border = "1px solid rgba(255,120,150,.24)";
-          policyNote.style.color = "rgba(255,210,220,.96)";
-          policyNote.style.fontSize = "13px";
-          policyNote.style.lineHeight = "1.5";
           policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
           policyNote.style.backdropFilter = "blur(10px)";
           policyNote.style.webkitBackdropFilter = "blur(10px)";
           policyNote.style.position = "relative";
           policyNote.style.overflow = "hidden";
+          policyNote.style.textAlign = "center";
           policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-          policyNote.textContent =
-            "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
+          policyNote.innerHTML = `
+            <span style="
+              display:block;
+              width:100%;
+              text-align:center;
+              font-size:14px;
+              font-weight:800;
+              line-height:1.65;
+              letter-spacing:.01em;
+              background-image:linear-gradient(120deg, rgba(255,210,220,.82) 0%, rgba(255,255,255,1) 24%, rgba(255,210,220,.82) 48%, rgba(255,255,255,1) 62%, rgba(255,210,220,.82) 100%);
+              background-size:220% 100%;
+              background-position:200% 0;
+              -webkit-background-clip:text;
+              background-clip:text;
+              color:transparent;
+              -webkit-text-fill-color:transparent;
+              animation:aivoPolicyPulse 1.8s ease-in-out infinite;
+            ">Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.</span>
+          `;
         }
       }, true);
     }
