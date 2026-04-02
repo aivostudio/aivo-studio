@@ -252,11 +252,6 @@ module.exports = async (req, res) => {
 
     // 1) Admin notification
     const { data: adminData, error: adminError } = await resend.emails.send({
-      console.log("[send-mail][admin]", {
-  adminTo: adminTo,
-  adminData,
-  adminError
-});
       from: fromAddr,
       to: adminTo,
       subject: adminSubject,
