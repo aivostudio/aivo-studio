@@ -2,8 +2,9 @@ export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
 import authModule from "../_lib/auth.js";
-const { requireAuth } = authModule;
+import { enforcePolicy, policyErrorResponse } from "../_lib/policy-gateway.js";
 
+const { requireAuth } = authModule;
 // küçük helper: bu deployment’da aynı host üzerinden iç endpoint çağırmak için
 function getBaseUrl(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";
@@ -82,6 +83,26 @@ export default async function handler(req, res) {
     const prompt = body.prompt ? String(body.prompt) : null;
     const metaIn = body.meta || null;
 
+     // body normalize
+    const body = req.body || {};
+    const prompt = body.prompt ? String(body.prompt).trim() : "";
+    const metaIn = body.meta || null;
+
+    const policy = enforcePolicy({
+      app: "atmo",
+      prompt,
+      personName: String(body.personName || "").trim(),
+    });
+
+    if (policy.decision === "block") {
+      return res.status(403).json(policyErrorResponse(policy));
+    }
+
+    const safePrompt =
+      policy.decision === "rewrite"
+        ? String(policy.rewrittenPrompt || prompt || "").trim()
+        : prompt;
+
     // meta garanti: atmo kimliği
     // ✅ status.js / overlay otomasyonu için gerekli alanları meta'ya kaydediyoruz
     const metaSafe = {
@@ -89,6 +110,10 @@ export default async function handler(req, res) {
       app: "atmo",
       kind: "atmo_video",
       provider: "fal",
+
+      prompt: safePrompt || null,
+      original_prompt: prompt || null,
+      policy_decision: policy.decision || "allow",
 
       // --- logo overlay inputs (kritik) ---
       logo_url: body.logo_url ?? null, // https://media.aivo.tr/uploads/tmp/...png
@@ -117,13 +142,13 @@ export default async function handler(req, res) {
         created_at,
         updated_at
       )
-      values (
+         values (
         ${email},
         ${user_uuid}::uuid,
         'atmo',
         'atmo',
         'queued',
-        ${prompt},
+        ${safePrompt},
         ${metaSafe},
         '[]'::jsonb,
         now(),
@@ -147,8 +172,9 @@ export default async function handler(req, res) {
           // cookie forward: auth gerektiriyorsa iç endpoint de aynı session’ı görsün
           cookie: req.headers.cookie || "",
         },
-        body: JSON.stringify({
+             body: JSON.stringify({
           ...body,
+          prompt: safePrompt,
           // job ile ilişkilendirme için (istersen create endpoint bunu loglayabilir)
           job_id,
           app: "atmo",
