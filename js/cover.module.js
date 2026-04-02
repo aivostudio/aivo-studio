@@ -660,13 +660,35 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     }
   }
 
+  function buildCoverPolicyPhraseRegex(term) {
+    const normalized = normalizePolicyText(term);
+    if (!normalized) return null;
+
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\s+");
+
+    return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+  }
+
   function isCoverPolicyBlocked(raw) {
     const text = normalizePolicyText(raw);
 
     const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-      ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+      HARD_BLOCK_TERMS.some((term) => {
+        const rx = buildCoverPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      PUBLIC_FIGURE_TERMS.some((term) => {
+        const rx = buildCoverPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      ARTIST_NAME_TERMS.some((term) => {
+        const rx = buildCoverPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      });
 
     const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
     return !!raw && (hasBlockedTerm || hasBlockedPattern);
