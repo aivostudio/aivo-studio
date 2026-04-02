@@ -156,31 +156,30 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
-      // 1) Direkt API
-      let result = null;
-      try {
-        result = await callGenerateAPI(prompt);
-      } catch (apiErr) {
-        console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
+   // 1) Önce kredi düşen service zinciri
+let result = null;
 
-        // 2) Fallback: eski service
-        const svc =
-          window.StudioServices ||
-          window.AIVO_SERVICES ||
-          window.AIVO_APP ||
-          null;
+const svc =
+  window.StudioServices ||
+  window.AIVO_SERVICES ||
+  window.AIVO_APP ||
+  null;
 
-        if (svc?.generateMusic && typeof svc.generateMusic === "function"){
-          result = await svc.generateMusic({ prompt });
-        }
-        else if (window.generateMusic && typeof window.generateMusic === "function"){
-          result = await window.generateMusic({ prompt });
-        }
-        else {
-          toastError("Generate endpoint hata verdi ve fallback generateMusic fonksiyonu bulunamadı.");
-          return;
-        }
-      }
+if (svc?.generateMusic && typeof svc.generateMusic === "function") {
+  result = await svc.generateMusic({ prompt });
+}
+else if (window.generateMusic && typeof window.generateMusic === "function") {
+  result = await window.generateMusic({ prompt });
+}
+else {
+  try {
+    result = await callGenerateAPI(prompt);
+  } catch (apiErr) {
+    console.warn("[music.generate] service yok, direct /api/music/generate da failed:", apiErr);
+    toastError("Generate servisi bulunamadı.");
+    return;
+  }
+}
 
       // =========================================================
       // ✅ RESULT NORMALIZE (FIXED)
