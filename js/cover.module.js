@@ -135,6 +135,243 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     return j;
   }
 
+    const HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "replace face",
+    "swap face"
+  ];
+
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\byuzuyle\b/i,
+    /\byüzüyle\b/i,
+    /\byuzunu kullan\b/i,
+    /\byüzünü kullan\b/i,
+    /\bsuratini kullan\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "kilicdaroglu",
+    "kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "imamoglu",
+    "imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizePolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function ensureCoverPolicyNote(generateBtn) {
+    const root = getRoot();
+    if (!root || !generateBtn || !generateBtn.parentElement) return null;
+
+    let policyNote = root.querySelector("#coverPolicyNote");
+    if (!policyNote) {
+      policyNote = document.createElement("div");
+      policyNote.id = "coverPolicyNote";
+      policyNote.style.display = "none";
+      policyNote.style.marginTop = "12px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.backdropFilter = "blur(10px)";
+      policyNote.style.webkitBackdropFilter = "blur(10px)";
+      policyNote.style.textAlign = "center";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "800";
+      policyNote.style.lineHeight = "1.65";
+      policyNote.style.letterSpacing = ".01em";
+      policyNote.style.color = "rgba(255,245,248,.96)";
+      generateBtn.parentElement.appendChild(policyNote);
+    }
+
+    return policyNote;
+  }
+
+  function resetCoverPolicyUI(root, promptEl, generateBtn) {
+    const policyNote = root?.querySelector("#coverPolicyNote");
+
+    if (promptEl) {
+      promptEl.style.borderColor = "";
+      promptEl.style.boxShadow = "";
+      promptEl.style.animation = "";
+    }
+
+    if (generateBtn) {
+      generateBtn.style.background = "";
+      generateBtn.style.borderColor = "";
+      generateBtn.style.boxShadow = "";
+      generateBtn.style.cursor = "";
+      generateBtn.style.filter = "";
+      generateBtn.style.animation = "";
+    }
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+    }
+  }
+
+  function isCoverPolicyBlocked(raw) {
+    const text = normalizePolicyText(raw);
+
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+      ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
   // --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
   function withTitleSafeArea(p) {
     const raw = String(p || "").trim();
