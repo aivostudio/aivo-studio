@@ -746,8 +746,10 @@
 
       generateBtn.__aivoPolicyClickBound = true;
 
-           const resetPolicyUI = () => {
+       const resetPolicyUI = () => {
         const policyNote = module.querySelector("#musicPolicyNote");
+        const mode = module.getAttribute("data-mode") || "basic";
+        const isAdvanced = mode === "advanced";
 
         if (promptEl) {
           promptEl.style.borderColor = "";
@@ -761,14 +763,26 @@
           lyricsEl.style.animation = "";
         }
 
-        generateBtn.style.background = "";
         generateBtn.style.borderColor = "";
-        generateBtn.style.boxShadow = "";
         generateBtn.style.opacity = "";
         generateBtn.style.cursor = "";
         generateBtn.style.transform = "";
         generateBtn.style.filter = "";
         generateBtn.style.animation = "";
+
+        if (isAdvanced) {
+          generateBtn.style.background = "linear-gradient(135deg, #ff5a8f 0%, #ff3b3b 100%)";
+          generateBtn.style.border = "1px solid rgba(255,120,150,.34)";
+          generateBtn.style.boxShadow = "0 18px 40px rgba(255,70,110,.24), inset 0 1px 0 rgba(255,255,255,.18)";
+          generateBtn.style.color = "#fff";
+          generateBtn.style.fontWeight = "800";
+        } else {
+          generateBtn.style.background = "";
+          generateBtn.style.border = "";
+          generateBtn.style.boxShadow = "";
+          generateBtn.style.color = "";
+          generateBtn.style.fontWeight = "";
+        }
 
         if (policyNote) {
           policyNote.style.display = "none";
