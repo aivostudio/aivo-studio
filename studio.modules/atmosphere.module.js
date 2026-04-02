@@ -1406,26 +1406,89 @@ async function onGenerate(btn) {
 
   const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
 
-  const hook =
-    window.ATM_CREATE ||
-    window.atmoGenerate ||
-    window.ATMOSPHERE_CREATE ||
-    null;
+const creditCost =
+  mode === "pro"
+    ? 45
+    : 30;
 
-  if (typeof hook === "function") {
-    console.log("[ATM] generate -> hook()", { mode, payload });
+const creditReason =
+  mode === "pro"
+    ? "studio_atmo_generate_pro"
+    : "studio_atmo_generate_basic";
 
-    return withGenerateLoading(
-      btn,
-      async () => {
-        // hook job create yapıp aivo:atmo:job_created emit etmeli
-        return await hook(payload);
-      },
-      root
-    );
+const creditRes = await fetch("/api/credits/consume", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    "content-type": "application/json",
+    "accept": "application/json"
+  },
+  body: JSON.stringify({
+    cost: creditCost,
+    reason: creditReason
+  })
+});
+
+let creditData = null;
+try {
+  creditData = await creditRes.json();
+} catch {
+  creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+}
+
+if (!creditRes.ok || !creditData?.ok) {
+  const msg =
+    creditData?.error ||
+    creditData?.message ||
+    "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+
+  try { window.toast?.error?.(String(msg)); } catch {}
+  return;
+}
+
+try {
+  const creditGetRes = await fetch("/api/credits/get", {
+    credentials: "include",
+    cache: "no-store",
+    headers: { "accept": "application/json" }
+  });
+
+  const creditGetData = await creditGetRes.json().catch(() => null);
+
+  if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+    const topCreditCountEl = document.getElementById("topCreditCount");
+    if (topCreditCountEl) {
+      topCreditCountEl.textContent = String(creditGetData.credits);
+    }
+
+    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+      window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+    }
   }
+} catch {}
 
-  console.log("[ATM] generate payload =", payload);
+const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
+
+const hook =
+  window.ATM_CREATE ||
+  window.atmoGenerate ||
+  window.ATMOSPHERE_CREATE ||
+  null;
+
+if (typeof hook === "function") {
+  console.log("[ATM] generate -> hook()", { mode, payload });
+
+  return withGenerateLoading(
+    btn,
+    async () => {
+      // hook job create yapıp aivo:atmo:job_created emit etmeli
+      return await hook(payload);
+    },
+    root
+  );
+}
+
+console.log("[ATM] generate payload =", payload);
 }
 document.addEventListener(
   "click",
