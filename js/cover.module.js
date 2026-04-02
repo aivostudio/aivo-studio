@@ -372,6 +372,48 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
     return !!raw && (hasBlockedTerm || hasBlockedPattern);
   }
+    if (!document.getElementById("aivoPolicyPulseStyle")) {
+    const style = document.createElement("style");
+    style.id = "aivoPolicyPulseStyle";
+    style.textContent = `
+      @keyframes aivoPolicyPulse {
+        0% {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.04),
+            0 0 0 1px rgba(255,120,150,.18),
+            0 8px 24px rgba(255,70,110,.10);
+        }
+        50% {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.05),
+            0 0 0 1px rgba(255,120,150,.30),
+            0 12px 34px rgba(255,70,110,.18);
+        }
+        100% {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.04),
+            0 0 0 1px rgba(255,120,150,.18),
+            0 8px 24px rgba(255,70,110,.10);
+        }
+      }
+
+      @keyframes aivoPolicyTextGlow {
+        0% {
+          opacity: .88;
+          text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
+        }
+        50% {
+          opacity: 1;
+          text-shadow: 0 0 14px rgba(255,255,255,.16), 0 0 28px rgba(255,120,150,.24);
+        }
+        100% {
+          opacity: .88;
+          text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
   // --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
   function withTitleSafeArea(p) {
     const raw = String(p || "").trim();
