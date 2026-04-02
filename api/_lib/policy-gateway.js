@@ -136,28 +136,59 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function buildNormalizedPhraseRegex(term) {
+  const normalized = normalizeText(term);
+  if (!normalized) return null;
+
+  const pattern = normalized
+    .split(' ')
+    .filter(Boolean)
+    .map(escapeRegex)
+    .join('\\s+');
+
+  return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, 'i');
+}
+
 function containsAny(text, terms) {
-  return terms.some((term) => text.includes(normalizeText(term)));
+  const haystack = normalizeText(text);
+  return terms.some((term) => {
+    const rx = buildNormalizedPhraseRegex(term);
+    return rx ? rx.test(haystack) : false;
+  });
 }
 
 function pickMatchedTerms(text, terms, limit = 6) {
+  const haystack = normalizeText(text);
   const hits = [];
+
   for (const term of terms) {
-    const n = normalizeText(term);
-    if (text.includes(n) && !hits.includes(term)) hits.push(term);
+    const rx = buildNormalizedPhraseRegex(term);
+    if (rx && rx.test(haystack) && !hits.includes(term)) {
+      hits.push(term);
+    }
     if (hits.length >= limit) break;
   }
+
   return hits;
 }
 
 function replaceTermsCaseInsensitive(source, terms, replacement) {
   let output = String(source || '');
+
   for (const term of terms) {
     const clean = String(term || '').trim();
     if (!clean) continue;
-    const pattern = new RegExp(`\\b${escapeRegex(clean)}\\b`, 'gi');
-    output = output.replace(pattern, replacement);
+
+    const pattern = clean
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(escapeRegex)
+      .join('\\s+');
+
+    const rx = new RegExp(`(^|\\b)${pattern}(?=\\b|$)`, 'gi');
+    output = output.replace(rx, (match, lead) => `${lead}${replacement}`);
   }
+
   return output;
 }
 
