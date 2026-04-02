@@ -49,8 +49,8 @@
   // ------------------------------------------------------------
   // ✅ 0.5) Generate loading helpers (3–5s “basılı” hissi)
   // ------------------------------------------------------------
-  const GEN_MIN_MS = 3000;   // en az 3s
-  const GEN_MAX_MS = 5000;   // en fazla 5s
+  const GEN_MIN_MS = 3000;
+  const GEN_MAX_MS = 5000;
 
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
@@ -122,7 +122,8 @@
       btn.__atmBusy = false;
     }
   }
-   // ------------------------------------------------------------
+
+  // ------------------------------------------------------------
   // 1) Scope finder
   // ------------------------------------------------------------
   function getAtmoPanelRoot() {
@@ -451,7 +452,7 @@
   // ------------------------------------------------------------
   const state = (window.__ATM_V2__ = window.__ATM_V2__ || {
     mode: "basic",
-    aspect: "16:9", // "16:9" | "1:1" | "9:16"
+    aspect: "16:9",
 
     // basic
     scene: "",
@@ -493,139 +494,255 @@
     }
   });
 
-// ------------------------------------------------------------
-// ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
-// ------------------------------------------------------------
-state.uploads = state.uploads || {
-  basicImage: { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
-  proImage:   { status: "empty", url: "", name: "" }, // empty|uploading|ready|error
-  logo:       { status: "empty", url: "", name: "" },
-  audio:      { status: "empty", url: "", name: "" }
-};
+  // ------------------------------------------------------------
+  // ✅ 2.1) Upload state (R2) — IMAGE/LOGO/AUDIO
+  // ------------------------------------------------------------
+  state.uploads = state.uploads || {
+    basicImage: { status: "empty", url: "", name: "" },
+    proImage: { status: "empty", url: "", name: "" },
+    logo: { status: "empty", url: "", name: "" },
+    audio: { status: "empty", url: "", name: "" }
+  };
 
-function isUploadingAny() {
-  const u = state.uploads || {};
-  return Object.values(u).some((x) => x?.status === "uploading");
-}
-
-function ensureAtmUploadUI(root, kind) {
-  const r = root || getAtmoPanelRoot() || document;
-  const inputId =
-    kind === "image" ? "#atmImageFile" :
-    kind === "logo"  ? "#atmLogoFile"  :
-    kind === "audio" ? "#atmAudioFile" :
-    "";
-
-  const col = inputId ? qs(inputId, r)?.closest?.(".atmPersCol") : null;
-  if (!col) return;
-
-  const prevId = `atm${kind[0].toUpperCase() + kind.slice(1)}Preview`;
-  const badgeId = `atm${kind[0].toUpperCase() + kind.slice(1)}Badge`;
-
-  // Preview (image/logo only)
-  if ((kind === "image" || kind === "logo") && !qs(`#${prevId}`, col)) {
-    const img = document.createElement("img");
-    img.id = prevId;
-    img.alt = kind + " preview";
-    img.style.display = "none";
-    img.style.width = "64px";
-    img.style.height = "64px";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "12px";
-    img.style.marginTop = "10px";
-    img.style.border = "1px solid rgba(255,255,255,0.12)";
-    col.appendChild(img);
+  function isUploadingAny() {
+    const u = state.uploads || {};
+    return Object.values(u).some((x) => x?.status === "uploading");
   }
 
-  // Badge
-  if (!qs(`#${badgeId}`, col)) {
-    const b = document.createElement("div");
-    b.id = badgeId;
-    b.textContent = "Hazır ✓";
-    b.style.display = "none";
-    b.style.marginTop = "8px";
-    b.style.fontSize = "12px";
-    b.style.fontWeight = "800";
-    b.style.padding = "6px 10px";
-    b.style.borderRadius = "999px";
-    b.style.width = "fit-content";
-    b.style.border = "1px solid rgba(120,255,190,.22)";
-    b.style.background = "rgba(120,255,190,.08)";
-    col.appendChild(b);
+  const ATMO_DURATION_STEP_COST = {
+    "4": 0,
+    "6": 2,
+    "8": 4,
+    "10": 6,
+    "12": 8,
+    "15": 10
+  };
+
+  function getAtmoSelectedDuration(mode) {
+    if (mode === "pro") {
+      return String(state.proDuration || "8");
+    }
+    return String(state.duration || "8");
   }
-}
 
-function setUploadUI(root, kind, patch) {
-  const r = root || getAtmoPanelRoot() || document;
+  function computeAtmoCredit(mode) {
+    const m = String(mode || state.mode || "basic").toLowerCase();
+    const duration = getAtmoSelectedDuration(m);
 
-  // ✅ PRO tespiti (Basic'i bozma)
-  const isPro =
-    (r?.dataset?.modePanel === "pro") ||
-    !!(r?.closest?.('[data-mode-panel="pro"]'));
+    const baseCredit = m === "pro" ? 45 : 30;
+    const durationExtra = Number(ATMO_DURATION_STEP_COST[duration] || 0);
 
-  // ✅ Basic davranış aynen: UI elemanlarını ensure et
-  // ✅ Pro’da preview/badge istemiyoruz: ensureAtmUploadUI çağırmıyoruz
-  if (!isPro) ensureAtmUploadUI(r, kind);
+    const effectsExtra =
+      m === "basic"
+        ? Number((state.effects || []).length || 0)
+        : 0;
 
- const uploadKey =
-  kind === "image"
-    ? (isPro ? "proImage" : "basicImage")
-    : kind;
+    const total = baseCredit + durationExtra + effectsExtra;
 
-const st = state.uploads[uploadKey] || { status: "empty", url: "", name: "" };
-const next = { ...st, ...(patch || {}) };
-state.uploads[uploadKey] = next;
+    const reason =
+      m === "pro"
+        ? "studio_atmo_generate_pro"
+        : "studio_atmo_generate_basic";
 
-  // ------------------------------------------------------------
-  // ✅ PRO UI bağları (Süper Mod)
-  //   Logo:  #atmProLogoFileName + #atmProLogoStatus
-  //   Audio: #atmProAudioFileName + #atmProAudioStatus
-  // ------------------------------------------------------------
-  if (isPro) {
-   const proNameId =
-  kind === "logo"  ? "atmProLogoFileName" :
-  kind === "image" ? "atmProRefImageFileName" :
-  kind === "audio" ? "atmProAudioFileName" :
-  "";
+    return {
+      mode: m,
+      duration,
+      baseCredit,
+      durationExtra,
+      effectsExtra,
+      total,
+      reason
+    };
+  }
 
-const proStatusId =
-  kind === "logo"  ? "atmProLogoStatus" :
-  kind === "image" ? "atmProRefImageStatus" :
-  kind === "audio" ? "atmProAudioStatus" :
-  "";
+  function syncAtmoGenerateCredits(root) {
+    const r = root || getAtmoPanelRoot();
+    if (!r) return;
 
-const nameEl = proNameId ? document.getElementById(proNameId) : null;
-const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
-const proLogoClearBtn  = kind === "logo"  ? document.getElementById("atmProLogoClear") : null;
-const proImageClearBtn = kind === "image" ? document.getElementById("atmProRefImageClear") : null;
-const proAudioClearBtn = kind === "audio" ? document.getElementById("atmProAudioClear") : null;
+    const basicBtn =
+      qs('[data-atm-generate][data-atm-mode="basic"]', r) ||
+      qs('[data-atm-mode="basic"][data-atm-generate]', r);
 
-// Name label (PRO)
-if (nameEl) {
-  if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
-  else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
-  else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
-  else nameEl.textContent = next.name || "Dosya seçilmedi";
-}
+    const proBtn =
+      qs('[data-atm-generate][data-atm-mode="pro"]', r) ||
+      qs('[data-atm-mode="pro"][data-atm-generate]', r);
 
-// Hazır etiketi (PRO) — sadece ready’de göster
-if (statusEl) {
-  if (next.status === "ready") statusEl.style.display = "";
-  else statusEl.style.display = "none";
-}
+    const basicCalc = computeAtmoCredit("basic");
+    const proCalc = computeAtmoCredit("pro");
 
-// PRO clear buttons
-if (proLogoClearBtn) {
-  proLogoClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
-}
-if (proImageClearBtn) {
-  proImageClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
-}
-if (proAudioClearBtn) {
-  proAudioClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
-}
+    if (basicBtn) {
+      basicBtn.setAttribute("data-credit-cost", String(basicCalc.total));
+      basicBtn.textContent = `🎬 Atmosfer Video Oluştur (${basicCalc.total} Kredi)`;
+    }
 
-    // Generate buttons lock while uploading (PRO içinde de çalışsın)
+    if (proBtn) {
+      proBtn.setAttribute("data-credit-cost", String(proCalc.total));
+      proBtn.textContent = `✨ Süper Atmosfer Video Oluştur (${proCalc.total} Kredi)`;
+    }
+  }
+
+  function ensureAtmUploadUI(root, kind) {
+    const r = root || getAtmoPanelRoot() || document;
+    const inputId =
+      kind === "image" ? "#atmImageFile" :
+      kind === "logo" ? "#atmLogoFile" :
+      kind === "audio" ? "#atmAudioFile" :
+      "";
+
+    const col = inputId ? qs(inputId, r)?.closest?.(".atmPersCol") : null;
+    if (!col) return;
+
+    const prevId = `atm${kind[0].toUpperCase() + kind.slice(1)}Preview`;
+    const badgeId = `atm${kind[0].toUpperCase() + kind.slice(1)}Badge`;
+
+    if ((kind === "image" || kind === "logo") && !qs(`#${prevId}`, col)) {
+      const img = document.createElement("img");
+      img.id = prevId;
+      img.alt = kind + " preview";
+      img.style.display = "none";
+      img.style.width = "64px";
+      img.style.height = "64px";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "12px";
+      img.style.marginTop = "10px";
+      img.style.border = "1px solid rgba(255,255,255,0.12)";
+      col.appendChild(img);
+    }
+
+    if (!qs(`#${badgeId}`, col)) {
+      const b = document.createElement("div");
+      b.id = badgeId;
+      b.textContent = "Hazır ✓";
+      b.style.display = "none";
+      b.style.marginTop = "8px";
+      b.style.fontSize = "12px";
+      b.style.fontWeight = "800";
+      b.style.padding = "6px 10px";
+      b.style.borderRadius = "999px";
+      b.style.width = "fit-content";
+      b.style.border = "1px solid rgba(120,255,190,.22)";
+      b.style.background = "rgba(120,255,190,.08)";
+      col.appendChild(b);
+    }
+  }
+
+  function setUploadUI(root, kind, patch) {
+    const r = root || getAtmoPanelRoot() || document;
+
+    const isPro =
+      (r?.dataset?.modePanel === "pro") ||
+      !!(r?.closest?.('[data-mode-panel="pro"]'));
+
+    if (!isPro) ensureAtmUploadUI(r, kind);
+
+    const uploadKey =
+      kind === "image"
+        ? (isPro ? "proImage" : "basicImage")
+        : kind;
+
+    const st = state.uploads[uploadKey] || { status: "empty", url: "", name: "" };
+    const next = { ...st, ...(patch || {}) };
+    state.uploads[uploadKey] = next;
+
+    if (isPro) {
+      const proNameId =
+        kind === "logo" ? "atmProLogoFileName" :
+        kind === "image" ? "atmProRefImageFileName" :
+        kind === "audio" ? "atmProAudioFileName" :
+        "";
+
+      const proStatusId =
+        kind === "logo" ? "atmProLogoStatus" :
+        kind === "image" ? "atmProRefImageStatus" :
+        kind === "audio" ? "atmProAudioStatus" :
+        "";
+
+      const nameEl = proNameId ? document.getElementById(proNameId) : null;
+      const statusEl = proStatusId ? document.getElementById(proStatusId) : null;
+      const proLogoClearBtn = kind === "logo" ? document.getElementById("atmProLogoClear") : null;
+      const proImageClearBtn = kind === "image" ? document.getElementById("atmProRefImageClear") : null;
+      const proAudioClearBtn = kind === "audio" ? document.getElementById("atmProAudioClear") : null;
+
+      if (nameEl) {
+        if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
+        else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
+        else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
+        else nameEl.textContent = next.name || "Dosya seçilmedi";
+      }
+
+      if (statusEl) {
+        if (next.status === "ready") statusEl.style.display = "";
+        else statusEl.style.display = "none";
+      }
+
+      if (proLogoClearBtn) {
+        proLogoClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
+      }
+      if (proImageClearBtn) {
+        proImageClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
+      }
+      if (proAudioClearBtn) {
+        proAudioClearBtn.style.display = next.status === "ready" ? "inline-flex" : "none";
+      }
+
+      const genBtns = qsa('[data-atm-generate]', r);
+      const uploading = isUploadingAny();
+      genBtns.forEach((b) => {
+        if (!b) return;
+        b.toggleAttribute?.("disabled", uploading);
+        b.classList.toggle?.("is-uploading", uploading);
+        if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
+        else b.removeAttribute("title");
+      });
+
+      return;
+    }
+
+    const cap = kind[0].toUpperCase() + kind.slice(1);
+    const badgeId = `atm${cap}Badge`;
+    const prevId = `atm${cap}Preview`;
+
+    const inputId =
+      kind === "image" ? "atmImageFileName" :
+      kind === "logo" ? "atmLogoFileName" :
+      kind === "audio" ? "atmAudioFileName" :
+      "";
+
+    const nameEl = inputId ? document.getElementById(inputId) : null;
+    const badgeEl = qs(`#${badgeId}`, r);
+    const prevEl = qs(`#${prevId}`, r);
+
+    if (nameEl) {
+      if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
+      else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
+      else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
+      else nameEl.textContent = next.name || "Dosya seçilmedi";
+    }
+
+    if (badgeEl) {
+      badgeEl.style.display = next.status === "ready" ? "" : "none";
+      if (next.status === "uploading") badgeEl.style.display = "none";
+      if (next.status === "error") {
+        badgeEl.style.display = "";
+        badgeEl.textContent = "Hata";
+        badgeEl.style.border = "1px solid rgba(255,120,120,.25)";
+        badgeEl.style.background = "rgba(255,120,120,.10)";
+      } else {
+        badgeEl.textContent = "Hazır ✓";
+        badgeEl.style.border = "1px solid rgba(120,255,190,.22)";
+        badgeEl.style.background = "rgba(120,255,190,.08)";
+      }
+    }
+
+    if (prevEl && (kind === "image" || kind === "logo")) {
+      if (next.status === "ready" && next.url) {
+        prevEl.src = next.url;
+        prevEl.style.display = "";
+      } else {
+        prevEl.style.display = "none";
+      }
+    }
+
     const genBtns = qsa('[data-atm-generate]', r);
     const uploading = isUploadingAny();
     genBtns.forEach((b) => {
@@ -635,162 +752,92 @@ if (proAudioClearBtn) {
       if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
       else b.removeAttribute("title");
     });
-
-    return; // ✅ PRO işi bitti, Basic kısmına düşme
   }
 
-  // ------------------------------------------------------------
-  // ✅ BASIC UI (aynen senin eski mantık)
-  // ------------------------------------------------------------
-  const cap = kind[0].toUpperCase() + kind.slice(1);
-  const badgeId = `atm${cap}Badge`;
-  const prevId = `atm${cap}Preview`;
+  async function presignR2({ app, kind, filename, contentType }) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: app || "atmo",
+        kind,
+        filename,
+        contentType
+      })
+    });
 
-  const inputId =
-    kind === "image" ? "atmImageFileName" :
-    kind === "logo"  ? "atmLogoFileName" :
-    kind === "audio" ? "atmAudioFileName" :
-    "";
+    if (!res.ok) throw new Error("presign_failed");
+    const data = await res.json();
+    if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
 
-  const nameEl = inputId ? document.getElementById(inputId) : null;
-  const badgeEl = qs(`#${badgeId}`, r);
-  const prevEl = qs(`#${prevId}`, r);
+    const uploadUrl = data.uploadUrl || data.upload_url;
+    const publicUrl = data.publicUrl || data.public_url || data.url;
 
-  // Name label
-  if (nameEl) {
-    if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
-    else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
-    else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
-    else nameEl.textContent = next.name || "Dosya seçilmedi";
+    if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
+    return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
   }
 
-  // Badge
-  if (badgeEl) {
-    badgeEl.style.display = next.status === "ready" ? "" : "none";
-    if (next.status === "uploading") badgeEl.style.display = "none";
-    if (next.status === "error") {
-      badgeEl.style.display = "";
-      badgeEl.textContent = "Hata";
-      badgeEl.style.border = "1px solid rgba(255,120,120,.25)";
-      badgeEl.style.background = "rgba(255,120,120,.10)";
-    } else {
-      badgeEl.textContent = "Hazır ✓";
-      badgeEl.style.border = "1px solid rgba(120,255,190,.22)";
-      badgeEl.style.background = "rgba(120,255,190,.08)";
-    }
-  }
+  async function uploadToR2(file, { app = "atmo", kind }) {
+    if (!file) throw new Error("missing_file");
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `${kind || "file"}-${Date.now()}`;
 
-  // Preview (image/logo)
-  if (prevEl && (kind === "image" || kind === "logo")) {
-    if (next.status === "ready" && next.url) {
-      prevEl.src = next.url;
-      prevEl.style.display = "";
-    } else {
-      prevEl.style.display = "none";
-    }
-  }
-
-  // Generate buttons lock while uploading
-  const genBtns = qsa('[data-atm-generate]', r);
-  const uploading = isUploadingAny();
-  genBtns.forEach((b) => {
-    if (!b) return;
-    b.toggleAttribute?.("disabled", uploading);
-    b.classList.toggle?.("is-uploading", uploading);
-    if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
-    else b.removeAttribute("title");
-  });
-}
-// ---- R2 presign + upload (expects your backend)
-// Backend contract (recommended):
-// POST /api/r2/presign-put
-// body: { app:"atmo", kind:"image|logo|audio", filename, contentType }
-// resp: { ok:true, uploadUrl, publicUrl, key }   (publicUrl can be R2 public or your CDN)
-async function presignR2({ app, kind, filename, contentType }) {
-  const res = await fetch("/api/r2/presign-put", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: app || "atmo",
+    const { uploadUrl, publicUrl } = await presignR2({
+      app,
       kind,
       filename,
       contentType
-    })
-  });
-
-  if (!res.ok) throw new Error("presign_failed");
-  const data = await res.json();
-  if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
-
-  const uploadUrl = data.uploadUrl || data.upload_url;
-  const publicUrl = data.publicUrl || data.public_url || data.url;
-
-  if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
-  return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
-}
-
-async function uploadToR2(file, { app = "atmo", kind }) {
-  if (!file) throw new Error("missing_file");
-  const contentType = file.type || "application/octet-stream";
-  const filename = file.name || `${kind || "file"}-${Date.now()}`;
-
-  const { uploadUrl, publicUrl } = await presignR2({
-    app,
-    kind,
-    filename,
-    contentType
-  });
-
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: file
-  });
-  if (!put.ok) throw new Error("r2_put_failed");
-
-  return { url: publicUrl, name: filename };
-}
-
-async function handleUpload(root, kind, file) {
-  const r = root || getAtmoPanelRoot() || document;
-
-  if (!file) {
-    setUploadUI(r, kind, { status: "empty", url: "", name: "" });
-
-    // ✅ LOGO global cleanup (logo kaldırıldıysa)
-    if ((state?.uploads?.logo?.status || "") === "empty" || kind === "logo") {
-      try { delete window.__ATMO_LOGO_PUBLIC_URL__; } catch {}
-      try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-    }
-
-    return;
-  }
-
-  setUploadUI(r, kind, { status: "uploading", url: "", name: file.name || "" });
-
-  try {
-    const out = await uploadToR2(file, { app: "atmo", kind });
-
-    setUploadUI(r, kind, {
-      status: "ready",
-      url: out.url,
-      name: out.name || file.name || ""
     });
 
-    // ✅ LOGO public_url -> global (kind mismatch olursa bile çalışsın)
-    const logoUrl = state?.uploads?.logo?.url || out?.url || "";
-    if (logoUrl) {
-      window.__ATMO_LOGO_PUBLIC_URL__ = logoUrl;
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: file
+    });
+    if (!put.ok) throw new Error("r2_put_failed");
+
+    return { url: publicUrl, name: filename };
+  }
+
+  async function handleUpload(root, kind, file) {
+    const r = root || getAtmoPanelRoot() || document;
+
+    if (!file) {
+      setUploadUI(r, kind, { status: "empty", url: "", name: "" });
+
+      if ((state?.uploads?.logo?.status || "") === "empty" || kind === "logo") {
+        try { delete window.__ATMO_LOGO_PUBLIC_URL__; } catch {}
+        try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+      }
+
+      return;
     }
 
-    return out;
-  } catch (e) {
-    console.error("[ATM][R2] upload error:", kind, e);
-    setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
-    try { window.toast?.error?.("Yükleme hatası"); } catch {}
-    return null;
+    setUploadUI(r, kind, { status: "uploading", url: "", name: file.name || "" });
+
+    try {
+      const out = await uploadToR2(file, { app: "atmo", kind });
+
+      setUploadUI(r, kind, {
+        status: "ready",
+        url: out.url,
+        name: out.name || file.name || ""
+      });
+
+      const logoUrl = state?.uploads?.logo?.url || out?.url || "";
+      if (logoUrl) {
+        window.__ATMO_LOGO_PUBLIC_URL__ = logoUrl;
+      }
+
+      return out;
+    } catch (e) {
+      console.error("[ATM][R2] upload error:", kind, e);
+      setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
+      try { window.toast?.error?.("Yükleme hatası"); } catch {}
+      return null;
+    }
   }
-}
+
   // ------------------------------------------------------------
   // 3) Sync helpers (hidden legacy inputs etc.)
   // ------------------------------------------------------------
@@ -898,21 +945,18 @@ async function handleUpload(root, kind, file) {
     syncLegacyEffectsInput(root);
     syncAspectUI(root, root);
 
-    // ensure upload UIs exist
-   // ensure upload UIs exist
-ensureAtmUploadUI(root, "image");
-ensureAtmUploadUI(root, "logo");
-ensureAtmUploadUI(root, "audio");
+    ensureAtmUploadUI(root, "image");
+    ensureAtmUploadUI(root, "logo");
+    ensureAtmUploadUI(root, "audio");
 
-// reflect persisted state.uploads
-const basicPanelRef = shell ? qs('.mode-panel[data-mode-panel="basic"]', shell) : null;
-const proPanelRef   = shell ? qs('.mode-panel[data-mode-panel="pro"]', shell) : null;
+    const basicPanelRef = shell ? qs('.mode-panel[data-mode-panel="basic"]', shell) : null;
+    const proPanelRef = shell ? qs('.mode-panel[data-mode-panel="pro"]', shell) : null;
 
-if (basicPanelRef) setUploadUI(basicPanelRef, "image", state.uploads.basicImage);
-if (proPanelRef)   setUploadUI(proPanelRef, "image", state.uploads.proImage);
+    if (basicPanelRef) setUploadUI(basicPanelRef, "image", state.uploads.basicImage);
+    if (proPanelRef) setUploadUI(proPanelRef, "image", state.uploads.proImage);
 
-setUploadUI(root, "logo", state.uploads.logo);
-setUploadUI(root, "audio", state.uploads.audio);
+    setUploadUI(root, "logo", state.uploads.logo);
+    setUploadUI(root, "audio", state.uploads.audio);
   }
 
   // ------------------------------------------------------------
@@ -935,7 +979,6 @@ setUploadUI(root, "audio", state.uploads.audio);
 
       const mode = tab.dataset.mode || "basic";
       state.mode = mode;
-       
 
       qsa('.mode-tab[data-mode]', shell).forEach((t) => {
         const on = t.dataset.mode === mode;
@@ -951,6 +994,7 @@ setUploadUI(root, "audio", state.uploads.audio);
 
       syncAspectUI(root, shell);
       console.log("[ATM] mode switch ->", mode);
+      syncAtmoGenerateCredits(root);
     },
     true
   );
@@ -998,6 +1042,7 @@ setUploadUI(root, "audio", state.uploads.audio);
 
     state.effects = Array.from(set);
     syncLegacyEffectsInput(root);
+    syncAtmoGenerateCredits(root);
   });
 
   // ------------------------------------------------------------
@@ -1045,11 +1090,14 @@ setUploadUI(root, "audio", state.uploads.audio);
     if (cam) state.camera = cam.value || state.camera;
 
     const dur = closestWithin(e.target, "#atmDuration", root);
-    if (dur) state.duration = dur.value || state.duration;
+    if (dur) {
+      state.duration = dur.value || state.duration;
+      syncAtmoGenerateCredits(root);
+    }
   });
-   // ------------------------------------------------------------
+
+  // ------------------------------------------------------------
   // 8) Files: Basic image / logo / audio + Pro refs
-  //    ✅ R2 upload for basic image/logo/audio
   // ------------------------------------------------------------
   document.addEventListener("change", async (e) => {
     const root = getAtmoPanelRoot();
@@ -1057,62 +1105,48 @@ setUploadUI(root, "audio", state.uploads.audio);
 
     const file = e.target?.files?.[0] || null;
 
-    // BASIC files (R2)
-   if (closestWithin(e.target, "#atmImageFile", root)) {
-  state.imageFile = file;
-
-  const panel = e.target.closest('[data-mode-panel="basic"]');
-  await handleUpload(panel || root, "image", file);
-
-  return;
-}
+    if (closestWithin(e.target, "#atmImageFile", root)) {
+      state.imageFile = file;
+      const panel = e.target.closest('[data-mode-panel="basic"]');
+      await handleUpload(panel || root, "image", file);
+      return;
+    }
 
     if (closestWithin(e.target, "#atmLogoFile", root)) {
       state.logoFile = file;
-
       const panel = e.target.closest('[data-mode-panel="basic"]');
       await handleUpload(panel || root, "logo", file);
-
       return;
     }
 
     if (closestWithin(e.target, "#atmAudioFile", root)) {
       state.audioFile = file;
-
       const panel = e.target.closest('[data-mode-panel="basic"]');
       await handleUpload(panel || root, "audio", file);
-
       return;
     }
 
-    // ✅ PRO files (R2) — panel scope fix
     if (closestWithin(e.target, "#atmProLogoFile", root)) {
       state.logoFile = file;
-
       const panel = e.target.closest('[data-mode-panel="pro"]');
       await handleUpload(panel || root, "logo", file);
-
       return;
     }
-  if (closestWithin(e.target, "#atmProRefImageFile", root)) {
-  state.refImageFile = file;
 
-  const panel = e.target.closest('[data-mode-panel="pro"]');
-  await handleUpload(panel || root, "image", file);
+    if (closestWithin(e.target, "#atmProRefImageFile", root)) {
+      state.refImageFile = file;
+      const panel = e.target.closest('[data-mode-panel="pro"]');
+      await handleUpload(panel || root, "image", file);
+      return;
+    }
 
-  return;
-}
-   
     if (closestWithin(e.target, "#atmProAudioFile", root)) {
       state.audioFile = file;
-
       const panel = e.target.closest('[data-mode-panel="pro"]');
       await handleUpload(panel || root, "audio", file);
-
       return;
     }
 
-    // PRO refs (şimdilik file olarak kalsın; istersen sonra R2’ye alırız)
     if (closestWithin(e.target, "#atmSceneImageInput", root)) {
       state.refImageFile = file;
       return;
@@ -1123,7 +1157,8 @@ setUploadUI(root, "audio", state.uploads.audio);
       return;
     }
   });
-   // ------------------------------------------------------------
+
+  // ------------------------------------------------------------
   // 9) Basic personalization controls
   // ------------------------------------------------------------
   document.addEventListener("change", (e) => {
@@ -1148,11 +1183,9 @@ setUploadUI(root, "audio", state.uploads.audio);
     const sc = closestWithin(e.target, "#atmSilentCopy", root);
     if (sc) state.silentCopy = !!sc.checked;
 
-    // ✅ PRO: logo position (atmProLogoPos -> state.logoPos)
     const proPos = closestWithin(e.target, "#atmProLogoPos", root);
     if (proPos) state.logoPos = proPos.value || state.logoPos;
 
-    // ✅ PRO: audio mode (atmProAudioMode -> state.audioMode)
     const proAudioMode = closestWithin(e.target, "#atmProAudioMode", root);
     if (proAudioMode) state.audioMode = proAudioMode.value || state.audioMode;
   });
@@ -1226,7 +1259,10 @@ setUploadUI(root, "audio", state.uploads.audio);
     if (seam) state.seamFix = !!seam.checked;
 
     const pd = closestWithin(e.target, "#atmProDuration", root);
-    if (pd) state.proDuration = pd.value;
+    if (pd) {
+      state.proDuration = pd.value;
+      syncAtmoGenerateCredits(root);
+    }
 
     state.details = state.details || {};
     const d = state.details;
@@ -1249,124 +1285,124 @@ setUploadUI(root, "audio", state.uploads.audio);
     if (lut) d.lut = lut.value || "";
   });
 
-// ------------------------------------------------------------
-// 13) Payload builders
-//    ✅ Basic payload: send R2 URL (NOT File)
-// ------------------------------------------------------------
-function buildBasicPayload() {
-   const root = getAtmoPanelRoot();
-const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
-const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
-const basicPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
-  return {
-    app: "atmo",
-    mode: "basic",
-    aspect: state.aspect || "16:9",
+  // ------------------------------------------------------------
+  // 13) Payload builders
+  // ------------------------------------------------------------
+  function buildBasicPayload() {
+    const root = getAtmoPanelRoot();
+    const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+    const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
+    const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
+    const basicPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
 
-    scene: state.scene || null,
-     prompt: basicPrompt,
-scene_label: sceneTitle,
-scene_desc: sceneDesc,
-    effects: (state.effects || []).slice(),
-    camera: state.camera || "kenburns_soft",
-    duration: state.duration || "8",
+    return {
+      app: "atmo",
+      mode: "basic",
+      aspect: state.aspect || "16:9",
 
-  image_url: state.uploads?.basicImage?.url || "",
+      scene: state.scene || null,
+      prompt: basicPrompt,
+      scene_label: sceneTitle,
+      scene_desc: sceneDesc,
+      effects: (state.effects || []).slice(),
+      camera: state.camera || "kenburns_soft",
+      duration: state.duration || "8",
 
-    logo_url: state.uploads?.logo?.url || "",
-    logo_pos: state.logoPos || "br",
-    logo_size: state.logoSize || "sm",
-    logo_opacity: state.logoOpacity ?? 0.9,
+      image_url: state.uploads?.basicImage?.url || "",
 
-    audio_url: state.uploads?.audio?.url || "",
-    audio_mode: state.audioMode || "none",
-    audio_trim: state.audioTrim || "loop_to_fit",
-    silent_copy: !!state.silentCopy
-  };
-}
+      logo_url: state.uploads?.logo?.url || "",
+      logo_pos: state.logoPos || "br",
+      logo_size: state.logoSize || "sm",
+      logo_opacity: state.logoOpacity ?? 0.9,
 
-function buildProPayload() {
-  return {
-    app: "atmo",
-    mode: "pro",
-    aspect: state.aspect || "16:9",
-
-    prompt: state.prompt || "",
-    light: state.light || null,
-    mood: state.mood || null,
-
-  image_url: state.uploads?.proImage?.url || "",
-
-    fps: state.fps || "24",
-    format: state.format || "mp4",
-    duration: state.proDuration || undefined,
-    seam_fix: !!state.seamFix,
-
-    // ✅ Pro’da da R2 logo/audio URL’lerini gönder
-    logo_url: state.uploads?.logo?.url || "",
-    logo_pos: state.logoPos || "br",
-    logo_size: state.logoSize || "sm",
-    logo_opacity: state.logoOpacity ?? 0.9,
-
-    audio_url: state.uploads?.audio?.url || "",
-    audio_mode: state.audioMode || "none",
-    audio_trim: state.audioTrim || "loop_to_fit",
-    silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
-
-    details: { ...(state.details || {}) }
-  };
-}
- // ------------------------------------------------------------
-// 14) Generate (delegated) — CAPTURE
-// ------------------------------------------------------------
-async function onGenerate(btn) {
-  const root = getAtmoPanelRoot();
-  if (!root) return;
-
-  bindAtmoPolicyReset();
-
-  if (isUploadingAny()) {
-    try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
-    return;
+      audio_url: state.uploads?.audio?.url || "",
+      audio_mode: state.audioMode || "none",
+      audio_trim: state.audioTrim || "loop_to_fit",
+      silent_copy: !!state.silentCopy
+    };
   }
 
-  const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
-  state.mode = mode;
+  function buildProPayload() {
+    return {
+      app: "atmo",
+      mode: "pro",
+      aspect: state.aspect || "16:9",
 
-  if (mode === "pro") {
-    const promptEl = qs("#atmSuperPrompt", root) || document.getElementById("atmSuperPrompt");
-    const raw = String(promptEl?.value || state.prompt || "").trim();
-    state.prompt = raw;
+      prompt: state.prompt || "",
+      light: state.light || null,
+      mood: state.mood || null,
 
-    resetAtmoPolicyUI(root, promptEl, btn);
+      image_url: state.uploads?.proImage?.url || "",
 
-    if (!raw) {
-      try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
-      if (promptEl) promptEl.focus();
+      fps: state.fps || "24",
+      format: state.format || "mp4",
+      duration: state.proDuration || undefined,
+      seam_fix: !!state.seamFix,
+
+      logo_url: state.uploads?.logo?.url || "",
+      logo_pos: state.logoPos || "br",
+      logo_size: state.logoSize || "sm",
+      logo_opacity: state.logoOpacity ?? 0.9,
+
+      audio_url: state.uploads?.audio?.url || "",
+      audio_mode: state.audioMode || "none",
+      audio_trim: state.audioTrim || "loop_to_fit",
+      silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
+
+      details: { ...(state.details || {}) }
+    };
+  }
+
+  // ------------------------------------------------------------
+  // 14) Generate (delegated) — CAPTURE
+  // ------------------------------------------------------------
+  async function onGenerate(btn) {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    bindAtmoPolicyReset();
+
+    if (isUploadingAny()) {
+      try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
       return;
     }
 
-    if (isAtmoPolicyBlocked(raw)) {
-      const policyNote = ensureAtmoPolicyNote(root, btn);
+    const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
+    state.mode = mode;
 
-      if (promptEl) {
-        promptEl.style.borderColor = "rgba(255,110,140,.92)";
-        promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-        promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-        promptEl.focus();
+    if (mode === "pro") {
+      const promptEl = qs("#atmSuperPrompt", root) || document.getElementById("atmSuperPrompt");
+      const raw = String(promptEl?.value || state.prompt || "").trim();
+      state.prompt = raw;
+
+      resetAtmoPolicyUI(root, promptEl, btn);
+
+      if (!raw) {
+        try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
+        if (promptEl) promptEl.focus();
+        return;
       }
 
-      btn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-      btn.style.borderColor = "rgba(255,110,140,.95)";
-      btn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-      btn.style.cursor = "not-allowed";
-      btn.style.filter = "saturate(1.05)";
-      btn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+      if (isAtmoPolicyBlocked(raw)) {
+        const policyNote = ensureAtmoPolicyNote(root, btn);
 
-      if (policyNote) {
-        policyNote.style.display = "block";
-        policyNote.innerHTML = `
+        if (promptEl) {
+          promptEl.style.borderColor = "rgba(255,110,140,.92)";
+          promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+          promptEl.focus();
+        }
+
+        btn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+        btn.style.borderColor = "rgba(255,110,140,.95)";
+        btn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+        btn.style.cursor = "not-allowed";
+        btn.style.filter = "saturate(1.05)";
+        btn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+
+        if (policyNote) {
+          policyNote.style.display = "block";
+          policyNote.innerHTML = `
           <span style="
             display:inline-block;
             width:100%;
@@ -1386,196 +1422,197 @@ async function onGenerate(btn) {
             animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
           ">Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve video hissini tarif et.</span>
         `;
+        }
+
+        return;
+      }
+    }
+
+    if (mode === "basic") {
+      const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+      const sceneKey = String(state.scene || "").trim();
+
+      if (!activeSceneBtn || !sceneKey) {
+        try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
+        const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
+        if (firstScene) firstScene.focus();
+        return;
+      }
+    }
+
+    const creditCalc = computeAtmoCredit(mode);
+
+    const creditCost =
+      Number(btn?.getAttribute("data-credit-cost") || creditCalc.total) ||
+      creditCalc.total;
+
+    const creditReason = creditCalc.reason;
+
+    const creditRes = await fetch("/api/credits/consume", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        cost: creditCost,
+        reason: creditReason
+      })
+    });
+
+    let creditData = null;
+    try {
+      creditData = await creditRes.json();
+    } catch {
+      creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+    }
+
+    if (!creditRes.ok || !creditData?.ok) {
+      const msg =
+        creditData?.error ||
+        creditData?.message ||
+        "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+
+      try { window.toast?.error?.(String(msg)); } catch {}
+      return;
+    }
+
+    try {
+      const creditGetRes = await fetch("/api/credits/get", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
+
+      const creditGetData = await creditGetRes.json().catch(() => null);
+
+      if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(creditGetData.credits);
+        }
+
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+        }
+      }
+    } catch {}
+
+    const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
+
+    const hook =
+      window.ATM_CREATE ||
+      window.atmoGenerate ||
+      window.ATMOSPHERE_CREATE ||
+      null;
+
+    if (typeof hook === "function") {
+      console.log("[ATM] generate -> hook()", {
+        mode,
+        payload,
+        credit: creditCalc
+      });
+
+      return withGenerateLoading(
+        btn,
+        async () => {
+          return await hook(payload);
+        },
+        root
+      );
+    }
+
+    console.log("[ATM] generate payload =", payload);
+  }
+
+  document.addEventListener(
+    "click",
+    (e) => {
+      const root = getAtmoPanelRoot();
+      if (!root) return;
+
+      const logoClearBtn = closestWithin(e.target, "#atmProLogoClear", root);
+      if (logoClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const logoInput = document.getElementById("atmProLogoFile");
+        if (logoInput) logoInput.value = "";
+
+        state.logoFile = null;
+
+        const panel =
+          logoClearBtn.closest('[data-mode-panel="pro"]') ||
+          qs('[data-mode-panel="pro"]', root) ||
+          root;
+
+        setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
+        try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+        return;
       }
 
-      return;
-    }
-  }
+      const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
+      if (imageClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
 
-  if (mode === "basic") {
-    const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-    const sceneKey = String(state.scene || "").trim();
+        const imageInput = document.getElementById("atmProRefImageFile");
+        if (imageInput) imageInput.value = "";
 
-    if (!activeSceneBtn || !sceneKey) {
-      try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
-      const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
-      if (firstScene) firstScene.focus();
-      return;
-    }
-  }
+        state.refImageFile = null;
 
-  const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
+        const panel =
+          imageClearBtn.closest('[data-mode-panel="pro"]') ||
+          qs('[data-mode-panel="pro"]', root) ||
+          root;
 
-const creditCost =
-  mode === "pro"
-    ? 45
-    : 30;
+        setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
+        return;
+      }
 
-const creditReason =
-  mode === "pro"
-    ? "studio_atmo_generate_pro"
-    : "studio_atmo_generate_basic";
+      const audioClearBtn = closestWithin(e.target, "#atmProAudioClear", root);
+      if (audioClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
 
-const creditRes = await fetch("/api/credits/consume", {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "content-type": "application/json",
-    "accept": "application/json"
-  },
-  body: JSON.stringify({
-    cost: creditCost,
-    reason: creditReason
-  })
-});
+        const audioInput = document.getElementById("atmProAudioFile");
+        if (audioInput) audioInput.value = "";
 
-let creditData = null;
-try {
-  creditData = await creditRes.json();
-} catch {
-  creditData = { ok: false, error: "non_json_response", status: creditRes.status };
-}
+        state.audioFile = null;
 
-if (!creditRes.ok || !creditData?.ok) {
-  const msg =
-    creditData?.error ||
-    creditData?.message ||
-    "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+        const panel =
+          audioClearBtn.closest('[data-mode-panel="pro"]') ||
+          qs('[data-mode-panel="pro"]', root) ||
+          root;
 
-  try { window.toast?.error?.(String(msg)); } catch {}
-  return;
-}
+        setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
+        return;
+      }
 
-try {
-  const creditGetRes = await fetch("/api/credits/get", {
-    credentials: "include",
-    cache: "no-store",
-    headers: { "accept": "application/json" }
-  });
+      const btn = closestWithin(e.target, "[data-atm-generate]", root);
+      if (!btn) return;
 
-  const creditGetData = await creditGetRes.json().catch(() => null);
+      if (root.dataset?.atmBusy === "1") {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
 
-  if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-    const topCreditCountEl = document.getElementById("topCreditCount");
-    if (topCreditCountEl) {
-      topCreditCountEl.textContent = String(creditGetData.credits);
-    }
+      if (isUploadingAny()) {
+        e.preventDefault();
+        e.stopPropagation();
+        try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
+        return;
+      }
 
-    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-      window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-    }
-  }
-} catch {}
-
-const payload = mode === "pro" ? buildProPayload() : buildBasicPayload();
-
-const hook =
-  window.ATM_CREATE ||
-  window.atmoGenerate ||
-  window.ATMOSPHERE_CREATE ||
-  null;
-
-if (typeof hook === "function") {
-  console.log("[ATM] generate -> hook()", { mode, payload });
-
-  return withGenerateLoading(
-    btn,
-    async () => {
-      // hook job create yapıp aivo:atmo:job_created emit etmeli
-      return await hook(payload);
+      e.preventDefault();
+      e.stopPropagation();
+      onGenerate(btn);
     },
-    root
+    true
   );
-}
 
-console.log("[ATM] generate payload =", payload);
-}
-document.addEventListener(
-  "click",
-  (e) => {
-    const root = getAtmoPanelRoot();
-    if (!root) return;
-     
-const logoClearBtn = closestWithin(e.target, "#atmProLogoClear", root);
-if (logoClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  const logoInput = document.getElementById("atmProLogoFile");
-  if (logoInput) logoInput.value = "";
-
-  state.logoFile = null;
-
-  const panel =
-    logoClearBtn.closest('[data-mode-panel="pro"]') ||
-    qs('[data-mode-panel="pro"]', root) ||
-    root;
-
-  setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
-  try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-  return;
-}
-
-const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
-if (imageClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  const imageInput = document.getElementById("atmProRefImageFile");
-  if (imageInput) imageInput.value = "";
-
-  state.refImageFile = null;
-
-  const panel =
-    imageClearBtn.closest('[data-mode-panel="pro"]') ||
-    qs('[data-mode-panel="pro"]', root) ||
-    root;
-
-  setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
-  return;
-}
-
-const audioClearBtn = closestWithin(e.target, "#atmProAudioClear", root);
-if (audioClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  const audioInput = document.getElementById("atmProAudioFile");
-  if (audioInput) audioInput.value = "";
-
-  state.audioFile = null;
-
-  const panel =
-    audioClearBtn.closest('[data-mode-panel="pro"]') ||
-    qs('[data-mode-panel="pro"]', root) ||
-    root;
-
-  setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
-  return;
-}
-    const btn = closestWithin(e.target, "[data-atm-generate]", root);
-    if (!btn) return;
-
-    if (root.dataset?.atmBusy === "1") {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-
-    // upload sırasında tıklamayı yut
-    if (isUploadingAny()) {
-      e.preventDefault();
-      e.stopPropagation();
-      try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
-      return;
-    }
-
-    e.preventDefault();
-    e.stopPropagation();
-    onGenerate(btn);
-  },
-  true
-);
   // ------------------------------------------------------------
   // 15) Init sync (best effort)
   // ------------------------------------------------------------
@@ -1585,6 +1622,7 @@ if (audioClearBtn) {
 
     readInitialFromDOM(root);
     syncLegacyEffectsInput(root);
+    syncAtmoGenerateCredits(root);
 
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
     if (shell) {
@@ -1610,30 +1648,31 @@ if (audioClearBtn) {
   setTimeout(init, 200);
   setTimeout(init, 800);
   setTimeout(init, 1600);
-   // ------------------------------------------------------------
-// ATMOS — PPE bridge (FINAL)
-// ------------------------------------------------------------
-if (window.PPE) {
-  window.PPE.onOutput = function(job) {
-    if (!job) return;
 
-    const logoUrl =
-      job.logo_url ||
-      job.logoUrl ||
-      job.meta?.logo_url ||
-      window.__ATMO_LOGO_PUBLIC_URL__ ||
-      "";
+  // ------------------------------------------------------------
+  // ATMOS — PPE bridge (FINAL)
+  // ------------------------------------------------------------
+  if (window.PPE) {
+    window.PPE.onOutput = function(job) {
+      if (!job) return;
 
-    if (!logoUrl) return;
+      const logoUrl =
+        job.logo_url ||
+        job.logoUrl ||
+        job.meta?.logo_url ||
+        window.__ATMO_LOGO_PUBLIC_URL__ ||
+        "";
 
-    const targets = document.querySelectorAll("[data-atmo-logo-target]");
-    targets.forEach((el) => {
-      el.src = logoUrl;
-    });
+      if (!logoUrl) return;
 
-    console.log("[ATMO] Logo applied via PPE:", logoUrl);
-  };
+      const targets = document.querySelectorAll("[data-atmo-logo-target]");
+      targets.forEach((el) => {
+        el.src = logoUrl;
+      });
 
-  console.log("[ATMO] PPE.onOutput bound");
-}
+      console.log("[ATMO] Logo applied via PPE:", logoUrl);
+    };
+
+    console.log("[ATMO] PPE.onOutput bound");
+  }
 })();
