@@ -414,6 +414,24 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     `;
     document.head.appendChild(style);
   }
+    function bindCoverPolicyReset() {
+    const root = getRoot();
+    if (!root) return;
+
+    const promptEl = qs("#coverPrompt", root);
+    const gen = qs("#coverGenerateBtn", root);
+
+    if (!promptEl || !gen || promptEl.__aivoCoverPolicyResetBound) return;
+    promptEl.__aivoCoverPolicyResetBound = true;
+
+    promptEl.addEventListener("input", () => {
+      resetCoverPolicyUI(root, promptEl, gen);
+    });
+
+    promptEl.addEventListener("change", () => {
+      resetCoverPolicyUI(root, promptEl, gen);
+    });
+  }
   // --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
   function withTitleSafeArea(p) {
     const raw = String(p || "").trim();
@@ -781,6 +799,7 @@ function buildCoverPrompt(prompt, quality) {
 
   new MutationObserver(() => {
     bindPromptCounter();
+      bindCoverPolicyReset();
     ensureDefaultCoverQuality();
   }).observe(document.documentElement, {
     childList: true,
