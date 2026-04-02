@@ -840,7 +840,8 @@
           policyNote.style.overflow = "hidden";
           policyNote.style.textAlign = "center";
           policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-                policyNote.innerHTML = `
+              
+          policyNote.innerHTML = `
             <span style="
               display:block;
               width:100%;
@@ -849,21 +850,15 @@
               border:none;
               outline:none;
               box-shadow:none;
-              background-color:transparent;
+              background:none;
               text-align:center;
               font-size:14px;
               font-weight:800;
               line-height:1.65;
               letter-spacing:.01em;
-              background-image:linear-gradient(120deg, rgba(255,210,220,.82) 0%, rgba(255,255,255,1) 24%, rgba(255,210,220,.82) 48%, rgba(255,255,255,1) 62%, rgba(255,210,220,.82) 100%);
-              background-size:220% 100%;
-              background-position:200% 0;
-              background-repeat:no-repeat;
-              -webkit-background-clip:text;
-              background-clip:text;
-              color:transparent;
-              -webkit-text-fill-color:transparent;
-              animation:aivoPolicyPulse 1.8s ease-in-out infinite;
+              color:rgba(255,245,248,.96);
+              text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
+              animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
             ">Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.</span>
           `;
         }
@@ -891,6 +886,20 @@
               inset 0 1px 0 rgba(255,255,255,.04),
               0 0 0 1px rgba(255,120,150,.18),
               0 8px 24px rgba(255,70,110,.10);
+          }
+        }
+                @keyframes aivoPolicyTextGlow {
+          0% {
+            opacity: .88;
+            text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
+          }
+          50% {
+            opacity: 1;
+            text-shadow: 0 0 14px rgba(255,255,255,.16), 0 0 28px rgba(255,120,150,.24);
+          }
+          100% {
+            opacity: .88;
+            text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
           }
         }
       `;
