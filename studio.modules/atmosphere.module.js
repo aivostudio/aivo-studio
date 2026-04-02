@@ -914,18 +914,28 @@ function isAtmoPolicyBlocked(raw) {
     });
   }
 
-  function readInitialFromDOM(root) {
-    const activeScene = qs("#atmScenes .smpack-choice.is-active", root);
-    if (activeScene?.dataset?.atmScene) state.scene = activeScene.dataset.atmScene;
+function readInitialFromDOM(root) {
+  if (root && !root.dataset.atmoDurationDefaultApplied) {
+    const basicDurEl = qs("#atmDuration", root);
+    const proDurEl = qs("#atmProDuration", root);
 
-    const effBtns = qsa("#atmEffects [data-atm-eff].is-active", root);
-    const eff = effBtns.map((b) => b.dataset.atmEff).filter(Boolean);
-    if (eff.length) state.effects = eff;
+    if (basicDurEl) basicDurEl.value = "4";
+    if (proDurEl) proDurEl.value = "4";
 
-    const cam = qs("#atmCamera", root)?.value;
-    const dur = qs("#atmDuration", root)?.value;
-    if (cam) state.camera = cam;
-    if (dur) state.duration = dur;
+    root.dataset.atmoDurationDefaultApplied = "1";
+  }
+
+  const activeScene = qs("#atmScenes .smpack-choice.is-active", root);
+  if (activeScene?.dataset?.atmScene) state.scene = activeScene.dataset.atmScene;
+
+  const effBtns = qsa("#atmEffects [data-atm-eff].is-active", root);
+  const eff = effBtns.map((b) => b.dataset.atmEff).filter(Boolean);
+  if (eff.length) state.effects = eff;
+
+  const cam = qs("#atmCamera", root)?.value;
+  const dur = qs("#atmDuration", root)?.value;
+  if (cam) state.camera = cam;
+  if (dur) state.duration = dur;
 
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
     const basicPanel = shell ? qs('.mode-panel[data-mode-panel="basic"]', shell) : null;
