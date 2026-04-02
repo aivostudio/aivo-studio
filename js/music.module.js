@@ -746,29 +746,36 @@
 
       generateBtn.__aivoPolicyClickBound = true;
 
-      const resetPolicyUI = () => {
-        const policyNote = module.querySelector("#musicPolicyNote");
+   const resetPolicyUI = () => {
+  const policyNote = module.querySelector("#musicPolicyNote");
 
-        if (promptEl) {
-          promptEl.style.borderColor = "";
-          promptEl.style.boxShadow = "";
-        }
+  if (promptEl) {
+    promptEl.style.borderColor = "";
+    promptEl.style.boxShadow = "";
+    promptEl.style.animation = "";
+  }
 
-        if (lyricsEl) {
-          lyricsEl.style.borderColor = "";
-          lyricsEl.style.boxShadow = "";
-        }
+  if (lyricsEl) {
+    lyricsEl.style.borderColor = "";
+    lyricsEl.style.boxShadow = "";
+    lyricsEl.style.animation = "";
+  }
 
-        generateBtn.style.background = "";
-        generateBtn.style.borderColor = "";
-        generateBtn.style.opacity = "";
-        generateBtn.style.cursor = "";
+  generateBtn.style.background = "";
+  generateBtn.style.borderColor = "";
+  generateBtn.style.boxShadow = "";
+  generateBtn.style.opacity = "";
+  generateBtn.style.cursor = "";
+  generateBtn.style.filter = "";
+  generateBtn.style.animation = "";
 
-        if (policyNote) {
-          policyNote.style.display = "none";
-          policyNote.textContent = "";
-        }
-      };
+  if (policyNote) {
+    policyNote.style.display = "none";
+    policyNote.textContent = "";
+    policyNote.innerHTML = "";
+    policyNote.style.animation = "";
+  }
+};
 
       if (promptEl && !promptEl.__aivoPolicyResetBound) {
         promptEl.__aivoPolicyResetBound = true;
