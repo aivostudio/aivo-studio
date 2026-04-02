@@ -12,6 +12,266 @@
 
   const FIXED_CREDIT_COST = 8;
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
+    // ------------------------------------------------------------
+  // Policy helpers (PhotoFX)
+  // ------------------------------------------------------------
+  const PFX_HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
+
+  const PFX_HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const PFX_PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const PFX_ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizePhotoFxPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isPhotoFxPolicyBlocked(raw) {
+    const text = normalizePhotoFxPolicyText(raw);
+
+    const hasBlockedTerm =
+      PFX_HARD_BLOCK_TERMS.some((term) =>
+        text.includes(normalizePhotoFxPolicyText(term))
+      ) ||
+      PFX_PUBLIC_FIGURE_TERMS.some((term) =>
+        text.includes(normalizePhotoFxPolicyText(term))
+      ) ||
+      PFX_ARTIST_NAME_TERMS.some((term) =>
+        text.includes(normalizePhotoFxPolicyText(term))
+      );
+
+    const hasBlockedPattern = PFX_HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+
+  function ensurePhotoFxPolicyNote(root, createBtn) {
+    if (!root || !createBtn) return null;
+
+    let note = qs("#pfxPolicyNote", root);
+    if (note) return note;
+
+    note = document.createElement("div");
+    note.id = "pfxPolicyNote";
+    note.style.display = "none";
+    note.style.marginTop = "14px";
+    note.style.padding = "14px 16px";
+    note.style.borderRadius = "18px";
+    note.style.background = "rgba(255,90,120,.10)";
+    note.style.border = "1px solid rgba(255,120,150,.24)";
+    note.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+    note.style.textAlign = "center";
+    note.style.fontSize = "14px";
+    note.style.fontWeight = "800";
+    note.style.lineHeight = "1.65";
+    note.style.color = "rgba(255,245,248,.96)";
+
+    const mountPoint =
+      createBtn.parentElement ||
+      createBtn.closest(".pfxCreateWrap") ||
+      root;
+
+    mountPoint.appendChild(note);
+    return note;
+  }
+
+  function resetPhotoFxPolicyUI(root) {
+    if (!root) return;
+
+    const promptEl = qs("#pfxPrompt", root);
+    const createBtn = qs(".pfxCreateBtn", root);
+    const note = qs("#pfxPolicyNote", root);
+
+    if (promptEl) {
+      promptEl.style.borderColor = "";
+      promptEl.style.boxShadow = "";
+    }
+
+    if (createBtn) {
+      createBtn.style.background = "";
+      createBtn.style.borderColor = "";
+      createBtn.style.boxShadow = "";
+      createBtn.style.cursor = "";
+      createBtn.style.filter = "";
+    }
+
+    if (note) {
+      note.style.display = "none";
+      note.textContent = "";
+    }
+  }
+
+  function buildPhotoFxPolicyText(root, form = null) {
+    const payload = form || collectForm(root);
+
+    return [
+      payload?.prompt,
+      payload?.style,
+      ...(Array.isArray(payload?.styles) ? payload.styles : []),
+      payload?.motionLevel,
+      payload?.effectStrength,
+      payload?.colorMood,
+      payload?.transitionSpeed,
+      payload?.zoomLevel
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
@@ -803,7 +1063,8 @@ const builtEffects = {
       const root = getRoot();
       if (!root || !root.contains(e.target)) return;
 
-      if (e.target.matches("#pfxPrompt")) {
+          if (e.target.matches("#pfxPrompt")) {
+        resetPhotoFxPolicyUI(root);
         setPromptCounter(root);
       }
     },
@@ -817,6 +1078,18 @@ const builtEffects = {
       if (!root || !root.contains(e.target)) return;
 
       const state = getState(root);
+
+        if (
+        e.target.matches("#pfxIncludeMusic") ||
+        e.target.matches("#pfxDuration") ||
+        e.target.matches("#pfxMotionLevel") ||
+        e.target.matches("#pfxEffectPower") ||
+        e.target.matches("#pfxColorMood") ||
+        e.target.matches("#pfxTransitionSpeed") ||
+        e.target.matches("#pfxZoomLevel")
+      ) {
+        resetPhotoFxPolicyUI(root);
+      }
 
       if (e.target.matches("#pfxIncludeMusic")) {
         syncIncludeMusic(root);
@@ -1084,7 +1357,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         } else {
           nextState.presets = [...nextState.presets, preset];
         }
-
+      resetPhotoFxPolicyUI(nextRoot);
         renderPresets(nextRoot);
       }
     },
@@ -1096,6 +1369,35 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
       createBtn.__bound = true;
       createBtn.addEventListener("click", (e) => {
         e.preventDefault();
+
+                const policyText = buildPhotoFxPolicyText(root);
+        const policyNote = ensurePhotoFxPolicyNote(root, createBtn);
+        const promptEl = qs("#pfxPrompt", root);
+
+        if (isPhotoFxPolicyBlocked(policyText)) {
+          if (promptEl) {
+            promptEl.style.borderColor = "rgba(255,110,140,.92)";
+            promptEl.style.boxShadow =
+              "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+            promptEl.focus();
+          }
+
+          createBtn.style.background =
+            "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+          createBtn.style.borderColor = "rgba(255,110,140,.95)";
+          createBtn.style.boxShadow =
+            "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+          createBtn.style.cursor = "not-allowed";
+          createBtn.style.filter = "saturate(1.05)";
+
+          if (policyNote) {
+            policyNote.textContent =
+              "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine efekti, geçişi ve görsel atmosferi tarif et.";
+            policyNote.style.display = "block";
+          }
+
+          return;
+        }
 
         const credit = createBtn.getAttribute("data-credit-cost") || "8";
 
