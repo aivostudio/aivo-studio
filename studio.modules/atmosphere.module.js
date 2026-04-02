@@ -560,12 +560,12 @@ function isAtmoPolicyBlocked(raw) {
     "15": 10
   };
 
-  function getAtmoSelectedDuration(mode) {
-    if (mode === "pro") {
-      return String(state.proDuration || "8");
-    }
-    return String(state.duration || "8");
+ function getAtmoSelectedDuration(mode) {
+  if (mode === "pro") {
+    return String(state.proDuration || "4");
   }
+  return String(state.duration || "4");
+}
 
   function computeAtmoCredit(mode) {
     const m = String(mode || state.mode || "basic").toLowerCase();
