@@ -286,17 +286,16 @@ function enforceMusicPolicy(text) {
 
   if (hasArtistName) {
     return makeResult({
-      decision: 'rewrite',
-      code: 'ARTIST_NAME_REWRITE',
-      severity: 'medium',
+      decision: 'block',
+      code: 'ARTIST_NAME_REAL_PERSON',
+      severity: 'high',
       message:
-        'Sanatçı adı güvenli genel dile dönüştürülmelidir; tür, dönem, duygu ve enstrüman bazlı ifade kullanılmalı.',
+        'Belirli bir sanatçı, ünlü veya tanınan gerçek kişiyi doğrudan hedef alan video, görsel veya benzeri içerik üretilemez.',
       rewrittenPrompt: null,
-      reasons: ['artist-name-rewrite'],
+      reasons: ['artist-name-real-person'],
       matchedTerms: hitsArtistNames,
     });
   }
-
   return null;
 }
 
