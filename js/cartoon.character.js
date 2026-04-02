@@ -83,7 +83,187 @@
 
     return publicUrl;
   }
+   // ------------------------------------------------------------
+  // Policy helpers (Character)
+  // ------------------------------------------------------------
+  const HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
 
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizeCharacterPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isCharacterPolicyBlocked(raw) {
+    const text = normalizeCharacterPolicyText(raw);
+
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeCharacterPolicyText(term))) ||
+      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeCharacterPolicyText(term))) ||
+      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeCharacterPolicyText(term)));
+
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
   function updateCharacterDescCount(root) {
     const input = qs("[data-character-desc]", root);
     const out = qs("[data-character-desc-count]", root);
