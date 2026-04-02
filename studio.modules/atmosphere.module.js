@@ -123,7 +123,7 @@
     }
   }
 
-  // ------------------------------------------------------------
+   // ------------------------------------------------------------
   // 1) Scope finder
   // ------------------------------------------------------------
   function getAtmoPanelRoot() {
@@ -133,6 +133,318 @@
       qs("#atmRoot") ||
       null
     );
+  }
+
+  // ------------------------------------------------------------
+  // 1.1) Policy helpers (PRO only)
+  // ------------------------------------------------------------
+  const HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
+
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizeAtmoPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getAtmoProPanel(root) {
+    const r = root || getAtmoPanelRoot();
+    if (!r) return null;
+
+    return (
+      qs('[data-mode-panel="pro"]', r) ||
+      r.closest?.('[data-mode-panel="pro"]') ||
+      r
+    );
+  }
+
+  function ensureAtmoPolicyNote(root, generateBtn) {
+    const panel = getAtmoProPanel(root);
+    if (!panel || !generateBtn || !generateBtn.parentElement) return null;
+
+    let policyNote = panel.querySelector("#atmPolicyNote");
+    if (!policyNote) {
+      policyNote = document.createElement("div");
+      policyNote.id = "atmPolicyNote";
+      policyNote.style.display = "none";
+      policyNote.style.marginTop = "12px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.backdropFilter = "blur(10px)";
+      policyNote.style.webkitBackdropFilter = "blur(10px)";
+      policyNote.style.textAlign = "center";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "800";
+      policyNote.style.lineHeight = "1.65";
+      policyNote.style.letterSpacing = ".01em";
+      policyNote.style.color = "rgba(255,245,248,.96)";
+      generateBtn.parentElement.appendChild(policyNote);
+    }
+
+    return policyNote;
+  }
+
+  function resetAtmoPolicyUI(root, promptEl, generateBtn) {
+    const panel = getAtmoProPanel(root);
+    const policyNote = panel?.querySelector("#atmPolicyNote");
+
+    if (promptEl) {
+      promptEl.style.borderColor = "";
+      promptEl.style.boxShadow = "";
+      promptEl.style.animation = "";
+    }
+
+    if (generateBtn) {
+      generateBtn.style.background = "";
+      generateBtn.style.borderColor = "";
+      generateBtn.style.boxShadow = "";
+      generateBtn.style.cursor = "";
+      generateBtn.style.filter = "";
+      generateBtn.style.animation = "";
+    }
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+      policyNote.innerHTML = "";
+    }
+  }
+
+  function isAtmoPolicyBlocked(raw) {
+    const text = normalizeAtmoPolicyText(raw);
+
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeAtmoPolicyText(term))) ||
+      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeAtmoPolicyText(term))) ||
+      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeAtmoPolicyText(term)));
+
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+
+  if (!document.getElementById("aivoPolicyPulseStyle")) {
+    const style = document.createElement("style");
+    style.id = "aivoPolicyPulseStyle";
+    style.textContent = `
+      @keyframes aivoPolicyPulse {
+        0% {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.04),
+            0 0 0 1px rgba(255,120,150,.18),
+            0 8px 24px rgba(255,70,110,.10);
+        }
+        50% {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.05),
+            0 0 0 1px rgba(255,120,150,.30),
+            0 12px 34px rgba(255,70,110,.18);
+        }
+        100% {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.04),
+            0 0 0 1px rgba(255,120,150,.18),
+            0 8px 24px rgba(255,70,110,.10);
+        }
+      }
+
+      @keyframes aivoPolicyTextGlow {
+        0% {
+          opacity: .88;
+          text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
+        }
+        50% {
+          opacity: 1;
+          text-shadow: 0 0 14px rgba(255,255,255,.16), 0 0 28px rgba(255,120,150,.24);
+        }
+        100% {
+          opacity: .88;
+          text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function bindAtmoPolicyReset() {
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    const promptEl = qs("#atmSuperPrompt", root);
+    if (!promptEl || promptEl.__aivoAtmoPolicyResetBound) return;
+
+    promptEl.__aivoAtmoPolicyResetBound = true;
+
+    const getProGenerateBtn = () =>
+      qs('[data-atm-generate][data-atm-mode="pro"]', root) ||
+      qs('[data-atm-mode="pro"][data-atm-generate]', root);
+
+    const reset = () => {
+      resetAtmoPolicyUI(root, promptEl, getProGenerateBtn());
+    };
+
+    promptEl.addEventListener("input", reset);
+    promptEl.addEventListener("change", reset);
   }
 
   // ------------------------------------------------------------
@@ -1013,6 +1325,8 @@ async function onGenerate(btn) {
   const root = getAtmoPanelRoot();
   if (!root) return;
 
+  bindAtmoPolicyReset();
+
   if (isUploadingAny()) {
     try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
     return;
@@ -1021,11 +1335,62 @@ async function onGenerate(btn) {
   const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
   state.mode = mode;
 
-  if (mode === "pro" && !String(state.prompt || "").trim()) {
-    try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
-    const ta = document.getElementById("atmSuperPrompt");
-    if (ta) ta.focus();
-    return;
+  if (mode === "pro") {
+    const promptEl = qs("#atmSuperPrompt", root) || document.getElementById("atmSuperPrompt");
+    const raw = String(promptEl?.value || state.prompt || "").trim();
+    state.prompt = raw;
+
+    resetAtmoPolicyUI(root, promptEl, btn);
+
+    if (!raw) {
+      try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
+      if (promptEl) promptEl.focus();
+      return;
+    }
+
+    if (isAtmoPolicyBlocked(raw)) {
+      const policyNote = ensureAtmoPolicyNote(root, btn);
+
+      if (promptEl) {
+        promptEl.style.borderColor = "rgba(255,110,140,.92)";
+        promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+        promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+        promptEl.focus();
+      }
+
+      btn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      btn.style.borderColor = "rgba(255,110,140,.95)";
+      btn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      btn.style.cursor = "not-allowed";
+      btn.style.filter = "saturate(1.05)";
+      btn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+
+      if (policyNote) {
+        policyNote.style.display = "block";
+        policyNote.innerHTML = `
+          <span style="
+            display:inline-block;
+            width:100%;
+            margin:0;
+            padding:0;
+            border:none;
+            outline:none;
+            box-shadow:none;
+            background:none;
+            text-align:center;
+            font-size:14px;
+            font-weight:800;
+            line-height:1.65;
+            letter-spacing:.01em;
+            color:rgba(255,245,248,.96);
+            text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
+            animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
+          ">Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve video hissini tarif et.</span>
+        `;
+      }
+
+      return;
+    }
   }
 
   if (mode === "basic") {
@@ -1063,7 +1428,6 @@ async function onGenerate(btn) {
 
   console.log("[ATM] generate payload =", payload);
 }
-
 document.addEventListener(
   "click",
   (e) => {
