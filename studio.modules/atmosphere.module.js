@@ -98,9 +98,9 @@
     const startedAt = Date.now();
 
     try {
-      const eventWaiter = waitForAtmoJobCreated(GEN_MAX_MS);
       const res = await Promise.resolve().then(run);
-      const evt = await eventWaiter;
+      const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
+      const evt = await waitForAtmoJobCreated(remainingForEvent);
 
       const elapsed = Date.now() - startedAt;
       if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
