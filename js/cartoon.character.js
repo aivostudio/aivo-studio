@@ -1050,7 +1050,40 @@
     ].filter(Boolean).join(" ");
 
     if (isCharacterPolicyBlocked(policyText)) {
-      alert("Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.");
+     const descInput = qs("#cartoon-character-desc", root);
+
+if (descInput) {
+  descInput.style.borderColor = "rgba(255,110,140,.92)";
+  descInput.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+}
+
+let policyNote = qs("#cartoonCharacterPolicyNote", root);
+
+if (!policyNote) {
+  policyNote = document.createElement("div");
+  policyNote.id = "cartoonCharacterPolicyNote";
+  policyNote.style.marginTop = "14px";
+  policyNote.style.padding = "14px 16px";
+  policyNote.style.borderRadius = "18px";
+  policyNote.style.background = "rgba(255,90,120,.10)";
+  policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+  policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+  policyNote.style.textAlign = "center";
+  policyNote.style.fontSize = "14px";
+  policyNote.style.fontWeight = "800";
+  policyNote.style.lineHeight = "1.65";
+  policyNote.style.color = "rgba(255,245,248,.96)";
+
+  const createBtnWrap = characterCreateBtn.parentElement;
+  if (createBtnWrap) {
+    createBtnWrap.appendChild(policyNote);
+  }
+}
+
+policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.";
+policyNote.style.display = "block";
+
+return;
       return;
     }
     console.log("[CARTOON][CHARACTER] payload =", payload);
