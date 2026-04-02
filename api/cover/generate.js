@@ -69,6 +69,10 @@ export default async function handler(req, res) {
   if (policy.decision === "block") {
     return res.status(403).json(policyErrorResponse(policy));
   }
+    const safePrompt =
+    policy.decision === "rewrite"
+      ? String(policy.rewrittenPrompt || prompt || "").trim()
+      : prompt;
 
   if (!imageUrl) {
     return res.status(400).json({ ok: false, error: "image_url_empty" });
@@ -151,7 +155,7 @@ export default async function handler(req, res) {
         'cover',
         'cover',
         'ready',
-        ${prompt},
+        ${safePrompt},
         ${metaSafe},
         ${JSON.stringify(outputsSafe)}::jsonb,
         now(),
