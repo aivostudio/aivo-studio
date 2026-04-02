@@ -56,123 +56,359 @@
 
     return publicUrl;
   }
-async function presignCartoonAudio(file) {
-  const res = await fetch("/api/r2/presign-put", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: "cartoon",
-      kind: "audio",
-      filename: file?.name || `audio-${Date.now()}.mp3`,
-      contentType: file?.type || "application/octet-stream"
-    })
-  });
 
-  const data = await res.json().catch(() => null);
+  async function presignCartoonAudio(file) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "audio",
+        filename: file?.name || `audio-${Date.now()}.mp3`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
 
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || "cartoon_audio_presign_failed");
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "cartoon_audio_presign_failed");
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || "",
+    };
   }
 
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || "",
-  };
-}
+  async function uploadCartoonAudioToR2(file) {
+    if (!file) throw new Error("missing_audio_file");
 
-async function uploadCartoonAudioToR2(file) {
-  if (!file) throw new Error("missing_audio_file");
+    const { uploadUrl, publicUrl } = await presignCartoonAudio(file);
 
-  const { uploadUrl, publicUrl } = await presignCartoonAudio(file);
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("cartoon_audio_missing_upload_urls");
+    }
 
-  if (!uploadUrl || !publicUrl) {
-    throw new Error("cartoon_audio_missing_upload_urls");
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("cartoon_audio_r2_put_failed");
+    }
+
+    return publicUrl;
   }
 
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream"
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error("cartoon_audio_r2_put_failed");
-  }
-
-  return publicUrl;
-}
   async function presignCartoonLogo(file) {
-  const res = await fetch("/api/r2/presign-put", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: "cartoon",
-      kind: "logo",
-      filename: file?.name || `logo-${Date.now()}.png`,
-      contentType: file?.type || "application/octet-stream"
-    })
-  });
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "logo",
+        filename: file?.name || `logo-${Date.now()}.png`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
 
-  const data = await res.json().catch(() => null);
+    const data = await res.json().catch(() => null);
 
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || "cartoon_logo_presign_failed");
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "cartoon_logo_presign_failed");
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || "",
+    };
   }
 
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || "",
-  };
-}
+  async function uploadCartoonLogoToR2(file) {
+    if (!file) throw new Error("missing_logo_file");
 
-async function uploadCartoonLogoToR2(file) {
-  if (!file) throw new Error("missing_logo_file");
+    const { uploadUrl, publicUrl } = await presignCartoonLogo(file);
 
-  const { uploadUrl, publicUrl } = await presignCartoonLogo(file);
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("cartoon_logo_missing_upload_urls");
+    }
 
-  if (!uploadUrl || !publicUrl) {
-    throw new Error("cartoon_logo_missing_upload_urls");
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("cartoon_logo_r2_put_failed");
+    }
+
+    return publicUrl;
   }
 
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream"
-    },
-    body: file
-  });
+  // ------------------------------------------------------------
+  // Policy helpers (Basic)
+  // ------------------------------------------------------------
+  const HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
 
-  if (!put.ok) {
-    throw new Error("cartoon_logo_r2_put_failed");
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+  const PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü"
+  ];
+
+  const ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "handa yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizeBasicPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
-  return publicUrl;
-}
- const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
-  mode: "character",
+  function isBasicPolicyBlocked(raw) {
+    const text = normalizeBasicPolicyText(raw);
+
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeBasicPolicyText(term))) ||
+      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeBasicPolicyText(term))) ||
+      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeBasicPolicyText(term)));
+
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+
+  function ensureBasicPolicyNote(root, generateBtn) {
+    if (!root || !generateBtn || !generateBtn.parentElement) return null;
+
+    let policyNote = qs("#cartoonBasicPolicyNote", root);
+    if (!policyNote) {
+      policyNote = document.createElement("div");
+      policyNote.id = "cartoonBasicPolicyNote";
+      policyNote.style.display = "none";
+      policyNote.style.marginTop = "14px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.textAlign = "center";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "800";
+      policyNote.style.lineHeight = "1.65";
+      policyNote.style.color = "rgba(255,245,248,.96)";
+      generateBtn.parentElement.appendChild(policyNote);
+    }
+
+    return policyNote;
+  }
+
+  function resetBasicPolicyUI(root) {
+    if (!root) return;
+
+    const promptEl = qs("[data-cartoon-prompt-input]", root);
+    const generateBtn = qs("[data-cartoon-generate]", root);
+    const policyNote = qs("#cartoonBasicPolicyNote", root);
+
+    if (promptEl) {
+      promptEl.style.borderColor = "";
+      promptEl.style.boxShadow = "";
+    }
+
+    if (generateBtn) {
+      generateBtn.style.background = "";
+      generateBtn.style.borderColor = "";
+      generateBtn.style.boxShadow = "";
+      generateBtn.style.cursor = "";
+      generateBtn.style.filter = "";
+    }
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+    }
+  }
+
+  const state = (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
+    mode: "character",
     extraPrompt: "",
     mainCharacter: "red-fish",
     helpers: [],
     scene: "underwater",
-  actions: ["swimming"],
-      duration: "5",
+    actions: ["swimming"],
+    duration: "5",
     ratio: "16:9",
     style: "soft-cartoon",
-   audioSource: "none",
+    audioSource: "none",
     audioFile: null,
-audioFileName: "",
-audioFileUrl: "",
-audioFileUploadPromise: null,
-audioFileUploadStatus: "idle",
-audioFileUploadError: "",
+    audioFileName: "",
+    audioFileUrl: "",
+    audioFileUploadPromise: null,
+    audioFileUploadStatus: "idle",
+    audioFileUploadError: "",
     logoFile: null,
-logoFileName: "",
-logoFileUrl: "",
-logoFileUploadPromise: null,
-logoFileUploadStatus: "idle",
-logoFileUploadError: "",
+    logoFileName: "",
+    logoFileUrl: "",
+    logoFileUploadPromise: null,
+    logoFileUploadStatus: "idle",
+    logoFileUploadError: "",
     characterImage: null,
     characterImageName: "",
     characterImageUrl: "",
@@ -197,7 +433,7 @@ logoFileUploadError: "",
     if (!input || !out) return;
 
     const len = String(input.value || "").length;
-  out.textContent = `${len} / 5000`;
+    out.textContent = `${len} / 5000`;
   }
 
   function updateHelperCount(root) {
@@ -301,165 +537,167 @@ logoFileUploadError: "",
     textEl.textContent = state.characterImageName || "Dosya seçilmedi";
     if (generateBtn) generateBtn.disabled = !!state.isGenerating;
   }
+
   function clearBasicAudioFile(root) {
-  const input = qs("[data-audio-upload]", root);
+    const input = qs("[data-audio-upload]", root);
 
-  state.audioFile = null;
-  state.audioFileName = "";
-  state.audioFileUrl = "";
-  state.audioFileUploadPromise = null;
-  state.audioFileUploadStatus = "idle";
-  state.audioFileUploadError = "";
+    state.audioFile = null;
+    state.audioFileName = "";
+    state.audioFileUrl = "";
+    state.audioFileUploadPromise = null;
+    state.audioFileUploadStatus = "idle";
+    state.audioFileUploadError = "";
 
-  if (input) input.value = "";
+    if (input) input.value = "";
 
-  updateBasicAudioUploadStatusUI(root);
-  updateSummary(root);
-}
-
-function ensureBasicAudioUploadClearButton(root) {
-  const clearBtn = qs("[data-basic-audio-upload-clear]", root);
-  if (!clearBtn || clearBtn.dataset.bound === "1") return;
-
-  clearBtn.dataset.bound = "1";
-  clearBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const nextRoot = getCartoonRoot();
-    if (!nextRoot) return;
-    clearBasicAudioFile(nextRoot);
-  });
-}
-
-function updateBasicAudioUploadStatusUI(root) {
-  const textEl = qs("[data-basic-audio-upload-text]", root);
-  const clearBtn = qs("[data-basic-audio-upload-clear]", root);
-
-  ensureBasicAudioUploadClearButton(root);
-
-  if (!textEl) return;
-
-  if (!state.audioFile) {
-    textEl.textContent = "Dosya seçilmedi";
-    if (clearBtn) clearBtn.style.display = "none";
-    return;
+    updateBasicAudioUploadStatusUI(root);
+    updateSummary(root);
   }
 
-  if (state.audioFileUploadStatus === "uploading") {
-    textEl.textContent = `${state.audioFileName} · Yükleniyor...`;
-    if (clearBtn) clearBtn.style.display = "none";
-    return;
+  function ensureBasicAudioUploadClearButton(root) {
+    const clearBtn = qs("[data-basic-audio-upload-clear]", root);
+    if (!clearBtn || clearBtn.dataset.bound === "1") return;
+
+    clearBtn.dataset.bound = "1";
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const nextRoot = getCartoonRoot();
+      if (!nextRoot) return;
+      clearBasicAudioFile(nextRoot);
+    });
   }
 
-  if (state.audioFileUploadStatus === "ready") {
-    textEl.textContent = `${state.audioFileName} · Hazır ✓`;
-    if (clearBtn) {
-      clearBtn.style.display = "inline-grid";
-      clearBtn.style.placeItems = "center";
-      clearBtn.style.marginLeft = "8px";
-      clearBtn.style.width = "22px";
-      clearBtn.style.height = "22px";
-      clearBtn.style.borderRadius = "999px";
-      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
-      clearBtn.style.background = "rgba(255,255,255,.08)";
-      clearBtn.style.color = "#fff";
-      clearBtn.style.cursor = "pointer";
+  function updateBasicAudioUploadStatusUI(root) {
+    const textEl = qs("[data-basic-audio-upload-text]", root);
+    const clearBtn = qs("[data-basic-audio-upload-clear]", root);
+
+    ensureBasicAudioUploadClearButton(root);
+
+    if (!textEl) return;
+
+    if (!state.audioFile) {
+      textEl.textContent = "Dosya seçilmedi";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
     }
-    return;
-  }
 
-  if (state.audioFileUploadStatus === "error") {
-    textEl.textContent = `${state.audioFileName} · Yükleme hatası`;
-    if (clearBtn) {
-      clearBtn.style.display = "inline-grid";
-      clearBtn.style.placeItems = "center";
+    if (state.audioFileUploadStatus === "uploading") {
+      textEl.textContent = `${state.audioFileName} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
     }
-    return;
-  }
 
-  textEl.textContent = state.audioFileName || "Dosya seçilmedi";
-  if (clearBtn) clearBtn.style.display = "none";
-}
-function clearBasicLogoFile(root) {
-  const input = qs("[data-basic-logo-upload]", root);
+    if (state.audioFileUploadStatus === "ready") {
+      textEl.textContent = `${state.audioFileName} · Hazır ✓`;
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+        clearBtn.style.marginLeft = "8px";
+        clearBtn.style.width = "22px";
+        clearBtn.style.height = "22px";
+        clearBtn.style.borderRadius = "999px";
+        clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+        clearBtn.style.background = "rgba(255,255,255,.08)";
+        clearBtn.style.color = "#fff";
+        clearBtn.style.cursor = "pointer";
+      }
+      return;
+    }
 
-  state.logoFile = null;
-  state.logoFileName = "";
-  state.logoFileUrl = "";
-  state.logoFileUploadPromise = null;
-  state.logoFileUploadStatus = "idle";
-  state.logoFileUploadError = "";
+    if (state.audioFileUploadStatus === "error") {
+      textEl.textContent = `${state.audioFileName} · Yükleme hatası`;
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
 
-  if (input) input.value = "";
-
-  updateBasicLogoUploadStatusUI(root);
-  updateSummary(root);
-}
-
-function ensureBasicLogoUploadClearButton(root) {
-  const clearBtn = qs("[data-basic-logo-upload-clear]", root);
-  if (!clearBtn || clearBtn.dataset.bound === "1") return;
-
-  clearBtn.dataset.bound = "1";
-  clearBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const nextRoot = getCartoonRoot();
-    if (!nextRoot) return;
-    clearBasicLogoFile(nextRoot);
-  });
-}
-
-function updateBasicLogoUploadStatusUI(root) {
-  const textEl = qs("[data-basic-logo-upload-text]", root);
-  const clearBtn = qs("[data-basic-logo-upload-clear]", root);
-
-  ensureBasicLogoUploadClearButton(root);
-
-  if (!textEl) return;
-
-  if (!state.logoFile) {
-    textEl.textContent = "Dosya seçilmedi";
+    textEl.textContent = state.audioFileName || "Dosya seçilmedi";
     if (clearBtn) clearBtn.style.display = "none";
-    return;
   }
 
-  if (state.logoFileUploadStatus === "uploading") {
-    textEl.textContent = `${state.logoFileName} · Yükleniyor...`;
+  function clearBasicLogoFile(root) {
+    const input = qs("[data-basic-logo-upload]", root);
+
+    state.logoFile = null;
+    state.logoFileName = "";
+    state.logoFileUrl = "";
+    state.logoFileUploadPromise = null;
+    state.logoFileUploadStatus = "idle";
+    state.logoFileUploadError = "";
+
+    if (input) input.value = "";
+
+    updateBasicLogoUploadStatusUI(root);
+    updateSummary(root);
+  }
+
+  function ensureBasicLogoUploadClearButton(root) {
+    const clearBtn = qs("[data-basic-logo-upload-clear]", root);
+    if (!clearBtn || clearBtn.dataset.bound === "1") return;
+
+    clearBtn.dataset.bound = "1";
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const nextRoot = getCartoonRoot();
+      if (!nextRoot) return;
+      clearBasicLogoFile(nextRoot);
+    });
+  }
+
+  function updateBasicLogoUploadStatusUI(root) {
+    const textEl = qs("[data-basic-logo-upload-text]", root);
+    const clearBtn = qs("[data-basic-logo-upload-clear]", root);
+
+    ensureBasicLogoUploadClearButton(root);
+
+    if (!textEl) return;
+
+    if (!state.logoFile) {
+      textEl.textContent = "Dosya seçilmedi";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (state.logoFileUploadStatus === "uploading") {
+      textEl.textContent = `${state.logoFileName} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (state.logoFileUploadStatus === "ready") {
+      textEl.textContent = `${state.logoFileName} · Hazır ✓`;
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+        clearBtn.style.marginLeft = "8px";
+        clearBtn.style.width = "22px";
+        clearBtn.style.height = "22px";
+        clearBtn.style.borderRadius = "999px";
+        clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+        clearBtn.style.background = "rgba(255,255,255,.08)";
+        clearBtn.style.color = "#fff";
+        clearBtn.style.cursor = "pointer";
+      }
+      return;
+    }
+
+    if (state.logoFileUploadStatus === "error") {
+      textEl.textContent = `${state.logoFileName} · Yükleme hatası`;
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+
+    textEl.textContent = state.logoFileName || "Dosya seçilmedi";
     if (clearBtn) clearBtn.style.display = "none";
-    return;
   }
 
-  if (state.logoFileUploadStatus === "ready") {
-    textEl.textContent = `${state.logoFileName} · Hazır ✓`;
-    if (clearBtn) {
-      clearBtn.style.display = "inline-grid";
-      clearBtn.style.placeItems = "center";
-      clearBtn.style.marginLeft = "8px";
-      clearBtn.style.width = "22px";
-      clearBtn.style.height = "22px";
-      clearBtn.style.borderRadius = "999px";
-      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
-      clearBtn.style.background = "rgba(255,255,255,.08)";
-      clearBtn.style.color = "#fff";
-      clearBtn.style.cursor = "pointer";
-    }
-    return;
-  }
-
-  if (state.logoFileUploadStatus === "error") {
-    textEl.textContent = `${state.logoFileName} · Yükleme hatası`;
-    if (clearBtn) {
-      clearBtn.style.display = "inline-grid";
-      clearBtn.style.placeItems = "center";
-    }
-    return;
-  }
-
-  textEl.textContent = state.logoFileName || "Dosya seçilmedi";
-  if (clearBtn) clearBtn.style.display = "none";
-}
-  
   function updateSummary(root) {
     const el = qs("[data-cartoon-summary]", root);
     if (!el) return;
@@ -496,14 +734,14 @@ function updateBasicLogoUploadStatusUI(root) {
     });
   }
 
- function syncActionSelection(root) {
-  qsa("[data-action]", root).forEach((btn) => {
-    const value = btn.dataset.action || "";
-    const on = Array.isArray(state.actions) && state.actions.includes(value);
-    btn.classList.toggle("is-selected", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  });
-}
+  function syncActionSelection(root) {
+    qsa("[data-action]", root).forEach((btn) => {
+      const value = btn.dataset.action || "";
+      const on = Array.isArray(state.actions) && state.actions.includes(value);
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
 
   function syncModeTabs(root) {
     qsa("[data-cartoon-mode]", root).forEach((btn) => {
@@ -527,15 +765,15 @@ function updateBasicLogoUploadStatusUI(root) {
     const duration = qs("#cartoon-duration", root);
     const ratio = qs("#cartoon-ratio", root);
     const basicStyle = qs("[data-basic-style]", root);
-   const audioSource = qs("[data-audio-source]", root);
+    const audioSource = qs("[data-audio-source]", root);
 
     if (prompt && prompt.value !== state.extraPrompt) prompt.value = state.extraPrompt;
     if (duration && duration.value !== state.duration) duration.value = state.duration;
     if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
     if (basicStyle && basicStyle.value !== state.style) basicStyle.value = state.style;
-   if (audioSource && audioSource.value !== state.audioSource) {
-  audioSource.value = state.audioSource;
-}
+    if (audioSource && audioSource.value !== state.audioSource) {
+      audioSource.value = state.audioSource;
+    }
   }
 
   function render(root) {
@@ -548,7 +786,7 @@ function updateBasicLogoUploadStatusUI(root) {
     syncSceneSelection(root);
     syncActionSelection(root);
     syncFormValues(root);
-      updatePromptCount(root);
+    updatePromptCount(root);
     updateHelperCount(root);
     updateBasicUploadStatusUI(root);
     updateBasicAudioUploadStatusUI(root);
@@ -556,23 +794,23 @@ function updateBasicLogoUploadStatusUI(root) {
     updateSummary(root);
   }
 
-function buildBasicPayload() {
-  return {
-    app: "cartoon",
-    mode: "basic",
-    extraPrompt: state.extraPrompt,
-    mainCharacter: state.mainCharacter,
-    helperCharacters: [...state.helpers],
-    scene: state.scene,
-   actions: [...(state.actions || [])],
-action: (state.actions || []).join(", "),
-    duration: state.duration,
-    aspectRatio: state.ratio,
-        style: state.style || "soft-cartoon",
-    audioSource: state.audioSource || "none",
-audioMode: state.audioSource === "upload" ? "upload" : "none",
-audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
-audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
+  function buildBasicPayload() {
+    return {
+      app: "cartoon",
+      mode: "basic",
+      extraPrompt: state.extraPrompt,
+      mainCharacter: state.mainCharacter,
+      helperCharacters: [...state.helpers],
+      scene: state.scene,
+      actions: [...(state.actions || [])],
+      action: (state.actions || []).join(", "),
+      duration: state.duration,
+      aspectRatio: state.ratio,
+      style: state.style || "soft-cartoon",
+      audioSource: state.audioSource || "none",
+      audioMode: state.audioSource === "upload" ? "upload" : "none",
+      audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
+      audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
       logoFileName: state.logoFileName || "",
       logoFileUrl: state.logoFileUrl || "",
       logoPosition:
@@ -587,12 +825,12 @@ audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
               : (qs("[data-basic-logo-position]", getCartoonRoot())?.value || "bottom-right") === "center"
                 ? "c"
                 : "br",
-    characterImage: state.characterImage,
-    characterImageName: state.characterImageName,
-    characterImageUrl: state.characterImageUrl || "",
-    estimatedCredits: getEstimatedCredits()
-  };
-}
+      characterImage: state.characterImage,
+      characterImageName: state.characterImageName,
+      characterImageUrl: state.characterImageUrl || "",
+      estimatedCredits: getEstimatedCredits()
+    };
+  }
 
   async function pollCartoonJob(jobId, tries = 0, pollToken = 0) {
     try {
@@ -755,8 +993,8 @@ audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
       const mainBtn = e.target.closest('[data-role="main"]');
       if (mainBtn && root.contains(mainBtn)) {
         e.preventDefault();
-        const value = mainBtn.dataset.character || "";
-        state.mainCharacter = state.mainCharacter === value ? "" : value;
+        state.mainCharacter = state.mainCharacter === (mainBtn.dataset.character || "") ? "" : (mainBtn.dataset.character || "");
+        resetBasicPolicyUI(root);
         render(root);
         return;
       }
@@ -776,6 +1014,7 @@ audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
           state.helpers = [...state.helpers, value];
         }
 
+        resetBasicPolicyUI(root);
         render(root);
         return;
       }
@@ -783,96 +1022,132 @@ audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
       const sceneBtn = e.target.closest("[data-scene]");
       if (sceneBtn && root.contains(sceneBtn)) {
         e.preventDefault();
-        const value = sceneBtn.dataset.scene || "";
-        state.scene = state.scene === value ? "" : value;
+        state.scene = state.scene === (sceneBtn.dataset.scene || "") ? "" : (sceneBtn.dataset.scene || "");
+        resetBasicPolicyUI(root);
         render(root);
         return;
       }
 
-    const actionBtn = e.target.closest("[data-action]");
-if (actionBtn && root.contains(actionBtn)) {
-  e.preventDefault();
-  const value = actionBtn.dataset.action || "";
-  if (!value) return;
+      const actionBtn = e.target.closest("[data-action]");
+      if (actionBtn && root.contains(actionBtn)) {
+        e.preventDefault();
+        const value = actionBtn.dataset.action || "";
+        if (!value) return;
 
-  const exists = Array.isArray(state.actions) && state.actions.includes(value);
+        const exists = Array.isArray(state.actions) && state.actions.includes(value);
 
-  if (exists) {
-    state.actions = state.actions.filter((x) => x !== value);
-  } else {
-    state.actions = [...(Array.isArray(state.actions) ? state.actions : []), value];
-  }
+        if (exists) {
+          state.actions = state.actions.filter((x) => x !== value);
+        } else {
+          state.actions = [...(Array.isArray(state.actions) ? state.actions : []), value];
+        }
 
-  render(root);
-  return;
-}
-
-const generateBtn = e.target.closest("[data-cartoon-generate]");
-if (generateBtn && root.contains(generateBtn)) {
-  e.preventDefault();
-
-  if (state.mode !== "basic") return;
-  if (state.isGenerating) return;
-
-  if (state.characterImage) {
-    if (
-      state.characterImageUploadStatus === "uploading" &&
-      state.characterImageUploadPromise
-    ) {
-      try {
-        await state.characterImageUploadPromise;
-      } catch {
+        resetBasicPolicyUI(root);
+        render(root);
         return;
       }
-    }
 
-    if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
-      alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
-      return;
-    }
-  }
+      const generateBtn = e.target.closest("[data-cartoon-generate]");
+      if (generateBtn && root.contains(generateBtn)) {
+        e.preventDefault();
 
-  if (state.logoFile) {
-    if (
-      state.logoFileUploadStatus === "uploading" &&
-      state.logoFileUploadPromise
-    ) {
-      try {
-        await state.logoFileUploadPromise;
-      } catch {
-        return;
-      }
-    }
+        if (state.mode !== "basic") return;
+        if (state.isGenerating) return;
 
-    if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
-      alert("Logo henüz yüklenmedi. Lütfen 'Hazır ✓' olmasını bekleyin.");
-      return;
-    }
-  }
+        if (state.characterImage) {
+          if (
+            state.characterImageUploadStatus === "uploading" &&
+            state.characterImageUploadPromise
+          ) {
+            try {
+              await state.characterImageUploadPromise;
+            } catch {
+              return;
+            }
+          }
 
-  if (state.audioSource === "upload") {
-    if (!state.audioFile) {
-      alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
-      return;
-    }
+          if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
+            alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
+            return;
+          }
+        }
 
-    if (
-      state.audioFileUploadStatus === "uploading" &&
-      state.audioFileUploadPromise
-    ) {
-      try {
-        await state.audioFileUploadPromise;
-      } catch {
-        return;
-      }
-    }
+        if (state.logoFile) {
+          if (
+            state.logoFileUploadStatus === "uploading" &&
+            state.logoFileUploadPromise
+          ) {
+            try {
+              await state.logoFileUploadPromise;
+            } catch {
+              return;
+            }
+          }
 
-    if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
-      alert("Ses dosyası henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
-      return;
-    }
-  }
+          if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
+            alert("Logo henüz yüklenmedi. Lütfen 'Hazır ✓' olmasını bekleyin.");
+            return;
+          }
+        }
+
+        if (state.audioSource === "upload") {
+          if (!state.audioFile) {
+            alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
+            return;
+          }
+
+          if (
+            state.audioFileUploadStatus === "uploading" &&
+            state.audioFileUploadPromise
+          ) {
+            try {
+              await state.audioFileUploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
+            alert("Ses dosyası henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
         const payload = buildBasicPayload();
+
+        const policyText = [
+          payload.extraPrompt,
+          payload.style,
+          payload.scene,
+          payload.action,
+          payload.mainCharacter,
+          ...(payload.helperCharacters || [])
+        ].filter(Boolean).join(" ");
+
+        if (isBasicPolicyBlocked(policyText)) {
+          const promptEl = qs("[data-cartoon-prompt-input]", root);
+          const policyNote = ensureBasicPolicyNote(root, generateBtn);
+
+          if (promptEl) {
+            promptEl.style.borderColor = "rgba(255,110,140,.92)";
+            promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+            promptEl.focus();
+          }
+
+          generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+          generateBtn.style.borderColor = "rgba(255,110,140,.95)";
+          generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+          generateBtn.style.cursor = "not-allowed";
+          generateBtn.style.filter = "saturate(1.05)";
+
+          if (policyNote) {
+            policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve karakter aksiyonunu tarif et.";
+            policyNote.style.display = "block";
+          }
+
+          return;
+        }
+
         console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
         state.isGenerating = true;
@@ -914,7 +1189,7 @@ if (generateBtn && root.contains(generateBtn)) {
                       payload.mainCharacter,
                       ...(payload.helperCharacters || []),
                       payload.scene,
-                     ...((payload.actions || []).filter(Boolean)),
+                      ...((payload.actions || []).filter(Boolean)),
                       payload.extraPrompt
                     ].filter(Boolean).join(" • "),
                     duration: payload.duration,
@@ -974,6 +1249,7 @@ if (generateBtn && root.contains(generateBtn)) {
       const prompt = e.target.closest("[data-cartoon-prompt-input]");
       if (prompt && root.contains(prompt)) {
         state.extraPrompt = String(prompt.value || "");
+        resetBasicPolicyUI(root);
         updatePromptCount(root);
         updateSummary(root);
       }
@@ -986,6 +1262,7 @@ if (generateBtn && root.contains(generateBtn)) {
       const duration = e.target.closest("#cartoon-duration");
       if (duration && root.contains(duration)) {
         state.duration = duration.value || "5";
+        resetBasicPolicyUI(root);
         updateSummary(root);
         return;
       }
@@ -993,109 +1270,115 @@ if (generateBtn && root.contains(generateBtn)) {
       const ratio = e.target.closest("#cartoon-ratio");
       if (ratio && root.contains(ratio)) {
         state.ratio = ratio.value || "16:9";
+        resetBasicPolicyUI(root);
         updateSummary(root);
         return;
       }
-   const basicStyle = e.target.closest("[data-basic-style]");
-if (basicStyle && root.contains(basicStyle)) {
-  state.style = basicStyle.value || "soft-cartoon";
-  updateSummary(root);
-  return;
-}
-    const audioSource = e.target.closest("[data-audio-source]");
-if (audioSource && root.contains(audioSource)) {
-  state.audioSource = audioSource.value || "none";
 
-  if (state.audioSource !== "upload") {
-    clearBasicAudioFile(root);
-  }
+      const basicStyle = e.target.closest("[data-basic-style]");
+      if (basicStyle && root.contains(basicStyle)) {
+        state.style = basicStyle.value || "soft-cartoon";
+        resetBasicPolicyUI(root);
+        updateSummary(root);
+        return;
+      }
 
-  updateSummary(root);
-  return;
-}
+      const audioSource = e.target.closest("[data-audio-source]");
+      if (audioSource && root.contains(audioSource)) {
+        state.audioSource = audioSource.value || "none";
 
-const logoUpload = e.target.closest("[data-basic-logo-upload]");
-if (logoUpload && root.contains(logoUpload)) {
-  const file = logoUpload.files && logoUpload.files[0] ? logoUpload.files[0] : null;
+        if (state.audioSource !== "upload") {
+          clearBasicAudioFile(root);
+        }
 
-  state.logoFile = file;
-  state.logoFileName = file ? file.name : "";
-  state.logoFileUrl = "";
-  state.logoFileUploadPromise = null;
-  state.logoFileUploadError = "";
-  state.logoFileUploadStatus = file ? "uploading" : "idle";
+        resetBasicPolicyUI(root);
+        updateSummary(root);
+        return;
+      }
 
-  updateBasicLogoUploadStatusUI(root);
-  updateSummary(root);
+      const logoUpload = e.target.closest("[data-basic-logo-upload]");
+      if (logoUpload && root.contains(logoUpload)) {
+        const file = logoUpload.files && logoUpload.files[0] ? logoUpload.files[0] : null;
 
-  if (!file) return;
+        state.logoFile = file;
+        state.logoFileName = file ? file.name : "";
+        state.logoFileUrl = "";
+        state.logoFileUploadPromise = null;
+        state.logoFileUploadError = "";
+        state.logoFileUploadStatus = file ? "uploading" : "idle";
 
-  state.logoFileUploadPromise = uploadCartoonLogoToR2(file)
-    .then((publicUrl) => {
-      state.logoFileUrl = String(publicUrl || "").trim();
-      state.logoFileUploadStatus = "ready";
-      state.logoFileUploadError = "";
-      const nextRoot = getCartoonRoot();
-      if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
-      console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
-      return state.logoFileUrl;
-    })
-    .catch((err) => {
-      state.logoFileUrl = "";
-      state.logoFileUploadStatus = "error";
-      state.logoFileUploadError = String(err?.message || err || "basic_logo_upload_failed");
-      console.error("[CARTOON][BASIC_LOGO_UPLOAD_ERROR]", err);
-      const nextRoot = getCartoonRoot();
-      if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
-      alert(state.logoFileUploadError);
-      throw err;
-    });
+        updateBasicLogoUploadStatusUI(root);
+        updateSummary(root);
 
-  return;
-}
+        if (!file) return;
 
-     const audioUpload = e.target.closest("[data-audio-upload]");
-if (audioUpload && root.contains(audioUpload)) {
-  const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
-  if (state.audioSource !== "upload") {
-  state.audioSource = "upload";
-}
+        state.logoFileUploadPromise = uploadCartoonLogoToR2(file)
+          .then((publicUrl) => {
+            state.logoFileUrl = String(publicUrl || "").trim();
+            state.logoFileUploadStatus = "ready";
+            state.logoFileUploadError = "";
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
+            console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
+            return state.logoFileUrl;
+          })
+          .catch((err) => {
+            state.logoFileUrl = "";
+            state.logoFileUploadStatus = "error";
+            state.logoFileUploadError = String(err?.message || err || "basic_logo_upload_failed");
+            console.error("[CARTOON][BASIC_LOGO_UPLOAD_ERROR]", err);
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
+            alert(state.logoFileUploadError);
+            throw err;
+          });
 
-  state.audioFile = file;
-  state.audioFileName = file ? file.name : "";
-  state.audioFileUrl = "";
-  state.audioFileUploadPromise = null;
-  state.audioFileUploadError = "";
-  state.audioFileUploadStatus = file ? "uploading" : "idle";
-  updateBasicAudioUploadStatusUI(root);
+        return;
+      }
 
-  updateSummary(root);
+      const audioUpload = e.target.closest("[data-audio-upload]");
+      if (audioUpload && root.contains(audioUpload)) {
+        const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
+        if (state.audioSource !== "upload") {
+          state.audioSource = "upload";
+        }
 
-  if (!file) return;
+        state.audioFile = file;
+        state.audioFileName = file ? file.name : "";
+        state.audioFileUrl = "";
+        state.audioFileUploadPromise = null;
+        state.audioFileUploadError = "";
+        state.audioFileUploadStatus = file ? "uploading" : "idle";
+        updateBasicAudioUploadStatusUI(root);
 
-  state.audioFileUploadPromise = uploadCartoonAudioToR2(file)
-    .then((publicUrl) => {
-      state.audioFileUrl = String(publicUrl || "").trim();
-      state.audioFileUploadStatus = "ready";
-      state.audioFileUploadError = "";
-      const nextRoot = getCartoonRoot();
-if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
-      console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
-      return state.audioFileUrl;
-    })
-    .catch((err) => {
-      state.audioFileUrl = "";
-      state.audioFileUploadStatus = "error";
-      state.audioFileUploadError = String(err?.message || err || "basic_audio_upload_failed");
-      console.error("[CARTOON][BASIC_AUDIO_UPLOAD_ERROR]", err);
-      const nextRoot = getCartoonRoot();
-if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
-      alert(state.audioFileUploadError);
-      throw err;
-    });
+        updateSummary(root);
 
-  return;
-}
+        if (!file) return;
+
+        state.audioFileUploadPromise = uploadCartoonAudioToR2(file)
+          .then((publicUrl) => {
+            state.audioFileUrl = String(publicUrl || "").trim();
+            state.audioFileUploadStatus = "ready";
+            state.audioFileUploadError = "";
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
+            console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
+            return state.audioFileUrl;
+          })
+          .catch((err) => {
+            state.audioFileUrl = "";
+            state.audioFileUploadStatus = "error";
+            state.audioFileUploadError = String(err?.message || err || "basic_audio_upload_failed");
+            console.error("[CARTOON][BASIC_AUDIO_UPLOAD_ERROR]", err);
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
+            alert(state.audioFileUploadError);
+            throw err;
+          });
+
+        return;
+      }
+
       const upload = e.target.closest("[data-character-upload]");
       if (upload && root.contains(upload)) {
         const file = upload.files && upload.files[0] ? upload.files[0] : null;
@@ -1145,24 +1428,23 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
   function initFromDOM(root) {
     if (!root) return;
 
-    const selectedMode = qs('[data-cartoon-mode].is-active', root);
     const selectedMain = qs('[data-role="main"].is-selected', root);
     const selectedScene = qs('[data-scene].is-selected', root);
- const selectedActions = qsa('[data-action].is-selected', root);
+    const selectedActions = qsa('[data-action].is-selected', root);
     const selectedHelpers = qsa('[data-role="helper"].is-selected', root);
 
     const prompt = qs("[data-cartoon-prompt-input]", root);
     const duration = qs("#cartoon-duration", root);
     const ratio = qs("#cartoon-ratio", root);
     const basicStyle = qs("[data-basic-style]", root);
-   const audioSource = qs("[data-audio-source]", root);
+    const audioSource = qs("[data-audio-source]", root);
 
-  state.mode = "character";
+    state.mode = "character";
     if (selectedMain?.dataset.character) state.mainCharacter = selectedMain.dataset.character;
     if (selectedScene?.dataset.scene) state.scene = selectedScene.dataset.scene;
-  state.actions = selectedActions
-  .map((btn) => btn.dataset.action)
-  .filter(Boolean);
+    state.actions = selectedActions
+      .map((btn) => btn.dataset.action)
+      .filter(Boolean);
 
     state.helpers = selectedHelpers
       .map((btn) => btn.dataset.character)
@@ -1173,7 +1455,7 @@ if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
     if (duration?.value) state.duration = duration.value;
     if (ratio?.value) state.ratio = ratio.value;
     if (basicStyle?.value) state.style = basicStyle.value;
-   if (audioSource?.value) state.audioSource = audioSource.value;
+    if (audioSource?.value) state.audioSource = audioSource.value;
 
     render(root);
   }
