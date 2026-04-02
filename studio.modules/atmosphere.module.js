@@ -384,18 +384,26 @@ function buildAtmoPolicyPhraseRegex(term) {
     }
   }
 
-  function isAtmoPolicyBlocked(raw) {
-    const text = normalizeAtmoPolicyText(raw);
+function isAtmoPolicyBlocked(raw) {
+  const text = normalizeAtmoPolicyText(raw);
 
-    const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeAtmoPolicyText(term))) ||
-      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeAtmoPolicyText(term))) ||
-      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeAtmoPolicyText(term)));
+  const hasBlockedTerm =
+    HARD_BLOCK_TERMS.some((term) => {
+      const rx = buildAtmoPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    PUBLIC_FIGURE_TERMS.some((term) => {
+      const rx = buildAtmoPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    ARTIST_NAME_TERMS.some((term) => {
+      const rx = buildAtmoPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    });
 
-    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-    return !!raw && (hasBlockedTerm || hasBlockedPattern);
-  }
-
+  const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+  return !!raw && (hasBlockedTerm || hasBlockedPattern);
+}
   if (!document.getElementById("aivoPolicyPulseStyle")) {
     const style = document.createElement("style");
     style.id = "aivoPolicyPulseStyle";
