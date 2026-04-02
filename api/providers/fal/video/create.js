@@ -3,10 +3,6 @@ export const config = { runtime: "nodejs" };
 // /pages/api/providers/fal/video/create.js
 import { neon } from "@neondatabase/serverless";
 import authModule from "../../../_lib/auth.js";
-import {
-  enforcePolicy,
-  policyErrorResponse,
-} from "../../../_lib/policy-gateway.js";
 const { requireAuth } = authModule;
 
 function pickConn() {
@@ -102,22 +98,6 @@ export default async function handler(req, res) {
 
   // ---- INPUT ----
   const body = safeJson(req);
-    const policy = enforcePolicy({
-    app: "video",
-    prompt: [
-      body?.prompt,
-      body?.scene,
-      ...(Array.isArray(body?.effects) ? body.effects : []),
-      body?.camera,
-      body?.mode,
-      body?.aspect_ratio,
-      body?.duration
-    ].filter(Boolean).join(" ")
-  });
-
-  if (policy.decision === "block") {
-    return res.status(403).json(policyErrorResponse(policy));
-  }
 
   // 🔑 Eğer create-atmo iç çağrısıysa job_id gelir; yeni job açmak YASAK.
   const incomingJobId = body.job_id ? String(body.job_id) : null;
