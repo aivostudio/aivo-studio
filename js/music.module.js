@@ -746,35 +746,27 @@
 
       generateBtn.__aivoPolicyClickBound = true;
 
-           const resetPolicyUI = () => {
+      const resetPolicyUI = () => {
         const policyNote = module.querySelector("#musicPolicyNote");
 
         if (promptEl) {
           promptEl.style.borderColor = "";
           promptEl.style.boxShadow = "";
-          promptEl.style.animation = "";
         }
 
         if (lyricsEl) {
           lyricsEl.style.borderColor = "";
           lyricsEl.style.boxShadow = "";
-          lyricsEl.style.animation = "";
         }
 
         generateBtn.style.background = "";
         generateBtn.style.borderColor = "";
-        generateBtn.style.boxShadow = "";
         generateBtn.style.opacity = "";
         generateBtn.style.cursor = "";
-        generateBtn.style.transform = "";
-        generateBtn.style.filter = "";
-        generateBtn.style.animation = "";
 
         if (policyNote) {
           policyNote.style.display = "none";
           policyNote.textContent = "";
-          policyNote.innerHTML = "";
-          policyNote.style.animation = "";
         }
       };
 
@@ -971,23 +963,13 @@
         }
       }
 
-          if (generateBtn) {
+      if (generateBtn) {
         if (showAdv) {
           generateBtn.style.minHeight = "64px";
           generateBtn.style.borderRadius = "999px";
-          generateBtn.style.background = "linear-gradient(135deg, #ff5a8f 0%, #ff3b3b 100%)";
-          generateBtn.style.border = "1px solid rgba(255,120,150,.34)";
-          generateBtn.style.boxShadow = "0 18px 40px rgba(255,70,110,.24), inset 0 1px 0 rgba(255,255,255,.18)";
-          generateBtn.style.color = "#fff";
-          generateBtn.style.fontWeight = "800";
         } else {
           generateBtn.style.minHeight = "";
           generateBtn.style.borderRadius = "";
-          generateBtn.style.background = "";
-          generateBtn.style.border = "";
-          generateBtn.style.boxShadow = "";
-          generateBtn.style.color = "";
-          generateBtn.style.fontWeight = "";
         }
       }
     }
