@@ -510,12 +510,13 @@ const VIDEO_PUBLIC_FIGURE_TERMS = [
     );
   }
 
-  function ensureVideoPolicyNote(root, btn) {
-    if (!root || !btn) return null;
+function ensureVideoPolicyNote(root, btn) {
+  if (!root || !btn) return null;
 
-    let note = qs("#videoPolicyNote", root);
-    if (note) return note;
+  const mountPoint = btn.parentElement || root;
+  let note = qs("#videoPolicyNote", root);
 
+  if (!note) {
     note = document.createElement("div");
     note.id = "videoPolicyNote";
     note.style.display = "none";
@@ -530,11 +531,14 @@ const VIDEO_PUBLIC_FIGURE_TERMS = [
     note.style.fontWeight = "800";
     note.style.lineHeight = "1.65";
     note.style.color = "rgba(255,245,248,.96)";
-
-    const mountPoint = btn.parentElement || root;
-    mountPoint.appendChild(note);
-    return note;
   }
+
+  if (note.parentElement !== mountPoint) {
+    mountPoint.appendChild(note);
+  }
+
+  return note;
+}
 
   function resetVideoPolicyUI(root) {
     if (!root) return;
@@ -797,6 +801,7 @@ async function createText() {
 
   async function createImage() {
     const root = getRoot();
+    resetVideoPolicyUI(root);
 
     const file = qs("#videoImageInput", root)?.files?.[0];
       const policyText = buildVideoPolicyText(root, "image");
@@ -889,7 +894,7 @@ async function createText() {
       audio: payload.audio,
     });
 
-    pollJob(job_id).catch(console.error);
+        await pollJob(job_id);
   }
 
   // ===============================
