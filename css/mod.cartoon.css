@@ -2717,3 +2717,72 @@
     height: 60px;
   }
 }
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-block--compact {
+  padding: 16px 18px 20px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-block--compact .cartoon-block-head {
+  margin-bottom: 10px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-block--compact .cartoon-block-head h3 {
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-block--compact .cartoon-muted {
+  font-size: 12px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-form-grid-2,
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-form-grid-2--with-audio {
+  gap: 16px 20px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-select {
+  height: 42px;
+  padding: 0 42px 0 14px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-upload-row {
+  gap: 10px;
+  min-height: 40px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-upload-btn {
+  min-width: 108px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-upload-text {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] {
+  gap: 18px;
+  margin-top: 6px;
+}
+
+@media (max-width: 900px) {
+  .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] {
+    grid-template-columns: 1fr !important;
+  }
+}
