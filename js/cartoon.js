@@ -1013,6 +1013,7 @@ function getEstimatedCredits() {
   }
 
   function updateSummary(root) {
+    
     const el = qs("[data-cartoon-summary]", root);
     if (!el) return;
 
@@ -1023,7 +1024,17 @@ function getEstimatedCredits() {
 
     el.textContent = `${durationText} • ${mainCountText} • ${helperCountText} • ${creditText}`;
   }
+  function syncGenerateButtonCredit(root) {
+  const btn = qs("[data-cartoon-generate]", root);
+  if (!btn) return;
 
+  const total = getEstimatedCredits();
+  btn.setAttribute("data-credit-cost", String(total));
+
+  if (!state.isGenerating) {
+    btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
+  }
+}
   function syncMainSelection(root) {
     qsa('[data-role="main"]', root).forEach((btn) => {
       const on = btn.dataset.character === state.mainCharacter;
@@ -1106,6 +1117,7 @@ function getEstimatedCredits() {
     updateBasicAudioUploadStatusUI(root);
     updateBasicLogoUploadStatusUI(root);
     updateSummary(root);
+    syncGenerateButtonCredit(root);
   }
 
   function buildBasicPayload() {
@@ -1229,67 +1241,67 @@ function getEstimatedCredits() {
       }
 
       if (normalizedStatus === "error") {
-        console.error("[CARTOON][BASIC] job error =", j2);
+  console.error("[CARTOON][BASIC] job error =", j2);
 
-        if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-          state.activeBasicJobId = "";
-          state.activeBasicPollToken = 0;
-          state.isGenerating = false;
+  if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+    state.activeBasicJobId = "";
+    state.activeBasicPollToken = 0;
+    state.isGenerating = false;
 
-          const root = getCartoonRoot();
-          const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-          if (basicGenerateBtn) {
-            basicGenerateBtn.disabled = false;
-            basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-            basicGenerateBtn.classList.remove("is-loading");
-          }
-        }
-
-        return;
-      }
-
-      if (tries < 60) {
-        setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-        return;
-      }
-
-      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-        state.activeBasicJobId = "";
-        state.activeBasicPollToken = 0;
-        state.isGenerating = false;
-
-        const root = getCartoonRoot();
-        const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-        if (basicGenerateBtn) {
-          basicGenerateBtn.disabled = false;
-          basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-          basicGenerateBtn.classList.remove("is-loading");
-        }
-      }
-    } catch (err) {
-      console.error("[CARTOON][BASIC] poll error =", err);
-
-      if (tries < 60) {
-        setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-        return;
-      }
-
-      const currentJobId = String(jobId || "").trim();
-      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-        state.activeBasicJobId = "";
-        state.activeBasicPollToken = 0;
-        state.isGenerating = false;
-
-        const root = getCartoonRoot();
-        const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-        if (basicGenerateBtn) {
-          basicGenerateBtn.disabled = false;
-          basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
-          basicGenerateBtn.classList.remove("is-loading");
-        }
-      }
+    const root = getCartoonRoot();
+    const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+    if (basicGenerateBtn) {
+      basicGenerateBtn.disabled = false;
+      basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+      basicGenerateBtn.classList.remove("is-loading");
     }
   }
+
+  return;
+}
+
+if (tries < 60) {
+  setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+  return;
+}
+
+if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+  state.activeBasicJobId = "";
+  state.activeBasicPollToken = 0;
+  state.isGenerating = false;
+
+  const root = getCartoonRoot();
+  const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+  if (basicGenerateBtn) {
+    basicGenerateBtn.disabled = false;
+    basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+    basicGenerateBtn.classList.remove("is-loading");
+  }
+}
+} catch (err) {
+  console.error("[CARTOON][BASIC] poll error =", err);
+
+  if (tries < 60) {
+    setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+    return;
+  }
+
+  const currentJobId = String(jobId || "").trim();
+  if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+    state.activeBasicJobId = "";
+    state.activeBasicPollToken = 0;
+    state.isGenerating = false;
+
+    const root = getCartoonRoot();
+    const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+    if (basicGenerateBtn) {
+      basicGenerateBtn.disabled = false;
+      basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+      basicGenerateBtn.classList.remove("is-loading");
+    }
+  }
+}
+}
 
   function bindEvents() {
     document.addEventListener("click", async (e) => {
@@ -1546,7 +1558,7 @@ function getEstimatedCredits() {
       if (basicGenerateBtn) {
         state.isGenerating = false;
         basicGenerateBtn.disabled = false;
-        basicGenerateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
+        basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
         basicGenerateBtn.classList.remove("is-loading");
       }
 
