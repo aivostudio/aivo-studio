@@ -25,6 +25,8 @@
       characters: [],
       characterCreatePending: false,
       characterReferenceImageUrl: "",
+     characterReferenceUploadStatus: "idle",
+      characterReferenceUploadError: "",
       characterImageUrl: "",
       characterImageUploadPromise: null,
       characterImageUploadStatus: "idle",
@@ -724,7 +726,56 @@
     out.textContent = `${len} / 1000`;
   }
 
+  function clearCharacterCreateReference(root) {
+    const state = getState();
+    const input = qs("[data-character-create-upload]", root);
+
+    state.characterReferenceImageUrl = "";
+    state.characterReferenceUploadStatus = "idle";
+    state.characterReferenceUploadError = "";
+
+    if (input) input.value = "";
+
+    updateCharacterCreateUploadUI(root);
+    syncCharacterCreateCredit(root);
+  }
+
+  function ensureCharacterCreateUploadClearButton(root, host) {
+    let clearBtn = qs("[data-character-create-upload-clear]", host);
+
+    if (!clearBtn) {
+      clearBtn = document.createElement("button");
+      clearBtn.type = "button";
+      clearBtn.setAttribute("data-character-create-upload-clear", "");
+      clearBtn.setAttribute("aria-label", "Referans görseli kaldır");
+      clearBtn.title = "Resmi kaldır";
+      clearBtn.textContent = "×";
+      clearBtn.style.marginLeft = "8px";
+      clearBtn.style.width = "22px";
+      clearBtn.style.height = "22px";
+      clearBtn.style.borderRadius = "999px";
+      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+      clearBtn.style.background = "rgba(255,255,255,.08)";
+      clearBtn.style.color = "#fff";
+      clearBtn.style.cursor = "pointer";
+      clearBtn.style.display = "none";
+      clearBtn.style.verticalAlign = "middle";
+      host.appendChild(clearBtn);
+
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const nextRoot = getCartoonRoot();
+        if (!nextRoot) return;
+        clearCharacterCreateReference(nextRoot);
+      });
+    }
+
+    return clearBtn;
+  }
+
   function updateCharacterCreateUploadUI(root) {
+    const state = getState();
     const input = qs("[data-character-create-upload]", root);
     if (!input) return;
 
@@ -760,16 +811,16 @@
       host.appendChild(previewEl);
     }
 
+    const clearBtn = ensureCharacterCreateUploadClearButton(root, host);
     const file = input.files && input.files[0] ? input.files[0] : null;
 
     if (!file) {
       nameEl.textContent = "";
       previewEl.style.display = "none";
       previewEl.removeAttribute("src");
+      if (clearBtn) clearBtn.style.display = "none";
       return;
     }
-
-    nameEl.textContent = "";
 
     try {
       const nextUrl = URL.createObjectURL(file);
@@ -784,8 +835,34 @@
     } catch {
       previewEl.style.display = "none";
     }
-  }
 
+    if (state.characterReferenceUploadStatus === "uploading") {
+      nameEl.textContent = `${file.name} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (state.characterReferenceUploadStatus === "ready") {
+      nameEl.textContent = `${file.name} · Hazır ✓`;
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+
+    if (state.characterReferenceUploadStatus === "error") {
+      nameEl.textContent = `${file.name} · Yükleme hatası`;
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+
+    nameEl.textContent = file.name || "";
+    if (clearBtn) clearBtn.style.display = "none";
+  }
   function renderCharacterLibrary(root) {
     const state = getState();
 
