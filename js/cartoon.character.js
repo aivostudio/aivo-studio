@@ -1420,7 +1420,6 @@
     if (!root) return;
 
     const state = getState();
-
     const characterCreateUpload = e.target.closest("[data-character-create-upload]");
     if (characterCreateUpload && root.contains(characterCreateUpload)) {
       const file =
@@ -1428,24 +1427,36 @@
           ? characterCreateUpload.files[0]
           : null;
 
-      updateCharacterCreateUploadUI(root);
-       syncCharacterCreateCredit(root);
-
       if (!file) {
         state.characterReferenceImageUrl = "";
+        state.characterReferenceUploadStatus = "idle";
+        state.characterReferenceUploadError = "";
+        updateCharacterCreateUploadUI(root);
+        syncCharacterCreateCredit(root);
         return;
       }
 
       state.characterReferenceImageUrl = "";
+      state.characterReferenceUploadStatus = "uploading";
+      state.characterReferenceUploadError = "";
+
+      updateCharacterCreateUploadUI(root);
+      syncCharacterCreateCredit(root);
 
       try {
         const publicUrl = await uploadCartoonReferenceToR2(file);
         state.characterReferenceImageUrl = String(publicUrl || "").trim();
+        state.characterReferenceUploadStatus = "ready";
+        state.characterReferenceUploadError = "";
+        updateCharacterCreateUploadUI(root);
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
       } catch (err) {
         state.characterReferenceImageUrl = "";
+        state.characterReferenceUploadStatus = "error";
+        state.characterReferenceUploadError = String(err?.message || err || "reference_upload_failed");
+        updateCharacterCreateUploadUI(root);
         console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
-        alert(String(err?.message || err || "reference_upload_failed"));
+        alert(state.characterReferenceUploadError);
       }
 
       return;
