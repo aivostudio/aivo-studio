@@ -3057,49 +3057,51 @@ setStoryGenerateButton(root, true);
     });
   }
 
-  function updateStoryCharacterUploadUI(root, slot) {
-    const key = String(slot || "").trim();
-    if (!key) return;
+function updateStoryCharacterUploadUI(root, slot) {
+  const key = String(slot || "").trim();
+  if (!key) return;
 
-    const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
-    const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
-    const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
-    const imageState = getStoryCharacterImage(key);
+  const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
+  const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
+  const clearBtn = qs(`[data-story-upload-remove="${key}"]`, root);
+  const imageState = getStoryCharacterImage(key);
 
-    if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
+  if (!uploadBtn || !nameEl || !clearBtn || !imageState) return;
 
-    if (!imageState.file) {
-      uploadBtn.hidden = false;
-      stateBox.hidden = true;
-      nameEl.textContent = "Dosya seçilmedi";
-      syncStoryGenerateButtonCredit(root);
-      return;
-    }
+  uploadBtn.hidden = false;
 
-    uploadBtn.hidden = true;
-    stateBox.hidden = false;
-
-    if (imageState.uploadStatus === "uploading") {
-      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
-      syncStoryGenerateButtonCredit(root);
-      return;
-    }
-
-    if (imageState.uploadStatus === "ready") {
-      nameEl.textContent = getShortFileName(imageState.fileName);
-      syncStoryGenerateButtonCredit(root);
-      return;
-    }
-
-    if (imageState.uploadStatus === "error") {
-      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
-      syncStoryGenerateButtonCredit(root);
-      return;
-    }
-
-    nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+  if (!imageState.file) {
+    nameEl.textContent = "Dosya seçilmedi";
+    clearBtn.style.display = "none";
     syncStoryGenerateButtonCredit(root);
+    return;
   }
+
+  if (imageState.uploadStatus === "uploading") {
+    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+    clearBtn.style.display = "none";
+    syncStoryGenerateButtonCredit(root);
+    return;
+  }
+
+  if (imageState.uploadStatus === "ready") {
+    nameEl.textContent = getShortFileName(imageState.fileName);
+    clearBtn.style.display = "inline-grid";
+    syncStoryGenerateButtonCredit(root);
+    return;
+  }
+
+  if (imageState.uploadStatus === "error") {
+    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+    clearBtn.style.display = "inline-grid";
+    syncStoryGenerateButtonCredit(root);
+    return;
+  }
+
+  nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+  clearBtn.style.display = "none";
+  syncStoryGenerateButtonCredit(root);
+}
 
   function tryInit() {
     const root = getCartoonRoot();
