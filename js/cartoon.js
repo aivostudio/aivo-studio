@@ -724,22 +724,23 @@
     activeBasicPollToken: 0,
   });
 
-  function getEstimatedCredits() {
-    const duration = String(state.duration || "4");
+ function getEstimatedCredits() {
+  const duration = String(state.duration || "4");
 
-    let total = 30;
+  let total = 30;
 
-    if (duration === "6") total = 35;
-    else if (duration === "8") total = 40;
-    else if (duration === "10") total = 45;
-    else if (duration === "12") total = 50;
-    else if (duration === "15") total = 55;
+  if (duration === "6") total = 35;
+  else if (duration === "8") total = 40;
+  else if (duration === "10") total = 45;
+  else if (duration === "12") total = 50;
+  else if (duration === "15") total = 55;
 
-    if (state.characterImage) total += 10;
-    if (state.logoFile) total += 10;
+  if (state.characterImage) total += 10;
+  if (state.logoFile) total += 10;
+  if (state.audioSource === "upload" && state.audioFile) total += 10;
 
-    return total;
-  }
+  return total;
+}
 
   function updatePromptCount(root) {
     const input = qs("[data-cartoon-prompt-input]", root);
