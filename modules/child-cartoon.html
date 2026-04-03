@@ -624,10 +624,7 @@
   style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; align-items:start;"
 >
   <div class="story-field story-character-field">
-    <label for="storyMainCharacter">Ana Karakter (+10 Kredi)</label>
-    <select id="storyMainCharacter" name="storyMainCharacter" data-story-main-character>
-      <option value="">Seçiniz</option>
-    </select>
+    <label for="storyMainCharacterImage">Ana Karakter (+10 Kredi)</label>
 
     <div class="story-upload-slot" data-story-upload-slot="main" style="margin-top:12px;">
       <input
@@ -637,6 +634,8 @@
         hidden
         data-story-character-file="main"
       />
+
+      <input type="hidden" id="storyMainCharacter" name="storyMainCharacter" data-story-main-character value="" />
 
       <button
         type="button"
@@ -672,10 +671,7 @@
   </div>
 
   <div class="story-field story-character-field">
-    <label for="storySideCharacter1">Yardımcı Karakter 1 (+10 Kredi)</label>
-    <select id="storySideCharacter1" name="storySideCharacter1" data-story-helper-1>
-      <option value="">Seçiniz</option>
-    </select>
+    <label for="storyHelperCharacter1Image">Yardımcı Karakter 1 (+10 Kredi)</label>
 
     <div class="story-upload-slot" data-story-upload-slot="helper1" style="margin-top:12px;">
       <input
@@ -685,6 +681,8 @@
         hidden
         data-story-character-file="helper1"
       />
+
+      <input type="hidden" id="storySideCharacter1" name="storySideCharacter1" data-story-helper-1 value="" />
 
       <button
         type="button"
@@ -720,10 +718,7 @@
   </div>
 
   <div class="story-field story-character-field">
-    <label for="storySideCharacter2">Yardımcı Karakter 2 (+10 Kredi)</label>
-    <select id="storySideCharacter2" name="storySideCharacter2" data-story-helper-2>
-      <option value="">Seçiniz</option>
-    </select>
+    <label for="storyHelperCharacter2Image">Yardımcı Karakter 2 (+10 Kredi)</label>
 
     <div class="story-upload-slot" data-story-upload-slot="helper2" style="margin-top:12px;">
       <input
@@ -733,6 +728,8 @@
         hidden
         data-story-character-file="helper2"
       />
+
+      <input type="hidden" id="storySideCharacter2" name="storySideCharacter2" data-story-helper-2 value="" />
 
       <button
         type="button"
@@ -768,10 +765,7 @@
   </div>
 
   <div class="story-field story-character-field">
-    <label for="storyExtraCharacter">Ek Karakter (+10 Kredi)</label>
-    <select id="storyExtraCharacter" name="storyExtraCharacter" data-story-extra-character>
-      <option value="">Seçiniz</option>
-    </select>
+    <label for="storyExtraCharacterImage">Ek Karakter (+10 Kredi)</label>
 
     <div class="story-upload-slot" data-story-upload-slot="extra" style="margin-top:12px;">
       <input
@@ -781,6 +775,8 @@
         hidden
         data-story-character-file="extra"
       />
+
+      <input type="hidden" id="storyExtraCharacter" name="storyExtraCharacter" data-story-extra-character value="" />
 
       <button
         type="button"
