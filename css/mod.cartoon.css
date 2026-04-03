@@ -2298,11 +2298,31 @@
   padding-top:0 !important;
 }
 
-.story-characters-card .story-grid-4 > .story-character-field > label{
-  min-height:44px;
-  display:flex;
-  align-items:flex-end;
-  margin:0 0 10px 0;
+.story-characters-card .story-grid-4 > .story-character-field > label.story-character-title{
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.story-characters-card .story-grid-4 > .story-character-field > label.story-character-title .story-character-title-text{
+  display: block;
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 800;
+  color: #fff;
+}
+
+.story-characters-card .story-grid-4 > .story-character-field > label.story-character-title .story-character-title-credit{
+  display: block;
+  font-size: 13px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: rgba(255,255,255,.72);
 }
 .main-panel[data-module="cartoon"] [data-story-duration-summary]{
   font-size:14px !important;
