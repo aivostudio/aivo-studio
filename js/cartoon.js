@@ -185,361 +185,361 @@
     /\bimpersonat(e|ion)\b/i
   ];
 
- const PUBLIC_FIGURE_TERMS = [
-  "recep tayyip erdogan",
-  "recep tayyip erdoğan",
-  "erdogan",
-  "erdoğan",
-  "kemal kilicdaroglu",
-  "kemal kılıçdaroğlu",
-  "kilicdaroglu",
-  "kılıçdaroğlu",
-  "ekrem imamoglu",
-  "ekrem imamoğlu",
-  "imamoglu",
-  "imamoğlu",
-  "mansur yavas",
-  "mansur yavaş",
-  "devlet bahceli",
-  "devlet bahçeli",
-  "bahceli",
-  "bahçeli",
-  "meral aksener",
-  "meral akşener",
-  "aksener",
-  "akşener",
-  "ozgur ozel",
-  "özgür özel",
-  "ozel",
-  "özel",
-  "selahattin demirtas",
-  "selahattin demirtaş",
-  "demirtas",
-  "demirtaş",
-  "umit ozdag",
-  "ümit özdağ",
-  "ozdag",
-  "özdağ",
-  "fatih erbakan",
-  "temel karamollaoglu",
-  "temel karamollaoğlu",
-  "muharrem ince",
-  "sinan ogan",
-  "sinan oğan",
-  "ali babacan",
-  "ahmet davutoglu",
-  "ahmet davutoğlu",
-  "davutoglu",
-  "davutoğlu",
-  "hulusi akar",
-  "hakan fidan",
-  "mehmet simsek",
-  "mehmet şimşek",
-  "simsek",
-  "şimşek",
-  "suleyman soylu",
-  "süleyman soylu",
-  "soylu",
-  "bekir bozdag",
-  "bekir bozdağ",
-  "bozdag",
-  "bozdağ",
-  "numan kurtulmus",
-  "numan kurtulmuş",
-  "kurtulmus",
-  "kurtulmuş",
-  "omer celik",
-  "ömer çelik",
-  "celik",
-  "çelik",
-  "binali yildirim",
-  "binali yıldırım",
-  "abdullah gul",
-  "abdullah gül",
-  "gul",
-  "gül",
-  "ahmet necdet sezer",
-  "turgut ozal",
-  "turgut özal",
-  "ismet inonu",
-  "ismet inönü",
-  "inonu",
-  "inönü",
-  "mustafa kemal ataturk",
-  "mustafa kemal atatürk",
-  "ataturk",
-  "atatürk",
-  "kemal ataturk",
-  "cumhurbaskani",
-  "cumhurbaşkanı",
-  "cumhurbaskani yardimcisi",
-  "cumhurbaşkanı yardımcısı",
-  "bakan",
-  "milletvekili",
-  "belediye baskani",
-  "belediye başkanı",
-  "vali",
-  "kaymakam",
-  "siyasetci",
-  "siyasetçi",
-  "politikaci",
-  "politikacı",
-  "kamu figuru",
-  "kamu figürü",
-  "devlet buyugu",
-  "devlet büyüğü",
-  "donald trump",
-  "trump",
-  "jd vance",
-  "j d vance",
-  "vance",
-  "keir starmer",
-  "starmer",
-  "emmanuel macron",
-  "macron",
-  "friedrich merz",
-  "merz",
-  "frank walter steinmeier",
-  "frank-walter steinmeier",
-  "steinmeier",
-  "giorgia meloni",
-  "meloni",
-  "sergio mattarella",
-  "mattarella",
-  "pedro sanchez",
-  "pedro sánchez",
-  "sanchez",
-  "sánchez",
-  "felipe vi",
-  "mark carney",
-  "carney",
-  "claudia sheinbaum",
-  "sheinbaum",
-  "javier milei",
-  "milei",
-  "luiz inacio lula da silva",
-  "luiz inácio lula da silva",
-  "lula",
-  "lula da silva",
-  "vladimir putin",
-  "putin",
-  "mikhail mishustin",
-  "mishustin",
-  "volodymyr zelenskyy",
-  "zelenskyy",
-  "zelensky",
-  "yulia svyrydenko",
-  "svyrydenko",
-  "xi jinping",
-  "jinping",
-  "li qiang",
-  "narendra modi",
-  "modi",
-  "droupadi murmu",
-  "murmu",
-  "benjamin netanyahu",
-  "netanyahu",
-  "isaac herzog",
-  "herzog",
-  "masoud pezeshkian",
-  "pezeshkian",
-  "mojtaba khamenei",
-  "khamenei",
-  "mohammed bin salman",
-  "muhammed bin salman",
-  "mbs",
-  "salman",
-  "king salman",
-  "sheikh mohamed bin zayed al nahyan",
-  "mohamed bin zayed",
-  "mbz",
-  "sheikh mohammed bin rashid al maktoum",
-  "mohammed bin rashid",
-  "bin rashid",
-  "abdullah ii",
-  "king abdullah",
-  "jafar hassan",
-  "abdel fattah el sisi",
-  "abdel fattah al sisi",
-  "sisi",
-  "mostafa madbouly",
-  "madbouly",
-  "abiy ahmed",
-  "abiy",
-  "william ruto",
-  "ruto",
-  "paul kagame",
-  "kagame",
-  "samia suluhu hassan",
-  "samia suluhu",
-  "samia",
-  "cyril ramaphosa",
-  "ramaphosa",
-  "bola tinubu",
-  "tinubu",
-  "bassirou diomaye faye",
-  "diomaye faye",
-  "ousmane sonko",
-  "sonko",
-  "john mahama",
-  "mahama",
-  "netumbo nandi ndaitwah",
-  "netumbo nandi-ndaitwah",
-  "nandi ndaitwah",
-  "hassan sheikh mohamud",
-  "hassan sheikh",
-  "hamza abdi barre",
-  "kais saied",
-  "kais saïed",
-  "saied",
-  "saïed",
-  "mohamed muizzu",
-  "muizzu",
-  "anwar ibrahim",
-  "anwar",
-  "prabowo subianto",
-  "prabowo",
-  "lawrence wong",
-  "wong",
-  "tharman shanmugaratnam",
-  "tharman",
-  "lee jae myung",
-  "lee jae-myung",
-  "shigeru ishiba",
-  "ishiba",
-  "naruhito",
-  "anura kumara dissanayake",
-  "dissanayake",
-  "paetongtarn shinawatra",
-  "shinawatra",
-  "maha vajiralongkorn",
-  "to lam",
-  "tô lâm",
-  "luong cuong",
-  "lương cường",
-  "pham minh chinh",
-  "phạm minh chính",
-  "hun manet",
-  "hun sen",
-  "norodom sihamoni",
-  "thongloun sisoulith",
-  "sisoulith",
-  "sonexay siphandone",
-  "shehbaz sharif",
-  "sharif",
-  "asif ali zardari",
-  "zardari",
-  "muhammad yunus",
-  "yunus",
-  "kassym jomart tokayev",
-  "kassym-jomart tokayev",
-  "tokayev",
-  "shavkat mirziyoyev",
-  "mirziyoyev",
-  "sadyr japarov",
-  "japarov",
-  "emomali rahmon",
-  "rahmon",
-  "nikol pashinyan",
-  "pashinyan",
-  "ilham aliyev",
-  "aliyev",
-  "irakli kobakhidze",
-  "kobakhidze",
-  "mikheil kavelashvili",
-  "kavelashvili",
-  "maia sandu",
-  "sandu",
-  "aleksandar vucic",
-  "aleksandar vučić",
-  "vucic",
-  "vučić",
-  "robert fico",
-  "fico",
-  "peter pellegrini",
-  "pellegrini",
-  "andrej plenkovic",
-  "andrej plenković",
-  "plenkovic",
-  "plenković",
-  "petr pavel",
-  "pavel",
-  "donald tusk",
-  "tusk",
-  "andrzej duda",
-  "duda",
-  "viktor orban",
-  "viktor orbán",
-  "orban",
-  "orbán",
-  "nicusor dan",
-  "nicușor dan",
-  "ilie bolojan",
-  "bolojan",
-  "boyko borisov",
-  "borisov",
-  "rumen radev",
-  "radev",
-  "kyriakos mitsotakis",
-  "mitsotakis",
-  "edi rama",
-  "rama",
-  "zoran milanovic",
-  "zoran milanović",
-  "milanovic",
-  "milanović",
-  "andrej babis",
-  "andrej babiš",
-  "babis",
-  "babiš",
-  "micheal martin",
-  "martin",
-  "rodrigo chaves",
-  "chaves",
-  "gustavo petro",
-  "petro",
-  "daniel noboa",
-  "noboa",
-  "nayib bukele",
-  "bukele",
-  "bernardo arevalo",
-  "bernardo arévalo",
-  "arevalo",
-  "arévalo",
-  "xiomara castro",
-  "castro",
-  "daniel ortega",
-  "ortega",
-  "rosario murillo",
-  "murillo",
-  "laurentino cortizo",
-  "cortizo",
-  "jose raul mulino",
-  "josé raúl mulino",
-  "mulino",
-  "luis abinader",
-  "abinader",
-  "irfaan ali",
-  "ali",
-  "chan santokhi",
-  "santokhi",
-  "nicolas maduro",
-  "nicolás maduro",
-  "maduro",
-  "yamandu orsi",
-  "yamandú orsi",
-  "orsi",
-  "prime minister",
-  "president",
-  "king",
-  "queen",
-  "chancellor",
-  "taoiseach",
-  "premier",
-  "head of state",
-  "head of government",
-  "basbakan",
-  "başbakan"
+  const PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "kilicdaroglu",
+    "kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "imamoglu",
+    "imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "bahceli",
+    "bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "aksener",
+    "akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "ozel",
+    "özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "demirtas",
+    "demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "ozdag",
+    "özdağ",
+    "fatih erbakan",
+    "temel karamollaoglu",
+    "temel karamollaoğlu",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "davutoglu",
+    "davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "simsek",
+    "şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "soylu",
+    "bekir bozdag",
+    "bekir bozdağ",
+    "bozdag",
+    "bozdağ",
+    "numan kurtulmus",
+    "numan kurtulmuş",
+    "kurtulmus",
+    "kurtulmuş",
+    "omer celik",
+    "ömer çelik",
+    "celik",
+    "çelik",
+    "binali yildirim",
+    "binali yıldırım",
+    "abdullah gul",
+    "abdullah gül",
+    "gul",
+    "gül",
+    "ahmet necdet sezer",
+    "turgut ozal",
+    "turgut özal",
+    "ismet inonu",
+    "ismet inönü",
+    "inonu",
+    "inönü",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "kemal ataturk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "cumhurbaskani yardimcisi",
+    "cumhurbaşkanı yardımcısı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü",
+    "devlet buyugu",
+    "devlet büyüğü",
+    "donald trump",
+    "trump",
+    "jd vance",
+    "j d vance",
+    "vance",
+    "keir starmer",
+    "starmer",
+    "emmanuel macron",
+    "macron",
+    "friedrich merz",
+    "merz",
+    "frank walter steinmeier",
+    "frank-walter steinmeier",
+    "steinmeier",
+    "giorgia meloni",
+    "meloni",
+    "sergio mattarella",
+    "mattarella",
+    "pedro sanchez",
+    "pedro sánchez",
+    "sanchez",
+    "sánchez",
+    "felipe vi",
+    "mark carney",
+    "carney",
+    "claudia sheinbaum",
+    "sheinbaum",
+    "javier milei",
+    "milei",
+    "luiz inacio lula da silva",
+    "luiz inácio lula da silva",
+    "lula",
+    "lula da silva",
+    "vladimir putin",
+    "putin",
+    "mikhail mishustin",
+    "mishustin",
+    "volodymyr zelenskyy",
+    "zelenskyy",
+    "zelensky",
+    "yulia svyrydenko",
+    "svyrydenko",
+    "xi jinping",
+    "jinping",
+    "li qiang",
+    "narendra modi",
+    "modi",
+    "droupadi murmu",
+    "murmu",
+    "benjamin netanyahu",
+    "netanyahu",
+    "isaac herzog",
+    "herzog",
+    "masoud pezeshkian",
+    "pezeshkian",
+    "mojtaba khamenei",
+    "khamenei",
+    "mohammed bin salman",
+    "muhammed bin salman",
+    "mbs",
+    "salman",
+    "king salman",
+    "sheikh mohamed bin zayed al nahyan",
+    "mohamed bin zayed",
+    "mbz",
+    "sheikh mohammed bin rashid al maktoum",
+    "mohammed bin rashid",
+    "bin rashid",
+    "abdullah ii",
+    "king abdullah",
+    "jafar hassan",
+    "abdel fattah el sisi",
+    "abdel fattah al sisi",
+    "sisi",
+    "mostafa madbouly",
+    "madbouly",
+    "abiy ahmed",
+    "abiy",
+    "william ruto",
+    "ruto",
+    "paul kagame",
+    "kagame",
+    "samia suluhu hassan",
+    "samia suluhu",
+    "samia",
+    "cyril ramaphosa",
+    "ramaphosa",
+    "bola tinubu",
+    "tinubu",
+    "bassirou diomaye faye",
+    "diomaye faye",
+    "ousmane sonko",
+    "sonko",
+    "john mahama",
+    "mahama",
+    "netumbo nandi ndaitwah",
+    "netumbo nandi-ndaitwah",
+    "nandi ndaitwah",
+    "hassan sheikh mohamud",
+    "hassan sheikh",
+    "hamza abdi barre",
+    "kais saied",
+    "kais saïed",
+    "saied",
+    "saïed",
+    "mohamed muizzu",
+    "muizzu",
+    "anwar ibrahim",
+    "anwar",
+    "prabowo subianto",
+    "prabowo",
+    "lawrence wong",
+    "wong",
+    "tharman shanmugaratnam",
+    "tharman",
+    "lee jae myung",
+    "lee jae-myung",
+    "shigeru ishiba",
+    "ishiba",
+    "naruhito",
+    "anura kumara dissanayake",
+    "dissanayake",
+    "paetongtarn shinawatra",
+    "shinawatra",
+    "maha vajiralongkorn",
+    "to lam",
+    "tô lâm",
+    "luong cuong",
+    "lương cường",
+    "pham minh chinh",
+    "phạm minh chính",
+    "hun manet",
+    "hun sen",
+    "norodom sihamoni",
+    "thongloun sisoulith",
+    "sisoulith",
+    "sonexay siphandone",
+    "shehbaz sharif",
+    "sharif",
+    "asif ali zardari",
+    "zardari",
+    "muhammad yunus",
+    "yunus",
+    "kassym jomart tokayev",
+    "kassym-jomart tokayev",
+    "tokayev",
+    "shavkat mirziyoyev",
+    "mirziyoyev",
+    "sadyr japarov",
+    "japarov",
+    "emomali rahmon",
+    "rahmon",
+    "nikol pashinyan",
+    "pashinyan",
+    "ilham aliyev",
+    "aliyev",
+    "irakli kobakhidze",
+    "kobakhidze",
+    "mikheil kavelashvili",
+    "kavelashvili",
+    "maia sandu",
+    "sandu",
+    "aleksandar vucic",
+    "aleksandar vučić",
+    "vucic",
+    "vučić",
+    "robert fico",
+    "fico",
+    "peter pellegrini",
+    "pellegrini",
+    "andrej plenkovic",
+    "andrej plenković",
+    "plenkovic",
+    "plenković",
+    "petr pavel",
+    "pavel",
+    "donald tusk",
+    "tusk",
+    "andrzej duda",
+    "duda",
+    "viktor orban",
+    "viktor orbán",
+    "orban",
+    "orbán",
+    "nicusor dan",
+    "nicușor dan",
+    "ilie bolojan",
+    "bolojan",
+    "boyko borisov",
+    "borisov",
+    "rumen radev",
+    "radev",
+    "kyriakos mitsotakis",
+    "mitsotakis",
+    "edi rama",
+    "rama",
+    "zoran milanovic",
+    "zoran milanović",
+    "milanovic",
+    "milanović",
+    "andrej babis",
+    "andrej babiš",
+    "babis",
+    "babiš",
+    "micheal martin",
+    "martin",
+    "rodrigo chaves",
+    "chaves",
+    "gustavo petro",
+    "petro",
+    "daniel noboa",
+    "noboa",
+    "nayib bukele",
+    "bukele",
+    "bernardo arevalo",
+    "bernardo arévalo",
+    "arevalo",
+    "arévalo",
+    "xiomara castro",
+    "castro",
+    "daniel ortega",
+    "ortega",
+    "rosario murillo",
+    "murillo",
+    "laurentino cortizo",
+    "cortizo",
+    "jose raul mulino",
+    "josé raúl mulino",
+    "mulino",
+    "luis abinader",
+    "abinader",
+    "irfaan ali",
+    "ali",
+    "chan santokhi",
+    "santokhi",
+    "nicolas maduro",
+    "nicolás maduro",
+    "maduro",
+    "yamandu orsi",
+    "yamandú orsi",
+    "orsi",
+    "prime minister",
+    "president",
+    "king",
+    "queen",
+    "chancellor",
+    "taoiseach",
+    "premier",
+    "head of state",
+    "head of government",
+    "basbakan",
+    "başbakan"
   ];
 
   const ARTIST_NAME_TERMS = [
@@ -724,22 +724,22 @@
     activeBasicPollToken: 0,
   });
 
-function getEstimatedCredits() {
-  const duration = String(state.duration || "4");
+  function getEstimatedCredits() {
+    const duration = String(state.duration || "4");
 
-  let total = 30;
+    let total = 30;
 
-  if (duration === "6") total = 35;
-  else if (duration === "8") total = 40;
-  else if (duration === "10") total = 45;
-  else if (duration === "12") total = 50;
-  else if (duration === "15") total = 55;
+    if (duration === "6") total = 35;
+    else if (duration === "8") total = 40;
+    else if (duration === "10") total = 45;
+    else if (duration === "12") total = 50;
+    else if (duration === "15") total = 55;
 
-  if (state.characterImage) total += 10;
-  if (state.logoFile) total += 10;
+    if (state.characterImage) total += 10;
+    if (state.logoFile) total += 10;
 
-  return total;
-}
+    return total;
+  }
 
   function updatePromptCount(root) {
     const input = qs("[data-cartoon-prompt-input]", root);
@@ -770,6 +770,7 @@ function getEstimatedCredits() {
 
     updateBasicUploadStatusUI(root);
     updateSummary(root);
+    syncGenerateButtonCredit(root);
   }
 
   function ensureBasicUploadClearButton(root) {
@@ -866,6 +867,7 @@ function getEstimatedCredits() {
 
     updateBasicAudioUploadStatusUI(root);
     updateSummary(root);
+    syncGenerateButtonCredit(root);
   }
 
   function ensureBasicAudioUploadClearButton(root) {
@@ -946,6 +948,7 @@ function getEstimatedCredits() {
 
     updateBasicLogoUploadStatusUI(root);
     updateSummary(root);
+    syncGenerateButtonCredit(root);
   }
 
   function ensureBasicLogoUploadClearButton(root) {
@@ -1013,7 +1016,6 @@ function getEstimatedCredits() {
   }
 
   function updateSummary(root) {
-    
     const el = qs("[data-cartoon-summary]", root);
     if (!el) return;
 
@@ -1024,17 +1026,19 @@ function getEstimatedCredits() {
 
     el.textContent = `${durationText} • ${mainCountText} • ${helperCountText} • ${creditText}`;
   }
+
   function syncGenerateButtonCredit(root) {
-  const btn = qs("[data-cartoon-generate]", root);
-  if (!btn) return;
+    const btn = qs("[data-cartoon-generate]", root);
+    if (!btn) return;
 
-  const total = getEstimatedCredits();
-  btn.setAttribute("data-credit-cost", String(total));
+    const total = getEstimatedCredits();
+    btn.setAttribute("data-credit-cost", String(total));
 
-  if (!state.isGenerating) {
-    btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
+    if (!state.isGenerating) {
+      btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
+    }
   }
-}
+
   function syncMainSelection(root) {
     qsa('[data-role="main"]', root).forEach((btn) => {
       const on = btn.dataset.character === state.mainCharacter;
@@ -1241,67 +1245,67 @@ function getEstimatedCredits() {
       }
 
       if (normalizedStatus === "error") {
-  console.error("[CARTOON][BASIC] job error =", j2);
+        console.error("[CARTOON][BASIC] job error =", j2);
 
-  if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-    state.activeBasicJobId = "";
-    state.activeBasicPollToken = 0;
-    state.isGenerating = false;
+        if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+          state.activeBasicJobId = "";
+          state.activeBasicPollToken = 0;
+          state.isGenerating = false;
 
-    const root = getCartoonRoot();
-    const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-    if (basicGenerateBtn) {
-      basicGenerateBtn.disabled = false;
-      basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
-      basicGenerateBtn.classList.remove("is-loading");
+          const root = getCartoonRoot();
+          const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+          if (basicGenerateBtn) {
+            basicGenerateBtn.disabled = false;
+            basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+            basicGenerateBtn.classList.remove("is-loading");
+          }
+        }
+
+        return;
+      }
+
+      if (tries < 60) {
+        setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+        return;
+      }
+
+      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+        state.activeBasicJobId = "";
+        state.activeBasicPollToken = 0;
+        state.isGenerating = false;
+
+        const root = getCartoonRoot();
+        const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+        if (basicGenerateBtn) {
+          basicGenerateBtn.disabled = false;
+          basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          basicGenerateBtn.classList.remove("is-loading");
+        }
+      }
+    } catch (err) {
+      console.error("[CARTOON][BASIC] poll error =", err);
+
+      if (tries < 60) {
+        setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
+        return;
+      }
+
+      const currentJobId = String(jobId || "").trim();
+      if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+        state.activeBasicJobId = "";
+        state.activeBasicPollToken = 0;
+        state.isGenerating = false;
+
+        const root = getCartoonRoot();
+        const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
+        if (basicGenerateBtn) {
+          basicGenerateBtn.disabled = false;
+          basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          basicGenerateBtn.classList.remove("is-loading");
+        }
+      }
     }
   }
-
-  return;
-}
-
-if (tries < 60) {
-  setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-  return;
-}
-
-if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-  state.activeBasicJobId = "";
-  state.activeBasicPollToken = 0;
-  state.isGenerating = false;
-
-  const root = getCartoonRoot();
-  const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-  if (basicGenerateBtn) {
-    basicGenerateBtn.disabled = false;
-    basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
-    basicGenerateBtn.classList.remove("is-loading");
-  }
-}
-} catch (err) {
-  console.error("[CARTOON][BASIC] poll error =", err);
-
-  if (tries < 60) {
-    setTimeout(() => pollCartoonJob(jobId, tries + 1, pollToken), 3000);
-    return;
-  }
-
-  const currentJobId = String(jobId || "").trim();
-  if (String(state.activeBasicJobId || "").trim() === currentJobId) {
-    state.activeBasicJobId = "";
-    state.activeBasicPollToken = 0;
-    state.isGenerating = false;
-
-    const root = getCartoonRoot();
-    const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
-    if (basicGenerateBtn) {
-      basicGenerateBtn.disabled = false;
-      basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
-      basicGenerateBtn.classList.remove("is-loading");
-    }
-  }
-}
-}
 
   function bindEvents() {
     document.addEventListener("click", async (e) => {
@@ -1530,7 +1534,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         } catch (err) {
           state.isGenerating = false;
           generateBtn.disabled = false;
-        generateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          generateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
           generateBtn.classList.remove("is-loading");
 
           console.error("[CARTOON][BASIC] create error:", err);
@@ -1578,6 +1582,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         resetBasicPolicyUI(root);
         updatePromptCount(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
       }
     });
 
@@ -1590,6 +1595,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         state.duration = duration.value || "4";
         resetBasicPolicyUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
         return;
       }
 
@@ -1598,6 +1604,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         state.ratio = ratio.value || "16:9";
         resetBasicPolicyUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
         return;
       }
 
@@ -1606,6 +1613,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         state.style = basicStyle.value || "soft-cartoon";
         resetBasicPolicyUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
         return;
       }
 
@@ -1619,6 +1627,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
 
         resetBasicPolicyUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
         return;
       }
 
@@ -1635,6 +1644,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
 
         updateBasicLogoUploadStatusUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
 
         if (!file) return;
 
@@ -1644,7 +1654,11 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
             state.logoFileUploadStatus = "ready";
             state.logoFileUploadError = "";
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
+            if (nextRoot) {
+              updateBasicLogoUploadStatusUI(nextRoot);
+              updateSummary(nextRoot);
+              syncGenerateButtonCredit(nextRoot);
+            }
             console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
             return state.logoFileUrl;
           })
@@ -1654,7 +1668,11 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
             state.logoFileUploadError = String(err?.message || err || "basic_logo_upload_failed");
             console.error("[CARTOON][BASIC_LOGO_UPLOAD_ERROR]", err);
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateBasicLogoUploadStatusUI(nextRoot);
+            if (nextRoot) {
+              updateBasicLogoUploadStatusUI(nextRoot);
+              updateSummary(nextRoot);
+              syncGenerateButtonCredit(nextRoot);
+            }
             alert(state.logoFileUploadError);
             throw err;
           });
@@ -1675,9 +1693,10 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         state.audioFileUploadPromise = null;
         state.audioFileUploadError = "";
         state.audioFileUploadStatus = file ? "uploading" : "idle";
-        updateBasicAudioUploadStatusUI(root);
 
+        updateBasicAudioUploadStatusUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
 
         if (!file) return;
 
@@ -1687,7 +1706,11 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
             state.audioFileUploadStatus = "ready";
             state.audioFileUploadError = "";
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
+            if (nextRoot) {
+              updateBasicAudioUploadStatusUI(nextRoot);
+              updateSummary(nextRoot);
+              syncGenerateButtonCredit(nextRoot);
+            }
             console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
             return state.audioFileUrl;
           })
@@ -1697,7 +1720,11 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
             state.audioFileUploadError = String(err?.message || err || "basic_audio_upload_failed");
             console.error("[CARTOON][BASIC_AUDIO_UPLOAD_ERROR]", err);
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateBasicAudioUploadStatusUI(nextRoot);
+            if (nextRoot) {
+              updateBasicAudioUploadStatusUI(nextRoot);
+              updateSummary(nextRoot);
+              syncGenerateButtonCredit(nextRoot);
+            }
             alert(state.audioFileUploadError);
             throw err;
           });
@@ -1718,6 +1745,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
 
         updateBasicUploadStatusUI(root);
         updateSummary(root);
+        syncGenerateButtonCredit(root);
 
         if (!file) return;
 
@@ -1729,7 +1757,11 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
             console.log("[CARTOON][BASIC_UPLOAD_OK]", state.characterImageUrl);
 
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateBasicUploadStatusUI(nextRoot);
+            if (nextRoot) {
+              updateBasicUploadStatusUI(nextRoot);
+              updateSummary(nextRoot);
+              syncGenerateButtonCredit(nextRoot);
+            }
 
             return state.characterImageUrl;
           })
@@ -1740,7 +1772,11 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
             console.error("[CARTOON][BASIC_UPLOAD_ERROR]", err);
 
             const nextRoot = getCartoonRoot();
-            if (nextRoot) updateBasicUploadStatusUI(nextRoot);
+            if (nextRoot) {
+              updateBasicUploadStatusUI(nextRoot);
+              updateSummary(nextRoot);
+              syncGenerateButtonCredit(nextRoot);
+            }
 
             alert(state.characterImageUploadError);
             throw err;
