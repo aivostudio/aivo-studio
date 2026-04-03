@@ -2292,6 +2292,35 @@
   align-items:center;
   justify-content:space-between;
 }
+.story-characters-card .cartoon-upload-row--compact .cartoon-upload-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:152px;
+  height:52px;
+  padding:0 20px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(90deg, #8b5cf6 0%, #ec5ba7 100%);
+  box-shadow:0 12px 28px rgba(191,86,255,.22);
+  color:#fff;
+  font-size:15px;
+  line-height:1;
+  font-weight:800;
+  white-space:nowrap;
+  transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+.story-characters-card .cartoon-upload-row--compact .cartoon-upload-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 16px 34px rgba(191,86,255,.28);
+  filter:brightness(1.03);
+}
+
+.story-characters-card .cartoon-upload-row--compact .cartoon-upload-btn:active{
+  transform:translateY(0);
+  box-shadow:0 10px 22px rgba(191,86,255,.20);
+}
 .story-characters-card .story-grid-4 > .story-character-field{
   align-self:start;
   margin-top:0 !important;
