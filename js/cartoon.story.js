@@ -103,7 +103,6 @@ function createPresetCharacterEntry(role, value, label) {
     label: safeText(label)
   };
 }
-
 function createUploadCharacterEntry(slot) {
   const key = safeText(slot);
   if (!key) return null;
@@ -115,7 +114,7 @@ function createUploadCharacterEntry(slot) {
   const imageState = getStoryCharacterImage(key);
   const hasFile = !!(imageState && imageState.file);
 
-  if (!label && !hasFile) return null;
+  if (!hasFile) return null;
 
   return {
     key: `upload:${key}`,
