@@ -1824,6 +1824,17 @@ function getStoryEstimatedCredits() {
 
   return total;
 }
+  function syncStoryGenerateButtonCredit(root) {
+  const btn = qs("[data-story-generate]", root);
+  if (!btn) return;
+
+  const total = getStoryEstimatedCredits();
+  btn.setAttribute("data-credit-cost", String(total));
+
+  if (!state.isGenerating) {
+    btn.textContent = `Hikayeyi Oluştur (${total} Kredi)`;
+  }
+}
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
     const totalSeconds = getSelectedTotalSeconds();
