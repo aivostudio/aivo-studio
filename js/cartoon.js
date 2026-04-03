@@ -1575,7 +1575,7 @@ function getEstimatedCredits() {
 
       const duration = e.target.closest("#cartoon-duration");
       if (duration && root.contains(duration)) {
-        state.duration = duration.value || "5";
+        state.duration = duration.value || "4";
         resetBasicPolicyUI(root);
         updateSummary(root);
         return;
