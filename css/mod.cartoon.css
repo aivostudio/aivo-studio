@@ -2786,3 +2786,42 @@
     grid-template-columns: 1fr !important;
   }
 }
+.story-character-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.story-character-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 72px;
+  margin: 0 0 14px 0;
+  text-align: center;
+}
+
+.story-character-title-text {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.story-character-title-credit {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: rgba(255,255,255,.72);
+}
+
+.story-character-field .cartoon-upload-row {
+  width: 100%;
+  justify-content: center;
+}
