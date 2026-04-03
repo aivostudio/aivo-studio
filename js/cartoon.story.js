@@ -2026,12 +2026,12 @@ function getStoryEstimatedCredits() {
       characterImageName: "",
       characterImageUrl: resolved.characterImageUrl,
       elements: elements.map((el) => ({
-        token: el.token,
-        frontal_image_url: el.frontal_image_url,
-        reference_image_urls: el.reference_image_urls
+      token: el.token,
+      frontal_image_url: el.frontal_image_url,
+      reference_image_urls: el.reference_image_urls
       })),
-      estimatedCredits: 0,
-      meta: {
+       estimatedCredits: Number(storyPayload?.estimatedCredits || 0),
+        meta: {
         app: "cartoon",
         mode: "story",
         scene_id: String(scene?.id || ""),
