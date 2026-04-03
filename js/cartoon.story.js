@@ -2568,15 +2568,24 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
     if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
       showStoryCharacterLimitAlert();
 
-      qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', root).forEach((btn) => {
-        const btnLabel =
-          safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-          safeText(btn.textContent) ||
-          safeText(btn.dataset.character);
+      setTimeout(() => {
+        const liveRoot = getCartoonRoot();
+        if (!liveRoot) return;
 
-        const isSelectedInState = helperSlots.some((slot) => safeText(state[helperStateKeys[slot]]) === btnLabel);
-        btn.classList.toggle("is-selected", isSelectedInState);
-      });
+        qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', liveRoot).forEach((btn) => {
+          const btnLabel =
+            safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+            safeText(btn.textContent) ||
+            safeText(btn.dataset.character);
+
+          const isSelectedInState = helperSlots.some((slot) => {
+            const stateKey = helperStateKeys[slot];
+            return safeText(state[stateKey]) === btnLabel;
+          });
+
+          btn.classList.toggle("is-selected", isSelectedInState);
+        });
+      }, 0);
 
       return;
     }
