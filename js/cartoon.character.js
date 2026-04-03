@@ -1050,22 +1050,104 @@
           return !!u && t === "image";
         });
 
-      if (
+         if (
         ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
         (readyImageUrl || hasReadyImageOutput)
       ) {
-        window.dispatchEvent(
-          new CustomEvent("aivo:cartoon:job_ready", {
-            detail: {
-              job_id: jobId,
-              status: normalizedStatus,
-              mode: "character",
-              image: readyImageUrl ? { url: readyImageUrl } : null,
-              outputs: j2.outputs || [],
-              raw: j2
-            }
-          })
+        const root = getCartoonRoot();
+        const state = getState();
+
+        const raw = j2 || {};
+        const meta = raw?.meta || {};
+        const fallbackName = root ? (qs("#cartoon-character-name", root)?.value || "") : "";
+        const fallbackStyle = root ? (qs("#cartoon-character-style", root)?.value || "") : "";
+
+        const nextItem = {
+          id: String(jobId || `character_${Date.now()}`),
+          job_id: String(jobId || ""),
+          name: String(
+            meta?.name ||
+            raw?.name ||
+            raw?.meta?.ui_state?.name ||
+            raw?.ui_state?.name ||
+            fallbackName ||
+            "Karakter"
+          ).trim(),
+          type: String(meta?.type || raw?.type || "").trim(),
+          style: String(
+            meta?.style ||
+            raw?.style ||
+            raw?.meta?.ui_state?.style ||
+            raw?.ui_state?.style ||
+            fallbackStyle ||
+            ""
+          ).trim(),
+          prompt: String(meta?.prompt || raw?.prompt || "").trim(),
+          uiState: {
+            name:
+              raw?.meta?.ui_state?.name ||
+              raw?.ui_state?.name ||
+              (root ? (qs("#cartoon-character-name", root)?.value || "") : ""),
+            type:
+              raw?.meta?.ui_state?.type ||
+              raw?.ui_state?.type ||
+              (root ? (qs("#cartoon-character-type", root)?.value || "") : ""),
+            style:
+              raw?.meta?.ui_state?.style ||
+              raw?.ui_state?.style ||
+              (root ? (qs("#cartoon-character-style", root)?.value || "") : ""),
+            prompt:
+              raw?.meta?.ui_state?.prompt ||
+              raw?.ui_state?.prompt ||
+              (root ? (qs("#cartoon-character-desc", root)?.value || "") : ""),
+            hairType:
+              raw?.meta?.ui_state?.hairType ||
+              raw?.ui_state?.hairType ||
+              (root ? (qs("[data-character-hair-type]", root)?.value || "") : ""),
+            hairColor:
+              raw?.meta?.ui_state?.hairColor ||
+              raw?.ui_state?.hairColor ||
+              (root ? (qs("[data-character-hair-color]", root)?.value || "") : ""),
+            outfit:
+              raw?.meta?.ui_state?.outfit ||
+              raw?.ui_state?.outfit ||
+              (root ? (qs("[data-character-outfit]", root)?.value || "") : ""),
+            glasses:
+              raw?.meta?.ui_state?.glasses ||
+              raw?.ui_state?.glasses ||
+              (root ? (qs("[data-character-glasses]", root)?.value || "") : ""),
+            accessory:
+              raw?.meta?.ui_state?.accessory ||
+              raw?.ui_state?.accessory ||
+              (root ? (qs("[data-character-accessory]", root)?.value || "") : ""),
+            expression:
+              raw?.meta?.ui_state?.expression ||
+              raw?.ui_state?.expression ||
+              (root ? (qs("[data-character-expression]", root)?.value || "") : "")
+          },
+          imageUrl: readyImageUrl
+        };
+
+        const exists = (state.characters || []).some(
+          (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
         );
+
+        if (!exists) {
+          state.characters = [nextItem, ...(state.characters || [])];
+        }
+
+        state.characterCreatePending = false;
+
+        const createBtn = root?.querySelector("[data-cartoon-character-create]");
+        if (createBtn) {
+          createBtn.disabled = false;
+          createBtn.textContent = "🧩 Karakter Oluştur";
+        }
+
+        if (root) {
+          renderCharacterOnly(root);
+        }
+
         return;
       }
 
@@ -1669,119 +1751,6 @@
       });
   });
 
-  window.addEventListener("aivo:cartoon:job_ready", (e) => {
-    const d = e?.detail || {};
-    const raw = d?.raw || {};
-    const root = getCartoonRoot();
-    const state = getState();
-
-    const mode = String(
-      d?.mode ||
-      d?.raw?.mode ||
-      d?.raw?.meta?.mode ||
-      ((d?.image?.url || d?.raw?.image?.url) ? "character" : "")
-    ).trim().toLowerCase();
-
-    const imageUrl = String(
-      d?.image?.url ||
-      d?.raw?.image?.url ||
-      extractImageUrlFromOutputs(d?.outputs) ||
-      extractImageUrlFromOutputs(d?.raw?.outputs) ||
-      ""
-    ).trim();
-
-    if (mode !== "character" || !imageUrl) return;
-
-    const meta = raw?.meta || {};
-    const fallbackName = root ? (qs("#cartoon-character-name", root)?.value || "") : "";
-    const fallbackStyle = root ? (qs("#cartoon-character-style", root)?.value || "") : "";
-
-    const nextItem = {
-      id: String(d.job_id || `character_${Date.now()}`),
-      job_id: String(d.job_id || ""),
-      name: String(
-        meta?.name ||
-        raw?.name ||
-        raw?.meta?.ui_state?.name ||
-        raw?.ui_state?.name ||
-        fallbackName ||
-        "Karakter"
-      ).trim(),
-      type: String(meta?.type || raw?.type || "").trim(),
-      style: String(
-        meta?.style ||
-        raw?.style ||
-        raw?.meta?.ui_state?.style ||
-        raw?.ui_state?.style ||
-        fallbackStyle ||
-        ""
-      ).trim(),
-      prompt: String(meta?.prompt || raw?.prompt || "").trim(),
-      uiState: {
-        name:
-          raw?.meta?.ui_state?.name ||
-          raw?.ui_state?.name ||
-          (root ? (qs("#cartoon-character-name", root)?.value || "") : ""),
-        type:
-          raw?.meta?.ui_state?.type ||
-          raw?.ui_state?.type ||
-          (root ? (qs("#cartoon-character-type", root)?.value || "") : ""),
-        style:
-          raw?.meta?.ui_state?.style ||
-          raw?.ui_state?.style ||
-          (root ? (qs("#cartoon-character-style", root)?.value || "") : ""),
-        prompt:
-          raw?.meta?.ui_state?.prompt ||
-          raw?.ui_state?.prompt ||
-          (root ? (qs("#cartoon-character-desc", root)?.value || "") : ""),
-        hairType:
-          raw?.meta?.ui_state?.hairType ||
-          raw?.ui_state?.hairType ||
-          (root ? (qs("[data-character-hair-type]", root)?.value || "") : ""),
-        hairColor:
-          raw?.meta?.ui_state?.hairColor ||
-          raw?.ui_state?.hairColor ||
-          (root ? (qs("[data-character-hair-color]", root)?.value || "") : ""),
-        outfit:
-          raw?.meta?.ui_state?.outfit ||
-          raw?.ui_state?.outfit ||
-          (root ? (qs("[data-character-outfit]", root)?.value || "") : ""),
-        glasses:
-          raw?.meta?.ui_state?.glasses ||
-          raw?.ui_state?.glasses ||
-          (root ? (qs("[data-character-glasses]", root)?.value || "") : ""),
-        accessory:
-          raw?.meta?.ui_state?.accessory ||
-          raw?.ui_state?.accessory ||
-          (root ? (qs("[data-character-accessory]", root)?.value || "") : ""),
-        expression:
-          raw?.meta?.ui_state?.expression ||
-          raw?.ui_state?.expression ||
-          (root ? (qs("[data-character-expression]", root)?.value || "") : "")
-      },
-      imageUrl
-    };
-
-    const exists = (state.characters || []).some(
-      (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
-    );
-
-    if (!exists) {
-      state.characters = [nextItem, ...(state.characters || [])];
-    }
-
-    state.characterCreatePending = false;
-
-    const createBtn = root?.querySelector("[data-cartoon-character-create]");
-    if (createBtn) {
-      createBtn.disabled = false;
-      createBtn.textContent = "🧩 Karakter Oluştur";
-    }
-
-    if (root) {
-      renderCharacterOnly(root);
-    }
-  });
 
   function tryInit() {
     const root = getCartoonRoot();
