@@ -1814,18 +1814,18 @@ function getStoryEstimatedCredits() {
     total += Math.floor((totalSeconds - 4) / 2) * 5;
   }
 
-  const hasAnyCharacterImage = STORY_CHARACTER_SLOT_CONFIG.some((config) => {
-    const imageState = getStoryCharacterImage(config.slot);
-    return !!(imageState && imageState.file);
-  });
+const characterImageCount = STORY_CHARACTER_SLOT_CONFIG.reduce((sum, config) => {
+  const imageState = getStoryCharacterImage(config.slot);
+  return sum + (imageState && imageState.file ? 1 : 0);
+}, 0);
 
-  const logoAsset = getStoryLogoAsset();
-  const audioAsset = getStoryAudioAsset();
-  const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
+const logoAsset = getStoryLogoAsset();
+const audioAsset = getStoryAudioAsset();
+const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
 
-  if (hasAnyCharacterImage) total += 5;
-  if (logoAsset.file) total += 10;
-  if (includeMusic && audioAsset.file) total += 10;
+total += characterImageCount * 5;
+if (logoAsset.file) total += 10;
+if (includeMusic && audioAsset.file) total += 10;
 
   return total;
 }
