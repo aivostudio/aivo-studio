@@ -974,10 +974,9 @@
   function setStoryGenerateButton(root, loading) {
     const btn = root?.querySelector("[data-story-generate]");
     if (!btn) return;
-
-    btn.disabled = !!loading;
-    btn.textContent = loading ? "Üretiliyor..." : "Hikayeyi Oluştur";
-    btn.classList.toggle("is-loading", !!loading);
+   btn.disabled = !!loading;
+   btn.textContent = loading ? "Üretiliyor..." : `Hikayeyi Oluştur (${getStoryEstimatedCredits()} Kredi)`;
+   btn.classList.toggle("is-loading", !!loading);
   }
 
   function completeStoryGenerateIfAllSettled() {
