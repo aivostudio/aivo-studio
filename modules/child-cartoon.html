@@ -626,7 +626,11 @@
   <div class="story-field story-character-field">
     <label for="storyMainCharacterImage">Ana Karakter (+10 Kredi)</label>
 
-    <div class="story-upload-slot" data-story-upload-slot="main" style="margin-top:12px;">
+    <label
+      class="cartoon-upload-row cartoon-upload-row--compact"
+      data-story-upload-slot="main"
+      style="margin-top:12px;"
+    >
       <input
         type="file"
         id="storyMainCharacterImage"
@@ -635,45 +639,49 @@
         data-story-character-file="main"
       />
 
-      <input type="hidden" id="storyMainCharacter" name="storyMainCharacter" data-story-main-character value="" />
+      <input
+        type="hidden"
+        id="storyMainCharacter"
+        name="storyMainCharacter"
+        data-story-main-character
+        value=""
+      />
 
-      <button
-        type="button"
+      <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="main"
       >
         Resim Seç
-      </button>
+      </span>
 
-      <div
-        class="cartoon-upload-row cartoon-upload-row--compact"
-        data-story-upload-state="main"
-        hidden
-        style="margin-top:10px;"
+      <span
+        class="cartoon-upload-text"
+        data-story-upload-name="main"
       >
-        <span
-          class="cartoon-upload-text"
-          data-story-upload-name="main"
-        >Dosya seçilmedi</span>
+        Dosya seçilmedi
+      </span>
 
-        <button
-          type="button"
-          class="cartoon-upload-clear"
-          aria-label="Ana karakter görselini kaldır"
-          title="Resmi kaldır"
-          data-story-upload-remove="main"
-          style="display:inline-grid;"
-        >
-          ×
-        </button>
-      </div>
-    </div>
+      <button
+        type="button"
+        class="cartoon-upload-clear"
+        aria-label="Ana karakter görselini kaldır"
+        title="Resmi kaldır"
+        data-story-upload-remove="main"
+        style="display:none;"
+      >
+        ×
+      </button>
+    </label>
   </div>
 
   <div class="story-field story-character-field">
     <label for="storyHelperCharacter1Image">Yardımcı Karakter 1 (+10 Kredi)</label>
 
-    <div class="story-upload-slot" data-story-upload-slot="helper1" style="margin-top:12px;">
+    <label
+      class="cartoon-upload-row cartoon-upload-row--compact"
+      data-story-upload-slot="helper1"
+      style="margin-top:12px;"
+    >
       <input
         type="file"
         id="storyHelperCharacter1Image"
@@ -682,45 +690,49 @@
         data-story-character-file="helper1"
       />
 
-      <input type="hidden" id="storySideCharacter1" name="storySideCharacter1" data-story-helper-1 value="" />
+      <input
+        type="hidden"
+        id="storySideCharacter1"
+        name="storySideCharacter1"
+        data-story-helper-1
+        value=""
+      />
 
-      <button
-        type="button"
+      <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="helper1"
       >
         Resim Seç
-      </button>
+      </span>
 
-      <div
-        class="cartoon-upload-row cartoon-upload-row--compact"
-        data-story-upload-state="helper1"
-        hidden
-        style="margin-top:10px;"
+      <span
+        class="cartoon-upload-text"
+        data-story-upload-name="helper1"
       >
-        <span
-          class="cartoon-upload-text"
-          data-story-upload-name="helper1"
-        >Dosya seçilmedi</span>
+        Dosya seçilmedi
+      </span>
 
-        <button
-          type="button"
-          class="cartoon-upload-clear"
-          aria-label="Yardımcı karakter 1 görselini kaldır"
-          title="Resmi kaldır"
-          data-story-upload-remove="helper1"
-          style="display:inline-grid;"
-        >
-          ×
-        </button>
-      </div>
-    </div>
+      <button
+        type="button"
+        class="cartoon-upload-clear"
+        aria-label="Yardımcı karakter 1 görselini kaldır"
+        title="Resmi kaldır"
+        data-story-upload-remove="helper1"
+        style="display:none;"
+      >
+        ×
+      </button>
+    </label>
   </div>
 
   <div class="story-field story-character-field">
     <label for="storyHelperCharacter2Image">Yardımcı Karakter 2 (+10 Kredi)</label>
 
-    <div class="story-upload-slot" data-story-upload-slot="helper2" style="margin-top:12px;">
+    <label
+      class="cartoon-upload-row cartoon-upload-row--compact"
+      data-story-upload-slot="helper2"
+      style="margin-top:12px;"
+    >
       <input
         type="file"
         id="storyHelperCharacter2Image"
@@ -729,45 +741,49 @@
         data-story-character-file="helper2"
       />
 
-      <input type="hidden" id="storySideCharacter2" name="storySideCharacter2" data-story-helper-2 value="" />
+      <input
+        type="hidden"
+        id="storySideCharacter2"
+        name="storySideCharacter2"
+        data-story-helper-2
+        value=""
+      />
 
-      <button
-        type="button"
+      <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="helper2"
       >
         Resim Seç
-      </button>
+      </span>
 
-      <div
-        class="cartoon-upload-row cartoon-upload-row--compact"
-        data-story-upload-state="helper2"
-        hidden
-        style="margin-top:10px;"
+      <span
+        class="cartoon-upload-text"
+        data-story-upload-name="helper2"
       >
-        <span
-          class="cartoon-upload-text"
-          data-story-upload-name="helper2"
-        >Dosya seçilmedi</span>
+        Dosya seçilmedi
+      </span>
 
-        <button
-          type="button"
-          class="cartoon-upload-clear"
-          aria-label="Yardımcı karakter 2 görselini kaldır"
-          title="Resmi kaldır"
-          data-story-upload-remove="helper2"
-          style="display:inline-grid;"
-        >
-          ×
-        </button>
-      </div>
-    </div>
+      <button
+        type="button"
+        class="cartoon-upload-clear"
+        aria-label="Yardımcı karakter 2 görselini kaldır"
+        title="Resmi kaldır"
+        data-story-upload-remove="helper2"
+        style="display:none;"
+      >
+        ×
+      </button>
+    </label>
   </div>
 
   <div class="story-field story-character-field">
     <label for="storyExtraCharacterImage">Ek Karakter (+10 Kredi)</label>
 
-    <div class="story-upload-slot" data-story-upload-slot="extra" style="margin-top:12px;">
+    <label
+      class="cartoon-upload-row cartoon-upload-row--compact"
+      data-story-upload-slot="extra"
+      style="margin-top:12px;"
+    >
       <input
         type="file"
         id="storyExtraCharacterImage"
@@ -776,39 +792,41 @@
         data-story-character-file="extra"
       />
 
-      <input type="hidden" id="storyExtraCharacter" name="storyExtraCharacter" data-story-extra-character value="" />
+      <input
+        type="hidden"
+        id="storyExtraCharacter"
+        name="storyExtraCharacter"
+        data-story-extra-character
+        value=""
+      />
 
-      <button
-        type="button"
+      <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="extra"
       >
         Resim Seç
-      </button>
+      </span>
 
-      <div
-        class="cartoon-upload-row cartoon-upload-row--compact"
-        data-story-upload-state="extra"
-        hidden
-        style="margin-top:10px;"
+      <span
+        class="cartoon-upload-text"
+        data-story-upload-name="extra"
       >
-        <span
-          class="cartoon-upload-text"
-          data-story-upload-name="extra"
-        >Dosya seçilmedi</span>
+        Dosya seçilmedi
+      </span>
 
-        <button
-          type="button"
-          class="cartoon-upload-clear"
-          aria-label="Ek karakter görselini kaldır"
-          title="Resmi kaldır"
-          data-story-upload-remove="extra"
-          style="display:inline-grid;"
-        >
-          ×
-        </button>
-      </div>
-    </div>
+      <button
+        type="button"
+        class="cartoon-upload-clear"
+        aria-label="Ek karakter görselini kaldır"
+        title="Resmi kaldır"
+        data-story-upload-remove="extra"
+        style="display:none;"
+      >
+        ×
+      </button>
+    </label>
+  </div>
+  </div>
   </div>
 </div>
 </section>
