@@ -1249,29 +1249,34 @@
     if (!asset.file) {
       textEl.textContent = "Dosya seçilmedi";
       if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "uploading") {
       textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
       if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "ready") {
       textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "error") {
       textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
     if (clearBtn) clearBtn.style.display = "none";
+    syncStoryGenerateButtonCredit(root);
   }
 
   function updateStoryAudioUploadUI(root) {
@@ -1284,29 +1289,34 @@
     if (!asset.file) {
       textEl.textContent = "Dosya seçilmedi";
       if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "uploading") {
       textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
       if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "ready") {
       textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "error") {
       textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
     if (clearBtn) clearBtn.style.display = "none";
+    syncStoryGenerateButtonCredit(root);
   }
 
   function syncStorySettingsUploadUI(root) {
@@ -1795,7 +1805,8 @@
       }
     }
   }
-function getStoryEstimatedCredits() {
+
+  function getStoryEstimatedCredits() {
   const selectedScenes = getSelectedScenes();
   const totalSeconds = getSelectedTotalSeconds();
 
@@ -1823,7 +1834,8 @@ function getStoryEstimatedCredits() {
   if (includeMusic && audioAsset.file) total += 10;
 
   return total;
-}
+  }
+
   function syncStoryGenerateButtonCredit(root) {
   const btn = qs("[data-story-generate]", root);
   if (!btn) return;
@@ -1834,7 +1846,8 @@ function getStoryEstimatedCredits() {
   if (!state.isGenerating) {
     btn.textContent = `Hikayeyi Oluştur (${total} Kredi)`;
   }
-}
+  }
+
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
     const totalSeconds = getSelectedTotalSeconds();
@@ -2569,12 +2582,12 @@ function getStoryEstimatedCredits() {
           return;
         }
 
-        const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nDevam edilsin mi?`;
+        const creditCost = getStoryEstimatedCredits();
+        const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nToplam kredi: ${creditCost}.\nDevam edilsin mi?`;
         if (!window.confirm(summaryText)) {
           return;
         }
-const creditCost = getStoryEstimatedCredits();
-const creditReason = "studio_cartoon_story_generate";
+        const creditReason = "studio_cartoon_story_generate";
 
 const creditRes = await fetch("/api/credits/consume", {
   method: "POST",
@@ -3065,6 +3078,7 @@ setStoryGenerateButton(root, true);
       uploadBtn.hidden = false;
       stateBox.hidden = true;
       nameEl.textContent = "Dosya seçilmedi";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
@@ -3073,20 +3087,24 @@ setStoryGenerateButton(root, true);
 
     if (imageState.uploadStatus === "uploading") {
       nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (imageState.uploadStatus === "ready") {
       nameEl.textContent = getShortFileName(imageState.fileName);
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (imageState.uploadStatus === "error") {
       nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
     nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+    syncStoryGenerateButtonCredit(root);
   }
 
   function tryInit() {
