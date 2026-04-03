@@ -701,6 +701,20 @@
     btn.setAttribute("data-credit-cost", String(total));
     btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
   }
+    function syncCharacterCreateCredit(root) {
+    if (!root) return;
+
+    const btn = qs("[data-cartoon-character-create]", root);
+    if (!btn) return;
+
+    const hasReferenceImage =
+      !!qs("[data-character-create-upload]", root)?.files?.[0];
+
+    const total = hasReferenceImage ? 25 : 20;
+
+    btn.setAttribute("data-credit-cost", String(total));
+    btn.textContent = `🧩 Karakter Oluştur (${total} Kredi)`;
+  }
   function updateCharacterDescCount(root) {
     const input = qs("[data-character-desc]", root);
     const out = qs("[data-character-desc-count]", root);
@@ -919,6 +933,7 @@
     if (!root) return;
     updateCharacterDescCount(root);
     updateCharacterCreateUploadUI(root);
+    syncCharacterCreateCredit(root);
     renderCharacterLibrary(root);
   }
 
@@ -1255,6 +1270,7 @@
           : null;
 
       updateCharacterCreateUploadUI(root);
+       syncCharacterCreateCredit(root);
 
       if (!file) {
         state.characterReferenceImageUrl = "";
@@ -1560,8 +1576,13 @@
       showCharacterPolicyBlockedUI(root, descInput, characterCreateBtn);
       return;
     }
-    console.log("[CARTOON][CHARACTER] payload =", payload);
-        const creditCost = 20;
+      console.log("[CARTOON][CHARACTER] payload =", payload);
+
+    const hasReferenceImage =
+      !!payload.referenceImageUrl ||
+      !!payload.referenceFile;
+
+    const creditCost = hasReferenceImage ? 25 : 20;
     const creditReason = "studio_cartoon_character_create";
 
     const creditRes = await fetch("/api/credits/consume", {
