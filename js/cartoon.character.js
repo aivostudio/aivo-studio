@@ -17,7 +17,7 @@
       helpers: [],
       scene: "underwater",
       action: "swimming",
-      duration: "5",
+        duration: "4",
       ratio: "16:9",
       audioEnabled: false,
       characterImage: null,
@@ -557,16 +557,149 @@
       .trim();
   }
 
+  function buildCharacterPolicyPhraseRegex(term) {
+    const normalized = normalizeCharacterPolicyText(term);
+    if (!normalized) return null;
+
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\s+");
+
+    return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+  }
+
   function isCharacterPolicyBlocked(raw) {
     const text = normalizeCharacterPolicyText(raw);
 
     const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeCharacterPolicyText(term))) ||
-      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeCharacterPolicyText(term))) ||
-      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeCharacterPolicyText(term)));
+      HARD_BLOCK_TERMS.some((term) => {
+        const rx = buildCharacterPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      PUBLIC_FIGURE_TERMS.some((term) => {
+        const rx = buildCharacterPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      ARTIST_NAME_TERMS.some((term) => {
+        const rx = buildCharacterPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      });
 
     const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
     return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+    function ensureCharacterPolicyNote(root, createBtn) {
+    if (!root || !createBtn || !createBtn.parentElement) return null;
+
+    let policyNote = qs("#cartoonCharacterPolicyNote", root);
+
+    if (!policyNote) {
+      policyNote = document.createElement("div");
+      policyNote.id = "cartoonCharacterPolicyNote";
+      policyNote.style.display = "none";
+      policyNote.style.marginTop = "14px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.textAlign = "center";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "800";
+      policyNote.style.lineHeight = "1.65";
+      policyNote.style.color = "rgba(255,245,248,.96)";
+      createBtn.parentElement.appendChild(policyNote);
+    }
+
+    return policyNote;
+  }
+
+  function resetCharacterPolicyUI(root, descInput, createBtn) {
+    const policyNote = qs("#cartoonCharacterPolicyNote", root);
+
+    if (descInput) {
+      descInput.style.borderColor = "";
+      descInput.style.boxShadow = "";
+    }
+
+    if (createBtn) {
+      createBtn.style.background = "";
+      createBtn.style.borderColor = "";
+      createBtn.style.boxShadow = "";
+      createBtn.style.cursor = "";
+      createBtn.style.filter = "";
+    }
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+    }
+  }
+
+  function showCharacterPolicyBlockedUI(root, descInput, createBtn) {
+    const policyNote = ensureCharacterPolicyNote(root, createBtn);
+
+    if (descInput) {
+      descInput.style.borderColor = "rgba(255,110,140,.92)";
+      descInput.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      descInput.focus();
+    }
+
+    if (createBtn) {
+      createBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      createBtn.style.borderColor = "rgba(255,110,140,.95)";
+      createBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      createBtn.style.cursor = "not-allowed";
+      createBtn.style.filter = "saturate(1.05)";
+    }
+
+    if (policyNote) {
+      policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.";
+      policyNote.style.display = "block";
+    }
+  }
+    const CARTOON_VIDEO_BASE_CREDITS = {
+    "4": 30,
+    "6": 35,
+    "8": 40,
+    "10": 45,
+    "12": 50,
+    "15": 55
+  };
+
+  function getCartoonBasicCredit() {
+    const state = getState();
+    const root = getCartoonRoot();
+    const duration = String(state.duration || "4");
+
+    let total = Number(CARTOON_VIDEO_BASE_CREDITS[duration] || 30);
+
+    const hasCharacterImage =
+      !!state.characterImage ||
+      !!qs("[data-character-upload]", root)?.files?.[0];
+
+    const hasLogoImage =
+      !!qs("[data-basic-logo-upload]", root)?.files?.[0];
+
+    if (hasCharacterImage) total += 5;
+    if (hasLogoImage) total += 5;
+    if (state.audioEnabled) total += 5;
+
+    return total;
+  }
+
+  function syncCartoonBasicGenerateCredit(root) {
+    if (!root) return;
+
+    const btn = qs("[data-cartoon-generate]", root);
+    if (!btn) return;
+
+    const total = getCartoonBasicCredit();
+
+    btn.setAttribute("data-credit-cost", String(total));
+    btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
   }
   function updateCharacterDescCount(root) {
     const input = qs("[data-character-desc]", root);
@@ -1048,7 +1181,37 @@
       console.error("[CARTOON][CHARACTER_HYDRATE] failed =", err);
     }
   }
+   document.addEventListener("change", (e) => {
+    const root = getCartoonRoot();
+    if (!root) return;
 
+    const state = getState();
+
+    const durationEl = e.target.closest("#cartoon-duration");
+    if (durationEl && root.contains(durationEl)) {
+      state.duration = String(durationEl.value || "4");
+      syncCartoonBasicGenerateCredit(root);
+      return;
+    }
+
+    const audioSourceEl = e.target.closest("[data-audio-source]");
+    if (audioSourceEl && root.contains(audioSourceEl)) {
+      state.audioEnabled = String(audioSourceEl.value || "") === "upload";
+      syncCartoonBasicGenerateCredit(root);
+      return;
+    }
+         const logoPositionEl = e.target.closest("[data-basic-logo-position]");
+    if (logoPositionEl && root.contains(logoPositionEl)) {
+      syncCartoonBasicGenerateCredit(root);
+      return;
+    }
+
+    const basicStyleEl = e.target.closest("[data-basic-style]");
+    if (basicStyleEl && root.contains(basicStyleEl)) {
+      syncCartoonBasicGenerateCredit(root);
+      return;
+    }
+  });
   document.addEventListener("input", (e) => {
     const root = getCartoonRoot();
     if (!root) return;
@@ -1085,30 +1248,49 @@
     const state = getState();
 
     const characterCreateUpload = e.target.closest("[data-character-create-upload]");
-    if (!characterCreateUpload || !root.contains(characterCreateUpload)) return;
+    if (characterCreateUpload && root.contains(characterCreateUpload)) {
+      const file =
+        characterCreateUpload.files && characterCreateUpload.files[0]
+          ? characterCreateUpload.files[0]
+          : null;
 
-    const file =
-      characterCreateUpload.files && characterCreateUpload.files[0]
-        ? characterCreateUpload.files[0]
-        : null;
+      updateCharacterCreateUploadUI(root);
 
-    updateCharacterCreateUploadUI(root);
+      if (!file) {
+        state.characterReferenceImageUrl = "";
+        return;
+      }
 
-    if (!file) {
       state.characterReferenceImageUrl = "";
+
+      try {
+        const publicUrl = await uploadCartoonReferenceToR2(file);
+        state.characterReferenceImageUrl = String(publicUrl || "").trim();
+        console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
+      } catch (err) {
+        state.characterReferenceImageUrl = "";
+        console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
+        alert(String(err?.message || err || "reference_upload_failed"));
+      }
+
       return;
     }
 
-    state.characterReferenceImageUrl = "";
+    const basicCharacterUpload = e.target.closest("[data-character-upload]");
+    if (basicCharacterUpload && root.contains(basicCharacterUpload)) {
+      state.characterImage =
+        basicCharacterUpload.files && basicCharacterUpload.files[0]
+          ? basicCharacterUpload.files[0]
+          : null;
 
-    try {
-      const publicUrl = await uploadCartoonReferenceToR2(file);
-      state.characterReferenceImageUrl = String(publicUrl || "").trim();
-      console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
-    } catch (err) {
-      state.characterReferenceImageUrl = "";
-      console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
-      alert(String(err?.message || err || "reference_upload_failed"));
+      syncCartoonBasicGenerateCredit(root);
+      return;
+    }
+
+    const basicLogoUpload = e.target.closest("[data-basic-logo-upload]");
+    if (basicLogoUpload && root.contains(basicLogoUpload)) {
+      syncCartoonBasicGenerateCredit(root);
+      return;
     }
   });
 
@@ -1276,12 +1458,7 @@
 
         const nameInput = qs("#cartoon-character-name", root);
         const descInput = qs("#cartoon-character-desc", root);
-              characterCreateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-      characterCreateBtn.style.borderColor = "rgba(255,110,140,.95)";
-      characterCreateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-      characterCreateBtn.style.cursor = "not-allowed";
-      characterCreateBtn.style.filter = "saturate(1.05)";
-        const styleSelect = qs("#cartoon-character-style", root);
+         const styleSelect = qs("#cartoon-character-style", root);
 
         if (nameInput) nameInput.value = selectedItem.name || "";
         if (descInput) descInput.value = selectedItem.prompt || "";
@@ -1377,44 +1554,66 @@
       payload.expression
     ].filter(Boolean).join(" ");
 
+    resetCharacterPolicyUI(root, qs("#cartoon-character-desc", root), characterCreateBtn);
     if (isCharacterPolicyBlocked(policyText)) {
-     const descInput = qs("#cartoon-character-desc", root);
-
-if (descInput) {
-  descInput.style.borderColor = "rgba(255,110,140,.92)";
-  descInput.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-}
-
-let policyNote = qs("#cartoonCharacterPolicyNote", root);
-
-if (!policyNote) {
-  policyNote = document.createElement("div");
-  policyNote.id = "cartoonCharacterPolicyNote";
-  policyNote.style.marginTop = "14px";
-  policyNote.style.padding = "14px 16px";
-  policyNote.style.borderRadius = "18px";
-  policyNote.style.background = "rgba(255,90,120,.10)";
-  policyNote.style.border = "1px solid rgba(255,120,150,.24)";
-  policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
-  policyNote.style.textAlign = "center";
-  policyNote.style.fontSize = "14px";
-  policyNote.style.fontWeight = "800";
-  policyNote.style.lineHeight = "1.65";
-  policyNote.style.color = "rgba(255,245,248,.96)";
-
-  const createBtnWrap = characterCreateBtn.parentElement;
-  if (createBtnWrap) {
-    createBtnWrap.appendChild(policyNote);
-  }
-}
-
-policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.";
-policyNote.style.display = "block";
-
-return;
+      const descInput = qs("#cartoon-character-desc", root);
+      showCharacterPolicyBlockedUI(root, descInput, characterCreateBtn);
       return;
     }
     console.log("[CARTOON][CHARACTER] payload =", payload);
+        const creditCost = 20;
+    const creditReason = "studio_cartoon_character_create";
+
+    const creditRes = await fetch("/api/credits/consume", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        cost: creditCost,
+        reason: creditReason
+      })
+    });
+
+    let creditData = null;
+    try {
+      creditData = await creditRes.json();
+    } catch {
+      creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+    }
+
+    if (!creditRes.ok || !creditData?.ok) {
+      const msg =
+        creditData?.error ||
+        creditData?.message ||
+        "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+
+      alert(String(msg));
+      return;
+    }
+
+    try {
+      const creditGetRes = await fetch("/api/credits/get", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
+
+      const creditGetData = await creditGetRes.json().catch(() => null);
+
+      if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(creditGetData.credits);
+        }
+
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+        }
+      }
+    } catch {}
 
     state.characterCreatePending = true;
     characterCreateBtn.disabled = true;
