@@ -618,26 +618,48 @@
     "sertab"
   ];
 
-  function normalizeBasicPolicyText(value) {
-    return String(value || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+function normalizeBasicPolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  function isBasicPolicyBlocked(raw) {
-    const text = normalizeBasicPolicyText(raw);
+function buildBasicPolicyPhraseRegex(term) {
+  const normalized = normalizeBasicPolicyText(term);
+  if (!normalized) return null;
 
-    const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeBasicPolicyText(term))) ||
-      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeBasicPolicyText(term))) ||
-      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeBasicPolicyText(term)));
+  const pattern = normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("\\s+");
 
-    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-    return !!raw && (hasBlockedTerm || hasBlockedPattern);
-  }
+  return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+}
+
+function isBasicPolicyBlocked(raw) {
+  const text = normalizeBasicPolicyText(raw);
+
+  const hasBlockedTerm =
+    HARD_BLOCK_TERMS.some((term) => {
+      const rx = buildBasicPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    PUBLIC_FIGURE_TERMS.some((term) => {
+      const rx = buildBasicPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    ARTIST_NAME_TERMS.some((term) => {
+      const rx = buildBasicPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    });
+
+  const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+  return !!raw && (hasBlockedTerm || hasBlockedPattern);
+}
 
   function ensureBasicPolicyNote(root, generateBtn) {
     if (!root || !generateBtn || !generateBtn.parentElement) return null;
