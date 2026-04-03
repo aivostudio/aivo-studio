@@ -127,21 +127,53 @@ function createUploadCharacterEntry(slot) {
 }
 
 function getSelectedPresetCharacters(root) {
-  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', root)
-    .map((btn) => {
-      const role = safeText(btn.dataset.role);
-      const value = safeText(btn.dataset.character);
-      const label =
+  const selected = [];
+
+  const mainLabel = safeText(state.mainCharacter);
+  if (mainLabel) {
+    const mainBtn = qsa('[data-role="main"]', root).find((btn) => {
+      const btnLabel =
         safeText(qs(".cartoon-character-name", btn)?.textContent) ||
         safeText(btn.textContent) ||
-        value;
+        safeText(btn.dataset.character);
+      return btnLabel === mainLabel;
+    });
 
-      if (!role || !value || !label) return null;
-      return createPresetCharacterEntry(role, value, label);
-    })
-    .filter(Boolean);
+    selected.push(
+      createPresetCharacterEntry(
+        "main",
+        safeText(mainBtn?.dataset.character) || mainLabel,
+        mainLabel
+      )
+    );
+  }
+
+  [
+    safeText(state.helperCharacter1),
+    safeText(state.helperCharacter2),
+    safeText(state.extraCharacter)
+  ]
+    .filter(Boolean)
+    .forEach((helperLabel) => {
+      const helperBtn = qsa('[data-role="helper"]', root).find((btn) => {
+        const btnLabel =
+          safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+          safeText(btn.textContent) ||
+          safeText(btn.dataset.character);
+        return btnLabel === helperLabel;
+      });
+
+      selected.push(
+        createPresetCharacterEntry(
+          "helper",
+          safeText(helperBtn?.dataset.character) || helperLabel,
+          helperLabel
+        )
+      );
+    });
+
+  return selected.filter(Boolean);
 }
-
 function getSelectedUploadCharacters() {
   return STORY_CHARACTER_SLOT_CONFIG
     .map((config) => createUploadCharacterEntry(config.slot))
