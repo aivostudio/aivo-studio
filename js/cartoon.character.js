@@ -1729,8 +1729,16 @@ function ensureCharacterCreateUploadClearButton(root, host) {
 
     e.preventDefault();
 
-    const payload = buildCharacterCreatePayload(root);
-        const policyText = [
+      const payload = buildCharacterCreatePayload(root);
+
+    if (!String(payload.prompt || "").trim()) {
+      alert("Önce kısa tanım / prompt yazın.");
+      const descInput = qs("#cartoon-character-desc", root);
+      if (descInput) descInput.focus();
+      return;
+    }
+
+    const policyText = [
       payload.name,
       payload.prompt,
       payload.style,
