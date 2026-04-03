@@ -2331,8 +2331,10 @@ function getStoryEstimatedCredits() {
     syncSceneEditor(root);
     updateStoryIdeaCount(root);
     syncAllStoryCharacterUploadUI(root);
-    syncStorySettingsUploadUI(root);
-    syncStoryDurationSummary(root);
+   syncStorySettingsUploadUI(root);
+   syncStoryDurationSummary(root);
+   syncStoryGenerateButtonCredit(root);
+    
   }
 
   function bindClicks() {
