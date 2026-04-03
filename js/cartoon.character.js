@@ -1654,27 +1654,7 @@
         }
 
         if (j?.job_id) {
-          window.dispatchEvent(
-            new CustomEvent("aivo:cartoon:job_created", {
-              detail: {
-                app: "cartoon",
-                mode: "character",
-                job_id: j.job_id,
-                prompt: payload.prompt || "",
-                createdAt: Date.now(),
-                meta: {
-                  app: "cartoon",
-                  mode: "character",
-                  provider: "fal",
-                  name: payload.name || "",
-                  type: payload.type || "",
-                  style: payload.style || "",
-                  prompt: payload.prompt || "",
-                  ui_state: payload.uiState || {}
-                }
-              }
-            })
-          );
+       
 
           pollCartoonCharacterJob(j.job_id, 0);
         }
