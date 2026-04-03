@@ -2460,10 +2460,20 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
 
   if (!role || !value || !label) return;
 
+  const helperSlots = ["helper1", "helper2", "extra"];
+  const helperStateKeys = {
+    helper1: "helperCharacter1",
+    helper2: "helperCharacter2",
+    extra: "extraCharacter"
+  };
+
+  const totalSelectedCount = getStorySelectedCharacterCount(root);
+
   if (role === "main") {
     const isAlreadySelected = safeText(state.mainCharacter) === label;
     const mainImageState = getStoryCharacterImage("main");
     const hasMainUpload = !!(mainImageState && mainImageState.file);
+    const hasMainPreset = !!safeText(state.mainCharacter);
 
     if (isAlreadySelected && !hasMainUpload) {
       state.mainCharacter = "";
@@ -2480,8 +2490,12 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
       return;
     }
 
-    if (!safeText(state.mainCharacter) && !canAddStoryCharacter(root, 1)) {
+    const willAddNewMainPreset = !isAlreadySelected && !hasMainPreset;
+    if (willAddNewMainPreset && totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
       showStoryCharacterLimitAlert();
+      qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
+        btn.classList.toggle("is-selected", safeText(btn.dataset.character) === safeText(state.mainCharacter));
+      });
       return;
     }
 
@@ -2497,42 +2511,32 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
   }
 
   if (role === "helper") {
-    const helperSlots = ["helper1", "helper2", "extra"];
-    const stateKeys = {
-      helper1: "helperCharacter1",
-      helper2: "helperCharacter2",
-      extra: "extraCharacter"
-    };
-
-    const selectedSlot = helperSlots.find((slot) => safeText(state[stateKeys[slot]]) === label);
+    const selectedSlot = helperSlots.find((slot) => safeText(state[helperStateKeys[slot]]) === label);
 
     if (selectedSlot) {
       const selectedImageState = getStoryCharacterImage(selectedSlot);
       const hasUploadInSelectedSlot = !!(selectedImageState && selectedImageState.file);
 
       if (!hasUploadInSelectedSlot) {
-        state[stateKeys[selectedSlot]] = "";
-        storyCharacterCard.classList.remove("is-selected");
+        state[helperStateKeys[selectedSlot]] = "";
         resetStoryPolicyUI(root);
         render(root);
         return;
       }
-    }
 
-    const emptySlot = helperSlots.find((slot) => !safeText(state[stateKeys[slot]]));
-
-    if (!emptySlot) {
-      showStoryCharacterLimitAlert();
+      alert("Bu slotta özel karakter var. Önce onu kaldırmalısın.");
       return;
     }
 
-    if (!canAddStoryCharacter(root, 1)) {
+    const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
+
+    if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
       showStoryCharacterLimitAlert();
+      render(root);
       return;
     }
 
-    state[stateKeys[emptySlot]] = label;
-    storyCharacterCard.classList.add("is-selected");
+    state[helperStateKeys[emptySlot]] = label;
 
     resetStoryPolicyUI(root);
     render(root);
