@@ -1802,10 +1802,11 @@ function getStoryEstimatedCredits() {
   let total = 0;
 
   if (selectedScenes.length > 0) {
-    if (totalSeconds <= 60) total = 30;
-    else if (totalSeconds <= 120) total = 40;
-    else if (totalSeconds <= 180) total = 50;
-    else total = 60;
+    if (totalSeconds <= 30) total = 30;
+    else if (totalSeconds <= 60) total = 40;
+    else if (totalSeconds <= 120) total = 50;
+    else if (totalSeconds <= 180) total = 60;
+    else total = 70;
   }
 
   const hasAnyCharacterImage = STORY_CHARACTER_SLOT_CONFIG.some((config) => {
