@@ -2407,6 +2407,41 @@ if (includeMusic && audioAsset.file) total += 10;
     render(root);
   }
 
+  function syncStoryPresetCharacterCards(root) {
+    if (!root) return;
+
+    const helperSlots = ["helper1", "helper2", "extra"];
+    const helperStateKeys = {
+      helper1: "helperCharacter1",
+      helper2: "helperCharacter2",
+      extra: "extraCharacter"
+    };
+
+    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
+      const btnLabel =
+        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        safeText(btn.dataset.character);
+
+      const isSelectedInState = safeText(state.mainCharacter) === btnLabel;
+      btn.classList.toggle("is-selected", isSelectedInState);
+    });
+
+    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', root).forEach((btn) => {
+      const btnLabel =
+        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        safeText(btn.dataset.character);
+
+      const isSelectedInState = helperSlots.some((slot) => {
+        const stateKey = helperStateKeys[slot];
+        return safeText(state[stateKey]) === btnLabel;
+      });
+
+      btn.classList.toggle("is-selected", isSelectedInState);
+    });
+  }
+
   function render(root) {
     if (!root) return;
 
@@ -2416,6 +2451,7 @@ if (includeMusic && audioAsset.file) total += 10;
     syncStoryFormValues(root);
     syncStoryFlowDuration(root);
     syncCharacterSelects(root);
+    syncStoryPresetCharacterCards(root);
     renderSectionScenes(root);
     syncStorySectionCounts(root);
     syncStoryAccordion(root);
@@ -2424,10 +2460,9 @@ if (includeMusic && audioAsset.file) total += 10;
     syncSceneEditor(root);
     updateStoryIdeaCount(root);
     syncAllStoryCharacterUploadUI(root);
-   syncStorySettingsUploadUI(root);
-   syncStoryDurationSummary(root);
-   syncStoryGenerateButtonCredit(root);
-    
+    syncStorySettingsUploadUI(root);
+    syncStoryDurationSummary(root);
+    syncStoryGenerateButtonCredit(root);
   }
 
   function bindClicks() {
