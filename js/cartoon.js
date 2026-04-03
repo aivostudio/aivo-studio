@@ -1530,7 +1530,7 @@ if (String(state.activeBasicJobId || "").trim() === currentJobId) {
         } catch (err) {
           state.isGenerating = false;
           generateBtn.disabled = false;
-          generateBtn.textContent = "🎬 Sahneyi Oluştur (50 Kredi)";
+        generateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
           generateBtn.classList.remove("is-loading");
 
           console.error("[CARTOON][BASIC] create error:", err);
