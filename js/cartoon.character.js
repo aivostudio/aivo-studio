@@ -740,39 +740,42 @@
     syncCharacterCreateCredit(root);
   }
 
-  function ensureCharacterCreateUploadClearButton(root, host) {
-    let clearBtn = qs("[data-character-create-upload-clear]", host);
+function ensureCharacterCreateUploadClearButton(root, host) {
+  let clearBtn = qs("[data-character-create-upload-clear]", host);
 
-    if (!clearBtn) {
-      clearBtn = document.createElement("button");
-      clearBtn.type = "button";
-      clearBtn.setAttribute("data-character-create-upload-clear", "");
-      clearBtn.setAttribute("aria-label", "Referans görseli kaldır");
-      clearBtn.title = "Resmi kaldır";
-      clearBtn.textContent = "×";
-      clearBtn.style.marginLeft = "8px";
-      clearBtn.style.width = "22px";
-      clearBtn.style.height = "22px";
-      clearBtn.style.borderRadius = "999px";
-      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
-      clearBtn.style.background = "rgba(255,255,255,.08)";
-      clearBtn.style.color = "#fff";
-      clearBtn.style.cursor = "pointer";
-      clearBtn.style.display = "none";
-      clearBtn.style.verticalAlign = "middle";
-      host.appendChild(clearBtn);
-
-      clearBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const nextRoot = getCartoonRoot();
-        if (!nextRoot) return;
-        clearCharacterCreateReference(nextRoot);
-      });
-    }
-
-    return clearBtn;
+  if (!clearBtn) {
+    clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.setAttribute("data-character-create-upload-clear", "");
+    clearBtn.setAttribute("aria-label", "Referans görseli kaldır");
+    clearBtn.title = "Resmi kaldır";
+    clearBtn.textContent = "×";
+    clearBtn.style.marginLeft = "8px";
+    clearBtn.style.width = "22px";
+    clearBtn.style.height = "22px";
+    clearBtn.style.borderRadius = "999px";
+    clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+    clearBtn.style.background = "rgba(255,255,255,.08)";
+    clearBtn.style.color = "#fff";
+    clearBtn.style.cursor = "pointer";
+    clearBtn.style.display = "none";
+    clearBtn.style.verticalAlign = "middle";
+    host.appendChild(clearBtn);
   }
+
+  if (clearBtn.dataset.bound !== "1") {
+    clearBtn.dataset.bound = "1";
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const nextRoot = getCartoonRoot();
+      if (!nextRoot) return;
+      clearCharacterCreateReference(nextRoot);
+    });
+  }
+
+  return clearBtn;
+}
 
   function updateCharacterCreateUploadUI(root) {
     const state = getState();
