@@ -549,13 +549,69 @@
 <section class="story-card story-characters-card">
   <div class="story-card-head">
     <h4>Karakterler</h4>
-    <p class="story-card-note">En fazla 4 referans kullanılabilir.</p>
+    <p class="story-card-note">Hazır karakterleri ücretsiz kullanabilir, kendi özel karakterini ayrı alandan ekleyebilirsin.</p>
   </div>
 
-<div
-  class="story-grid story-grid-4"
-  style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; align-items:start;"
->
+  <!-- Hazır Karakterler -->
+  <div class="cartoon-character-duo" style="margin-top:8px;">
+    <section class="cartoon-block">
+      <div class="cartoon-block-head">
+        <h3>Ana Karakter</h3>
+      </div>
+
+      <div class="cartoon-character-grid cartoon-character-grid--stack">
+        <button type="button" class="cartoon-character-card is-selected" data-role="main" data-character="red-fish">
+          <span class="cartoon-character-thumb">🐟</span>
+          <span class="cartoon-character-name">Kırmızı Balık</span>
+        </button>
+
+        <button type="button" class="cartoon-character-card" data-role="main" data-character="chick">
+          <span class="cartoon-character-thumb">🐥</span>
+          <span class="cartoon-character-name">Civciv</span>
+        </button>
+
+        <button type="button" class="cartoon-character-card" data-role="main" data-character="duck">
+          <span class="cartoon-character-thumb">🦆</span>
+          <span class="cartoon-character-name">Ördek</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="cartoon-block">
+      <div class="cartoon-block-head">
+        <h3>Yardımcı Karakterler</h3>
+        <span class="cartoon-count" data-helper-count>0/3</span>
+      </div>
+
+      <div class="cartoon-character-grid cartoon-character-grid--stack">
+        <button type="button" class="cartoon-character-card" data-role="helper" data-character="small-fish-school">
+          <span class="cartoon-character-thumb">🐠</span>
+          <span class="cartoon-character-name">Küçük Balıklar</span>
+        </button>
+
+        <button type="button" class="cartoon-character-card" data-role="helper" data-character="frog">
+          <span class="cartoon-character-thumb">🐸</span>
+          <span class="cartoon-character-name">Kurbağa</span>
+        </button>
+
+        <button type="button" class="cartoon-character-card" data-role="helper" data-character="crab">
+          <span class="cartoon-character-thumb">🦀</span>
+          <span class="cartoon-character-name">Yengeç</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Özel Karakterler -->
+  <div class="story-card-head" style="margin-top:24px;">
+    <h4>Özel Karakterler (+10 Kredi)</h4>
+    <p class="story-card-note">Kendi fotoğrafını, çocuğunun görselini veya özel referans karakterlerini buradan ekle.</p>
+  </div>
+
+  <div
+    class="story-grid story-grid-4"
+    style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; align-items:start;"
+  >
     <div class="story-field story-character-field">
       <label for="storyMainCharacter">Ana Karakter</label>
       <select id="storyMainCharacter" name="storyMainCharacter" data-story-main-character>
