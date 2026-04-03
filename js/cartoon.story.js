@@ -3100,7 +3100,6 @@ setStoryGenerateButton(root, true);
         setStoryAudioAsset({ uploadPromise });
         return;
       }
-
       const characterFileInput = e.target.closest("[data-story-character-file]");
       if (characterFileInput && root.contains(characterFileInput)) {
         const slot = safeText(characterFileInput.dataset.storyCharacterFile);
@@ -3112,6 +3111,23 @@ setStoryGenerateButton(root, true);
             : null;
 
         const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
+        const currentImageState = getStoryCharacterImage(slot);
+        const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
+        const slotAlreadyHasLabel = !!safeText(slotConfig ? state[slotConfig.stateKey] : "");
+        const totalSelectedCount = getStorySelectedCharacterCount(root);
+
+        if (
+          file &&
+          slotConfig &&
+          !slotAlreadyUsedByUpload &&
+          !slotAlreadyHasLabel &&
+          totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS
+        ) {
+          characterFileInput.value = "";
+          showStoryCharacterLimitAlert();
+          render(root);
+          return;
+        }
 
         if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
           const autoLabel = safeText(file.name)
