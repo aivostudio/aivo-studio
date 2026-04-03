@@ -717,27 +717,14 @@
     btn.setAttribute("data-credit-cost", String(total));
     btn.textContent = `🧩 Karakter Oluştur (${total} Kredi)`;
   }
-function updateCharacterDescCount(root) {
-  const input = qs("[data-character-desc]", root);
-  const out = qs("[data-character-desc-count]", root);
-  const createBtn = qs("[data-cartoon-character-create]", root);
+  function updateCharacterDescCount(root) {
+    const input = qs("[data-character-desc]", root);
+    const out = qs("[data-character-desc-count]", root);
+    if (!input || !out) return;
 
-  if (!input || !out) return;
-
-  const text = String(input.value || "");
-  const len = text.length;
-  const hasPrompt = text.trim().length > 0;
-
-  out.textContent = `${len} / 1000`;
-
-  if (createBtn) {
-    createBtn.disabled = !hasPrompt;
-    createBtn.style.opacity = hasPrompt ? "1" : ".55";
-    createBtn.style.cursor = hasPrompt ? "" : "not-allowed";
-    createBtn.style.pointerEvents = hasPrompt ? "" : "none";
-    createBtn.title = hasPrompt ? "" : "Önce kısa tanım girin";
+    const len = String(input.value || "").length;
+    out.textContent = `${len} / 1000`;
   }
-}
 
   function clearCharacterCreateReference(root) {
     const state = getState();
