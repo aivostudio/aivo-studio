@@ -2318,8 +2318,9 @@
 }
 
 .story-characters-card .cartoon-upload-row--compact .cartoon-upload-btn:active{
-  transform:translateY(0);
-  box-shadow:0 6px 14px rgba(191,86,255,.14);
+  transform:translateY(2px) scale(.985);
+  box-shadow:0 4px 10px rgba(191,86,255,.12);
+  filter:brightness(.98);
 }
 .story-characters-card .story-grid-4 > .story-character-field{
   align-self:start;
