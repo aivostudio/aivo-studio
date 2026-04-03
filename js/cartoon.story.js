@@ -2444,7 +2444,90 @@ if (includeMusic && audioAsset.file) total += 10;
         render(root);
         return;
       }
+      const storyCharacterCard = e.target.closest("[data-role][data-character]");
+if (storyCharacterCard && root.contains(storyCharacterCard)) {
+  const storyView = storyCharacterCard.closest('.cartoon-mode-view[data-cartoon-view="story"]');
+  if (!storyView || storyView.hidden) return;
 
+  e.preventDefault();
+
+  const role = safeText(storyCharacterCard.dataset.role);
+  const value = safeText(storyCharacterCard.dataset.character);
+  const label =
+    safeText(qs(".cartoon-character-name", storyCharacterCard)?.textContent) ||
+    safeText(storyCharacterCard.textContent) ||
+    value;
+
+  if (!role || !value || !label) return;
+
+  if (role === "main") {
+    const mainImageState = getStoryCharacterImage("main");
+    const hasMainUpload = !!(mainImageState && mainImageState.file);
+
+    if (hasMainUpload) {
+      alert("Ana Karakter slotunda özel karakter var. Önce onu kaldırmalısın.");
+      return;
+    }
+
+    if (!safeText(state.mainCharacter) && !canAddStoryCharacter(root, 1)) {
+      showStoryCharacterLimitAlert();
+      return;
+    }
+
+    state.mainCharacter = label;
+
+    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
+      btn.classList.toggle("is-selected", btn === storyCharacterCard);
+    });
+
+    resetStoryPolicyUI(root);
+    render(root);
+    return;
+  }
+
+  if (role === "helper") {
+    const helperSlots = ["helper1", "helper2", "extra"];
+    const stateKeys = {
+      helper1: "helperCharacter1",
+      helper2: "helperCharacter2",
+      extra: "extraCharacter"
+    };
+
+    const selectedSlot = helperSlots.find((slot) => safeText(state[stateKeys[slot]]) === label);
+
+    if (selectedSlot) {
+      const selectedImageState = getStoryCharacterImage(selectedSlot);
+      const hasUploadInSelectedSlot = !!(selectedImageState && selectedImageState.file);
+
+      if (!hasUploadInSelectedSlot) {
+        state[stateKeys[selectedSlot]] = "";
+        storyCharacterCard.classList.remove("is-selected");
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+    }
+
+    const emptySlot = helperSlots.find((slot) => !safeText(state[stateKeys[slot]]));
+
+    if (!emptySlot) {
+      showStoryCharacterLimitAlert();
+      return;
+    }
+
+    if (!canAddStoryCharacter(root, 1)) {
+      showStoryCharacterLimitAlert();
+      return;
+    }
+
+    state[stateKeys[emptySlot]] = label;
+    storyCharacterCard.classList.add("is-selected");
+
+    resetStoryPolicyUI(root);
+    render(root);
+    return;
+  }
+}
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
       if (sectionToggle && root.contains(sectionToggle)) {
         e.preventDefault();
