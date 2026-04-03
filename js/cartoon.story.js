@@ -1796,7 +1796,34 @@
       }
     }
   }
+function getStoryEstimatedCredits() {
+  const selectedScenes = getSelectedScenes();
+  const totalSeconds = getSelectedTotalSeconds();
 
+  let total = 0;
+
+  if (selectedScenes.length > 0) {
+    if (totalSeconds <= 60) total = 30;
+    else if (totalSeconds <= 120) total = 40;
+    else if (totalSeconds <= 180) total = 50;
+    else total = 60;
+  }
+
+  const hasAnyCharacterImage = STORY_CHARACTER_SLOT_CONFIG.some((config) => {
+    const imageState = getStoryCharacterImage(config.slot);
+    return !!(imageState && imageState.file);
+  });
+
+  const logoAsset = getStoryLogoAsset();
+  const audioAsset = getStoryAudioAsset();
+  const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
+
+  if (hasAnyCharacterImage) total += 10;
+  if (logoAsset.file) total += 10;
+  if (includeMusic && audioAsset.file) total += 10;
+
+  return total;
+}
   function buildStoryPayload() {
     const selectedScenes = getSelectedScenes();
     const totalSeconds = getSelectedTotalSeconds();
