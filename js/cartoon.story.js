@@ -1806,18 +1806,12 @@
     }
   }
 
-  function getStoryEstimatedCredits() {
-  const selectedScenes = getSelectedScenes();
-  const totalSeconds = getSelectedTotalSeconds();
+function getStoryEstimatedCredits() {
+  const totalSeconds = Math.max(4, Number(getSelectedTotalSeconds() || 0));
+  let total = 30;
 
-  let total = 0;
-
-  if (selectedScenes.length > 0) {
-    if (totalSeconds <= 30) total = 30;
-    else if (totalSeconds <= 60) total = 40;
-    else if (totalSeconds <= 120) total = 50;
-    else if (totalSeconds <= 180) total = 60;
-    else total = 70;
+  if (totalSeconds > 4) {
+    total += Math.floor((totalSeconds - 4) / 2) * 5;
   }
 
   const hasAnyCharacterImage = STORY_CHARACTER_SLOT_CONFIG.some((config) => {
@@ -1829,12 +1823,12 @@
   const audioAsset = getStoryAudioAsset();
   const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
 
-  if (hasAnyCharacterImage) total += 10;
+  if (hasAnyCharacterImage) total += 5;
   if (logoAsset.file) total += 10;
   if (includeMusic && audioAsset.file) total += 10;
 
   return total;
-  }
+}
 
   function syncStoryGenerateButtonCredit(root) {
   const btn = qs("[data-story-generate]", root);
