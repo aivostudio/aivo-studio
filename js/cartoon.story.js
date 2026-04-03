@@ -2561,6 +2561,7 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
     resetStoryPolicyUI(root);
     render(root);
     return;
+    }
   }
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
       if (sectionToggle && root.contains(sectionToggle)) {
