@@ -2445,7 +2445,22 @@
     inset 0 0 0 1px rgba(255,255,255,.03),
     0 14px 34px rgba(0,0,0,.24);
 }
+.story-characters-card .story-card-note,
+.story-characters-card .story-card-helper,
+.story-characters-card .story-card-head .story-card-note,
+.story-characters-card .story-card-head .story-card-helper,
+.story-characters-card > p,
+.story-characters-card .story-muted,
+.story-characters-card .story-subtext{
+  color:#fff !important;
+  opacity:1 !important;
+}
 
+.story-characters-card .story-card-note,
+.story-characters-card .story-card-helper,
+.story-characters-card > p{
+  font-weight:700;
+}
 .story-characters-card .story-grid-4{
   align-items:start;
 }
