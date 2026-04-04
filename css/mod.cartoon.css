@@ -1881,7 +1881,92 @@
 .story-scene-editor-card [data-scene-editor-mood]{
   align-self:start;
 }
+.story-scene-editor-card > .story-card-head{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
 
+.story-scene-editor-card > .story-card-head h4{
+  width:100%;
+  margin:0;
+  text-align:center;
+}
+
+.story-scene-editor-card .story-field label[for="sceneDescription"],
+.story-scene-editor-card .story-scene-characters-field > label,
+.story-scene-editor-card .story-field label[for="sceneNote"]{
+  display:block;
+  width:100%;
+  text-align:center;
+}
+
+.story-scene-editor-card .story-scene-characters-field{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+
+.story-scene-editor-card .story-scene-characters-field > p,
+.story-scene-editor-card .story-scene-characters-field .story-scene-character-empty{
+  width:100%;
+  margin:8px 0 0;
+  text-align:left;
+}
+
+.story-scene-editor-card .story-grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  align-items:end;
+}
+
+.story-scene-editor-card .story-grid-2 > .story-field{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+
+.story-scene-editor-card .story-grid-2 > .story-field label{
+  display:block;
+  width:100%;
+  margin:0 0 8px;
+  text-align:left;
+}
+
+.story-scene-editor-card .story-grid-2 > .story-field select,
+.story-scene-editor-card .story-grid-2 > .story-field input,
+.story-scene-editor-card .story-grid-2 > .story-field textarea{
+  width:100%;
+  box-sizing:border-box;
+}
+
+.story-scene-editor-card [data-scene-editor-duration],
+.story-scene-editor-card [data-scene-editor-mood]{
+  width:100%;
+  margin-top:auto;
+}
+
+.story-scene-editor-card .story-field:has([data-scene-editor-note]){
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.story-scene-editor-card .story-field:has([data-scene-editor-note]) textarea{
+  width:100%;
+  box-sizing:border-box;
+}
+
+@media (max-width: 820px){
+  .story-scene-editor-card .story-grid-2{
+    grid-template-columns:1fr;
+    align-items:start;
+  }
+}
 @media (max-width: 820px){
   .story-scene-editor-card .story-grid-2{
     grid-template-columns:1fr;
