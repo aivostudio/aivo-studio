@@ -126,26 +126,86 @@ function createUploadCharacterEntry(slot) {
   };
 }
 
-function getSelectedPresetCharacters(root) {
-  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', root)
-    .map((btn) => {
-      const role = safeText(btn.dataset.role);
-      const value = safeText(btn.dataset.character);
-      const label =
-        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        value;
+function getSelectedPresetCharacters() {
+  const entries = [];
 
-      if (!role || !value || !label) return null;
-      return createPresetCharacterEntry(role, value, label);
-    })
-    .filter(Boolean);
+  if (safeText(state.mainCharacter)) {
+    entries.push(
+      createPresetCharacterEntry("main", safeText(state.mainCharacter), safeText(state.mainCharacter))
+    );
+  }
+
+  if (safeText(state.helperCharacter1)) {
+    entries.push(
+      createPresetCharacterEntry("helper", safeText(state.helperCharacter1), safeText(state.helperCharacter1))
+    );
+  }
+
+  if (safeText(state.helperCharacter2)) {
+    entries.push(
+      createPresetCharacterEntry("helper", safeText(state.helperCharacter2), safeText(state.helperCharacter2))
+    );
+  }
+
+  if (safeText(state.extraCharacter)) {
+    entries.push(
+      createPresetCharacterEntry("helper", safeText(state.extraCharacter), safeText(state.extraCharacter))
+    );
+  }
+
+  return entries;
 }
 
 function getSelectedUploadCharacters() {
   return STORY_CHARACTER_SLOT_CONFIG
     .map((config) => createUploadCharacterEntry(config.slot))
     .filter(Boolean);
+}
+
+function getStorySelectedCharacters() {
+  const slots = [
+    {
+      slot: "main",
+      label: safeText(state.mainCharacter),
+      hasUpload: !!getStoryCharacterImage("main")?.file
+    },
+    {
+      slot: "helper1",
+      label: safeText(state.helperCharacter1),
+      hasUpload: !!getStoryCharacterImage("helper1")?.file
+    },
+    {
+      slot: "helper2",
+      label: safeText(state.helperCharacter2),
+      hasUpload: !!getStoryCharacterImage("helper2")?.file
+    },
+    {
+      slot: "extra",
+      label: safeText(state.extraCharacter),
+      hasUpload: !!getStoryCharacterImage("extra")?.file
+    }
+  ];
+
+  return slots
+    .filter((item) => item.label || item.hasUpload)
+    .map((item) => ({
+      key: item.slot,
+      slot: item.slot,
+      label: item.label,
+      hasUpload: item.hasUpload
+    }));
+}
+
+function getStorySelectedCharacterCount() {
+  return getStorySelectedCharacters().length;
+}
+
+function getStorySelectedCharacterEntries() {
+  return getStorySelectedCharacters();
+}
+
+function canAddStoryCharacter(nextCount = 1) {
+  return getStorySelectedCharacterCount() + Number(nextCount || 0) <= STORY_MAX_TOTAL_CHARACTERS;
 }
 
 function getStorySelectedCharacters(root) {
@@ -197,12 +257,16 @@ function showStoryCharacterLimitAlert() {
     return String(value || "").slice(0, max);
   }
 
-  function normalizeStorySceneDuration(value) {
-    const n = Number(value || 15);
-    if (n <= 5) return "5";
-    if (n <= 10) return "10";
-    return "15";
-  }
+ function normalizeStorySceneDuration(value) {
+  const n = Number(value || 4);
+
+  if (n <= 4) return "4";
+  if (n <= 6) return "6";
+  if (n <= 8) return "8";
+  if (n <= 10) return "10";
+  if (n <= 12) return "12";
+  return "15";
+}
 
   function formatSecondsLabel(totalSeconds) {
     const total = Math.max(0, Number(totalSeconds || 0));
@@ -246,19 +310,19 @@ function showStoryCharacterLimitAlert() {
           description: "Bu bölüm için yeni sahne."
         };
 
-        scenes.push({
-          id: `${section}-${i + 1}`,
-          section,
-          title: `Sahne ${sceneNumber} · ${blueprint.title}`,
-          description: blueprint.description,
-          characters: "",
-          characterSlots: [],
-          selected: false,
-          duration: "15",
-          mood: "",
-          type: "",
-          directorNote: ""
-        });
+    scenes.push({
+  id: `${section}-${i + 1}`,
+  section,
+  title: `Sahne ${sceneNumber} · ${blueprint.title}`,
+  description: blueprint.description,
+  characters: "",
+  characterSlots: [],
+  selected: false,
+  duration: "4",
+  mood: "",
+  type: "",
+  directorNote: ""
+});
 
         sceneNumber += 1;
       }
@@ -878,26 +942,48 @@ function showStoryCharacterLimitAlert() {
     "sertab"
   ];
 
-  function normalizeStoryPolicyText(value) {
-    return String(value || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+function normalizeStoryPolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  function isStoryPolicyBlocked(raw) {
-    const text = normalizeStoryPolicyText(raw);
+function buildStoryPolicyPhraseRegex(term) {
+  const normalized = normalizeStoryPolicyText(term);
+  if (!normalized) return null;
 
-    const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
-      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
-      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term)));
+  const pattern = normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("\\s+");
 
-    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-    return !!raw && (hasBlockedTerm || hasBlockedPattern);
-  }
+  return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+}
+
+function isStoryPolicyBlocked(raw) {
+  const text = normalizeStoryPolicyText(raw);
+
+  const hasBlockedTerm =
+    HARD_BLOCK_TERMS.some((term) => {
+      const rx = buildStoryPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    PUBLIC_FIGURE_TERMS.some((term) => {
+      const rx = buildStoryPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    ARTIST_NAME_TERMS.some((term) => {
+      const rx = buildStoryPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    });
+
+  const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+  return !!raw && (hasBlockedTerm || hasBlockedPattern);
+}
 
   function ensureStoryPolicyNote(root, generateBtn) {
     if (!root || !generateBtn || !generateBtn.parentElement) return null;
@@ -1007,39 +1093,49 @@ function showStoryCharacterLimitAlert() {
     return buildStoryScenesFromFlowDuration(flowDuration);
   }
 
-  const state = (window.__CARTOON_STORY_STATE__ =
-    window.__CARTOON_STORY_STATE__ || {
-      mode: "story",
-      flowDuration: "3",
-      storyIdea: "",
-      theme: "",
-      ageGroup: "",
-      duration: "180",
-      mainCharacter: "",
-      helperCharacter1: "",
-      helperCharacter2: "",
-      extraCharacter: "",
-      settingsOpen: false,
-      ratio: "16:9",
-      style: "",
-      audio: "none",
-      includeMusic: "no",
-      logoPosition: "bottom-right",
-      extraPrompt: "",
-      openSection: "intro",
-      editingSceneId: "",
-      isGenerating: false,
-      characterImages: {
-        main: createEmptyStoryCharacterImageState(),
-        helper1: createEmptyStoryCharacterImageState(),
-        helper2: createEmptyStoryCharacterImageState(),
-        extra: createEmptyStoryCharacterImageState()
-      },
-      logoAsset: createEmptyStoryAssetState(),
-      audioAsset: createEmptyStoryAssetState(),
-      scenes: createDefaultScenes("3"),
-      characterOptions: []
-    });
+const existingStoryState = window.__CARTOON_STORY_STATE__;
+
+const state = (window.__CARTOON_STORY_STATE__ =
+  existingStoryState
+    ? {
+        ...existingStoryState,
+        mainCharacter: "",
+        helperCharacter1: "",
+        helperCharacter2: "",
+        extraCharacter: ""
+      }
+    : {
+        mode: "story",
+        flowDuration: "3",
+        storyIdea: "",
+        theme: "",
+        ageGroup: "",
+        duration: "180",
+        mainCharacter: "",
+        helperCharacter1: "",
+        helperCharacter2: "",
+        extraCharacter: "",
+        settingsOpen: false,
+        ratio: "16:9",
+        style: "",
+        audio: "none",
+        includeMusic: "no",
+        logoPosition: "bottom-right",
+        extraPrompt: "",
+        openSection: "intro",
+        editingSceneId: "",
+        isGenerating: false,
+        characterImages: {
+          main: createEmptyStoryCharacterImageState(),
+          helper1: createEmptyStoryCharacterImageState(),
+          helper2: createEmptyStoryCharacterImageState(),
+          extra: createEmptyStoryCharacterImageState()
+        },
+        logoAsset: createEmptyStoryAssetState(),
+        audioAsset: createEmptyStoryAssetState(),
+        scenes: createDefaultScenes("3"),
+        characterOptions: []
+      });
 
   const storyPollState = (window.__CARTOON_STORY_POLL_STATE__ =
     window.__CARTOON_STORY_POLL_STATE__ || {
@@ -2553,18 +2649,18 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
       return;
     }
 
-    const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
+   const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
 
-    if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
-      showStoryCharacterLimitAlert();
-      render(root);
-      return;
-    }
+if (!emptySlot) {
+  showStoryCharacterLimitAlert();
+  render(root);
+  return;
+}
 
-    state[helperStateKeys[emptySlot]] = label;
-    resetStoryPolicyUI(root);
-    render(root);
-    return;
+state[helperStateKeys[emptySlot]] = label;
+resetStoryPolicyUI(root);
+render(root);
+return;
   }
 }
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
@@ -3134,24 +3230,15 @@ setStoryGenerateButton(root, true);
             ? characterFileInput.files[0]
             : null;
 
-  const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
+const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
 const currentImageState = getStoryCharacterImage(slot);
 const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
-const slotAlreadyHasLabel = !!safeText(slotConfig ? state[slotConfig.stateKey] : "");
-const totalSelectedCount = getStorySelectedCharacterCount(root);
-
-if (file && slotConfig && slotAlreadyHasLabel && !slotAlreadyUsedByUpload) {
-  characterFileInput.value = "";
-  alert("Bu slotta zaten seçili bir karakter var. Önce mevcut karakteri kaldırmalısın.");
-  render(root);
-  return;
-}
+const totalSelectedCount = getStorySelectedCharacterCount();
 
 if (
   file &&
   slotConfig &&
   !slotAlreadyUsedByUpload &&
-  !slotAlreadyHasLabel &&
   totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS
 ) {
   characterFileInput.value = "";
