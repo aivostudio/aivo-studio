@@ -2563,32 +2563,32 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
       return;
     }
 
-    const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
+  const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
 
-    if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
-      showStoryCharacterLimitAlert();
+if (!emptySlot) {
+  showStoryCharacterLimitAlert();
 
-      setTimeout(() => {
-        const liveRoot = getCartoonRoot();
-        if (!liveRoot) return;
+  setTimeout(() => {
+    const liveRoot = getCartoonRoot();
+    if (!liveRoot) return;
 
-        qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', liveRoot).forEach((btn) => {
-          const btnLabel =
-            safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-            safeText(btn.textContent) ||
-            safeText(btn.dataset.character);
+    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', liveRoot).forEach((btn) => {
+      const btnLabel =
+        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        safeText(btn.dataset.character);
 
-          const isSelectedInState = helperSlots.some((slot) => {
-            const stateKey = helperStateKeys[slot];
-            return safeText(state[stateKey]) === btnLabel;
-          });
+      const isSelectedInState = helperSlots.some((slot) => {
+        const stateKey = helperStateKeys[slot];
+        return safeText(state[stateKey]) === btnLabel;
+      });
 
-          btn.classList.toggle("is-selected", isSelectedInState);
-        });
-      }, 0);
+      btn.classList.toggle("is-selected", isSelectedInState);
+    });
+  }, 0);
 
-      return;
-    }
+  return;
+}
 
     state[helperStateKeys[emptySlot]] = label;
 
