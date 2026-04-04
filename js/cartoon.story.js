@@ -246,19 +246,19 @@ function showStoryCharacterLimitAlert() {
           description: "Bu bölüm için yeni sahne."
         };
 
-        scenes.push({
-          id: `${section}-${i + 1}`,
-          section,
-          title: `Sahne ${sceneNumber} · ${blueprint.title}`,
-          description: blueprint.description,
-          characters: "",
-          characterSlots: [],
-          selected: false,
-          duration: "15",
-          mood: "",
-          type: "",
-          directorNote: ""
-        });
+    scenes.push({
+  id: `${section}-${i + 1}`,
+  section,
+  title: `Sahne ${sceneNumber} · ${blueprint.title}`,
+  description: blueprint.description,
+  characters: "",
+  characterSlots: [],
+  selected: false,
+  duration: "4",
+  mood: "",
+  type: "",
+  directorNote: ""
+});
 
         sceneNumber += 1;
       }
