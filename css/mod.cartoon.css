@@ -3115,18 +3115,58 @@
 .cartoon-field-label--stack {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   gap: 2px;
+  min-height: 40px;
+  margin: 0 0 6px;
+  text-align: center;
 }
 
 .main-panel[data-module="cartoon"] 
 .cartoon-mode-view[data-cartoon-view="basic"] 
 .cartoon-field-label-title {
-  font-weight: 600;
+  display: block;
+  width: 100%;
+  font-weight: 700;
+  line-height: 1.12;
+  text-align: center;
 }
 
 .main-panel[data-module="cartoon"] 
 .cartoon-mode-view[data-cartoon-view="basic"] 
 .cartoon-field-label-credit {
+  display: block;
+  width: 100%;
   font-size: 12px;
-  opacity: 0.7;
+  line-height: 1.05;
+  font-weight: 700;
+  opacity: 0.78;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] 
+.cartoon-mode-view[data-cartoon-view="basic"] 
+.cartoon-field-label-credit:empty {
+  display: block;
+  visibility: hidden;
+}
+
+.main-panel[data-module="cartoon"] 
+.cartoon-mode-view[data-cartoon-view="basic"] 
+.cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] > .cartoon-field > .cartoon-field-label {
+  margin: 0 0 6px;
+}
+
+.main-panel[data-module="cartoon"] 
+.cartoon-mode-view[data-cartoon-view="basic"] 
+.cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] .cartoon-upload-row--compact {
+  min-height: 40px;
+  align-items: center;
+}
+
+.main-panel[data-module="cartoon"] 
+.cartoon-mode-view[data-cartoon-view="basic"] 
+.cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] .cartoon-select {
+  height: 40px;
 }
