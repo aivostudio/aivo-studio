@@ -1151,31 +1151,45 @@
     Önce üst bölümden karakter seç.
   </div>
 </div>
-    <div class="story-grid story-grid-2">
-     <div class="story-field">
-  <label for="sceneDuration">Süre</label>
-  <select id="sceneDuration" name="sceneDuration" data-scene-editor-duration>
-    <option value="4">4 sn</option>
-    <option value="6">6 sn</option>
-    <option value="8" selected>8 sn</option>
-    <option value="10">10 sn</option>
-    <option value="12">12 sn</option>
-    <option value="15">15 sn</option>
-  </select>
-</div>
+<div class="story-grid story-grid-2">
+  <div class="story-field">
+    <label for="sceneDuration">Süre</label>
+    <select id="sceneDuration" name="sceneDuration" data-scene-editor-duration>
+      <option value="4">4 sn</option>
+      <option value="6">6 sn</option>
+      <option value="8">8 sn</option>
+      <option value="10">10 sn</option>
+      <option value="12">12 sn</option>
+      <option value="15">15 sn</option>
+    </select>
 
-      <div class="story-field">
-        <label for="sceneMood">Sahne Duygusu</label>
-        <select id="sceneMood" name="sceneMood" data-scene-editor-mood>
-          <option value="">Seçiniz</option>
-          <option value="neseli">Neşeli</option>
-          <option value="merakli">Meraklı</option>
-          <option value="heyecanli">Heyecanlı</option>
-          <option value="gergin">Gergin</option>
-          <option value="duygusal">Duygusal</option>
-        </select>
-      </div>
+    <div
+      data-scene-credit-note
+      style="margin-top:10px; font-size:13px; line-height:1.5; font-weight:700; color:rgba(255,255,255,.70);"
+    >
+      4 sn başlangıç süresidir. Her +2 sn için +5 kredi eklenir.
     </div>
+
+    <div
+      data-scene-credit-live
+      style="margin-top:8px; min-height:44px; display:flex; align-items:center; padding:0 14px; border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.04); font-size:14px; font-weight:800; color:rgba(255,255,255,.96);"
+    >
+      Bu sahne kaydedilirse toplam: 30 Kredi
+    </div>
+  </div>
+
+  <div class="story-field">
+    <label for="sceneMood">Sahne Duygusu</label>
+    <select id="sceneMood" name="sceneMood" data-scene-editor-mood>
+      <option value="">Seçiniz</option>
+      <option value="neseli">Neşeli</option>
+      <option value="merakli">Meraklı</option>
+      <option value="heyecanli">Heyecanlı</option>
+      <option value="duygusal">Duygusal</option>
+      <option value="eglenceli">Eğlenceli</option>
+    </select>
+  </div>
+</div>
 
     <div class="story-field">
       <label for="sceneType">Sahne Tipi</label>
