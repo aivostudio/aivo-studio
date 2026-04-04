@@ -839,17 +839,38 @@
 }
 /* ===== Studio / gradientleri matlaştır ===== */
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn,
-.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb,
-.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb{
   background: linear-gradient(90deg, rgba(139,92,246,.78) 0%, rgba(236,72,153,.78) 100%) !important;
   border: 1px solid rgba(255,255,255,.08) !important;
   box-shadow: 0 6px 18px rgba(191,86,255,.12) !important;
 }
 
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn{
+  background: linear-gradient(90deg, rgba(120,80,255,.95), rgba(255,110,190,.95)) !important;
+  border: 0 !important;
+  color: #fff !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 0 20px !important;
+  border-radius: 999px !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,.45) !important;
+}
+
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .cartoon-upload-btn:hover,
-.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:hover,
-.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:hover{
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-scene-thumb:hover{
   filter: brightness(1.02);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:hover{
+  transform: translateY(-1px) !important;
+  filter: brightness(1.06) !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-final-actions .story-primary-btn:active{
+  transform: translateY(0) scale(.99) !important;
 }
 /* ===== Studio / Ses-Logo kartı eşit hizalama ===== */
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card:nth-last-of-type(2) .story-grid.story-grid-2{
