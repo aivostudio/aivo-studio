@@ -2073,7 +2073,7 @@ function syncSceneEditorCreditPreview(root) {
   }
 
   if (liveEl) {
-    liveEl.textContent = `Bu sahne kaydedilirse toplam: ${total} Kredi`;
+    liveEl.textContent = `Toplam harcanan: ${total} Kredi`;
   }
 }
   function syncStoryGenerateButtonCredit(root) {
