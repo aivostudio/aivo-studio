@@ -2445,7 +2445,23 @@
     inset 0 0 0 1px rgba(255,255,255,.03),
     0 14px 34px rgba(0,0,0,.24);
 }
+.story-characters-card .story-card-head .story-card-note,
+.story-characters-card .story-card-note{
+  color:rgba(255,255,255,.84) !important;
+  opacity:1 !important;
+  font-weight:600 !important;
+}
 
+.story-characters-card .story-grid-4 > .story-character-field > label.story-character-title .story-character-title-credit{
+  color:rgba(255,255,255,.82) !important;
+}
+
+.story-characters-card .cartoon-upload-text,
+.story-characters-card [data-story-upload-name],
+.story-characters-card .story-upload-name{
+  color:rgba(255,255,255,.62) !important;
+  font-weight:600 !important;
+}
 .story-characters-card .story-grid-4{
   align-items:start;
 }
