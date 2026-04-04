@@ -882,26 +882,48 @@ function showStoryCharacterLimitAlert() {
     "sertab"
   ];
 
-  function normalizeStoryPolicyText(value) {
-    return String(value || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+function normalizeStoryPolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  function isStoryPolicyBlocked(raw) {
-    const text = normalizeStoryPolicyText(raw);
+function buildStoryPolicyPhraseRegex(term) {
+  const normalized = normalizeStoryPolicyText(term);
+  if (!normalized) return null;
 
-    const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
-      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
-      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term)));
+  const pattern = normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("\\s+");
 
-    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-    return !!raw && (hasBlockedTerm || hasBlockedPattern);
-  }
+  return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+}
+
+function isStoryPolicyBlocked(raw) {
+  const text = normalizeStoryPolicyText(raw);
+
+  const hasBlockedTerm =
+    HARD_BLOCK_TERMS.some((term) => {
+      const rx = buildStoryPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    PUBLIC_FIGURE_TERMS.some((term) => {
+      const rx = buildStoryPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    }) ||
+    ARTIST_NAME_TERMS.some((term) => {
+      const rx = buildStoryPolicyPhraseRegex(term);
+      return rx ? rx.test(text) : false;
+    });
+
+  const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+  return !!raw && (hasBlockedTerm || hasBlockedPattern);
+}
 
   function ensureStoryPolicyNote(root, generateBtn) {
     if (!root || !generateBtn || !generateBtn.parentElement) return null;
