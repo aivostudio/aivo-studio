@@ -3335,6 +3335,7 @@ if (file && slotConfig) {
         });
 
         updateStoryCharacterUploadUI(root, slot);
+        render(root);
 
         const scene = getSceneById(state.editingSceneId);
         if (scene) {
