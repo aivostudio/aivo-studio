@@ -1062,22 +1062,21 @@ function isBasicPolicyBlocked(raw) {
     }
   }
 
-  function syncMainSelection(root) {
-    qsa('[data-role="main"]', root).forEach((btn) => {
-      const on = btn.dataset.character === state.mainCharacter;
-      btn.classList.toggle("is-selected", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
+function syncMainSelection(root) {
+  qsa('.cartoon-mode-view[data-cartoon-view="basic"] [data-role="main"]', root).forEach((btn) => {
+    const on = btn.dataset.character === state.mainCharacter;
+    btn.classList.toggle("is-selected", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
 
-  function syncHelperSelection(root) {
-    qsa('[data-role="helper"]', root).forEach((btn) => {
-      const on = state.helpers.includes(btn.dataset.character);
-      btn.classList.toggle("is-selected", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
-
+function syncHelperSelection(root) {
+  qsa('.cartoon-mode-view[data-cartoon-view="basic"] [data-role="helper"]', root).forEach((btn) => {
+    const on = state.helpers.includes(btn.dataset.character);
+    btn.classList.toggle("is-selected", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
   function syncSceneSelection(root) {
     qsa("[data-scene]", root).forEach((btn) => {
       const on = btn.dataset.scene === state.scene;
