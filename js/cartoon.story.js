@@ -127,7 +127,10 @@ function createUploadCharacterEntry(slot) {
 }
 
 function getSelectedPresetCharacters(root) {
-  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', root)
+  const storyView = qs('.cartoon-mode-view[data-cartoon-view="story"]', root);
+  if (!storyView) return [];
+
+  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', storyView)
     .map((btn) => {
       const role = safeText(btn.dataset.role);
       const value = safeText(btn.dataset.character);
