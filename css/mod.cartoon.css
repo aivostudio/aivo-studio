@@ -3245,20 +3245,28 @@
     0 4px 10px rgba(123, 92, 255, .16),
     inset 0 1px 0 rgba(255,255,255,.12);
 }
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field.cartoon-field--full[style*="margin-top:16px"]{
-  position: sticky;
-  bottom: 10px;
-  z-index: 20;
-  margin-top: 18px !important;
-  padding: 14px 16px !important;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
-    linear-gradient(180deg, rgba(28,18,55,.94), rgba(12,10,34,.96));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] [data-character-create-upload] + .cartoon-upload-btn{
+  min-width: 112px !important;
+  height: 34px !important;
+  padding: 0 18px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(90deg, #7b5cff 0%, #ff5fa8 100%) !important;
   box-shadow:
-    0 -10px 30px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.04);
+    0 8px 18px rgba(123, 92, 255, .22),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] [data-character-create-upload] + .cartoon-upload-btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] [data-character-create-upload] + .cartoon-upload-btn:active{
+  transform: translateY(2px) scale(.985);
+  filter: brightness(.98);
 }
