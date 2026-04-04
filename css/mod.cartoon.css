@@ -3170,3 +3170,14 @@
 .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] .cartoon-select {
   height: 40px;
 }
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-block--compact {
+  padding: 20px 22px 28px !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-prompt-input {
+  min-height: 140px !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full {
+  margin-top: 18px !important;
+}
