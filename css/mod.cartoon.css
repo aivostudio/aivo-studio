@@ -2821,8 +2821,6 @@
   padding: 26px 24px 34px;
   border: 1px solid rgba(196, 132, 255, 0.18);
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(132, 92, 255, 0.18), transparent 52%),
-    radial-gradient(80% 56% at 50% 100%, rgba(98, 72, 255, 0.18), transparent 68%),
     linear-gradient(180deg, rgba(34, 24, 66, 0.96), rgba(9, 10, 34, 0.98));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.05),
