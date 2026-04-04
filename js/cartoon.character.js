@@ -1760,11 +1760,11 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       console.log("[CARTOON][CHARACTER] payload =", payload);
 
     const hasReferenceImage =
-      !!payload.referenceImageUrl ||
-      !!payload.referenceFile;
+  !!payload.referenceImageUrl ||
+  !!payload.referenceFile;
 
-    const creditCost = hasReferenceImage ? 25 : 20;
-    const creditReason = "studio_cartoon_character_create";
+const creditCost = hasReferenceImage ? 30 : 20;
+const creditReason = "studio_cartoon_character_create";
 
     const creditRes = await fetch("/api/credits/consume", {
       method: "POST",
