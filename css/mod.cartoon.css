@@ -3171,7 +3171,7 @@
   height: 40px;
 }
 
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full > .cartoon-field-label {
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full .cartoon-upload-row > .cartoon-field-label {
   font-size: 15px !important;
   line-height: 1.45 !important;
   font-weight: 800 !important;
