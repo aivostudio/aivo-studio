@@ -3171,13 +3171,13 @@
   height: 40px;
 }
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-block--compact {
-  padding: 20px 22px 28px !important;
+  padding: 15px 17px 21px !important;
 }
 
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-prompt-input {
-  min-height: 140px !important;
+  min-height: 105px !important;
 }
 
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full {
-  margin-top: 18px !important;
+  margin-top: 14px !important;
 }
