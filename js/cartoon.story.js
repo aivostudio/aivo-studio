@@ -2490,41 +2490,119 @@ if (includeMusic && audioAsset.file) total += 10;
     render(root);
   }
 
-  function syncStoryPresetCharacterCards(root) {
-    if (!root) return;
+function syncStoryPresetCharacterCards(root) {
+  if (!root) return;
 
-    const helperSlots = ["helper1", "helper2", "extra"];
-    const helperStateKeys = {
-      helper1: "helperCharacter1",
-      helper2: "helperCharacter2",
-      extra: "extraCharacter"
-    };
+  const helperSlots = ["helper1", "helper2", "extra"];
+  const helperStateKeys = {
+    helper1: "helperCharacter1",
+    helper2: "helperCharacter2",
+    extra: "extraCharacter"
+  };
 
-    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
-      const btnLabel =
-        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        safeText(btn.dataset.character);
+  const orderedSelections = [
+    { slot: "main", label: safeText(state.mainCharacter) },
+    { slot: "helper1", label: safeText(state.helperCharacter1) },
+    { slot: "helper2", label: safeText(state.helperCharacter2) },
+    { slot: "extra", label: safeText(state.extraCharacter) }
+  ].filter((item) => item.label);
 
-      const isSelectedInState = safeText(state.mainCharacter) === btnLabel;
-      btn.classList.toggle("is-selected", isSelectedInState);
-    });
+  const orderMap = new Map(
+    orderedSelections.map((item, index) => [item.label, index + 1])
+  );
 
-    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', root).forEach((btn) => {
-      const btnLabel =
-        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        safeText(btn.dataset.character);
+  const storyView = qs('.cartoon-mode-view[data-cartoon-view="story"]', root);
 
-      const isSelectedInState = helperSlots.some((slot) => {
-        const stateKey = helperStateKeys[slot];
-        return safeText(state[stateKey]) === btnLabel;
-      });
+  if (storyView) {
+    const headings = qsa("h1, h2, h3, h4", storyView);
+    const charactersHeading = headings.find((el) => safeText(el.textContent) === "Karakterler");
 
-      btn.classList.toggle("is-selected", isSelectedInState);
-    });
+    if (charactersHeading) {
+      let counter = qs('[data-story-selected-counter]', charactersHeading.parentElement || storyView);
+
+      if (!counter) {
+        counter = document.createElement("div");
+        counter.setAttribute("data-story-selected-counter", "");
+        counter.style.marginTop = "10px";
+        counter.style.textAlign = "center";
+        counter.style.fontSize = "14px";
+        counter.style.fontWeight = "800";
+        counter.style.color = "rgba(255,255,255,.88)";
+        charactersHeading.insertAdjacentElement("afterend", counter);
+      }
+
+      counter.textContent = `Seçili Karakter: ${orderedSelections.length} / ${STORY_MAX_TOTAL_CHARACTERS}`;
+    }
   }
 
+  qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
+    const btnLabel =
+      safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+      safeText(btn.textContent) ||
+      safeText(btn.dataset.character);
+
+    const isSelectedInState = safeText(state.mainCharacter) === btnLabel;
+    btn.classList.toggle("is-selected", isSelectedInState);
+
+    let badge = qs('[data-story-order-badge]', btn);
+    if (badge) badge.remove();
+
+    if (isSelectedInState) {
+      badge = document.createElement("span");
+      badge.setAttribute("data-story-order-badge", "");
+      badge.textContent = String(orderMap.get(btnLabel) || "");
+      badge.style.marginLeft = "10px";
+      badge.style.display = "inline-flex";
+      badge.style.alignItems = "center";
+      badge.style.justifyContent = "center";
+      badge.style.width = "24px";
+      badge.style.height = "24px";
+      badge.style.borderRadius = "999px";
+      badge.style.background = "rgba(255,255,255,.18)";
+      badge.style.border = "1px solid rgba(255,255,255,.22)";
+      badge.style.fontSize = "12px";
+      badge.style.fontWeight = "900";
+      badge.style.color = "#fff";
+      btn.appendChild(badge);
+    }
+  });
+
+  qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', root).forEach((btn) => {
+    const btnLabel =
+      safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+      safeText(btn.textContent) ||
+      safeText(btn.dataset.character);
+
+    const isSelectedInState = helperSlots.some((slot) => {
+      const stateKey = helperStateKeys[slot];
+      return safeText(state[stateKey]) === btnLabel;
+    });
+
+    btn.classList.toggle("is-selected", isSelectedInState);
+
+    let badge = qs('[data-story-order-badge]', btn);
+    if (badge) badge.remove();
+
+    if (isSelectedInState) {
+      badge = document.createElement("span");
+      badge.setAttribute("data-story-order-badge", "");
+      badge.textContent = String(orderMap.get(btnLabel) || "");
+      badge.style.marginLeft = "10px";
+      badge.style.display = "inline-flex";
+      badge.style.alignItems = "center";
+      badge.style.justifyContent = "center";
+      badge.style.width = "24px";
+      badge.style.height = "24px";
+      badge.style.borderRadius = "999px";
+      badge.style.background = "rgba(255,255,255,.18)";
+      badge.style.border = "1px solid rgba(255,255,255,.22)";
+      badge.style.fontSize = "12px";
+      badge.style.fontWeight = "900";
+      badge.style.color = "#fff";
+      btn.appendChild(badge);
+    }
+  });
+}
   function render(root) {
     if (!root) return;
 
