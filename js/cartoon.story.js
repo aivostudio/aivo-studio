@@ -1033,39 +1033,49 @@ function isStoryPolicyBlocked(raw) {
     return buildStoryScenesFromFlowDuration(flowDuration);
   }
 
+const existingStoryState = window.__CARTOON_STORY_STATE__;
+
 const state = (window.__CARTOON_STORY_STATE__ =
-  window.__CARTOON_STORY_STATE__ || {
-    mode: "story",
-    flowDuration: "3",
-    storyIdea: "",
-    theme: "",
-    ageGroup: "",
-    duration: "180",
-    mainCharacter: "",
-    helperCharacter1: "",
-    helperCharacter2: "",
-    extraCharacter: "",
-    settingsOpen: true,
-    ratio: "16:9",
-    style: "",
-    audio: "none",
-    includeMusic: "no",
-    logoPosition: "bottom-right",
-    extraPrompt: "",
-    openSection: "intro",
-    editingSceneId: "",
-    isGenerating: false,
-      characterImages: {
-        main: createEmptyStoryCharacterImageState(),
-        helper1: createEmptyStoryCharacterImageState(),
-        helper2: createEmptyStoryCharacterImageState(),
-        extra: createEmptyStoryCharacterImageState()
-      },
-      logoAsset: createEmptyStoryAssetState(),
-      audioAsset: createEmptyStoryAssetState(),
-      scenes: createDefaultScenes("3"),
-      characterOptions: []
-    });
+  existingStoryState
+    ? {
+        ...existingStoryState,
+        mainCharacter: "",
+        helperCharacter1: "",
+        helperCharacter2: "",
+        extraCharacter: ""
+      }
+    : {
+        mode: "story",
+        flowDuration: "3",
+        storyIdea: "",
+        theme: "",
+        ageGroup: "",
+        duration: "180",
+        mainCharacter: "",
+        helperCharacter1: "",
+        helperCharacter2: "",
+        extraCharacter: "",
+        settingsOpen: false,
+        ratio: "16:9",
+        style: "",
+        audio: "none",
+        includeMusic: "no",
+        logoPosition: "bottom-right",
+        extraPrompt: "",
+        openSection: "intro",
+        editingSceneId: "",
+        isGenerating: false,
+        characterImages: {
+          main: createEmptyStoryCharacterImageState(),
+          helper1: createEmptyStoryCharacterImageState(),
+          helper2: createEmptyStoryCharacterImageState(),
+          extra: createEmptyStoryCharacterImageState()
+        },
+        logoAsset: createEmptyStoryAssetState(),
+        audioAsset: createEmptyStoryAssetState(),
+        scenes: createDefaultScenes("3"),
+        characterOptions: []
+      });
 
   const storyPollState = (window.__CARTOON_STORY_POLL_STATE__ =
     window.__CARTOON_STORY_POLL_STATE__ || {
