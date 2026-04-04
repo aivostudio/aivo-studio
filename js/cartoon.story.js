@@ -208,32 +208,7 @@ function canAddStoryCharacter(nextCount = 1) {
   return getStorySelectedCharacterCount() + Number(nextCount || 0) <= STORY_MAX_TOTAL_CHARACTERS;
 }
 
-function getStorySelectedCharacters(root) {
-  const merged = [
-    ...getSelectedPresetCharacters(root),
-    ...getSelectedUploadCharacters()
-  ];
 
-  const seen = new Set();
-  return merged.filter((item) => {
-    if (!item || !item.key) return false;
-    if (seen.has(item.key)) return false;
-    seen.add(item.key);
-    return true;
-  });
-}
-
-function getStorySelectedCharacterCount(root) {
-  return getStorySelectedCharacters(root).length;
-}
-
-function getStorySelectedCharacterEntries(root) {
-  return getStorySelectedCharacters(root);
-}
-
-function canAddStoryCharacter(root, nextCount = 1) {
-  return getStorySelectedCharacterCount(root) + Number(nextCount || 0) <= STORY_MAX_TOTAL_CHARACTERS;
-}
 
 function showStoryCharacterLimitAlert() {
   alert("En fazla 4 karakter seçebilirsin. Ücretsiz ve özel karakterler toplamda 4 hakkı paylaşır.");
