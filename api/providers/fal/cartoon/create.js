@@ -362,9 +362,11 @@ module.exports = async function handler(req, res) {
     storyImageUrls.push(String(characterImageUrl).trim());
   }
 
-  const falModel =
+   const falModel =
     mode === "character"
-      ? "fal-ai/nano-banana-pro"
+      ? (referenceImageUrl
+          ? "fal-ai/nano-banana-pro/edit"
+          : "fal-ai/nano-banana-pro")
       : mode === "story"
         ? "fal-ai/kling-video/o3/standard/reference-to-video"
         : "fal-ai/kling-video/o3/standard/reference-to-video";
