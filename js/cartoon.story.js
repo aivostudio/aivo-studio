@@ -127,46 +127,21 @@ function createUploadCharacterEntry(slot) {
 }
 
 function getSelectedPresetCharacters(root) {
-  const selected = [];
+  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', root)
+    .map((btn) => {
+      const role = safeText(btn.dataset.role);
+      const value = safeText(btn.dataset.character);
+      const label =
+        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        value;
 
-  const slotDefs = [
-    { slot: "main", role: "main", stateKey: "mainCharacter", selector: '[data-role="main"]' },
-    { slot: "helper1", role: "helper", stateKey: "helperCharacter1", selector: '[data-role="helper"]' },
-    { slot: "helper2", role: "helper", stateKey: "helperCharacter2", selector: '[data-role="helper"]' },
-    { slot: "extra", role: "helper", stateKey: "extraCharacter", selector: '[data-role="helper"]' }
-  ];
-
-  slotDefs.forEach(({ slot, role, stateKey, selector }) => {
-    const label = safeText(state[stateKey]);
-    if (!label) return;
-
-    const imageState = getStoryCharacterImage(slot);
-    const hasUpload = !!(imageState && imageState.file);
-
-    if (hasUpload) return;
-
-    const btn = qsa(selector, root).find((el) => {
-      const btnLabel =
-        safeText(qs(".cartoon-character-name", el)?.textContent) ||
-        safeText(el.textContent) ||
-        safeText(el.dataset.character);
-
-      return btnLabel === label;
-    });
-
-    if (!btn) return;
-
-    selected.push(
-      createPresetCharacterEntry(
-        role,
-        safeText(btn.dataset.character) || label,
-        label
-      )
-    );
-  });
-
-  return selected.filter(Boolean);
+      if (!role || !value || !label) return null;
+      return createPresetCharacterEntry(role, value, label);
+    })
+    .filter(Boolean);
 }
+
 function getSelectedUploadCharacters() {
   return STORY_CHARACTER_SLOT_CONFIG
     .map((config) => createUploadCharacterEntry(config.slot))
