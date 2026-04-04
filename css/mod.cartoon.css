@@ -3170,17 +3170,7 @@
 .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] .cartoon-select {
   height: 40px;
 }
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-block--compact {
-  padding: 15px 17px 21px !important;
-}
 
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-prompt-input {
-  min-height: 105px !important;
-}
-
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full {
-  margin-top: 14px !important;
-}
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full > .cartoon-field-label {
   font-size: 15px !important;
   line-height: 1.45 !important;
