@@ -94,7 +94,16 @@
   ];
  const STORY_MAX_TOTAL_CHARACTERS = 4;
 
-function createStorySlotEntry(slot) {
+function createPresetCharacterEntry(role, value, label) {
+  return {
+    key: `preset:${role}:${value}`,
+    source: "preset",
+    role: role === "main" ? "main" : "helper",
+    value: safeText(value),
+    label: safeText(label)
+  };
+}
+function createUploadCharacterEntry(slot) {
   const key = safeText(slot);
   if (!key) return null;
 
@@ -102,37 +111,68 @@ function createStorySlotEntry(slot) {
   if (!slotConfig) return null;
 
   const label = safeText(state[slotConfig.stateKey]);
-  if (!label) return null;
-
   const imageState = getStoryCharacterImage(key);
   const hasFile = !!(imageState && imageState.file);
 
+  if (!hasFile) return null;
+
   return {
-    key: `slot:${key}`,
-    slot: key,
-    source: hasFile ? "upload" : "preset",
+    key: `upload:${key}`,
+    source: "upload",
     role: key === "main" ? "main" : "helper",
-    value: label,
-    label
+    slot: key,
+    value: key,
+    label: label || key
   };
 }
 
-function getStorySelectedCharacters() {
-  return STORY_CHARACTER_SLOT_CONFIG
-    .map((config) => createStorySlotEntry(config.slot))
+function getSelectedPresetCharacters(root) {
+  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', root)
+    .map((btn) => {
+      const role = safeText(btn.dataset.role);
+      const value = safeText(btn.dataset.character);
+      const label =
+        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        value;
+
+      if (!role || !value || !label) return null;
+      return createPresetCharacterEntry(role, value, label);
+    })
     .filter(Boolean);
 }
 
-function getStorySelectedCharacterCount() {
-  return getStorySelectedCharacters().length;
+function getSelectedUploadCharacters() {
+  return STORY_CHARACTER_SLOT_CONFIG
+    .map((config) => createUploadCharacterEntry(config.slot))
+    .filter(Boolean);
 }
 
-function getStorySelectedCharacterEntries() {
-  return getStorySelectedCharacters();
+function getStorySelectedCharacters(root) {
+  const merged = [
+    ...getSelectedPresetCharacters(root),
+    ...getSelectedUploadCharacters()
+  ];
+
+  const seen = new Set();
+  return merged.filter((item) => {
+    if (!item || !item.key) return false;
+    if (seen.has(item.key)) return false;
+    seen.add(item.key);
+    return true;
+  });
 }
 
-function canAddStoryCharacter(nextCount = 1) {
-  return getStorySelectedCharacterCount() + Number(nextCount || 0) <= STORY_MAX_TOTAL_CHARACTERS;
+function getStorySelectedCharacterCount(root) {
+  return getStorySelectedCharacters(root).length;
+}
+
+function getStorySelectedCharacterEntries(root) {
+  return getStorySelectedCharacters(root);
+}
+
+function canAddStoryCharacter(root, nextCount = 1) {
+  return getStorySelectedCharacterCount(root) + Number(nextCount || 0) <= STORY_MAX_TOTAL_CHARACTERS;
 }
 
 function showStoryCharacterLimitAlert() {
