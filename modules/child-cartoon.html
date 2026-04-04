@@ -1151,7 +1151,7 @@
     Önce üst bölümden karakter seç.
   </div>
 </div>
-<div class="story-grid story-grid-2">
+<div class="story-grid story-grid-2" style="align-items:start;">
   <div class="story-field">
     <label for="sceneDuration">Süre</label>
     <select id="sceneDuration" name="sceneDuration" data-scene-editor-duration>
@@ -1162,28 +1162,46 @@
       <option value="12">12 sn</option>
       <option value="15">15 sn</option>
     </select>
+  </div>
 
-    <div
-  data-scene-credit-note
-  style="
-    margin-top:12px;
-    margin-bottom:14px;
-    font-size:13px;
-    line-height:1.35;
-    font-weight:700;
-    color:rgba(255,255,255,.72);
-  "
->
-  Her +2 sn için +5 kredi eklenir.
+  <div class="story-field">
+    <label for="sceneMood">Sahne Duygusu</label>
+    <select id="sceneMood" name="sceneMood" data-scene-editor-mood>
+      <option value="">Seçiniz</option>
+      <option value="neseli">Neşeli</option>
+      <option value="merakli">Meraklı</option>
+      <option value="heyecanli">Heyecanlı</option>
+      <option value="duygusal">Duygusal</option>
+      <option value="eglenceli">Eğlenceli</option>
+    </select>
+  </div>
 </div>
 
 <div
   style="
     display:flex;
+    flex-direction:column;
+    align-items:center;
     justify-content:center;
-    margin-bottom:18px;
+    margin-top:14px;
+    margin-bottom:20px;
+    text-align:center;
   "
 >
+  <div
+    data-scene-credit-note
+    style="
+      margin-bottom:14px;
+      font-size:13px;
+      line-height:1.35;
+      font-weight:700;
+      color:rgba(255,255,255,.72);
+      text-align:center;
+    "
+  >
+    Her +2 sn için +5 kredi eklenir.
+  </div>
+
   <div
     data-scene-credit-live
     style="
@@ -1206,20 +1224,6 @@
     "
   >
     Bu sahne kaydedilirse toplam: 30 Kredi
-  </div>
-</div>
-  </div>
-
-  <div class="story-field">
-    <label for="sceneMood">Sahne Duygusu</label>
-    <select id="sceneMood" name="sceneMood" data-scene-editor-mood>
-      <option value="">Seçiniz</option>
-      <option value="neseli">Neşeli</option>
-      <option value="merakli">Meraklı</option>
-      <option value="heyecanli">Heyecanlı</option>
-      <option value="duygusal">Duygusal</option>
-      <option value="eglenceli">Eğlenceli</option>
-    </select>
   </div>
 </div>
 
