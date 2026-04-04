@@ -3180,27 +3180,27 @@
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-block-head {
   justify-content: center !important;
   text-align: center !important;
-  margin-bottom: 14px !important;
+  margin-bottom: 10px !important;
 }
 
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-block-head h3 {
   width: 100%;
   margin: 0 !important;
   text-align: center !important;
-  font-size: 34px !important;
-  line-height: 1.08 !important;
-  font-weight: 900 !important;
+  font-size: 22px !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
   color: rgba(255,255,255,.98) !important;
-  letter-spacing: -0.02em !important;
+  letter-spacing: -0.01em !important;
 }
 
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] label[for="cartoon-character-desc"] {
   display: block !important;
   width: 100% !important;
-  margin: 0 0 12px !important;
+  margin: 0 0 8px !important;
   text-align: center !important;
-  font-size: 22px !important;
+  font-size: 14px !important;
   line-height: 1.2 !important;
-  font-weight: 800 !important;
-  color: rgba(255,255,255,.94) !important;
+  font-weight: 700 !important;
+  color: rgba(255,255,255,.90) !important;
 }
