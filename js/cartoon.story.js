@@ -197,12 +197,16 @@ function showStoryCharacterLimitAlert() {
     return String(value || "").slice(0, max);
   }
 
-  function normalizeStorySceneDuration(value) {
-    const n = Number(value || 15);
-    if (n <= 5) return "5";
-    if (n <= 10) return "10";
-    return "15";
-  }
+ function normalizeStorySceneDuration(value) {
+  const n = Number(value || 4);
+
+  if (n <= 4) return "4";
+  if (n <= 6) return "6";
+  if (n <= 8) return "8";
+  if (n <= 10) return "10";
+  if (n <= 12) return "12";
+  return "15";
+}
 
   function formatSecondsLabel(totalSeconds) {
     const total = Math.max(0, Number(totalSeconds || 0));
