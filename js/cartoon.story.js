@@ -164,14 +164,7 @@ function getStorySelectedCharacters(root) {
 }
 
 function getStorySelectedCharacterCount(root) {
-  let count = 0;
-
-  if (safeText(state.mainCharacter)) count += 1;
-  if (safeText(state.helperCharacter1)) count += 1;
-  if (safeText(state.helperCharacter2)) count += 1;
-  if (safeText(state.extraCharacter)) count += 1;
-
-  return count;
+  return getStorySelectedCharacters(root).length;
 }
 
 function getStorySelectedCharacterEntries(root) {
