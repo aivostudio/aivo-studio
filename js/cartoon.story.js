@@ -1632,28 +1632,19 @@ const state = (window.__CARTOON_STORY_STATE__ =
     state.characterOptions = Array.from(map.entries()).map(([value, label]) => ({ value, label }));
   }
 
-  function fillCharacterSelect(selectEl, selectedValue) {
-    if (!selectEl) return;
+function fillCharacterSelect(inputEl, selectedValue) {
+  if (!inputEl) return;
+  inputEl.value = String(selectedValue || "");
+}
 
-    const current = String(selectedValue || "");
-    const options = state.characterOptions || [];
-
-    selectEl.innerHTML = "";
-    const empty = document.createElement("option");
-    empty.value = "";
-    empty.textContent = "Seçiniz";
-    selectEl.appendChild(empty);
-
-    options.forEach((item) => {
-      const opt = document.createElement("option");
-      opt.value = item.value;
-      opt.textContent = item.label;
-      if (item.value === current) opt.selected = true;
-      selectEl.appendChild(opt);
+function syncCharacterSelects(root) {
+  STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
+    const selectedValue = safeText(state[config.stateKey]);
+    config.selectSelectors.forEach((selector) => {
+      fillCharacterSelect(qs(selector, root), selectedValue);
     });
-
-    selectEl.value = current;
-  }
+  });
+}
 
   function syncCharacterSelects(root) {
     STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
