@@ -2649,18 +2649,18 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
       return;
     }
 
-    const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
+   const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
 
-    if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
-      showStoryCharacterLimitAlert();
-      render(root);
-      return;
-    }
+if (!emptySlot) {
+  showStoryCharacterLimitAlert();
+  render(root);
+  return;
+}
 
-    state[helperStateKeys[emptySlot]] = label;
-    resetStoryPolicyUI(root);
-    render(root);
-    return;
+state[helperStateKeys[emptySlot]] = label;
+resetStoryPolicyUI(root);
+render(root);
+return;
   }
 }
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
