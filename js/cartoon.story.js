@@ -2512,9 +2512,6 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
 
     if (isAlreadySelected && !hasMainUpload) {
       state.mainCharacter = "";
-      qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
-        btn.classList.remove("is-selected");
-      });
       resetStoryPolicyUI(root);
       render(root);
       return;
@@ -2528,18 +2525,11 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
     const willAddNewMainPreset = !isAlreadySelected && !hasMainPreset;
     if (willAddNewMainPreset && totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
       showStoryCharacterLimitAlert();
-      qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
-        btn.classList.toggle("is-selected", safeText(btn.dataset.character) === safeText(state.mainCharacter));
-      });
+      render(root);
       return;
     }
 
     state.mainCharacter = label;
-
-    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="main"]', root).forEach((btn) => {
-      btn.classList.toggle("is-selected", btn === storyCharacterCard);
-    });
-
     resetStoryPolicyUI(root);
     render(root);
     return;
@@ -2565,28 +2555,18 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
 
     const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
 
-if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
-  showStoryCharacterLimitAlert();
-  render(root);
-  return;
-}
+    if (!emptySlot || totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
+      showStoryCharacterLimitAlert();
+      render(root);
+      return;
+    }
+
     state[helperStateKeys[emptySlot]] = label;
-
-    qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role="helper"]', root).forEach((btn) => {
-      const btnLabel =
-        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        safeText(btn.dataset.character);
-
-      const isSelectedInState = helperSlots.some((slot) => safeText(state[helperStateKeys[slot]]) === btnLabel);
-      btn.classList.toggle("is-selected", isSelectedInState);
-    });
-
     resetStoryPolicyUI(root);
     render(root);
     return;
-    }
   }
+}
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
       if (sectionToggle && root.contains(sectionToggle)) {
         e.preventDefault();
