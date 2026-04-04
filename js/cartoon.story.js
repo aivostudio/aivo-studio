@@ -2048,9 +2048,9 @@ function getStoryEstimatedCreditsWithSceneDraft(root) {
   const audioAsset = getStoryAudioAsset();
   const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
 
- total += characterImageCount * 10;
-if (logoAsset.file) total += 10;
-if (includeMusic && audioAsset.file) total += 10;
+  total += characterImageCount * 5;
+  if (logoAsset.file) total += 10;
+  if (includeMusic && audioAsset.file) total += 10;
 
   return total;
 }
