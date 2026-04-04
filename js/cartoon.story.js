@@ -126,26 +126,86 @@ function createUploadCharacterEntry(slot) {
   };
 }
 
-function getSelectedPresetCharacters(root) {
-  return qsa('[data-role="main"].is-selected, [data-role="helper"].is-selected', root)
-    .map((btn) => {
-      const role = safeText(btn.dataset.role);
-      const value = safeText(btn.dataset.character);
-      const label =
-        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        value;
+function getSelectedPresetCharacters() {
+  const entries = [];
 
-      if (!role || !value || !label) return null;
-      return createPresetCharacterEntry(role, value, label);
-    })
-    .filter(Boolean);
+  if (safeText(state.mainCharacter)) {
+    entries.push(
+      createPresetCharacterEntry("main", safeText(state.mainCharacter), safeText(state.mainCharacter))
+    );
+  }
+
+  if (safeText(state.helperCharacter1)) {
+    entries.push(
+      createPresetCharacterEntry("helper", safeText(state.helperCharacter1), safeText(state.helperCharacter1))
+    );
+  }
+
+  if (safeText(state.helperCharacter2)) {
+    entries.push(
+      createPresetCharacterEntry("helper", safeText(state.helperCharacter2), safeText(state.helperCharacter2))
+    );
+  }
+
+  if (safeText(state.extraCharacter)) {
+    entries.push(
+      createPresetCharacterEntry("helper", safeText(state.extraCharacter), safeText(state.extraCharacter))
+    );
+  }
+
+  return entries;
 }
 
 function getSelectedUploadCharacters() {
   return STORY_CHARACTER_SLOT_CONFIG
     .map((config) => createUploadCharacterEntry(config.slot))
     .filter(Boolean);
+}
+
+function getStorySelectedCharacters() {
+  const slots = [
+    {
+      slot: "main",
+      label: safeText(state.mainCharacter),
+      hasUpload: !!getStoryCharacterImage("main")?.file
+    },
+    {
+      slot: "helper1",
+      label: safeText(state.helperCharacter1),
+      hasUpload: !!getStoryCharacterImage("helper1")?.file
+    },
+    {
+      slot: "helper2",
+      label: safeText(state.helperCharacter2),
+      hasUpload: !!getStoryCharacterImage("helper2")?.file
+    },
+    {
+      slot: "extra",
+      label: safeText(state.extraCharacter),
+      hasUpload: !!getStoryCharacterImage("extra")?.file
+    }
+  ];
+
+  return slots
+    .filter((item) => item.label || item.hasUpload)
+    .map((item) => ({
+      key: item.slot,
+      slot: item.slot,
+      label: item.label,
+      hasUpload: item.hasUpload
+    }));
+}
+
+function getStorySelectedCharacterCount() {
+  return getStorySelectedCharacters().length;
+}
+
+function getStorySelectedCharacterEntries() {
+  return getStorySelectedCharacters();
+}
+
+function canAddStoryCharacter(nextCount = 1) {
+  return getStorySelectedCharacterCount() + Number(nextCount || 0) <= STORY_MAX_TOTAL_CHARACTERS;
 }
 
 function getStorySelectedCharacters(root) {
