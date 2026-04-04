@@ -1069,7 +1069,6 @@ function isStoryPolicyBlocked(raw) {
   }
 
 const existingStoryState = window.__CARTOON_STORY_STATE__;
-
 const state = (window.__CARTOON_STORY_STATE__ =
   existingStoryState
     ? {
@@ -1077,7 +1076,14 @@ const state = (window.__CARTOON_STORY_STATE__ =
         mainCharacter: "",
         helperCharacter1: "",
         helperCharacter2: "",
-        extraCharacter: ""
+        extraCharacter: "",
+        characterLabelSource: {
+          main: "preset",
+          helper1: "preset",
+          helper2: "preset",
+          extra: "preset",
+          ...(existingStoryState.characterLabelSource || {})
+        }
       }
     : {
         mode: "story",
@@ -1105,6 +1111,12 @@ const state = (window.__CARTOON_STORY_STATE__ =
           helper1: createEmptyStoryCharacterImageState(),
           helper2: createEmptyStoryCharacterImageState(),
           extra: createEmptyStoryCharacterImageState()
+        },
+        characterLabelSource: {
+          main: "preset",
+          helper1: "preset",
+          helper2: "preset",
+          extra: "preset"
         },
         logoAsset: createEmptyStoryAssetState(),
         audioAsset: createEmptyStoryAssetState(),
