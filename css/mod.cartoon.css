@@ -2831,19 +2831,7 @@
 }
 
 .main-panel[data-module="cartoon"] .story-flow-card::before{
-  content:"";
-  position:absolute;
-  left:50%;
-  bottom:-120px;
-  transform:translateX(-50%);
-  width:520px;
-  height:260px;
-  border-radius:50%;
-  background:
-    radial-gradient(circle, rgba(116, 88, 255, 0.24) 0%, rgba(116, 88, 255, 0.12) 34%, rgba(116, 88, 255, 0.00) 72%);
-  filter: blur(26px);
-  pointer-events:none;
-  z-index:0;
+  display:none !important;
 }
 
 .main-panel[data-module="cartoon"] .story-flow-card::after{
