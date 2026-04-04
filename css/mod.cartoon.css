@@ -1901,6 +1901,12 @@
   width:100%;
   margin-top:0 !important;
 }
+
+.story-scene-editor-card .story-field:has([data-scene-editor-type]) > label{
+  display:block;
+  width:100%;
+  text-align:center;
+}
 .story-scene-editor-card > .story-card-head{
   display:flex;
   justify-content:center;
