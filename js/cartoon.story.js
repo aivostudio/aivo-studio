@@ -129,48 +129,41 @@ function createUploadCharacterEntry(slot) {
 function getSelectedPresetCharacters(root) {
   const selected = [];
 
-  const mainLabel = safeText(state.mainCharacter);
-  if (mainLabel) {
-    const mainBtn = qsa('[data-role="main"]', root).find((btn) => {
+  const slotDefs = [
+    { slot: "main", role: "main", stateKey: "mainCharacter", selector: '[data-role="main"]' },
+    { slot: "helper1", role: "helper", stateKey: "helperCharacter1", selector: '[data-role="helper"]' },
+    { slot: "helper2", role: "helper", stateKey: "helperCharacter2", selector: '[data-role="helper"]' },
+    { slot: "extra", role: "helper", stateKey: "extraCharacter", selector: '[data-role="helper"]' }
+  ];
+
+  slotDefs.forEach(({ slot, role, stateKey, selector }) => {
+    const label = safeText(state[stateKey]);
+    if (!label) return;
+
+    const imageState = getStoryCharacterImage(slot);
+    const hasUpload = !!(imageState && imageState.file);
+
+    if (hasUpload) return;
+
+    const btn = qsa(selector, root).find((el) => {
       const btnLabel =
-        safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-        safeText(btn.textContent) ||
-        safeText(btn.dataset.character);
-      return btnLabel === mainLabel;
+        safeText(qs(".cartoon-character-name", el)?.textContent) ||
+        safeText(el.textContent) ||
+        safeText(el.dataset.character);
+
+      return btnLabel === label;
     });
+
+    if (!btn) return;
 
     selected.push(
       createPresetCharacterEntry(
-        "main",
-        safeText(mainBtn?.dataset.character) || mainLabel,
-        mainLabel
+        role,
+        safeText(btn.dataset.character) || label,
+        label
       )
     );
-  }
-
-  [
-    safeText(state.helperCharacter1),
-    safeText(state.helperCharacter2),
-    safeText(state.extraCharacter)
-  ]
-    .filter(Boolean)
-    .forEach((helperLabel) => {
-      const helperBtn = qsa('[data-role="helper"]', root).find((btn) => {
-        const btnLabel =
-          safeText(qs(".cartoon-character-name", btn)?.textContent) ||
-          safeText(btn.textContent) ||
-          safeText(btn.dataset.character);
-        return btnLabel === helperLabel;
-      });
-
-      selected.push(
-        createPresetCharacterEntry(
-          "helper",
-          safeText(helperBtn?.dataset.character) || helperLabel,
-          helperLabel
-        )
-      );
-    });
+  });
 
   return selected.filter(Boolean);
 }
