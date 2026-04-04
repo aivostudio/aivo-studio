@@ -1988,48 +1988,24 @@ function fillSceneEditor(root, sceneId) {
 
 function getStoryEstimatedCredits() {
   const totalSeconds = Math.max(4, Number(getSelectedTotalSeconds() || 0));
-function getStoryEstimatedCreditsWithSceneDraft(root) {
-  const editor = getStorySceneEditor(root);
-  if (!editor || !state.editingSceneId) {
-    return getStoryEstimatedCredits();
-  }
-
-  const draftDuration = normalizeStorySceneDuration(
-    qs("[data-scene-editor-duration]", editor)?.value || "4"
-  );
-
-  const scenes = state.scenes.map((scene) => {
-    if (scene.id !== state.editingSceneId) return scene;
-
-    return {
-      ...scene,
-      duration: draftDuration,
-      selected: true
-    };
-  });
-
-  const totalSeconds = scenes
-    .filter((scene) => scene && scene.selected === true)
-    .reduce((sum, scene) => sum + toSceneDurationNumber(scene?.duration), 0);
-
   let total = 30;
 
   if (totalSeconds > 4) {
     total += Math.floor((totalSeconds - 4) / 2) * 5;
   }
 
-  const characterImageCount = STORY_CHARACTER_SLOT_CONFIG.reduce((sum, config) => {
-    const imageState = getStoryCharacterImage(config.slot);
-    return sum + (imageState && imageState.file ? 1 : 0);
-  }, 0);
+const characterImageCount = STORY_CHARACTER_SLOT_CONFIG.reduce((sum, config) => {
+  const imageState = getStoryCharacterImage(config.slot);
+  return sum + (imageState && imageState.file ? 1 : 0);
+}, 0);
 
-  const logoAsset = getStoryLogoAsset();
-  const audioAsset = getStoryAudioAsset();
-  const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
+const logoAsset = getStoryLogoAsset();
+const audioAsset = getStoryAudioAsset();
+const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
 
-  total += characterImageCount * 10;
-  if (logoAsset.file) total += 10;
-  if (includeMusic && audioAsset.file) total += 10;
+total += characterImageCount * 5;
+if (logoAsset.file) total += 10;
+if (includeMusic && audioAsset.file) total += 10;
 
   return total;
 }
