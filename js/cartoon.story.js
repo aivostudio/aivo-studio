@@ -3211,13 +3211,6 @@ const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
 const slotAlreadyHasLabel = !!safeText(slotConfig ? state[slotConfig.stateKey] : "");
 const totalSelectedCount = getStorySelectedCharacterCount();
 
-if (file && slotConfig && slotAlreadyHasLabel && !slotAlreadyUsedByUpload) {
-  characterFileInput.value = "";
-  alert("Bu slotta zaten seçili bir karakter var. Önce mevcut karakteri kaldırmalısın.");
-  render(root);
-  return;
-}
-
 if (
   file &&
   slotConfig &&
@@ -3231,7 +3224,7 @@ if (
   return;
 }
 
-if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
+if (file && slotConfig) {
   const autoLabel = safeText(file.name)
     .replace(/\.[^.]+$/, "")
     .replace(/[_-]+/g, " ")
