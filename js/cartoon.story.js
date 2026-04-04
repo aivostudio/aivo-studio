@@ -1930,30 +1930,32 @@ function resetStoryCharacterImage(root, slot) {
     });
   }
 
-  function fillSceneEditor(root, sceneId) {
-    const editor = getStorySceneEditor(root);
-    const scene = getSceneById(sceneId);
-    if (!editor || !scene) return;
+function fillSceneEditor(root, sceneId) {
+  const editor = getStorySceneEditor(root);
+  const scene = getSceneById(sceneId);
+  if (!editor || !scene) return;
 
-    const heading = qs("[data-scene-editor-heading]", editor);
-    const title = qs("[data-scene-editor-title]", editor);
-    const description = qs("[data-scene-editor-description]", editor);
-    const duration = qs("[data-scene-editor-duration]", editor);
-    const mood = qs("[data-scene-editor-mood]", editor);
-    const type = qs("[data-scene-editor-type]", editor);
-    const note = qs("[data-scene-editor-note]", editor);
+  const heading = qs("[data-scene-editor-heading]", editor);
+  const title = qs("[data-scene-editor-title]", editor);
+  const description = qs("[data-scene-editor-description]", editor);
+  const duration = qs("[data-scene-editor-duration]", editor);
+  const mood = qs("[data-scene-editor-mood]", editor);
+  const type = qs("[data-scene-editor-type]", editor);
+  const note = qs("[data-scene-editor-note]", editor);
 
-    if (heading) heading.textContent = scene.title || "Sahne Düzenle";
-    if (title) title.value = scene.title || "";
-    if (description) description.value = scene.description || "";
+  if (heading) heading.textContent = scene.title || "Sahne Düzenle";
+  if (title) title.value = scene.title || "";
+  if (description) description.value = scene.description || "";
 
-    renderSceneCharacterPicker(root, scene);
+  renderSceneCharacterPicker(root, scene);
 
-    if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
-    if (mood) mood.value = scene.mood || "";
-    if (type) type.value = scene.type || "";
-    if (note) note.value = scene.directorNote || "";
-  }
+  if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
+  if (mood) mood.value = scene.mood || "";
+  if (type) type.value = scene.type || "";
+  if (note) note.value = scene.directorNote || "";
+
+  syncSceneEditorCreditPreview(root);
+}
 
   function ensureStorySceneEditorPortal(root) {
     const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
@@ -2007,7 +2009,73 @@ if (includeMusic && audioAsset.file) total += 10;
 
   return total;
 }
+function getStoryEstimatedCreditsWithSceneDraft(root) {
+  const editor = getStorySceneEditor(root);
+  if (!editor || !state.editingSceneId) {
+    return getStoryEstimatedCredits();
+  }
 
+  const draftDuration = normalizeStorySceneDuration(
+    qs("[data-scene-editor-duration]", editor)?.value || "4"
+  );
+
+  const scenes = state.scenes.map((scene) => {
+    if (scene.id !== state.editingSceneId) return scene;
+
+    return {
+      ...scene,
+      duration: draftDuration,
+      selected: true
+    };
+  });
+
+  const totalSeconds = scenes
+    .filter((scene) => scene && scene.selected === true)
+    .reduce((sum, scene) => sum + toSceneDurationNumber(scene?.duration), 0);
+
+  let total = 30;
+
+  if (totalSeconds > 4) {
+    total += Math.floor((totalSeconds - 4) / 2) * 5;
+  }
+
+  const characterImageCount = STORY_CHARACTER_SLOT_CONFIG.reduce((sum, config) => {
+    const imageState = getStoryCharacterImage(config.slot);
+    return sum + (imageState && imageState.file ? 1 : 0);
+  }, 0);
+
+  const logoAsset = getStoryLogoAsset();
+  const audioAsset = getStoryAudioAsset();
+  const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
+
+  total += characterImageCount * 5;
+  if (logoAsset.file) total += 10;
+  if (includeMusic && audioAsset.file) total += 10;
+
+  return total;
+}
+
+function syncSceneEditorCreditPreview(root) {
+  const editor = getStorySceneEditor(root);
+  if (!editor) return;
+
+  const liveEl = qs("[data-scene-credit-live]", editor);
+  const btn = qs("[data-story-generate]", root);
+
+  const total = getStoryEstimatedCreditsWithSceneDraft(root);
+
+  if (btn) {
+    btn.setAttribute("data-credit-cost", String(total));
+
+    if (!state.isGenerating) {
+      btn.textContent = `Hikayeyi Oluştur (${total} Kredi)`;
+    }
+  }
+
+  if (liveEl) {
+    liveEl.textContent = `Bu sahne kaydedilirse toplam: ${total} Kredi`;
+  }
+}
   function syncStoryGenerateButtonCredit(root) {
   const btn = qs("[data-story-generate]", root);
   if (!btn) return;
@@ -3118,7 +3186,11 @@ setStoryGenerateButton(root, true);
         render(root);
         return;
       }
-
+      const sceneEditorDuration = e.target.closest("[data-scene-editor-duration]");
+if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDuration)) {
+  syncSceneEditorCreditPreview(root);
+  return;
+}
       const mainCharacter = e.target.closest("[data-story-main-character]");
       if (mainCharacter && root.contains(mainCharacter)) {
         state.mainCharacter = mainCharacter.value || "";
