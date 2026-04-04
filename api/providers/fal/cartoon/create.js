@@ -254,7 +254,15 @@ module.exports = async function handler(req, res) {
   const prompt =
     mode === "character"
       ? [
-          "Cute kids cartoon character design.",
+          referenceImageUrl
+            ? "Transform the uploaded reference image into a cartoon character while preserving the same person's core identity."
+            : "Cute kids cartoon character design.",
+          referenceImageUrl
+            ? "Keep the same face structure, hairline, hairstyle, eye shape, nose shape, mouth proportions, jawline, beard or facial-hair cues, and overall head shape from the reference."
+            : "",
+          referenceImageUrl
+            ? "Do not invent a different person. Do not significantly change age, gender presentation, facial identity, or hairstyle unless explicitly requested."
+            : "",
           characterType ? `Character type: ${characterType}.` : "",
           characterName ? `Character name: ${characterName}.` : "",
           characterStyle ? `Visual style: ${characterStyle}.` : "",
@@ -269,15 +277,14 @@ module.exports = async function handler(req, res) {
           "Full body character.",
           "Centered composition.",
           "Clean simple background.",
-          "Child-friendly, adorable, expressive design.",
-          "No text, no watermark.",
+          "Cute 3D cartoon finish.",
+          "No extra people, no text, no watermark.",
         ]
           .filter(Boolean)
           .join(" ")
       : mode === "story"
         ? `${String(body.extraPrompt || "").trim()} Unique shot token: ${requestNonce}.`
         : `${buildBasicPrompt(body)} Unique shot token: ${requestNonce}.`;
-
   const duration = String(body.duration || "5");
   const aspect_ratio = String(body.aspectRatio || body.aspect_ratio || "16:9");
 
