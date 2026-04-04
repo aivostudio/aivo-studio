@@ -3204,3 +3204,44 @@
   font-weight: 700 !important;
   color: rgba(255,255,255,.90) !important;
 }
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] [data-character-create-upload] + .cartoon-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  height: 56px;
+  padding: 0 28px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: linear-gradient(90deg, #7b5cff 0%, #ff5fa8 100%);
+  box-shadow:
+    0 10px 24px rgba(123, 92, 255, .24),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    filter .16s ease,
+    opacity .16s ease;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] [data-character-create-upload] + .cartoon-upload-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow:
+    0 14px 30px rgba(123, 92, 255, .30),
+    inset 0 1px 0 rgba(255,255,255,.20);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] [data-character-create-upload] + .cartoon-upload-btn:active {
+  transform: translateY(2px) scale(.985);
+  filter: brightness(.98);
+  box-shadow:
+    0 6px 14px rgba(123, 92, 255, .18),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
