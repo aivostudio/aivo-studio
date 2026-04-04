@@ -1901,7 +1901,16 @@
   width:100%;
   margin-top:0 !important;
 }
-
+.story-scene-editor-card [data-scene-credit-live]{
+  color:#fff;
+  font-size:18px;
+  line-height:1.1;
+  font-weight:900;
+  letter-spacing:-0.01em;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.22),
+    0 0 12px rgba(255,255,255,.08);
+}
 .story-scene-editor-card .story-field:has([data-scene-editor-type]) > label{
   display:block;
   width:100%;
