@@ -3170,6 +3170,48 @@
 .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] .cartoon-select {
   height: 40px;
 }
+/* === CHARACTER MODE CTA FIX === */
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"]{
+  padding-bottom: 140px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-character-footer{
+  position: sticky;
+  bottom: 10px;
+  z-index: 20;
+  width: min(720px, 100%);
+  margin: 14px auto 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(28,18,55,.94), rgba(12,10,34,.96));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-character-footer .cartoon-generate-btn{
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  margin: 0;
+  border-radius: 999px;
+}
+
+@media (max-width: 900px){
+  .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"]{
+    padding-bottom: 160px;
+  }
+
+  .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-character-footer{
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full[style*="margin-top:16px"] > div > label.cartoon-field-label {
   font-size: 18px !important;
   line-height: 1.28 !important;
