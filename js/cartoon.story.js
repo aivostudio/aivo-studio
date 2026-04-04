@@ -2502,7 +2502,12 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
     extra: "extraCharacter"
   };
 
-  const totalSelectedCount = getStorySelectedCharacterCount(root);
+ const totalSelectedCount =
+  qsa('.cartoon-mode-view[data-cartoon-view="story"] [data-role].is-selected', root).length +
+  STORY_CHARACTER_SLOT_CONFIG.filter((config) => {
+    const imageState = getStoryCharacterImage(config.slot);
+    return !!(imageState && imageState.file);
+  }).length;
 
   if (role === "main") {
     const isAlreadySelected = safeText(state.mainCharacter) === label;
