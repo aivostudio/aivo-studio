@@ -2093,7 +2093,7 @@
 .story-grid-3 .story-field input{
   margin-top:0;
 }
-/* === STORY + BASIC MODE CTA FIX === */
+/* === STORY MODE CTA FIX === */
 
 /* Story view hidden ise asla görünmesin */
 .cartoon-mode-view[data-cartoon-view="story"][hidden]{
@@ -2115,35 +2115,6 @@
 }
 
 .cartoon-mode-view[data-cartoon-view="story"] .story-footer .story-primary-btn{
-  display:flex;
-  width:100%;
-  min-width:0;
-  height:56px;
-  border-radius:999px;
-  justify-content:center;
-  align-items:center;
-  font-size:18px;
-  font-weight:800;
-  box-shadow:0 14px 40px rgba(191,86,255,.24);
-}
-
-/* BASIC MODE CTA FIX */
-.cartoon-mode-view[data-cartoon-view="basic"] .cartoon-cta{
-  position:sticky;
-  bottom:0;
-  z-index:8;
-  display:block;
-  margin-top:10px;
-  padding:12px 16px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;
-  background:rgba(8,10,30,.9);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  box-shadow:0 -10px 30px rgba(0,0,0,.18);
-}
-
-.cartoon-mode-view[data-cartoon-view="basic"] .cartoon-cta .cartoon-generate-btn{
   display:flex;
   width:100%;
   min-width:0;
