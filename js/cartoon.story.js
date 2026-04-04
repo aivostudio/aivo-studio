@@ -3205,65 +3205,53 @@ setStoryGenerateButton(root, true);
             ? characterFileInput.files[0]
             : null;
 
-let targetSlot = slot;
-let slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === targetSlot);
+const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
+const currentImageState = getStoryCharacterImage(slot);
+const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
+const slotAlreadyHasLabel = !!safeText(slotConfig ? state[slotConfig.stateKey] : "");
+const totalSelectedCount = getStorySelectedCharacterCount();
 
-if (file) {
-  const currentLabel = safeText(slotConfig ? state[slotConfig.stateKey] : "");
-  const currentImageState = getStoryCharacterImage(targetSlot);
-  const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
+if (file && slotConfig && slotAlreadyHasLabel && !slotAlreadyUsedByUpload) {
+  characterFileInput.value = "";
+  alert("Bu slotta zaten seçili bir karakter var. Önce mevcut karakteri kaldırmalısın.");
+  render(root);
+  return;
+}
 
-  if (currentLabel && !slotAlreadyUsedByUpload) {
-    const emptySlotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => {
-      const hasLabel = !!safeText(state[config.stateKey]);
-      const hasUpload = !!(getStoryCharacterImage(config.slot)?.file);
-      return !hasLabel && !hasUpload;
-    });
+if (
+  file &&
+  slotConfig &&
+  !slotAlreadyUsedByUpload &&
+  !slotAlreadyHasLabel &&
+  totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS
+) {
+  characterFileInput.value = "";
+  showStoryCharacterLimitAlert();
+  render(root);
+  return;
+}
 
-    if (emptySlotConfig) {
-      targetSlot = emptySlotConfig.slot;
-      slotConfig = emptySlotConfig;
-    } else {
-      characterFileInput.value = "";
-      showStoryCharacterLimitAlert();
-      render(root);
-      return;
-    }
-  }
+if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
+  const autoLabel = safeText(file.name)
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
 
-  const totalSelectedCount = getStorySelectedCharacterCount();
-  const targetHasLabel = !!safeText(slotConfig ? state[slotConfig.stateKey] : "");
-  const targetHasUpload = !!(getStoryCharacterImage(targetSlot)?.file);
-
-  if (!targetHasLabel && !targetHasUpload && totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
-    characterFileInput.value = "";
-    showStoryCharacterLimitAlert();
-    render(root);
-    return;
-  }
-
-  if (slotConfig && !safeText(state[slotConfig.stateKey])) {
-    const autoLabel = safeText(file.name)
-      .replace(/\.[^.]+$/, "")
-      .replace(/[_-]+/g, " ")
-      .trim();
-
-    if (autoLabel) {
-      state[slotConfig.stateKey] = autoLabel;
-    }
+  if (autoLabel) {
+    state[slotConfig.stateKey] = autoLabel;
   }
 }
 
-setStoryCharacterImage(targetSlot, {
-  file,
-  fileName: file ? file.name : "",
-  fileUrl: "",
-  uploadPromise: null,
-  uploadStatus: file ? "uploading" : "idle",
-  uploadError: ""
-});
+        setStoryCharacterImage(slot, {
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
 
-updateStoryCharacterUploadUI(root, targetSlot);
+        updateStoryCharacterUploadUI(root, slot);
 
         const scene = getSceneById(state.editingSceneId);
         if (scene) {
