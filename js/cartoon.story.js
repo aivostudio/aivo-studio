@@ -1389,23 +1389,24 @@ const state = (window.__CARTOON_STORY_STATE__ =
     updateStoryAudioUploadUI(root);
   }
 
-  function resetStoryCharacterImage(root, slot) {
-    const key = String(slot || "").trim();
-    if (!key) return;
+function resetStoryCharacterImage(root, slot) {
+  const key = String(slot || "").trim();
+  if (!key) return;
 
-    const input = qs(`[data-story-character-file="${key}"]`, root);
-    if (input) input.value = "";
+  const input = qs(`[data-story-character-file="${key}"]`, root);
+  if (input) input.value = "";
 
-    setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
+  setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
 
-    updateStoryCharacterUploadUI(root, key);
+  updateStoryCharacterUploadUI(root, key);
+  render(root);
 
-    const scene = getSceneById(state.editingSceneId);
-    if (scene) {
-      renderSceneCharacterPicker(root, scene);
-      syncSceneRows(root);
-    }
+  const scene = getSceneById(state.editingSceneId);
+  if (scene) {
+    renderSceneCharacterPicker(root, scene);
+    syncSceneRows(root);
   }
+}
 
   function updateStoryLogoUploadUI(root) {
     const textEl = qs("[data-story-logo-upload-text]", root);
