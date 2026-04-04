@@ -3174,45 +3174,47 @@ setStoryGenerateButton(root, true);
             ? characterFileInput.files[0]
             : null;
 
-        const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
-        const currentImageState = getStoryCharacterImage(slot);
-        const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
-        const slotAlreadyHasLabel = !!safeText(slotConfig ? state[slotConfig.stateKey] : "");
-        const totalSelectedCount = getStorySelectedCharacterCount(root);
+  const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
+const currentImageState = getStoryCharacterImage(slot);
+const slotAlreadyUsedByUpload = !!(currentImageState && currentImageState.file);
+const slotStateLabel = safeText(slotConfig ? state[slotConfig.stateKey] : "");
+const totalSelectedCount = getStorySelectedCharacterCount(root);
 
-        if (
-          file &&
-          slotConfig &&
-          !slotAlreadyUsedByUpload &&
-          !slotAlreadyHasLabel &&
-          totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS
-        ) {
-          characterFileInput.value = "";
-          showStoryCharacterLimitAlert();
-          render(root);
-          return;
-        }
+if (file && slotConfig) {
+  if (slotStateLabel && !slotAlreadyUsedByUpload) {
+    characterFileInput.value = "";
+    alert("Bu slotta zaten seçili bir karakter var. Önce mevcut karakteri kaldırmalısın.");
+    render(root);
+    return;
+  }
 
-        if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
-          const autoLabel = safeText(file.name)
-            .replace(/\.[^.]+$/, "")
-            .replace(/[_-]+/g, " ")
-            .trim();
+  if (!slotAlreadyUsedByUpload && totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
+    characterFileInput.value = "";
+    showStoryCharacterLimitAlert();
+    render(root);
+    return;
+  }
+}
 
-          if (autoLabel) {
-            state[slotConfig.stateKey] = autoLabel;
-          }
-        }
+if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
+  const autoLabel = safeText(file.name)
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
 
-        setStoryCharacterImage(slot, {
-          file,
-          fileName: file ? file.name : "",
-          fileUrl: "",
-          uploadPromise: null,
-          uploadStatus: file ? "uploading" : "idle",
-          uploadError: ""
-        });
+  if (autoLabel) {
+    state[slotConfig.stateKey] = autoLabel;
+  }
+}
 
+setStoryCharacterImage(slot, {
+  file,
+  fileName: file ? file.name : "",
+  fileUrl: "",
+  uploadPromise: null,
+  uploadStatus: file ? "uploading" : "idle",
+  uploadError: ""
+});
         updateStoryCharacterUploadUI(root, slot);
 
         const scene = getSceneById(state.editingSceneId);
