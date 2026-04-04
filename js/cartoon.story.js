@@ -3245,6 +3245,11 @@ if (file && slotConfig) {
   if (autoLabel) {
     state[slotConfig.stateKey] = autoLabel;
   }
+
+  state.characterLabelSource = {
+    ...(state.characterLabelSource || {}),
+    [slot]: "upload"
+  };
 }
 
         setStoryCharacterImage(slot, {
