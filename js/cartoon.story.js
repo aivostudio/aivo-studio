@@ -2500,17 +2500,16 @@ function syncStoryPresetCharacterCards(root) {
     extra: "extraCharacter"
   };
 
-  const orderedSelections = [
-    { slot: "main", label: safeText(state.mainCharacter) },
-    { slot: "helper1", label: safeText(state.helperCharacter1) },
-    { slot: "helper2", label: safeText(state.helperCharacter2) },
-    { slot: "extra", label: safeText(state.extraCharacter) }
-  ].filter((item) => item.label);
+const orderedSelections = [
+  { slot: "main", label: safeText(state.mainCharacter) },
+  { slot: "helper1", label: safeText(state.helperCharacter1) },
+  { slot: "helper2", label: safeText(state.helperCharacter2) },
+  { slot: "extra", label: safeText(state.extraCharacter) }
+].filter((item) => item.label);
 
-  const orderMap = new Map(
-    orderedSelections.map((item, index) => [item.label, index + 1])
-  );
-
+const orderMap = new Map(
+  orderedSelections.map((item, index) => [item.label, index + 1])
+);
   const storyView = qs('.cartoon-mode-view[data-cartoon-view="story"]', root);
 
   if (storyView) {
