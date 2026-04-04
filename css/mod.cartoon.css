@@ -3170,10 +3170,10 @@
 .cartoon-field--full[style*="grid-template-columns:repeat(4,minmax(0,1fr))"] .cartoon-select {
   height: 40px;
 }
-
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full .cartoon-upload-row > .cartoon-field-label {
-  font-size: 15px !important;
-  line-height: 1.45 !important;
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="character"] .cartoon-field--full[style*="margin-top:16px"] > div > label.cartoon-field-label {
+  font-size: 18px !important;
+  line-height: 1.28 !important;
   font-weight: 800 !important;
-  color: rgba(255,255,255,.96) !important;
+  color: rgba(255,255,255,.98) !important;
+  max-width: 980px;
 }
