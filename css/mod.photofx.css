@@ -1005,3 +1005,50 @@ section[data-module="photofx"] .pfxCreditBadge--accent{
   background:linear-gradient(135deg, rgba(123,92,255,.18), rgba(255,111,177,.16));
   border-color:rgba(255,255,255,.12);
 }
+/* ===== PhotoFX / top 4 tools vertical-center alignment ===== */
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+}
+
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxLabel{
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxCreditInline{
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 10px !important;
+}
+
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxUploadTool,
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxSelectWrap{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxUploadTool{
+  min-height: 56px;
+}
+
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxSelectWrap .pfxSelect{
+  width: 100%;
+}
+
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxUploadToolName,
+section[data-module="photofx"] .pfxUploadToolsGrid.pfxUploadToolsGrid--four > .pfxField .pfxUploadMeta{
+  text-align: left;
+}
