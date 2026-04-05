@@ -357,13 +357,47 @@ function enforcePersonPolicy(app, text) {
       code: 'DEFAMATION_PUBLIC_FIGURE',
       severity: 'high',
       message:
+   function enforcePersonPolicy(app, text) {
+  const hitsPublic = pickMatchedTerms(text, PUBLIC_FIGURE_TERMS, 8);
+  const hitsDefamation = pickMatchedTerms(text, DEFAMATION_TERMS, 8);
+  const hitsDeepfake = pickMatchedTerms(text, DEEPFAKE_TERMS, 8);
+
+  const hasPublicFigure = hitsPublic.length > 0;
+  const hasDefamation = hitsDefamation.length > 0;
+  const hasDeepfake = hitsDeepfake.length > 0;
+
+  const isVisualApp =
+    app === 'video' ||
+    app === 'cover' ||
+    app === 'image' ||
+    app === 'cartoon' ||
+    app === 'photofx';
+
+  if (hasPublicFigure && hasDeepfake) {
+    return makeResult({
+      decision: 'block',
+      code: 'DEEPFAKE_REAL_PERSON',
+      severity: 'high',
+      message:
+        'Gerçek kişi, kamu figürü veya ünlü kişiyi sahte konuşma, deepfake veya yanıltıcı taklit ile gösteren içerik üretilemez.',
+      reasons: ['deepfake-real-person'],
+      matchedTerms: [...hitsPublic, ...hitsDeepfake].slice(0, 8),
+    });
+  }
+
+  if (hasPublicFigure && hasDefamation) {
+    return makeResult({
+      decision: 'block',
+      code: 'DEFAMATION_PUBLIC_FIGURE',
+      severity: 'high',
+      message:
         'Kamu figürü, siyasetçi, ünlü veya gerçek kişiyi aşağılayan, alay eden ya da itibar zedeleyen içerik üretilemez.',
       reasons: ['defamation-public-figure'],
       matchedTerms: [...hitsPublic, ...hitsDefamation].slice(0, 8),
     });
   }
 
-  if ((app === 'video' || app === 'cover' || app === 'image' || app === 'cartoon') && hasPublicFigure) {
+  if (isVisualApp && hasPublicFigure) {
     return makeResult({
       decision: 'rewrite',
       code: 'PUBLIC_FIGURE_REWRITE',
@@ -374,6 +408,10 @@ function enforcePersonPolicy(app, text) {
       reasons: ['public-figure-rewrite'],
       matchedTerms: hitsPublic,
     });
+  }
+
+  if (isVisualApp && hasDeepfake && !hasPublicFigure) {
+    return null;
   }
 
   return null;
