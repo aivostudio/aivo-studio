@@ -1034,3 +1034,44 @@
     0 0 0 2px rgba(255,255,255,.14),
     0 0 0 5px rgba(236,72,153,.18);
 }
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-inline{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:auto;
+  height:32px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.92);
+  font-size:12px;
+  line-height:1;
+  font-weight:800;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-badge--accent{
+  background:linear-gradient(135deg, rgba(123,92,255,.18), rgba(255,111,177,.16));
+  border-color:rgba(255,255,255,.12);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .story-field > div[style*="flex-direction:column"]{
+  width:100%;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .story-field > div[style*="flex-direction:column"] > label{
+  margin:0;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-inline .cartoon-upload-row--compact{
+  margin:0;
+}
