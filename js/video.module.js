@@ -1029,46 +1029,59 @@ async function createImage() {
 
         await pollJob(job_id);
   }
-  function bindVideoPricingUI(root) {
-    if (!root || root.__videoPricingBound) return;
-    root.__videoPricingBound = true;
+function bindVideoPricingUI(root) {
+  if (!root || root.__videoPricingBound) return;
+  root.__videoPricingBound = true;
 
-    const durationEl = qs("#videoDuration", root);
-    const audioEl = qs("#audioEnabled", root);
-    const ratioEl = qs("#videoRatio", root);
-    const resolutionEl = qs("#videoResolution", root);
+  const durationEl = qs("#videoDuration", root);
+  const audioEl = qs("#audioEnabled", root);
+  const ratioEl = qs("#videoRatio", root);
+  const resolutionEl = qs("#videoResolution", root);
 
-    function syncDurationDefault() {
-      if (!durationEl) return;
-      const next = clampDuration(Number(durationEl.value || 5));
-      durationEl.value = String(next);
+  function applyInitialDefaults() {
+    if (durationEl && !durationEl.dataset.videoDefaultApplied) {
+      durationEl.value = "5";
+      durationEl.dataset.videoDefaultApplied = "1";
     }
 
-    function refreshPricing() {
-      syncDurationDefault();
-      syncVideoCreditUI(root);
+    if (audioEl && !audioEl.dataset.videoDefaultApplied) {
+      audioEl.checked = false;
+      audioEl.dataset.videoDefaultApplied = "1";
     }
-
-    if (durationEl) {
-      durationEl.addEventListener("change", refreshPricing);
-      durationEl.addEventListener("input", refreshPricing);
-    }
-
-    if (audioEl) {
-      audioEl.addEventListener("change", refreshPricing);
-      audioEl.addEventListener("input", refreshPricing);
-    }
-
-    if (ratioEl) {
-      ratioEl.addEventListener("change", refreshPricing);
-    }
-
-    if (resolutionEl) {
-      resolutionEl.addEventListener("change", refreshPricing);
-    }
-
-    refreshPricing();
   }
+
+  function syncDurationDefault() {
+    if (!durationEl) return;
+    const next = clampDuration(Number(durationEl.value || 5));
+    durationEl.value = String(next);
+  }
+
+  function refreshPricing() {
+    applyInitialDefaults();
+    syncDurationDefault();
+    syncVideoCreditUI(root);
+  }
+
+  if (durationEl) {
+    durationEl.addEventListener("change", refreshPricing);
+    durationEl.addEventListener("input", refreshPricing);
+  }
+
+  if (audioEl) {
+    audioEl.addEventListener("change", refreshPricing);
+    audioEl.addEventListener("input", refreshPricing);
+  }
+
+  if (ratioEl) {
+    ratioEl.addEventListener("change", refreshPricing);
+  }
+
+  if (resolutionEl) {
+    resolutionEl.addEventListener("change", refreshPricing);
+  }
+
+  refreshPricing();
+}
   // ===============================
   // Buttons (event delegation)
   // ===============================
