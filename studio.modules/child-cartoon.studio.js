@@ -52,6 +52,7 @@ function buildStudioPersistPayload(rootState) {
     app: STUDIO_DB_APP,
     mode: STUDIO_DB_MODE,
     format: String(rootState?.format || '16:9'),
+
     scenes: Array.isArray(rootState?.scenes)
       ? rootState.scenes.map((scene) => ({
           id: String(scene?.id || ''),
@@ -61,7 +62,19 @@ function buildStudioPersistPayload(rootState) {
           videoUrl: String(scene?.videoUrl || ''),
           fileName: String(scene?.fileName || '')
         }))
-      : []
+      : [],
+
+    voice: {
+      fileName: String(rootState?.voiceFileName || ''),
+      fileUrl: String(rootState?.voiceFileUrl || ''),
+      uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
+    },
+
+    logo: {
+      fileName: String(rootState?.logoFileName || ''),
+      fileUrl: String(rootState?.logoFileUrl || ''),
+      uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
+    }
   };
 }
 
