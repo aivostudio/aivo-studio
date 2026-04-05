@@ -577,28 +577,30 @@ async function uploadStudioLogoFileToR2(file) {
 
   return publicUrl;
 }
-  function clearStudioVoiceFile(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonVoiceFile',
-      '#studioVoiceFile',
-      '[data-studio-voice-upload]',
-      'input[name="voiceFile"]',
-      'input[name="kendiSesin"]'
-    ]);
+function clearStudioVoiceFile(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
 
-    rootState.voiceFile = null;
-    rootState.voiceFileName = '';
-    rootState.voiceFileUrl = '';
-    rootState.voiceFileUploadPromise = null;
-    rootState.voiceFileUploadStatus = 'idle';
-    rootState.voiceFileUploadError = '';
+  rootState.voiceFile = null;
+  rootState.voiceFileName = '';
+  rootState.voiceFileUrl = '';
+  rootState.voiceFileUploadPromise = null;
+  rootState.voiceFileUploadStatus = 'idle';
+  rootState.voiceFileUploadError = '';
 
-    if (input) {
-      input.value = '';
-    }
-
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+  if (input) {
+    input.value = '';
   }
+
+  updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+  updateStudioSummary(rootState, studioRoot);
+  saveStudioState(rootState);
+}
   function clearStudioLogoFile(rootState, studioRoot) {
   const input = qsAny(studioRoot, [
     '#cartoonLogoFile',
