@@ -3346,3 +3346,37 @@
   gap:12px;
   flex-wrap:wrap;
 }
+/* ===== Cartoon / Basic mode upload buttons only ===== */
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-upload-btn{
+  background: linear-gradient(90deg, rgba(139,92,246,.92) 0%, rgba(236,91,167,.92) 100%) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px rgba(191,86,255,.16) !important;
+
+  /* mevcut boyu koru */
+  min-width: 92px !important;
+  height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-upload-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(191,86,255,.20) !important;
+  filter: brightness(1.03);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-upload-btn:active{
+  transform: translateY(1px) scale(.985);
+  box-shadow: 0 4px 10px rgba(191,86,255,.12) !important;
+  filter: brightness(.98);
+}
