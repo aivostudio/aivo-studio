@@ -843,6 +843,60 @@ async function createText() {
     prompt,
   };
 
+  const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
+  const creditReason = "studio_video_text_generate";
+
+  const creditRes = await fetch("/api/credits/consume", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "content-type": "application/json",
+      "accept": "application/json"
+    },
+    body: JSON.stringify({
+      cost: creditCost,
+      reason: creditReason
+    })
+  });
+
+  let creditData = null;
+  try {
+    creditData = await creditRes.json();
+  } catch {
+    creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+  }
+
+  if (!creditRes.ok || !creditData?.ok) {
+    const msg =
+      creditData?.error ||
+      creditData?.message ||
+      "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+
+    alert(String(msg));
+    return;
+  }
+
+  try {
+    const creditGetRes = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store",
+      headers: { "accept": "application/json" }
+    });
+
+    const creditGetData = await creditGetRes.json().catch(() => null);
+
+    if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+      const topCreditCountEl = document.getElementById("topCreditCount");
+      if (topCreditCountEl) {
+        topCreditCountEl.textContent = String(creditGetData.credits);
+      }
+
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+      }
+    }
+  } catch {}
+
   const j = await postJSON("/api/providers/runway/video/create", payload);
   const job = j.job || j;
 
@@ -851,7 +905,7 @@ async function createText() {
   window.AIVO_JOBS?.upsert?.(job);
 
   const job_id = job.job_id || job.id;
-  console.log("[video] created(text)", { job_id, job });
+  console.log("[video] created(text)", { job_id, job, creditCost });
 
   emitVideoJobCreated({
     app: "video",
@@ -864,10 +918,10 @@ async function createText() {
     duration: payload.duration,
     resolution: payload.resolution,
     audio: payload.audio,
+    credit_cost: creditCost
   });
 
   await pollJob(job_id);
-}
 
 
   async function createImage() {
