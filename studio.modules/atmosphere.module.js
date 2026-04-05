@@ -1529,13 +1529,21 @@ function isAtmoPolicyBlocked(raw) {
       creditData = { ok: false, error: "non_json_response", status: creditRes.status };
     }
 
-    if (!creditRes.ok || !creditData?.ok) {
+      if (!creditRes.ok || !creditData?.ok) {
       const msg =
         creditData?.error ||
         creditData?.message ||
         "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
 
       try { window.toast?.error?.(String(msg)); } catch {}
+
+      const to = encodeURIComponent(
+        location.pathname + location.search + location.hash
+      );
+
+      location.href =
+        "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+
       return;
     }
 
