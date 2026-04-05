@@ -1656,6 +1656,46 @@ function isAtmoPolicyBlocked(raw) {
         syncAtmoGenerateCredits(root);
         return;
       }
+      const basicLogoClearBtn = closestWithin(e.target, "#atmLogoClear", root);
+      if (basicLogoClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const logoInput = document.getElementById("atmLogoFile");
+        if (logoInput) logoInput.value = "";
+
+        state.logoFile = null;
+
+        const panel =
+          basicLogoClearBtn.closest('[data-mode-panel="basic"]') ||
+          qs('[data-mode-panel="basic"]', root) ||
+          root;
+
+        setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
+        try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+        syncAtmoGenerateCredits(root);
+        return;
+      }
+
+      const basicAudioClearBtn = closestWithin(e.target, "#atmAudioClear", root);
+      if (basicAudioClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const audioInput = document.getElementById("atmAudioFile");
+        if (audioInput) audioInput.value = "";
+
+        state.audioFile = null;
+
+        const panel =
+          basicAudioClearBtn.closest('[data-mode-panel="basic"]') ||
+          qs('[data-mode-panel="basic"]', root) ||
+          root;
+
+        setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
+        syncAtmoGenerateCredits(root);
+        return;
+      }
 
       const btn = closestWithin(e.target, "[data-atm-generate]", root);
       if (!btn) return;
