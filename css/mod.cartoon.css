@@ -3519,3 +3519,33 @@
   position: relative !important;
   top: 34px !important;
 }
+/* === STORY MODE / OZEL KARAKTERLER: CENTERED UPLOAD STACK === */
+.main-panel[data-module="cartoon"] .story-characters-card .story-grid-4 > .story-character-field {
+  align-items: center;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .story-characters-card .cartoon-credit-inline {
+  justify-content: center;
+}
+
+.main-panel[data-module="cartoon"] .story-characters-card .cartoon-upload-row--compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.main-panel[data-module="cartoon"] .story-characters-card .cartoon-upload-row--compact .cartoon-upload-btn {
+  min-width: 160px;
+}
+
+.main-panel[data-module="cartoon"] .story-characters-card .cartoon-upload-row--compact .cartoon-upload-text {
+  max-width: 180px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
