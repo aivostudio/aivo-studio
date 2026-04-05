@@ -1016,42 +1016,21 @@ section.main-panel[data-module="atmosphere"] .atmProRefsBtns .atmFileBtn::before
 section.main-panel[data-module="atmosphere"] .atmProRefsBtns .atmFileBtn::after{
   content: none;
 }
-/* ===== ATM PRO STYLE CARD — MATCH EXPORT HEIGHT + CLEAN INNER LAYOUT ===== */
+/* ===== ATM PRO STYLE CARD — MATCH EXPORT HEIGHT ONLY ===== */
+div[style*="grid-template-columns:1fr 320px"]{
+  align-items: stretch !important;
+}
+
+#atmProStyleCard,
+#atmProExportCard{
+  height: 100% !important;
+}
+
 #atmProStyleCard{
-  height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-#atmProStyleCard > div:last-child{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100%;
-}
-
-#atmProStyleCard .smpack-row{
-  gap: 10px !important;
-  align-content: flex-start !important;
-}
-
-#atmProStyleCard .smpack-pill{
-  min-height: 44px;
-  padding: 0 18px !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 #atmProStyleCard .card-header{
-  margin-bottom: 18px !important;
-}
-
-#atmProStyleCard .card-subtitle{
-  margin-top: 6px !important;
-}
-
-#atmProStyleCard .atmProStyleGroup + .atmProStyleGroup{
-  margin-top: 22px;
+  margin-bottom: 14px !important;
 }
