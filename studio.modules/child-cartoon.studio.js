@@ -44,61 +44,98 @@
   };
 }
 
-  const STUDIO_STORAGE_KEY = 'aivo_cartoon_studio_scenes_v1';
-  const STUDIO_FORMAT_STORAGE_KEY = 'aivo_cartoon_studio_format_v1';
+const STUDIO_DB_APP = 'cartoon';
+const STUDIO_DB_MODE = 'studio';
 
-  function saveStudioState(rootState) {
-    try {
-      const safeScenes = Array.isArray(rootState?.scenes)
-        ? rootState.scenes.map((scene) => ({
-            id: String(scene?.id || ''),
-            title: String(scene?.title || 'Sahne'),
-            duration: Number(scene?.duration) || 0,
-            included: !!scene?.included,
-            videoUrl: String(scene?.videoUrl || ''),
-            fileName: String(scene?.fileName || '')
-          }))
-        : [];
+function buildStudioPersistPayload(rootState) {
+  return {
+    app: STUDIO_DB_APP,
+    mode: STUDIO_DB_MODE,
+    format: String(rootState?.format || '16:9'),
+    scenes: Array.isArray(rootState?.scenes)
+      ? rootState.scenes.map((scene) => ({
+          id: String(scene?.id || ''),
+          title: String(scene?.title || 'Sahne'),
+          duration: Number(scene?.duration) || 0,
+          included: !!scene?.included,
+          videoUrl: String(scene?.videoUrl || ''),
+          fileName: String(scene?.fileName || '')
+        }))
+      : []
+  };
+}
 
-      localStorage.setItem(STUDIO_STORAGE_KEY, JSON.stringify(safeScenes));
-      localStorage.setItem(
-        STUDIO_FORMAT_STORAGE_KEY,
-        String(rootState?.format || '16:9')
-      );
-    } catch (err) {
-      console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
-    }
+function saveStudioState(rootState) {
+  try {
+    const payload = buildStudioPersistPayload(rootState);
+
+    window.__CARTOON_STUDIO_LAST_SAVE__ = payload;
+
+    fetch('/api/cartoon/studio/state/save', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data || data.ok === false) {
+          throw new Error(data?.error || 'studio_state_save_failed');
+        }
+
+        console.log('[CARTOON][STUDIO_SAVE_OK]', data);
+      })
+      .catch((err) => {
+        console.error('[CARTOON][STUDIO_SAVE_ERROR]', err);
+      });
+  } catch (err) {
+    console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
   }
+}
 
-  function loadStudioState() {
-    try {
-      const rawScenes = localStorage.getItem(STUDIO_STORAGE_KEY);
-      const rawFormat = localStorage.getItem(STUDIO_FORMAT_STORAGE_KEY);
+async function loadStudioState() {
+  try {
+    const res = await fetch('/api/cartoon/studio/state/get', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
 
-      const parsedScenes = rawScenes ? JSON.parse(rawScenes) : [];
-      const scenes = Array.isArray(parsedScenes)
-        ? parsedScenes.map((scene, index) => ({
-            id: String(scene?.id || `saved-${Date.now()}-${index + 1}`),
-            title: String(scene?.title || 'Sahne'),
-            duration: Number(scene?.duration) || 0,
-            included: !!scene?.included,
-            videoUrl: String(scene?.videoUrl || ''),
-            fileName: String(scene?.fileName || '')
-          }))
-        : [];
+    const data = await res.json().catch(() => null);
 
-      return {
-        format: String(rawFormat || '16:9'),
-        scenes
-      };
-    } catch (err) {
-      console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
-      return {
-        format: '16:9',
-        scenes: []
-      };
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || 'studio_state_get_failed');
     }
+
+    const parsedScenes = Array.isArray(data?.scenes) ? data.scenes : [];
+    const scenes = parsedScenes.map((scene, index) => ({
+      id: String(scene?.id || `saved-${Date.now()}-${index + 1}`),
+      title: String(scene?.title || 'Sahne'),
+      duration: Number(scene?.duration) || 0,
+      included: !!scene?.included,
+      videoUrl: String(scene?.videoUrl || ''),
+      fileName: String(scene?.fileName || '')
+    }));
+
+    return {
+      format: String(data?.format || '16:9'),
+      scenes
+    };
+  } catch (err) {
+    console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
+    return {
+      format: '16:9',
+      scenes: []
+    };
   }
+}
 
   function ensureStudioPreviewModal(studioRoot) {
     let modal = document.querySelector('[data-studio-preview-modal]');
