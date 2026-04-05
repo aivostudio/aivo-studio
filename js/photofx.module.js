@@ -1426,14 +1426,18 @@ const builtEffects = {
 
       const state = getState(root);
 
-      if (
+          if (
         e.target.matches("#pfxIncludeMusic") ||
         e.target.matches("#pfxDuration") ||
         e.target.matches("#pfxMotionLevel") ||
         e.target.matches("#pfxEffectPower") ||
         e.target.matches("#pfxColorMood") ||
         e.target.matches("#pfxTransitionSpeed") ||
-        e.target.matches("#pfxZoomLevel")
+        e.target.matches("#pfxZoomLevel") ||
+        e.target.matches("#pfxImageInput") ||
+        e.target.matches("#pfxEndImageInput") ||
+        e.target.matches("#pfxLogoInput") ||
+        e.target.matches("#pfxAudioInput")
       ) {
         resetPhotoFxPolicyUI(root);
       }
