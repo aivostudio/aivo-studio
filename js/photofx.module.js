@@ -1403,7 +1403,6 @@ const builtEffects = {
     },
     true
   );
-
   document.addEventListener(
     "change",
     (e) => {
@@ -1412,7 +1411,7 @@ const builtEffects = {
 
       const state = getState(root);
 
-        if (
+      if (
         e.target.matches("#pfxIncludeMusic") ||
         e.target.matches("#pfxDuration") ||
         e.target.matches("#pfxMotionLevel") ||
@@ -1426,11 +1425,13 @@ const builtEffects = {
 
       if (e.target.matches("#pfxIncludeMusic")) {
         syncIncludeMusic(root);
+        syncCreateButton(root);
         return;
       }
 
       if (e.target.matches("#pfxDuration")) {
         syncDurationRules(root);
+        syncCreateButton(root);
         return;
       }
 
@@ -1438,6 +1439,7 @@ const builtEffects = {
         const file = e.target.files?.[0] || null;
         state.imageFile = file;
         renderUploads(root);
+        syncCreateButton(root);
         console.log("[photofx] image selected =", file?.name || null);
         return;
       }
@@ -1446,6 +1448,7 @@ const builtEffects = {
         const file = e.target.files?.[0] || null;
         state.endImageFile = file;
         renderUploads(root);
+        syncCreateButton(root);
         console.log("[photofx] end image selected =", file?.name || null);
         return;
       }
@@ -1454,6 +1457,7 @@ const builtEffects = {
         const file = e.target.files?.[0] || null;
         state.logoFile = file;
         renderUploads(root);
+        syncCreateButton(root);
         console.log("[photofx] logo selected =", file?.name || null);
         return;
       }
@@ -1462,6 +1466,7 @@ const builtEffects = {
         const file = e.target.files?.[0] || null;
         state.audioFile = file;
         renderUploads(root);
+        syncCreateButton(root);
         console.log("[photofx] audio selected =", file?.name || null);
         return;
       }
