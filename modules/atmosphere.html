@@ -404,11 +404,6 @@
   <!-- butonlar -->
 <div class="atmProRefsBtns">
   <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-    🖼️ Logo Seç
-  </label>
-
-  <label class="btn atmFileBtn" style="cursor:pointer;">
     <input type="file" id="atmProRefImageFile" accept="image/*" hidden>
     🏞️ Resim Seç
   </label>
@@ -417,22 +412,14 @@
     <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
     🎵 Audio Seç
   </label>
-</div>
-   <!-- ✅ meta (thumbnail yok) -->
- <div class="atmProRefsMeta">
-  <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-    <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-    <button
-      type="button"
-      id="atmProLogoClear"
-      aria-label="Yüklenen logoyu kaldır"
-      title="Logoyu kaldır"
-      style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-    >
-      ×
-    </button>
-  </label>
 
+  <label class="btn atmFileBtn" style="cursor:pointer;">
+    <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+    🖼️ Logo Seç
+  </label>
+</div>
+<!-- ✅ meta (thumbnail yok) -->
+<div class="atmProRefsMeta">
   <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
     <span class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
     <button
@@ -453,6 +440,19 @@
       id="atmProAudioClear"
       aria-label="Yüklenen audioyu kaldır"
       title="Audioyu kaldır"
+      style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+    >
+      ×
+    </button>
+  </label>
+
+  <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+    <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+    <button
+      type="button"
+      id="atmProLogoClear"
+      aria-label="Yüklenen logoyu kaldır"
+      title="Logoyu kaldır"
       style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
     >
       ×
