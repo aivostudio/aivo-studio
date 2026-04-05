@@ -1562,12 +1562,12 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
   throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
 }
 
-             button.disabled = true;
+         const creditCost = getStudioExportCreditCost(rootState);
+        const creditReason = 'studio_cartoon_montage_export';
+
+        button.disabled = true;
         button.textContent = 'Çıktı hazırlanıyor...';
         button.classList.add('is-loading');
-
-        const creditCost = 10;
-        const creditReason = 'studio_cartoon_montage_export';
 
         const creditRes = await fetch('/api/credits/consume', {
           method: 'POST',
