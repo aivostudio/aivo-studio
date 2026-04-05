@@ -1760,6 +1760,35 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
         const creditCost = getPhotoFxEstimatedCredits(root);
         const creditReason = "studio_photofx_generate";
+        const refundReason = "studio_photofx_generate_refund";
+
+        const refreshTopCredits = async () => {
+          try {
+            const creditGetRes = await fetch("/api/credits/get", {
+              credentials: "include",
+              cache: "no-store",
+              headers: {
+                "accept": "application/json"
+              }
+            });
+
+            const creditGetData = await creditGetRes.json().catch(() => null);
+
+            if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+              const topCreditCountEl = document.getElementById("topCreditCount");
+              if (topCreditCountEl) {
+                topCreditCountEl.textContent = String(creditGetData.credits);
+              }
+
+              if (
+                window.AIVO_STORE_V1 &&
+                typeof window.AIVO_STORE_V1.setCredits === "function"
+              ) {
+                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+              }
+            }
+          } catch {}
+        };
 
         const creditRes = await fetch("/api/credits/consume", {
           method: "POST",
@@ -1795,45 +1824,47 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           return;
         }
 
-        try {
-          const creditGetRes = await fetch("/api/credits/get", {
-            credentials: "include",
-            cache: "no-store",
-            headers: {
-              "accept": "application/json"
-            }
-          });
-
-          const creditGetData = await creditGetRes.json().catch(() => null);
-
-          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-            const topCreditCountEl = document.getElementById("topCreditCount");
-            if (topCreditCountEl) {
-              topCreditCountEl.textContent = String(creditGetData.credits);
-            }
-
-            if (
-              window.AIVO_STORE_V1 &&
-              typeof window.AIVO_STORE_V1.setCredits === "function"
-            ) {
-              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-            }
-          }
-        } catch {}
+        await refreshTopCredits();
 
         createBtn.disabled = true;
         createBtn.classList.add("is-loading");
         createBtn.textContent = "Üretiliyor...";
 
         createPhotoFx(root)
-          .catch((err) => {
+          .catch(async (err) => {
             console.error("[photofx] create error:", err);
+
+            try {
+              const refundRes = await fetch("/api/credits/add", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "content-type": "application/json",
+                  "accept": "application/json"
+                },
+                body: JSON.stringify({
+                  amount: creditCost,
+                  reason: refundReason
+                })
+              });
+
+              const refundData = await refundRes.json().catch(() => null);
+
+              if (!refundRes.ok || refundData?.ok === false) {
+                console.error("[photofx] refund failed:", refundData || refundRes.status);
+              } else {
+                await refreshTopCredits();
+              }
+            } catch (refundErr) {
+              console.error("[photofx] refund error:", refundErr);
+            }
+
             alert(String(err?.message || err || "photofx_create_failed"));
           })
           .finally(() => {
             createBtn.disabled = false;
             createBtn.classList.remove("is-loading");
-             syncCreateButton(root);
+            syncCreateButton(root);
           });
       });
     }
