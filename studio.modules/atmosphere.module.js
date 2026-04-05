@@ -1223,7 +1223,10 @@ function isAtmoPolicyBlocked(raw) {
     if (opacity) state.logoOpacity = parseFloat(opacity.value) || state.logoOpacity;
 
     const am = closestWithin(e.target, "#atmAudioMode", root);
-    if (am) state.audioMode = am.value || state.audioMode;
+    if (am) {
+      state.audioMode = am.value || state.audioMode;
+      syncAtmoGenerateCredits(root);
+    }
 
     const at = closestWithin(e.target, "#atmAudioTrim", root);
     if (at) state.audioTrim = at.value || state.audioTrim;
@@ -1235,7 +1238,10 @@ function isAtmoPolicyBlocked(raw) {
     if (proPos) state.logoPos = proPos.value || state.logoPos;
 
     const proAudioMode = closestWithin(e.target, "#atmProAudioMode", root);
-    if (proAudioMode) state.audioMode = proAudioMode.value || state.audioMode;
+    if (proAudioMode) {
+      state.audioMode = proAudioMode.value || state.audioMode;
+      syncAtmoGenerateCredits(root);
+    }
   });
 
   // ------------------------------------------------------------
