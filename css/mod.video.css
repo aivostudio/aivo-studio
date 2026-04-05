@@ -993,3 +993,19 @@
   align-self:center;
   transform:translateY(0);
 }
+#moduleHost[data-active-module="video"] .audio-icon,
+.main-panel[data-module="video"] .audio-icon{
+  font-size: 24px;
+  line-height: 1;
+  color: rgba(255,255,255,0.58);
+  transition: color .25s ease, text-shadow .25s ease, transform .25s ease, filter .25s ease;
+}
+
+/* Ses açıkken ikon renklensin */
+#moduleHost[data-active-module="video"] .audio-toggle-card:has(#audioEnabled:checked) .audio-icon,
+.main-panel[data-module="video"] .audio-toggle-card:has(#audioEnabled:checked) .audio-icon{
+  color: #7b5cff;
+  text-shadow: 0 0 14px rgba(123,92,255,.45);
+  filter: drop-shadow(0 0 10px rgba(255,111,177,.28));
+  transform: scale(1.06);
+}
