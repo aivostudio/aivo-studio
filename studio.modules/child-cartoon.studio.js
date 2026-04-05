@@ -719,7 +719,9 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     rootState.logoFileUploadPromise = null;
     rootState.logoFileUploadError = '';
     rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
+
     updateStudioLogoUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
 
     if (!file) return;
 
@@ -728,7 +730,10 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         rootState.logoFileUrl = String(publicUrl || '').trim();
         rootState.logoFileUploadStatus = 'ready';
         rootState.logoFileUploadError = '';
+
         updateStudioLogoUploadStatusUI(rootState, studioRoot);
+        updateStudioSummary(rootState, studioRoot);
+
         console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
         return rootState.logoFileUrl;
       })
@@ -736,7 +741,10 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         rootState.logoFileUrl = '';
         rootState.logoFileUploadStatus = 'error';
         rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
+
         updateStudioLogoUploadStatusUI(rootState, studioRoot);
+        updateStudioSummary(rootState, studioRoot);
+
         console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
         alert(rootState.logoFileUploadError);
         throw err;
