@@ -654,23 +654,18 @@ function ensureVideoPolicyNote(root, btn) {
     return 20;
   }
 
-  function getVideoCredit(root) {
-    const duration = clampDuration(Number(qs("#videoDuration", root)?.value || 5));
-    const mode = getVideoMode(root);
-    const audioEnabled = !!qs("#audioEnabled", root)?.checked;
+ function getVideoCredit(root) {
+  const duration = clampDuration(Number(qs("#videoDuration", root)?.value || 5));
+  const audioEnabled = !!qs("#audioEnabled", root)?.checked;
 
-    if (mode === "image") {
-      return 0;
-    }
+  let total = getVideoBaseCredit(duration);
 
-    let total = getVideoBaseCredit(duration);
-
-    if (audioEnabled) {
-      total += 5;
-    }
-
-    return total;
+  if (audioEnabled) {
+    total += 5;
   }
+
+  return total;
+}
 
 function syncVideoCreditUI(root) {
   if (!root) return;
