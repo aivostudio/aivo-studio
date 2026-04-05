@@ -1295,21 +1295,13 @@ async function createImage() {
   // ===============================
   // Single observer: root geldiğinde bind et, sonra hafif çalışsın
   // ===============================
-  function tryBindAll() {
-    const root = document.querySelector(ROOT_SEL);
-    if (!root) return;
+ function tryBindAll() {
+  const root = document.querySelector(ROOT_SEL);
+  if (!root) return;
 
-    const durationEl = qs("#videoDuration", root);
-    if (durationEl && !durationEl.dataset.videoDefaultApplied) {
-      durationEl.value = "5";
-      durationEl.dataset.videoDefaultApplied = "1";
-    }
-
-    bindTabs(root);
-    bindPromptCounter(root);
-    bindVideoPricingUI(root);
-    syncVideoCreditUI(root);
-  }
+  bindTabs(root);
+  bindPromptCounter(root);
+}
 
   // İlk çalıştır
   tryBindAll();
