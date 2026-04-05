@@ -1837,7 +1837,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           .finally(() => {
             createBtn.disabled = false;
             createBtn.classList.remove("is-loading");
-            createBtn.textContent = `🎬 Klip Oluştur (${credit} Kredi)`;
+             syncCreateButton(root);
           });
       });
     }
