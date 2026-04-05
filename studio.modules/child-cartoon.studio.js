@@ -888,24 +888,26 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
 
       if (!file) return;
 
-      rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
-        .then((publicUrl) => {
-          rootState.voiceFileUrl = String(publicUrl || '').trim();
-          rootState.voiceFileUploadStatus = 'ready';
-          rootState.voiceFileUploadError = '';
-          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-          console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-          return rootState.voiceFileUrl;
-        })
-        .catch((err) => {
-          rootState.voiceFileUrl = '';
-          rootState.voiceFileUploadStatus = 'error';
-          rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
-          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-          console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-          alert(rootState.voiceFileUploadError);
-          throw err;
-        });
+ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
+  .then((publicUrl) => {
+    rootState.voiceFileUrl = String(publicUrl || '').trim();
+    rootState.voiceFileUploadStatus = 'ready';
+    rootState.voiceFileUploadError = '';
+    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
+    console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
+    return rootState.voiceFileUrl;
+  })
+  .catch((err) => {
+    rootState.voiceFileUrl = '';
+    rootState.voiceFileUploadStatus = 'error';
+    rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
+    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
+    console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
+    alert(rootState.voiceFileUploadError);
+    throw err;
+  });
     });
   }
 
