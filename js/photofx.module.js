@@ -10,7 +10,6 @@
 
   console.log("[PHOTOFX] module script loaded, waiting for root...");
 
-  const FIXED_CREDIT_COST = 8;
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
     // ------------------------------------------------------------
   // Policy helpers (PhotoFX)
