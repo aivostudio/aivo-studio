@@ -1956,13 +1956,28 @@ loadStudioState()
     studioState.format = String(savedState?.format || '16:9');
     studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
 
+    studioState.voiceFile = null;
+    studioState.voiceFileName = String(savedState?.voice?.fileName || '');
+    studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
+    studioState.voiceFileUploadPromise = null;
+    studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
+    studioState.voiceFileUploadError = '';
+
+    studioState.logoFile = null;
+    studioState.logoFileName = String(savedState?.logo?.fileName || '');
+    studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
+    studioState.logoFileUploadPromise = null;
+    studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
+    studioState.logoFileUploadError = '';
+
     renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+    updateStudioVoiceUploadStatusUI(studioState, studioRoot);
+    updateStudioLogoUploadStatusUI(studioState, studioRoot);
     updateStudioSummary(studioState, studioRoot);
   })
   .catch((err) => {
     console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
   });
-
     bindStudioVideoUpload(
       studioState,
       studioRoot,
