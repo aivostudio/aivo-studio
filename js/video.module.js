@@ -1193,7 +1193,7 @@ async function createText() {
       });
     }
 
-    function setMode(mode) {
+      function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
       tabImage.classList.toggle("is-active", !isText);
@@ -1209,6 +1209,7 @@ async function createText() {
       if (mode === "image") bindImageUploadUX();
 
       root.dataset.videoMode = mode;
+      syncVideoCreditUI(root);
       console.log("[video.tabs] mode =", mode);
     }
 
