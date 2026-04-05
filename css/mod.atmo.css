@@ -1111,14 +1111,27 @@ div[style*="grid-template-columns:1fr 320px"]{
 }
 
 #atmProStyleCard .atmProStyleGroupTitle{
-  font-weight:700;
-  font-size:14px;
-  opacity:.92;
-  margin-bottom:12px;
-  width:100%;
-  text-align:center;
+  position: relative;
+  width: 100%;
+  margin: 0 0 18px;
+  padding-bottom: 12px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 14px;
+  opacity: .96;
+  letter-spacing: .2px;
 }
 
+#atmProStyleCard .atmProStyleGroupTitle::after{
+  content: "";
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin: 10px auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(139,92,246,.95), rgba(236,72,153,.95));
+  box-shadow: 0 0 12px rgba(139,92,246,.28);
+}
 #atmProStyleCard .atmProStyleStack{
   display:flex;
   flex-direction:column;
