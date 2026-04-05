@@ -479,7 +479,7 @@ function isAtmoPolicyBlocked(raw) {
     scene: "",
     effects: [],
     camera: "kenburns_soft",
-    duration: "8",
+    duration: "4",
 
     // personalization (basic)
     imageFile: null,
@@ -501,8 +501,8 @@ function isAtmoPolicyBlocked(raw) {
     mood: null,
     fps: "24",
     format: "mp4",
-    seamFix: false,
-    proDuration: "8",
+      seamFix: false,
+    proDuration: "4",
 
     details: {
       grain: false,
@@ -541,9 +541,25 @@ function isAtmoPolicyBlocked(raw) {
 
   function getAtmoSelectedDuration(mode) {
     if (mode === "pro") {
-      return String(state.proDuration || "8");
+      return String(state.proDuration || "4");
     }
-    return String(state.duration || "8");
+    return String(state.duration || "4");
+  }
+
+  function hasAtmoLogoSelected() {
+    return !!String(state?.uploads?.logo?.url || "").trim();
+  }
+
+  function hasAtmoAudioSelected(mode) {
+    const m = String(mode || state.mode || "basic").toLowerCase();
+
+    if (!String(state?.uploads?.audio?.url || "").trim()) return false;
+
+    if (m === "pro") {
+      return String(state.audioMode || "none") !== "none";
+    }
+
+    return String(state.audioMode || "none") !== "none";
   }
 
   function computeAtmoCredit(mode) {
@@ -558,7 +574,10 @@ function isAtmoPolicyBlocked(raw) {
         ? Number((state.effects || []).length || 0)
         : 0;
 
-    const total = baseCredit + durationExtra + effectsExtra;
+    const logoExtra = hasAtmoLogoSelected() ? 10 : 0;
+    const audioExtra = hasAtmoAudioSelected(m) ? 10 : 0;
+
+    const total = baseCredit + durationExtra + effectsExtra + logoExtra + audioExtra;
 
     const reason =
       m === "pro"
@@ -571,6 +590,8 @@ function isAtmoPolicyBlocked(raw) {
       baseCredit,
       durationExtra,
       effectsExtra,
+      logoExtra,
+      audioExtra,
       total,
       reason
     };
