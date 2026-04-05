@@ -675,29 +675,37 @@ function ensureVideoPolicyNote(root, btn) {
 function syncVideoCreditUI(root) {
   if (!root) return;
 
-  const mode = getVideoMode(root);
   const credit = getVideoCredit(root);
 
   const textBtn = qs("#videoGenerateTextBtn", root);
   const imageBtn = qs("#videoGenerateImageBtn", root);
 
-  const badgeEl = qs("[data-video-credit-badge]", root);
+  const textBadge =
+    qs('[data-video-subview="text"] .badge-beta', root) ||
+    qs("#videoGenerateTextBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
+    null;
+
+  const imageBadge =
+    qs('[data-video-subview="image"] .badge-beta', root) ||
+    qs("#videoGenerateImageBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
+    null;
 
   if (textBtn) {
     textBtn.dataset.creditCost = String(credit);
-    textBtn.textContent =
-      mode === "image"
-        ? "🎬 Video Oluştur (Ücretsiz)"
-        : `🎬 Video Oluştur (${credit} Kredi)`;
+    textBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
   }
 
   if (imageBtn) {
-    imageBtn.dataset.creditCost = "0";
-    imageBtn.textContent = "🎬 Video Oluştur (Ücretsiz)";
+    imageBtn.dataset.creditCost = String(credit);
+    imageBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
   }
 
-  if (badgeEl) {
-    badgeEl.textContent = mode === "image" ? "Ücretsiz" : `${credit} Kredi`;
+  if (textBadge) {
+    textBadge.textContent = `${credit} Kredi`;
+  }
+
+  if (imageBadge) {
+    imageBadge.textContent = `${credit} Kredi`;
   }
 }
 
