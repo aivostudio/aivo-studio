@@ -930,7 +930,6 @@ updateStudioVoiceUploadStatusUI(rootState, studioRoot);
 updateStudioSummary(rootState, studioRoot);
 
 if (!file) return;
-
 rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
   .then((publicUrl) => {
     rootState.voiceFileUrl = String(publicUrl || '').trim();
@@ -938,6 +937,7 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
     rootState.voiceFileUploadError = '';
     updateStudioVoiceUploadStatusUI(rootState, studioRoot);
     updateStudioSummary(rootState, studioRoot);
+    saveStudioState(rootState);
     console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
     return rootState.voiceFileUrl;
   })
@@ -947,6 +947,7 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
     rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
     updateStudioVoiceUploadStatusUI(rootState, studioRoot);
     updateStudioSummary(rootState, studioRoot);
+    saveStudioState(rootState);
     console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
     alert(rootState.voiceFileUploadError);
     throw err;
