@@ -1671,10 +1671,10 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
     if (createBtn && !createBtn.__bound) {
       createBtn.__bound = true;
-      createBtn.addEventListener("click", (e) => {
+      createBtn.addEventListener("click", async (e) => {
         e.preventDefault();
 
-                const policyText = buildPhotoFxPolicyText(root);
+        const policyText = buildPhotoFxPolicyText(root);
         const policyNote = ensurePhotoFxPolicyNote(root, createBtn);
         const promptEl = qs("#pfxPrompt", root);
 
@@ -1704,6 +1704,68 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         }
 
         const credit = createBtn.getAttribute("data-credit-cost") || "8";
+        const creditCost = Number(credit) || FIXED_CREDIT_COST;
+        const creditReason = "studio_photofx_generate";
+
+        const creditRes = await fetch("/api/credits/consume", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            cost: creditCost,
+            reason: creditReason
+          })
+        });
+
+        let creditData = null;
+        try {
+          creditData = await creditRes.json();
+        } catch {
+          creditData = {
+            ok: false,
+            error: "non_json_response",
+            status: creditRes.status
+          };
+        }
+
+        if (!creditRes.ok || !creditData?.ok) {
+          const msg =
+            creditData?.error ||
+            creditData?.message ||
+            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+
+          alert(String(msg));
+          return;
+        }
+
+        try {
+          const creditGetRes = await fetch("/api/credits/get", {
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "accept": "application/json"
+            }
+          });
+
+          const creditGetData = await creditGetRes.json().catch(() => null);
+
+          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+            const topCreditCountEl = document.getElementById("topCreditCount");
+            if (topCreditCountEl) {
+              topCreditCountEl.textContent = String(creditGetData.credits);
+            }
+
+            if (
+              window.AIVO_STORE_V1 &&
+              typeof window.AIVO_STORE_V1.setCredits === "function"
+            ) {
+              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            }
+          }
+        } catch {}
 
         createBtn.disabled = true;
         createBtn.classList.add("is-loading");
