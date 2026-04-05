@@ -836,3 +836,99 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
     padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
   }
 }
+/* ===== ATM PRO REFS LAYOUT FIX ===== */
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsHead{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:20px !important;
+  margin-bottom:18px !important;
+  align-items:start !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefTop{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  text-align:center !important;
+  min-width:0 !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsTitle{
+  min-height:32px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  line-height:1.2 !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmCreditInline{
+  justify-content:center !important;
+  margin:10px 0 0 !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBtns{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:24px !important;
+  align-items:start !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBtns .atmFileBtn{
+  width:100% !important;
+  justify-content:center !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsMeta{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:24px !important;
+  margin-top:16px !important;
+  align-items:start !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsSelects{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:24px !important;
+  margin-top:26px !important;
+  align-items:start !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefSelectCol{
+  min-width:0 !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProSelect{
+  width:100% !important;
+  min-width:0 !important;
+  display:block !important;
+  position:static !important;
+  top:auto !important;
+  margin-top:0 !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBottom{
+  display:flex !important;
+  gap:12px !important;
+  margin-top:18px !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  flex-wrap:wrap !important;
+}
+
+@media (max-width: 980px){
+  section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsHead,
+  section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBtns,
+  section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsMeta,
+  section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsSelects{
+    grid-template-columns:1fr !important;
+    gap:14px !important;
+  }
+
+  section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBottom{
+    flex-direction:column !important;
+    align-items:flex-start !important;
+  }
+}
