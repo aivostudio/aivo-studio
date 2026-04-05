@@ -1158,7 +1158,7 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"
   width: 100% !important;
   text-align: center !important;
 }
-/* ===== ATMO BASIC ATMOSPHERE PILLS — KEEP INLINE, FIT ONE ROW ===== */
+/* ===== ATMO BASIC ATMOSPHERE PILLS — KEEP INLINE, FILL RIGHT SIDE A BIT MORE ===== */
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-row{
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -1169,7 +1169,7 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
   flex: 0 0 auto !important;
   min-width: 0 !important;
-  padding: 8px 15px !important;
+  padding: 8px 17px !important;
   justify-content: center !important;
   text-align: center !important;
   font-size: 11.5px !important;
@@ -1177,8 +1177,8 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"
 
 @media (max-width: 1200px){
   section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
-    padding: 8px 13px !important;
-    font-size: 11px !important;
+    padding: 8px 15px !important;
+    font-size: 11.25px !important;
   }
 }
 
