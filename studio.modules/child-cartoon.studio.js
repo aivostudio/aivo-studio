@@ -21,156 +21,157 @@
     return `${minutes} dk ${seconds} sn`;
   }
 
- function createStudioState() {
-  return {
-    format: '16:9',
-    scenes: [],
-    previewUrl: '',
-    previewTitle: '',
-
-    voiceFile: null,
-    voiceFileName: '',
-    voiceFileUrl: '',
-    voiceFileUploadPromise: null,
-    voiceFileUploadStatus: 'idle',
-    voiceFileUploadError: '',
-
-    logoFile: null,
-    logoFileName: '',
-    logoFileUrl: '',
-    logoFileUploadPromise: null,
-    logoFileUploadStatus: 'idle',
-    logoFileUploadError: ''
-  };
-}
-
-const STUDIO_DB_APP = 'cartoon';
-const STUDIO_DB_MODE = 'studio';
-
-function buildStudioPersistPayload(rootState) {
-  return {
-    app: STUDIO_DB_APP,
-    mode: STUDIO_DB_MODE,
-    format: String(rootState?.format || '16:9'),
-
-    scenes: Array.isArray(rootState?.scenes)
-      ? rootState.scenes.map((scene) => ({
-          id: String(scene?.id || ''),
-          title: String(scene?.title || 'Sahne'),
-          duration: Number(scene?.duration) || 0,
-          included: !!scene?.included,
-          videoUrl: String(scene?.videoUrl || ''),
-          fileName: String(scene?.fileName || '')
-        }))
-      : [],
-
-    voice: {
-      fileName: String(rootState?.voiceFileName || ''),
-      fileUrl: String(rootState?.voiceFileUrl || ''),
-      uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
-    },
-
-    logo: {
-      fileName: String(rootState?.logoFileName || ''),
-      fileUrl: String(rootState?.logoFileUrl || ''),
-      uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
-    }
-  };
-}
-
-function saveStudioState(rootState) {
-  try {
-    const payload = buildStudioPersistPayload(rootState);
-
-    window.__CARTOON_STUDIO_LAST_SAVE__ = payload;
-
-    fetch('/api/cartoon/studio/state/save', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    })
-      .then(async (res) => {
-        const data = await res.json().catch(() => null);
-
-        if (!res.ok || !data || data.ok === false) {
-          throw new Error(data?.error || 'studio_state_save_failed');
-        }
-
-        console.log('[CARTOON][STUDIO_SAVE_OK]', data);
-      })
-      .catch((err) => {
-        console.error('[CARTOON][STUDIO_SAVE_ERROR]', err);
-      });
-  } catch (err) {
-    console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
-  }
-}
-
-async function loadStudioState() {
-  try {
-    const res = await fetch('/api/cartoon/studio/state/get', {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || 'studio_state_get_failed');
-    }
-
-    const parsedScenes = Array.isArray(data?.scenes) ? data.scenes : [];
-    const scenes = parsedScenes.map((scene, index) => ({
-      id: String(scene?.id || `saved-${Date.now()}-${index + 1}`),
-      title: String(scene?.title || 'Sahne'),
-      duration: Number(scene?.duration) || 0,
-      included: !!scene?.included,
-      videoUrl: String(scene?.videoUrl || ''),
-      fileName: String(scene?.fileName || '')
-    }));
-
-    return {
-      format: String(data?.format || '16:9'),
-      scenes,
-
-      voice: {
-        fileName: String(data?.voice?.fileName || ''),
-        fileUrl: String(data?.voice?.fileUrl || ''),
-        uploadStatus: String(data?.voice?.uploadStatus || 'idle')
-      },
-
-      logo: {
-        fileName: String(data?.logo?.fileName || ''),
-        fileUrl: String(data?.logo?.fileUrl || ''),
-        uploadStatus: String(data?.logo?.uploadStatus || 'idle')
-      }
-    };
-  } catch (err) {
-    console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
+  function createStudioState() {
     return {
       format: '16:9',
       scenes: [],
+      previewUrl: '',
+      previewTitle: '',
+
+      voiceFile: null,
+      voiceFileName: '',
+      voiceFileUrl: '',
+      voiceFileUploadPromise: null,
+      voiceFileUploadStatus: 'idle',
+      voiceFileUploadError: '',
+
+      logoFile: null,
+      logoFileName: '',
+      logoFileUrl: '',
+      logoFileUploadPromise: null,
+      logoFileUploadStatus: 'idle',
+      logoFileUploadError: ''
+    };
+  }
+
+  const STUDIO_DB_APP = 'cartoon';
+  const STUDIO_DB_MODE = 'studio';
+
+  function buildStudioPersistPayload(rootState) {
+    return {
+      app: STUDIO_DB_APP,
+      mode: STUDIO_DB_MODE,
+      format: String(rootState?.format || '16:9'),
+
+      scenes: Array.isArray(rootState?.scenes)
+        ? rootState.scenes.map((scene) => ({
+            id: String(scene?.id || ''),
+            title: String(scene?.title || 'Sahne'),
+            duration: Number(scene?.duration) || 0,
+            included: !!scene?.included,
+            videoUrl: String(scene?.videoUrl || ''),
+            fileName: String(scene?.fileName || '')
+          }))
+        : [],
+
       voice: {
-        fileName: '',
-        fileUrl: '',
-        uploadStatus: 'idle'
+        fileName: String(rootState?.voiceFileName || ''),
+        fileUrl: String(rootState?.voiceFileUrl || ''),
+        uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
       },
+
       logo: {
-        fileName: '',
-        fileUrl: '',
-        uploadStatus: 'idle'
+        fileName: String(rootState?.logoFileName || ''),
+        fileUrl: String(rootState?.logoFileUrl || ''),
+        uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
       }
     };
   }
-}
+
+  function saveStudioState(rootState) {
+    try {
+      const payload = buildStudioPersistPayload(rootState);
+
+      window.__CARTOON_STUDIO_LAST_SAVE__ = payload;
+
+      fetch('/api/cartoon/studio/state/save', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => null);
+
+          if (!res.ok || !data || data.ok === false) {
+            throw new Error(data?.error || 'studio_state_save_failed');
+          }
+
+          console.log('[CARTOON][STUDIO_SAVE_OK]', data);
+        })
+        .catch((err) => {
+          console.error('[CARTOON][STUDIO_SAVE_ERROR]', err);
+        });
+    } catch (err) {
+      console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
+    }
+  }
+
+  async function loadStudioState() {
+    try {
+      const res = await fetch('/api/cartoon/studio/state/get', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.ok === false) {
+        throw new Error(data?.error || 'studio_state_get_failed');
+      }
+
+      const parsedScenes = Array.isArray(data?.scenes) ? data.scenes : [];
+      const scenes = parsedScenes.map((scene, index) => ({
+        id: String(scene?.id || `saved-${Date.now()}-${index + 1}`),
+        title: String(scene?.title || 'Sahne'),
+        duration: Number(scene?.duration) || 0,
+        included: !!scene?.included,
+        videoUrl: String(scene?.videoUrl || ''),
+        fileName: String(scene?.fileName || '')
+      }));
+
+      return {
+        format: String(data?.format || '16:9'),
+        scenes,
+
+        voice: {
+          fileName: String(data?.voice?.fileName || ''),
+          fileUrl: String(data?.voice?.fileUrl || ''),
+          uploadStatus: String(data?.voice?.uploadStatus || 'idle')
+        },
+
+        logo: {
+          fileName: String(data?.logo?.fileName || ''),
+          fileUrl: String(data?.logo?.fileUrl || ''),
+          uploadStatus: String(data?.logo?.uploadStatus || 'idle')
+        }
+      };
+    } catch (err) {
+      console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
+      return {
+        format: '16:9',
+        scenes: [],
+        voice: {
+          fileName: '',
+          fileUrl: '',
+          uploadStatus: 'idle'
+        },
+        logo: {
+          fileName: '',
+          fileUrl: '',
+          uploadStatus: 'idle'
+        }
+      };
+    }
+  }
+
   function ensureStudioPreviewModal(studioRoot) {
     let modal = document.querySelector('[data-studio-preview-modal]');
 
@@ -530,354 +531,360 @@ async function loadStudioState() {
 
     return publicUrl;
   }
- function getStudioLogoExtension(fileName) {
-  const name = String(fileName || '').toLowerCase().trim();
-  const match = name.match(/\.([a-z0-9]+)$/i);
-  return match ? match[1] : '';
-}
 
-function resolveStudioLogoContentType(file) {
-  const rawType = String(file?.type || '').toLowerCase().trim();
-  const ext = getStudioLogoExtension(file?.name || '');
-
-  const allowedTypes = new Set([
-    'image/png',
-    'image/jpeg',
-    'image/jpg',
-    'image/webp',
-    'image/svg+xml'
-  ]);
-
-  if (allowedTypes.has(rawType)) {
-    if (rawType === 'image/jpg') return 'image/jpeg';
-    return rawType;
+  function getStudioLogoExtension(fileName) {
+    const name = String(fileName || '').toLowerCase().trim();
+    const match = name.match(/\.([a-z0-9]+)$/i);
+    return match ? match[1] : '';
   }
 
-  if (ext === 'png') return 'image/png';
-  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
-  if (ext === 'webp') return 'image/webp';
-  if (ext === 'svg') return 'image/svg+xml';
+  function resolveStudioLogoContentType(file) {
+    const rawType = String(file?.type || '').toLowerCase().trim();
+    const ext = getStudioLogoExtension(file?.name || '');
 
-  return 'image/png';
-}
+    const allowedTypes = new Set([
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/webp',
+      'image/svg+xml'
+    ]);
 
-async function presignStudioLogoFile(file) {
-  const safeContentType = resolveStudioLogoContentType(file);
+    if (allowedTypes.has(rawType)) {
+      if (rawType === 'image/jpg') return 'image/jpeg';
+      return rawType;
+    }
 
-  const res = await fetch('/api/r2/presign-put', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      app: 'cartoon',
-      kind: 'studio-logo',
-      filename: file?.name || `studio-logo-${Date.now()}.png`,
+    if (ext === 'png') return 'image/png';
+    if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+    if (ext === 'webp') return 'image/webp';
+    if (ext === 'svg') return 'image/svg+xml';
+
+    return 'image/png';
+  }
+
+  async function presignStudioLogoFile(file) {
+    const safeContentType = resolveStudioLogoContentType(file);
+
+    const res = await fetch('/api/r2/presign-put', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app: 'cartoon',
+        kind: 'studio-logo',
+        filename: file?.name || `studio-logo-${Date.now()}.png`,
+        contentType: safeContentType
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || 'studio_logo_presign_failed');
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || '',
       contentType: safeContentType
-    })
-  });
-
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok || !data || data.ok === false) {
-    throw new Error(data?.error || 'studio_logo_presign_failed');
+    };
   }
 
-  return {
-    uploadUrl: data.uploadUrl || data.upload_url,
-    publicUrl: data.publicUrl || data.public_url || data.url || '',
-    contentType: safeContentType
-  };
-}
+  async function uploadStudioLogoFileToR2(file) {
+    if (!file) throw new Error('missing_studio_logo_file');
 
-async function uploadStudioLogoFileToR2(file) {
-  if (!file) throw new Error('missing_studio_logo_file');
+    const { uploadUrl, publicUrl, contentType } = await presignStudioLogoFile(file);
 
-  const { uploadUrl, publicUrl, contentType } = await presignStudioLogoFile(file);
-
-  if (!uploadUrl || !publicUrl) {
-    throw new Error('studio_logo_missing_upload_urls');
-  }
-
-  const put = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': contentType || 'image/png'
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error('studio_logo_r2_put_failed');
-  }
-
-  return publicUrl;
-}
-function clearStudioVoiceFile(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
-
-  rootState.voiceFile = null;
-  rootState.voiceFileName = '';
-  rootState.voiceFileUrl = '';
-  rootState.voiceFileUploadPromise = null;
-  rootState.voiceFileUploadStatus = 'idle';
-  rootState.voiceFileUploadError = '';
-
-  if (input) {
-    input.value = '';
-  }
-
-  updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-  updateStudioSummary(rootState, studioRoot);
-  saveStudioState(rootState);
-}
-function clearStudioLogoFile(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonLogoFile',
-    '#studioLogoFile',
-    '[data-studio-logo-upload]',
-    'input[name="logoFile"]',
-    'input[name="logo"]'
-  ]);
-
-  rootState.logoFile = null;
-  rootState.logoFileName = '';
-  rootState.logoFileUrl = '';
-  rootState.logoFileUploadPromise = null;
-  rootState.logoFileUploadStatus = 'idle';
-  rootState.logoFileUploadError = '';
-
-  if (input) {
-    input.value = '';
-  }
-
-  updateStudioLogoUploadStatusUI(rootState, studioRoot);
-  updateStudioSummary(rootState, studioRoot);
-  saveStudioState(rootState);
-}
-function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonLogoFile',
-    '#studioLogoFile',
-    '[data-studio-logo-upload]',
-    'input[name="logoFile"]',
-    'input[name="logo"]'
-  ]);
-
-  if (!input) return null;
-
-  const row = input.closest('.cartoon-upload-row') || input.parentElement;
-  if (!row) return null;
-
-  let clearBtn = row.querySelector('[data-studio-logo-upload-clear]');
-
-  if (!clearBtn) {
-    clearBtn = document.createElement('button');
-    clearBtn.type = 'button';
-    clearBtn.setAttribute('data-studio-logo-upload-clear', '');
-    clearBtn.setAttribute('aria-label', 'Yüklenen logoyu kaldır');
-    clearBtn.title = 'Logoyu kaldır';
-    clearBtn.textContent = '×';
-    clearBtn.style.marginLeft = '8px';
-    clearBtn.style.width = '22px';
-    clearBtn.style.height = '22px';
-    clearBtn.style.borderRadius = '999px';
-    clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-    clearBtn.style.background = 'rgba(255,255,255,.08)';
-    clearBtn.style.color = '#fff';
-    clearBtn.style.cursor = 'pointer';
-    clearBtn.style.display = 'none';
-    clearBtn.style.verticalAlign = 'middle';
-    row.appendChild(clearBtn);
-  }
-
-  if (clearBtn.dataset.bound === '1') {
-    return clearBtn;
-  }
-
-  clearBtn.dataset.bound = '1';
-  clearBtn.type = 'button';
-
-  clearBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    clearStudioLogoFile(rootState, studioRoot);
-  });
-
-  return clearBtn;
-}
-
-function updateStudioLogoUploadStatusUI(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonLogoFile',
-    '#studioLogoFile',
-    '[data-studio-logo-upload]',
-    'input[name="logoFile"]',
-    'input[name="logo"]'
-  ]);
-
-  if (!input) return;
-
-  const row = input.closest('.cartoon-upload-row') || input.parentElement;
-  if (!row) return;
-
-  const textEl =
-    row.querySelector('[data-studio-logo-upload-text]') ||
-    row.querySelector('.cartoon-upload-text');
-
-  const clearBtn = ensureStudioLogoUploadClearButton(rootState, studioRoot);
-
-  if (!textEl) return;
-
-  const status = String(rootState?.logoFileUploadStatus || 'idle');
-  const fileName = String(rootState?.logoFileName || '').trim();
-
-  if (!fileName) {
-    textEl.textContent = 'Dosya seçilmedi';
-    if (clearBtn) clearBtn.style.display = 'none';
-    return;
-  }
-
-  if (status === 'uploading') {
-    textEl.textContent = `${fileName} · Yükleniyor...`;
-    if (clearBtn) clearBtn.style.display = 'none';
-    return;
-  }
-
-  if (status === 'ready') {
-    textEl.textContent = `${fileName} · Hazır ✓`;
-    if (clearBtn) {
-      clearBtn.style.display = 'inline-grid';
-      clearBtn.style.placeItems = 'center';
+    if (!uploadUrl || !publicUrl) {
+      throw new Error('studio_logo_missing_upload_urls');
     }
-    return;
-  }
 
-  if (status === 'error') {
-    textEl.textContent = `${fileName} · Yükleme hatası`;
-    if (clearBtn) {
-      clearBtn.style.display = 'inline-grid';
-      clearBtn.style.placeItems = 'center';
+    const put = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': contentType || 'image/png'
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error('studio_logo_r2_put_failed');
     }
-    return;
+
+    return publicUrl;
   }
 
-  textEl.textContent = fileName;
-  if (clearBtn) clearBtn.style.display = 'none';
-}
+  function clearStudioVoiceFile(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonVoiceFile',
+      '#studioVoiceFile',
+      '[data-studio-voice-upload]',
+      'input[name="voiceFile"]',
+      'input[name="kendiSesin"]'
+    ]);
 
-function bindStudioLogoUpload(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonLogoFile',
-    '#studioLogoFile',
-    '[data-studio-logo-upload]',
-    'input[name="logoFile"]',
-    'input[name="logo"]'
-  ]);
+    rootState.voiceFile = null;
+    rootState.voiceFileName = '';
+    rootState.voiceFileUrl = '';
+    rootState.voiceFileUploadPromise = null;
+    rootState.voiceFileUploadStatus = 'idle';
+    rootState.voiceFileUploadError = '';
 
-  if (!input) return;
-  if (input.getAttribute('data-studio-logo-bound') === 'true') return;
+    if (input) {
+      input.value = '';
+    }
 
-  input.setAttribute('data-studio-logo-bound', 'true');
+    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
+    saveStudioState(rootState);
+  }
 
-  input.addEventListener('change', async () => {
-    const file = input.files?.[0] || null;
+  function clearStudioLogoFile(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonLogoFile',
+      '#studioLogoFile',
+      '[data-studio-logo-upload]',
+      'input[name="logoFile"]',
+      'input[name="logo"]'
+    ]);
 
-    rootState.logoFile = file;
-    rootState.logoFileName = file ? String(file.name || '') : '';
+    rootState.logoFile = null;
+    rootState.logoFileName = '';
     rootState.logoFileUrl = '';
     rootState.logoFileUploadPromise = null;
+    rootState.logoFileUploadStatus = 'idle';
     rootState.logoFileUploadError = '';
-    rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
 
-    updateStudioLogoUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-
-    if (!file) return;
-
- rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
-  .then((publicUrl) => {
-    rootState.logoFileUrl = String(publicUrl || '').trim();
-    rootState.logoFileUploadStatus = 'ready';
-    rootState.logoFileUploadError = '';
+    if (input) {
+      input.value = '';
+    }
 
     updateStudioLogoUploadStatusUI(rootState, studioRoot);
     updateStudioSummary(rootState, studioRoot);
     saveStudioState(rootState);
-
-    console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
-    return rootState.logoFileUrl;
-  })
-  .catch((err) => {
-    rootState.logoFileUrl = '';
-    rootState.logoFileUploadStatus = 'error';
-    rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
-
-    updateStudioLogoUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
-
-    console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
-    alert(rootState.logoFileUploadError);
-    throw err;
-  });
-  });
-}
-function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
-
-  if (!input) return null;
-
-  const row = input.closest('.cartoon-upload-row') || input.parentElement;
-  if (!row) return null;
-
-  let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
-
-  if (!clearBtn) {
-    clearBtn = document.createElement('button');
-    clearBtn.type = 'button';
-    clearBtn.setAttribute('data-studio-voice-upload-clear', '');
-    clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
-    clearBtn.title = 'Sesi kaldır';
-    clearBtn.textContent = '×';
-    clearBtn.style.marginLeft = '8px';
-    clearBtn.style.width = '22px';
-    clearBtn.style.height = '22px';
-    clearBtn.style.borderRadius = '999px';
-    clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-    clearBtn.style.background = 'rgba(255,255,255,.08)';
-    clearBtn.style.color = '#fff';
-    clearBtn.style.cursor = 'pointer';
-    clearBtn.style.display = 'none';
-    clearBtn.style.verticalAlign = 'middle';
-    row.appendChild(clearBtn);
   }
 
-  if (clearBtn.dataset.bound === '1') {
+  function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonLogoFile',
+      '#studioLogoFile',
+      '[data-studio-logo-upload]',
+      'input[name="logoFile"]',
+      'input[name="logo"]'
+    ]);
+
+    if (!input) return null;
+
+    const row = input.closest('.cartoon-upload-row') || input.parentElement;
+    if (!row) return null;
+
+    let clearBtn = row.querySelector('[data-studio-logo-upload-clear]');
+
+    if (!clearBtn) {
+      clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.setAttribute('data-studio-logo-upload-clear', '');
+      clearBtn.setAttribute('aria-label', 'Yüklenen logoyu kaldır');
+      clearBtn.title = 'Logoyu kaldır';
+      clearBtn.textContent = '×';
+      clearBtn.style.marginLeft = '8px';
+      clearBtn.style.width = '22px';
+      clearBtn.style.height = '22px';
+      clearBtn.style.borderRadius = '999px';
+      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
+      clearBtn.style.background = 'rgba(255,255,255,.08)';
+      clearBtn.style.color = '#fff';
+      clearBtn.style.cursor = 'pointer';
+      clearBtn.style.display = 'none';
+      clearBtn.style.verticalAlign = 'middle';
+      row.appendChild(clearBtn);
+    }
+
+    if (clearBtn.dataset.bound === '1') {
+      return clearBtn;
+    }
+
+    clearBtn.dataset.bound = '1';
+    clearBtn.type = 'button';
+
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearStudioLogoFile(rootState, studioRoot);
+    });
+
     return clearBtn;
   }
 
-  clearBtn.dataset.bound = '1';
-  clearBtn.type = 'button';
+  function updateStudioLogoUploadStatusUI(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonLogoFile',
+      '#studioLogoFile',
+      '[data-studio-logo-upload]',
+      'input[name="logoFile"]',
+      'input[name="logo"]'
+    ]);
 
-  clearBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    clearStudioVoiceFile(rootState, studioRoot);
-  });
+    if (!input) return;
 
-  return clearBtn;
-}
+    const row = input.closest('.cartoon-upload-row') || input.parentElement;
+    if (!row) return;
+
+    const textEl =
+      row.querySelector('[data-studio-logo-upload-text]') ||
+      row.querySelector('.cartoon-upload-text');
+
+    const clearBtn = ensureStudioLogoUploadClearButton(rootState, studioRoot);
+
+    if (!textEl) return;
+
+    const status = String(rootState?.logoFileUploadStatus || 'idle');
+    const fileName = String(rootState?.logoFileName || '').trim();
+
+    if (!fileName) {
+      textEl.textContent = 'Dosya seçilmedi';
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+
+    if (status === 'uploading') {
+      textEl.textContent = `${fileName} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+
+    if (status === 'ready') {
+      textEl.textContent = `${fileName} · Hazır ✓`;
+      if (clearBtn) {
+        clearBtn.style.display = 'inline-grid';
+        clearBtn.style.placeItems = 'center';
+      }
+      return;
+    }
+
+    if (status === 'error') {
+      textEl.textContent = `${fileName} · Yükleme hatası`;
+      if (clearBtn) {
+        clearBtn.style.display = 'inline-grid';
+        clearBtn.style.placeItems = 'center';
+      }
+      return;
+    }
+
+    textEl.textContent = fileName;
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
+
+  function bindStudioLogoUpload(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonLogoFile',
+      '#studioLogoFile',
+      '[data-studio-logo-upload]',
+      'input[name="logoFile"]',
+      'input[name="logo"]'
+    ]);
+
+    if (!input) return;
+    if (input.getAttribute('data-studio-logo-bound') === 'true') return;
+
+    input.setAttribute('data-studio-logo-bound', 'true');
+
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0] || null;
+
+      rootState.logoFile = file;
+      rootState.logoFileName = file ? String(file.name || '') : '';
+      rootState.logoFileUrl = '';
+      rootState.logoFileUploadPromise = null;
+      rootState.logoFileUploadError = '';
+      rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
+
+      updateStudioLogoUploadStatusUI(rootState, studioRoot);
+      updateStudioSummary(rootState, studioRoot);
+
+      if (!file) return;
+
+      rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
+        .then((publicUrl) => {
+          rootState.logoFileUrl = String(publicUrl || '').trim();
+          rootState.logoFileUploadStatus = 'ready';
+          rootState.logoFileUploadError = '';
+
+          updateStudioLogoUploadStatusUI(rootState, studioRoot);
+          updateStudioSummary(rootState, studioRoot);
+          saveStudioState(rootState);
+
+          console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
+          return rootState.logoFileUrl;
+        })
+        .catch((err) => {
+          rootState.logoFileUrl = '';
+          rootState.logoFileUploadStatus = 'error';
+          rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
+
+          updateStudioLogoUploadStatusUI(rootState, studioRoot);
+          updateStudioSummary(rootState, studioRoot);
+          saveStudioState(rootState);
+
+          console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
+          alert(rootState.logoFileUploadError);
+          throw err;
+        });
+    });
+  }
+
+  function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
+    const input = qsAny(studioRoot, [
+      '#cartoonVoiceFile',
+      '#studioVoiceFile',
+      '[data-studio-voice-upload]',
+      'input[name="voiceFile"]',
+      'input[name="kendiSesin"]'
+    ]);
+
+    if (!input) return null;
+
+    const row = input.closest('.cartoon-upload-row') || input.parentElement;
+    if (!row) return null;
+
+    let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
+
+    if (!clearBtn) {
+      clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.setAttribute('data-studio-voice-upload-clear', '');
+      clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
+      clearBtn.title = 'Sesi kaldır';
+      clearBtn.textContent = '×';
+      clearBtn.style.marginLeft = '8px';
+      clearBtn.style.width = '22px';
+      clearBtn.style.height = '22px';
+      clearBtn.style.borderRadius = '999px';
+      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
+      clearBtn.style.background = 'rgba(255,255,255,.08)';
+      clearBtn.style.color = '#fff';
+      clearBtn.style.cursor = 'pointer';
+      clearBtn.style.display = 'none';
+      clearBtn.style.verticalAlign = 'middle';
+      row.appendChild(clearBtn);
+    }
+
+    if (clearBtn.dataset.bound === '1') {
+      return clearBtn;
+    }
+
+    clearBtn.dataset.bound = '1';
+    clearBtn.type = 'button';
+
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearStudioVoiceFile(rootState, studioRoot);
+    });
+
+    return clearBtn;
+  }
+
   function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
       '#cartoonVoiceFile',
@@ -954,38 +961,39 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     input.addEventListener('change', async () => {
       const file = input.files?.[0] || null;
 
-   rootState.voiceFile = file;
-rootState.voiceFileName = file ? String(file.name || '') : '';
-rootState.voiceFileUrl = '';
-rootState.voiceFileUploadPromise = null;
-rootState.voiceFileUploadError = '';
-rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
-updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-updateStudioSummary(rootState, studioRoot);
+      rootState.voiceFile = file;
+      rootState.voiceFileName = file ? String(file.name || '') : '';
+      rootState.voiceFileUrl = '';
+      rootState.voiceFileUploadPromise = null;
+      rootState.voiceFileUploadError = '';
+      rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
+      updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+      updateStudioSummary(rootState, studioRoot);
 
-if (!file) return;
-rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
-  .then((publicUrl) => {
-    rootState.voiceFileUrl = String(publicUrl || '').trim();
-    rootState.voiceFileUploadStatus = 'ready';
-    rootState.voiceFileUploadError = '';
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
-    console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-    return rootState.voiceFileUrl;
-  })
-  .catch((err) => {
-    rootState.voiceFileUrl = '';
-    rootState.voiceFileUploadStatus = 'error';
-    rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
-    console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-    alert(rootState.voiceFileUploadError);
-    throw err;
-  });
+      if (!file) return;
+
+      rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
+        .then((publicUrl) => {
+          rootState.voiceFileUrl = String(publicUrl || '').trim();
+          rootState.voiceFileUploadStatus = 'ready';
+          rootState.voiceFileUploadError = '';
+          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+          updateStudioSummary(rootState, studioRoot);
+          saveStudioState(rootState);
+          console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
+          return rootState.voiceFileUrl;
+        })
+        .catch((err) => {
+          rootState.voiceFileUrl = '';
+          rootState.voiceFileUploadStatus = 'error';
+          rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
+          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+          updateStudioSummary(rootState, studioRoot);
+          saveStudioState(rootState);
+          console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
+          alert(rootState.voiceFileUploadError);
+          throw err;
+        });
     });
   }
 
@@ -1038,11 +1046,10 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
 
     input.addEventListener('change', async () => {
       const files = Array.from(input.files || []);
-      const count = files.length;
 
       if (text) {
-  text.textContent = '';
-}
+        text.textContent = '';
+      }
 
       try {
         await appendUploadedStudioVideos(
@@ -1102,49 +1109,56 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
     array.length = 0;
     copied.forEach((entry) => array.push(entry));
   }
- function getStudioExportCreditCost(rootState, studioRoot) {
-  const selectedCount = Array.isArray(rootState?.scenes)
-    ? rootState.scenes.filter((scene) => scene?.included).length
-    : 0;
 
-  const hasVoiceFile = !!rootState?.voiceFile;
-  const hasLogoFile = !!rootState?.logoFile;
+  function getStudioExportCreditCost(rootState, studioRoot) {
+    const selectedCount = Array.isArray(rootState?.scenes)
+      ? rootState.scenes.filter((scene) => scene?.included).length
+      : 0;
 
-  const readyMusicValue = String(
-    getValue(studioRoot, [
-      '#cartoonReadyMusic',
-      '#studioReadyMusic',
-      '[data-studio-ready-music]',
-      'select[name="readyMusic"]',
-      'select[name="hazirMuzik"]'
-    ], '')
-  ).trim().toLowerCase();
+    const hasVoiceFile =
+      !!rootState?.voiceFile ||
+      !!String(rootState?.voiceFileUrl || '').trim();
 
-  const hasReadyMusic =
-    !!readyMusicValue &&
-    readyMusicValue !== 'none' &&
-    readyMusicValue !== 'off' &&
-    readyMusicValue !== 'no' &&
-    readyMusicValue !== 'hayir' &&
-    readyMusicValue !== 'hayır' &&
-    readyMusicValue !== 'yok' &&
-    readyMusicValue !== '';
+    const hasLogoFile =
+      !!rootState?.logoFile ||
+      !!String(rootState?.logoFileUrl || '').trim();
 
-  return (
-    (Math.max(1, selectedCount) * 10) +
-    (hasVoiceFile ? 10 : 0) +
-    (hasLogoFile ? 10 : 0) +
-    (hasReadyMusic ? 10 : 0)
-  );
-}
-   function updateStudioSummary(rootState, studioRoot) {
+    const readyMusicValue = String(
+      getValue(studioRoot, [
+        '#cartoonReadyMusic',
+        '#studioReadyMusic',
+        '[data-studio-ready-music]',
+        'select[name="readyMusic"]',
+        'select[name="hazirMuzik"]'
+      ], '')
+    ).trim().toLowerCase();
+
+    const hasReadyMusic =
+      !!readyMusicValue &&
+      readyMusicValue !== 'none' &&
+      readyMusicValue !== 'off' &&
+      readyMusicValue !== 'no' &&
+      readyMusicValue !== 'hayir' &&
+      readyMusicValue !== 'hayır' &&
+      readyMusicValue !== 'yok' &&
+      readyMusicValue !== '';
+
+    return (
+      (Math.max(1, selectedCount) * 10) +
+      (hasVoiceFile ? 10 : 0) +
+      (hasLogoFile ? 10 : 0) +
+      (hasReadyMusic ? 10 : 0)
+    );
+  }
+
+  function updateStudioSummary(rootState, studioRoot) {
     const summary = studioRoot.querySelector('.studio-inline-summary');
     const selectedCount = rootState.scenes.filter((scene) => scene.included).length;
     const totalDuration = rootState.scenes
       .filter((scene) => scene.included)
       .reduce((sum, scene) => sum + (Number(scene.duration) || 0), 0);
 
-   const creditCost = getStudioExportCreditCost(rootState, studioRoot);
+    const creditCost = getStudioExportCreditCost(rootState, studioRoot);
 
     if (summary) {
       const items = summary.querySelectorAll('span');
@@ -1173,6 +1187,7 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
       exportBtn.textContent = `Paylaşmaya Hazır Çıktı Al (${creditCost} Kredi)`;
     }
   }
+
   function qsAny(root, selectors) {
     for (const selector of selectors) {
       const el = root.querySelector(selector);
@@ -1249,7 +1264,7 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
         ], ''),
 
         voiceFile: {
-          hasFile: !!rootState?.voiceFile,
+          hasFile: !!rootState?.voiceFile || !!String(rootState?.voiceFileUrl || '').trim(),
           name: String(rootState?.voiceFileName || ''),
           type: String(rootState?.voiceFile?.type || ''),
           size: Number(rootState?.voiceFile?.size || 0),
@@ -1257,14 +1272,14 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
           uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
         },
 
-       mode: getValue(studioRoot, [
-  '[data-studio-voice-enabled]',
-  '#cartoonAudioMode',
-  '#studioAudioMode',
-  '[data-studio-audio-mode]',
-  'select[name="audioMode"]',
-  'select[name="ses"]'
-], 'off'),
+        mode: getValue(studioRoot, [
+          '[data-studio-voice-enabled]',
+          '#cartoonAudioMode',
+          '#studioAudioMode',
+          '[data-studio-audio-mode]',
+          'select[name="audioMode"]',
+          'select[name="ses"]'
+        ], 'off'),
 
         musicLevel: getValue(studioRoot, [
           '#cartoonMusicLevel',
@@ -1301,67 +1316,68 @@ rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
         ], '')
       },
 
-branding: {
-  logoFile: {
-    hasFile: !!rootState?.logoFile,
-    name: String(rootState?.logoFileName || ''),
-    type: String(rootState?.logoFile?.type || ''),
-    size: Number(rootState?.logoFile?.size || 0),
-    url: String(rootState?.logoFileUrl || ''),
-    uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
-  },
+      branding: {
+        logoFile: {
+          hasFile: !!rootState?.logoFile || !!String(rootState?.logoFileUrl || '').trim(),
+          name: String(rootState?.logoFileName || ''),
+          type: String(rootState?.logoFile?.type || ''),
+          size: Number(rootState?.logoFile?.size || 0),
+          url: String(rootState?.logoFileUrl || ''),
+          uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
+        },
 
-  logoPosition: getValue(studioRoot, [
-    '#cartoonLogoPosition',
-    '#studioLogoPosition',
-    '[data-studio-logo-position]',
-    'select[name="logoPosition"]',
-    'select[name="logoYonu"]'
-  ], 'bottom-right'),
-
-  logoPos:
-    getValue(studioRoot, [
-      '#cartoonLogoPosition',
-      '#studioLogoPosition',
-      '[data-studio-logo-position]',
-      'select[name="logoPosition"]',
-      'select[name="logoYonu"]'
-    ], 'bottom-right') === 'top-left'
-      ? 'tl'
-      : getValue(studioRoot, [
+        logoPosition: getValue(studioRoot, [
           '#cartoonLogoPosition',
           '#studioLogoPosition',
           '[data-studio-logo-position]',
           'select[name="logoPosition"]',
           'select[name="logoYonu"]'
-        ], 'bottom-right') === 'top-right'
-        ? 'tr'
-        : getValue(studioRoot, [
+        ], 'bottom-right'),
+
+        logoPos:
+          getValue(studioRoot, [
             '#cartoonLogoPosition',
             '#studioLogoPosition',
             '[data-studio-logo-position]',
             'select[name="logoPosition"]',
             'select[name="logoYonu"]'
-          ], 'bottom-right') === 'bottom-left'
-          ? 'bl'
-          : getValue(studioRoot, [
-              '#cartoonLogoPosition',
-              '#studioLogoPosition',
-              '[data-studio-logo-position]',
-              'select[name="logoPosition"]',
-              'select[name="logoYonu"]'
-            ], 'bottom-right') === 'center'
-            ? 'c'
-            : 'br',
+          ], 'bottom-right') === 'top-left'
+            ? 'tl'
+            : getValue(studioRoot, [
+                '#cartoonLogoPosition',
+                '#studioLogoPosition',
+                '[data-studio-logo-position]',
+                'select[name="logoPosition"]',
+                'select[name="logoYonu"]'
+              ], 'bottom-right') === 'top-right'
+              ? 'tr'
+              : getValue(studioRoot, [
+                  '#cartoonLogoPosition',
+                  '#studioLogoPosition',
+                  '[data-studio-logo-position]',
+                  'select[name="logoPosition"]',
+                  'select[name="logoYonu"]'
+                ], 'bottom-right') === 'bottom-left'
+                ? 'bl'
+                : getValue(studioRoot, [
+                    '#cartoonLogoPosition',
+                    '#studioLogoPosition',
+                    '[data-studio-logo-position]',
+                    'select[name="logoPosition"]',
+                    'select[name="logoYonu"]'
+                  ], 'bottom-right') === 'center'
+                  ? 'c'
+                  : 'br',
 
-  watermarkMode: getValue(studioRoot, [
-    '#cartoonWatermarkMode',
-    '#studioWatermarkMode',
-    '[data-studio-watermark-mode]',
-    'select[name="watermarkMode"]',
-    'select[name="filigran"]'
-  ], '')
-},
+        watermarkMode: getValue(studioRoot, [
+          '#cartoonWatermarkMode',
+          '#studioWatermarkMode',
+          '[data-studio-watermark-mode]',
+          'select[name="watermarkMode"]',
+          'select[name="filigran"]'
+        ], '')
+      },
+
       cover: {
         videoFrame: getValue(studioRoot, [
           '#cartoonCoverFrame',
@@ -1384,20 +1400,24 @@ branding: {
         sceneCount: selectedScenes.length,
         totalDuration,
         format: String(rootState?.format || '16:9'),
-        hasLogo: !!getFileMeta(studioRoot, [
-          '#cartoonLogoFile',
-          '#studioLogoFile',
-          '[data-studio-logo-upload]',
-          'input[name="logoFile"]',
-          'input[name="logo"]'
-        ]).hasFile,
-        hasVoiceFile: !!getFileMeta(studioRoot, [
-          '#cartoonVoiceFile',
-          '#studioVoiceFile',
-          '[data-studio-voice-upload]',
-          'input[name="voiceFile"]',
-          'input[name="kendiSesin"]'
-        ]).hasFile,
+        hasLogo:
+          !!getFileMeta(studioRoot, [
+            '#cartoonLogoFile',
+            '#studioLogoFile',
+            '[data-studio-logo-upload]',
+            'input[name="logoFile"]',
+            'input[name="logo"]'
+          ]).hasFile ||
+          !!String(rootState?.logoFileUrl || '').trim(),
+        hasVoiceFile:
+          !!getFileMeta(studioRoot, [
+            '#cartoonVoiceFile',
+            '#studioVoiceFile',
+            '[data-studio-voice-upload]',
+            'input[name="voiceFile"]',
+            'input[name="kendiSesin"]'
+          ]).hasFile ||
+          !!String(rootState?.voiceFileUrl || '').trim(),
         hasCustomCover: !!getFileMeta(studioRoot, [
           '#cartoonCoverFile',
           '#studioCoverFile',
@@ -1477,96 +1497,96 @@ branding: {
         !!finalizedOutputUrl ||
         !!previewOutputUrl;
 
-if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
- let resolvedFinalVideoUrl =
-  finalizedOutputUrl ||
-  previewOutputUrl ||
-  finalVideoUrl ||
-  '';
+      if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
+        let resolvedFinalVideoUrl =
+          finalizedOutputUrl ||
+          previewOutputUrl ||
+          finalVideoUrl ||
+          '';
 
-  const studioState = window.__CARTOON_STUDIO__ || null;
-  const logoUrl = String(studioState?.logoFileUrl || '').trim();
+        const studioState = window.__CARTOON_STUDIO__ || null;
+        const logoUrl = String(studioState?.logoFileUrl || '').trim();
 
-  if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
-    button.disabled = true;
-    button.textContent = 'Logo işleniyor...';
-    button.classList.add('is-loading');
+        if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
+          button.disabled = true;
+          button.textContent = 'Logo işleniyor...';
+          button.classList.add('is-loading');
 
-  const logoPosRaw = String(
-  document
-    .querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] [data-studio-logo-position]')?.value ||
-  'bottom-right'
-).trim().toLowerCase();
+          const logoPosRaw = String(
+            document
+              .querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] [data-studio-logo-position]')?.value ||
+            'bottom-right'
+          ).trim().toLowerCase();
 
-const logoPos =
-  ['top-left', 'sol-ust', 'sol üst', 'solüst'].includes(logoPosRaw) ? 'tl' :
-  ['top-right', 'sag-ust', 'sağ-üst', 'sağ üst', 'sağüst'].includes(logoPosRaw) ? 'tr' :
-  ['bottom-left', 'sol-alt', 'sol alt', 'solalt'].includes(logoPosRaw) ? 'bl' :
-  ['center', 'orta'].includes(logoPosRaw) ? 'c' :
-  'br';
+          const logoPos =
+            ['top-left', 'sol-ust', 'sol üst', 'solüst'].includes(logoPosRaw) ? 'tl' :
+            ['top-right', 'sag-ust', 'sağ-üst', 'sağ üst', 'sağüst'].includes(logoPosRaw) ? 'tr' :
+            ['bottom-left', 'sol-alt', 'sol alt', 'solalt'].includes(logoPosRaw) ? 'bl' :
+            ['center', 'orta'].includes(logoPosRaw) ? 'c' :
+            'br';
 
-    console.log('[CARTOON][STUDIO_LOGO_OVERLAY_REQUEST]', {
-      jobId,
-      resolvedFinalVideoUrl,
-      logoUrl,
-      logoPos
-    });
+          console.log('[CARTOON][STUDIO_LOGO_OVERLAY_REQUEST]', {
+            jobId,
+            resolvedFinalVideoUrl,
+            logoUrl,
+            logoPos
+          });
 
-    const overlayRes = await fetch('/api/cartoon/overlay-logo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        job_id: String(jobId || ''),
-        video_url: resolvedFinalVideoUrl,
-        logo_url: logoUrl,
-        logo_pos: logoPos,
-        app: 'cartoon'
-      })
-    });
+          const overlayRes = await fetch('/api/cartoon/overlay-logo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              job_id: String(jobId || ''),
+              video_url: resolvedFinalVideoUrl,
+              logo_url: logoUrl,
+              logo_pos: logoPos,
+              app: 'cartoon'
+            })
+          });
 
-    const overlayData = await overlayRes.json().catch(() => null);
+          const overlayData = await overlayRes.json().catch(() => null);
 
-    console.log('[CARTOON][STUDIO_LOGO_OVERLAY_RESPONSE]', {
-      status: overlayRes.status,
-      ok: overlayRes.ok,
-      overlayData
-    });
+          console.log('[CARTOON][STUDIO_LOGO_OVERLAY_RESPONSE]', {
+            status: overlayRes.status,
+            ok: overlayRes.ok,
+            overlayData
+          });
 
-    if (!overlayRes.ok || !overlayData || overlayData.ok === false) {
-      throw new Error(overlayData?.message || overlayData?.error || 'studio_logo_overlay_failed');
-    }
+          if (!overlayRes.ok || !overlayData || overlayData.ok === false) {
+            throw new Error(overlayData?.message || overlayData?.error || 'studio_logo_overlay_failed');
+          }
 
-    resolvedFinalVideoUrl = String(overlayData?.url || resolvedFinalVideoUrl || '').trim();
-    window.__CARTOON_STUDIO_LOGO_DONE__ = true;
-  }
-
-  window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-  window.dispatchEvent(
-    new CustomEvent('aivo:cartoon:job_ready', {
-      detail: {
-        app: 'cartoon',
-        mode: 'studio_export',
-        job_id: String(jobId || ''),
-        status,
-        video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
-        outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-        raw: j,
-        meta: {
-          app: 'cartoon',
-          mode: 'studio_export',
-          final_video_url: resolvedFinalVideoUrl,
-          preview_video_url: previewVideoUrl || previewOutputUrl
+          resolvedFinalVideoUrl = String(overlayData?.url || resolvedFinalVideoUrl || '').trim();
+          window.__CARTOON_STUDIO_LOGO_DONE__ = true;
         }
-      }
-    })
-  );
-  button.disabled = false;
-  button.textContent = originalText;
-  button.classList.remove('is-loading');
 
-  alert(`Çıktı hazır. Final video: ${resolvedFinalVideoUrl || '-'}`);
-  return;
-}
+        window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
+        window.dispatchEvent(
+          new CustomEvent('aivo:cartoon:job_ready', {
+            detail: {
+              app: 'cartoon',
+              mode: 'studio_export',
+              job_id: String(jobId || ''),
+              status,
+              video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
+              outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+              raw: j,
+              meta: {
+                app: 'cartoon',
+                mode: 'studio_export',
+                final_video_url: resolvedFinalVideoUrl,
+                preview_video_url: previewVideoUrl || previewOutputUrl
+              }
+            }
+          })
+        );
+        button.disabled = false;
+        button.textContent = originalText;
+        button.classList.remove('is-loading');
+
+        alert(`Çıktı hazır. Final video: ${resolvedFinalVideoUrl || '-'}`);
+        return;
+      }
 
       if (status === 'error') {
         button.disabled = false;
@@ -1598,7 +1618,7 @@ const logoPos =
   }
 
   function bindStudioExportPayloadDebug(rootState, studioRoot) {
-     const button = qsAny(studioRoot, [
+    const button = qsAny(studioRoot, [
       '[data-studio-export]',
       '[data-studio-final-output]',
       '[data-studio-generate-final]',
@@ -1612,7 +1632,7 @@ const logoPos =
       return;
     }
 
-      const initialCreditCost = getStudioExportCreditCost(rootState, studioRoot);
+    const initialCreditCost = getStudioExportCreditCost(rootState, studioRoot);
     button.setAttribute('data-credit-cost', String(initialCreditCost));
 
     if (!button.disabled) {
@@ -1653,24 +1673,31 @@ const logoPos =
           }
         }
 
-        if (rootState?.voiceFile && String(rootState?.voiceFileUploadStatus || '') !== 'ready') {
+        if (
+          (rootState?.voiceFile || String(rootState?.voiceFileUrl || '').trim()) &&
+          String(rootState?.voiceFileUploadStatus || '') !== 'ready'
+        ) {
           throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
         }
+
         if (rootState?.logoFileUploadPromise) {
-  button.disabled = true;
-  button.textContent = 'Logo yükleniyor...';
-  button.classList.add('is-loading');
+          button.disabled = true;
+          button.textContent = 'Logo yükleniyor...';
+          button.classList.add('is-loading');
 
-  try {
-    await rootState.logoFileUploadPromise;
-  } catch {
-    throw new Error(rootState?.logoFileUploadError || 'studio_logo_upload_failed');
-  }
-}
+          try {
+            await rootState.logoFileUploadPromise;
+          } catch {
+            throw new Error(rootState?.logoFileUploadError || 'studio_logo_upload_failed');
+          }
+        }
 
-if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 'ready') {
-  throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
-}
+        if (
+          (rootState?.logoFile || String(rootState?.logoFileUrl || '').trim()) &&
+          String(rootState?.logoFileUploadStatus || '') !== 'ready'
+        ) {
+          throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
+        }
 
         const creditCost = getStudioExportCreditCost(rootState, studioRoot);
         const creditReason = 'studio_cartoon_montage_export';
@@ -1754,7 +1781,7 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
             job_id: String(data.job_id || ''),
             prompt: payload?.text?.title || payload?.text?.description || 'studio export',
             createdAt: Date.now(),
-                       meta: {
+            meta: {
               app: 'cartoon',
               mode: 'studio_export',
               provider: 'studio',
@@ -1946,58 +1973,60 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
       return true;
     }
 
-  const studioState = createStudioState();
+    const studioState = createStudioState();
 
-ensureStudioPreviewModal(studioRoot);
-renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-
-loadStudioState()
-  .then((savedState) => {
-    studioState.format = String(savedState?.format || '16:9');
-    studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
-
-    studioState.voiceFile = null;
-    studioState.voiceFileName = String(savedState?.voice?.fileName || '');
-    studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
-    studioState.voiceFileUploadPromise = null;
-    studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
-    studioState.voiceFileUploadError = '';
-
-    studioState.logoFile = null;
-    studioState.logoFileName = String(savedState?.logo?.fileName || '');
-    studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
-    studioState.logoFileUploadPromise = null;
-    studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
-    studioState.logoFileUploadError = '';
-
+    ensureStudioPreviewModal(studioRoot);
     renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-    updateStudioVoiceUploadStatusUI(studioState, studioRoot);
-    updateStudioLogoUploadStatusUI(studioState, studioRoot);
-    updateStudioSummary(studioState, studioRoot);
-  })
-  .catch((err) => {
-    console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
-  });
+
+    loadStudioState()
+      .then((savedState) => {
+        studioState.format = String(savedState?.format || '16:9');
+        studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
+
+        studioState.voiceFile = null;
+        studioState.voiceFileName = String(savedState?.voice?.fileName || '');
+        studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
+        studioState.voiceFileUploadPromise = null;
+        studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
+        studioState.voiceFileUploadError = '';
+
+        studioState.logoFile = null;
+        studioState.logoFileName = String(savedState?.logo?.fileName || '');
+        studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
+        studioState.logoFileUploadPromise = null;
+        studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
+        studioState.logoFileUploadError = '';
+
+        renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+        updateStudioVoiceUploadStatusUI(studioState, studioRoot);
+        updateStudioLogoUploadStatusUI(studioState, studioRoot);
+        updateStudioSummary(studioState, studioRoot);
+      })
+      .catch((err) => {
+        console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
+      });
+
     bindStudioVideoUpload(
       studioState,
       studioRoot,
       studioSceneList,
       studioSceneTemplate
     );
-bindStudioVoiceUpload(
-  studioState,
-  studioRoot
-);
 
-bindStudioLogoUpload(
-  studioState,
-  studioRoot
-);
+    bindStudioVoiceUpload(
+      studioState,
+      studioRoot
+    );
 
-bindStudioFormatPills(
-  studioState,
-  studioRoot
-);
+    bindStudioLogoUpload(
+      studioState,
+      studioRoot
+    );
+
+    bindStudioFormatPills(
+      studioState,
+      studioRoot
+    );
 
     bindStudioExportPayloadDebug(
       studioState,
