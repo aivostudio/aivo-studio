@@ -1009,3 +1009,17 @@
   filter: drop-shadow(0 0 10px rgba(255,111,177,.28));
   transform: scale(1.06);
 }
+#moduleHost[data-active-module="video"] .audio-toggle-right,
+.main-panel[data-module="video"] .audio-toggle-right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#moduleHost[data-active-module="video"] .audio-credit-badge,
+.main-panel[data-module="video"] .audio-credit-badge{
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: .92;
+}
