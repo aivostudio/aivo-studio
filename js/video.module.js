@@ -937,10 +937,10 @@ async function createText() {
     credit_cost: creditCost
   });
 
-  await pollJob(job_id);
+   await pollJob(job_id);
+}
 
-
-  async function createImage() {
+async function createImage() {
     const root = getRoot();
     resetVideoPolicyUI(root);
 
