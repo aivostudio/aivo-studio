@@ -672,42 +672,34 @@ function ensureVideoPolicyNote(root, btn) {
     return total;
   }
 
-  function syncVideoCreditUI(root) {
-    if (!root) return;
+function syncVideoCreditUI(root) {
+  if (!root) return;
 
-    const mode = getVideoMode(root);
-    const credit = getVideoCredit(root);
+  const mode = getVideoMode(root);
+  const credit = getVideoCredit(root);
 
-    const textBtn = qs("#videoGenerateTextBtn", root);
-    const imageBtn = qs("#videoGenerateImageBtn", root);
+  const textBtn = qs("#videoGenerateTextBtn", root);
+  const imageBtn = qs("#videoGenerateImageBtn", root);
 
-    const badgeCandidates = [
-      qs("[data-video-credit-badge]", root),
-      ...Array.from(root.querySelectorAll("span,div,strong,b"))
-    ];
+  const badgeEl = qs("[data-video-credit-badge]", root);
 
-    const badgeEl = badgeCandidates.find((el) => {
-      const txt = String(el?.textContent || "").toLowerCase();
-      return txt.includes("kredi");
-    });
-
-    if (textBtn) {
-      textBtn.dataset.creditCost = String(credit);
-      textBtn.textContent =
-        mode === "image"
-          ? "🎬 Video Oluştur (Ücretsiz)"
-          : `🎬 Video Oluştur (${credit} Kredi)`;
-    }
-
-    if (imageBtn) {
-      imageBtn.dataset.creditCost = "0";
-      imageBtn.textContent = "🎬 Video Oluştur (Ücretsiz)";
-    }
-
-    if (badgeEl) {
-      badgeEl.textContent = mode === "image" ? "Ücretsiz" : `${credit} Kredi`;
-    }
+  if (textBtn) {
+    textBtn.dataset.creditCost = String(credit);
+    textBtn.textContent =
+      mode === "image"
+        ? "🎬 Video Oluştur (Ücretsiz)"
+        : `🎬 Video Oluştur (${credit} Kredi)`;
   }
+
+  if (imageBtn) {
+    imageBtn.dataset.creditCost = "0";
+    imageBtn.textContent = "🎬 Video Oluştur (Ücretsiz)";
+  }
+
+  if (badgeEl) {
+    badgeEl.textContent = mode === "image" ? "Ücretsiz" : `${credit} Kredi`;
+  }
+}
 
   // ===============================
   // Robust JSON POST (500'lerde text dönebilir)
