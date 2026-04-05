@@ -1115,13 +1115,15 @@ div[style*="grid-template-columns:1fr 320px"]{
   font-size:14px;
   opacity:.92;
   margin-bottom:12px;
+  width:100%;
+  text-align:center;
 }
 
 #atmProStyleCard .atmProStyleStack{
   display:flex;
   flex-direction:column;
   gap:12px;
-  align-items:flex-start;
+  align-items:center;
 }
 
 #atmProStyleCard .atmProStyleStack .smpack-pill{
