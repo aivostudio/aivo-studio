@@ -3487,3 +3487,26 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* === BASIC MODE STYLE FIELD ALIGN FIX === */
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field-label--stack {
+  min-height: 88px !important;
+  height: 88px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 2px !important;
+  margin: 0 0 10px !important;
+  text-align: center !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field-label-title {
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field-label-credit {
+  display: block !important;
+  visibility: hidden !important;
+  height: 32px !important;
+}
