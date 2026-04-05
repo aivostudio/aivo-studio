@@ -727,6 +727,35 @@
     return Array.isArray(state?.presets) ? state.presets : [];
   }
 
+  function getPhotoFxEstimatedCredits(root) {
+    const state = getState(root);
+    const selected = getSelectedPresets(root);
+    const duration = String(qs("#pfxDuration", root)?.value || "6");
+
+    let total = 30;
+
+    if (duration === "8") total = 35;
+    else if (duration === "10") total = 40;
+    else if (duration === "12") total = 45;
+    else if (duration === "14") total = 50;
+    else if (duration === "16") total = 55;
+    else if (duration === "18") total = 60;
+    else if (duration === "20") total = 65;
+
+    total += selected.length * 5;
+
+    if (state?.logoFile) total += 10;
+
+    const includeMusic =
+      String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes";
+
+    if (includeMusic && state?.audioFile) {
+      total += 10;
+    }
+
+    return total;
+  }
+
   function setPromptCounter(root) {
     const ta = qs("#pfxPrompt", root);
     const count = qs("#pfxPromptCount", root);
@@ -739,10 +768,11 @@
     const createBtn = qs(".pfxCreateBtn", root);
     if (!createBtn) return;
 
-    createBtn.setAttribute("data-credit-cost", String(FIXED_CREDIT_COST));
-    createBtn.textContent = `🎬 Klip Oluştur (${FIXED_CREDIT_COST} Kredi)`;
-  }
+    const totalCredits = getPhotoFxEstimatedCredits(root);
 
+    createBtn.setAttribute("data-credit-cost", String(totalCredits));
+    createBtn.textContent = `🎬 Klip Oluştur (${totalCredits} Kredi)`;
+  }
   function renderPresets(root) {
     const selected = getSelectedPresets(root);
 
