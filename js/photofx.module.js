@@ -1757,7 +1757,10 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           return;
         }
 
-        const credit = createBtn.getAttribute("data-credit-cost") || "8";
+              const credit = String(
+          createBtn.getAttribute("data-credit-cost") ||
+          getPhotoFxEstimatedCredits(root)
+        );
         const creditCost = Number(credit) || getPhotoFxEstimatedCredits(root);
         const creditReason = "studio_photofx_generate";
 
