@@ -1503,10 +1503,11 @@ const logoPos =
       return;
     }
 
-    button.setAttribute('data-credit-cost', '10');
+        const initialCreditCost = getStudioExportCreditCost(rootState);
+    button.setAttribute('data-credit-cost', String(initialCreditCost));
 
     if (!button.disabled) {
-      button.textContent = 'Paylaşmaya Hazır Çıktı Al (10 Kredi)';
+      button.textContent = `Paylaşmaya Hazır Çıktı Al (${initialCreditCost} Kredi)`;
     }
 
     if (button.getAttribute('data-studio-export-bound') === 'true') {
