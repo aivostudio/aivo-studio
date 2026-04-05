@@ -270,25 +270,30 @@
             gap:10px;
           }
 
-          /* ✅ Thumbnail slot (sabit boyut, asla alta itmez) */
-          #atmPersonalCard .atmLogoThumb{
-            width:44px;
-            height:44px;
-            border-radius:12px;
-            border:1px solid rgba(255,255,255,.12);
-            background:rgba(0,0,0,.22);
-            overflow:hidden;
-            flex:0 0 44px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-          }
-          #atmPersonalCard .atmLogoThumb img[data-atmo-logo-target]{
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            display:block;
-          }
+        /* ✅ Thumbnail slot: boşken görünmez, logo gelince görünür */
+#atmPersonalCard .atmLogoThumb{
+  display:none;
+}
+
+#atmPersonalCard .atmLogoThumb.has-image{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.22);
+  overflow:hidden;
+  flex:0 0 44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#atmPersonalCard .atmLogoThumb img[data-atmo-logo-target]{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
 
           /* CTA wrapper (sadece buton) */
           #atmPersonalCard .atmPersCta{
