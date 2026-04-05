@@ -806,7 +806,7 @@ section.main-panel[data-module="atmosphere"] .mode-tab.is-active{
 .atmInlineSelect{
   min-width:120px;
 }
-/* ===== ATMO SUPER MODE — sticky CTA (REAL WRAPPER) ===== */
+
 /* ===== ATMO SUPER MODE — ONLY CTA STICKY ===== */
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"]{
@@ -853,6 +853,49 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] 
 
 @media (max-width: 900px){
   section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="pro"] .atmPersCta--pro{
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+}
+/* ===== ATMO BASIC MODE — SAME CTA STICKY ===== */
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"]{
+  padding-bottom: 140px !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .atmPersCta--basic{
+  position: sticky !important;
+  bottom: 10px !important;
+  z-index: 90 !important;
+
+  width: min(720px, 100%) !important;
+  margin: 14px auto 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(28,18,55,.94), rgba(12,10,34,.96)) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .atmPersCta--basic .atmBigCtaBtn{
+  width: 100% !important;
+  min-height: 58px !important;
+  margin: 0 !important;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 900px){
+  section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .atmPersCta--basic{
     bottom: calc(10px + env(safe-area-inset-bottom)) !important;
     padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
   }
