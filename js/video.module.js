@@ -1233,12 +1233,19 @@ async function createText() {
   // ===============================
   // Single observer: root geldiğinde bind et, sonra hafif çalışsın
   // ===============================
-  function tryBindAll() {
+   function tryBindAll() {
     const root = document.querySelector(ROOT_SEL);
     if (!root) return;
 
+    const durationEl = qs("#videoDuration", root);
+    if (durationEl) {
+      durationEl.value = "5";
+    }
+
     bindTabs(root);
     bindPromptCounter(root);
+    bindVideoPricingUI(root);
+    syncVideoCreditUI(root);
   }
 
   // İlk çalıştır
