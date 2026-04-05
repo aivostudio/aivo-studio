@@ -225,17 +225,39 @@ section.main-panel[data-module="atmosphere"] .atmCreditBadge--accent{
     0 10px 24px rgba(120,80,255,.10);
 }
 
+section.main-panel[data-module="atmosphere"] .atmPersCol--credit{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
 section.main-panel[data-module="atmosphere"] .atmPersCol--credit > .form-label{
+  width:100%;
   text-align:center;
 }
 
-section.main-panel[data-module="atmosphere"] .atmPersCol--credit > .btn,
+section.main-panel[data-module="atmosphere"] .atmPersCol--credit .atmCreditInline{
+  width:100%;
+  justify-content:center;
+}
+
+section.main-panel[data-module="atmosphere"] .atmPersCol--credit > .btn{
+  display:inline-flex;
+  justify-content:center;
+}
+
 section.main-panel[data-module="atmosphere"] .atmPersCol--credit .atmLogoTop{
+  width:100%;
   justify-content:center;
 }
 
 section.main-panel[data-module="atmosphere"] .atmPersCol--credit .atmFileMeta{
+  width:100%;
   text-align:center;
+}
+
+section.main-panel[data-module="atmosphere"] .atmPersCol--credit .atmRow2{
+  width:100%;
 }
 /* ---------- scene choices grid ---------- */
 section.main-panel[data-module="atmosphere"] .smpack-grid{
