@@ -3380,3 +3380,27 @@
   box-shadow: 0 4px 10px rgba(191,86,255,.12) !important;
   filter: brightness(.98);
 }
+.main-panel[data-module="cartoon"] .cartoon-field-label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-block--compact > .cartoon-block-head h3 {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.main-panel[data-module="cartoon"] .cartoon-block--compact > .cartoon-block-head .cartoon-muted {
+  color: rgba(255, 255, 255, 0.50);
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="character"] .cartoon-field-label[style*="margin:0"] {
+  color: rgba(255, 255, 255, 0.68) !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  font-weight: 700 !important;
+}
+
+.main-panel[data-module="cartoon"] [data-cartoon-view="character"] .cartoon-block--compact > .cartoon-block-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
