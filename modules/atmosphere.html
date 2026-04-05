@@ -387,92 +387,101 @@
     </div>
   </div><!-- /#atmSuperPromptCard -->
 
-  <!-- (2) LIGHT · EXPORT · MOOD -->
-  <div class="card" id="atmProMoodExport" style="margin-top:14px;">
+<!-- (2) ATMOSPHERE STYLE + EXPORT -->
+<div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;margin-top:14px;">
+
+  <!-- SOL KART: ATMOSFER STİLİ -->
+  <div class="card" id="atmProStyleCard" style="margin-top:0;">
     <div class="card-header">
       <div>
-        <div class="card-title">Işık · Export · Duygu</div>
-        <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
+        <div class="card-title">Atmosfer Stili</div>
+        <div class="card-subtitle">Işık ve duygu tonunu seç.</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
+      <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+        <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+        <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+        <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+        <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+        <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+      </div>
+
+      <div style="font-weight:600;font-size:13px;opacity:.85;margin:16px 0 8px;">🎭 Duygu</div>
+      <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+        <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+        <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+        <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+        <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+        <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAĞ KART: EXPORT AYARLARI -->
+  <div class="card" id="atmProExportCard" style="margin-top:0;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Export Ayarları</div>
+        <div class="card-subtitle">Çıktı biçimi ve süre ayarları.</div>
         <div style="margin-top:8px;font-size:13px;line-height:1.5;opacity:.78;">
           Süre uzadıkça ve logo, müzik, görsel eklendikçe hazırlık süresi artabilir. Video yaklaşık 5–10 dakikada hazır olur.
         </div>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+    <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
 
-      <div>
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
-        <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-          <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-          <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
-          <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
-          <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
-        </div>
-
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin:12px 0 8px;">🎭 Duygu</div>
-        <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
-          <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
-          <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
-        </div>
+    <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+      📐 Oran
+      <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
+        <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
+        <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
+        <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
       </div>
+    </label>
 
-      <div>
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
+    <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+      🎞️ FPS
+      <select id="atmProFps">
+        <option value="24" selected>24 FPS</option>
+        <option value="30">30 FPS</option>
+      </select>
+    </label>
 
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          📐 Oran
-          <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
-            <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
-            <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
-            <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
-          </div>
-        </label>
+    <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+      📁 Format
+      <select id="atmProFormat">
+        <option value="mp4" selected>MP4</option>
+        <option value="webm">WebM</option>
+      </select>
+    </label>
 
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          🎞️ FPS
-          <select id="atmProFps">
-            <option value="24" selected>24 FPS</option>
-            <option value="30">30 FPS</option>
-          </select>
-        </label>
+    <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+      ⏱️ Süre
+      <select id="atmProDuration">
+        <option value="4">4 sn</option>
+        <option value="6">6 sn</option>
+        <option value="8" selected>8 sn</option>
+        <option value="10">10 sn</option>
+        <option value="12">12 sn</option>
+        <option value="15">15 sn</option>
+      </select>
+    </label>
 
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          📁 Format
-          <select id="atmProFormat">
-            <option value="mp4" selected>MP4</option>
-            <option value="webm">WebM</option>
-          </select>
-        </label>
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProSeamFix">
+      🔁 Loop Seam Fix
+    </label>
 
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          ⏱️ Süre
-          <select id="atmProDuration">
-            <option value="4">4 sn</option>
-            <option value="6">6 sn</option>
-            <option value="8" selected>8 sn</option>
-            <option value="10">10 sn</option>
-            <option value="12">12 sn</option>
-            <option value="15">15 sn</option>
-          </select>
-        </label>
-
-        <label style="display:flex;gap:10px;align-items:center;">
-          <input type="checkbox" id="atmProSeamFix">
-          🔁 Loop Seam Fix
-        </label>
-
-        <div style="margin-top:10px;font-size:12px;opacity:.6;">
-          shader / ffmpeg post-process
-        </div>
-      </div>
-
+    <div style="margin-top:10px;font-size:12px;opacity:.6;">
+      shader / ffmpeg post-process
     </div>
   </div>
+
+</div>
 
   <!-- (3) DETAIL EFFECTS + LUT -->
   <div class="card" id="atmProDetails" style="margin-top:14px;">
