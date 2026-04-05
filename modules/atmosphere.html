@@ -361,7 +361,7 @@
 <!-- ================= SUPER MODE ================= -->
 <div class="mode-panel" data-mode-panel="pro" role="tabpanel">
 
-  <!-- (1) SUPER PROMPT + (LOGO + AUDIO) -->
+  <!-- (1) SUPER PROMPT -->
   <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
     <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
       <div style="color:#fff;font-weight:600;font-size:14px;">
@@ -375,526 +375,29 @@
     <div style="margin-top:8px;">
       <textarea
         id="atmSuperPrompt"
-        rows="4"
+        rows="6"
         maxlength="5000"
         placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
-        style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;"
+        style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;min-height:150px;"
       ></textarea>
 
       <div style="text-align:right;font-size:12px;opacity:.7;margin-top:6px;">
         <span id="atmSuperPromptCount">0</span> / 5000
       </div>
     </div>
-
-<!-- ✅ PRO: Logo + Audio (Basit Mod’daki upload mantığıyla) -->
-<div class="atmProRefs">
-
-  <!-- üst satır: 3 kolon başlık + badge -->
-  <div class="atmProRefsHead atmProRefsHead--triple">
-    <div class="atmProRefTop">
-      <div class="atmProRefsTitle">Ana Görsel</div>
-      <div class="atmCreditInline atmCreditInline--center">
-        <span class="atmCreditBadge">Ücretsiz</span>
-      </div>
-    </div>
-
-    <div class="atmProRefTop">
-      <div class="atmProRefsTitle">Audio Yükle</div>
-      <div class="atmCreditInline atmCreditInline--center">
-        <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
-      </div>
-    </div>
-
-    <div class="atmProRefTop">
-      <div class="atmProRefsTitle">Logo Yükle</div>
-      <div class="atmCreditInline atmCreditInline--center">
-        <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- butonlar -->
-  <div class="atmProRefsBtns">
-    <label class="btn atmFileBtn" style="cursor:pointer;">
-      <input type="file" id="atmProRefImageFile" accept="image/*" hidden>
-      🏞️ Resim Seç
-    </label>
-
-    <label class="btn atmFileBtn" style="cursor:pointer;">
-      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-      🎵 Audio Seç
-    </label>
-
-    <label class="btn atmFileBtn" style="cursor:pointer;">
-      <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-      🖼️ Logo Seç
-    </label>
-  </div>
-
-  <!-- meta -->
-  <div class="atmProRefsMeta">
-    <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-      <span class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-      <button
-        type="button"
-        id="atmProRefImageClear"
-        aria-label="Yüklenen resmi kaldır"
-        title="Resmi kaldır"
-        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-      >
-        ×
-      </button>
-    </label>
-
-    <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-      <span class="atmFileName" id="atmProAudioFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-      <button
-        type="button"
-        id="atmProAudioClear"
-        aria-label="Yüklenen audioyu kaldır"
-        title="Audioyu kaldır"
-        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-      >
-        ×
-      </button>
-    </label>
-
-    <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-      <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-      <button
-        type="button"
-        id="atmProLogoClear"
-        aria-label="Yüklenen logoyu kaldır"
-        title="Logoyu kaldır"
-        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-      >
-        ×
-      </button>
-    </label>
-  </div>
-
-  <!-- alt ayarlar: solda logo pozisyonu, ortada audio modu, sağda boş kolon -->
-  <div class="atmProRefsSelects">
-    <div class="atmProRefSelectCol">
-      <select id="atmProLogoPos" class="input atmProSelect">
-        <option value="tl">Sol Üst</option>
-        <option value="tr">Sağ Üst</option>
-        <option value="bl">Sol Alt</option>
-        <option value="br" selected>Sağ Alt</option>
-        <option value="center_small">Ortada (küçük)</option>
-      </select>
-    </div>
-
-    <div class="atmProRefSelectCol">
-      <select id="atmProAudioMode" class="input atmProSelect">
-        <option value="none" selected>Ses yok</option>
-        <option value="embed">MP4 içine ekle</option>
-      </select>
-    </div>
-
-    <div class="atmProRefSelectCol"></div>
-  </div>
-
-  <!-- ✅ küçük durum etiketi -->
-  <div class="atmProRefsBottom">
-    <div id="atmProLogoStatus"
-         style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-      Hazır ✓
-    </div>
-    <div id="atmProRefImageStatus"
-         style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-      Hazır ✓
-    </div>
-    <div id="atmProAudioStatus"
-         style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
-      Hazır ✓
-    </div>
-  </div>
-
-</div>
-</div><!-- /#atmSuperPromptCard -->
-
-<style>
-    /* PRO refs box (tamamen card içinde, kompakt) */
-    #atmSuperPromptCard .atmProRefs{
-      margin-top:12px;
-      padding:12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.14);
-    }
-
-    #atmSuperPromptCard .atmProRefsHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:10px;
-    }
-    #atmSuperPromptCard .atmProRefsTitle{
-      font-weight:700;
-      opacity:.92;
-    }
-
- #atmSuperPromptCard .atmProRefsBtns{
-  display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
-  gap:12px;
-}
-
-#atmSuperPromptCard .atmProRefsMeta{
-  display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
-  gap:12px;
-  margin-top:18px;
-  align-items:start;
-}
- #atmSuperPromptCard .atmRow2{
-  margin-top:24px;
-}
-    #atmSuperPromptCard .atmFileName{
-      font-size:12px;
-      opacity:.9;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    #atmSuperPromptCard .atmProRefsBottom{
-      display:flex;
-      gap:12px;
-      margin-top:12px;
-      align-items:center;
-      justify-content:flex-start;
-    }
-
-  #atmSuperPromptCard .atmProSelect{
-  width:100%;
-  min-width:0;
-  position:relative;
-  top:-6px;
-}
-
-    @media (max-width: 980px){
-      #atmSuperPromptCard .atmProRefsBtns,
-      #atmSuperPromptCard .atmProRefsMeta{
-        grid-template-columns:1fr;
-      }
-      #atmSuperPromptCard .atmProRefsHead{
-        flex-direction:column;
-        align-items:stretch;
-      }
-      #atmSuperPromptCard .atmProRefsBottom{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-    }
-  </style>
-
-  <script>
-    (() => {
-      const qs = (s, r=document) => r.querySelector(s);
-
-      // state garanti
-      window.__ATM_V2__ = window.__ATM_V2__ || {};
-      window.__ATM_V2__.uploads = window.__ATM_V2__.uploads || {
-        image: { status: "empty", url: "", name: "" },
-        logo:  { status: "empty", url: "", name: "" },
-        audio: { status: "empty", url: "", name: "" }
-      };
-
-      const uploads = window.__ATM_V2__.uploads;
-
-      const setStatus = (el, status) => {
-        if (!el) return;
-        if (status === "ready") {
-          el.style.display = "";
-          el.textContent = "Hazır ✓";
-          el.style.border = "1px solid rgba(120,255,190,.22)";
-          el.style.background = "rgba(120,255,190,.08)";
-        } else if (status === "uploading") {
-          el.style.display = "";
-          el.textContent = "Yükleniyor…";
-          el.style.border = "1px solid rgba(255,255,255,.14)";
-          el.style.background = "rgba(255,255,255,.06)";
-        } else if (status === "error") {
-          el.style.display = "";
-          el.textContent = "Hata";
-          el.style.border = "1px solid rgba(255,120,120,.25)";
-          el.style.background = "rgba(255,120,120,.10)";
-        } else {
-          el.style.display = "none";
-        }
-      };
-
-      async function presignR2({ app, kind, filename, contentType }) {
-        const res = await fetch("/api/r2/presign-put", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            app: app || "atmo",
-            kind,
-            filename,
-            contentType
-          })
-        });
-
-        if (!res.ok) throw new Error("presign_failed");
-        const data = await res.json();
-        if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
-
-        const uploadUrl = data.uploadUrl || data.upload_url;
-        const publicUrl = data.publicUrl || data.public_url || data.url;
-
-        if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
-        return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
-      }
-
-      async function uploadToR2(file, { app="atmo", kind }) {
-        const contentType = file.type || "application/octet-stream";
-        const filename = file.name || `${kind}-${Date.now()}`;
-
-        const { uploadUrl, publicUrl } = await presignR2({
-          app,
-          kind,
-          filename,
-          contentType
-        });
-
-        const put = await fetch(uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": contentType },
-          body: file
-        });
-
-        if (!put.ok) throw new Error("r2_put_failed");
-        return { url: publicUrl, name: filename };
-      }
-
-      // UI refs
-      const logoInput   = qs("#atmProLogoFile");
-      const imageInput  = qs("#atmProRefImageFile");
-      const audioInput  = qs("#atmProAudioFile");
-
-      const logoName    = qs("#atmProLogoFileName");
-      const imageName   = qs("#atmProRefImageFileName");
-      const audioName   = qs("#atmProAudioFileName");
-
-      const logoStatus  = qs("#atmProLogoStatus");
-      const imageStatus = qs("#atmProRefImageStatus");
-      const audioStatus = qs("#atmProAudioStatus");
-
-    const logoClearBtn  = qs("#atmProLogoClear");
-const imageClearBtn = qs("#atmProRefImageClear");
-const audioClearBtn = qs("#atmProAudioClear");
-
-// Pos -> global state’e yaz
-const posSel = qs("#atmProLogoPos");
-if (posSel) {
-  posSel.addEventListener("change", () => {
-    try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
-  });
-  try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
-}
-
-function syncLogoClearBtn() {
-  if (!logoClearBtn) return;
-  logoClearBtn.style.display = uploads.logo?.status === "ready" ? "inline-grid" : "none";
-  logoClearBtn.style.placeItems = "center";
-}
-
-function syncImageClearBtn() {
-  if (!imageClearBtn) return;
-  imageClearBtn.style.display = uploads.image?.status === "ready" ? "inline-grid" : "none";
-  imageClearBtn.style.placeItems = "center";
-}
-
-function syncAudioClearBtn() {
-  if (!audioClearBtn) return;
-  audioClearBtn.style.display = uploads.audio?.status === "ready" ? "inline-grid" : "none";
-  audioClearBtn.style.placeItems = "center";
-}
-
-      async function onLogoChange() {
-  const f = logoInput && logoInput.files && logoInput.files[0];
-  if (!f) {
-    if (logoName) logoName.textContent = "Dosya seçilmedi";
-    uploads.logo = { status:"empty", url:"", name:"" };
-    setStatus(logoStatus, "empty");
-    syncLogoClearBtn();
-    try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-    return;
-  }
-
-  if (logoName) logoName.textContent = "Yükleniyor…";
-  uploads.logo = { status:"uploading", url:"", name: f.name || "" };
-  setStatus(logoStatus, "uploading");
-  syncLogoClearBtn();
-
-  try {
-    const out = await uploadToR2(f, { app:"atmo", kind:"logo" });
-    uploads.logo = { status:"ready", url: out.url, name: out.name || f.name || "" };
-    if (logoName) logoName.textContent = uploads.logo.name;
-    setStatus(logoStatus, "ready");
-    syncLogoClearBtn();
-    window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
-  } catch (e) {
-    console.error("[ATM][PRO] logo upload error:", e);
-    uploads.logo = { status:"error", url:"", name: f.name || "" };
-    if (logoName) logoName.textContent = "Yükleme hatası";
-    setStatus(logoStatus, "error");
-    syncLogoClearBtn();
-    try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
-  }
-}
-
-      async function onImageChange() {
-        const f = imageInput && imageInput.files && imageInput.files[0];
-        if (!f) {
-          if (imageName) imageName.textContent = "Dosya seçilmedi";
-          uploads.image = { status:"empty", url:"", name:"" };
-          setStatus(imageStatus, "empty");
-          syncImageClearBtn();
-          return;
-        }
-
-        if (imageName) imageName.textContent = "Yükleniyor…";
-        uploads.image = { status:"uploading", url:"", name: f.name || "" };
-        setStatus(imageStatus, "uploading");
-        syncImageClearBtn();
-
-        try {
-          const out = await uploadToR2(f, { app:"atmo", kind:"image" });
-          uploads.image = { status:"ready", url: out.url, name: out.name || f.name || "" };
-          if (imageName) imageName.textContent = uploads.image.name;
-          setStatus(imageStatus, "ready");
-          syncImageClearBtn();
-        } catch (e) {
-          console.error("[ATM][PRO] image upload error:", e);
-          uploads.image = { status:"error", url:"", name: f.name || "" };
-          if (imageName) imageName.textContent = "Yükleme hatası";
-          setStatus(imageStatus, "error");
-          syncImageClearBtn();
-          try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
-        }
-      }
-
-   async function onAudioChange() {
-  const f = audioInput && audioInput.files && audioInput.files[0];
-  if (!f) {
-    if (audioName) audioName.textContent = "Dosya seçilmedi";
-    uploads.audio = { status:"empty", url:"", name:"" };
-    setStatus(audioStatus, "empty");
-    syncAudioClearBtn();
-    return;
-  }
-
-  if (audioName) audioName.textContent = "Yükleniyor…";
-  uploads.audio = { status:"uploading", url:"", name: f.name || "" };
-  setStatus(audioStatus, "uploading");
-  syncAudioClearBtn();
-
-  try {
-    const out = await uploadToR2(f, { app:"atmo", kind:"audio" });
-    uploads.audio = { status:"ready", url: out.url, name: out.name || f.name || "" };
-    if (audioName) audioName.textContent = uploads.audio.name;
-    setStatus(audioStatus, "ready");
-    syncAudioClearBtn();
-  } catch (e) {
-    console.error("[ATM][PRO] audio upload error:", e);
-    uploads.audio = { status:"error", url:"", name: f.name || "" };
-    if (audioName) audioName.textContent = "Yükleme hatası";
-    setStatus(audioStatus, "error");
-    syncAudioClearBtn();
-    try { window.toast?.error?.("Audio yükleme hatası"); } catch {}
-  }
-}
-
-      if (logoInput) {
-        logoInput.addEventListener("change", onLogoChange);
-      }
-      if (imageInput) {
-        imageInput.addEventListener("change", onImageChange);
-      }
-      if (audioInput) {
-        audioInput.addEventListener("change", onAudioChange);
-      }
-     if (logoClearBtn) {
-  logoClearBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (logoInput) logoInput.value = "";
-    uploads.logo = { status:"empty", url:"", name:"" };
-
-    if (logoName) logoName.textContent = "Dosya seçilmedi";
-    setStatus(logoStatus, "empty");
-    syncLogoClearBtn();
-    try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-  });
-}
-
-if (imageClearBtn) {
-  imageClearBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (imageInput) imageInput.value = "";
-    uploads.image = { status:"empty", url:"", name:"" };
-
-    if (imageName) imageName.textContent = "Dosya seçilmedi";
-    setStatus(imageStatus, "empty");
-    syncImageClearBtn();
-  });
-}
-
-if (audioClearBtn) {
-  audioClearBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (audioInput) audioInput.value = "";
-    uploads.audio = { status:"empty", url:"", name:"" };
-
-    if (audioName) audioName.textContent = "Dosya seçilmedi";
-    setStatus(audioStatus, "empty");
-    syncAudioClearBtn();
-  });
-}
-      // İlk render: state’ten doldur (sayfa refresh’te)
- try {
-  if (uploads.logo?.status === "ready" && uploads.logo?.name && logoName) {
-    logoName.textContent = uploads.logo.name;
-    setStatus(logoStatus, "ready");
-    syncLogoClearBtn();
-  }
-
-  if (uploads.image?.status === "ready" && uploads.image?.name && imageName) {
-    imageName.textContent = uploads.image.name;
-    setStatus(imageStatus, "ready");
-    syncImageClearBtn();
-  }
-
-  if (uploads.audio?.status === "ready" && uploads.audio?.name && audioName) {
-    audioName.textContent = uploads.audio.name;
-    setStatus(audioStatus, "ready");
-    syncAudioClearBtn();
-  }
-} catch {}
-    })();
-  </script>
+  </div><!-- /#atmSuperPromptCard -->
 
   <!-- (2) LIGHT · EXPORT · MOOD -->
- <div class="card" id="atmProMoodExport" style="margin-top:14px;">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Işık · Export · Duygu</div>
-      <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
-      <div style="margin-top:8px;font-size:13px;line-height:1.5;opacity:.78;">
-        Süre uzadıkça ve logo, müzik, görsel eklendikçe hazırlık süresi artabilir. Video yaklaşık 5–10 dakikada hazır olur.
+  <div class="card" id="atmProMoodExport" style="margin-top:14px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Işık · Export · Duygu</div>
+        <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
+        <div style="margin-top:8px;font-size:13px;line-height:1.5;opacity:.78;">
+          Süre uzadıkça ve logo, müzik, görsel eklendikçe hazırlık süresi artabilir. Video yaklaşık 5–10 dakikada hazır olur.
+        </div>
       </div>
     </div>
-  </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
 
@@ -970,44 +473,572 @@ if (audioClearBtn) {
 
     </div>
   </div>
-<!-- (3) DETAIL EFFECTS + LUT -->
-<div class="card" id="atmProDetails" style="margin-top:14px;">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Detay Efektler</div>
-      <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+
+  <!-- (3) DETAIL EFFECTS + LUT -->
+  <div class="card" id="atmProDetails" style="margin-top:14px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Detay Efektler</div>
+        <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+      </div>
+    </div>
+
+    <div class="atmProFxGrid">
+      <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
+      <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
+      <label class="atmFxItem"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
+
+      <label class="atmFxItem"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
+      <label class="atmFxItem"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
+      <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+    </div>
+
+    <div class="atmLutRow">
+      <div class="atmLutLabel">🎨 Color Grade / LUT</div>
+      <select id="atmProLut" class="atmLutSelect">
+        <option value="" selected>Kapalı</option>
+        <option value="warm">Sıcak</option>
+        <option value="cold">Soğuk</option>
+        <option value="cinematic">Sinematik</option>
+        <option value="lofi">Lo-fi</option>
+      </select>
     </div>
   </div>
 
-  <div class="atmProFxGrid">
-    <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
-    <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
-    <label class="atmFxItem"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
+  <!-- (4) PRO MEDIA / REFS -->
+  <div class="card atmProRefsCard" style="margin-top:14px;">
+    <div class="atmProRefs">
 
-    <label class="atmFxItem"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
-    <label class="atmFxItem"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
-    <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+      <div class="atmProRefsHead atmProRefsHead--triple">
+        <div class="atmProRefTop">
+          <div class="atmProRefsTitle">Ana Görsel</div>
+          <div class="atmCreditInline atmCreditInline--center">
+            <span class="atmCreditBadge">Ücretsiz</span>
+          </div>
+        </div>
+
+        <div class="atmProRefTop">
+          <div class="atmProRefsTitle">Audio Yükle</div>
+          <div class="atmCreditInline atmCreditInline--center">
+            <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+          </div>
+        </div>
+
+        <div class="atmProRefTop">
+          <div class="atmProRefsTitle">Logo Yükle</div>
+          <div class="atmCreditInline atmCreditInline--center">
+            <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="atmProRefsBtns">
+        <label class="btn atmFileBtn" style="cursor:pointer;">
+          <input type="file" id="atmProRefImageFile" accept="image/*" hidden>
+          🏞️ Resim Seç
+        </label>
+
+        <label class="btn atmFileBtn" style="cursor:pointer;">
+          <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+          🎵 Audio Seç
+        </label>
+
+        <label class="btn atmFileBtn" style="cursor:pointer;">
+          <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+          🖼️ Logo Seç
+        </label>
+      </div>
+
+      <div class="atmProRefsMeta">
+        <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+          <span class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+          <button
+            type="button"
+            id="atmProRefImageClear"
+            aria-label="Yüklenen resmi kaldır"
+            title="Resmi kaldır"
+            style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+          >
+            ×
+          </button>
+        </label>
+
+        <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+          <span class="atmFileName" id="atmProAudioFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+          <button
+            type="button"
+            id="atmProAudioClear"
+            aria-label="Yüklenen audioyu kaldır"
+            title="Audioyu kaldır"
+            style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+          >
+            ×
+          </button>
+        </label>
+
+        <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+          <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+          <button
+            type="button"
+            id="atmProLogoClear"
+            aria-label="Yüklenen logoyu kaldır"
+            title="Logoyu kaldır"
+            style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+          >
+            ×
+          </button>
+        </label>
+      </div>
+
+      <div class="atmProRefsSelects">
+        <div class="atmProRefSelectCol">
+          <select id="atmProLogoPos" class="input atmProSelect">
+            <option value="tl">Sol Üst</option>
+            <option value="tr">Sağ Üst</option>
+            <option value="bl">Sol Alt</option>
+            <option value="br" selected>Sağ Alt</option>
+            <option value="center_small">Ortada (küçük)</option>
+          </select>
+        </div>
+
+        <div class="atmProRefSelectCol">
+          <select id="atmProAudioMode" class="input atmProSelect">
+            <option value="none" selected>Ses yok</option>
+            <option value="embed">MP4 içine ekle</option>
+          </select>
+        </div>
+
+        <div class="atmProRefSelectCol"></div>
+      </div>
+
+      <div class="atmProRefsBottom">
+        <div id="atmProLogoStatus"
+             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+          Hazır ✓
+        </div>
+        <div id="atmProRefImageStatus"
+             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+          Hazır ✓
+        </div>
+        <div id="atmProAudioStatus"
+             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+          Hazır ✓
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <div class="atmLutRow">
-    <div class="atmLutLabel">🎨 Color Grade / LUT</div>
-    <select id="atmProLut" class="atmLutSelect">
-      <option value="" selected>Kapalı</option>
-      <option value="warm">Sıcak</option>
-      <option value="cold">Soğuk</option>
-      <option value="cinematic">Sinematik</option>
-      <option value="lofi">Lo-fi</option>
-    </select>
+  <style>
+    .atmProRefsCard .atmProRefs{
+      padding:4px 0 0;
+    }
+
+    .atmProRefsHead{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:20px;
+      margin-bottom:18px;
+      align-items:start;
+    }
+
+    .atmProRefTop{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      text-align:center;
+      min-width:0;
+    }
+
+    .atmProRefsTitle{
+      font-weight:700;
+      opacity:.92;
+      text-align:center;
+      line-height:1.2;
+      min-height:32px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .atmProRefsBtns{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:24px;
+      align-items:start;
+    }
+
+    .atmProRefsBtns .atmFileBtn{
+      width:100%;
+      justify-content:center;
+    }
+
+    .atmProRefsMeta{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:24px;
+      margin-top:16px;
+      align-items:start;
+      text-align:center;
+    }
+
+    .atmProRefsMeta .atmFileMeta{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-align:center;
+    }
+
+    .atmProRefsMeta .atmFileName{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      text-align:center;
+    }
+
+    .atmProRefsSelects{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:24px;
+      margin-top:26px;
+      align-items:start;
+    }
+
+    .atmProRefSelectCol{
+      min-width:0;
+      display:flex;
+      align-items:flex-start;
+    }
+
+    .atmProSelect{
+      width:100%;
+      min-width:0;
+      display:block;
+      position:static;
+      margin-top:0;
+    }
+
+    .atmProRefsBottom{
+      display:flex;
+      gap:12px;
+      margin-top:18px;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width: 980px){
+      .atmProRefsHead,
+      .atmProRefsBtns,
+      .atmProRefsMeta,
+      .atmProRefsSelects{
+        grid-template-columns:1fr;
+        gap:14px;
+      }
+
+      .atmProRefsBottom{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
+
+  <script>
+    (() => {
+      const qs = (s, r=document) => r.querySelector(s);
+
+      window.__ATM_V2__ = window.__ATM_V2__ || {};
+      window.__ATM_V2__.uploads = window.__ATM_V2__.uploads || {
+        image: { status: "empty", url: "", name: "" },
+        logo:  { status: "empty", url: "", name: "" },
+        audio: { status: "empty", url: "", name: "" }
+      };
+
+      const uploads = window.__ATM_V2__.uploads;
+
+      const setStatus = (el, status) => {
+        if (!el) return;
+        if (status === "ready") {
+          el.style.display = "";
+          el.textContent = "Hazır ✓";
+          el.style.border = "1px solid rgba(120,255,190,.22)";
+          el.style.background = "rgba(120,255,190,.08)";
+        } else if (status === "uploading") {
+          el.style.display = "";
+          el.textContent = "Yükleniyor…";
+          el.style.border = "1px solid rgba(255,255,255,.14)";
+          el.style.background = "rgba(255,255,255,.06)";
+        } else if (status === "error") {
+          el.style.display = "";
+          el.textContent = "Hata";
+          el.style.border = "1px solid rgba(255,120,120,.25)";
+          el.style.background = "rgba(255,120,120,.10)";
+        } else {
+          el.style.display = "none";
+        }
+      };
+
+      async function presignR2({ app, kind, filename, contentType }) {
+        const res = await fetch("/api/r2/presign-put", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            app: app || "atmo",
+            kind,
+            filename,
+            contentType
+          })
+        });
+
+        if (!res.ok) throw new Error("presign_failed");
+        const data = await res.json();
+        if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
+
+        const uploadUrl = data.uploadUrl || data.upload_url;
+        const publicUrl = data.publicUrl || data.public_url || data.url;
+
+        if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
+        return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
+      }
+
+      async function uploadToR2(file, { app="atmo", kind }) {
+        const contentType = file.type || "application/octet-stream";
+        const filename = file.name || `${kind}-${Date.now()}`;
+
+        const { uploadUrl, publicUrl } = await presignR2({
+          app,
+          kind,
+          filename,
+          contentType
+        });
+
+        const put = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": contentType },
+          body: file
+        });
+
+        if (!put.ok) throw new Error("r2_put_failed");
+        return { url: publicUrl, name: filename };
+      }
+
+      const logoInput   = qs("#atmProLogoFile");
+      const imageInput  = qs("#atmProRefImageFile");
+      const audioInput  = qs("#atmProAudioFile");
+
+      const logoName    = qs("#atmProLogoFileName");
+      const imageName   = qs("#atmProRefImageFileName");
+      const audioName   = qs("#atmProAudioFileName");
+
+      const logoStatus  = qs("#atmProLogoStatus");
+      const imageStatus = qs("#atmProRefImageStatus");
+      const audioStatus = qs("#atmProAudioStatus");
+
+      const logoClearBtn  = qs("#atmProLogoClear");
+      const imageClearBtn = qs("#atmProRefImageClear");
+      const audioClearBtn = qs("#atmProAudioClear");
+
+      const posSel = qs("#atmProLogoPos");
+      if (posSel) {
+        posSel.addEventListener("change", () => {
+          try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+        });
+        try { window.__ATM_V2__.logoPos = posSel.value; } catch {}
+      }
+
+      function syncLogoClearBtn() {
+        if (!logoClearBtn) return;
+        logoClearBtn.style.display = uploads.logo?.status === "ready" ? "inline-grid" : "none";
+        logoClearBtn.style.placeItems = "center";
+      }
+
+      function syncImageClearBtn() {
+        if (!imageClearBtn) return;
+        imageClearBtn.style.display = uploads.image?.status === "ready" ? "inline-grid" : "none";
+        imageClearBtn.style.placeItems = "center";
+      }
+
+      function syncAudioClearBtn() {
+        if (!audioClearBtn) return;
+        audioClearBtn.style.display = uploads.audio?.status === "ready" ? "inline-grid" : "none";
+        audioClearBtn.style.placeItems = "center";
+      }
+
+      async function onLogoChange() {
+        const f = logoInput && logoInput.files && logoInput.files[0];
+        if (!f) {
+          if (logoName) logoName.textContent = "Dosya seçilmedi";
+          uploads.logo = { status:"empty", url:"", name:"" };
+          setStatus(logoStatus, "empty");
+          syncLogoClearBtn();
+          try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+          return;
+        }
+
+        if (logoName) logoName.textContent = "Yükleniyor…";
+        uploads.logo = { status:"uploading", url:"", name: f.name || "" };
+        setStatus(logoStatus, "uploading");
+        syncLogoClearBtn();
+
+        try {
+          const out = await uploadToR2(f, { app:"atmo", kind:"logo" });
+          uploads.logo = { status:"ready", url: out.url, name: out.name || f.name || "" };
+          if (logoName) logoName.textContent = uploads.logo.name;
+          setStatus(logoStatus, "ready");
+          syncLogoClearBtn();
+          window.__ATMO_LOGO_PUBLIC_URL__ = out.url;
+        } catch (e) {
+          console.error("[ATM][PRO] logo upload error:", e);
+          uploads.logo = { status:"error", url:"", name: f.name || "" };
+          if (logoName) logoName.textContent = "Yükleme hatası";
+          setStatus(logoStatus, "error");
+          syncLogoClearBtn();
+          try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
+        }
+      }
+
+      async function onImageChange() {
+        const f = imageInput && imageInput.files && imageInput.files[0];
+        if (!f) {
+          if (imageName) imageName.textContent = "Dosya seçilmedi";
+          uploads.image = { status:"empty", url:"", name:"" };
+          setStatus(imageStatus, "empty");
+          syncImageClearBtn();
+          return;
+        }
+
+        if (imageName) imageName.textContent = "Yükleniyor…";
+        uploads.image = { status:"uploading", url:"", name: f.name || "" };
+        setStatus(imageStatus, "uploading");
+        syncImageClearBtn();
+
+        try {
+          const out = await uploadToR2(f, { app:"atmo", kind:"image" });
+          uploads.image = { status:"ready", url: out.url, name: out.name || f.name || "" };
+          if (imageName) imageName.textContent = uploads.image.name;
+          setStatus(imageStatus, "ready");
+          syncImageClearBtn();
+        } catch (e) {
+          console.error("[ATM][PRO] image upload error:", e);
+          uploads.image = { status:"error", url:"", name: f.name || "" };
+          if (imageName) imageName.textContent = "Yükleme hatası";
+          setStatus(imageStatus, "error");
+          syncImageClearBtn();
+          try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
+        }
+      }
+
+      async function onAudioChange() {
+        const f = audioInput && audioInput.files && audioInput.files[0];
+        if (!f) {
+          if (audioName) audioName.textContent = "Dosya seçilmedi";
+          uploads.audio = { status:"empty", url:"", name:"" };
+          setStatus(audioStatus, "empty");
+          syncAudioClearBtn();
+          return;
+        }
+
+        if (audioName) audioName.textContent = "Yükleniyor…";
+        uploads.audio = { status:"uploading", url:"", name: f.name || "" };
+        setStatus(audioStatus, "uploading");
+        syncAudioClearBtn();
+
+        try {
+          const out = await uploadToR2(f, { app:"atmo", kind:"audio" });
+          uploads.audio = { status:"ready", url: out.url, name: out.name || f.name || "" };
+          if (audioName) audioName.textContent = uploads.audio.name;
+          setStatus(audioStatus, "ready");
+          syncAudioClearBtn();
+        } catch (e) {
+          console.error("[ATM][PRO] audio upload error:", e);
+          uploads.audio = { status:"error", url:"", name: f.name || "" };
+          if (audioName) audioName.textContent = "Yükleme hatası";
+          setStatus(audioStatus, "error");
+          syncAudioClearBtn();
+          try { window.toast?.error?.("Audio yükleme hatası"); } catch {}
+        }
+      }
+
+      if (logoInput) logoInput.addEventListener("change", onLogoChange);
+      if (imageInput) imageInput.addEventListener("change", onImageChange);
+      if (audioInput) audioInput.addEventListener("change", onAudioChange);
+
+      if (logoClearBtn) {
+        logoClearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (logoInput) logoInput.value = "";
+          uploads.logo = { status:"empty", url:"", name:"" };
+
+          if (logoName) logoName.textContent = "Dosya seçilmedi";
+          setStatus(logoStatus, "empty");
+          syncLogoClearBtn();
+          try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+        });
+      }
+
+      if (imageClearBtn) {
+        imageClearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (imageInput) imageInput.value = "";
+          uploads.image = { status:"empty", url:"", name:"" };
+
+          if (imageName) imageName.textContent = "Dosya seçilmedi";
+          setStatus(imageStatus, "empty");
+          syncImageClearBtn();
+        });
+      }
+
+      if (audioClearBtn) {
+        audioClearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (audioInput) audioInput.value = "";
+          uploads.audio = { status:"empty", url:"", name:"" };
+
+          if (audioName) audioName.textContent = "Dosya seçilmedi";
+          setStatus(audioStatus, "empty");
+          syncAudioClearBtn();
+        });
+      }
+
+      try {
+        if (uploads.logo?.status === "ready" && uploads.logo?.name && logoName) {
+          logoName.textContent = uploads.logo.name;
+          setStatus(logoStatus, "ready");
+          syncLogoClearBtn();
+        }
+
+        if (uploads.image?.status === "ready" && uploads.image?.name && imageName) {
+          imageName.textContent = uploads.image.name;
+          setStatus(imageStatus, "ready");
+          syncImageClearBtn();
+        }
+
+        if (uploads.audio?.status === "ready" && uploads.audio?.name && audioName) {
+          audioName.textContent = uploads.audio.name;
+          setStatus(audioStatus, "ready");
+          syncAudioClearBtn();
+        }
+      } catch {}
+    })();
+  </script>
+
+  <!-- ✅ CTA PRO (CARD DIŞINDA) -->
+  <div class="atmPersCta atmPersCta--pro" style="margin-top:14px;">
+    <button class="atmBigCtaBtn atmBigCtaBtn--pro"
+            type="button"
+            data-atm-generate
+            data-atm-mode="pro">
+      🎬 Süper Atmosfer Video Oluştur (45 Kredi)
+    </button>
   </div>
 </div>
-
-<!-- ✅ CTA PRO (CARD DIŞINDA) -->
-<div class="atmPersCta atmPersCta--pro" style="margin-top:14px;">
-  <button class="atmBigCtaBtn atmBigCtaBtn--pro"
-          type="button"
-          data-atm-generate
-          data-atm-mode="pro">
-    🎬 Süper Atmosfer Video Oluştur (45 Kredi)
-  </button>
-</div>
-  </div>
