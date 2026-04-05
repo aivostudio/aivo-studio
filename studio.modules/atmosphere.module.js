@@ -750,7 +750,13 @@ function isAtmoPolicyBlocked(raw) {
       kind === "audio" ? "atmAudioFileName" :
       "";
 
+    const clearId =
+      kind === "logo" ? "atmLogoClear" :
+      kind === "audio" ? "atmAudioClear" :
+      "";
+
     const nameEl = inputId ? document.getElementById(inputId) : null;
+    const clearEl = clearId ? document.getElementById(clearId) : null;
     const badgeEl = qs(`#${badgeId}`, r);
     const prevEl = qs(`#${prevId}`, r);
 
@@ -759,6 +765,10 @@ function isAtmoPolicyBlocked(raw) {
       else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
       else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
       else nameEl.textContent = next.name || "Dosya seçilmedi";
+    }
+
+    if (clearEl) {
+      clearEl.style.display = next.status === "ready" ? "inline-flex" : "none";
     }
 
     if (badgeEl) {
