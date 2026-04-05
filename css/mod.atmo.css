@@ -1135,3 +1135,26 @@ div[style*="grid-template-columns:1fr 320px"]{
     gap:20px;
   }
 }
+/* ===== ATMO BASIC MODE — CENTER ALL CARD HEADERS ===== */
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .card-header{
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .card-header > div{
+  width: 100% !important;
+  text-align: center !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .card-title{
+  width: 100% !important;
+  text-align: center !important;
+}
+
+section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] .card-subtitle{
+  width: 100% !important;
+  text-align: center !important;
+}
