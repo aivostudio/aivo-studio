@@ -889,7 +889,7 @@ updateStudioSummary(rootState, studioRoot);
 
 if (!file) return;
 
- rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
+rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
   .then((publicUrl) => {
     rootState.voiceFileUrl = String(publicUrl || '').trim();
     rootState.voiceFileUploadStatus = 'ready';
