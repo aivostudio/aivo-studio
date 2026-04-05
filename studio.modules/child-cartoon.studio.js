@@ -765,30 +765,32 @@ function bindStudioLogoUpload(rootState, studioRoot) {
 
     if (!file) return;
 
-    rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
-      .then((publicUrl) => {
-        rootState.logoFileUrl = String(publicUrl || '').trim();
-        rootState.logoFileUploadStatus = 'ready';
-        rootState.logoFileUploadError = '';
+ rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
+  .then((publicUrl) => {
+    rootState.logoFileUrl = String(publicUrl || '').trim();
+    rootState.logoFileUploadStatus = 'ready';
+    rootState.logoFileUploadError = '';
 
-        updateStudioLogoUploadStatusUI(rootState, studioRoot);
-        updateStudioSummary(rootState, studioRoot);
+    updateStudioLogoUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
+    saveStudioState(rootState);
 
-        console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
-        return rootState.logoFileUrl;
-      })
-      .catch((err) => {
-        rootState.logoFileUrl = '';
-        rootState.logoFileUploadStatus = 'error';
-        rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
+    console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
+    return rootState.logoFileUrl;
+  })
+  .catch((err) => {
+    rootState.logoFileUrl = '';
+    rootState.logoFileUploadStatus = 'error';
+    rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
 
-        updateStudioLogoUploadStatusUI(rootState, studioRoot);
-        updateStudioSummary(rootState, studioRoot);
+    updateStudioLogoUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
+    saveStudioState(rootState);
 
-        console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
-        alert(rootState.logoFileUploadError);
-        throw err;
-      });
+    console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
+    alert(rootState.logoFileUploadError);
+    throw err;
+  });
   });
 }
 function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
