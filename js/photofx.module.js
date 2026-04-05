@@ -28,20 +28,19 @@
     "suratini kullan"
   ];
 
-  const PFX_HARD_BLOCK_PATTERNS = [
-    /\bgibi\b/i,
-    /\btarzında\b/i,
-    /\btarzinda\b/i,
-    /\bstilinde\b/i,
-    /\bin the style of\b/i,
-    /\blike\b/i,
-    /\bbirebir\b/i,
-    /\baynısı\b/i,
-    /\baynisi\b/i,
-    /\bface of\b/i,
-    /\bwith the face of\b/i,
-    /\bimpersonat(e|ion)\b/i
-  ];
+const PFX_HARD_BLOCK_PATTERNS = [
+  /\bgibi\b/i,
+  /\btarzında\b/i,
+  /\btarzinda\b/i,
+  /\bstilinde\b/i,
+  /\bin the style of\b/i,
+  /\bbirebir\b/i,
+  /\baynısı\b/i,
+  /\baynisi\b/i,
+  /\bface of\b/i,
+  /\bwith the face of\b/i,
+  /\bimpersonat(e|ion)\b/i
+];
 
  const PUBLIC_FIGURE_TERMS = [
   "recep tayyip erdogan",
