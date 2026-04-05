@@ -878,15 +878,16 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     input.addEventListener('change', async () => {
       const file = input.files?.[0] || null;
 
-      rootState.voiceFile = file;
-      rootState.voiceFileName = file ? String(file.name || '') : '';
-      rootState.voiceFileUrl = '';
-      rootState.voiceFileUploadPromise = null;
-      rootState.voiceFileUploadError = '';
-      rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
-      updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+   rootState.voiceFile = file;
+rootState.voiceFileName = file ? String(file.name || '') : '';
+rootState.voiceFileUrl = '';
+rootState.voiceFileUploadPromise = null;
+rootState.voiceFileUploadError = '';
+rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
+updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+updateStudioSummary(rootState, studioRoot);
 
-      if (!file) return;
+if (!file) return;
 
  rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
   .then((publicUrl) => {
