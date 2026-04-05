@@ -700,7 +700,6 @@
     chip.appendChild(clearBtn);
     node.appendChild(chip);
   }
-
   function clearFileSelection(root, key) {
     const state = getState(root);
     if (!state) return;
@@ -734,7 +733,9 @@
       if (input) input.value = "";
     }
 
+    resetPhotoFxPolicyUI(root);
     renderUploads(root);
+    syncCreateButton(root);
   }
 
   function getSelectedPresets(root) {
