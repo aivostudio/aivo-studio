@@ -139,17 +139,38 @@ async function loadStudioState() {
 
     return {
       format: String(data?.format || '16:9'),
-      scenes
+      scenes,
+
+      voice: {
+        fileName: String(data?.voice?.fileName || ''),
+        fileUrl: String(data?.voice?.fileUrl || ''),
+        uploadStatus: String(data?.voice?.uploadStatus || 'idle')
+      },
+
+      logo: {
+        fileName: String(data?.logo?.fileName || ''),
+        fileUrl: String(data?.logo?.fileUrl || ''),
+        uploadStatus: String(data?.logo?.uploadStatus || 'idle')
+      }
     };
   } catch (err) {
     console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
     return {
       format: '16:9',
-      scenes: []
+      scenes: [],
+      voice: {
+        fileName: '',
+        fileUrl: '',
+        uploadStatus: 'idle'
+      },
+      logo: {
+        fileName: '',
+        fileUrl: '',
+        uploadStatus: 'idle'
+      }
     };
   }
 }
-
   function ensureStudioPreviewModal(studioRoot) {
     let modal = document.querySelector('[data-studio-preview-modal]');
 
