@@ -1021,6 +1021,14 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
       .filter((scene) => scene.included)
       .reduce((sum, scene) => sum + (Number(scene.duration) || 0), 0);
 
+    const hasVoiceFile = !!rootState?.voiceFile;
+    const hasLogoFile = !!rootState?.logoFile;
+
+    const creditCost =
+      (Math.max(1, selectedCount) * 10) +
+      (hasVoiceFile ? 10 : 0) +
+      (hasLogoFile ? 10 : 0);
+
     if (summary) {
       const items = summary.querySelectorAll('span');
 
@@ -1042,10 +1050,9 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
 
     if (!exportBtn) return;
 
-    const creditCost = Math.max(1, selectedCount) * 10;
     exportBtn.setAttribute('data-credit-cost', String(creditCost));
 
-    if (!exportBtn.disabled || !exportBtn.classList.contains('is-loading')) {
+    if (!exportBtn.classList.contains('is-loading')) {
       exportBtn.textContent = `Paylaşmaya Hazır Çıktı Al (${creditCost} Kredi)`;
     }
   }
