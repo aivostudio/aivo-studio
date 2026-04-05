@@ -1586,7 +1586,7 @@ function isAtmoPolicyBlocked(raw) {
       const root = getAtmoPanelRoot();
       if (!root) return;
 
-      const logoClearBtn = closestWithin(e.target, "#atmProLogoClear", root);
+          const logoClearBtn = closestWithin(e.target, "#atmProLogoClear", root);
       if (logoClearBtn) {
         e.preventDefault();
         e.stopPropagation();
@@ -1603,6 +1603,7 @@ function isAtmoPolicyBlocked(raw) {
 
         setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
         try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+        syncAtmoGenerateCredits(root);
         return;
       }
 
@@ -1622,6 +1623,7 @@ function isAtmoPolicyBlocked(raw) {
           root;
 
         setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
+        syncAtmoGenerateCredits(root);
         return;
       }
 
@@ -1641,6 +1643,7 @@ function isAtmoPolicyBlocked(raw) {
           root;
 
         setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
+        syncAtmoGenerateCredits(root);
         return;
       }
 
