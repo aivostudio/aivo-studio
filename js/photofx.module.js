@@ -485,24 +485,39 @@
       .trim();
   }
 
+  function buildPhotoFxPolicyPhraseRegex(term) {
+    const normalized = normalizePhotoFxPolicyText(term);
+    if (!normalized) return null;
+
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\s+");
+
+    return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+  }
+
   function isPhotoFxPolicyBlocked(raw) {
     const text = normalizePhotoFxPolicyText(raw);
 
     const hasBlockedTerm =
-      PFX_HARD_BLOCK_TERMS.some((term) =>
-        text.includes(normalizePhotoFxPolicyText(term))
-      ) ||
-      PFX_PUBLIC_FIGURE_TERMS.some((term) =>
-        text.includes(normalizePhotoFxPolicyText(term))
-      ) ||
-      PFX_ARTIST_NAME_TERMS.some((term) =>
-        text.includes(normalizePhotoFxPolicyText(term))
-      );
+      PFX_HARD_BLOCK_TERMS.some((term) => {
+        const rx = buildPhotoFxPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      PUBLIC_FIGURE_TERMS.some((term) => {
+        const rx = buildPhotoFxPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      PFX_ARTIST_NAME_TERMS.some((term) => {
+        const rx = buildPhotoFxPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      });
 
     const hasBlockedPattern = PFX_HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
     return !!raw && (hasBlockedTerm || hasBlockedPattern);
   }
-
   function ensurePhotoFxPolicyNote(root, createBtn) {
     if (!root || !createBtn) return null;
 
