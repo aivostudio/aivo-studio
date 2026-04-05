@@ -151,69 +151,77 @@
               </label>
             </div>
 
-            <!-- 2) Logo -->
-            <div class="atmPersCol">
-              <div class="form-label">Logo</div>
+         <!-- 2) Logo -->
+<div class="atmPersCol atmPersCol--credit">
+  <div class="form-label">Logo</div>
 
-              <!-- ✅ Buton + Thumbnail aynı satır -->
-              <div class="atmLogoTop">
-                <label class="btn atmFileBtn" style="cursor:pointer;">
-                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
-                  🏷️ Logo Seç
-                </label>
+  <div class="atmCreditInline atmCreditInline--center">
+    <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+  </div>
 
-                <!-- ✅ Thumbnail slot: SABİT, asla alta itmez -->
-                <div class="atmLogoThumb" aria-hidden="true">
-                  <img data-atmo-logo-target alt="" />
-                </div>
-              </div>
+  <!-- ✅ Buton + Thumbnail aynı satır -->
+  <div class="atmLogoTop">
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmLogoFile" accept="image/*" hidden>
+      🏷️ Logo Seç
+    </label>
 
-              <!-- ✅ Dosya adı tek satır / ellipsis -->
-              <div class="atmFileMeta">
-                <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
-              </div>
+    <!-- ✅ Thumbnail slot: SABİT, asla alta itmez -->
+    <div class="atmLogoThumb" aria-hidden="true">
+      <img data-atmo-logo-target alt="" />
+    </div>
+  </div>
 
-              <div class="atmRow2">
-                <select id="atmLogoPos" class="input">
-                  <option value="tl">Sol Üst</option>
-                  <option value="tr">Sağ Üst</option>
-                  <option value="bl">Sol Alt</option>
-                  <option value="br" selected>Sağ Alt</option>
-                  <option value="center_small">Ortada (küçük)</option>
-                </select>
+  <!-- ✅ Dosya adı tek satır / ellipsis -->
+  <div class="atmFileMeta">
+    <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+  </div>
 
-                <select id="atmLogoSize" class="input">
-                  <option value="sm" selected>Küçük</option>
-                  <option value="md">Orta</option>
-                </select>
-              </div>
-            </div>
+  <div class="atmRow2">
+    <select id="atmLogoPos" class="input">
+      <option value="tl">Sol Üst</option>
+      <option value="tr">Sağ Üst</option>
+      <option value="bl">Sol Alt</option>
+      <option value="br" selected>Sağ Alt</option>
+      <option value="center_small">Ortada (küçük)</option>
+    </select>
 
-            <!-- 3) Audio -->
-            <div class="atmPersCol">
-              <div class="form-label">Müzik / Jingle</div>
+    <select id="atmLogoSize" class="input">
+      <option value="sm" selected>Küçük</option>
+      <option value="md">Orta</option>
+    </select>
+  </div>
+</div>
 
-              <label class="btn atmFileBtn" style="cursor:pointer;">
-                <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-                🎵 Audio Seç
-              </label>
+<!-- 3) Audio -->
+<div class="atmPersCol atmPersCol--credit">
+  <div class="form-label">Müzik / Jingle</div>
 
-              <div class="atmFileMeta">
-                <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
-              </div>
+  <div class="atmCreditInline atmCreditInline--center">
+    <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+  </div>
 
-              <div class="atmRow2">
-                <select id="atmAudioMode" class="input">
-                  <option value="none" selected>Ses yok</option>
-                  <option value="embed">MP4 içine ekle</option>
-                </select>
+  <label class="btn atmFileBtn" style="cursor:pointer;">
+    <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+    🎵 Audio Seç
+  </label>
 
-                <select id="atmAudioTrim" class="input">
-                  <option value="loop_to_fit" selected>Loop ile uydur</option>
-                  <option value="trim">Kırp</option>
-                </select>
-              </div>
-            </div>
+  <div class="atmFileMeta">
+    <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
+  </div>
+
+  <div class="atmRow2">
+    <select id="atmAudioMode" class="input">
+      <option value="none" selected>Ses yok</option>
+      <option value="embed">MP4 içine ekle</option>
+    </select>
+
+    <select id="atmAudioTrim" class="input">
+      <option value="loop_to_fit" selected>Loop ile uydur</option>
+      <option value="trim">Kırp</option>
+    </select>
+  </div>
+</div>
 
             <!-- CTA (BASIC) -->
             <div class="atmPersCta">
