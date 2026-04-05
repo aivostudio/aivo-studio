@@ -1163,22 +1163,22 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"
   display: flex !important;
   flex-wrap: nowrap !important;
   justify-content: flex-start !important;
-  gap: 10px !important;
+  gap: 8px !important;
 }
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
   flex: 0 0 auto !important;
   min-width: 0 !important;
-  padding: 9px 18px !important;
+  padding: 8px 15px !important;
   justify-content: center !important;
   text-align: center !important;
-  font-size: 12px !important;
+  font-size: 11.5px !important;
 }
 
 @media (max-width: 1200px){
   section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
-    padding: 8px 15px !important;
-    font-size: 11.5px !important;
+    padding: 8px 13px !important;
+    font-size: 11px !important;
   }
 }
 
