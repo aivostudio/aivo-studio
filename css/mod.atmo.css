@@ -1034,6 +1034,10 @@ div[style*="grid-template-columns:1fr 320px"]{
 #atmProStyleCard .card-header{
   margin-bottom: 14px !important;
 }
+
+#atmProStyleCard .atmProStyleInner{
+  margin-top: 24px !important;
+}
 /* ===== ATM PRO STYLE CARD — CENTER HEADER + 2 COLUMN STACK ===== */
 #atmProStyleCard .card-header{
   display:flex !important;
