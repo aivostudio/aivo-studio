@@ -932,3 +932,39 @@ section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBott
     align-items:flex-start !important;
   }
 }
+/* ===== ATM PRO REFS ALIGN + PROMPT HEIGHT FIX ===== */
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard textarea#atmSuperPrompt{
+  min-height: 150px !important;
+  max-height: 220px !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsMeta{
+  text-align:center !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsMeta .atmFileMeta{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  text-align:center !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsMeta .atmFileName{
+  flex:0 1 auto !important;
+  min-width:0 !important;
+  text-align:center !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsSelects{
+  margin-top:32px !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsSelects .atmProRefSelectCol{
+  display:flex !important;
+  align-items:flex-start !important;
+}
+
+section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsSelects .atmProSelect{
+  margin-top:0 !important;
+}
