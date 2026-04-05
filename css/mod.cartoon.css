@@ -3510,7 +3510,7 @@
   visibility: hidden !important;
   height: 32px !important;
 }
-/* === BASIC MODE ONLY: STYLE SELECT DOWN ALIGN === */
+/* === BASIC MODE STYLE FINAL NUDGE === */
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] select[data-basic-style] {
-  margin-top: 50px !important;
+  margin-top: 18px !important;
 }
