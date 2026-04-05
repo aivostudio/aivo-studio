@@ -1473,7 +1473,6 @@ const builtEffects = {
     },
     true
   );
-
   function bindEvents(root) {
     if (!root || root.__photofxEventsBound) return;
     root.__photofxEventsBound = true;
