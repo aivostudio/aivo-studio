@@ -1151,6 +1151,7 @@ function isAtmoPolicyBlocked(raw) {
       state.imageFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
       await handleUpload(panel || root, "image", file);
+      syncAtmoGenerateCredits(root);
       return;
     }
 
@@ -1158,6 +1159,7 @@ function isAtmoPolicyBlocked(raw) {
       state.logoFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
       await handleUpload(panel || root, "logo", file);
+      syncAtmoGenerateCredits(root);
       return;
     }
 
@@ -1165,6 +1167,7 @@ function isAtmoPolicyBlocked(raw) {
       state.audioFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
       await handleUpload(panel || root, "audio", file);
+      syncAtmoGenerateCredits(root);
       return;
     }
 
@@ -1172,6 +1175,7 @@ function isAtmoPolicyBlocked(raw) {
       state.logoFile = file;
       const panel = e.target.closest('[data-mode-panel="pro"]');
       await handleUpload(panel || root, "logo", file);
+      syncAtmoGenerateCredits(root);
       return;
     }
 
@@ -1179,6 +1183,7 @@ function isAtmoPolicyBlocked(raw) {
       state.refImageFile = file;
       const panel = e.target.closest('[data-mode-panel="pro"]');
       await handleUpload(panel || root, "image", file);
+      syncAtmoGenerateCredits(root);
       return;
     }
 
@@ -1186,6 +1191,7 @@ function isAtmoPolicyBlocked(raw) {
       state.audioFile = file;
       const panel = e.target.closest('[data-mode-panel="pro"]');
       await handleUpload(panel || root, "audio", file);
+      syncAtmoGenerateCredits(root);
       return;
     }
 
