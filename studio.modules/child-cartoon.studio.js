@@ -1457,7 +1457,7 @@ const logoPos =
   }
 
   function bindStudioExportPayloadDebug(rootState, studioRoot) {
-    const button = qsAny(studioRoot, [
+     const button = qsAny(studioRoot, [
       '[data-studio-export]',
       '[data-studio-final-output]',
       '[data-studio-generate-final]',
@@ -1469,6 +1469,12 @@ const logoPos =
     if (!button) {
       console.warn('[CARTOON][STUDIO_EXPORT_BUTTON_NOT_FOUND]');
       return;
+    }
+
+    button.setAttribute('data-credit-cost', '10');
+
+    if (!button.disabled) {
+      button.textContent = 'Paylaşmaya Hazır Çıktı Al (10 Kredi)';
     }
 
     if (button.getAttribute('data-studio-export-bound') === 'true') {
