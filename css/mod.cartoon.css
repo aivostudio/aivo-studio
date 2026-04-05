@@ -3514,3 +3514,7 @@
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] select[data-basic-style] {
   margin-top: 38px !important;
 }
+/* === BASIC MODE STYLE LABEL DOWN FIX === */
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field-label--stack {
+  padding-top: 14px !important;
+}
