@@ -1906,14 +1906,22 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
       return true;
     }
 
-    const studioState = createStudioState();
-    const savedState = loadStudioState();
+  const studioState = createStudioState();
 
+ensureStudioPreviewModal(studioRoot);
+renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+
+loadStudioState()
+  .then((savedState) => {
     studioState.format = String(savedState?.format || '16:9');
     studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
 
-    ensureStudioPreviewModal(studioRoot);
     renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+    updateStudioSummary(studioState, studioRoot);
+  })
+  .catch((err) => {
+    console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
+  });
 
     bindStudioVideoUpload(
       studioState,
