@@ -669,20 +669,35 @@
       align-items:start;
     }
 
-    .atmProRefsBtns .atmFileBtn{
-      width:100%;
-      min-height:80px;
-      justify-content:center;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:24px;
-      background:linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
-      color:#fff;
-      font-weight:900;
-      font-size:18px;
-      box-shadow:
-        0 12px 24px rgba(139,92,246,.20),
-        inset 0 1px 0 rgba(255,255,255,.16);
-    }
+.atmProRefsBtns .atmFileBtn{
+  width:100%;
+  height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border:none;
+  border-radius:999px;
+
+  background:linear-gradient(90deg, #7c5cff 0%, #ff4db8 100%);
+  color:#fff;
+
+  font-weight:700;
+  font-size:15px;
+
+  box-shadow:
+    0 8px 20px rgba(124,92,255,.25),
+    0 0 24px rgba(255,77,184,.18);
+
+  transition:all .2s ease;
+}
+
+.atmProRefsBtns .atmFileBtn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 12px 28px rgba(124,92,255,.35),
+    0 0 32px rgba(255,77,184,.25);
+}
 
     .atmProRefsBtns .atmFileBtn:hover{
       border-color:rgba(255,255,255,.16);
