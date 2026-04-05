@@ -1758,11 +1758,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           return;
         }
 
-              const credit = String(
-          createBtn.getAttribute("data-credit-cost") ||
-          getPhotoFxEstimatedCredits(root)
-        );
-        const creditCost = Number(credit) || getPhotoFxEstimatedCredits(root);
+        const creditCost = getPhotoFxEstimatedCredits(root);
         const creditReason = "studio_photofx_generate";
 
         const creditRes = await fetch("/api/credits/consume", {
