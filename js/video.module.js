@@ -608,18 +608,89 @@ function ensureVideoPolicyNote(root, btn) {
   }
 
   // ===============================
-  // Duration clamp helper (Runway UI: 5 / 8 / 10)
+  // Duration + credit helpers (Video UI: 5 / 8 / 10)
   // ===============================
   function clampDuration(n) {
     const allowed = [5, 8, 10];
     const num = Number(n);
 
-    if (!Number.isFinite(num)) return 8;
+    if (!Number.isFinite(num)) return 5;
     if (allowed.includes(num)) return num;
 
     return allowed.reduce((prev, curr) =>
       Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev
     );
+  }
+
+  function getVideoMode(root) {
+    const activeTab =
+      root?.querySelector('[data-video-tab].is-active')?.dataset?.videoTab ||
+      root?.dataset?.videoMode ||
+      "text";
+
+    return activeTab === "image" ? "image" : "text";
+  }
+
+  function getVideoBaseCredit(duration) {
+    const d = clampDuration(duration);
+    if (d === 8) return 25;
+    if (d === 10) return 30;
+    return 20;
+  }
+
+  function getVideoCredit(root) {
+    const duration = clampDuration(Number(qs("#videoDuration", root)?.value || 5));
+    const mode = getVideoMode(root);
+    const audioEnabled = !!qs("#audioEnabled", root)?.checked;
+
+    if (mode === "image") {
+      return 0;
+    }
+
+    let total = getVideoBaseCredit(duration);
+
+    if (audioEnabled) {
+      total += 5;
+    }
+
+    return total;
+  }
+
+  function syncVideoCreditUI(root) {
+    if (!root) return;
+
+    const mode = getVideoMode(root);
+    const credit = getVideoCredit(root);
+
+    const textBtn = qs("#videoGenerateTextBtn", root);
+    const imageBtn = qs("#videoGenerateImageBtn", root);
+
+    const badgeCandidates = [
+      qs("[data-video-credit-badge]", root),
+      ...Array.from(root.querySelectorAll("span,div,strong,b"))
+    ];
+
+    const badgeEl = badgeCandidates.find((el) => {
+      const txt = String(el?.textContent || "").toLowerCase();
+      return txt.includes("kredi");
+    });
+
+    if (textBtn) {
+      textBtn.dataset.creditCost = String(credit);
+      textBtn.textContent =
+        mode === "image"
+          ? "🎬 Video Oluştur (Ücretsiz)"
+          : `🎬 Video Oluştur (${credit} Kredi)`;
+    }
+
+    if (imageBtn) {
+      imageBtn.dataset.creditCost = "0";
+      imageBtn.textContent = "🎬 Video Oluştur (Ücretsiz)";
+    }
+
+    if (badgeEl) {
+      badgeEl.textContent = mode === "image" ? "Ücretsiz" : `${credit} Kredi`;
+    }
   }
 
   // ===============================
@@ -666,7 +737,7 @@ function ensureVideoPolicyNote(root, btn) {
       if (!o) return false;
       if (o.type && o.type !== "video") return false;
       const app = o.meta?.app || o.app || o.module;
-      return !app || app === "video"; // app yoksa da kabul (geriye uyumluluk)
+      return !app || app === "video";
     });
   }
 
@@ -695,7 +766,6 @@ function ensureVideoPolicyNote(root, btn) {
         return;
       }
 
-      // backend error ise erken kır
       if (String(j.status || "").toLowerCase() === "error") {
         throw j.error || "video_job_error";
       }
@@ -712,7 +782,7 @@ function ensureVideoPolicyNote(root, btn) {
   }
 
   function buildCommonPayload(root) {
-    const durationRaw = Number(qs("#videoDuration", root)?.value || 8);
+    const durationRaw = Number(qs("#videoDuration", root)?.value || 5);
     const duration = clampDuration(durationRaw);
 
     return {
@@ -722,6 +792,7 @@ function ensureVideoPolicyNote(root, btn) {
       ratio: qs("#videoRatio", root)?.value || "16:9",
       resolution: Number(qs("#videoResolution", root)?.value || 720),
       audio: !!qs("#audioEnabled", root)?.checked,
+      credit_cost: getVideoCredit(root),
     };
   }
 
