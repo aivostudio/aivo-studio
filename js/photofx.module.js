@@ -1679,7 +1679,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         return;
       }
 
-      const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
+        const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
       if (presetCard && nextRoot.contains(presetCard)) {
         e.preventDefault();
 
@@ -1695,8 +1695,10 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         } else {
           nextState.presets = [...nextState.presets, preset];
         }
-      resetPhotoFxPolicyUI(nextRoot);
+
+        resetPhotoFxPolicyUI(nextRoot);
         renderPresets(nextRoot);
+        syncCreateButton(nextRoot);
       }
     },
     true
