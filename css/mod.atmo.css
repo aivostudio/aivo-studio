@@ -969,22 +969,29 @@ section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsSele
   margin-top:0 !important;
 }
 /* ===== ATM SUPER MODE — PRO REFS BUTTON COLOR OVERRIDE ===== */
-section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBtns .atmFileBtn{
-  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  border-radius: 18px !important;
-  color: #fff !important;
-  font-weight: 900 !important;
+section.main-panel[data-module="atmosphere"] .atmProRefsBtns .atmFileBtn{
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+  color: #fff;
+  font-weight: 900;
   box-shadow:
     0 12px 24px rgba(139,92,246,.20),
-    inset 0 1px 0 rgba(255,255,255,.16) !important;
+    inset 0 1px 0 rgba(255,255,255,.16);
 }
 
-section.main-panel[data-module="atmosphere"] #atmSuperPromptCard .atmProRefsBtns .atmFileBtn:hover{
-  background: linear-gradient(90deg, #9b6bff 0%, #f35cab 100%) !important;
-  border-color: rgba(255,255,255,.16) !important;
-  color: #fff !important;
+section.main-panel[data-module="atmosphere"] .atmProRefsBtns .atmFileBtn:hover{
+  border-color: rgba(255,255,255,.16);
+  background: linear-gradient(90deg, #9b6bff 0%, #f35cab 100%);
+  color: #fff;
   box-shadow:
     0 14px 28px rgba(139,92,246,.24),
-    inset 0 1px 0 rgba(255,255,255,.18) !important;
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+section.main-panel[data-module="atmosphere"] .atmProRefsBtns .atmFileBtn::before,
+section.main-panel[data-module="atmosphere"] .atmProRefsBtns .atmFileBtn::after{
+  content: none;
 }
