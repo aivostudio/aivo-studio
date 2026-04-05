@@ -1014,6 +1014,20 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     array.length = 0;
     copied.forEach((entry) => array.push(entry));
   }
+    function getStudioExportCreditCost(rootState) {
+    const selectedCount = Array.isArray(rootState?.scenes)
+      ? rootState.scenes.filter((scene) => scene?.included).length
+      : 0;
+
+    const hasVoiceFile = !!rootState?.voiceFile;
+    const hasLogoFile = !!rootState?.logoFile;
+
+    return (
+      (Math.max(1, selectedCount) * 10) +
+      (hasVoiceFile ? 10 : 0) +
+      (hasLogoFile ? 10 : 0)
+    );
+  }
   function updateStudioSummary(rootState, studioRoot) {
     const summary = studioRoot.querySelector('.studio-inline-summary');
     const selectedCount = rootState.scenes.filter((scene) => scene.included).length;
