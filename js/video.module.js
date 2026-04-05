@@ -1073,11 +1073,13 @@ async function createText() {
       textPromptEl.addEventListener("input", () => {
         resetVideoPolicyUI(root);
         updateText();
+        syncVideoCreditUI(root);
       });
 
       textPromptEl.addEventListener("change", () => {
         resetVideoPolicyUI(root);
         updateText();
+        syncVideoCreditUI(root);
       });
 
       updateText();
@@ -1088,14 +1090,15 @@ async function createText() {
 
       imagePromptEl.addEventListener("input", () => {
         resetVideoPolicyUI(root);
+        syncVideoCreditUI(root);
       });
 
       imagePromptEl.addEventListener("change", () => {
         resetVideoPolicyUI(root);
+        syncVideoCreditUI(root);
       });
     }
   }
-
   // ===============================
   // Tabs + Image upload UX (bind once per root)
   // ===============================
