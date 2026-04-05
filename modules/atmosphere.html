@@ -414,84 +414,85 @@
   </div>
 
   <!-- butonlar -->
-<div class="atmProRefsBtns">
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmProRefImageFile" accept="image/*" hidden>
-    🏞️ Resim Seç
-  </label>
+  <div class="atmProRefsBtns">
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProRefImageFile" accept="image/*" hidden>
+      🏞️ Resim Seç
+    </label>
 
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-    🎵 Audio Seç
-  </label>
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
+      🎵 Audio Seç
+    </label>
 
-  <label class="btn atmFileBtn" style="cursor:pointer;">
-    <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-    🖼️ Logo Seç
-  </label>
-</div>
-<!-- ✅ meta (thumbnail yok) -->
-<div class="atmProRefsMeta">
-  <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-    <span class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-    <button
-      type="button"
-      id="atmProRefImageClear"
-      aria-label="Yüklenen resmi kaldır"
-      title="Resmi kaldır"
-      style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-    >
-      ×
-    </button>
-  </label>
-
-  <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-    <span class="atmFileName" id="atmProAudioFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-    <button
-      type="button"
-      id="atmProAudioClear"
-      aria-label="Yüklenen audioyu kaldır"
-      title="Audioyu kaldır"
-      style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-    >
-      ×
-    </button>
-  </label>
-
-  <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-    <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
-    <button
-      type="button"
-      id="atmProLogoClear"
-      aria-label="Yüklenen logoyu kaldır"
-      title="Logoyu kaldır"
-      style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
-    >
-      ×
-    </button>
-  </label>
-</div>
-
-  <div class="atmRow2">
-    <select id="atmProLogoPos" class="input atmProSelect">
-      <option value="tl">Sol Üst</option>
-      <option value="tr">Sağ Üst</option>
-      <option value="bl">Sol Alt</option>
-      <option value="br" selected>Sağ Alt</option>
-      <option value="center_small">Ortada (küçük)</option>
-    </select>
-
-    <select id="atmProAudioMode" class="input atmProSelect">
-      <option value="none" selected>Ses yok</option>
-      <option value="embed">MP4 içine ekle</option>
-    </select>
+    <label class="btn atmFileBtn" style="cursor:pointer;">
+      <input type="file" id="atmProLogoFile" accept="image/*" hidden>
+      🖼️ Logo Seç
+    </label>
   </div>
-  <!-- ✅ PRO audio mode (Ses yok / MP4 içine ekle) -->
-  <div class="atmRow2">
-    <select id="atmProAudioMode" class="input atmProSelect">
-      <option value="none" selected>Ses yok</option>
-      <option value="embed">MP4 içine ekle</option>
-    </select>
+
+  <!-- meta -->
+  <div class="atmProRefsMeta">
+    <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+      <span class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+      <button
+        type="button"
+        id="atmProRefImageClear"
+        aria-label="Yüklenen resmi kaldır"
+        title="Resmi kaldır"
+        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+      >
+        ×
+      </button>
+    </label>
+
+    <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+      <span class="atmFileName" id="atmProAudioFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+      <button
+        type="button"
+        id="atmProAudioClear"
+        aria-label="Yüklenen audioyu kaldır"
+        title="Audioyu kaldır"
+        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+      >
+        ×
+      </button>
+    </label>
+
+    <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
+      <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+      <button
+        type="button"
+        id="atmProLogoClear"
+        aria-label="Yüklenen logoyu kaldır"
+        title="Logoyu kaldır"
+        style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
+      >
+        ×
+      </button>
+    </label>
+  </div>
+
+  <!-- alt ayarlar: solda logo pozisyonu, ortada audio modu, sağda boş kolon -->
+  <div class="atmProRefsSelects">
+    <div class="atmProRefSelectCol">
+      <select id="atmProLogoPos" class="input atmProSelect">
+        <option value="tl">Sol Üst</option>
+        <option value="tr">Sağ Üst</option>
+        <option value="bl">Sol Alt</option>
+        <option value="br" selected>Sağ Alt</option>
+        <option value="center_small">Ortada (küçük)</option>
+      </select>
+    </div>
+
+    <div class="atmProRefSelectCol">
+      <select id="atmProAudioMode" class="input atmProSelect">
+        <option value="none" selected>Ses yok</option>
+        <option value="embed">MP4 içine ekle</option>
+      </select>
+    </div>
+
+    <div class="atmProRefSelectCol"></div>
   </div>
 
   <!-- ✅ küçük durum etiketi -->
