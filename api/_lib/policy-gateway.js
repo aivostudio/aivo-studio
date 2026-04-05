@@ -339,33 +339,6 @@ function enforcePersonPolicy(app, text) {
   const hasDefamation = hitsDefamation.length > 0;
   const hasDeepfake = hitsDeepfake.length > 0;
 
-  if (hasDeepfake) {
-    return makeResult({
-      decision: 'block',
-      code: 'DEEPFAKE_REAL_PERSON',
-      severity: 'high',
-      message:
-        'Gerçek kişi, kamu figürü veya ünlü kişiyi sahte konuşma, deepfake veya yanıltıcı taklit ile gösteren içerik üretilemez.',
-      reasons: ['deepfake-real-person'],
-      matchedTerms: [...hitsPublic, ...hitsDeepfake].slice(0, 8),
-    });
-  }
-
-  if (hasPublicFigure && hasDefamation) {
-    return makeResult({
-      decision: 'block',
-      code: 'DEFAMATION_PUBLIC_FIGURE',
-      severity: 'high',
-      message:
-   function enforcePersonPolicy(app, text) {
-  const hitsPublic = pickMatchedTerms(text, PUBLIC_FIGURE_TERMS, 8);
-  const hitsDefamation = pickMatchedTerms(text, DEFAMATION_TERMS, 8);
-  const hitsDeepfake = pickMatchedTerms(text, DEEPFAKE_TERMS, 8);
-
-  const hasPublicFigure = hitsPublic.length > 0;
-  const hasDefamation = hitsDefamation.length > 0;
-  const hasDeepfake = hitsDeepfake.length > 0;
-
   const isVisualApp =
     app === 'video' ||
     app === 'cover' ||
@@ -416,7 +389,6 @@ function enforcePersonPolicy(app, text) {
 
   return null;
 }
-
 function enforcePolicy(input = {}) {
   const app = normalizeText(input.app || 'generic');
   const raw = joinInput(input);
