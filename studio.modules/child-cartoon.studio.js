@@ -1524,9 +1524,61 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
   throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
 }
 
-        button.disabled = true;
+             button.disabled = true;
         button.textContent = 'Çıktı hazırlanıyor...';
         button.classList.add('is-loading');
+
+        const creditCost = 10;
+        const creditReason = 'studio_cartoon_montage_export';
+
+        const creditRes = await fetch('/api/credits/consume', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json'
+          },
+          body: JSON.stringify({
+            cost: creditCost,
+            reason: creditReason
+          })
+        });
+
+        let creditData = null;
+        try {
+          creditData = await creditRes.json();
+        } catch {
+          creditData = { ok: false, error: 'non_json_response', status: creditRes.status };
+        }
+
+        if (!creditRes.ok || !creditData?.ok) {
+          throw new Error(
+            creditData?.error ||
+            creditData?.message ||
+            'Kredi düşülemedi. Lütfen bakiyeni kontrol et.'
+          );
+        }
+
+        try {
+          const creditGetRes = await fetch('/api/credits/get', {
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'accept': 'application/json' }
+          });
+
+          const creditGetData = await creditGetRes.json().catch(() => null);
+
+          if (creditGetData?.ok && typeof creditGetData.credits === 'number') {
+            const topCreditCountEl = document.getElementById('topCreditCount');
+            if (topCreditCountEl) {
+              topCreditCountEl.textContent = String(creditGetData.credits);
+            }
+
+            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === 'function') {
+              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            }
+          }
+        } catch {}
 
         const res = await fetch('/api/cartoon/studio/export-create', {
           method: 'POST',
