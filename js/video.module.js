@@ -1295,12 +1295,13 @@ async function createImage() {
   // ===============================
   // Single observer: root geldiğinde bind et, sonra hafif çalışsın
   // ===============================
- function tryBindAll() {
+function tryBindAll() {
   const root = document.querySelector(ROOT_SEL);
   if (!root) return;
 
   bindTabs(root);
   bindPromptCounter(root);
+  bindVideoPricingUI(root);
 }
 
   // İlk çalıştır
