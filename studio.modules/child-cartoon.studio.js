@@ -1014,22 +1014,40 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     array.length = 0;
     copied.forEach((entry) => array.push(entry));
   }
-
   function updateStudioSummary(rootState, studioRoot) {
     const summary = studioRoot.querySelector('.studio-inline-summary');
-    if (!summary) return;
-
-    const items = summary.querySelectorAll('span');
-    if (!items.length || items.length < 3) return;
-
     const selectedCount = rootState.scenes.filter((scene) => scene.included).length;
     const totalDuration = rootState.scenes
       .filter((scene) => scene.included)
       .reduce((sum, scene) => sum + (Number(scene.duration) || 0), 0);
 
-    items[0].textContent = `Seçilen Sahne: ${selectedCount}`;
-    items[1].textContent = `Toplam Süre: ${formatSummaryDuration(totalDuration)}`;
-    items[2].textContent = `Format: ${rootState.format}`;
+    if (summary) {
+      const items = summary.querySelectorAll('span');
+
+      if (items.length >= 3) {
+        items[0].textContent = `Seçilen Sahne: ${selectedCount}`;
+        items[1].textContent = `Toplam Süre: ${formatSummaryDuration(totalDuration)}`;
+        items[2].textContent = `Format: ${rootState.format}`;
+      }
+    }
+
+    const exportBtn = qsAny(studioRoot, [
+      '[data-studio-export]',
+      '[data-studio-final-output]',
+      '[data-studio-generate-final]',
+      '#cartoonStudioExportBtn',
+      '#studioExportBtn',
+      'button[type="button"][data-role="studio-export"]'
+    ]);
+
+    if (!exportBtn) return;
+
+    const creditCost = Math.max(1, selectedCount) * 10;
+    exportBtn.setAttribute('data-credit-cost', String(creditCost));
+
+    if (!exportBtn.disabled || !exportBtn.classList.contains('is-loading')) {
+      exportBtn.textContent = `Paylaşmaya Hazır Çıktı Al (${creditCost} Kredi)`;
+    }
   }
 
   function qsAny(root, selectors) {
