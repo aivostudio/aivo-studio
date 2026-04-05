@@ -1158,30 +1158,37 @@ section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"
   width: 100% !important;
   text-align: center !important;
 }
-/* ===== ATMO BASIC ATMOSPHERE PILLS — KEEP INLINE, REDUCE END GAP ===== */
+/* ===== ATMO BASIC ATMOSPHERE PILLS — KEEP INLINE, FIT ONE ROW ===== */
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-row{
   display: flex !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
   justify-content: flex-start !important;
-  gap: 12px !important;
+  gap: 10px !important;
 }
 
 section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
   flex: 0 0 auto !important;
   min-width: 0 !important;
-  padding: 10px 22px !important;
+  padding: 9px 18px !important;
   justify-content: center !important;
   text-align: center !important;
+  font-size: 12px !important;
 }
 
 @media (max-width: 1200px){
   section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
-    padding: 9px 18px !important;
+    padding: 8px 15px !important;
+    font-size: 11.5px !important;
   }
 }
 
 @media (max-width: 980px){
+  section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-row{
+    flex-wrap: wrap !important;
+  }
+
   section.main-panel[data-module="atmosphere"] .mode-panel[data-mode-panel="basic"] #atmCard .smpack-pill{
     padding: 8px 14px !important;
+    font-size: 12px !important;
   }
 }
