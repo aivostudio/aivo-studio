@@ -1606,14 +1606,15 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
             job_id: String(data.job_id || ''),
             prompt: payload?.text?.title || payload?.text?.description || 'studio export',
             createdAt: Date.now(),
-            meta: {
+                       meta: {
               app: 'cartoon',
               mode: 'studio_export',
               provider: 'studio',
               prompt: payload?.text?.title || payload?.text?.description || 'studio export',
               scene_count: Number(payload?.export?.sceneCount || 0),
               total_duration: Number(payload?.export?.totalDuration || 0),
-              aspect_ratio: String(payload?.export?.format || '16:9')
+              aspect_ratio: String(payload?.export?.format || '16:9'),
+              credit_cost: creditCost
             }
           };
 
