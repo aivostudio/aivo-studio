@@ -223,18 +223,18 @@
   </div>
 </div>
 
-            <!-- CTA (BASIC) -->
-            <div class="atmPersCta">
-              <button class="atmBigCtaBtn"
-                      type="button"
-                      data-atm-generate
-                      data-atm-mode="basic">
-                🎬 Atmosfer Video Oluştur (30 Kredi)
-              </button>
-            </div>
-
-          </div><!-- /.atmPersGrid -->
+                     </div><!-- /.atmPersGrid -->
         </div><!-- /#atmPersonalCard.card -->
+
+        <!-- CTA BASIC (CARD DIŞINDA) -->
+        <div class="atmPersCta atmPersCta--basic">
+          <button class="atmBigCtaBtn"
+                  type="button"
+                  data-atm-generate
+                  data-atm-mode="basic">
+            🎬 Atmosfer Video Oluştur (30 Kredi)
+          </button>
+        </div>
 
         <style>
           /* Personalization 3'lü grid */
@@ -302,12 +302,7 @@
   object-fit:cover;
   display:block;
 }
-
-          /* CTA wrapper (sadece buton) */
-          #atmPersonalCard .atmPersCta{
-            grid-column: 1 / -1;
-            margin-top:16px;
-          }
+          /* CTA artık kart dışında */
 
           #atmPersonalCard .atmBigCtaBtn{
             width:100%;
