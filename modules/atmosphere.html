@@ -389,16 +389,28 @@
 <!-- ✅ PRO: Logo + Audio (Basit Mod’daki upload mantığıyla) -->
 <div class="atmProRefs">
 
-  <!-- üst satır: Logo başlığı + pozisyon -->
-  <div class="atmProRefsHead">
-    <div class="atmProRefsTitle">Logo</div>
-    <select id="atmProLogoPos" class="input atmProSelect">
-      <option value="tl">Sol Üst</option>
-      <option value="tr">Sağ Üst</option>
-      <option value="bl">Sol Alt</option>
-      <option value="br" selected>Sağ Alt</option>
-      <option value="center_small">Ortada (küçük)</option>
-    </select>
+  <!-- üst satır: 3 kolon başlık + badge -->
+  <div class="atmProRefsHead atmProRefsHead--triple">
+    <div class="atmProRefTop">
+      <div class="atmProRefsTitle">Ana Görsel</div>
+      <div class="atmCreditInline atmCreditInline--center">
+        <span class="atmCreditBadge">Ücretsiz</span>
+      </div>
+    </div>
+
+    <div class="atmProRefTop">
+      <div class="atmProRefsTitle">Audio Yükle</div>
+      <div class="atmCreditInline atmCreditInline--center">
+        <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+      </div>
+    </div>
+
+    <div class="atmProRefTop">
+      <div class="atmProRefsTitle">Logo Yükle</div>
+      <div class="atmCreditInline atmCreditInline--center">
+        <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+      </div>
+    </div>
   </div>
 
   <!-- butonlar -->
@@ -459,6 +471,21 @@
     </button>
   </label>
 </div>
+
+  <div class="atmRow2">
+    <select id="atmProLogoPos" class="input atmProSelect">
+      <option value="tl">Sol Üst</option>
+      <option value="tr">Sağ Üst</option>
+      <option value="bl">Sol Alt</option>
+      <option value="br" selected>Sağ Alt</option>
+      <option value="center_small">Ortada (küçük)</option>
+    </select>
+
+    <select id="atmProAudioMode" class="input atmProSelect">
+      <option value="none" selected>Ses yok</option>
+      <option value="embed">MP4 içine ekle</option>
+    </select>
+  </div>
   <!-- ✅ PRO audio mode (Ses yok / MP4 içine ekle) -->
   <div class="atmRow2">
     <select id="atmProAudioMode" class="input atmProSelect">
