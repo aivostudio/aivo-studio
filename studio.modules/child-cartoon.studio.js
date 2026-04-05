@@ -1064,7 +1064,7 @@ function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
       .filter((scene) => scene.included)
       .reduce((sum, scene) => sum + (Number(scene.duration) || 0), 0);
 
-    const creditCost = getStudioExportCreditCost(rootState);
+   const creditCost = getStudioExportCreditCost(rootState, studioRoot);
 
     if (summary) {
       const items = summary.querySelectorAll('span');
@@ -1532,7 +1532,7 @@ const logoPos =
       return;
     }
 
-        const initialCreditCost = getStudioExportCreditCost(rootState);
+      const initialCreditCost = getStudioExportCreditCost(rootState, studioRoot);
     button.setAttribute('data-credit-cost', String(initialCreditCost));
 
     if (!button.disabled) {
@@ -1592,7 +1592,7 @@ if (rootState?.logoFile && String(rootState?.logoFileUploadStatus || '') !== 're
   throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
 }
 
-         const creditCost = getStudioExportCreditCost(rootState);
+        const creditCost = getStudioExportCreditCost(rootState, studioRoot);
         const creditReason = 'studio_cartoon_montage_export';
 
         button.disabled = true;
