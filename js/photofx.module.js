@@ -871,25 +871,56 @@ const PFX_HARD_BLOCK_PATTERNS = [
     }
   }
 
-  async function postJSON(url, payload) {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+async function postJSON(url, payload) {
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const rawText = await r.text().catch(() => "");
+  let j = null;
+
+  try {
+    j = rawText ? JSON.parse(rawText) : null;
+  } catch (_) {
+    j = null;
+  }
+
+  if (!r.ok) {
+    console.error("[photofx] postJSON failed:", {
+      url,
+      status: r.status,
+      statusText: r.statusText,
+      payload,
+      rawText,
+      json: j,
     });
 
-    const j = await r.json().catch(() => null);
-
-    if (!r.ok || !j) {
-      throw new Error(j?.error || `photofx_failed_${r.status}`);
-    }
-
-    if (j.ok === false) {
-      throw new Error(j.error || "photofx_failed");
-    }
-
-    return j;
+    throw new Error(
+      j?.error ||
+      j?.message ||
+      rawText ||
+      `photofx_failed_${r.status}`
+    );
   }
+
+  if (!j) {
+    console.error("[photofx] postJSON non-json success response:", {
+      url,
+      status: r.status,
+      rawText,
+    });
+
+    throw new Error("photofx_invalid_json_response");
+  }
+
+  if (j.ok === false) {
+    throw new Error(j.error || j.message || "photofx_failed");
+  }
+
+  return j;
+}
 
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
