@@ -3514,7 +3514,8 @@
 .main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] select[data-basic-style] {
   margin-top: 38px !important;
 }
-/* === BASIC MODE STYLE LABEL DOWN FIX === */
-.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field-label--stack {
-  padding-top: 14px !important;
+/* === BASIC MODE ONLY: STYLE LABEL EXACT ALIGN === */
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] label[for="cartoon-basic-style"] {
+  position: relative !important;
+  top: 34px !important;
 }
