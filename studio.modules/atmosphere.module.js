@@ -569,10 +569,7 @@ function isAtmoPolicyBlocked(raw) {
     const baseCredit = m === "pro" ? 45 : 30;
     const durationExtra = Number(ATMO_DURATION_STEP_COST[duration] || 0);
 
-    const effectsExtra =
-      m === "basic"
-        ? Number((state.effects || []).length || 0)
-        : 0;
+      const effectsExtra = 0;
 
     const logoExtra = hasAtmoLogoSelected() ? 10 : 0;
     const audioExtra = hasAtmoAudioSelected(m) ? 10 : 0;
