@@ -418,57 +418,75 @@
       style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; align-items:start;">
       
 <div class="cartoon-field">
-  <label class="cartoon-field-label cartoon-field-label--stack">
-    <span class="cartoon-field-label-title">Kendi Sesini Yükle</span>
-    <span class="cartoon-field-label-credit">10 Kredi</span>
-  </label>
-  <label class="cartoon-upload-row cartoon-upload-row--compact">
-    <input type="file" accept="audio/*" hidden data-audio-upload>
-    <span class="cartoon-upload-btn">Audio Seç</span>
-    <span class="cartoon-upload-text" data-basic-audio-upload-text>Dosya seçilmedi</span>
-    <button
-      type="button"
-      class="cartoon-upload-clear"
-      data-basic-audio-upload-clear
-      aria-label="Yüklenen sesi kaldır"
-      title="Sesi kaldır"
-      style="display:none;">
-      ×
-    </button>
-  </label>
+  <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+    <label class="cartoon-field-label" style="margin:0;">
+      Kendi Sesini Yükle
+    </label>
+
+    <div class="cartoon-credit-inline">
+      <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+
+      <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
+        <input type="file" accept="audio/*" hidden data-audio-upload>
+        <span class="cartoon-upload-btn">Audio Seç</span>
+        <span class="cartoon-upload-text" data-basic-audio-upload-text>Dosya seçilmedi</span>
+        <button
+          type="button"
+          class="cartoon-upload-clear"
+          data-basic-audio-upload-clear
+          aria-label="Yüklenen sesi kaldır"
+          title="Sesi kaldır"
+          style="display:none;">
+          ×
+        </button>
+      </label>
+    </div>
+  </div>
 </div>
 
 <div class="cartoon-field">
-  <label class="cartoon-field-label cartoon-field-label--stack">
-    <span class="cartoon-field-label-title">Logo Yükle</span>
-    <span class="cartoon-field-label-credit">10 Kredi</span>
-  </label>
-  <label class="cartoon-upload-row cartoon-upload-row--compact">
-    <input type="file" accept="image/*" hidden data-basic-logo-upload>
-    <span class="cartoon-upload-btn">Logo Seç</span>
-    <span class="cartoon-upload-text" data-basic-logo-upload-text>Dosya seçilmedi</span>
-    <button
-      type="button"
-      class="cartoon-upload-clear"
-      data-basic-logo-upload-clear
-      aria-label="Yüklenen logoyu kaldır"
-      title="Logoyu kaldır"
-      style="display:none;">
-      ×
-    </button>
-  </label>
+  <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+    <label class="cartoon-field-label" style="margin:0;">
+      Logo Yükle
+    </label>
+
+    <div class="cartoon-credit-inline">
+      <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+
+      <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
+        <input type="file" accept="image/*" hidden data-basic-logo-upload>
+        <span class="cartoon-upload-btn">Logo Seç</span>
+        <span class="cartoon-upload-text" data-basic-logo-upload-text>Dosya seçilmedi</span>
+        <button
+          type="button"
+          class="cartoon-upload-clear"
+          data-basic-logo-upload-clear
+          aria-label="Yüklenen logoyu kaldır"
+          title="Logoyu kaldır"
+          style="display:none;">
+          ×
+        </button>
+      </label>
+    </div>
+  </div>
 </div>
 
 <div class="cartoon-field">
-  <label class="cartoon-field-label cartoon-field-label--stack">
-    <span class="cartoon-field-label-title">Kendi Karakterini Koy</span>
-    <span class="cartoon-field-label-credit">10 Kredi</span>
-  </label>
-  <label class="cartoon-upload-row cartoon-upload-row--compact">
-    <input type="file" accept="image/*" hidden data-character-upload>
-    <span class="cartoon-upload-btn">Resim Seç</span>
-    <span class="cartoon-upload-text" data-basic-upload-text>Dosya seçilmedi</span>
-  </label>
+  <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+    <label class="cartoon-field-label" style="margin:0;">
+      Kendi Karakterini Koy
+    </label>
+
+    <div class="cartoon-credit-inline">
+      <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+
+      <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
+        <input type="file" accept="image/*" hidden data-character-upload>
+        <span class="cartoon-upload-btn">Resim Seç</span>
+        <span class="cartoon-upload-text" data-basic-upload-text>Dosya seçilmedi</span>
+      </label>
+    </div>
+  </div>
 </div>
 
 <div class="cartoon-field">
