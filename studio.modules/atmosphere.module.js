@@ -532,11 +532,11 @@ function isAtmoPolicyBlocked(raw) {
 
   const ATMO_DURATION_STEP_COST = {
     "4": 0,
-    "6": 2,
-    "8": 4,
-    "10": 6,
-    "12": 8,
-    "15": 10
+    "6": 5,
+    "8": 10,
+    "10": 15,
+    "12": 20,
+    "15": 25
   };
 
   function getAtmoSelectedDuration(mode) {
