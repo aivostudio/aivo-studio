@@ -505,7 +505,7 @@
     </div>
   </div>
 
-  <!-- (4) PRO MEDIA / REFS -->
+<!-- (4) PRO MEDIA / REFS -->
   <div class="card atmProRefsCard" style="margin-top:14px;">
     <div class="atmProRefs">
 
@@ -591,6 +591,15 @@
       </div>
 
       <div class="atmProRefsSelects">
+        <div class="atmProRefSelectCol"></div>
+
+        <div class="atmProRefSelectCol">
+          <select id="atmProAudioMode" class="input atmProSelect">
+            <option value="none" selected>Ses yok</option>
+            <option value="embed">MP4 içine ekle</option>
+          </select>
+        </div>
+
         <div class="atmProRefSelectCol">
           <select id="atmProLogoPos" class="input atmProSelect">
             <option value="tl">Sol Üst</option>
@@ -600,15 +609,6 @@
             <option value="center_small">Ortada (küçük)</option>
           </select>
         </div>
-
-        <div class="atmProRefSelectCol">
-          <select id="atmProAudioMode" class="input atmProSelect">
-            <option value="none" selected>Ses yok</option>
-            <option value="embed">MP4 içine ekle</option>
-          </select>
-        </div>
-
-        <div class="atmProRefSelectCol"></div>
       </div>
 
       <div class="atmProRefsBottom">
@@ -671,7 +671,26 @@
 
     .atmProRefsBtns .atmFileBtn{
       width:100%;
+      min-height:80px;
       justify-content:center;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:24px;
+      background:linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+      color:#fff;
+      font-weight:900;
+      font-size:18px;
+      box-shadow:
+        0 12px 24px rgba(139,92,246,.20),
+        inset 0 1px 0 rgba(255,255,255,.16);
+    }
+
+    .atmProRefsBtns .atmFileBtn:hover{
+      border-color:rgba(255,255,255,.16);
+      background:linear-gradient(90deg, #9b6bff 0%, #f35cab 100%);
+      color:#fff;
+      box-shadow:
+        0 14px 28px rgba(139,92,246,.24),
+        inset 0 1px 0 rgba(255,255,255,.18);
     }
 
     .atmProRefsMeta{
