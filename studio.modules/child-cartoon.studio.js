@@ -601,7 +601,7 @@ function clearStudioVoiceFile(rootState, studioRoot) {
   updateStudioSummary(rootState, studioRoot);
   saveStudioState(rootState);
 }
-  function clearStudioLogoFile(rootState, studioRoot) {
+function clearStudioLogoFile(rootState, studioRoot) {
   const input = qsAny(studioRoot, [
     '#cartoonLogoFile',
     '#studioLogoFile',
@@ -622,8 +622,9 @@ function clearStudioVoiceFile(rootState, studioRoot) {
   }
 
   updateStudioLogoUploadStatusUI(rootState, studioRoot);
+  updateStudioSummary(rootState, studioRoot);
+  saveStudioState(rootState);
 }
-
 function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
   const input = qsAny(studioRoot, [
     '#cartoonLogoFile',
