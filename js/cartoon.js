@@ -618,48 +618,48 @@
     "sertab"
   ];
 
-function normalizeBasicPolicyText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+  function normalizeBasicPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-function buildBasicPolicyPhraseRegex(term) {
-  const normalized = normalizeBasicPolicyText(term);
-  if (!normalized) return null;
+  function buildBasicPolicyPhraseRegex(term) {
+    const normalized = normalizeBasicPolicyText(term);
+    if (!normalized) return null;
 
-  const pattern = normalized
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("\\s+");
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\s+");
 
-  return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
-}
+    return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+  }
 
-function isBasicPolicyBlocked(raw) {
-  const text = normalizeBasicPolicyText(raw);
+  function isBasicPolicyBlocked(raw) {
+    const text = normalizeBasicPolicyText(raw);
 
-  const hasBlockedTerm =
-    HARD_BLOCK_TERMS.some((term) => {
-      const rx = buildBasicPolicyPhraseRegex(term);
-      return rx ? rx.test(text) : false;
-    }) ||
-    PUBLIC_FIGURE_TERMS.some((term) => {
-      const rx = buildBasicPolicyPhraseRegex(term);
-      return rx ? rx.test(text) : false;
-    }) ||
-    ARTIST_NAME_TERMS.some((term) => {
-      const rx = buildBasicPolicyPhraseRegex(term);
-      return rx ? rx.test(text) : false;
-    });
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => {
+        const rx = buildBasicPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      PUBLIC_FIGURE_TERMS.some((term) => {
+        const rx = buildBasicPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      ARTIST_NAME_TERMS.some((term) => {
+        const rx = buildBasicPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      });
 
-  const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-  return !!raw && (hasBlockedTerm || hasBlockedPattern);
-}
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
 
   function ensureBasicPolicyNote(root, generateBtn) {
     if (!root || !generateBtn || !generateBtn.parentElement) return null;
@@ -746,23 +746,23 @@ function isBasicPolicyBlocked(raw) {
     activeBasicPollToken: 0,
   });
 
- function getEstimatedCredits() {
-  const duration = String(state.duration || "4");
+  function getEstimatedCredits() {
+    const duration = String(state.duration || "4");
 
-  let total = 30;
+    let total = 30;
 
-  if (duration === "6") total = 35;
-  else if (duration === "8") total = 40;
-  else if (duration === "10") total = 45;
-  else if (duration === "12") total = 50;
-  else if (duration === "15") total = 55;
+    if (duration === "6") total = 35;
+    else if (duration === "8") total = 40;
+    else if (duration === "10") total = 45;
+    else if (duration === "12") total = 50;
+    else if (duration === "15") total = 55;
 
-  if (state.characterImage) total += 10;
-  if (state.logoFile) total += 10;
-  if (state.audioSource === "upload" && state.audioFile) total += 10;
+    if (state.characterImage) total += 10;
+    if (state.logoFile) total += 10;
+    if (state.audioSource === "upload" && state.audioFile) total += 10;
 
-  return total;
-}
+    return total;
+  }
 
   function updatePromptCount(root) {
     const input = qs("[data-cartoon-prompt-input]", root);
@@ -1062,21 +1062,22 @@ function isBasicPolicyBlocked(raw) {
     }
   }
 
-function syncMainSelection(root) {
-  qsa('.cartoon-mode-view[data-cartoon-view="basic"] [data-role="main"]', root).forEach((btn) => {
-    const on = btn.dataset.character === state.mainCharacter;
-    btn.classList.toggle("is-selected", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  });
-}
+  function syncMainSelection(root) {
+    qsa('.cartoon-mode-view[data-cartoon-view="basic"] [data-role="main"]', root).forEach((btn) => {
+      const on = btn.dataset.character === state.mainCharacter;
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
 
-function syncHelperSelection(root) {
-  qsa('.cartoon-mode-view[data-cartoon-view="basic"] [data-role="helper"]', root).forEach((btn) => {
-    const on = state.helpers.includes(btn.dataset.character);
-    btn.classList.toggle("is-selected", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  });
-}
+  function syncHelperSelection(root) {
+    qsa('.cartoon-mode-view[data-cartoon-view="basic"] [data-role="helper"]', root).forEach((btn) => {
+      const on = state.helpers.includes(btn.dataset.character);
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
   function syncSceneSelection(root) {
     qsa("[data-scene]", root).forEach((btn) => {
       const on = btn.dataset.scene === state.scene;
@@ -1283,6 +1284,7 @@ function syncHelperSelection(root) {
           }
         }
 
+        try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
         return;
       }
 
@@ -1304,6 +1306,8 @@ function syncHelperSelection(root) {
           basicGenerateBtn.classList.remove("is-loading");
         }
       }
+
+      try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
     } catch (err) {
       console.error("[CARTOON][BASIC] poll error =", err);
 
@@ -1326,6 +1330,8 @@ function syncHelperSelection(root) {
           basicGenerateBtn.classList.remove("is-loading");
         }
       }
+
+      try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
     }
   }
 
@@ -1406,6 +1412,15 @@ function syncHelperSelection(root) {
         if (state.mode !== "basic") return;
         if (state.isGenerating) return;
 
+        const payload = buildBasicPayload();
+
+        if (!String(payload.extraPrompt || "").trim()) {
+          try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+          const promptEl = qs("[data-cartoon-prompt-input]", root);
+          if (promptEl) promptEl.focus();
+          return;
+        }
+
         if (state.characterImage) {
           if (
             state.characterImageUploadStatus === "uploading" &&
@@ -1419,7 +1434,7 @@ function syncHelperSelection(root) {
           }
 
           if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
-            alert("Karakter görseli henüz yüklenmedi. Lütfen 'Hazır ✓' görünmesini bekleyin.");
+            try { window.toast?.info?.("Karakter görseli henüz hazır değil"); } catch {}
             return;
           }
         }
@@ -1437,14 +1452,14 @@ function syncHelperSelection(root) {
           }
 
           if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
-            alert("Logo henüz yüklenmedi. Lütfen 'Hazır ✓' olmasını bekleyin.");
+            try { window.toast?.info?.("Logo henüz hazır değil"); } catch {}
             return;
           }
         }
 
         if (state.audioSource === "upload") {
           if (!state.audioFile) {
-            alert("Ses kaynağı olarak 'Kendi sesimi yükle' seçildi. Lütfen bir ses dosyası yükleyin.");
+            try { window.toast?.info?.("Müzik seçmelisin"); } catch {}
             return;
           }
 
@@ -1460,12 +1475,10 @@ function syncHelperSelection(root) {
           }
 
           if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
-            alert("Ses dosyası henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+            try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
             return;
           }
         }
-
-        const payload = buildBasicPayload();
 
         const policyText = [
           payload.extraPrompt,
@@ -1500,123 +1513,126 @@ function syncHelperSelection(root) {
           return;
         }
 
-   console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
+        console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
-const creditCost = getEstimatedCredits();
-const creditReason = "studio_cartoon_basic_generate";
+        const creditCost = getEstimatedCredits();
+        const creditReason = "studio_cartoon_basic_generate";
 
-const creditRes = await fetch("/api/credits/consume", {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "content-type": "application/json",
-    "accept": "application/json"
-  },
-  body: JSON.stringify({
-    cost: creditCost,
-    reason: creditReason
-  })
-});
+        const creditRes = await fetch("/api/credits/consume", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            cost: creditCost,
+            reason: creditReason
+          })
+        });
 
-let creditData = null;
-try {
-  creditData = await creditRes.json();
-} catch {
-  creditData = { ok: false, error: "non_json_response", status: creditRes.status };
-}
-if (!creditRes.ok || !creditData?.ok) {
-  const to = encodeURIComponent(
-    location.pathname + location.search + location.hash
-  );
-
-  location.href =
-    "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-
-  return;
-}
-
-try {
-  const creditGetRes = await fetch("/api/credits/get", {
-    credentials: "include",
-    cache: "no-store",
-    headers: { "accept": "application/json" }
-  });
-
-  const creditGetData = await creditGetRes.json().catch(() => null);
-
-  if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-    const topCreditCountEl = document.getElementById("topCreditCount");
-    if (topCreditCountEl) {
-      topCreditCountEl.textContent = String(creditGetData.credits);
-    }
-
-    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-      window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-    }
-  }
-} catch {}
-
-state.isGenerating = true;
-generateBtn.disabled = true;
-generateBtn.textContent = "Üretiliyor...";
-generateBtn.classList.add("is-loading");
-
-try {
-  const r = await fetch("/api/providers/fal/cartoon/create", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const j = await r.json().catch(() => null);
-  if (!r.ok || !j || j.ok === false) {
-    throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
-  }
-
-  console.log("[CARTOON][BASIC] create ok =", j);
-
-  if (j?.job_id) {
-    state.activeBasicJobId = String(j.job_id || "");
-    state.activeBasicPollToken = Date.now();
-
-    window.dispatchEvent(
-      new CustomEvent("aivo:cartoon:job_created", {
-        detail: {
-          app: "cartoon",
-          mode: "basic",
-          job_id: j.job_id,
-          prompt: payload.extraPrompt || "",
-          createdAt: Date.now(),
-          meta: {
-            app: "cartoon",
-            mode: "basic",
-            provider: "fal",
-            prompt: [
-              payload.mainCharacter,
-              ...(payload.helperCharacters || []),
-              payload.scene,
-              ...((payload.actions || []).filter(Boolean)),
-              payload.extraPrompt
-            ].filter(Boolean).join(" • "),
-            duration: payload.duration,
-            aspect_ratio: payload.aspectRatio,
-            credit_cost: creditCost
-          }
+        let creditData = null;
+        try {
+          creditData = await creditRes.json();
+        } catch {
+          creditData = { ok: false, error: "non_json_response", status: creditRes.status };
         }
-      })
-    );
 
-    pollCartoonJob(j.job_id, 0, state.activeBasicPollToken);
-  }
-} catch (err) {
-  state.isGenerating = false;
-  generateBtn.disabled = false;
-  generateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
-  generateBtn.classList.remove("is-loading");
+        if (!creditRes.ok || !creditData?.ok) {
+          const to = encodeURIComponent(
+            location.pathname + location.search + location.hash
+          );
 
-  console.error("[CARTOON][BASIC] create error:", err);
-  alert(String(err?.message || err || "cartoon_create_failed"));
-}
+          location.href =
+            "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+
+          return;
+        }
+
+        try {
+          const creditGetRes = await fetch("/api/credits/get", {
+            credentials: "include",
+            cache: "no-store",
+            headers: { "accept": "application/json" }
+          });
+
+          const creditGetData = await creditGetRes.json().catch(() => null);
+
+          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+            const topCreditCountEl = document.getElementById("topCreditCount");
+            if (topCreditCountEl) {
+              topCreditCountEl.textContent = String(creditGetData.credits);
+            }
+
+            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            }
+          }
+        } catch {}
+
+        state.isGenerating = true;
+        generateBtn.disabled = true;
+        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.classList.add("is-loading");
+
+        try { window.toast?.success?.("Sahne üretimi başladı"); } catch {}
+
+        try {
+          const r = await fetch("/api/providers/fal/cartoon/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const j = await r.json().catch(() => null);
+          if (!r.ok || !j || j.ok === false) {
+            throw new Error(j?.error || `cartoon_create_failed_${r.status}`);
+          }
+
+          console.log("[CARTOON][BASIC] create ok =", j);
+
+          if (j?.job_id) {
+            state.activeBasicJobId = String(j.job_id || "");
+            state.activeBasicPollToken = Date.now();
+
+            window.dispatchEvent(
+              new CustomEvent("aivo:cartoon:job_created", {
+                detail: {
+                  app: "cartoon",
+                  mode: "basic",
+                  job_id: j.job_id,
+                  prompt: payload.extraPrompt || "",
+                  createdAt: Date.now(),
+                  meta: {
+                    app: "cartoon",
+                    mode: "basic",
+                    provider: "fal",
+                    prompt: [
+                      payload.mainCharacter,
+                      ...(payload.helperCharacters || []),
+                      payload.scene,
+                      ...((payload.actions || []).filter(Boolean)),
+                      payload.extraPrompt
+                    ].filter(Boolean).join(" • "),
+                    duration: payload.duration,
+                    aspect_ratio: payload.aspectRatio,
+                    credit_cost: creditCost
+                  }
+                }
+              })
+            );
+
+            pollCartoonJob(j.job_id, 0, state.activeBasicPollToken);
+          }
+        } catch (err) {
+          state.isGenerating = false;
+          generateBtn.disabled = false;
+          generateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          generateBtn.classList.remove("is-loading");
+
+          console.error("[CARTOON][BASIC] create error:", err);
+          try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+        }
 
         return;
       }
@@ -1647,6 +1663,8 @@ try {
         updateBasicUploadStatusUI(root);
         render(root);
       }
+
+      try { window.toast?.success?.("Sahne hazır"); } catch {}
     });
 
     document.addEventListener("input", (e) => {
@@ -1726,7 +1744,7 @@ try {
         if (!file) return;
 
         state.logoFileUploadPromise = uploadCartoonLogoToR2(file)
-                .then((publicUrl) => {
+          .then((publicUrl) => {
             state.logoFileUrl = String(publicUrl || "").trim();
             state.logoFileUploadStatus = "ready";
             state.logoFileUploadError = "";
@@ -1751,7 +1769,7 @@ try {
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
-            alert(state.logoFileUploadError);
+            try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
             throw err;
           });
 
@@ -1779,7 +1797,7 @@ try {
         if (!file) return;
 
         state.audioFileUploadPromise = uploadCartoonAudioToR2(file)
-                .then((publicUrl) => {
+          .then((publicUrl) => {
             state.audioFileUrl = String(publicUrl || "").trim();
             state.audioFileUploadStatus = "ready";
             state.audioFileUploadError = "";
@@ -1804,7 +1822,7 @@ try {
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
-            alert(state.audioFileUploadError);
+            try { window.toast?.error?.("Müzik yükleme hatası"); } catch {}
             throw err;
           });
 
@@ -1842,6 +1860,8 @@ try {
               syncGenerateButtonCredit(nextRoot);
             }
 
+            try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
+
             return state.characterImageUrl;
           })
           .catch((err) => {
@@ -1857,7 +1877,7 @@ try {
               syncGenerateButtonCredit(nextRoot);
             }
 
-            alert(state.characterImageUploadError);
+            try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
             throw err;
           });
 
