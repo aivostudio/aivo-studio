@@ -552,6 +552,7 @@
           const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
           const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
           const can = !!(ready && url);
+            if (can) console.log("[ATMO READY HIT]", { jobId: job?.job_id, url, ready, badge });
            const toastKey = `atmo-ready:${String(job?.job_id || "")}`;
 
           if (can && job?.job_id && !window.__ATMO_READY_TOASTS__.has(toastKey)) {
