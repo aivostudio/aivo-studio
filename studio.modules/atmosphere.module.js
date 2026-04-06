@@ -107,7 +107,7 @@
       const elapsed = Date.now() - startedAt;
       if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
 
-      if (evt || res) {
+          if (evt) {
         try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
       }
 
