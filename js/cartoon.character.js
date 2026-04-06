@@ -1452,6 +1452,8 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceUploadStatus = "ready";
         state.characterReferenceUploadError = "";
         updateCharacterCreateUploadUI(root);
+        syncCharacterCreateCredit(root);
+        try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
       } catch (err) {
         state.characterReferenceImageUrl = "";
