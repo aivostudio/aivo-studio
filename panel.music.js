@@ -1496,11 +1496,14 @@ async function actionDelete(card){
    const readySrc = String(src || playUrl || "").trim();
 
 if (st === "ready" && readySrc) {
+  const shouldReadyToast = !!existing.__should_ready_toast;
+
   upsertJob({
     job_id: id,
     id,
     __ui_state: "ready",
     __audio_src: readySrc,
+    __should_ready_toast: false,
     output_id: output_id || existing.output_id || "",
     ...(duration ? { __duration: String(duration) } : {}),
     __pending_src: "",
@@ -1516,7 +1519,7 @@ if (st === "ready" && readySrc) {
   POLL_BUSY.delete(id);
   render();
 
-  if (id && !READY_TOASTED.has(id)) {
+  if (shouldReadyToast && id && !READY_TOASTED.has(id)) {
     READY_TOASTED.add(id);
     toast("success", "Müzik hazır");
   }
@@ -1691,12 +1694,13 @@ function onJob(e){
   const songIdRev = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
   const safeTitle = String(payload.title || "").trim();
 
-  const common = {
+   const common = {
     type: "music",
     subtitle: String(payload.subtitle || "").trim(),
     provider_job_id: providerJobId,
     __ui_state: "processing",
     __audio_src: "",
+    __should_ready_toast: true,
     title: safeTitle,
     lyrics: String(payload.lyrics || "").trim(),
     prompt: String(payload.prompt || "").trim(),
