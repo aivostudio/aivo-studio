@@ -1726,7 +1726,7 @@ try {
         if (!file) return;
 
         state.logoFileUploadPromise = uploadCartoonLogoToR2(file)
-          .then((publicUrl) => {
+                .then((publicUrl) => {
             state.logoFileUrl = String(publicUrl || "").trim();
             state.logoFileUploadStatus = "ready";
             state.logoFileUploadError = "";
@@ -1736,6 +1736,7 @@ try {
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+            try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
             console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
             return state.logoFileUrl;
           })
