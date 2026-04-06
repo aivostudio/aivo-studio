@@ -801,7 +801,7 @@ setTimeout(syncSearchFromInput, 0);
         return;
       }
 
-   if (act === "delete") {
+if (act === "delete") {
   if (!jobId) return;
 
   deletedIds.add(jobId);
@@ -829,8 +829,9 @@ setTimeout(syncSearchFromInput, 0);
 
   return;
 }
+}
 
-    $grid?.addEventListener(
+$grid?.addEventListener(
       "click",
       (e) => {
         const btn = e.target?.closest?.("[data-svc-act], [data-act]");
