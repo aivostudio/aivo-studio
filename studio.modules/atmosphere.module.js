@@ -1489,18 +1489,27 @@ function isAtmoPolicyBlocked(raw) {
       }
     }
 
-    if (mode === "basic") {
-      const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-      const sceneKey = String(state.scene || "").trim();
+  if (mode === "basic") {
+  const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+  const sceneKey = String(state.scene || "").trim();
 
-      if (!activeSceneBtn || !sceneKey) {
-        try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
-        const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
-        if (firstScene) firstScene.focus();
-        return;
-      }
-    }
+  if (!activeSceneBtn || !sceneKey) {
+    try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
+    const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
+    if (firstScene) firstScene.focus();
+    return;
+  }
 
+  const selectedEffects = Array.isArray(state.effects) ? state.effects.filter(Boolean) : [];
+
+  if (!selectedEffects.length) {
+    try { window.toast?.info?.("En az 1 atmosfer seçmelisin."); } catch {}
+    const firstEffect = document.querySelector('#atmEffects [data-atm-eff]');
+    if (firstEffect) firstEffect.focus();
+    return;
+  }
+}
+    
     const creditCalc = computeAtmoCredit(mode);
 
     const creditCost =
