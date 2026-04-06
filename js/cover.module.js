@@ -911,7 +911,7 @@ function buildCoverPrompt(prompt, quality) {
 
     console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-    const imgs = await generateImages({ prompt, style, ratio, n, quality });
+     const imgs = await generateImages({ prompt, style, ratio, n, quality });
 
     for (const img of imgs) {
       console.log("[cover overlay start]", img.url);
@@ -965,8 +965,9 @@ function buildCoverPrompt(prompt, quality) {
         console.error("[cover] db write failed", e);
       }
     }
-  }
 
+    toastSuccess("Kapak hazır");
+  }
   // --- PROMPT CHAR COUNT (opsiyonel) ---
   function bindPromptCounter() {
     const root = getRoot();
@@ -1135,6 +1136,7 @@ function buildCoverPrompt(prompt, quality) {
             gen.classList.add("is-loading");
 
             try {
+                 try {
               const creditGetRes = await fetch("/api/credits/get", {
                 credentials: "include",
                 cache: "no-store",
@@ -1154,6 +1156,14 @@ function buildCoverPrompt(prompt, quality) {
                 }
               }
             } catch (_) {}
+
+            if (creditCost === 9) {
+              toastSuccess("9 kredi düşüldü");
+            } else {
+              toastSuccess("6 kredi düşüldü");
+            }
+
+            toastSuccess("Kapak üretimi başladı");
 
             await createCover();
           } catch (err) {
