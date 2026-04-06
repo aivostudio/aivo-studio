@@ -529,44 +529,45 @@ if (!kvkk) {
     }
   }
 
-document.addEventListener("click", (e) => {
-  const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
-  if (!card) return;
+  document.addEventListener("click", (e) => {
+    const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
+    if (!card) return;
 
-  e.preventDefault();
-  e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
 
-  const product = (card.getAttribute("data-product") || "").trim();
-  if (!product) return;
+    const product = (card.getAttribute("data-product") || "").trim();
+    if (!product) return;
 
-  const isStudio =
-    /\/studio(\.html)?$/i.test(location.pathname) ||
-    /\/studio\.v2\.html$/i.test(location.pathname) ||
-    /studio\.html/i.test(location.href) ||
-    /studio\.v2\.html/i.test(location.href);
+    const isStudio =
+      /\/studio(\.html)?$/i.test(location.pathname) ||
+      /\/studio\.v2\.html$/i.test(location.pathname) ||
+      /studio\.html/i.test(location.href) ||
+      /studio\.v2\.html/i.test(location.href);
 
-  const map = { music: "music", cover: "cover", video: "video" };
-  const page = map[product] || product;
+    const map = { music: "music", cover: "cover", video: "video" };
+    const page = map[product] || product;
 
-  if (!isStudio && !safeIsLoggedIn()) {
-    try {
-      sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page));
-    } catch(_) {}
-    safeOpenLogin();
-    return;
-  }
+    if (!isStudio && !safeIsLoggedIn()) {
+      try {
+        sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page));
+      } catch(_) {}
+      safeOpenLogin();
+      return;
+    }
 
-  try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
+    try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
 
-  if (!isStudio) {
-    location.href = "/studio.v2.html#" + encodeURIComponent(page);
-    return;
-  }
+    if (!isStudio) {
+      location.href = "/studio.v2.html#" + encodeURIComponent(page);
+      return;
+    }
 
-  if (typeof window.AIVO_SWITCH_PAGE === "function") {
-    window.AIVO_SWITCH_PAGE(page);
-    try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
-  }
-}, true);
+    if (typeof window.AIVO_SWITCH_PAGE === "function") {
+      window.AIVO_SWITCH_PAGE(page);
+      try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
+    }
+  }, true);
 })();
 
