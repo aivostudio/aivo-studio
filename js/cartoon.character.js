@@ -1786,13 +1786,14 @@ const creditReason = "studio_cartoon_character_create";
       creditData = { ok: false, error: "non_json_response", status: creditRes.status };
     }
 
-    if (!creditRes.ok || !creditData?.ok) {
-      const msg =
-        creditData?.error ||
-        creditData?.message ||
-        "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+      if (!creditRes.ok || !creditData?.ok) {
+      const to = encodeURIComponent(
+        location.pathname + location.search + location.hash
+      );
 
-      alert(String(msg));
+      location.href =
+        "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+
       return;
     }
 
