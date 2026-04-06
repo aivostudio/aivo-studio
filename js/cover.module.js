@@ -1041,6 +1041,12 @@ function buildCoverPrompt(prompt, quality) {
 
         resetCoverPolicyUI(root, promptEl, gen);
 
+         if (!raw) {
+          e.stopPropagation();
+          toastError("Prompt yazmalısın");
+          return;
+        }
+
         if (isCoverPolicyBlocked(raw)) {
           const policyNote = ensureCoverPolicyNote(gen);
 
@@ -1086,8 +1092,7 @@ function buildCoverPrompt(prompt, quality) {
           return;
         }
 
-             const prev = gen.textContent;
-
+        const prev = gen.textContent;
         (async () => {
           try {
             const creditCost =
