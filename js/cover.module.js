@@ -1135,8 +1135,7 @@ function buildCoverPrompt(prompt, quality) {
             gen.textContent = "Üretiliyor...";
             gen.classList.add("is-loading");
 
-            try {
-                 try {
+                      try {
               const creditGetRes = await fetch("/api/credits/get", {
                 credentials: "include",
                 cache: "no-store",
