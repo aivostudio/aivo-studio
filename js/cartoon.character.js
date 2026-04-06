@@ -1448,12 +1448,21 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       updateCharacterCreateUploadUI(root);
       syncCharacterCreateCredit(root);
 
-          try {
+      try {
         const publicUrl = await uploadCartoonReferenceToR2(file);
         state.characterReferenceImageUrl = String(publicUrl || "").trim();
         state.characterReferenceUploadStatus = "ready";
         state.characterReferenceUploadError = "";
+
+        const descInput = qs("#cartoon-character-desc", root) || qs("[data-character-desc]", root);
+        if (descInput && !String(descInput.value || "").trim()) {
+          descInput.value = "Yüklediğim referans fotoğrafı temel al. Sevimli, temiz, yüksek detaylı bir çizgi film karakteri oluştur. Yüz hatlarını yumuşat, ifadeyi sıcak yap ve çocuk dostu 3D çizgi film stilinde üret.";
+          updateCharacterDescCount(root);
+        }
+
         updateCharacterCreateUploadUI(root);
+        syncCharacterCreateCredit(root);
+        try { window.toast?.success?.("10 kredi eklendi"); } catch {}
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
       } catch (err) {
         state.characterReferenceImageUrl = "";
@@ -1461,7 +1470,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceUploadError = String(err?.message || err || "reference_upload_failed");
         updateCharacterCreateUploadUI(root);
         console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
-        try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
+        alert(state.characterReferenceUploadError);
       }
 
       return;
