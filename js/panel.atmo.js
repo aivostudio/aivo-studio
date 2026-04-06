@@ -304,6 +304,8 @@
     let destroyed = false;
     let timer = null;
     let searchTimer = null;
+    let prevHasProcessing = false;
+let lastReadyToastJobId = "";
 
    const state = {
   items: [],
@@ -642,9 +644,20 @@ setTimeout(syncSearchFromInput, 0);
 
       const items = combinedItems();
 
-      const hasProcessing = items.some((j) => isProcessing(j));
-      setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
+     const hasProcessing = items.some((j) => isProcessing(j));
+setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
+if (prevHasProcessing && !hasProcessing) {
+  const readyJob = items.find((j) => isReady(j));
+  const readyJobId = safeStr(readyJob?.job_id || readyJob?.id);
+
+  if (readyJobId && readyJobId !== lastReadyToastJobId) {
+    lastReadyToastJobId = readyJobId;
+    try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
+  }
+}
+
+prevHasProcessing = hasProcessing;
      if (!items.length) {
   $grid.innerHTML = `<div class="atmoEmpty">${
     state.query ? "Aramana uygun atmos üretim bulunamadı." : "Henüz atmos üretim yok."
