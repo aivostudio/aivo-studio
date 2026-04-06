@@ -79,7 +79,7 @@
     });
   }
 
-  async function withGenerateLoading(btn, run, root) {
+   async function withGenerateLoading(btn, run, root) {
     if (!btn) return;
     if (btn.__atmBusy) return;
     btn.__atmBusy = true;
@@ -98,12 +98,18 @@
     const startedAt = Date.now();
 
     try {
+      try { window.toast?.success?.("Atmosfer video üretimi başladı"); } catch {}
+
       const res = await Promise.resolve().then(run);
       const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
       const evt = await waitForAtmoJobCreated(remainingForEvent);
 
       const elapsed = Date.now() - startedAt;
       if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
+
+      if (evt || res) {
+        try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
+      }
 
       return { ok: true, res, evt };
     } catch (err) {
