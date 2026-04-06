@@ -39,11 +39,10 @@ async function generateMusic(payload) {
     return (el?.value || "").trim();
   }
 
-  function toastError(msg){
+    function toastError(msg){
     if (window.toast?.error) return window.toast.error(msg);
     if (window.toast?.info) return window.toast.info(msg);
     console.warn("[music.generate]", msg);
-    alert(msg);
   }
 
   function toastSuccess(msg){
@@ -142,9 +141,9 @@ async function generateMusic(payload) {
       btn.setAttribute("aria-busy", "true");
     }
     try {
-      const prompt = getPrompt();
+           const prompt = getPrompt();
       if (!prompt){
-        toastError("Lütfen önce prompt yaz.");
+        toastError("Prompt yazmalısın");
         return;
       }
 
@@ -183,7 +182,7 @@ async function generateMusic(payload) {
           return;
         }
 
-        try {
+               try {
           const creditGetRes = await fetch("/api/credits/get", {
             credentials: "include",
             cache: "no-store",
@@ -203,6 +202,8 @@ async function generateMusic(payload) {
             }
           }
         } catch (_) {}
+
+        toastSuccess("5 kredi düşüldü");
 
       } catch (creditErr) {
         console.error("[music.generate] credits consume failed:", creditErr);
@@ -296,7 +297,7 @@ async function generateMusic(payload) {
       const isProviderJob = String(job_id).startsWith("prov_music_");
       const jobType = "music"; // panel key music
 
-      toastSuccess("Müzik üretimi başladı 🎵");
+      toastSuccess("Müzik üretimi başladı");
 
       // 1) Panel event
       dispatchJob({
@@ -365,7 +366,7 @@ async function generateMusic(payload) {
 
                 console.log("[music.generate] poll status:", st);
 
-                if (st?.state === "ready" && st?.audio?.src) {
+                 if (st?.state === "ready" && st?.audio?.src) {
                   clearInterval(pollInterval);
 
                   console.log("[music.generate] READY → dispatch UI update", st);
@@ -393,6 +394,8 @@ async function generateMusic(payload) {
                     __provider_job_id: provider_job_id,
                     __internal_job_id: st.internal_job_id,
                   });
+
+                  toastSuccess("Müzik hazır");
                 }
               } catch (e) {
                 console.warn("[music.generate] status poll failed:", e);
