@@ -529,29 +529,6 @@ if (!kvkk) {
     }
   }
 
-  function getStudioTargetForProduct(product){
-    const map = { music: "music", cover: "cover", video: "video" };
-    const page = map[product] || product;
-    return "/studio.v2.html#" + encodeURIComponent(page);
-  }
-
-  function getRedirectIntent(product){
-    const fallback = getStudioTargetForProduct(product);
-
-    try{
-      const params = new URLSearchParams(location.search);
-      const from   = (params.get("from") || "").trim().toLowerCase();
-      const reason = (params.get("reason") || "").trim().toLowerCase();
-      const rawTo  = (params.get("to") || "").trim();
-
-      if (from === "studio" && reason === "insufficient_credit" && rawTo) {
-        return decodeURIComponent(rawTo);
-      }
-    }catch(_){}
-
-    return fallback;
-  }
-
   document.addEventListener("click", (e) => {
     const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
     if (!card) return;
@@ -563,37 +540,34 @@ if (!kvkk) {
     const product = (card.getAttribute("data-product") || "").trim();
     if (!product) return;
 
-    const target = getRedirectIntent(product);
-    const hashIndex = target.indexOf("#");
-    const page = hashIndex >= 0 ? decodeURIComponent(target.slice(hashIndex + 1)) : product;
-
     const isStudio =
       /\/studio(\.html)?$/i.test(location.pathname) ||
       /\/studio\.v2\.html$/i.test(location.pathname) ||
       /studio\.html/i.test(location.href) ||
       /studio\.v2\.html/i.test(location.href);
 
+    const map = { music: "music", cover: "cover", video: "video" };
+    const page = map[product] || product;
+
     if (!isStudio && !safeIsLoggedIn()) {
       try {
-        sessionStorage.setItem("aivo_after_login", target);
+        sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page));
       } catch(_) {}
       safeOpenLogin();
       return;
     }
 
-    try { localStorage.setItem("aivo_product_target", page); } catch(_) {}
+    try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
 
     if (!isStudio) {
-      location.href = target;
+      location.href = "/studio.v2.html#" + encodeURIComponent(page);
       return;
     }
 
     if (typeof window.AIVO_SWITCH_PAGE === "function") {
       window.AIVO_SWITCH_PAGE(page);
       try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
-      return;
     }
-
-    location.hash = "#" + encodeURIComponent(page);
   }, true);
 })();
+
