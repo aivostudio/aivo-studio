@@ -1779,7 +1779,7 @@ try {
         if (!file) return;
 
         state.audioFileUploadPromise = uploadCartoonAudioToR2(file)
-          .then((publicUrl) => {
+                .then((publicUrl) => {
             state.audioFileUrl = String(publicUrl || "").trim();
             state.audioFileUploadStatus = "ready";
             state.audioFileUploadError = "";
@@ -1789,6 +1789,7 @@ try {
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+            try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
             console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
             return state.audioFileUrl;
           })
