@@ -1161,8 +1161,13 @@ function isAtmoPolicyBlocked(raw) {
     if (closestWithin(e.target, "#atmImageFile", root)) {
       state.imageFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
-      await handleUpload(panel || root, "image", file);
+      const uploaded = await handleUpload(panel || root, "image", file);
       syncAtmoGenerateCredits(root);
+
+      if (file && uploaded?.url) {
+        try { window.toast?.success?.("Resim eklendi"); } catch {}
+      }
+
       return;
     }
 
@@ -1208,8 +1213,13 @@ function isAtmoPolicyBlocked(raw) {
     if (closestWithin(e.target, "#atmProRefImageFile", root)) {
       state.refImageFile = file;
       const panel = e.target.closest('[data-mode-panel="pro"]');
-      await handleUpload(panel || root, "image", file);
+      const uploaded = await handleUpload(panel || root, "image", file);
       syncAtmoGenerateCredits(root);
+
+      if (file && uploaded?.url) {
+        try { window.toast?.success?.("Resim eklendi"); } catch {}
+      }
+
       return;
     }
 
