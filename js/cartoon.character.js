@@ -1208,7 +1208,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           imageUrl: readyImageUrl
         };
 
-        const exists = (state.characters || []).some(
+              const exists = (state.characters || []).some(
           (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
         );
 
@@ -1227,6 +1227,8 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         if (root) {
           renderCharacterOnly(root);
         }
+
+        try { window.toast?.success?.("Karakter hazır"); } catch {}
 
         return;
       }
