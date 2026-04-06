@@ -1111,10 +1111,10 @@ function bindVideoPricingUI(root) {
   document.addEventListener(
     "click",
     (e) => {
-      const tBtn = e.target.closest("#videoGenerateTextBtn");
+         const tBtn = e.target.closest("#videoGenerateTextBtn");
       if (tBtn) {
         e.preventDefault();
-        return withLoading(tBtn, createText);
+        return createText();
       }
 
       const iBtn = e.target.closest("#videoGenerateImageBtn");
