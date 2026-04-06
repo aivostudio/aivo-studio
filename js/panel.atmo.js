@@ -930,19 +930,19 @@ $grid?.addEventListener(
   }
 };
    
-    const onJobReady = (e) => {
-      const d = e?.detail || {};
-      if (!d) return;
+  const onJobReady = (e) => {
+  const d = e?.detail || {};
+  if (!d) return;
 
-      const appKey = safeStr(
-        d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
-      ).toLowerCase();
+  const appKey = safeStr(
+    d?.app || d?.meta?.app || d?.meta?.module || d?.meta?.routeKey || "atmo"
+  ).toLowerCase();
 
-      if (!appKey.includes("atmo")) return;
+  if (!appKey.includes("atmo")) return;
 
-      upsertEphemeralReady(d);
-    };
-
+  upsertEphemeralReady(d);
+  try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
+};
       window.addEventListener("aivo:atmo:job_created", onJobCreated);
     window.addEventListener("aivo:atmo:job_ready", onJobReady);
 
