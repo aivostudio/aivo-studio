@@ -5358,20 +5358,19 @@ html.is-studio .aivo-topbar {
 #atmosphere-video .atmo-pill strong{
   font-weight: 700;
 }
-.aivo-contact-form{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 18px auto 0;
-  padding: 0;
-  width: fit-content;
-  color: #cfd3ff;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 1;
+.aivo-footer .aivo-contact .aivo-contact-form{
+  display: block !important;
+  width: fit-content !important;
+  margin: 18px auto 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  color: #cfd3ff !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
 }
 
-.aivo-contact-form:hover{
-  color: #ffffff;
+.aivo-footer .aivo-contact .aivo-contact-form:hover{
+  color: #ffffff !important;
 }
