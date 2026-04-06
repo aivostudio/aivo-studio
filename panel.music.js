@@ -2034,7 +2034,7 @@ window.removeEventListener("focus", rehydrateMusicPanel);
             return;
           }
 
-          try {
+                  try {
             const creditGetRes = await fetch("/api/credits/get", {
               credentials: "include",
               cache: "no-store",
@@ -2054,6 +2054,8 @@ window.removeEventListener("focus", rehydrateMusicPanel);
               }
             }
           } catch (_) {}
+
+          try { window.toast?.success?.("5 kredi düşüldü"); } catch {}
 
           await (onConfirm?.({ job_id }));
           closeStemConfirmModal();
