@@ -1843,13 +1843,13 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           pollCartoonCharacterJob(j.job_id, 0);
         }
       })
-      .catch((err) => {
+          .catch((err) => {
         state.characterCreatePending = false;
         characterCreateBtn.disabled = false;
         characterCreateBtn.textContent = "🧩 Karakter Oluştur";
 
         console.error("[CARTOON][CHARACTER] create error:", err);
-        alert(String(err?.message || err || "character_create_failed"));
+        try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
       });
   });
 
