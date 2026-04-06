@@ -1725,16 +1725,15 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       updateCharacterDescCount(root);
       return;
     }
-
     const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
     if (!characterCreateBtn || !root.contains(characterCreateBtn)) return;
 
     e.preventDefault();
 
-      const payload = buildCharacterCreatePayload(root);
+    const payload = buildCharacterCreatePayload(root);
 
     if (!String(payload.prompt || "").trim()) {
-      alert("Önce kısa tanım / prompt yazın.");
+      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
       const descInput = qs("#cartoon-character-desc", root);
       if (descInput) descInput.focus();
       return;
@@ -1759,14 +1758,15 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       showCharacterPolicyBlockedUI(root, descInput, characterCreateBtn);
       return;
     }
-      console.log("[CARTOON][CHARACTER] payload =", payload);
+
+    console.log("[CARTOON][CHARACTER] payload =", payload);
 
     const hasReferenceImage =
-  !!payload.referenceImageUrl ||
-  !!payload.referenceFile;
+      !!payload.referenceImageUrl ||
+      !!payload.referenceFile;
 
-const creditCost = hasReferenceImage ? 30 : 20;
-const creditReason = "studio_cartoon_character_create";
+    const creditCost = hasReferenceImage ? 30 : 20;
+    const creditReason = "studio_cartoon_character_create";
 
     const creditRes = await fetch("/api/credits/consume", {
       method: "POST",
@@ -1788,7 +1788,7 @@ const creditReason = "studio_cartoon_character_create";
       creditData = { ok: false, error: "non_json_response", status: creditRes.status };
     }
 
-      if (!creditRes.ok || !creditData?.ok) {
+    if (!creditRes.ok || !creditData?.ok) {
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
@@ -1822,7 +1822,9 @@ const creditReason = "studio_cartoon_character_create";
 
     state.characterCreatePending = true;
     characterCreateBtn.disabled = true;
-    characterCreateBtn.textContent = "Üretiliyor...";
+    characterCreateBtn.textContent = "Karakter Oluşturuluyor...";
+
+    try { window.toast?.success?.("Karakter oluşturuluyor"); } catch {}
 
     fetch("/api/providers/fal/cartoon/create", {
       method: "POST",
@@ -1838,8 +1840,6 @@ const creditReason = "studio_cartoon_character_create";
         }
 
         if (j?.job_id) {
-       
-
           pollCartoonCharacterJob(j.job_id, 0);
         }
       })
