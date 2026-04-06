@@ -831,7 +831,7 @@ if (act === "delete") {
 
   return;
 }
-    }
+
 
     $grid?.addEventListener(
       "click",
