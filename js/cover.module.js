@@ -606,7 +606,17 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       .replace(/\s+/g, " ")
       .trim();
   }
+  function toastError(msg) {
+    if (window.toast?.error) return window.toast.error(msg);
+    if (window.toast?.info) return window.toast.info(msg);
+    console.warn("[cover]", msg);
+  }
 
+  function toastSuccess(msg) {
+    if (window.toast?.success) return window.toast.success(msg);
+    if (window.toast?.info) return window.toast.info(msg);
+    console.log("[cover]", msg);
+  }
   function ensureCoverPolicyNote(generateBtn) {
     const root = getRoot();
     if (!root || !generateBtn || !generateBtn.parentElement) return null;
@@ -888,9 +898,11 @@ function buildCoverPrompt(prompt, quality) {
   async function createCover() {
     const root = getRoot();
     if (!root) return;
-
     const prompt = (qs("#coverPrompt", root)?.value || "").trim();
-    if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
+    if (!prompt) {
+      toastError("Prompt yazmalısın");
+      return;
+    }
 
     const style = root.dataset.coverStyle || null;
     const quality = root.dataset.coverQuality || "artist";
@@ -988,11 +1000,18 @@ function buildCoverPrompt(prompt, quality) {
       const root = getRoot();
       if (!root) return;
 
-      const qp = e.target.closest(".quality-pill");
+         const qp = e.target.closest(".quality-pill");
       if (qp && root.contains(qp)) {
         e.preventDefault();
         const q = qp.getAttribute("data-quality") || "artist";
         setActiveQuality(root, q);
+
+        if (q === "ultra") {
+          toastSuccess("Cinematic Ultra HD seçildi · 9 kredi");
+        } else {
+          toastSuccess("Artist seçildi · 6 kredi");
+        }
+
         return;
       }
 
