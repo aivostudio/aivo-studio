@@ -205,8 +205,8 @@
           });
         });
 
-        render();
-        window.toast?.success?.("Müzikler hazır 🎵");
+              render();
+        window.toast?.success?.("Müzik hazır");
         return;
       }
 
