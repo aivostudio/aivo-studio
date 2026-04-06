@@ -119,40 +119,22 @@ export default async function handler(req, res) {
   // ✅ BASIC MODE için structured seçimlerden prompt üret
   let promptSafe = prompt;
 
- if (!promptSafe && !multi_prompt) {
-  const parts = [];
+  if (!promptSafe && !multi_prompt) {
+    const parts = [];
 
-  const cameraKey = String(body.camera || "").trim().toLowerCase();
+    if (body.scene) parts.push(`Scene: ${body.scene}.`);
+    if (Array.isArray(body.effects) && body.effects.length)
+      parts.push(`Effects: ${body.effects.join(", ")}.`);
+    if (body.camera) parts.push(`Camera: ${body.camera}.`);
+    if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
+    if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
 
-  const cameraPromptMap = {
-    static: "Locked-off static camera, no pan, no tilt, no zoom.",
-    slow_zoom: "Slow cinematic push-in, gentle forward zoom, steady composition.",
-    light_pan: "Gentle slow horizontal pan, smooth lateral movement, stable framing.",
-    kenburns_soft: "Soft Ken Burns motion with subtle zoom and slight pan, smooth cinematic movement."
-  };
+    if (!parts.length) {
+      return res.status(400).json({ ok: false, error: "missing_prompt" });
+    }
 
-  const cameraPrompt =
-    cameraPromptMap[cameraKey] ||
-    "Soft cinematic camera movement, natural motion, stable framing.";
-
-  if (body.scene) parts.push(`Scene: ${body.scene}.`);
-  if (Array.isArray(body.effects) && body.effects.length) {
-    parts.push(`Effects: ${body.effects.join(", ")}.`);
+    promptSafe = parts.join(" ") + " Seamless loop. Cinematic. No text.";
   }
-
-  parts.push(cameraPrompt);
-
-  if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
-  if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
-
-  if (!parts.length) {
-    return res.status(400).json({ ok: false, error: "missing_prompt" });
-  }
-
-  promptSafe =
-    parts.join(" ") +
-    " Cinematic atmosphere video. Motion must follow the requested camera behavior exactly. No text, no subtitles, no watermark.";
-}
 
   // ---- canonical user_uuid resolve ----
   const userRow = await sql`
