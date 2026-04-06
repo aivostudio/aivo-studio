@@ -1162,22 +1162,31 @@ function isAtmoPolicyBlocked(raw) {
       return;
     }
 
-    if (closestWithin(e.target, "#atmLogoFile", root)) {
+     if (closestWithin(e.target, "#atmLogoFile", root)) {
       state.logoFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
-      await handleUpload(panel || root, "logo", file);
+      const uploaded = await handleUpload(panel || root, "logo", file);
       syncAtmoGenerateCredits(root);
+
+      if (file && uploaded?.url) {
+        try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+      }
+
       return;
     }
 
     if (closestWithin(e.target, "#atmAudioFile", root)) {
       state.audioFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
-      await handleUpload(panel || root, "audio", file);
+      const uploaded = await handleUpload(panel || root, "audio", file);
       syncAtmoGenerateCredits(root);
+
+      if (file && uploaded?.url) {
+        try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+      }
+
       return;
     }
-
     if (closestWithin(e.target, "#atmProLogoFile", root)) {
       state.logoFile = file;
       const panel = e.target.closest('[data-mode-panel="pro"]');
