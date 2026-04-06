@@ -743,11 +743,57 @@
     };
 
     window.addEventListener("aivo:atmo:job_created", onJobCreated);
+      const onPanelClick = async (e) => {
+      const btn = e.target?.closest?.('[data-act="delete"]');
+      if (!btn || !host.contains(btn)) return;
 
+      e.preventDefault();
+      e.stopPropagation();
+
+      const jobId = String(btn.getAttribute("data-job") || "").trim();
+      if (!jobId) return;
+
+      const prevText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Siliniyor...";
+
+      try {
+        const r = await fetch("/api/jobs/delete", {
+          method: "POST",
+          credentials: "include",
+          headers: { "content-type": "application/json", "accept": "application/json" },
+          body: JSON.stringify({ job_id: jobId, app: "atmo" })
+        });
+
+        const j = await r.json().catch(() => null);
+
+        if (!r.ok || !j?.ok) {
+          throw new Error(j?.error || "delete_failed");
+        }
+
+        try { optimistic.delete(jobId); } catch {}
+
+        const card = host.querySelector(`[data-job="${CSS.escape(jobId)}"]`);
+        if (card) card.remove();
+
+        try { window.toast?.success?.("Video silindi"); } catch {}
+
+        try { controller?.hydrateNow?.(); } catch {}
+      } catch (err) {
+        console.error("[ATMO PANEL] delete error:", err);
+        try { window.toast?.error?.("Video silinemedi"); } catch {}
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prevText;
+      }
+    };
+
+    host.addEventListener("click", onPanelClick);
     return {
       destroy() {
         destroyed = true;
         try { window.removeEventListener("aivo:atmo:job_created", onJobCreated); } catch {}
+         try { host.removeEventListener("click", onPanelClick); } catch {}
         try { controller?.destroy?.(); } catch {}
         try { host.innerHTML = ""; } catch {}
       },
