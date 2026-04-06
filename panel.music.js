@@ -948,10 +948,10 @@ async function togglePlayFromCard(card){
       return;
     }
 
-    stemsClearTimer(jobId);
+       stemsClearTimer(jobId);
     stemsSet(jobId, { status: "starting", prediction_id: "", output: null, error: "" });
     render();
-    toast("info", "Stems başlatılıyor…");
+    toast("info", "Kanal ayırma işlemi başladı");
 
     try {
       const c = await stemsPost({ audio_url: src });
@@ -960,9 +960,8 @@ async function togglePlayFromCard(card){
       if (!pid) throw new Error("missing_prediction_id");
       if (isHiddenJobId(jobId)) return;
 
-      stemsSet(jobId, { status: st || "starting", prediction_id: pid, output: null, error: "" });
+         stemsSet(jobId, { status: st || "starting", prediction_id: pid, output: null, error: "" });
       render();
-      toast("success", "Stems başladı");
       stemsSchedulePoll(jobId, 1200);
     } catch (e) {
       stemsSet(jobId, { status: "failed", error: String(e?.message || e || "failed") });
