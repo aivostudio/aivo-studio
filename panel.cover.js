@@ -447,7 +447,7 @@ function download(url) {
           const out = pickBestImageOutput(job);
           const url = out?.url || "";
 
-     if (act === "delete") {
+      if (act === "delete") {
   fetch("/api/jobs/delete", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -460,7 +460,7 @@ function download(url) {
 
       hiddenDeletedIds.add(String(id));
 
-          const currentItems = Array.isArray(controller?.state?.items) ? controller.state.items : [];
+      const currentItems = Array.isArray(controller?.state?.items) ? controller.state.items : [];
       const visibleItems = currentItems.filter(
         (x) => !hiddenDeletedIds.has(String(x?.job_id || x?.id || ""))
       );
@@ -468,9 +468,21 @@ function download(url) {
       host.__coverItems = visibleItems;
       render(host, visibleItems);
       controller?.hydrate?.();
+
+      if (window.toast?.success) {
+        window.toast.success("Silindi");
+      } else if (window.toast?.info) {
+        window.toast.info("Silindi");
+      }
     })
     .catch((err) => {
       console.error("[cover] delete failed", err);
+
+      if (window.toast?.error) {
+        window.toast.error("Silme başarısız");
+      } else if (window.toast?.info) {
+        window.toast.info("Silme başarısız");
+      }
     });
 
   return;
