@@ -901,9 +901,10 @@ async function togglePlayFromCard(card){
       const status = String(s.status || "").toLowerCase();
       if (isHiddenJobId(jobId)) return;
 
-      if (status === "succeeded") {
+         if (status === "succeeded") {
         stemsSet(jobId, { status: "succeeded", output: s.output || null, error: "" });
         render();
+        toast("success", "Kanal ayırma hazır");
         return;
       }
 
