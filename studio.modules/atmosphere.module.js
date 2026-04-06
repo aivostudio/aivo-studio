@@ -1789,16 +1789,14 @@ function isAtmoPolicyBlocked(raw) {
         window.__ATMO_LOGO_PUBLIC_URL__ ||
         "";
 
-      if (logoUrl) {
-        const targets = document.querySelectorAll("[data-atmo-logo-target]");
-        targets.forEach((el) => {
-          el.src = logoUrl;
-        });
+      if (!logoUrl) return;
 
-        console.log("[ATMO] Logo applied via PPE:", logoUrl);
-      }
+      const targets = document.querySelectorAll("[data-atmo-logo-target]");
+      targets.forEach((el) => {
+        el.src = logoUrl;
+      });
 
-      try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
+      console.log("[ATMO] Logo applied via PPE:", logoUrl);
     };
 
     console.log("[ATMO] PPE.onOutput bound");
