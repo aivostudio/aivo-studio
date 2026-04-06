@@ -1066,10 +1066,7 @@ function buildCoverPrompt(prompt, quality) {
           return;
         }
 
-              gen.disabled = true;
-        const prev = gen.textContent;
-        gen.textContent = "Üretiliyor...";
-        gen.classList.add("is-loading");
+             const prev = gen.textContent;
 
         (async () => {
           try {
@@ -1099,7 +1096,11 @@ function buildCoverPrompt(prompt, quality) {
             try { creditData = await creditRes.json(); }
             catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
 
-                      if (!creditRes.ok || !creditData?.ok) {
+            if (!creditRes.ok || !creditData?.ok) {
+              gen.disabled = true;
+              gen.textContent = "Kredi yetersiz";
+              gen.classList.remove("is-loading");
+
               const to = encodeURIComponent(
                 location.pathname + location.search + location.hash
               );
@@ -1109,6 +1110,10 @@ function buildCoverPrompt(prompt, quality) {
 
               return;
             }
+
+            gen.disabled = true;
+            gen.textContent = "Üretiliyor...";
+            gen.classList.add("is-loading");
 
             try {
               const creditGetRes = await fetch("/api/credits/get", {
