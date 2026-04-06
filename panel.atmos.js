@@ -551,6 +551,12 @@
           const isPortrait = ratio.includes("9:16") || ratio.includes("4:5") || ratio.includes("2:3");
           const ready = badge.kind === "ok"; // sadece "Hazır" iken video göster
           const can = !!(ready && url);
+           const toastKey = `atmo-ready:${String(job?.job_id || "")}`;
+
+          if (can && job?.job_id && !window.__ATMO_READY_TOASTS__.has(toastKey)) {
+            window.__ATMO_READY_TOASTS__.add(toastKey);
+            try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
+          }
 
           const thumb = el.querySelector(".atmoThumb");
           if (thumb) {
