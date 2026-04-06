@@ -1567,9 +1567,9 @@ const familyWasAlreadyReady =
 
         render();
 
-        if (baseId && !READY_TOASTED.has(baseId) && !familyWasAlreadyReady) {
+           if (baseId && !READY_TOASTED.has(baseId) && !familyWasAlreadyReady) {
   READY_TOASTED.add(baseId);
-  toast("success", "Müzikler hazır 🎵");
+  toast("success", "Müzik hazır");
 }
         return;
       }
