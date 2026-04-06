@@ -1529,14 +1529,7 @@ function isAtmoPolicyBlocked(raw) {
       creditData = { ok: false, error: "non_json_response", status: creditRes.status };
     }
 
-      if (!creditRes.ok || !creditData?.ok) {
-      const msg =
-        creditData?.error ||
-        creditData?.message ||
-        "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-
-      try { window.toast?.error?.(String(msg)); } catch {}
-
+       if (!creditRes.ok || !creditData?.ok) {
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
@@ -1546,7 +1539,6 @@ function isAtmoPolicyBlocked(raw) {
 
       return;
     }
-
     try {
       const creditGetRes = await fetch("/api/credits/get", {
         credentials: "include",
