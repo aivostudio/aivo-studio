@@ -803,28 +803,34 @@ setTimeout(syncSearchFromInput, 0);
 
       if (act === "delete") {
         if (!jobId) return;
+if (act === "delete") {
+  if (!jobId) return;
 
-        deletedIds.add(jobId);
+  deletedIds.add(jobId);
 
-        state.ephemerals = (state.ephemerals || []).filter(
-          (x) => safeStr(x?.job_id) !== jobId
-        );
-        state.items = (state.items || []).filter(
-          (x) => safeStr(x?.job_id) !== jobId
-        );
+  state.ephemerals = (state.ephemerals || []).filter(
+    (x) => safeStr(x?.job_id) !== jobId
+  );
+  state.items = (state.items || []).filter(
+    (x) => safeStr(x?.job_id) !== jobId
+  );
 
-        render();
+  render();
 
-        if (db && typeof db.deleteJob === "function") {
-          const ok = await db.deleteJob(jobId);
-          if (!ok) {
-            deletedIds.delete(jobId);
-            db.hydrate(true);
-          }
-        }
+  if (db && typeof db.deleteJob === "function") {
+    const ok = await db.deleteJob(jobId);
+    if (!ok) {
+      deletedIds.delete(jobId);
+      db.hydrate(true);
+    } else {
+      try { window.toast?.success?.("Video silindi"); } catch {}
+    }
+  } else {
+    try { window.toast?.success?.("Video silindi"); } catch {}
+  }
 
-        return;
-      }
+  return;
+}
     }
 
     $grid?.addEventListener(
