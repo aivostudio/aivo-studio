@@ -1162,7 +1162,7 @@ function isAtmoPolicyBlocked(raw) {
       return;
     }
 
-     if (closestWithin(e.target, "#atmLogoFile", root)) {
+    if (closestWithin(e.target, "#atmLogoFile", root)) {
       state.logoFile = file;
       const panel = e.target.closest('[data-mode-panel="basic"]');
       const uploaded = await handleUpload(panel || root, "logo", file);
@@ -1187,6 +1187,7 @@ function isAtmoPolicyBlocked(raw) {
 
       return;
     }
+
     if (closestWithin(e.target, "#atmProLogoFile", root)) {
       state.logoFile = file;
       const panel = e.target.closest('[data-mode-panel="pro"]');
@@ -1221,7 +1222,6 @@ function isAtmoPolicyBlocked(raw) {
       return;
     }
   });
-
   // ------------------------------------------------------------
   // 9) Basic personalization controls
   // ------------------------------------------------------------
