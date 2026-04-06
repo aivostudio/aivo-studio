@@ -2603,106 +2603,210 @@
   margin-left: 16px;
 }
 /* =========================================================
-   PRODUCTS DROPDOWN — SOLID GLASS (Pricing/Kurumsal FIX) v7
-   - Arka plan içerik görünmesin (opak cam)
-   - Z-index en üstte
-   - Safari sızıntı/overlap kes
-   - Pseudo overlay (dev after/before) kill
+   PRODUCTS DROPDOWN — SINGLE SOURCE OF TRUTH (HARD RESET)
+   - Products dropdown için tek layout owner
+   - Hitbox kaymasını bitirir
+   - JS is-open akışına uyumludur
    ========================================================= */
 
-/* Topbar her zaman üstte */
+/* Topbar üstte kalsın */
 .aivo-topbar{
   position: relative;
   z-index: 9000;
   isolation: isolate;
 }
 
-/* Dropdown anchor */
-.nav-item.has-dropdown{
+/* Anchor */
+#navProducts{
   position: relative;
 }
 
-/* Panel */
-.dropdown.dropdown--products{
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%) translateZ(0);
-  z-index: 9999;
+/* Panel: sadece kutu */
+#navProducts > .dropdown.dropdown--products{
+  position: absolute !important;
+  top: calc(100% + 12px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 99999 !important;
 
-  /* ✅ opak cam */
-  background: rgba(12, 14, 28, 0.96);
-  border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 22px;
+  width: min(980px, calc(100vw - 56px)) !important;
+  padding: 0 !important;
+  border-radius: 22px !important;
 
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-
-  /* panel büyüyüp sayfayı "boyamasın" */
-  overflow: hidden;
-  isolation: isolate;
-
-  box-shadow: 0 28px 70px rgba(0,0,0,0.55);
-
-  /* genişlik kontrol (çok açılmasın) */
-  width: min(980px, calc(100vw - 56px));
-}
-
-/* Bazı düzenlerde panelin kendi before/after’ı sayfayı kaplayabiliyor */
-.dropdown.dropdown--products::before,
-.dropdown.dropdown--products::after{
-  content: none !important;
-  display: none !important;
-}
-
-/* İç container: tek owner + opak garanti */
-.dropdown.dropdown--products .products-menu{
-  display: grid !important;
-  grid-auto-flow: column !important;
-  grid-auto-columns: minmax(0, 1fr) !important;
-  gap: 12px !important;
-
-  padding: 16px !important;
   background: rgba(12, 14, 28, 0.96) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  box-shadow: 0 28px 70px rgba(0,0,0,0.55) !important;
 
-  /* içerik taşması / mavi overlay ihtimali */
+  -webkit-backdrop-filter: blur(18px) !important;
+  backdrop-filter: blur(18px) !important;
+
   overflow: hidden !important;
   isolation: isolate !important;
 }
 
-/* İç container pseudo’larını tamamen kapat */
-.dropdown.dropdown--products .products-menu::before,
-.dropdown.dropdown--products .products-menu::after{
+/* Panel pseudo kapalı */
+#navProducts > .dropdown.dropdown--products::before,
+#navProducts > .dropdown.dropdown--products::after{
   content: none !important;
   display: none !important;
 }
 
-/* Kartlar */
-.dropdown.dropdown--products .product-card{
-  min-height: 170px !important;
-  border-radius: 18px !important;
+/* Products grid: SADECE row-grid, asla auto-flow column değil */
+#navProducts > .dropdown.dropdown--products > .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-flow: row !important;
+  grid-auto-columns: unset !important;
 
-  background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
+  gap: 14px !important;
+  padding: 16px !important;
+  margin: 0 !important;
+
+  width: 100% !important;
+  max-width: none !important;
+
+  background: transparent !important;
+  overflow: visible !important;
+  isolation: isolate !important;
+}
+
+/* İç pseudo kapalı */
+#navProducts > .dropdown.dropdown--products > .products-menu::before,
+#navProducts > .dropdown.dropdown--products > .products-menu::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* Kart: gerçek hitbox kartın kendisi olsun */
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card{
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+
+  min-height: 170px !important;
+  padding: 18px !important;
+  margin: 0 !important;
+  border-radius: 18px !important;
+  box-sizing: border-box !important;
+
+  text-decoration: none !important;
+  color: rgba(255,255,255,.92) !important;
+  white-space: normal !important;
+
+  background: linear-gradient(135deg, rgba(120,120,255,.12), rgba(34,211,238,.10)) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,.35) !important;
 
   overflow: hidden !important;
+  transform: none !important;
+}
+
+/* Kart hover */
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card:hover{
+  transform: translateY(-2px) !important;
+  background: rgba(255,255,255,.07) !important;
+  border-color: rgba(255,255,255,.16) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,.35) !important;
+}
+
+/* İkon */
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card .pc-ico{
   position: relative !important;
-  transform: translateZ(0);
+  top: auto !important;
+  left: auto !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 auto !important;
+  font-size: 18px !important;
+
+  background: rgba(255,255,255,.07) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
 }
 
-.dropdown.dropdown--products .product-card:hover{
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.16) !important;
+/* Metin */
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card .pc-txt{
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding-top: 0 !important;
+  min-width: 0 !important;
 }
 
-/* Mobil/ dar ekran: 2 satıra düşsün, taşmasın */
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card .pc-title{
+  display: block !important;
+  margin: 0 0 6px !important;
+  font-size: 24px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  color: rgba(255,255,255,.96) !important;
+}
+
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card .pc-sub{
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+  color: rgba(255,255,255,.72) !important;
+}
+
+/* Alt çizgi sadece görsel, click yemesin */
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card::after{
+  content: "" !important;
+  position: absolute !important;
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 12px !important;
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, rgba(111,99,255,.95), rgba(31,182,255,.95)) !important;
+  opacity: 0 !important;
+  transform: scaleX(.55) !important;
+  transform-origin: left center !important;
+  transition: opacity .18s ease, transform .18s ease !important;
+  pointer-events: none !important;
+}
+
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card:hover::after,
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card:focus::after,
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card:focus-visible::after,
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card:active::after,
+#navProducts > .dropdown.dropdown--products > .products-menu > a.product-card.is-active::after{
+  opacity: .95 !important;
+  transform: scaleX(1) !important;
+}
+
+/* Mobil */
 @media (max-width: 900px){
-  .dropdown.dropdown--products{
-    width: calc(100vw - 24px);
+  #navProducts > .dropdown.dropdown--products{
+    width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    transform: none !important;
   }
-  .dropdown.dropdown--products .products-menu{
-    grid-auto-flow: row !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+  #navProducts > .dropdown.dropdown--products > .products-menu{
+    grid-template-columns: 1fr !important;
+  }
+
+  #navProducts > .dropdown.dropdown--products > .products-menu > a.product-card{
+    min-height: 120px !important;
+  }
+
+  #navProducts > .dropdown.dropdown--products > .products-menu > a.product-card .pc-title{
+    font-size: 22px !important;
+  }
+
+  #navProducts > .dropdown.dropdown--products > .products-menu > a.product-card .pc-sub{
+    font-size: 14px !important;
   }
 }
 /* Topbar: sadece avatar, yazı gizli */
