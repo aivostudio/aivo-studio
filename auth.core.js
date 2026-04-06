@@ -517,18 +517,24 @@ if (!kvkk) {
     }catch(_){}
   }
 
-  function safeIsLoggedIn(){
-    try{
-      if (localStorage.getItem("aivo_logged_in") === "1") return true;
-      if ((localStorage.getItem("aivo_user_email") || "").trim()) return true;
-      if ((localStorage.getItem("aivo_token") || "").trim()) return true;
-      if ((localStorage.getItem("aivo_user") || "").trim()) return true;
-      return false;
-    }catch(_){
-      return false;
+function safeIsLoggedIn(){
+  try{
+    const s = window.__AIVO_SESSION__;
+    if (s && typeof s.ok === "boolean") {
+      return !!s.ok;
     }
-  }
+  }catch(_){}
 
+  try{
+    if (localStorage.getItem("aivo_logged_in") === "1") return true;
+    if ((localStorage.getItem("aivo_user_email") || "").trim()) return true;
+    if ((localStorage.getItem("aivo_token") || "").trim()) return true;
+    if ((localStorage.getItem("aivo_user") || "").trim()) return true;
+    return false;
+  }catch(_){
+    return false;
+  }
+}
   document.addEventListener("click", (e) => {
     const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
     if (!card) return;
