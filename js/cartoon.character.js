@@ -1448,14 +1448,12 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       updateCharacterCreateUploadUI(root);
       syncCharacterCreateCredit(root);
 
-      try {
+          try {
         const publicUrl = await uploadCartoonReferenceToR2(file);
         state.characterReferenceImageUrl = String(publicUrl || "").trim();
         state.characterReferenceUploadStatus = "ready";
         state.characterReferenceUploadError = "";
         updateCharacterCreateUploadUI(root);
-        syncCharacterCreateCredit(root);
-        try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
       } catch (err) {
         state.characterReferenceImageUrl = "";
@@ -1463,7 +1461,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceUploadError = String(err?.message || err || "reference_upload_failed");
         updateCharacterCreateUploadUI(root);
         console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
-        alert(state.characterReferenceUploadError);
+        try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
       }
 
       return;
