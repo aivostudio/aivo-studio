@@ -248,6 +248,7 @@
 
     // Optimistic overlay store (job_id -> job-like object)
     const optimistic = new Map(); // key: job_id
+   window.__ATMO_READY_TOASTS__ = window.__ATMO_READY_TOASTS__ || new Set();
 
     // ============================
     // ✅ AUTO LOGO OVERLAY helpers (READY -> /api/atmo/overlay-logo)
