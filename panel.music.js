@@ -1515,6 +1515,12 @@ if (st === "ready" && readySrc) {
   clearPoll(id);
   POLL_BUSY.delete(id);
   render();
+
+  if (id && !READY_TOASTED.has(id)) {
+    READY_TOASTED.add(id);
+    toast("success", "Müzik hazır");
+  }
+
   return;
 }
      const existingMe = (jobs || []).find((x) => getJobId(x) === id) || {};
