@@ -1031,9 +1031,15 @@
     }
 
     rootState.scenes.push(...nextScenes);
-    saveStudioState(rootState);
-    renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-  }
+saveStudioState(rootState);
+renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+
+if (nextScenes.length === 1) {
+  try { window.toast?.success?.("1 video eklendi"); } catch {}
+} else if (nextScenes.length > 1) {
+  try { window.toast?.success?.(`${nextScenes.length} video eklendi`); } catch {}
+}
+
 
   function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
     const input = studioRoot.querySelector('[data-studio-video-upload]');
