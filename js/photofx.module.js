@@ -1055,30 +1055,7 @@ const PFX_HARD_BLOCK_PATTERNS = [
                       },
                     ];
 
-                     try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
-
-        window.dispatchEvent(
-          new CustomEvent("aivo:photofx:job_ready", {
-            detail: {
-              app: "photofx",
-              job_id,
-              status: String(j.status || "").toLowerCase(),
-              video: directVideoUrl ? { url: directVideoUrl } : null,
-              outputs: finalOutputs,
-              raw: j,
-            },
-          })
-        );
-
-        return;
-              }
-            }
-          }
-        }
-
-                      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
-
-                window.dispatchEvent(
+                      window.dispatchEvent(
                   new CustomEvent("aivo:photofx:job_ready", {
                     detail: {
                       app: "photofx",
@@ -1089,6 +1066,25 @@ const PFX_HARD_BLOCK_PATTERNS = [
                         : null,
                       outputs: refreshedFinalOutputs,
                       raw: refreshed,
+                    },
+                  })
+                );
+
+                return;
+              }
+            }
+          }
+        }
+
+                                    window.dispatchEvent(
+                  new CustomEvent("aivo:photofx:job_ready", {
+                    detail: {
+                      app: "photofx",
+                      job_id,
+                      status: String(j.status || "").toLowerCase(),
+                      video: directVideoUrl ? { url: directVideoUrl } : null,
+                      outputs: finalOutputs,
+                      raw: j,
                     },
                   })
                 );
