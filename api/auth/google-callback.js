@@ -1,4 +1,6 @@
-module.exports = async function handler(req, res) {
+import { createAuthSession } from "./login.js";
+
+export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
       res.setHeader("Allow", "GET");
