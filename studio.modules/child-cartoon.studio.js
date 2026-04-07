@@ -805,30 +805,31 @@
       if (!file) return;
 
       rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
-    rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
-  .then((publicUrl) => {
-    rootState.voiceFileUrl = String(publicUrl || '').trim();
-    rootState.voiceFileUploadStatus = 'ready';
-    rootState.voiceFileUploadError = '';
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
+        .then((publicUrl) => {
+          rootState.logoFileUrl = String(publicUrl || '').trim();
+          rootState.logoFileUploadStatus = 'ready';
+          rootState.logoFileUploadError = '';
 
-    try { window.toast?.success?.("Ses eklendi · +10 kredi"); } catch {}
-    console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-    return rootState.voiceFileUrl;
-  })
-  .catch((err) => {
-    rootState.voiceFileUrl = '';
-    rootState.voiceFileUploadStatus = 'error';
-    rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
-    console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-    alert(rootState.voiceFileUploadError);
-    throw err;
-  });
+          updateStudioLogoUploadStatusUI(rootState, studioRoot);
+          updateStudioSummary(rootState, studioRoot);
+          saveStudioState(rootState);
+
+          console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
+          return rootState.logoFileUrl;
+        })
+        .catch((err) => {
+          rootState.logoFileUrl = '';
+          rootState.logoFileUploadStatus = 'error';
+          rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
+
+          updateStudioLogoUploadStatusUI(rootState, studioRoot);
+          updateStudioSummary(rootState, studioRoot);
+          saveStudioState(rootState);
+
+          console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
+          alert(rootState.logoFileUploadError);
+          throw err;
+        });
     });
   }
 
