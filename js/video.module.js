@@ -1034,7 +1034,7 @@ async function createImage() {
       resolution: payload.resolution,
       audio: payload.audio,
     });
-
+    try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
         await pollJob(job_id);
   }
 function bindVideoPricingUI(root) {
