@@ -3305,36 +3305,37 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
 
         if (!file) return;
 
-        const uploadPromise = uploadStoryLogoToR2(file)
-          .then((publicUrl) => {
-            setStoryLogoAsset({
-              fileUrl: safeText(publicUrl),
-              uploadStatus: "ready",
-              uploadError: "",
-              uploadPromise: null
-            });
+  const uploadPromise = uploadStoryLogoToR2(file)
+  .then((publicUrl) => {
+    setStoryLogoAsset({
+      fileUrl: safeText(publicUrl),
+      uploadStatus: "ready",
+      uploadError: "",
+      uploadPromise: null
+    });
 
-            const nextRoot = getCartoonRoot();
-            if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) updateStoryLogoUploadUI(nextRoot);
 
-            console.log("[CARTOON][STORY_LOGO_UPLOAD_OK]", publicUrl);
-            return publicUrl;
-          })
-          .catch((err) => {
-            setStoryLogoAsset({
-              fileUrl: "",
-              uploadStatus: "error",
-              uploadError: String(err?.message || err || "story_logo_upload_failed"),
-              uploadPromise: null
-            });
+    try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+    console.log("[CARTOON][STORY_LOGO_UPLOAD_OK]", publicUrl);
+    return publicUrl;
+  })
+  .catch((err) => {
+    setStoryLogoAsset({
+      fileUrl: "",
+      uploadStatus: "error",
+      uploadError: String(err?.message || err || "story_logo_upload_failed"),
+      uploadPromise: null
+    });
 
-            const nextRoot = getCartoonRoot();
-            if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) updateStoryLogoUploadUI(nextRoot);
 
-            console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
-            alert(String(err?.message || err || "story_logo_upload_failed"));
-            throw err;
-          });
+    console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
+    alert(String(err?.message || err || "story_logo_upload_failed"));
+    throw err;
+  });
 
         setStoryLogoAsset({ uploadPromise });
         return;
