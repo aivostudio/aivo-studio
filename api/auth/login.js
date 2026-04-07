@@ -15,6 +15,25 @@ function json(res, status, data) {
 
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
 
+export async function createAuthSession(res, email) {
+  const sid = crypto.randomBytes(24).toString("hex");
+
+  await kvSetJson(
+    `sess:${sid}`,
+    { email: normalizeEmail(email), createdAt: Date.now() },
+    { ex: 60 * 60 * 24 * 7 }
+  );
+
+  const maxAge = 60 * 60 * 24 * 7;
+
+  res.setHeader("Set-Cookie", [
+    `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
+    `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
+  ]);
+
+  return sid;
+}
+
 async function readJson(req) {
   try {
     if (req.body && typeof req.body === "object") return req.body;
@@ -26,7 +45,6 @@ async function readJson(req) {
     return null;
   }
 }
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
