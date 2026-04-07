@@ -2575,13 +2575,24 @@ function syncSceneEditorCreditPreview(root) {
     const type = safeText(qs("[data-scene-editor-type]", editor)?.value);
     const note = clampText(qs("[data-scene-editor-note]", editor)?.value, 1000);
 
-    if (!title) return alert("Sahne Başlığı zorunlu.");
-    if (!description) return alert("Sahne Açıklaması zorunlu.");
+   if (!title) {
+  try { window.toast?.info?.("Sahne başlığı yazmalısın"); } catch {}
+  const titleEl = qs("[data-scene-editor-title]", editor);
+  if (titleEl) titleEl.focus();
+  return;
+}
 
-    if (!characterSlots.length) {
-      return alert("Bu sahne için en az 1 karakter seçmelisin.");
-    }
+if (!description) {
+  try { window.toast?.info?.("Sahne açıklaması yazmalısın"); } catch {}
+  const descriptionEl = qs("[data-scene-editor-description]", editor);
+  if (descriptionEl) descriptionEl.focus();
+  return;
+}
 
+if (!characterSlots.length) {
+  try { window.toast?.info?.("Bu sahne için en az 1 karakter seçmelisin"); } catch {}
+  return;
+}
     updateSceneById(state.editingSceneId, {
       title,
       description,
