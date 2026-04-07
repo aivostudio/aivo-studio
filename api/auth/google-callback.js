@@ -1,0 +1,109 @@
+module.exports = async function handler(req, res) {
+  try {
+    if (req.method !== "GET") {
+      res.setHeader("Allow", "GET");
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+    if (!clientId || !clientSecret || !redirectUri) {
+      return res.status(500).json({
+        ok: false,
+        error: "google_oauth_env_missing"
+      });
+    }
+
+    const code = typeof req.query?.code === "string" ? req.query.code.trim() : "";
+    const state = typeof req.query?.state === "string" ? req.query.state.trim() : "";
+    const error = typeof req.query?.error === "string" ? req.query.error.trim() : "";
+
+    if (error) {
+      const msg = encodeURIComponent("Google girişi iptal edildi.");
+      return res.redirect(302, `/?tf=warning&tm=${msg}`);
+    }
+
+    if (!code) {
+      const msg = encodeURIComponent("Google giriş kodu alınamadı.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    }
+
+    let returnTo = "/studio.v2.html";
+
+    if (state) {
+      try {
+        const parsed = JSON.parse(Buffer.from(state, "base64url").toString("utf8"));
+        const rawReturnTo =
+          parsed && typeof parsed.returnTo === "string" ? parsed.returnTo.trim() : "";
+
+        if (rawReturnTo && rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")) {
+          returnTo = rawReturnTo;
+        }
+      } catch (_) {}
+    }
+
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code"
+      }).toString()
+    });
+
+    const tokenData = await tokenRes.json().catch(() => ({}));
+
+    if (!tokenRes.ok || !tokenData.access_token) {
+      console.error("[auth/google-callback] token error:", tokenData);
+      const msg = encodeURIComponent("Google token alınamadı.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    }
+
+    const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`
+      }
+    });
+
+    const userData = await userRes.json().catch(() => ({}));
+
+    if (!userRes.ok || !userData.email) {
+      console.error("[auth/google-callback] userinfo error:", userData);
+      const msg = encodeURIComponent("Google kullanıcı bilgisi alınamadı.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    }
+
+    const authUser = {
+      provider: "google",
+      google_id: userData.id ? String(userData.id) : "",
+      email: String(userData.email || "").trim().toLowerCase(),
+      name: String(userData.name || userData.given_name || "").trim(),
+      avatar_url: String(userData.picture || "").trim(),
+      email_verified: userData.verified_email === true
+    };
+
+    if (!authUser.email) {
+      const msg = encodeURIComponent("Google hesabında email bilgisi bulunamadı.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    }
+
+    return res.status(200).json({
+      ok: true,
+      stage: "google_callback_ok",
+      authUser,
+      returnTo
+    });
+  } catch (err) {
+    console.error("[auth/google-callback] fatal error:", err);
+    const msg = encodeURIComponent("Google girişinde beklenmeyen hata oluştu.");
+    return res.redirect(302, `/?tf=error&tm=${msg}`);
+  }
+};
