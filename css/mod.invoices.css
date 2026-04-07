@@ -91,7 +91,6 @@
 .card{
   border-radius: 24px;
   padding: 18px;
-  min-height: 720px;
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(126,87,194,.14), transparent 60%),
     rgba(16,15,34,.72);
@@ -105,7 +104,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 620px;
   border-radius: 22px;
   padding: 18px;
   background: rgba(255,255,255,.025);
@@ -226,16 +224,7 @@
   line-height: 1;
   cursor: pointer;
 }
-
 @media (max-width: 980px){
-  .card{
-    min-height: 640px;
-  }
-
-  .invoices-list{
-    min-height: 520px;
-  }
-
   .invoice-row{
     grid-template-columns: 1fr 1fr;
   }
