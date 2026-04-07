@@ -789,64 +789,64 @@ function clearStudioLogoFile(rootState, studioRoot) {
     textEl.textContent = fileName;
     if (clearBtn) clearBtn.style.display = 'none';
   }
+function bindStudioLogoUpload(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonLogoFile',
+    '#studioLogoFile',
+    '[data-studio-logo-upload]',
+    'input[name="logoFile"]',
+    'input[name="logo"]'
+  ]);
 
-  function bindStudioLogoUpload(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonLogoFile',
-      '#studioLogoFile',
-      '[data-studio-logo-upload]',
-      'input[name="logoFile"]',
-      'input[name="logo"]'
-    ]);
+  if (!input) return;
+  if (input.getAttribute('data-studio-logo-bound') === 'true') return;
 
-    if (!input) return;
-    if (input.getAttribute('data-studio-logo-bound') === 'true') return;
+  input.setAttribute('data-studio-logo-bound', 'true');
 
-    input.setAttribute('data-studio-logo-bound', 'true');
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0] || null;
 
-    input.addEventListener('change', async () => {
-      const file = input.files?.[0] || null;
+    rootState.logoFile = file;
+    rootState.logoFileName = file ? String(file.name || '') : '';
+    rootState.logoFileUrl = '';
+    rootState.logoFileUploadPromise = null;
+    rootState.logoFileUploadError = '';
+    rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
 
-      rootState.logoFile = file;
-      rootState.logoFileName = file ? String(file.name || '') : '';
-      rootState.logoFileUrl = '';
-      rootState.logoFileUploadPromise = null;
-      rootState.logoFileUploadError = '';
-      rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
+    updateStudioLogoUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
 
-      updateStudioLogoUploadStatusUI(rootState, studioRoot);
-      updateStudioSummary(rootState, studioRoot);
+    if (!file) return;
 
-      if (!file) return;
+    rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
+      .then((publicUrl) => {
+        rootState.logoFileUrl = String(publicUrl || '').trim();
+        rootState.logoFileUploadStatus = 'ready';
+        rootState.logoFileUploadError = '';
 
-      rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
-        .then((publicUrl) => {
-          rootState.logoFileUrl = String(publicUrl || '').trim();
-          rootState.logoFileUploadStatus = 'ready';
-          rootState.logoFileUploadError = '';
+        updateStudioLogoUploadStatusUI(rootState, studioRoot);
+        updateStudioSummary(rootState, studioRoot);
+        saveStudioState(rootState);
 
-          updateStudioLogoUploadStatusUI(rootState, studioRoot);
-          updateStudioSummary(rootState, studioRoot);
-          saveStudioState(rootState);
+        try { window.toast?.success?.('Logo eklendi · +10 kredi'); } catch {}
+        console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
+        return rootState.logoFileUrl;
+      })
+      .catch((err) => {
+        rootState.logoFileUrl = '';
+        rootState.logoFileUploadStatus = 'error';
+        rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
 
-          console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
-          return rootState.logoFileUrl;
-        })
-        .catch((err) => {
-          rootState.logoFileUrl = '';
-          rootState.logoFileUploadStatus = 'error';
-          rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
+        updateStudioLogoUploadStatusUI(rootState, studioRoot);
+        updateStudioSummary(rootState, studioRoot);
+        saveStudioState(rootState);
 
-          updateStudioLogoUploadStatusUI(rootState, studioRoot);
-          updateStudioSummary(rootState, studioRoot);
-          saveStudioState(rootState);
-
-          console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
-          alert(rootState.logoFileUploadError);
-          throw err;
-        });
-    });
-  }
+        console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
+        alert(rootState.logoFileUploadError);
+        throw err;
+      });
+  });
+}
 
   function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
