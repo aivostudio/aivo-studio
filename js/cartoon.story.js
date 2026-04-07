@@ -2800,11 +2800,10 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
       return;
     }
 
-    if (hasMainUpload && !isAlreadySelected) {
-      alert("Ana Karakter slotunda özel karakter var. Önce onu kaldırmalısın.");
-      return;
-    }
-
+  if (hasMainUpload && !isAlreadySelected) {
+  try { window.toast?.info?.("Ana karakter slotunda özel karakter var. Önce onu kaldırmalısın"); } catch {}
+  return;
+}
     const willAddNewMainPreset = !isAlreadySelected && !hasMainPreset;
     if (willAddNewMainPreset && totalSelectedCount >= STORY_MAX_TOTAL_CHARACTERS) {
       showStoryCharacterLimitAlert();
@@ -2831,11 +2830,8 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
         render(root);
         return;
       }
-
-      alert("Bu slotta özel karakter var. Önce onu kaldırmalısın.");
-      return;
-    }
-
+try { window.toast?.info?.("Bu slotta özel karakter var. Önce onu kaldırmalısın"); } catch {}
+return;
    const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
 
 if (!emptySlot) {
@@ -2984,7 +2980,7 @@ if (!safeText(state.storyIdea)) {
 }
 
 if (!selectedScenes.length) {
-  alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
+  try { window.toast?.info?.("Önce en az 1 sahneyi düzenleyip kaydetmelisin"); } catch {}
   return;
 }
 
@@ -3002,10 +2998,10 @@ if (!selectedScenes.length) {
             }
           }
 
-          if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
-            alert("Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
-            return;
-          }
+        if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
+  try { window.toast?.info?.("Karakter görsellerinden biri henüz hazır değil"); } catch {}
+  return;
+}
         }
 
         const logoAsset = getStoryLogoAsset();
@@ -3018,18 +3014,18 @@ if (!selectedScenes.length) {
             }
           }
 
-          if (!logoAsset.fileUrl || logoAsset.uploadStatus !== "ready") {
-            alert("Logo henüz yüklenmedi. Lütfen logo yüklemesi tamamlanınca tekrar deneyin.");
-            return;
-          }
+        if (!logoAsset.fileUrl || logoAsset.uploadStatus !== "ready") {
+  try { window.toast?.info?.("Logo henüz hazır değil"); } catch {}
+  return;
+}
         }
 
         const audioAsset = getStoryAudioAsset();
         if (safeText(state.includeMusic).toLowerCase() === "yes") {
-          if (!audioAsset.file) {
-            alert("Müziği videoya dahil etmek için önce bir ses dosyası yüklemelisin.");
-            return;
-          }
+         if (!audioAsset.file) {
+  try { window.toast?.info?.("Müzik seçmelisin"); } catch {}
+  return;
+}
 
           if (audioAsset.uploadStatus === "uploading" && audioAsset.uploadPromise) {
             try {
