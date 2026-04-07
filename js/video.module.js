@@ -974,10 +974,10 @@ async function createImage() {
 
     return;
   }
-    if (!file) {
-      alert("Lütfen bir resim seç.");
-      return;
-    }
+  if (!file) {
+  try { window.toast?.info?.("Resim seçmelisin"); } catch {}
+  return;
+}
 
     const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
 
