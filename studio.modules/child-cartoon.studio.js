@@ -1048,46 +1048,45 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     rootState.scenes.push(...nextScenes);
 saveStudioState(rootState);
 renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-
 if (nextScenes.length === 1) {
   try { window.toast?.success?.("1 video eklendi"); } catch {}
 } else if (nextScenes.length > 1) {
   try { window.toast?.success?.(`${nextScenes.length} video eklendi`); } catch {}
 }
+}
 
+function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
+  const input = studioRoot.querySelector('[data-studio-video-upload]');
+  const text = studioRoot.querySelector('[data-studio-video-upload-text]');
 
-  function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
-    const input = studioRoot.querySelector('[data-studio-video-upload]');
-    const text = studioRoot.querySelector('[data-studio-video-upload-text]');
+  if (!input) return;
+  if (input.getAttribute('data-studio-upload-bound') === 'true') return;
 
-    if (!input) return;
-    if (input.getAttribute('data-studio-upload-bound') === 'true') return;
+  input.setAttribute('data-studio-upload-bound', 'true');
 
-    input.setAttribute('data-studio-upload-bound', 'true');
+  input.addEventListener('change', async () => {
+    const files = Array.from(input.files || []);
 
-    input.addEventListener('change', async () => {
-      const files = Array.from(input.files || []);
+    if (text) {
+      text.textContent = '';
+    }
 
-      if (text) {
-        text.textContent = '';
-      }
-
-      try {
-        await appendUploadedStudioVideos(
-          rootState,
-          studioRoot,
-          sceneList,
-          sceneTemplate,
-          files
-        );
-      } catch (err) {
-        console.error('[CARTOON][STUDIO_UPLOAD_ERROR]', err);
-        alert(String(err?.message || err || 'studio_video_upload_failed'));
-      } finally {
-        input.value = '';
-      }
-    });
-  }
+    try {
+      await appendUploadedStudioVideos(
+        rootState,
+        studioRoot,
+        sceneList,
+        sceneTemplate,
+        files
+      );
+    } catch (err) {
+      console.error('[CARTOON][STUDIO_UPLOAD_ERROR]', err);
+      alert(String(err?.message || err || 'studio_video_upload_failed'));
+    } finally {
+      input.value = '';
+    }
+  });
+}
 
   function bindStudioFormatPills(rootState, studioRoot) {
     const pills = Array.from(studioRoot.querySelectorAll('[data-studio-format]'));
