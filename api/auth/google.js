@@ -25,12 +25,20 @@ module.exports = async function handler(req, res) {
         ? rawReturn
         : "/studio.v2.html";
 
+    const stateNonce = crypto.randomBytes(16).toString("hex");
+
     const statePayload = {
       returnTo,
-      ts: Date.now()
+      ts: Date.now(),
+      nonce: stateNonce
     };
 
     const state = Buffer.from(JSON.stringify(statePayload), "utf8").toString("base64url");
+
+    res.setHeader(
+      "Set-Cookie",
+      `aivo_google_state=${stateNonce}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=600`
+    );
 
     const googleUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     googleUrl.searchParams.set("client_id", clientId);
