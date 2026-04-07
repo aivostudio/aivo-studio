@@ -1,0 +1,179 @@
+/* ==============================
+   MODULE: PROFILE RIGHT PANEL
+   ============================== */
+
+#rightPanelHost .rp-card{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: 22px;
+  padding: 16px;
+  background:
+    radial-gradient(900px 420px at 50% -10%, rgba(126,87,194,.12), transparent 60%),
+    rgba(20,18,40,.72);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 16px 40px rgba(0,0,0,.22);
+}
+
+#rightPanelHost .rp-card__header{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+#rightPanelHost .rp-title{
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: rgba(255,255,255,.97);
+}
+
+#rightPanelHost .rp-subtitle{
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255,255,255,.62);
+}
+
+#rightPanelHost .rp-card__body{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#rightPanelHost .rp-section{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 18px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+#rightPanelHost .rp-section__title{
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+}
+
+#rightPanelHost .rp-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#rightPanelHost .rp-row__label{
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255,255,255,.64);
+}
+
+#rightPanelHost .rp-row__value{
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: rgba(255,255,255,.94);
+  text-align: right;
+}
+
+#rightPanelHost .rp-metric-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#rightPanelHost .rp-metric{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 78px;
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+#rightPanelHost .rp-metric__label{
+  font-size: 12px;
+  line-height: 1.3;
+  color: rgba(255,255,255,.64);
+}
+
+#rightPanelHost .rp-metric__value{
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+  color: rgba(255,255,255,.98);
+}
+
+#rightPanelHost .rp-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#rightPanelHost .rp-btn{
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.92);
+  color: #171325;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    border-color .12s ease;
+}
+
+#rightPanelHost .rp-btn:hover{
+  transform: translateY(-1px);
+  background: #fff;
+  border-color: #fff;
+}
+
+#rightPanelHost .rp-btn--ghost{
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.94);
+  border-color: rgba(255,255,255,.10);
+}
+
+#rightPanelHost .rp-btn--ghost:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.18);
+}
+
+#rightPanelHost .rp-hint{
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.60);
+}
+
+@media (max-width: 640px){
+  #rightPanelHost .rp-metric-grid{
+    grid-template-columns: 1fr;
+  }
+
+  #rightPanelHost .rp-actions{
+    flex-direction: column;
+  }
+
+  #rightPanelHost .rp-btn{
+    width: 100%;
+  }
+}
