@@ -1352,25 +1352,15 @@
 }
 
 .cartoon-upload-row--compact{
-  display:grid;
-  grid-template-columns:auto auto;
-  grid-template-areas:
-    "button clear"
-    "text text";
+  display:flex;
   align-items:center;
-  column-gap:10px;
-  row-gap:8px;
+  gap:10px;
+  flex-wrap:nowrap;
   min-width:0;
 }
 
-.cartoon-upload-row--compact .cartoon-upload-btn{
-  grid-area:button;
-}
-
 .cartoon-upload-row--compact .cartoon-upload-text{
-  grid-area:text;
-  display:block;
-  width:100%;
+  flex:1 1 auto;
   min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -1378,7 +1368,6 @@
 }
 
 .cartoon-upload-row--compact .cartoon-upload-clear{
-  grid-area:clear;
   flex:0 0 auto;
 }
 
