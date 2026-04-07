@@ -32,19 +32,53 @@ export default async function handler(req, res) {
       return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
 
-    let returnTo = "/studio.v2.html";
+      let returnTo = "/studio.v2.html";
 
-    if (state) {
-      try {
-        const parsed = JSON.parse(Buffer.from(state, "base64url").toString("utf8"));
-        const rawReturnTo =
-          parsed && typeof parsed.returnTo === "string" ? parsed.returnTo.trim() : "";
+    const cookieHeader = String(req.headers?.cookie || "");
+    const cookiePairs = cookieHeader
+      .split(";")
+      .map((v) => v.trim())
+      .filter(Boolean);
 
-        if (rawReturnTo && rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")) {
-          returnTo = rawReturnTo;
-        }
-      } catch (_) {}
+    const cookieMap = Object.fromEntries(
+      cookiePairs.map((part) => {
+        const idx = part.indexOf("=");
+        if (idx === -1) return [part, ""];
+        return [part.slice(0, idx), decodeURIComponent(part.slice(idx + 1))];
+      })
+    );
+
+    const stateCookie = String(cookieMap.aivo_google_state || "").trim();
+
+    if (!state) {
+      const msg = encodeURIComponent("Google state bilgisi eksik.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
+
+    try {
+      const parsed = JSON.parse(Buffer.from(state, "base64url").toString("utf8"));
+      const rawReturnTo =
+        parsed && typeof parsed.returnTo === "string" ? parsed.returnTo.trim() : "";
+      const stateNonce =
+        parsed && typeof parsed.nonce === "string" ? parsed.nonce.trim() : "";
+
+      if (!stateNonce || !stateCookie || stateNonce !== stateCookie) {
+        const msg = encodeURIComponent("Google doğrulama oturumu eşleşmedi.");
+        return res.redirect(302, `/?tf=error&tm=${msg}`);
+      }
+
+      if (rawReturnTo && rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")) {
+        returnTo = rawReturnTo;
+      }
+    } catch (_) {
+      const msg = encodeURIComponent("Google state verisi çözülemedi.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    }
+
+    res.setHeader(
+      "Set-Cookie",
+      `aivo_google_state=; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=0`
+    );
 
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
