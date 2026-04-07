@@ -98,20 +98,7 @@ if (user.verified !== true) {
     }
 
     // ✅ SESSION
-    const sid = crypto.randomBytes(24).toString("hex");
-    await kvSetJson(
-      `sess:${sid}`,
-      { email, createdAt: Date.now() },
-      { ex: 60 * 60 * 24 * 7 } // 7 gün
-    );
-
-   const maxAge = 60 * 60 * 24 * 7;
-
-res.setHeader("Set-Cookie", [
-  `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
-  `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy destek
-]);
-
+    await createAuthSession(res, email);
 
 
 
