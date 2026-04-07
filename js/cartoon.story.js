@@ -211,7 +211,9 @@ function canAddStoryCharacter(nextCount = 1) {
 
 
 function showStoryCharacterLimitAlert() {
-  alert("En fazla 4 karakter seçebilirsin. Ücretsiz ve özel karakterler toplamda 4 hakkı paylaşır.");
+  try {
+    window.toast?.info?.("En fazla 4 karakter seçebilirsin");
+  } catch {}
 }
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
