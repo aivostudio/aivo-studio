@@ -97,12 +97,9 @@ export default async function handler(req, res) {
       return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
 
-    return res.status(200).json({
-      ok: true,
-      stage: "google_callback_ok",
-      authUser,
-      returnTo
-    });
+      await createAuthSession(res, authUser.email);
+
+    return res.redirect(302, `${returnTo}?tf=success&tm=${encodeURIComponent("Girişiniz başarılı")}`);
   } catch (err) {
     console.error("[auth/google-callback] fatal error:", err);
     const msg = encodeURIComponent("Google girişinde beklenmeyen hata oluştu.");
