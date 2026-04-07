@@ -1,3 +1,353 @@
-/* ===============================
+/* ==============================
    MODULE: PROFILE
-   =============================== */
+   ============================== */
+
+.main-panel{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel-header{
+  margin: 0;
+}
+
+.page-head{
+  margin: 0;
+}
+
+.page-head__box{
+  border-radius: 18px;
+  padding: 18px 20px;
+  background: linear-gradient(180deg, rgba(116,82,180,.42), rgba(73,50,120,.28));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 16px 40px rgba(0,0,0,.22);
+  text-align: center;
+}
+
+.page-head__title{
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 800;
+  color: rgba(255,255,255,.97);
+}
+
+.page-head__sub{
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.72);
+}
+
+.card{
+  border-radius: 24px;
+  padding: 18px;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(126,87,194,.14), transparent 60%),
+    rgba(16,15,34,.72);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 18px 48px rgba(0,0,0,.24);
+}
+
+.profile-ribbon{
+  padding: 18px 20px;
+}
+
+.profile-ribbon-inner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profile-user{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.profile-avatar{
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  font-size: 22px;
+  font-weight: 800;
+  color: rgba(255,255,255,.98);
+  background: linear-gradient(180deg, rgba(168,118,255,.95), rgba(116,82,180,.85));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 10px 24px rgba(0,0,0,.25);
+}
+
+.profile-name{
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: rgba(255,255,255,.97);
+}
+
+.profile-mail{
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.68);
+}
+
+.profile-actions{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip-btn{
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.94);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    border-color .12s ease,
+    box-shadow .12s ease;
+}
+
+.chip-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.18);
+}
+
+.chip-btn--primary{
+  background: rgba(255,255,255,.92);
+  color: #171325;
+  border-color: rgba(255,255,255,.92);
+}
+
+.chip-btn--primary:hover{
+  background: #fff;
+  border-color: #fff;
+}
+
+.profile-card{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-security{
+  gap: 18px;
+}
+
+.card-header{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-title{
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: rgba(255,255,255,.97);
+}
+
+.card-subtitle{
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.68);
+}
+
+.profile-form{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.form-row{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row label{
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: rgba(255,255,255,.86);
+}
+
+.form-row input{
+  appearance: none;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.96);
+  font-size: 14px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.form-row input::placeholder{
+  color: rgba(255,255,255,.38);
+}
+
+.form-row input:focus{
+  border-color: rgba(185,140,255,.55);
+  box-shadow:
+    0 0 0 3px rgba(143,92,255,.14),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.aivo-input.is-readonly,
+.form-row input[readonly]{
+  opacity: .84;
+  cursor: not-allowed;
+  background: rgba(255,255,255,.04);
+}
+
+.form-row small{
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.58);
+}
+
+.right-list{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.usage-wrap{
+  gap: 16px;
+}
+
+.usage-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.usage-pill,
+.usage-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  border-radius: 16px;
+  padding: 0 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.usage-label{
+  font-size: 13px;
+  line-height: 1.3;
+  color: rgba(255,255,255,.72);
+}
+
+.usage-value{
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: rgba(255,255,255,.97);
+  text-align: right;
+}
+
+.usage-rows{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.usage-row--muted .usage-label{
+  color: rgba(255,255,255,.60);
+}
+
+@media (max-width: 980px){
+  .profile-ribbon-inner{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-actions{
+    justify-content: flex-start;
+  }
+
+  .usage-grid{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px){
+  .page-head__box{
+    padding: 16px;
+  }
+
+  .page-head__title{
+    font-size: 18px;
+  }
+
+  .card{
+    padding: 14px;
+  }
+
+  .profile-ribbon{
+    padding: 14px;
+  }
+
+  .profile-user{
+    align-items: flex-start;
+  }
+
+  .profile-avatar{
+    width: 50px;
+    height: 50px;
+    flex-basis: 50px;
+    font-size: 20px;
+  }
+
+  .profile-actions{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chip-btn{
+    width: 100%;
+  }
+
+  .usage-grid{
+    grid-template-columns: 1fr;
+  }
+}
