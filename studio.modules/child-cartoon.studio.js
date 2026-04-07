@@ -959,59 +959,59 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     if (clearBtn) clearBtn.style.display = 'none';
   }
 
-  function bindStudioVoiceUpload(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonVoiceFile',
-      '#studioVoiceFile',
-      '[data-studio-voice-upload]',
-      'input[name="voiceFile"]',
-      'input[name="kendiSesin"]'
-    ]);
+ function bindStudioVoiceUpload(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
 
-    if (!input) return;
-    if (input.getAttribute('data-studio-voice-bound') === 'true') return;
+  if (!input) return;
+  if (input.getAttribute('data-studio-voice-bound') === 'true') return;
 
-    input.setAttribute('data-studio-voice-bound', 'true');
+  input.setAttribute('data-studio-voice-bound', 'true');
 
-    input.addEventListener('change', async () => {
-      const file = input.files?.[0] || null;
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0] || null;
 
-      rootState.voiceFile = file;
-      rootState.voiceFileName = file ? String(file.name || '') : '';
-      rootState.voiceFileUrl = '';
-      rootState.voiceFileUploadPromise = null;
-      rootState.voiceFileUploadError = '';
-      rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
-      updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-      updateStudioSummary(rootState, studioRoot);
+    rootState.voiceFile = file;
+    rootState.voiceFileName = file ? String(file.name || '') : '';
+    rootState.voiceFileUrl = '';
+    rootState.voiceFileUploadPromise = null;
+    rootState.voiceFileUploadError = '';
+    rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
+    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+    updateStudioSummary(rootState, studioRoot);
 
-      if (!file) return;
+    if (!file) return;
 
-      rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
-        .then((publicUrl) => {
-          rootState.voiceFileUrl = String(publicUrl || '').trim();
-          rootState.voiceFileUploadStatus = 'ready';
-          rootState.voiceFileUploadError = '';
-          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-          updateStudioSummary(rootState, studioRoot);
-          saveStudioState(rootState);
-          console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-          return rootState.voiceFileUrl;
-        })
-        .catch((err) => {
-          rootState.voiceFileUrl = '';
-          rootState.voiceFileUploadStatus = 'error';
-          rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
-          updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-          updateStudioSummary(rootState, studioRoot);
-          saveStudioState(rootState);
-          console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-          alert(rootState.voiceFileUploadError);
-          throw err;
-        });
-    });
-  }
-
+    rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
+      .then((publicUrl) => {
+        rootState.voiceFileUrl = String(publicUrl || '').trim();
+        rootState.voiceFileUploadStatus = 'ready';
+        rootState.voiceFileUploadError = '';
+        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+        updateStudioSummary(rootState, studioRoot);
+        saveStudioState(rootState);
+        try { window.toast?.success?.('Ses eklendi · +10 kredi'); } catch {}
+        console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
+        return rootState.voiceFileUrl;
+      })
+      .catch((err) => {
+        rootState.voiceFileUrl = '';
+        rootState.voiceFileUploadStatus = 'error';
+        rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
+        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+        updateStudioSummary(rootState, studioRoot);
+        saveStudioState(rootState);
+        console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
+        alert(rootState.voiceFileUploadError);
+        throw err;
+      });
+  });
+}
   async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
     const files = Array.from(fileList || []).filter((file) => {
       if (!file) return false;
