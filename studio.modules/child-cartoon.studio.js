@@ -1797,7 +1797,7 @@ const creditRes = await fetch('/api/credits/consume', {
         }
 
         window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
-    if (data?.job_id) {
+if (data?.job_id) {
   const createdDetail = {
     app: 'cartoon',
     mode: 'studio_export',
@@ -1822,9 +1822,8 @@ const creditRes = await fetch('/api/credits/consume', {
         detail: createdDetail
       })
     );
+    try { window.toast?.success?.('Video hazırlanıyor'); } catch {}
   }, 3500);
-
-  try { window.toast?.success?.('Video hazırlanıyor'); } catch {}
 
   startedPolling = true;
   pollStudioExportJob(String(data.job_id), button, originalText, 0);
