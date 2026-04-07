@@ -2817,34 +2817,36 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
     return;
   }
 
-  if (role === "helper") {
-    const selectedSlot = helperSlots.find((slot) => safeText(state[helperStateKeys[slot]]) === label);
+if (role === "helper") {
+  const selectedSlot = helperSlots.find((slot) => safeText(state[helperStateKeys[slot]]) === label);
 
-    if (selectedSlot) {
-      const selectedImageState = getStoryCharacterImage(selectedSlot);
-      const hasUploadInSelectedSlot = !!(selectedImageState && selectedImageState.file);
+  if (selectedSlot) {
+    const selectedImageState = getStoryCharacterImage(selectedSlot);
+    const hasUploadInSelectedSlot = !!(selectedImageState && selectedImageState.file);
 
-      if (!hasUploadInSelectedSlot) {
-        state[helperStateKeys[selectedSlot]] = "";
-        resetStoryPolicyUI(root);
-        render(root);
-        return;
-      }
-try { window.toast?.info?.("Bu slotta özel karakter var. Önce onu kaldırmalısın"); } catch {}
-return;
-   const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
+    if (!hasUploadInSelectedSlot) {
+      state[helperStateKeys[selectedSlot]] = "";
+      resetStoryPolicyUI(root);
+      render(root);
+      return;
+    }
 
-if (!emptySlot) {
-  showStoryCharacterLimitAlert();
+    try { window.toast?.info?.("Bu slotta özel karakter var. Önce onu kaldırmalısın"); } catch {}
+    return;
+  }
+
+  const emptySlot = helperSlots.find((slot) => !safeText(state[helperStateKeys[slot]]));
+
+  if (!emptySlot) {
+    showStoryCharacterLimitAlert();
+    render(root);
+    return;
+  }
+
+  state[helperStateKeys[emptySlot]] = label;
+  resetStoryPolicyUI(root);
   render(root);
   return;
-}
-
-state[helperStateKeys[emptySlot]] = label;
-resetStoryPolicyUI(root);
-render(root);
-return;
-  }
 }
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
       if (sectionToggle && root.contains(sectionToggle)) {
