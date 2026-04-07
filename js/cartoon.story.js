@@ -2959,13 +2959,21 @@ return;
         if (state.mode !== "story") return;
         if (state.isGenerating) return;
 
-        const selectedScenes = getSelectedScenes();
-        const totalSeconds = getSelectedTotalSeconds();
+     const selectedScenes = getSelectedScenes();
+const totalSeconds = getSelectedTotalSeconds();
 
-        if (!selectedScenes.length) {
-          alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
-          return;
-        }
+if (!safeText(state.storyIdea)) {
+  try { window.toast?.info?.("Hikaye fikri yazmalısın"); } catch {}
+
+  const storyIdeaEl = qs("[data-story-idea]", root);
+  if (storyIdeaEl) storyIdeaEl.focus();
+  return;
+}
+
+if (!selectedScenes.length) {
+  alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
+  return;
+}
 
         const slots = STORY_CHARACTER_SLOT_CONFIG.map((config) => config.slot);
 
