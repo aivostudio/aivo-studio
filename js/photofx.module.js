@@ -1352,7 +1352,7 @@ const builtEffects = {
         },
       })
     );
-
+    try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
     console.log("[photofx] create queued ✅", {
       finalJobId,
       requestId,
