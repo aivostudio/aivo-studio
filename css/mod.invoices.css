@@ -45,22 +45,25 @@
 }
 
 .invoices-actions{
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .invoices-actions .chip-btn{
   appearance: none;
+  width: 100%;
+  min-width: 0;
   border-radius: 999px;
-  padding: 10px 14px;
+  padding: 12px 10px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.07);
   color: rgba(255,255,255,.94);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   line-height: 1;
+  text-align: center;
   cursor: pointer;
   transition:
     transform .12s ease,
