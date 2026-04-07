@@ -1886,9 +1886,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             syncCreateButton(root);
           });
       });
-    }
-  }
-    if (!window.__AIVO_PHOTOFX_READY_BOUND__) {
+          if (!window.__AIVO_PHOTOFX_READY_BOUND__) {
       window.__AIVO_PHOTOFX_READY_BOUND__ = true;
 
       window.addEventListener("aivo:photofx:job_ready", () => {
@@ -1905,6 +1903,9 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         try { window.toast?.success?.("Klip hazır"); } catch {}
       });
     }
+    }
+  }
+
    function retryBoot(attempt = 0) {
     const root = getRoot();
     const presetCards = root ? qsa(".pfxPresetCard[data-preset]", root) : [];
