@@ -71,11 +71,22 @@
   // ✅ RightPanel hazır olana kadar bekle (order/defer sorununu kökten çözer)
   function registerWhenReady() {
     const rp = window.RightPanel;
-    if (rp && typeof rp.register === "function") {
-      rp.register(KEY, { mount, destroy });
-      console.log("[panel.dashboard] registered");
-      return true;
-    }
+  if (rp && typeof rp.register === "function") {
+  rp.register(KEY, {
+    getHeader() {
+      return {
+        title: "Dashboard",
+        meta: "Kısa özet",
+        searchEnabled: false,
+        resetSearch: true
+      };
+    },
+    mount,
+    destroy
+  });
+  console.log("[panel.dashboard] registered");
+  return true;
+}
     return false;
   }
 
