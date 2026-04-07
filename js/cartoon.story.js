@@ -1314,7 +1314,16 @@ const state = (window.__CARTOON_STORY_STATE__ =
     if (key === "extra") return safeText(state.extraCharacter);
     return "";
   }
+function getStoryCharacterToastLabel(slot) {
+  const key = String(slot || "").trim();
 
+  if (key === "main") return "Ana karakter";
+  if (key === "helper1") return "Yardımcı karakter 1";
+  if (key === "helper2") return "Yardımcı karakter 2";
+  if (key === "extra") return "Ek karakter";
+
+  return "Karakter";
+}
   function getSceneById(sceneId) {
     return state.scenes.find((scene) => scene.id === sceneId) || null;
   }
