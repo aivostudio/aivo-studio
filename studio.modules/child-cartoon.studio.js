@@ -1719,14 +1719,12 @@ return;
           throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
         }
 
-     const creditCost = getStudioExportCreditCost(rootState, studioRoot);
+const creditCost = getStudioExportCreditCost(rootState, studioRoot);
 const creditReason = 'studio_cartoon_montage_export';
 
 button.disabled = true;
 button.textContent = 'Çıktı hazırlanıyor...';
 button.classList.add('is-loading');
-
-try { window.toast?.success?.('Video hazırlanıyor'); } catch {}
 
 const creditRes = await fetch('/api/credits/consume', {
   method: 'POST',
