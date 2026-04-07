@@ -1373,21 +1373,33 @@ const state = (window.__CARTOON_STORY_STATE__ =
     };
   }
 
-  function resetStoryLogoAsset(root) {
-    const input = qs("[data-story-logo-upload]", root);
-    if (input) input.value = "";
+ function resetStoryLogoAsset(root) {
+  const input = qs("[data-story-logo-upload]", root);
+  const hadFile = !!getStoryLogoAsset()?.file;
 
-    state.logoAsset = createEmptyStoryAssetState();
-    updateStoryLogoUploadUI(root);
+  if (input) input.value = "";
+
+  state.logoAsset = createEmptyStoryAssetState();
+  updateStoryLogoUploadUI(root);
+
+  if (hadFile) {
+    try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
   }
+}
 
-  function resetStoryAudioAsset(root) {
-    const input = qs("[data-story-audio-upload]", root);
-    if (input) input.value = "";
+function resetStoryAudioAsset(root) {
+  const input = qs("[data-story-audio-upload]", root);
+  const hadFile = !!getStoryAudioAsset()?.file;
 
-    state.audioAsset = createEmptyStoryAssetState();
-    updateStoryAudioUploadUI(root);
+  if (input) input.value = "";
+
+  state.audioAsset = createEmptyStoryAssetState();
+  updateStoryAudioUploadUI(root);
+
+  if (hadFile) {
+    try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
   }
+}
 
 function resetStoryCharacterImage(root, slot) {
   const key = String(slot || "").trim();
