@@ -1,79 +1,124 @@
-let MEMORY_STORE = globalThis.__AIVO_CARTOON_STUDIO_STATE_STORE__;
-if (!MEMORY_STORE) {
-  MEMORY_STORE = new Map();
-  globalThis.__AIVO_CARTOON_STUDIO_STATE_STORE__ = MEMORY_STORE;
+export const config = { runtime: "nodejs" };
+
+import { neon } from "@neondatabase/serverless";
+import { requireAuth } from "../../../_lib/auth.js";
+
+function safeString(value, fallback = "") {
+  return String(value ?? fallback).trim();
 }
 
-function getClientKey(req) {
-  const forwardedFor = String(req.headers["x-forwarded-for"] || "").trim();
-  const realIp = String(req.headers["x-real-ip"] || "").trim();
-  const cookie = String(req.headers.cookie || "").trim();
-
-  if (cookie) return `cookie:${cookie}`;
-  if (forwardedFor) return `ip:${forwardedFor.split(",")[0].trim()}`;
-  if (realIp) return `ip:${realIp}`;
-  return "anonymous";
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
 }
 
-function sanitizePayload(body) {
+function buildPayload(body) {
   return {
     app: "cartoon",
     mode: "studio",
-    format: String(body?.format || "16:9"),
+    format: safeString(body?.format || "16:9", "16:9"),
 
-    scenes: Array.isArray(body?.scenes)
-      ? body.scenes.map((scene, index) => ({
-          id: String(scene?.id || `scene-${Date.now()}-${index + 1}`),
-          title: String(scene?.title || "Sahne"),
-          duration: Number(scene?.duration) || 0,
-          included: !!scene?.included,
-          videoUrl: String(scene?.videoUrl || ""),
-          fileName: String(scene?.fileName || "")
-        }))
-      : [],
+    scenes: safeArray(body?.scenes).map((scene, index) => ({
+      id: safeString(scene?.id || `scene-${Date.now()}-${index + 1}`),
+      title: safeString(scene?.title || "Sahne"),
+      duration: Number(scene?.duration) || 0,
+      included: !!scene?.included,
+      videoUrl: safeString(scene?.videoUrl || ""),
+      fileName: safeString(scene?.fileName || "")
+    })),
 
     voice: {
-      fileName: String(body?.voice?.fileName || ""),
-      fileUrl: String(body?.voice?.fileUrl || ""),
-      uploadStatus: String(body?.voice?.uploadStatus || "idle")
+      fileName: safeString(body?.voice?.fileName || ""),
+      fileUrl: safeString(body?.voice?.fileUrl || ""),
+      uploadStatus: safeString(body?.voice?.uploadStatus || "idle", "idle")
     },
 
     logo: {
-      fileName: String(body?.logo?.fileName || ""),
-      fileUrl: String(body?.logo?.fileUrl || ""),
-      uploadStatus: String(body?.logo?.uploadStatus || "idle")
-    },
-
-    updatedAt: new Date().toISOString()
+      fileName: safeString(body?.logo?.fileName || ""),
+      fileUrl: safeString(body?.logo?.fileUrl || ""),
+      uploadStatus: safeString(body?.logo?.uploadStatus || "idle", "idle")
+    }
   };
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({
+    return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  }
+
+  res.setHeader("Cache-Control", "no-store");
+
+  const conn =
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!conn) {
+    return res.status(500).json({ ok: false, error: "missing_db_env" });
+  }
+
+  let auth = null;
+  try {
+    auth = await requireAuth(req);
+  } catch (e) {
+    return res.status(401).json({
       ok: false,
-      error: "method_not_allowed"
+      error: "unauthorized",
+      message: String(e?.message || e)
     });
   }
 
-  try {
-    const body = req.body || {};
-    const clientKey = getClientKey(req);
-    const payload = sanitizePayload(body);
+  const user_id = auth?.user_id ? String(auth.user_id) : null;
+  if (!user_id) {
+    return res.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      message: "missing_user_id",
+      auth: auth || null
+    });
+  }
 
-    MEMORY_STORE.set(clientKey, payload);
+  const body = req.body || {};
+  const payload = buildPayload(body);
+  const sql = neon(conn);
+
+  try {
+    await sql`
+      insert into cartoon_studio_states (
+        user_id,
+        app,
+        mode,
+        payload,
+        created_at,
+        updated_at
+      )
+      values (
+        ${user_id},
+        ${"cartoon"},
+        ${"studio"},
+        ${payload},
+        now(),
+        now()
+      )
+      on conflict (user_id, app, mode)
+      do update set
+        payload = excluded.payload,
+        updated_at = now()
+    `;
 
     return res.status(200).json({
       ok: true,
       saved: true,
-      app: payload.app,
-      mode: payload.mode,
-      updatedAt: payload.updatedAt
+      app: "cartoon",
+      mode: "studio"
     });
   } catch (err) {
+    console.error("cartoon/studio/state/save error:", err);
+
     return res.status(500).json({
       ok: false,
-      error: err?.message || "studio_state_save_failed"
+      error: "server_error",
+      message: String(err?.message || err)
     });
   }
 }
