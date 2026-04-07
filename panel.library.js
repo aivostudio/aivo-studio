@@ -61,10 +61,38 @@
     if (host) host.innerHTML = "";
   }
 
-  if (!window.RightPanel || typeof window.RightPanel.register !== "function") {
-    console.warn("[panel.library] RightPanel not ready; register skipped");
+function registerWhenReady() {
+  const rp = window.RightPanel;
+  if (rp && typeof rp.register === "function") {
+    rp.register(KEY, {
+      getHeader() {
+        return {
+          title: "Ürettiklerim",
+          meta: "Son üretilenler",
+          searchEnabled: false,
+          resetSearch: true
+        };
+      },
+      mount,
+      destroy
+    });
+    console.log("[panel.library] registered");
+    return true;
+  }
+  return false;
+}
+
+if (registerWhenReady()) return;
+
+const t0 = Date.now();
+const timer = setInterval(() => {
+  if (registerWhenReady()) {
+    clearInterval(timer);
     return;
   }
-
-  window.RightPanel.register(KEY, { mount, destroy });
+  if (Date.now() - t0 > 8000) {
+    clearInterval(timer);
+    console.warn("[panel.library] RightPanel not ready after 8s; giving up");
+  }
+}, 50);
 })();
