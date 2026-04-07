@@ -646,31 +646,38 @@ function clearStudioVoiceFile(rootState, studioRoot) {
     try { window.toast?.success?.('Ses kaldırıldı · -10 kredi'); } catch {}
   }
 }
+function clearStudioLogoFile(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonLogoFile',
+    '#studioLogoFile',
+    '[data-studio-logo-upload]',
+    'input[name="logoFile"]',
+    'input[name="logo"]'
+  ]);
 
-  function clearStudioLogoFile(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonLogoFile',
-      '#studioLogoFile',
-      '[data-studio-logo-upload]',
-      'input[name="logoFile"]',
-      'input[name="logo"]'
-    ]);
+  const hadFile =
+    !!rootState.logoFile ||
+    !!String(rootState.logoFileUrl || '').trim();
 
-    rootState.logoFile = null;
-    rootState.logoFileName = '';
-    rootState.logoFileUrl = '';
-    rootState.logoFileUploadPromise = null;
-    rootState.logoFileUploadStatus = 'idle';
-    rootState.logoFileUploadError = '';
+  rootState.logoFile = null;
+  rootState.logoFileName = '';
+  rootState.logoFileUrl = '';
+  rootState.logoFileUploadPromise = null;
+  rootState.logoFileUploadStatus = 'idle';
+  rootState.logoFileUploadError = '';
 
-    if (input) {
-      input.value = '';
-    }
-
-    updateStudioLogoUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
+  if (input) {
+    input.value = '';
   }
+
+  updateStudioLogoUploadStatusUI(rootState, studioRoot);
+  updateStudioSummary(rootState, studioRoot);
+  saveStudioState(rootState);
+
+  if (hadFile) {
+    try { window.toast?.success?.('Logo kaldırıldı · -10 kredi'); } catch {}
+  }
+}
 
   function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
