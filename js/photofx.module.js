@@ -1907,7 +1907,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           syncCreateButton(nextRoot);
         }
 
-        try { window.toast?.success?.("Klip hazır"); } catch {}
+         try { window.toast?.success?.("Video hazır"); } catch {}
       });
     }
     }
