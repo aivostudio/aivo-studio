@@ -1974,7 +1974,7 @@ if (removeBtn) {
     rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
     saveStudioState(rootState);
     renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-    try { window.toast?.success?.('Video silindi'); } catch {}
+    try { window.toast?.success?.('Video başarıyla silindi'); } catch {}
   });
 }
 
