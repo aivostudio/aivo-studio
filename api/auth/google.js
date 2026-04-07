@@ -1,4 +1,6 @@
-module.exports = async function handler(req, res) {
+import crypto from "crypto";
+
+export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
       res.setHeader("Allow", "GET");
