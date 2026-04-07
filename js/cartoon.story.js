@@ -3361,37 +3361,37 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
 
         if (!file) return;
 
-        const uploadPromise = uploadStoryAudioToR2(file)
-          .then((publicUrl) => {
-            setStoryAudioAsset({
-              fileUrl: safeText(publicUrl),
-              uploadStatus: "ready",
-              uploadError: "",
-              uploadPromise: null
-            });
+      const uploadPromise = uploadStoryAudioToR2(file)
+  .then((publicUrl) => {
+    setStoryAudioAsset({
+      fileUrl: safeText(publicUrl),
+      uploadStatus: "ready",
+      uploadError: "",
+      uploadPromise: null
+    });
 
-            const nextRoot = getCartoonRoot();
-            if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) updateStoryAudioUploadUI(nextRoot);
 
-            console.log("[CARTOON][STORY_AUDIO_UPLOAD_OK]", publicUrl);
-            return publicUrl;
-          })
-          .catch((err) => {
-            setStoryAudioAsset({
-              fileUrl: "",
-              uploadStatus: "error",
-              uploadError: String(err?.message || err || "story_audio_upload_failed"),
-              uploadPromise: null
-            });
+    try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+    console.log("[CARTOON][STORY_AUDIO_UPLOAD_OK]", publicUrl);
+    return publicUrl;
+  })
+  .catch((err) => {
+    setStoryAudioAsset({
+      fileUrl: "",
+      uploadStatus: "error",
+      uploadError: String(err?.message || err || "story_audio_upload_failed"),
+      uploadPromise: null
+    });
 
-            const nextRoot = getCartoonRoot();
-            if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) updateStoryAudioUploadUI(nextRoot);
 
-            console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
-            alert(String(err?.message || err || "story_audio_upload_failed"));
-            throw err;
-          });
-
+    console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
+    alert(String(err?.message || err || "story_audio_upload_failed"));
+    throw err;
+  });
         setStoryAudioAsset({ uploadPromise });
         return;
       }
