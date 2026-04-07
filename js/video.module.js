@@ -934,7 +934,9 @@ if (!prompt) {
     credit_cost: creditCost
   });
 
-   await pollJob(job_id);
+ try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+
+  await pollJob(job_id);
 }
 
 async function createImage() {
