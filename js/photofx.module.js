@@ -703,11 +703,16 @@ const PFX_HARD_BLOCK_PATTERNS = [
     const state = getState(root);
     if (!state) return;
 
-    if (key === "image") {
-      state.imageFile = null;
-      const input = qs("#pfxImageInput", root);
-      if (input) input.value = "";
-    }
+  if (key === "image") {
+  const hadImage = !!state.imageFile;
+  state.imageFile = null;
+  const input = qs("#pfxImageInput", root);
+  if (input) input.value = "";
+
+  if (hadImage) {
+    try { window.toast?.success?.("Resim silindi"); } catch {}
+  }
+}
 
     if (key === "end-image") {
       state.endImageFile = null;
