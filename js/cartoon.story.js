@@ -3118,28 +3118,31 @@ console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
 state.isGenerating = true;
 setStoryGenerateButton(root, true);
 
-        try {
-          const created = await createStoryScenesFromPayload(payload);
+try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+try { window.toast?.success?.("Hikaye üretimi başladı"); } catch {}
 
-          window.__LAST_CARTOON_STORY_CREATED__ = created;
-          console.log("[CARTOON][STORY_CREATE_OK]", created);
+try {
+  const created = await createStoryScenesFromPayload(payload);
 
-          window.dispatchEvent(
-            new CustomEvent("aivo:cartoon:story_payload_ready", {
-              detail: {
-                payload,
-                created
-              }
-            })
-          );
-        } catch (err) {
-          console.error("[CARTOON][STORY_CREATE_ERROR]", err);
-          alert(String(err?.message || err || "story_scene_create_failed"));
-          state.isGenerating = false;
-          setStoryGenerateButton(root, false);
-        } finally {
-          render(root);
-        }
+  window.__LAST_CARTOON_STORY_CREATED__ = created;
+  console.log("[CARTOON][STORY_CREATE_OK]", created);
+
+  window.dispatchEvent(
+    new CustomEvent("aivo:cartoon:story_payload_ready", {
+      detail: {
+        payload,
+        created
+      }
+    })
+  );
+} catch (err) {
+  console.error("[CARTOON][STORY_CREATE_ERROR]", err);
+  alert(String(err?.message || err || "story_scene_create_failed"));
+  state.isGenerating = false;
+  setStoryGenerateButton(root, false);
+} finally {
+  render(root);
+}
 
         return;
       }
