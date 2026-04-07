@@ -1195,8 +1195,10 @@ const builtEffects = {
     zoomLevel: String(form.zoomLevel || "normal").trim(),
   },
 };
-    if (!form.prompt) {
-      alert("Lütfen klip açıklamasını yaz.");
+        if (!form.prompt) {
+      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+      const promptEl = qs("#pfxPrompt", root);
+      if (promptEl) promptEl.focus();
       return;
     }
 
