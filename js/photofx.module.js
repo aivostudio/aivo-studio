@@ -1888,7 +1888,23 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
       });
     }
   }
+    if (!window.__AIVO_PHOTOFX_READY_BOUND__) {
+      window.__AIVO_PHOTOFX_READY_BOUND__ = true;
 
+      window.addEventListener("aivo:photofx:job_ready", () => {
+        const nextRoot = getRoot();
+        if (!nextRoot) return;
+
+        const nextCreateBtn = qs(".pfxCreateBtn", nextRoot);
+        if (nextCreateBtn) {
+          nextCreateBtn.disabled = false;
+          nextCreateBtn.classList.remove("is-loading");
+          syncCreateButton(nextRoot);
+        }
+
+        try { window.toast?.success?.("Klip hazır"); } catch {}
+      });
+    }
    function retryBoot(attempt = 0) {
     const root = getRoot();
     const presetCards = root ? qsa(".pfxPresetCard[data-preset]", root) : [];
