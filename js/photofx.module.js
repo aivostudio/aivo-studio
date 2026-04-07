@@ -1880,10 +1880,11 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
             alert(String(err?.message || err || "photofx_create_failed"));
           })
-          .finally(() => {
+                .finally(() => {
             createBtn.disabled = false;
             createBtn.classList.remove("is-loading");
             syncCreateButton(root);
+            try { window.toast?.success?.("Klip hazır"); } catch {}
           });
       });
     }
