@@ -766,17 +766,18 @@ function syncVideoCreditUI(root) {
       const ready = isReadyStatus(j.status);
       const outs = pickVideoOutputs(j.outputs);
 
-      if (ready && outs.length) {
-        window.PPE?.apply?.({
-          state: "COMPLETED",
-          outputs: outs.map((o) => ({
-            ...o,
-            meta: { ...(o.meta || {}), app: "video" },
-          })),
-        });
-        return;
-      }
+    if (ready && outs.length) {
+  window.PPE?.apply?.({
+    state: "COMPLETED",
+    outputs: outs.map((o) => ({
+      ...o,
+      meta: { ...(o.meta || {}), app: "video" },
+    })),
+  });
 
+  try { window.toast?.success?.("Video hazır"); } catch {}
+  return;
+}
       if (String(j.status || "").toLowerCase() === "error") {
         throw j.error || "video_job_error";
       }
