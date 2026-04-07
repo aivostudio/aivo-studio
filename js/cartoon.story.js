@@ -1409,14 +1409,6 @@ function resetStoryAudioAsset(root) {
     try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
   }
 }
-
-function resetStoryCharacterImage(root, slot) {
-  const key = String(slot || "").trim();
-  if (!key) return;
-
-  const input = qs(`[data-story-character-file="${key}"]`, root);
-  if (input) input.value = "";
-
 function resetStoryCharacterImage(root, slot) {
   const key = String(slot || "").trim();
   if (!key) return;
