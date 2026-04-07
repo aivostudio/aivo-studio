@@ -782,8 +782,6 @@
   function clearBasicCharacterImage(root) {
     const input = qs("[data-character-upload]", root);
 
-    const hadFile = !!state.characterImage;
-
     state.characterImage = null;
     state.characterImageName = "";
     state.characterImageUrl = "";
@@ -796,10 +794,6 @@
     updateBasicUploadStatusUI(root);
     updateSummary(root);
     syncGenerateButtonCredit(root);
-
-    if (hadFile) {
-      try { window.toast?.success?.("Resim kaldırıldı · -10 kredi"); } catch {}
-    }
   }
 
   function ensureBasicUploadClearButton(root) {
@@ -882,10 +876,8 @@
     if (generateBtn) generateBtn.disabled = !!state.isGenerating;
   }
 
-  function clearBasicAudioFile(root, options = {}) {
+  function clearBasicAudioFile(root) {
     const input = qs("[data-audio-upload]", root);
-    const silent = !!options.silent;
-    const hadFile = !!state.audioFile;
 
     state.audioFile = null;
     state.audioFileName = "";
@@ -899,10 +891,6 @@
     updateBasicAudioUploadStatusUI(root);
     updateSummary(root);
     syncGenerateButtonCredit(root);
-
-    if (!silent && hadFile) {
-      try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
-    }
   }
 
   function ensureBasicAudioUploadClearButton(root) {
@@ -971,7 +959,6 @@
 
   function clearBasicLogoFile(root) {
     const input = qs("[data-basic-logo-upload]", root);
-    const hadFile = !!state.logoFile;
 
     state.logoFile = null;
     state.logoFileName = "";
@@ -985,10 +972,6 @@
     updateBasicLogoUploadStatusUI(root);
     updateSummary(root);
     syncGenerateButtonCredit(root);
-
-    if (hadFile) {
-      try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
-    }
   }
 
   function ensureBasicLogoUploadClearButton(root) {
@@ -1631,9 +1614,9 @@
                       ...((payload.actions || []).filter(Boolean)),
                       payload.extraPrompt
                     ].filter(Boolean).join(" • "),
-                      duration: payload.duration,
-                      aspect_ratio: payload.aspectRatio,
-                      credit_cost: creditCost
+                    duration: payload.duration,
+                    aspect_ratio: payload.aspectRatio,
+                    credit_cost: creditCost
                   }
                 }
               })
@@ -1734,7 +1717,7 @@
         state.audioSource = audioSource.value || "none";
 
         if (state.audioSource !== "upload") {
-          clearBasicAudioFile(root, { silent: true });
+          clearBasicAudioFile(root);
         }
 
         resetBasicPolicyUI(root);
