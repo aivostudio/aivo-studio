@@ -314,10 +314,12 @@ window.ensureModuleCSS = function () {
     const btn = e.target.closest(".navBtn");
     if (!btn) return;
 
+    const key = (btn.dataset.route || "").trim();
+    if (!key) return;
+
     e.preventDefault();
     e.stopPropagation();
 
-    const key = btn.dataset.route || "music";
     setHash(key);
   }
 
