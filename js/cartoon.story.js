@@ -1147,25 +1147,29 @@ const state = (window.__CARTOON_STORY_STATE__ =
    btn.classList.toggle("is-loading", !!loading);
   }
 
-  function completeStoryGenerateIfAllSettled() {
-    const root = getCartoonRoot();
-    const total = Number(storyPollState.total || 0);
-    const ready = Number(storyPollState.ready || 0);
-    const failed = Number(storyPollState.failed || 0);
+function completeStoryGenerateIfAllSettled() {
+  const root = getCartoonRoot();
+  const total = Number(storyPollState.total || 0);
+  const ready = Number(storyPollState.ready || 0);
+  const failed = Number(storyPollState.failed || 0);
 
-    if (!total) return;
-    if (ready + failed < total) return;
+  if (!total) return;
+  if (ready + failed < total) return;
 
-    state.isGenerating = false;
-    setStoryGenerateButton(root, false);
+  state.isGenerating = false;
+  setStoryGenerateButton(root, false);
 
-    console.log("[CARTOON][STORY_ALL_SETTLED]", {
-      total,
-      ready,
-      failed,
-      jobs: storyPollState.jobs
-    });
+  if (ready === total && failed === 0) {
+    try { window.toast?.success?.("Hikaye hazır"); } catch {}
   }
+
+  console.log("[CARTOON][STORY_ALL_SETTLED]", {
+    total,
+    ready,
+    failed,
+    jobs: storyPollState.jobs
+  });
+}
 
   function ensureStoryJobState(jobId, item) {
     const key = safeText(jobId);
