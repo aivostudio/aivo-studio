@@ -614,30 +614,38 @@
     return publicUrl;
   }
 
-  function clearStudioVoiceFile(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonVoiceFile',
-      '#studioVoiceFile',
-      '[data-studio-voice-upload]',
-      'input[name="voiceFile"]',
-      'input[name="kendiSesin"]'
-    ]);
+function clearStudioVoiceFile(rootState, studioRoot) {
+  const input = qsAny(studioRoot, [
+    '#cartoonVoiceFile',
+    '#studioVoiceFile',
+    '[data-studio-voice-upload]',
+    'input[name="voiceFile"]',
+    'input[name="kendiSesin"]'
+  ]);
 
-    rootState.voiceFile = null;
-    rootState.voiceFileName = '';
-    rootState.voiceFileUrl = '';
-    rootState.voiceFileUploadPromise = null;
-    rootState.voiceFileUploadStatus = 'idle';
-    rootState.voiceFileUploadError = '';
+  const hadFile =
+    !!rootState.voiceFile ||
+    !!String(rootState.voiceFileUrl || '').trim();
 
-    if (input) {
-      input.value = '';
-    }
+  rootState.voiceFile = null;
+  rootState.voiceFileName = '';
+  rootState.voiceFileUrl = '';
+  rootState.voiceFileUploadPromise = null;
+  rootState.voiceFileUploadStatus = 'idle';
+  rootState.voiceFileUploadError = '';
 
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-    saveStudioState(rootState);
+  if (input) {
+    input.value = '';
   }
+
+  updateStudioVoiceUploadStatusUI(rootState, studioRoot);
+  updateStudioSummary(rootState, studioRoot);
+  saveStudioState(rootState);
+
+  if (hadFile) {
+    try { window.toast?.success?.('Ses kaldırıldı · -10 kredi'); } catch {}
+  }
+}
 
   function clearStudioLogoFile(rootState, studioRoot) {
     const input = qsAny(studioRoot, [
