@@ -1465,11 +1465,16 @@ const builtEffects = {
         return;
       }
 
-      if (e.target.matches("#pfxImageInput")) {
+         if (e.target.matches("#pfxImageInput")) {
         const file = e.target.files?.[0] || null;
         state.imageFile = file;
         renderUploads(root);
         syncCreateButton(root);
+
+        if (file) {
+          try { window.toast?.success?.("Resim eklendi"); } catch {}
+        }
+
         console.log("[photofx] image selected =", file?.name || null);
         return;
       }
