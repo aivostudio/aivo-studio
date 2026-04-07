@@ -1,3 +1,647 @@
-/* ===============================
+/* ================================
    MODULE: SETTINGS
-   =============================== */
+================================ */
+
+#moduleHost .main-panel{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+#moduleHost .aivo-settings-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding:22px 22px 0;
+}
+
+#moduleHost .aivo-sec-head{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+#moduleHost .aivo-sec-title{
+  margin:0;
+  font-size:28px;
+  line-height:1.1;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:-0.02em;
+}
+
+#moduleHost .aivo-sec-sub{
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  color:rgba(255,255,255,0.72);
+}
+
+#moduleHost .aivo-settings-head-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+#moduleHost .aivo-settings-topnav{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:24px;
+  margin:0 22px;
+  border:1px solid rgba(150,110,255,0.22);
+  border-radius:28px;
+  background:
+    radial-gradient(circle at top center, rgba(145,104,255,0.18), transparent 58%),
+    linear-gradient(180deg, rgba(20,18,40,0.96) 0%, rgba(11,10,25,0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 18px 40px rgba(0,0,0,0.28);
+  overflow:hidden;
+}
+
+#moduleHost .aivo-settings-topnav::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+#moduleHost .aivo-settings-topnav-head{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+#moduleHost .aivo-settings-topnav-text{
+  max-width:640px;
+}
+
+#moduleHost .aivo-settings-topnav-title{
+  font-size:24px;
+  line-height:1.15;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:-0.02em;
+}
+
+#moduleHost .aivo-settings-topnav-sub{
+  margin-top:8px;
+  font-size:15px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.72);
+}
+
+#moduleHost .aivo-settings-topnav-chips{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+#moduleHost .preset-chip{
+  appearance:none;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.05);
+  color:rgba(255,255,255,0.84);
+  padding:12px 18px;
+  min-height:44px;
+  border-radius:999px;
+  font-size:14px;
+  line-height:1;
+  font-weight:700;
+  cursor:pointer;
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease,
+    color .18s ease;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+#moduleHost .preset-chip:hover{
+  transform:translateY(-1px);
+  border-color:rgba(177,133,255,0.42);
+  background:rgba(123,84,255,0.14);
+  color:#ffffff;
+}
+
+#moduleHost .preset-chip.is-active,
+#moduleHost .preset-chip[aria-selected="true"]{
+  color:#ffffff;
+  border-color:rgba(178,135,255,0.52);
+  background:linear-gradient(180deg, rgba(132,92,255,0.32) 0%, rgba(83,55,170,0.26) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 0 1px rgba(178,135,255,0.14),
+    0 10px 24px rgba(82,43,181,0.24);
+}
+
+#moduleHost .aivo-settings-pane{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  padding:0 22px;
+}
+
+#moduleHost .aivo-settings-pane:not(.is-active){
+  display:none !important;
+}
+
+#moduleHost .aivo-settings-title{
+  font-size:24px;
+  line-height:1.15;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:-0.02em;
+  margin-top:4px;
+}
+
+#moduleHost .aivo-settings-sub{
+  margin-top:-6px;
+  font-size:14px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.70);
+}
+
+#moduleHost .aivo-settings-card{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  padding:20px;
+  border-radius:24px;
+  border:1px solid rgba(149,108,255,0.16);
+  background:
+    linear-gradient(180deg, rgba(20,18,40,0.96) 0%, rgba(10,10,24,0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 16px 34px rgba(0,0,0,0.24);
+  overflow:hidden;
+}
+
+#moduleHost .aivo-settings-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.025);
+}
+
+#moduleHost .aivo-settings-card-head{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+}
+
+#moduleHost .aivo-settings-card-icon{
+  width:46px;
+  height:46px;
+  min-width:46px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  font-size:20px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.12), transparent 58%),
+    linear-gradient(180deg, rgba(124,86,255,0.22) 0%, rgba(58,39,122,0.22) 100%);
+  border:1px solid rgba(181,139,255,0.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+#moduleHost .aivo-settings-card-title{
+  font-size:17px;
+  line-height:1.25;
+  font-weight:800;
+  color:#ffffff;
+}
+
+#moduleHost .aivo-settings-card-sub{
+  margin-top:4px;
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.68);
+}
+
+#moduleHost .aivo-settings-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:14px 0;
+  border-top:1px solid rgba(255,255,255,0.08);
+}
+
+#moduleHost .aivo-settings-row:first-of-type{
+  border-top:none;
+  padding-top:2px;
+}
+
+#moduleHost .aivo-settings-row-title{
+  font-size:15px;
+  line-height:1.35;
+  font-weight:700;
+  color:#ffffff;
+}
+
+#moduleHost .aivo-settings-row-sub{
+  margin-top:4px;
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.68);
+  max-width:760px;
+}
+
+#moduleHost .aivo-settings-center{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+
+#moduleHost .aivo-settings-muted{
+  font-size:13px;
+  line-height:1.5;
+  color:rgba(255,255,255,0.76);
+}
+
+#moduleHost .aivo-settings-micro{
+  margin-top:4px;
+  font-size:12px;
+  line-height:1.5;
+  color:rgba(255,255,255,0.52);
+}
+
+#moduleHost .aivo-toggle{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-end;
+  min-width:52px;
+  cursor:pointer;
+}
+
+#moduleHost .aivo-toggle input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+#moduleHost .aivo-toggle span{
+  position:relative;
+  display:block;
+  width:52px;
+  height:30px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.10);
+  transition:background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+#moduleHost .aivo-toggle span::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#ffffff;
+  box-shadow:0 4px 12px rgba(0,0,0,0.22);
+  transition:transform .2s ease;
+}
+
+#moduleHost .aivo-toggle input:checked + span{
+  background:linear-gradient(180deg, rgba(121,86,255,0.92) 0%, rgba(91,63,196,0.92) 100%);
+  border-color:rgba(177,136,255,0.58);
+  box-shadow:0 0 0 4px rgba(118,83,247,0.12);
+}
+
+#moduleHost .aivo-toggle input:checked + span::after{
+  transform:translateX(22px);
+}
+
+#moduleHost .aivo-toggle input:disabled + span{
+  opacity:.55;
+}
+
+#moduleHost .aivo-radio{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;
+  background:rgba(255,255,255,0.03);
+  cursor:pointer;
+  transition:border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+#moduleHost .aivo-radio + .aivo-radio{
+  margin-top:10px;
+}
+
+#moduleHost .aivo-radio:hover{
+  transform:translateY(-1px);
+  border-color:rgba(174,131,255,0.28);
+  background:rgba(123,84,255,0.08);
+}
+
+#moduleHost .aivo-radio input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+#moduleHost .aivo-radio-ui{
+  position:relative;
+  width:20px;
+  height:20px;
+  min-width:20px;
+  margin-top:2px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,0.28);
+  background:transparent;
+  transition:border-color .18s ease, box-shadow .18s ease;
+}
+
+#moduleHost .aivo-radio-ui::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:#ffffff;
+  transform:scale(0);
+  transition:transform .18s ease;
+}
+
+#moduleHost .aivo-radio input:checked + .aivo-radio-ui{
+  border-color:rgba(186,145,255,0.92);
+  box-shadow:0 0 0 4px rgba(123,84,255,0.12);
+}
+
+#moduleHost .aivo-radio input:checked + .aivo-radio-ui::after{
+  transform:scale(1);
+}
+
+#moduleHost .aivo-radio b{
+  display:block;
+  margin:0;
+  font-size:15px;
+  line-height:1.35;
+  font-weight:800;
+  color:#ffffff;
+}
+
+#moduleHost .aivo-radio small{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.68);
+}
+
+#moduleHost .aivo-slider{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+#moduleHost .aivo-slider-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  font-size:13px;
+  line-height:1.4;
+  color:rgba(255,255,255,0.68);
+}
+
+#moduleHost .aivo-slider-top b{
+  font-size:15px;
+  color:#ffffff;
+}
+
+#moduleHost .aivo-slider input[type="range"]{
+  width:100%;
+  appearance:none;
+  height:6px;
+  border-radius:999px;
+  background:linear-gradient(90deg, rgba(111,78,235,0.95), rgba(171,125,255,0.95));
+  outline:none;
+}
+
+#moduleHost .aivo-slider input[type="range"]::-webkit-slider-thumb{
+  appearance:none;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#ffffff;
+  border:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.22);
+  cursor:pointer;
+}
+
+#moduleHost .aivo-slider input[type="range"]::-moz-range-thumb{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#ffffff;
+  border:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.22);
+  cursor:pointer;
+}
+
+#moduleHost .aivo-select{
+  min-width:160px;
+  min-height:46px;
+  padding:0 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.05);
+  color:#ffffff;
+  font-size:14px;
+  font-weight:600;
+  outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+#moduleHost .aivo-select:focus{
+  border-color:rgba(174,131,255,0.42);
+  box-shadow:0 0 0 4px rgba(123,84,255,0.10);
+}
+
+#moduleHost .aivo-textarea{
+  width:100%;
+  min-height:110px;
+  resize:vertical;
+  padding:14px 16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.04);
+  color:#ffffff;
+  font-size:14px;
+  line-height:1.6;
+  outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+#moduleHost .aivo-textarea::placeholder{
+  color:rgba(255,255,255,0.42);
+}
+
+#moduleHost .aivo-textarea:focus{
+  border-color:rgba(177,136,255,0.42);
+  box-shadow:0 0 0 4px rgba(123,84,255,0.10);
+}
+
+#moduleHost .aivo-callout{
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid rgba(255,125,125,0.18);
+  background:rgba(255,88,88,0.08);
+  color:rgba(255,240,240,0.9);
+  font-size:13px;
+  line-height:1.6;
+}
+
+#moduleHost .aivo-warn{
+  border-color:rgba(255,116,116,0.16);
+}
+
+#moduleHost .chip-btn{
+  appearance:none;
+  border:none;
+  min-height:44px;
+  padding:0 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  color:#ffffff;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .18s ease, background .18s ease, box-shadow .18s ease, opacity .18s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 10px 24px rgba(0,0,0,0.18);
+}
+
+#moduleHost .chip-btn:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,0.10);
+}
+
+#moduleHost .chip-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+#moduleHost .chip-btn--primary{
+  background:linear-gradient(180deg, rgba(124,87,255,0.98) 0%, rgba(90,62,198,0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 12px 28px rgba(79,45,180,0.34);
+}
+
+#moduleHost .chip-btn--primary:hover{
+  background:linear-gradient(180deg, rgba(136,99,255,1) 0%, rgba(97,68,212,1) 100%);
+}
+
+@media (max-width: 1180px){
+  #moduleHost .aivo-settings-head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  #moduleHost .aivo-settings-center{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  #moduleHost .aivo-settings-row{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  #moduleHost .aivo-toggle{
+    align-self:flex-start;
+  }
+
+  #moduleHost .aivo-select{
+    width:100%;
+  }
+}
+
+@media (max-width: 860px){
+  #moduleHost .aivo-settings-head{
+    padding:18px 16px 0;
+  }
+
+  #moduleHost .aivo-settings-topnav{
+    margin:0 16px;
+    padding:20px;
+    border-radius:24px;
+  }
+
+  #moduleHost .aivo-settings-pane{
+    padding:0 16px;
+  }
+
+  #moduleHost .aivo-sec-title{
+    font-size:24px;
+  }
+
+  #moduleHost .aivo-settings-topnav-title{
+    font-size:22px;
+  }
+
+  #moduleHost .aivo-settings-title{
+    font-size:22px;
+  }
+
+  #moduleHost .aivo-settings-card{
+    padding:18px;
+    border-radius:20px;
+  }
+}
+
+@media (max-width: 640px){
+  #moduleHost .aivo-settings-topnav-chips{
+    justify-content:flex-start;
+  }
+
+  #moduleHost .preset-chip{
+    width:100%;
+    justify-content:center;
+    text-align:center;
+  }
+
+  #moduleHost .aivo-settings-card-head{
+    flex-direction:column;
+  }
+
+  #moduleHost .aivo-settings-card-icon{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    border-radius:14px;
+  }
+
+  #moduleHost .chip-btn,
+  #moduleHost .chip-btn--primary{
+    width:100%;
+    justify-content:center;
+  }
+}
