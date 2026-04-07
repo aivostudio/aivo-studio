@@ -128,21 +128,26 @@
 .library-grid{
   border-radius: 22px;
   min-height: 620px;
-  padding: 16px;
+  padding: 18px;
   background: rgba(255,255,255,.025);
   border: 1px solid rgba(255,255,255,.06);
+  display: flex;
 }
 
 .library-cards{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 100%;
 }
 
 .library-empty{
-  width: min(100%, 420px);
+  width: 100%;
+  min-height: 100%;
   border-radius: 22px;
-  padding: 26px 24px 22px;
+  padding: 34px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   background:
     linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
   border: 1px solid rgba(255,255,255,.08);
