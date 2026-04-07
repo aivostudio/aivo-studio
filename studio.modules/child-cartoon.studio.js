@@ -1719,25 +1719,27 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
           throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
         }
 
-        const creditCost = getStudioExportCreditCost(rootState, studioRoot);
-        const creditReason = 'studio_cartoon_montage_export';
+     const creditCost = getStudioExportCreditCost(rootState, studioRoot);
+const creditReason = 'studio_cartoon_montage_export';
 
-        button.disabled = true;
-        button.textContent = 'Çıktı hazırlanıyor...';
-        button.classList.add('is-loading');
+button.disabled = true;
+button.textContent = 'Çıktı hazırlanıyor...';
+button.classList.add('is-loading');
 
-        const creditRes = await fetch('/api/credits/consume', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-          },
-          body: JSON.stringify({
-            cost: creditCost,
-            reason: creditReason
-          })
-        });
+try { window.toast?.success?.('Video hazırlanıyor'); } catch {}
+
+const creditRes = await fetch('/api/credits/consume', {
+  method: 'POST',
+  credentials: 'include',
+  headers: {
+    'content-type': 'application/json',
+    'accept': 'application/json'
+  },
+  body: JSON.stringify({
+    cost: creditCost,
+    reason: creditReason
+  })
+});
 
         let creditData = null;
         try {
