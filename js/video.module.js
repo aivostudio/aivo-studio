@@ -843,10 +843,12 @@ async function createText() {
 
     return;
   }
-  if (!prompt) {
-    alert("Lütfen video açıklaması yaz.");
-    return;
-  }
+if (!prompt) {
+  try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+  const promptEl = qs("#videoPrompt", root);
+  if (promptEl) promptEl.focus();
+  return;
+}
 
   const payload = {
     ...buildCommonPayload(root),
