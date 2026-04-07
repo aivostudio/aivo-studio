@@ -1848,11 +1848,9 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
               await refreshTopCredits();
 
-        createBtn.disabled = true;
+               createBtn.disabled = true;
         createBtn.classList.add("is-loading");
         createBtn.textContent = "Üretiliyor...";
-
-        try { window.toast?.success?.("Klip üretimi başladı"); } catch {}
 
         createPhotoFx(root)
           .catch(async (err) => {
