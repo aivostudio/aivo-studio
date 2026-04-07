@@ -2848,6 +2848,7 @@ if (role === "helper") {
   render(root);
   return;
 }
+}
       const sectionToggle = e.target.closest("[data-story-section-toggle]");
       if (sectionToggle && root.contains(sectionToggle)) {
         e.preventDefault();
