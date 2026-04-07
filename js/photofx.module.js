@@ -1479,11 +1479,16 @@ const builtEffects = {
         return;
       }
 
-      if (e.target.matches("#pfxLogoInput")) {
+         if (e.target.matches("#pfxLogoInput")) {
         const file = e.target.files?.[0] || null;
         state.logoFile = file;
         renderUploads(root);
         syncCreateButton(root);
+
+        if (file) {
+          try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+        }
+
         console.log("[photofx] logo selected =", file?.name || null);
         return;
       }
