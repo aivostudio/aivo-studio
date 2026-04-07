@@ -1138,17 +1138,17 @@ function bindVideoPricingUI(root) {
   document.addEventListener(
     "click",
     (e) => {
-         const tBtn = e.target.closest("#videoGenerateTextBtn");
-      if (tBtn) {
-        e.preventDefault();
-        return createText();
-      }
+   const tBtn = e.target.closest("#videoGenerateTextBtn");
+if (tBtn) {
+  e.preventDefault();
+  return withLoading(tBtn, createText);
+}
 
-      const iBtn = e.target.closest("#videoGenerateImageBtn");
-      if (iBtn) {
-        e.preventDefault();
-        return withLoading(iBtn, createImage);
-      }
+const iBtn = e.target.closest("#videoGenerateImageBtn");
+if (iBtn) {
+  e.preventDefault();
+  return withLoading(iBtn, createImage);
+}
     },
     true
   );
