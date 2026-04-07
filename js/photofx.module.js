@@ -1696,8 +1696,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         }
         return;
       }
-
-        const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
+      const presetCard = e.target.closest(".pfxPresetCard[data-preset]");
       if (presetCard && nextRoot.contains(presetCard)) {
         e.preventDefault();
 
@@ -1710,8 +1709,10 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
         if (nextState.presets.includes(preset)) {
           nextState.presets = nextState.presets.filter((x) => x !== preset);
+          try { window.toast?.success?.(`${preset} kaldırıldı · -5 kredi`); } catch {}
         } else {
           nextState.presets = [...nextState.presets, preset];
+          try { window.toast?.success?.(`${preset} seçildi · +5 kredi`); } catch {}
         }
 
         resetPhotoFxPolicyUI(nextRoot);
