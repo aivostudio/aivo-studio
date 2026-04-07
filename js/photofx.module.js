@@ -725,8 +725,8 @@ const PFX_HARD_BLOCK_PATTERNS = [
         try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
       }
     }
-
     if (key === "audio") {
+      const hadAudio = !!state.audioFile;
       state.audioFile = null;
       state.audioFileName = "";
       state.audioFileUrl = "";
@@ -735,6 +735,10 @@ const PFX_HARD_BLOCK_PATTERNS = [
       state.audioFileUploadError = "";
       const input = qs("#pfxAudioInput", root);
       if (input) input.value = "";
+
+      if (hadAudio) {
+        try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+      }
     }
 
     resetPhotoFxPolicyUI(root);
