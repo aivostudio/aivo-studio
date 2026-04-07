@@ -3455,52 +3455,53 @@ if (file && slotConfig) {
 
         if (!file) return;
 
-        const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
-          .then((publicUrl) => {
-            setStoryCharacterImage(slot, {
-              fileUrl: safeText(publicUrl),
-              uploadStatus: "ready",
-              uploadError: "",
-              uploadPromise: null
-            });
+     const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
+  .then((publicUrl) => {
+    setStoryCharacterImage(slot, {
+      fileUrl: safeText(publicUrl),
+      uploadStatus: "ready",
+      uploadError: "",
+      uploadPromise: null
+    });
 
-            const nextRoot = getCartoonRoot();
-            if (nextRoot) {
-              updateStoryCharacterUploadUI(nextRoot, slot);
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) {
+      updateStoryCharacterUploadUI(nextRoot, slot);
 
-              const nextScene = getSceneById(state.editingSceneId);
-              if (nextScene) {
-                renderSceneCharacterPicker(nextRoot, nextScene);
-                syncSceneRows(nextRoot);
-              }
-            }
+      const nextScene = getSceneById(state.editingSceneId);
+      if (nextScene) {
+        renderSceneCharacterPicker(nextRoot, nextScene);
+        syncSceneRows(nextRoot);
+      }
+    }
 
-            console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
-            return publicUrl;
-          })
-          .catch((err) => {
-            setStoryCharacterImage(slot, {
-              fileUrl: "",
-              uploadStatus: "error",
-              uploadError: String(err?.message || err || "story_reference_upload_failed"),
-              uploadPromise: null
-            });
+    try { window.toast?.success?.(`${getStoryCharacterToastLabel(slot)} eklendi · +10 kredi`); } catch {}
+    console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
+    return publicUrl;
+  })
+  .catch((err) => {
+    setStoryCharacterImage(slot, {
+      fileUrl: "",
+      uploadStatus: "error",
+      uploadError: String(err?.message || err || "story_reference_upload_failed"),
+      uploadPromise: null
+    });
 
-            const nextRoot = getCartoonRoot();
-            if (nextRoot) {
-              updateStoryCharacterUploadUI(nextRoot, slot);
+    const nextRoot = getCartoonRoot();
+    if (nextRoot) {
+      updateStoryCharacterUploadUI(nextRoot, slot);
 
-              const nextScene = getSceneById(state.editingSceneId);
-              if (nextScene) {
-                renderSceneCharacterPicker(nextRoot, nextScene);
-                syncSceneRows(nextRoot);
-              }
-            }
+      const nextScene = getSceneById(state.editingSceneId);
+      if (nextScene) {
+        renderSceneCharacterPicker(nextRoot, nextScene);
+        syncSceneRows(nextRoot);
+      }
+    }
 
-            console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
-            alert(String(err?.message || err || "story_reference_upload_failed"));
-            throw err;
-          });
+    console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
+    alert(String(err?.message || err || "story_reference_upload_failed"));
+    throw err;
+  });
 
         setStoryCharacterImage(slot, { uploadPromise });
         resetStoryPolicyUI(root);
