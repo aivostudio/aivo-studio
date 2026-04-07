@@ -1054,7 +1054,6 @@ if (nextScenes.length === 1) {
   try { window.toast?.success?.(`${nextScenes.length} video eklendi`); } catch {}
 }
 }
-
 function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
   const input = studioRoot.querySelector('[data-studio-video-upload]');
   const text = studioRoot.querySelector('[data-studio-video-upload-text]');
@@ -1068,7 +1067,9 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
     const files = Array.from(input.files || []);
 
     if (text) {
-      text.textContent = '';
+      text.textContent = files.length > 1
+        ? `${files.length} video hazırlanıyor...`
+        : 'Video hazırlanıyor...';
     }
 
     try {
@@ -1079,8 +1080,19 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         sceneTemplate,
         files
       );
+
+      if (text) {
+        text.textContent = files.length > 1
+          ? `${files.length} video hazır ✓`
+          : 'Video hazır ✓';
+      }
     } catch (err) {
       console.error('[CARTOON][STUDIO_UPLOAD_ERROR]', err);
+
+      if (text) {
+        text.textContent = 'Video yükleme hatası';
+      }
+
       alert(String(err?.message || err || 'studio_video_upload_failed'));
     } finally {
       input.value = '';
