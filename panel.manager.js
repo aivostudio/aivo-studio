@@ -189,24 +189,28 @@
   const api = {
     _keys(){ return Array.from(registry.keys()); },
     _has(key){ return registry.has(key); },
+register(key, impl){
+  if(!key || !impl || typeof impl.mount !== "function"){
+    console.warn("[RightPanel] invalid register:", key, impl);
+    return;
+  }
 
-    register(key, impl){
-      if(!key || !impl || typeof impl.mount !== "function"){
-        console.warn("[RightPanel] invalid register:", key, impl);
-        return;
-      }
+  if(registry.has(key)){
+    console.warn("[RightPanel] duplicate register for key:", key);
+  }
 
-      if(registry.has(key)){
-        console.warn("[RightPanel] duplicate register for key:", key);
-      }
+  registry.set(key, impl);
 
-      registry.set(key, impl);
+  const cached = panelCache.get(key);
+  if(cached){
+    cached.impl = impl;
+  }
 
-      const cached = panelCache.get(key);
-      if(cached){
-        cached.impl = impl;
-      }
-    },
+  if(currentKey === key){
+    api.destroyPanel(key);
+    api.force(key);
+  }
+},
 
     force(key, payload){
       const host = ensureHost();
