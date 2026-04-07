@@ -3035,10 +3035,10 @@ if (!selectedScenes.length) {
             }
           }
 
-          if (!audioAsset.fileUrl || audioAsset.uploadStatus !== "ready") {
-            alert("Müzik henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
-            return;
-          }
+        if (!audioAsset.fileUrl || audioAsset.uploadStatus !== "ready") {
+  try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
+  return;
+}
         }
 
         const policyText = buildStoryPolicyText();
@@ -3158,9 +3158,9 @@ try {
   );
 } catch (err) {
   console.error("[CARTOON][STORY_CREATE_ERROR]", err);
-  alert(String(err?.message || err || "story_scene_create_failed"));
-  state.isGenerating = false;
-  setStoryGenerateButton(root, false);
+  try { window.toast?.error?.(String(err?.message || err || "story_scene_create_failed")); } catch {}
+state.isGenerating = false;
+setStoryGenerateButton(root, false);
 } finally {
   render(root);
 }
@@ -3357,9 +3357,9 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
     const nextRoot = getCartoonRoot();
     if (nextRoot) updateStoryLogoUploadUI(nextRoot);
 
-    console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
-    alert(String(err?.message || err || "story_logo_upload_failed"));
-    throw err;
+   console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
+try { window.toast?.error?.(String(err?.message || err || "story_logo_upload_failed")); } catch {}
+throw err;
   });
 
         setStoryLogoAsset({ uploadPromise });
@@ -3413,9 +3413,9 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
     const nextRoot = getCartoonRoot();
     if (nextRoot) updateStoryAudioUploadUI(nextRoot);
 
-    console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
-    alert(String(err?.message || err || "story_audio_upload_failed"));
-    throw err;
+   console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
+try { window.toast?.error?.(String(err?.message || err || "story_audio_upload_failed")); } catch {}
+throw err;
   });
         setStoryAudioAsset({ uploadPromise });
         return;
@@ -3522,10 +3522,9 @@ if (file && slotConfig) {
         syncSceneRows(nextRoot);
       }
     }
-
-    console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
-    alert(String(err?.message || err || "story_reference_upload_failed"));
-    throw err;
+console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
+try { window.toast?.error?.(String(err?.message || err || "story_reference_upload_failed")); } catch {}
+throw err;
   });
 
         setStoryCharacterImage(slot, { uploadPromise });
