@@ -715,10 +715,15 @@ const PFX_HARD_BLOCK_PATTERNS = [
       if (input) input.value = "";
     }
 
-    if (key === "logo") {
+     if (key === "logo") {
+      const hadLogo = !!state.logoFile;
       state.logoFile = null;
       const input = qs("#pfxLogoInput", root);
       if (input) input.value = "";
+
+      if (hadLogo) {
+        try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+      }
     }
 
     if (key === "audio") {
