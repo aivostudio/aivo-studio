@@ -1648,12 +1648,13 @@ const builtEffects = {
         console.log("[photofx] audio uploading =", file?.name || null);
 
         state.audioFileUploadPromise = uploadFile(file, "audio")
-          .then((publicUrl) => {
+               .then((publicUrl) => {
             state.audioFile = file;
             state.audioFileUrl = String(publicUrl || "").trim();
             state.audioFileUploadStatus = "ready";
             state.audioFileUploadError = "";
             renderUploads(root);
+            try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
             console.log("[photofx] audio ready =", state.audioFileUrl);
             return state.audioFileUrl;
           })
