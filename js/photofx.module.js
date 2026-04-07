@@ -1465,8 +1465,25 @@ const builtEffects = {
         return;
       }
 
-         if (e.target.matches("#pfxImageInput")) {
+             if (e.target.matches("#pfxImageInput")) {
         const file = e.target.files?.[0] || null;
+        const fileName = String(file?.name || "").toLowerCase();
+        const fileType = String(file?.type || "").toLowerCase();
+        const isHeic =
+          fileName.endsWith(".heic") ||
+          fileName.endsWith(".heif") ||
+          fileType.includes("heic") ||
+          fileType.includes("heif");
+
+        if (isHeic) {
+          state.imageFile = null;
+          e.target.value = "";
+          renderUploads(root);
+          syncCreateButton(root);
+          try { window.toast?.error?.("HEIC desteklenmiyor · JPG veya PNG yükle"); } catch {}
+          return;
+        }
+
         state.imageFile = file;
         renderUploads(root);
         syncCreateButton(root);
