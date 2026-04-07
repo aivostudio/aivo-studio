@@ -1070,10 +1070,32 @@ function bindVideoPricingUI(root) {
     durationEl.addEventListener("input", refreshPricing);
   }
 
-  if (audioEl) {
-    audioEl.addEventListener("change", refreshPricing);
-    audioEl.addEventListener("input", refreshPricing);
+ if (audioEl) {
+  let lastAudioState = !!audioEl.checked;
+
+  function handleAudioToast() {
+    const nextAudioState = !!audioEl.checked;
+
+    if (nextAudioState === lastAudioState) return;
+    lastAudioState = nextAudioState;
+
+    if (nextAudioState) {
+      try { window.toast?.success?.("Ses üretimi açıldı · +5 kredi"); } catch {}
+    } else {
+      try { window.toast?.success?.("Ses üretimi kapatıldı · -5 kredi"); } catch {}
+    }
   }
+
+  audioEl.addEventListener("change", () => {
+    handleAudioToast();
+    refreshPricing();
+  });
+
+  audioEl.addEventListener("input", () => {
+    handleAudioToast();
+    refreshPricing();
+  });
+}
 
   if (ratioEl) {
     ratioEl.addEventListener("change", refreshPricing);
