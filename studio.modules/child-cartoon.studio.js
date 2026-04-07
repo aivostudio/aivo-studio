@@ -1581,31 +1581,31 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         }
 
         window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-        window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:job_ready', {
-            detail: {
-              app: 'cartoon',
-              mode: 'studio_export',
-              job_id: String(jobId || ''),
-              status,
-              video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
-              outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-              raw: j,
-              meta: {
-                app: 'cartoon',
-                mode: 'studio_export',
-                final_video_url: resolvedFinalVideoUrl,
-                preview_video_url: previewVideoUrl || previewOutputUrl
-              }
-            }
-          })
-        );
-        button.disabled = false;
-        button.textContent = originalText;
-        button.classList.remove('is-loading');
+window.dispatchEvent(
+  new CustomEvent('aivo:cartoon:job_ready', {
+    detail: {
+      app: 'cartoon',
+      mode: 'studio_export',
+      job_id: String(jobId || ''),
+      status,
+      video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
+      outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+      raw: j,
+      meta: {
+        app: 'cartoon',
+        mode: 'studio_export',
+        final_video_url: resolvedFinalVideoUrl,
+        preview_video_url: previewVideoUrl || previewOutputUrl
+      }
+    }
+  })
+);
+button.disabled = false;
+button.textContent = originalText;
+button.classList.remove('is-loading');
 
-        alert(`Çıktı hazır. Final video: ${resolvedFinalVideoUrl || '-'}`);
-        return;
+try { window.toast?.success?.('Video hazır'); } catch {}
+return;
       }
 
       if (status === 'error') {
