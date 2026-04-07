@@ -1408,6 +1408,14 @@ function resetStoryCharacterImage(root, slot) {
   const input = qs(`[data-story-character-file="${key}"]`, root);
   if (input) input.value = "";
 
+function resetStoryCharacterImage(root, slot) {
+  const key = String(slot || "").trim();
+  if (!key) return;
+
+  const hadFile = !!getStoryCharacterImage(key)?.file;
+  const input = qs(`[data-story-character-file="${key}"]`, root);
+  if (input) input.value = "";
+
   const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === key);
 
   setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
@@ -1426,6 +1434,10 @@ function resetStoryCharacterImage(root, slot) {
   if (scene) {
     renderSceneCharacterPicker(root, scene);
     syncSceneRows(root);
+  }
+
+  if (hadFile) {
+    try { window.toast?.success?.(`${getStoryCharacterToastLabel(key)} kaldırıldı · -10 kredi`); } catch {}
   }
 }
 
