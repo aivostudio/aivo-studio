@@ -1956,17 +1956,17 @@ const creditRes = await fetch('/api/credits/consume', {
           renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
         });
       }
+if (removeBtn) {
+  removeBtn.addEventListener('click', () => {
+    const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
+    if (!ok) return;
 
-      if (removeBtn) {
-        removeBtn.addEventListener('click', () => {
-          const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
-          if (!ok) return;
-
-          rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
-          saveStudioState(rootState);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
+    rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
+    saveStudioState(rootState);
+    renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
+    try { window.toast?.success?.('Video silindi'); } catch {}
+  });
+}
 
       sceneList.appendChild(fragment);
     });
