@@ -83,7 +83,7 @@ export default async function handler(req, res) {
       return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
 
-    const authUser = {
+     const authUser = {
       provider: "google",
       google_id: userData.id ? String(userData.id) : "",
       email: String(userData.email || "").trim().toLowerCase(),
@@ -97,7 +97,42 @@ export default async function handler(req, res) {
       return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
 
-      await createAuthSession(res, authUser.email);
+    const kvMod = await import("../_kv.js");
+    const kv = kvMod?.default || kvMod || {};
+    const kvGetJson = kv.kvGetJson;
+    const kvSetJson = kv.kvSetJson;
+
+    if (typeof kvGetJson !== "function" || typeof kvSetJson !== "function") {
+      const msg = encodeURIComponent("Kullanıcı verisi servisi hazır değil.");
+      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    }
+
+    const userKey1 = `user:${authUser.email}`;
+    const userKey2 = `users:${authUser.email}`;
+
+    const existing1 = await kvGetJson(userKey1).catch(() => null);
+    const existing2 = await kvGetJson(userKey2).catch(() => null);
+
+    const existingUser =
+      (existing1 && typeof existing1 === "object")
+        ? existing1
+        : ((existing2 && typeof existing2 === "object") ? existing2 : null);
+
+    const finalUser = existingUser || {
+      email: authUser.email,
+      name: authUser.name || "",
+      role: "user",
+      provider: "google",
+      googleId: authUser.google_id || "",
+      avatarUrl: authUser.avatar_url || "",
+      verified: true,
+      createdAt: Date.now()
+    };
+
+    await kvSetJson(userKey1, finalUser);
+    await kvSetJson(userKey2, finalUser);
+
+    await createAuthSession(res, authUser.email);
 
     return res.redirect(302, `${returnTo}?tf=success&tm=${encodeURIComponent("Girişiniz başarılı")}`);
   } catch (err) {
