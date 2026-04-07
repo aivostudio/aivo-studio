@@ -75,11 +75,16 @@ export default async function handler(req, res) {
       return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
 
-    res.setHeader(
-      "Set-Cookie",
+       const prevSetCookie = res.getHeader("Set-Cookie");
+    const nextCookies = Array.isArray(prevSetCookie)
+      ? prevSetCookie.slice()
+      : (prevSetCookie ? [prevSetCookie] : []);
+
+    nextCookies.push(
       `aivo_google_state=; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=0`
     );
 
+    res.setHeader("Set-Cookie", nextCookies);
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: {
