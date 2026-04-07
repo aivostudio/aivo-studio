@@ -1076,20 +1076,23 @@ const PFX_HARD_BLOCK_PATTERNS = [
           }
         }
 
-        window.dispatchEvent(
-          new CustomEvent("aivo:photofx:job_ready", {
-            detail: {
-              app: "photofx",
-              job_id,
-              status: String(j.status || "").toLowerCase(),
-              video: directVideoUrl ? { url: directVideoUrl } : null,
-              outputs: finalOutputs,
-              raw: j,
-            },
-          })
-        );
+                      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
 
-        return;
+                window.dispatchEvent(
+                  new CustomEvent("aivo:photofx:job_ready", {
+                    detail: {
+                      app: "photofx",
+                      job_id,
+                      status: String(refreshed.status || "ready").toLowerCase(),
+                      video: refreshedDirectVideoUrl
+                        ? { url: refreshedDirectVideoUrl }
+                        : null,
+                      outputs: refreshedFinalOutputs,
+                      raw: refreshed,
+                    },
+                  })
+                );
+                return;
       }
 
       if (String(j.status || "").toLowerCase() === "error") {
