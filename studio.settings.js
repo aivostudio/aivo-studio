@@ -372,6 +372,135 @@
 })();
 
 
+/* =========================================================
+   SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL) v2 SAFE (NO-CONFLICT)
+   - NOT: V5 (AIVO SETTINGS — SINGLE OWNER) varsa KENDİNİ KAPATIR.
+   - Bu blok artık legacy; amaç sadece yanlışlıkla dosyada kalırsa çakışmayı engellemek.
+   ========================================================= */
+(function(){
+  "use strict";
+
+  var ROOT_SEL  = '.page.page-settings[data-page="settings"]';
+  var LS_ACTIVE = "aivo_settings_active_tab_v1";
+
+  // ✅ V5 varsa bu legacy tabs bloğu ÇALIŞMASIN (çakışmayı bitirir)
+  // 1) global flag (senin v5 bind'inde page.__aivoSettingsBoundV5 set ediliyor)
+  // 2) veya başka bir yerden __aivoSettingsBoundV5 / __aivoSettingsV5Bound gibi bir guard varsa
+  try{
+    var page = document.querySelector(ROOT_SEL);
+    if (page && page.__aivoSettingsBoundV5) return;
+    if (window.__aivoSettingsBoundV5) return; // ihtiyaten
+  } catch(e){}
+
+  // prevent double bind (legacy içinde bile)
+  if (window.__aivoSettingsTabsBound) return;
+  window.__aivoSettingsTabsBound = true;
+
+  function norm(v){ return String(v || "").trim().toLowerCase(); }
+  function root(){ return document.querySelector(ROOT_SEL); }
+
+  function tabs(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-tab]')); }
+  function panes(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-pane]')); }
+
+  function showPane(p){
+    if (!p) return;
+    p.classList.add("is-active");
+    p.style.setProperty("display", "block", "important");
+    p.removeAttribute("aria-hidden");
+  }
+
+  function hidePane(p){
+    if (!p) return;
+    p.classList.remove("is-active");
+    p.style.setProperty("display", "none", "important");
+    p.setAttribute("aria-hidden", "true");
+  }
+
+  function activate(r, rawKey){
+    var key = norm(rawKey);
+    if (!key) return;
+
+    var t = tabs(r);
+    var p = panes(r);
+    if (!t.length || !p.length) return;
+
+    // tabs active
+    t.forEach(function(btn){
+      var on = norm(btn.getAttribute("data-settings-tab")) === key;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+      btn.setAttribute("tabindex", on ? "0" : "-1");
+    });
+
+    // panes show/hide
+    var anyOn = false;
+    p.forEach(function(pane){
+      var on = norm(pane.getAttribute("data-settings-pane")) === key;
+      if (on) { anyOn = true; showPane(pane); }
+      else hidePane(pane);
+    });
+
+    // fallback
+    if (!anyOn) {
+      key = "notifications";
+      p.forEach(function(pane){
+        var on2 = norm(pane.getAttribute("data-settings-pane")) === key;
+        if (on2) showPane(pane);
+        else hidePane(pane);
+      });
+      t.forEach(function(btn){
+        var on3 = norm(btn.getAttribute("data-settings-tab")) === key;
+        btn.classList.toggle("is-active", on3);
+        btn.setAttribute("aria-selected", on3 ? "true" : "false");
+        btn.setAttribute("tabindex", on3 ? "0" : "-1");
+      });
+    }
+
+    try { localStorage.setItem(LS_ACTIVE, key); } catch(e){}
+  }
+
+  function init(){
+    var r = root();
+    if (!r) return;
+
+    // ✅ init anında tekrar V5 kontrol (sayfa sonradan bind olabilir)
+    if (r.__aivoSettingsBoundV5) return;
+
+    // click delegation (capture) — sadece tab butonlarına dokun
+    r.addEventListener("click", function(ev){
+      // V5 sonradan devreye girdiyse legacy tab handler çalışmasın
+      if (r.__aivoSettingsBoundV5) return;
+
+      var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
+      if (!btn || !r.contains(btn)) return;
+      ev.preventDefault();
+      activate(r, btn.getAttribute("data-settings-tab"));
+    }, true);
+
+    // init: URL > saved > html-active > fallback
+    var urlKey = "";
+    try { urlKey = norm(new URLSearchParams(location.search).get("stab")); } catch(e){}
+
+    var savedKey = "";
+    try { savedKey = norm(localStorage.getItem(LS_ACTIVE)); } catch(e){}
+
+    var htmlActive = "";
+    var activeBtn = r.querySelector('[data-settings-tab].is-active');
+    if (activeBtn) htmlActive = norm(activeBtn.getAttribute("data-settings-tab"));
+
+    if (urlKey) { activate(r, urlKey); return; }
+    if (savedKey) { activate(r, savedKey); return; }
+    if (htmlActive) { activate(r, htmlActive); return; }
+
+    activate(r, "notifications");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
 
 /* =========================================================
    DATA RIGHTS — FAKE JSON EXPORT (MVP) v1
