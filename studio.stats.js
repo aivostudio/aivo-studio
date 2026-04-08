@@ -345,9 +345,10 @@ wrap("addCredits");
       window.__AIVO_STATS_POLL_V14__ = true;
       setInterval(function(){
         try{
-          patchStore();
+            patchStore();
           patchJobs();
           patchGenBridge();
+          bindDirectJobEvents();
 
           var c = readCredits();
           if (c != null){
