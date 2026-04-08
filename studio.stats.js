@@ -212,18 +212,19 @@ wrap("addCredits");
   }
   function normalizeTypeFromIdOrJob(job){
     var id = jobId(job).toLowerCase();
-    var t  = String((job && (job.type || job.kind || job.product || job.page || job.module)) || "").toLowerCase();
+    var t  = String((job && (job.type || job.kind || job.product || job.page || job.module || job.app || job.routeKey)) || "").toLowerCase();
 
     if (id.indexOf("music-")===0) return "music";
     if (id.indexOf("cover-")===0) return "cover";
+    if (id.indexOf("atmo-")===0) return "atmo";
+    if (id.indexOf("atmosphere-")===0) return "atmo";
     if (id.indexOf("video-")===0) return "video";
-    if (id.indexOf("atmo-")===0) return "video";
-    if (id.indexOf("atmosphere-")===0) return "video";
 
     if (t === "music" || t.indexOf("muzik")>=0) return "music";
     if (t === "cover" || t.indexOf("kapak")>=0) return "cover";
+    if (t === "atmo" || t === "atmosphere" || t.indexOf("atmosfer")>=0) return "atmo";
     if (t === "video") return "video";
-    if (t === "atmo" || t === "atmosphere" || t.indexOf("atmosfer")>=0) return "video";
+
     return "";
   }
 
@@ -238,17 +239,17 @@ wrap("addCredits");
 
     if (type === "music") stats.music++;
     else if (type === "cover") stats.cover++;
+    else if (type === "atmo") stats.atmo++;
     else if (type === "video") stats.video++;
 
     stats.seen[id] = now();
     persist(); paint();
   }
-
   function scanList(list){
     if (!Array.isArray(list)) return;
     for (var i=0;i<list.length;i++) applyJob(list[i]);
   }
-     function bindDirectJobEvents(){
+  function bindDirectJobEvents(){
     if (window.__AIVO_STATS_DIRECT_EVENTS_V14__) return;
     window.__AIVO_STATS_DIRECT_EVENTS_V14__ = true;
 
@@ -270,6 +271,23 @@ wrap("addCredits");
           job_id: detail.job_id || detail.id || "",
           type: "cover",
           kind: "cover"
+        });
+      }catch(e){}
+    });
+
+    window.addEventListener("aivo:atmo:job_created", function(ev){
+      try{
+        var detail = (ev && ev.detail) || null;
+        if (!detail) return;
+
+        applyJob({
+          id: detail.job_id || detail.id || "",
+          job_id: detail.job_id || detail.id || "",
+          type: "atmo",
+          kind: "atmo",
+          app: "atmo",
+          module: "atmo",
+          routeKey: "atmo"
         });
       }catch(e){}
     });
