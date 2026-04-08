@@ -23,13 +23,14 @@
     catch (_) { return fallback; }
   }
 
-  function getSettingsRoot() {
-    return (
-      qs("#moduleHost .main-panel") ||
-      qs('.page[data-page="settings"]') ||
-      null
-    );
-  }
+function getSettingsRoot() {
+  return (
+    qs('.page[data-page="settings"]') ||
+    qs('#moduleHost [data-page="settings"]') ||
+    qs('#moduleHost .page-settings') ||
+    null
+  );
+}
 
   function getDefaultState() {
     return {
