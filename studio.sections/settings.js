@@ -2,10 +2,8 @@
 (function () {
   "use strict";
 
-  if (window.__AIVO_STUDIO_SETTINGS_CORE__) return;
-  window.__AIVO_STUDIO_SETTINGS_CORE__ = true;
-
-  window.AIVO_STUDIO_SETTINGS = window.AIVO_STUDIO_SETTINGS || {};
+  if (window.__AIVO_STUDIO_SECTIONS_SETTINGS__) return;
+  window.__AIVO_STUDIO_SECTIONS_SETTINGS__ = true;
 
   const KEY_SETTINGS = "aivo_settings_v1";
   const KEY_ACTIVE_TAB = "aivo_settings_active_tab_v1";
@@ -27,8 +25,8 @@
 
   function getSettingsRoot() {
     return (
-      qs('.page[data-page="settings"]') ||
       qs("#moduleHost .main-panel") ||
+      qs('.page[data-page="settings"]') ||
       null
     );
   }
@@ -61,9 +59,9 @@
     return Object.assign({}, getDefaultState(), raw || {});
   }
 
-  function saveState(nextState) {
+  function saveState(state) {
     try {
-      localStorage.setItem(KEY_SETTINGS, JSON.stringify(nextState || {}));
+      localStorage.setItem(KEY_SETTINGS, JSON.stringify(state || {}));
       return true;
     } catch (_) {
       return false;
@@ -198,10 +196,9 @@
     return state;
   }
 
-  function bindTabs() {
-    const root = getSettingsRoot();
-    if (!root || root.__aivoSettingsTabsBoundCore) return;
-    root.__aivoSettingsTabsBoundCore = true;
+  function bindTabs(root) {
+    if (root.__aivoSettingsTabsBound) return;
+    root.__aivoSettingsTabsBound = true;
 
     root.addEventListener("click", function (e) {
       const btn = e.target.closest("[data-settings-tab]");
@@ -216,10 +213,9 @@
     });
   }
 
-  function bindSave() {
-    const root = getSettingsRoot();
-    if (!root || root.__aivoSettingsSaveBoundCore) return;
-    root.__aivoSettingsSaveBoundCore = true;
+  function bindSave(root) {
+    if (root.__aivoSettingsSaveBound) return;
+    root.__aivoSettingsSaveBound = true;
 
     root.addEventListener("click", function (e) {
       const btn = e.target.closest("[data-settings-save]");
@@ -238,10 +234,9 @@
     });
   }
 
-  function bindVolume() {
-    const root = getSettingsRoot();
-    if (!root || root.__aivoSettingsVolumeBoundCore) return;
-    root.__aivoSettingsVolumeBoundCore = true;
+  function bindVolume(root) {
+    if (root.__aivoSettingsVolumeBound) return;
+    root.__aivoSettingsVolumeBound = true;
 
     root.addEventListener("input", function (e) {
       const el = e.target.closest('input[type="range"][data-setting="music_volume"]');
@@ -258,16 +253,10 @@
 
     applyStateToDOM(loadState());
     setActiveTab(getActiveTab());
-    bindTabs();
-    bindSave();
-    bindVolume();
+    bindTabs(root);
+    bindSave(root);
+    bindVolume(root);
   }
-
-  window.AIVO_STUDIO_SETTINGS.boot = boot;
-  window.AIVO_STUDIO_SETTINGS.loadState = loadState;
-  window.AIVO_STUDIO_SETTINGS.saveState = saveState;
-  window.AIVO_STUDIO_SETTINGS.setActiveTab = setActiveTab;
-  window.AIVO_STUDIO_SETTINGS.collectStateFromDOM = collectStateFromDOM;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
