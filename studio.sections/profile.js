@@ -311,9 +311,23 @@
       if (firstName) safeSetLS("aivo_profile_name", firstName);
       if (lastName) safeSetLS("aivo_profile_surname", lastName);
 
+          var cachedName = firstNonEmpty(
+        safeGetLS("aivo_profile_name"),
+        readJSON("aivo_auth_unified_v1").first_name,
+        readJSON("aivo_auth_unified_v1").name,
+        ""
+      );
+
+      var emailName = "";
+      if (email && String(email).indexOf("@") !== -1) {
+        emailName = String(email).split("@")[0].trim();
+      }
+
       var fullName = firstNonEmpty(
         (firstName && lastName) ? (firstName + " " + lastName) : "",
         firstName,
+        cachedName,
+        emailName,
         "Kullanıcı"
       );
 
