@@ -201,10 +201,13 @@ wrap("addCredits");
     if (id.indexOf("music-")===0) return "music";
     if (id.indexOf("cover-")===0) return "cover";
     if (id.indexOf("video-")===0) return "video";
+    if (id.indexOf("atmo-")===0) return "video";
+    if (id.indexOf("atmosphere-")===0) return "video";
 
     if (t === "music" || t.indexOf("muzik")>=0) return "music";
     if (t === "cover" || t.indexOf("kapak")>=0) return "cover";
     if (t === "video") return "video";
+    if (t === "atmo" || t === "atmosphere" || t.indexOf("atmosfer")>=0) return "video";
     return "";
   }
 
