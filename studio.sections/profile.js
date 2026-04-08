@@ -170,17 +170,53 @@
 
   function applyProfile() {
     var page = getProfilePage();
-    if (!page) return;
-    if (!isProfileActive()) return;
+
+    console.log("[profile.section] applyProfile:start", {
+      hasPage: !!page,
+      isProfileActive: isProfileActive(),
+      activePageAttr: document.body.getAttribute("data-active-page")
+    });
+
+    if (!page) {
+      console.warn("[profile.section] applyProfile aborted: page not found");
+      return;
+    }
+
+    if (!isProfileActive()) {
+      console.warn("[profile.section] applyProfile aborted: profile not active");
+      return;
+    }
 
     var data = readProfileData();
-    if (!data) return;
+
+    console.log("[profile.section] applyProfile:data", data);
+
+    if (!data) {
+      console.warn("[profile.section] applyProfile aborted: no data");
+      return;
+    }
 
     var initial = (data.name || "K").charAt(0).toUpperCase();
 
-    text(qs("[data-profile-initial]", page), initial);
-    text(qs("[data-profile-name]", page), data.name);
-    text(qs("[data-profile-email]", page), data.email);
+    var initialEl = qs("[data-profile-initial]", page);
+    var nameEl = qs("[data-profile-name]", page);
+    var emailEl = qs("[data-profile-email]", page);
+    var inputNameEl = qs("[data-profile-input-name]", page);
+    var inputSurnameEl = qs("[data-profile-input-surname]", page);
+    var inputEmailEl = qs("[data-profile-input-email]", page);
+
+    console.log("[profile.section] applyProfile:nodes", {
+      initialEl: !!initialEl,
+      nameEl: !!nameEl,
+      emailEl: !!emailEl,
+      inputNameEl: !!inputNameEl,
+      inputSurnameEl: !!inputSurnameEl,
+      inputEmailEl: !!inputEmailEl
+    });
+
+    text(initialEl, initial);
+    text(nameEl, data.name);
+    text(emailEl, data.email);
 
     var planEls = qsa("[data-profile-plan]", page);
     for (var i = 0; i < planEls.length; i++) {
@@ -192,11 +228,18 @@
       creditEls[j].textContent = "Kredi: " + data.credit;
     }
 
-    value(qs("[data-profile-input-name]", page), data.name || "");
-    value(qs("[data-profile-input-surname]", page), data.surname || "");
-    value(qs("[data-profile-input-email]", page), data.email || "");
-  }
+    value(inputNameEl, data.name || "");
+    value(inputSurnameEl, data.surname || "");
+    value(inputEmailEl, data.email || "");
 
+    console.log("[profile.section] applyProfile:done", {
+      renderedName: nameEl ? nameEl.textContent : null,
+      renderedEmail: emailEl ? emailEl.textContent : null,
+      inputName: inputNameEl ? inputNameEl.value : null,
+      inputSurname: inputSurnameEl ? inputSurnameEl.value : null,
+      inputEmail: inputEmailEl ? inputEmailEl.value : null
+    });
+  }
   async function hydrateProfileFromApi() {
     var page = getProfilePage();
     if (!page) return;
