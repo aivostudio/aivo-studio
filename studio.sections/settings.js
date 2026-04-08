@@ -232,23 +232,26 @@ function getPage() {
     }
   }
 
-  function boot() {
+  function tryInit() {
     var page = getPage();
-    if (!page) return;
-
+    if (!page) return false;
     bind(page);
+    return true;
+  }
+
+  function boot() {
+    if (tryInit()) return;
 
     try {
       var mo = new MutationObserver(function () {
-        var p = getPage();
-        if (p) bind(p);
+        if (tryInit()) {
+          mo.disconnect();
+        }
       });
 
       mo.observe(document.documentElement, {
-        subtree: true,
         childList: true,
-        attributes: true,
-        attributeFilter: ["class", "style", "data-active-page"]
+        subtree: true
       });
     } catch (_) {}
   }
