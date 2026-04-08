@@ -513,7 +513,7 @@ wrap("addCredits");
 
   function boot(){
     persist(); paint();
-
+     hydrateStatsFromDB();
     if (!window.__AIVO_STATS_POLL_V14__){
       window.__AIVO_STATS_POLL_V14__ = true;
       setInterval(function(){
