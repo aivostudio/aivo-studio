@@ -34,8 +34,20 @@
     };
   }
 
-  function empty(){
-    return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, seen:{}, updatedAt:0 };
+   function empty(){
+    return {
+      music: 0,
+      cover: 0,
+      atmo: 0,
+      cartoon: 0,
+      photofx: 0,
+      imageToVideo: 0,
+      spent: 0,
+      total: null,
+      lastCredits: null,
+      seen: {},
+      updatedAt: 0
+    };
   }
   function isAllZero(o){ return !o || (!o.music && !o.cover && !o.video && !o.spent); }
 
@@ -50,6 +62,10 @@
 
     s.music = clampInt(s.music);
     s.cover = clampInt(s.cover);
+    s.atmo = clampInt(s.atmo);
+    s.cartoon = clampInt(s.cartoon);
+    s.photofx = clampInt(s.photofx);
+    s.imageToVideo = clampInt(s.imageToVideo);
     s.video = clampInt(s.video);
     s.spent = clampInt(s.spent);
     s.total = (s.total==null?null:clampInt(s.total));
