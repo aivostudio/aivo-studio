@@ -267,7 +267,7 @@ wrap("addCredits");
     if (!Array.isArray(list)) return;
     for (var i=0;i<list.length;i++) applyJob(list[i]);
   }
-  function bindDirectJobEvents(){
+   function bindDirectJobEvents(){
     if (window.__AIVO_STATS_DIRECT_EVENTS_V14__) return;
     window.__AIVO_STATS_DIRECT_EVENTS_V14__ = true;
 
@@ -310,7 +310,7 @@ wrap("addCredits");
       }catch(e){}
     });
 
-     window.addEventListener("aivo:cartoon:job_created", function(ev){
+    window.addEventListener("aivo:cartoon:job_created", function(ev){
       try{
         var detail = (ev && ev.detail) || null;
         console.log("[AIVO_STATS][CARTOON_JOB_CREATED]", detail);
@@ -328,13 +328,12 @@ wrap("addCredits");
 
         console.log("[AIVO_STATS][CARTOON_JOB_MAPPED]", mappedJob);
         applyJob(mappedJob);
-       }catch(e){
+      }catch(e){
         console.error("[AIVO_STATS][CARTOON_JOB_CREATED][ERROR]", e);
-       }
-      });
       }
+    });
 
-       window.addEventListener("aivo:photofx:job_created", function(ev){
+    window.addEventListener("aivo:photofx:job_created", function(ev){
       try{
         var detail = (ev && ev.detail) || null;
         if (!detail) return;
@@ -348,8 +347,9 @@ wrap("addCredits");
           module: "photofx",
           routeKey: "photofx"
         });
-        }catch(e){}
-       });
+      }catch(e){}
+    });
+  }
      function patchJobs(){
     if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
     if (!window.AIVO_JOBS) return;
