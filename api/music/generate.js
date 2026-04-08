@@ -52,19 +52,7 @@ function uuidLike() {
 function safeJson(res, obj, code = 200) {
   return res.status(code).json(obj);
 }
-function loadRaw(k) {
-  try {
-    return globalThis.localStorage ? localStorage.getItem(k) : null;
-  } catch {
-    return null;
-  }
-}
 
-function saveRaw(k, v) {
-  try {
-    if (globalThis.localStorage) localStorage.setItem(k, v);
-  } catch {}
-}
 function safeParseJson(s) {
   try {
     return JSON.parse(s);
@@ -257,41 +245,6 @@ if (mood) providerPayload.mood = mood;
       ? provider_song_ids_raw.map((x) => String(x)).filter(Boolean)
       : [];
 
-        // usage stats: user-scoped music counter + spent credits
-    try {
-      const authFn = await getRequireAuth();
-      let auth = null;
-
-      if (typeof authFn === "function") {
-        try {
-          auth = await authFn(req);
-        } catch (_) {
-          auth = null;
-        }
-      }
-
-      const statsEmail = auth?.email ? String(auth.email).trim().toLowerCase() : "";
-      if (statsEmail) {
-        const statsKey = "aivo_profile_stats_v1:" + statsEmail.replace(/[^a-z0-9@._-]/g, "_");
-        const statsBkKey = "aivo_profile_stats_bk_v1:" + statsEmail.replace(/[^a-z0-9@._-]/g, "_");
-
-        let stats = {};
-        try {
-          stats = JSON.parse(loadRaw(statsKey) || "{}") || {};
-        } catch (_) {
-          stats = {};
-        }
-
-        stats.music = Number(stats.music || 0) + 1;
-        stats.spent = Number(stats.spent || 0) + 5;
-        stats.updatedAt = Date.now();
-
-        saveRaw(statsKey, JSON.stringify(stats));
-        saveRaw(statsBkKey, JSON.stringify(stats));
-      }
-    } catch (e) {
-      console.warn("music stats update failed:", e);
-    }
     // KV keys
     const mapKey = `providers/music/${provider_job_id}.json`;
     const jobMetaKey = `jobs/${internal_job_id}/job.json`;
