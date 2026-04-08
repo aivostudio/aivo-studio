@@ -110,14 +110,12 @@
             </div>
           </div>
 
-          <div class="rp-section">
-            <div class="rp-section__title">Kısayollar</div>
-            <div class="rp-actions">
-                <button class="rp-btn rp-btn--ghost" data-act="profile">Profile Git</button>
-              <button class="rp-btn rp-btn--ghost" data-act="dashboard">Dashboard’a Git</button>
+                  <div class="rp-section">
+            <div class="rp-section__title">Panel Notu</div>
+            <div class="rp-hint">
+              Bu alan yalnızca aktif ayar sekmesi için özet ve yardımcı bilgi gösterir.
             </div>
           </div>
-
           <div class="rp-hint">
             Bu sağ panel özet ve yönlendirme alanıdır. Form alanlarının sahibi orta paneldir.
           </div>
