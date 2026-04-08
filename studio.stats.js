@@ -267,7 +267,7 @@ wrap("addCredits");
     if (!Array.isArray(list)) return;
     for (var i=0;i<list.length;i++) applyJob(list[i]);
   }
-   function bindDirectJobEvents(){
+  function bindDirectJobEvents(){
     if (window.__AIVO_STATS_DIRECT_EVENTS_V14__) return;
     window.__AIVO_STATS_DIRECT_EVENTS_V14__ = true;
 
@@ -346,6 +346,27 @@ wrap("addCredits");
           app: "photofx",
           module: "photofx",
           routeKey: "photofx"
+        });
+      }catch(e){}
+    });
+
+    window.addEventListener("aivo:video:job_created", function(ev){
+      try{
+        var detail = (ev && ev.detail) || null;
+        if (!detail) return;
+
+        var videoType = String(detail.mode || "").toLowerCase() === "image"
+          ? "imageToVideo"
+          : "video";
+
+        applyJob({
+          id: detail.job_id || detail.id || "",
+          job_id: detail.job_id || detail.id || "",
+          type: videoType,
+          kind: videoType,
+          app: videoType,
+          module: videoType,
+          routeKey: videoType
         });
       }catch(e){}
     });
