@@ -54,27 +54,41 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
     }
 
-    const userId =
-      authJson?.user?.id ||
-      authJson?.user_id ||
-      authJson?.id ||
-      authJson?.user?.user_id ||
-      null;
+  let userId =
+  authJson?.user?.id ||
+  authJson?.user_id ||
+  authJson?.id ||
+  authJson?.user?.user_id ||
+  null;
 
-    const email =
-      authJson?.user?.email ||
-      authJson?.email ||
-      null;
+const email =
+  authJson?.user?.email ||
+  authJson?.email ||
+  null;
 
-    if (!userId) {
-      return res.status(401).json({ ok: false, error: "missing_user_id" });
-    }
+if (!process.env.DATABASE_URL) {
+  return res.status(500).json({ ok: false, error: "missing_database_url" });
+}
 
-    if (!process.env.DATABASE_URL) {
-      return res.status(500).json({ ok: false, error: "missing_database_url" });
-    }
+const sql = neon(process.env.DATABASE_URL);
 
-    const sql = neon(process.env.DATABASE_URL);
+if (!userId && email) {
+  const userRows = await sql`
+    select id
+    from users
+    where lower(email) = lower(${email})
+    limit 1
+  `;
+  userId = userRows?.[0]?.id || null;
+}
+
+if (!userId) {
+  return res.status(401).json({
+    ok: false,
+    error: "missing_user_id",
+    debug: { email, authJson }
+  });
+}
 
     const rows = await sql`
       select
