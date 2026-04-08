@@ -222,7 +222,96 @@
         if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
         return;
       }
+   async function hydrateProfileFromApi() {
+  var page = getProfilePage();
+  if (!page) return;
 
+  try {
+    var res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    if (!res.ok) return;
+
+    var me = await res.json();
+    if (!me) return;
+
+    var email = firstNonEmpty(
+      me.email,
+      me.user && me.user.email,
+      ""
+    );
+
+    var firstName = firstNonEmpty(
+      me.first_name,
+      me.firstName,
+      me.name,
+      me.full_name,
+      me.fullName,
+      me.user && me.user.first_name,
+      me.user && me.user.firstName,
+      me.user && me.user.name,
+      ""
+    );
+
+    var lastName = firstNonEmpty(
+      me.last_name,
+      me.lastName,
+      me.surname,
+      me.user && me.user.last_name,
+      me.user && me.user.lastName,
+      me.user && me.user.surname,
+      ""
+    );
+
+    if (!email && !firstName && !lastName) return;
+
+    safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+      loggedIn: true,
+      email: email || "",
+      name: firstNonEmpty(firstName, ""),
+      full_name: firstNonEmpty(
+        (firstName && lastName) ? (firstName + " " + lastName) : "",
+        firstName,
+        ""
+      ),
+      first_name: firstNonEmpty(firstName, ""),
+      last_name: firstNonEmpty(lastName, ""),
+      ts: Date.now()
+    }));
+
+    if (firstName) safeSetLS("aivo_profile_name", firstName);
+    if (lastName) safeSetLS("aivo_profile_surname", lastName);
+
+    var fullName = firstNonEmpty(
+      (firstName && lastName) ? (firstName + " " + lastName) : "",
+      firstName,
+      "Kullanıcı"
+    );
+
+    var initial = fullName.charAt(0).toUpperCase();
+
+    value(qs("[data-profile-input-name]", page), firstName || "");
+    value(qs("[data-profile-input-surname]", page), lastName || "");
+    value(qs("[data-profile-input-email]", page), email || "");
+
+    text(qs("[data-profile-name]", page), fullName);
+    text(qs("[data-profile-email]", page), email || "—");
+    text(qs("[data-profile-initial]", page), initial);
+
+    document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
+      detail: {
+        name: firstName || "",
+        surname: lastName || "",
+        fullName: fullName,
+        email: email || ""
+      }
+    }));
+  } catch (err) {
+    console.warn("[profile.section] hydrateProfileFromApi failed", err);
+  }
+}
       safeSetLS("aivo_profile_name", name);
       safeSetLS("aivo_profile_surname", surname);
 
