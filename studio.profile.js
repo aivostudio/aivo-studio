@@ -263,16 +263,9 @@ function observePage() {
   /* ===============================
      INIT
      =============================== */
-  document.addEventListener("DOMContentLoaded", function () {
-    // İlk yükte body data-active-page profile değilse apply basmayız (safe)
-    bindSave();
-    observePage();
-    bindPasswordModal();
-
-    // Eğer sayfa direkt profile ile açılıyorsa:
-    if (isProfileActive()) applyProfile();
-  });
-})();
+document.addEventListener("DOMContentLoaded", function () {
+  bindPasswordModal();
+});
 // ================= AIVO STUDIO — AUTH UI HYDRATE (email/name/initial) =================
 (function(){
   function readAuth(){
