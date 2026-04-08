@@ -8,40 +8,66 @@
 (function(){
   "use strict";
 
-  var KEY="aivo_profile_stats_v1", BK="aivo_profile_stats_bk_v1";
-
   function safeParse(s,f){ try{return JSON.parse(String(s||""));}catch(e){return f;} }
   function clampInt(n){ n=Number(n||0); if(!isFinite(n)) n=0; n=Math.floor(n); return n<0?0:n; }
   function loadRaw(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
   function saveRaw(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
   function now(){ return Date.now?Date.now():+new Date(); }
 
+  function readAuth(){
+    try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
+    catch(e){ return {}; }
+  }
+
+  function getUserScope(){
+    var auth = readAuth();
+    var email = String((auth && auth.email) || "").trim().toLowerCase();
+    if (!email) return "guest";
+    return email.replace(/[^a-z0-9@._-]/g, "_");
+  }
+
+  function getKeys(){
+    var scope = getUserScope();
+    return {
+      KEY: "aivo_profile_stats_v1:" + scope,
+      BK:  "aivo_profile_stats_bk_v1:" + scope
+    };
+  }
+
   function empty(){
     return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, seen:{}, updatedAt:0 };
   }
   function isAllZero(o){ return !o || (!o.music && !o.cover && !o.video && !o.spent); }
 
-  // load (prefer KEY; fallback BK only if KEY empty)
-  var main = safeParse(loadRaw(KEY), null);
-  var bk   = safeParse(loadRaw(BK), null);
-  var stats = empty();
-  if (main && typeof main==="object") stats = Object.assign(stats, main);
-  if (isAllZero(stats) && bk && typeof bk==="object" && !isAllZero(bk)) stats = Object.assign(stats, bk);
+  function loadStats(){
+    var keys = getKeys();
+    var main = safeParse(loadRaw(keys.KEY), null);
+    var bk   = safeParse(loadRaw(keys.BK), null);
 
-  stats.music = clampInt(stats.music);
-  stats.cover = clampInt(stats.cover);
-  stats.video = clampInt(stats.video);
-  stats.spent = clampInt(stats.spent);
-  stats.total = (stats.total==null?null:clampInt(stats.total));
-  stats.lastCredits = (stats.lastCredits==null?null:clampInt(stats.lastCredits));
-  if (!stats.seen || typeof stats.seen !== "object") stats.seen = {};
-  stats.updatedAt = clampInt(stats.updatedAt);
+    var s = empty();
+    if (main && typeof main==="object") s = Object.assign(s, main);
+    if (isAllZero(s) && bk && typeof bk==="object" && !isAllZero(bk)) s = Object.assign(s, bk);
+
+    s.music = clampInt(s.music);
+    s.cover = clampInt(s.cover);
+    s.video = clampInt(s.video);
+    s.spent = clampInt(s.spent);
+    s.total = (s.total==null?null:clampInt(s.total));
+    s.lastCredits = (s.lastCredits==null?null:clampInt(s.lastCredits));
+    if (!s.seen || typeof s.seen !== "object") s.seen = {};
+    s.updatedAt = clampInt(s.updatedAt);
+
+    return s;
+  }
+
+  var stats = loadStats();
 
   function persist(){
+    var keys = getKeys();
     stats.updatedAt = now();
     var json = JSON.stringify(stats);
-    saveRaw(KEY, json);
-    saveRaw(BK,  json);
+    saveRaw(keys.KEY, json);
+    saveRaw(keys.BK,  json);
   }
 
   // UI root (only inside usage card)
