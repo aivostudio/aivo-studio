@@ -120,6 +120,36 @@
       console.warn("[AIVO_STATS][DB_HYDRATE][ERROR]", e);
     }
   }
+     async function persistStatsToDB(){
+    try{
+      await fetch("/api/profile-stats/upsert", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          stats: {
+            music: clampInt(stats.music),
+            cover: clampInt(stats.cover),
+            atmo: clampInt(stats.atmo),
+            cartoon: clampInt(stats.cartoon),
+            photofx: clampInt(stats.photofx),
+            imageToVideo: clampInt(stats.imageToVideo),
+            video: clampInt(stats.video),
+            spent: clampInt(stats.spent),
+            total: (stats.total == null ? null : clampInt(stats.total)),
+            lastCredits: (stats.lastCredits == null ? null : clampInt(stats.lastCredits)),
+            seen: (stats.seen && typeof stats.seen === "object") ? stats.seen : {},
+            updatedAt: clampInt(stats.updatedAt || now())
+          }
+        })
+      });
+    }catch(e){
+      console.warn("[AIVO_STATS][DB_PERSIST][ERROR]", e);
+    }
+  }
   window.addEventListener("aivo:profile-stats-updated", function(ev){
     try{
       var detail = (ev && ev.detail) || {};
