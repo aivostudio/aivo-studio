@@ -305,6 +305,23 @@ wrap("addCredits");
         });
       }catch(e){}
     });
+
+    window.addEventListener("aivo:cartoon:job_created", function(ev){
+      try{
+        var detail = (ev && ev.detail) || null;
+        if (!detail) return;
+
+        applyJob({
+          id: detail.job_id || detail.id || "",
+          job_id: detail.job_id || detail.id || "",
+          type: "cartoon",
+          kind: "cartoon",
+          app: "cartoon",
+          module: "cartoon",
+          routeKey: "cartoon"
+        });
+      }catch(e){}
+    });
   }
   function patchJobs(){
     if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
