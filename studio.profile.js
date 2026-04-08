@@ -10,6 +10,7 @@
    HELPERS (CLEAN — NO TOAST)
    =============================== */
 
+/*
 function qs(sel, root) {
   return (root || document).querySelector(sel);
 }
@@ -42,129 +43,115 @@ function isProfileActive() {
   return document.body.getAttribute("data-active-page") === "profile";
 }
 
-  /* ===============================
-     PROFİL VERİ KAYNAĞI (tek gerçek)
-     =============================== */
-  function readProfileData() {
-    var page = getProfilePage();
-    if (!page) return null;
+function readProfileData() {
+  var page = getProfilePage();
+  if (!page) return null;
 
-    var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
+  var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
 
-    var name =
-      (qs("[data-profile-input-name]", page)?.value || "").trim() ||
-      (qs("[data-profile-name]", page)?.textContent || "").trim() ||
-      cachedName;
+  var name =
+    (qs("[data-profile-input-name]", page)?.value || "").trim() ||
+    (qs("[data-profile-name]", page)?.textContent || "").trim() ||
+    cachedName;
 
-    var email =
-      (qs("[data-profile-input-email]", page)?.value || "").trim() ||
-      (qs("[data-profile-email]", page)?.textContent || "").trim();
+  var email =
+    (qs("[data-profile-input-email]", page)?.value || "").trim() ||
+    (qs("[data-profile-email]", page)?.textContent || "").trim();
 
-    var planText = (qs("[data-profile-plan]", page)?.textContent || "").trim();
-    var creditText = (qs("[data-profile-credit]", page)?.textContent || "").trim();
+  var planText = (qs("[data-profile-plan]", page)?.textContent || "").trim();
+  var creditText = (qs("[data-profile-credit]", page)?.textContent || "").trim();
 
-    var plan = "Basic";
-    var credit = "0";
+  var plan = "Basic";
+  var credit = "0";
 
-    if (planText) {
-      var pm = planText.match(/Plan:\s*(.+)$/i);
-      if (pm && pm[1]) plan = pm[1].trim();
-    }
-
-    if (creditText) {
-      var cm = creditText.match(/(\d+)/);
-      if (cm && cm[1]) credit = cm[1];
-    }
-
-    return {
-      name: name || "Kullanıcı",
-      email: email || "—",
-      plan: plan,
-      credit: credit
-    };
+  if (planText) {
+    var pm = planText.match(/Plan:\s*(.+)$/i);
+    if (pm && pm[1]) plan = pm[1].trim();
   }
 
-  /* ===============================
-     UI APPLY
-     =============================== */
-  function applyProfile() {
-    var page = getProfilePage();
-    if (!page) return;
-
-    // Profil aktif değilken apply basmayalım (sayfa karışıklığı riskini azaltır)
-    if (!isProfileActive()) return;
-
-    var data = readProfileData();
-    if (!data) return;
-
-    var initial = (data.name || "K").charAt(0).toUpperCase();
-    text(qs("[data-profile-initial]", page), initial);
-
-    text(qs("[data-profile-name]", page), data.name);
-    text(qs("[data-profile-email]", page), data.email);
-
-    var planEls = qsa("[data-profile-plan]", page);
-    for (var i = 0; i < planEls.length; i++) planEls[i].textContent = "Plan: " + data.plan;
-
-    var creditEls = qsa("[data-profile-credit]", page);
-    for (var j = 0; j < creditEls.length; j++) creditEls[j].textContent = "Kredi: " + data.credit;
-
-    // Inputları sadece profil aktifken basıyoruz
-    value(qs("[data-profile-input-name]", page), data.name);
-    value(qs("[data-profile-input-email]", page), data.email);
+  if (creditText) {
+    var cm = creditText.match(/(\d+)/);
+    if (cm && cm[1]) credit = cm[1];
   }
 
-  /* ===============================
-     SAVE (LOCAL)
-     =============================== */
-  function bindSave() {
-    var page = getProfilePage();
-    if (!page) return;
+  return {
+    name: name || "Kullanıcı",
+    email: email || "—",
+    plan: plan,
+    credit: credit
+  };
+}
 
-    var btn = qs("[data-profile-save]", page);
-    if (!btn) return;
+function applyProfile() {
+  var page = getProfilePage();
+  if (!page) return;
 
-    if (btn.__aivoBound) return;
-    btn.__aivoBound = true;
+  if (!isProfileActive()) return;
 
-    btn.addEventListener("click", function () {
-      var name = (qs("[data-profile-input-name]", page)?.value || "").trim();
-      if (!name) {
+  var data = readProfileData();
+  if (!data) return;
+
+  var initial = (data.name || "K").charAt(0).toUpperCase();
+  text(qs("[data-profile-initial]", page), initial);
+
+  text(qs("[data-profile-name]", page), data.name);
+  text(qs("[data-profile-email]", page), data.email);
+
+  var planEls = qsa("[data-profile-plan]", page);
+  for (var i = 0; i < planEls.length; i++) planEls[i].textContent = "Plan: " + data.plan;
+
+  var creditEls = qsa("[data-profile-credit]", page);
+  for (var j = 0; j < creditEls.length; j++) creditEls[j].textContent = "Kredi: " + data.credit;
+
+  value(qs("[data-profile-input-name]", page), data.name);
+  value(qs("[data-profile-input-email]", page), data.email);
+}
+
+function bindSave() {
+  var page = getProfilePage();
+  if (!page) return;
+
+  var btn = qs("[data-profile-save]", page);
+  if (!btn) return;
+
+  if (btn.__aivoBound) return;
+  btn.__aivoBound = true;
+
+  btn.addEventListener("click", function () {
+    var name = (qs("[data-profile-input-name]", page)?.value || "").trim();
+    if (!name) {
       window.toast.error("Ad alanı boş olamaz.");
+      return;
+    }
 
-        return;
-      }
+    safeSetLS("aivo_profile_name", name);
 
-      safeSetLS("aivo_profile_name", name);
-
-      text(qs("[data-profile-name]", page), name);
-      text(qs("[data-profile-initial]", page), name.charAt(0).toUpperCase());
+    text(qs("[data-profile-name]", page), name);
+    text(qs("[data-profile-initial]", page), name.charAt(0).toUpperCase());
 
     window.toast.success("Profil güncellendi.");
+  });
+}
 
-    });
-  }
+function observePage() {
+  if (window.__aivoProfileObserverBound) return;
+  window.__aivoProfileObserverBound = true;
 
-  /* ===============================
-     PAGE SWITCH SUPPORT
-     =============================== */
-  function observePage() {
-    if (window.__aivoProfileObserverBound) return;
-    window.__aivoProfileObserverBound = true;
+  var mo = new MutationObserver(function () {
+    if (isProfileActive()) {
+      applyProfile();
+      bindSave();
+    }
+  });
 
-    var mo = new MutationObserver(function () {
-      if (isProfileActive()) {
-        applyProfile();
-        bindSave();
-      }
-    });
+  mo.observe(document.body, {
+    attributes: true,
+    attributeFilter: ["data-active-page"]
+  });
+}
+*/
 
-    mo.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["data-active-page"]
-    });
-  }
-
+/* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
   /* =========================================================
      PASSWORD MODAL (PROFILE) — STABLE + SAFARI FIX
      ========================================================= */
