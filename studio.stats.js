@@ -77,13 +77,13 @@
   }
 
   var stats = loadStats();
-
   function persist(){
     var keys = getKeys();
     stats.updatedAt = now();
     var json = JSON.stringify(stats);
     saveRaw(keys.KEY, json);
     saveRaw(keys.BK,  json);
+    persistStatsToDB();
   }
      async function hydrateStatsFromDB(){
     try{
