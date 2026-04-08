@@ -58,13 +58,11 @@
     return "";
   }
 
-   function readCreditsFromTopbar() {
+  function readCreditsFromTopbar() {
     return "";
   }
 
   function readSpentCreditsFromProfilePage(page) {
-    var scopedNode = page ? qs('[data-stat="spentCredits"]', page) : null;
-    if (scopedNode) return String(scopedNode.textContent || "").trim();
     return "";
   }
 
@@ -114,19 +112,7 @@
       "Basic"
     );
 
-    var creditText = firstNonEmpty(
-      qs("[data-profile-credit]", page) && qs("[data-profile-credit]", page).textContent,
-      readCreditsFromTopbar(),
-      "0"
-    );
-
-    var spentText = firstNonEmpty(
-      readSpentCreditsFromProfilePage(page),
-      "0"
-    );
-
     var plan = "Basic";
-    var credit = "0";
 
     if (planText) {
       var pm = String(planText).match(/Plan:\s*(.+)$/i);
@@ -134,18 +120,13 @@
       else plan = String(planText).trim();
     }
 
-    if (creditText) {
-      var cm = String(creditText).match(/(\d+)/);
-      if (cm && cm[1]) credit = cm[1];
-    }
-
     return {
       name: fullName,
       surname: surname,
       email: email,
       plan: plan,
-      credit: credit,
-      spent: spentText
+      credit: "0",
+      spent: "0"
     };
   }
 
