@@ -22,15 +22,16 @@
     catch (_) { return fallback; }
   }
 
-  function getPage() {
-    return (
-      qs('.page[data-page="settings"]') ||
-      qs('#moduleHost .page[data-page="settings"]') ||
-      qs('#moduleHost .page.page-settings[data-page="settings"]') ||
-      null
-    );
-  }
-
+function getPage() {
+  return (
+    qs('.page[data-page="settings"]') ||
+    qs('#moduleHost .page[data-page="settings"]') ||
+    qs('#moduleHost .page.page-settings[data-page="settings"]') ||
+    qs('#moduleHost section.main-panel') ||
+    qs('section.main-panel') ||
+    null
+  );
+}
   function defaults(st) {
     st = (st && typeof st === "object") ? st : {};
 
