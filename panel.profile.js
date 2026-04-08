@@ -68,7 +68,6 @@
     const node = page ? qs('[data-stat="spentCredits"]', page) : null;
     return node ? String(node.textContent || "").trim() : "";
   }
-
   function readProfileState(ctx) {
     const page = getProfilePage();
     const auth = readAuth();
@@ -117,15 +116,33 @@
       "—"
     );
 
-    const credits = firstNonEmpty(
-      ctx && ctx.credits,
-      "0"
-    );
+    let credits = "0";
+    let spentCredits = "0";
 
-    const spentCredits = firstNonEmpty(
-      ctx && ctx.spentCredits,
-      "0"
-    );
+    try {
+      const safeEmail = String(email || "").trim().toLowerCase().replace(/[^a-z0-9@._-]/g, "_");
+      const scopedKey = safeEmail ? ("aivo_profile_stats_v1:" + safeEmail) : "";
+      const stats = scopedKey ? JSON.parse(localStorage.getItem(scopedKey) || "{}") : {};
+
+      credits = String(
+        firstNonEmpty(
+          ctx && ctx.credits,
+          stats.total,
+          "0"
+        )
+      );
+
+      spentCredits = String(
+        firstNonEmpty(
+          ctx && ctx.spentCredits,
+          stats.spent,
+          "0"
+        )
+      );
+    } catch (e) {
+      credits = String(firstNonEmpty(ctx && ctx.credits, "0"));
+      spentCredits = String(firstNonEmpty(ctx && ctx.spentCredits, "0"));
+    }
 
     return {
       name: finalName,
@@ -134,7 +151,6 @@
       spentCredits: spentCredits
     };
   }
-
   function buildCard(state) {
     const root = el(`
       <div class="rp-card">
