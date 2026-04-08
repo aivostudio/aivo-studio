@@ -229,7 +229,32 @@ wrap("addCredits");
     if (!Array.isArray(list)) return;
     for (var i=0;i<list.length;i++) applyJob(list[i]);
   }
+     function bindDirectJobEvents(){
+    if (window.__AIVO_STATS_DIRECT_EVENTS_V14__) return;
+    window.__AIVO_STATS_DIRECT_EVENTS_V14__ = true;
 
+    window.addEventListener("aivo:job", function(ev){
+      try{
+        var job = (ev && ev.detail) || null;
+        if (!job) return;
+        applyJob(job);
+      }catch(e){}
+    });
+
+    window.addEventListener("aivo:cover:job_created", function(ev){
+      try{
+        var detail = (ev && ev.detail) || null;
+        if (!detail) return;
+
+        applyJob({
+          id: detail.job_id || detail.id || "",
+          job_id: detail.job_id || detail.id || "",
+          type: "cover",
+          kind: "cover"
+        });
+      }catch(e){}
+    });
+  }
   function patchJobs(){
     if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
     if (!window.AIVO_JOBS) return;
