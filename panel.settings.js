@@ -113,8 +113,8 @@
           <div class="rp-section">
             <div class="rp-section__title">Kısayollar</div>
             <div class="rp-actions">
-              <button class="rp-btn rp-btn--ghost" data-act="go-profile">Profile Git</button>
-              <button class="rp-btn rp-btn--ghost" data-act="go-dashboard">Dashboard’a Git</button>
+                <button class="rp-btn rp-btn--ghost" data-act="profile">Profile Git</button>
+              <button class="rp-btn rp-btn--ghost" data-act="dashboard">Dashboard’a Git</button>
             </div>
           </div>
 
