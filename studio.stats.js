@@ -349,7 +349,26 @@ wrap("addCredits");
         });
       }catch(e){}
     });
+          window.addEventListener("aivo:video:job_created", function(ev){
+      try{
+        var detail = (ev && ev.detail) || null;
+        if (!detail) return;
 
+        var videoType = String(detail.mode || "").toLowerCase() === "image"
+          ? "imageToVideo"
+          : "video";
+
+        applyJob({
+          id: detail.job_id || detail.id || "",
+          job_id: detail.job_id || detail.id || "",
+          type: videoType,
+          kind: videoType,
+          app: videoType,
+          module: videoType,
+          routeKey: videoType
+        });
+      }catch(e){}
+    });
     window.addEventListener("aivo:video:job_created", function(ev){
       try{
         var detail = (ev && ev.detail) || null;
