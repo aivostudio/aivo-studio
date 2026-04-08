@@ -48,6 +48,7 @@ module.exports = async function handler(req, res) {
     });
 
     const authJson = await authRes.json().catch(() => null);
+    console.log("[PROFILE_STATS_UPSERT][AUTH_JSON_FULL]", JSON.stringify(authJson, null, 2));
 
     if (!authRes.ok || !authJson?.ok) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
