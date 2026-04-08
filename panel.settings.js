@@ -13,30 +13,37 @@
     const root = el(`
       <div class="rp-card">
         <div class="rp-card__header">
-          <div class="rp-title">Settings</div>
-          <div class="rp-subtitle">İpuçları ve hızlı kontroller</div>
+          <div class="rp-title">Ayarlar</div>
+          <div class="rp-subtitle">Bağlamsal yardım ve kısa bilgiler</div>
         </div>
 
         <div class="rp-card__body">
           <div class="rp-section">
-            <div class="rp-section__title">Hızlı Notlar</div>
+            <div class="rp-section__title">Bu panel ne işe yarar?</div>
             <ul class="rp-list">
-              <li>Outputs tek kaynaktan: <code>/api/jobs/status</code></li>
-              <li>Global Player shell içinde; route değişse de playback devam eder</li>
-              <li>Scroll yalnızca outputs alanında</li>
+              <li>Orta panelde açık olan ayar kategorisine yardımcı olur.</li>
+              <li>Ayarların kopyasını göstermez; kısa açıklama ve yönlendirme sunar.</li>
+              <li>Gerçek değişiklik ve kayıt işlemi orta panelden yapılır.</li>
             </ul>
+          </div>
+
+          <div class="rp-section">
+            <div class="rp-section__title">Aktif kategori</div>
+            <div class="rp-hint">
+              Bildirimler, Müzik, Gizlilik, Hesap & Güvenlik ve Veri Hakları sekmelerine göre bu alan daha sonra dinamik içerik gösterecek.
+            </div>
           </div>
 
           <div class="rp-section">
             <div class="rp-section__title">Kısayollar</div>
             <div class="rp-actions">
-              <button class="rp-btn rp-btn--ghost" data-act="go-profile">Profile</button>
-              <button class="rp-btn rp-btn--ghost" data-act="go-dashboard">Dashboard</button>
+              <button class="rp-btn rp-btn--ghost" data-act="go-profile">Profile Git</button>
+              <button class="rp-btn rp-btn--ghost" data-act="go-dashboard">Dashboard’a Git</button>
             </div>
           </div>
 
           <div class="rp-hint">
-            Bu panel şimdilik stub. Gerçek ayarlar orta panelde yönetilecek.
+            Bu sağ panelin rolü: özet, ipucu ve bağlamsal yardım. Form alanlarının sahibi orta paneldir.
           </div>
         </div>
       </div>
