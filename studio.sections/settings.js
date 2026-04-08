@@ -80,6 +80,20 @@
     btn.classList.toggle("is-disabled", !enabled);
   }
 
+  function syncRectificationSubmit(page) {
+    var ta = qs('textarea[data-setting="data_rectification_note"]', page);
+    var btn = qs('[data-rectification-submit]', page);
+
+    if (!btn) return;
+
+    var value = ta ? String(ta.value || "").trim() : "";
+    var enabled = value.length > 0;
+
+    btn.disabled = !enabled;
+    btn.setAttribute("aria-disabled", enabled ? "false" : "true");
+    btn.classList.toggle("is-disabled", !enabled);
+  }
+
   function applyToDOM(page, st) {
     qsa('input[type="checkbox"][data-setting]', page).forEach(function (el) {
       var k = el.getAttribute("data-setting");
@@ -117,6 +131,7 @@
     });
 
     syncDeleteSubmit(page);
+    syncRectificationSubmit(page);
   }
 
   function collectFromDOM(page) {
@@ -281,6 +296,7 @@
         var now = collectFromDOM(page);
         saveState(now);
         syncDeleteSubmit(page);
+        syncRectificationSubmit(page);
 
         if (window.toast && typeof window.toast.success === "function") {
           window.toast.success("Ayarlar kaydedildi");
@@ -301,6 +317,35 @@
       });
     });
 
+    qsa('textarea[data-setting="data_rectification_note"]', page).forEach(function (el) {
+      if (el.__aivoRectificationBoundV1) return;
+      el.__aivoRectificationBoundV1 = true;
+
+      el.addEventListener("input", function () {
+        syncRectificationSubmit(page);
+      });
+    });
+
+    qsa('[data-rectification-submit]', page).forEach(function (btn) {
+      if (btn.__aivoRectificationSubmitBoundV1) return;
+      btn.__aivoRectificationSubmitBoundV1 = true;
+
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        syncRectificationSubmit(page);
+        if (btn.disabled) return;
+
+        if (window.toast && typeof window.toast.success === "function") {
+          window.toast.success("Düzeltme talebi alındı");
+        } else if (window.toast && typeof window.toast === "function") {
+          window.toast("Düzeltme talebi alındı");
+        } else {
+          console.log("[settings] rectification request submitted");
+        }
+      });
+    });
+
     var range = qs('input[type="range"][data-setting="music_volume"]', page);
     if (range && !range.__aivoVolBoundV6) {
       range.__aivoVolBoundV6 = true;
@@ -311,6 +356,7 @@
     }
 
     syncDeleteSubmit(page);
+    syncRectificationSubmit(page);
   }
 
   function tryInit() {
