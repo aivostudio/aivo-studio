@@ -1,12 +1,11 @@
-// studio.sections/settings.js
 (function () {
   "use strict";
 
   if (window.__AIVO_STUDIO_SECTIONS_SETTINGS__) return;
   window.__AIVO_STUDIO_SECTIONS_SETTINGS__ = true;
 
-  const KEY_SETTINGS = "aivo_settings_v1";
-  const KEY_ACTIVE_TAB = "aivo_settings_active_tab_v1";
+  var KEY_SETTINGS = "aivo_settings_v1";
+  var KEY_TAB = "aivo_settings_active_tab_v1";
 
   function qs(sel, root) {
     try { return (root || document).querySelector(sel); }
@@ -14,7 +13,7 @@
   }
 
   function qsa(sel, root) {
-    try { return Array.from((root || document).querySelectorAll(sel)); }
+    try { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
     catch (_) { return []; }
   }
 
@@ -23,240 +22,234 @@
     catch (_) { return fallback; }
   }
 
-function getSettingsRoot() {
-  return (
-    qs('.page[data-page="settings"]') ||
-    qs('#moduleHost [data-page="settings"]') ||
-    qs('#moduleHost .page-settings') ||
-    null
-  );
-}
+  function getPage() {
+    return (
+      qs('.page[data-page="settings"]') ||
+      qs('#moduleHost .page[data-page="settings"]') ||
+      qs('#moduleHost .page.page-settings[data-page="settings"]') ||
+      null
+    );
+  }
 
-  function getDefaultState() {
-    return {
-      notify_email_done: true,
-      notify_email_lowcredit: true,
-      notify_email_weekly: false,
-      notify_email_promos: false,
+  function defaults(st) {
+    st = (st && typeof st === "object") ? st : {};
 
-      music_quality: "high",
-      music_autoplay: false,
-      music_volume: 80,
+    if (typeof st.notify_email_done !== "boolean") st.notify_email_done = true;
+    if (typeof st.notify_email_lowcredit !== "boolean") st.notify_email_lowcredit = true;
+    if (typeof st.notify_email_weekly !== "boolean") st.notify_email_weekly = false;
+    if (typeof st.notify_email_promos !== "boolean") st.notify_email_promos = false;
 
-      profile_visibility: "private",
-      privacy_activity_share: true,
-      privacy_analytics: true,
+    if (!st.music_quality) st.music_quality = "high";
+    if (typeof st.music_autoplay !== "boolean") st.music_autoplay = false;
+    if (typeof st.music_volume !== "number") st.music_volume = 80;
 
-      security_session_timeout: "1h",
+    if (!st.profile_visibility) st.profile_visibility = "private";
+    if (typeof st.privacy_activity_share !== "boolean") st.privacy_activity_share = true;
+    if (typeof st.privacy_analytics !== "boolean") st.privacy_analytics = true;
 
-      data_export_format: "json",
-      data_rectification_note: "",
-      data_delete_ack: false
-    };
+    if (!st.security_session_timeout) st.security_session_timeout = "1h";
+
+    if (!st.data_export_format) st.data_export_format = "json";
+    if (typeof st.data_rectification_note !== "string") st.data_rectification_note = "";
+    if (typeof st.data_delete_ack !== "boolean") st.data_delete_ack = false;
+
+    return st;
   }
 
   function loadState() {
-    const raw = safeParse(localStorage.getItem(KEY_SETTINGS), {});
-    return Object.assign({}, getDefaultState(), raw || {});
+    var st = safeParse(localStorage.getItem(KEY_SETTINGS), null);
+    return defaults(st);
   }
 
-  function saveState(state) {
-    try {
-      localStorage.setItem(KEY_SETTINGS, JSON.stringify(state || {}));
-      return true;
-    } catch (_) {
-      return false;
-    }
+  function saveState(st) {
+    try { localStorage.setItem(KEY_SETTINGS, JSON.stringify(st)); } catch (_) {}
   }
 
-  function getActiveTab() {
-    try {
-      const url = new URL(window.location.href);
-      const fromUrl = String(url.searchParams.get("stab") || "").trim().toLowerCase();
-      if (fromUrl) return fromUrl;
-    } catch (_) {}
-
-    try {
-      const fromLs = String(localStorage.getItem(KEY_ACTIVE_TAB) || "").trim().toLowerCase();
-      if (fromLs) return fromLs;
-    } catch (_) {}
-
-    return "notifications";
-  }
-
-  function setActiveTab(tabKey) {
-    const root = getSettingsRoot();
-    if (!root) return;
-
-    const key = String(tabKey || "notifications").trim().toLowerCase();
-
-    qsa("[data-settings-tab]", root).forEach((btn) => {
-      const btnKey = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
-      const isOn = btnKey === key;
-      btn.classList.toggle("is-active", isOn);
-      btn.setAttribute("aria-selected", isOn ? "true" : "false");
+  function applyToDOM(page, st) {
+    qsa('input[type="checkbox"][data-setting]', page).forEach(function (el) {
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
+      if (k in st) el.checked = !!st[k];
     });
 
-    qsa("[data-settings-pane]", root).forEach((pane) => {
-      const paneKey = String(pane.getAttribute("data-settings-pane") || "").trim().toLowerCase();
-      const isOn = paneKey === key;
-      pane.classList.toggle("is-active", isOn);
-      pane.style.display = isOn ? "" : "none";
+    qsa('input[type="radio"][data-setting]', page).forEach(function (el) {
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
+      el.checked = String(st[k]) === String(el.value);
     });
 
-    try {
-      localStorage.setItem(KEY_ACTIVE_TAB, key);
-    } catch (_) {}
-
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("stab", key);
-      history.replaceState({}, "", url.toString());
-    } catch (_) {}
-  }
-
-  function applyStateToDOM(state) {
-    const root = getSettingsRoot();
-    if (!root) return;
-
-    qsa('input[type="checkbox"][data-setting]', root).forEach((el) => {
-      const key = el.getAttribute("data-setting");
-      if (!key) return;
-      if (Object.prototype.hasOwnProperty.call(state, key)) {
-        el.checked = !!state[key];
-      }
+    qsa('select[data-setting]', page).forEach(function (el) {
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
+      if (st[k] != null) el.value = String(st[k]);
     });
 
-    qsa('input[type="radio"][data-setting]', root).forEach((el) => {
-      const key = el.getAttribute("data-setting");
-      if (!key) return;
-      el.checked = String(state[key]) === String(el.value);
+    qsa('textarea[data-setting]', page).forEach(function (el) {
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
+      el.value = st[k] != null ? String(st[k]) : "";
     });
 
-    qsa('select[data-setting]', root).forEach((el) => {
-      const key = el.getAttribute("data-setting");
-      if (!key) return;
-      if (state[key] != null) el.value = String(state[key]);
-    });
+    qsa('input[type="range"][data-setting]', page).forEach(function (el) {
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
+      if (st[k] != null) el.value = String(st[k]);
 
-    qsa('textarea[data-setting]', root).forEach((el) => {
-      const key = el.getAttribute("data-setting");
-      if (!key) return;
-      el.value = state[key] != null ? String(state[key]) : "";
-    });
-
-    qsa('input[type="range"][data-setting]', root).forEach((el) => {
-      const key = el.getAttribute("data-setting");
-      if (!key) return;
-      if (state[key] != null) el.value = String(state[key]);
-
-      if (key === "music_volume") {
-        const label = qs("[data-settings-volume-label]", root);
-        if (label) label.textContent = "%" + String(el.value || "0");
+      if (k === "music_volume") {
+        var lbl = qs("[data-settings-volume-label]", page);
+        if (lbl) lbl.textContent = "%" + String(el.value || "0");
       }
     });
   }
 
-  function collectStateFromDOM() {
-    const root = getSettingsRoot();
-    const state = loadState();
-    if (!root) return state;
+  function collectFromDOM(page) {
+    var st = loadState();
+    var scope = qs('[data-settings-pane].is-active', page) || page;
 
-    qsa("[data-setting]", root).forEach((el) => {
-      const key = el.getAttribute("data-setting");
-      if (!key) return;
+    qsa('[data-setting]', scope).forEach(function (el) {
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
 
-      const tag = String(el.tagName || "").toLowerCase();
-      const type = String(el.getAttribute("type") || "").toLowerCase();
+      var tag = String(el.tagName || "").toLowerCase();
+      var type = String(el.getAttribute("type") || "").toLowerCase();
 
-      if (tag === "input" && type === "checkbox") {
-        state[key] = !!el.checked;
+      if (tag === "input" && type === "radio") {
+        if (el.checked) st[k] = String(el.value || "");
         return;
       }
 
-      if (tag === "input" && type === "radio") {
-        if (el.checked) state[key] = String(el.value || "");
+      if (tag === "input" && type === "checkbox") {
+        st[k] = (el.checked === true);
         return;
       }
 
       if (tag === "input" && type === "range") {
-        state[key] = Number(el.value || 0);
+        var v = parseInt(el.value, 10);
+        if (isFinite(v)) st[k] = v;
         return;
       }
 
       if (tag === "select") {
-        state[key] = String(el.value || "");
+        st[k] = String(el.value || "");
         return;
       }
 
       if (tag === "textarea") {
-        state[key] = String(el.value || "");
+        st[k] = String(el.value || "");
       }
     });
 
-    return state;
+    var q = qs('input[name="music_quality"]:checked', scope);
+    if (q) st.music_quality = q.value;
+
+    var pv = qs('input[name="profile_visibility"]:checked', scope);
+    if (pv) st.profile_visibility = pv.value;
+
+    return defaults(st);
   }
 
-  function bindTabs(root) {
-    if (root.__aivoSettingsTabsBound) return;
-    root.__aivoSettingsTabsBound = true;
+  function setActiveTab(page, tab) {
+    tab = String(tab || "").trim().toLowerCase() || "notifications";
 
-    root.addEventListener("click", function (e) {
-      const btn = e.target.closest("[data-settings-tab]");
-      if (!btn || !root.contains(btn)) return;
-
-      e.preventDefault();
-
-      const key = btn.getAttribute("data-settings-tab");
-      if (!key) return;
-
-      setActiveTab(key);
+    qsa('[data-settings-tab]', page).forEach(function (btn) {
+      var k = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+      var on = (k === tab);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
     });
+
+    qsa('[data-settings-pane]', page).forEach(function (pane) {
+      var k = String(pane.getAttribute("data-settings-pane") || "").trim().toLowerCase();
+      var on = (k === tab);
+      pane.classList.toggle("is-active", on);
+      pane.style.display = on ? "" : "none";
+    });
+
+    try { localStorage.setItem(KEY_TAB, tab); } catch (_) {}
+
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.set("stab", tab);
+      history.replaceState({}, "", u.toString());
+    } catch (_) {}
   }
 
-  function bindSave(root) {
-    if (root.__aivoSettingsSaveBound) return;
-    root.__aivoSettingsSaveBound = true;
-
-    root.addEventListener("click", function (e) {
-      const btn = e.target.closest("[data-settings-save]");
-      if (!btn || !root.contains(btn)) return;
-
-      e.preventDefault();
-
-      const state = collectStateFromDOM();
-      saveState(state);
-
-      if (window.toast && typeof window.toast.success === "function") {
-        window.toast.success("Ayarlar kaydedildi");
-      } else {
-        console.log("[settings] saved");
-      }
-    });
+  function getTabFromURL() {
+    try {
+      var u = new URL(window.location.href);
+      return String(u.searchParams.get("stab") || "").trim().toLowerCase();
+    } catch (_) {
+      return "";
+    }
   }
 
-  function bindVolume(root) {
-    if (root.__aivoSettingsVolumeBound) return;
-    root.__aivoSettingsVolumeBound = true;
+  function bind(page) {
+    if (page.__aivoSettingsBoundV6) return;
+    page.__aivoSettingsBoundV6 = true;
 
-    root.addEventListener("input", function (e) {
-      const el = e.target.closest('input[type="range"][data-setting="music_volume"]');
-      if (!el || !root.contains(el)) return;
+    var st = loadState();
+    applyToDOM(page, st);
 
-      const label = qs("[data-settings-volume-label]", root);
-      if (label) label.textContent = "%" + String(el.value || "0");
+    var urlTab = getTabFromURL();
+    var lastTab = "";
+    try { lastTab = String(localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch (_) {}
+
+    setActiveTab(page, urlTab || lastTab || "notifications");
+
+    qsa('[data-settings-tab]', page).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var t = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+        if (!t) return;
+        setActiveTab(page, t);
+      });
     });
+
+    qsa('[data-settings-save]', page).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var now = collectFromDOM(page);
+        saveState(now);
+
+        if (window.toast && typeof window.toast.success === "function") {
+          window.toast.success("Ayarlar kaydedildi");
+        } else if (window.toast && typeof window.toast === "function") {
+          window.toast("Ayarlar kaydedildi");
+        } else {
+          console.log("[settings] saved");
+        }
+      });
+    });
+
+    var range = qs('input[type="range"][data-setting="music_volume"]', page);
+    if (range && !range.__aivoVolBoundV6) {
+      range.__aivoVolBoundV6 = true;
+      range.addEventListener("input", function () {
+        var lbl = qs('[data-settings-volume-label]', page);
+        if (lbl) lbl.textContent = "%" + String(range.value || "0");
+      });
+    }
   }
 
   function boot() {
-    const root = getSettingsRoot();
-    if (!root) return;
+    var page = getPage();
+    if (!page) return;
 
-    applyStateToDOM(loadState());
-    setActiveTab(getActiveTab());
-    bindTabs(root);
-    bindSave(root);
-    bindVolume(root);
+    bind(page);
+
+    try {
+      var mo = new MutationObserver(function () {
+        var p = getPage();
+        if (p) bind(p);
+      });
+
+      mo.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["class", "style", "data-active-page"]
+      });
+    } catch (_) {}
   }
 
   if (document.readyState === "loading") {
