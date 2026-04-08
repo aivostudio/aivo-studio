@@ -259,6 +259,8 @@ wrap("addCredits");
     else if (type === "cover") stats.cover++;
     else if (type === "atmo") stats.atmo++;
     else if (type === "cartoon") stats.cartoon++;
+    else if (type === "photofx") stats.photofx++;
+    else if (type === "imageToVideo") stats.imageToVideo++;
     else if (type === "video") stats.video++;
 
     stats.seen[id] = now();
