@@ -361,8 +361,9 @@
     if (window.__aivoProfileSectionObserverBound) return;
     window.__aivoProfileSectionObserverBound = true;
 
-    var mo = new MutationObserver(function () {
+    var mo = new MutationObserver(async function () {
       if (isProfileActive()) {
+        await hydrateProfileFromApi();
         applyProfile();
         bindSave();
       }
@@ -373,7 +374,6 @@
       attributeFilter: ["data-active-page"]
     });
   }
-
   document.addEventListener("DOMContentLoaded", async function () {
     await hydrateProfileFromApi();
     bindSave();
