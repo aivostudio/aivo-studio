@@ -306,12 +306,13 @@ wrap("addCredits");
       }catch(e){}
     });
 
-    window.addEventListener("aivo:cartoon:job_created", function(ev){
+     window.addEventListener("aivo:cartoon:job_created", function(ev){
       try{
         var detail = (ev && ev.detail) || null;
+        console.log("[AIVO_STATS][CARTOON_JOB_CREATED]", detail);
         if (!detail) return;
 
-        applyJob({
+        var mappedJob = {
           id: detail.job_id || detail.id || "",
           job_id: detail.job_id || detail.id || "",
           type: "cartoon",
@@ -319,8 +320,13 @@ wrap("addCredits");
           app: "cartoon",
           module: "cartoon",
           routeKey: "cartoon"
-        });
-      }catch(e){}
+        };
+
+        console.log("[AIVO_STATS][CARTOON_JOB_MAPPED]", mappedJob);
+        applyJob(mappedJob);
+      }catch(e){
+        console.error("[AIVO_STATS][CARTOON_JOB_CREATED][ERROR]", e);
+      }
     });
   }
   function patchJobs(){
