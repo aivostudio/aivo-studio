@@ -58,40 +58,13 @@
     return "";
   }
 
-  function readCreditsFromTopbar() {
-    var node = qs("#topCreditCount");
-    return node ? String(node.textContent || "").trim() : "";
+   function readCreditsFromTopbar() {
+    return "";
   }
 
   function readSpentCreditsFromProfilePage(page) {
     var scopedNode = page ? qs('[data-stat="spentCredits"]', page) : null;
     if (scopedNode) return String(scopedNode.textContent || "").trim();
-
-    var globalNode = qs('[data-stat="spentCredits"]');
-    if (globalNode) return String(globalNode.textContent || "").trim();
-
-    var rows = Array.prototype.slice.call(
-      document.querySelectorAll(".usage-row, .rp-row, .stat-row, .usage-pill")
-    );
-
-    for (var i = 0; i < rows.length; i++) {
-      var row = rows[i];
-      var txt = String(row.textContent || "").toLowerCase();
-
-      if (txt.indexOf("harcanan kredi") !== -1) {
-        var valNode =
-          row.querySelector(".usage-value") ||
-          row.querySelector('[data-stat="spentCredits"]') ||
-          row.querySelector(".rp-row__value") ||
-          row.querySelector(".stat-value");
-
-        if (valNode) return String(valNode.textContent || "").trim();
-
-        var match = String(row.textContent || "").match(/(\d[\d.]*)/);
-        if (match && match[1]) return match[1];
-      }
-    }
-
     return "";
   }
 
