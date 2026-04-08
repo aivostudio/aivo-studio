@@ -1161,52 +1161,13 @@ function buildCoverPrompt(prompt, quality) {
               }
             } catch (_) {}
 
-                     if (creditCost === 9) {
+            if (creditCost === 9) {
               toastSuccess("9 kredi düşüldü");
             } else {
               toastSuccess("6 kredi düşüldü");
             }
 
             toastSuccess("Kapak üretimi başladı");
-
-            try {
-              const meRes = await fetch("/api/auth/me", {
-                credentials: "include",
-                cache: "no-store",
-                headers: { "accept": "application/json" }
-              });
-
-              const meData = await meRes.json().catch(() => null);
-              const statsEmail = String(meData?.email || "").trim().toLowerCase();
-
-              if (statsEmail) {
-                const safeEmail = statsEmail.replace(/[^a-z0-9@._-]/g, "_");
-                const statsKey = `aivo_profile_stats_v1:${safeEmail}`;
-                const statsBkKey = `aivo_profile_stats_bk_v1:${safeEmail}`;
-
-                let stats = {};
-                try {
-                  stats = JSON.parse(localStorage.getItem(statsKey) || "{}") || {};
-                } catch (_) {
-                  stats = {};
-                }
-
-                stats.cover = Number(stats.cover || 0) + 1;
-                stats.spent = Number(stats.spent || 0) + Number(creditCost || 0);
-                stats.updatedAt = Date.now();
-
-                localStorage.setItem(statsKey, JSON.stringify(stats));
-                localStorage.setItem(statsBkKey, JSON.stringify(stats));
-
-                try {
-                  window.dispatchEvent(new CustomEvent("aivo:profile-stats-updated", {
-                    detail: { email: statsEmail, stats }
-                  }));
-                } catch (_) {}
-              }
-            } catch (statsErr) {
-              console.warn("[cover] stats update failed:", statsErr);
-            }
 
             await createCover();
           } catch (err) {
