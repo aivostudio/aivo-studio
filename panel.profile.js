@@ -157,15 +157,14 @@ function readProfileState(ctx) {
   }
 
   const email = firstNonEmpty(
+    auth.email,
+    ctx && ctx.email,
     getValue("[data-profile-input-email]", page),
     getValue("[data-profile-input-email]"),
     getText("[data-profile-email]", page),
     getText("[data-profile-email]"),
-    auth.email,
-    ctx && ctx.email,
     "—"
   );
-
   const credits = firstNonEmpty(
     ctx && ctx.credits,
     readCreditsFromTopbar(),
