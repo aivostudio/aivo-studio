@@ -183,7 +183,54 @@ function getPage() {
       return "";
     }
   }
+function activateTab(page, rawKey) {
+  var key = String(rawKey || "").trim().toLowerCase();
+  if (!key) key = "notifications";
 
+  var tabs = qsa('[data-settings-tab]', page);
+  var panes = qsa('[data-settings-pane]', page);
+
+  if (!tabs.length || !panes.length) return;
+
+  tabs.forEach(function (btn) {
+    var btnKey = String(btn.getAttribute('data-settings-tab') || '').trim().toLowerCase();
+    var on = (btnKey === key);
+    btn.classList.toggle('is-active', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    btn.setAttribute('tabindex', on ? '0' : '-1');
+  });
+
+  var anyOn = false;
+
+  panes.forEach(function (pane) {
+    var paneKey = String(pane.getAttribute('data-settings-pane') || '').trim().toLowerCase();
+    var on = (paneKey === key);
+
+    if (on) anyOn = true;
+
+    pane.classList.toggle('is-active', on);
+    pane.style.setProperty('display', on ? 'block' : 'none', 'important');
+
+    if (on) {
+      pane.removeAttribute('aria-hidden');
+    } else {
+      pane.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  if (!anyOn && key !== 'notifications') {
+    activateTab(page, 'notifications');
+    return;
+  }
+
+  try { localStorage.setItem(KEY_TAB, key); } catch (_) {}
+
+  try {
+    var u = new URL(window.location.href);
+    u.searchParams.set('stab', key);
+    history.replaceState({}, '', u.toString());
+  } catch (_) {}
+}
   function bind(page) {
     if (page.__aivoSettingsBoundV6) return;
     page.__aivoSettingsBoundV6 = true;
