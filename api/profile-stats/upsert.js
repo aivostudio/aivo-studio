@@ -62,41 +62,60 @@ if (!authRes.ok || !authJson?.ok) {
   });
 }
 
-    const userId =
-      authJson?.user?.id ||
-      authJson?.user_id ||
-      authJson?.id ||
-      authJson?.user?.user_id ||
-      null;
+   const email =
+  authJson?.user?.email ||
+  authJson?.email ||
+  null;
 
-    if (!userId) {
-      return res.status(401).json({ ok: false, error: "missing_user_id" });
-    }
+let userId =
+  authJson?.user?.id ||
+  authJson?.user_id ||
+  authJson?.id ||
+  authJson?.user?.user_id ||
+  null;
 
-    if (!process.env.DATABASE_URL) {
-      return res.status(500).json({ ok: false, error: "missing_database_url" });
-    }
+if (!process.env.DATABASE_URL) {
+  return res.status(500).json({ ok: false, error: "missing_database_url" });
+}
 
-    const body =
-      typeof req.body === "string"
-        ? JSON.parse(req.body || "{}")
-        : (req.body || {});
+const sql = neon(process.env.DATABASE_URL);
 
-    const stats = body.stats || {};
+if (!userId && email) {
+  const userRows = await sql`
+    select id
+    from users
+    where lower(email) = lower(${email})
+    limit 1
+  `;
+  userId = userRows?.[0]?.id || null;
+}
 
-    const music = toSafeInt(stats.music);
-    const cover = toSafeInt(stats.cover);
-    const atmo = toSafeInt(stats.atmo);
-    const cartoon = toSafeInt(stats.cartoon);
-    const photofx = toSafeInt(stats.photofx);
-    const imageToVideo = toSafeInt(stats.imageToVideo);
-    const video = toSafeInt(stats.video);
-    const spent = toSafeInt(stats.spent);
-    const total = toNullableInt(stats.total);
-    const lastCredits = toNullableInt(stats.lastCredits);
-    const seen = stats.seen && typeof stats.seen === "object" ? stats.seen : {};
+if (!userId) {
+  return res.status(401).json({
+    ok: false,
+    error: "missing_user_id",
+    debug: { email, authJson }
+  });
+}
 
-    const sql = neon(process.env.DATABASE_URL);
+const body =
+  typeof req.body === "string"
+    ? JSON.parse(req.body || "{}")
+    : (req.body || {});
+
+const stats = body.stats || {};
+
+const music = toSafeInt(stats.music);
+const cover = toSafeInt(stats.cover);
+const atmo = toSafeInt(stats.atmo);
+const cartoon = toSafeInt(stats.cartoon);
+const photofx = toSafeInt(stats.photofx);
+const imageToVideo = toSafeInt(stats.imageToVideo);
+const video = toSafeInt(stats.video);
+const spent = toSafeInt(stats.spent);
+const total = toNullableInt(stats.total);
+const lastCredits = toNullableInt(stats.lastCredits);
+const seen = stats.seen && typeof stats.seen === "object" ? stats.seen : {};
 
     await sql`
       insert into profile_stats (
