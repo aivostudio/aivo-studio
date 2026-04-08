@@ -29,19 +29,38 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_host" });
     }
 
-    const authRes = await fetch(`${protocol}://${host}/api/auth/me`, {
-      method: "GET",
-      headers: {
-        cookie: req.headers.cookie || "",
-        accept: "application/json",
-      },
-    });
+  const authRes = await fetch(`${protocol}://${host}/api/auth/me`, {
+  method: "GET",
+  headers: {
+    cookie: req.headers.cookie || "",
+    accept: "application/json",
+  },
+});
 
-    const authJson = await authRes.json().catch(() => null);
+const authJson = await authRes.json().catch(() => null);
 
-    if (!authRes.ok || !authJson?.ok) {
-      return res.status(401).json({ ok: false, error: "unauthorized" });
-    }
+console.log("[PROFILE_STATS_UPSERT][AUTH_DEBUG]", {
+  protocol,
+  host,
+  hasCookie: !!req.headers.cookie,
+  cookiePreview: String(req.headers.cookie || "").slice(0, 120),
+  authStatus: authRes.status,
+  authOk: authRes.ok,
+  authJson,
+});
+
+if (!authRes.ok || !authJson?.ok) {
+  return res.status(401).json({
+    ok: false,
+    error: "unauthorized",
+    debug: {
+      authStatus: authRes.status,
+      authOk: authRes.ok,
+      hasCookie: !!req.headers.cookie,
+      authJson,
+    },
+  });
+}
 
     const userId =
       authJson?.user?.id ||
