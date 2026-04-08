@@ -98,8 +98,12 @@
       var incoming = detail.stats;
       if (!incoming || typeof incoming !== "object") return;
 
-      stats.music = clampInt(incoming.music);
+         stats.music = clampInt(incoming.music);
       stats.cover = clampInt(incoming.cover);
+      stats.atmo = clampInt(incoming.atmo);
+      stats.cartoon = clampInt(incoming.cartoon);
+      stats.photofx = clampInt(incoming.photofx);
+      stats.imageToVideo = clampInt(incoming.imageToVideo);
       stats.video = clampInt(incoming.video);
       stats.spent = clampInt(incoming.spent);
       stats.total = (incoming.total == null ? stats.total : clampInt(incoming.total));
