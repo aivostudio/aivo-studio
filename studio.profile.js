@@ -10,7 +10,6 @@
    HELPERS (CLEAN — NO TOAST)
    =============================== */
 
-/*
 function qs(sel, root) {
   return (root || document).querySelector(sel);
 }
@@ -34,6 +33,8 @@ function safeGetLS(key) {
 function safeSetLS(key, val) {
   try { localStorage.setItem(key, val); return true; } catch (e) { return false; }
 }
+
+/* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
 
 function getProfilePage() {
   return qs('.page-profile[data-page="profile"]');
