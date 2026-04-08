@@ -331,12 +331,29 @@ wrap("addCredits");
 
         console.log("[AIVO_STATS][CARTOON_JOB_MAPPED]", mappedJob);
         applyJob(mappedJob);
-      }catch(e){
+       }catch(e){
         console.error("[AIVO_STATS][CARTOON_JOB_CREATED][ERROR]", e);
+       }
+      });
       }
-    });
-  }
-  function patchJobs(){
+
+       window.addEventListener("aivo:photofx:job_created", function(ev){
+      try{
+        var detail = (ev && ev.detail) || null;
+        if (!detail) return;
+
+        applyJob({
+          id: detail.job_id || detail.id || "",
+          job_id: detail.job_id || detail.id || "",
+          type: "photofx",
+          kind: "photofx",
+          app: "photofx",
+          module: "photofx",
+          routeKey: "photofx"
+        });
+        }catch(e){}
+       });
+     function patchJobs(){
     if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
     if (!window.AIVO_JOBS) return;
 
