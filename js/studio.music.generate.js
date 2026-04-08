@@ -281,7 +281,45 @@ async function generateMusic(payload) {
         toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
         return;
       }
+            // ✅ usage stats: user-scoped music counter + spent credits
+      try {
+        const meRes = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "accept": "application/json" }
+        });
 
+        const meData = await meRes.json().catch(() => null);
+        const statsEmail = String(meData?.email || "").trim().toLowerCase();
+
+        if (statsEmail) {
+          const safeEmail = statsEmail.replace(/[^a-z0-9@._-]/g, "_");
+          const statsKey = `aivo_profile_stats_v1:${safeEmail}`;
+          const statsBkKey = `aivo_profile_stats_bk_v1:${safeEmail}`;
+
+          let stats = {};
+          try {
+            stats = JSON.parse(localStorage.getItem(statsKey) || "{}") || {};
+          } catch (_) {
+            stats = {};
+          }
+
+          stats.music = Number(stats.music || 0) + 1;
+          stats.spent = Number(stats.spent || 0) + 5;
+          stats.updatedAt = Date.now();
+
+          localStorage.setItem(statsKey, JSON.stringify(stats));
+          localStorage.setItem(statsBkKey, JSON.stringify(stats));
+
+          try {
+            window.dispatchEvent(new CustomEvent("aivo:profile-stats-updated", {
+              detail: { email: statsEmail, stats }
+            }));
+          } catch (_) {}
+        }
+      } catch (statsErr) {
+        console.warn("[music.generate] stats update failed:", statsErr);
+      }
       // DEBUG
       window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
       window.__LAST_MUSIC_JOB_ID__ = job_id;
