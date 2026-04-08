@@ -127,7 +127,7 @@
     var root = getRoot();
     if(!root) return;
 
-    var m = root.querySelector('[data-stat="music"]');
+      var m = root.querySelector('[data-stat="music"]');
     var c = root.querySelector('[data-stat="cover"]');
     var v = root.querySelector('[data-stat="video"]');
     var s = root.querySelector('[data-stat="spentCredits"]');
@@ -136,7 +136,7 @@
 
     if (m) m.textContent = String(stats.music);
     if (c) c.textContent = String(stats.cover);
-    if (v) v.textContent = (stats.video > 0 ? String(stats.video) : "Henüz yok");
+    if (v) v.textContent = (stats.atmo > 0 ? String(stats.atmo) : "Henüz yok");
     if (s) s.textContent = String(stats.spent);
     if (t) t.textContent = (stats.total == null ? "0" : String(stats.total));
 
