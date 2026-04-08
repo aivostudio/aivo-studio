@@ -69,7 +69,32 @@
     saveRaw(keys.KEY, json);
     saveRaw(keys.BK,  json);
   }
+  window.addEventListener("aivo:profile-stats-updated", function(ev){
+    try{
+      var detail = (ev && ev.detail) || {};
+      var auth = readAuth();
+      var currentEmail = String((auth && auth.email) || "").trim().toLowerCase();
+      var incomingEmail = String(detail.email || "").trim().toLowerCase();
 
+      if (!currentEmail || !incomingEmail) return;
+      if (currentEmail !== incomingEmail) return;
+
+      var incoming = detail.stats;
+      if (!incoming || typeof incoming !== "object") return;
+
+      stats.music = clampInt(incoming.music);
+      stats.cover = clampInt(incoming.cover);
+      stats.video = clampInt(incoming.video);
+      stats.spent = clampInt(incoming.spent);
+      stats.total = (incoming.total == null ? stats.total : clampInt(incoming.total));
+      stats.lastCredits = (incoming.lastCredits == null ? stats.lastCredits : clampInt(incoming.lastCredits));
+      stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : (stats.seen || {});
+      stats.updatedAt = clampInt(incoming.updatedAt || now());
+
+      persist();
+      paint();
+    }catch(e){}
+  });
   // UI root (only inside usage card)
   function getRoot(){
     var el =
