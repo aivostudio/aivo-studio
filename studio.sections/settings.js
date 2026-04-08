@@ -67,6 +67,32 @@
     try { localStorage.setItem(KEY_SETTINGS, JSON.stringify(st)); } catch (_) {}
   }
 
+  function toastSuccess(msg) {
+    if (window.toast && typeof window.toast.success === "function") {
+      window.toast.success(msg);
+    } else if (window.toast && typeof window.toast === "function") {
+      window.toast(msg);
+    } else if (typeof window.AIVO_TOAST === "function") {
+      window.AIVO_TOAST("success", msg);
+    } else if (typeof window.showToast === "function") {
+      window.showToast("success", msg);
+    } else {
+      console.log(msg);
+    }
+  }
+
+  function toastError(msg) {
+    if (window.toast && typeof window.toast.error === "function") {
+      window.toast.error(msg);
+    } else if (typeof window.AIVO_TOAST === "function") {
+      window.AIVO_TOAST("error", msg);
+    } else if (typeof window.showToast === "function") {
+      window.showToast("error", msg);
+    } else {
+      console.error(msg);
+    }
+  }
+
   function syncDeleteSubmit(page) {
     var ack = qs('input[type="checkbox"][data-setting="data_delete_ack"]', page);
     var btn = qs('[data-delete-submit]', page);
@@ -88,6 +114,26 @@
 
     var value = ta ? String(ta.value || "").trim() : "";
     var enabled = value.length > 0;
+
+    btn.disabled = !enabled;
+    btn.setAttribute("aria-disabled", enabled ? "false" : "true");
+    btn.classList.toggle("is-disabled", !enabled);
+  }
+
+  function syncDataExport(page) {
+    var pane = qs('[data-settings-pane="data"]', page) || page;
+    var btn =
+      qs('[data-action="data-export"]', pane) ||
+      qs('[data-action="export-data"]', pane) ||
+      qs('[data-action="download-export"]', pane) ||
+      qs('[data-data-export]', pane);
+
+    var sel = qs('[data-setting="data_export_format"]', pane);
+
+    if (!btn) return;
+
+    var fmt = sel ? String(sel.value || "json").trim().toLowerCase() : "json";
+    var enabled = (fmt === "json" || fmt === "");
 
     btn.disabled = !enabled;
     btn.setAttribute("aria-disabled", enabled ? "false" : "true");
@@ -132,6 +178,7 @@
 
     syncDeleteSubmit(page);
     syncRectificationSubmit(page);
+    syncDataExport(page);
   }
 
   function collectFromDOM(page) {
@@ -268,6 +315,112 @@
     } catch (_) {}
   }
 
+  function readLS(key) {
+    var raw = localStorage.getItem(key);
+    if (raw == null) return null;
+    var parsed = safeParse(raw, null);
+    return (parsed !== null ? parsed : String(raw));
+  }
+
+  function nowISO() {
+    try { return new Date().toISOString(); } catch (_) { return ""; }
+  }
+
+  function collectExportPayload() {
+    var settings = readLS("aivo_settings_v1");
+    var profileStats = readLS("aivo_profile_stats_v1");
+    var profileStatsBk = readLS("aivo_profile_stats_bk_v1");
+
+    var jobs = null;
+    try {
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS === "object") {
+        if (Array.isArray(window.AIVO_JOBS.list)) jobs = window.AIVO_JOBS.list.slice(0);
+        else if (typeof window.AIVO_JOBS.getList === "function") jobs = window.AIVO_JOBS.getList();
+      }
+    } catch (_) { jobs = null; }
+
+    var credits = null;
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
+        credits = window.AIVO_STORE_V1.getCredits();
+      } else {
+        var lsCredits = readLS("aivo_credits_v1") || readLS("aivo_store_v1");
+        if (lsCredits != null) credits = lsCredits;
+      }
+    } catch (_) { credits = null; }
+
+    var user = null;
+    try {
+      user = {
+        name: (window.AIVO_USER && window.AIVO_USER.name) ? String(window.AIVO_USER.name) : null,
+        email: (window.AIVO_USER && window.AIVO_USER.email) ? String(window.AIVO_USER.email) : null
+      };
+    } catch (_) { user = null; }
+
+    return {
+      meta: {
+        exported_at: nowISO(),
+        export_version: "aivo-export-v1",
+        format: "json",
+        note: "MVP fake export: localStorage + globals snapshot. Backend entegre olunca gerçek export ile değişecek."
+      },
+      user: user,
+      data: {
+        settings: settings,
+        profile_stats: profileStats,
+        profile_stats_backup: profileStatsBk,
+        jobs: jobs,
+        credits: credits
+      }
+    };
+  }
+
+  function downloadJSON(obj, filename) {
+    filename = filename || "aivo-export.json";
+    var json = JSON.stringify(obj, null, 2);
+
+    try {
+      var blob = new Blob([json], { type: "application/json;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+
+      var a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = filename;
+      a.rel = "noopener";
+      a.target = "_self";
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function () {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+        try { a.remove(); } catch (_) {}
+      }, 400);
+
+      return;
+    } catch (_) {}
+
+    try {
+      var dataUrl = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+      var a2 = document.createElement("a");
+      a2.style.display = "none";
+      a2.href = dataUrl;
+      a2.download = filename;
+      a2.rel = "noopener";
+      a2.target = "_self";
+      document.body.appendChild(a2);
+      a2.click();
+
+      setTimeout(function () {
+        try { a2.remove(); } catch (_) {}
+      }, 200);
+
+      return;
+    } catch (_) {}
+
+    toastError("Export indirilemedi.");
+  }
+
   function bind(page) {
     if (page.__aivoSettingsBoundV6) return;
     page.__aivoSettingsBoundV6 = true;
@@ -297,14 +450,8 @@
         saveState(now);
         syncDeleteSubmit(page);
         syncRectificationSubmit(page);
-
-        if (window.toast && typeof window.toast.success === "function") {
-          window.toast.success("Ayarlar kaydedildi");
-        } else if (window.toast && typeof window.toast === "function") {
-          window.toast("Ayarlar kaydedildi");
-        } else {
-          console.log("[settings] saved");
-        }
+        syncDataExport(page);
+        toastSuccess("Ayarlar kaydedildi");
       });
     });
 
@@ -332,17 +479,38 @@
 
       btn.addEventListener("click", function (e) {
         e.preventDefault();
-
         syncRectificationSubmit(page);
         if (btn.disabled) return;
+        toastSuccess("Düzeltme talebi alındı");
+      });
+    });
 
-        if (window.toast && typeof window.toast.success === "function") {
-          window.toast.success("Düzeltme talebi alındı");
-        } else if (window.toast && typeof window.toast === "function") {
-          window.toast("Düzeltme talebi alındı");
-        } else {
-          console.log("[settings] rectification request submitted");
+    qsa('[data-action="data-export"]', page).forEach(function (btn) {
+      if (btn.__aivoDataExportBoundV1) return;
+      btn.__aivoDataExportBoundV1 = true;
+
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        syncDataExport(page);
+        if (btn.disabled) return;
+
+        try {
+          var payload = collectExportPayload();
+          downloadJSON(payload, "aivo-export.json");
+          toastSuccess("Export hazır: aivo-export.json indirildi");
+        } catch (_) {
+          toastError("Export oluşturulamadı");
         }
+      });
+    });
+
+    qsa('select[data-setting="data_export_format"]', page).forEach(function (el) {
+      if (el.__aivoExportFormatBoundV1) return;
+      el.__aivoExportFormatBoundV1 = true;
+
+      el.addEventListener("change", function () {
+        syncDataExport(page);
       });
     });
 
@@ -357,6 +525,7 @@
 
     syncDeleteSubmit(page);
     syncRectificationSubmit(page);
+    syncDataExport(page);
   }
 
   function tryInit() {
