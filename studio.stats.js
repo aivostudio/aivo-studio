@@ -131,16 +131,22 @@
     var root = getRoot();
     if(!root) return;
 
-      var m = root.querySelector('[data-stat="music"]');
+    var m = root.querySelector('[data-stat="music"]');
     var c = root.querySelector('[data-stat="cover"]');
-    var v = root.querySelector('[data-stat="video"]');
+    var a = root.querySelector('[data-stat="atmo"]');
+    var k = root.querySelector('[data-stat="cartoon"]');
+    var f = root.querySelector('[data-stat="photofx"]');
+    var i = root.querySelector('[data-stat="imageToVideo"]');
     var s = root.querySelector('[data-stat="spentCredits"]');
     var t = root.querySelector('[data-stat="totalCredits"]');
     var p = root.querySelector('[data-stat="progress"]');
 
     if (m) m.textContent = String(stats.music);
     if (c) c.textContent = String(stats.cover);
-    if (v) v.textContent = (stats.atmo > 0 ? String(stats.atmo) : "Henüz yok");
+    if (a) a.textContent = String(stats.atmo || 0);
+    if (k) k.textContent = String(stats.cartoon || 0);
+    if (f) f.textContent = String(stats.photofx || 0);
+    if (i) i.textContent = String(stats.imageToVideo || 0);
     if (s) s.textContent = String(stats.spent);
     if (t) t.textContent = (stats.total == null ? "0" : String(stats.total));
 
