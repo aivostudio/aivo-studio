@@ -57,7 +57,11 @@
   }
 
   function readCreditsFromTopbar() {
-    return getText("#topCreditCount") || "";
+    return "";
+  }
+
+  function getProfilePage() {
+    return qs('.page-profile[data-page="profile"]');
   }
 
   function readSpentCreditsFromProfilePage(page) {
@@ -65,125 +69,71 @@
     return node ? String(node.textContent || "").trim() : "";
   }
 
-function getProfilePage() {
-  return (
-    qs('.page-profile[data-page="profile"]') ||
-    qs('[data-page="profile"]') ||
-    qs(".main-panel")
-  );
-}
+  function readProfileState(ctx) {
+    const page = getProfilePage();
+    const auth = readAuth();
 
-function readSpentCreditsFromProfilePage(page) {
-  const scopedNode = page ? qs('[data-stat="spentCredits"]', page) : null;
-  if (scopedNode) {
-    return String(scopedNode.textContent || "").trim();
-  }
+    const savedName = safeGetLS("aivo_profile_name") || "";
+    const savedSurname = safeGetLS("aivo_profile_surname") || "";
 
-  const globalNode = qs('[data-stat="spentCredits"]');
-  if (globalNode) {
-    return String(globalNode.textContent || "").trim();
-  }
+    const inputName = firstNonEmpty(
+      getValue("[data-profile-input-name]", page),
+      savedName,
+      auth.first_name,
+      auth.name,
+      auth.full_name,
+      auth.fullName,
+      auth.username
+    );
 
-  const rows = Array.prototype.slice.call(
-    document.querySelectorAll(".usage-row, .rp-row, .stat-row, .usage-pill")
-  );
+    const inputSurname = firstNonEmpty(
+      getValue("[data-profile-input-surname]", page),
+      savedSurname,
+      auth.surname,
+      auth.last_name,
+      auth.lastName,
+      ctx && ctx.surname
+    );
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const txt = String(row.textContent || "").toLowerCase();
+    let finalName = firstNonEmpty(
+      inputName,
+      ctx && ctx.name,
+      "Kullanıcı"
+    );
 
-    if (txt.indexOf("harcanan kredi") !== -1) {
-      const valNode =
-        row.querySelector(".usage-value") ||
-        row.querySelector('[data-stat="spentCredits"]') ||
-        row.querySelector(".rp-row__value") ||
-        row.querySelector(".stat-value");
-
-      if (valNode) return String(valNode.textContent || "").trim();
-
-      const match = String(row.textContent || "").match(/(\d[\d.]*)/);
-      if (match && match[1]) return match[1];
+    if (
+      inputSurname &&
+      finalName &&
+      finalName.toLowerCase().indexOf(inputSurname.toLowerCase()) === -1
+    ) {
+      finalName = (finalName + " " + inputSurname).trim();
     }
+
+    const email = firstNonEmpty(
+      auth.email,
+      ctx && ctx.email,
+      getValue("[data-profile-input-email]", page),
+      getText("[data-profile-email]", page),
+      "—"
+    );
+
+    const credits = firstNonEmpty(
+      ctx && ctx.credits,
+      "0"
+    );
+
+    const spentCredits = firstNonEmpty(
+      ctx && ctx.spentCredits,
+      "0"
+    );
+
+    return {
+      name: finalName,
+      email: email,
+      credits: credits,
+      spentCredits: spentCredits
+    };
   }
-
-  return "";
-}
-
-function readProfileState(ctx) {
-  const page = getProfilePage();
-  const auth = readAuth();
-
-  const savedName = safeGetLS("aivo_profile_name") || "";
-  const savedSurname = safeGetLS("aivo_profile_surname") || "";
-
-  const inputName = firstNonEmpty(
-    getValue("[data-profile-input-name]", page),
-    getValue("[data-profile-input-name]"),
-    getText("[data-profile-name]", page),
-    getText("[data-profile-name]")
-  );
-
-  const inputSurname = firstNonEmpty(
-    getValue("[data-profile-input-surname]", page),
-    getValue("[data-profile-input-surname]"),
-    savedSurname,
-    auth.surname,
-    auth.last_name,
-    auth.lastName,
-    ctx && ctx.surname
-  );
-
-  const authFullName = firstNonEmpty(
-    auth.name,
-    auth.full_name,
-    auth.fullName,
-    auth.username
-  );
-
-  let finalName = firstNonEmpty(
-    inputName,
-    savedName,
-    authFullName,
-    ctx && ctx.name,
-    "Kullanıcı"
-  );
-
-  if (
-    inputSurname &&
-    finalName &&
-    finalName.toLowerCase().indexOf(inputSurname.toLowerCase()) === -1
-  ) {
-    finalName = (finalName + " " + inputSurname).trim();
-  }
-
-  const email = firstNonEmpty(
-    auth.email,
-    ctx && ctx.email,
-    getValue("[data-profile-input-email]", page),
-    getValue("[data-profile-input-email]"),
-    getText("[data-profile-email]", page),
-    getText("[data-profile-email]"),
-    "—"
-  );
-  const credits = firstNonEmpty(
-    ctx && ctx.credits,
-    readCreditsFromTopbar(),
-    "0"
-  );
-
-  const spentCredits = firstNonEmpty(
-    ctx && ctx.spentCredits,
-    readSpentCreditsFromProfilePage(page),
-    "0"
-  );
-
-  return {
-    name: finalName,
-    email: email,
-    credits: credits,
-    spentCredits: spentCredits
-  };
-}
 
   function buildCard(state) {
     const root = el(`
