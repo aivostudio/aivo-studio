@@ -1,1 +1,271 @@
+(function () {
+  "use strict";
 
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
+  }
+
+  function qsa(sel, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  }
+
+  function text(el, val) {
+    if (el) el.textContent = val;
+  }
+
+  function value(el, val) {
+    if (el) el.value = val;
+  }
+
+  function safeGetLS(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+
+  function safeSetLS(key, val) {
+    try { localStorage.setItem(key, val); return true; } catch (e) { return false; }
+  }
+
+  function readJSON(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "{}"); }
+    catch (e) { return {}; }
+  }
+
+  function getProfilePage() {
+    return (
+      qs('.page-profile[data-page="profile"]') ||
+      qs('[data-page="profile"]') ||
+      qs(".main-panel")
+    );
+  }
+
+  function isProfileActive() {
+    return document.body.getAttribute("data-active-page") === "profile";
+  }
+
+  function firstNonEmpty() {
+    for (var i = 0; i < arguments.length; i++) {
+      var v = arguments[i];
+      if (v != null && String(v).trim()) return String(v).trim();
+    }
+    return "";
+  }
+
+  function readCreditsFromTopbar() {
+    var node = qs("#topCreditCount");
+    return node ? String(node.textContent || "").trim() : "";
+  }
+
+  function readSpentCreditsFromProfilePage(page) {
+    var scopedNode = page ? qs('[data-stat="spentCredits"]', page) : null;
+    if (scopedNode) return String(scopedNode.textContent || "").trim();
+
+    var globalNode = qs('[data-stat="spentCredits"]');
+    if (globalNode) return String(globalNode.textContent || "").trim();
+
+    var rows = Array.prototype.slice.call(
+      document.querySelectorAll(".usage-row, .rp-row, .stat-row, .usage-pill")
+    );
+
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var txt = String(row.textContent || "").toLowerCase();
+
+      if (txt.indexOf("harcanan kredi") !== -1) {
+        var valNode =
+          row.querySelector(".usage-value") ||
+          row.querySelector('[data-stat="spentCredits"]') ||
+          row.querySelector(".rp-row__value") ||
+          row.querySelector(".stat-value");
+
+        if (valNode) return String(valNode.textContent || "").trim();
+
+        var match = String(row.textContent || "").match(/(\d[\d.]*)/);
+        if (match && match[1]) return match[1];
+      }
+    }
+
+    return "";
+  }
+
+  function readProfileData() {
+    var page = getProfilePage();
+    if (!page) return null;
+
+    var auth = readJSON("aivo_auth_unified_v1");
+
+    var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
+    var cachedSurname = (safeGetLS("aivo_profile_surname") || "").trim();
+
+    var name = firstNonEmpty(
+      qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value,
+      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+      cachedName,
+      auth.name,
+      auth.full_name,
+      auth.fullName,
+      auth.username
+    );
+
+    var surname = firstNonEmpty(
+      qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value,
+      cachedSurname,
+      auth.surname,
+      auth.last_name,
+      auth.lastName
+    );
+
+    var fullName = name || "Kullanıcı";
+    if (surname && fullName.toLowerCase().indexOf(surname.toLowerCase()) === -1) {
+      fullName = (fullName + " " + surname).trim();
+    }
+
+    var email = firstNonEmpty(
+      qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+      qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+      auth.email,
+      "—"
+    );
+
+    var planText = firstNonEmpty(
+      qs("[data-profile-plan]", page) && qs("[data-profile-plan]", page).textContent,
+      qs("#umPlan") && qs("#umPlan").textContent,
+      "Basic"
+    );
+
+    var creditText = firstNonEmpty(
+      qs("[data-profile-credit]", page) && qs("[data-profile-credit]", page).textContent,
+      readCreditsFromTopbar(),
+      "0"
+    );
+
+    var spentText = firstNonEmpty(
+      readSpentCreditsFromProfilePage(page),
+      "0"
+    );
+
+    var plan = "Basic";
+    var credit = "0";
+
+    if (planText) {
+      var pm = String(planText).match(/Plan:\s*(.+)$/i);
+      if (pm && pm[1]) plan = pm[1].trim();
+      else plan = String(planText).trim();
+    }
+
+    if (creditText) {
+      var cm = String(creditText).match(/(\d+)/);
+      if (cm && cm[1]) credit = cm[1];
+    }
+
+    return {
+      name: fullName,
+      email: email,
+      plan: plan,
+      credit: credit,
+      spent: spentText
+    };
+  }
+
+  function applyProfile() {
+    var page = getProfilePage();
+    if (!page) return;
+    if (!isProfileActive()) return;
+
+    var data = readProfileData();
+    if (!data) return;
+
+    var initial = (data.name || "K").charAt(0).toUpperCase();
+
+    text(qs("[data-profile-initial]", page), initial);
+    text(qs("[data-profile-name]", page), data.name);
+    text(qs("[data-profile-email]", page), data.email);
+
+    var planEls = qsa("[data-profile-plan]", page);
+    for (var i = 0; i < planEls.length; i++) {
+      planEls[i].textContent = "Plan: " + data.plan;
+    }
+
+    var creditEls = qsa("[data-profile-credit]", page);
+    for (var j = 0; j < creditEls.length; j++) {
+      creditEls[j].textContent = "Kredi: " + data.credit;
+    }
+
+    value(qs("[data-profile-input-name]", page), data.name);
+    value(qs("[data-profile-input-email]", page), data.email);
+  }
+
+  function bindSave() {
+    var page = getProfilePage();
+    if (!page) return;
+
+    var btn = qs("[data-profile-save]", page);
+    if (!btn) return;
+
+    if (btn.__aivoProfileSectionBound) return;
+    btn.__aivoProfileSectionBound = true;
+
+    btn.addEventListener("click", function () {
+      var name = firstNonEmpty(
+        qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
+      );
+
+      var surname = firstNonEmpty(
+        qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value
+      );
+
+      var email = firstNonEmpty(
+        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent
+      );
+
+      if (!name) {
+        if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
+        return;
+      }
+
+      safeSetLS("aivo_profile_name", name);
+      safeSetLS("aivo_profile_surname", surname);
+
+      var fullName = surname ? (name + " " + surname).trim() : name;
+
+      text(qs("[data-profile-name]", page), fullName);
+      text(qs("[data-profile-email]", page), email);
+      text(qs("[data-profile-initial]", page), fullName.charAt(0).toUpperCase());
+
+      document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
+        detail: {
+          name: name,
+          surname: surname,
+          fullName: fullName,
+          email: email
+        }
+      }));
+
+      if (window.toast && window.toast.success) window.toast.success("Profil güncellendi.");
+    });
+  }
+
+  function observePage() {
+    if (window.__aivoProfileSectionObserverBound) return;
+    window.__aivoProfileSectionObserverBound = true;
+
+    var mo = new MutationObserver(function () {
+      if (isProfileActive()) {
+        applyProfile();
+        bindSave();
+      }
+    });
+
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-active-page"]
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    bindSave();
+    observePage();
+
+    if (isProfileActive()) applyProfile();
+  });
+})();
