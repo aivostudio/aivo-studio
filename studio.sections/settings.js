@@ -242,16 +242,16 @@ function activateTab(page, rawKey) {
     var lastTab = "";
     try { lastTab = String(localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch (_) {}
 
-    setActiveTab(page, urlTab || lastTab || "notifications");
+  activateTab(page, urlTab || lastTab || "notifications");
 
-    qsa('[data-settings-tab]', page).forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        var t = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
-        if (!t) return;
-        setActiveTab(page, t);
-      });
-    });
+   qsa('[data-settings-tab]', page).forEach(function (btn) {
+  btn.addEventListener("click", function (e) {
+    e.preventDefault();
+    var t = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+    if (!t) return;
+    activateTab(page, t);
+  });
+});
 
     qsa('[data-settings-save]', page).forEach(function (btn) {
       btn.addEventListener("click", function (e) {
