@@ -98,13 +98,13 @@
 
     var name = firstNonEmpty(
       qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value,
-      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
       cachedName,
       auth.first_name,
       auth.name,
       auth.full_name,
       auth.fullName,
-      auth.username
+      auth.username,
+      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent
     );
 
     var surname = firstNonEmpty(
@@ -121,9 +121,9 @@
     }
 
     var email = firstNonEmpty(
+      auth.email,
       qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
       qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-      auth.email,
       "—"
     );
 
@@ -253,6 +253,7 @@
         ),
         first_name: firstNonEmpty(firstName, ""),
         last_name: firstNonEmpty(lastName, ""),
+        surname: firstNonEmpty(lastName, ""),
         ts: Date.now()
       }));
 
@@ -308,8 +309,10 @@
       );
 
       var email = firstNonEmpty(
+        readJSON("aivo_auth_unified_v1").email,
         qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent
+        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+        "—"
       );
 
       if (!name) {
@@ -320,18 +323,31 @@
       safeSetLS("aivo_profile_name", name);
       safeSetLS("aivo_profile_surname", surname);
 
+      var auth = readJSON("aivo_auth_unified_v1");
+      auth.name = name;
+      auth.first_name = name;
+      auth.surname = surname;
+      auth.last_name = surname;
+      auth.full_name = surname ? (name + " " + surname).trim() : name;
+      auth.email = firstNonEmpty(auth.email, email, "");
+      auth.loggedIn = true;
+      auth.ts = Date.now();
+      safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
+
       var fullName = surname ? (name + " " + surname).trim() : name;
 
       text(qs("[data-profile-name]", page), fullName);
-      text(qs("[data-profile-email]", page), email || "—");
+      text(qs("[data-profile-email]", page), firstNonEmpty(auth.email, email, "—"));
       text(qs("[data-profile-initial]", page), fullName.charAt(0).toUpperCase());
+
+      value(qs("[data-profile-input-email]", page), firstNonEmpty(auth.email, email, "—"));
 
       document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
         detail: {
           name: name,
           surname: surname,
           fullName: fullName,
-          email: email || ""
+          email: firstNonEmpty(auth.email, email, "")
         }
       }));
 
