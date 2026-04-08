@@ -350,11 +350,11 @@
       attributeFilter: ["data-active-page"]
     });
   }
+document.addEventListener("DOMContentLoaded", async function () {
+  await hydrateProfileFromApi();
+  bindSave();
+  observePage();
 
-  document.addEventListener("DOMContentLoaded", function () {
-    bindSave();
-    observePage();
-
-    if (isProfileActive()) applyProfile();
-  });
+  if (isProfileActive()) applyProfile();
+});
 })();
