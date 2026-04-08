@@ -85,6 +85,41 @@
     saveRaw(keys.KEY, json);
     saveRaw(keys.BK,  json);
   }
+     async function hydrateStatsFromDB(){
+    try{
+      var r = await fetch("/api/profile-stats/get", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "accept": "application/json"
+        },
+        cache: "no-store"
+      });
+
+      var j = await r.json().catch(function(){ return null; });
+      if (!r.ok || !j || j.ok === false || !j.stats) return;
+
+      var incoming = j.stats || {};
+
+      stats.music = clampInt(incoming.music);
+      stats.cover = clampInt(incoming.cover);
+      stats.atmo = clampInt(incoming.atmo);
+      stats.cartoon = clampInt(incoming.cartoon);
+      stats.photofx = clampInt(incoming.photofx);
+      stats.imageToVideo = clampInt(incoming.imageToVideo);
+      stats.video = clampInt(incoming.video);
+      stats.spent = clampInt(incoming.spent);
+      stats.total = (incoming.total == null ? null : clampInt(incoming.total));
+      stats.lastCredits = (incoming.lastCredits == null ? null : clampInt(incoming.lastCredits));
+      stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
+      stats.updatedAt = clampInt(incoming.updatedAt || now());
+
+      persist();
+      paint();
+    }catch(e){
+      console.warn("[AIVO_STATS][DB_HYDRATE][ERROR]", e);
+    }
+  }
   window.addEventListener("aivo:profile-stats-updated", function(ev){
     try{
       var detail = (ev && ev.detail) || {};
