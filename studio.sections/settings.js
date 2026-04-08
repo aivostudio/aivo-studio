@@ -22,16 +22,17 @@
     catch (_) { return fallback; }
   }
 
-function getPage() {
-  return (
-    qs('.page[data-page="settings"]') ||
-    qs('#moduleHost .page[data-page="settings"]') ||
-    qs('#moduleHost .page.page-settings[data-page="settings"]') ||
-    qs('#moduleHost section.main-panel') ||
-    qs('section.main-panel') ||
-    null
-  );
-}
+  function getPage() {
+    return (
+      qs('.page[data-page="settings"]') ||
+      qs('#moduleHost .page[data-page="settings"]') ||
+      qs('#moduleHost .page.page-settings[data-page="settings"]') ||
+      qs('#moduleHost section.main-panel') ||
+      qs('section.main-panel') ||
+      null
+    );
+  }
+
   function defaults(st) {
     st = (st && typeof st === "object") ? st : {};
 
@@ -64,6 +65,19 @@ function getPage() {
 
   function saveState(st) {
     try { localStorage.setItem(KEY_SETTINGS, JSON.stringify(st)); } catch (_) {}
+  }
+
+  function syncDeleteSubmit(page) {
+    var ack = qs('input[type="checkbox"][data-setting="data_delete_ack"]', page);
+    var btn = qs('[data-delete-submit]', page);
+
+    if (!btn) return;
+
+    var enabled = !!(ack && ack.checked === true);
+
+    btn.disabled = !enabled;
+    btn.setAttribute("aria-disabled", enabled ? "false" : "true");
+    btn.classList.toggle("is-disabled", !enabled);
   }
 
   function applyToDOM(page, st) {
@@ -101,6 +115,8 @@ function getPage() {
         if (lbl) lbl.textContent = "%" + String(el.value || "0");
       }
     });
+
+    syncDeleteSubmit(page);
   }
 
   function collectFromDOM(page) {
@@ -183,54 +199,60 @@ function getPage() {
       return "";
     }
   }
-function activateTab(page, rawKey) {
-  var key = String(rawKey || "").trim().toLowerCase();
-  if (!key) key = "notifications";
 
-  var tabs = qsa('[data-settings-tab]', page);
-  var panes = qsa('[data-settings-pane]', page);
+  function activateTab(page, rawKey) {
+    var key = String(rawKey || "").trim().toLowerCase();
+    if (!key) key = "notifications";
 
-  if (!tabs.length || !panes.length) return;
+    var tabs = qsa('[data-settings-tab]', page);
+    var panes = qsa('[data-settings-pane]', page);
 
-  tabs.forEach(function (btn) {
-    var btnKey = String(btn.getAttribute('data-settings-tab') || '').trim().toLowerCase();
-    var on = (btnKey === key);
-    btn.classList.toggle('is-active', on);
-    btn.setAttribute('aria-selected', on ? 'true' : 'false');
-    btn.setAttribute('tabindex', on ? '0' : '-1');
-  });
+    if (!tabs.length || !panes.length) return;
 
-  var anyOn = false;
+    tabs.forEach(function (btn) {
+      var btnKey = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+      var on = (btnKey === key);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+      btn.setAttribute("tabindex", on ? "0" : "-1");
+    });
 
-  panes.forEach(function (pane) {
-    var paneKey = String(pane.getAttribute('data-settings-pane') || '').trim().toLowerCase();
-    var on = (paneKey === key);
+    var anyOn = false;
 
-    if (on) anyOn = true;
+    panes.forEach(function (pane) {
+      var paneKey = String(pane.getAttribute("data-settings-pane") || "").trim().toLowerCase();
+      var on = (paneKey === key);
 
-    pane.classList.toggle('is-active', on);
-    pane.style.setProperty('display', on ? 'block' : 'none', 'important');
+      if (on) anyOn = true;
 
-    if (on) {
-      pane.removeAttribute('aria-hidden');
-    } else {
-      pane.setAttribute('aria-hidden', 'true');
+      pane.classList.toggle("is-active", on);
+      pane.style.setProperty("display", on ? "block" : "none", "important");
+
+      if (on) {
+        pane.removeAttribute("aria-hidden");
+      } else {
+        pane.setAttribute("aria-hidden", "true");
+      }
+    });
+
+    if (!anyOn && key !== "notifications") {
+      activateTab(page, "notifications");
+      return;
     }
-  });
 
-  if (!anyOn && key !== 'notifications') {
-    activateTab(page, 'notifications');
-    return;
+    try { localStorage.setItem(KEY_TAB, key); } catch (_) {}
+
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.set("stab", key);
+      history.replaceState({}, "", u.toString());
+    } catch (_) {}
+
+    try {
+      window.dispatchEvent(new CustomEvent("settings:tab-changed", { detail: { tab: key } }));
+    } catch (_) {}
   }
 
-  try { localStorage.setItem(KEY_TAB, key); } catch (_) {}
-
-  try {
-    var u = new URL(window.location.href);
-    u.searchParams.set('stab', key);
-    history.replaceState({}, '', u.toString());
-  } catch (_) {}
-}
   function bind(page) {
     if (page.__aivoSettingsBoundV6) return;
     page.__aivoSettingsBoundV6 = true;
@@ -242,22 +264,23 @@ function activateTab(page, rawKey) {
     var lastTab = "";
     try { lastTab = String(localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch (_) {}
 
-  activateTab(page, urlTab || lastTab || "notifications");
+    activateTab(page, urlTab || lastTab || "notifications");
 
-   qsa('[data-settings-tab]', page).forEach(function (btn) {
-  btn.addEventListener("click", function (e) {
-    e.preventDefault();
-    var t = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
-    if (!t) return;
-    activateTab(page, t);
-  });
-});
+    qsa('[data-settings-tab]', page).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var t = String(btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+        if (!t) return;
+        activateTab(page, t);
+      });
+    });
 
     qsa('[data-settings-save]', page).forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
         var now = collectFromDOM(page);
         saveState(now);
+        syncDeleteSubmit(page);
 
         if (window.toast && typeof window.toast.success === "function") {
           window.toast.success("Ayarlar kaydedildi");
@@ -269,6 +292,15 @@ function activateTab(page, rawKey) {
       });
     });
 
+    qsa('input[type="checkbox"][data-setting="data_delete_ack"]', page).forEach(function (el) {
+      if (el.__aivoDeleteAckBoundV1) return;
+      el.__aivoDeleteAckBoundV1 = true;
+
+      el.addEventListener("change", function () {
+        syncDeleteSubmit(page);
+      });
+    });
+
     var range = qs('input[type="range"][data-setting="music_volume"]', page);
     if (range && !range.__aivoVolBoundV6) {
       range.__aivoVolBoundV6 = true;
@@ -277,29 +309,31 @@ function activateTab(page, rawKey) {
         if (lbl) lbl.textContent = "%" + String(range.value || "0");
       });
     }
+
+    syncDeleteSubmit(page);
   }
 
   function tryInit() {
-  var page = getPage();
-  if (!page) return false;
-  bind(page);
-  return true;
-}
+    var page = getPage();
+    if (!page) return false;
+    bind(page);
+    return true;
+  }
 
-function boot() {
-  tryInit();
+  function boot() {
+    tryInit();
 
-  try {
-    var mo = new MutationObserver(function () {
-      tryInit();
-    });
+    try {
+      var mo = new MutationObserver(function () {
+        tryInit();
+      });
 
-    mo.observe(document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-  } catch (_) {}
-}
+      mo.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+    } catch (_) {}
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
