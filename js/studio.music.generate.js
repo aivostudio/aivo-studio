@@ -276,19 +276,12 @@ async function generateMusic(payload) {
         return;
       }
 
-      if (!job_id){
-        console.warn("[music.generate] generate response:", result);
-        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
-        return;
-      }
-            if (!job_id){
+          if (!job_id){
         console.warn("[music.generate] generate response:", result);
         toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
         return;
       }
 
-      // DEBUG
-      window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
       // DEBUG
       window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
       window.__LAST_MUSIC_JOB_ID__ = job_id;
