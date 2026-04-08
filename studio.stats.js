@@ -228,11 +228,14 @@ wrap("addCredits");
     if (id.indexOf("cover-")===0) return "cover";
     if (id.indexOf("atmo-")===0) return "atmo";
     if (id.indexOf("atmosphere-")===0) return "atmo";
+    if (id.indexOf("cartoon-")===0) return "cartoon";
+    if (id.indexOf("child-cartoon-")===0) return "cartoon";
     if (id.indexOf("video-")===0) return "video";
 
     if (t === "music" || t.indexOf("muzik")>=0) return "music";
     if (t === "cover" || t.indexOf("kapak")>=0) return "cover";
     if (t === "atmo" || t === "atmosphere" || t.indexOf("atmosfer")>=0) return "atmo";
+    if (t === "cartoon" || t.indexOf("cizgifilm")>=0 || t.indexOf("çizgifilm")>=0 || t.indexOf("child-cartoon")>=0) return "cartoon";
     if (t === "video") return "video";
 
     return "";
@@ -250,6 +253,7 @@ wrap("addCredits");
     if (type === "music") stats.music++;
     else if (type === "cover") stats.cover++;
     else if (type === "atmo") stats.atmo++;
+    else if (type === "cartoon") stats.cartoon++;
     else if (type === "video") stats.video++;
 
     stats.seen[id] = now();
