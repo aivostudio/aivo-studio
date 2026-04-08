@@ -36,6 +36,7 @@ function safeSetLS(key, val) {
 
 /* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
 
+/*
 function getProfilePage() {
   return qs('.page-profile[data-page="profile"]');
 }
