@@ -232,6 +232,8 @@ wrap("addCredits");
     if (id.indexOf("child-cartoon-")===0) return "cartoon";
     if (id.indexOf("photofx-")===0) return "photofx";
     if (id.indexOf("photo-fx-")===0) return "photofx";
+    if (id.indexOf("image-to-video-")===0) return "imageToVideo";
+    if (id.indexOf("imagetovideo-")===0) return "imageToVideo";
     if (id.indexOf("video-")===0) return "video";
 
     if (t === "music" || t.indexOf("muzik")>=0) return "music";
@@ -239,6 +241,7 @@ wrap("addCredits");
     if (t === "atmo" || t === "atmosphere" || t.indexOf("atmosfer")>=0) return "atmo";
     if (t === "cartoon" || t.indexOf("cizgifilm")>=0 || t.indexOf("çizgifilm")>=0 || t.indexOf("child-cartoon")>=0) return "cartoon";
     if (t === "photofx" || t === "photo-fx" || t.indexOf("foto efekt")>=0) return "photofx";
+    if (t === "imagetovideo" || t === "image-to-video" || t === "image_to_video") return "imageToVideo";
     if (t === "video") return "video";
 
     return "";
