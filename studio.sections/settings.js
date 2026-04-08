@@ -280,28 +280,26 @@ function activateTab(page, rawKey) {
   }
 
   function tryInit() {
-    var page = getPage();
-    if (!page) return false;
-    bind(page);
-    return true;
-  }
+  var page = getPage();
+  if (!page) return false;
+  bind(page);
+  return true;
+}
 
-  function boot() {
-    if (tryInit()) return;
+function boot() {
+  tryInit();
 
-    try {
-      var mo = new MutationObserver(function () {
-        if (tryInit()) {
-          mo.disconnect();
-        }
-      });
+  try {
+    var mo = new MutationObserver(function () {
+      tryInit();
+    });
 
-      mo.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-      });
-    } catch (_) {}
-  }
+    mo.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  } catch (_) {}
+}
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
