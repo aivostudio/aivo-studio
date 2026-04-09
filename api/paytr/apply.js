@@ -131,21 +131,22 @@ export default async function handler(req, res) {
   );
   if (!firstTime) {
     const cur = Number(await kvGet(creditsKey) || 0) || 0;
-     return json(res, 200, {
+    const existingInvoiceId = `paytr_${oid}`;
+
+    return json(res, 200, {
       ok: true,
       oid,
       email,
-      added: creditsToAdd,
-      credits: Number(newTotal) || 0,
-      credits_balance: Number(newTotal) || 0,
-      invoiceId,
-      invoice_id: invoiceId,
+      added: 0,
+      credits: cur,
+      credits_balance: cur,
+      invoiceId: existingInvoiceId,
+      invoice_id: existingInvoiceId,
       credit_applied: true,
       invoice_created: true,
-      already_processed: false,
+      already_processed: true,
     });
   }
-
   // 5) Lock al (yarış durumuna karşı)
   const lockVal = `apply_${Date.now()}`;
   const lockOk = await kvSetNxLock(lockKey, lockVal, 30);
