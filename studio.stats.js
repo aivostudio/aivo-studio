@@ -84,8 +84,7 @@
     saveRaw(keys.KEY, json);
     saveRaw(keys.BK,  json);
     persistStatsToDB();
-  }
-     async function hydrateStatsFromDB(){
+      async function hydrateStatsFromDB(){
     try{
       var r = await fetch("/api/profile-stats/get", {
         method: "GET",
@@ -114,7 +113,6 @@
       stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
       stats.updatedAt = clampInt(incoming.updatedAt || now());
 
-      persist();
       paint();
     }catch(e){
       console.warn("[AIVO_STATS][DB_HYDRATE][ERROR]", e);
