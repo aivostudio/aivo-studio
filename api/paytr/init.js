@@ -144,8 +144,8 @@ function normEmail(v) {
   // Diğer alanlar (temel)
   const currency = "TRY";
   const lang = "tr";
- const test_mode = "0";
-  const debug_on = "1";          // canlıda "0"
+  const test_mode = "0";
+  const debug_on = "0";
   const timeout_limit = "30";    // dakika
 
   const no_installment = "0";
