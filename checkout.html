@@ -52,6 +52,42 @@
   /* ================= DISPLAY ================= */
 
   const params = new URLSearchParams(location.search);
+    const paytrState = (params.get("paytr") || "").trim();
+  const paytrOid = (params.get("oid") || localStorage.getItem("aivo_pending_paytr_oid") || "").trim();
+
+  if (paytrState === "ok" && paytrOid) {
+    setNote("Ödeme doğrulanıyor…");
+
+    fetch(`/api/paytr/verify?oid=${encodeURIComponent(paytrOid)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    })
+      .then(async function (r) {
+        const raw = await r.text();
+        let data = null;
+        try { data = JSON.parse(raw); } catch (_) {}
+
+        if (!r.ok || !data || !data.ok) {
+          throw new Error((data && data.error) ? data.error : "PAYTR_VERIFY_FAILED");
+        }
+
+        if (data.status === "paid") {
+          setNote("Ödeme başarılı. Krediniz hesabınıza tanımlanıyor…");
+          try { localStorage.removeItem("aivo_pending_paytr_oid"); } catch (e) {}
+          return;
+        }
+
+        throw new Error("PAYMENT_NOT_PAID");
+      })
+      .catch(function (err) {
+        console.error("[Checkout][PayTR Verify]", err);
+        setNote("Ödeme doğrulanamadı: " + (err && err.message ? err.message : "Bilinmeyen hata"));
+      });
+  }
+
+  if (paytrState === "fail") {
+    setNote("Ödeme tamamlanmadı veya iptal edildi.");
+  }
   const storePack = safeGetSelectedPack();
 
   const urlPlan  = (params.get("plan") || "").trim();
