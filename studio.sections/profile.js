@@ -386,22 +386,81 @@
       }
     });
   }
+  async function renderProfileNow() {
+    var page = getProfilePage();
+    if (!page) return false;
+
+    await hydrateProfileFromApi();
+    bindSave();
+
+    if (isProfileActive()) {
+      applyProfile();
+    } else {
+      var initialEl = qs("[data-profile-initial]", page);
+      var nameEl = qs("[data-profile-name]", page);
+      var emailEl = qs("[data-profile-email]", page);
+
+      var auth = readJSON("aivo_auth_unified_v1");
+      var email = firstNonEmpty(
+        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+        auth.email,
+        ""
+      );
+
+      var name = firstNonEmpty(
+        qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+        auth.full_name,
+        auth.name,
+        auth.first_name,
+        ""
+      );
+
+      if (email) {
+        value(qs("[data-profile-input-email]", page), email);
+        text(emailEl, email);
+      }
+
+      if (name) {
+        text(nameEl, name);
+        text(initialEl, name.charAt(0).toUpperCase());
+      }
+    }
+
+    var hasEmail =
+      firstNonEmpty(
+        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+        ""
+      ) !== "";
+
+    var hasName =
+      firstNonEmpty(
+        qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+        ""
+      ) !== "";
+
+    var hasInitial =
+      firstNonEmpty(
+        qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
+        ""
+      ) !== "";
+
+    return !!(hasEmail && hasName && hasInitial);
+  }
 
   function observePage() {
     if (window.__aivoProfileSectionObserverBound) return;
     window.__aivoProfileSectionObserverBound = true;
 
     var mo = new MutationObserver(async function () {
-      if (isProfileActive()) {
-        await hydrateProfileFromApi();
-        applyProfile();
-        bindSave();
-      }
+      await renderProfileNow();
     });
 
     mo.observe(document.body, {
+      subtree: true,
+      childList: true,
       attributes: true,
-      attributeFilter: ["data-active-page"]
+      attributeFilter: ["data-active-page", "class", "style"]
     });
   }
 
@@ -410,35 +469,8 @@
     var wait = Number(delay || 0);
 
     while (left > 0) {
-      var page = getProfilePage();
-
-      if (page) {
-        await hydrateProfileFromApi();
-        bindSave();
-        applyProfile();
-
-        var hasEmail =
-          firstNonEmpty(
-            qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-            qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-            ""
-          ) !== "";
-
-        var hasName =
-          firstNonEmpty(
-            qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
-            qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value,
-            ""
-          ) !== "";
-
-        var hasInitial =
-          firstNonEmpty(
-            qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
-            ""
-          ) !== "";
-
-        if (hasEmail || hasName || hasInitial) return;
-      }
+      var ok = await renderProfileNow();
+      if (ok) return;
 
       await new Promise(function (resolve) {
         setTimeout(resolve, wait);
@@ -450,6 +482,16 @@
 
   document.addEventListener("DOMContentLoaded", async function () {
     observePage();
-    await bootProfileRender(12, 250);
+    await bootProfileRender(20, 200);
+  });
+
+  window.addEventListener("load", async function () {
+    await bootProfileRender(10, 200);
+  });
+
+  document.addEventListener("visibilitychange", async function () {
+    if (!document.hidden) {
+      await bootProfileRender(6, 150);
+    }
   });
 })();
