@@ -468,21 +468,61 @@ async function hydrateProfileFromApi() {
     return !!(hasEmail && hasName && hasInitial);
   }
 
-  function observePage() {
-    if (window.__aivoProfileSectionObserverBound) return;
-    window.__aivoProfileSectionObserverBound = true;
+function observePage() {
+  if (window.__aivoProfileSectionObserverBound) return;
+  window.__aivoProfileSectionObserverBound = true;
 
-    var mo = new MutationObserver(async function () {
-      await renderProfileNow();
-    });
+  var scheduled = false;
+  var lastActivePage = document.body.getAttribute("data-active-page") || "";
 
-    mo.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["data-active-page", "class", "style"]
-    });
-  }
+  var mo = new MutationObserver(function (mutations) {
+    var shouldRun = false;
+    var nextActivePage = document.body.getAttribute("data-active-page") || "";
+
+    for (var i = 0; i < mutations.length; i++) {
+      var m = mutations[i];
+
+      if (
+        m.type === "attributes" &&
+        m.target === document.body &&
+        m.attributeName === "data-active-page"
+      ) {
+        shouldRun = true;
+        break;
+      }
+
+      if (m.type === "childList") {
+        var page = getProfilePage();
+        if (page) {
+          shouldRun = true;
+          break;
+        }
+      }
+    }
+
+    if (!shouldRun) return;
+    if (nextActivePage === lastActivePage && nextActivePage !== "profile") return;
+    if (scheduled) return;
+
+    scheduled = true;
+
+    setTimeout(async function () {
+      try {
+        lastActivePage = document.body.getAttribute("data-active-page") || "";
+        await renderProfileNow();
+      } finally {
+        scheduled = false;
+      }
+    }, 120);
+  });
+
+  mo.observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["data-active-page"]
+  });
+}
 
   async function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
