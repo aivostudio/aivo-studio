@@ -131,13 +131,18 @@ export default async function handler(req, res) {
   );
   if (!firstTime) {
     const cur = Number(await kvGet(creditsKey) || 0) || 0;
-    return json(res, 200, {
+     return json(res, 200, {
       ok: true,
       oid,
       email,
-      added: 0,
-      credits: cur,
-      already_processed: true,
+      added: creditsToAdd,
+      credits: Number(newTotal) || 0,
+      credits_balance: Number(newTotal) || 0,
+      invoiceId,
+      invoice_id: invoiceId,
+      credit_applied: true,
+      invoice_created: true,
+      already_processed: false,
     });
   }
 
