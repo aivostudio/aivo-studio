@@ -75,8 +75,8 @@
 
     return s;
   }
-
   var stats = loadStats();
+
   function persist(){
     var keys = getKeys();
     stats.updatedAt = now();
@@ -84,7 +84,9 @@
     saveRaw(keys.KEY, json);
     saveRaw(keys.BK,  json);
     persistStatsToDB();
-      async function hydrateStatsFromDB(){
+  }
+
+  async function hydrateStatsFromDB(){
     try{
       var r = await fetch("/api/profile-stats/get", {
         method: "GET",
