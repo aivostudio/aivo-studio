@@ -76,20 +76,15 @@
     return s;
   }
 
-var stats = loadStats();
-var hasHydratedFromDB = false;
-
-function persist(){
-  var keys = getKeys();
-  stats.updatedAt = now();
-  var json = JSON.stringify(stats);
-  saveRaw(keys.KEY, json);
-  saveRaw(keys.BK,  json);
-
-  if (hasHydratedFromDB) {
+  var stats = loadStats();
+  function persist(){
+    var keys = getKeys();
+    stats.updatedAt = now();
+    var json = JSON.stringify(stats);
+    saveRaw(keys.KEY, json);
+    saveRaw(keys.BK,  json);
     persistStatsToDB();
   }
-}
      async function hydrateStatsFromDB(){
     try{
       var r = await fetch("/api/profile-stats/get", {
@@ -116,10 +111,9 @@ function persist(){
       stats.spent = clampInt(incoming.spent);
       stats.total = (incoming.total == null ? null : clampInt(incoming.total));
       stats.lastCredits = (incoming.lastCredits == null ? null : clampInt(incoming.lastCredits));
-           stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
+      stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
       stats.updatedAt = clampInt(incoming.updatedAt || now());
 
-      hasHydratedFromDB = true;
       persist();
       paint();
     }catch(e){
@@ -548,8 +542,8 @@ wrap("addCredits");
   }
 
   function boot(){
-    paint();
-    hydrateStatsFromDB();
+    persist(); paint();
+     hydrateStatsFromDB();
     if (!window.__AIVO_STATS_POLL_V14__){
       window.__AIVO_STATS_POLL_V14__ = true;
       setInterval(function(){
