@@ -31,7 +31,7 @@ async function kvSet(key, value) {
       Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ value }),
+    body: JSON.stringify(value),
   });
 
   if (!r.ok) {
