@@ -108,11 +108,11 @@
       finalName = (finalName + " " + inputSurname).trim();
     }
 
-    const email = firstNonEmpty(
-      auth.email,
-      ctx && ctx.email,
+      const email = firstNonEmpty(
       getValue("[data-profile-input-email]", page),
       getText("[data-profile-email]", page),
+      ctx && ctx.email,
+      auth.email,
       "—"
     );
 
