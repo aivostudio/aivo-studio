@@ -95,7 +95,7 @@
       if (!pack) pack = String(Math.round(amount || 0));
 
       // Allowed liste
-      const ALLOWED = ["199","399","899","2999"];
+     const ALLOWED = ["199","699","1299","2999"];
       if (!ALLOWED.includes(pack)) {
         throw new Error("INVALID_PACK:" + pack + " amount=" + amount);
       }
