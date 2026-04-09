@@ -138,8 +138,8 @@ function normEmail(v) {
 
   // Zorunlu URL'ler (sende bu sayfalar olmalı)
   // PayTR ödeme sonucu bu URL'lere döner.
-  const merchant_ok_url = "https://www.aivo.tr/checkout-success.html";
-  const merchant_fail_url = "https://www.aivo.tr/checkout-fail.html";
+  const merchant_ok_url = "https://www.aivo.tr/checkout.html?paytr=ok";
+  const merchant_fail_url = "https://www.aivo.tr/checkout.html?paytr=fail";
 
   // Diğer alanlar (temel)
   const currency = "TRY";
