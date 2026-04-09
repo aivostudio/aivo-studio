@@ -14,12 +14,8 @@
     return (root || document).querySelector(sel);
   }
 
-  function safeGetLS(key) {
-    try {
-      return localStorage.getItem(key);
-    } catch (e) {
-      return null;
-    }
+  function qsa(sel, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
   }
 
   function readJSON(key) {
@@ -38,42 +34,6 @@
     return "";
   }
 
-function readAuth() {
-  return readJSON("aivo_auth_unified_v1");
-}
-
-function readCreditsFromTopbar() {
-  return "";
-}
-
-function getProfilePage() {
-  const pages = Array.prototype.slice.call(
-    document.querySelectorAll('.page-profile[data-page="profile"]')
-  );
-
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
-    if (page && page.isConnected && page.offsetParent !== null) return page;
-  }
-
-  const fallbackPages = Array.prototype.slice.call(
-    document.querySelectorAll('[data-page="profile"]')
-  );
-
-  for (let j = 0; j < fallbackPages.length; j++) {
-    const fallbackPage = fallbackPages[j];
-    if (fallbackPage && fallbackPage.isConnected && fallbackPage.offsetParent !== null) {
-      return fallbackPage;
-    }
-  }
-
-  return null;
-}
-
-function readSpentCreditsFromProfilePage(page) {
-  ...
-}
-
   function getText(sel, root) {
     const node = qs(sel, root);
     return node ? String(node.textContent || "").trim() : "";
@@ -88,16 +48,26 @@ function readSpentCreditsFromProfilePage(page) {
     return readJSON("aivo_auth_unified_v1");
   }
 
-  function readCreditsFromTopbar() {
-    return "";
+  function getProfilePage() {
+    const pages = qsa('.page-profile[data-page="profile"]');
+
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      if (page && page.isConnected && page.offsetParent !== null) return page;
+    }
+
+    const fallbackPages = qsa('[data-page="profile"]');
+
+    for (let j = 0; j < fallbackPages.length; j++) {
+      const fallbackPage = fallbackPages[j];
+      if (fallbackPage && fallbackPage.isConnected && fallbackPage.offsetParent !== null) {
+        return fallbackPage;
+      }
+    }
+
+    return null;
   }
 
- 
-
-  function readSpentCreditsFromProfilePage(page) {
-    const node = page ? qs('[data-stat="spentCredits"]', page) : null;
-    return node ? String(node.textContent || "").trim() : "";
-  }
   function readProfileState(ctx) {
     const page = getProfilePage();
     const auth = readAuth();
@@ -195,6 +165,7 @@ function readSpentCreditsFromProfilePage(page) {
       spentCredits: spentCredits
     };
   }
+
   function buildCard(state) {
     const root = el(`
       <div class="rp-card">
@@ -298,11 +269,35 @@ function readSpentCreditsFromProfilePage(page) {
     host.innerHTML = "";
     render(host, ctx);
 
-    function rerenderSoon() {
+    let profileObserver = null;
+
+    function rerenderSoon(delay) {
       window.setTimeout(function () {
         if (!host || !document.body.contains(host)) return;
         render(host, ctx);
-      }, 0);
+      }, Number(delay || 0));
+    }
+
+    function bindProfileObserver() {
+      if (profileObserver) {
+        profileObserver.disconnect();
+        profileObserver = null;
+      }
+
+      const page = getProfilePage();
+      if (!page) return;
+
+      profileObserver = new MutationObserver(function () {
+        rerenderSoon(0);
+      });
+
+      profileObserver.observe(page, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["value", "class", "style"]
+      });
     }
 
     function onStorage(e) {
@@ -310,9 +305,12 @@ function readSpentCreditsFromProfilePage(page) {
 
       if (
         e.key === "aivo_profile_name" ||
+        e.key === "aivo_profile_surname" ||
         e.key === "aivo_auth_unified_v1"
       ) {
-        rerenderSoon();
+        rerenderSoon(0);
+        rerenderSoon(120);
+        rerenderSoon(300);
       }
     }
 
@@ -323,29 +321,69 @@ function readSpentCreditsFromProfilePage(page) {
 
       if (!saveBtn) return;
 
-      rerenderSoon();
-      window.setTimeout(rerenderSoon, 120);
-      window.setTimeout(rerenderSoon, 300);
+      rerenderSoon(0);
+      rerenderSoon(120);
+      rerenderSoon(300);
     }
 
     function onProfileSaved() {
-      rerenderSoon();
+      rerenderSoon(0);
+      rerenderSoon(120);
+      rerenderSoon(300);
     }
 
     function onVisibilityChange() {
-      if (!document.hidden) rerenderSoon();
+      if (!document.hidden) {
+        bindProfileObserver();
+        rerenderSoon(0);
+        rerenderSoon(120);
+      }
+    }
+
+    function onRouteOrDomChange() {
+      bindProfileObserver();
+      rerenderSoon(0);
     }
 
     window.addEventListener("storage", onStorage);
     document.addEventListener("click", onDocumentClick, true);
     document.addEventListener("aivo:profile-saved", onProfileSaved);
     document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("hashchange", onRouteOrDomChange);
+
+    const bodyObserver = new MutationObserver(function () {
+      bindProfileObserver();
+      rerenderSoon(0);
+    });
+
+    bodyObserver.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["data-active-page", "class", "style"]
+    });
+
+    bindProfileObserver();
+    rerenderSoon(0);
+    rerenderSoon(120);
+    rerenderSoon(300);
+    rerenderSoon(600);
 
     host._cleanup = function () {
       window.removeEventListener("storage", onStorage);
       document.removeEventListener("click", onDocumentClick, true);
       document.removeEventListener("aivo:profile-saved", onProfileSaved);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("hashchange", onRouteOrDomChange);
+
+      if (profileObserver) {
+        profileObserver.disconnect();
+        profileObserver = null;
+      }
+
+      if (bodyObserver) {
+        bodyObserver.disconnect();
+      }
 
       const root = host.firstElementChild;
       if (root && root._cleanup) root._cleanup();
