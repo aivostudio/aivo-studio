@@ -100,54 +100,100 @@
         throw new Error("INVALID_PACK:" + pack + " amount=" + amount);
       }
 
-      /* ================= STRIPE (TEST MODE) ================= */
+      /* ================= PAYMENT INIT ================= */
 
-      if (!PAYTR_ENABLED) {
-        console.log("[Checkout] Stripe pack =", pack);
-        setNote("Stripe plan: " + pack);
+      console.log("[Checkout] paytr pack =", pack);
+      setNote("Ödeme bağlantısı hazırlanıyor…");
 
-        // Eski pending’i temizle (yanlış session ile çakışmasın)
-        try { localStorage.removeItem("aivo_pending_stripe_session"); } catch (e) {}
+      // Eski stripe pending bilgisini temizle
+      try { localStorage.removeItem("aivo_pending_stripe_session"); } catch (e) {}
 
-        const r = await fetch("/api/stripe/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: pack, pack: pack, price: pack })
-        });
+      const meRes = await fetch("/api/auth/me", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
 
-        // JSON değilse bile gerçek cevabı görebilmek için:
-        const raw = await r.text();
-        let data = null;
-        try { data = JSON.parse(raw); } catch (_) {}
+      const meRaw = await meRes.text();
+      let meData = null;
+      try { meData = JSON.parse(meRaw); } catch (_) {}
 
-        if (!r.ok || !data || !data.url) {
-          const errMsg =
-            (data && data.error) ? data.error :
-            ("STRIPE_INIT_FAILED HTTP " + r.status + " RAW=" + raw.slice(0, 160));
-          throw new Error(errMsg);
-        }
-
-        // ✅ KRİTİK: session_id'yi DAHA STRIPE AÇILMADAN sakla
-        // Studio açılınca finalizer bu key’den okuyacak.
-        if (!data.session_id) {
-          throw new Error("STRIPE_SESSION_ID_MISSING");
-        }
-
-        try {
-          localStorage.setItem("aivo_pending_stripe_session", String(data.session_id));
-          console.log("[Checkout] pending session saved:", data.session_id);
-        } catch (e) {
-          throw new Error("LOCALSTORAGE_WRITE_FAILED");
-        }
-
-        setNote("Stripe yönlendirmesi başlatılıyor…");
-        window.location.href = data.url;
-        return;
+      if (!meRes.ok || !meData || !meData.user) {
+        throw new Error("AUTH_ME_FAILED");
       }
 
-      /* ================= PAYTR (LATER) ================= */
+      const user = meData.user || {};
+      const userId =
+        String(
+          user.id ||
+          user.user_id ||
+          user.uid ||
+          user.email ||
+          ""
+        ).trim();
 
-      throw new Error("PAYTR_NOT_ACTIVE");
+      const email =
+        String(
+          user.email ||
+          user.user_email ||
+          ""
+        ).trim();
+
+      if (!userId || !email) {
+        throw new Error("USER_ID_OR_EMAIL_MISSING");
+      }
+
+      const initRes = await fetch("/api/paytr/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          email: email,
+          plan: pack,
+          amount: Number(pack)
+        })
+      });
+
+      const initRaw = await initRes.text();
+      let initData = null;
+      try { initData = JSON.parse(initRaw); } catch (_) {}
+
+      if (!initRes.ok || !initData || !initData.form) {
+        const errMsg =
+          (initData && initData.error) ? initData.error :
+          ("PAYTR_INIT_FAILED HTTP " + initRes.status + " RAW=" + initRaw.slice(0, 160));
+        throw new Error(errMsg);
+      }
+
+      const form = initData.form;
+      const oid = initData.oid || form.merchant_oid;
+      if (!oid) {
+        throw new Error("PAYTR_OID_MISSING");
+      }
+
+      try {
+        localStorage.setItem("aivo_pending_paytr_oid", String(oid));
+        console.log("[Checkout] pending paytr oid saved:", oid);
+      } catch (e) {
+        throw new Error("LOCALSTORAGE_WRITE_FAILED");
+      }
+
+      const paytrForm = document.createElement("form");
+      paytrForm.method = "POST";
+      paytrForm.action = "https://www.paytr.com/odeme";
+      paytrForm.style.display = "none";
+
+      Object.keys(form).forEach(function (key) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = form[key] == null ? "" : String(form[key]);
+        paytrForm.appendChild(input);
+      });
+
+      document.body.appendChild(paytrForm);
+      setNote("Ödeme sayfasına yönlendiriliyorsunuz…");
+      paytrForm.submit();
+      return;
 
     } catch (err) {
       console.error("[Checkout]", err);
