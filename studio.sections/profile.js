@@ -405,16 +405,8 @@
       attributeFilter: ["data-active-page"]
     });
   }
-    document.addEventListener("DOMContentLoaded", async function () {
-    await hydrateProfileFromApi();
-    bindSave();
+  document.addEventListener("DOMContentLoaded", async function () {
     observePage();
-    applyProfile();
-
-    setTimeout(async function () {
-      await hydrateProfileFromApi();
-      bindSave();
-      applyProfile();
-    }, 300);
+    await bootProfileRender(12, 250);
   });
 })();
