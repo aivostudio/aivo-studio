@@ -72,95 +72,72 @@
     const page = getProfilePage();
     const auth = readAuth();
 
-    const pageName = firstNonEmpty(
-      getText("[data-profile-name]", page)
-    );
+    const savedName = safeGetLS("aivo_profile_name") || "";
+    const savedSurname = safeGetLS("aivo_profile_surname") || "";
 
-    const pageSurname = firstNonEmpty(
-      getValue("[data-profile-input-surname]", page)
-    );
-
-    const pageEmail = firstNonEmpty(
-      getValue("[data-profile-input-email]", page),
-      getText("[data-profile-email]", page)
-    );
-
-    const ctxName = firstNonEmpty(
-      ctx && ctx.fullName,
-      ctx && ctx.name
-    );
-
-    const ctxSurname = firstNonEmpty(
-      ctx && ctx.surname
-    );
-
-    const authEmail = firstNonEmpty(auth.email, "");
-    const authEmailName =
-      authEmail && authEmail.indexOf("@") !== -1
-        ? String(authEmail).split("@")[0].trim()
-        : "";
-
-    const pageEmailName =
-      pageEmail && pageEmail.indexOf("@") !== -1
-        ? String(pageEmail).split("@")[0].trim()
-        : "";
-
-    const finalEmail = firstNonEmpty(
-      pageEmail,
-      ctx && ctx.email,
-      authEmail,
-      "—"
-    );
-
-    const baseName = firstNonEmpty(
-      pageName,
-      ctxName,
-      pageEmailName,
-      auth.full_name,
-      auth.name,
+    const inputName = firstNonEmpty(
+      getValue("[data-profile-input-name]", page),
+      savedName,
       auth.first_name,
-      authEmailName,
-      "Kullanıcı"
+      auth.name,
+      auth.full_name,
+      auth.fullName,
+      auth.username
     );
 
-    const finalSurname = firstNonEmpty(
-      pageSurname,
-      ctxSurname,
+    const inputSurname = firstNonEmpty(
+      getValue("[data-profile-input-surname]", page),
+      savedSurname,
       auth.surname,
       auth.last_name,
       auth.lastName,
-      ""
+      ctx && ctx.surname
     );
 
-    let finalName = baseName;
+    let finalName = firstNonEmpty(
+      inputName,
+      ctx && ctx.name,
+      "Kullanıcı"
+    );
 
     if (
-      finalSurname &&
+      inputSurname &&
       finalName &&
-      finalName.toLowerCase().indexOf(finalSurname.toLowerCase()) === -1
+      finalName.toLowerCase().indexOf(inputSurname.toLowerCase()) === -1
     ) {
-      finalName = (finalName + " " + finalSurname).trim();
+      finalName = (finalName + " " + inputSurname).trim();
     }
 
-    const credits = String(
+      const email = firstNonEmpty(
+      getValue("[data-profile-input-email]", page),
+      getText("[data-profile-email]", page),
+      ctx && ctx.email,
+      auth.email,
+      "—"
+    );
+
+    let credits = "0";
+    let spentCredits = "0";
+
+    credits = String(
       firstNonEmpty(
-        getText('[data-stat="totalCredits"]', page),
         ctx && ctx.credits,
+        getText('[data-stat="totalCredits"]', page),
         "0"
       )
     );
 
-    const spentCredits = String(
+    spentCredits = String(
       firstNonEmpty(
-        getText('[data-stat="spentCredits"]', page),
         ctx && ctx.spentCredits,
+        getText('[data-stat="spentCredits"]', page),
         "0"
       )
     );
 
     return {
       name: finalName,
-      email: finalEmail,
+      email: email,
       credits: credits,
       spentCredits: spentCredits
     };
