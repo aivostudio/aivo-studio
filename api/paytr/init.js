@@ -38,6 +38,36 @@ export default async function handler(req, res) {
   const merchant_key = process.env.PAYTR_MERCHANT_KEY;
   const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
 
+  async function kvCmd(path, { method = "GET", body } = {}) {
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+
+  const url = `${process.env.KV_REST_API_URL}${path}`;
+  const r = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+      ...(body ? { "Content-Type": "application/json" } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!r.ok) return null;
+  const data = await r.json().catch(() => null);
+  return data && typeof data === "object" && "result" in data ? data.result : data;
+}
+
+async function kvSetJson(key, obj, { exSec } = {}) {
+  const q = exSec ? `?EX=${encodeURIComponent(String(exSec))}` : "";
+  return kvCmd(`/set/${encodeURIComponent(key)}${q}`, {
+    method: "POST",
+    body: obj,
+  });
+}
+
+function normEmail(v) {
+  return String(v || "").trim().toLowerCase();
+}
+  
   if (!merchant_id || !merchant_key || !merchant_salt) {
     return json(res, 500, {
       ok: false,
