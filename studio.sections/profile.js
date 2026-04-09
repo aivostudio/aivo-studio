@@ -260,51 +260,49 @@
 
       if (!email && !firstName && !lastName) return;
 
-      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
-        loggedIn: true,
-        email: email || "",
-        name: firstNonEmpty(firstName, ""),
-        full_name: firstNonEmpty(
-          (firstName && lastName) ? (firstName + " " + lastName) : "",
-          firstName,
-          ""
-        ),
-        first_name: firstNonEmpty(firstName, ""),
-        last_name: firstNonEmpty(lastName, ""),
-        surname: firstNonEmpty(lastName, ""),
-        ts: Date.now()
-      }));
-
-      if (firstName) safeSetLS("aivo_profile_name", firstName);
-      if (lastName) safeSetLS("aivo_profile_surname", lastName);
-
-      var cachedName = firstNonEmpty(
-        safeGetLS("aivo_profile_name"),
-        readJSON("aivo_auth_unified_v1").first_name,
-        readJSON("aivo_auth_unified_v1").name,
-        ""
-      );
-
-      var emailName = "";
+         var emailName = "";
       if (email && String(email).indexOf("@") !== -1) {
         emailName = String(email).split("@")[0].trim();
       }
 
-      var fullName = firstNonEmpty(
-        (firstName && lastName) ? (firstName + " " + lastName) : "",
+      var resolvedName = firstNonEmpty(
         firstName,
-        cachedName,
         emailName,
         "Kullanıcı"
       );
 
-      var initial = fullName.charAt(0).toUpperCase();
+      var resolvedSurname = firstNonEmpty(
+        lastName,
+        ""
+      );
+
+      var resolvedFullName = firstNonEmpty(
+        (resolvedName && resolvedSurname) ? (resolvedName + " " + resolvedSurname) : "",
+        resolvedName,
+        "Kullanıcı"
+      );
+
+      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+        loggedIn: true,
+        email: email || "",
+        name: resolvedName,
+        full_name: resolvedFullName,
+        first_name: resolvedName,
+        last_name: resolvedSurname,
+        surname: resolvedSurname,
+        ts: Date.now()
+      }));
+
+      safeSetLS("aivo_profile_name", resolvedName);
+      safeSetLS("aivo_profile_surname", resolvedSurname);
+
+      var initial = resolvedFullName.charAt(0).toUpperCase();
 
       value(qs("[data-profile-input-name]", page), firstName || "");
       value(qs("[data-profile-input-surname]", page), lastName || "");
       value(qs("[data-profile-input-email]", page), email || "");
 
-      text(qs("[data-profile-name]", page), fullName);
+      text(qs("[data-profile-name]", page), resolvedFullName);
       text(qs("[data-profile-email]", page), email || "—");
       text(qs("[data-profile-initial]", page), initial);
 
