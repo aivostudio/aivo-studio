@@ -38,9 +38,41 @@
     return "";
   }
 
-  function getProfilePage() {
-    return qs('.page-profile[data-page="profile"]');
+function readAuth() {
+  return readJSON("aivo_auth_unified_v1");
+}
+
+function readCreditsFromTopbar() {
+  return "";
+}
+
+function getProfilePage() {
+  const pages = Array.prototype.slice.call(
+    document.querySelectorAll('.page-profile[data-page="profile"]')
+  );
+
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    if (page && page.isConnected && page.offsetParent !== null) return page;
   }
+
+  const fallbackPages = Array.prototype.slice.call(
+    document.querySelectorAll('[data-page="profile"]')
+  );
+
+  for (let j = 0; j < fallbackPages.length; j++) {
+    const fallbackPage = fallbackPages[j];
+    if (fallbackPage && fallbackPage.isConnected && fallbackPage.offsetParent !== null) {
+      return fallbackPage;
+    }
+  }
+
+  return null;
+}
+
+function readSpentCreditsFromProfilePage(page) {
+  ...
+}
 
   function getText(sel, root) {
     const node = qs(sel, root);
@@ -60,9 +92,7 @@
     return "";
   }
 
-  function getProfilePage() {
-    return qs('.page-profile[data-page="profile"]');
-  }
+ 
 
   function readSpentCreditsFromProfilePage(page) {
     const node = page ? qs('[data-stat="spentCredits"]', page) : null;
