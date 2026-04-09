@@ -108,10 +108,10 @@ function normEmail(v) {
 
     const normalizedEmail = normEmail(email);
   const creditsMap = {
-    "199": 50,
-    "399": 120,
-    "899": 300,
-    "2999": 1200
+    "199": 25,
+    "699": 100,
+    "1299": 200,
+    "2999": 500
   };
 
   const credits =
