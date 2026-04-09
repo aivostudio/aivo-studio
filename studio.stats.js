@@ -75,9 +75,22 @@
 
     return s;
   }
+  var currentScope = getUserScope();
   var stats = loadStats();
 
+  function ensureScope(){
+    var nextScope = getUserScope();
+    if (nextScope === currentScope) return false;
+
+    currentScope = nextScope;
+    stats = loadStats();
+    paint();
+    return true;
+  }
+
   function persist(){
+    ensureScope();
+
     var keys = getKeys();
     stats.updatedAt = now();
     var json = JSON.stringify(stats);
@@ -87,6 +100,8 @@
   }
 
   async function hydrateStatsFromDB(){
+    ensureScope();
+
     try{
       var r = await fetch("/api/profile-stats/get", {
         method: "GET",
