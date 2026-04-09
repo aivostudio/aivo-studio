@@ -77,14 +77,20 @@
   }
   var currentScope = getUserScope();
   var stats = loadStats();
-
   function ensureScope(){
     var nextScope = getUserScope();
     if (nextScope === currentScope) return false;
 
     currentScope = nextScope;
-    stats = loadStats();
+    stats = empty();
     paint();
+
+    setTimeout(function(){
+      try{
+        hydrateStatsFromDB();
+      }catch(e){}
+    }, 0);
+
     return true;
   }
 
