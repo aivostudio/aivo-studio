@@ -94,8 +94,8 @@
     return true;
   }
 
-  function persist(){
-    ensureScope();
+   function persist(){
+    if (ensureScope()) return;
 
     var keys = getKeys();
     stats.updatedAt = now();
