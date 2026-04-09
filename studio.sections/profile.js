@@ -30,7 +30,7 @@
     catch (e) { return {}; }
   }
 
-   function getProfilePage() {
+  function getProfilePage() {
     var pages = qsa('.page-profile[data-page="profile"]');
     for (var i = 0; i < pages.length; i++) {
       var page = pages[i];
@@ -214,6 +214,7 @@
       inputEmail: inputEmailEl ? inputEmailEl.value : null
     });
   }
+
   async function hydrateProfileFromApi() {
     var page = getProfilePage();
     if (!page) return;
@@ -277,7 +278,7 @@
       if (firstName) safeSetLS("aivo_profile_name", firstName);
       if (lastName) safeSetLS("aivo_profile_surname", lastName);
 
-          var cachedName = firstNonEmpty(
+      var cachedName = firstNonEmpty(
         safeGetLS("aivo_profile_name"),
         readJSON("aivo_auth_unified_v1").first_name,
         readJSON("aivo_auth_unified_v1").name,
@@ -405,6 +406,50 @@
       attributeFilter: ["data-active-page"]
     });
   }
+
+  async function bootProfileRender(retries, delay) {
+    var left = Number(retries || 0);
+    var wait = Number(delay || 0);
+
+    while (left > 0) {
+      var page = getProfilePage();
+
+      if (page) {
+        await hydrateProfileFromApi();
+        bindSave();
+        applyProfile();
+
+        var hasEmail =
+          firstNonEmpty(
+            qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+            qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+            ""
+          ) !== "";
+
+        var hasName =
+          firstNonEmpty(
+            qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+            qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value,
+            ""
+          ) !== "";
+
+        var hasInitial =
+          firstNonEmpty(
+            qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
+            ""
+          ) !== "";
+
+        if (hasEmail || hasName || hasInitial) return;
+      }
+
+      await new Promise(function (resolve) {
+        setTimeout(resolve, wait);
+      });
+
+      left -= 1;
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", async function () {
     observePage();
     await bootProfileRender(12, 250);
