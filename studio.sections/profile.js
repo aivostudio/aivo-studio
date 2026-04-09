@@ -448,21 +448,30 @@
     return !!(hasEmail && hasName && hasInitial);
   }
 
-  function observePage() {
-    if (window.__aivoProfileSectionObserverBound) return;
-    window.__aivoProfileSectionObserverBound = true;
+function observePage() {
+  if (window.__aivoProfileSectionObserverBound) return;
+  window.__aivoProfileSectionObserverBound = true;
 
-    var mo = new MutationObserver(async function () {
+  var lastActivePage = document.body.getAttribute("data-active-page") || "";
+
+  var mo = new MutationObserver(async function () {
+    var nextActivePage = document.body.getAttribute("data-active-page") || "";
+    if (nextActivePage === lastActivePage) return;
+
+    lastActivePage = nextActivePage;
+
+    if (nextActivePage === "profile") {
       await renderProfileNow();
-    });
+    }
+  });
 
-    mo.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["data-active-page", "class", "style"]
-    });
-  }
+  mo.observe(document.body, {
+    subtree: false,
+    childList: false,
+    attributes: true,
+    attributeFilter: ["data-active-page"]
+  });
+}
 
   async function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
