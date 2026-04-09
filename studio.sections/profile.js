@@ -310,7 +310,7 @@
         detail: {
           name: firstName || "",
           surname: lastName || "",
-          fullName: fullName,
+          fullName: resolvedFullName,
           email: email || ""
         }
       }));
