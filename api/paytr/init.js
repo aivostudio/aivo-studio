@@ -106,6 +106,31 @@ function normEmail(v) {
   // Sipariş ID: benzersiz
   const merchant_oid = `AIVO_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
+    const normalizedEmail = normEmail(email);
+  const creditsMap = {
+    "199": 50,
+    "399": 120,
+    "899": 300,
+    "2999": 1200
+  };
+
+  const credits =
+    Number(body.credits) > 0
+      ? Number(body.credits)
+      : (creditsMap[String(amountTl)] || 0);
+
+  await kvSetJson(`aivo:order_init:${merchant_oid}`, {
+    oid: merchant_oid,
+    email: normalizedEmail,
+    user_id: user_id,
+    plan: plan,
+    amount: Number(amountTl),
+    credits: credits,
+    provider: "paytr",
+    status: "init",
+    created_at: new Date().toISOString()
+  }, { exSec: 60 * 60 * 24 });
+
   // Sepet: PayTR "user_basket" base64(JSON)
   // Örnek: [["Standart Paket", "399.00", 1]]
   const basket = [[plan, (payment_amount / 100).toFixed(2), 1]];
