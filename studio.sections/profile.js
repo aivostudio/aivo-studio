@@ -34,13 +34,13 @@
     var pages = qsa('.page-profile[data-page="profile"]');
     for (var i = 0; i < pages.length; i++) {
       var page = pages[i];
-      if (page && page.isConnected && page.offsetParent !== null) return page;
+      if (page && page.isConnected) return page;
     }
 
     var fallbackPages = qsa('[data-page="profile"]');
     for (var j = 0; j < fallbackPages.length; j++) {
       var fallbackPage = fallbackPages[j];
-      if (fallbackPage && fallbackPage.isConnected && fallbackPage.offsetParent !== null) return fallbackPage;
+      if (fallbackPage && fallbackPage.isConnected) return fallbackPage;
     }
 
     return null;
