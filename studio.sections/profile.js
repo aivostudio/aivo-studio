@@ -75,23 +75,35 @@
     var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
     var cachedSurname = (safeGetLS("aivo_profile_surname") || "").trim();
 
+    var inputNameNow = firstNonEmpty(
+      qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
+    );
+
+    var inputSurnameNow = firstNonEmpty(
+      qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value
+    );
+
+    var inputEmailNow = firstNonEmpty(
+      qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value
+    );
+
     var name = firstNonEmpty(
-      qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value,
-      cachedName,
+      inputNameNow,
       auth.first_name,
       auth.name,
       auth.full_name,
       auth.fullName,
       auth.username,
-      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent
+      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+      cachedName
     );
 
     var surname = firstNonEmpty(
-      qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value,
-      cachedSurname,
+      inputSurnameNow,
       auth.surname,
       auth.last_name,
-      auth.lastName
+      auth.lastName,
+      cachedSurname
     );
 
     var fullName = name || "Kullanıcı";
@@ -100,8 +112,8 @@
     }
 
     var email = firstNonEmpty(
+      inputEmailNow,
       auth.email,
-      qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
       qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
       "—"
     );
