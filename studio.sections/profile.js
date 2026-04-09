@@ -214,110 +214,130 @@
       inputEmail: inputEmailEl ? inputEmailEl.value : null
     });
   }
+async function hydrateProfileFromApi() {
+  var page = getProfilePage();
+  if (!page) return false;
 
-  async function hydrateProfileFromApi() {
-    var page = getProfilePage();
-    if (!page) return;
+  var nowTs = Date.now();
 
-    try {
-      var res = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache: "no-store"
-      });
-
-      if (!res.ok) return;
-
-      var me = await res.json();
-      if (!me) return;
-
-      var email = firstNonEmpty(
-        me.email,
-        me.user && me.user.email,
-        ""
-      );
-
-      var firstName = firstNonEmpty(
-        me.first_name,
-        me.firstName,
-        me.name,
-        me.full_name,
-        me.fullName,
-        me.user && me.user.first_name,
-        me.user && me.user.firstName,
-        me.user && me.user.name,
-        ""
-      );
-
-      var lastName = firstNonEmpty(
-        me.last_name,
-        me.lastName,
-        me.surname,
-        me.user && me.user.last_name,
-        me.user && me.user.lastName,
-        me.user && me.user.surname,
-        ""
-      );
-
-      if (!email && !firstName && !lastName) return;
-
-         var emailName = "";
-      if (email && String(email).indexOf("@") !== -1) {
-        emailName = String(email).split("@")[0].trim();
-      }
-
-      var resolvedName = firstNonEmpty(
-        firstName,
-        emailName,
-        "Kullanıcı"
-      );
-
-      var resolvedSurname = firstNonEmpty(
-        lastName,
-        ""
-      );
-
-      var resolvedFullName = firstNonEmpty(
-        (resolvedName && resolvedSurname) ? (resolvedName + " " + resolvedSurname) : "",
-        resolvedName,
-        "Kullanıcı"
-      );
-
-      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
-        loggedIn: true,
-        email: email || "",
-        name: resolvedName,
-        full_name: resolvedFullName,
-        first_name: resolvedName,
-        last_name: resolvedSurname,
-        surname: resolvedSurname,
-        ts: Date.now()
-      }));
-
-      safeSetLS("aivo_profile_name", resolvedName);
-      safeSetLS("aivo_profile_surname", resolvedSurname);
-
-      var initial = resolvedFullName.charAt(0).toUpperCase();
-
-      value(qs("[data-profile-input-name]", page), firstName || "");
-      value(qs("[data-profile-input-surname]", page), lastName || "");
-      value(qs("[data-profile-input-email]", page), email || "");
-
-      text(qs("[data-profile-name]", page), resolvedFullName);
-      text(qs("[data-profile-email]", page), email || "—");
-      text(qs("[data-profile-initial]", page), initial);
-
-      document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
-        detail: {
-          name: firstName || "",
-          surname: lastName || "",
-          fullName: fullName,
-          email: email || ""
-        }
-      }));
-    } catch (err) {
-      console.warn("[profile.section] hydrateProfileFromApi failed", err);
-    }
+  if (window.__aivoProfileHydrateInFlight) {
+    return false;
   }
+
+  if (
+    window.__aivoProfileHydrateLastTs &&
+    (nowTs - window.__aivoProfileHydrateLastTs) < 1500
+  ) {
+    return false;
+  }
+
+  window.__aivoProfileHydrateInFlight = true;
+  window.__aivoProfileHydrateLastTs = nowTs;
+
+  try {
+    var res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    if (!res.ok) return false;
+
+    var me = await res.json();
+    if (!me) return false;
+
+    var email = firstNonEmpty(
+      me.email,
+      me.user && me.user.email,
+      ""
+    );
+
+    var firstName = firstNonEmpty(
+      me.first_name,
+      me.firstName,
+      me.name,
+      me.full_name,
+      me.fullName,
+      me.user && me.user.first_name,
+      me.user && me.user.firstName,
+      me.user && me.user.name,
+      ""
+    );
+
+    var lastName = firstNonEmpty(
+      me.last_name,
+      me.lastName,
+      me.surname,
+      me.user && me.user.last_name,
+      me.user && me.user.lastName,
+      me.user && me.user.surname,
+      ""
+    );
+
+    if (!email && !firstName && !lastName) return false;
+
+    var emailName = "";
+    if (email && String(email).indexOf("@") !== -1) {
+      emailName = String(email).split("@")[0].trim();
+    }
+
+    var resolvedName = firstNonEmpty(
+      firstName,
+      emailName,
+      "Kullanıcı"
+    );
+
+    var resolvedSurname = firstNonEmpty(
+      lastName,
+      ""
+    );
+
+    var resolvedFullName = firstNonEmpty(
+      (resolvedName && resolvedSurname) ? (resolvedName + " " + resolvedSurname) : "",
+      resolvedName,
+      "Kullanıcı"
+    );
+
+    safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+      loggedIn: true,
+      email: email || "",
+      name: resolvedName,
+      full_name: resolvedFullName,
+      first_name: resolvedName,
+      last_name: resolvedSurname,
+      surname: resolvedSurname,
+      ts: Date.now()
+    }));
+
+    safeSetLS("aivo_profile_name", resolvedName);
+    safeSetLS("aivo_profile_surname", resolvedSurname);
+
+    var initial = resolvedFullName.charAt(0).toUpperCase();
+
+    value(qs("[data-profile-input-name]", page), firstName || "");
+    value(qs("[data-profile-input-surname]", page), lastName || "");
+    value(qs("[data-profile-input-email]", page), email || "");
+
+    text(qs("[data-profile-name]", page), resolvedFullName);
+    text(qs("[data-profile-email]", page), email || "—");
+    text(qs("[data-profile-initial]", page), initial);
+
+    document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
+      detail: {
+        name: resolvedName || "",
+        surname: resolvedSurname || "",
+        fullName: resolvedFullName,
+        email: email || ""
+      }
+    }));
+
+    return true;
+  } catch (err) {
+    console.warn("[profile.section] hydrateProfileFromApi failed", err);
+    return false;
+  } finally {
+    window.__aivoProfileHydrateInFlight = false;
+  }
+}
 
   function bindSave() {
     var page = getProfilePage();
