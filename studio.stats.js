@@ -75,17 +75,19 @@
 
     return s;
   }
+  var stats = empty();
 
-  var stats = loadStats();
-  function persist(){
-    var keys = getKeys();
-    stats.updatedAt = now();
-    var json = JSON.stringify(stats);
-    saveRaw(keys.KEY, json);
-    saveRaw(keys.BK,  json);
-    persistStatsToDB();
+  function saveStatsCache(){
+    try{
+      var keys = getKeys();
+      stats.updatedAt = now();
+      var json = JSON.stringify(stats);
+      saveRaw(keys.KEY, json);
+      saveRaw(keys.BK, json);
+    }catch(e){}
   }
-     async function hydrateStatsFromDB(){
+
+  async function hydrateStatsFromDB(){
     try{
       var r = await fetch("/api/profile-stats/get", {
         method: "GET",
@@ -97,7 +99,12 @@
       });
 
       var j = await r.json().catch(function(){ return null; });
-      if (!r.ok || !j || j.ok === false || !j.stats) return;
+      if (!r.ok || !j || j.ok === false || !j.stats) {
+        stats = empty();
+        saveStatsCache();
+        paint();
+        return;
+      }
 
       var incoming = j.stats || {};
 
@@ -114,42 +121,16 @@
       stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
       stats.updatedAt = clampInt(incoming.updatedAt || now());
 
-      persist();
+      saveStatsCache();
       paint();
     }catch(e){
       console.warn("[AIVO_STATS][DB_HYDRATE][ERROR]", e);
+      stats = empty();
+      saveStatsCache();
+      paint();
     }
   }
-     async function persistStatsToDB(){
-    try{
-      await fetch("/api/profile-stats/upsert", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json",
-          "accept": "application/json"
-        },
-        body: JSON.stringify({
-          stats: {
-            music: clampInt(stats.music),
-            cover: clampInt(stats.cover),
-            atmo: clampInt(stats.atmo),
-            cartoon: clampInt(stats.cartoon),
-            photofx: clampInt(stats.photofx),
-            imageToVideo: clampInt(stats.imageToVideo),
-            video: clampInt(stats.video),
-            spent: clampInt(stats.spent),
-            total: (stats.total == null ? null : clampInt(stats.total)),
-            lastCredits: (stats.lastCredits == null ? null : clampInt(stats.lastCredits)),
-            seen: (stats.seen && typeof stats.seen === "object") ? stats.seen : {},
-            updatedAt: clampInt(stats.updatedAt || now())
-          }
-        })
-      });
-    }catch(e){
-      console.warn("[AIVO_STATS][DB_PERSIST][ERROR]", e);
-    }
-  }
+
   window.addEventListener("aivo:profile-stats-updated", function(ev){
     try{
       var detail = (ev && ev.detail) || {};
@@ -163,7 +144,7 @@
       var incoming = detail.stats;
       if (!incoming || typeof incoming !== "object") return;
 
-         stats.music = clampInt(incoming.music);
+      stats.music = clampInt(incoming.music);
       stats.cover = clampInt(incoming.cover);
       stats.atmo = clampInt(incoming.atmo);
       stats.cartoon = clampInt(incoming.cartoon);
@@ -173,10 +154,10 @@
       stats.spent = clampInt(incoming.spent);
       stats.total = (incoming.total == null ? stats.total : clampInt(incoming.total));
       stats.lastCredits = (incoming.lastCredits == null ? stats.lastCredits : clampInt(incoming.lastCredits));
-      stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : (stats.seen || {});
+      stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
       stats.updatedAt = clampInt(incoming.updatedAt || now());
 
-      persist();
+      saveStatsCache();
       paint();
     }catch(e){}
   });
@@ -542,29 +523,18 @@ wrap("addCredits");
   }
 
   function boot(){
-    persist(); paint();
-     hydrateStatsFromDB();
+    stats = empty();
+    paint();
+    hydrateStatsFromDB();
+
     if (!window.__AIVO_STATS_POLL_V14__){
       window.__AIVO_STATS_POLL_V14__ = true;
       setInterval(function(){
         try{
-            patchStore();
-          patchJobs();
-          patchGenBridge();
-          bindDirectJobEvents();
-
-          var c = readCredits();
-          if (c != null){
-            stats.total = c;
-            if (stats.lastCredits == null) stats.lastCredits = c;
-            persist();
-          }
           paint();
         }catch(e){}
       }, 600);
     }
-
-    window.addEventListener("beforeunload", function(){ try{persist();}catch(e){} });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
