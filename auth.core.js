@@ -340,7 +340,7 @@ if (!kvkk) {
       try { await res.json(); } catch (_) {}
 
       // auth + redirect intentlerini TAM temizle (credits/jobs vs. dokunma)
-        const lsKeysToDelete = [
+      const lsKeysToDelete = [
         "aivo_logged_in",
         "aivo_user",
         "aivo_user_email",
@@ -350,7 +350,6 @@ if (!kvkk) {
         "auth_token",
         "aivo_auth",
         "aivo_auth_v1",
-        "aivo_auth_unified_v1",
         "aivo_user_v1",
         "aivo_session_v1",
         "aivo_after_login",
@@ -571,4 +570,3 @@ if (!kvkk) {
     }
   }, true);
 })();
-
