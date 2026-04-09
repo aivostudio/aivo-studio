@@ -542,29 +542,43 @@ wrap("addCredits");
   }
 
   function boot(){
-    persist(); paint();
-     hydrateStatsFromDB();
+    paint();
+    hydrateStatsFromDB();
+
     if (!window.__AIVO_STATS_POLL_V14__){
       window.__AIVO_STATS_POLL_V14__ = true;
       setInterval(function(){
         try{
-            patchStore();
+          patchStore();
           patchJobs();
           patchGenBridge();
           bindDirectJobEvents();
 
           var c = readCredits();
           if (c != null){
-            stats.total = c;
-            if (stats.lastCredits == null) stats.lastCredits = c;
-            persist();
+            var changed = false;
+
+            if (stats.total !== c){
+              stats.total = c;
+              changed = true;
+            }
+
+            if (stats.lastCredits == null){
+              stats.lastCredits = c;
+              changed = true;
+            }
+
+            if (changed) persist();
           }
+
           paint();
         }catch(e){}
       }, 600);
     }
 
-    window.addEventListener("beforeunload", function(){ try{persist();}catch(e){} });
+    window.addEventListener("beforeunload", function(){
+      try{ persist(); }catch(e){}
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
