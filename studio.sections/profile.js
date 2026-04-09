@@ -406,68 +406,125 @@ async function hydrateProfileFromApi() {
       }
     });
   }
-  async function renderProfileNow() {
-    var page = getProfilePage();
-    if (!page) return false;
+async function renderProfileNow() {
+  var page = getProfilePage();
+  if (!page) return false;
 
+  bindSave();
+
+  var auth = readJSON("aivo_auth_unified_v1");
+  var cachedEmail = firstNonEmpty(
+    qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+    auth.email,
+    qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+    ""
+  );
+
+  var cachedName = firstNonEmpty(
+    qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+    auth.full_name,
+    auth.name,
+    auth.first_name,
+    safeGetLS("aivo_profile_name"),
+    ""
+  );
+
+  if (isProfileActive()) {
+    applyProfile();
+  } else {
+    var initialEl = qs("[data-profile-initial]", page);
+    var nameEl = qs("[data-profile-name]", page);
+    var emailEl = qs("[data-profile-email]", page);
+
+    if (cachedEmail) {
+      value(qs("[data-profile-input-email]", page), cachedEmail);
+      text(emailEl, cachedEmail);
+    }
+
+    if (cachedName) {
+      text(nameEl, cachedName);
+      text(initialEl, cachedName.charAt(0).toUpperCase());
+    }
+  }
+
+  var hasEmailBeforeHydrate =
+    firstNonEmpty(
+      qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+      qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+      ""
+    ) !== "";
+
+  var hasNameBeforeHydrate =
+    firstNonEmpty(
+      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+      ""
+    ) !== "";
+
+  var hasInitialBeforeHydrate =
+    firstNonEmpty(
+      qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
+      ""
+    ) !== "";
+
+  if (!(hasEmailBeforeHydrate && hasNameBeforeHydrate && hasInitialBeforeHydrate)) {
     await hydrateProfileFromApi();
-    bindSave();
 
     if (isProfileActive()) {
       applyProfile();
     } else {
-      var initialEl = qs("[data-profile-initial]", page);
-      var nameEl = qs("[data-profile-name]", page);
-      var emailEl = qs("[data-profile-email]", page);
+      var initialEl2 = qs("[data-profile-initial]", page);
+      var nameEl2 = qs("[data-profile-name]", page);
+      var emailEl2 = qs("[data-profile-email]", page);
 
-      var auth = readJSON("aivo_auth_unified_v1");
-      var email = firstNonEmpty(
+      var auth2 = readJSON("aivo_auth_unified_v1");
+      var email2 = firstNonEmpty(
         qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-        auth.email,
+        auth2.email,
         ""
       );
 
-      var name = firstNonEmpty(
+      var name2 = firstNonEmpty(
         qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
-        auth.full_name,
-        auth.name,
-        auth.first_name,
+        auth2.full_name,
+        auth2.name,
+        auth2.first_name,
+        safeGetLS("aivo_profile_name"),
         ""
       );
 
-      if (email) {
-        value(qs("[data-profile-input-email]", page), email);
-        text(emailEl, email);
+      if (email2) {
+        value(qs("[data-profile-input-email]", page), email2);
+        text(emailEl2, email2);
       }
 
-      if (name) {
-        text(nameEl, name);
-        text(initialEl, name.charAt(0).toUpperCase());
+      if (name2) {
+        text(nameEl2, name2);
+        text(initialEl2, name2.charAt(0).toUpperCase());
       }
     }
-
-    var hasEmail =
-      firstNonEmpty(
-        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-        ""
-      ) !== "";
-
-    var hasName =
-      firstNonEmpty(
-        qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
-        ""
-      ) !== "";
-
-    var hasInitial =
-      firstNonEmpty(
-        qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
-        ""
-      ) !== "";
-
-    return !!(hasEmail && hasName && hasInitial);
   }
 
+  var hasEmail =
+    firstNonEmpty(
+      qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+      qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+      ""
+    ) !== "";
+
+  var hasName =
+    firstNonEmpty(
+      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+      ""
+    ) !== "";
+
+  var hasInitial =
+    firstNonEmpty(
+      qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
+      ""
+    ) !== "";
+
+  return !!(hasEmail && hasName && hasInitial);
+}
 function observePage() {
   if (window.__aivoProfileSectionObserverBound) return;
   window.__aivoProfileSectionObserverBound = true;
