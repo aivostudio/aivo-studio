@@ -95,15 +95,28 @@
         return;
       }
     } catch (_) {}
+// -------------------------------------------------
+// 3) STORE HAZIR MI?
+// -------------------------------------------------
+function waitForStoreReady(maxWaitMs) {
+  return new Promise(function(resolve) {
+    var started = Date.now();
 
-    // -------------------------------------------------
-    // 3) STORE HAZIR MI?
-    // -------------------------------------------------
-    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
-      // Store henüz yüklenmemiş olabilir → sessizce çık
-      return;
+    function check() {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.applyPurchase === "function") {
+        return resolve(true);
+      }
+
+      if (Date.now() - started >= maxWaitMs) {
+        return resolve(false);
+      }
+
+      setTimeout(check, 50);
     }
 
+    check();
+  });
+}
     // -------------------------------------------------
     // 4) VERIFY SESSION (POST -> GET fallback)
     // -------------------------------------------------
