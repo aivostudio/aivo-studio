@@ -13,8 +13,7 @@
   const started = Date.now();
 
   const byId = (id) => document.getElementById(id);
-
-  const q = (sel, root=document) => root.querySelector(sel);
+  const q = (sel, root = document) => root.querySelector(sel);
 
   const safeMsg = (x) => {
     if (x == null) return "";
@@ -28,7 +27,84 @@
   const isValidEmail = (email) =>
     !!email && email.includes("@") && email.includes(".") && email.length >= 6;
 
-  async function postJSON(url, body){
+  function normalizeEmail(email) {
+    return String(email || "").trim().toLowerCase();
+  }
+
+  function firstNonEmpty() {
+    for (let i = 0; i < arguments.length; i++) {
+      const v = arguments[i];
+      if (v != null && String(v).trim()) return String(v).trim();
+    }
+    return "";
+  }
+
+  function emailToName(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized || normalized.indexOf("@") === -1) return "";
+    return normalized.split("@")[0].trim();
+  }
+
+  function safeLSRemove(key) {
+    try { localStorage.removeItem(key); } catch (_) {}
+  }
+
+  function safeLSSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (_) {}
+  }
+
+  function getScopedProfileKey(baseKey, email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return baseKey;
+    return `${baseKey}:${normalized}`;
+  }
+
+  function writeUnifiedAuthFromLogin(payloadEmail, payloadName, payloadSurname) {
+    const email = normalizeEmail(payloadEmail);
+    const firstName = firstNonEmpty(payloadName, emailToName(email), "Kullanıcı");
+    const surname = firstNonEmpty(payloadSurname, "");
+    const fullName = firstNonEmpty(
+      firstName && surname ? `${firstName} ${surname}` : "",
+      firstName,
+      "Kullanıcı"
+    );
+
+    safeLSSet("aivo_auth_unified_v1", JSON.stringify({
+      loggedIn: true,
+      email: email,
+      name: firstName,
+      full_name: fullName,
+      first_name: firstName,
+      last_name: surname,
+      surname: surname,
+      ts: Date.now()
+    }));
+
+    safeLSSet("aivo_profile_name", "");
+    safeLSSet("aivo_profile_surname", "");
+    safeLSSet(getScopedProfileKey("aivo_profile_name", email), firstName);
+    safeLSSet(getScopedProfileKey("aivo_profile_surname", email), surname);
+  }
+
+  function clearUnifiedAuthState() {
+    const currentUnified = (() => {
+      try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
+      catch (_) { return {}; }
+    })();
+
+    const currentEmail = normalizeEmail(currentUnified && currentUnified.email);
+
+    safeLSRemove("aivo_auth_unified_v1");
+    safeLSRemove("aivo_profile_name");
+    safeLSRemove("aivo_profile_surname");
+
+    if (currentEmail) {
+      safeLSRemove(getScopedProfileKey("aivo_profile_name", currentEmail));
+      safeLSRemove(getScopedProfileKey("aivo_profile_surname", currentEmail));
+    }
+  }
+
+  async function postJSON(url, body) {
     const res = await fetch(url, {
       method: "POST",
       credentials: "include",
@@ -42,8 +118,7 @@
     return { res, text, data };
   }
 
-  // Modal’i her yerde aynı şekilde bul (id/class toleransı)
-  function getModal(){
+  function getModal() {
     return (
       byId("loginModal") ||
       byId("login-modal") ||
@@ -53,23 +128,30 @@
     );
   }
 
-  function getSubmitBtn(){
+  function getSubmitBtn() {
     return byId("btnAuthSubmit") || q("#btnAuthSubmit") || null;
   }
 
-  function setMode(modal, mode){
+  function setMode(modal, mode) {
     if (!modal) return;
     modal.setAttribute("data-mode", mode);
   }
 
-  function applyModeUI(modal){
+  function applyModeUI(modal) {
     if (!modal) return;
 
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
     const isReg = mode === "register";
 
-    const show = (id, on) => { const el = byId(id); if (el) el.style.display = on ? "" : "none"; };
-    const setText = (id, txt) => { const el = byId(id); if (el) el.textContent = txt; };
+    const show = (id, on) => {
+      const el = byId(id);
+      if (el) el.style.display = on ? "" : "none";
+    };
+
+    const setText = (id, txt) => {
+      const el = byId(id);
+      if (el) el.textContent = txt;
+    };
 
     setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
     setText(
@@ -79,19 +161,19 @@
         : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
     );
 
-    show("registerName",  isReg);
+    show("registerName", isReg);
     show("registerPass2", isReg);
-    show("kvkkRow",       isReg);
+    show("kvkkRow", isReg);
 
-    show("googleBlock",   !isReg);
-    show("loginMeta",     !isReg);
-    show("registerMeta",  isReg);
+    show("googleBlock", !isReg);
+    show("loginMeta", !isReg);
+    show("registerMeta", isReg);
 
     const btn = getSubmitBtn();
     if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
   }
 
-  function openModal(mode){
+  function openModal(mode) {
     const modal = getModal();
     if (!modal) return;
 
@@ -103,7 +185,7 @@
     modal.setAttribute("aria-hidden", "false");
   }
 
-  function closeModal(){
+  function closeModal() {
     const modal = getModal();
     if (!modal) return;
 
@@ -115,18 +197,17 @@
         modal.style.display = "none";
         modal.setAttribute("aria-hidden", "true");
       }
-    } catch(_){}
+    } catch (_) {}
   }
 
-  function setBusy(btn, busy, text){
+  function setBusy(btn, busy, text) {
     if (!btn) return;
-    // NOTE: disable kalabilir ama click’i biz capture phase’de yakaladığımız için sorun yaşamaz.
     btn.disabled = !!busy;
     if (text != null) btn.textContent = text;
   }
 
-  function waitForModalReady(cb){
-    (function tick(){
+  function waitForModalReady(cb) {
+    (function tick() {
       const btn = getSubmitBtn();
       const modal = getModal() || btn?.closest?.(".login-modal") || null;
 
@@ -137,51 +218,48 @@
     })();
   }
 
-  // --------- SUBMIT handler (Login/Register) ----------
-  async function handleSubmit(){
+  async function handleSubmit() {
     const modal = getModal();
-    const btn   = getSubmitBtn();
+    const btn = getSubmitBtn();
     if (!modal || !btn) return;
 
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
     const isReg = mode === "register";
 
-    const v  = (id) => (byId(id)?.value || "").trim();
+    const v = (id) => (byId(id)?.value || "").trim();
     const on = (id) => !!byId(id)?.checked;
 
-    // REGISTER
-    if (isReg){
+    if (isReg) {
       const email = v("loginEmail").toLowerCase();
-      const pass  = v("loginPass");
-      const name  = v("registerName");
+      const pass = v("loginPass");
+      const name = v("registerName");
       const pass2 = v("registerPass2");
-      const kvkk  = on("kvkkCheck");
+      const kvkk = on("kvkkCheck");
 
-     if (!isValidEmail(email)) {
-  window.toast.error("Geçerli bir email gir.");
-  return;
-}
+      if (!isValidEmail(email)) {
+        window.toast.error("Geçerli bir email gir.");
+        return;
+      }
 
-if (!name) {
-  window.toast.error("Ad Soyad gir.");
-  return;
-}
+      if (!name) {
+        window.toast.error("Ad Soyad gir.");
+        return;
+      }
 
-if (!pass || pass.length < 6) {
-  window.toast.error("Şifre en az 6 karakter olmalı.");
-  return;
-}
+      if (!pass || pass.length < 6) {
+        window.toast.error("Şifre en az 6 karakter olmalı.");
+        return;
+      }
 
-if (pass !== pass2) {
-  window.toast.error("Şifreler aynı değil.");
-  return;
-}
+      if (pass !== pass2) {
+        window.toast.error("Şifreler aynı değil.");
+        return;
+      }
 
-if (!kvkk) {
-  window.toast.warning("KVKK ve şartları kabul etmelisin.");
-  return;
-}
-
+      if (!kvkk) {
+        window.toast.warning("KVKK ve şartları kabul etmelisin.");
+        return;
+      }
 
       const old = btn.textContent;
       setBusy(btn, true, "Hesap oluşturuluyor...");
@@ -189,31 +267,37 @@ if (!kvkk) {
       try {
         const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
 
-        if (!res.ok || data?.ok === false){
-          try{ if(window.toast) toast.error("Kayıt başarısız", safeMsg(data?.error || data?.message || text || "Kayıt başarısız.")); }catch(_){} 
+        if (!res.ok || data?.ok === false) {
+          try {
+            if (window.toast) toast.error("Kayıt başarısız", safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+          } catch (_) {}
           return;
         }
 
-        try{ if(window.toast) toast.success("Kayıt başarılı","Doğrulama için e-postanı kontrol et. (Spam’i de kontrol et)"); }catch(_){} 
+        try {
+          if (window.toast) toast.success("Kayıt başarılı", "Doğrulama için e-postanı kontrol et. (Spam’i de kontrol et)");
+        } catch (_) {}
 
         setMode(modal, "login");
         applyModeUI(modal);
-
-      } catch (err){
+      } catch (err) {
         console.error("AIVO_LOGIN_FETCH_FAIL:", err);
-        try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
+        try {
+          if (window.toast) toast.error("Bağlantı hatası", "Tekrar dene.");
+        } catch (_) {}
       } finally {
         setBusy(btn, false, old || "Hesap Oluştur");
       }
       return;
     }
 
-    // LOGIN
     const email = v("loginEmail").toLowerCase();
-    const pass  = v("loginPass");
+    const pass = v("loginPass");
 
-    if (!isValidEmail(email) || !pass){
-      try{ if(window.toast) toast.error("Eksik bilgi","E-posta ve şifre gir."); }catch(_){} 
+    if (!isValidEmail(email) || !pass) {
+      try {
+        if (window.toast) toast.error("Eksik bilgi", "E-posta ve şifre gir.");
+      } catch (_) {}
       return;
     }
 
@@ -223,24 +307,54 @@ if (!kvkk) {
     try {
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
 
-      if (!res.ok || data?.ok === false){
-        try{ if(window.toast) toast.error("Giriş başarısız", safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı.")); }catch(_){} 
+      if (!res.ok || data?.ok === false) {
+        try {
+          if (window.toast) toast.error("Giriş başarısız", safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı."));
+        } catch (_) {}
         return;
       }
 
-      // ✅ LOGIN SUCCESS — URL TOAST (storage'siz kesin çözüm)
-      try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
-      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
-      if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
+      const resolvedEmail = normalizeEmail(
+        firstNonEmpty(
+          data?.user?.email,
+          data?.email,
+          email
+        )
+      );
+
+      const resolvedName = firstNonEmpty(
+        data?.user?.first_name,
+        data?.user?.firstName,
+        data?.user?.name,
+        data?.name,
+        emailToName(resolvedEmail)
+      );
+
+      const resolvedSurname = firstNonEmpty(
+        data?.user?.last_name,
+        data?.user?.lastName,
+        data?.user?.surname,
+        data?.surname,
+        ""
+      );
+
+      safeLSSet("aivo_logged_in", "1");
+      safeLSSet("aivo_user_email", resolvedEmail || email);
+      if (data?.token) safeLSSet("aivo_token", data.token);
+
+      writeUnifiedAuthFromLogin(resolvedEmail || email, resolvedName, resolvedSurname);
 
       try {
         if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-        else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
+        else {
+          modal.classList.remove("is-open");
+          modal.setAttribute("aria-hidden", "true");
+        }
       } catch (_) {}
 
-    let after = "/studio.v2.html";
+      let after = "/studio.v2.html";
       try {
-       after = sessionStorage.getItem("aivo_after_login") || "/studio.v2.html";
+        after = sessionStorage.getItem("aivo_after_login") || "/studio.v2.html";
         sessionStorage.removeItem("aivo_after_login");
       } catch (_) {}
 
@@ -248,31 +362,32 @@ if (!kvkk) {
       const sep = String(after).includes("?") ? "&" : "?";
       window.location.href = `${after}${sep}tf=success&tm=${msg}`;
       return;
-
-    } catch (_){
-      try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
+    } catch (_) {
+      try {
+        if (window.toast) toast.error("Bağlantı hatası", "Tekrar dene.");
+      } catch (_) {}
     } finally {
       setBusy(btn, false, old || "Giriş Yap");
     }
   }
 
-  // --------- GLOBAL CLICK CAPTURE (üst üste JS olsa bile yakalar) ----------
-  document.addEventListener("click", function(e){
+  document.addEventListener("click", function (e) {
     const t = e.target;
 
-    // Topbar: Giriş Yap / Kayıt Ol
     if (t?.closest?.("#btnLoginTop")) {
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
       openModal("login");
       return;
     }
+
     if (t?.closest?.("#btnRegisterTop")) {
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
       openModal("register");
       return;
     }
 
-    // Modal submit
     if (t?.closest?.("#btnAuthSubmit")) {
       e.preventDefault();
       e.stopPropagation();
@@ -281,37 +396,46 @@ if (!kvkk) {
       return;
     }
 
-    // Modal kapat (X) — toleranslı
     if (t?.closest?.(".login-modal .close, .login-modal [data-close], .login-modal .x, .login-modal .btn-close")) {
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
       closeModal();
       return;
     }
   }, true);
 
-  // Modal hazır olunca UI senkron
   waitForModalReady((modal) => {
     applyModeUI(modal);
 
-    if (!modal.__aivoModeObs){
+    if (!modal.__aivoModeObs) {
       modal.__aivoModeObs = true;
       try {
         const obs = new MutationObserver(() => applyModeUI(modal));
-        obs.observe(modal, { attributes:true, attributeFilter:["data-mode"] });
-      } catch(_){}
+        obs.observe(modal, { attributes: true, attributeFilter: ["data-mode"] });
+      } catch (_) {}
     }
   });
-
 })();
-// ===============================
-// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
-// Trigger: [data-action="logout"]
-// Action : POST /api/auth/logout -> cleanup -> redirect
-// Notes  : only LEFT click, ignore right-click/inspect, reduce false hits
-// ===============================
+
+/* ===============================
+   AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
+   Trigger: [data-action="logout"]
+   Action : POST /api/auth/logout -> cleanup -> redirect
+   Notes  : only LEFT click, ignore right-click/inspect, reduce false hits
+   =============================== */
 (function initSingleAuthorityLogout() {
   if (window.__AIVO_LOGOUT_INIT__) return;
   window.__AIVO_LOGOUT_INIT__ = true;
+
+  function normalizeEmail(email) {
+    return String(email || "").trim().toLowerCase();
+  }
+
+  function getScopedProfileKey(baseKey, email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return baseKey;
+    return `${baseKey}:${normalized}`;
+  }
 
   function isVisible(el) {
     try {
@@ -321,7 +445,7 @@ if (!kvkk) {
       if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") return false;
       return true;
     } catch (_) {
-      return true; // fail-open
+      return true;
     }
   }
 
@@ -329,17 +453,23 @@ if (!kvkk) {
     if (doLogout.__busy) return;
     doLogout.__busy = true;
 
+    const currentUnified = (() => {
+      try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
+      catch (_) { return {}; }
+    })();
+
+    const currentEmail = normalizeEmail(currentUnified && currentUnified.email);
+
     try {
       const res = await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        cache: "no-store",
+        cache: "no-store"
       });
 
       try { await res.json(); } catch (_) {}
 
-      // auth + redirect intentlerini TAM temizle (credits/jobs vs. dokunma)
       const lsKeysToDelete = [
         "aivo_logged_in",
         "aivo_user",
@@ -362,8 +492,19 @@ if (!kvkk) {
         "aivo_intent",
         "aivo_login_state",
         "aivo_login_email",
+        "aivo_auth_unified_v1",
+        "aivo_profile_name",
+        "aivo_profile_surname"
       ];
-      lsKeysToDelete.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
+
+      lsKeysToDelete.forEach((k) => {
+        try { localStorage.removeItem(k); } catch (_) {}
+      });
+
+      if (currentEmail) {
+        try { localStorage.removeItem(getScopedProfileKey("aivo_profile_name", currentEmail)); } catch (_) {}
+        try { localStorage.removeItem(getScopedProfileKey("aivo_profile_surname", currentEmail)); } catch (_) {}
+      }
 
       const ssKeysToDelete = [
         "aivo_after_login",
@@ -373,55 +514,52 @@ if (!kvkk) {
         "aivo_intent",
         "login_redirect",
         "post_login_redirect",
-        "aivo_login_state",
+        "aivo_login_state"
       ];
-      ssKeysToDelete.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
 
-      // ✅ LOGOUT SUCCESS — URL TOAST
+      ssKeysToDelete.forEach((k) => {
+        try { sessionStorage.removeItem(k); } catch (_) {}
+      });
+
       const msg = encodeURIComponent("Çıkış yapıldı");
       const target = (redirectTo || "/");
       const sep = target.includes("?") ? "&" : "?";
       window.location.replace(`${target}${sep}tf=info&tm=${msg}`);
       return;
-
     } catch (_) {
-      try {
-        localStorage.removeItem("aivo_logged_in");
-        localStorage.removeItem("aivo_user");
-        localStorage.removeItem("aivo_token");
-        sessionStorage.removeItem("after_login_redirect");
-        sessionStorage.removeItem("return_after_login");
-        sessionStorage.removeItem("aivo_intent");
-      } catch (_) {}
+      try { localStorage.removeItem("aivo_logged_in"); } catch (_) {}
+      try { localStorage.removeItem("aivo_user"); } catch (_) {}
+      try { localStorage.removeItem("aivo_token"); } catch (_) {}
+      try { localStorage.removeItem("aivo_auth_unified_v1"); } catch (_) {}
+      try { localStorage.removeItem("aivo_profile_name"); } catch (_) {}
+      try { localStorage.removeItem("aivo_profile_surname"); } catch (_) {}
+      if (currentEmail) {
+        try { localStorage.removeItem(getScopedProfileKey("aivo_profile_name", currentEmail)); } catch (_) {}
+        try { localStorage.removeItem(getScopedProfileKey("aivo_profile_surname", currentEmail)); } catch (_) {}
+      }
+      try { sessionStorage.removeItem("after_login_redirect"); } catch (_) {}
+      try { sessionStorage.removeItem("return_after_login"); } catch (_) {}
+      try { sessionStorage.removeItem("aivo_intent"); } catch (_) {}
 
-      // ✅ LOGOUT SUCCESS — URL TOAST
       const msg = encodeURIComponent("Çıkış yapıldı");
       const target = (redirectTo || "/");
       const sep = target.includes("?") ? "&" : "?";
       window.location.replace(`${target}${sep}tf=info&tm=${msg}`);
       return;
-
     } finally {
       doLogout.__busy = false;
     }
   }
 
-  // Global delegated listener (tek otorite)
   document.addEventListener("click", (e) => {
-    // ✅ sadece SOL tık
     if (e.button !== 0) return;
-
-    // ✅ inspect / yeni sekme / ctrl+click gibi davranışları dışla
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
     const el = e.target?.closest?.('[data-action="logout"]');
     if (!el) return;
 
-    // ✅ sadece button/a hedefle (yanlış eşleşmeyi azalt)
     const tag = (el.tagName || "").toUpperCase();
     if (tag !== "BUTTON" && tag !== "A") return;
-
-    // ✅ görünür değilse tetikleme (rect 0 sorunun için koruma)
     if (!isVisible(el)) return;
 
     e.preventDefault();
@@ -431,30 +569,25 @@ if (!kvkk) {
     doLogout({ redirectTo });
   }, true);
 
-  // ✅ ekstra güvenlik: right-click contextmenu asla logout tetiklemesin
   document.addEventListener("contextmenu", () => {}, true);
 })();
-// =====================================
-// AIVO CREDITS HYDRATE — GLOBAL (ALL PAGES)
-// =====================================
+
+/* =====================================
+   AIVO CREDITS HYDRATE — GLOBAL (ALL PAGES)
+   ===================================== */
 (function initCreditsHydrateEverywhere() {
   if (window.__AIVO_CREDITS_HYDRATE__) return;
- window.__AIVO_CREDITS_HYDRATE__ = true;
-
+  window.__AIVO_CREDITS_HYDRATE__ = true;
 
   const MAX_MS = 8000;
   const started = Date.now();
 
   function paintUI(credits) {
-    // Studio
     const n1 = document.getElementById("topCreditCount");
     if (n1) n1.textContent = String(credits);
 
-    // Index/Kurumsal/Fiyatlandırma (senin ekranda görünen pill)
     const pill = document.querySelector("#topCredits .credit-pill, .credit-pill.credit-pill--static, .credit-pill");
     if (pill && !n1) {
-      // pill içinde sadece text varsa direkt bas
-      // örn: "Kredi 0" -> "Kredi 29770"
       const txt = pill.textContent || "";
       if (txt.toLowerCase().includes("kredi")) {
         pill.textContent = `Kredi ${credits}`;
@@ -465,66 +598,62 @@ if (!kvkk) {
   (function tick() {
     const store = window.AIVO_STORE_V1;
 
-    // store yoksa biraz bekle
     if (!store) {
       if (Date.now() - started < MAX_MS) return setTimeout(tick, 120);
       return;
     }
 
-    // store varsa hydrate et
     (async () => {
       try {
         const r = await fetch("/api/credits/get", {
           credentials: "include",
           cache: "no-store",
-          headers: { "Accept": "application/json" },
+          headers: { "Accept": "application/json" }
         });
 
         const j = await r.json().catch(() => null);
         if (!j?.ok || typeof j.credits !== "number") return;
 
-        // store
         if (typeof store.setCredits === "function") store.setCredits(j.credits);
 
-        // varsa kendi UI sync’i
         if (typeof store.syncCreditsUI === "function") {
           try { store.syncCreditsUI(); } catch (_) {}
         }
 
-        // her ihtimale karşı fallback UI paint
         paintUI(j.credits);
       } catch (_) {}
     })();
   })();
 })();
+
 /* =========================================================
    PRODUCTS dropdown click (GLOBAL GATE / ROUTE)
    - Pricing + Kurumsal + diğer vitrinde çalışsın
    - login yoksa modal açsın
    - login varsa studio target'a gitsin
    ========================================================= */
-(function bindProductsNav(){
+(function bindProductsNav() {
   if (window.__AIVO_PRODUCTS_NAV_GATE__) return;
   window.__AIVO_PRODUCTS_NAV_GATE__ = true;
 
-  function safeOpenLogin(){
-    try{
+  function safeOpenLogin() {
+    try {
       if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
-      if (typeof window.openAuthModal  === "function") { window.openAuthModal("login"); return; }
-      if (typeof window.openModal      === "function") { window.openModal("login"); return; }
+      if (typeof window.openAuthModal === "function") { window.openAuthModal("login"); return; }
+      if (typeof window.openModal === "function") { window.openModal("login"); return; }
       const btn = document.getElementById("btnLoginTop");
       if (btn) { btn.click(); return; }
-    }catch(_){}
+    } catch (_) {}
   }
 
-  function safeIsLoggedIn(){
-    try{
+  function safeIsLoggedIn() {
+    try {
       if (localStorage.getItem("aivo_logged_in") === "1") return true;
       if ((localStorage.getItem("aivo_user_email") || "").trim()) return true;
       if ((localStorage.getItem("aivo_token") || "").trim()) return true;
       if ((localStorage.getItem("aivo_user") || "").trim()) return true;
       return false;
-    }catch(_){
+    } catch (_) {
       return false;
     }
   }
@@ -552,12 +681,12 @@ if (!kvkk) {
     if (!isStudio && !safeIsLoggedIn()) {
       try {
         sessionStorage.setItem("aivo_after_login", "/studio.v2.html#" + encodeURIComponent(page));
-      } catch(_) {}
+      } catch (_) {}
       safeOpenLogin();
       return;
     }
 
-    try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
+    try { localStorage.setItem("aivo_product_target", product); } catch (_) {}
 
     if (!isStudio) {
       location.href = "/studio.v2.html#" + encodeURIComponent(page);
@@ -566,7 +695,7 @@ if (!kvkk) {
 
     if (typeof window.AIVO_SWITCH_PAGE === "function") {
       window.AIVO_SWITCH_PAGE(page);
-      try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
+      try { localStorage.removeItem("aivo_product_target"); } catch (_) {}
     }
   }, true);
 })();
