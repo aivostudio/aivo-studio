@@ -72,6 +72,31 @@
     const page = getProfilePage();
     const auth = readAuth();
 
+    const normalizeEmail = function (v) {
+      return String(v || "").trim().toLowerCase();
+    };
+
+    const authEmail = normalizeEmail(firstNonEmpty(auth.email, ""));
+    const pageEmail = normalizeEmail(firstNonEmpty(
+      getValue("[data-profile-input-email]", page),
+      getText("[data-profile-email]", page)
+    ));
+    const ctxEmail = normalizeEmail(firstNonEmpty(ctx && ctx.email, ""));
+
+    const activeEmail = firstNonEmpty(
+      pageEmail,
+      authEmail,
+      "—"
+    );
+
+    const ctxMatchesActive =
+      !!ctxEmail &&
+      !!activeEmail &&
+      activeEmail !== "—" &&
+      ctxEmail === activeEmail;
+
+    const safeCtx = ctxMatchesActive ? (ctx || {}) : {};
+
     const pageName = firstNonEmpty(
       getText("[data-profile-name]", page)
     );
@@ -80,42 +105,31 @@
       getValue("[data-profile-input-surname]", page)
     );
 
-    const pageEmail = firstNonEmpty(
-      getValue("[data-profile-input-email]", page),
-      getText("[data-profile-email]", page)
-    );
-
     const ctxName = firstNonEmpty(
-      ctx && ctx.fullName,
-      ctx && ctx.name
+      safeCtx.fullName,
+      safeCtx.name
     );
 
     const ctxSurname = firstNonEmpty(
-      ctx && ctx.surname
+      safeCtx.surname
     );
 
-    const authEmail = firstNonEmpty(auth.email, "");
     const authEmailName =
       authEmail && authEmail.indexOf("@") !== -1
         ? String(authEmail).split("@")[0].trim()
         : "";
 
-    const pageEmailName =
-      pageEmail && pageEmail.indexOf("@") !== -1
-        ? String(pageEmail).split("@")[0].trim()
+    const activeEmailName =
+      activeEmail && activeEmail !== "—" && activeEmail.indexOf("@") !== -1
+        ? String(activeEmail).split("@")[0].trim()
         : "";
 
-    const finalEmail = firstNonEmpty(
-      pageEmail,
-      ctx && ctx.email,
-      authEmail,
-      "—"
-    );
+    const finalEmail = activeEmail;
 
     const baseName = firstNonEmpty(
       pageName,
       ctxName,
-      pageEmailName,
+      activeEmailName,
       auth.full_name,
       auth.name,
       auth.first_name,
@@ -145,7 +159,7 @@
     const credits = String(
       firstNonEmpty(
         getText('[data-stat="totalCredits"]', page),
-        ctx && ctx.credits,
+        safeCtx.credits,
         "0"
       )
     );
@@ -153,7 +167,7 @@
     const spentCredits = String(
       firstNonEmpty(
         getText('[data-stat="spentCredits"]', page),
-        ctx && ctx.spentCredits,
+        safeCtx.spentCredits,
         "0"
       )
     );
