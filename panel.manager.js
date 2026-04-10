@@ -62,23 +62,9 @@
             <div class="rpTitle">Panel</div>
             <div class="rpMeta"></div>
           </div>
-             <div class="rpHeaderBottom">
-        <input
-          class="rpSearch"
-          id="rightPanelSearch"
-          name="panel_search"
-          data-right-panel-search="1"
-          type="search"
-          placeholder="Ara..."
-          autocomplete="off"
-          autocapitalize="off"
-          autocorrect="off"
-          spellcheck="false"
-          inputmode="search"
-          enterkeyhint="search"
-          aria-label="Panel içinde ara"
-        />
-      </div>
+          <div class="rpHeaderBottom">
+            <input class="rpSearch" type="search" placeholder="Ara..." autocomplete="off" />
+          </div>
         </div>
 
         <div class="rpBody">
