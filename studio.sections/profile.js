@@ -469,19 +469,7 @@ function observePage() {
   });
 }
 
-  var host = document.getElementById("moduleHost") || document.body;
 
-  var domMo = new MutationObserver(function () {
-    if (getProfilePage()) {
-      triggerProfileRenderSoon();
-    }
-  });
-
-  domMo.observe(host, {
-    subtree: true,
-    childList: true
-  });
-}
 
   function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
