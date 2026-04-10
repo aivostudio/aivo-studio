@@ -308,19 +308,28 @@ function bindFilters(root) {
 
   applyFilter(ACTIVE_FILTER || "all", nodes.page);
 }
-  function bindExport(root) {
+function bindExport(root) {
   var nodes = getNodes(root);
-  if (!nodes.page || !nodes.exportBtn || nodes.exportBtn.__aivoInvoicesExportBound) {
+  if (!nodes.page || nodes.page.__aivoInvoicesExportBound) {
     return;
   }
 
-  nodes.exportBtn.__aivoInvoicesExportBound = true;
+  nodes.page.__aivoInvoicesExportBound = true;
 
-  nodes.exportBtn.addEventListener("click", function (e) {
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest
+      ? e.target.closest("[data-invoices-export]")
+      : null;
+
+    if (!btn) return;
+
+    var page = getPage();
+    if (!page || !page.contains(btn)) return;
+
     e.preventDefault();
 
     var activeKey = String(ACTIVE_FILTER || "all").trim().toLowerCase();
-    var rows = qsa("[data-invoice-type]", nodes.page);
+    var rows = qsa("[data-invoice-type]", page);
 
     var visibleRows = rows.filter(function (row) {
       var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
