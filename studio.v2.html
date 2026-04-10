@@ -724,10 +724,10 @@ if (r.status === 200) {
   setOpen(false);
 })();
 </script>
-    <script>
-(function AIVO_STUDIO_NARROW_AUTOFILL_GUARD(){
-  if (window.__AIVO_STUDIO_NARROW_AUTOFILL_GUARD__) return;
-  window.__AIVO_STUDIO_NARROW_AUTOFILL_GUARD__ = true;
+<script>
+(function AIVO_STUDIO_AUTOFILL_GUARD_V2(){
+  if (window.__AIVO_STUDIO_AUTOFILL_GUARD_V2__) return;
+  window.__AIVO_STUDIO_AUTOFILL_GUARD_V2__ = true;
 
   function looksLikeEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
@@ -735,7 +735,31 @@ if (r.status === 200) {
 
   function isAuthInput(el){
     if (!el) return false;
-    return !!el.closest('#loginModal, .login-modal, .login-email, #authGuest, #authUser');
+    return !!el.closest(
+      '#loginModal, .login-modal, .login-email, #authGuest, #authUser, .auth-user, .auth-guest'
+    );
+  }
+
+  function isProtectedInput(el){
+    if (!el || el.tagName !== "INPUT") return true;
+
+    var type = String(el.getAttribute("type") || "text").toLowerCase();
+
+    if (type === "password") return true;
+    if (type === "hidden") return true;
+    if (type === "checkbox") return true;
+    if (type === "radio") return true;
+    if (el.readOnly) return true;
+    if (el.disabled) return true;
+    if (el.hasAttribute("readonly")) return true;
+    if (el.hasAttribute("disabled")) return true;
+
+    if (isAuthInput(el)) return true;
+
+    if (el.matches('[data-profile-input-email]')) return true;
+    if (el.matches('#profile-email')) return true;
+
+    return false;
   }
 
   function isSearchLike(el){
@@ -750,6 +774,7 @@ if (r.status === 200) {
     if (type === "search") return true;
     if (placeholder.indexOf("ara") !== -1) return true;
     if (placeholder.indexOf("search") !== -1) return true;
+    if (placeholder.indexOf("go to file") !== -1) return true;
     if (id.indexOf("search") !== -1) return true;
     if (name.indexOf("search") !== -1) return true;
     if (cls.indexOf("search") !== -1) return true;
@@ -757,14 +782,37 @@ if (r.status === 200) {
     return false;
   }
 
-  function cleanOne(el){
-    if (!isSearchLike(el)) return;
-    if (isAuthInput(el)) return;
+  function isStudioPanelInput(el){
+    if (!el || el.tagName !== "INPUT") return false;
+
+    return !!el.closest(
+      '#rightPanelHost, .studioOutputs, .outputsCard, .panelFooter, .panelHeader, .panelBody'
+    );
+  }
+
+  function shouldClean(el){
+    if (!el || el.tagName !== "INPUT") return false;
+    if (isProtectedInput(el)) return false;
+
+    if (isSearchLike(el)) return true;
+    if (isStudioPanelInput(el)) return true;
+
+    return false;
+  }
+
+  function hardenInput(el){
+    if (!shouldClean(el)) return;
 
     el.setAttribute("autocomplete", "off");
     el.setAttribute("autocapitalize", "off");
     el.setAttribute("autocorrect", "off");
     el.setAttribute("spellcheck", "false");
+  }
+
+  function cleanOne(el){
+    if (!shouldClean(el)) return;
+
+    hardenInput(el);
 
     if (looksLikeEmail(el.value)) {
       el.value = "";
@@ -775,21 +823,25 @@ if (r.status === 200) {
 
   function scan(){
     var inputs = document.querySelectorAll("input");
-    for (var i = 0; i < inputs.length; i++) cleanOne(inputs[i]);
+    for (var i = 0; i < inputs.length; i++) {
+      hardenInput(inputs[i]);
+      cleanOne(inputs[i]);
+    }
+  }
+
+  function scanSoon(){
+    setTimeout(scan, 0);
+    setTimeout(scan, 120);
+    setTimeout(scan, 400);
+    setTimeout(scan, 900);
   }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function(){
-      scan();
-      setTimeout(scan, 120);
-      setTimeout(scan, 500);
-      setTimeout(scan, 1200);
+      scanSoon();
     }, { once:true });
   } else {
-    scan();
-    setTimeout(scan, 120);
-    setTimeout(scan, 500);
-    setTimeout(scan, 1200);
+    scanSoon();
   }
 
   document.addEventListener("focusin", function(e){
@@ -798,16 +850,31 @@ if (r.status === 200) {
     cleanOne(el);
   }, true);
 
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if (!el || el.tagName !== "INPUT") return;
+    if (!shouldClean(el)) return;
+    if (!looksLikeEmail(el.value)) return;
+
+    el.value = "";
+    try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (_) {}
+  }, true);
+
   document.addEventListener("aivo:module-mounted", function(){
-    setTimeout(scan, 0);
-    setTimeout(scan, 120);
-    setTimeout(scan, 400);
+    scanSoon();
   });
 
   window.addEventListener("hashchange", function(){
-    setTimeout(scan, 0);
-    setTimeout(scan, 120);
-    setTimeout(scan, 400);
+    scanSoon();
+  });
+
+  var bodyObserver = new MutationObserver(function(){
+    scanSoon();
+  });
+
+  bodyObserver.observe(document.body, {
+    subtree: true,
+    childList: true
   });
 })();
 </script>
