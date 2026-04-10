@@ -159,6 +159,12 @@ if (r.status === 200) {
   if (st) st.remove();
   document.documentElement.style.visibility = "visible";
 
+  try {
+    document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+      detail: { me: me }
+    }));
+  } catch (e) {}
+
   // 🟢 ONLINE PRESENCE PING
   if (me && me.email) {
     fetch("/api/presence/ping", {
