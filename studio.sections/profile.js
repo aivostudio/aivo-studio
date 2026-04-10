@@ -68,15 +68,6 @@
     return baseKey + ":" + normalized;
   }
 
-  function getCurrentProfileScopeEmail(page, auth) {
-    return normalizeEmail(firstNonEmpty(
-      page && qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-      page && qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-      auth && auth.email,
-      ""
-    ));
-  }
-
   function getScopedProfileName(email) {
     return (safeGetLS(getScopedProfileKey("aivo_profile_name", email)) || "").trim();
   }
@@ -85,12 +76,12 @@
     return (safeGetLS(getScopedProfileKey("aivo_profile_surname", email)) || "").trim();
   }
 
-  function setScopedProfileName(email, value) {
-    safeSetLS(getScopedProfileKey("aivo_profile_name", email), value || "");
+  function setScopedProfileName(email, val) {
+    safeSetLS(getScopedProfileKey("aivo_profile_name", email), val || "");
   }
 
-  function setScopedProfileSurname(email, value) {
-    safeSetLS(getScopedProfileKey("aivo_profile_surname", email), value || "");
+  function setScopedProfileSurname(email, val) {
+    safeSetLS(getScopedProfileKey("aivo_profile_surname", email), val || "");
   }
 
   function clearGlobalProfileCache() {
@@ -99,42 +90,37 @@
   }
 
   function clearScopedProfileCache(email) {
-    setScopedProfileName(email, "");
-    setScopedProfileSurname(email, "");
-  }
-
-  function clearAuthIdentityButKeepEmail(email) {
-    safeSetLS("aivo_auth_unified_v1", JSON.stringify({
-      loggedIn: true,
-      email: normalizeEmail(email),
-      name: "",
-      full_name: "",
-      first_name: "",
-      last_name: "",
-      surname: "",
-      ts: 0
-    }));
+    safeSetLS(getScopedProfileKey("aivo_profile_name", email), "");
+    safeSetLS(getScopedProfileKey("aivo_profile_surname", email), "");
   }
 
   function authMatchesEmail(auth, email) {
     return normalizeEmail(auth && auth.email) === normalizeEmail(email);
   }
 
-  function hasUsableAuthIdentityForEmail(auth, email) {
-    if (!authMatchesEmail(auth, email)) return false;
-    return !!firstNonEmpty(
-      auth && auth.full_name,
-      auth && auth.name,
-      auth && auth.first_name
+  function emailToDisplayName(email) {
+    var normalized = normalizeEmail(email);
+    if (!normalized || normalized.indexOf("@") === -1) return "";
+    return normalized.split("@")[0].trim();
+  }
+
+  function getCurrentScopeEmail(page, auth) {
+    return normalizeEmail(firstNonEmpty(
+      page && qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+      page && qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+      auth && auth.email,
+      ""
+    ));
+  }
+
+  function buildFullName(name, surname, email) {
+    var full = firstNonEmpty(
+      (name && surname) ? (name + " " + surname).trim() : "",
+      name,
+      emailToDisplayName(email),
+      "Kullanıcı"
     );
-  }
-
-  function readCreditsFromTopbar() {
-    return "";
-  }
-
-  function readSpentCreditsFromProfilePage(page) {
-    return "";
+    return full;
   }
 
   function readProfileData() {
@@ -142,10 +128,7 @@
     if (!page) return null;
 
     var auth = readJSON("aivo_auth_unified_v1");
-    var scopeEmail = getCurrentProfileScopeEmail(page, auth);
-    var scopedName = getScopedProfileName(scopeEmail);
-    var scopedSurname = getScopedProfileSurname(scopeEmail);
-    var canUseAuthIdentity = hasUsableAuthIdentityForEmail(auth, scopeEmail);
+    var scopeEmail = getCurrentScopeEmail(page, auth);
 
     var inputNameNow = firstNonEmpty(
       qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
@@ -155,51 +138,52 @@
       qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value
     );
 
-    var inputEmailNow = firstNonEmpty(
+    var inputEmailNow = normalizeEmail(firstNonEmpty(
       qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value
+    ));
+
+    var domNameNow = firstNonEmpty(
+      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent
     );
 
-    var authFirstName = canUseAuthIdentity ? firstNonEmpty(
-      auth.first_name,
-      auth.name
-    ) : "";
+    var domEmailNow = normalizeEmail(firstNonEmpty(
+      qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent
+    ));
 
-    var authSurname = canUseAuthIdentity ? firstNonEmpty(
-      auth.surname,
-      auth.last_name,
-      auth.lastName
-    ) : "";
+    var email = normalizeEmail(firstNonEmpty(
+      inputEmailNow,
+      scopeEmail,
+      domEmailNow,
+      auth && auth.email,
+      ""
+    ));
 
-    var authFullName = canUseAuthIdentity ? firstNonEmpty(
-      auth.full_name,
-      auth.fullName
-    ) : "";
+    var scopedName = getScopedProfileName(email);
+    var scopedSurname = getScopedProfileSurname(email);
+
+    var authName = authMatchesEmail(auth, email)
+      ? firstNonEmpty(auth && auth.first_name, auth && auth.name)
+      : "";
+
+    var authSurname = authMatchesEmail(auth, email)
+      ? firstNonEmpty(auth && auth.surname, auth && auth.last_name, auth && auth.lastName)
+      : "";
 
     var name = firstNonEmpty(
       inputNameNow,
-      authFirstName,
-      scopedName
+      scopedName,
+      authName,
+      domNameNow && domNameNow !== "Kullanıcı" ? domNameNow : "",
+      emailToDisplayName(email)
     );
 
     var surname = firstNonEmpty(
       inputSurnameNow,
-      authSurname,
-      scopedSurname
+      scopedSurname,
+      authSurname
     );
 
-    var fullName = firstNonEmpty(
-      authFullName,
-      (name && surname) ? (name + " " + surname).trim() : "",
-      name,
-      "Kullanıcı"
-    );
-
-    var email = firstNonEmpty(
-      inputEmailNow,
-      scopeEmail,
-      auth.email,
-      "—"
-    );
+    var fullName = buildFullName(name, surname, email);
 
     var planText = firstNonEmpty(
       qs("[data-profile-plan]", page) && qs("[data-profile-plan]", page).textContent,
@@ -216,23 +200,51 @@
     }
 
     return {
-      name: fullName,
+      firstName: firstNonEmpty(name, emailToDisplayName(email), "Kullanıcı"),
       surname: surname,
-      email: email,
+      name: fullName,
+      email: firstNonEmpty(email, "—"),
       plan: plan,
       credit: "0",
       spent: "0"
     };
   }
 
+  function syncAuthAndScopedCacheFromProfileData(data) {
+    if (!data) return;
+
+    var email = normalizeEmail(data.email);
+    if (!email || email === "—") return;
+
+    var firstName = firstNonEmpty(data.firstName, emailToDisplayName(email), "Kullanıcı");
+    var surname = firstNonEmpty(data.surname, "");
+    var fullName = buildFullName(firstName, surname, email);
+
+    var auth = readJSON("aivo_auth_unified_v1");
+    auth.loggedIn = true;
+    auth.email = email;
+    auth.name = firstName;
+    auth.first_name = firstName;
+    auth.surname = surname;
+    auth.last_name = surname;
+    auth.full_name = fullName;
+    auth.ts = Date.now();
+    safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
+
+    clearGlobalProfileCache();
+    setScopedProfileName(email, firstName);
+    setScopedProfileSurname(email, surname);
+  }
+
   function applyProfile() {
     var page = getProfilePage();
-
     if (!page) return;
     if (!isProfileActive()) return;
 
     var data = readProfileData();
     if (!data) return;
+
+    syncAuthAndScopedCacheFromProfileData(data);
 
     var initial = (data.name || "K").charAt(0).toUpperCase();
 
@@ -257,105 +269,9 @@
       creditEls[j].textContent = "Kredi: " + data.credit;
     }
 
-    value(inputNameEl, data.name || "");
+    value(inputNameEl, data.firstName || "");
     value(inputSurnameEl, data.surname || "");
     value(inputEmailEl, data.email || "");
-  }
-
-  async function hydrateProfileFromApi() {
-    var page = getProfilePage();
-    if (!page) return false;
-
-    try {
-      var res = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache: "no-store"
-      });
-
-      if (!res.ok) return false;
-
-      var me = await res.json();
-      if (!me) return false;
-
-      var email = normalizeEmail(firstNonEmpty(
-        me.email,
-        me.user && me.user.email,
-        ""
-      ));
-
-      var firstName = firstNonEmpty(
-        me.first_name,
-        me.firstName,
-        me.name,
-        me.user && me.user.first_name,
-        me.user && me.user.firstName,
-        me.user && me.user.name,
-        ""
-      );
-
-      var lastName = firstNonEmpty(
-        me.last_name,
-        me.lastName,
-        me.surname,
-        me.user && me.user.last_name,
-        me.user && me.user.lastName,
-        me.user && me.user.surname,
-        ""
-      );
-
-      if (!email && !firstName && !lastName) return false;
-
-      var emailName = "";
-      if (email && email.indexOf("@") !== -1) {
-        emailName = email.split("@")[0].trim();
-      }
-
-      var resolvedName = firstNonEmpty(firstName, emailName, "Kullanıcı");
-      var resolvedSurname = firstNonEmpty(lastName, "");
-      var resolvedFullName = firstNonEmpty(
-        (resolvedName && resolvedSurname) ? (resolvedName + " " + resolvedSurname) : "",
-        resolvedName,
-        "Kullanıcı"
-      );
-
-      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
-        loggedIn: true,
-        email: email,
-        name: resolvedName,
-        full_name: resolvedFullName,
-        first_name: resolvedName,
-        last_name: resolvedSurname,
-        surname: resolvedSurname,
-        ts: Date.now()
-      }));
-
-      clearGlobalProfileCache();
-      clearScopedProfileCache(email);
-      setScopedProfileName(email, resolvedName);
-      setScopedProfileSurname(email, resolvedSurname);
-
-      value(qs("[data-profile-input-name]", page), resolvedName || "");
-      value(qs("[data-profile-input-surname]", page), resolvedSurname || "");
-      value(qs("[data-profile-input-email]", page), email || "");
-
-      text(qs("[data-profile-name]", page), resolvedFullName);
-      text(qs("[data-profile-email]", page), email || "—");
-      text(qs("[data-profile-initial]", page), resolvedFullName.charAt(0).toUpperCase());
-
-      document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
-        detail: {
-          name: resolvedName || "",
-          surname: resolvedSurname || "",
-          fullName: resolvedFullName,
-          email: email || ""
-        }
-      }));
-
-      return true;
-    } catch (err) {
-      console.warn("[profile.section] hydrateProfileFromApi failed", err);
-      return false;
-    }
   }
 
   function bindSave() {
@@ -369,7 +285,7 @@
     btn.__aivoProfileSectionBound = true;
 
     btn.addEventListener("click", function () {
-      var name = firstNonEmpty(
+      var firstName = firstNonEmpty(
         qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
       );
 
@@ -384,43 +300,43 @@
         ""
       ));
 
-      if (!name) {
+      if (!firstName) {
         if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
         return;
       }
 
+      var fullName = buildFullName(firstName, surname, email);
+
       var auth = readJSON("aivo_auth_unified_v1");
-      auth.name = name;
-      auth.first_name = name;
+      auth.loggedIn = true;
+      auth.email = email;
+      auth.name = firstName;
+      auth.first_name = firstName;
       auth.surname = surname;
       auth.last_name = surname;
-      auth.full_name = surname ? (name + " " + surname).trim() : name;
-      auth.email = firstNonEmpty(auth.email, email, "");
-      auth.loggedIn = true;
+      auth.full_name = fullName;
       auth.ts = Date.now();
       safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
 
       clearGlobalProfileCache();
-      clearScopedProfileCache(auth.email);
-      setScopedProfileName(auth.email, name);
-      setScopedProfileSurname(auth.email, surname);
-
-      var fullName = surname ? (name + " " + surname).trim() : name;
+      clearScopedProfileCache(email);
+      setScopedProfileName(email, firstName);
+      setScopedProfileSurname(email, surname);
 
       text(qs("[data-profile-name]", page), fullName);
-      text(qs("[data-profile-email]", page), firstNonEmpty(auth.email, email, "—"));
+      text(qs("[data-profile-email]", page), firstNonEmpty(email, "—"));
       text(qs("[data-profile-initial]", page), fullName.charAt(0).toUpperCase());
 
-      value(qs("[data-profile-input-name]", page), name || "");
+      value(qs("[data-profile-input-name]", page), firstName || "");
       value(qs("[data-profile-input-surname]", page), surname || "");
-      value(qs("[data-profile-input-email]", page), firstNonEmpty(auth.email, email, "—"));
+      value(qs("[data-profile-input-email]", page), firstNonEmpty(email, "—"));
 
       document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
         detail: {
-          name: name,
+          name: firstName,
           surname: surname,
           fullName: fullName,
-          email: firstNonEmpty(auth.email, email, "")
+          email: firstNonEmpty(email, "")
         }
       }));
 
@@ -430,94 +346,39 @@
     });
   }
 
-async function ensureFreshProfileIdentity(page, auth) {
-  var pageEmail = getCurrentProfileScopeEmail(page, auth);
-  var authEmail = normalizeEmail(auth && auth.email);
-  var currentEmail = normalizeEmail(firstNonEmpty(pageEmail, authEmail, ""));
-  var hydrateInFlight = !!window.__aivoProfileHydrateInFlight;
-  var lastHydratedEmail = normalizeEmail(window.__aivoProfileHydratedEmail || "");
-  var profileEntryKey = normalizeEmail(
-    firstNonEmpty(currentEmail, authEmail, "__empty__")
-  );
-  var lastProfileEntryKey = normalizeEmail(window.__aivoProfileLastEntryKey || "");
-  var isFreshEntryForThisIdentity = profileEntryKey !== lastProfileEntryKey;
-
-  if (!currentEmail) {
-    currentEmail = authEmail;
-  }
-
-  if (authEmail && currentEmail && authEmail !== currentEmail) {
-    clearGlobalProfileCache();
-    clearScopedProfileCache(authEmail);
-    clearAuthIdentityButKeepEmail(currentEmail);
-    auth = readJSON("aivo_auth_unified_v1");
-    authEmail = normalizeEmail(auth && auth.email);
-  }
-
-  var authValidForCurrentEmail = hasUsableAuthIdentityForEmail(auth, currentEmail);
-  var scopedName = getScopedProfileName(currentEmail);
-
-  var needsHydrate = false;
-
-  if (!currentEmail) {
-    needsHydrate = !lastHydratedEmail;
-  } else {
-    needsHydrate =
-      isFreshEntryForThisIdentity ||
-      !authValidForCurrentEmail ||
-      !scopedName ||
-      lastHydratedEmail !== currentEmail;
-  }
-
-  if (needsHydrate && !hydrateInFlight) {
-    window.__aivoProfileHydrateInFlight = true;
-    try {
-      var ok = await hydrateProfileFromApi();
-      if (ok) {
-        window.__aivoProfileHydratedEmail = normalizeEmail(readJSON("aivo_auth_unified_v1").email);
-      }
-    } finally {
-      window.__aivoProfileHydrateInFlight = false;
-    }
-  }
-
-  window.__aivoProfileLastEntryKey = profileEntryKey;
-}
-
-  async function renderProfileNow() {
+  function renderProfileNow() {
     var page = getProfilePage();
     if (!page) return false;
 
     bindSave();
 
     var auth = readJSON("aivo_auth_unified_v1");
+    var data = readProfileData();
 
     if (isProfileActive()) {
-      await ensureFreshProfileIdentity(page, auth);
       applyProfile();
     } else {
       var initialEl = qs("[data-profile-initial]", page);
       var nameEl = qs("[data-profile-name]", page);
       var emailEl = qs("[data-profile-email]", page);
+      var inputEmailEl = qs("[data-profile-input-email]", page);
 
       var email = normalizeEmail(firstNonEmpty(
-        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-        auth.email,
+        data && data.email,
+        auth && auth.email,
         ""
       ));
 
-      var scopedName = getScopedProfileName(email);
-      var scopedSurname = getScopedProfileSurname(email);
       var displayName = firstNonEmpty(
-        hasUsableAuthIdentityForEmail(auth, email) ? auth.full_name : "",
-        hasUsableAuthIdentityForEmail(auth, email) ? auth.name : "",
-        (scopedName && scopedSurname) ? (scopedName + " " + scopedSurname).trim() : "",
-        scopedName,
-        ""
+        data && data.name,
+        authMatchesEmail(auth, email) ? auth.full_name : "",
+        authMatchesEmail(auth, email) ? auth.name : "",
+        emailToDisplayName(email),
+        "Kullanıcı"
       );
 
       if (email) {
-        value(qs("[data-profile-input-email]", page), email);
+        value(inputEmailEl, email);
         text(emailEl, email);
       }
 
@@ -555,14 +416,14 @@ async function ensureFreshProfileIdentity(page, auth) {
 
     var lastActivePage = document.body.getAttribute("data-active-page") || "";
 
-    var mo = new MutationObserver(async function () {
+    var mo = new MutationObserver(function () {
       var nextActivePage = document.body.getAttribute("data-active-page") || "";
       if (nextActivePage === lastActivePage) return;
 
       lastActivePage = nextActivePage;
 
       if (nextActivePage === "profile") {
-        await renderProfileNow();
+        renderProfileNow();
       }
     });
 
@@ -574,34 +435,35 @@ async function ensureFreshProfileIdentity(page, auth) {
     });
   }
 
-  async function bootProfileRender(retries, delay) {
+  function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
     var wait = Number(delay || 0);
 
-    while (left > 0) {
-      var ok = await renderProfileNow();
+    function tick() {
+      var ok = renderProfileNow();
       if (ok) return;
 
-      await new Promise(function (resolve) {
-        setTimeout(resolve, wait);
-      });
-
       left -= 1;
+      if (left <= 0) return;
+
+      setTimeout(tick, wait);
     }
+
+    tick();
   }
 
-  document.addEventListener("DOMContentLoaded", async function () {
+  document.addEventListener("DOMContentLoaded", function () {
     observePage();
-    await bootProfileRender(20, 200);
+    bootProfileRender(20, 200);
   });
 
-  window.addEventListener("load", async function () {
-    await bootProfileRender(10, 200);
+  window.addEventListener("load", function () {
+    bootProfileRender(10, 200);
   });
 
-  document.addEventListener("visibilitychange", async function () {
+  document.addEventListener("visibilitychange", function () {
     if (!document.hidden) {
-      await bootProfileRender(6, 150);
+      bootProfileRender(6, 150);
     }
   });
 })();
