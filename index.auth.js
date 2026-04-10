@@ -121,9 +121,17 @@ function openModal(mode /* "login" | "register" */) {
 
   document.body.classList.add("modal-open");
   document.documentElement.classList.add("modal-open");
+
   // ✅ apply mode
   applyModalMode(m, finalMode);
+
+  // focus email
+  setTimeout(() => {
+    const email = document.getElementById("loginEmail");
+    if (email && typeof email.focus === "function") email.focus();
+  }, 30);
 }
+
 
 /* =========================
    TARGET / REDIRECT
