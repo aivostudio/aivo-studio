@@ -151,13 +151,13 @@ function getCurrentScopeEmail(page, auth) {
       qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent
     ));
 
-    var email = normalizeEmail(firstNonEmpty(
-      inputEmailNow,
-      scopeEmail,
-      domEmailNow,
-      auth && auth.email,
-      ""
-    ));
+   var email = normalizeEmail(firstNonEmpty(
+  auth && auth.email,
+  scopeEmail,
+  domEmailNow,
+  inputEmailNow,
+  ""
+));
 
     var scopedName = getScopedProfileName(email);
     var scopedSurname = getScopedProfileSurname(email);
