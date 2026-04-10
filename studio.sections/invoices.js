@@ -222,7 +222,7 @@
     var actionLabel = inv.pdfUrl ? "Belge Aç" : "Belge Yok";
 
     return (
-      '<article class="invoice-row" data-invoice-type="' + escapeHtml(inv.type) + '">' +
+    '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">'
         '<div class="invoice-row__main">' +
           '<div class="invoice-row__title">' + escapeHtml(inv.title) + '</div>' +
           '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
@@ -236,7 +236,7 @@
               : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
           ) +
         '</div>' +
-      '</article>'
+      '</div>'
     );
   }
 
