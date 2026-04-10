@@ -156,10 +156,11 @@
       finalName = (finalName + " " + finalSurname).trim();
     }
 
-    const credits = String(
+      const credits = String(
       firstNonEmpty(
+        getText("#topCreditCount"),
         getText('[data-stat="totalCredits"]', page),
-        safeCtx.credits,
+        ctx && ctx.credits,
         "0"
       )
     );
