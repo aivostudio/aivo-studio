@@ -314,30 +314,47 @@
         return;
       }
 
-      const resolvedEmail = normalizeEmail(
-        firstNonEmpty(
-          data?.user?.email,
-          data?.email,
-          email
-        )
-      );
+    const resolvedEmail = normalizeEmail(
+  firstNonEmpty(
+    data?.user?.email,
+    data?.email,
+    email
+  )
+);
 
-      const resolvedName = firstNonEmpty(
-        data?.user?.first_name,
-        data?.user?.firstName,
-        data?.user?.name,
-        data?.name,
-        emailToName(resolvedEmail)
-      );
+const rawFirstName = firstNonEmpty(
+  data?.user?.first_name,
+  data?.user?.firstName,
+  ""
+);
 
-      const resolvedSurname = firstNonEmpty(
-        data?.user?.last_name,
-        data?.user?.lastName,
-        data?.user?.surname,
-        data?.surname,
-        ""
-      );
+const rawSurname = firstNonEmpty(
+  data?.user?.last_name,
+  data?.user?.lastName,
+  data?.user?.surname,
+  data?.surname,
+  ""
+);
 
+const rawLegacyName = firstNonEmpty(
+  data?.user?.name,
+  data?.name,
+  ""
+);
+
+const loginEmailLocalName = emailToName(resolvedEmail);
+
+const resolvedName = firstNonEmpty(
+  rawFirstName,
+  rawLegacyName && normalizeEmail(data?.user?.email || data?.email) === resolvedEmail ? rawLegacyName : "",
+  loginEmailLocalName,
+  "Kullanıcı"
+);
+
+const resolvedSurname = firstNonEmpty(
+  rawSurname,
+  ""
+);
       safeLSSet("aivo_logged_in", "1");
       safeLSSet("aivo_user_email", resolvedEmail || email);
       if (data?.token) safeLSSet("aivo_token", data.token);
