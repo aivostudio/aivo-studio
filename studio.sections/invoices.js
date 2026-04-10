@@ -47,15 +47,17 @@
     }
   }
 
-  function getPage() {
-    return (
-      qs('.page[data-page="invoices"]') ||
-      qs('#moduleHost .page[data-page="invoices"]') ||
-      qs('#moduleHost section.main-panel') ||
-      qs('section.main-panel') ||
-      null
-    );
-  }
+ function getPage() {
+  return (
+    qs('[data-module="invoices"]') ||
+    qs('[data-page="invoices"]') ||
+    qs('section.main-panel[data-module="invoices"]') ||
+    qs('section.main-panel[data-page="invoices"]') ||
+    qs('section.main-panel:has([data-invoices-cards])') ||
+    qs('section.main-panel:has([data-invoices-filter])') ||
+    null
+  );
+}
 
   async function resolveEmail() {
     try {
