@@ -445,28 +445,45 @@ function observePage() {
     setTimeout(function () {
       renderProfileNow();
     }, 300);
+
+    setTimeout(function () {
+      renderProfileNow();
+    }, 700);
   }
 
-  if (lastActivePage === "profile") {
+  if (getProfilePage()) {
     triggerProfileRenderSoon();
   }
 
-  var mo = new MutationObserver(function () {
+  var bodyMo = new MutationObserver(function () {
     var nextActivePage = document.body.getAttribute("data-active-page") || "";
     if (nextActivePage === lastActivePage) return;
 
     lastActivePage = nextActivePage;
 
-    if (nextActivePage === "profile") {
+    if (nextActivePage === "profile" || getProfilePage()) {
       triggerProfileRenderSoon();
     }
   });
 
-  mo.observe(document.body, {
+  bodyMo.observe(document.body, {
     subtree: false,
     childList: false,
     attributes: true,
     attributeFilter: ["data-active-page"]
+  });
+
+  var host = document.getElementById("moduleHost") || document.body;
+
+  var domMo = new MutationObserver(function () {
+    if (getProfilePage()) {
+      triggerProfileRenderSoon();
+    }
+  });
+
+  domMo.observe(host, {
+    subtree: true,
+    childList: true
   });
 }
 
