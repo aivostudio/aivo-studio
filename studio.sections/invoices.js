@@ -1,8 +1,25 @@
 (function () {
   "use strict";
 
+  if (window.__AIVO_INVOICES_SECTION_V2__) return;
+  window.__AIVO_INVOICES_SECTION_V2__ = true;
+
+  var ACTIVE_FILTER = "all";
+
   function qs(sel, root) {
-    return (root || document).querySelector(sel);
+    try {
+      return (root || document).querySelector(sel);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function qsa(sel, root) {
+    try {
+      return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+    } catch (_) {
+      return [];
+    }
   }
 
   function text(el, val) {
@@ -30,6 +47,16 @@
     }
   }
 
+  function getPage() {
+    return (
+      qs('.page[data-page="invoices"]') ||
+      qs('#moduleHost .page[data-page="invoices"]') ||
+      qs('#moduleHost section.main-panel') ||
+      qs('section.main-panel') ||
+      null
+    );
+  }
+
   async function resolveEmail() {
     try {
       var meRes = await fetch("/api/auth/me", {
@@ -54,25 +81,34 @@
     return normalizeEmail(auth && auth.email);
   }
 
-  function getNodes() {
+  function getNodes(root) {
+    var page = root || getPage() || document;
+
     return {
-      cards: qs("[data-invoices-cards]"),
-      empty: qs("[data-invoices-empty]")
+      page: page,
+      cards: qs("[data-invoices-cards]", page),
+      empty: qs("[data-invoices-empty]", page),
+      filters: qsa("[data-invoices-filter]", page),
+      exportBtn: qs("[data-invoices-export]", page),
+      moreBtn: qs("[data-invoices-more]", page)
     };
   }
 
-  function showEmpty(message) {
-    var nodes = getNodes();
+  function showEmpty(message, root) {
+    var nodes = getNodes(root);
     if (!nodes.cards || !nodes.empty) return;
 
     nodes.cards.innerHTML = "";
     nodes.empty.hidden = false;
     nodes.empty.style.display = "";
-    text(nodes.empty, message || "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.");
+    text(
+      nodes.empty,
+      message || "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek."
+    );
   }
 
-  function hideEmpty() {
-    var nodes = getNodes();
+  function hideEmpty(root) {
+    var nodes = getNodes(root);
     if (!nodes.empty) return;
 
     nodes.empty.hidden = true;
@@ -158,6 +194,7 @@
       id: inv.id || inv.order_id || inv.orderId || "",
       type: inferType(inv),
       title: inv.pack || inv.pack_key || inv.plan || inv.title || "Satın Alım",
+      statusRaw: String(inv.status || "").toLowerCase().trim(),
       status: mapStatusLabel(inv.status || ""),
       amount:
         inv.amount_try != null ? inv.amount_try :
@@ -195,12 +232,71 @@
         '<div class="invoice-row__actions">' +
           (
             inv.pdfUrl
-              ? '<a class="invoice-row__btn" href="' + escapeHtml(inv.pdfUrl) + '" target="_blank" rel="noopener noreferrer">Belge Aç</a>'
-              : '<button class="invoice-row__btn" type="button" disabled>Belge Yok</button>'
+              ? '<a class="invoice-row__btn" href="' + escapeHtml(inv.pdfUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
+              : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
           ) +
         '</div>' +
       '</article>'
     );
+  }
+
+  function applyFilter(filterKey, root) {
+    var nodes = getNodes(root);
+    if (!nodes.page) return;
+
+    var key = String(filterKey || "all").trim().toLowerCase();
+    if (!key) key = "all";
+    ACTIVE_FILTER = key;
+
+    nodes.filters.forEach(function (btn) {
+      var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+      var on = (btnKey === key);
+
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    var rows = qsa(".invoice-row[data-invoice-type]", nodes.page);
+    if (!rows.length) return;
+
+    var visibleCount = 0;
+
+    rows.forEach(function (row) {
+      var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
+      var show = (key === "all") || (rowType === key);
+
+      row.style.display = show ? "" : "none";
+      if (show) visibleCount += 1;
+    });
+
+    if (!visibleCount) {
+      if (nodes.empty) {
+        nodes.empty.hidden = false;
+        nodes.empty.style.display = "";
+        text(nodes.empty, "Bu filtre için gösterilecek fatura bulunamadı.");
+      }
+    } else {
+      hideEmpty(nodes.page);
+    }
+  }
+
+  function bindFilters(root) {
+    var nodes = getNodes(root);
+    if (!nodes.filters.length) return;
+
+    nodes.filters.forEach(function (btn) {
+      if (btn.__aivoInvoicesFilterBound) return;
+      btn.__aivoInvoicesFilterBound = true;
+
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        var key = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+        applyFilter(key || "all", nodes.page);
+      });
+    });
+
+    applyFilter(ACTIVE_FILTER || "all", nodes.page);
   }
 
   async function fetchInvoices(email) {
@@ -218,13 +314,15 @@
     return Array.isArray(json.invoices) ? json.invoices : [];
   }
 
-  async function renderInvoices() {
-    var nodes = getNodes();
+  async function renderInvoices(root) {
+    var nodes = getNodes(root);
     if (!nodes.cards || !nodes.empty) return;
+
+    bindFilters(nodes.page);
 
     var email = await resolveEmail();
     if (!email) {
-      showEmpty("Faturaları göstermek için oturum bilgisi bulunamadı.");
+      showEmpty("Faturaları göstermek için oturum bilgisi bulunamadı.", nodes.page);
       return;
     }
 
@@ -232,11 +330,12 @@
       var invoices = await fetchInvoices(email);
 
       if (!invoices.length) {
-        showEmpty("Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.");
+        showEmpty("Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.", nodes.page);
+        applyFilter(ACTIVE_FILTER || "all", nodes.page);
         return;
       }
 
-      hideEmpty();
+      hideEmpty(nodes.page);
 
       var sorted = invoices.slice().sort(function (a, b) {
         return toTime(
@@ -247,20 +346,29 @@
       });
 
       nodes.cards.innerHTML = sorted.map(rowHtml).join("");
+      applyFilter(ACTIVE_FILTER || "all", nodes.page);
     } catch (err) {
       console.error("[AIVO_INVOICES_RENDER_FAIL]", err);
-      showEmpty("Faturalar şu an yüklenemedi.");
+      showEmpty("Faturalar şu an yüklenemedi.", nodes.page);
     }
   }
 
   function boot() {
-    if (window.__aivoInvoicesSectionBooted) return;
-    window.__aivoInvoicesSectionBooted = true;
+    var page = getPage();
+    if (!page) return;
 
-    renderInvoices();
-    window.refreshInvoices = renderInvoices;
+    bindFilters(page);
+    renderInvoices(page);
+    window.refreshInvoices = function () {
+      return renderInvoices(page);
+    };
   }
 
-  document.addEventListener("DOMContentLoaded", boot);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
   window.addEventListener("load", boot);
 })();
