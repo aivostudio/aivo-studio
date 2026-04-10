@@ -41,6 +41,10 @@ function parseCookies(header) {
   return out;
 }
 
+function normalizeEmail(v) {
+  return String(v || "").trim().toLowerCase();
+}
+
 function verifyJWT(token, secret) {
   const parts = String(token || "").split(".");
   if (parts.length !== 3) return null;
@@ -63,24 +67,22 @@ function json(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-async function resolveVerifiedFromUserStore(email) {
-  // FAIL-OPEN: herhangi bir hata me'yi bozmamalı
+async function resolveUserFromStore(email) {
   try {
-    if (!email) return null;
+    const normalized = normalizeEmail(email);
+    if (!normalized) return null;
     if (typeof kvGetJson !== "function") return null;
 
-    // user key varyantları (geçmişte key farklı olabilir diye)
-    const keys = [`user:${email}`, `users:${email}`];
+    const keys = [`user:${normalized}`, `users:${normalized}`];
 
     for (const k of keys) {
       const u = await kvGetJson(k).catch(() => null);
       if (u && typeof u === "object") {
-        if (typeof u.verified === "boolean") return u.verified;
-        if (typeof u.email_verified === "boolean") return u.email_verified;
-        if (typeof u.emailVerified === "boolean") return u.emailVerified;
+        return u;
       }
     }
   } catch (_) {}
+
   return null;
 }
 
@@ -97,24 +99,26 @@ export default async function handler(req, res) {
 
       const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
       if (sess && typeof sess === "object" && sess.email) {
-        // verified çözümü: önce session, yoksa user store (fail-open)
+        const email = normalizeEmail(sess.email);
+        const user = await resolveUserFromStore(email);
+
         let verified = null;
 
         if (typeof sess.verified === "boolean") verified = sess.verified;
         else if (typeof sess.email_verified === "boolean") verified = sess.email_verified;
         else if (typeof sess.emailVerified === "boolean") verified = sess.emailVerified;
+        else if (user && typeof user.verified === "boolean") verified = user.verified;
+        else if (user && typeof user.email_verified === "boolean") verified = user.email_verified;
+        else if (user && typeof user.emailVerified === "boolean") verified = user.emailVerified;
 
-        if (verified === null) {
-          verified = await resolveVerifiedFromUserStore(sess.email);
-        }
-
-        // geçiş dönemi: bilinmiyorsa true (Studio kırılmasın)
         if (verified === null) verified = true;
 
         return json(res, 200, {
           ok: true,
-          email: sess.email,
-          role: sess.role || "user",
+          email,
+          name: (user && (user.name || user.first_name || user.firstName)) || "",
+          surname: (user && (user.surname || user.last_name || user.lastName)) || "",
+          role: sess.role || (user && user.role) || "user",
           verified,
           session: "kv",
         });
@@ -129,31 +133,31 @@ export default async function handler(req, res) {
     if (!token) return json(res, 401, { ok: false, error: "no_session" });
 
     if (!JWT_SECRET) {
-      // JWT cookie geldi ama secret yoksa doğrulayamayız
       return json(res, 401, { ok: false, error: "invalid_session" });
     }
 
     const payload = verifyJWT(token, JWT_SECRET);
     if (!payload) return json(res, 401, { ok: false, error: "invalid_session" });
 
-    const email = payload.email || payload.sub || null;
+    const email = normalizeEmail(payload.email || payload.sub || null);
+    const user = await resolveUserFromStore(email);
 
-    // verified çözümü: önce payload, yoksa user store (fail-open)
     let verified = null;
     if (typeof payload.verified === "boolean") verified = payload.verified;
     else if (typeof payload.email_verified === "boolean") verified = payload.email_verified;
     else if (typeof payload.emailVerified === "boolean") verified = payload.emailVerified;
-
-    if (verified === null) {
-      verified = await resolveVerifiedFromUserStore(email);
-    }
+    else if (user && typeof user.verified === "boolean") verified = user.verified;
+    else if (user && typeof user.email_verified === "boolean") verified = user.email_verified;
+    else if (user && typeof user.emailVerified === "boolean") verified = user.emailVerified;
 
     if (verified === null) verified = true;
 
     return json(res, 200, {
       ok: true,
       email,
-      role: payload.role || "user",
+      name: (user && (user.name || user.first_name || user.firstName)) || "",
+      surname: (user && (user.surname || user.last_name || user.lastName)) || "",
+      role: payload.role || (user && user.role) || "user",
       exp: payload.exp || null,
       verified,
       session: "jwt",
