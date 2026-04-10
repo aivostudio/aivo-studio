@@ -725,9 +725,9 @@ if (r.status === 200) {
 })();
 </script>
 <script>
-(function AIVO_STUDIO_AUTOFILL_GUARD_V2(){
-  if (window.__AIVO_STUDIO_AUTOFILL_GUARD_V2__) return;
-  window.__AIVO_STUDIO_AUTOFILL_GUARD_V2__ = true;
+(function AIVO_STUDIO_AUTOFILL_GUARD_V3(){
+  if (window.__AIVO_STUDIO_AUTOFILL_GUARD_V3__) return;
+  window.__AIVO_STUDIO_AUTOFILL_GUARD_V3__ = true;
 
   function looksLikeEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
@@ -740,141 +740,149 @@ if (r.status === 200) {
     );
   }
 
-  function isProtectedInput(el){
-    if (!el || el.tagName !== "INPUT") return true;
+  function isProtectedField(el){
+    if (!el) return true;
 
-    var type = String(el.getAttribute("type") || "text").toLowerCase();
+    var tag = String(el.tagName || "").toUpperCase();
+    var type = String(el.getAttribute("type") || "").toLowerCase();
+    var id = String(el.id || "").toLowerCase();
+    var name = String(el.getAttribute("name") || "").toLowerCase();
 
-    if (type === "password") return true;
-    if (type === "hidden") return true;
-    if (type === "checkbox") return true;
-    if (type === "radio") return true;
-    if (el.readOnly) return true;
-    if (el.disabled) return true;
-    if (el.hasAttribute("readonly")) return true;
-    if (el.hasAttribute("disabled")) return true;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") return true;
 
     if (isAuthInput(el)) return true;
+
+    if (type === "password" || type === "hidden" || type === "checkbox" || type === "radio" || type === "file") return true;
+    if (el.readOnly || el.disabled) return true;
+    if (el.hasAttribute("readonly") || el.hasAttribute("disabled")) return true;
 
     if (el.matches('[data-profile-input-email]')) return true;
     if (el.matches('#profile-email')) return true;
 
+    if (id === "loginemail" || id === "loginpass") return true;
+    if (name === "username" || name === "password") return true;
+
     return false;
   }
 
-  function isSearchLike(el){
-    if (!el || el.tagName !== "INPUT") return false;
+  function shouldGuard(el){
+    if (!el || isProtectedField(el)) return false;
 
+    var tag = String(el.tagName || "").toUpperCase();
     var type = String(el.getAttribute("type") || "text").toLowerCase();
     var id = String(el.id || "").toLowerCase();
     var name = String(el.getAttribute("name") || "").toLowerCase();
     var placeholder = String(el.getAttribute("placeholder") || "").toLowerCase();
     var cls = String(el.className || "").toLowerCase();
 
-    if (type === "search") return true;
+    if (tag === "TEXTAREA") return true;
+
+    if (type === "search" || type === "text" || type === "email") return true;
     if (placeholder.indexOf("ara") !== -1) return true;
     if (placeholder.indexOf("search") !== -1) return true;
+    if (placeholder.indexOf("şarkı adı") !== -1) return true;
     if (placeholder.indexOf("go to file") !== -1) return true;
     if (id.indexOf("search") !== -1) return true;
     if (name.indexOf("search") !== -1) return true;
     if (cls.indexOf("search") !== -1) return true;
 
-    return false;
+    return true;
   }
 
-  function isStudioPanelInput(el){
-    if (!el || el.tagName !== "INPUT") return false;
-
-    return !!el.closest(
-      '#rightPanelHost, .studioOutputs, .outputsCard, .panelFooter, .panelHeader, .panelBody'
-    );
-  }
-
-  function shouldClean(el){
-    if (!el || el.tagName !== "INPUT") return false;
-    if (isProtectedInput(el)) return false;
-
-    if (isSearchLike(el)) return true;
-    if (isStudioPanelInput(el)) return true;
-
-    return false;
-  }
-
-  function hardenInput(el){
-    if (!shouldClean(el)) return;
+  function harden(el){
+    if (!shouldGuard(el)) return;
 
     el.setAttribute("autocomplete", "off");
     el.setAttribute("autocapitalize", "off");
     el.setAttribute("autocorrect", "off");
     el.setAttribute("spellcheck", "false");
+
+    if (el.tagName === "INPUT" && !el.hasAttribute("inputmode")) {
+      el.setAttribute("inputmode", "text");
+    }
   }
 
   function cleanOne(el){
-    if (!shouldClean(el)) return;
+    if (!shouldGuard(el)) return;
 
-    hardenInput(el);
+    harden(el);
 
-    if (looksLikeEmail(el.value)) {
+    var val = String(el.value || "").trim();
+    if (!val) return;
+
+    if (looksLikeEmail(val)) {
       el.value = "";
       try { el.dispatchEvent(new Event("input", { bubbles: true })); } catch (_) {}
       try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (_) {}
+      try { el.blur(); } catch (_) {}
     }
   }
 
   function scan(){
-    var inputs = document.querySelectorAll("input");
-    for (var i = 0; i < inputs.length; i++) {
-      hardenInput(inputs[i]);
-      cleanOne(inputs[i]);
+    var nodes = document.querySelectorAll("input, textarea");
+    for (var i = 0; i < nodes.length; i++) {
+      harden(nodes[i]);
+      cleanOne(nodes[i]);
     }
   }
 
-  function scanSoon(){
-    setTimeout(scan, 0);
-    setTimeout(scan, 120);
-    setTimeout(scan, 400);
-    setTimeout(scan, 900);
+  function burstScan(){
+    scan();
+    setTimeout(scan, 80);
+    setTimeout(scan, 180);
+    setTimeout(scan, 350);
+    setTimeout(scan, 700);
+    setTimeout(scan, 1200);
+    setTimeout(scan, 2000);
+  }
+
+  function startBootSweep(){
+    var startedAt = Date.now();
+    var timer = setInterval(function(){
+      scan();
+      if (Date.now() - startedAt > 12000) {
+        clearInterval(timer);
+      }
+    }, 500);
   }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function(){
-      scanSoon();
+      burstScan();
+      startBootSweep();
     }, { once:true });
   } else {
-    scanSoon();
+    burstScan();
+    startBootSweep();
   }
+
+  window.addEventListener("load", burstScan, { passive: true });
+  window.addEventListener("pageshow", burstScan, { passive: true });
+  window.addEventListener("focus", burstScan, { passive: true });
+  window.addEventListener("hashchange", burstScan, { passive: true });
+
+  document.addEventListener("visibilitychange", function(){
+    if (!document.hidden) burstScan();
+  });
 
   document.addEventListener("focusin", function(e){
     var el = e.target;
-    if (!el || el.tagName !== "INPUT") return;
+    if (!el) return;
     cleanOne(el);
   }, true);
 
-  document.addEventListener("input", function(e){
-    var el = e.target;
-    if (!el || el.tagName !== "INPUT") return;
-    if (!shouldClean(el)) return;
-    if (!looksLikeEmail(el.value)) return;
-
-    el.value = "";
-    try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (_) {}
-  }, true);
-
   document.addEventListener("aivo:module-mounted", function(){
-    scanSoon();
+    burstScan();
   });
 
-  window.addEventListener("hashchange", function(){
-    scanSoon();
+  var obs = new MutationObserver(function(){
+    burstScan();
   });
 
-  var bodyObserver = new MutationObserver(function(){
-    scanSoon();
-  });
-
-  bodyObserver.observe(document.body, {
+  obs.observe(document.body, {
     subtree: true,
-    childList: true
+    childList: true,
+    attributes: false
   });
 })();
 </script>
