@@ -386,7 +386,7 @@
       }
     });
   }
- async function renderProfileNow() {
+async function renderProfileNow() {
   var page = getProfilePage();
   if (!page) return false;
 
@@ -395,6 +395,31 @@
   var shouldHydrateFromApi = false;
   var now = Date.now();
   var auth = readJSON("aivo_auth_unified_v1");
+
+  var pageEmailNow = firstNonEmpty(
+    qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+    qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+    ""
+  ).toLowerCase();
+
+  var cachedAuthEmail = firstNonEmpty(auth.email).toLowerCase();
+
+  if (pageEmailNow && cachedAuthEmail && pageEmailNow !== cachedAuthEmail) {
+    safeSetLS("aivo_profile_name", "");
+    safeSetLS("aivo_profile_surname", "");
+    safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+      loggedIn: true,
+      email: pageEmailNow,
+      name: "",
+      full_name: "",
+      first_name: "",
+      last_name: "",
+      surname: "",
+      ts: 0
+    }));
+    window.__aivoProfileHydrateAt = 0;
+    auth = readJSON("aivo_auth_unified_v1");
+  }
 
   var hasCachedEmail = !!firstNonEmpty(auth.email);
   var hasCachedName = !!firstNonEmpty(
