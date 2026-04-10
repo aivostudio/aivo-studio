@@ -98,6 +98,11 @@
     safeSetLS("aivo_profile_surname", "");
   }
 
+  function clearScopedProfileCache(email) {
+    setScopedProfileName(email, "");
+    setScopedProfileSurname(email, "");
+  }
+
   function readCreditsFromTopbar() {
     return "";
   }
@@ -110,7 +115,7 @@
     var page = getProfilePage();
     if (!page) return null;
 
-     var auth = readJSON("aivo_auth_unified_v1");
+    var auth = readJSON("aivo_auth_unified_v1");
     var scopeEmail = getCurrentProfileScopeEmail(page, auth);
 
     var cachedName = getScopedProfileName(scopeEmail);
@@ -135,7 +140,6 @@
       auth.full_name,
       auth.fullName,
       auth.username,
-      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
       cachedName
     );
 
@@ -301,7 +305,7 @@
 
       if (!email && !firstName && !lastName) return;
 
-         var emailName = "";
+      var emailName = "";
       if (email && String(email).indexOf("@") !== -1) {
         emailName = String(email).split("@")[0].trim();
       }
@@ -323,7 +327,7 @@
         "Kullanıcı"
       );
 
-         safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
         loggedIn: true,
         email: email || "",
         name: resolvedName,
@@ -335,13 +339,14 @@
       }));
 
       clearGlobalProfileCache();
+      clearScopedProfileCache(email);
       setScopedProfileName(email, resolvedName);
       setScopedProfileSurname(email, resolvedSurname);
 
       var initial = resolvedFullName.charAt(0).toUpperCase();
 
-      value(qs("[data-profile-input-name]", page), firstName || "");
-      value(qs("[data-profile-input-surname]", page), lastName || "");
+      value(qs("[data-profile-input-name]", page), resolvedName || "");
+      value(qs("[data-profile-input-surname]", page), resolvedSurname || "");
       value(qs("[data-profile-input-email]", page), email || "");
 
       text(qs("[data-profile-name]", page), resolvedFullName);
@@ -350,8 +355,8 @@
 
       document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
         detail: {
-          name: firstName || "",
-          surname: lastName || "",
+          name: resolvedName || "",
+          surname: resolvedSurname || "",
           fullName: resolvedFullName,
           email: email || ""
         }
@@ -384,13 +389,14 @@
         readJSON("aivo_auth_unified_v1").email,
         qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
         qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-        "—"
+        ""
       );
 
       if (!name) {
         if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
         return;
       }
+
       var auth = readJSON("aivo_auth_unified_v1");
       auth.name = name;
       auth.first_name = name;
@@ -403,6 +409,7 @@
       safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
 
       clearGlobalProfileCache();
+      clearScopedProfileCache(auth.email);
       setScopedProfileName(auth.email, name);
       setScopedProfileSurname(auth.email, surname);
 
@@ -412,6 +419,8 @@
       text(qs("[data-profile-email]", page), firstNonEmpty(auth.email, email, "—"));
       text(qs("[data-profile-initial]", page), fullName.charAt(0).toUpperCase());
 
+      value(qs("[data-profile-input-name]", page), name || "");
+      value(qs("[data-profile-input-surname]", page), surname || "");
       value(qs("[data-profile-input-email]", page), firstNonEmpty(auth.email, email, "—"));
 
       document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
@@ -428,147 +437,157 @@
       }
     });
   }
-async function renderProfileNow() {
-  var page = getProfilePage();
-  if (!page) return false;
 
-  bindSave();
+  async function renderProfileNow() {
+    var page = getProfilePage();
+    if (!page) return false;
 
-  var shouldHydrateFromApi = false;
-  var now = Date.now();
-  var auth = readJSON("aivo_auth_unified_v1");
+    bindSave();
 
-  var pageEmailNow = firstNonEmpty(
-    qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-    qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-    ""
-  ).toLowerCase();
+    var shouldHydrateFromApi = false;
+    var now = Date.now();
+    var auth = readJSON("aivo_auth_unified_v1");
 
-  var cachedAuthEmail = firstNonEmpty(auth.email).toLowerCase();
-
-  if (pageEmailNow && cachedAuthEmail && pageEmailNow !== cachedAuthEmail) {
-    clearGlobalProfileCache();
-    safeSetLS("aivo_auth_unified_v1", JSON.stringify({
-      loggedIn: true,
-      email: pageEmailNow,
-      name: "",
-      full_name: "",
-      first_name: "",
-      last_name: "",
-      surname: "",
-      ts: 0
-    }));
-    window.__aivoProfileHydrateAt = 0;
-    auth = readJSON("aivo_auth_unified_v1");
-  }
-
-  var hasCachedEmail = !!firstNonEmpty(auth.email);
-  var hasCachedName = !!firstNonEmpty(
-    auth.full_name,
-    auth.name,
-    auth.first_name
-  );
-
-  var lastHydrateAt = Number(window.__aivoProfileHydrateAt || 0);
-  var hydrateInFlight = !!window.__aivoProfileHydrateInFlight;
-
-  if (isProfileActive()) {
-    if ((!hasCachedEmail || !hasCachedName) && !hydrateInFlight) {
-      shouldHydrateFromApi = true;
-    } else if ((now - lastHydrateAt) > 15000 && !hydrateInFlight) {
-      shouldHydrateFromApi = true;
-    }
-  }
-
-  if (shouldHydrateFromApi) {
-    try {
-      window.__aivoProfileHydrateInFlight = true;
-      await hydrateProfileFromApi();
-      window.__aivoProfileHydrateAt = Date.now();
-      auth = readJSON("aivo_auth_unified_v1");
-    } finally {
-      window.__aivoProfileHydrateInFlight = false;
-    }
-  }
-
-  if (isProfileActive()) {
-    applyProfile();
-  } else {
-    var initialEl = qs("[data-profile-initial]", page);
-    var nameEl = qs("[data-profile-name]", page);
-    var emailEl = qs("[data-profile-email]", page);
-
-    var email = firstNonEmpty(
-      qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-      auth.email,
-      ""
-    );
-
-    var name = firstNonEmpty(
-      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
-      auth.full_name,
-      auth.name,
-      auth.first_name,
-      ""
-    );
-
-    if (email) {
-      value(qs("[data-profile-input-email]", page), email);
-      text(emailEl, email);
-    }
-
-    if (name) {
-      text(nameEl, name);
-      text(initialEl, name.charAt(0).toUpperCase());
-    }
-  }
-
-  var hasEmail =
-    firstNonEmpty(
+    var pageEmailNow = normalizeEmail(firstNonEmpty(
       qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
       qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
       ""
-    ) !== "";
+    ));
 
-  var hasName =
-    firstNonEmpty(
-      qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
-      ""
-    ) !== "";
+    var cachedAuthEmail = normalizeEmail(firstNonEmpty(auth.email));
 
-  var hasInitial =
-    firstNonEmpty(
-      qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
-      ""
-    ) !== "";
-
-  return !!(hasEmail && hasName && hasInitial);
-}
-
-function observePage() {
-  if (window.__aivoProfileSectionObserverBound) return;
-  window.__aivoProfileSectionObserverBound = true;
-
-  var lastActivePage = document.body.getAttribute("data-active-page") || "";
-
-  var mo = new MutationObserver(async function () {
-    var nextActivePage = document.body.getAttribute("data-active-page") || "";
-    if (nextActivePage === lastActivePage) return;
-
-    lastActivePage = nextActivePage;
-
-    if (nextActivePage === "profile") {
-      await renderProfileNow();
+    if (pageEmailNow && cachedAuthEmail && pageEmailNow !== cachedAuthEmail) {
+      clearGlobalProfileCache();
+      clearScopedProfileCache(cachedAuthEmail);
+      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+        loggedIn: true,
+        email: pageEmailNow,
+        name: "",
+        full_name: "",
+        first_name: "",
+        last_name: "",
+        surname: "",
+        ts: 0
+      }));
+      window.__aivoProfileHydrateAt = 0;
+      auth = readJSON("aivo_auth_unified_v1");
     }
-  });
 
-  mo.observe(document.body, {
-    subtree: false,
-    childList: false,
-    attributes: true,
-    attributeFilter: ["data-active-page"]
-  });
-}
+    var scopedNameNow = getScopedProfileName(pageEmailNow || auth.email);
+    var hasCachedEmail = !!firstNonEmpty(auth.email);
+    var hasCachedName = !!firstNonEmpty(
+      auth.full_name,
+      auth.name,
+      auth.first_name,
+      scopedNameNow
+    );
+
+    var lastHydrateAt = Number(window.__aivoProfileHydrateAt || 0);
+    var hydrateInFlight = !!window.__aivoProfileHydrateInFlight;
+
+    if (isProfileActive()) {
+      if ((!hasCachedEmail || !hasCachedName) && !hydrateInFlight) {
+        shouldHydrateFromApi = true;
+      } else if ((now - lastHydrateAt) > 15000 && !hydrateInFlight) {
+        shouldHydrateFromApi = true;
+      }
+    }
+
+    if (shouldHydrateFromApi) {
+      try {
+        window.__aivoProfileHydrateInFlight = true;
+        await hydrateProfileFromApi();
+        window.__aivoProfileHydrateAt = Date.now();
+        auth = readJSON("aivo_auth_unified_v1");
+      } finally {
+        window.__aivoProfileHydrateInFlight = false;
+      }
+    }
+
+    if (isProfileActive()) {
+      applyProfile();
+    } else {
+      var initialEl = qs("[data-profile-initial]", page);
+      var nameEl = qs("[data-profile-name]", page);
+      var emailEl = qs("[data-profile-email]", page);
+
+      var email = firstNonEmpty(
+        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+        auth.email,
+        ""
+      );
+
+      var scopedName = getScopedProfileName(email);
+      var scopedSurname = getScopedProfileSurname(email);
+      var fallbackName = firstNonEmpty(
+        auth.full_name,
+        auth.name,
+        auth.first_name,
+        scopedName,
+        ""
+      );
+
+      if (!fallbackName && scopedName) {
+        fallbackName = scopedSurname ? (scopedName + " " + scopedSurname).trim() : scopedName;
+      }
+
+      if (email) {
+        value(qs("[data-profile-input-email]", page), email);
+        text(emailEl, email);
+      }
+
+      if (fallbackName) {
+        text(nameEl, fallbackName);
+        text(initialEl, fallbackName.charAt(0).toUpperCase());
+      }
+    }
+
+    var hasEmail =
+      firstNonEmpty(
+        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+        ""
+      ) !== "";
+
+    var hasName =
+      firstNonEmpty(
+        qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+        ""
+      ) !== "";
+
+    var hasInitial =
+      firstNonEmpty(
+        qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
+        ""
+      ) !== "";
+
+    return !!(hasEmail && hasName && hasInitial);
+  }
+
+  function observePage() {
+    if (window.__aivoProfileSectionObserverBound) return;
+    window.__aivoProfileSectionObserverBound = true;
+
+    var lastActivePage = document.body.getAttribute("data-active-page") || "";
+
+    var mo = new MutationObserver(async function () {
+      var nextActivePage = document.body.getAttribute("data-active-page") || "";
+      if (nextActivePage === lastActivePage) return;
+
+      lastActivePage = nextActivePage;
+
+      if (nextActivePage === "profile") {
+        await renderProfileNow();
+      }
+    });
+
+    mo.observe(document.body, {
+      subtree: false,
+      childList: false,
+      attributes: true,
+      attributeFilter: ["data-active-page"]
+    });
+  }
 
   async function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
