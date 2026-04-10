@@ -104,12 +104,12 @@
     return normalized.split("@")[0].trim();
   }
 
-  function getCurrentScopeEmail(page, auth) {
+function getCurrentScopeEmail(page, auth) {
   return normalizeEmail(firstNonEmpty(
-    page && qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-    page && qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
     auth && auth.email,
     safeGetLS("aivo_user_email"),
+    page && qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+    page && qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
     ""
   ));
 }
