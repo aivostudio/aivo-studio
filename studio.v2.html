@@ -643,6 +643,105 @@ if (r.status === 200) {
 <!-- ✅ ESKİ STUDIO'DAN TAŞINAN USER MENU DAVRANIŞI -->
 <script>
 (function AIVO_USER_MENU_FINAL(){
+  <script>
+(function AIVO_AUTOFILL_GUARD(){
+  if (window.__AIVO_AUTOFILL_GUARD__) return;
+  window.__AIVO_AUTOFILL_GUARD__ = true;
+
+  function qsa(sel, root){
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  }
+
+  function isAuthInput(el){
+    if (!el) return false;
+
+    if (el.closest('[data-password-modal]')) return true;
+    if (el.id === 'loginEmail') return true;
+    if (el.id === 'loginPass') return true;
+    if (el.id === 'registerName') return true;
+    if (el.id === 'registerPass2') return true;
+
+    var name = String(el.getAttribute('name') || '').toLowerCase();
+    if (
+      name === 'email' ||
+      name === 'password' ||
+      name === 'current_password' ||
+      name === 'new_password' ||
+      name === 'new_password_confirm'
+    ) return true;
+
+    return false;
+  }
+
+  function isSearchLike(el){
+    if (!el) return false;
+
+    var type = String(el.getAttribute('type') || '').toLowerCase();
+    var ph = String(el.getAttribute('placeholder') || '').toLowerCase();
+    var aria = String(el.getAttribute('aria-label') || '').toLowerCase();
+    var cls = String(el.className || '').toLowerCase();
+
+    return (
+      type === 'search' ||
+      ph.indexOf('ara') !== -1 ||
+      ph.indexOf('search') !== -1 ||
+      aria.indexOf('ara') !== -1 ||
+      aria.indexOf('search') !== -1 ||
+      cls.indexOf('search') !== -1
+    );
+  }
+
+  function hardenInput(el){
+    if (!el || isAuthInput(el)) return;
+
+    el.setAttribute('autocomplete', 'off');
+    el.setAttribute('autocapitalize', 'off');
+    el.setAttribute('autocorrect', 'off');
+    el.setAttribute('spellcheck', 'false');
+
+    if (el.hasAttribute('data-profile-input-email')) {
+      el.setAttribute('readonly', 'readonly');
+    }
+
+    if (isSearchLike(el)) {
+      var v = String(el.value || '').trim();
+      if (v && v.indexOf('@') !== -1) {
+        el.value = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  }
+
+  function run(){
+    var inputs = qsa('input, textarea');
+    for (var i = 0; i < inputs.length; i++) {
+      hardenInput(inputs[i]);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
+    run();
+  }
+
+  window.addEventListener('load', run);
+
+  var mo = new MutationObserver(function(){
+    run();
+  });
+
+  mo.observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+
+  document.addEventListener('focusin', function(e){
+    hardenInput(e.target);
+  }, true);
+})();
+</script>
   if (window.__AIVO_USER_MENU_FINAL__) return;
   window.__AIVO_USER_MENU_FINAL__ = true;
 
