@@ -77,12 +77,15 @@
   }
   var currentScope = getUserScope();
   var stats = loadStats();
+  var statsHydratedForScope = false;
+
   function ensureScope(){
     var nextScope = getUserScope();
     if (nextScope === currentScope) return false;
 
     currentScope = nextScope;
     stats = empty();
+    statsHydratedForScope = false;
     paint();
 
     setTimeout(function(){
@@ -94,8 +97,9 @@
     return true;
   }
 
-   function persist(){
+  function persist(){
     if (ensureScope()) return;
+    if (!statsHydratedForScope) return;
 
     var keys = getKeys();
     stats.updatedAt = now();
@@ -119,7 +123,11 @@
       });
 
       var j = await r.json().catch(function(){ return null; });
-      if (!r.ok || !j || j.ok === false || !j.stats) return;
+      if (!r.ok || !j || j.ok === false || !j.stats) {
+        statsHydratedForScope = true;
+        paint();
+        return;
+      }
 
       var incoming = j.stats || {};
 
@@ -136,8 +144,10 @@
       stats.seen = (incoming.seen && typeof incoming.seen === "object") ? incoming.seen : {};
       stats.updatedAt = clampInt(incoming.updatedAt || now());
 
+      statsHydratedForScope = true;
       paint();
     }catch(e){
+      statsHydratedForScope = true;
       console.warn("[AIVO_STATS][DB_HYDRATE][ERROR]", e);
     }
   }
