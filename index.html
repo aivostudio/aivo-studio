@@ -2543,10 +2543,28 @@
       <div class="card-title" id="authCardTitle">Email ile Giriş</div>
       <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
 
-      <!-- EMAIL + PASSWORD -->
-      <div class="email-row email-row-2">
-        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+           <div class="email-row email-row-2">
+        <input
+          id="loginEmail"
+          name="username"
+          type="email"
+          placeholder="ornek@aivo.tr"
+          autocomplete="username"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          inputmode="email"
+        />
+        <input
+          id="loginPass"
+          name="password"
+          type="password"
+          placeholder="Şifre"
+          autocomplete="current-password"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
       </div>
 
       <!-- REGISTER EXTRA -->
