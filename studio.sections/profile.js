@@ -497,9 +497,20 @@ function observePage() {
     bootProfileRender(10, 200);
   });
 
-  document.addEventListener("visibilitychange", function () {
+   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) {
       bootProfileRender(6, 150);
     }
+  });
+
+  document.addEventListener("aivo:module-mounted", function (e) {
+    var detail = e && e.detail ? e.detail : null;
+    var key = detail && detail.key ? String(detail.key).trim() : "";
+
+    if (key !== "profile") return;
+
+    setTimeout(function () {
+      bootProfileRender(8, 120);
+    }, 0);
   });
 })();
