@@ -244,7 +244,7 @@
     if (f) f.textContent = String(stats.photofx || 0);
     if (i) i.textContent = String(stats.imageToVideo || 0);
     if (s) s.textContent = String(stats.spent);
-    if (t) t.textContent = (stats.total == null ? "0" : String(stats.total));
+   if (t) t.textContent = (stats.lastCredits == null ? "0" : String(stats.lastCredits));
 
     if (p){
       var pct = 0;
