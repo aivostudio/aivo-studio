@@ -255,12 +255,6 @@
 
   // credits (spent/total)
   function readCredits(){
-    try{
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function"){
-        var v = window.AIVO_STORE_V1.getCredits();
-        if (v != null) return clampInt(v);
-      }
-    }catch(e){}
     return null;
   }
 
