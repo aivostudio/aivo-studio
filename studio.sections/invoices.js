@@ -393,17 +393,17 @@ function bindFilters(root) {
       showEmpty("Faturalar şu an yüklenemedi.", nodes.page);
     }
   }
+function boot() {
+  var page = getPage();
+  if (!page) return;
 
-  function boot() {
-    var page = getPage();
-    if (!page) return;
-
-    bindFilters(page);
-    renderInvoices(page);
-    window.refreshInvoices = function () {
-      return renderInvoices(page);
-    };
-  }
+  bindFilters(page);
+  bindExport(page);
+  renderInvoices(page);
+  window.refreshInvoices = function () {
+    return renderInvoices(page);
+  };
+}
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
