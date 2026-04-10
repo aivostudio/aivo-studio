@@ -290,66 +290,101 @@ function getCurrentScopeEmail(page, auth) {
     if (btn.__aivoProfileSectionBound) return;
     btn.__aivoProfileSectionBound = true;
 
-    btn.addEventListener("click", function () {
-      var firstName = firstNonEmpty(
-        qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
-      );
+btn.addEventListener("click", async function () {
+  var firstName = firstNonEmpty(
+    qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
+  );
 
-      var surname = firstNonEmpty(
-        qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value
-      );
+  var surname = firstNonEmpty(
+    qs("[data-profile-input-surname]", page) && qs("[data-profile-input-surname]", page).value
+  );
 
-      var email = normalizeEmail(firstNonEmpty(
-        readJSON("aivo_auth_unified_v1").email,
-        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-        ""
-      ));
+  var email = normalizeEmail(firstNonEmpty(
+    readJSON("aivo_auth_unified_v1").email,
+    qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+    qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+    ""
+  ));
 
-      if (!firstName) {
-        if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
-        return;
-      }
+  if (!firstName) {
+    if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
+    return;
+  }
 
-      var fullName = buildFullName(firstName, surname, email);
+  if (btn.disabled) return;
+  btn.disabled = true;
 
-      var auth = readJSON("aivo_auth_unified_v1");
-      auth.loggedIn = true;
-      auth.email = email;
-      auth.name = firstName;
-      auth.first_name = firstName;
-      auth.surname = surname;
-      auth.last_name = surname;
-      auth.full_name = fullName;
-      auth.ts = Date.now();
-      safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
-
-      clearGlobalProfileCache();
-      clearScopedProfileCache(email);
-      setScopedProfileName(email, firstName);
-      setScopedProfileSurname(email, surname);
-
-      text(qs("[data-profile-name]", page), fullName);
-      text(qs("[data-profile-email]", page), firstNonEmpty(email, "—"));
-      text(qs("[data-profile-initial]", page), fullName.charAt(0).toUpperCase());
-
-      value(qs("[data-profile-input-name]", page), firstName || "");
-      value(qs("[data-profile-input-surname]", page), surname || "");
-      value(qs("[data-profile-input-email]", page), firstNonEmpty(email, "—"));
-
-      document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
-        detail: {
-          name: firstName,
-          surname: surname,
-          fullName: fullName,
-          email: firstNonEmpty(email, "")
-        }
-      }));
-
-      if (window.toast && window.toast.success) {
-        window.toast.success("Profil güncellendi.");
-      }
+  try {
+    var res = await fetch("/api/auth/profile-update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        name: firstName,
+        surname: surname
+      })
     });
+
+    var raw = await res.text();
+    var json = {};
+    try { json = JSON.parse(raw || "{}"); } catch (e) { json = {}; }
+
+    if (!res.ok || !json || json.ok !== true || !json.user) {
+      throw new Error(
+        (json && (json.message || json.error)) || "profile_update_failed"
+      );
+    }
+
+    var savedName = firstNonEmpty(json.user.name, firstName);
+    var savedSurname = firstNonEmpty(json.user.surname, surname);
+    var savedEmail = normalizeEmail(firstNonEmpty(json.user.email, email));
+    var fullName = buildFullName(savedName, savedSurname, savedEmail);
+
+    var auth = readJSON("aivo_auth_unified_v1");
+    auth.loggedIn = true;
+    auth.email = savedEmail;
+    auth.name = savedName;
+    auth.first_name = savedName;
+    auth.surname = savedSurname;
+    auth.last_name = savedSurname;
+    auth.full_name = fullName;
+    auth.ts = Date.now();
+    safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
+
+    clearGlobalProfileCache();
+    clearScopedProfileCache(savedEmail);
+    setScopedProfileName(savedEmail, savedName);
+    setScopedProfileSurname(savedEmail, savedSurname);
+
+    text(qs("[data-profile-name]", page), fullName);
+    text(qs("[data-profile-email]", page), firstNonEmpty(savedEmail, "—"));
+    text(qs("[data-profile-initial]", page), fullName.charAt(0).toUpperCase());
+
+    value(qs("[data-profile-input-name]", page), savedName || "");
+    value(qs("[data-profile-input-surname]", page), savedSurname || "");
+    value(qs("[data-profile-input-email]", page), firstNonEmpty(savedEmail, "—"));
+
+    document.dispatchEvent(new CustomEvent("aivo:profile-saved", {
+      detail: {
+        name: savedName,
+        surname: savedSurname,
+        fullName: fullName,
+        email: firstNonEmpty(savedEmail, "")
+      }
+    }));
+
+    if (window.toast && window.toast.success) {
+      window.toast.success("Profil güncellendi.");
+    }
+  } catch (err) {
+    console.error("[AIVO_PROFILE_UPDATE_FAIL]", err);
+    if (window.toast && window.toast.error) {
+      window.toast.error("Profil kaydedilemedi.");
+    }
+  } finally {
+    btn.disabled = false;
+  }
+});
   }
 
   function renderProfileNow() {
