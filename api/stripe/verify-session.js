@@ -158,8 +158,13 @@ export default async function handler(req, res) {
       invoiceId,
       already_processed: false,
     });
-  } catch (err) {
-    const msg = safeStr(err?.message || err);
-    return json(res, 500, { ok: false, error: "SERVER_ERROR", detail: msg });
-  }
+ } catch (err) {
+  console.error("[verify-session][fatal]", {
+    message: err?.message || null,
+    stack: err?.stack || null,
+    session_id: req?.body?.session_id || null
+  });
+  const msg = safeStr(err?.message || err);
+  return json(res, 500, { ok: false, error: "SERVER_ERROR", detail: msg });
+}
 }
