@@ -47,17 +47,15 @@
     }
   }
 
- function getPage() {
-  return (
-    qs('[data-module="invoices"]') ||
-    qs('[data-page="invoices"]') ||
-    qs('section.main-panel[data-module="invoices"]') ||
-    qs('section.main-panel[data-page="invoices"]') ||
-    qs('section.main-panel:has([data-invoices-cards])') ||
-    qs('section.main-panel:has([data-invoices-filter])') ||
-    null
-  );
-}
+  function getPage() {
+    return (
+      qs('.main-panel[data-module="invoices"]') ||
+      qs('.main-panel[data-page="invoices"]') ||
+      qs('[data-module="invoices"]') ||
+      qs('[data-page="invoices"]') ||
+      null
+    );
+  }
 
   async function resolveEmail() {
     try {
@@ -215,174 +213,161 @@
       pdfUrl: inv.pdf_url || inv.pdfUrl || inv.url || ""
     };
   }
-function rowHtml(rawInv) {
-  var inv = normalizeInvoice(rawInv);
-  var typeLabel = mapTypeLabel(inv);
-  var dateText = formatDate(inv.createdAt);
-  var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
-  var actionLabel = inv.pdfUrl ? "Belge Aç" : "Belge Yok";
 
-  return (
-    '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
-      '<div class="invoice-row__main">' +
-        '<div class="invoice-row__title">' + escapeHtml(inv.title) + '</div>' +
-        '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
-      '</div>' +
-      '<div class="invoice-row__meta">Durum: ' + escapeHtml(inv.status) + '</div>' +
-      '<div class="invoice-row__amount">' + escapeHtml(amountText || "-") + '</div>' +
-      '<div class="invoice-row__actions">' +
-        (
-          inv.pdfUrl
-            ? '<a class="invoice-row__btn" href="' + escapeHtml(inv.pdfUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
-            : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
-        ) +
-      '</div>' +
-    '</div>'
-  );
-}
+  function rowHtml(rawInv) {
+    var inv = normalizeInvoice(rawInv);
+    var typeLabel = mapTypeLabel(inv);
+    var dateText = formatDate(inv.createdAt);
+    var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
+    var actionLabel = inv.pdfUrl ? "Belge Aç" : "Belge Yok";
 
-function applyFilter(filterKey, root) {
-  var nodes = getNodes(root);
-  if (!nodes.page) return;
+    return (
+      '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
+        '<div class="invoice-row__main">' +
+          '<div class="invoice-row__title">' + escapeHtml(inv.title) + '</div>' +
+          '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
+        '</div>' +
+        '<div class="invoice-row__meta">Durum: ' + escapeHtml(inv.status) + '</div>' +
+        '<div class="invoice-row__amount">' + escapeHtml(amountText || "-") + '</div>' +
+        '<div class="invoice-row__actions">' +
+          (
+            inv.pdfUrl
+              ? '<a class="invoice-row__btn" href="' + escapeHtml(inv.pdfUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
+              : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
+          ) +
+        '</div>' +
+      '</div>'
+    );
+  }
 
-  var key = String(filterKey || "all").trim().toLowerCase();
-  if (!key) key = "all";
-  ACTIVE_FILTER = key;
+  function applyFilter(filterKey, root) {
+    var nodes = getNodes(root);
+    if (!nodes.page) return;
 
-  nodes.filters.forEach(function (btn) {
-    var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
-    var on = (btnKey === key);
+    var key = String(filterKey || "all").trim().toLowerCase();
+    if (!key) key = "all";
+    ACTIVE_FILTER = key;
 
-    btn.classList.toggle("is-active", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  });
+    nodes.filters.forEach(function (btn) {
+      var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+      var on = (btnKey === key);
 
-  var rows = qsa("[data-invoice-type]", nodes.page);
-  if (!rows.length) return;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
 
-  var visibleCount = 0;
+    var rows = qsa("[data-invoice-type]", nodes.page);
+    if (!rows.length) return;
 
-  rows.forEach(function (row) {
-    var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
-    var show = (key === "all") || (rowType === key);
+    var visibleCount = 0;
 
-    row.style.display = show ? "" : "none";
-    if (show) visibleCount += 1;
-  });
+    rows.forEach(function (row) {
+      var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
+      var show = (key === "all") || (rowType === key);
 
-  if (!visibleCount) {
-    if (nodes.empty) {
-      nodes.empty.hidden = false;
-      nodes.empty.style.display = "";
-      text(nodes.empty, "Bu filtre için gösterilecek fatura bulunamadı.");
+      row.style.display = show ? "" : "none";
+      if (show) visibleCount += 1;
+    });
+
+    if (!visibleCount) {
+      if (nodes.empty) {
+        nodes.empty.hidden = false;
+        nodes.empty.style.display = "";
+        text(nodes.empty, "Bu filtre için gösterilecek fatura bulunamadı.");
+      }
+    } else {
+      hideEmpty(nodes.page);
     }
-  } else {
-    hideEmpty(nodes.page);
-  }
-}
-
-function bindFilters(root) {
-  var nodes = getNodes(root);
-  if (!nodes.page || nodes.page.__aivoInvoicesFiltersBound) {
-    applyFilter(ACTIVE_FILTER || "all", nodes.page || root);
-    return;
   }
 
-  nodes.page.__aivoInvoicesFiltersBound = true;
-
-  document.addEventListener("click", function (e) {
-    var btn = e.target && e.target.closest
-      ? e.target.closest("[data-invoices-filter]")
-      : null;
-
-    if (!btn) return;
-
-    var page = getPage();
-    if (!page || !page.contains(btn)) return;
-
-    e.preventDefault();
-
-    var key = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
-    applyFilter(key || "all", page);
-  });
-
-  applyFilter(ACTIVE_FILTER || "all", nodes.page);
-}
-function bindExport(root) {
-  var nodes = getNodes(root);
-  if (!nodes.page || nodes.page.__aivoInvoicesExportBound) {
-    return;
-  }
-
-  nodes.page.__aivoInvoicesExportBound = true;
-
-  document.addEventListener("click", async function (e) {
-    var btn = e.target && e.target.closest
-      ? e.target.closest("[data-invoices-export]")
-      : null;
-
-    if (!btn) return;
-
-    var page = getPage();
-    if (!page || !page.contains(btn)) return;
-
-    e.preventDefault();
-
-    var activeKey = String(ACTIVE_FILTER || "all").trim().toLowerCase();
-    var email = await resolveEmail();
-    if (!email) {
-      console.error("[AIVO_INVOICES_EXPORT_FAIL]", "email_missing");
+  function bindFilters(root) {
+    var nodes = getNodes(root);
+    if (!nodes.page || nodes.page.__aivoInvoicesFiltersBound) {
+      applyFilter(ACTIVE_FILTER || "all", nodes.page || root);
       return;
     }
 
-    try {
-      var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
-        method: "GET",
-        credentials: "same-origin",
-        cache: "no-store"
-      });
+    nodes.page.__aivoInvoicesFiltersBound = true;
 
-      var json = await res.json().catch(function () { return null; });
-      if (!res.ok || !json || json.ok !== true) {
-        throw new Error((json && (json.error || json.message)) || "invoices_export_fetch_failed");
+    nodes.filters.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        var key = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+        applyFilter(key || "all", nodes.page);
+      });
+    });
+
+    applyFilter(ACTIVE_FILTER || "all", nodes.page);
+  }
+
+  function bindExport(root) {
+    var nodes = getNodes(root);
+    if (!nodes.page || !nodes.exportBtn || nodes.exportBtn.__aivoInvoicesExportBound) {
+      return;
+    }
+
+    nodes.exportBtn.__aivoInvoicesExportBound = true;
+
+    nodes.exportBtn.addEventListener("click", async function (e) {
+      e.preventDefault();
+
+      var activeKey = String(ACTIVE_FILTER || "all").trim().toLowerCase();
+      var email = await resolveEmail();
+      if (!email) {
+        console.error("[AIVO_INVOICES_EXPORT_FAIL]", "email_missing");
+        return;
       }
 
-      var invoices = Array.isArray(json.invoices) ? json.invoices : [];
-      var filtered = invoices.filter(function (inv) {
-        var type = inferType(inv);
-        return activeKey === "all" || type === activeKey;
-      });
+      try {
+        var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "no-store"
+        });
 
-      var payload = {
-        exported_at: new Date().toISOString(),
-        email: email,
-        filter: activeKey,
-        count: filtered.length,
-        invoices: filtered
-      };
+        var json = await res.json().catch(function () { return null; });
+        if (!res.ok || !json || json.ok !== true) {
+          throw new Error((json && (json.error || json.message)) || "invoices_export_fetch_failed");
+        }
 
-      var blob = new Blob(
-        [JSON.stringify(payload, null, 2)],
-        { type: "application/json;charset=utf-8" }
-      );
+        var invoices = Array.isArray(json.invoices) ? json.invoices : [];
+        var filtered = invoices.filter(function (inv) {
+          var type = inferType(inv);
+          return activeKey === "all" || type === activeKey;
+        });
 
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = "aivo-invoices-" + activeKey + ".json";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+        var payload = {
+          exported_at: new Date().toISOString(),
+          email: email,
+          filter: activeKey,
+          count: filtered.length,
+          invoices: filtered
+        };
 
-      setTimeout(function () {
-        try { URL.revokeObjectURL(url); } catch (_) {}
-      }, 500);
-    } catch (err) {
-      console.error("[AIVO_INVOICES_EXPORT_FAIL]", err);
-    }
-  });
-}
+        var blob = new Blob(
+          [JSON.stringify(payload, null, 2)],
+          { type: "application/json;charset=utf-8" }
+        );
+
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "aivo-invoices-" + activeKey + ".json";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(function () {
+          try { URL.revokeObjectURL(url); } catch (_) {}
+        }, 500);
+      } catch (err) {
+        console.error("[AIVO_INVOICES_EXPORT_FAIL]", err);
+      }
+    });
+  }
+
   async function fetchInvoices(email) {
     var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
       method: "GET",
@@ -398,14 +383,14 @@ function bindExport(root) {
     return Array.isArray(json.invoices) ? json.invoices : [];
   }
 
- async function renderInvoices(root) {
-  var nodes = getNodes(root);
-  if (!nodes.cards || !nodes.empty) return;
+  async function renderInvoices(root) {
+    var nodes = getNodes(root);
+    if (!nodes.cards || !nodes.empty) return;
 
-  bindFilters(nodes.page);
-  bindExport(nodes.page);
+    bindFilters(nodes.page);
+    bindExport(nodes.page);
 
-  var email = await resolveEmail();
+    var email = await resolveEmail();
     if (!email) {
       showEmpty("Faturaları göstermek için oturum bilgisi bulunamadı.", nodes.page);
       return;
@@ -437,23 +422,45 @@ function bindExport(root) {
       showEmpty("Faturalar şu an yüklenemedi.", nodes.page);
     }
   }
-function boot() {
-  var page = getPage();
-  if (!page) return;
 
-  bindFilters(page);
-  console.log("[INVOICES_BOOT_TEST]", "boot-running");
-  bindExport(page);
-  renderInvoices(page);
-  window.refreshInvoices = function () {
-    return renderInvoices(page);
-  };
-}
+  function bind(page) {
+    if (!page || page.__aivoInvoicesBoundV3) return;
+    page.__aivoInvoicesBoundV3 = true;
+
+    bindFilters(page);
+    bindExport(page);
+    renderInvoices(page);
+
+    window.refreshInvoices = function () {
+      return renderInvoices(page);
+    };
+  }
+
+  function tryInit() {
+    var page = getPage();
+    if (!page) return false;
+    bind(page);
+    return true;
+  }
+
+  function boot() {
+    tryInit();
+
+    try {
+      var mo = new MutationObserver(function () {
+        tryInit();
+      });
+
+      mo.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+    } catch (_) {}
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
     boot();
   }
-
-  window.addEventListener("load", boot);
 })();
