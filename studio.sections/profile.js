@@ -388,26 +388,37 @@
       }
     }
 
-    var hasEmail =
-      firstNonEmpty(
-        qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
-        qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
-        ""
-      ) !== "";
+   var resolvedEmail = firstNonEmpty(
+  qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+  qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+  ""
+).trim();
 
-    var hasName =
-      firstNonEmpty(
-        qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
-        ""
-      ) !== "";
+var resolvedName = firstNonEmpty(
+  qs("[data-profile-name]", page) && qs("[data-profile-name]", page).textContent,
+  ""
+).trim();
 
-    var hasInitial =
-      firstNonEmpty(
-        qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
-        ""
-      ) !== "";
+var resolvedInitial = firstNonEmpty(
+  qs("[data-profile-initial]", page) && qs("[data-profile-initial]", page).textContent,
+  ""
+).trim();
 
-    return !!(hasEmail && hasName && hasInitial);
+var hasRealEmail =
+  !!resolvedEmail &&
+  resolvedEmail !== "—" &&
+  resolvedEmail.indexOf("@") !== -1;
+
+var hasRealName =
+  !!resolvedName &&
+  resolvedName !== "Kullanıcı" &&
+  resolvedName !== "—";
+
+var hasRealInitial =
+  !!resolvedInitial &&
+  resolvedInitial !== "K";
+
+return !!(hasRealEmail && hasRealName && hasRealInitial);
   }
 
 function observePage() {
