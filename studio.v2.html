@@ -724,6 +724,92 @@ if (r.status === 200) {
   setOpen(false);
 })();
 </script>
-    
+    <script>
+(function AIVO_STUDIO_NARROW_AUTOFILL_GUARD(){
+  if (window.__AIVO_STUDIO_NARROW_AUTOFILL_GUARD__) return;
+  window.__AIVO_STUDIO_NARROW_AUTOFILL_GUARD__ = true;
+
+  function looksLikeEmail(v){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
+  }
+
+  function isAuthInput(el){
+    if (!el) return false;
+    return !!el.closest('#loginModal, .login-modal, .login-email, #authGuest, #authUser');
+  }
+
+  function isSearchLike(el){
+    if (!el || el.tagName !== "INPUT") return false;
+
+    var type = String(el.getAttribute("type") || "text").toLowerCase();
+    var id = String(el.id || "").toLowerCase();
+    var name = String(el.getAttribute("name") || "").toLowerCase();
+    var placeholder = String(el.getAttribute("placeholder") || "").toLowerCase();
+    var cls = String(el.className || "").toLowerCase();
+
+    if (type === "search") return true;
+    if (placeholder.indexOf("ara") !== -1) return true;
+    if (placeholder.indexOf("search") !== -1) return true;
+    if (id.indexOf("search") !== -1) return true;
+    if (name.indexOf("search") !== -1) return true;
+    if (cls.indexOf("search") !== -1) return true;
+
+    return false;
+  }
+
+  function cleanOne(el){
+    if (!isSearchLike(el)) return;
+    if (isAuthInput(el)) return;
+
+    el.setAttribute("autocomplete", "off");
+    el.setAttribute("autocapitalize", "off");
+    el.setAttribute("autocorrect", "off");
+    el.setAttribute("spellcheck", "false");
+
+    if (looksLikeEmail(el.value)) {
+      el.value = "";
+      try { el.dispatchEvent(new Event("input", { bubbles: true })); } catch (_) {}
+      try { el.dispatchEvent(new Event("change", { bubbles: true })); } catch (_) {}
+    }
+  }
+
+  function scan(){
+    var inputs = document.querySelectorAll("input");
+    for (var i = 0; i < inputs.length; i++) cleanOne(inputs[i]);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function(){
+      scan();
+      setTimeout(scan, 120);
+      setTimeout(scan, 500);
+      setTimeout(scan, 1200);
+    }, { once:true });
+  } else {
+    scan();
+    setTimeout(scan, 120);
+    setTimeout(scan, 500);
+    setTimeout(scan, 1200);
+  }
+
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if (!el || el.tagName !== "INPUT") return;
+    cleanOne(el);
+  }, true);
+
+  document.addEventListener("aivo:module-mounted", function(){
+    setTimeout(scan, 0);
+    setTimeout(scan, 120);
+    setTimeout(scan, 400);
+  });
+
+  window.addEventListener("hashchange", function(){
+    setTimeout(scan, 0);
+    setTimeout(scan, 120);
+    setTimeout(scan, 400);
+  });
+})();
+</script>
 </body>
 </html>
