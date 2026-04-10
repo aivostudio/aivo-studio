@@ -440,17 +440,13 @@ function observePage() {
     setTimeout(function () {
       renderProfileNow();
     }, 300);
-
-    setTimeout(function () {
-      renderProfileNow();
-    }, 700);
   }
 
   if (lastActivePage === "profile") {
     triggerProfileRenderSoon();
   }
 
-  var bodyMo = new MutationObserver(function () {
+  var mo = new MutationObserver(function () {
     var nextActivePage = document.body.getAttribute("data-active-page") || "";
     if (nextActivePage === lastActivePage) return;
 
@@ -461,29 +457,14 @@ function observePage() {
     }
   });
 
-  bodyMo.observe(document.body, {
+  mo.observe(document.body, {
     subtree: false,
     childList: false,
     attributes: true,
     attributeFilter: ["data-active-page"]
   });
-
-  var host = document.getElementById("moduleHost") || document.body;
-
-  var domMo = new MutationObserver(function () {
-    if ((document.body.getAttribute("data-active-page") || "") !== "profile") return;
-
-    var page = getProfilePage();
-    if (!page) return;
-
-    triggerProfileRenderSoon();
-  });
-
-  domMo.observe(host, {
-    subtree: true,
-    childList: true
-  });
 }
+
   function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
     var wait = Number(delay || 0);
