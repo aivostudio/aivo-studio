@@ -89,30 +89,71 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: false, invalidCredits: true, creditsRaw: session?.metadata?.credits });
   }
 
-  const creditsKey = `credits:${email}`;
+const creditsKey = `credits:${email}`;
+const invoicesKey = `invoices:${email}`;
+const invoiceId = `stripe_${session?.id || event?.id || Date.now()}`;
 
-  try {
-    // önce dedupe yaz (7 gün) -> sonra kredi artır
-    await kvSet(dedupeKey, "1", { ex: 60 * 60 * 24 * 7 });
+try {
+  // önce dedupe yaz (7 gün) -> sonra kredi artır
+  await kvSet(dedupeKey, "1", { ex: 60 * 60 * 24 * 7 });
 
-    const before = await kvGet(creditsKey);
-    const afterIncr = await kvIncr(creditsKey, credits);
-    const after = await kvGet(creditsKey);
+  const before = await kvGet(creditsKey);
+  const afterIncr = await kvIncr(creditsKey, credits);
+  const after = await kvGet(creditsKey);
 
-    console.log("[WEBHOOK] credits updated", {
-      email,
-      creditsKey,
-      credits,
-      before,
-      afterIncr,
-      after,
-      session_id: session?.id,
-      event_id: event?.id,
-    });
+  let currentInvoices = await kvGet(invoicesKey);
+  let invoices = [];
 
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    console.log("[WEBHOOK] KV write fail:", err?.message, { creditsKey, credits });
-    return res.status(500).json({ ok: false, error: "KV_WRITE_FAIL", message: err?.message || "UNKNOWN" });
+  if (Array.isArray(currentInvoices)) {
+    invoices = currentInvoices;
+  } else if (typeof currentInvoices === "string" && currentInvoices.trim()) {
+    try {
+      const parsed = JSON.parse(currentInvoices);
+      invoices = Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      invoices = [];
+    }
+  } else if (currentInvoices && typeof currentInvoices === "object") {
+    invoices = Array.isArray(currentInvoices) ? currentInvoices : [];
   }
+
+  invoices.unshift({
+    id: invoiceId,
+    provider: "stripe",
+    type: "purchase",
+    title: "Kredi Satın Alımı",
+    credits,
+    amount: session?.amount_total ? Number(session.amount_total) / 100 : null,
+    pack: String(session?.metadata?.pack || ""),
+    status: "paid",
+    created_at: new Date().toISOString(),
+    stripe: {
+      session_id: session?.id || "",
+      event_id: event?.id || ""
+    }
+  });
+
+  await kvSet(invoicesKey, JSON.stringify(invoices));
+
+  console.log("[WEBHOOK] credits+invoice updated", {
+    email,
+    creditsKey,
+    invoicesKey,
+    credits,
+    before,
+    afterIncr,
+    after,
+    invoiceId,
+    session_id: session?.id,
+    event_id: event?.id,
+  });
+
+  return res.status(200).json({ ok: true });
+} catch (err) {
+  console.log("[WEBHOOK] KV write fail:", err?.message, {
+    creditsKey,
+    invoicesKey,
+    credits
+  });
+  return res.status(500).json({ ok: false, error: "KV_WRITE_FAIL", message: err?.message || "UNKNOWN" });
 }
