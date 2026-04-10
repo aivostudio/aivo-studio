@@ -240,65 +240,73 @@
     );
   }
 
-  function applyFilter(filterKey, root) {
-    var nodes = getNodes(root);
-    if (!nodes.page) return;
+function applyFilter(filterKey, root) {
+  var nodes = getNodes(root);
+  if (!nodes.page) return;
 
-    var key = String(filterKey || "all").trim().toLowerCase();
-    if (!key) key = "all";
-    ACTIVE_FILTER = key;
+  var key = String(filterKey || "all").trim().toLowerCase();
+  if (!key) key = "all";
+  ACTIVE_FILTER = key;
 
-    nodes.filters.forEach(function (btn) {
-      var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
-      var on = (btnKey === key);
+  nodes.filters.forEach(function (btn) {
+    var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+    var on = (btnKey === key);
 
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
 
-    var rows = qsa(".invoice-row[data-invoice-type]", nodes.page);
-    if (!rows.length) return;
+  var rows = qsa("[data-invoice-type]", nodes.page);
+  if (!rows.length) return;
 
-    var visibleCount = 0;
+  var visibleCount = 0;
 
-    rows.forEach(function (row) {
-      var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
-      var show = (key === "all") || (rowType === key);
+  rows.forEach(function (row) {
+    var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
+    var show = (key === "all") || (rowType === key);
 
-      row.style.display = show ? "" : "none";
-      if (show) visibleCount += 1;
-    });
+    row.style.display = show ? "" : "none";
+    if (show) visibleCount += 1;
+  });
 
-    if (!visibleCount) {
-      if (nodes.empty) {
-        nodes.empty.hidden = false;
-        nodes.empty.style.display = "";
-        text(nodes.empty, "Bu filtre için gösterilecek fatura bulunamadı.");
-      }
-    } else {
-      hideEmpty(nodes.page);
+  if (!visibleCount) {
+    if (nodes.empty) {
+      nodes.empty.hidden = false;
+      nodes.empty.style.display = "";
+      text(nodes.empty, "Bu filtre için gösterilecek fatura bulunamadı.");
     }
+  } else {
+    hideEmpty(nodes.page);
+  }
+}
+
+function bindFilters(root) {
+  var nodes = getNodes(root);
+  if (!nodes.page || nodes.page.__aivoInvoicesFiltersBound) {
+    applyFilter(ACTIVE_FILTER || "all", nodes.page || root);
+    return;
   }
 
-  function bindFilters(root) {
-    var nodes = getNodes(root);
-    if (!nodes.filters.length) return;
+  nodes.page.__aivoInvoicesFiltersBound = true;
 
-    nodes.filters.forEach(function (btn) {
-      if (btn.__aivoInvoicesFilterBound) return;
-      btn.__aivoInvoicesFilterBound = true;
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest
+      ? e.target.closest("[data-invoices-filter]")
+      : null;
 
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
+    if (!btn) return;
 
-        var key = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
-        applyFilter(key || "all", nodes.page);
-      });
-    });
+    var page = getPage();
+    if (!page || !page.contains(btn)) return;
 
-    applyFilter(ACTIVE_FILTER || "all", nodes.page);
-  }
+    e.preventDefault();
 
+    var key = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+    applyFilter(key || "all", page);
+  });
+
+  applyFilter(ACTIVE_FILTER || "all", nodes.page);
+}
   async function fetchInvoices(email) {
     var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
       method: "GET",
