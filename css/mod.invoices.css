@@ -45,37 +45,49 @@
   color: rgba(232,228,255,.72);
 }
 
-.main-panel .invoices-actions{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: nowrap;
-  margin-top: 14px !important;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-}
+@media (max-width: 640px){
+  .main-panel .page-head__box{
+    padding: 22px 18px;
+    border-radius: 22px;
+  }
 
-.main-panel .chip-btn{
-  min-width: 0;
-  height: 52px;
-  padding: 0 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.08);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-  box-shadow:
-    0 12px 28px rgba(0,0,0,.26),
-    inset 0 1px 0 rgba(255,255,255,.04);
-  color: rgba(245,245,255,.96);
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -.01em;
-  white-space: nowrap;
-  flex: 0 0 auto;
+  .main-panel .page-head__title{
+    font-size: 22px;
+  }
+
+  .main-panel .page-head__sub{
+    font-size: 13px;
+  }
+
+  .main-panel .invoices-actions{
+    gap: 10px;
+  }
+
+  .main-panel .chip-btn{
+    width: 100%;
+    min-width: 0;
+    height: 54px;
+    font-size: 15px;
+  }
+
+  .main-panel .invoices-card{
+    min-height: 620px;
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .main-panel .invoices-list{
+    min-height: 560px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .main-panel .invoices-empty{
+    min-height: 72px;
+    padding: 0 16px;
+    border-radius: 18px;
+    font-size: 14px;
+  }
 }
 
 .main-panel .chip-btn.chip-btn--primary{
