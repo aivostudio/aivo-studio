@@ -217,9 +217,19 @@ window.ensureModuleCSS = function () {
       incomingTag: incomingRoot && incomingRoot.nodeName
     });
 
-    host.replaceChildren(incomingRoot);
+      host.replaceChildren(incomingRoot);
     host.setAttribute("data-active-module", key);
     host.removeAttribute("data-loading-module");
+
+    try {
+      document.dispatchEvent(new CustomEvent("aivo:module-mounted", {
+        detail: {
+          key: key,
+          host: host,
+          root: incomingRoot
+        }
+      }));
+    } catch (_) {}
 
     console.log("[ROUTER][LOAD] mount:after", {
       key,
