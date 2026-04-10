@@ -5,6 +5,7 @@
    - Safari Keychain dropdown "takılı kalmasın" fix
    ========================================================= */
 (function () {
+    
   "use strict";
 /* ===============================
    HELPERS (CLEAN — NO TOAST)
@@ -270,6 +271,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 // ================= AIVO STUDIO — AUTH UI HYDRATE (email/name/initial) =================
 (function(){
+  return;
+
   function readAuth(){
     try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
     catch(e){ return {}; }
