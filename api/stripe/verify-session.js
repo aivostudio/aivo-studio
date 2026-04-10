@@ -74,11 +74,19 @@ export default async function handler(req, res) {
     }
 
     // 6) STRIPE RETRIEVE + expand line_items
-    let session;
+      let session;
     try {
       session = await stripe.checkout.sessions.retrieve(session_id, { expand: ["line_items"] });
     } catch (e) {
-      // Stripe “bulunamadı / invalid id” gibi hatalar burada
+      console.error("[verify-session][stripe.retrieve.fail]", {
+        message: e?.message || null,
+        raw_message: e?.raw?.message || null,
+        type: e?.type || null,
+        code: e?.code || null,
+        statusCode: e?.statusCode || null,
+        session_id
+      });
+
       const msg = safeStr(e?.raw?.message || e?.message || "Stripe error");
       return json(res, 200, { ok: false, error: "STRIPE_ERROR", detail: msg });
     }
