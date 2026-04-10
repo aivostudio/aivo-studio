@@ -430,63 +430,59 @@
     });
   }
 
-  async function ensureFreshProfileIdentity(page, auth) {
-    var pageEmail = getCurrentProfileScopeEmail(page, auth);
-    var authEmail = normalizeEmail(auth && auth.email);
-    var currentEmail = normalizeEmail(firstNonEmpty(pageEmail, authEmail, ""));
-    var hydratedEmail = normalizeEmail(window.__aivoProfileHydratedEmail || "");
-    var hydrateInFlight = !!window.__aivoProfileHydrateInFlight;
-    var lastHydrateAt = Number(window.__aivoProfileHydrateAt || 0);
-    var now = Date.now();
+async function ensureFreshProfileIdentity(page, auth) {
+  var pageEmail = getCurrentProfileScopeEmail(page, auth);
+  var authEmail = normalizeEmail(auth && auth.email);
+  var currentEmail = normalizeEmail(firstNonEmpty(pageEmail, authEmail, ""));
+  var hydrateInFlight = !!window.__aivoProfileHydrateInFlight;
+  var lastHydratedEmail = normalizeEmail(window.__aivoProfileHydratedEmail || "");
+  var profileEntryKey = normalizeEmail(
+    firstNonEmpty(currentEmail, authEmail, "__empty__")
+  );
+  var lastProfileEntryKey = normalizeEmail(window.__aivoProfileLastEntryKey || "");
+  var isFreshEntryForThisIdentity = profileEntryKey !== lastProfileEntryKey;
 
-    if (!currentEmail) {
-      currentEmail = authEmail;
-    }
+  if (!currentEmail) {
+    currentEmail = authEmail;
+  }
 
-    if (!currentEmail) {
-      if (!hydrateInFlight) {
-        window.__aivoProfileHydrateInFlight = true;
-        try {
-          var okNoEmail = await hydrateProfileFromApi();
-          if (okNoEmail) {
-            window.__aivoProfileHydrateAt = Date.now();
-            window.__aivoProfileHydratedEmail = normalizeEmail(readJSON("aivo_auth_unified_v1").email);
-          }
-        } finally {
-          window.__aivoProfileHydrateInFlight = false;
-        }
-      }
-      return;
-    }
+  if (authEmail && currentEmail && authEmail !== currentEmail) {
+    clearGlobalProfileCache();
+    clearScopedProfileCache(authEmail);
+    clearAuthIdentityButKeepEmail(currentEmail);
+    auth = readJSON("aivo_auth_unified_v1");
+    authEmail = normalizeEmail(auth && auth.email);
+  }
 
-    if (authEmail && currentEmail && authEmail !== currentEmail) {
-      clearGlobalProfileCache();
-      clearScopedProfileCache(authEmail);
-      clearAuthIdentityButKeepEmail(currentEmail);
-      auth = readJSON("aivo_auth_unified_v1");
-    }
+  var authValidForCurrentEmail = hasUsableAuthIdentityForEmail(auth, currentEmail);
+  var scopedName = getScopedProfileName(currentEmail);
 
-    var authValidForCurrentEmail = hasUsableAuthIdentityForEmail(auth, currentEmail);
-    var scopedName = getScopedProfileName(currentEmail);
-    var needsHydrate =
+  var needsHydrate = false;
+
+  if (!currentEmail) {
+    needsHydrate = !lastHydratedEmail;
+  } else {
+    needsHydrate =
+      isFreshEntryForThisIdentity ||
       !authValidForCurrentEmail ||
       !scopedName ||
-      hydratedEmail !== currentEmail ||
-      (now - lastHydrateAt) > 15000;
+      lastHydratedEmail !== currentEmail;
+  }
 
-    if (needsHydrate && !hydrateInFlight) {
-      window.__aivoProfileHydrateInFlight = true;
-      try {
-        var ok = await hydrateProfileFromApi();
-        if (ok) {
-          window.__aivoProfileHydrateAt = Date.now();
-          window.__aivoProfileHydratedEmail = normalizeEmail(readJSON("aivo_auth_unified_v1").email);
-        }
-      } finally {
-        window.__aivoProfileHydrateInFlight = false;
+  if (needsHydrate && !hydrateInFlight) {
+    window.__aivoProfileHydrateInFlight = true;
+    try {
+      var ok = await hydrateProfileFromApi();
+      if (ok) {
+        window.__aivoProfileHydratedEmail = normalizeEmail(readJSON("aivo_auth_unified_v1").email);
       }
+    } finally {
+      window.__aivoProfileHydrateInFlight = false;
     }
   }
+
+  window.__aivoProfileLastEntryKey = profileEntryKey;
+}
 
   async function renderProfileNow() {
     var page = getProfilePage();
