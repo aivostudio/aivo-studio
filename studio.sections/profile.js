@@ -58,6 +58,46 @@
     return "";
   }
 
+  function normalizeEmail(email) {
+    return String(email || "").trim().toLowerCase();
+  }
+
+  function getScopedProfileKey(baseKey, email) {
+    var normalized = normalizeEmail(email);
+    if (!normalized) return baseKey;
+    return baseKey + ":" + normalized;
+  }
+
+  function getCurrentProfileScopeEmail(page, auth) {
+    return normalizeEmail(firstNonEmpty(
+      auth && auth.email,
+      page && qs("[data-profile-input-email]", page) && qs("[data-profile-input-email]", page).value,
+      page && qs("[data-profile-email]", page) && qs("[data-profile-email]", page).textContent,
+      ""
+    ));
+  }
+
+  function getScopedProfileName(email) {
+    return (safeGetLS(getScopedProfileKey("aivo_profile_name", email)) || "").trim();
+  }
+
+  function getScopedProfileSurname(email) {
+    return (safeGetLS(getScopedProfileKey("aivo_profile_surname", email)) || "").trim();
+  }
+
+  function setScopedProfileName(email, value) {
+    safeSetLS(getScopedProfileKey("aivo_profile_name", email), value || "");
+  }
+
+  function setScopedProfileSurname(email, value) {
+    safeSetLS(getScopedProfileKey("aivo_profile_surname", email), value || "");
+  }
+
+  function clearGlobalProfileCache() {
+    safeSetLS("aivo_profile_name", "");
+    safeSetLS("aivo_profile_surname", "");
+  }
+
   function readCreditsFromTopbar() {
     return "";
   }
@@ -70,10 +110,11 @@
     var page = getProfilePage();
     if (!page) return null;
 
-    var auth = readJSON("aivo_auth_unified_v1");
+     var auth = readJSON("aivo_auth_unified_v1");
+    var scopeEmail = getCurrentProfileScopeEmail(page, auth);
 
-    var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
-    var cachedSurname = (safeGetLS("aivo_profile_surname") || "").trim();
+    var cachedName = getScopedProfileName(scopeEmail);
+    var cachedSurname = getScopedProfileSurname(scopeEmail);
 
     var inputNameNow = firstNonEmpty(
       qs("[data-profile-input-name]", page) && qs("[data-profile-input-name]", page).value
@@ -282,7 +323,7 @@
         "Kullanıcı"
       );
 
-      safeSetLS("aivo_auth_unified_v1", JSON.stringify({
+         safeSetLS("aivo_auth_unified_v1", JSON.stringify({
         loggedIn: true,
         email: email || "",
         name: resolvedName,
@@ -293,8 +334,9 @@
         ts: Date.now()
       }));
 
-      safeSetLS("aivo_profile_name", resolvedName);
-      safeSetLS("aivo_profile_surname", resolvedSurname);
+      clearGlobalProfileCache();
+      setScopedProfileName(email, resolvedName);
+      setScopedProfileSurname(email, resolvedSurname);
 
       var initial = resolvedFullName.charAt(0).toUpperCase();
 
@@ -349,10 +391,6 @@
         if (window.toast && window.toast.error) window.toast.error("Ad alanı boş olamaz.");
         return;
       }
-
-      safeSetLS("aivo_profile_name", name);
-      safeSetLS("aivo_profile_surname", surname);
-
       var auth = readJSON("aivo_auth_unified_v1");
       auth.name = name;
       auth.first_name = name;
@@ -363,6 +401,10 @@
       auth.loggedIn = true;
       auth.ts = Date.now();
       safeSetLS("aivo_auth_unified_v1", JSON.stringify(auth));
+
+      clearGlobalProfileCache();
+      setScopedProfileName(auth.email, name);
+      setScopedProfileSurname(auth.email, surname);
 
       var fullName = surname ? (name + " " + surname).trim() : name;
 
@@ -405,8 +447,7 @@ async function renderProfileNow() {
   var cachedAuthEmail = firstNonEmpty(auth.email).toLowerCase();
 
   if (pageEmailNow && cachedAuthEmail && pageEmailNow !== cachedAuthEmail) {
-    safeSetLS("aivo_profile_name", "");
-    safeSetLS("aivo_profile_surname", "");
+    clearGlobalProfileCache();
     safeSetLS("aivo_auth_unified_v1", JSON.stringify({
       loggedIn: true,
       email: pageEmailNow,
