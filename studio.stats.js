@@ -264,14 +264,24 @@
     return null;
   }
 
-  function onCreditsChanged(prev, cur){
-    prev = clampInt(prev);
-    cur  = clampInt(cur);
-    stats.total = cur;
-    if (cur < prev) stats.spent += (prev - cur);
-    stats.lastCredits = cur;
-    persist(); paint();
+ function onCreditsChanged(prev, cur){
+  prev = clampInt(prev);
+  cur  = clampInt(cur);
+
+  if (stats.total == null) {
+    stats.total = prev;
   }
+
+  if (cur < prev) {
+    stats.spent += (prev - cur);
+  } else if (cur > prev) {
+    stats.total += (cur - prev);
+  }
+
+  stats.lastCredits = cur;
+  persist();
+  paint();
+}
 
   function patchStore(){
     if (window.__AIVO_STATS_PATCH_STORE_V14__) return;
@@ -279,11 +289,12 @@
     var S = window.AIVO_STORE_V1;
     window.__AIVO_STATS_PATCH_STORE_V14__ = true;
 
-    var base = readCredits();
+       var base = readCredits();
     if (base != null){
-      stats.total = base;
+      if (stats.total == null) stats.total = base;
       if (stats.lastCredits == null) stats.lastCredits = base;
-      persist(); paint();
+      persist();
+      paint();
     }
 
 function wrap(name){
@@ -586,10 +597,10 @@ wrap("addCredits");
           bindDirectJobEvents();
 
           var c = readCredits();
-          if (c != null){
+                  if (c != null){
             var changed = false;
 
-            if (stats.total !== c){
+            if (stats.total == null){
               stats.total = c;
               changed = true;
             }
