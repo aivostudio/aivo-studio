@@ -398,6 +398,7 @@ function boot() {
   if (!page) return;
 
   bindFilters(page);
+  console.log("[INVOICES_BOOT_TEST]", "boot-running");
   bindExport(page);
   renderInvoices(page);
   window.refreshInvoices = function () {
