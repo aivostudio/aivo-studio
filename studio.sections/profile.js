@@ -426,7 +426,6 @@ var hasRealInitial =
 
 return !!(hasRealEmail && hasRealName && hasRealInitial);
   }
-
 function observePage() {
   if (window.__aivoProfileSectionObserverBound) return;
   window.__aivoProfileSectionObserverBound = true;
@@ -445,33 +444,30 @@ function observePage() {
     setTimeout(function () {
       renderProfileNow();
     }, 300);
-
-    setTimeout(function () {
-      renderProfileNow();
-    }, 700);
   }
 
-  if (getProfilePage()) {
+  if (lastActivePage === "profile") {
     triggerProfileRenderSoon();
   }
 
-  var bodyMo = new MutationObserver(function () {
+  var mo = new MutationObserver(function () {
     var nextActivePage = document.body.getAttribute("data-active-page") || "";
     if (nextActivePage === lastActivePage) return;
 
     lastActivePage = nextActivePage;
 
-    if (nextActivePage === "profile" || getProfilePage()) {
+    if (nextActivePage === "profile") {
       triggerProfileRenderSoon();
     }
   });
 
-  bodyMo.observe(document.body, {
+  mo.observe(document.body, {
     subtree: false,
     childList: false,
     attributes: true,
     attributeFilter: ["data-active-page"]
   });
+}
 
   var host = document.getElementById("moduleHost") || document.body;
 
