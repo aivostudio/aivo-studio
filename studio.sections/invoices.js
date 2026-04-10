@@ -308,6 +308,38 @@ function bindFilters(root) {
 
   applyFilter(ACTIVE_FILTER || "all", nodes.page);
 }
+  function bindExport(root) {
+  var nodes = getNodes(root);
+  if (!nodes.page || !nodes.exportBtn || nodes.exportBtn.__aivoInvoicesExportBound) {
+    return;
+  }
+
+  nodes.exportBtn.__aivoInvoicesExportBound = true;
+
+  nodes.exportBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    var activeKey = String(ACTIVE_FILTER || "all").trim().toLowerCase();
+    var rows = qsa("[data-invoice-type]", nodes.page);
+
+    var visibleRows = rows.filter(function (row) {
+      var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
+      return activeKey === "all" || rowType === activeKey;
+    });
+
+    console.log("[AIVO_INVOICES_EXPORT]", {
+      activeFilter: activeKey,
+      totalRows: rows.length,
+      visibleRows: visibleRows.length
+    });
+
+    try {
+      window.print();
+    } catch (err) {
+      console.error("[AIVO_INVOICES_EXPORT_FAIL]", err);
+    }
+  });
+}
   async function fetchInvoices(email) {
     var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
       method: "GET",
