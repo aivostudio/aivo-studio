@@ -1752,13 +1752,13 @@ function setMusicHostForEvents(el){
     render();
   }
 
-   function getHeader(){
+  function getHeader(){
     return {
       title: "Müziklerim",
       meta: "⚠️ Müzik dosyaları 14 gün saklanır.",
-      searchPlaceholder: "",
-      searchEnabled: false,
-      resetSearch: true
+      searchPlaceholder: "Müziklerde ara...",
+      searchEnabled: true,
+      resetSearch: false
     };
   }
 
