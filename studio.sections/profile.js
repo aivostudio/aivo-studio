@@ -502,7 +502,4 @@ function observePage() {
       bootProfileRender(6, 150);
     }
   });
-  document.addEventListener("aivo:auth-ready", function () {
-  bootProfileRender(12, 150);
-});
 })();
