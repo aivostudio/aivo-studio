@@ -46,9 +46,14 @@
     return null;
   }
 
-  function isProfileActive() {
-    return document.body.getAttribute("data-active-page") === "profile";
-  }
+function isProfileActive() {
+  if (document.body.getAttribute("data-active-page") === "profile") return true;
+
+  var page = getProfilePage();
+  if (!page) return false;
+
+  return !!(page && page.isConnected);
+}
 
   function firstNonEmpty() {
     for (var i = 0; i < arguments.length; i++) {
