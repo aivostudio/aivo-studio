@@ -355,13 +355,14 @@ function bindFilters(root) {
     return Array.isArray(json.invoices) ? json.invoices : [];
   }
 
-  async function renderInvoices(root) {
-    var nodes = getNodes(root);
-    if (!nodes.cards || !nodes.empty) return;
+ async function renderInvoices(root) {
+  var nodes = getNodes(root);
+  if (!nodes.cards || !nodes.empty) return;
 
-    bindFilters(nodes.page);
+  bindFilters(nodes.page);
+  bindExport(nodes.page);
 
-    var email = await resolveEmail();
+  var email = await resolveEmail();
     if (!email) {
       showEmpty("Faturaları göstermek için oturum bilgisi bulunamadı.", nodes.page);
       return;
