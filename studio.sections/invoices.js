@@ -316,7 +316,7 @@ function bindExport(root) {
 
   nodes.page.__aivoInvoicesExportBound = true;
 
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", async function (e) {
     var btn = e.target && e.target.closest
       ? e.target.closest("[data-invoices-export]")
       : null;
@@ -329,21 +329,55 @@ function bindExport(root) {
     e.preventDefault();
 
     var activeKey = String(ACTIVE_FILTER || "all").trim().toLowerCase();
-    var rows = qsa("[data-invoice-type]", page);
-
-    var visibleRows = rows.filter(function (row) {
-      var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
-      return activeKey === "all" || rowType === activeKey;
-    });
-
-    console.log("[AIVO_INVOICES_EXPORT]", {
-      activeFilter: activeKey,
-      totalRows: rows.length,
-      visibleRows: visibleRows.length
-    });
+    var email = await resolveEmail();
+    if (!email) {
+      console.error("[AIVO_INVOICES_EXPORT_FAIL]", "email_missing");
+      return;
+    }
 
     try {
-      window.print();
+      var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+
+      var json = await res.json().catch(function () { return null; });
+      if (!res.ok || !json || json.ok !== true) {
+        throw new Error((json && (json.error || json.message)) || "invoices_export_fetch_failed");
+      }
+
+      var invoices = Array.isArray(json.invoices) ? json.invoices : [];
+      var filtered = invoices.filter(function (inv) {
+        var type = inferType(inv);
+        return activeKey === "all" || type === activeKey;
+      });
+
+      var payload = {
+        exported_at: new Date().toISOString(),
+        email: email,
+        filter: activeKey,
+        count: filtered.length,
+        invoices: filtered
+      };
+
+      var blob = new Blob(
+        [JSON.stringify(payload, null, 2)],
+        { type: "application/json;charset=utf-8" }
+      );
+
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "aivo-invoices-" + activeKey + ".json";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(function () {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+      }, 500);
     } catch (err) {
       console.error("[AIVO_INVOICES_EXPORT_FAIL]", err);
     }
