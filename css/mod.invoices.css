@@ -1,156 +1,377 @@
 /* =========================================================
-   INVOICES v2 — PAGE / CONTAINER RESET
-   Sadece üst alan + liste kabuğu + boş state
+   AIVO STUDIO v2 — INVOICES
+   HTML hedefi:
+   .main-panel
+   .panel-header
+   .page-head
+   .page-head__box
+   .page-head__title
+   .page-head__sub
+   .invoices-actions
+   .chip-btn
+   .chip-btn--primary
+   .invoices-card
+   .invoices-list
+   .invoices-empty
+   .invoices-cards
+   .invoices-more
+   ========================================================= */
+
+/* =========================================================
+   ROOT
    ========================================================= */
 
 .main-panel{
   width: 100%;
+  min-width: 0;
 }
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .main-panel .panel-header{
   margin-bottom: 18px;
 }
 
 .main-panel .page-head{
-  margin-bottom: 14px;
+  margin: 0 0 16px;
 }
 
 .main-panel .page-head__box{
-  padding: 26px 28px;
-  border-radius: 28px;
+  padding: 34px 32px 30px;
+  border-radius: 34px;
   background:
-    linear-gradient(180deg, rgba(124,92,255,.28), rgba(73,48,150,.18));
-  border: 1px solid rgba(255,255,255,.10);
+    radial-gradient(circle at 50% 0%, rgba(140, 112, 255, .28), transparent 60%),
+    linear-gradient(180deg, rgba(92, 67, 180, .42), rgba(41, 26, 92, .34));
+  border: 1px solid rgba(130, 106, 230, .42);
   box-shadow:
-    0 18px 40px rgba(0,0,0,.30),
-    inset 0 1px 0 rgba(255,255,255,.06);
-  backdrop-filter: blur(10px);
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 18px 40px rgba(0,0,0,.26);
 }
 
 .main-panel .page-head__title{
   margin: 0;
   text-align: center;
-  font-size: 24px;
-  line-height: 1.15;
+  font-size: 34px;
+  line-height: 1.1;
   font-weight: 800;
-  color: #f5f3ff;
-  letter-spacing: -.02em;
+  letter-spacing: -.03em;
+  color: #f6f3ff;
 }
 
 .main-panel .page-head__sub{
-  margin: 12px 0 0;
+  margin: 24px 0 0;
   text-align: center;
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(232,228,255,.72);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: rgba(223, 216, 255, .72);
 }
 
-@media (max-width: 640px){
-  .main-panel .page-head__box{
-    padding: 22px 18px;
-    border-radius: 22px;
-  }
+/* =========================================================
+   ACTIONS — 4 eşit kolon, baştan sona
+   ========================================================= */
 
-  .main-panel .page-head__title{
-    font-size: 22px;
-  }
-
-  .main-panel .page-head__sub{
-    font-size: 13px;
-  }
-
-  .main-panel .invoices-actions{
-    gap: 10px;
-  }
-
-  .main-panel .chip-btn{
-    width: 100%;
-    min-width: 0;
-    height: 54px;
-    font-size: 15px;
-  }
-
-  .main-panel .invoices-card{
-    min-height: 620px;
-    padding: 16px;
-    border-radius: 22px;
-  }
-
-  .main-panel .invoices-list{
-    min-height: 560px;
-    padding: 14px;
-    border-radius: 18px;
-  }
-
-  .main-panel .invoices-empty{
-    min-height: 72px;
-    padding: 0 16px;
-    border-radius: 18px;
-    font-size: 14px;
-  }
+.main-panel .invoices-actions{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin-top: 14px !important;
 }
 
-.main-panel .chip-btn.chip-btn--primary{
+.main-panel .invoices-actions .chip-btn{
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: 64px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
   background:
-    linear-gradient(180deg, #8b63ff 0%, #6f4cff 100%);
-  border-color: rgba(167,141,255,.42);
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 24px rgba(0,0,0,.20);
+  color: rgba(248, 246, 255, .94);
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform .14s ease,
+    border-color .14s ease,
+    background .14s ease,
+    box-shadow .14s ease;
+}
+
+.main-panel .invoices-actions .chip-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(160, 138, 255, .24);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 12px 28px rgba(0,0,0,.24);
+}
+
+.main-panel .invoices-actions .chip-btn:active{
+  transform: translateY(0);
+}
+
+.main-panel .invoices-actions .chip-btn:focus{
+  outline: none;
+}
+
+.main-panel .invoices-actions .chip-btn:focus-visible{
+  box-shadow:
+    0 0 0 2px rgba(151, 123, 255, .28),
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 12px 28px rgba(0,0,0,.24);
+}
+
+.main-panel .invoices-actions .chip-btn.chip-btn--primary{
+  background:
+    linear-gradient(180deg, #8f66ff 0%, #6e49f7 100%);
+  border-color: rgba(175, 148, 255, .34);
   color: #ffffff;
   box-shadow:
-    0 16px 34px rgba(90,60,255,.32),
-    inset 0 1px 0 rgba(255,255,255,.14);
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 14px 30px rgba(96, 66, 255, .28);
 }
+
+.main-panel .invoices-actions .chip-btn.chip-btn--primary:hover{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 16px 34px rgba(96, 66, 255, .34);
+}
+
+.main-panel .invoices-actions .chip-btn.is-active{
+  background:
+    linear-gradient(180deg, rgba(140,110,255,.22), rgba(104,79,212,.18));
+  border-color: rgba(170,145,255,.34);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 12px 28px rgba(81, 58, 194, .20);
+}
+
+/* =========================================================
+   OUTER CARD
+   ========================================================= */
 
 .main-panel .invoices-card{
   margin-top: 22px;
-  border-radius: 34px;
+  padding: 34px;
+  border-radius: 38px;
   background:
-    radial-gradient(circle at top center, rgba(84,57,176,.16), transparent 42%),
-    linear-gradient(180deg, rgba(17,16,40,.96), rgba(7,7,24,.98));
-  border: 1px solid rgba(118,94,210,.28);
+    radial-gradient(circle at 50% 0%, rgba(90, 61, 191, .14), transparent 52%),
+    linear-gradient(180deg, rgba(21, 16, 50, .96), rgba(7, 6, 25, .98));
+  border: 1px solid rgba(98, 74, 190, .34);
   box-shadow:
-    0 30px 80px rgba(0,0,0,.42),
-    inset 0 0 0 1px rgba(255,255,255,.03);
-  padding: 26px;
-  min-height: 980px;
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 26px 70px rgba(0,0,0,.34);
+  min-height: 760px;
 }
 
+/* =========================================================
+   INNER LIST SHELL
+   ========================================================= */
+
 .main-panel .invoices-list{
-  min-height: 928px;
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,.06);
+  min-height: 620px;
+  padding: 30px;
+  border-radius: 30px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));
-  padding: 24px;
+    linear-gradient(180deg, rgba(255,255,255,.026), rgba(255,255,255,.012));
+  border: 1px solid rgba(255,255,255,.06);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.03);
 }
 
-.main-panel .invoices-cards{
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 120px;
-}
+/* =========================================================
+   EMPTY
+   ========================================================= */
 
 .main-panel .invoices-empty{
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 86px;
-  padding: 0 24px;
-  margin-bottom: 10px;
+  min-height: 78px;
+  padding: 0 20px;
+  margin-bottom: 16px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.06);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
-  color: rgba(235,232,255,.62);
-  font-size: 15px;
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+  color: rgba(227, 220, 255, .64);
   text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .main-panel .invoices-empty[hidden]{
   display: none !important;
 }
+
+/* =========================================================
+   LIST AREA
+   ========================================================= */
+
+.main-panel .invoices-cards{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 120px;
+}
+
+/* =========================================================
+   FUTURE INVOICE ROW CARD
+   JS kart bastığında hazır olsun
+   ========================================================= */
+
+.main-panel .invoice-card{
+  padding: 22px 24px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 12px 28px rgba(0,0,0,.22);
+}
+
+.main-panel .invoice-card + .invoice-card{
+  margin-top: 0;
+}
+
+.main-panel .invoice-card .inv-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.main-panel .invoice-card .inv-title{
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: rgba(157, 165, 255, .86);
+}
+
+.main-panel .invoice-card .inv-id{
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #f3f0ff;
+}
+
+.main-panel .invoice-card .inv-ref{
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(225, 220, 255, .56);
+  word-break: break-all;
+}
+
+.main-panel .invoice-card .inv-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.main-panel .invoice-card .inv-item{
+  min-width: 0;
+}
+
+.main-panel .invoice-card .inv-item span{
+  display: block;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: rgba(159, 168, 255, .80);
+}
+
+.main-panel .invoice-card .inv-item strong{
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.main-panel .invoice-card .inv-good{
+  color: #74f0b3;
+}
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.main-panel .invoice-card .inv-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.94);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.main-panel .invoice-card .inv-badge--provider{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.94);
+}
+
+.main-panel .invoice-card .inv-badge--status{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.94);
+}
+
+.main-panel .invoice-card .inv-badge--ok{
+  background: rgba(52, 211, 153, .12);
+  border-color: rgba(52, 211, 153, .26);
+  color: rgba(220, 255, 244, .96);
+}
+
+.main-panel .invoice-card .inv-badge--warn{
+  background: rgba(245, 158, 11, .12);
+  border-color: rgba(245, 158, 11, .28);
+  color: rgba(255, 245, 225, .96);
+}
+
+.main-panel .invoice-card .inv-badge--bad{
+  background: rgba(239, 68, 68, .12);
+  border-color: rgba(239, 68, 68, .28);
+  color: rgba(255, 233, 233, .96);
+}
+
+.main-panel .invoice-card .inv-badge--refund{
+  background: rgba(168, 85, 247, .12);
+  border-color: rgba(168, 85, 247, .30);
+  color: rgba(246, 236, 255, .96);
+}
+
+/* =========================================================
+   MORE
+   ========================================================= */
 
 .main-panel .invoices-more{
   display: flex;
@@ -158,67 +379,117 @@
   padding-top: 18px;
 }
 
-@media (max-width: 980px){
-  .main-panel .chip-btn{
-    min-width: 160px;
-    height: 56px;
-    font-size: 16px;
-  }
-
-  .main-panel .invoices-card{
-    min-height: 760px;
-    padding: 20px;
-    border-radius: 26px;
-  }
-
-  .main-panel .invoices-list{
-    min-height: 700px;
-    padding: 18px;
-    border-radius: 22px;
-  }
+.main-panel .invoices-more [hidden]{
+  display: none !important;
 }
 
-@media (max-width: 640px){
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px){
   .main-panel .page-head__box{
-    padding: 22px 18px;
-    border-radius: 22px;
+    padding: 30px 24px 26px;
+    border-radius: 28px;
   }
 
   .main-panel .page-head__title{
-    font-size: 22px;
+    font-size: 30px;
   }
 
   .main-panel .page-head__sub{
-    font-size: 13px;
+    margin-top: 18px;
+    font-size: 15px;
   }
 
   .main-panel .invoices-actions{
-    gap: 10px;
+    gap: 12px;
   }
 
-  .main-panel .chip-btn{
-    width: 100%;
-    min-width: 0;
-    height: 54px;
+  .main-panel .invoices-actions .chip-btn{
+    height: 58px;
     font-size: 15px;
   }
 
   .main-panel .invoices-card{
-    min-height: 620px;
-    padding: 16px;
-    border-radius: 22px;
+    padding: 26px;
+    border-radius: 30px;
+    min-height: 680px;
   }
 
   .main-panel .invoices-list{
+    padding: 22px;
+    border-radius: 24px;
     min-height: 560px;
+  }
+
+  .main-panel .invoice-card .inv-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px){
+  .main-panel .page-head__box{
+    padding: 24px 18px 22px;
+    border-radius: 22px;
+  }
+
+  .main-panel .page-head__title{
+    font-size: 24px;
+  }
+
+  .main-panel .page-head__sub{
+    margin-top: 14px;
+    font-size: 14px;
+  }
+
+  .main-panel .invoices-actions{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .main-panel .invoices-actions .chip-btn{
+    height: 48px;
+    padding: 0 10px;
+    font-size: 14px;
+  }
+
+  .main-panel .invoices-card{
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 22px;
+    min-height: 560px;
+  }
+
+  .main-panel .invoices-list{
+    min-height: 460px;
     padding: 14px;
     border-radius: 18px;
   }
 
   .main-panel .invoices-empty{
-    min-height: 72px;
-    padding: 0 16px;
+    min-height: 66px;
+    padding: 0 14px;
     border-radius: 18px;
     font-size: 14px;
+  }
+
+  .main-panel .invoice-card{
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .main-panel .invoice-card .inv-head{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-panel .invoice-card .inv-grid{
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
