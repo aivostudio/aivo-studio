@@ -410,30 +410,48 @@
     return !!(hasEmail && hasName && hasInitial);
   }
 
-  function observePage() {
-    if (window.__aivoProfileSectionObserverBound) return;
-    window.__aivoProfileSectionObserverBound = true;
+function observePage() {
+  if (window.__aivoProfileSectionObserverBound) return;
+  window.__aivoProfileSectionObserverBound = true;
 
-    var lastActivePage = document.body.getAttribute("data-active-page") || "";
+  var lastActivePage = document.body.getAttribute("data-active-page") || "";
 
-    var mo = new MutationObserver(function () {
-      var nextActivePage = document.body.getAttribute("data-active-page") || "";
-      if (nextActivePage === lastActivePage) return;
+  function triggerProfileRenderSoon() {
+    setTimeout(function () {
+      renderProfileNow();
+    }, 0);
 
-      lastActivePage = nextActivePage;
+    setTimeout(function () {
+      renderProfileNow();
+    }, 120);
 
-      if (nextActivePage === "profile") {
-        renderProfileNow();
-      }
-    });
-
-    mo.observe(document.body, {
-      subtree: false,
-      childList: false,
-      attributes: true,
-      attributeFilter: ["data-active-page"]
-    });
+    setTimeout(function () {
+      renderProfileNow();
+    }, 300);
   }
+
+  if (lastActivePage === "profile") {
+    triggerProfileRenderSoon();
+  }
+
+  var mo = new MutationObserver(function () {
+    var nextActivePage = document.body.getAttribute("data-active-page") || "";
+    if (nextActivePage === lastActivePage) return;
+
+    lastActivePage = nextActivePage;
+
+    if (nextActivePage === "profile") {
+      triggerProfileRenderSoon();
+    }
+  });
+
+  mo.observe(document.body, {
+    subtree: false,
+    childList: false,
+    attributes: true,
+    attributeFilter: ["data-active-page"]
+  });
+}
 
   function bootProfileRender(retries, delay) {
     var left = Number(retries || 0);
