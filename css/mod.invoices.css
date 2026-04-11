@@ -237,18 +237,20 @@
 .main-panel .invoice-card{
   position: relative;
   overflow: hidden;
-  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px 28px 24px;
   border-radius: 28px;
   background:
-    radial-gradient(circle at top left, rgba(133, 92, 255, .22), transparent 34%),
-    radial-gradient(circle at top right, rgba(86, 153, 255, .10), transparent 30%),
-    linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.020) 42%, rgba(255,255,255,.012) 100%);
-  border: 1px solid rgba(170, 145, 255, .18);
+    radial-gradient(circle at top left, rgba(137, 98, 255, .20), transparent 34%),
+    radial-gradient(circle at top right, rgba(114, 191, 255, .10), transparent 28%),
+    linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.028) 42%, rgba(255,255,255,.014) 100%);
+  border: 1px solid rgba(173, 145, 255, .18);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -1px 0 rgba(255,255,255,.02),
-    0 18px 44px rgba(0,0,0,.28),
-    0 0 0 1px rgba(117, 88, 255, .04);
+    inset 0 -1px 0 rgba(255,255,255,.03),
+    0 22px 48px rgba(0,0,0,.28);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -261,88 +263,130 @@
   pointer-events: none;
   background:
     linear-gradient(135deg, rgba(255,255,255,.16), transparent 22%, transparent 78%, rgba(255,255,255,.05));
-  opacity: .55;
-}
-
-.main-panel .invoice-card::after{
-  content: "";
-  position: absolute;
-  left: 22px;
-  right: 22px;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
-  pointer-events: none;
+  opacity: .48;
 }
 
 .main-panel .invoice-card + .invoice-card{
   margin-top: 0;
 }
 
+.main-panel .invoice-card > *{
+  position: relative;
+  z-index: 1;
+}
+
 .main-panel .invoice-card .inv-head{
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
+  gap: 18px;
+  margin-bottom: 4px;
 }
 
 .main-panel .invoice-card .inv-title{
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 800;
-  letter-spacing: .10em;
+  font-size: 11px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: .14em;
   text-transform: uppercase;
-  color: rgba(157, 165, 255, .86);
+  color: rgba(176, 184, 255, .78);
 }
 
 .main-panel .invoice-card .inv-id{
-  margin-top: 6px;
-  font-size: 14px;
-  line-height: 1.35;
-  font-weight: 700;
-  color: #f3f0ff;
+  margin-top: 8px;
+  font-size: 28px;
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  color: #ffffff;
 }
 
 .main-panel .invoice-card .inv-ref{
-  margin-top: 6px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: rgba(225, 220, 255, .56);
-  word-break: break-all;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 600;
+  color: rgba(226, 220, 255, .76);
+  word-break: break-word;
 }
 
 .main-panel .invoice-card .inv-grid{
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  margin-top: 10px;
 }
 
 .main-panel .invoice-card .inv-item{
   min-width: 0;
+  padding: 14px 14px 12px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
 }
 
 .main-panel .invoice-card .inv-item span{
   display: block;
-  font-size: 12px;
-  line-height: 1.25;
-  font-weight: 700;
-  color: rgba(159, 168, 255, .80);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(164, 172, 255, .72);
 }
 
 .main-panel .invoice-card .inv-item strong{
   display: block;
-  margin-top: 6px;
-  font-size: 14px;
-  line-height: 1.4;
-  font-weight: 800;
+  margin-top: 8px;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 900;
+  letter-spacing: -.02em;
   color: #ffffff;
 }
 
 .main-panel .invoice-card .inv-good{
-  color: #74f0b3;
+  color: #7ff0b7;
 }
 
+.main-panel .invoice-card a{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  margin-top: 14px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(151, 111, 255, .22), rgba(106, 70, 238, .18));
+  border: 1px solid rgba(176, 145, 255, .28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 12px 28px rgba(71, 42, 178, .22);
+  color: #f7f3ff !important;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  text-decoration: none;
+  transition:
+    transform .14s ease,
+    box-shadow .14s ease,
+    border-color .14s ease;
+}
+
+.main-panel .invoice-card a:hover{
+  transform: translateY(-1px);
+  border-color: rgba(196, 170, 255, .42);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 16px 34px rgba(71, 42, 178, .28);
+}
+
+.main-panel .invoice-card a:active{
+  transform: translateY(0);
+}
 /* =========================================================
    BADGES
    ========================================================= */
