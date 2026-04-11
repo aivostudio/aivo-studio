@@ -21,22 +21,18 @@ window.ensureModuleCSS = function () {
     atmo: "atmo",
     cartoon: "cartoon",
     photofx: "photofx",
-    dashboard: "dashboard",
-    library: "library",
     invoices: "invoices",
     profile: "profile",
     settings: "settings",
   };
 
-    const ROUTES = new Set([
+  const ROUTES = new Set([
     "music",
     "video",
     "cover",
     "atmo",
     "cartoon",
     "photofx",
-    "dashboard",
-    "library",
     "invoices",
     "profile",
     "settings",
@@ -49,8 +45,6 @@ window.ensureModuleCSS = function () {
     atmo: "/modules/atmosphere.html",
     cartoon: "/modules/child-cartoon.html",
     photofx: "/modules/photofx.html",
-    dashboard: "/modules/dashboard.html",
-    library: "/modules/library.html",
     invoices: "/modules/invoices.html",
     profile: "/modules/profile.html",
     settings: "/modules/settings.html",
