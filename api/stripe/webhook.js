@@ -56,9 +56,13 @@ export default async function handler(req, res) {
     console.log("[WEBHOOK] signature/construct fail:", err?.message);
     return res.status(400).send(`Webhook Error: ${err?.message || "UNKNOWN"}`);
   }
+  // Şimdilik 2 Stripe event'ini kabul ediyoruz:
+  // 1) checkout.session.completed -> satın alım
+  // 2) charge.refunded           -> iade
+  const isCheckoutCompleted = event.type === "checkout.session.completed";
+  const isChargeRefunded = event.type === "charge.refunded";
 
-  // Sadece bunu işliyoruz
-  if (event.type !== "checkout.session.completed") {
+  if (!isCheckoutCompleted && !isChargeRefunded) {
     return res.status(200).json({ ok: true, skipped: true, type: event.type });
   }
 
