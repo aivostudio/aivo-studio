@@ -63,54 +63,27 @@ function escapeHtml(s) {
 function buildInvoiceHtml(data) {
   const companyName = safeStr(data.companyName || "AIVO");
   const companyCountry = safeStr(data.companyCountry || "Türkiye");
-  const customerName = safeStr(data.customerName || "-");
+const customerName = safeStr(data.customerName || "-");
   const customerCountry = safeStr(data.customerCountry || "Türkiye");
   const email = safeStr(data.email || "-");
   const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
   const issueDate = formatDateTR(data.issueDate || new Date().toISOString());
   const dueDate = formatDateTR(data.dueDate || data.issueDate || new Date().toISOString());
-  const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
-  const quantity = Number(data.quantity || 1);
-
-  const creditCount = Number(
-    data.creditCount != null
-      ? data.creditCount
-      : data.credits != null
-        ? data.credits
-        : data.credit_amount != null
-          ? data.credit_amount
-          : quantity
-  );
-
-  const amountValue = Number(data.amount_try || 0);
-  const unitPrice = formatMoneyTRY(amountValue);
-  const totalPrice = formatMoneyTRY(amountValue);
-  const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
-
-  const documentType = safeStr(data.documentType || "purchase").toLowerCase();
-  const isRefund = documentType === "refund";
-
-  const pageTitle = isRefund ? "İade Belgesi" : "Fatura";
-  const badgeText = isRefund ? "Refunded" : "Paid";
-  const heroLabel = isRefund ? "İade Özeti" : "Tahsilat Özeti";
-  const introText = isRefund
-    ? `Bu belge, ${escapeHtml(companyName)} tarafından oluşturulmuş resmi iade / geri ödeme kaydıdır. İşlem, iade ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.`
-    : `Bu belge, ${escapeHtml(companyName)} tarafından oluşturulmuş resmi satın alım kaydıdır. İşlem, ödeme ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.`;
-  const heroCopy = isRefund
-    ? `${escapeHtml(dueDate)} tarihinde iade edildi. Bu işlem için geri ödeme durumu tamamlandı ve belge oluşturuldu.`
-    : `${escapeHtml(dueDate)} tarihinde tahsil edildi. Bu işlem için ödeme durumu tamamlandı ve belge oluşturuldu.`;
-  const infoCardTitle = isRefund ? "İade Bilgileri" : "Fatura Bilgileri";
-  const dueLabel = isRefund ? "İade Tarihi" : "Vade / Tahsilat";
-  const documentKind = isRefund ? "İade / geri ödeme belgesi" : "Dijital hizmet faturası";
-  const paymentStatus = isRefund ? "İade Edildi" : "Ödendi";
-  const paymentChannel = isRefund ? "Online ödeme / Stripe iadesi" : "Online ödeme / Stripe";
-  const itemDesc = isRefund
-    ? `AIVO dijital üyelik / kredi satın alımına ait iade işlem kalemi. İade edilen kredi: ${escapeHtml(String(creditCount))} kredi.`
-    : `AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi. Satın alınan kredi: ${escapeHtml(String(creditCount))} kredi.`;
-  const finalTotalLabel = isRefund ? "İade Edilen Tutar" : "Ödenen Tutar";
-  const noteText = isRefund
-    ? `Bu belge ${escapeHtml(companyName)} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve iade özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.`
-    : `Bu belge ${escapeHtml(companyName)} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve işlem özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.`;
+const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
+const quantity = Number(data.quantity || 1);
+const creditCount = Number(
+  data.creditCount != null
+    ? data.creditCount
+    : data.credits != null
+      ? data.credits
+      : data.credit_amount != null
+        ? data.credit_amount
+        : quantity
+);
+const amountValue = Number(data.amount_try || 0);
+const unitPrice = formatMoneyTRY(amountValue);
+const totalPrice = formatMoneyTRY(amountValue);
+const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
 
   return `
 <!doctype html>
@@ -118,7 +91,7 @@ function buildInvoiceHtml(data) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(companyName)} ${pageTitle}</title>
+  <title>${escapeHtml(companyName)} Fatura</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -166,7 +139,7 @@ function buildInvoiceHtml(data) {
       pointer-events: none;
     }
 
-    .topbar {
+         .topbar {
       position: relative;
       z-index: 1;
       display: flex;
@@ -184,7 +157,7 @@ function buildInvoiceHtml(data) {
       gap: 18px;
     }
 
-    .brand-mark {
+     .brand-mark {
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -199,7 +172,7 @@ function buildInvoiceHtml(data) {
       padding: 0;
     }
 
-    .brand-mark img {
+       .brand-mark img {
       width: 220px;
       height: auto;
       object-fit: contain;
@@ -219,6 +192,14 @@ function buildInvoiceHtml(data) {
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: #64748b;
+    }
+
+    .brand-name {
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #0f172a;
     }
 
     .brand-meta {
@@ -551,33 +532,38 @@ function buildInvoiceHtml(data) {
           <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)} Logo" />
         </div>
         <div class="brand-copy">
-          <div class="brand-eyebrow">Official Invoice</div>
-          <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
-        </div>
+  <div class="brand-eyebrow">Official Invoice</div>
+  <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
+</div>
       </div>
 
       <div class="invoice-badge-wrap">
-        <div class="invoice-badge">${badgeText}</div>
+        <div class="invoice-badge">Paid</div>
         <div class="invoice-code">No: ${escapeHtml(invoiceNo)}</div>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-left">
-        <h1 class="invoice-title">${pageTitle}</h1>
-        <p class="invoice-subtitle">${introText}</p>
+        <h1 class="invoice-title">Fatura</h1>
+        <p class="invoice-subtitle">
+          Bu belge, ${escapeHtml(companyName)} tarafından oluşturulmuş resmi satın alım kaydıdır.
+          İşlem, ödeme ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.
+        </p>
       </div>
 
       <div class="hero-panel">
-        <div class="hero-panel-label">${heroLabel}</div>
+        <div class="hero-panel-label">Tahsilat Özeti</div>
         <div class="hero-panel-amount">${escapeHtml(totalPrice)}</div>
-        <p class="hero-panel-copy">${heroCopy}</p>
+        <p class="hero-panel-copy">
+          ${escapeHtml(dueDate)} tarihinde tahsil edildi. Bu işlem için ödeme durumu tamamlandı ve belge oluşturuldu.
+        </p>
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
-        <h2 class="card-title">${infoCardTitle}</h2>
+        <h2 class="card-title">Fatura Bilgileri</h2>
         <div class="detail-list">
           <div class="detail-row">
             <div class="detail-label">Fatura Numarası</div>
@@ -588,7 +574,7 @@ function buildInvoiceHtml(data) {
             <div class="detail-value">${escapeHtml(issueDate)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">${dueLabel}</div>
+            <div class="detail-label">Vade / Tahsilat</div>
             <div class="detail-value">${escapeHtml(dueDate)}</div>
           </div>
         </div>
@@ -635,15 +621,15 @@ function buildInvoiceHtml(data) {
         <div class="detail-list">
           <div class="detail-row">
             <div class="detail-label">Belge Türü</div>
-            <div class="detail-value">${documentKind}</div>
+            <div class="detail-value">Dijital hizmet faturası</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Ödeme Durumu</div>
-            <div class="detail-value">${paymentStatus}</div>
+            <div class="detail-value">Ödendi</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Kanal</div>
-            <div class="detail-value">${paymentChannel}</div>
+            <div class="detail-value">Online ödeme / Stripe</div>
           </div>
         </div>
       </div>
@@ -665,9 +651,9 @@ function buildInvoiceHtml(data) {
           <tr>
             <td>
               <div class="item-name">${escapeHtml(itemTitle)}</div>
-              <div class="item-desc">${itemDesc}</div>
+              <div class="item-desc">AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi. Satın alınan kredi: ${escapeHtml(String(creditCount))} kredi.</div>
             </td>
-            <td class="num">${escapeHtml(String(creditCount))}</td>
+          <td class="num">${escapeHtml(String(creditCount))}</td>
             <td class="num">${escapeHtml(unitPrice)}</td>
             <td class="num">${escapeHtml(totalPrice)}</td>
           </tr>
@@ -687,7 +673,7 @@ function buildInvoiceHtml(data) {
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
           <tr>
-            <td>${finalTotalLabel}</td>
+            <td>Ödenen Tutar</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
         </table>
@@ -695,7 +681,7 @@ function buildInvoiceHtml(data) {
     </div>
 
     <div class="note">
-      ${noteText}
+      Bu belge ${escapeHtml(companyName)} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve işlem özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.
     </div>
 
     <div class="footer">
@@ -739,122 +725,102 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "INVOICE_NOT_FOUND" });
     }
 
-    const amountTry =
-      invoice?.amount_try != null ? Number(invoice.amount_try) :
-      invoice?.amount != null ? Number(invoice.amount) :
-      invoice?.total != null ? Number(invoice.total) :
-      invoice?.price != null ? Number(invoice.price) :
-      0;
+const amountTry =
+  invoice?.amount_try != null ? Number(invoice.amount_try) :
+  invoice?.amount != null ? Number(invoice.amount) :
+  invoice?.total != null ? Number(invoice.total) :
+  invoice?.price != null ? Number(invoice.price) :
+  0;
 
-    const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
-    const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
-    const reqOrigin = `${reqProto}://${reqHost}`;
+const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
+const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
+const reqOrigin = `${reqProto}://${reqHost}`;
 
-    let resolvedCustomerName = "";
+let resolvedCustomerName = "";
 
-    try {
-      const meRes = await fetch(`${reqOrigin}/api/auth/me`, {
-        method: "GET",
-        headers: {
-          cookie: req.headers.cookie || "",
-          accept: "application/json",
-        },
-      });
+try {
+  const meRes = await fetch(`${reqOrigin}/api/auth/me`, {
+    method: "GET",
+    headers: {
+      cookie: req.headers.cookie || "",
+      accept: "application/json",
+    },
+  });
 
-      const meJson = await meRes.json().catch(() => null);
+  const meJson = await meRes.json().catch(() => null);
 
-      const firstName =
-        safeStr(meJson?.name) ||
-        safeStr(meJson?.first_name) ||
-        safeStr(meJson?.firstName) ||
-        safeStr(meJson?.user?.name) ||
-        safeStr(meJson?.user?.first_name) ||
-        safeStr(meJson?.user?.firstName) ||
-        safeStr(meJson?.profile?.name) ||
-        safeStr(meJson?.profile?.first_name) ||
-        safeStr(meJson?.profile?.firstName);
+  const firstName =
+    safeStr(meJson?.name) ||
+    safeStr(meJson?.first_name) ||
+    safeStr(meJson?.firstName) ||
+    safeStr(meJson?.user?.name) ||
+    safeStr(meJson?.user?.first_name) ||
+    safeStr(meJson?.user?.firstName) ||
+    safeStr(meJson?.profile?.name) ||
+    safeStr(meJson?.profile?.first_name) ||
+    safeStr(meJson?.profile?.firstName);
 
-      const lastName =
-        safeStr(meJson?.surname) ||
-        safeStr(meJson?.last_name) ||
-        safeStr(meJson?.lastName) ||
-        safeStr(meJson?.user?.surname) ||
-        safeStr(meJson?.user?.last_name) ||
-        safeStr(meJson?.user?.lastName) ||
-        safeStr(meJson?.profile?.surname) ||
-        safeStr(meJson?.profile?.last_name) ||
-        safeStr(meJson?.profile?.lastName);
+  const lastName =
+    safeStr(meJson?.surname) ||
+    safeStr(meJson?.last_name) ||
+    safeStr(meJson?.lastName) ||
+    safeStr(meJson?.user?.surname) ||
+    safeStr(meJson?.user?.last_name) ||
+    safeStr(meJson?.user?.lastName) ||
+    safeStr(meJson?.profile?.surname) ||
+    safeStr(meJson?.profile?.last_name) ||
+    safeStr(meJson?.profile?.lastName);
 
-      resolvedCustomerName = safeStr(`${firstName} ${lastName}`);
-    } catch (_) {}
+  resolvedCustomerName = safeStr(`${firstName} ${lastName}`);
+} catch (_) {}
 
-    const invoiceStatus = safeStr(invoice?.status).toLowerCase();
-    const invoiceType = safeStr(
-      invoice?.document_type ||
-      invoice?.type ||
-      invoice?.kind ||
-      invoice?.event_type
-    ).toLowerCase();
-
-    const documentType =
-      invoiceStatus === "refunded" ||
-      invoiceStatus === "refund" ||
-      invoiceType === "refund" ||
-      invoiceType === "refunded"
-        ? "refund"
-        : "purchase";
-
-    const html = buildInvoiceHtml({
-      documentType,
-      invoiceNo:
-        safeStr(invoice?.invoice_no) ||
-        safeStr(invoice?.invoiceNo) ||
-        safeStr(invoice?.stripe?.invoice_id) ||
-        safeStr(invoice?.id) ||
-        "AIVO-0001",
-      issueDate:
-        invoice?.created_at ||
-        invoice?.createdAt ||
-        invoice?.created ||
-        invoice?.date ||
-        new Date().toISOString(),
-      dueDate:
-        invoice?.refunded_at ||
-        invoice?.refund_date ||
-        invoice?.paid_at ||
-        invoice?.updated_at ||
-        invoice?.created_at ||
-        invoice?.createdAt ||
-        invoice?.created ||
-        new Date().toISOString(),
-      email,
-      customerName:
-        resolvedCustomerName ||
-        safeStr(invoice?.customer_name) ||
-        safeStr(invoice?.customerName) ||
-        "-",
-      customerCountry:
-        safeStr(invoice?.customer_country) ||
-        safeStr(invoice?.customerCountry) ||
-        "Türkiye",
-      companyName: "AIVO",
-      companyCountry: "Türkiye",
-      itemTitle:
-        safeStr(invoice?.item_title) ||
-        safeStr(invoice?.title) ||
-        safeStr(invoice?.plan) ||
-        "AIVO Pro",
-      quantity: Number(invoice?.quantity || 1),
-      creditCount:
-        invoice?.credit_count != null ? Number(invoice.credit_count) :
-        invoice?.credits != null ? Number(invoice.credits) :
-        invoice?.credit_amount != null ? Number(invoice.credit_amount) :
-        invoice?.quantity != null ? Number(invoice.quantity) :
-        1,
-      amount_try: amountTry,
-      logoUrl: `${ORIGIN}/aivo-logo.png`,
-    });
-
+const html = buildInvoiceHtml({
+  invoiceNo:
+    safeStr(invoice?.invoice_no) ||
+    safeStr(invoice?.invoiceNo) ||
+    safeStr(invoice?.stripe?.invoice_id) ||
+    safeStr(invoice?.id) ||
+    "AIVO-0001",
+  issueDate:
+    invoice?.created_at ||
+    invoice?.createdAt ||
+    invoice?.created ||
+    invoice?.date ||
+    new Date().toISOString(),
+  dueDate:
+    invoice?.paid_at ||
+    invoice?.updated_at ||
+    invoice?.created_at ||
+    invoice?.createdAt ||
+    invoice?.created ||
+    new Date().toISOString(),
+  email: email,
+  customerName:
+    resolvedCustomerName ||
+    safeStr(invoice?.customer_name) ||
+    safeStr(invoice?.customerName) ||
+    "-",
+  customerCountry:
+    safeStr(invoice?.customer_country) ||
+    safeStr(invoice?.customerCountry) ||
+    "Türkiye",
+  companyName: "AIVO",
+  companyCountry: "Türkiye",
+  itemTitle:
+    safeStr(invoice?.item_title) ||
+    safeStr(invoice?.title) ||
+    safeStr(invoice?.plan) ||
+    "AIVO Pro",
+  quantity: Number(invoice?.quantity || 1),
+  creditCount:
+    invoice?.credit_count != null ? Number(invoice.credit_count) :
+    invoice?.credits != null ? Number(invoice.credits) :
+    invoice?.credit_amount != null ? Number(invoice.credit_amount) :
+    invoice?.quantity != null ? Number(invoice.quantity) :
+    1,
+  amount_try: amountTry,
+  logoUrl: `${ORIGIN}/aivo-logo.png`,
+});
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(html);
