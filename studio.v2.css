@@ -433,7 +433,7 @@ button.primary-btn.aivoBtnPrimary{
   justify-content: space-between !important;
 
   padding-top: 28px !important;
-  padding-bottom: 28px !important;
+  padding-bottom: 20px !important;
 }
 
 #leftMenu .navScroll .navCard:first-child{
@@ -443,13 +443,31 @@ button.primary-btn.aivoBtnPrimary{
 }
 
 #leftMenu .navScroll .navCard:last-child{
-  margin-top: 0 !important;
+  margin-top: 32px !important;
   padding-top: 12px !important;
-  padding-bottom: 28px !important;
+  padding-bottom: 18px !important;
 }
 
 #leftMenu .navInfo{
-  display: none !important;
+  display: block !important;
+  margin-top: 18px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.06) !important;
+  min-height: auto !important;
+}
+
+#leftMenu .navInfoTitle{
+  font-weight: 800 !important;
+  opacity: .92 !important;
+  margin-bottom: 8px !important;
+}
+
+#leftMenu .navInfoBody{
+  opacity: .78 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
 }
 /* ===== TOPBAR FINAL FLUSH FIX ===== */
 header#top.aivo-topbar{
