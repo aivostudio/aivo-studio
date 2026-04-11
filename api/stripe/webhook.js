@@ -121,8 +121,9 @@ export default async function handler(req, res) {
       }
     }
 
-   let stripeInvoice = null;
+let stripeInvoice = null;
 let pdfUrl = "";
+let aivoHtml = "";
 
 if (session?.invoice) {
   try {
@@ -132,6 +133,36 @@ if (session?.invoice) {
       stripeInvoice?.hosted_invoice_url ||
       ""
     );
+
+    const generated = await fetch("https://aivo.tr/api/invoices/generate", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        stripe_invoice_id: stripeInvoice?.id || String(session?.invoice || ""),
+        email,
+        customer_name:
+          stripeInvoice?.customer_name ||
+          stripeInvoice?.customer_email ||
+          email,
+        customer_country: "Türkiye",
+        item_title: "AIVO Pro",
+        amount_try: session?.amount_total ? Number(session.amount_total) / 100 : null
+      })
+    });
+
+    const generatedJson = await generated.json().catch(() => null);
+
+    if (generated?.ok && generatedJson?.ok && generatedJson?.html) {
+      aivoHtml = String(generatedJson.html || "");
+    } else {
+      console.log("[WEBHOOK] aivo invoice generate failed", {
+        status: generated?.status || 0,
+        body: generatedJson || null,
+        stripe_invoice_id: stripeInvoice?.id || String(session?.invoice || "")
+      });
+    }
   } catch (err) {
     console.log("[WEBHOOK] stripe invoice retrieve fail:", err?.message, {
       session_id: session?.id,
@@ -151,6 +182,7 @@ const invoice = {
   created_at: new Date().toISOString(),
   status: "paid",
   pdf_url: pdfUrl,
+  aivo_html: aivoHtml,
   stripe: {
     session_id: session?.id || "",
     event_id: event?.id || "",
