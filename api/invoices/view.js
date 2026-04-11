@@ -761,7 +761,7 @@ export default async function handler(req, res) {
         "AIVO Pro",
       quantity: Number(invoice?.quantity || 1),
       amount_try: amountTry,
-      logoUrl: `${ORIGIN}/aivo-logo.png`,
+     logoUrl: `${ORIGIN}/aivo-logo-invoice.png`,
     });
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
