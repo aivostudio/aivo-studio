@@ -147,25 +147,24 @@ function buildInvoiceHtml(data) {
       gap: 18px;
     }
 
-    .brand-mark {
-      width: 64px;
-      height: 64px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-      border: 1px solid rgba(148, 163, 184, 0.20);
-      box-shadow:
-        0 12px 32px rgba(15, 23, 42, 0.08),
-        inset 0 1px 0 rgba(255,255,255,0.85);
+     .brand-mark {
       display: flex;
       align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      justify-content: flex-start;
+      overflow: visible;
       flex: 0 0 auto;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      width: auto;
+      height: auto;
+      padding: 0;
     }
 
     .brand-mark img {
-      width: 42px;
-      height: 42px;
+      width: 220px;
+      height: auto;
       object-fit: contain;
       display: block;
     }
