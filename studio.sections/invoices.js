@@ -232,9 +232,14 @@ function rowHtml(rawInv, email) {
       : inv.title;
 
   var normalizedEmail = normalizeEmail(email);
+  var openBase =
+    inv.type === "refund"
+      ? "/api/invoices/refund-view"
+      : "/api/invoices/view";
+
   var openUrl =
     (inv.id && normalizedEmail)
-      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
+      ? (openBase + "?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
   var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
