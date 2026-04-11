@@ -222,7 +222,7 @@ function rowHtml(rawInv, email) {
   var normalizedEmail = normalizeEmail(email);
   var openUrl =
     (inv.id && normalizedEmail)
-      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
+      ? ("/api/invoices/pdf?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
   var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
