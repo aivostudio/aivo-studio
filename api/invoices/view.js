@@ -172,11 +172,12 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       padding: 0;
     }
 
-    .brand-mark img {
+     .brand-mark img {
       width: 220px;
       height: auto;
       object-fit: contain;
       display: block;
+      margin-left: -14px;
     }
 
     .brand-copy {
