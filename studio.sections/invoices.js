@@ -220,15 +220,9 @@ function rowHtml(rawInv, email) {
   var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
 
   var normalizedEmail = normalizeEmail(email);
-  var hasPdf =
-    !!safeStr(rawInv && rawInv.aivo_html) ||
-    !!safeStr(rawInv && rawInv.pdf_url) ||
-    !!safeStr(rawInv && rawInv.pdfUrl) ||
-    !!safeStr(rawInv && rawInv.url);
-
   var openUrl =
-    (inv.id && normalizedEmail && hasPdf)
-      ? ("/api/invoices/pdf?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
+    (inv.id && normalizedEmail)
+      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
   var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
