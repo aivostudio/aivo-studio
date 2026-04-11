@@ -227,7 +227,7 @@ function rowHtml(rawInv, email) {
   var inv = normalizeInvoice(rawInv);
   var typeLabel = mapTypeLabel(inv);
   var dateText = formatDate(inv.createdAt);
-  var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
+  var amountText = inv.amount != null ? formatAmount(inv.amount) : "-";
 
   var creditCount =
     rawInv && rawInv.credit_count != null ? Number(rawInv.credit_count) :
@@ -236,10 +236,15 @@ function rowHtml(rawInv, email) {
     rawInv && rawInv.quantity != null ? Number(rawInv.quantity) :
     null;
 
-  var titleText =
+  var packTitle =
     creditCount && isFinite(creditCount) && creditCount > 0
-      ? String(creditCount) + " Kredi"
-      : inv.title;
+      ? String(creditCount) + " Kredilik Paket"
+      : (inv.title || "Kredi Paketi");
+
+  var packSub =
+    creditCount && isFinite(creditCount) && creditCount > 0
+      ? "Toplam " + String(creditCount) + " kredi tanımı"
+      : "Satın alım detayı";
 
   var normalizedEmail = normalizeEmail(email);
   var openBase =
@@ -252,23 +257,72 @@ function rowHtml(rawInv, email) {
       ? (openBase + "?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
-  var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
+  var statusClass =
+    inv.type === "refund"
+      ? "inv-badge inv-badge--refund"
+      : (inv.statusRaw === "paid" || inv.statusRaw === "succeeded" || inv.statusRaw === "success")
+        ? "inv-badge inv-badge--ok"
+        : (inv.statusRaw === "failed" || inv.statusRaw === "error")
+          ? "inv-badge inv-badge--bad"
+          : "inv-badge inv-badge--status";
+
+  var typeClass =
+    inv.type === "refund"
+      ? "inv-badge inv-badge--refund"
+      : "inv-badge inv-badge--provider";
+
+  var actionLabel =
+    inv.type === "refund"
+      ? "İade Belgesini Aç"
+      : "Faturayı Görüntüle";
+
+  var amountLabel =
+    inv.type === "refund"
+      ? "İade Tutarı"
+      : "Ödeme Tutarı";
+
+  var detailLine =
+    inv.type === "refund"
+      ? "İşlem türü iade olarak işlendi."
+      : "Paket ödemesi başarıyla tamamlandı.";
 
   return (
     '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
-      '<div class="invoice-row__main">' +
-        '<div class="invoice-row__title">' + escapeHtml(titleText) + '</div>' +
-        '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
+
+      '<div class="inv-head">' +
+        '<div class="inv-head__left">' +
+          '<div class="inv-title">AIVO FATURA KAYDI</div>' +
+          '<div class="inv-id">' + escapeHtml(packTitle) + '</div>' +
+          '<div class="inv-ref">' + escapeHtml(packSub) + '</div>' +
+        '</div>' +
+        '<div class="inv-head__right">' +
+          '<span class="' + escapeHtml(typeClass) + '">' + escapeHtml(typeLabel) + '</span>' +
+        '</div>' +
       '</div>' +
-      '<div class="invoice-row__meta">Durum: ' + escapeHtml(inv.status) + '</div>' +
-      '<div class="invoice-row__amount">' + escapeHtml(amountText || "-") + '</div>' +
-      '<div class="invoice-row__actions">' +
-        (
-          openUrl
-            ? '<a class="invoice-row__btn" href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
-            : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
-        ) +
+
+      '<div class="inv-grid">' +
+        '<div class="inv-item">' +
+          '<span>Tarih</span>' +
+          '<strong>' + escapeHtml(dateText) + '</strong>' +
+        '</div>' +
+        '<div class="inv-item">' +
+          '<span>Durum</span>' +
+          '<strong><span class="' + escapeHtml(statusClass) + '">' + escapeHtml(inv.status || "-") + '</span></strong>' +
+        '</div>' +
+        '<div class="inv-item">' +
+          '<span>' + escapeHtml(amountLabel) + '</span>' +
+          '<strong>' + escapeHtml(amountText) + '</strong>' +
+        '</div>' +
       '</div>' +
+
+      '<div class="inv-ref">' + escapeHtml(detailLine) + '</div>' +
+
+      (
+        openUrl
+          ? '<a class="invoice-row__btn invoice-row__btn--primary" href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(actionLabel) + '</a>'
+          : '<button class="invoice-row__btn invoice-row__btn--primary" type="button" disabled>Belge Hazır Değil</button>'
+      ) +
+
     '</div>'
   );
 }
