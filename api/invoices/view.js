@@ -521,10 +521,9 @@ function buildInvoiceHtml(data) {
           <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)} Logo" />
         </div>
         <div class="brand-copy">
-          <div class="brand-eyebrow">Official Invoice</div>
-          <div class="brand-name">${escapeHtml(companyName)}</div>
-          <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
-        </div>
+  <div class="brand-eyebrow">Official Invoice</div>
+  <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
+</div>
       </div>
 
       <div class="invoice-badge-wrap">
