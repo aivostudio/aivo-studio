@@ -649,9 +649,9 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
           <tr>
             <td>
               <div class="item-name">${escapeHtml(itemTitle)}</div>
-              <div class="item-desc">AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi.</div>
+              <div class="item-desc">AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi. Satın alınan kredi: ${escapeHtml(String(creditCount))} kredi.</div>
             </td>
-            <td class="num">${quantity}</td>
+          <td class="num">${escapeHtml(String(creditCount))}</td>
             <td class="num">${escapeHtml(unitPrice)}</td>
             <td class="num">${escapeHtml(totalPrice)}</td>
           </tr>
