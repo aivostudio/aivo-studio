@@ -235,14 +235,44 @@
    ========================================================= */
 
 .main-panel .invoice-card{
-  padding: 22px 24px;
-  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 28px 24px;
+  border-radius: 28px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
-  border: 1px solid rgba(255,255,255,.08);
+    radial-gradient(circle at top left, rgba(133, 92, 255, .22), transparent 34%),
+    radial-gradient(circle at top right, rgba(86, 153, 255, .10), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.020) 42%, rgba(255,255,255,.012) 100%);
+  border: 1px solid rgba(170, 145, 255, .18);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.03),
-    0 12px 28px rgba(0,0,0,.22);
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(255,255,255,.02),
+    0 18px 44px rgba(0,0,0,.28),
+    0 0 0 1px rgba(117, 88, 255, .04);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.main-panel .invoice-card::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.16), transparent 22%, transparent 78%, rgba(255,255,255,.05));
+  opacity: .55;
+}
+
+.main-panel .invoice-card::after{
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
+  pointer-events: none;
 }
 
 .main-panel .invoice-card + .invoice-card{
