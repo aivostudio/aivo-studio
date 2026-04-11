@@ -213,7 +213,6 @@
       pdfUrl: inv.pdf_url || inv.pdfUrl || inv.url || ""
     };
   }
-
 function rowHtml(rawInv, email) {
   var inv = normalizeInvoice(rawInv);
   var typeLabel = mapTypeLabel(inv);
@@ -221,18 +220,11 @@ function rowHtml(rawInv, email) {
   var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
 
   var normalizedEmail = normalizeEmail(email);
-  var hasAivoHtml = !!String((rawInv && rawInv.aivo_html) || "").trim();
-
-  var viewUrl =
-    (hasAivoHtml && inv.id && normalizedEmail)
+  var openUrl =
+    (inv.id && normalizedEmail)
       ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
-  var fallbackPdfUrl = String(
-    (rawInv && (rawInv.pdf_url || rawInv.pdfUrl || rawInv.url)) || ""
-  ).trim();
-
-  var openUrl = viewUrl || fallbackPdfUrl || "";
   var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
 
   return (
