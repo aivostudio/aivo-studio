@@ -20,11 +20,9 @@
 <link rel="stylesheet" href="/studio.pages.css?v=8">
 
 <!-- ================= MODULE CSS (STATIK / PRELOADED) ================= -->
-<link rel="stylesheet" href="/css/mod.dashboard.v2.css?v=1">
 <link rel="stylesheet" href="/css/mod.music.css?v=3">
 <link rel="stylesheet" href="/css/mod.video.css?v=3">
 <link rel="stylesheet" href="/css/mod.cover.css?v=3">
-<link rel="stylesheet" href="/css/mod.library.css?v=3">
 <link rel="stylesheet" href="/css/mod.invoices.css?v=3">
 <link rel="stylesheet" href="/css/mod.profile.css?v=3">
 <link rel="stylesheet" href="/css/mod.settings.css?v=3">
@@ -34,11 +32,9 @@
 
 <!-- ================= PANEL CSS (video/covers/atmo panel ui) ================= -->
 <link rel="stylesheet" href="/css/mod.video.panel.css?v=2">
-<link rel="stylesheet" href="/css/mod.dashboard.panel.css?v=1">
-<link rel="stylesheet" href="/css/mod.library.panel.css?v=1">
 <link rel="stylesheet" href="/css/mod.invoices.panel.css?v=1">
- <link rel="stylesheet" href="/css/mod.profile.panel.css?v=1">
- <link rel="stylesheet" href="/css/mod.settings.panel.css?v=1">
+<link rel="stylesheet" href="/css/mod.profile.panel.css?v=1">
+<link rel="stylesheet" href="/css/mod.settings.panel.css?v=1">
 <link rel="stylesheet" href="/css/mod.atmo.panel.css?v=1">
 <link rel="stylesheet" href="/css/mod.atmo.css?v=1">
 <link rel="stylesheet" href="/css/mod.cartoon.css?v=1">
@@ -354,8 +350,6 @@ if (r.status === 200) {
 
                 <div class="um-sep"></div>
 
-                <a class="um-item" href="/studio.v2.html#dashboard"><span class="um-i">✦</span><span>Dashboard</span></a>
-                <a class="um-item" href="/studio.v2.html#library"><span class="um-i">▦</span><span>Ürettiklerim</span></a>
                 <a class="um-item" href="/studio.v2.html#profile"><span class="um-i">👤</span><span>Profil</span></a>
                 <a class="um-item" href="/studio.v2.html#settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
 
@@ -413,9 +407,6 @@ if (r.status === 200) {
 
         <div class="navCard">
           <div class="navTitle">Paneller</div>
-
-          <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
-          <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
 
           <a class="navBtn ghost" href="/fiyatlandirma.html#packs" style="display:block;text-decoration:none;">
             Kredi Satın Al
@@ -541,11 +532,9 @@ if (r.status === 200) {
 <script src="/js/shared.video.card.js?v=2" defer></script>
 
 <!-- ================= PANELLER ================= -->
-<script src="/panel.dashboard.js?v=1" defer></script>
 <script src="/panel.music.js?v=6" defer></script>
 <script src="/panel.video.js?v=9999" defer></script>
 <script src="/panel.cover.js?v=2" defer></script>
-<script src="/panel.library.js?v=1" defer></script>
 <script src="/panel.invoices.js?v=1" defer></script>
 <script src="/panel.profile.js?v=1" defer></script>
 <script src="/panel.settings.js?v=1" defer></script>
@@ -576,7 +565,6 @@ if (r.status === 200) {
 <script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
 
 <!-- ================= DASHBOARD / PROFILE / SETTINGS ================= -->
-<script src="/studio.dashboard.recent.js?v=7" defer></script>
 <script src="/studio.stats.js?v=16" defer></script>
 <script src="/studio.settings.js?v=3" defer></script>
 <script src="/studio.sections/settings.js?v=1" defer></script>
