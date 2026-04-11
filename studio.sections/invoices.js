@@ -419,7 +419,9 @@ function rowHtml(rawInv, email) {
         );
       });
 
-      nodes.cards.innerHTML = sorted.map(rowHtml).join("");
+    nodes.cards.innerHTML = sorted.map(function (inv) {
+  return rowHtml(inv, email);
+}).join("");
       applyFilter(ACTIVE_FILTER || "all", nodes.page);
     } catch (err) {
       console.error("[AIVO_INVOICES_RENDER_FAIL]", err);
