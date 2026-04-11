@@ -163,10 +163,20 @@
       inv.kind ||
       inv.event ||
       inv.action ||
+      inv.status ||
       ""
     ).toLowerCase();
 
-    if (raw.indexOf("refund") !== -1 || raw.indexOf("iade") !== -1) return "refund";
+    if (
+      raw.indexOf("refund") !== -1 ||
+      raw.indexOf("refunded") !== -1 ||
+      raw.indexOf("partial_refund") !== -1 ||
+      raw.indexOf("partially_refunded") !== -1 ||
+      raw.indexOf("iade") !== -1
+    ) {
+      return "refund";
+    }
+
     return "purchase";
   }
 
