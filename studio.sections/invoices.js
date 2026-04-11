@@ -214,31 +214,35 @@
     };
   }
 
-  function rowHtml(rawInv) {
-    var inv = normalizeInvoice(rawInv);
-    var typeLabel = mapTypeLabel(inv);
-    var dateText = formatDate(inv.createdAt);
-    var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
-    var actionLabel = inv.pdfUrl ? "Belge Aç" : "Belge Yok";
+function rowHtml(rawInv, email) {
+  var inv = normalizeInvoice(rawInv);
+  var typeLabel = mapTypeLabel(inv);
+  var dateText = formatDate(inv.createdAt);
+  var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
+  var viewUrl =
+    (inv.id && email)
+      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizeEmail(email)) + "&id=" + encodeURIComponent(inv.id))
+      : "";
+  var actionLabel = viewUrl ? "Belge Aç" : "Belge Yok";
 
-    return (
-      '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
-        '<div class="invoice-row__main">' +
-          '<div class="invoice-row__title">' + escapeHtml(inv.title) + '</div>' +
-          '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
-        '</div>' +
-        '<div class="invoice-row__meta">Durum: ' + escapeHtml(inv.status) + '</div>' +
-        '<div class="invoice-row__amount">' + escapeHtml(amountText || "-") + '</div>' +
-        '<div class="invoice-row__actions">' +
-          (
-            inv.pdfUrl
-              ? '<a class="invoice-row__btn" href="' + escapeHtml(inv.pdfUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
-              : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
-          ) +
-        '</div>' +
-      '</div>'
-    );
-  }
+  return (
+    '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
+      '<div class="invoice-row__main">' +
+        '<div class="invoice-row__title">' + escapeHtml(inv.title) + '</div>' +
+        '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
+      '</div>' +
+      '<div class="invoice-row__meta">Durum: ' + escapeHtml(inv.status) + '</div>' +
+      '<div class="invoice-row__amount">' + escapeHtml(amountText || "-") + '</div>' +
+      '<div class="invoice-row__actions">' +
+        (
+          viewUrl
+            ? '<a class="invoice-row__btn" href="' + escapeHtml(viewUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
+            : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
+        ) +
+      '</div>' +
+    '</div>'
+  );
+}
 
   function applyFilter(filterKey, root) {
     var nodes = getNodes(root);
