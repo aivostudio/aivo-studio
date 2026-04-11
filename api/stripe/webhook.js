@@ -74,6 +74,13 @@ export default async function handler(req, res) {
   }
 
   const session = event.data.object;
+  console.log("[WEBHOOK] session invoice debug", {
+  session_id: session?.id || "",
+  session_invoice: session?.invoice || "",
+  payment_status: session?.payment_status || "",
+  customer_email: session?.customer_email || "",
+  metadata_email: session?.metadata?.email || ""
+});
 
   const paymentStatus = String(session?.payment_status || "");
   if (paymentStatus !== "paid") {
