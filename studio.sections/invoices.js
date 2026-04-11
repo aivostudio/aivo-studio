@@ -222,10 +222,10 @@ function rowHtml(rawInv, email) {
   var normalizedEmail = normalizeEmail(email);
   var openUrl =
     (inv.id && normalizedEmail)
-      ? ("/api/invoices/pdf?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
+      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
-  var actionLabel = openUrl ? "Belge İndir" : "Belge Yok";
+  var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
 
   return (
     '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
@@ -238,13 +238,13 @@ function rowHtml(rawInv, email) {
       '<div class="invoice-row__actions">' +
         (
           openUrl
-            ? '<a class="invoice-row__btn" href="' + escapeHtml(openUrl) + '">' + actionLabel + '</a>'
+            ? '<a class="invoice-row__btn" href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
             : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
         ) +
       '</div>' +
     '</div>'
   );
-  }
+}
 
   function applyFilter(filterKey, root) {
     var nodes = getNodes(root);
