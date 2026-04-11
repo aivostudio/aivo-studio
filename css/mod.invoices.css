@@ -39,36 +39,35 @@
 }
 
 .main-panel .page-head__box{
-  padding: 34px 32px 30px;
-  border-radius: 34px;
+  padding: 64px 56px 58px;
+  border-radius: 48px;
   background:
-    radial-gradient(circle at 50% 0%, rgba(140, 112, 255, .28), transparent 60%),
-    linear-gradient(180deg, rgba(92, 67, 180, .42), rgba(41, 26, 92, .34));
-  border: 1px solid rgba(130, 106, 230, .42);
+    radial-gradient(circle at 50% 0%, rgba(165, 140, 255, .34), transparent 58%),
+    linear-gradient(180deg, rgba(82, 58, 176, .72), rgba(39, 24, 92, .66));
+  border: 1px solid rgba(126, 95, 240, .72);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 18px 40px rgba(0,0,0,.26);
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 24px 60px rgba(0,0,0,.30);
 }
 
 .main-panel .page-head__title{
   margin: 0;
   text-align: center;
-  font-size: 34px;
-  line-height: 1.1;
-  font-weight: 800;
-  letter-spacing: -.03em;
-  color: #f6f3ff;
+  font-size: 62px;
+  line-height: 1.04;
+  font-weight: 900;
+  letter-spacing: -.05em;
+  color: #f7f4ff;
 }
 
 .main-panel .page-head__sub{
-  margin: 24px 0 0;
+  margin: 26px 0 0;
   text-align: center;
-  font-size: 16px;
-  line-height: 1.5;
-  font-weight: 600;
-  color: rgba(223, 216, 255, .72);
+  font-size: 22px;
+  line-height: 1.45;
+  font-weight: 700;
+  color: rgba(223, 216, 255, .62);
 }
-
 /* =========================================================
    ACTIONS — 4 eşit kolon, baştan sona
    ========================================================= */
