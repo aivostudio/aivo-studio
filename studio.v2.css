@@ -428,11 +428,17 @@ button.primary-btn.aivoBtnPrimary{
   flex: 1 1 auto !important;
   min-height: 0 !important;
   overflow: auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#leftMenu .navScroll .navCard:last-child{
+  margin-top: auto !important;
 }
 
 #leftMenu .navInfo{
-  margin-top: 0 !important;
-  flex: 0 0 auto !important;
+  display: none !important;
 }
 /* ===== TOPBAR FINAL FLUSH FIX ===== */
 header#top.aivo-topbar{
