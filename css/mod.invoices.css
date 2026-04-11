@@ -390,53 +390,57 @@
 .main-panel .invoice-card .inv-badge{
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 30px;
-  padding: 0 12px;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 16px;
+  box-sizing: border-box;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.94);
-  font-size: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.07);
+  color: #ffffff;
+  font-size: 11px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .main-panel .invoice-card .inv-badge--provider{
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.10);
-  color: rgba(255,255,255,.94);
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.14);
+  color: #ffffff;
 }
 
 .main-panel .invoice-card .inv-badge--status{
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.10);
-  color: rgba(255,255,255,.94);
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.14);
+  color: #ffffff;
 }
 
 .main-panel .invoice-card .inv-badge--ok{
-  background: rgba(52, 211, 153, .12);
-  border-color: rgba(52, 211, 153, .26);
-  color: rgba(220, 255, 244, .96);
+  background: rgba(52, 211, 153, .16);
+  border-color: rgba(52, 211, 153, .34);
+  color: #eafff5;
 }
 
 .main-panel .invoice-card .inv-badge--warn{
-  background: rgba(245, 158, 11, .12);
-  border-color: rgba(245, 158, 11, .28);
-  color: rgba(255, 245, 225, .96);
+  background: rgba(245, 158, 11, .16);
+  border-color: rgba(245, 158, 11, .34);
+  color: #fff4dc;
 }
 
 .main-panel .invoice-card .inv-badge--bad{
-  background: rgba(239, 68, 68, .12);
-  border-color: rgba(239, 68, 68, .28);
-  color: rgba(255, 233, 233, .96);
+  background: rgba(239, 68, 68, .16);
+  border-color: rgba(239, 68, 68, .34);
+  color: #ffeaea;
 }
 
 .main-panel .invoice-card .inv-badge--refund{
-  background: rgba(168, 85, 247, .12);
-  border-color: rgba(168, 85, 247, .30);
-  color: rgba(246, 236, 255, .96);
+  background: rgba(168, 85, 247, .18);
+  border-color: rgba(168, 85, 247, .40);
+  color: #ffffff;
 }
 
 /* =========================================================
