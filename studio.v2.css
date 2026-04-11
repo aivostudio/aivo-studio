@@ -431,10 +431,15 @@ button.primary-btn.aivoBtnPrimary{
 
   display: flex !important;
   flex-direction: column !important;
+  padding-top: 26px !important;
+}
+
+#leftMenu .navScroll .navCard:first-child{
+  margin-top: 0 !important;
 }
 
 #leftMenu .navScroll .navCard:last-child{
-  margin-top: 150px !important;
+  margin-top: 110px !important;
 }
 
 #leftMenu .navInfo{
