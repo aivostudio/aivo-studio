@@ -433,14 +433,13 @@
   border-color: rgba(255,255,255,.14);
   color: #ffffff;
 }
-
 .main-panel .invoice-card .inv-badge--ok{
-  background: linear-gradient(180deg, rgba(52, 211, 153, .24), rgba(16, 185, 129, .18));
-  border-color: rgba(52, 211, 153, .52);
+  background: linear-gradient(180deg, rgba(29, 185, 84, .58), rgba(18, 140, 64, .54));
+  border-color: rgba(82, 255, 154, .34);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 10px 24px rgba(16, 185, 129, .14);
-  color: #ecfff7;
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 0 0 1px rgba(18, 140, 64, .10);
+  color: #f3fff8;
 }
 .main-panel .invoice-card .inv-badge--warn{
   background: rgba(245, 158, 11, .16);
@@ -449,17 +448,20 @@
 }
 
 .main-panel .invoice-card .inv-badge--bad{
-  background: linear-gradient(180deg, rgba(239, 68, 68, .24), rgba(220, 38, 38, .18));
-  border-color: rgba(239, 68, 68, .52);
+  background: linear-gradient(180deg, rgba(239, 68, 68, .58), rgba(190, 24, 24, .54));
+  border-color: rgba(255, 120, 120, .34);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 10px 24px rgba(220, 38, 38, .14);
-  color: #fff1f1;
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 0 0 1px rgba(190, 24, 24, .10);
+  color: #fff5f5;
 }
 
 .main-panel .invoice-card .inv-badge--refund{
-  background: rgba(168, 85, 247, .18);
-  border-color: rgba(168, 85, 247, .40);
+  background: linear-gradient(180deg, rgba(154, 92, 255, .56), rgba(115, 63, 201, .52));
+  border-color: rgba(190, 146, 255, .34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 0 0 1px rgba(115, 63, 201, .10);
   color: #ffffff;
 }
 
