@@ -400,24 +400,28 @@
 /* =========================================================
    BADGES
    ========================================================= */
+
 .main-panel .invoice-card .inv-badge{
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  height: 78px;
-  padding: 0 18px;
+  min-height: 42px;
+  padding: 0 14px;
   box-sizing: border-box;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.18);
   background: rgba(255,255,255,.08);
   color: #ffffff !important;
-  font-size: 18px;
-  line-height: 78px;
+  font-size: 13px;
+  line-height: 1;
   font-weight: 900;
-  letter-spacing: .05em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
 }
+
 .main-panel .invoice-card .inv-badge--provider{
   background: rgba(255,255,255,.08);
   border-color: rgba(255,255,255,.14);
