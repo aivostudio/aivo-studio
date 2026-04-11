@@ -431,7 +431,7 @@ button.primary-btn.aivoBtnPrimary{
 
   display: flex !important;
   flex-direction: column !important;
-  padding-top: 26px !important;
+  padding-top: 70px !important;
 }
 
 #leftMenu .navScroll .navCard:first-child{
