@@ -69,12 +69,21 @@ function buildInvoiceHtml(data) {
   const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
   const issueDate = formatDateTR(data.issueDate || new Date().toISOString());
   const dueDate = formatDateTR(data.dueDate || data.issueDate || new Date().toISOString());
-  const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
-  const quantity = Number(data.quantity || 1);
-  const amountValue = Number(data.amount_try || 0);
-  const unitPrice = formatMoneyTRY(amountValue);
-  const totalPrice = formatMoneyTRY(amountValue);
-  const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
+const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
+const quantity = Number(data.quantity || 1);
+const creditCount = Number(
+  data.creditCount != null
+    ? data.creditCount
+    : data.credits != null
+      ? data.credits
+      : data.credit_amount != null
+        ? data.credit_amount
+        : quantity
+);
+const amountValue = Number(data.amount_try || 0);
+const unitPrice = formatMoneyTRY(amountValue);
+const totalPrice = formatMoneyTRY(amountValue);
+const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
 
   return `
 <!doctype html>
