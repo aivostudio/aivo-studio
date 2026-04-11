@@ -118,86 +118,21 @@ function waitForStoreReady(maxWaitMs) {
   });
 }
     // -------------------------------------------------
-    // 4) VERIFY SESSION (POST -> GET fallback)
+    // 4) WEBHOOK MODE — verify-session finalizer kapalı
     // -------------------------------------------------
-    function verifySession(sid) {
-      return (async function () {
-        // POST
-        try {
-          var r1 = await fetch("/api/stripe/verify-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify({ session_id: sid })
-          });
-          var j1 = await r1.json().catch(function(){ return null; });
-          if (r1.ok && j1 && j1.ok === true) return j1;
-        } catch (_) {}
-
-        // GET fallback
-        try {
-          var r2 = await fetch("/api/stripe/verify-session?session_id=" + encodeURIComponent(sid), {
-            method: "GET",
-            headers: { "Accept": "application/json" }
-          });
-          var j2 = await r2.json().catch(function(){ return null; });
-          return j2;
-        } catch (_) {
-          return null;
-        }
-      })();
-    }
-
-    // -------------------------------------------------
-    // 5) RUN
-    // -------------------------------------------------
-    (async function run() {
-      var data = await verifySession(sessionId);
-
-      if (!data || data.ok !== true) {
-        try { window.showToast("Ödeme doğrulanamadı.", "error"); } catch (_) {}
-        return;
-      }
-
-      // credits/pack/order_id beklenen alanlar
-      var credits = Number(data.credits || 0) || 0;
-      var pack =
-        (data.pack ? String(data.pack) : "") ||
-        (credits >= 500 ? "2999" :
-         credits >= 150 ? "899"  :
-         credits >= 60  ? "399"  :
-         credits >= 25  ? "199"  : "custom");
-
-      var orderId = String(data.order_id || ("stripe_" + sessionId));
-
-      var result = null;
-      try {
-        result = window.AIVO_STORE_V1.applyPurchase({
-          order_id: orderId,
-          pack: pack,
-          credits: credits
-        });
-      } catch (e) {
-        result = null;
-      }
-
-      if (!result || result.ok !== true) {
-        try { window.showToast("Kredi eklenemedi.", "error"); } catch (_) {}
-        return;
-      }
-
-      // idempotency set
+    (function finalizeStripeReturnWithoutVerify() {
       try { localStorage.setItem(DONE_KEY, "1"); } catch (_) {}
 
-      // UI sync (varsa)
-      try { if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") window.AIVO_STORE_V1.syncCreditsUI(); } catch (_) {}
-
-      // ✅ SUCCESS TOAST
       try {
-        var added = Number(result.added || credits || 0) || 0;
-        window.toast.success("Kredi yüklendi", "+" + added + " kredi yüklendi 🎉");
+        if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+          window.AIVO_STORE_V1.syncCreditsUI();
+        }
       } catch (_) {}
 
-      // URL temizle
+      try {
+        window.toast.success("Ödeme alındı", "Kredi ve fatura webhook ile işleniyor.");
+      } catch (_) {}
+
       try {
         url.searchParams.delete("stripe");
         url.searchParams.delete("session_id");
