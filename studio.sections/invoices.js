@@ -244,6 +244,7 @@ function rowHtml(rawInv, email) {
       '</div>' +
     '</div>'
   );
+  }
 
   function applyFilter(filterKey, root) {
     var nodes = getNodes(root);
