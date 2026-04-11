@@ -39,80 +39,69 @@ function parseInvoices(raw) {
   return [];
 }
 
+function matchesPurchaseByStripeRefs(item, refs) {
+  if (!item || item.type !== "purchase" || !item.stripe) return false;
+
+  const itemInvoiceId = String(item.stripe.invoice_id || "");
+  const itemPaymentIntent = String(item.stripe.payment_intent || "");
+  const itemChargeId = String(item.stripe.charge_id || "");
+
+  return (
+    (refs.invoiceId && itemInvoiceId === refs.invoiceId) ||
+    (refs.paymentIntent && itemPaymentIntent === refs.paymentIntent) ||
+    (refs.chargeId && itemChargeId === refs.chargeId)
+  );
+}
+
+function matchesPurchaseByFallback(item, refs) {
+  if (!item || item.type !== "purchase") return false;
+
+  const itemAmount = Number(item.amount_try || 0);
+  const itemEmail = normEmail(item.email || "");
+
+  return (
+    !!refs.email &&
+    itemEmail === refs.email &&
+    refs.amountTry > 0 &&
+    itemAmount > 0 &&
+    itemAmount === refs.amountTry
+  );
+}
+
 async function findPurchaseForRefund(kvGet, charge) {
   const receiptEmail = normEmail(
     charge?.billing_details?.email || charge?.receipt_email || ""
   );
 
-  const invoiceId = String(charge?.invoice || "");
-  const paymentIntent = String(charge?.payment_intent || "");
-  const chargeId = String(charge?.id || "");
-  const refundedAmountTry = Number(charge?.amount_refunded || 0) / 100;
+  const metadataEmail = normEmail(charge?.metadata?.email || "");
+  const refs = {
+    invoiceId: String(charge?.invoice || ""),
+    paymentIntent: String(charge?.payment_intent || ""),
+    chargeId: String(charge?.id || ""),
+    amountTry: Number(charge?.amount_refunded || 0) / 100,
+    email: receiptEmail || metadataEmail || "",
+  };
 
-  async function scanInvoicesForEmail(email) {
-    const emailNorm = normEmail(email);
-    if (!emailNorm) return null;
+  const candidateEmails = [receiptEmail, metadataEmail].filter(Boolean);
 
-    const emailInvoicesKey = `invoices:${emailNorm}`;
-    const raw = await kvGet(emailInvoicesKey);
+  for (const email of candidateEmails) {
+    const invoicesKey = `invoices:${email}`;
+    const raw = await kvGet(invoicesKey);
     const invoices = parseInvoices(raw);
 
-    if (!Array.isArray(invoices) || !invoices.length) return null;
-
-    const exactMatch = invoices.find((item) => {
-      if (!item || item.type !== "purchase" || !item.stripe) return false;
-
-      return (
-        (invoiceId && String(item.stripe.invoice_id || "") === invoiceId) ||
-        (paymentIntent && String(item.stripe.payment_intent || "") === paymentIntent) ||
-        (chargeId && String(item.stripe.charge_id || "") === chargeId)
-      );
-    });
-
-    if (exactMatch) {
-      return {
-        email: emailNorm,
-        purchase: exactMatch,
-      };
+    const exact = invoices.find((item) => matchesPurchaseByStripeRefs(item, refs));
+    if (exact) {
+      return { email, purchase: exact };
     }
 
-    const fallbackMatch = invoices.find((item) => {
-      if (!item || item.type !== "purchase") return false;
-
-      const itemAmount = Number(item.amount_try || 0);
-      const itemEmail = normEmail(item.email || "");
-
-      return (
-        itemEmail === emailNorm &&
-        refundedAmountTry > 0 &&
-        itemAmount > 0 &&
-        itemAmount === refundedAmountTry
-      );
-    });
-
-    if (fallbackMatch) {
-      return {
-        email: emailNorm,
-        purchase: fallbackMatch,
-      };
+    const fallback = invoices.find((item) => matchesPurchaseByFallback(item, { ...refs, email }));
+    if (fallback) {
+      return { email, purchase: fallback };
     }
-
-    return null;
-  }
-
-  if (receiptEmail) {
-    const direct = await scanInvoicesForEmail(receiptEmail);
-    if (direct) return direct;
-  }
-
-  const fallbackEmail = normEmail(charge?.metadata?.email || "");
-  if (fallbackEmail && fallbackEmail !== receiptEmail) {
-    const metaMatch = await scanInvoicesForEmail(fallbackEmail);
-    if (metaMatch) return metaMatch;
   }
 
   return {
-    email: receiptEmail || fallbackEmail || "",
+    email: receiptEmail || metadataEmail || "",
     purchase: null,
   };
 }
@@ -189,6 +178,7 @@ export default async function handler(req, res) {
       payment_status: session?.payment_status || "",
       customer_email: session?.customer_email || "",
       metadata_email: session?.metadata?.email || "",
+      payment_intent: session?.payment_intent || "",
     });
   }
 
@@ -199,6 +189,7 @@ export default async function handler(req, res) {
       invoice_id: charge?.invoice || "",
       amount_refunded: charge?.amount_refunded || 0,
       receipt_email: charge?.billing_details?.email || charge?.receipt_email || "",
+      metadata_email: charge?.metadata?.email || "",
     });
   }
 
@@ -308,7 +299,7 @@ export default async function handler(req, res) {
         type: "purchase",
         title: "Kredi Satın Alımı",
         pack: String(session?.metadata?.pack || ""),
-        credits: credits,
+        credits,
         amount_try: session?.amount_total
           ? Number(session.amount_total) / 100
           : null,
@@ -358,6 +349,7 @@ export default async function handler(req, res) {
           payment_intent: charge?.payment_intent || "",
           receipt_email:
             charge?.billing_details?.email || charge?.receipt_email || "",
+          metadata_email: charge?.metadata?.email || "",
         });
 
         return res.status(200).json({
@@ -382,7 +374,7 @@ export default async function handler(req, res) {
           String(item.stripe.charge_id || "") === String(charge?.id || "") ||
           String(item.stripe.event_id || "") === String(event?.id || "") ||
           (
-            String(item.stripe.invoice_id || "") === String(charge?.invoice || "") &&
+            String(item.stripe.payment_intent || "") === String(charge?.payment_intent || "") &&
             Number(item.amount_try || 0) === -(Number(charge?.amount_refunded || 0) / 100)
           )
         );
@@ -408,7 +400,7 @@ export default async function handler(req, res) {
         type: "refund",
         title: "Kredi İadesi",
         pack: String(purchase?.pack || ""),
-        credits: credits,
+        credits,
         amount_try: charge?.amount_refunded
           ? -(Number(charge.amount_refunded) / 100)
           : null,
@@ -423,7 +415,7 @@ export default async function handler(req, res) {
           event_id: event?.id || "",
           invoice_id: charge?.invoice || purchase?.stripe?.invoice_id || "",
           charge_id: charge?.id || "",
-          payment_intent: charge?.payment_intent || "",
+          payment_intent: charge?.payment_intent || purchase?.stripe?.payment_intent || "",
         },
       };
 
@@ -441,6 +433,7 @@ export default async function handler(req, res) {
         after,
         invoice_id: invoice.id,
         charge_id: charge?.id || "",
+        payment_intent: charge?.payment_intent || "",
         event_id: event?.id || "",
       });
 
