@@ -356,17 +356,14 @@
   padding: 0 14px;
   border-radius: 14px;
 
-  /* 🔥 ANA RENK (senin sistemle uyumlu) */
-  background: linear-gradient(180deg, #ffffff, #e9e4ff);
+  background: linear-gradient(180deg, #7c5cff 0%, #5f3df2 100%);
+  border: 1px solid rgba(160, 132, 255, .34);
 
-  border: none;
-
-  /* 🔥 glow */
   box-shadow:
-    0 6px 16px rgba(0,0,0,.18),
-    0 0 0 1px rgba(255,255,255,.25) inset;
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 10px 24px rgba(96, 66, 255, .24);
 
-  color: #1b1533 !important;
+  color: #ffffff !important;
 
   font-size: 12px;
   line-height: 1;
@@ -385,8 +382,8 @@
   filter: brightness(1.04);
 
   box-shadow:
-    0 10px 22px rgba(0,0,0,.22),
-    0 0 0 1px rgba(255,255,255,.35) inset;
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 12px 28px rgba(96, 66, 255, .30);
 }
 
 .main-panel .invoice-card a:active{
