@@ -70,11 +70,38 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "INVOICE_NOT_FOUND" });
     }
 
-    const aivoHtml = safeStr(invoice?.aivo_html);
+    let aivoHtml = safeStr(invoice?.aivo_html);
 
-    if (!aivoHtml) {
-      return res.status(404).json({ ok: false, error: "AIVO_HTML_NOT_FOUND" });
+if (!aivoHtml) {
+  const origin =
+    process.env.APP_ORIGIN ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://aivo.tr";
+
+  const viewUrl =
+    origin +
+    "/api/invoices/view?email=" +
+    encodeURIComponent(email) +
+    "&id=" +
+    encodeURIComponent(id);
+
+  const viewRes = await fetch(viewUrl, {
+    method: "GET",
+    headers: {
+      accept: "text/html"
     }
+  });
+
+  if (!viewRes.ok) {
+    return res.status(404).json({ ok: false, error: "AIVO_HTML_NOT_FOUND" });
+  }
+
+  aivoHtml = await viewRes.text();
+
+  if (!safeStr(aivoHtml)) {
+    return res.status(404).json({ ok: false, error: "AIVO_HTML_NOT_FOUND" });
+  }
+}
 
     const executablePath = await resolveExecutablePath();
 
