@@ -766,9 +766,15 @@ export default async function handler(req, res) {
         safeStr(invoice?.title) ||
         safeStr(invoice?.plan) ||
         "AIVO Pro",
-      quantity: Number(invoice?.quantity || 1),
-      amount_try: amountTry,
-     logoUrl: `${ORIGIN}/aivo-logo-invoice.png`,
+     quantity: Number(invoice?.quantity || 1),
+creditCount:
+  invoice?.credit_count != null ? Number(invoice.credit_count) :
+  invoice?.credits != null ? Number(invoice.credits) :
+  invoice?.credit_amount != null ? Number(invoice.credit_amount) :
+  invoice?.quantity != null ? Number(invoice.quantity) :
+  1,
+amount_try: amountTry,
+logoUrl: `${ORIGIN}/aivo-logo.png`,
     });
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
