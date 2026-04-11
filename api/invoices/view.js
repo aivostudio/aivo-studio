@@ -60,30 +60,63 @@ function escapeHtml(s) {
     .replaceAll("'", "&#39;");
 }
 
-function buildInvoiceHtml(data) {
-  const companyName = safeStr(data.companyName || "AIVO");
-  const companyCountry = safeStr(data.companyCountry || "Türkiye");
-const customerName = safeStr(data.customerName || "-");
-  const customerCountry = safeStr(data.customerCountry || "Türkiye");
-  const email = safeStr(data.email || "-");
-  const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
-  const issueDate = formatDateTR(data.issueDate || new Date().toISOString());
-  const dueDate = formatDateTR(data.dueDate || data.issueDate || new Date().toISOString());
-const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
-const quantity = Number(data.quantity || 1);
-const creditCount = Number(
-  data.creditCount != null
-    ? data.creditCount
-    : data.credits != null
-      ? data.credits
-      : data.credit_amount != null
-        ? data.credit_amount
-        : quantity
-);
-const amountValue = Number(data.amount_try || 0);
-const unitPrice = formatMoneyTRY(amountValue);
-const totalPrice = formatMoneyTRY(amountValue);
-const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
+const html = buildInvoiceHtml({
+  documentType:
+    safeStr(invoice?.document_type) ||
+    safeStr(invoice?.type) ||
+    safeStr(invoice?.kind) ||
+    safeStr(invoice?.event_type) ||
+    safeStr(invoice?.status) === "refunded"
+      ? "refund"
+      : "purchase",
+  invoiceNo:
+    safeStr(invoice?.invoice_no) ||
+    safeStr(invoice?.invoiceNo) ||
+    safeStr(invoice?.stripe?.invoice_id) ||
+    safeStr(invoice?.id) ||
+    "AIVO-0001",
+  issueDate:
+    invoice?.created_at ||
+    invoice?.createdAt ||
+    invoice?.created ||
+    invoice?.date ||
+    new Date().toISOString(),
+  dueDate:
+    invoice?.refunded_at ||
+    invoice?.refund_date ||
+    invoice?.paid_at ||
+    invoice?.updated_at ||
+    invoice?.created_at ||
+    invoice?.createdAt ||
+    invoice?.created ||
+    new Date().toISOString(),
+  email: email,
+  customerName:
+    resolvedCustomerName ||
+    safeStr(invoice?.customer_name) ||
+    safeStr(invoice?.customerName) ||
+    "-",
+  customerCountry:
+    safeStr(invoice?.customer_country) ||
+    safeStr(invoice?.customerCountry) ||
+    "Türkiye",
+  companyName: "AIVO",
+  companyCountry: "Türkiye",
+  itemTitle:
+    safeStr(invoice?.item_title) ||
+    safeStr(invoice?.title) ||
+    safeStr(invoice?.plan) ||
+    "AIVO Pro",
+  quantity: Number(invoice?.quantity || 1),
+  creditCount:
+    invoice?.credit_count != null ? Number(invoice.credit_count) :
+    invoice?.credits != null ? Number(invoice.credits) :
+    invoice?.credit_amount != null ? Number(invoice.credit_amount) :
+    invoice?.quantity != null ? Number(invoice.quantity) :
+    1,
+  amount_try: amountTry,
+  logoUrl: `${ORIGIN}/aivo-logo.png`,
+});
 
   return `
 <!doctype html>
