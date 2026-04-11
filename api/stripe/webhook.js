@@ -114,22 +114,42 @@ export default async function handler(req, res) {
       }
     }
 
-    const invoice = {
-      id: `stripe_${session?.id || event?.id || Date.now()}`,
-      provider: "stripe",
-      type: "purchase",
-      title: "Kredi Satın Alımı",
-      pack: String(session?.metadata?.pack || ""),
-      credits: credits,
-      amount_try: session?.amount_total ? Number(session.amount_total) / 100 : null,
-      created_at: new Date().toISOString(),
-      status: "paid",
-      stripe: {
-        session_id: session?.id || "",
-        event_id: event?.id || ""
-      }
-    };
+   let stripeInvoice = null;
+let pdfUrl = "";
 
+if (session?.invoice) {
+  try {
+    stripeInvoice = await stripe.invoices.retrieve(session.invoice);
+    pdfUrl = String(
+      stripeInvoice?.invoice_pdf ||
+      stripeInvoice?.hosted_invoice_url ||
+      ""
+    );
+  } catch (err) {
+    console.log("[WEBHOOK] stripe invoice retrieve fail:", err?.message, {
+      session_id: session?.id,
+      stripe_invoice_id: session?.invoice
+    });
+  }
+}
+
+const invoice = {
+  id: `stripe_${session?.id || event?.id || Date.now()}`,
+  provider: "stripe",
+  type: "purchase",
+  title: "Kredi Satın Alımı",
+  pack: String(session?.metadata?.pack || ""),
+  credits: credits,
+  amount_try: session?.amount_total ? Number(session.amount_total) / 100 : null,
+  created_at: new Date().toISOString(),
+  status: "paid",
+  pdf_url: pdfUrl,
+  stripe: {
+    session_id: session?.id || "",
+    event_id: event?.id || "",
+    invoice_id: stripeInvoice?.id || String(session?.invoice || "")
+  }
+};
     invoices.unshift(invoice);
     await kvSet(invoicesKey, JSON.stringify(invoices));
 
