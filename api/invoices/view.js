@@ -723,60 +723,102 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "INVOICE_NOT_FOUND" });
     }
 
-    const amountTry =
-      invoice?.amount_try != null ? Number(invoice.amount_try) :
-      invoice?.amount != null ? Number(invoice.amount) :
-      invoice?.total != null ? Number(invoice.total) :
-      invoice?.price != null ? Number(invoice.price) :
-      0;
+const amountTry =
+  invoice?.amount_try != null ? Number(invoice.amount_try) :
+  invoice?.amount != null ? Number(invoice.amount) :
+  invoice?.total != null ? Number(invoice.total) :
+  invoice?.price != null ? Number(invoice.price) :
+  0;
 
-    const html = buildInvoiceHtml({
-      invoiceNo:
-        safeStr(invoice?.invoice_no) ||
-        safeStr(invoice?.invoiceNo) ||
-        safeStr(invoice?.stripe?.invoice_id) ||
-        safeStr(invoice?.id) ||
-        "AIVO-0001",
-      issueDate:
-        invoice?.created_at ||
-        invoice?.createdAt ||
-        invoice?.created ||
-        invoice?.date ||
-        new Date().toISOString(),
-      dueDate:
-        invoice?.paid_at ||
-        invoice?.updated_at ||
-        invoice?.created_at ||
-        invoice?.createdAt ||
-        invoice?.created ||
-        new Date().toISOString(),
-      email: email,
-     customerName:
-  safeStr(invoice?.customer_name) ||
-  safeStr(invoice?.customerName) ||
-  "-",
-      customerCountry:
-        safeStr(invoice?.customer_country) ||
-        safeStr(invoice?.customerCountry) ||
-        "Türkiye",
-      companyName: "AIVO",
-      companyCountry: "Türkiye",
-      itemTitle:
-        safeStr(invoice?.item_title) ||
-        safeStr(invoice?.title) ||
-        safeStr(invoice?.plan) ||
-        "AIVO Pro",
-     quantity: Number(invoice?.quantity || 1),
-creditCount:
-  invoice?.credit_count != null ? Number(invoice.credit_count) :
-  invoice?.credits != null ? Number(invoice.credits) :
-  invoice?.credit_amount != null ? Number(invoice.credit_amount) :
-  invoice?.quantity != null ? Number(invoice.quantity) :
-  1,
-amount_try: amountTry,
-logoUrl: `${ORIGIN}/aivo-logo.png`,
-    });
+const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
+const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
+const reqOrigin = `${reqProto}://${reqHost}`;
 
+let resolvedCustomerName = "";
+
+try {
+  const meRes = await fetch(`${reqOrigin}/api/auth/me`, {
+    method: "GET",
+    headers: {
+      cookie: req.headers.cookie || "",
+      accept: "application/json",
+    },
+  });
+
+  const meJson = await meRes.json().catch(() => null);
+
+  const firstName =
+    safeStr(meJson?.name) ||
+    safeStr(meJson?.first_name) ||
+    safeStr(meJson?.firstName) ||
+    safeStr(meJson?.user?.name) ||
+    safeStr(meJson?.user?.first_name) ||
+    safeStr(meJson?.user?.firstName) ||
+    safeStr(meJson?.profile?.name) ||
+    safeStr(meJson?.profile?.first_name) ||
+    safeStr(meJson?.profile?.firstName);
+
+  const lastName =
+    safeStr(meJson?.surname) ||
+    safeStr(meJson?.last_name) ||
+    safeStr(meJson?.lastName) ||
+    safeStr(meJson?.user?.surname) ||
+    safeStr(meJson?.user?.last_name) ||
+    safeStr(meJson?.user?.lastName) ||
+    safeStr(meJson?.profile?.surname) ||
+    safeStr(meJson?.profile?.last_name) ||
+    safeStr(meJson?.profile?.lastName);
+
+  resolvedCustomerName = safeStr(`${firstName} ${lastName}`);
+} catch (_) {}
+
+const html = buildInvoiceHtml({
+  invoiceNo:
+    safeStr(invoice?.invoice_no) ||
+    safeStr(invoice?.invoiceNo) ||
+    safeStr(invoice?.stripe?.invoice_id) ||
+    safeStr(invoice?.id) ||
+    "AIVO-0001",
+  issueDate:
+    invoice?.created_at ||
+    invoice?.createdAt ||
+    invoice?.created ||
+    invoice?.date ||
+    new Date().toISOString(),
+  dueDate:
+    invoice?.paid_at ||
+    invoice?.updated_at ||
+    invoice?.created_at ||
+    invoice?.createdAt ||
+    invoice?.created ||
+    new Date().toISOString(),
+  email: email,
+  customerName:
+    resolvedCustomerName ||
+    safeStr(invoice?.customer_name) ||
+    safeStr(invoice?.customerName) ||
+    "-",
+  customerCountry:
+    safeStr(invoice?.customer_country) ||
+    safeStr(invoice?.customerCountry) ||
+    "Türkiye",
+  companyName: "AIVO",
+  companyCountry: "Türkiye",
+  itemTitle:
+    safeStr(invoice?.item_title) ||
+    safeStr(invoice?.title) ||
+    safeStr(invoice?.plan) ||
+    "AIVO Pro",
+  quantity: Number(invoice?.quantity || 1),
+  creditCount:
+    invoice?.credit_count != null ? Number(invoice.credit_count) :
+    invoice?.credits != null ? Number(invoice.credits) :
+    invoice?.credit_amount != null ? Number(invoice.credit_amount) :
+    invoice?.quantity != null ? Number(invoice.quantity) :
+    1,
+  amount_try: amountTry,
+  logoUrl: `${ORIGIN}/aivo-logo.png`,
+});
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(html);
