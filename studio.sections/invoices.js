@@ -219,11 +219,19 @@ function rowHtml(rawInv, email) {
   var typeLabel = mapTypeLabel(inv);
   var dateText = formatDate(inv.createdAt);
   var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
+
+  var normalizedEmail = normalizeEmail(email);
   var viewUrl =
-    (inv.id && email)
-      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizeEmail(email)) + "&id=" + encodeURIComponent(inv.id))
+    (inv.id && normalizedEmail)
+      ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
-  var actionLabel = viewUrl ? "Belge Aç" : "Belge Yok";
+
+  var fallbackPdfUrl = String(
+    (rawInv && (rawInv.pdf_url || rawInv.pdfUrl || rawInv.url)) || ""
+  ).trim();
+
+  var openUrl = viewUrl || fallbackPdfUrl || "";
+  var actionLabel = openUrl ? "Belge Aç" : "Belge Yok";
 
   return (
     '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
@@ -235,8 +243,8 @@ function rowHtml(rawInv, email) {
       '<div class="invoice-row__amount">' + escapeHtml(amountText || "-") + '</div>' +
       '<div class="invoice-row__actions">' +
         (
-          viewUrl
-            ? '<a class="invoice-row__btn" href="' + escapeHtml(viewUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
+          openUrl
+            ? '<a class="invoice-row__btn" href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">' + actionLabel + '</a>'
             : '<button class="invoice-row__btn" type="button" disabled>' + actionLabel + '</button>'
         ) +
       '</div>' +
