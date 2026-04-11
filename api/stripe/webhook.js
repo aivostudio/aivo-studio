@@ -44,34 +44,75 @@ async function findPurchaseForRefund(kvGet, charge) {
     charge?.billing_details?.email || charge?.receipt_email || ""
   );
 
-  if (receiptEmail) {
-    const emailInvoicesKey = `invoices:${receiptEmail}`;
+  const invoiceId = String(charge?.invoice || "");
+  const paymentIntent = String(charge?.payment_intent || "");
+  const chargeId = String(charge?.id || "");
+  const refundedAmountTry = Number(charge?.amount_refunded || 0) / 100;
+
+  async function scanInvoicesForEmail(email) {
+    const emailNorm = normEmail(email);
+    if (!emailNorm) return null;
+
+    const emailInvoicesKey = `invoices:${emailNorm}`;
     const raw = await kvGet(emailInvoicesKey);
     const invoices = parseInvoices(raw);
 
-    const matched = invoices.find((item) => {
+    if (!Array.isArray(invoices) || !invoices.length) return null;
+
+    const exactMatch = invoices.find((item) => {
+      if (!item || item.type !== "purchase" || !item.stripe) return false;
+
       return (
-        item &&
-        item.type === "purchase" &&
-        item.stripe &&
-        (
-          String(item.stripe.invoice_id || "") === String(charge?.invoice || "") ||
-          String(item.stripe.payment_intent || "") === String(charge?.payment_intent || "") ||
-          String(item.stripe.charge_id || "") === String(charge?.id || "")
-        )
+        (invoiceId && String(item.stripe.invoice_id || "") === invoiceId) ||
+        (paymentIntent && String(item.stripe.payment_intent || "") === paymentIntent) ||
+        (chargeId && String(item.stripe.charge_id || "") === chargeId)
       );
     });
 
-    if (matched) {
+    if (exactMatch) {
       return {
-        email: receiptEmail,
-        purchase: matched,
+        email: emailNorm,
+        purchase: exactMatch,
       };
     }
+
+    const fallbackMatch = invoices.find((item) => {
+      if (!item || item.type !== "purchase") return false;
+
+      const itemAmount = Number(item.amount_try || 0);
+      const itemEmail = normEmail(item.email || "");
+
+      return (
+        itemEmail === emailNorm &&
+        refundedAmountTry > 0 &&
+        itemAmount > 0 &&
+        itemAmount === refundedAmountTry
+      );
+    });
+
+    if (fallbackMatch) {
+      return {
+        email: emailNorm,
+        purchase: fallbackMatch,
+      };
+    }
+
+    return null;
+  }
+
+  if (receiptEmail) {
+    const direct = await scanInvoicesForEmail(receiptEmail);
+    if (direct) return direct;
+  }
+
+  const fallbackEmail = normEmail(charge?.metadata?.email || "");
+  if (fallbackEmail && fallbackEmail !== receiptEmail) {
+    const metaMatch = await scanInvoicesForEmail(fallbackEmail);
+    if (metaMatch) return metaMatch;
   }
 
   return {
-    email: receiptEmail,
+    email: receiptEmail || fallbackEmail || "",
     purchase: null,
   };
 }
@@ -162,8 +203,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    await kvSet(dedupeKey, "1", { ex: 60 * 60 * 24 * 7 });
-
     let email = "";
     let credits = 0;
     let invoice = null;
@@ -206,6 +245,7 @@ export default async function handler(req, res) {
       let stripeInvoice = null;
       let pdfUrl = "";
       let aivoHtml = "";
+      let chargeId = "";
 
       if (session?.invoice) {
         try {
@@ -213,6 +253,12 @@ export default async function handler(req, res) {
           pdfUrl = String(
             stripeInvoice?.invoice_pdf ||
             stripeInvoice?.hosted_invoice_url ||
+            ""
+          );
+
+          chargeId = String(
+            stripeInvoice?.charge ||
+            stripeInvoice?.payment_intent?.latest_charge ||
             ""
           );
 
@@ -276,6 +322,7 @@ export default async function handler(req, res) {
           event_id: event?.id || "",
           invoice_id: stripeInvoice?.id || String(session?.invoice || ""),
           payment_intent: session?.payment_intent || "",
+          charge_id: chargeId,
         },
       };
 
@@ -283,6 +330,7 @@ export default async function handler(req, res) {
       const invoices = parseInvoices(rawInvoices);
       invoices.unshift(invoice);
       await kvSet(invoicesKey, JSON.stringify(invoices));
+      await kvSet(dedupeKey, "1", { ex: 60 * 60 * 24 * 7 });
 
       console.log("[WEBHOOK] purchase saved", {
         email,
@@ -324,22 +372,19 @@ export default async function handler(req, res) {
 
       const creditsKey = `credits:${email}`;
       const invoicesKey = `invoices:${email}`;
-
-      if (Number.isFinite(credits) && credits > 0) {
-        before = await kvGet(creditsKey);
-        afterIncr = await kvIncr(creditsKey, -credits);
-        after = await kvGet(creditsKey);
-      }
-
       const rawInvoices = await kvGet(invoicesKey);
       const invoices = parseInvoices(rawInvoices);
 
       const alreadyExists = invoices.some((item) => {
+        if (!item || item.type !== "refund" || !item.stripe) return false;
+
         return (
-          item &&
-          item.type === "refund" &&
-          item.stripe &&
-          String(item.stripe.charge_id || "") === String(charge?.id || "")
+          String(item.stripe.charge_id || "") === String(charge?.id || "") ||
+          String(item.stripe.event_id || "") === String(event?.id || "") ||
+          (
+            String(item.stripe.invoice_id || "") === String(charge?.invoice || "") &&
+            Number(item.amount_try || 0) === -(Number(charge?.amount_refunded || 0) / 100)
+          )
         );
       });
 
@@ -349,6 +394,12 @@ export default async function handler(req, res) {
           deduped: true,
           type: "refund",
         });
+      }
+
+      if (Number.isFinite(credits) && credits > 0) {
+        before = await kvGet(creditsKey);
+        afterIncr = await kvIncr(creditsKey, -credits);
+        after = await kvGet(creditsKey);
       }
 
       invoice = {
@@ -378,6 +429,7 @@ export default async function handler(req, res) {
 
       invoices.unshift(invoice);
       await kvSet(invoicesKey, JSON.stringify(invoices));
+      await kvSet(dedupeKey, "1", { ex: 60 * 60 * 24 * 7 });
 
       console.log("[WEBHOOK] refund saved", {
         email,
