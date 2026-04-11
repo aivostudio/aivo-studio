@@ -336,12 +336,13 @@ function rowHtml(rawInv, email) {
     ACTIVE_FILTER = key;
 
     nodes.filters.forEach(function (btn) {
-      var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
-      var on = (btnKey === key);
+  var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+  var on = (btnKey === key);
 
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
+  btn.classList.toggle("is-active", on);
+  btn.classList.toggle("chip-btn--primary", on);
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+});
 
     var rows = qsa("[data-invoice-type]", nodes.page);
     if (!rows.length) return;
