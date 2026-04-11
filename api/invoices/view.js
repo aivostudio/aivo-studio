@@ -139,13 +139,14 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       pointer-events: none;
     }
 
-    .topbar {
+     .topbar {
       position: relative;
       z-index: 1;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 36px;
+      padding-top: 14px;
       padding-bottom: 34px;
       border-bottom: 1px solid #e2e8f0;
     }
