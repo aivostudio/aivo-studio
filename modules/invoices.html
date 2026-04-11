@@ -11,14 +11,11 @@
       </div>
     </div>
 
-    <div class="invoices-actions" style="margin-top:12px;">
-      <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>
-        PDF İndir
-      </button>
-      <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-      <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-      <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-    </div>
+   <div class="invoices-actions" style="margin-top:12px;">
+  <button class="chip-btn is-active" type="button" data-invoices-filter="all" aria-pressed="true">Tümü</button>
+  <button class="chip-btn" type="button" data-invoices-filter="purchase" aria-pressed="false">Satın Alım</button>
+  <button class="chip-btn" type="button" data-invoices-filter="refund" aria-pressed="false">İade</button>
+</div>
   </div>
 
   <section class="invoices-list invoices-list--flat" aria-label="Fatura listesi">
