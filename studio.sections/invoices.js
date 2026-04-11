@@ -219,6 +219,18 @@ function rowHtml(rawInv, email) {
   var dateText = formatDate(inv.createdAt);
   var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
 
+  var creditCount =
+    rawInv && rawInv.credit_count != null ? Number(rawInv.credit_count) :
+    rawInv && rawInv.credits != null ? Number(rawInv.credits) :
+    rawInv && rawInv.credit_amount != null ? Number(rawInv.credit_amount) :
+    rawInv && rawInv.quantity != null ? Number(rawInv.quantity) :
+    null;
+
+  var titleText =
+    creditCount && isFinite(creditCount) && creditCount > 0
+      ? String(creditCount) + " Kredi"
+      : inv.title;
+
   var normalizedEmail = normalizeEmail(email);
   var openUrl =
     (inv.id && normalizedEmail)
@@ -230,7 +242,7 @@ function rowHtml(rawInv, email) {
   return (
     '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
       '<div class="invoice-row__main">' +
-        '<div class="invoice-row__title">' + escapeHtml(inv.title) + '</div>' +
+        '<div class="invoice-row__title">' + escapeHtml(titleText) + '</div>' +
         '<div class="invoice-row__sub">' + escapeHtml(dateText + " • " + typeLabel) + '</div>' +
       '</div>' +
       '<div class="invoice-row__meta">Durum: ' + escapeHtml(inv.status) + '</div>' +
