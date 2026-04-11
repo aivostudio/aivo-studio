@@ -110,7 +110,7 @@ export default async function handler(req, res) {
     const filename = `aivo-invoice-${safeStr(invoice?.id || "document")}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).send(pdfBuffer);
