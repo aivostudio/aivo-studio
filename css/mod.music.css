@@ -384,6 +384,7 @@
 /* === MODE TOGGLE PILL — GUARANTEED (en sona) === */
 .card[data-ui="workmode"]{
   overflow: visible !important;
+  padding-bottom: 18px !important;
 }
 
 .card[data-ui="workmode"] .mode-toggle{
@@ -393,7 +394,7 @@
   gap: 10px !important;
   padding: 6px !important;
   margin-top: 10px !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 14px !important;
   min-height: 64px !important;
   border-radius: 999px !important;
   overflow: hidden !important;
@@ -413,6 +414,10 @@
   transition: transform .18s ease !important;
   z-index: 0 !important;
   pointer-events: none !important;
+}
+
+.card[data-ui="workmode"] .mode-toggle[data-active="advanced"]::before{
+  transform: translateX(100%) !important;
 }
 
 .card[data-ui="workmode"] .mode-btn{
