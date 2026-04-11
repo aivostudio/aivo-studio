@@ -90,6 +90,7 @@ export default async function handler(req, res) {
   }
 
   const creditsKey = `credits:${email}`;
+  const invoicesKey = `invoices:${email}`;
 
   try {
     // önce dedupe yaz (7 gün) -> sonra kredi artır
@@ -99,20 +100,59 @@ export default async function handler(req, res) {
     const afterIncr = await kvIncr(creditsKey, credits);
     const after = await kvGet(creditsKey);
 
-    console.log("[WEBHOOK] credits updated", {
+    const rawInvoices = await kvGet(invoicesKey);
+    let invoices = [];
+
+    if (Array.isArray(rawInvoices)) {
+      invoices = rawInvoices;
+    } else if (typeof rawInvoices === "string" && rawInvoices.trim()) {
+      try {
+        const parsed = JSON.parse(rawInvoices);
+        invoices = Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        invoices = [];
+      }
+    }
+
+    const invoice = {
+      id: `stripe_${session?.id || event?.id || Date.now()}`,
+      provider: "stripe",
+      type: "purchase",
+      title: "Kredi Satın Alımı",
+      pack: String(session?.metadata?.pack || ""),
+      credits: credits,
+      amount_try: session?.amount_total ? Number(session.amount_total) / 100 : null,
+      created_at: new Date().toISOString(),
+      status: "paid",
+      stripe: {
+        session_id: session?.id || "",
+        event_id: event?.id || ""
+      }
+    };
+
+    invoices.unshift(invoice);
+    await kvSet(invoicesKey, JSON.stringify(invoices));
+
+    console.log("[WEBHOOK] credits+invoice updated", {
       email,
       creditsKey,
+      invoicesKey,
       credits,
       before,
       afterIncr,
       after,
+      invoice_id: invoice.id,
       session_id: session?.id,
       event_id: event?.id,
     });
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.log("[WEBHOOK] KV write fail:", err?.message, { creditsKey, credits });
+    console.log("[WEBHOOK] KV write fail:", err?.message, {
+      creditsKey,
+      invoicesKey,
+      credits
+    });
     return res.status(500).json({ ok: false, error: "KV_WRITE_FAIL", message: err?.message || "UNKNOWN" });
   }
 }
