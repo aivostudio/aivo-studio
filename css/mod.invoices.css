@@ -401,8 +401,8 @@
    BADGES
    ========================================================= */
 
-.main-panel .invoice-card .inv-badge{
-  display: inline-flex;
+.main-panel .invoice-card .inv-item .inv-badge{
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -414,7 +414,7 @@
   background: rgba(255,255,255,.08);
   color: #ffffff !important;
   font-size: 13px;
-  line-height: 1;
+  line-height: 1 !important;
   font-weight: 900;
   letter-spacing: .06em;
   text-transform: uppercase;
