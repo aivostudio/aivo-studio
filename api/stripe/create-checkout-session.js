@@ -107,23 +107,24 @@ export default async function handler(req, res) {
       apiVersion: "2023-10-16",
     });
 
-    const checkout = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
+const checkout = await stripe.checkout.sessions.create({
+  mode: "payment",
+  line_items: [{ price: priceId, quantity: 1 }],
+  invoice_creation: { enabled: true },
 
-    success_url: `${ORIGIN}/studio.v2.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
-cancel_url: `${ORIGIN}/fiyatlandirma.html?canceled=1`,
+  success_url: `${ORIGIN}/studio.v2.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${ORIGIN}/fiyatlandirma.html?canceled=1`,
 
-      customer_email: userEmail,
+  customer_email: userEmail,
 
-      client_reference_id: userEmail,
+  client_reference_id: userEmail,
 
-      metadata: {
-        pack: packCode,
-        credits: String(credits),
-        email: userEmail,
-      },
-    });
+  metadata: {
+    pack: packCode,
+    credits: String(credits),
+    email: userEmail,
+  },
+});
 
     return res.status(200).json({
       ok: true,
