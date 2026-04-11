@@ -221,8 +221,10 @@ function rowHtml(rawInv, email) {
   var amountText = inv.amount != null ? formatAmount(inv.amount) : "";
 
   var normalizedEmail = normalizeEmail(email);
+  var hasAivoHtml = !!String((rawInv && rawInv.aivo_html) || "").trim();
+
   var viewUrl =
-    (inv.id && normalizedEmail)
+    (hasAivoHtml && inv.id && normalizedEmail)
       ? ("/api/invoices/view?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
       : "";
 
