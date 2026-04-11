@@ -63,7 +63,7 @@ function escapeHtml(s) {
 function buildInvoiceHtml(data) {
   const companyName = safeStr(data.companyName || "AIVO");
   const companyCountry = safeStr(data.companyCountry || "Türkiye");
-  const customerName = safeStr(data.customerName || data.email || "-");
+const customerName = safeStr(data.customerName || "-");
   const customerCountry = safeStr(data.customerCountry || "Türkiye");
   const email = safeStr(data.email || "-");
   const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
@@ -751,10 +751,10 @@ export default async function handler(req, res) {
         invoice?.created ||
         new Date().toISOString(),
       email: email,
-      customerName:
-        safeStr(invoice?.customer_name) ||
-        safeStr(invoice?.customerName) ||
-        email,
+     customerName:
+  safeStr(invoice?.customer_name) ||
+  safeStr(invoice?.customerName) ||
+  "-",
       customerCountry:
         safeStr(invoice?.customer_country) ||
         safeStr(invoice?.customerCountry) ||
