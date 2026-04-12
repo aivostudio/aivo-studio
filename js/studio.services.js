@@ -241,7 +241,7 @@ window.AIVO_APP = window.AIVO_APP || {};
 
       if (job_id) {
         // ✅ Video hissi: kartı anında çıkar
-        dispatchJobCreated(job_id, payload);
+         dispatchJobCreated(job_id, data.request_id || data.requestId || "", payload);
 
         // ✅ Paneli atmo'ya çekmek istersen
         window.RightPanel?.force?.("atmo", {});
