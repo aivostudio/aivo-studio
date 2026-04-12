@@ -609,7 +609,6 @@
   grid-column: 2;
   grid-row: 4;
 }
-
 /* CTA: basic normal, advanced final card sticky */
 #moduleHost section[data-module="music"] #musicGenerateBtn{
   width: 100%;
