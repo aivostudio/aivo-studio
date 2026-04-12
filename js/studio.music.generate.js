@@ -1,7 +1,3 @@
-studio.music.generate.js
-
-—————
-
 /* ==========================================================
    AIVO Studio – Music Generate (AUTO BIND, PRODUCTION)
    File: /js/studio.music.generate.js
