@@ -1154,21 +1154,21 @@ function buildCoverPrompt(prompt, quality) {
   }
 
   try {
-    const creditRes = await fetch("/api/credits/consume", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "content-type": "application/json",
-        "accept": "application/json"
-      },
-      body: JSON.stringify({
-        app: "cover",
-        action: creditReason,
-        cost: creditCost,
-        request_id: consumeRequestId,
-        reason: creditReason
-      })
-    });
+  const creditRes = await fetch("/api/credits/consume-ledger", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    "content-type": "application/json",
+    "accept": "application/json"
+  },
+  body: JSON.stringify({
+    app: "cover",
+    action: creditReason,
+    cost: creditCost,
+    request_id: consumeRequestId,
+    reason: creditReason
+  })
+});
 
     let creditData = null;
     try { creditData = await creditRes.json(); }
