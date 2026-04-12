@@ -1,13 +1,11 @@
-export const config = { runtime: "nodejs" };
-
-import { neon } from "@neondatabase/serverless";
-import authModule from "../_lib/auth.js";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
+const { neon } = require("@neondatabase/serverless");
+const authModule = require("../_lib/auth.js");
 const { refundCredits } = require("../_lib/credits-ledger.js");
 const { writeRefundAudit } = require("../_lib/refund-audit.js");
-const { requireAuth } = authModule;
+
+const requireAuth =
+  authModule?.requireAuth ||
+  authModule?.default?.requireAuth;
 
 function pickConn() {
   return (
@@ -34,7 +32,7 @@ function safeJson(res, code, obj) {
   return res.status(code).json(obj);
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     if (req.method === "OPTIONS") {
       return res.status(204).end();
@@ -52,6 +50,13 @@ export default async function handler(req, res) {
       return safeJson(res, 500, {
         ok: false,
         error: "missing_db_env"
+      });
+    }
+
+    if (typeof requireAuth !== "function") {
+      return safeJson(res, 500, {
+        ok: false,
+        error: "require_auth_missing"
       });
     }
 
@@ -91,7 +96,10 @@ export default async function handler(req, res) {
     }
 
     const user_uuid = String(userRows[0].id);
-    const body = req.body || {};
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body || {});
 
     const app = safeText(body.app);
     const action = safeText(body.action);
@@ -203,4 +211,4 @@ export default async function handler(req, res) {
       message: String(e?.message || e)
     });
   }
-}
+};
