@@ -1023,3 +1023,36 @@
   font-weight: 800;
   opacity: .92;
 }
+/* ===== FINAL OVERRIDE — VIDEO HEADER SHRINK ===== */
+#moduleHost[data-active-module="video"] .panel-header,
+.main-panel[data-module="video"] .panel-header{
+  margin-bottom: 8px !important;
+  padding: 4px 4px 0 !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head,
+.main-panel[data-module="video"] .page-head{
+  padding: 6px !important;
+  border-radius: 18px !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__box,
+.main-panel[data-module="video"] .page-head__box{
+  padding: 16px 18px !important;
+  border-radius: 16px !important;
+  min-height: 0 !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__title,
+.main-panel[data-module="video"] .page-head__title{
+  margin: 0 0 4px 0 !important;
+  font-size: 24px !important;
+  line-height: 1.05 !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__sub,
+.main-panel[data-module="video"] .page-head__sub{
+  margin: 0 !important;
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+}
