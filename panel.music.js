@@ -21,7 +21,7 @@
   }
 
   const PANEL_KEY = "music";
-  const LS_KEY = "aivo.music.jobs.v4";
+  const LS_KEY_LEGACY = "aivo.music.jobs.v4";
   const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
   let dbCtrl = null;
@@ -192,15 +192,72 @@ let onMusicVisibilityChange = null;
     hiddenDeletedIds.delete(`${b}::rev1`);
   }
 
+  function getCookieValue(name){
+    try {
+      const s = String(document.cookie || "");
+      const parts = s.split(";").map((x) => x.trim());
+      for (const p of parts) {
+        if (!p) continue;
+        const i = p.indexOf("=");
+        if (i < 0) continue;
+        const k = p.slice(0, i).trim();
+        const v = p.slice(i + 1).trim();
+        if (k === name) return v;
+      }
+    } catch {}
+    return "";
+  }
+
+  function safeKeyPart(v){
+    return String(v || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function getMusicCacheScope(){
+    try {
+      const authRaw = localStorage.getItem("aivo_auth_unified_v1");
+      if (authRaw) {
+        const auth = JSON.parse(authRaw);
+        const email =
+          String(auth?.email || auth?.user?.email || auth?.profile?.email || "").trim();
+        if (email) return `mail:${safeKeyPart(email)}`;
+
+        const userId =
+          String(auth?.user_id || auth?.userId || auth?.user?.id || "").trim();
+        if (userId) return `uid:${safeKeyPart(userId)}`;
+      }
+    } catch {}
+
+    const sessionId = String(getCookieValue("aivo_session") || "").trim();
+    if (sessionId) return `sess:${safeKeyPart(sessionId.slice(0, 24))}`;
+
+    return "guest";
+  }
+
+  function getMusicCacheKey(){
+    return `aivo.music.jobs.v5.${getMusicCacheScope()}`;
+  }
+
+  function clearLegacyMusicCache(){
+    try {
+      localStorage.removeItem(LS_KEY_LEGACY);
+    } catch {}
+  }
+
   function saveJobs(){
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify((jobs || []).slice(0, 200)));
+      clearLegacyMusicCache();
+      localStorage.setItem(getMusicCacheKey(), JSON.stringify((jobs || []).slice(0, 200)));
     } catch {}
   }
 
   function loadJobs(){
     try {
-      const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+      clearLegacyMusicCache();
+      const arr = JSON.parse(localStorage.getItem(getMusicCacheKey()) || "[]");
       return Array.isArray(arr) ? arr : [];
     } catch {
       return [];
