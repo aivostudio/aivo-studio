@@ -1387,3 +1387,21 @@ section[data-module="cover"] .cover-form-grid .quality-pill .qp-credit{
     inset 0 1px 0 rgba(255,255,255,0.06),
     0 6px 18px rgba(0,0,0,0.22) !important;
 }
+/* COVER HEADER SHELL – MATCH MUSIC */
+section[data-module="cover"] .page-hero-card{
+  margin-bottom: 14px !important;
+}
+
+section[data-module="cover"] .page-hero-inner{
+  padding: 20px 28px !important;
+  border-radius: 26px !important;
+  min-height: 0 !important;
+}
+
+section[data-module="cover"] .page-title{
+  margin: 0 0 6px 0 !important;
+}
+
+section[data-module="cover"] .page-subtitle{
+  margin: 0 !important;
+}
