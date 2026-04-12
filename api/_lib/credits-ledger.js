@@ -1,4 +1,9 @@
 const { neon } = require("@neondatabase/serverless");
+const kvMod = require("../_kv.js");
+
+const kv = kvMod?.default || kvMod || {};
+const kvGet = kv.kvGet;
+const kvSet = kv.kvSet;
 
 function pickConn() {
   return (
@@ -117,27 +122,38 @@ async function markTransactionStatus(sql, id, status, extraMeta) {
 }
 
 async function getUserCredits(sql, userUuid, userId) {
-  const rows = await sql`
-    select credits
-    from users
-    where id = ${userUuid}::uuid
-       or email = ${userId}
-    limit 1
-  `;
-  return rows[0] || null;
+  const email = safeText(userId);
+  if (!email) return { credits: 0 };
+
+  if (typeof kvGet !== "function") {
+    throw new Error("kv_get_missing");
+  }
+
+  const key = `credits:${String(email).trim().toLowerCase()}`;
+  const credits = Number(await kvGet(key).catch(() => 0)) || 0;
+
+  return { credits };
 }
 
 async function setUserCredits(sql, userUuid, userId, nextCredits) {
-  const rows = await sql`
-    update users
-    set credits = ${nextCredits}
-    where id = ${userUuid}::uuid
-       or email = ${userId}
-    returning id, email, credits
-  `;
-  return rows[0] || null;
-}
+  const email = safeText(userId);
+  if (!email) return null;
 
+  if (typeof kvSet !== "function") {
+    throw new Error("kv_set_missing");
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const key = `credits:${normalizedEmail}`;
+
+  await kvSet(key, safeInt(nextCredits));
+
+  return {
+    id: userUuid || null,
+    email: normalizedEmail,
+    credits: safeInt(nextCredits)
+  };
+}
 async function consumeCredits(input) {
   const sql = getSql();
 
