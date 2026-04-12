@@ -1136,16 +1136,58 @@ function buildCoverPrompt(prompt, quality) {
 
       const refundData = await refundRes.json().catch(() => null);
 
-      if (refundRes.ok && refundData?.ok && refundData?.refunded) {
-        try { window.syncCreditsUI?.({ force: true }); } catch {}
-        toastError("İşlem başarısız oldu, kredi iade edildi.");
-        return true;
+   if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+  try {
+    const creditGetRes = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store",
+      headers: { "accept": "application/json" }
+    });
+
+    const creditGetData = await creditGetRes.json().catch(() => null);
+
+    if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+      const topCreditCountEl = document.getElementById("topCreditCount");
+      if (topCreditCountEl) {
+        topCreditCountEl.textContent = String(creditGetData.credits);
       }
 
-      if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
-        try { window.syncCreditsUI?.({ force: true }); } catch {}
-        return true;
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
       }
+    }
+  } catch (_) {}
+
+  try { window.syncCreditsUI?.({ force: true }); } catch {}
+  toastError("İşlem başarısız oldu, kredi iade edildi.");
+  return true;
+}
+
+if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+  try {
+    const creditGetRes = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store",
+      headers: { "accept": "application/json" }
+    });
+
+    const creditGetData = await creditGetRes.json().catch(() => null);
+
+    if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+      const topCreditCountEl = document.getElementById("topCreditCount");
+      if (topCreditCountEl) {
+        topCreditCountEl.textContent = String(creditGetData.credits);
+      }
+
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+      }
+    }
+  } catch (_) {}
+
+  try { window.syncCreditsUI?.({ force: true }); } catch {}
+  return true;
+}
     } catch (refundErr) {
       console.error("[cover] refund failed:", refundErr);
     }
