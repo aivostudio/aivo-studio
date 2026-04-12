@@ -59,6 +59,24 @@
 
   async function resolveEmail() {
     try {
+      if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) {
+        var sessionEmail = normalizeEmail(window.__AIVO_SESSION__.email);
+        if (sessionEmail) return sessionEmail;
+      }
+    } catch (_) {}
+
+    try {
+      var auth = safeReadAuth();
+      var cachedEmail = normalizeEmail(auth && auth.email);
+      if (cachedEmail) return cachedEmail;
+    } catch (_) {}
+
+    try {
+      var directEmail = normalizeEmail(localStorage.getItem("aivo_user_email") || "");
+      if (directEmail) return directEmail;
+    } catch (_) {}
+
+    try {
       var meRes = await fetch("/api/auth/me", {
         method: "GET",
         credentials: "same-origin",
@@ -66,19 +84,12 @@
       });
 
       var meJson = await meRes.json().catch(function () { return null; });
-      if (meRes.ok && meJson && meJson.ok && meJson.email) {
+      if (meRes.ok && meJson && meJson.email) {
         return normalizeEmail(meJson.email);
       }
     } catch (_) {}
 
-    try {
-      if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) {
-        return normalizeEmail(window.__AIVO_SESSION__.email);
-      }
-    } catch (_) {}
-
-    var auth = safeReadAuth();
-    return normalizeEmail(auth && auth.email);
+    return "";
   }
 
   function getNodes(root) {
