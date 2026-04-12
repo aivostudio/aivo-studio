@@ -1093,92 +1093,156 @@ function buildCoverPrompt(prompt, quality) {
         }
 
         const prev = gen.textContent;
-        (async () => {
-          try {
-            const creditCost =
-              Number(gen.getAttribute("data-credit-cost") || (root.dataset.coverQuality === "ultra" ? 9 : 6)) ||
-              (root.dataset.coverQuality === "ultra" ? 9 : 6);
+(async () => {
+  let consumed = false;
+  let consumeTransactionId = null;
+  let creditCost =
+    Number(gen.getAttribute("data-credit-cost") || (root.dataset.coverQuality === "ultra" ? 9 : 6)) ||
+    (root.dataset.coverQuality === "ultra" ? 9 : 6);
 
-            const creditReason =
-              root.dataset.coverQuality === "ultra"
-                ? "studio_cover_generate_ultra"
-                : "studio_cover_generate_artist";
+  const creditReason =
+    root.dataset.coverQuality === "ultra"
+      ? "studio_cover_generate_ultra"
+      : "studio_cover_generate_artist";
 
-            const creditRes = await fetch("/api/credits/consume", {
-              method: "POST",
-              credentials: "include",
-              headers: {
-                "content-type": "application/json",
-                "accept": "application/json"
-              },
-              body: JSON.stringify({
-                cost: creditCost,
-                reason: creditReason
-              })
-            });
+  const consumeRequestId = `cover:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
-            let creditData = null;
-            try { creditData = await creditRes.json(); }
-            catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+  async function tryRefund(reason, extraMeta = {}) {
+    if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
 
-            if (!creditRes.ok || !creditData?.ok) {
-              gen.disabled = true;
-              gen.textContent = "Kredi yetersiz";
-              gen.classList.remove("is-loading");
-
-              const to = encodeURIComponent(
-                location.pathname + location.search + location.hash
-              );
-
-              location.href =
-                "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-
-              return;
-            }
-
-            gen.disabled = true;
-            gen.textContent = "Üretiliyor...";
-            gen.classList.add("is-loading");
-
-                      try {
-              const creditGetRes = await fetch("/api/credits/get", {
-                credentials: "include",
-                cache: "no-store",
-                headers: { "accept": "application/json" }
-              });
-
-              const creditGetData = await creditGetRes.json().catch(() => null);
-
-              if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-                const topCreditCountEl = document.getElementById("topCreditCount");
-                if (topCreditCountEl) {
-                  topCreditCountEl.textContent = String(creditGetData.credits);
-                }
-
-                if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-                  window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-                }
-              }
-            } catch (_) {}
-
-            if (creditCost === 9) {
-              toastSuccess("9 kredi düşüldü");
-            } else {
-              toastSuccess("6 kredi düşüldü");
-            }
-
-            toastSuccess("Kapak üretimi başladı");
-
-            await createCover();
-          } catch (err) {
-            console.error("[cover] createCover error:", err);
-            alert(String(err));
-          } finally {
-            gen.disabled = false;
-            gen.textContent = prev;
-            gen.classList.remove("is-loading");
+    try {
+      const refundRes = await fetch("/api/credits/refund", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: "cover",
+          action: creditReason,
+          amount: creditCost,
+          request_id: consumeRequestId,
+          related_transaction_id: consumeTransactionId,
+          reason,
+          meta: {
+            source: "cover.module.create",
+            quality: root.dataset.coverQuality || "artist",
+            ratio: qs("#coverRatio", root)?.value || "1:1",
+            ...extraMeta
           }
-        })();
+        })
+      });
+
+      const refundData = await refundRes.json().catch(() => null);
+
+      if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+        try { window.syncCreditsUI?.({ force: true }); } catch {}
+        toastError("İşlem başarısız oldu, kredi iade edildi.");
+        return true;
+      }
+
+      if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+        try { window.syncCreditsUI?.({ force: true }); } catch {}
+        return true;
+      }
+    } catch (refundErr) {
+      console.error("[cover] refund failed:", refundErr);
+    }
+
+    return false;
+  }
+
+  try {
+    const creditRes = await fetch("/api/credits/consume", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "cover",
+        action: creditReason,
+        cost: creditCost,
+        request_id: consumeRequestId,
+        reason: creditReason
+      })
+    });
+
+    let creditData = null;
+    try { creditData = await creditRes.json(); }
+    catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+
+    if (!creditRes.ok || !creditData?.ok) {
+      gen.disabled = true;
+      gen.textContent = "Kredi yetersiz";
+      gen.classList.remove("is-loading");
+
+      const to = encodeURIComponent(
+        location.pathname + location.search + location.hash
+      );
+
+      location.href =
+        "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+
+      return;
+    }
+
+    consumed = true;
+    consumeTransactionId =
+      creditData?.transaction_id ||
+      creditData?.transaction?.id ||
+      null;
+
+    gen.disabled = true;
+    gen.textContent = "Üretiliyor...";
+    gen.classList.add("is-loading");
+
+    try {
+      const creditGetRes = await fetch("/api/credits/get", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
+
+      const creditGetData = await creditGetRes.json().catch(() => null);
+
+      if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(creditGetData.credits);
+        }
+
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+        }
+      }
+    } catch (_) {}
+
+    if (creditCost === 9) {
+      toastSuccess("9 kredi düşüldü");
+    } else {
+      toastSuccess("6 kredi düşüldü");
+    }
+
+    toastSuccess("Kapak üretimi başladı");
+
+    await createCover();
+  } catch (err) {
+    console.error("[cover] createCover error:", err);
+
+    await tryRefund("cover_create_failed", {
+      error: String(err?.message || err || "failed")
+    });
+
+    alert(String(err));
+  } finally {
+    gen.disabled = false;
+    gen.textContent = prev;
+    gen.classList.remove("is-loading");
+  }
+})();
 
         return;
       }
