@@ -147,7 +147,9 @@ if (policy.decision === "block") {
 
     const creditCost = 5;
     const creditAction = "studio_music_generate";
-    const consumeRequestId = `music:${Date.now()}:${uuidLike()}`;
+  const consumeRequestId =
+  String(body.request_id || body.client_request_id || "").trim() ||
+  `music:${internal_job_id}`;
     let consumeTransactionId = null;
 
     // ✅ internal id bizde kalsın (UI + KV mapping için)
