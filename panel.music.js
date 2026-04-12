@@ -997,9 +997,18 @@ async function togglePlayFromCard(card){
     }
   }
 
-  async function actionStems(card){
-    const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+  async function actionStems(card, opts = {}){
+    const jobId = String(
+      opts?.job_id ||
+      card?.getAttribute("data-job-id") ||
+      ""
+    ).trim();
     if (!jobId || isHiddenJobId(jobId)) return;
+
+    const consumeTransactionId = String(opts?.consume_transaction_id || "").trim();
+    const consumeAmount = Number(opts?.consume_amount || 0) || 0;
+    const consumeAction = String(opts?.consume_action || "music_stems_split").trim();
+    const consumeRequestId = String(opts?.consume_request_id || `stems:${jobId}`).trim();
 
     const existing = jobs.find((x) => getJobId(x) === jobId) || {};
     const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
@@ -1023,7 +1032,50 @@ async function togglePlayFromCard(card){
       return;
     }
 
-       stemsClearTimer(jobId);
+    async function tryRefund(reason, extraMeta = {}) {
+      if (!consumeTransactionId || consumeAmount <= 0) return false;
+
+      try {
+        const refundRes = await fetch("/api/credits/refund", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "music",
+            action: consumeAction,
+            amount: consumeAmount,
+            request_id: consumeRequestId,
+            job_id: jobId,
+            related_transaction_id: consumeTransactionId,
+            reason,
+            meta: {
+              source: "panel.music.actionStems",
+              ...extraMeta
+            }
+          })
+        });
+
+        const refundData = await refundRes.json().catch(() => null);
+
+        if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+          return true;
+        }
+
+        if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+          return true;
+        }
+      } catch (err) {
+        console.warn("[panel.music] refund failed", err);
+      }
+
+      return false;
+    }
+
+    stemsClearTimer(jobId);
     stemsSet(jobId, { status: "starting", prediction_id: "", output: null, error: "" });
     render();
     toast("info", "Kanal ayırma işlemi başladı");
@@ -1032,13 +1084,24 @@ async function togglePlayFromCard(card){
       const c = await stemsPost({ audio_url: src });
       const pid = String(c.id || c.prediction_id || "").trim();
       const st = String(c.status || "starting").toLowerCase();
-      if (!pid) throw new Error("missing_prediction_id");
+
+      if (!pid) {
+        await tryRefund("stems_start_missing_prediction_id", {
+          stems_response: c || null
+        });
+        throw new Error("missing_prediction_id");
+      }
+
       if (isHiddenJobId(jobId)) return;
 
-         stemsSet(jobId, { status: st || "starting", prediction_id: pid, output: null, error: "" });
+      stemsSet(jobId, { status: st || "starting", prediction_id: pid, output: null, error: "" });
       render();
       stemsSchedulePoll(jobId, 1200);
     } catch (e) {
+      await tryRefund("stems_start_failed", {
+        error: String(e?.message || e || "failed")
+      });
+
       stemsSet(jobId, { status: "failed", error: String(e?.message || e || "failed") });
       render();
       toast("error", "Stems başlatılamadı");
