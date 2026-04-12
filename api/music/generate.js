@@ -1,452 +1,438 @@
-/* ==========================================================
-   AIVO Studio – Music Generate (AUTO BIND, PRODUCTION)
-   File: /js/studio.music.generate.js
-   ========================================================== */
+// api/music/generate.js
+// ✅ KV (Redis) + ✅ Neon jobs INSERT (skeleton)
+// - Generates internal_job_id (job_...)
+// - Calls TopMediai create via /api/providers/topmediai/music/create
+// - Writes mapping + job meta to Redis
+// - Inserts a row into Neon `jobs` table (best-effort auth)
+//
+// ✅ CHANGE (THIS REVISION):
+// - UI request'te gelse bile `reference_audio_url` artık provider'a forward edilmiyor.
+//   (Benzer ama yeni üretim için provider tarafında upload/audio_url modu tetiklenmesin.)
 
-async function generateMusic(payload) {
-  const r = await fetch("/api/music/generate", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+export const config = { runtime: "nodejs" };
 
-  const j = await r.json();
-  if (!j.ok) throw new Error("generate_failed");
+const { getRedis } = require("../_kv");
+const fetchFn = globalThis.fetch || require("node-fetch");
+const { neon } = require("@neondatabase/serverless");
+const { enforcePolicy, policyErrorResponse } = require("../_lib/policy-gateway");
 
-  return j.provider_job_id;
+// NOTE: auth modülü sende bazı endpointlerde ESM, bazı yerde CJS görünüyor.
+// Burada CJS require ile güvenli alıyoruz:
+let requireAuth = null;
+
+async function getRequireAuth() {
+  if (requireAuth) return requireAuth;
+
+  try {
+    const mod = await import("../_lib/auth.js");
+    requireAuth =
+      mod?.requireAuth ||
+      mod?.default?.requireAuth ||
+      mod?.default ||
+      null;
+  } catch {
+    requireAuth = null;
+  }
+
+  return requireAuth;
 }
 
-/* =========================================================
-   AIVO Studio — Music Generate (AUTO BIND, PRODUCTION)
-   File: /js/studio.music.generate.js
-   ========================================================= */
-(function AIVO_STUDIO_MUSIC_GENERATE(){
-  if (window.__AIVO_STUDIO_MUSIC_GENERATE__) return;
-  window.__AIVO_STUDIO_MUSIC_GENERATE__ = true;
+function nowISO() {
+  return new Date().toISOString();
+}
 
-  const BTN_ID = "musicGenerateBtn";
-  const PROMPT_SEL = "#prompt";
+function uuidLike() {
+  return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
-  let boundBtn = null;
-  let isBusy = false;
+function safeJson(res, obj, code = 200) {
+  return res.status(code).json(obj);
+}
 
-  function qs(sel, root=document){ return root.querySelector(sel); }
-
-  function sleep(ms){ return new Promise((r)=>setTimeout(r, ms)); }
-
-  function getPrompt(){
-    const el = qs(PROMPT_SEL);
-    return (el?.value || "").trim();
+function safeParseJson(s) {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
   }
+}
 
-    function toastError(msg){
-    if (window.toast?.error) return window.toast.error(msg);
-    if (window.toast?.info) return window.toast.info(msg);
-    console.warn("[music.generate]", msg);
+function getOrigin(req) {
+  const proto =
+    (req.headers["x-forwarded-proto"] || "")
+      .toString()
+      .split(",")[0]
+      .trim() || "https";
+  const host =
+    (req.headers["x-forwarded-host"] || "")
+      .toString()
+      .split(",")[0]
+      .trim() ||
+    (req.headers.host || "").toString().trim();
+
+  return host ? `${proto}://${host}` : "https://aivo.tr";
+}
+
+function pickConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    ""
+  );
+}
+
+function cookieValue(cookieHeader, name) {
+  const s = String(cookieHeader || "");
+  const parts = s.split(";").map((x) => x.trim());
+  for (const p of parts) {
+    if (!p) continue;
+    const i = p.indexOf("=");
+    if (i < 0) continue;
+    const k = p.slice(0, i).trim();
+    const v = p.slice(i + 1).trim();
+    if (k === name) return v;
   }
+  return "";
+}
 
-  function toastSuccess(msg){
-    if (window.toast?.success) return window.toast.success(msg);
-    if (window.toast?.info) return window.toast.info(msg);
-    console.log("[music.generate]", msg);
-  }
+module.exports = async (req, res) => {
+  try {
+    if (req.method === "OPTIONS") return res.status(204).end();
 
-  function dispatchJob(job){
-    try {
-      window.dispatchEvent(new CustomEvent("aivo:job", { detail: job }));
-    } catch(e) {
-      console.warn("[music.generate] dispatch aivo:job failed:", e);
+    if (req.method !== "POST") {
+      return safeJson(res, { ok: false, error: "method_not_allowed" }, 405);
     }
-  }
 
-  async function callGenerateAPI(prompt){
+    const redis = getRedis();
+    const body = req.body || {};
+    const prompt = String(body.prompt || body.text || "").trim();
 
-    const titleEl  = document.querySelector('#songName');
-    const lyricsEl = document.querySelector('#lyrics');
-    const vocalEl  = document.querySelector('#vocalType');
-    const moodEl   = document.querySelector('#mood');
+    if (!prompt) {
+      return safeJson(res, { ok: false, error: "missing_prompt" }, 400);
+    }
 
-    const title  = titleEl  ? titleEl.value.trim()  : '';
-    const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
+    // UI'dan gelen ek alanlar
+    const title = String(body.title || "").trim();
+    const lyrics = String(body.lyrics || "").trim();
+    const vocal = String(body.vocal || "").trim();
+    const mood = String(body.mood || "").trim();
+    const policy = enforcePolicy({
+  app: "music",
+  prompt,
+  title,
+  lyrics,
+  vocal,
+  mood,
+  referenceArtist: String(body.referenceArtist || body.artist || "").trim(),
+  personName: String(body.personName || "").trim(),
+});
 
-    const vocalText = vocalEl
-      ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "")
-      : "";
+if (policy.decision === "block") {
+  return safeJson(res, policyErrorResponse(policy), 403);
+}
 
-    const moodText = moodEl
-      ? (moodEl.value || moodEl.selectedOptions?.[0]?.textContent?.trim() || "")
-      : "";
+    // ✅ NOTE: UI request'te gelse bile burada intentionally ignore ediyoruz.
+    // const reference_audio_url = String(body.reference_audio_url || "").trim();
 
-    // placeholder ise boş gönder
-    const vocal = (vocalText === "Vokal tipini seç") ? "" : vocalText;
-    const mood  = (moodText  === "Ruh halini seç")   ? "" : moodText;
+    let mode = String(body.mode || "").trim();
+    if (!mode) {
+      mode = vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals";
+    }
 
-    // mode’u vokale göre ayarla (enstrümantal seçilmediyse vocals)
-    const mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
+    // ✅ internal id bizde kalsın (UI + KV mapping için)
+    const internal_job_id = `job_${uuidLike()}`;
 
-     const reference_audio_url = String(window.__MUSIC_REF_AUDIO_URL__ || "").trim();
+    // ✅ TopMediai create'i direkt Vercel üzerinden çağır
+    const origin = getOrigin(req);
+    const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
-     const payload = {
-      prompt,
-      mode,
-      title,
-      lyrics,
-      vocal,
-      mood,
+    // Provider payload (NO reference_audio_url forward)
+  const safePrompt =
+  policy.decision === "rewrite"
+    ? String(policy.rewrittenPrompt || prompt || "").trim()
+    : prompt;
 
-      // ✅ Ref Audio URL only if present (boş göndermiyoruz)
-      ...(reference_audio_url ? { reference_audio_url } : {}),
+const providerPayload = { prompt: safePrompt };
+if (title) providerPayload.title = title;
+if (lyrics) providerPayload.lyrics = lyrics;
+if (mode) providerPayload.mode = mode;
+if (vocal) providerPayload.vocal = vocal;
+if (mood) providerPayload.mood = mood;
+    let pr;
+    try {
+      pr = await fetchFn(providerCreateUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify(providerPayload),
+      });
+    } catch (e) {
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: "provider_create_fetch_failed",
+          internal_job_id,
+          detail: String(e?.message || e),
+          provider_create_url: providerCreateUrl,
+          // debug
+          sent_to_provider: providerPayload,
+        },
+        200
+      );
+    }
 
-      use_credits: true,
-      charge: true,
-      credits: 5,
-      cost: 5,
+    const ptext = await pr.text();
+    const pjson = safeParseJson(ptext);
+
+    if (!pr.ok || !pjson || pjson.ok === false) {
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: "provider_create_failed",
+          internal_job_id,
+          provider_status: pr.status,
+          provider_create_url: providerCreateUrl,
+          sample: String(ptext || "").slice(0, 1000),
+          provider_response: pjson,
+          // debug
+          sent_to_provider: providerPayload,
+        },
+        200
+      );
+    }
+
+    const provider_job_id = String(
+      pjson.provider_job_id || pjson.job_id || pjson.id || ""
+    ).trim();
+  
+
+    if (!provider_job_id) {
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: "provider_missing_provider_job_id",
+          internal_job_id,
+          provider_create_url: providerCreateUrl,
+          provider_response: pjson,
+          // debug
+          sent_to_provider: providerPayload,
+        },
+        200
+      );
+    }
+
+    // ✅ NEW: 2 song id (tracks ids)
+    const provider_song_ids_raw =
+      pjson.provider_song_ids ||
+      pjson.providerSongIds ||
+      pjson.song_ids ||
+      pjson.songIds ||
+      pjson?.topmediai?.data?.song_ids ||
+      [];
+
+    const provider_song_ids = Array.isArray(provider_song_ids_raw)
+      ? provider_song_ids_raw.map((x) => String(x)).filter(Boolean)
+      : [];
+
+    // KV keys
+    const mapKey = `providers/music/${provider_job_id}.json`;
+    const jobMetaKey = `jobs/${internal_job_id}/job.json`;
+    const outputsIndexKey = `jobs/${internal_job_id}/outputs/index.json`;
+    const jobKey = `job:${internal_job_id}`;
+    const providerMapKey = `provider_map:${provider_job_id}`;
+    const internalMapKey = `internal_map:${internal_job_id}`;
+
+    // 1) provider -> internal mapping
+    await redis.set(
+      providerMapKey,
+      JSON.stringify({
+        provider_job_id,
+        internal_job_id,
+        created_at: nowISO(),
+        provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+      })
+    );
+    // ✅ NEW: internal -> provider reverse mapping (status?job_id=job_... için)
+await redis.set(
+  internalMapKey,
+  JSON.stringify({
+    internal_job_id,
+    provider_job_id,
+    provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+    created_at: nowISO(),
+  })
+);
+
+    // 2) provider meta (debug)
+    await redis.set(
+      mapKey,
+      JSON.stringify({
+        ok: true,
+        kind: "music",
+        provider_job_id,
+        provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+        internal_job_id,
+        state: "queued",
+        prompt: prompt || null,
+        created_at: nowISO(),
+        provider: {
+          create_url: providerCreateUrl,
+          // provider raw response
+          resp: pjson,
+          // what we sent
+          sent_to_provider: providerPayload,
+        },
+      })
+    );
+
+    // 3) job meta KV
+    const jobObj = {
+      id: internal_job_id,
+      kind: "music",
+      provider_job_id,
+      provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+      status: "processing",
+      state: "queued",
+      prompt: prompt || null,
+      title: title || null,
+      lyrics: lyrics || null,
+      mode: mode || null,
+      vocal: vocal || null,
+      mood: mood || null,
+      created_at: nowISO(),
+      updated_at: nowISO(),
+      outputs: [],
+      // db_job_id aşağıda doldurulacak
+      db_job_id: null,
     };
 
-    const res = await fetch("/api/music/generate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
+    await redis.set(jobMetaKey, JSON.stringify(jobObj));
+    await redis.set(jobKey, JSON.stringify(jobObj));
 
-    let data = null;
-    try { data = await res.json(); }
-    catch { data = { ok:false, error:"non_json_response", status: res.status }; }
+    // 4) outputs index boş başlasın
+    await redis.set(outputsIndexKey, JSON.stringify({ outputs: [] }));
 
-    if (!res.ok || !data?.ok) {
-      const errMsg = data?.error || ("http_" + res.status);
-      throw new Error("generate_failed:" + errMsg);
-    }
+    // ---------------------------------------------------------
+    // ✅ 5) NEON INSERT (jobs table) — skeleton kayıt
+    // ---------------------------------------------------------
+    const conn = pickConn();
+    let db_job_id = null;
+    let db_insert_ok = false;
+    let db_insert_error = null;
 
-    return data;
-  }
+    if (!conn) {
+      db_insert_error = "missing_db_env";
+    } else {
+      const sql = neon(conn);
 
-  async function doGenerate(){
-    if (isBusy) return;
-    isBusy = true;
-
-    // =========================================================
-    // ✅ BUTTON LOADING EFFECT (Cover ile aynı)
-    // - basınca disable + "Üretiliyor..." + class is-loading
-    // - minimum 3.5s sonra normale döner
-    // =========================================================
-    const btn = document.getElementById(BTN_ID);
-    const t0 = Date.now();
-    const prevText = btn ? btn.textContent : "";
-    if (btn) {
-      btn.disabled = true;
-      btn.classList.add("is-loading");
-      btn.textContent = "Üretiliyor...";
-      btn.setAttribute("aria-busy", "true");
-    }
-    try {
-           const prompt = getPrompt();
-      if (!prompt){
-        toastError("Prompt yazmalısın");
-        return;
-      }
-
-      // ✅ UI meta: kart başlığı hiçbir aşamada "Müzik Üretimi" ile ezilmeyecek
-      const uiTitle  = String(document.querySelector("#songName")?.value || "").trim();
-      const uiLyrics = String(document.querySelector("#lyrics")?.value || "").trim();
-      const uiPrompt = String(document.querySelector("#prompt")?.value || "").trim();
-
-      window.__LAST_PROMPT__ = prompt;
-
-      // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
+      // best-effort auth: email/user_id yakalarsak ilişkilendiririz
+          let auth = null;
       try {
-        const creditRes = await fetch("/api/credits/consume", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "content-type": "application/json",
-            "accept": "application/json"
-          },
-          body: JSON.stringify({
-            cost: 5,
-            reason: "studio_music_generate"
-          })
-        });
-
-        let creditData = null;
-        try { creditData = await creditRes.json(); }
-        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
-
-        if (!creditRes.ok || !creditData?.ok) {
-          const msg =
-            creditData?.error ||
-            creditData?.message ||
-            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-          toastError(msg);
-          return;
+        const authFn = await getRequireAuth();
+        if (typeof authFn === "function") {
+          auth = await authFn(req);
         }
-
-               try {
-          const creditGetRes = await fetch("/api/credits/get", {
-            credentials: "include",
-            cache: "no-store",
-            headers: { "accept": "application/json" }
-          });
-
-          const creditGetData = await creditGetRes.json().catch(() => null);
-
-          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-            const topCreditCountEl = document.getElementById("topCreditCount");
-            if (topCreditCountEl) {
-              topCreditCountEl.textContent = String(creditGetData.credits);
-            }
-
-            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-            }
-          }
-        } catch (_) {}
-
-        toastSuccess("5 kredi düşüldü");
-
-      } catch (creditErr) {
-        console.error("[music.generate] credits consume failed:", creditErr);
-        toastError("Kredi düşümünde bağlantı hatası oluştu.");
-        return;
+      } catch {
+        auth = null;
       }
 
-      // 1) Direkt API
-      let result = null;
-      try {
-        result = await callGenerateAPI(prompt);
-      } catch (apiErr) {
-        console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
-        // 2) Fallback: eski service
-        const svc =
-          window.StudioServices ||
-          window.AIVO_SERVICES ||
-          window.AIVO_APP ||
-          null;
+      const email = auth?.email ? String(auth.email) : "";
+      const user_id =
+        email ||
+        (auth?.user_id ? String(auth.user_id) : "") ||
+        (cookieValue(req.headers?.cookie, "aivo_session")
+          ? `sess:${cookieValue(req.headers?.cookie, "aivo_session").slice(0, 16)}`
+          : "unknown");
 
-        if (svc?.generateMusic && typeof svc.generateMusic === "function"){
-          result = await svc.generateMusic({ prompt });
-        }
-        else if (window.generateMusic && typeof window.generateMusic === "function"){
-          result = await window.generateMusic({ prompt });
-        }
-        else {
-          toastError("Generate endpoint hata verdi ve fallback generateMusic fonksiyonu bulunamadı.");
-          return;
-        }
-      }
-
-      // =========================================================
-      // ✅ RESULT NORMALIZE (FIXED)
-      // - backend artık provider_job_id döndürüyor: prov_music_...
-      // - status endpoint bunu bekliyor
-      // =========================================================
-      const provider_job_id =
-        result?.provider_job_id ||
-        result?.providerJobId ||
-        result?.data?.provider_job_id ||
-        result?.data?.providerJobId ||
-        null;
-
-      const internal_job_id =
-        result?.job_id ||
-        result?.jobId ||
-        result?.internal_job_id ||
-        result?.id ||
-        result?.data?.job_id ||
-        result?.data?.id ||
-        null;
-
-      // ✅ provider_song_ids normalize (2 ayrı şarkı id'si buradan gelecek)
-      const provider_song_ids =
-        result?.provider_song_ids ||
-        result?.providerSongIds ||
-        result?.data?.provider_song_ids ||
-        result?.data?.providerSongIds ||
-        [];
-
-      // Öncelik provider id
-      const job_id = provider_job_id || internal_job_id;
-
-      // ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
-      // Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
-      if (!provider_job_id) {
-        console.warn("[music.generate] missing provider_job_id, result:", result);
-        toastError("TopMediai create başarısız (provider_job_id gelmedi). Lütfen tekrar dene.");
-        return;
-      }
-
-          if (!job_id){
-        console.warn("[music.generate] generate response:", result);
-        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
-        return;
-      }
-
-      // DEBUG
-      window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
-      window.__LAST_MUSIC_JOB_ID__ = job_id;
-      window.__LAST_MUSIC_PROVIDER_JOB_ID__ = provider_job_id;
-      window.__LAST_MUSIC_INTERNAL_JOB_ID__ = internal_job_id;
-
-      console.log("[music.generate] FULL_RESPONSE:", result);
-      console.log("[music.generate] job_id chosen:", job_id, {
+      const meta = {
+        provider: "topmediai",
+        prompt,
         provider_job_id,
-        internal_job_id
-      });
+        provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+        internal_job_id, // KV id
+        title: title || undefined,
+        lyrics: lyrics || undefined,
+        mode: mode || undefined,
+        vocal: vocal || undefined,
+        mood: mood || undefined,
+        // NOTE: intentionally not storing reference_audio_url in DB meta
+      };
 
-      const isProviderJob = String(job_id).startsWith("prov_music_");
-      const jobType = "music"; // panel key music
-
-      toastSuccess("Müzik üretimi başladı");
-
-      // 1) Panel event
-      dispatchJob({
-        type: jobType,
-        kind: jobType,
-
-        job_id: job_id,
-        id: job_id,
-
-        status: result?.state || result?.status || "queued",
-
-        // ✅ UI meta forward (title boş olabilir, OK)
-        title: uiTitle,
-        lyrics: uiLyrics,
-        prompt: uiPrompt,
-
-        __ui_state: "processing",
-        __audio_src: "",
-
-        // panel.music.js bunu direkt okuyor
-        provider_job_id: provider_job_id,
-
-        // ✅ EN KRİTİK: iki kart için farklı provider_song_id'ler buradan gelecek
-        provider_song_ids: Array.isArray(provider_song_ids) ? provider_song_ids : [],
-
-        // panel.music.js için gerçek job id (internal) sakla
-        __real_job_id: internal_job_id || job_id,
-
-        // debug flagler kalsın
-        __provider_job: isProviderJob,
-        __provider_job_id: provider_job_id,
-        __internal_job_id: internal_job_id,
-      });
-
-      // 2) AIVO_JOBS store (varsa)
       try {
-        if (window.AIVO_JOBS?.upsert) {
-          window.AIVO_JOBS.upsert({
-            type: jobType,
-            kind: jobType,
-            job_id: job_id,
-            id: job_id,
-            status: result?.state || result?.status || "queued",
+        // status sütununda default yoksa queued yazmak güvenli.
+        const rows = await sql`
+          insert into jobs (user_id, app, type, provider, prompt, meta, outputs, error, request_id, status, created_at, updated_at)
+          values (
+            ${user_id},
+            ${"music"},
+            ${"music"},
+            ${"topmediai"},
+            ${prompt},
+            ${meta},
+            ${[]},
+            ${null},
+            ${provider_job_id},
+            ${"queued"},
+            now(),
+            now()
+          )
+          returning id
+        `;
 
-            // ✅ UI meta forward (title boş olabilir, OK)
-            title: uiTitle,
-            lyrics: uiLyrics,
-            prompt: uiPrompt,
+        db_job_id = rows?.[0]?.id ? String(rows[0].id) : null;
+        db_insert_ok = !!db_job_id;
 
-            createdAt: new Date().toISOString(),
-            __provider_job: isProviderJob,
-            __provider_job_id: provider_job_id,
-            __internal_job_id: internal_job_id,
-          });
-
-          // =========================================================
-          // 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
-          // =========================================================
-          if (provider_job_id) {
-            const pollInterval = setInterval(async () => {
-              try {
-                const r = await fetch(
-                  `/api/music/status?provider_job_id=${encodeURIComponent(provider_job_id)}`
-                );
-                const st = await r.json();
-
-                console.log("[music.generate] poll status:", st);
-
-                 if (st?.state === "ready" && st?.audio?.src) {
-                  clearInterval(pollInterval);
-
-                  console.log("[music.generate] READY → dispatch UI update", st);
-
-                  dispatchJob({
-                    type: "music",
-                    kind: "music",
-                    job_id: provider_job_id,
-                    id: provider_job_id,
-                    status: "ready",
-                    state: "ready",
-
-                    // ✅ UI meta forward AGAIN (READY update title ezmesin)
-                    title: uiTitle,
-                    lyrics: uiLyrics,
-                    prompt: uiPrompt,
-
-                    __ui_state: "ready",
-                    __audio_src: st.audio.src,
-                    audio: { src: st.audio.src },
-                    mp3_url: st.audio.src,
-                    output_id: st.output_id,
-                    internal_job_id: st.internal_job_id,
-                    __provider_job: true,
-                    __provider_job_id: provider_job_id,
-                    __internal_job_id: st.internal_job_id,
-                  });
-
-                  toastSuccess("Müzik hazır");
-                }
-              } catch (e) {
-                console.warn("[music.generate] status poll failed:", e);
-              }
-            }, 1500);
-          }
+        // KV job obj içine db id ekleyelim (status/update adımında lazım olacak)
+        if (db_job_id) {
+          jobObj.db_job_id = db_job_id;
+          jobObj.updated_at = nowISO();
+          await redis.set(jobMetaKey, JSON.stringify(jobObj));
+          await redis.set(jobKey, JSON.stringify(jobObj));
         }
-      } catch(e) {
-        console.warn("[music.generate] AIVO_JOBS.upsert failed:", e);
+      } catch (e) {
+        db_insert_ok = false;
+        db_insert_error = String(e?.message || e);
       }
-
-    } catch (e) {
-      console.error("[music.generate] error:", e);
-      toastError("Müzik üretiminde hata oluştu.");
-    } finally {
-      // minimum 3.5s loading görünsün (UX: basıldı hissi)
-      const minMs = 3500;
-      const dt = Date.now() - t0;
-      if (dt < minMs) await sleep(minMs - dt);
-
-      if (btn) {
-        btn.disabled = false;
-        btn.classList.remove("is-loading");
-        btn.textContent = prevText || "🎵 Müzik Üret";
-        btn.removeAttribute("aria-busy");
-      }
-
-      isBusy = false;
     }
-  }
 
-  function bind(){
-    const btn = document.getElementById(BTN_ID);
-    if (!btn) return;
+    // ✅ response: internal_job_id (KV) + db_job_id (Neon)
+    // ✅ + DEBUG: sent_to_provider (bizim create'a gönderdiğimiz) ve provider_response
+    return safeJson(res, {
+      ok: true,
+      state: "queued",
+      provider_job_id,
+      provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+      internal_job_id,
+      db_job_id: db_job_id || null,
+      db: {
+        ok: db_insert_ok,
+        error: db_insert_ok ? null : db_insert_error,
+      },
+      keys: { mapKey, jobMetaKey, outputsIndexKey, providerMapKey },
+      provider: { ok: true, create_url: providerCreateUrl },
 
-    if (boundBtn === btn) return;
-    boundBtn = btn;
-
-    btn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      doGenerate();
-      return false;
+      // ✅ DEBUG (Network Response'da göreceksin)
+      sent_to_provider: providerPayload,
+      sent_payload: pjson?.sent_payload || null,
+      provider_response: pjson,
     });
-
-    console.log("[studio.music.generate] bound OK:", BTN_ID);
+  } catch (err) {
+    console.error("music/generate error:", err);
+    return safeJson(
+      res,
+      { ok: false, error: "server_error", message: String(err?.message || err) },
+      500
+    );
   }
-
-  setInterval(bind, 500);
-
-  window.addEventListener("DOMContentLoaded", bind);
-  window.addEventListener("load", bind);
-
-})();
+};
