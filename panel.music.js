@@ -1059,8 +1059,28 @@ async function togglePlayFromCard(card){
         });
 
         const refundData = await refundRes.json().catch(() => null);
+if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+  try {
+    const creditGetRes = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store",
+      headers: { "accept": "application/json" }
+    });
 
-       if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+    const creditGetData = await creditGetRes.json().catch(() => null);
+
+    if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+      const topCreditCountEl = document.getElementById("topCreditCount");
+      if (topCreditCountEl) {
+        topCreditCountEl.textContent = String(creditGetData.credits);
+      }
+
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+      }
+    }
+  } catch (_) {}
+
   try { window.syncCreditsUI?.({ force: true }); } catch {}
   try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
   return true;
