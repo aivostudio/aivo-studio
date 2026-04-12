@@ -238,11 +238,12 @@ module.exports = async (req, res) => {
       pjson.providerSongIds ||
       pjson.song_ids ||
       pjson.songIds ||
+      pjson?.topmediai?.data?.ids ||
       pjson?.topmediai?.data?.song_ids ||
       [];
 
     const provider_song_ids = Array.isArray(provider_song_ids_raw)
-      ? provider_song_ids.map((x) => String(x)).filter(Boolean)
+      ? provider_song_ids_raw.map((x) => String(x)).filter(Boolean)
       : [];
 
     // KV keys
