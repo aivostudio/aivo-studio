@@ -170,15 +170,21 @@ window.AIVO_APP = window.AIVO_APP || {};
     return payload;
   };
 
-  const dispatchJobCreated = (job_id, payload) => {
+  const dispatchJobCreated = (job_id, request_id, payload) => {
     try {
+      const rid = String(request_id || "").trim();
+
       window.dispatchEvent(new CustomEvent("aivo:atmo:job_created", {
         detail: {
           job_id: String(job_id),
+          request_id: rid,
+          requestId: rid,
           app: "atmo",
           createdAt: nowISO(),
           meta: {
             app: "atmo",
+            request_id: rid,
+            requestId: rid,
             mode: payload.mode || "basic",
             duration: payload.duration || "8",
             fps: payload.fps || "24",
@@ -198,7 +204,6 @@ window.AIVO_APP = window.AIVO_APP || {};
       console.warn("[ATM_CREATE] job_created event fail:", e);
     }
   };
-
   window.ATM_CREATE = async function ATM_CREATE(inPayload) {
     // ✅ anti-double-submit lock
     if (window.__ATM_CREATE_INFLIGHT__) {
