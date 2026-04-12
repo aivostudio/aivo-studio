@@ -211,6 +211,31 @@ async function generateMusic(payload) {
         return;
       }
 
+        const tempJobId = `music_tmp_${Date.now()}`;
+      const jobType = "music";
+
+      dispatchJob({
+        type: jobType,
+        kind: jobType,
+        job_id: tempJobId,
+        id: tempJobId,
+        status: "queued",
+        state: "queued",
+        title: uiTitle,
+        lyrics: uiLyrics,
+        prompt: uiPrompt,
+        subtitle: uiLyrics,
+        __ui_state: "processing",
+        __audio_src: "",
+        provider_job_id: tempJobId,
+        provider_song_ids: [],
+        __provider_job: false,
+        __provider_job_id: "",
+        __internal_job_id: tempJobId,
+      });
+
+      toastSuccess("Müzik üretimi başladı");
+
       // 1) Direkt API
       let result = null;
       try {
@@ -257,7 +282,6 @@ async function generateMusic(payload) {
         result?.data?.id ||
         null;
 
-      // ✅ provider_song_ids normalize (2 ayrı şarkı id'si buradan gelecek)
       const provider_song_ids =
         result?.provider_song_ids ||
         result?.providerSongIds ||
@@ -265,24 +289,20 @@ async function generateMusic(payload) {
         result?.data?.providerSongIds ||
         [];
 
-      // Öncelik provider id
       const job_id = provider_job_id || internal_job_id;
 
-      // ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
-      // Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
       if (!provider_job_id) {
         console.warn("[music.generate] missing provider_job_id, result:", result);
         toastError("TopMediai create başarısız (provider_job_id gelmedi). Lütfen tekrar dene.");
         return;
       }
 
-          if (!job_id){
+      if (!job_id){
         console.warn("[music.generate] generate response:", result);
         toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
         return;
       }
 
-      // DEBUG
       window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
       window.__LAST_MUSIC_JOB_ID__ = job_id;
       window.__LAST_MUSIC_PROVIDER_JOB_ID__ = provider_job_id;
@@ -295,9 +315,6 @@ async function generateMusic(payload) {
       });
 
       const isProviderJob = String(job_id).startsWith("prov_music_");
-      const jobType = "music"; // panel key music
-
-      toastSuccess("Müzik üretimi başladı");
 
       // 1) Panel event
       dispatchJob({
