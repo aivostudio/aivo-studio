@@ -305,7 +305,8 @@
     let timer = null;
     let searchTimer = null;
     let prevHasProcessing = false;
-let lastReadyToastJobId = "";
+    let lastReadyToastJobId = "";
+    let lastRenderSignature = "";
 
    const state = {
   items: [],
@@ -639,105 +640,116 @@ setTimeout(syncSearchFromInput, 0);
     })
     .slice(0, MAX_ITEMS);
 }
-    function render() {
-      if (destroyed || !$grid) return;
+function render() {
+  if (destroyed || !$grid) return;
 
-      const items = combinedItems();
+  const items = combinedItems();
 
-     const hasProcessing = items.some((j) => isProcessing(j));
-setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
+  const hasProcessing = items.some((j) => isProcessing(j));
+  setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
-if (prevHasProcessing && !hasProcessing) {
-  const readyJob = items.find((j) => isReady(j));
-  const readyJobId = safeStr(readyJob?.job_id || readyJob?.id);
+  if (prevHasProcessing && !hasProcessing) {
+    const readyJob = items.find((j) => isReady(j));
+    const readyJobId = safeStr(readyJob?.job_id || readyJob?.id);
 
-  if (readyJobId && readyJobId !== lastReadyToastJobId) {
-    lastReadyToastJobId = readyJobId;
-    try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
-  }
-}
-
-prevHasProcessing = hasProcessing;
-     if (!items.length) {
-  $grid.innerHTML = `<div class="atmoEmpty">${
-    state.query ? "Aramana uygun atmos üretim bulunamadı." : "Henüz atmos üretim yok."
-  }</div>`;
-  return;
-}
-
-      $grid.innerHTML = items
-        .map((job) => {
-          const badge = badgeFor(job);
-          const isFreshCard = job?._fresh === true;
-
-          const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
-          const previewUrlResolved = safeStr(previewVideoFromJob(job));
-
-          const selectedPlaybackRawUrl = isFreshCard
-            ? finalUrl || previewUrlResolved
-            : previewUrlResolved || finalUrl;
-
-          const hasUrl = !!selectedPlaybackRawUrl;
-
-          const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
-          const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
-          const metaLine = `${engine}${dt ? " • " + dt : ""}`;
-          const promptLine = safeStr(job?.prompt || "");
-
-          const dummyOut = {
-            meta: { aspect_ratio: job?.meta?.aspect_ratio || "" },
-          };
-          const portrait = isPortrait(job, dummyOut);
-
-          const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
-          const videoUrl = playbackUrl
-            ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
-            : "";
-
-          if (
-            playbackUrl &&
-            !playableUrls.has(playbackUrl) &&
-            !probingUrls.has(playbackUrl)
-          ) {
-            probePlayableUrl(playbackUrl);
-          }
-
-          const isPlayableNow =
-            !!playbackUrl &&
-            playableUrls.has(playbackUrl) &&
-            badge.kind !== "bad";
-
-          return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-            ? (
-                '<div class="atmoCard"' +
-                  ' data-job="' + esc(job.job_id || "") + '"' +
-                  ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-                  ' data-final-url="' + esc(finalUrl) + '"' +
-                  ' data-preview-url="' + esc(previewUrlResolved) + '"' +
-                  ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-                '>' +
-                  window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                    id: safeStr(job.job_id || ""),
-                    title: promptLine || "—",
-                    sub: metaLine,
-                    badgeText: badge.text,
-                    badgeKind: isPlayableNow
-                      ? "ready"
-                      : (badge.kind === "bad" ? "error" : "loading"),
-                    videoUrl,
-                    posterUrl: "",
-                    ratio: portrait ? "9:16" : "16:9",
-                    ready: isPlayableNow,
-                    canDownload: !!finalUrl,
-                    canShare: isPlayableNow,
-                    canDelete: true
-                  }) +
-                '</div>'
-              )
-            : "";
-        })
-        .join("");
+    if (readyJobId && readyJobId !== lastReadyToastJobId) {
+      lastReadyToastJobId = readyJobId;
+      try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
     }
+  }
+
+  prevHasProcessing = hasProcessing;
+
+  if (!items.length) {
+    const emptyHtml = `<div class="atmoEmpty">${
+      state.query ? "Aramana uygun atmos üretim bulunamadı." : "Henüz atmos üretim yok."
+    }</div>`;
+
+    if (lastRenderSignature !== emptyHtml) {
+      $grid.innerHTML = emptyHtml;
+      lastRenderSignature = emptyHtml;
+    }
+    return;
+  }
+
+  const html = items
+    .map((job) => {
+      const badge = badgeFor(job);
+      const isFreshCard = job?._fresh === true;
+
+      const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
+      const previewUrlResolved = safeStr(previewVideoFromJob(job));
+
+      const selectedPlaybackRawUrl = isFreshCard
+        ? finalUrl || previewUrlResolved
+        : previewUrlResolved || finalUrl;
+
+      const hasUrl = !!selectedPlaybackRawUrl;
+
+      const dt = formatTs(job?.created_at || job?.updated_at || Date.now());
+      const engine = safeStr(job?.provider || job?.meta?.provider || "Atmos");
+      const metaLine = `${engine}${dt ? " • " + dt : ""}`;
+      const promptLine = safeStr(job?.prompt || "");
+
+      const dummyOut = {
+        meta: { aspect_ratio: job?.meta?.aspect_ratio || "" },
+      };
+      const portrait = isPortrait(job, dummyOut);
+
+      const playbackUrl = hasUrl ? resolvePlaybackUrl(selectedPlaybackRawUrl) : "";
+      const videoUrl = playbackUrl
+        ? (playbackUrl.includes("#") ? playbackUrl : playbackUrl + "#t=0.001")
+        : "";
+
+      if (
+        playbackUrl &&
+        !playableUrls.has(playbackUrl) &&
+        !probingUrls.has(playbackUrl)
+      ) {
+        probePlayableUrl(playbackUrl);
+      }
+
+      const isPlayableNow =
+        !!playbackUrl &&
+        playableUrls.has(playbackUrl) &&
+        badge.kind !== "bad";
+
+      return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+        ? (
+            '<div class="atmoCard"' +
+              ' data-job="' + esc(job.job_id || "") + '"' +
+              ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+              ' data-final-url="' + esc(finalUrl) + '"' +
+              ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+              ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+            '>' +
+              window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                id: safeStr(job.job_id || ""),
+                title: promptLine || "—",
+                sub: metaLine,
+                badgeText: badge.text,
+                badgeKind: isPlayableNow
+                  ? "ready"
+                  : (badge.kind === "bad" ? "error" : "loading"),
+                videoUrl,
+                posterUrl: "",
+                ratio: portrait ? "9:16" : "16:9",
+                ready: isPlayableNow,
+                canDownload: !!finalUrl,
+                canShare: isPlayableNow,
+                canDelete: true
+              }) +
+            '</div>'
+          )
+        : "";
+    })
+    .join("");
+
+  if (html === lastRenderSignature) return;
+
+  $grid.innerHTML = html;
+  lastRenderSignature = html;
+}
 
     async function handleAction(cardEl, act) {
       const jobId = safeStr(cardEl?.getAttribute("data-job"));
