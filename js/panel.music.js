@@ -16,7 +16,6 @@
   let hostEl = null;
   let listEl = null;
   let tracks = loadTracks(); // [{track_id, provider_job_id, title, subtitle, src, ui_state, created_at}]
- let lastRenderSignature = "";
 
   /* ---------------- utils ---------------- */
   const qs = (s,r=document)=>r.querySelector(s);
@@ -153,28 +152,18 @@
     }
 
     if (!tracks.length){
-      const emptyHtml = `
+      listEl.innerHTML = `
         <div class="aivo-empty">
           <div class="aivo-empty-title">Henüz müzik yok</div>
         </div>`;
-
-      if (lastRenderSignature !== emptyHtml){
-        listEl.innerHTML = emptyHtml;
-        lastRenderSignature = emptyHtml;
-      }
       return;
     }
 
-    const html = tracks
+    listEl.innerHTML = tracks
       .filter(t => t?.track_id)
       .slice(0,8)
       .map(renderCard)
       .join("");
-
-    if (html === lastRenderSignature) return;
-
-    listEl.innerHTML = html;
-    lastRenderSignature = html;
   }
 
   /* ---------------- polling ----------------
