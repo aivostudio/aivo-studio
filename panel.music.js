@@ -1060,10 +1060,11 @@ async function togglePlayFromCard(card){
 
         const refundData = await refundRes.json().catch(() => null);
 
-        if (refundRes.ok && refundData?.ok && refundData?.refunded) {
-          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
-          return true;
-        }
+       if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+  try { window.syncCreditsUI?.({ force: true }); } catch {}
+  try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+  return true;
+}
 
         if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
           return true;
