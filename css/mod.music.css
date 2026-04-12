@@ -810,3 +810,17 @@
     min-height: 58px !important;
   }
 }
+/* MUSIC HEADER SHELL – COMPACT */
+#moduleHost section[data-module="music"] .page-head__box{
+  padding: 20px 28px !important;
+  border-radius: 26px !important;
+  min-height: 0 !important;
+}
+
+#moduleHost section[data-module="music"] .page-head{
+  margin-bottom: 14px !important;
+}
+
+#moduleHost section[data-module="music"] .page-head__title{
+  margin-bottom: 6px !important;
+}
