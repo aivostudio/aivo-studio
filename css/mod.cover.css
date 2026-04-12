@@ -1387,21 +1387,21 @@ section[data-module="cover"] .cover-form-grid .quality-pill .qp-credit{
     inset 0 1px 0 rgba(255,255,255,0.06),
     0 6px 18px rgba(0,0,0,0.22) !important;
 }
-/* COVER HEADER – REAL SHELL SHRINK */
+/* COVER HEADER – SMALLER */
 section[data-module="cover"] .page-hero-card{
-  padding: 14px !important;
-  border-radius: 28px !important;
-  margin-bottom: 14px !important;
+  padding: 10px !important;
+  border-radius: 24px !important;
+  margin-bottom: 12px !important;
 }
 
 section[data-module="cover"] .page-hero-inner{
-  padding: 18px 24px !important;
-  border-radius: 24px !important;
-  min-height: auto !important;
+  padding: 12px 18px !important;
+  border-radius: 20px !important;
+  min-height: 0 !important;
 }
 
 section[data-module="cover"] .page-title{
-  margin: 0 0 6px 0 !important;
+  margin: 0 0 4px 0 !important;
 }
 
 section[data-module="cover"] .page-subtitle{
