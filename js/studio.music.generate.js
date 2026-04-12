@@ -97,10 +97,7 @@ async function generateMusic(payload) {
       // ✅ Ref Audio URL only if present (boş göndermiyoruz)
       ...(reference_audio_url ? { reference_audio_url } : {}),
 
-      use_credits: true,
-      charge: true,
-      credits: 5,
-      cost: 5,
+   
     };
 
     const res = await fetch("/api/music/generate", {
