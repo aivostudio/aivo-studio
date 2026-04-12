@@ -1271,15 +1271,17 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
     toastSuccess("Kapak üretimi başladı");
 
     await createCover();
-  } catch (err) {
-    console.error("[cover] createCover error:", err);
+} catch (err) {
+  console.error("[cover] createCover error:", err);
 
-    await tryRefund("cover_create_failed", {
-      error: String(err?.message || err || "failed")
-    });
+  const refunded = await tryRefund("cover_create_failed", {
+    error: String(err?.message || err || "failed")
+  });
 
+  if (!refunded) {
     alert(String(err));
-  } finally {
+  }
+} finally {
     gen.disabled = false;
     gen.textContent = prev;
     gen.classList.remove("is-loading");
