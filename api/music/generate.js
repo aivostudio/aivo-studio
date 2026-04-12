@@ -140,16 +140,60 @@ if (policy.decision === "block") {
     // ✅ NOTE: UI request'te gelse bile burada intentionally ignore ediyoruz.
     // const reference_audio_url = String(body.reference_audio_url || "").trim();
 
-    let mode = String(body.mode || "").trim();
+     let mode = String(body.mode || "").trim();
     if (!mode) {
       mode = vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals";
     }
 
+    const creditCost = 5;
+    const creditAction = "studio_music_generate";
+    const consumeRequestId = `music:${Date.now()}:${uuidLike()}`;
+    let consumeTransactionId = null;
+
     // ✅ internal id bizde kalsın (UI + KV mapping için)
     const internal_job_id = `job_${uuidLike()}`;
 
-    // ✅ TopMediai create'i direkt Vercel üzerinden çağır
     const origin = getOrigin(req);
+
+    const consumeRes = await fetchFn(`${origin}/api/credits/consume-ledger`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+        cookie: req.headers.cookie || "",
+      },
+      body: JSON.stringify({
+        app: "music",
+        action: creditAction,
+        cost: creditCost,
+        request_id: consumeRequestId,
+        job_id: internal_job_id,
+        reason: creditAction,
+      }),
+    });
+
+    const consumeJson = await consumeRes.json().catch(() => null);
+
+    if (!consumeRes.ok || !consumeJson || consumeJson.ok === false) {
+      return safeJson(
+        res,
+        {
+          ok: false,
+          error: consumeJson?.error || "credit_consume_failed",
+          message: consumeJson?.message || "Kredi düşürülemedi.",
+        },
+        200
+      );
+    }
+
+    consumeTransactionId =
+      String(
+        consumeJson?.transaction_id ||
+        consumeJson?.transaction?.id ||
+        ""
+      ).trim() || null;
+
+    // ✅ TopMediai create'i direkt Vercel üzerinden çağır
     const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
     // Provider payload (NO reference_audio_url forward)
@@ -164,6 +208,44 @@ if (lyrics) providerPayload.lyrics = lyrics;
 if (mode) providerPayload.mode = mode;
 if (vocal) providerPayload.vocal = vocal;
 if (mood) providerPayload.mood = mood;
+    async function tryRefund(reason, extraMeta = {}) {
+      if (!consumeTransactionId || creditCost <= 0) return false;
+
+      try {
+        const refundRes = await fetchFn(`${origin}/api/credits/refund`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            accept: "application/json",
+            cookie: req.headers.cookie || "",
+          },
+          body: JSON.stringify({
+            app: "music",
+            action: creditAction,
+            amount: creditCost,
+            request_id: consumeRequestId,
+            job_id: internal_job_id,
+            related_transaction_id: consumeTransactionId,
+            reason,
+            meta: {
+              source: "api/music/generate",
+              ...extraMeta,
+            },
+          }),
+        });
+
+        const refundJson = await refundRes.json().catch(() => null);
+
+        if (refundRes.ok && refundJson?.ok && (refundJson?.refunded || refundJson?.deduped || refundJson?.skipped)) {
+          return true;
+        }
+      } catch (refundErr) {
+        console.error("music/generate refund failed:", refundErr);
+      }
+
+      return false;
+    }
+
     let pr;
     try {
       pr = await fetchFn(providerCreateUrl, {
@@ -175,6 +257,10 @@ if (mood) providerPayload.mood = mood;
         body: JSON.stringify(providerPayload),
       });
     } catch (e) {
+      await tryRefund("music_provider_create_fetch_failed", {
+        detail: String(e?.message || e),
+      });
+
       return safeJson(
         res,
         {
@@ -183,7 +269,6 @@ if (mood) providerPayload.mood = mood;
           internal_job_id,
           detail: String(e?.message || e),
           provider_create_url: providerCreateUrl,
-          // debug
           sent_to_provider: providerPayload,
         },
         200
@@ -194,6 +279,12 @@ if (mood) providerPayload.mood = mood;
     const pjson = safeParseJson(ptext);
 
     if (!pr.ok || !pjson || pjson.ok === false) {
+      await tryRefund("music_provider_create_failed", {
+        provider_status: pr.status,
+        provider_response: pjson,
+        sample: String(ptext || "").slice(0, 1000),
+      });
+
       return safeJson(
         res,
         {
@@ -204,7 +295,6 @@ if (mood) providerPayload.mood = mood;
           provider_create_url: providerCreateUrl,
           sample: String(ptext || "").slice(0, 1000),
           provider_response: pjson,
-          // debug
           sent_to_provider: providerPayload,
         },
         200
