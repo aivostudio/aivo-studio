@@ -512,18 +512,58 @@ function rowHtml(rawInv, email) {
       showEmpty("Faturalar şu an yüklenemedi.", nodes.page);
     }
   }
+  function scheduleRender(page, delay) {
+    if (!page) return;
+
+    try {
+      clearTimeout(page.__aivoInvoicesRenderTimer);
+    } catch (_) {}
+
+    page.__aivoInvoicesRenderTimer = setTimeout(function () {
+      renderInvoices(page);
+    }, Number(delay || 0));
+  }
 
   function bind(page) {
-    if (!page || page.__aivoInvoicesBoundV3) return;
-    page.__aivoInvoicesBoundV3 = true;
+    if (!page) return;
 
-    bindFilters(page);
-    bindExport(page);
-    renderInvoices(page);
+    if (!page.__aivoInvoicesBoundV3) {
+      page.__aivoInvoicesBoundV3 = true;
 
-    window.refreshInvoices = function () {
-      return renderInvoices(page);
-    };
+      bindFilters(page);
+      bindExport(page);
+
+      window.refreshInvoices = function () {
+        return renderInvoices(page);
+      };
+
+      document.addEventListener("aivo:auth-ready", function () {
+        scheduleRender(page, 60);
+      });
+
+      document.addEventListener("aivo:module-mounted", function () {
+        var current = getPage();
+        if (current === page) scheduleRender(page, 40);
+      });
+
+      window.addEventListener("hashchange", function () {
+        var current = getPage();
+        if (current === page) scheduleRender(page, 40);
+      });
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) return;
+        var current = getPage();
+        if (current === page) scheduleRender(page, 40);
+      });
+
+      window.addEventListener("focus", function () {
+        var current = getPage();
+        if (current === page) scheduleRender(page, 40);
+      });
+    }
+
+    scheduleRender(page, 0);
   }
 
   function tryInit() {
@@ -549,7 +589,7 @@ function rowHtml(rawInv, email) {
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
   } else {
     boot();
   }
