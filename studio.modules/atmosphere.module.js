@@ -1542,7 +1542,6 @@ function isAtmoPolicyBlocked(raw) {
     return;
   }
 }
-    
     const creditCalc = computeAtmoCredit(mode);
 
     const creditCost =
@@ -1550,8 +1549,85 @@ function isAtmoPolicyBlocked(raw) {
       creditCalc.total;
 
     const creditReason = creditCalc.reason;
+    const consumeRequestId = `atmo:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
-    const creditRes = await fetch("/api/credits/consume", {
+    let consumed = false;
+    let consumeTransactionId = null;
+
+    async function refreshCreditsUI() {
+      try {
+        const creditGetRes = await fetch("/api/credits/get", {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "accept": "application/json" }
+        });
+
+        const creditGetData = await creditGetRes.json().catch(() => null);
+
+        if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+          const topCreditCountEl = document.getElementById("topCreditCount");
+          if (topCreditCountEl) {
+            topCreditCountEl.textContent = String(creditGetData.credits);
+          }
+
+          if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+            window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+          }
+        }
+      } catch (_) {}
+
+      try { window.syncCreditsUI?.({ force: true }); } catch {}
+    }
+
+    async function tryRefund(reason, extraMeta = {}) {
+      if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+
+      try {
+        const refundRes = await fetch("/api/credits/refund", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "atmo",
+            action: creditReason,
+            amount: creditCost,
+            request_id: consumeRequestId,
+            related_transaction_id: consumeTransactionId,
+            reason,
+            meta: {
+              source: "atmosphere.module.onGenerate",
+              mode,
+              aspect_ratio: state.aspect || "16:9",
+              duration: mode === "pro" ? (state.proDuration || "4") : (state.duration || "4"),
+              prompt: mode === "pro" ? String(state.prompt || "") : "",
+              ...extraMeta
+            }
+          })
+        });
+
+        const refundData = await refundRes.json().catch(() => null);
+
+        if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+          await refreshCreditsUI();
+          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+          return true;
+        }
+
+        if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+          await refreshCreditsUI();
+          return true;
+        }
+      } catch (refundErr) {
+        console.error("[ATM] refund failed:", refundErr);
+      }
+
+      return false;
+    }
+
+    const creditRes = await fetch("/api/credits/consume-ledger", {
       method: "POST",
       credentials: "include",
       headers: {
@@ -1559,7 +1635,10 @@ function isAtmoPolicyBlocked(raw) {
         "accept": "application/json"
       },
       body: JSON.stringify({
+        app: "atmo",
+        action: creditReason,
         cost: creditCost,
+        request_id: consumeRequestId,
         reason: creditReason
       })
     });
@@ -1571,7 +1650,7 @@ function isAtmoPolicyBlocked(raw) {
       creditData = { ok: false, error: "non_json_response", status: creditRes.status };
     }
 
-       if (!creditRes.ok || !creditData?.ok) {
+    if (!creditRes.ok || !creditData?.ok) {
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
@@ -1581,24 +1660,18 @@ function isAtmoPolicyBlocked(raw) {
 
       return;
     }
+
+    consumed = true;
+    consumeTransactionId =
+      creditData?.transaction_id ||
+      creditData?.transaction?.id ||
+      null;
+
+    await refreshCreditsUI();
+
     try {
-      const creditGetRes = await fetch("/api/credits/get", {
-        credentials: "include",
-        cache: "no-store",
-        headers: { "accept": "application/json" }
-      });
-
-      const creditGetData = await creditGetRes.json().catch(() => null);
-
-      if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-        const topCreditCountEl = document.getElementById("topCreditCount");
-        if (topCreditCountEl) {
-          topCreditCountEl.textContent = String(creditGetData.credits);
-        }
-
-        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-        }
+      if (creditCost > 0) {
+        window.toast?.success?.(`${creditCost} kredi düşüldü`);
       }
     } catch {}
 
@@ -1617,14 +1690,26 @@ function isAtmoPolicyBlocked(raw) {
         credit: creditCalc
       });
 
-      return withGenerateLoading(
+      const result = await withGenerateLoading(
         btn,
         async () => {
           return await hook(payload);
         },
         root
       );
+
+      if (!result?.ok) {
+        await tryRefund("atmo_generate_failed", {
+          error: String(result?.error?.message || result?.error || "generate_failed")
+        });
+      }
+
+      return result;
     }
+
+    await tryRefund("atmo_generate_hook_missing", {
+      error: "missing_generate_hook"
+    });
 
     console.log("[ATM] generate payload =", payload);
   }
