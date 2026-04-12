@@ -2090,8 +2090,8 @@ window.removeEventListener("focus", rehydrateMusicPanel);
       btnX.addEventListener("click", () => closeStemConfirmModal());
       btnCancel.addEventListener("click", () => closeStemConfirmModal());
 
-      let locked = false;
-         btnOk.addEventListener("click", async () => {
+       let locked = false;
+      btnOk.addEventListener("click", async () => {
         if (locked) return;
         locked = true;
         btnOk.disabled = true;
@@ -2099,6 +2099,10 @@ window.removeEventListener("focus", rehydrateMusicPanel);
         btnOk.textContent = "Yükleniyor...";
 
         try {
+          const consumeAction = "music_stems_split";
+          const consumeAmount = 5;
+          const consumeRequestId = `stems:${job_id}`;
+
           const creditRes = await fetch("/api/credits/consume", {
             method: "POST",
             credentials: "include",
@@ -2107,8 +2111,12 @@ window.removeEventListener("focus", rehydrateMusicPanel);
               "accept": "application/json"
             },
             body: JSON.stringify({
-              cost: 5,
-              reason: "music_stems_split"
+              app: "music",
+              action: consumeAction,
+              cost: consumeAmount,
+              request_id: consumeRequestId,
+              job_id,
+              reason: consumeAction
             })
           });
 
@@ -2117,10 +2125,21 @@ window.removeEventListener("focus", rehydrateMusicPanel);
           catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
 
           if (!creditRes.ok || !creditData?.ok) {
+            const insufficient =
+              creditRes.status === 402 ||
+              creditData?.error === "insufficient_credits";
+
             const msg =
               creditData?.error ||
               creditData?.message ||
-              "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+              "Kredi düşürülemedi. Lütfen bakiyeni kontrol et.";
+
+            if (insufficient) {
+              closeStemConfirmModal();
+              try { window.location.href = "/pricing.html"; } catch {}
+              return;
+            }
+
             try { window.toast?.error?.(msg); } catch {}
             btnOk.disabled = false;
             btnOk.textContent = prev;
@@ -2128,7 +2147,7 @@ window.removeEventListener("focus", rehydrateMusicPanel);
             return;
           }
 
-                  try {
+          try {
             const creditGetRes = await fetch("/api/credits/get", {
               credentials: "include",
               cache: "no-store",
@@ -2151,7 +2170,14 @@ window.removeEventListener("focus", rehydrateMusicPanel);
 
           try { window.toast?.success?.("5 kredi düşüldü"); } catch {}
 
-          await (onConfirm?.({ job_id }));
+          await (onConfirm?.({
+            job_id,
+            consume_transaction_id: creditData?.transaction_id || creditData?.transaction?.id || null,
+            consume_amount: consumeAmount,
+            consume_action: consumeAction,
+            consume_request_id: consumeRequestId
+          }));
+
           closeStemConfirmModal();
         } catch (err) {
           console.error("[stems] confirm failed", err);
