@@ -123,130 +123,47 @@ module.exports = async (req, res) => {
     const vocal = String(body.vocal || "").trim();
     const mood = String(body.mood || "").trim();
     const policy = enforcePolicy({
-  app: "music",
-  prompt,
-  title,
-  lyrics,
-  vocal,
-  mood,
-  referenceArtist: String(body.referenceArtist || body.artist || "").trim(),
-  personName: String(body.personName || "").trim(),
-});
+      app: "music",
+      prompt,
+      title,
+      lyrics,
+      vocal,
+      mood,
+      referenceArtist: String(body.referenceArtist || body.artist || "").trim(),
+      personName: String(body.personName || "").trim(),
+    });
 
-if (policy.decision === "block") {
-  return safeJson(res, policyErrorResponse(policy), 403);
-}
+    if (policy.decision === "block") {
+      return safeJson(res, policyErrorResponse(policy), 403);
+    }
 
     // ✅ NOTE: UI request'te gelse bile burada intentionally ignore ediyoruz.
     // const reference_audio_url = String(body.reference_audio_url || "").trim();
 
-     let mode = String(body.mode || "").trim();
+    let mode = String(body.mode || "").trim();
     if (!mode) {
       mode = vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals";
     }
 
-    const creditCost = 5;
-    const creditAction = "studio_music_generate";
-  const consumeRequestId =
-  String(body.request_id || body.client_request_id || "").trim() ||
-  `music:${internal_job_id}`;
-    let consumeTransactionId = null;
-
     // ✅ internal id bizde kalsın (UI + KV mapping için)
     const internal_job_id = `job_${uuidLike()}`;
 
-    const origin = getOrigin(req);
-
-    const consumeRes = await fetchFn(`${origin}/api/credits/consume-ledger`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-        cookie: req.headers.cookie || "",
-      },
-      body: JSON.stringify({
-        app: "music",
-        action: creditAction,
-        cost: creditCost,
-        request_id: consumeRequestId,
-        job_id: internal_job_id,
-        reason: creditAction,
-      }),
-    });
-
-    const consumeJson = await consumeRes.json().catch(() => null);
-
-    if (!consumeRes.ok || !consumeJson || consumeJson.ok === false) {
-      return safeJson(
-        res,
-        {
-          ok: false,
-          error: consumeJson?.error || "credit_consume_failed",
-          message: consumeJson?.message || "Kredi düşürülemedi.",
-        },
-        200
-      );
-    }
-
-    consumeTransactionId =
-      String(
-        consumeJson?.transaction_id ||
-        consumeJson?.transaction?.id ||
-        ""
-      ).trim() || null;
-
     // ✅ TopMediai create'i direkt Vercel üzerinden çağır
+    const origin = getOrigin(req);
     const providerCreateUrl = `${origin}/api/providers/topmediai/music/create`;
 
     // Provider payload (NO reference_audio_url forward)
-  const safePrompt =
-  policy.decision === "rewrite"
-    ? String(policy.rewrittenPrompt || prompt || "").trim()
-    : prompt;
+    const safePrompt =
+      policy.decision === "rewrite"
+        ? String(policy.rewrittenPrompt || prompt || "").trim()
+        : prompt;
 
-const providerPayload = { prompt: safePrompt };
-if (title) providerPayload.title = title;
-if (lyrics) providerPayload.lyrics = lyrics;
-if (mode) providerPayload.mode = mode;
-if (vocal) providerPayload.vocal = vocal;
-if (mood) providerPayload.mood = mood;
-    async function tryRefund(reason, extraMeta = {}) {
-      if (!consumeTransactionId || creditCost <= 0) return false;
-
-      try {
-        const refundRes = await fetchFn(`${origin}/api/credits/refund`, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            accept: "application/json",
-            cookie: req.headers.cookie || "",
-          },
-          body: JSON.stringify({
-            app: "music",
-            action: creditAction,
-            amount: creditCost,
-            request_id: consumeRequestId,
-            job_id: internal_job_id,
-            related_transaction_id: consumeTransactionId,
-            reason,
-            meta: {
-              source: "api/music/generate",
-              ...extraMeta,
-            },
-          }),
-        });
-
-        const refundJson = await refundRes.json().catch(() => null);
-
-        if (refundRes.ok && refundJson?.ok && (refundJson?.refunded || refundJson?.deduped || refundJson?.skipped)) {
-          return true;
-        }
-      } catch (refundErr) {
-        console.error("music/generate refund failed:", refundErr);
-      }
-
-      return false;
-    }
+    const providerPayload = { prompt: safePrompt };
+    if (title) providerPayload.title = title;
+    if (lyrics) providerPayload.lyrics = lyrics;
+    if (mode) providerPayload.mode = mode;
+    if (vocal) providerPayload.vocal = vocal;
+    if (mood) providerPayload.mood = mood;
 
     let pr;
     try {
@@ -259,10 +176,6 @@ if (mood) providerPayload.mood = mood;
         body: JSON.stringify(providerPayload),
       });
     } catch (e) {
-      await tryRefund("music_provider_create_fetch_failed", {
-        detail: String(e?.message || e),
-      });
-
       return safeJson(
         res,
         {
@@ -271,6 +184,7 @@ if (mood) providerPayload.mood = mood;
           internal_job_id,
           detail: String(e?.message || e),
           provider_create_url: providerCreateUrl,
+          // debug
           sent_to_provider: providerPayload,
         },
         200
@@ -281,12 +195,6 @@ if (mood) providerPayload.mood = mood;
     const pjson = safeParseJson(ptext);
 
     if (!pr.ok || !pjson || pjson.ok === false) {
-      await tryRefund("music_provider_create_failed", {
-        provider_status: pr.status,
-        provider_response: pjson,
-        sample: String(ptext || "").slice(0, 1000),
-      });
-
       return safeJson(
         res,
         {
@@ -297,6 +205,7 @@ if (mood) providerPayload.mood = mood;
           provider_create_url: providerCreateUrl,
           sample: String(ptext || "").slice(0, 1000),
           provider_response: pjson,
+          // debug
           sent_to_provider: providerPayload,
         },
         200
@@ -306,7 +215,6 @@ if (mood) providerPayload.mood = mood;
     const provider_job_id = String(
       pjson.provider_job_id || pjson.job_id || pjson.id || ""
     ).trim();
-  
 
     if (!provider_job_id) {
       return safeJson(
@@ -334,7 +242,7 @@ if (mood) providerPayload.mood = mood;
       [];
 
     const provider_song_ids = Array.isArray(provider_song_ids_raw)
-      ? provider_song_ids_raw.map((x) => String(x)).filter(Boolean)
+      ? provider_song_ids.map((x) => String(x)).filter(Boolean)
       : [];
 
     // KV keys
@@ -355,16 +263,17 @@ if (mood) providerPayload.mood = mood;
         provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       })
     );
+
     // ✅ NEW: internal -> provider reverse mapping (status?job_id=job_... için)
-await redis.set(
-  internalMapKey,
-  JSON.stringify({
-    internal_job_id,
-    provider_job_id,
-    provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
-    created_at: nowISO(),
-  })
-);
+    await redis.set(
+      internalMapKey,
+      JSON.stringify({
+        internal_job_id,
+        provider_job_id,
+        provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+        created_at: nowISO(),
+      })
+    );
 
     // 2) provider meta (debug)
     await redis.set(
@@ -429,7 +338,7 @@ await redis.set(
       const sql = neon(conn);
 
       // best-effort auth: email/user_id yakalarsak ilişkilendiririz
-          let auth = null;
+      let auth = null;
       try {
         const authFn = await getRequireAuth();
         if (typeof authFn === "function") {
@@ -452,17 +361,15 @@ await redis.set(
         prompt,
         provider_job_id,
         provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
-        internal_job_id, // KV id
+        internal_job_id,
         title: title || undefined,
         lyrics: lyrics || undefined,
         mode: mode || undefined,
         vocal: vocal || undefined,
         mood: mood || undefined,
-        // NOTE: intentionally not storing reference_audio_url in DB meta
       };
 
       try {
-        // status sütununda default yoksa queued yazmak güvenli.
         const rows = await sql`
           insert into jobs (user_id, app, type, provider, prompt, meta, outputs, error, request_id, status, created_at, updated_at)
           values (
@@ -485,7 +392,6 @@ await redis.set(
         db_job_id = rows?.[0]?.id ? String(rows[0].id) : null;
         db_insert_ok = !!db_job_id;
 
-        // KV job obj içine db id ekleyelim (status/update adımında lazım olacak)
         if (db_job_id) {
           jobObj.db_job_id = db_job_id;
           jobObj.updated_at = nowISO();
@@ -498,8 +404,6 @@ await redis.set(
       }
     }
 
-    // ✅ response: internal_job_id (KV) + db_job_id (Neon)
-    // ✅ + DEBUG: sent_to_provider (bizim create'a gönderdiğimiz) ve provider_response
     return safeJson(res, {
       ok: true,
       state: "queued",
