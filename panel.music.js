@@ -1430,14 +1430,24 @@ async function actionDelete(card){
 
       window.openStemConfirmModal?.({
         job_id,
-        onConfirm: async () => {
-          console.debug("[stems] confirmed 5 credits", { job_id });
-          await actionStems(card);
+        onConfirm: async ({ job_id: confirmed_job_id, consume_transaction_id, consume_amount, consume_action } = {}) => {
+          console.debug("[stems] confirmed 5 credits", {
+            job_id: confirmed_job_id || job_id,
+            consume_transaction_id,
+            consume_amount,
+            consume_action
+          });
+
+          await actionStems(card, {
+            job_id: confirmed_job_id || job_id,
+            consume_transaction_id: consume_transaction_id || null,
+            consume_amount: Number(consume_amount || 0) || 0,
+            consume_action: consume_action || "music_stems_split"
+          });
         }
       });
       return;
     }
-
     if (act === "toggle-play") return togglePlayFromCard(card);
     if (act === "stems") return actionStems(card);
     if (act === "lyrics") return actionLyrics(card);
