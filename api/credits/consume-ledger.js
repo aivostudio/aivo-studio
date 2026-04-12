@@ -1,12 +1,10 @@
-export const config = { runtime: "nodejs" };
-
-import { neon } from "@neondatabase/serverless";
-import authModule from "../_lib/auth.js";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
+const { neon } = require("@neondatabase/serverless");
+const authModule = require("../_lib/auth.js");
 const { consumeCredits } = require("../_lib/credits-ledger.js");
-const { requireAuth } = authModule;
+
+const requireAuth =
+  authModule?.requireAuth ||
+  authModule?.default?.requireAuth;
 
 function pickConn() {
   return (
@@ -29,10 +27,6 @@ function safeInt(v) {
   return Math.trunc(n);
 }
 
-function safeJson(res, code, obj) {
-  return res.status(code).json(obj);
-}
-
 function buildConsumeIdempotencyKey({
   app,
   action,
@@ -50,14 +44,14 @@ function buildConsumeIdempotencyKey({
   ].join(":");
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     if (req.method === "OPTIONS") {
       return res.status(204).end();
     }
 
     if (req.method !== "POST") {
-      return safeJson(res, 405, {
+      return res.status(405).json({
         ok: false,
         error: "method_not_allowed"
       });
@@ -65,9 +59,16 @@ export default async function handler(req, res) {
 
     const conn = pickConn();
     if (!conn) {
-      return safeJson(res, 500, {
+      return res.status(500).json({
         ok: false,
         error: "missing_db_env"
+      });
+    }
+
+    if (typeof requireAuth !== "function") {
+      return res.status(500).json({
+        ok: false,
+        error: "require_auth_missing"
       });
     }
 
@@ -75,7 +76,7 @@ export default async function handler(req, res) {
     try {
       auth = await requireAuth(req);
     } catch (e) {
-      return safeJson(res, 401, {
+      return res.status(401).json({
         ok: false,
         error: "unauthorized",
         message: String(e?.message || e)
@@ -84,7 +85,7 @@ export default async function handler(req, res) {
 
     const email = safeText(auth?.email);
     if (!email) {
-      return safeJson(res, 401, {
+      return res.status(401).json({
         ok: false,
         error: "missing_email"
       });
@@ -100,14 +101,17 @@ export default async function handler(req, res) {
     `;
 
     if (!userRows.length) {
-      return safeJson(res, 401, {
+      return res.status(401).json({
         ok: false,
         error: "user_not_found"
       });
     }
 
     const user_uuid = String(userRows[0].id);
-    const body = req.body || {};
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body || {});
 
     const app = safeText(body.app) || "unknown_app";
     const action =
@@ -131,22 +135,8 @@ export default async function handler(req, res) {
         provider_job_id
       });
 
-    if (!app) {
-      return safeJson(res, 400, {
-        ok: false,
-        error: "missing_app"
-      });
-    }
-
-    if (!action) {
-      return safeJson(res, 400, {
-        ok: false,
-        error: "missing_action"
-      });
-    }
-
     if (amount <= 0) {
-      return safeJson(res, 400, {
+      return res.status(400).json({
         ok: false,
         error: "invalid_amount"
       });
@@ -169,14 +159,14 @@ export default async function handler(req, res) {
     });
 
     if (!result?.ok) {
-      return safeJson(res, 400, {
+      return res.status(400).json({
         ok: false,
         error: result?.error || "consume_failed",
         transaction_id: result?.transaction_id || null
       });
     }
 
-    return safeJson(res, 200, {
+    return res.status(200).json({
       ok: true,
       deduped: !!result.deduped,
       credits: typeof result.credits === "number" ? result.credits : null,
@@ -186,10 +176,10 @@ export default async function handler(req, res) {
     });
   } catch (e) {
     console.error("credits/consume-ledger failed:", e);
-    return safeJson(res, 500, {
+    return res.status(500).json({
       ok: false,
       error: "consume_failed",
       message: String(e?.message || e)
     });
   }
-}
+};
