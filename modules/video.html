@@ -23,12 +23,11 @@
 
         <div class="form-field half">
           <label for="videoDuration">Süre</label>
-       <select id="videoDuration">
-  <option value="5">5 Saniye</option>
-  <option value="8" selected>8 Saniye</option>
-  <option value="10">10 Saniye</option>
-</select>
-
+          <select id="videoDuration">
+            <option value="5">5 Saniye</option>
+            <option value="8" selected>8 Saniye</option>
+            <option value="10">10 Saniye</option>
+          </select>
         </div>
 
         <div class="form-field half">
@@ -39,20 +38,18 @@
           </select>
         </div>
 
-       <div class="form-field full">
-  <label for="videoRatio">En / Boy Oranı</label>
-  <select id="videoRatio">
-    <option value="16:9">Geniş (16:9)</option>
-    <option value="9:16">Dikey (9:16)</option>
-  </select>
-</div>
+        <div class="form-field full">
+          <label for="videoRatio">En / Boy Oranı</label>
+          <select id="videoRatio">
+            <option value="16:9">Geniş (16:9)</option>
+            <option value="9:16">Dikey (9:16)</option>
+          </select>
+        </div>
 
-</div>
-</div>
+      </div>
+    </div>
 
     <!-- =============== /ORTAK VİDEO AYARLARI ================= -->
-
-  
 
     <!-- ================= VİDEO TABLARI ================= -->
     <div class="video-tabs">
@@ -73,7 +70,7 @@
             <div class="card-title">Video Açıklaması</div>
             <div class="card-subtitle">Max 1000 karakter</div>
           </div>
-          <div class="badge-beta">10 Kredi</div>
+          <div class="badge-beta">20 Kredi</div>
         </div>
 
         <div class="video-prompt-wrapper">
@@ -95,232 +92,228 @@
                 id="videoGenerateTextBtn"
                 type="button"
                 data-generate="video"
-                data-credit-cost="10">
-          🎬 Video Oluştur (10 Kredi)
+                data-credit-cost="20">
+          🎬 Video Oluştur (20 Kredi)
         </button>
 
       </div>
     </div>
     <!-- =============== /TEXT → VIDEO ================= -->
 
-   <!-- ================= IMAGE → VIDEO ================= -->
-<div class="video-subview" data-video-subview="image">
-  <div class="card">
+    <!-- ================= IMAGE → VIDEO ================= -->
+    <div class="video-subview" data-video-subview="image">
+      <div class="card">
 
-    <div class="card-header">
-      <div>
-        <div class="card-title">Resim Yükle</div>
-        <div class="card-subtitle">PNG / JPG – Max 10MB</div>
-      </div>
-      <div class="badge-beta">10 Kredi</div>
-    </div>
-
-    <div class="upload-box upload-box--file">
-      <!-- Tüm kutuyu kaplayan görünmez input -->
-      <input type="file" id="videoImageInput" accept="image/*" />
-
-      <strong>Resim seç veya sürükleyip bırak</strong>
-      <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
-
-      <!-- UX feedback alanı -->
-      <div class="upload-feedback" id="videoImageFeedback" style="display:none;">
-<div
-  class="upload-fileline"
-  style="display:flex;align-items:center;gap:10px;position:relative;z-index:5;pointer-events:auto;"
->
-  <div
-    class="upload-filename"
-    id="videoImageName"
-    style="display:flex;align-items:center;min-width:0;"
-  ></div>
-
-<button
-  type="button"
-  id="videoImageClearBtn"
-  data-video-image-clear
-  aria-label="Yüklenen resmi kaldır"
-  title="Resmi kaldır"
-  style="display:none;flex:0 0 auto;width:34px;height:34px;margin-top:-6px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;position:relative;z-index:6;pointer-events:auto;"
->
-  ×
-</button>
-</div>
-
-        <div class="upload-bar">
-          <div class="upload-bar__fill" id="videoImageBar"></div>
+        <div class="card-header">
+          <div>
+            <div class="card-title">Resim Yükle</div>
+            <div class="card-subtitle">PNG / JPG – Max 10MB</div>
+          </div>
+          <div class="badge-beta">20 Kredi</div>
         </div>
 
-        <div class="upload-percent" id="videoImagePct">0%</div>
+        <div class="upload-box upload-box--file">
+          <!-- Tüm kutuyu kaplayan görünmez input -->
+          <input type="file" id="videoImageInput" accept="image/*" />
+
+          <strong>Resim seç veya sürükleyip bırak</strong>
+          <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
+
+          <!-- UX feedback alanı -->
+          <div class="upload-feedback" id="videoImageFeedback" style="display:none;">
+            <div
+              class="upload-fileline"
+              style="display:flex;align-items:center;gap:10px;position:relative;z-index:5;pointer-events:auto;"
+            >
+              <div
+                class="upload-filename"
+                id="videoImageName"
+                style="display:flex;align-items:center;min-width:0;"
+              ></div>
+
+              <button
+                type="button"
+                id="videoImageClearBtn"
+                data-video-image-clear
+                aria-label="Yüklenen resmi kaldır"
+                title="Resmi kaldır"
+                style="display:none;flex:0 0 auto;width:34px;height:34px;margin-top:-6px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;position:relative;z-index:6;pointer-events:auto;"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="upload-bar">
+              <div class="upload-bar__fill" id="videoImageBar"></div>
+            </div>
+
+            <div class="upload-percent" id="videoImagePct">0%</div>
+          </div>
+        </div>
+
+        <div class="video-prompt-wrapper">
+          <div class="video-prompt-tip">
+            Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
+          </div>
+
+          <textarea id="videoImagePrompt"
+                    maxlength="1000"
+                    placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
+
+          <div class="video-prompt-counter" id="videoImagePromptCounter">
+            0 / 1000
+          </div>
+
+          <button class="primary-btn big-video-btn full-width"
+                  id="videoGenerateImageBtn"
+                  type="button"
+                  data-generate="video"
+                  data-credit-cost="20">
+            🎞 Video Oluştur (20 Kredi)
+          </button>
+
+        </div>
       </div>
     </div>
-
-    <div class="video-prompt-wrapper">
-      <div class="video-prompt-tip">
-        Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
-      </div>
-
-      <textarea id="videoImagePrompt"
-                maxlength="1000"
-                placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
-
-     <div class="video-prompt-counter" id="videoImagePromptCounter">
-  0 / 1000
-</div>
-
-
-    <button class="primary-btn big-video-btn full-width"
-            id="videoGenerateImageBtn"
-            type="button"
-            data-generate="video"
-            data-credit-cost="10">
-      🎞 Video Oluştur (10 Kredi)
-    </button>
+    <!-- =============== /IMAGE → VIDEO ================= -->
 
   </div>
-</div>
-<!-- =============== /IMAGE → VIDEO ================= -->
 
-
-  </div>
-<script>
-(function () {
-  function qs(sel, root = document) {
-    return root.querySelector(sel);
-  }
-
-  async function createVideoFromText() {
-    const prompt = qs("#videoPrompt")?.value?.trim();
-    if (!prompt) {
-      alert("Lütfen video açıklaması yaz.");
-      return;
-    }
-
-    const payload = {
-      app: "video",
-      mode: "text",
-      prompt,
-      duration: Number(qs("#videoDuration")?.value || 8),
-      resolution: Number(qs("#videoResolution")?.value || 720),
-      ratio: qs("#videoRatio")?.value || "16:9",
-      audio: !!qs("#audioEnabled")?.checked
-    };
-
-    try {
-      const res = await fetch("/api/providers/runway/video/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw json;
-
-      const job = json.job || json;
-
-      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
-        window.AIVO_JOBS.upsert(job);
+  <script>
+    (function () {
+      function qs(sel, root = document) {
+        return root.querySelector(sel);
       }
 
-      console.log("[video] job created", job);
-    } catch (err) {
-      console.error("[video] create failed", err);
-      alert("Video oluşturulamadı. Console loguna bak.");
-    }
-  }
-
-  async function createVideoFromImage() {
-    const fileInput = qs("#videoImageInput");
-    const file = fileInput?.files?.[0];
-
-    if (!file) {
-      alert("Lütfen bir resim seç.");
-      return;
-    }
-
-    const prompt = qs("#videoImagePrompt")?.value?.trim() || "";
-
-    const payload = new FormData();
-    payload.append("app", "video");
-    payload.append("mode", "image");
-    payload.append("image", file);
-    payload.append("prompt", prompt);
-    payload.append("duration", String(Number(qs("#videoDuration")?.value || 8)));
-    payload.append("resolution", String(Number(qs("#videoResolution")?.value || 720)));
-    payload.append("ratio", qs("#videoRatio")?.value || "16:9");
-    payload.append("audio", String(!!qs("#audioEnabled")?.checked));
-
-    try {
-      const res = await fetch("/api/providers/runway/video/create", {
-        method: "POST",
-        body: payload
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw json;
-
-      const job = json.job || json;
-
-      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
-        window.AIVO_JOBS.upsert(job);
-      }
-
-      console.log("[video] image job created", job);
-    } catch (err) {
-      console.error("[video] image create failed", err);
-      alert("Resimden video oluşturulamadı. Console loguna bak.");
-    }
-  }
-  // IMAGE input UX feedback (fake progress + filename)
-  const imgInput = qs("#videoImageInput");
-  const fb = qs("#videoImageFeedback");
-  const nm = qs("#videoImageName");
-  const bar = qs("#videoImageBar");
-  const pct = qs("#videoImagePct");
-
-  if (imgInput) {
-    imgInput.addEventListener("change", () => {
-      const f = imgInput.files?.[0];
-      if (!f) return;
-
-      if (fb) fb.style.display = "";
-      if (nm) nm.textContent = `Seçildi: ${f.name} (${Math.round(f.size/1024/1024*10)/10}MB)`;
-
-      // fake progress
-      let p = 0;
-      if (bar) bar.style.width = "0%";
-      if (pct) pct.textContent = "0%";
-
-      const t = setInterval(() => {
-        p += Math.max(3, Math.round((100 - p) * 0.18));
-        if (p >= 100) {
-          p = 100;
-          clearInterval(t);
+      async function createVideoFromText() {
+        const prompt = qs("#videoPrompt")?.value?.trim();
+        if (!prompt) {
+          alert("Lütfen video açıklaması yaz.");
+          return;
         }
-        if (bar) bar.style.width = p + "%";
-        if (pct) pct.textContent = p + "%";
-      }, 90);
-    });
-  }
 
-  document.addEventListener("click", function (e) {
-    const btnText = e.target.closest("#videoGenerateTextBtn");
-    if (btnText) {
-      e.preventDefault();
-      createVideoFromText();
-      return;
-    }
+        const payload = {
+          app: "video",
+          mode: "text",
+          prompt,
+          duration: Number(qs("#videoDuration")?.value || 8),
+          resolution: Number(qs("#videoResolution")?.value || 720),
+          ratio: qs("#videoRatio")?.value || "16:9"
+        };
 
-    const btnImg = e.target.closest("#videoGenerateImageBtn");
-    if (btnImg) {
-      e.preventDefault();
-      createVideoFromImage();
-      return;
-    }
-  });
-})();
-</script>
+        try {
+          const res = await fetch("/api/providers/runway/video/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
 
+          const json = await res.json();
+          if (!res.ok) throw json;
 
+          const job = json.job || json;
+
+          if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+            window.AIVO_JOBS.upsert(job);
+          }
+
+          console.log("[video] job created", job);
+        } catch (err) {
+          console.error("[video] create failed", err);
+          alert("Video oluşturulamadı. Console loguna bak.");
+        }
+      }
+
+      async function createVideoFromImage() {
+        const fileInput = qs("#videoImageInput");
+        const file = fileInput?.files?.[0];
+
+        if (!file) {
+          alert("Lütfen bir resim seç.");
+          return;
+        }
+
+        const prompt = qs("#videoImagePrompt")?.value?.trim() || "";
+
+        const payload = new FormData();
+        payload.append("app", "video");
+        payload.append("mode", "image");
+        payload.append("image", file);
+        payload.append("prompt", prompt);
+        payload.append("duration", String(Number(qs("#videoDuration")?.value || 8)));
+        payload.append("resolution", String(Number(qs("#videoResolution")?.value || 720)));
+        payload.append("ratio", qs("#videoRatio")?.value || "16:9");
+
+        try {
+          const res = await fetch("/api/providers/runway/video/create", {
+            method: "POST",
+            body: payload
+          });
+
+          const json = await res.json();
+          if (!res.ok) throw json;
+
+          const job = json.job || json;
+
+          if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+            window.AIVO_JOBS.upsert(job);
+          }
+
+          console.log("[video] image job created", job);
+        } catch (err) {
+          console.error("[video] image create failed", err);
+          alert("Resimden video oluşturulamadı. Console loguna bak.");
+        }
+      }
+
+      // IMAGE input UX feedback (fake progress + filename)
+      const imgInput = qs("#videoImageInput");
+      const fb = qs("#videoImageFeedback");
+      const nm = qs("#videoImageName");
+      const bar = qs("#videoImageBar");
+      const pct = qs("#videoImagePct");
+
+      if (imgInput) {
+        imgInput.addEventListener("change", () => {
+          const f = imgInput.files?.[0];
+          if (!f) return;
+
+          if (fb) fb.style.display = "";
+          if (nm) nm.textContent = `Seçildi: ${f.name} (${Math.round(f.size / 1024 / 1024 * 10) / 10}MB)`;
+
+          // fake progress
+          let p = 0;
+          if (bar) bar.style.width = "0%";
+          if (pct) pct.textContent = "0%";
+
+          const t = setInterval(() => {
+            p += Math.max(3, Math.round((100 - p) * 0.18));
+            if (p >= 100) {
+              p = 100;
+              clearInterval(t);
+            }
+            if (bar) bar.style.width = p + "%";
+            if (pct) pct.textContent = p + "%";
+          }, 90);
+        });
+      }
+
+      document.addEventListener("click", function (e) {
+        const btnText = e.target.closest("#videoGenerateTextBtn");
+        if (btnText) {
+          e.preventDefault();
+          createVideoFromText();
+          return;
+        }
+
+        const btnImg = e.target.closest("#videoGenerateImageBtn");
+        if (btnImg) {
+          e.preventDefault();
+          createVideoFromImage();
+          return;
+        }
+      });
+    })();
+  </script>
 
 </section>
-
