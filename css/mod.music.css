@@ -237,7 +237,8 @@
 }
 
 .music-view[data-music-view="geleneksel"] .page-head__title {
-  font-size: 26px;
+  font-size: 18px;
+  line-height: 1.25;
   font-weight: 700;
 }
 
