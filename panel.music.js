@@ -2167,22 +2167,22 @@ window.removeEventListener("focus", rehydrateMusicPanel);
           const consumeAmount = 5;
           const consumeRequestId = `stems:${job_id}`;
 
-          const creditRes = await fetch("/api/credits/consume", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "content-type": "application/json",
-              "accept": "application/json"
-            },
-            body: JSON.stringify({
-              app: "music",
-              action: consumeAction,
-              cost: consumeAmount,
-              request_id: consumeRequestId,
-              job_id,
-              reason: consumeAction
-            })
-          });
+      const creditRes = await fetch("/api/credits/consume-ledger", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    "content-type": "application/json",
+    "accept": "application/json"
+  },
+  body: JSON.stringify({
+    app: "music",
+    action: consumeAction,
+    cost: consumeAmount,
+    request_id: consumeRequestId,
+    job_id,
+    reason: consumeAction
+  })
+});
 
           let creditData = null;
           try { creditData = await creditRes.json(); }
