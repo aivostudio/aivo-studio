@@ -6,6 +6,7 @@ import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
 const { refundCredits } = require("../_lib/credits-ledger.js");
+const { writeRefundAudit } = require("../_lib/refund-audit.js");
 const { requireAuth } = authModule;
 
 function pickConn() {
@@ -154,6 +155,33 @@ export default async function handler(req, res) {
         error: result?.error || "refund_failed",
         transaction_id: result?.transaction_id || null
       });
+    }
+
+    try {
+      await writeRefundAudit({
+        user_uuid,
+        user_id: email,
+        app,
+        action,
+        amount,
+        request_id,
+        job_id,
+        provider_job_id,
+        related_transaction_id,
+        reason,
+        status: result.refunded
+          ? "refunded"
+          : (result.skipped ? "skipped" : (result.deduped ? "deduped" : "processed")),
+        meta: {
+          source: "api/credits/refund",
+          refunded: !!result.refunded,
+          deduped: !!result.deduped,
+          skipped: !!result.skipped,
+          refund_transaction_id: result?.transaction?.id || null
+        }
+      });
+    } catch (auditErr) {
+      console.error("refund audit write failed:", auditErr);
     }
 
     return safeJson(res, 200, {
