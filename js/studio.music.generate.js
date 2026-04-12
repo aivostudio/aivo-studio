@@ -151,9 +151,76 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
-          // ✅ Ana generate akışında kredi düşümü burada yapılmayacak.
-      // Kredi/charge backend generate akışının kendi içinde yönetilecek.
-      // Bu blok bilinçli olarak no-op bırakıldı.
+             // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
+      try {
+        const consumeAction = "studio_music_generate";
+        const consumeAmount = 5;
+        const consumeRequestId = `music_generate:${Date.now()}`;
+
+        const creditRes = await fetch("/api/credits/consume", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "music",
+            action: consumeAction,
+            amount: consumeAmount,
+            request_id: consumeRequestId,
+            reason: consumeAction
+          })
+        });
+
+        let creditData = null;
+        try { creditData = await creditRes.json(); }
+        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+
+        if (!creditRes.ok || !creditData?.ok) {
+          const msg =
+            creditData?.error ||
+            creditData?.message ||
+            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+
+          toastError(msg);
+          return;
+        }
+
+        window.__LAST_MUSIC_CONSUME_RESPONSE__ = creditData;
+        window.__LAST_MUSIC_CONSUME_TRANSACTION_ID__ =
+          creditData?.transaction_id ||
+          creditData?.transaction?.id ||
+          null;
+
+        try {
+          const creditGetRes = await fetch("/api/credits/get", {
+            credentials: "include",
+            cache: "no-store",
+            headers: { "accept": "application/json" }
+          });
+
+          const creditGetData = await creditGetRes.json().catch(() => null);
+
+          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+            const topCreditCountEl = document.getElementById("topCreditCount");
+            if (topCreditCountEl) {
+              topCreditCountEl.textContent = String(creditGetData.credits);
+            }
+
+            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            }
+          }
+        } catch (_) {}
+
+        toastSuccess("5 kredi düşüldü");
+
+      } catch (creditErr) {
+        console.error("[music.generate] credits consume failed:", creditErr);
+        toastError("Kredi düşümünde bağlantı hatası oluştu.");
+        return;
+      }
 
       // 1) Direkt API
       let result = null;
