@@ -917,7 +917,7 @@ $grid?.addEventListener(
 
     if (db) db.start();
 
-  const onJobCreated = (e) => {
+const onJobCreated = (e) => {
   const d = e?.detail || {};
   if (!d) return;
 
@@ -927,10 +927,16 @@ $grid?.addEventListener(
 
   if (!appKey.includes("atmo")) return;
 
+  const rid = safeStr(
+    d?.request_id || d?.requestId || d?.meta?.request_id || d?.meta?.requestId
+  );
+
+  const promptText = safeStr(d?.prompt || d?.meta?.prompt || "");
+
   upsertEphemeralProcessing({
     job_id: d?.job_id,
-    request_id: d?.request_id || d?.requestId || d?.meta?.request_id,
-    prompt: d?.prompt || d?.meta?.prompt,
+    request_id: rid,
+    prompt: promptText,
     provider: d?.provider || d?.meta?.provider || "Atmos",
     createdAt: d?.createdAt || Date.now(),
     meta: d?.meta || {},
@@ -942,16 +948,22 @@ $grid?.addEventListener(
       app: APP_KEY,
       provider: safeStr(d?.provider || d?.meta?.provider || "Atmos"),
       status: "PROCESSING",
-      prompt: safeStr(d?.prompt || d?.meta?.prompt || ""),
+      prompt: promptText,
       created_at: d?.createdAt || Date.now(),
       updated_at: d?.createdAt || Date.now(),
       meta: {
         ...(d?.meta || {}),
         app: APP_KEY,
-        request_id: safeStr(d?.request_id || d?.requestId || d?.meta?.request_id),
+        request_id: rid,
       },
       outputs: [],
     });
+  }
+
+  if (rid && rid !== "TEST") {
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => pollFalOnce(rid, promptText), 2000);
+    pollFalOnce(rid, promptText);
   }
 };
    
