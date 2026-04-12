@@ -1698,9 +1698,22 @@ function isAtmoPolicyBlocked(raw) {
         root
       );
 
-      if (!result?.ok) {
+      const hookFailed =
+        !result?.ok ||
+        result?.res?.ok === false ||
+        result?.res?.error ||
+        result?.res?.status >= 400;
+
+      if (hookFailed) {
         await tryRefund("atmo_generate_failed", {
-          error: String(result?.error?.message || result?.error || "generate_failed")
+          error: String(
+            result?.error?.message ||
+            result?.error ||
+            result?.res?.error ||
+            result?.res?.message ||
+            "generate_failed"
+          ),
+          status: result?.res?.status || null
         });
       }
 
