@@ -250,15 +250,32 @@ let onMusicVisibilityChange = null;
   function saveJobs(){
     try {
       clearLegacyMusicCache();
-      localStorage.setItem(getMusicCacheKey(), JSON.stringify((jobs || []).slice(0, 200)));
+
+      const scope = getMusicCacheScope();
+      const safeJobs = Array.isArray(jobs)
+        ? jobs.slice(0, 200).map((item) => ({
+            ...item,
+            __cache_scope: scope
+          }))
+        : [];
+
+      localStorage.setItem(getMusicCacheKey(), JSON.stringify(safeJobs));
     } catch {}
   }
 
   function loadJobs(){
     try {
       clearLegacyMusicCache();
+
+      const scope = getMusicCacheScope();
       const arr = JSON.parse(localStorage.getItem(getMusicCacheKey()) || "[]");
-      return Array.isArray(arr) ? arr : [];
+      if (!Array.isArray(arr)) return [];
+
+      return arr.filter((item) => {
+        const itemScope = String(item?.__cache_scope || "").trim();
+        if (!itemScope) return false;
+        return itemScope === scope;
+      });
     } catch {
       return [];
     }
