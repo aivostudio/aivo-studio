@@ -351,3 +351,28 @@
     grid-template-columns: 1fr;
   }
 }
+/* ===== FINAL OVERRIDE — PROFILE HEADER SHRINK ===== */
+.main-panel[data-page="profile"] .panel-header{
+  margin-bottom: 12px !important;
+}
+
+.main-panel[data-page="profile"] .page-head{
+  margin: 0 0 12px !important;
+}
+
+.main-panel[data-page="profile"] .page-head__box{
+  padding: 22px 24px 20px !important;
+  border-radius: 24px !important;
+}
+
+.main-panel[data-page="profile"] .page-head__title{
+  margin: 0 0 8px 0 !important;
+  font-size: 24px !important;
+  line-height: 1.06 !important;
+}
+
+.main-panel[data-page="profile"] .page-head__sub{
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+}
