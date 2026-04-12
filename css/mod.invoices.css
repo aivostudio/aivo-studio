@@ -87,14 +87,14 @@
   min-width: 0;
   height: 64px;
   padding: 0 14px;
-  border: 1px solid rgba(124, 96, 232, .34);
+  border: 1px solid rgba(112, 88, 214, .38);
   border-radius: 999px;
   background:
-    radial-gradient(circle at 50% 0%, rgba(156, 130, 255, .10), transparent 58%),
-    linear-gradient(180deg, rgba(78, 56, 166, .34), rgba(34, 22, 84, .30));
+    radial-gradient(circle at 50% 0%, rgba(156, 130, 255, .08), transparent 58%),
+    linear-gradient(180deg, rgba(60, 42, 138, .44), rgba(24, 16, 66, .42));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    0 10px 24px rgba(0,0,0,.22);
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 10px 24px rgba(0,0,0,.24);
   color: rgba(246, 243, 255, .96);
   font-size: 16px;
   line-height: 1;
@@ -112,13 +112,13 @@
 
 .main-panel .invoices-actions .chip-btn:hover{
   transform: translateY(-1px);
-  border-color: rgba(140, 112, 245, .42);
+  border-color: rgba(126, 100, 230, .46);
   background:
-    radial-gradient(circle at 50% 0%, rgba(156, 130, 255, .14), transparent 58%),
-    linear-gradient(180deg, rgba(84, 61, 176, .38), rgba(38, 24, 92, .34));
+    radial-gradient(circle at 50% 0%, rgba(156, 130, 255, .11), transparent 58%),
+    linear-gradient(180deg, rgba(68, 48, 150, .48), rgba(28, 18, 74, .46));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    0 12px 28px rgba(0,0,0,.24);
+    inset 0 1px 0 rgba(255,255,255,.045),
+    0 12px 28px rgba(0,0,0,.26);
 }
 .main-panel .invoices-actions .chip-btn:active{
   transform: translateY(0);
