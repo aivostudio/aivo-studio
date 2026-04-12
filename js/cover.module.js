@@ -1225,11 +1225,10 @@ function buildCoverPrompt(prompt, quality) {
     } else {
       toastSuccess("6 kredi düşüldü");
     }
-toastSuccess("Kapak üretimi başladı");
 
-throw new Error("cover_refund_test_manual");
+    toastSuccess("Kapak üretimi başladı");
 
-await createCover();
+    await createCover();
   } catch (err) {
     console.error("[cover] createCover error:", err);
 
