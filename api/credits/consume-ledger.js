@@ -93,12 +93,12 @@ module.exports = async function handler(req, res) {
 
     const sql = neon(conn);
 
-    const userRows = await sql`
-      select id, email, credits
-      from users
-      where email = ${email}
-      limit 1
-    `;
+ const userRows = await sql`
+  select id, email
+  from users
+  where email = ${email}
+  limit 1
+`;
 
     if (!userRows.length) {
       return res.status(401).json({
