@@ -1,3 +1,7 @@
+studio.music.generate.js
+
+—————
+
 /* ==========================================================
    AIVO Studio – Music Generate (AUTO BIND, PRODUCTION)
    File: /js/studio.music.generate.js
@@ -97,7 +101,10 @@ async function generateMusic(payload) {
       // ✅ Ref Audio URL only if present (boş göndermiyoruz)
       ...(reference_audio_url ? { reference_audio_url } : {}),
 
-   
+      use_credits: true,
+      charge: true,
+      credits: 5,
+      cost: 5,
     };
 
     const res = await fetch("/api/music/generate", {
@@ -151,12 +158,8 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
-             // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
+      // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
       try {
-        const consumeAction = "studio_music_generate";
-        const consumeAmount = 5;
-        const consumeRequestId = `music_generate:${Date.now()}`;
-
         const creditRes = await fetch("/api/credits/consume", {
           method: "POST",
           credentials: "include",
@@ -165,11 +168,8 @@ async function generateMusic(payload) {
             "accept": "application/json"
           },
           body: JSON.stringify({
-            app: "music",
-            action: consumeAction,
-            amount: consumeAmount,
-            request_id: consumeRequestId,
-            reason: consumeAction
+            cost: 5,
+            reason: "studio_music_generate"
           })
         });
 
@@ -182,18 +182,11 @@ async function generateMusic(payload) {
             creditData?.error ||
             creditData?.message ||
             "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-
           toastError(msg);
           return;
         }
 
-        window.__LAST_MUSIC_CONSUME_RESPONSE__ = creditData;
-        window.__LAST_MUSIC_CONSUME_TRANSACTION_ID__ =
-          creditData?.transaction_id ||
-          creditData?.transaction?.id ||
-          null;
-
-        try {
+               try {
           const creditGetRes = await fetch("/api/credits/get", {
             credentials: "include",
             cache: "no-store",
