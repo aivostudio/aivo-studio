@@ -16,7 +16,7 @@ create table if not exists admin_audit_logs (
   job_id text null,
   provider_job_id text null,
 
-  related_transaction_id uuid null references credit_transactions(id) on delete set null,
+related_transaction_id uuid null,
 
   reason text null,
   status text not null default 'logged',
