@@ -1211,6 +1211,110 @@ const PFX_HARD_BLOCK_PATTERNS = [
       }
     }
 
+    const activeRequestId = String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || "").trim();
+    const activeTransactionId = String(window.__PHOTOFX_LAST_TRANSACTION_ID__ || "").trim();
+    const activeCreditCost = Number(window.__PHOTOFX_LAST_CREDIT_COST__ || 0);
+    const activeCreditReason = String(window.__PHOTOFX_LAST_CREDIT_REASON__ || "studio_photofx_generate").trim();
+
+    const refundMeta = {
+      source: "photofx.poll.timeout",
+      job_id: String(job_id || "").trim(),
+      status: "timeout",
+      duration: String(opts?.duration || ""),
+      aspect_ratio: String(opts?.aspect_ratio || ""),
+      resolution: String(opts?.resolution || ""),
+      fps: String(opts?.fps || ""),
+      prompt: String(opts?.prompt || ""),
+      styles: Array.isArray(opts?.styles) ? opts.styles : []
+    };
+
+    if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
+      try {
+        const refundRes = await fetch("/api/credits/refund", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "photofx",
+            action: activeCreditReason,
+            amount: activeCreditCost,
+            request_id: activeRequestId,
+            related_transaction_id: activeTransactionId,
+            reason: "photofx_poll_timeout",
+            meta: refundMeta
+          })
+        });
+
+        const refundData = await refundRes.json().catch(() => null);
+
+        if (
+          refundRes.ok &&
+          refundData?.ok &&
+          (refundData?.refunded || refundData?.deduped || refundData?.skipped)
+        ) {
+          try {
+            const creditGetRes = await fetch("/api/credits/get", {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "accept": "application/json" }
+            });
+
+            const creditGetData = await creditGetRes.json().catch(() => null);
+
+            if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+              const topCreditCountEl = document.getElementById("topCreditCount");
+              if (topCreditCountEl) {
+                topCreditCountEl.textContent = String(creditGetData.credits);
+              }
+
+              if (
+                window.AIVO_STORE_V1 &&
+                typeof window.AIVO_STORE_V1.setCredits === "function"
+              ) {
+                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+              }
+            }
+          } catch (_) {}
+
+          try { window.syncCreditsUI?.({ force: true }); } catch {}
+          try { window.toast?.error?.("İşlem zaman aşımına uğradı, kredi iade edildi."); } catch {}
+        } else {
+          try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
+        }
+      } catch (refundErr) {
+        console.error("[photofx] timeout refund error:", refundErr);
+        try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
+      }
+    } else {
+      try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:photofx:job_failed", {
+        detail: {
+          app: "photofx",
+          job_id: String(job_id || "").trim(),
+          status: "timeout",
+          remove_placeholder: true,
+          raw: { status: "timeout" }
+        }
+      })
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:photofx:job_remove", {
+        detail: {
+          app: "photofx",
+          job_id: String(job_id || "").trim(),
+          remove_placeholder: true,
+          raw: { status: "timeout" }
+        }
+      })
+    );
+
     throw new Error("photofx_poll_timeout");
   }
 
