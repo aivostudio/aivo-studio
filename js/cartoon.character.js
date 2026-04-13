@@ -1130,7 +1130,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           return !!u && t === "image";
         });
 
-         if (
+      if (
         ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
         (readyImageUrl || hasReadyImageOutput)
       ) {
@@ -1208,7 +1208,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           imageUrl: readyImageUrl
         };
 
-              const exists = (state.characters || []).some(
+        const exists = (state.characters || []).some(
           (x) => String(x.job_id || x.id) === String(nextItem.job_id || nextItem.id)
         );
 
@@ -1217,6 +1217,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         }
 
         state.characterCreatePending = false;
+        window.__CARTOON_CHARACTER_ACTIVE_JOB_ID__ = "";
 
         const createBtn = root?.querySelector("[data-cartoon-character-create]");
         if (createBtn) {
