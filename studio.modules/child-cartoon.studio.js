@@ -1529,7 +1529,7 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         !!finalizedOutputUrl ||
         !!previewOutputUrl;
 
-      if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
+         if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
         let resolvedFinalVideoUrl =
           finalizedOutputUrl ||
           previewOutputUrl ||
@@ -1593,31 +1593,34 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         }
 
         window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-window.dispatchEvent(
-  new CustomEvent('aivo:cartoon:job_ready', {
-    detail: {
-      app: 'cartoon',
-      mode: 'studio_export',
-      job_id: String(jobId || ''),
-      status,
-      video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
-      outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-      raw: j,
-      meta: {
-        app: 'cartoon',
-        mode: 'studio_export',
-        final_video_url: resolvedFinalVideoUrl,
-        preview_video_url: previewVideoUrl || previewOutputUrl
-      }
-    }
-  })
-);
-button.disabled = false;
-button.textContent = originalText;
-button.classList.remove('is-loading');
+        window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
 
-try { window.toast?.success?.('Video hazır'); } catch {}
-return;
+        window.dispatchEvent(
+          new CustomEvent('aivo:cartoon:job_ready', {
+            detail: {
+              app: 'cartoon',
+              mode: 'studio_export',
+              job_id: String(jobId || ''),
+              status,
+              video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
+              outputs: Array.isArray(j?.outputs) ? j.outputs : [],
+              raw: j,
+              meta: {
+                app: 'cartoon',
+                mode: 'studio_export',
+                final_video_url: resolvedFinalVideoUrl,
+                preview_video_url: previewVideoUrl || previewOutputUrl
+              }
+            }
+          })
+        );
+
+        button.disabled = false;
+        button.textContent = originalText;
+        button.classList.remove('is-loading');
+
+        try { window.toast?.success?.('Video hazır'); } catch {}
+        return;
       }
 
           if (status === 'error') {
