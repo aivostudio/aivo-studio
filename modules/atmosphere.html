@@ -368,13 +368,85 @@
             transform:translateY(-1px);
             filter:brightness(1.06);
           }
-          #atmPersonalCard .atmBigCtaBtn:active{
-            transform:translateY(0px) scale(.99);
-          }
+        #atmPersonalCard .atmBigCtaBtn:active{
+  transform:translateY(0px) scale(.99);
+}
 
-          @media (max-width: 980px){
-            #atmPersonalCard .atmPersGrid{ grid-template-columns: 1fr; }
-          }
+/* ATMOS SCENE CARDS — edge glow separation */
+#atmScenes{
+  gap:18px;
+}
+
+#atmScenes .smpack-choice{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px;
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 10px 28px rgba(0,0,0,.22);
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
+}
+
+#atmScenes .smpack-choice::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:24px;
+  padding:1.5px;
+  background:linear-gradient(90deg, rgba(124,92,255,.85), rgba(255,77,184,.65));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  opacity:.58;
+  pointer-events:none;
+  filter:drop-shadow(0 0 10px rgba(124,92,255,.22));
+}
+
+#atmScenes .smpack-choice:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 14px 34px rgba(0,0,0,.28);
+}
+
+#atmScenes .smpack-choice:hover::after{
+  opacity:.9;
+  filter:
+    drop-shadow(0 0 12px rgba(124,92,255,.30))
+    drop-shadow(0 0 18px rgba(255,77,184,.16));
+}
+
+#atmScenes .smpack-choice.is-active,
+#atmScenes .smpack-choice[aria-pressed="true"],
+#atmScenes .smpack-choice[aria-selected="true"]{
+  background:linear-gradient(180deg, rgba(124,92,255,.10), rgba(255,77,184,.06));
+  border-color:rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 16px 38px rgba(0,0,0,.30);
+}
+
+#atmScenes .smpack-choice.is-active::after,
+#atmScenes .smpack-choice[aria-pressed="true"]::after,
+#atmScenes .smpack-choice[aria-selected="true"]::after{
+  opacity:1;
+  filter:
+    drop-shadow(0 0 14px rgba(124,92,255,.38))
+    drop-shadow(0 0 24px rgba(255,77,184,.22));
+}
+
+@media (max-width: 980px){
+  #atmPersonalCard .atmPersGrid{ grid-template-columns: 1fr; }
+}
         </style>
 
         <script>
