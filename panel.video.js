@@ -989,10 +989,35 @@
 
       renderCurrent();
     };
+    const onJobFailed = (e) => {
+      const d = e?.detail || {};
+      const job_id = String(d?.job_id || "").trim();
+      if (!job_id) return;
+
+      const app = String(d?.app || "").trim().toLowerCase();
+      if (app && !isVideoApp(app)) return;
+
+      optimistic.delete(job_id);
+      hiddenDeletedIds.add(job_id);
+      currentDbItems = currentDbItems.filter((j) => idOf(j) !== job_id);
+
+      const cachedCard = cardCache.get(job_id);
+      if (cachedCard && cachedCard.isConnected) {
+        try { cachedCard.remove(); } catch {}
+      }
+
+      renderCurrent();
+
+      setTimeout(() => {
+        hiddenDeletedIds.delete(job_id);
+      }, 1500);
+    };
 
     controller.start();
     window.addEventListener("aivo:video:job_created", onJobCreated);
     window.addEventListener("aivo:video:job_ready", onJobReady);
+    window.addEventListener("aivo:video:job_failed", onJobFailed);
+    window.addEventListener("aivo:video:job_remove", onJobFailed);
 
     return {
       destroy() {
@@ -1014,6 +1039,12 @@
         } catch {}
         try {
           window.removeEventListener("aivo:video:job_ready", onJobReady);
+        } catch {}
+        try {
+          window.removeEventListener("aivo:video:job_failed", onJobFailed);
+        } catch {}
+        try {
+          window.removeEventListener("aivo:video:job_remove", onJobFailed);
         } catch {}
         try {
           controller?.destroy?.();
