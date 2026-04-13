@@ -1102,9 +1102,22 @@ document.addEventListener(
     if (!eff) return;
 
     const on = !btn.classList.contains("is-active");
+    const next = new Set((state.effects || []).map(String));
+
+    if (eff === "snow" && on) {
+      next.delete("rain");
+      const rainBtn = qs('#atmEffects [data-atm-eff="rain"]', root);
+      if (rainBtn) setActive(rainBtn, false);
+    }
+
+    if (eff === "rain" && on) {
+      next.delete("snow");
+      const snowBtn = qs('#atmEffects [data-atm-eff="snow"]', root);
+      if (snowBtn) setActive(snowBtn, false);
+    }
+
     setActive(btn, on);
 
-    const next = new Set((state.effects || []).map(String));
     if (on) next.add(eff);
     else next.delete(eff);
 
@@ -1117,7 +1130,6 @@ document.addEventListener(
   },
   true
 );
-
   // ------------------------------------------------------------
   // 6.5) Aspect ratio (Basic + Pro) — CAPTURE
   // ------------------------------------------------------------
