@@ -97,19 +97,39 @@ export default async function handler(req, res) {
 
     const user_uuid = String(userRow[0].id);
 
-    const rows = await sql`
-      select id, user_id, user_uuid, app, type, status, prompt, meta, outputs, error, created_at, updated_at
-      from jobs
-      where app = ${app}
-        and deleted_at is null
-        and (
-          user_uuid = ${user_uuid}::uuid
-          OR user_id = ${email}
-        )
-      order by created_at desc
-      limit 50
-    `;
-    __mark("after jobs query");
+   const rows = await sql`
+  select id, user_id, user_uuid, app, type, status, prompt, meta, outputs, error, created_at, updated_at
+  from jobs
+  where app = ${app}
+    and deleted_at is null
+    and (
+      user_uuid = ${user_uuid}::uuid
+      OR user_id = ${email}
+    )
+  order by created_at desc
+  limit 50
+`;
+__mark("after jobs query");
+
+if (app === "music") {
+  const debugRows = await sql`
+    select id, app, type, status, user_id, user_uuid, created_at
+    from jobs
+    where deleted_at is null
+      and (
+        user_uuid = ${user_uuid}::uuid
+        OR user_id = ${email}
+      )
+    order by created_at desc
+    limit 30
+  `;
+
+  console.log("[jobs/list][music][debug] matched_rows_count=", rows.length);
+  console.log(
+    "[jobs/list][music][debug] recent_user_jobs=",
+    JSON.stringify(debugRows, null, 2)
+  );
+}
 
 const items = rows
   .map((r) => {
