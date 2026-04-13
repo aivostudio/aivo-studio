@@ -111,82 +111,94 @@ export default async function handler(req, res) {
     `;
     __mark("after jobs query");
 
-   const items = rows.map((r) => {
-  const outputs = Array.isArray(r.outputs) ? r.outputs : [];
-  const meta = (r.meta && typeof r.meta === "object") ? r.meta : {};
+const items = rows
+  .map((r) => {
+    const outputs = Array.isArray(r.outputs) ? r.outputs : [];
+    const meta = (r.meta && typeof r.meta === "object") ? r.meta : {};
 
-  const pickUrl = (o) =>
-    String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
+    const pickUrl = (o) =>
+      String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
 
-  const pickVideoByVariant = (variant) => {
-    const v = String(variant || "").toLowerCase().trim();
-    const hit = outputs.find(
-      (o) =>
-        String(o?.type || "").toLowerCase() === "video" &&
-        String(o?.meta?.variant || "").toLowerCase().trim() === v
-    );
-    return hit ? pickUrl(hit) : null;
-  };
+    const pickVideoByVariant = (variant) => {
+      const v = String(variant || "").toLowerCase().trim();
+      const hit = outputs.find(
+        (o) =>
+          String(o?.type || "").toLowerCase() === "video" &&
+          String(o?.meta?.variant || "").toLowerCase().trim() === v
+      );
+      return hit ? pickUrl(hit) : null;
+    };
 
-  const pickFinalFromOutputs = () => {
-    const fin = outputs.find(
-      (o) =>
-        String(o?.type || "").toLowerCase() === "video" &&
-        o?.meta?.is_final === true
-    );
-    if (fin) return pickUrl(fin);
+    const pickFinalFromOutputs = () => {
+      const fin = outputs.find(
+        (o) =>
+          String(o?.type || "").toLowerCase() === "video" &&
+          o?.meta?.is_final === true
+      );
+      if (fin) return pickUrl(fin);
 
-    const overlay = pickVideoByVariant("logo_overlay");
-    if (overlay) return overlay;
+      const overlay = pickVideoByVariant("logo_overlay");
+      if (overlay) return overlay;
 
-    const mux = pickVideoByVariant("mux");
-    if (mux) return mux;
+      const mux = pickVideoByVariant("mux");
+      if (mux) return mux;
 
-    const provider = pickVideoByVariant("provider");
-    if (provider) return provider;
+      const provider = pickVideoByVariant("provider");
+      if (provider) return provider;
 
-    const firstVideo = outputs.find(
-      (o) => String(o?.type || "").toLowerCase() === "video"
-    );
-    return firstVideo ? pickUrl(firstVideo) : null;
-  };
+      const firstVideo = outputs.find(
+        (o) => String(o?.type || "").toLowerCase() === "video"
+      );
+      return firstVideo ? pickUrl(firstVideo) : null;
+    };
 
-  const responseMeta = {
-    ...meta,
-    final_video_url:
-      meta.final_video_url ||
-      pickFinalFromOutputs() ||
-      null,
-    preview_video_url:
-      meta.preview_video_url ||
-      pickVideoByVariant("preview") ||
-      null,
-    muxed_url:
-      meta.muxed_url ||
-      pickVideoByVariant("mux") ||
-      null,
-    logo_overlay_url:
-      meta.logo_overlay_url ||
-      pickVideoByVariant("logo_overlay") ||
-      null,
-  };
+    const responseMeta = {
+      ...meta,
+      final_video_url:
+        meta.final_video_url ||
+        pickFinalFromOutputs() ||
+        null,
+      preview_video_url:
+        meta.preview_video_url ||
+        pickVideoByVariant("preview") ||
+        null,
+      muxed_url:
+        meta.muxed_url ||
+        pickVideoByVariant("mux") ||
+        null,
+      logo_overlay_url:
+        meta.logo_overlay_url ||
+        pickVideoByVariant("logo_overlay") ||
+        null,
+    };
 
-  return {
-    job_id: r.id,
-    user_id: r.user_id || null,
-    user_uuid: r.user_uuid || null,
-    app: r.app,
-    type: r.type || r.app || null,
-    status: r.status,
-    state: mapState(r.status),
-    prompt: r.prompt || null,
-    meta: responseMeta,
-    outputs,
-    error: r.error || null,
-    created_at: r.created_at,
-    updated_at: r.updated_at,
-  };
-});
+    return {
+      job_id: r.id,
+      user_id: r.user_id || null,
+      user_uuid: r.user_uuid || null,
+      app: r.app,
+      type: r.type || r.app || null,
+      status: r.status,
+      state: mapState(r.status),
+      prompt: r.prompt || null,
+      meta: responseMeta,
+      outputs,
+      error: r.error || null,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    };
+  })
+  .filter((item) => {
+    const appKey = String(item.app || item.type || "").trim().toLowerCase();
+
+    if (["video", "atmo", "atmos", "atmosphere", "atmosfer"].includes(appKey)) {
+      const state = String(item.state || "").toUpperCase();
+      const hasVideo = !!String(item?.meta?.final_video_url || "").trim();
+      return state === "COMPLETED" && hasVideo;
+    }
+
+    return true;
+  });
 
     __mark("before response");
 
