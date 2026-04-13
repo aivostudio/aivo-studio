@@ -1419,6 +1419,7 @@ function buildBasicPayload() {
   const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
   const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
   const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
+  const basicDisplayPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
 
   return {
     app: "atmo",
@@ -1432,6 +1433,12 @@ function buildBasicPayload() {
     effects: (state.effects || []).slice(),
     camera: state.camera || "kenburns_soft",
     duration: state.duration || "8",
+
+    meta: {
+      prompt: basicDisplayPrompt,
+      scene_label: sceneTitle,
+      scene_desc: sceneDesc
+    },
 
     image_url: state.uploads?.basicImage?.url || "",
 
