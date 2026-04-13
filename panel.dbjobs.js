@@ -39,9 +39,6 @@
     music: ["music", "müzik"],
     dashboard: ["dashboard"],
 
-    // cartoon / child cartoon
-    cartoon: ["cartoon", "child-cartoon", "child_cartoon", "cizgifilm", "çizgifilm"],
-
     // important: these may ALSO emit video outputs
     social: ["social", "socialpack", "sm-pack", "smpack", "sm_pack", "sosyal"],
     hook: ["hook", "viral-hook", "viral_hook", "viralhook"]
@@ -356,20 +353,13 @@
       try{
         const list = await fetchList(state.app);
 
-           // 1) strict job filter (prevents cross-app list/render bugs)
+        // 1) strict job filter (prevents cross-app list/render bugs)
         let final = list;
         if(state.acceptJob){
           final = final.filter(state.acceptJob);
         }
 
-        // 2) persistent truth guard:
-        // hydrate source only accepts COMPLETED jobs from backend truth
-        final = final.filter(job => {
-          const st = String(job && (job.state || job.status) || "").toUpperCase();
-          return st === "COMPLETED";
-        });
-
-        // 3) strict outputs filter (prevents video/social/hook mixing)
+        // 2) strict outputs filter (prevents video/social/hook mixing)
         if(state.acceptOutput){
           final = final.map(job => {
             const outs = (job.outputs || []).filter(o => {
@@ -417,7 +407,6 @@
 
           // strict job app gate (protect against status returning mixed meta)
           if(state.acceptJob && !state.acceptJob(fresh)){
-            remove(jobId);
             state.inFlight.delete(jobId);
             continue;
           }
@@ -431,30 +420,7 @@
             });
           }
 
-          const freshState = String(fresh && (fresh.state || fresh.status) || "").toUpperCase();
-
-          const hasRenderableOutput = Array.isArray(fresh.outputs) && fresh.outputs.some(o => {
-            const url = String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
-            return !!url;
-          });
-
-          if (freshState === "FAILED") {
-            remove(jobId);
-            continue;
-          }
-
-          if (freshState === "COMPLETED") {
-            if (!hasRenderableOutput) {
-              remove(jobId);
-              continue;
-            }
-
-            upsert(fresh);
-            continue;
-          }
-
-          // still ephemeral: do not turn processing/pending into persistent truth
-          // leave current temporary card as-is, but do not upsert backend processing row
+          upsert(fresh);
         }catch(e){
           // ignore errors, keep polling next time
         }finally{
@@ -463,7 +429,7 @@
       }
     }
 
-    function start(){
+      function start(){
       if(state.destroyed) return;
 
       bindFailureRemovalEvents();
@@ -520,15 +486,14 @@
   // Handy presets you can reuse in panels (optional):
   // - Video panel should only accept VIDEO app + type=video outputs
   // - Atmo panel accepts ATMO app + type=video outputs
-  // - Cartoon may contain image OR video outputs depending on sub-mode
   // - Social/Hook can accept video outputs too, but meta.app keeps them separate
   window.DBJobsFilters = {
     video: function(){ return makeAppFilters("video", { allowedTypes: ["video"] }); },
     atmo: function(){ return makeAppFilters("atmo",  { allowedTypes: ["video"] }); },
     cover:function(){ return makeAppFilters("cover", { allowedTypes: ["image"] }); },
-    cartoon:function(){ return makeAppFilters("cartoon", { allowedTypes: ["image","video"] }); },
     social:function(){ return makeAppFilters("social", { allowedTypes: ["image","video"] }); },
     hook: function(){ return makeAppFilters("hook",  { allowedTypes: ["video"] }); }
   };
 
 })();
+
