@@ -1370,6 +1370,31 @@
             try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
           }
 
+                 window.dispatchEvent(
+            new CustomEvent("aivo:cartoon:job_failed", {
+              detail: {
+                app: "cartoon",
+                mode: "basic",
+                job_id: currentJobId,
+                status: normalizedStatus,
+                remove_placeholder: true,
+                raw: j2
+              }
+            })
+          );
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:cartoon:job_remove", {
+              detail: {
+                app: "cartoon",
+                mode: "basic",
+                job_id: currentJobId,
+                remove_placeholder: true,
+                raw: j2
+              }
+            })
+          );
+
           state.activeBasicJobId = "";
           state.activeBasicPollToken = 0;
           state.isGenerating = false;
