@@ -3549,3 +3549,33 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* BASIC MODE upload alanları: taşmayı engelle */
+[data-cartoon-view="basic"] .cartoon-credit-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+[data-cartoon-view="basic"] .cartoon-upload-row {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+[data-cartoon-view="basic"] .cartoon-upload-text {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+[data-cartoon-view="basic"] .cartoon-field {
+  min-width: 0;
+}
