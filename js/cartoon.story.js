@@ -3167,9 +3167,14 @@ if (!selectedScenes.length) {
 
         const creditCost = getStoryEstimatedCredits();
         const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nToplam kredi: ${creditCost}.\nDevam edilsin mi?`;
-        if (!window.confirm(summaryText)) {
+            if (!window.confirm(summaryText)) {
           return;
         }
+
+        window.__CARTOON_STORY_REFUND_DONE__ = false;
+        window.__CARTOON_STORY_REFUND_IN_FLIGHT__ = false;
+        window.__CARTOON_STORY_CREATED_JOBS__ = [];
+
         const creditReason = "studio_cartoon_story_generate";
         const consumeRequestId = `cartoon-story:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
