@@ -1372,6 +1372,35 @@ function completeStoryGenerateIfAllSettled() {
       }
     }
 
+    window.dispatchEvent(
+      new CustomEvent("aivo:cartoon:job_failed", {
+        detail: {
+          app: "cartoon",
+          mode: "story",
+          sceneId: safeText(item?.scene_id),
+          sceneTitle: safeText(item?.scene_title),
+          job_id: key,
+          status: safeText(raw?.status || raw?.db_status || raw?.state || "error").toLowerCase(),
+          remove_placeholder: true,
+          raw
+        }
+      })
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:cartoon:job_remove", {
+        detail: {
+          app: "cartoon",
+          mode: "story",
+          sceneId: safeText(item?.scene_id),
+          sceneTitle: safeText(item?.scene_title),
+          job_id: key,
+          remove_placeholder: true,
+          raw
+        }
+      })
+    );
+
     completeStoryGenerateIfAllSettled();
   }
   function getStoryCharacterImage(slot) {
