@@ -1620,12 +1620,116 @@ try { window.toast?.success?.('Video hazır'); } catch {}
 return;
       }
 
-      if (status === 'error') {
+          if (status === 'error') {
         button.disabled = false;
         button.textContent = originalText;
         button.classList.remove('is-loading');
 
-        throw new Error(j?.error_reason || 'studio_export_failed');
+        const activeJobId = String(window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ || '').trim();
+        const currentJobId = String(jobId || '').trim();
+
+        async function refreshCreditsUI() {
+          try {
+            const creditGetRes = await fetch('/api/credits/get', {
+              credentials: 'include',
+              cache: 'no-store',
+              headers: { 'accept': 'application/json' }
+            });
+
+            const creditGetData = await creditGetRes.json().catch(() => null);
+
+            if (creditGetData?.ok && typeof creditGetData.credits === 'number') {
+              const topCreditCountEl = document.getElementById('topCreditCount');
+              if (topCreditCountEl) {
+                topCreditCountEl.textContent = String(creditGetData.credits);
+              }
+
+              if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === 'function') {
+                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+              }
+            }
+          } catch (_) {}
+
+          try { window.syncCreditsUI?.({ force: true }); } catch {}
+        }
+
+        if (!activeJobId || activeJobId === currentJobId) {
+          try {
+            const activeRequestId = String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || '').trim();
+            const activeTransactionId = String(window.__CARTOON_STUDIO_LAST_TRANSACTION_ID__ || '').trim();
+            const activeCreditCost = Number(window.__CARTOON_STUDIO_LAST_CREDIT_COST__ || 0);
+            const activeCreditReason = String(window.__CARTOON_STUDIO_LAST_CREDIT_REASON__ || 'studio_cartoon_montage_export').trim();
+
+            if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
+              const refundRes = await fetch('/api/credits/refund', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'content-type': 'application/json',
+                  'accept': 'application/json'
+                },
+                body: JSON.stringify({
+                  app: 'cartoon',
+                  action: activeCreditReason,
+                  amount: activeCreditCost,
+                  request_id: activeRequestId,
+                  related_transaction_id: activeTransactionId,
+                  reason: 'studio_export_job_failed',
+                  meta: {
+                    source: 'cartoon.studio.poll',
+                    mode: 'studio_export',
+                    job_id: currentJobId,
+                    status,
+                    error: String(j?.error || j?.error_reason || j?.reason || 'studio_export_failed')
+                  }
+                })
+              });
+
+              const refundData = await refundRes.json().catch(() => null);
+
+              if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+                await refreshCreditsUI();
+                try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
+              } else {
+                try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
+              }
+            } else {
+              try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
+            }
+          } catch (refundErr) {
+            console.error('[CARTOON][STUDIO] poll refund failed =', refundErr);
+            try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
+          }
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('aivo:cartoon:job_failed', {
+            detail: {
+              app: 'cartoon',
+              mode: 'studio_export',
+              job_id: currentJobId,
+              status,
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
+        window.dispatchEvent(
+          new CustomEvent('aivo:cartoon:job_remove', {
+            detail: {
+              app: 'cartoon',
+              mode: 'studio_export',
+              job_id: currentJobId,
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
+        window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
+
+        throw new Error(j?.error_reason || j?.error || 'studio_export_failed');
       }
 
       if (tries < 240) {
