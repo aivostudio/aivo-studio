@@ -1731,8 +1731,8 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         );
 
         window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
-console.warn('[CARTOON][STUDIO_EXPORT_ERROR]', j);
-return;
+
+        throw new Error(j?.error_reason || j?.error || 'studio_export_failed');
       }
 
       if (tries < 240) {
@@ -1746,16 +1746,13 @@ return;
 
       throw new Error('studio_export_timeout');
     } catch (err) {
-    } catch (err) {
       console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
 
       button.disabled = false;
       button.textContent = originalText;
       button.classList.remove('is-loading');
 
-      try {
-        window.toast?.error?.(String(err?.message || err || 'studio_export_poll_failed'));
-      } catch {}
+      alert(String(err?.message || err || 'studio_export_poll_failed'));
     }
   }
 
