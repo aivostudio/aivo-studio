@@ -1414,39 +1414,38 @@ document.addEventListener(
   // ------------------------------------------------------------
   // 13) Payload builders
   // ------------------------------------------------------------
-  function buildBasicPayload() {
-    const root = getAtmoPanelRoot();
-    const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-    const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
-    const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
-    const basicPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
+function buildBasicPayload() {
+  const root = getAtmoPanelRoot();
+  const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+  const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
+  const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
 
-    return {
-      app: "atmo",
-      mode: "basic",
-      aspect: state.aspect || "16:9",
+  return {
+    app: "atmo",
+    mode: "basic",
+    aspect: state.aspect || "16:9",
 
-      scene: state.scene || null,
-      prompt: basicPrompt,
-      scene_label: sceneTitle,
-      scene_desc: sceneDesc,
-      effects: (state.effects || []).slice(),
-      camera: state.camera || "kenburns_soft",
-      duration: state.duration || "8",
+    scene: state.scene || null,
+    prompt: "",
+    scene_label: sceneTitle,
+    scene_desc: sceneDesc,
+    effects: (state.effects || []).slice(),
+    camera: state.camera || "kenburns_soft",
+    duration: state.duration || "8",
 
-      image_url: state.uploads?.basicImage?.url || "",
+    image_url: state.uploads?.basicImage?.url || "",
 
-      logo_url: state.uploads?.logo?.url || "",
-      logo_pos: state.logoPos || "br",
-      logo_size: state.logoSize || "sm",
-      logo_opacity: state.logoOpacity ?? 0.9,
+    logo_url: state.uploads?.logo?.url || "",
+    logo_pos: state.logoPos || "br",
+    logo_size: state.logoSize || "sm",
+    logo_opacity: state.logoOpacity ?? 0.9,
 
-      audio_url: state.uploads?.audio?.url || "",
-      audio_mode: state.audioMode || "none",
-      audio_trim: state.audioTrim || "loop_to_fit",
-      silent_copy: !!state.silentCopy
-    };
-  }
+    audio_url: state.uploads?.audio?.url || "",
+    audio_mode: state.audioMode || "none",
+    audio_trim: state.audioTrim || "loop_to_fit",
+    silent_copy: !!state.silentCopy
+  };
+}
 
   function buildProPayload() {
     return {
