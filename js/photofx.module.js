@@ -1801,10 +1801,12 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
           return;
         }
-
         const creditCost = getPhotoFxEstimatedCredits(root);
         const creditReason = "studio_photofx_generate";
-        const refundReason = "studio_photofx_generate_refund";
+        const consumeRequestId = `photofx:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+        let consumed = false;
+        let consumeTransactionId = null;
 
         const refreshTopCredits = async () => {
           try {
@@ -1832,9 +1834,61 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
               }
             }
           } catch {}
+
+          try { window.syncCreditsUI?.({ force: true }); } catch {}
         };
 
-        const creditRes = await fetch("/api/credits/consume", {
+        const tryRefund = async (reason, extraMeta = {}) => {
+          if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+
+          try {
+            const refundRes = await fetch("/api/credits/refund", {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "content-type": "application/json",
+                "accept": "application/json"
+              },
+              body: JSON.stringify({
+                app: "photofx",
+                action: creditReason,
+                amount: creditCost,
+                request_id: consumeRequestId,
+                related_transaction_id: consumeTransactionId,
+                reason,
+                meta: {
+                  source: "photofx.create",
+                  duration: String(qs("#pfxDuration", root)?.value || "6"),
+                  aspect_ratio: String(qs("#pfxAspect", root)?.value || "9:16"),
+                  resolution: String(qs("#pfxResolution", root)?.value || "1080p"),
+                  fps: String(qs("#pfxFps", root)?.value || "25"),
+                  prompt: String(qs("#pfxPrompt", root)?.value || "").trim(),
+                  include_audio: String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
+                  styles: getSelectedPresets(root),
+                  ...extraMeta
+                }
+              })
+            });
+
+            const refundData = await refundRes.json().catch(() => null);
+
+            if (
+              refundRes.ok &&
+              refundData?.ok &&
+              (refundData?.refunded || refundData?.deduped || refundData?.skipped)
+            ) {
+              await refreshTopCredits();
+              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              return true;
+            }
+          } catch (refundErr) {
+            console.error("[photofx] refund error:", refundErr);
+          }
+
+          return false;
+        };
+
+        const creditRes = await fetch("/api/credits/consume-ledger", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -1842,7 +1896,10 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             "accept": "application/json"
           },
           body: JSON.stringify({
+            app: "photofx",
+            action: creditReason,
             cost: creditCost,
+            request_id: consumeRequestId,
             reason: creditReason
           })
         });
@@ -1857,6 +1914,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             status: creditRes.status
           };
         }
+
         if (!creditRes.ok || !creditData?.ok) {
           const to = encodeURIComponent(
             location.pathname + location.search + location.hash
@@ -1868,9 +1926,20 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           return;
         }
 
-              await refreshTopCredits();
+        consumed = true;
+        consumeTransactionId =
+          creditData?.transaction_id ||
+          creditData?.transaction?.id ||
+          null;
 
-               createBtn.disabled = true;
+        window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ = consumeRequestId;
+        window.__PHOTOFX_LAST_TRANSACTION_ID__ = consumeTransactionId || "";
+        window.__PHOTOFX_LAST_CREDIT_COST__ = creditCost;
+        window.__PHOTOFX_LAST_CREDIT_REASON__ = creditReason;
+
+        await refreshTopCredits();
+
+        createBtn.disabled = true;
         createBtn.classList.add("is-loading");
         createBtn.textContent = "Üretiliyor...";
 
@@ -1878,34 +1947,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           .catch(async (err) => {
             console.error("[photofx] create error:", err);
 
-            try {
-              const refundRes = await fetch("/api/credits/add", {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                  "content-type": "application/json",
-                  "accept": "application/json"
-                },
-                body: JSON.stringify({
-                  amount: creditCost,
-                  reason: refundReason
-                })
-              });
+            const refunded = await tryRefund("photofx_create_failed", {
+              error: String(err?.message || err || "photofx_create_failed")
+            });
 
-              const refundData = await refundRes.json().catch(() => null);
-
-              if (!refundRes.ok || refundData?.ok === false) {
-                console.error("[photofx] refund failed:", refundData || refundRes.status);
-              } else {
-                await refreshTopCredits();
-              }
-            } catch (refundErr) {
-              console.error("[photofx] refund error:", refundErr);
+            if (!refunded) {
+              try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
             }
-
-            alert(String(err?.message || err || "photofx_create_failed"));
           })
-                   .finally(() => {
+          .finally(() => {
             createBtn.disabled = false;
             createBtn.classList.remove("is-loading");
             syncCreateButton(root);
