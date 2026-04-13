@@ -353,13 +353,20 @@
       try{
         const list = await fetchList(state.app);
 
-        // 1) strict job filter (prevents cross-app list/render bugs)
+           // 1) strict job filter (prevents cross-app list/render bugs)
         let final = list;
         if(state.acceptJob){
           final = final.filter(state.acceptJob);
         }
 
-        // 2) strict outputs filter (prevents video/social/hook mixing)
+        // 2) persistent truth guard:
+        // hydrate source only accepts COMPLETED jobs from backend truth
+        final = final.filter(job => {
+          const st = String(job && (job.state || job.status) || "").toUpperCase();
+          return st === "COMPLETED";
+        });
+
+        // 3) strict outputs filter (prevents video/social/hook mixing)
         if(state.acceptOutput){
           final = final.map(job => {
             const outs = (job.outputs || []).filter(o => {
