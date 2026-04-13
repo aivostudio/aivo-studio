@@ -1746,13 +1746,18 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
 
       throw new Error('studio_export_timeout');
     } catch (err) {
+    } catch (err) {
       console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
 
       button.disabled = false;
       button.textContent = originalText;
       button.classList.remove('is-loading');
 
-      alert(String(err?.message || err || 'studio_export_poll_failed'));
+      try {
+        window.toast?.error?.(
+          String(err?.message || err || 'studio_export_poll_failed')
+        );
+      } catch {}
     }
   }
 
