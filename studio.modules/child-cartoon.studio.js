@@ -1731,8 +1731,8 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         );
 
         window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
-
-        throw new Error(j?.error_reason || j?.error || 'studio_export_failed');
+console.warn('[CARTOON][STUDIO_EXPORT_ERROR]', j);
+return;
       }
 
       if (tries < 240) {
