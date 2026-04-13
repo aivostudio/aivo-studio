@@ -1481,8 +1481,14 @@ const builtEffects = {
       logoUrl,
     });
 
-    pollPhotoFxJob(finalJobId, {
+     pollPhotoFxJob(finalJobId, {
       wantsLogo: !!logoUrl,
+      duration: String(form.duration || "6"),
+      aspect_ratio: String(form.ratio || "9:16"),
+      resolution: String(form.resolution || "1080p"),
+      fps: String(form.fps || "25"),
+      prompt: String(form.prompt || "").trim(),
+      styles: Array.isArray(form.styles) ? [...form.styles] : []
     }).catch((err) => {
       console.error("[photofx] poll error:", err);
     });
