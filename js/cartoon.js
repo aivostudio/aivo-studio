@@ -1529,13 +1529,93 @@
 
           return;
         }
-
         console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
+
+        let consumed = false;
+        let consumeTransactionId = null;
 
         const creditCost = getEstimatedCredits();
         const creditReason = "studio_cartoon_basic_generate";
+        const consumeRequestId = `cartoon-basic:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
-        const creditRes = await fetch("/api/credits/consume", {
+        async function refreshCreditsUI() {
+          try {
+            const creditGetRes = await fetch("/api/credits/get", {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "accept": "application/json" }
+            });
+
+            const creditGetData = await creditGetRes.json().catch(() => null);
+
+            if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+              const topCreditCountEl = document.getElementById("topCreditCount");
+              if (topCreditCountEl) {
+                topCreditCountEl.textContent = String(creditGetData.credits);
+              }
+
+              if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+              }
+            }
+          } catch (_) {}
+
+          try { window.syncCreditsUI?.({ force: true }); } catch {}
+        }
+
+        async function tryRefund(reason, extraMeta = {}) {
+          if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+
+          try {
+            const refundRes = await fetch("/api/credits/refund", {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "content-type": "application/json",
+                "accept": "application/json"
+              },
+              body: JSON.stringify({
+                app: "cartoon",
+                action: creditReason,
+                amount: creditCost,
+                request_id: consumeRequestId,
+                related_transaction_id: consumeTransactionId,
+                reason,
+                meta: {
+                  source: "cartoon.basic.create",
+                  mode: "basic",
+                  duration: payload.duration || "4",
+                  aspect_ratio: payload.aspectRatio || "16:9",
+                  main_character: payload.mainCharacter || "",
+                  helper_characters: payload.helperCharacters || [],
+                  scene: payload.scene || "",
+                  actions: payload.actions || [],
+                  prompt: payload.extraPrompt || "",
+                  ...extraMeta
+                }
+              })
+            });
+
+            const refundData = await refundRes.json().catch(() => null);
+
+            if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+              await refreshCreditsUI();
+              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              return true;
+            }
+
+            if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+              await refreshCreditsUI();
+              return true;
+            }
+          } catch (refundErr) {
+            console.error("[CARTOON][BASIC] refund failed:", refundErr);
+          }
+
+          return false;
+        }
+
+        const creditRes = await fetch("/api/credits/consume-ledger", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -1543,7 +1623,10 @@
             "accept": "application/json"
           },
           body: JSON.stringify({
+            app: "cartoon",
+            action: creditReason,
             cost: creditCost,
+            request_id: consumeRequestId,
             reason: creditReason
           })
         });
@@ -1566,32 +1649,20 @@
           return;
         }
 
-        try {
-          const creditGetRes = await fetch("/api/credits/get", {
-            credentials: "include",
-            cache: "no-store",
-            headers: { "accept": "application/json" }
-          });
+        consumed = true;
+        consumeTransactionId =
+          creditData?.transaction_id ||
+          creditData?.transaction?.id ||
+          null;
 
-          const creditGetData = await creditGetRes.json().catch(() => null);
-
-          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-            const topCreditCountEl = document.getElementById("topCreditCount");
-            if (topCreditCountEl) {
-              topCreditCountEl.textContent = String(creditGetData.credits);
-            }
-
-            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-            }
-          }
-        } catch {}
+        await refreshCreditsUI();
 
         state.isGenerating = true;
         generateBtn.disabled = true;
         generateBtn.textContent = "Üretiliyor...";
         generateBtn.classList.add("is-loading");
 
+        try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
         try { window.toast?.success?.("Sahne üretimi başladı"); } catch {}
 
         try {
@@ -1631,9 +1702,10 @@
                       ...((payload.actions || []).filter(Boolean)),
                       payload.extraPrompt
                     ].filter(Boolean).join(" • "),
-                      duration: payload.duration,
-                      aspect_ratio: payload.aspectRatio,
-                      credit_cost: creditCost
+                    duration: payload.duration,
+                    aspect_ratio: payload.aspectRatio,
+                    credit_cost: creditCost,
+                    request_id: consumeRequestId
                   }
                 }
               })
@@ -1648,7 +1720,14 @@
           generateBtn.classList.remove("is-loading");
 
           console.error("[CARTOON][BASIC] create error:", err);
-          try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+
+          const refunded = await tryRefund("cartoon_basic_create_failed", {
+            error: String(err?.message || err || "failed")
+          });
+
+          if (!refunded) {
+            try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+          }
         }
 
         return;
