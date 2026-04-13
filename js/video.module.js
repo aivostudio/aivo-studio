@@ -1231,6 +1231,41 @@ function syncVideoCreditUI(root) {
       }
     }
   }
+        mode: "image",
+        prompt: payload.prompt || "",
+        image_url: payload.image_url || "",
+        duration: payload.duration,
+        ratio: payload.ratio,
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId
+      });
+    } catch (err) {
+      console.error("[video] create(image) error =", err);
+
+      const refunded = await refundVideoCredits({
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId,
+        reason: "video_image_create_failed",
+        meta: {
+          source: "video.create",
+          mode: "image",
+          duration: payload.duration,
+          aspect_ratio: payload.ratio,
+          prompt: payload.prompt || "",
+          image_url: payload.image_url || "",
+          error: String(err?.message || err || "video_image_create_failed")
+        }
+      });
+
+      if (!refunded) {
+        throw err;
+      }
+    }
+  }
 
 async function createImage() {
     const root = getRoot();
