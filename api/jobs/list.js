@@ -262,7 +262,7 @@ const items = rows
     }
 
 if (["music", "müzik"].includes(appKey)) {
-  return hasAudio || hasVideo || hasImage;
+  return true;
 }
 
   if (["cover", "photofx"].includes(appKey)) {
