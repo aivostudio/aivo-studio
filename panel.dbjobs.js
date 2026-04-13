@@ -316,6 +316,30 @@
       emit();
     }
 
+    function bindFailureRemovalEvents(){
+      if(state.__failureRemovalBound) return;
+      state.__failureRemovalBound = true;
+
+      function handleRemoveEvent(ev){
+        const d = ev && ev.detail ? ev.detail : {};
+        const jobId = String(d.job_id || "").trim();
+        const app = String(d.app || "").trim().toLowerCase();
+
+        if(!jobId) return;
+        if(app && state.app && app !== String(state.app).trim().toLowerCase()) return;
+
+        remove(jobId);
+      }
+
+      window.addEventListener("aivo:cartoon:job_failed", handleRemoveEvent);
+      window.addEventListener("aivo:cartoon:job_remove", handleRemoveEvent);
+
+      state.__unbindFailureRemovalEvents = function(){
+        window.removeEventListener("aivo:cartoon:job_failed", handleRemoveEvent);
+        window.removeEventListener("aivo:cartoon:job_remove", handleRemoveEvent);
+      };
+    }
+
     async function hydrate(force){
       if(state.destroyed) return;
 
@@ -405,9 +429,10 @@
       }
     }
 
-    function start(){
+      function start(){
       if(state.destroyed) return;
 
+      bindFailureRemovalEvents();
       hydrate(true);
 
       if(state.pollTimer) clearInterval(state.pollTimer);
@@ -421,6 +446,9 @@
       if(state.pollTimer) clearInterval(state.pollTimer);
       state.pollTimer = null;
       state.inFlight.clear();
+      if(typeof state.__unbindFailureRemovalEvents === "function"){
+        state.__unbindFailureRemovalEvents();
+      }
     }
 
     async function deleteJob(jobId){
