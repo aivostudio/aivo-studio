@@ -412,8 +412,9 @@
         try{
           const fresh = await fetchStatus(jobId);
 
-          // strict job app gate (protect against status returning mixed meta)
+                // strict job app gate (protect against status returning mixed meta)
           if(state.acceptJob && !state.acceptJob(fresh)){
+            remove(jobId);
             state.inFlight.delete(jobId);
             continue;
           }
@@ -427,7 +428,30 @@
             });
           }
 
-          upsert(fresh);
+          const freshState = String(fresh && (fresh.state || fresh.status) || "").toUpperCase();
+
+          const hasRenderableOutput = Array.isArray(fresh.outputs) && fresh.outputs.some(o => {
+            const url = String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
+            return !!url;
+          });
+
+          if (freshState === "FAILED") {
+            remove(jobId);
+            continue;
+          }
+
+          if (freshState === "COMPLETED") {
+            if (!hasRenderableOutput) {
+              remove(jobId);
+              continue;
+            }
+
+            upsert(fresh);
+            continue;
+          }
+
+          // still ephemeral: do not turn processing/pending into persistent truth
+          // leave current temporary card as-is, but do not upsert backend processing row
         }catch(e){
           // ignore errors, keep polling next time
         }finally{
