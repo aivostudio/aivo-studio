@@ -111,82 +111,160 @@ export default async function handler(req, res) {
     `;
     __mark("after jobs query");
 
-   const items = rows.map((r) => {
-  const outputs = Array.isArray(r.outputs) ? r.outputs : [];
-  const meta = (r.meta && typeof r.meta === "object") ? r.meta : {};
+    const items = rows
+      .map((r) => {
+        const outputs = Array.isArray(r.outputs) ? r.outputs : [];
+        const meta = (r.meta && typeof r.meta === "object") ? r.meta : {};
+        const normalizedApp = String(app || r.app || "").trim().toLowerCase();
 
-  const pickUrl = (o) =>
-    String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
+        const pickUrl = (o) =>
+          String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
 
-  const pickVideoByVariant = (variant) => {
-    const v = String(variant || "").toLowerCase().trim();
-    const hit = outputs.find(
-      (o) =>
-        String(o?.type || "").toLowerCase() === "video" &&
-        String(o?.meta?.variant || "").toLowerCase().trim() === v
-    );
-    return hit ? pickUrl(hit) : null;
-  };
+        const hasOutputOfType = (wantedType) =>
+          outputs.some(
+            (o) =>
+              String(o?.type || "").toLowerCase() === String(wantedType || "").toLowerCase() &&
+              !!pickUrl(o)
+          );
 
-  const pickFinalFromOutputs = () => {
-    const fin = outputs.find(
-      (o) =>
-        String(o?.type || "").toLowerCase() === "video" &&
-        o?.meta?.is_final === true
-    );
-    if (fin) return pickUrl(fin);
+        const pickVideoByVariant = (variant) => {
+          const v = String(variant || "").toLowerCase().trim();
+          const hit = outputs.find(
+            (o) =>
+              String(o?.type || "").toLowerCase() === "video" &&
+              String(o?.meta?.variant || "").toLowerCase().trim() === v
+          );
+          return hit ? pickUrl(hit) : null;
+        };
 
-    const overlay = pickVideoByVariant("logo_overlay");
-    if (overlay) return overlay;
+        const pickFinalFromOutputs = () => {
+          const fin = outputs.find(
+            (o) =>
+              String(o?.type || "").toLowerCase() === "video" &&
+              o?.meta?.is_final === true
+          );
+          if (fin) return pickUrl(fin);
 
-    const mux = pickVideoByVariant("mux");
-    if (mux) return mux;
+          const overlay = pickVideoByVariant("logo_overlay");
+          if (overlay) return overlay;
 
-    const provider = pickVideoByVariant("provider");
-    if (provider) return provider;
+          const mux = pickVideoByVariant("mux");
+          if (mux) return mux;
 
-    const firstVideo = outputs.find(
-      (o) => String(o?.type || "").toLowerCase() === "video"
-    );
-    return firstVideo ? pickUrl(firstVideo) : null;
-  };
+          const provider = pickVideoByVariant("provider");
+          if (provider) return provider;
 
-  const responseMeta = {
-    ...meta,
-    final_video_url:
-      meta.final_video_url ||
-      pickFinalFromOutputs() ||
-      null,
-    preview_video_url:
-      meta.preview_video_url ||
-      pickVideoByVariant("preview") ||
-      null,
-    muxed_url:
-      meta.muxed_url ||
-      pickVideoByVariant("mux") ||
-      null,
-    logo_overlay_url:
-      meta.logo_overlay_url ||
-      pickVideoByVariant("logo_overlay") ||
-      null,
-  };
+          const firstVideo = outputs.find(
+            (o) => String(o?.type || "").toLowerCase() === "video"
+          );
+          return firstVideo ? pickUrl(firstVideo) : null;
+        };
 
-  return {
-    job_id: r.id,
-    user_id: r.user_id || null,
-    user_uuid: r.user_uuid || null,
-    app: r.app,
-    type: r.type || r.app || null,
-    status: r.status,
-    state: mapState(r.status),
-    prompt: r.prompt || null,
-    meta: responseMeta,
-    outputs,
-    error: r.error || null,
-    created_at: r.created_at,
-    updated_at: r.updated_at,
-  };
-});
+        const pickFirstOutputByType = (wantedType) => {
+          const hit = outputs.find(
+            (o) =>
+              String(o?.type || "").toLowerCase() === String(wantedType || "").toLowerCase() &&
+              !!pickUrl(o)
+          );
+          return hit ? pickUrl(hit) : null;
+        };
+
+        const responseMeta = {
+          ...meta,
+          final_video_url:
+            meta.final_video_url ||
+            pickFinalFromOutputs() ||
+            null,
+          preview_video_url:
+            meta.preview_video_url ||
+            pickVideoByVariant("preview") ||
+            null,
+          muxed_url:
+            meta.muxed_url ||
+            pickVideoByVariant("mux") ||
+            null,
+          logo_overlay_url:
+            meta.logo_overlay_url ||
+            pickVideoByVariant("logo_overlay") ||
+            null,
+          final_audio_url:
+            meta.final_audio_url ||
+            meta.audio_url ||
+            pickFirstOutputByType("audio") ||
+            null,
+          final_image_url:
+            meta.final_image_url ||
+            meta.image_url ||
+            pickFirstOutputByType("image") ||
+            null,
+        };
+
+        const item = {
+          job_id: r.id,
+          user_id: r.user_id || null,
+          user_uuid: r.user_uuid || null,
+          app: r.app,
+          type: r.type || r.app || null,
+          status: r.status,
+          state: mapState(r.status),
+          prompt: r.prompt || null,
+          meta: responseMeta,
+          outputs,
+          error: r.error || null,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+        };
+
+        if (item.state !== "COMPLETED") return null;
+
+        const hasVideo =
+          !!String(
+            responseMeta.final_video_url ||
+            responseMeta.preview_video_url ||
+            responseMeta.muxed_url ||
+            responseMeta.logo_overlay_url ||
+            ""
+          ).trim() ||
+          hasOutputOfType("video");
+
+        const hasAudio =
+          !!String(
+            responseMeta.final_audio_url ||
+            responseMeta.audio_url ||
+            ""
+          ).trim() ||
+          hasOutputOfType("audio");
+
+        const hasImage =
+          !!String(
+            responseMeta.final_image_url ||
+            responseMeta.image_url ||
+            ""
+          ).trim() ||
+          hasOutputOfType("image");
+
+        if (["video", "atmo", "atmosfer", "atmosphere"].includes(normalizedApp) && !hasVideo) {
+          return null;
+        }
+
+        if (["music", "audio"].includes(normalizedApp) && !hasAudio) {
+          return null;
+        }
+
+        if (["cover", "photofx", "cartoon", "image"].includes(normalizedApp) && !hasImage) {
+          return null;
+        }
+
+        if (
+          !["video", "atmo", "atmosfer", "atmosphere", "music", "audio", "cover", "photofx", "cartoon", "image"].includes(normalizedApp) &&
+          !(hasVideo || hasAudio || hasImage)
+        ) {
+          return null;
+        }
+
+        return item;
+      })
+      .filter(Boolean);
 
     __mark("before response");
 
