@@ -147,13 +147,13 @@ if (!promptSafe && !multi_prompt) {
       "A dim motel corridor with quiet lonely cinematic tension, low warm lighting, subtle ambient movement, realistic, no people, no text.",
   };
 
- const effectPromptMap = {
-  snow: "heavy snowfall, visible snowflakes falling continuously, dense snow particles in motion, cold winter atmosphere",
+const effectPromptMap = {
+  snow: "heavy blizzard snowfall, large dense snowflakes hitting the camera, visible snow particles across the whole frame, intense foreground snow, strong winter storm atmosphere, snow clearly moving in front of the lens",
   rain: "steady rainfall, visible rain streaks, wet reflective surfaces, cinematic rainy atmosphere",
   leaf: "falling leaves drifting through the air, visible leaf motion, soft windy autumn atmosphere",
   fog: "dense cinematic fog, misty air, atmospheric haze, low visibility depth",
   light: "cinematic light rays, glowing highlights, soft volumetric lighting, subtle flickering illumination",
-  fire: "visible fire glow, flickering warm light, cinematic flame ambience, orange light reflections",
+  fire: "visible open flames, strong fire movement, flickering orange firelight, dancing flame reflections, clearly noticeable fire ambience in the scene",
   wind: "strong visible wind movement, particles drifting in air, environmental motion, cinematic breeze",
 };
 
