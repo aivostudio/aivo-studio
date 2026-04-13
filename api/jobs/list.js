@@ -261,8 +261,8 @@ const items = rows
       return hasVideo;
     }
 
-   if (["music", "müzik"].includes(appKey)) {
-  return hasAudio || hasVideo;
+if (["music", "müzik"].includes(appKey)) {
+  return hasAudio || hasVideo || hasImage;
 }
 
   if (["cover", "photofx"].includes(appKey)) {
