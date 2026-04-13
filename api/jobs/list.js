@@ -169,18 +169,20 @@ const items = rows
       return firstImage ? pickUrl(firstImage) : null;
     };
 
-    const pickFinalAudioFromOutputs = () => {
-      const fin = outputs.find(
-        (o) =>
-          String(o?.type || "").toLowerCase().trim() === "audio" &&
-          o?.meta?.is_final === true
-      );
-      if (fin) return pickUrl(fin);
+  const pickFinalAudioFromOutputs = () => {
+  const isAudioLike = (o) => {
+    const t = String(o?.type || "").toLowerCase().trim();
+    return ["audio", "music", "song", "track", "wav", "mp3"].includes(t);
+  };
 
-      const firstAudio = pickOutputByType("audio");
-      return firstAudio ? pickUrl(firstAudio) : null;
-    };
+  const fin = outputs.find(
+    (o) => isAudioLike(o) && o?.meta?.is_final === true
+  );
+  if (fin) return pickUrl(fin);
 
+  const firstAudioLike = outputs.find((o) => isAudioLike(o));
+  return firstAudioLike ? pickUrl(firstAudioLike) : null;
+};
     const finalVideoUrl =
       String(
         meta.final_video_url ||
