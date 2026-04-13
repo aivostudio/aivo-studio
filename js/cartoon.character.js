@@ -1233,22 +1233,107 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         return;
       }
 
-      if (normalizedStatus === "error") {
+        if (normalizedStatus === "error") {
         console.error("[CARTOON][CHARACTER] job error =", j2);
 
         const root = getCartoonRoot();
         const createBtn = root?.querySelector("[data-cartoon-character-create]");
         const state = getState();
 
+        const activeJobId = String(window.__CARTOON_CHARACTER_ACTIVE_JOB_ID__ || "").trim();
+        const currentJobId = String(jobId || "").trim();
+
+        async function refreshCreditsUI() {
+          try {
+            const creditGetRes = await fetch("/api/credits/get", {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "accept": "application/json" }
+            });
+
+            const creditGetData = await creditGetRes.json().catch(() => null);
+
+            if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+              const topCreditCountEl = document.getElementById("topCreditCount");
+              if (topCreditCountEl) {
+                topCreditCountEl.textContent = String(creditGetData.credits);
+              }
+
+              if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+              }
+            }
+          } catch (_) {}
+
+          try { window.syncCreditsUI?.({ force: true }); } catch {}
+        }
+
+        if (!activeJobId || activeJobId === currentJobId) {
+          const refundMeta = {
+            source: "cartoon.character.poll",
+            mode: "character",
+            job_id: currentJobId,
+            status: normalizedStatus,
+            error: String(
+              j2?.error ||
+              j2?.error_reason ||
+              j2?.reason ||
+              "job_error"
+            )
+          };
+
+          try {
+            const activeRequestId = String(window.__CARTOON_CHARACTER_LAST_CONSUME_REQUEST_ID__ || "").trim();
+            const activeTransactionId = String(window.__CARTOON_CHARACTER_LAST_TRANSACTION_ID__ || "").trim();
+            const activeCreditCost = Number(window.__CARTOON_CHARACTER_LAST_CREDIT_COST__ || 0);
+            const activeCreditReason = String(window.__CARTOON_CHARACTER_LAST_CREDIT_REASON__ || "studio_cartoon_character_create").trim();
+
+            if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
+              const refundRes = await fetch("/api/credits/refund", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "content-type": "application/json",
+                  "accept": "application/json"
+                },
+                body: JSON.stringify({
+                  app: "cartoon",
+                  action: activeCreditReason,
+                  amount: activeCreditCost,
+                  request_id: activeRequestId,
+                  related_transaction_id: activeTransactionId,
+                  reason: "cartoon_character_job_failed",
+                  meta: refundMeta
+                })
+              });
+
+              const refundData = await refundRes.json().catch(() => null);
+
+              if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+                await refreshCreditsUI();
+                try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              } else {
+                try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+              }
+            } else {
+              try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+            }
+          } catch (refundErr) {
+            console.error("[CARTOON][CHARACTER] poll refund failed =", refundErr);
+            try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+          }
+        }
+
         state.characterCreatePending = false;
+        window.__CARTOON_CHARACTER_ACTIVE_JOB_ID__ = "";
 
         if (createBtn) {
           createBtn.disabled = false;
           createBtn.textContent = "🧩 Karakter Oluştur";
         }
+
         return;
       }
-
       if (tries < 60) {
         setTimeout(() => pollCartoonCharacterJob(jobId, tries + 1), 3000);
       }
