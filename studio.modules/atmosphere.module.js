@@ -1083,10 +1083,12 @@ document.addEventListener(
   },
   true
 );
-  // ------------------------------------------------------------
-  // 6) Basic: Effects multi-select
-  // ------------------------------------------------------------
-  document.addEventListener("click", (e) => {
+// ------------------------------------------------------------
+// 6) Basic: Effects multi-select — CAPTURE
+// ------------------------------------------------------------
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
@@ -1094,21 +1096,27 @@ document.addEventListener(
     if (!btn) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
-    const eff = btn.dataset.atmEff;
+    const eff = String(btn.dataset.atmEff || "").trim();
     if (!eff) return;
 
     const on = !btn.classList.contains("is-active");
     setActive(btn, on);
 
-    const set = new Set(state.effects || []);
-    if (on) set.add(eff);
-    else set.delete(eff);
+    const next = new Set((state.effects || []).map(String));
+    if (on) next.add(eff);
+    else next.delete(eff);
 
-    state.effects = Array.from(set);
+    state.effects = Array.from(next);
+
     syncLegacyEffectsInput(root);
     syncAtmoGenerateCredits(root);
-  });
+
+    console.log("[ATM] effects ->", state.effects);
+  },
+  true
+);
 
   // ------------------------------------------------------------
   // 6.5) Aspect ratio (Basic + Pro) — CAPTURE
