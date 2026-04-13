@@ -10,7 +10,8 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   const ROOT_SEL = 'section[data-module="video"]';
   const POLL_MS = 2000;
   const POLL_MAX = 120; // 4 dk
-    // ===============================
+
+  // ===============================
   // Policy helpers (Video)
   // ===============================
   const VIDEO_HARD_BLOCK_TERMS = [
@@ -42,361 +43,361 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     /\bimpersonat(e|ion)\b/i
   ];
 
-const VIDEO_PUBLIC_FIGURE_TERMS = [
-  "recep tayyip erdogan",
-  "recep tayyip erdoğan",
-  "erdogan",
-  "erdoğan",
-  "kemal kilicdaroglu",
-  "kemal kılıçdaroğlu",
-  "kilicdaroglu",
-  "kılıçdaroğlu",
-  "ekrem imamoglu",
-  "ekrem imamoğlu",
-  "imamoglu",
-  "imamoğlu",
-  "mansur yavas",
-  "mansur yavaş",
-  "devlet bahceli",
-  "devlet bahçeli",
-  "bahceli",
-  "bahçeli",
-  "meral aksener",
-  "meral akşener",
-  "aksener",
-  "akşener",
-  "ozgur ozel",
-  "özgür özel",
-  "ozel",
-  "özel",
-  "selahattin demirtas",
-  "selahattin demirtaş",
-  "demirtas",
-  "demirtaş",
-  "umit ozdag",
-  "ümit özdağ",
-  "ozdag",
-  "özdağ",
-  "fatih erbakan",
-  "temel karamollaoglu",
-  "temel karamollaoğlu",
-  "muharrem ince",
-  "sinan ogan",
-  "sinan oğan",
-  "ali babacan",
-  "ahmet davutoglu",
-  "ahmet davutoğlu",
-  "davutoglu",
-  "davutoğlu",
-  "hulusi akar",
-  "hakan fidan",
-  "mehmet simsek",
-  "mehmet şimşek",
-  "simsek",
-  "şimşek",
-  "suleyman soylu",
-  "süleyman soylu",
-  "soylu",
-  "bekir bozdag",
-  "bekir bozdağ",
-  "bozdag",
-  "bozdağ",
-  "numan kurtulmus",
-  "numan kurtulmuş",
-  "kurtulmus",
-  "kurtulmuş",
-  "omer celik",
-  "ömer çelik",
-  "celik",
-  "çelik",
-  "binali yildirim",
-  "binali yıldırım",
-  "abdullah gul",
-  "abdullah gül",
-  "gul",
-  "gül",
-  "ahmet necdet sezer",
-  "turgut ozal",
-  "turgut özal",
-  "ismet inonu",
-  "ismet inönü",
-  "inonu",
-  "inönü",
-  "mustafa kemal ataturk",
-  "mustafa kemal atatürk",
-  "ataturk",
-  "atatürk",
-  "kemal ataturk",
-  "cumhurbaskani",
-  "cumhurbaşkanı",
-  "cumhurbaskani yardimcisi",
-  "cumhurbaşkanı yardımcısı",
-  "bakan",
-  "milletvekili",
-  "belediye baskani",
-  "belediye başkanı",
-  "vali",
-  "kaymakam",
-  "siyasetci",
-  "siyasetçi",
-  "politikaci",
-  "politikacı",
-  "kamu figuru",
-  "kamu figürü",
-  "devlet buyugu",
-  "devlet büyüğü",
-  "donald trump",
-  "trump",
-  "jd vance",
-  "j d vance",
-  "vance",
-  "keir starmer",
-  "starmer",
-  "emmanuel macron",
-  "macron",
-  "friedrich merz",
-  "merz",
-  "frank walter steinmeier",
-  "frank-walter steinmeier",
-  "steinmeier",
-  "giorgia meloni",
-  "meloni",
-  "sergio mattarella",
-  "mattarella",
-  "pedro sanchez",
-  "pedro sánchez",
-  "sanchez",
-  "sánchez",
-  "felipe vi",
-  "mark carney",
-  "carney",
-  "claudia sheinbaum",
-  "sheinbaum",
-  "javier milei",
-  "milei",
-  "luiz inacio lula da silva",
-  "luiz inácio lula da silva",
-  "lula",
-  "lula da silva",
-  "vladimir putin",
-  "putin",
-  "mikhail mishustin",
-  "mishustin",
-  "volodymyr zelenskyy",
-  "zelenskyy",
-  "zelensky",
-  "yulia svyrydenko",
-  "svyrydenko",
-  "xi jinping",
-  "jinping",
-  "li qiang",
-  "narendra modi",
-  "modi",
-  "droupadi murmu",
-  "murmu",
-  "benjamin netanyahu",
-  "netanyahu",
-  "isaac herzog",
-  "herzog",
-  "masoud pezeshkian",
-  "pezeshkian",
-  "mojtaba khamenei",
-  "khamenei",
-  "mohammed bin salman",
-  "muhammed bin salman",
-  "mbs",
-  "salman",
-  "king salman",
-  "sheikh mohamed bin zayed al nahyan",
-  "mohamed bin zayed",
-  "mbz",
-  "sheikh mohammed bin rashid al maktoum",
-  "mohammed bin rashid",
-  "bin rashid",
-  "abdullah ii",
-  "king abdullah",
-  "jafar hassan",
-  "abdel fattah el sisi",
-  "abdel fattah al sisi",
-  "sisi",
-  "mostafa madbouly",
-  "madbouly",
-  "abiy ahmed",
-  "abiy",
-  "william ruto",
-  "ruto",
-  "paul kagame",
-  "kagame",
-  "samia suluhu hassan",
-  "samia suluhu",
-  "samia",
-  "cyril ramaphosa",
-  "ramaphosa",
-  "bola tinubu",
-  "tinubu",
-  "bassirou diomaye faye",
-  "diomaye faye",
-  "ousmane sonko",
-  "sonko",
-  "john mahama",
-  "mahama",
-  "netumbo nandi ndaitwah",
-  "netumbo nandi-ndaitwah",
-  "nandi ndaitwah",
-  "hassan sheikh mohamud",
-  "hassan sheikh",
-  "hamza abdi barre",
-  "kais saied",
-  "kais saïed",
-  "saied",
-  "saïed",
-  "mohamed muizzu",
-  "muizzu",
-  "anwar ibrahim",
-  "anwar",
-  "prabowo subianto",
-  "prabowo",
-  "lawrence wong",
-  "wong",
-  "tharman shanmugaratnam",
-  "tharman",
-  "lee jae myung",
-  "lee jae-myung",
-  "shigeru ishiba",
-  "ishiba",
-  "naruhito",
-  "anura kumara dissanayake",
-  "dissanayake",
-  "paetongtarn shinawatra",
-  "shinawatra",
-  "maha vajiralongkorn",
-  "to lam",
-  "tô lâm",
-  "luong cuong",
-  "lương cường",
-  "pham minh chinh",
-  "phạm minh chính",
-  "hun manet",
-  "hun sen",
-  "norodom sihamoni",
-  "thongloun sisoulith",
-  "sisoulith",
-  "sonexay siphandone",
-  "shehbaz sharif",
-  "sharif",
-  "asif ali zardari",
-  "zardari",
-  "muhammad yunus",
-  "yunus",
-  "kassym jomart tokayev",
-  "kassym-jomart tokayev",
-  "tokayev",
-  "shavkat mirziyoyev",
-  "mirziyoyev",
-  "sadyr japarov",
-  "japarov",
-  "emomali rahmon",
-  "rahmon",
-  "nikol pashinyan",
-  "pashinyan",
-  "ilham aliyev",
-  "aliyev",
-  "irakli kobakhidze",
-  "kobakhidze",
-  "mikheil kavelashvili",
-  "kavelashvili",
-  "maia sandu",
-  "sandu",
-  "aleksandar vucic",
-  "aleksandar vučić",
-  "vucic",
-  "vučić",
-  "robert fico",
-  "fico",
-  "peter pellegrini",
-  "pellegrini",
-  "andrej plenkovic",
-  "andrej plenković",
-  "plenkovic",
-  "plenković",
-  "petr pavel",
-  "pavel",
-  "donald tusk",
-  "tusk",
-  "andrzej duda",
-  "duda",
-  "viktor orban",
-  "viktor orbán",
-  "orban",
-  "orbán",
-  "nicusor dan",
-  "nicușor dan",
-  "ilie bolojan",
-  "bolojan",
-  "boyko borisov",
-  "borisov",
-  "rumen radev",
-  "radev",
-  "kyriakos mitsotakis",
-  "mitsotakis",
-  "edi rama",
-  "rama",
-  "zoran milanovic",
-  "zoran milanović",
-  "milanovic",
-  "milanović",
-  "andrej babis",
-  "andrej babiš",
-  "babis",
-  "babiš",
-  "micheal martin",
-  "martin",
-  "rodrigo chaves",
-  "chaves",
-  "gustavo petro",
-  "petro",
-  "daniel noboa",
-  "noboa",
-  "nayib bukele",
-  "bukele",
-  "bernardo arevalo",
-  "bernardo arévalo",
-  "arevalo",
-  "arévalo",
-  "xiomara castro",
-  "castro",
-  "daniel ortega",
-  "ortega",
-  "rosario murillo",
-  "murillo",
-  "laurentino cortizo",
-  "cortizo",
-  "jose raul mulino",
-  "josé raúl mulino",
-  "mulino",
-  "luis abinader",
-  "abinader",
-  "irfaan ali",
-  "ali",
-  "chan santokhi",
-  "santokhi",
-  "nicolas maduro",
-  "nicolás maduro",
-  "maduro",
-  "yamandu orsi",
-  "yamandú orsi",
-  "orsi",
-  "prime minister",
-  "president",
-  "king",
-  "queen",
-  "chancellor",
-  "taoiseach",
-  "premier",
-  "head of state",
-  "head of government",
-  "basbakan",
-  "başbakan"
+  const VIDEO_PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "kilicdaroglu",
+    "kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "imamoglu",
+    "imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "bahceli",
+    "bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "aksener",
+    "akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "ozel",
+    "özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "demirtas",
+    "demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "ozdag",
+    "özdağ",
+    "fatih erbakan",
+    "temel karamollaoglu",
+    "temel karamollaoğlu",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "davutoglu",
+    "davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "simsek",
+    "şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "soylu",
+    "bekir bozdag",
+    "bekir bozdağ",
+    "bozdag",
+    "bozdağ",
+    "numan kurtulmus",
+    "numan kurtulmuş",
+    "kurtulmus",
+    "kurtulmuş",
+    "omer celik",
+    "ömer çelik",
+    "celik",
+    "çelik",
+    "binali yildirim",
+    "binali yıldırım",
+    "abdullah gul",
+    "abdullah gül",
+    "gul",
+    "gül",
+    "ahmet necdet sezer",
+    "turgut ozal",
+    "turgut özal",
+    "ismet inonu",
+    "ismet inönü",
+    "inonu",
+    "inönü",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "kemal ataturk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "cumhurbaskani yardimcisi",
+    "cumhurbaşkanı yardımcısı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü",
+    "devlet buyugu",
+    "devlet büyüğü",
+    "donald trump",
+    "trump",
+    "jd vance",
+    "j d vance",
+    "vance",
+    "keir starmer",
+    "starmer",
+    "emmanuel macron",
+    "macron",
+    "friedrich merz",
+    "merz",
+    "frank walter steinmeier",
+    "frank-walter steinmeier",
+    "steinmeier",
+    "giorgia meloni",
+    "meloni",
+    "sergio mattarella",
+    "mattarella",
+    "pedro sanchez",
+    "pedro sánchez",
+    "sanchez",
+    "sánchez",
+    "felipe vi",
+    "mark carney",
+    "carney",
+    "claudia sheinbaum",
+    "sheinbaum",
+    "javier milei",
+    "milei",
+    "luiz inacio lula da silva",
+    "luiz inácio lula da silva",
+    "lula",
+    "lula da silva",
+    "vladimir putin",
+    "putin",
+    "mikhail mishustin",
+    "mishustin",
+    "volodymyr zelenskyy",
+    "zelenskyy",
+    "zelensky",
+    "yulia svyrydenko",
+    "svyrydenko",
+    "xi jinping",
+    "jinping",
+    "li qiang",
+    "narendra modi",
+    "modi",
+    "droupadi murmu",
+    "murmu",
+    "benjamin netanyahu",
+    "netanyahu",
+    "isaac herzog",
+    "herzog",
+    "masoud pezeshkian",
+    "pezeshkian",
+    "mojtaba khamenei",
+    "khamenei",
+    "mohammed bin salman",
+    "muhammed bin salman",
+    "mbs",
+    "salman",
+    "king salman",
+    "sheikh mohamed bin zayed al nahyan",
+    "mohamed bin zayed",
+    "mbz",
+    "sheikh mohammed bin rashid al maktoum",
+    "mohammed bin rashid",
+    "bin rashid",
+    "abdullah ii",
+    "king abdullah",
+    "jafar hassan",
+    "abdel fattah el sisi",
+    "abdel fattah al sisi",
+    "sisi",
+    "mostafa madbouly",
+    "madbouly",
+    "abiy ahmed",
+    "abiy",
+    "william ruto",
+    "ruto",
+    "paul kagame",
+    "kagame",
+    "samia suluhu hassan",
+    "samia suluhu",
+    "samia",
+    "cyril ramaphosa",
+    "ramaphosa",
+    "bola tinubu",
+    "tinubu",
+    "bassirou diomaye faye",
+    "diomaye faye",
+    "ousmane sonko",
+    "sonko",
+    "john mahama",
+    "mahama",
+    "netumbo nandi ndaitwah",
+    "netumbo nandi-ndaitwah",
+    "nandi ndaitwah",
+    "hassan sheikh mohamud",
+    "hassan sheikh",
+    "hamza abdi barre",
+    "kais saied",
+    "kais saïed",
+    "saied",
+    "saïed",
+    "mohamed muizzu",
+    "muizzu",
+    "anwar ibrahim",
+    "anwar",
+    "prabowo subianto",
+    "prabowo",
+    "lawrence wong",
+    "wong",
+    "tharman shanmugaratnam",
+    "tharman",
+    "lee jae myung",
+    "lee jae-myung",
+    "shigeru ishiba",
+    "ishiba",
+    "naruhito",
+    "anura kumara dissanayake",
+    "dissanayake",
+    "paetongtarn shinawatra",
+    "shinawatra",
+    "maha vajiralongkorn",
+    "to lam",
+    "tô lâm",
+    "luong cuong",
+    "lương cường",
+    "pham minh chinh",
+    "phạm minh chính",
+    "hun manet",
+    "hun sen",
+    "norodom sihamoni",
+    "thongloun sisoulith",
+    "sisoulith",
+    "sonexay siphandone",
+    "shehbaz sharif",
+    "sharif",
+    "asif ali zardari",
+    "zardari",
+    "muhammad yunus",
+    "yunus",
+    "kassym jomart tokayev",
+    "kassym-jomart tokayev",
+    "tokayev",
+    "shavkat mirziyoyev",
+    "mirziyoyev",
+    "sadyr japarov",
+    "japarov",
+    "emomali rahmon",
+    "rahmon",
+    "nikol pashinyan",
+    "pashinyan",
+    "ilham aliyev",
+    "aliyev",
+    "irakli kobakhidze",
+    "kobakhidze",
+    "mikheil kavelashvili",
+    "kavelashvili",
+    "maia sandu",
+    "sandu",
+    "aleksandar vucic",
+    "aleksandar vučić",
+    "vucic",
+    "vučić",
+    "robert fico",
+    "fico",
+    "peter pellegrini",
+    "pellegrini",
+    "andrej plenkovic",
+    "andrej plenković",
+    "plenkovic",
+    "plenković",
+    "petr pavel",
+    "pavel",
+    "donald tusk",
+    "tusk",
+    "andrzej duda",
+    "duda",
+    "viktor orban",
+    "viktor orbán",
+    "orban",
+    "orbán",
+    "nicusor dan",
+    "nicușor dan",
+    "ilie bolojan",
+    "bolojan",
+    "boyko borisov",
+    "borisov",
+    "rumen radev",
+    "radev",
+    "kyriakos mitsotakis",
+    "mitsotakis",
+    "edi rama",
+    "rama",
+    "zoran milanovic",
+    "zoran milanović",
+    "milanovic",
+    "milanović",
+    "andrej babis",
+    "andrej babiš",
+    "babis",
+    "babiš",
+    "micheal martin",
+    "martin",
+    "rodrigo chaves",
+    "chaves",
+    "gustavo petro",
+    "petro",
+    "daniel noboa",
+    "noboa",
+    "nayib bukele",
+    "bukele",
+    "bernardo arevalo",
+    "bernardo arévalo",
+    "arevalo",
+    "arévalo",
+    "xiomara castro",
+    "castro",
+    "daniel ortega",
+    "ortega",
+    "rosario murillo",
+    "murillo",
+    "laurentino cortizo",
+    "cortizo",
+    "jose raul mulino",
+    "josé raúl mulino",
+    "mulino",
+    "luis abinader",
+    "abinader",
+    "irfaan ali",
+    "ali",
+    "chan santokhi",
+    "santokhi",
+    "nicolas maduro",
+    "nicolás maduro",
+    "maduro",
+    "yamandu orsi",
+    "yamandú orsi",
+    "orsi",
+    "prime minister",
+    "president",
+    "king",
+    "queen",
+    "chancellor",
+    "taoiseach",
+    "premier",
+    "head of state",
+    "head of government",
+    "basbakan",
+    "başbakan"
   ];
 
   const VIDEO_ARTIST_NAME_TERMS = [
@@ -475,6 +476,14 @@ const VIDEO_PUBLIC_FIGURE_TERMS = [
     "sertab"
   ];
 
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
+  }
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
   function normalizeVideoPolicyText(value) {
     return String(value || "")
       .toLowerCase()
@@ -526,35 +535,35 @@ const VIDEO_PUBLIC_FIGURE_TERMS = [
     );
   }
 
-function ensureVideoPolicyNote(root, btn) {
-  if (!root || !btn) return null;
+  function ensureVideoPolicyNote(root, btn) {
+    if (!root || !btn) return null;
 
-  const mountPoint = btn.parentElement || root;
-  let note = qs("#videoPolicyNote", root);
+    const mountPoint = btn.parentElement || root;
+    let note = qs("#videoPolicyNote", root);
 
-  if (!note) {
-    note = document.createElement("div");
-    note.id = "videoPolicyNote";
-    note.style.display = "none";
-    note.style.marginTop = "14px";
-    note.style.padding = "14px 16px";
-    note.style.borderRadius = "18px";
-    note.style.background = "rgba(255,90,120,.10)";
-    note.style.border = "1px solid rgba(255,120,150,.24)";
-    note.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
-    note.style.textAlign = "center";
-    note.style.fontSize = "14px";
-    note.style.fontWeight = "800";
-    note.style.lineHeight = "1.65";
-    note.style.color = "rgba(255,245,248,.96)";
+    if (!note) {
+      note = document.createElement("div");
+      note.id = "videoPolicyNote";
+      note.style.display = "none";
+      note.style.marginTop = "14px";
+      note.style.padding = "14px 16px";
+      note.style.borderRadius = "18px";
+      note.style.background = "rgba(255,90,120,.10)";
+      note.style.border = "1px solid rgba(255,120,150,.24)";
+      note.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      note.style.textAlign = "center";
+      note.style.fontSize = "14px";
+      note.style.fontWeight = "800";
+      note.style.lineHeight = "1.65";
+      note.style.color = "rgba(255,245,248,.96)";
+    }
+
+    if (note.parentElement !== mountPoint) {
+      mountPoint.appendChild(note);
+    }
+
+    return note;
   }
-
-  if (note.parentElement !== mountPoint) {
-    mountPoint.appendChild(note);
-  }
-
-  return note;
-}
 
   function resetVideoPolicyUI(root) {
     if (!root) return;
@@ -588,31 +597,6 @@ function ensureVideoPolicyNote(root, btn) {
       note.style.display = "none";
       note.textContent = "";
     }
-  }
-
-  function buildVideoPolicyText(root, mode = "text") {
-    const common = buildCommonPayload(root);
-
-    const textPrompt = String(qs("#videoPrompt", root)?.value || "").trim();
-    const imagePrompt = String(qs("#videoImagePrompt", root)?.value || "").trim();
-
-    return [
-      mode === "image" ? imagePrompt : textPrompt,
-      common?.model,
-      common?.ratio,
-      common?.duration,
-      common?.resolution
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  function qs(sel, root = document) {
-    return root.querySelector(sel);
-  }
-
-  function sleep(ms) {
-    return new Promise((r) => setTimeout(r, ms));
   }
 
   function emitVideoJobCreated(meta) {
@@ -654,55 +638,55 @@ function ensureVideoPolicyNote(root, btn) {
     return 20;
   }
 
- function getVideoCredit(root) {
-  const duration = clampDuration(Number(qs("#videoDuration", root)?.value || 5));
-  const audioEnabled = !!qs("#audioEnabled", root)?.checked;
+  function getVideoCredit(root) {
+    const duration = clampDuration(Number(qs("#videoDuration", root)?.value || 5));
+    const audioEnabled = !!qs("#audioEnabled", root)?.checked;
 
-  let total = getVideoBaseCredit(duration);
+    let total = getVideoBaseCredit(duration);
 
-  if (audioEnabled) {
-    total += 5;
+    if (audioEnabled) {
+      total += 5;
+    }
+
+    return total;
   }
 
-  return total;
-}
+  function syncVideoCreditUI(root) {
+    if (!root) return;
 
-function syncVideoCreditUI(root) {
-  if (!root) return;
+    const credit = getVideoCredit(root);
 
-  const credit = getVideoCredit(root);
+    const textBtn = qs("#videoGenerateTextBtn", root);
+    const imageBtn = qs("#videoGenerateImageBtn", root);
 
-  const textBtn = qs("#videoGenerateTextBtn", root);
-  const imageBtn = qs("#videoGenerateImageBtn", root);
+    const textBadge =
+      qs('[data-video-subview="text"] .badge-beta', root) ||
+      qs("#videoGenerateTextBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
+      null;
 
-  const textBadge =
-    qs('[data-video-subview="text"] .badge-beta', root) ||
-    qs("#videoGenerateTextBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
-    null;
+    const imageBadge =
+      qs('[data-video-subview="image"] .badge-beta', root) ||
+      qs("#videoGenerateImageBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
+      null;
 
-  const imageBadge =
-    qs('[data-video-subview="image"] .badge-beta', root) ||
-    qs("#videoGenerateImageBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
-    null;
+    if (textBtn) {
+      textBtn.dataset.creditCost = String(credit);
+      textBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+    }
 
-  if (textBtn) {
-    textBtn.dataset.creditCost = String(credit);
-    textBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+    if (imageBtn) {
+      imageBtn.dataset.creditCost = String(credit);
+      imageBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+    }
+
+    if (textBadge) {
+      textBadge.textContent = `${credit} Kredi`;
+    }
+
+    if (imageBadge) {
+      imageBadge.textContent = `${credit} Kredi`;
+    }
   }
-
-  if (imageBtn) {
-    imageBtn.dataset.creditCost = String(credit);
-    imageBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
-  }
-
-  if (textBadge) {
-    textBadge.textContent = `${credit} Kredi`;
-  }
-
-  if (imageBadge) {
-    imageBadge.textContent = `${credit} Kredi`;
-  }
-}
 
   // ===============================
   // Robust JSON POST (500'lerde text dönebilir)
@@ -751,6 +735,7 @@ function syncVideoCreditUI(root) {
       return !app || app === "video";
     });
   }
+
   async function refreshVideoCreditsUI() {
     try {
       const creditGetRes = await fetch("/api/credits/get", {
@@ -964,6 +949,23 @@ function syncVideoCreditUI(root) {
       audio: !!qs("#audioEnabled", root)?.checked,
       credit_cost: getVideoCredit(root),
     };
+  }
+
+  function buildVideoPolicyText(root, mode = "text") {
+    const common = buildCommonPayload(root);
+
+    const textPrompt = String(qs("#videoPrompt", root)?.value || "").trim();
+    const imagePrompt = String(qs("#videoImagePrompt", root)?.value || "").trim();
+
+    return [
+      mode === "image" ? imagePrompt : textPrompt,
+      common?.model,
+      common?.ratio,
+      common?.duration,
+      common?.resolution
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   async function createText() {
@@ -1231,214 +1233,83 @@ function syncVideoCreditUI(root) {
       }
     }
   }
-        mode: "image",
-        prompt: payload.prompt || "",
-        image_url: payload.image_url || "",
-        duration: payload.duration,
-        ratio: payload.ratio,
-        creditCost,
-        creditReason,
-        consumeRequestId: consumed.consumeRequestId,
-        transactionId: consumed.transactionId
-      });
-    } catch (err) {
-      console.error("[video] create(image) error =", err);
 
-      const refunded = await refundVideoCredits({
-        creditCost,
-        creditReason,
-        consumeRequestId: consumed.consumeRequestId,
-        transactionId: consumed.transactionId,
-        reason: "video_image_create_failed",
-        meta: {
-          source: "video.create",
-          mode: "image",
-          duration: payload.duration,
-          aspect_ratio: payload.ratio,
-          prompt: payload.prompt || "",
-          image_url: payload.image_url || "",
-          error: String(err?.message || err || "video_image_create_failed")
-        }
-      });
+  function bindVideoPricingUI(root) {
+    if (!root || root.__videoPricingBound) return;
+    root.__videoPricingBound = true;
 
-      if (!refunded) {
-        throw err;
+    const durationEl = qs("#videoDuration", root);
+    const audioEl = qs("#audioEnabled", root);
+    const ratioEl = qs("#videoRatio", root);
+    const resolutionEl = qs("#videoResolution", root);
+
+    function applyInitialDefaults() {
+      if (durationEl && !durationEl.dataset.videoDefaultApplied) {
+        durationEl.value = "5";
+        durationEl.dataset.videoDefaultApplied = "1";
+      }
+
+      if (audioEl && !audioEl.dataset.videoDefaultApplied) {
+        audioEl.checked = false;
+        audioEl.dataset.videoDefaultApplied = "1";
       }
     }
-  }
 
-async function createImage() {
-    const root = getRoot();
-    resetVideoPolicyUI(root);
-
-    const file = qs("#videoImageInput", root)?.files?.[0];
-      const policyText = buildVideoPolicyText(root, "image");
-  const createBtn = qs("#videoGenerateImageBtn", root);
-  const policyNote = ensureVideoPolicyNote(root, createBtn);
-
-  if (isVideoPolicyBlocked(policyText)) {
-    const promptEl = qs("#videoImagePrompt", root);
-
-    if (promptEl) {
-      promptEl.style.borderColor = "rgba(255,110,140,.92)";
-      promptEl.style.boxShadow =
-        "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-      promptEl.focus();
+    function syncDurationDefault() {
+      if (!durationEl) return;
+      const next = clampDuration(Number(durationEl.value || 5));
+      durationEl.value = String(next);
     }
 
-    if (createBtn) {
-      createBtn.style.background =
-        "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-      createBtn.style.borderColor = "rgba(255,110,140,.95)";
-      createBtn.style.boxShadow =
-        "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-      createBtn.style.cursor = "not-allowed";
-      createBtn.style.filter = "saturate(1.05)";
+    function refreshPricing() {
+      applyInitialDefaults();
+      syncDurationDefault();
+      syncVideoCreditUI(root);
     }
 
-    if (policyNote) {
-      policyNote.textContent =
-        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
-      policyNote.style.display = "block";
+    if (durationEl) {
+      durationEl.addEventListener("change", refreshPricing);
+      durationEl.addEventListener("input", refreshPricing);
     }
 
-    return;
-  }
-  if (!file) {
-  try { window.toast?.info?.("Resim seçmelisin"); } catch {}
-  return;
-}
+    if (audioEl) {
+      let lastAudioState = !!audioEl.checked;
 
-    const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
+      function handleAudioToast() {
+        const nextAudioState = !!audioEl.checked;
 
-    const payload = {
-      ...buildCommonPayload(root),
-      mode: "image",
-      prompt,
-    };
+        if (nextAudioState === lastAudioState) return;
+        lastAudioState = nextAudioState;
 
-    console.log("[video] file selected:", file.name);
+        if (nextAudioState) {
+          try { window.toast?.success?.("Ses üretimi açıldı · +5 kredi"); } catch {}
+        } else {
+          try { window.toast?.success?.("Ses üretimi kapatıldı · -5 kredi"); } catch {}
+        }
+      }
 
-    // --- R2 PRESIGN + UPLOAD ---
-   const presign = await postJSON("/api/r2/presign-put", {
-  filename: file.name,
-  contentType: file.type || "image/jpeg",
-  prefix: "files/runway/input-images/",
-  app: "video",
-  kind: "runway-input-image",
-});
+      audioEl.addEventListener("change", () => {
+        handleAudioToast();
+        refreshPricing();
+      });
 
-    const up = await fetch(presign.upload_url, {
-      method: "PUT",
-      headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
-      body: file,
-    });
-
-    if (!up.ok) throw "r2_upload_failed_" + up.status;
-
-    payload.image_url = presign.public_url;
-    console.log("[video] uploaded to R2:", payload.image_url);
-
-    const j = await postJSON("/api/providers/runway/video/create", payload);
-    const job = j.job || j;
-
-    job.app = "video";
-    window.AIVO_JOBS?.upsert?.(job);
-
-    const job_id = job.job_id || job.id;
-    console.log("[video] created(image)", { job_id, job });
-
-    emitVideoJobCreated({
-      app: "video",
-      job_id,
-      createdAt: Date.now(),
-      mode: "image",
-      model: payload.model,
-      prompt: payload.prompt || "",
-      image_url: payload.image_url,
-      ratio: payload.ratio,
-      duration: payload.duration,
-      resolution: payload.resolution,
-      audio: payload.audio,
-    });
-    try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
-        await pollJob(job_id);
-  }
-function bindVideoPricingUI(root) {
-  if (!root || root.__videoPricingBound) return;
-  root.__videoPricingBound = true;
-
-  const durationEl = qs("#videoDuration", root);
-  const audioEl = qs("#audioEnabled", root);
-  const ratioEl = qs("#videoRatio", root);
-  const resolutionEl = qs("#videoResolution", root);
-
-  function applyInitialDefaults() {
-    if (durationEl && !durationEl.dataset.videoDefaultApplied) {
-      durationEl.value = "5";
-      durationEl.dataset.videoDefaultApplied = "1";
+      audioEl.addEventListener("input", () => {
+        handleAudioToast();
+        refreshPricing();
+      });
     }
 
-    if (audioEl && !audioEl.dataset.videoDefaultApplied) {
-      audioEl.checked = false;
-      audioEl.dataset.videoDefaultApplied = "1";
+    if (ratioEl) {
+      ratioEl.addEventListener("change", refreshPricing);
     }
-  }
 
-  function syncDurationDefault() {
-    if (!durationEl) return;
-    const next = clampDuration(Number(durationEl.value || 5));
-    durationEl.value = String(next);
-  }
-
-  function refreshPricing() {
-    applyInitialDefaults();
-    syncDurationDefault();
-    syncVideoCreditUI(root);
-  }
-
-  if (durationEl) {
-    durationEl.addEventListener("change", refreshPricing);
-    durationEl.addEventListener("input", refreshPricing);
-  }
-
- if (audioEl) {
-  let lastAudioState = !!audioEl.checked;
-
-  function handleAudioToast() {
-    const nextAudioState = !!audioEl.checked;
-
-    if (nextAudioState === lastAudioState) return;
-    lastAudioState = nextAudioState;
-
-    if (nextAudioState) {
-      try { window.toast?.success?.("Ses üretimi açıldı · +5 kredi"); } catch {}
-    } else {
-      try { window.toast?.success?.("Ses üretimi kapatıldı · -5 kredi"); } catch {}
+    if (resolutionEl) {
+      resolutionEl.addEventListener("change", refreshPricing);
     }
-  }
 
-  audioEl.addEventListener("change", () => {
-    handleAudioToast();
     refreshPricing();
-  });
-
-  audioEl.addEventListener("input", () => {
-    handleAudioToast();
-    refreshPricing();
-  });
-}
-
-  if (ratioEl) {
-    ratioEl.addEventListener("change", refreshPricing);
   }
 
-  if (resolutionEl) {
-    resolutionEl.addEventListener("change", refreshPricing);
-  }
-
-  refreshPricing();
-}
   // ===============================
   // Buttons (event delegation)
   // ===============================
@@ -1465,17 +1336,17 @@ function bindVideoPricingUI(root) {
   document.addEventListener(
     "click",
     (e) => {
-   const tBtn = e.target.closest("#videoGenerateTextBtn");
-if (tBtn) {
-  e.preventDefault();
-  return withLoading(tBtn, createText);
-}
+      const tBtn = e.target.closest("#videoGenerateTextBtn");
+      if (tBtn) {
+        e.preventDefault();
+        return withLoading(tBtn, createText);
+      }
 
-const iBtn = e.target.closest("#videoGenerateImageBtn");
-if (iBtn) {
-  e.preventDefault();
-  return withLoading(iBtn, createImage);
-}
+      const iBtn = e.target.closest("#videoGenerateImageBtn");
+      if (iBtn) {
+        e.preventDefault();
+        return withLoading(iBtn, createImage);
+      }
     },
     true
   );
@@ -1531,6 +1402,7 @@ if (iBtn) {
       });
     }
   }
+
   // ===============================
   // Tabs + Image upload UX (bind once per root)
   // ===============================
@@ -1628,7 +1500,7 @@ if (iBtn) {
       });
     }
 
-      function setMode(mode) {
+    function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
       tabImage.classList.toggle("is-active", !isText);
@@ -1662,24 +1534,25 @@ if (iBtn) {
     bindImageUploadUX();
     console.log("[video.tabs] bound ✅");
   }
+
   // ===============================
   // Single observer: root geldiğinde bind et, sonra hafif çalışsın
   // ===============================
-function tryBindAll() {
-  const root = document.querySelector(ROOT_SEL);
-  if (!root) return;
+  function tryBindAll() {
+    const root = document.querySelector(ROOT_SEL);
+    if (!root) return;
 
-  bindTabs(root);
-  bindPromptCounter(root);
-  bindVideoPricingUI(root);
-}
+    bindTabs(root);
+    bindPromptCounter(root);
+    bindVideoPricingUI(root);
+  }
 
   // İlk çalıştır
   tryBindAll();
 
   // Router/mount sonrası için tek observer
-const obs = new MutationObserver(() => tryBindAll());
-obs.observe(document.documentElement, { childList: true, subtree: true });
+  const obs = new MutationObserver(() => tryBindAll());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
 
   console.log("[VIDEO] module READY (create + poll + PPE) ✅");
 })();
