@@ -116,25 +116,77 @@ export default async function handler(req, res) {
     meta = null,
   } = body;
 
-  // ✅ BASIC MODE için structured seçimlerden prompt üret
-  let promptSafe = prompt;
+// ✅ BASIC MODE için structured seçimlerden prompt üret
+let promptSafe = prompt;
 
-  if (!promptSafe && !multi_prompt) {
-    const parts = [];
+if (!promptSafe && !multi_prompt) {
+  const scenePromptMap = {
+    winter_cafe:
+      "A cozy winter cafe at night, neon reflections on glass, soft snowfall outside, warm interior lighting, cinematic atmosphere, subtle motion, realistic, no people, no text.",
+    cozy_cabin:
+      "A warm mountain cabin with wooden textures and fireplace glow, cozy interior, gentle cinematic ambience, subtle movement, realistic, no people, no text.",
+    lake_cabin:
+      "A peaceful lakeside scene with soft reflections on water, calm cinematic mood, gentle ambient movement, realistic, no people, no text.",
+    city_night:
+      "A cinematic city night scene with street lamps, soft bokeh, urban depth, subtle motion, realistic, no people, no text.",
+    rainy_window:
+      "A moody rainy window scene with raindrops sliding on glass, dim warm interior light, emotional cinematic atmosphere, subtle movement, realistic, no people, no text.",
+    city_rooftop_night:
+      "A rooftop overlooking the city at night, distant glowing skyline, light wind, cinematic urban mood, subtle movement, realistic, no people, no text.",
+    old_stone_street:
+      "An old stone street at night with wet ground and warm street lamps, romantic cinematic ambience, subtle motion, realistic, no people, no text.",
+    attic_window:
+      "An attic window scene with soft warm indoor light and night ambience outside, intimate cinematic mood, subtle movement, realistic, no people, no text.",
+    sea_cliffs:
+      "Cinematic sea cliffs by the shore, open horizon, wind moving through the scene, atmospheric and emotional, realistic, no people, no text.",
+    pine_mountain_road:
+      "A pine-lined mountain road with cool natural air, quiet cinematic solitude, subtle environmental motion, realistic, no people, no text.",
+    sunset_highway:
+      "A roadside highway scene at sunset, glowing horizon, melancholic cinematic mood, subtle motion, realistic, no people, no text.",
+    dim_motel_corridor:
+      "A dim motel corridor with quiet lonely cinematic tension, low warm lighting, subtle ambient movement, realistic, no people, no text.",
+  };
 
-    if (body.scene) parts.push(`Scene: ${body.scene}.`);
-    if (Array.isArray(body.effects) && body.effects.length)
-      parts.push(`Effects: ${body.effects.join(", ")}.`);
-    if (body.camera) parts.push(`Camera: ${body.camera}.`);
-    if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
-    if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
+  const effectPromptMap = {
+    snow: "soft falling snow",
+    rain: "gentle flowing rain",
+    leaf: "leaves drifting in the air",
+    fog: "light cinematic fog",
+    light: "soft flickering light",
+    fire: "warm fire glow",
+    wind: "subtle wind movement",
+  };
 
-    if (!parts.length) {
-      return res.status(400).json({ ok: false, error: "missing_prompt" });
+  const parts = [];
+  const selectedSceneKey = body.scene ? String(body.scene).trim() : "";
+  const selectedScenePrompt =
+    scenePromptMap[selectedSceneKey] || (selectedSceneKey ? `Scene: ${selectedSceneKey}.` : "");
+
+  if (selectedScenePrompt) parts.push(selectedScenePrompt);
+
+  if (Array.isArray(body.effects) && body.effects.length) {
+    const effectText = body.effects
+      .map((key) => effectPromptMap[String(key).trim()] || String(key).trim())
+      .filter(Boolean)
+      .join(", ");
+
+    if (effectText) {
+      parts.push(`Atmospheric effects: ${effectText}.`);
     }
-
-    promptSafe = parts.join(" ") + " Seamless loop. Cinematic. No text.";
   }
+
+  if (body.camera) parts.push(`Camera style: ${body.camera}.`);
+  if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
+  if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
+
+  if (!parts.length) {
+    return res.status(400).json({ ok: false, error: "missing_prompt" });
+  }
+
+  promptSafe =
+    parts.join(" ") +
+    " Seamless loop, cinematic composition, premium atmosphere video, realistic motion, no text, no watermark, no people.";
+}
 
   // ---- canonical user_uuid resolve ----
   const userRow = await sql`
