@@ -966,10 +966,36 @@
       renderCurrent();
     };
 
+    const onJobFailed = (e) => {
+      const d = e?.detail || {};
+      const job_id = String(d?.job_id || "").trim();
+      if (!job_id) return;
+
+      const app = String(d?.app || "").trim().toLowerCase();
+      if (app && !isCartoonApp(app)) return;
+
+      optimistic.delete(job_id);
+      hiddenDeletedIds.add(job_id);
+      currentDbItems = currentDbItems.filter((j) => idOf(j) !== job_id);
+
+      const cachedCard = cardCache.get(job_id);
+      if (cachedCard && cachedCard.isConnected) {
+        try { cachedCard.remove(); } catch {}
+      }
+
+      renderCurrent();
+
+      setTimeout(() => {
+        hiddenDeletedIds.delete(job_id);
+      }, 1500);
+    };
+
     controller.start();
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
     window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
+    window.addEventListener("aivo:cartoon:job_failed", onJobFailed);
+    window.addEventListener("aivo:cartoon:job_remove", onJobFailed);
 
     return {
       destroy() {
@@ -997,6 +1023,12 @@
             "aivo:cartoon:story_scene_ready",
             onJobReady
           );
+        } catch {}
+        try {
+          window.removeEventListener("aivo:cartoon:job_failed", onJobFailed);
+        } catch {}
+        try {
+          window.removeEventListener("aivo:cartoon:job_remove", onJobFailed);
         } catch {}
         try {
           controller?.destroy?.();
