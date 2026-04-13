@@ -1284,10 +1284,92 @@
         return;
       }
 
-      if (normalizedStatus === "error") {
+         if (normalizedStatus === "error") {
         console.error("[CARTOON][BASIC] job error =", j2);
 
         if (String(state.activeBasicJobId || "").trim() === currentJobId) {
+          const refundMeta = {
+            source: "cartoon.basic.poll",
+            mode: "basic",
+            duration: state.duration || "4",
+            aspect_ratio: state.ratio || "16:9",
+            status: normalizedStatus,
+            job_id: currentJobId,
+            prompt: state.extraPrompt || "",
+            main_character: state.mainCharacter || "",
+            helper_characters: Array.isArray(state.helpers) ? state.helpers : [],
+            scene: state.scene || "",
+            actions: Array.isArray(state.actions) ? state.actions : [],
+            error: String(
+              j2?.error ||
+              j2?.error_reason ||
+              j2?.reason ||
+              "job_error"
+            )
+          };
+
+          try {
+            const activeRequestId = String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || "").trim();
+            const activeTransactionId = String(window.__CARTOON_BASIC_LAST_TRANSACTION_ID__ || "").trim();
+            const activeCreditCost = Number(window.__CARTOON_BASIC_LAST_CREDIT_COST__ || 0);
+            const activeCreditReason = String(window.__CARTOON_BASIC_LAST_CREDIT_REASON__ || "studio_cartoon_basic_generate").trim();
+
+            if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
+              const refundRes = await fetch("/api/credits/refund", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "content-type": "application/json",
+                  "accept": "application/json"
+                },
+                body: JSON.stringify({
+                  app: "cartoon",
+                  action: activeCreditReason,
+                  amount: activeCreditCost,
+                  request_id: activeRequestId,
+                  related_transaction_id: activeTransactionId,
+                  reason: "cartoon_basic_job_failed",
+                  meta: refundMeta
+                })
+              });
+
+              const refundData = await refundRes.json().catch(() => null);
+
+              if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+                try {
+                  const creditGetRes = await fetch("/api/credits/get", {
+                    credentials: "include",
+                    cache: "no-store",
+                    headers: { "accept": "application/json" }
+                  });
+
+                  const creditGetData = await creditGetRes.json().catch(() => null);
+
+                  if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+                    const topCreditCountEl = document.getElementById("topCreditCount");
+                    if (topCreditCountEl) {
+                      topCreditCountEl.textContent = String(creditGetData.credits);
+                    }
+
+                    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                      window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+                    }
+                  }
+                } catch (_) {}
+
+                try { window.syncCreditsUI?.({ force: true }); } catch {}
+                try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              } else {
+                try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+              }
+            } else {
+              try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+            }
+          } catch (refundErr) {
+            console.error("[CARTOON][BASIC] poll refund failed =", refundErr);
+            try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+          }
+
           state.activeBasicJobId = "";
           state.activeBasicPollToken = 0;
           state.isGenerating = false;
@@ -1301,7 +1383,6 @@
           }
         }
 
-        try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
         return;
       }
 
