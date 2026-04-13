@@ -751,8 +751,125 @@ function syncVideoCreditUI(root) {
       return !app || app === "video";
     });
   }
+  async function refreshVideoCreditsUI() {
+    try {
+      const creditGetRes = await fetch("/api/credits/get", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
 
-  async function pollJob(job_id) {
+      const creditGetData = await creditGetRes.json().catch(() => null);
+
+      if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(creditGetData.credits);
+        }
+
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+        }
+      }
+    } catch (_) {}
+
+    try { window.syncCreditsUI?.({ force: true }); } catch {}
+  }
+
+  async function consumeVideoCredits({ creditCost, creditReason }) {
+    const consumeRequestId = `video:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+    const creditRes = await fetch("/api/credits/consume-ledger", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "video",
+        action: creditReason,
+        cost: creditCost,
+        request_id: consumeRequestId,
+        reason: creditReason
+      })
+    });
+
+    let creditData = null;
+    try {
+      creditData = await creditRes.json();
+    } catch {
+      creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+    }
+
+    if (!creditRes.ok || !creditData?.ok) {
+      const to = encodeURIComponent(
+        location.pathname + location.search + location.hash
+      );
+
+      location.href =
+        "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+
+      return null;
+    }
+
+    const transactionId =
+      creditData?.transaction_id ||
+      creditData?.transaction?.id ||
+      null;
+
+    await refreshVideoCreditsUI();
+
+    return {
+      consumeRequestId,
+      transactionId
+    };
+  }
+
+  async function refundVideoCredits({
+    creditCost,
+    creditReason,
+    consumeRequestId,
+    transactionId,
+    reason,
+    meta = {}
+  }) {
+    if (!consumeRequestId || !transactionId || creditCost <= 0) return false;
+
+    try {
+      const refundRes = await fetch("/api/credits/refund", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: "video",
+          action: creditReason,
+          amount: creditCost,
+          request_id: consumeRequestId,
+          related_transaction_id: transactionId,
+          reason,
+          meta
+        })
+      });
+
+      const refundData = await refundRes.json().catch(() => null);
+
+      if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+        await refreshVideoCreditsUI();
+        try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+        return true;
+      }
+    } catch (refundErr) {
+      console.error("[video] refund failed =", refundErr);
+    }
+
+    return false;
+  }
+
+  async function pollJob(job_id, refundCtx = null) {
     for (let i = 0; i < POLL_MAX; i++) {
       await sleep(POLL_MS);
 
@@ -766,21 +883,62 @@ function syncVideoCreditUI(root) {
       const ready = isReadyStatus(j.status);
       const outs = pickVideoOutputs(j.outputs);
 
-    if (ready && outs.length) {
-  window.PPE?.apply?.({
-    state: "COMPLETED",
-    outputs: outs.map((o) => ({
-      ...o,
-      meta: { ...(o.meta || {}), app: "video" },
-    })),
-  });
+      if (ready && outs.length) {
+        window.PPE?.apply?.({
+          state: "COMPLETED",
+          outputs: outs.map((o) => ({
+            ...o,
+            meta: { ...(o.meta || {}), app: "video" },
+          })),
+        });
 
-  try { window.toast?.success?.("Video hazır"); } catch {}
-  return;
-}
+        try { window.toast?.success?.("Video hazır"); } catch {}
+        return;
+      }
+
       if (String(j.status || "").toLowerCase() === "error") {
+        if (refundCtx) {
+          await refundVideoCredits({
+            creditCost: refundCtx.creditCost,
+            creditReason: refundCtx.creditReason,
+            consumeRequestId: refundCtx.consumeRequestId,
+            transactionId: refundCtx.transactionId,
+            reason: "video_job_failed",
+            meta: {
+              source: "video.poll",
+              mode: refundCtx.mode,
+              duration: refundCtx.duration,
+              aspect_ratio: refundCtx.ratio,
+              prompt: refundCtx.prompt || "",
+              image_url: refundCtx.image_url || "",
+              job_id,
+              error: String(j.error || "video_job_error")
+            }
+          });
+        }
+
         throw j.error || "video_job_error";
       }
+    }
+
+    if (refundCtx) {
+      await refundVideoCredits({
+        creditCost: refundCtx.creditCost,
+        creditReason: refundCtx.creditReason,
+        consumeRequestId: refundCtx.consumeRequestId,
+        transactionId: refundCtx.transactionId,
+        reason: "video_poll_timeout",
+        meta: {
+          source: "video.poll",
+          mode: refundCtx.mode,
+          duration: refundCtx.duration,
+          aspect_ratio: refundCtx.ratio,
+          prompt: refundCtx.prompt || "",
+          image_url: refundCtx.image_url || "",
+          job_id,
+          error: "video_poll_timeout"
+        }
+      });
     }
 
     throw "video_poll_timeout";
@@ -808,137 +966,271 @@ function syncVideoCreditUI(root) {
     };
   }
 
-async function createText() {
-  const root = getRoot();
+  async function createText() {
+    const root = getRoot();
 
-  const prompt = (qs("#videoPrompt", root)?.value || "").trim();
+    const prompt = (qs("#videoPrompt", root)?.value || "").trim();
     const policyText = buildVideoPolicyText(root, "text");
-  const createBtn = qs("#videoGenerateTextBtn", root);
-  const policyNote = ensureVideoPolicyNote(root, createBtn);
+    const createBtn = qs("#videoGenerateTextBtn", root);
+    const policyNote = ensureVideoPolicyNote(root, createBtn);
 
-  if (isVideoPolicyBlocked(policyText)) {
-    const promptEl = qs("#videoPrompt", root);
+    if (isVideoPolicyBlocked(policyText)) {
+      const promptEl = qs("#videoPrompt", root);
 
-    if (promptEl) {
-      promptEl.style.borderColor = "rgba(255,110,140,.92)";
-      promptEl.style.boxShadow =
-        "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-      promptEl.focus();
-    }
-
-    if (createBtn) {
-      createBtn.style.background =
-        "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-      createBtn.style.borderColor = "rgba(255,110,140,.95)";
-      createBtn.style.boxShadow =
-        "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-      createBtn.style.cursor = "not-allowed";
-      createBtn.style.filter = "saturate(1.05)";
-    }
-
-    if (policyNote) {
-      policyNote.textContent =
-        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
-      policyNote.style.display = "block";
-    }
-
-    return;
-  }
-if (!prompt) {
-  try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
-  const promptEl = qs("#videoPrompt", root);
-  if (promptEl) promptEl.focus();
-  return;
-}
-
-  const payload = {
-    ...buildCommonPayload(root),
-    mode: "text",
-    prompt,
-  };
-
-  const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
-  const creditReason = "studio_video_text_generate";
-
-  const creditRes = await fetch("/api/credits/consume", {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "content-type": "application/json",
-      "accept": "application/json"
-    },
-    body: JSON.stringify({
-      cost: creditCost,
-      reason: creditReason
-    })
-  });
-
-  let creditData = null;
-  try {
-    creditData = await creditRes.json();
-  } catch {
-    creditData = { ok: false, error: "non_json_response", status: creditRes.status };
-  }
-
-  if (!creditRes.ok || !creditData?.ok) {
-    const to = encodeURIComponent(
-      location.pathname + location.search + location.hash
-    );
-
-    location.href =
-      "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-
-    return;
-  }
-  try {
-    const creditGetRes = await fetch("/api/credits/get", {
-      credentials: "include",
-      cache: "no-store",
-      headers: { "accept": "application/json" }
-    });
-
-    const creditGetData = await creditGetRes.json().catch(() => null);
-
-    if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-      const topCreditCountEl = document.getElementById("topCreditCount");
-      if (topCreditCountEl) {
-        topCreditCountEl.textContent = String(creditGetData.credits);
+      if (promptEl) {
+        promptEl.style.borderColor = "rgba(255,110,140,.92)";
+        promptEl.style.boxShadow =
+          "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+        promptEl.focus();
       }
 
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+      if (createBtn) {
+        createBtn.style.background =
+          "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+        createBtn.style.borderColor = "rgba(255,110,140,.95)";
+        createBtn.style.boxShadow =
+          "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+        createBtn.style.cursor = "not-allowed";
+        createBtn.style.filter = "saturate(1.05)";
+      }
+
+      if (policyNote) {
+        policyNote.textContent =
+          "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+        policyNote.style.display = "block";
+      }
+
+      return;
+    }
+
+    if (!prompt) {
+      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+      const promptEl = qs("#videoPrompt", root);
+      if (promptEl) promptEl.focus();
+      return;
+    }
+
+    const payload = {
+      ...buildCommonPayload(root),
+      mode: "text",
+      prompt,
+    };
+
+    const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
+    const creditReason = "studio_video_text_generate";
+
+    const consumed = await consumeVideoCredits({ creditCost, creditReason });
+    if (!consumed) return;
+
+    try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+
+    try {
+      const j = await postJSON("/api/providers/runway/video/create", payload);
+      const job = j.job || j;
+
+      job.app = "video";
+      window.AIVO_JOBS?.upsert?.(job);
+
+      const job_id = job.job_id || job.id;
+      console.log("[video] created(text)", { job_id, job, creditCost });
+
+      emitVideoJobCreated({
+        app: "video",
+        job_id,
+        createdAt: Date.now(),
+        mode: "text",
+        prompt,
+        model: payload.model,
+        ratio: payload.ratio,
+        duration: payload.duration,
+        resolution: payload.resolution,
+        audio: payload.audio,
+        credit_cost: creditCost,
+        request_id: consumed.consumeRequestId
+      });
+
+      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+
+      await pollJob(job_id, {
+        mode: "text",
+        prompt,
+        image_url: "",
+        duration: payload.duration,
+        ratio: payload.ratio,
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId
+      });
+    } catch (err) {
+      console.error("[video] create(text) error =", err);
+
+      const refunded = await refundVideoCredits({
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId,
+        reason: "video_text_create_failed",
+        meta: {
+          source: "video.create",
+          mode: "text",
+          duration: payload.duration,
+          aspect_ratio: payload.ratio,
+          prompt,
+          error: String(err?.message || err || "video_text_create_failed")
+        }
+      });
+
+      if (!refunded) {
+        throw err;
       }
     }
-  } catch {}
+  }
 
-  const j = await postJSON("/api/providers/runway/video/create", payload);
-  const job = j.job || j;
+  async function createImage() {
+    const root = getRoot();
+    resetVideoPolicyUI(root);
 
-  // jobs store
-  job.app = "video";
-  window.AIVO_JOBS?.upsert?.(job);
+    const file = qs("#videoImageInput", root)?.files?.[0];
+    const policyText = buildVideoPolicyText(root, "image");
+    const createBtn = qs("#videoGenerateImageBtn", root);
+    const policyNote = ensureVideoPolicyNote(root, createBtn);
 
-  const job_id = job.job_id || job.id;
-  console.log("[video] created(text)", { job_id, job, creditCost });
+    if (isVideoPolicyBlocked(policyText)) {
+      const promptEl = qs("#videoImagePrompt", root);
 
-  emitVideoJobCreated({
-    app: "video",
-    job_id,
-    createdAt: Date.now(),
-    mode: "text",
-    prompt,
-    model: payload.model,
-    ratio: payload.ratio,
-    duration: payload.duration,
-    resolution: payload.resolution,
-    audio: payload.audio,
-    credit_cost: creditCost
-  });
+      if (promptEl) {
+        promptEl.style.borderColor = "rgba(255,110,140,.92)";
+        promptEl.style.boxShadow =
+          "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+        promptEl.focus();
+      }
 
- try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+      if (createBtn) {
+        createBtn.style.background =
+          "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+        createBtn.style.borderColor = "rgba(255,110,140,.95)";
+        createBtn.style.boxShadow =
+          "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+        createBtn.style.cursor = "not-allowed";
+        createBtn.style.filter = "saturate(1.05)";
+      }
 
-  await pollJob(job_id);
-}
+      if (policyNote) {
+        policyNote.textContent =
+          "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+        policyNote.style.display = "block";
+      }
+
+      return;
+    }
+
+    if (!file) {
+      try { window.toast?.info?.("Resim seçmelisin"); } catch {}
+      return;
+    }
+
+    const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
+
+    const payload = {
+      ...buildCommonPayload(root),
+      mode: "image",
+      prompt,
+    };
+
+    console.log("[video] file selected:", file.name);
+
+    const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
+    const creditReason = "studio_video_image_generate";
+
+    const consumed = await consumeVideoCredits({ creditCost, creditReason });
+    if (!consumed) return;
+
+    try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+
+    try {
+      const presign = await postJSON("/api/r2/presign-put", {
+        filename: file.name,
+        contentType: file.type || "image/jpeg",
+        prefix: "files/runway/input-images/",
+        app: "video",
+        kind: "runway-input-image",
+      });
+
+      const up = await fetch(presign.upload_url, {
+        method: "PUT",
+        headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+
+      if (!up.ok) throw "r2_upload_failed_" + up.status;
+
+      payload.image_url = presign.public_url;
+      console.log("[video] uploaded to R2:", payload.image_url);
+
+      const j = await postJSON("/api/providers/runway/video/create", payload);
+      const job = j.job || j;
+
+      job.app = "video";
+      window.AIVO_JOBS?.upsert?.(job);
+
+      const job_id = job.job_id || job.id;
+      console.log("[video] created(image)", { job_id, job, creditCost });
+
+      emitVideoJobCreated({
+        app: "video",
+        job_id,
+        createdAt: Date.now(),
+        mode: "image",
+        model: payload.model,
+        prompt: payload.prompt || "",
+        image_url: payload.image_url,
+        ratio: payload.ratio,
+        duration: payload.duration,
+        resolution: payload.resolution,
+        audio: payload.audio,
+        credit_cost: creditCost,
+        request_id: consumed.consumeRequestId
+      });
+
+      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+
+      await pollJob(job_id, {
+        mode: "image",
+        prompt: payload.prompt || "",
+        image_url: payload.image_url || "",
+        duration: payload.duration,
+        ratio: payload.ratio,
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId
+      });
+    } catch (err) {
+      console.error("[video] create(image) error =", err);
+
+      const refunded = await refundVideoCredits({
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId,
+        reason: "video_image_create_failed",
+        meta: {
+          source: "video.create",
+          mode: "image",
+          duration: payload.duration,
+          aspect_ratio: payload.ratio,
+          prompt: payload.prompt || "",
+          image_url: payload.image_url || "",
+          error: String(err?.message || err || "video_image_create_failed")
+        }
+      });
+
+      if (!refunded) {
+        throw err;
+      }
+    }
+  }
 
 async function createImage() {
     const root = getRoot();
