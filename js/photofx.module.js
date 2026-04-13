@@ -948,7 +948,7 @@ const PFX_HARD_BLOCK_PATTERNS = [
     for (let i = 0; i < POLL_MAX; i++) {
       await sleep(POLL_MS);
 
-      const r = await fetch(
+        const r = await fetch(
         `/api/jobs/status?job_id=${encodeURIComponent(job_id)}&t=${Date.now()}`
       );
       const text = await r.text().catch(() => "");
@@ -958,6 +958,22 @@ const PFX_HARD_BLOCK_PATTERNS = [
         j = text ? JSON.parse(text) : null;
       } catch (_) {
         j = null;
+      }
+
+      const debugFailEnabled =
+        window.__PHOTOFX_FORCE_POLL_ERROR__ === true &&
+        String(window.__PHOTOFX_FORCE_POLL_ERROR_JOB_ID__ || "").trim() === String(job_id || "").trim() &&
+        window.__PHOTOFX_FORCE_POLL_ERROR_USED__ !== true;
+
+      if (debugFailEnabled) {
+        window.__PHOTOFX_FORCE_POLL_ERROR_USED__ = true;
+        j = {
+          ok: true,
+          status: "error",
+          error: "photofx_forced_test_error",
+          job_id: String(job_id || "").trim()
+        };
+        console.warn("[photofx] forced poll error test =", j);
       }
 
       console.log("[photofx] poll =", j);
