@@ -1075,3 +1075,27 @@
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-inline .cartoon-upload-row--compact{
   margin:0;
 }
+/* Studio / Montaj: ses ve logo dosya adını logo gibi kısalt */
+[data-cartoon-view="studio"] .cartoon-upload-row {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding-right: 52px;
+}
+
+[data-cartoon-view="studio"] .cartoon-upload-text {
+  display: inline-block;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+[data-cartoon-view="studio"] .cartoon-upload-clear {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
