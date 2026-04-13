@@ -1095,8 +1095,118 @@ const PFX_HARD_BLOCK_PATTERNS = [
                 );
                 return;
       }
-
       if (String(j.status || "").toLowerCase() === "error") {
+        const activeRequestId = String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || "").trim();
+        const activeTransactionId = String(window.__PHOTOFX_LAST_TRANSACTION_ID__ || "").trim();
+        const activeCreditCost = Number(window.__PHOTOFX_LAST_CREDIT_COST__ || 0);
+        const activeCreditReason = String(window.__PHOTOFX_LAST_CREDIT_REASON__ || "studio_photofx_generate").trim();
+
+        const refundMeta = {
+          source: "photofx.poll",
+          job_id: String(job_id || "").trim(),
+          status: String(j.status || "").toLowerCase(),
+          duration: String(j?.raw?.meta?.duration || j?.meta?.duration || opts?.duration || ""),
+          aspect_ratio: String(j?.raw?.meta?.aspect_ratio || j?.meta?.aspect_ratio || opts?.aspect_ratio || ""),
+          resolution: String(j?.raw?.meta?.resolution || j?.meta?.resolution || opts?.resolution || ""),
+          fps: String(j?.raw?.meta?.fps || j?.meta?.fps || opts?.fps || ""),
+          prompt: String(j?.raw?.meta?.prompt || j?.meta?.prompt || opts?.prompt || ""),
+          error: String(j?.error || "photofx_job_error"),
+          styles: Array.isArray(j?.raw?.meta?.styles)
+            ? j.raw.meta.styles
+            : Array.isArray(j?.meta?.styles)
+              ? j.meta.styles
+              : Array.isArray(opts?.styles)
+                ? opts.styles
+                : []
+        };
+
+        if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
+          try {
+            const refundRes = await fetch("/api/credits/refund", {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "content-type": "application/json",
+                "accept": "application/json"
+              },
+              body: JSON.stringify({
+                app: "photofx",
+                action: activeCreditReason,
+                amount: activeCreditCost,
+                request_id: activeRequestId,
+                related_transaction_id: activeTransactionId,
+                reason: "photofx_poll_failed",
+                meta: refundMeta
+              })
+            });
+
+            const refundData = await refundRes.json().catch(() => null);
+
+            if (
+              refundRes.ok &&
+              refundData?.ok &&
+              (refundData?.refunded || refundData?.deduped || refundData?.skipped)
+            ) {
+              try {
+                const creditGetRes = await fetch("/api/credits/get", {
+                  credentials: "include",
+                  cache: "no-store",
+                  headers: { "accept": "application/json" }
+                });
+
+                const creditGetData = await creditGetRes.json().catch(() => null);
+
+                if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+                  const topCreditCountEl = document.getElementById("topCreditCount");
+                  if (topCreditCountEl) {
+                    topCreditCountEl.textContent = String(creditGetData.credits);
+                  }
+
+                  if (
+                    window.AIVO_STORE_V1 &&
+                    typeof window.AIVO_STORE_V1.setCredits === "function"
+                  ) {
+                    window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+                  }
+                }
+              } catch (_) {}
+
+              try { window.syncCreditsUI?.({ force: true }); } catch {}
+              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+            } else {
+              try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+            }
+          } catch (refundErr) {
+            console.error("[photofx] poll refund error:", refundErr);
+            try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+          }
+        } else {
+          try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+        }
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:photofx:job_failed", {
+            detail: {
+              app: "photofx",
+              job_id: String(job_id || "").trim(),
+              status: "error",
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:photofx:job_remove", {
+            detail: {
+              app: "photofx",
+              job_id: String(job_id || "").trim(),
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
         throw new Error(j.error || "photofx_job_error");
       }
     }
