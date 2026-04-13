@@ -933,8 +933,33 @@ const onJobCreated = (e) => {
     };
 
     controller.start();
-    window.addEventListener("aivo:photofx:job_created", onJobCreated);
-    window.addEventListener("aivo:photofx:job_ready", onJobReady);
+   window.addEventListener("aivo:photofx:job_created", onJobCreated);
+window.addEventListener("aivo:photofx:job_ready", onJobReady);
+
+// 🔥 FAIL / REMOVE yakala → kartı sil
+const onJobFailed = (e) => {
+  const d = e?.detail || {};
+  const job_id = String(d?.job_id || "").trim();
+  if (!job_id) return;
+
+  optimistic.delete(job_id);
+  hiddenDeletedIds.add(job_id);
+  currentDbItems = currentDbItems.filter((j) => idOf(j) !== job_id);
+
+  const cachedCard = cardCache.get(job_id);
+  if (cachedCard && cachedCard.isConnected) {
+    try { cachedCard.remove(); } catch {}
+  }
+
+  renderCurrent();
+
+  setTimeout(() => {
+    hiddenDeletedIds.delete(job_id);
+  }, 1500);
+};
+
+window.addEventListener("aivo:photofx:job_failed", onJobFailed);
+window.addEventListener("aivo:photofx:job_remove", onJobFailed);
 
     return {
       destroy() {
