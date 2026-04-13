@@ -1733,12 +1733,87 @@ return;
 
 const creditCost = getStudioExportCreditCost(rootState, studioRoot);
 const creditReason = 'studio_cartoon_montage_export';
+const consumeRequestId = `cartoon-studio-export:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+let consumed = false;
+let consumeTransactionId = null;
+
+async function refreshCreditsUI() {
+  try {
+    const creditGetRes = await fetch('/api/credits/get', {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'accept': 'application/json' }
+    });
+
+    const creditGetData = await creditGetRes.json().catch(() => null);
+
+    if (creditGetData?.ok && typeof creditGetData.credits === 'number') {
+      const topCreditCountEl = document.getElementById('topCreditCount');
+      if (topCreditCountEl) {
+        topCreditCountEl.textContent = String(creditGetData.credits);
+      }
+
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === 'function') {
+        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+      }
+    }
+  } catch (_) {}
+
+  try { window.syncCreditsUI?.({ force: true }); } catch {}
+}
+
+async function tryRefund(reason, extraMeta = {}) {
+  if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+
+  try {
+    const refundRes = await fetch('/api/credits/refund', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify({
+        app: 'cartoon',
+        action: creditReason,
+        amount: creditCost,
+        request_id: consumeRequestId,
+        related_transaction_id: consumeTransactionId,
+        reason,
+        meta: {
+          source: 'cartoon.studio.export',
+          mode: 'studio_export',
+          scene_count: Number(payload?.export?.sceneCount || 0),
+          total_duration: Number(payload?.export?.totalDuration || 0),
+          aspect_ratio: String(payload?.export?.format || '16:9'),
+          has_voice: !!payload?.audio?.voiceFile?.url,
+          has_logo: !!payload?.branding?.logoFile?.url,
+          ready_music: String(payload?.audio?.readyMusic || ''),
+          ...extraMeta
+        }
+      })
+    });
+
+    const refundData = await refundRes.json().catch(() => null);
+
+    if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+      await refreshCreditsUI();
+      try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
+      return true;
+    }
+  } catch (refundErr) {
+    console.error('[CARTOON][STUDIO] refund failed:', refundErr);
+  }
+
+  return false;
+}
 
 button.disabled = true;
 button.textContent = 'Çıktı hazırlanıyor...';
 button.classList.add('is-loading');
 
-const creditRes = await fetch('/api/credits/consume', {
+const creditRes = await fetch('/api/credits/consume-ledger', {
   method: 'POST',
   credentials: 'include',
   headers: {
@@ -1746,70 +1821,75 @@ const creditRes = await fetch('/api/credits/consume', {
     'accept': 'application/json'
   },
   body: JSON.stringify({
+    app: 'cartoon',
+    action: creditReason,
     cost: creditCost,
+    request_id: consumeRequestId,
     reason: creditReason
   })
 });
 
-        let creditData = null;
-        try {
-          creditData = await creditRes.json();
-        } catch {
-          creditData = { ok: false, error: 'non_json_response', status: creditRes.status };
-        }
+let creditData = null;
+try {
+  creditData = await creditRes.json();
+} catch {
+  creditData = { ok: false, error: 'non_json_response', status: creditRes.status };
+}
 
-              if (!creditRes.ok || !creditData?.ok) {
-          const to = encodeURIComponent(
-            location.pathname + location.search + location.hash
-          );
+if (!creditRes.ok || !creditData?.ok) {
+  const to = encodeURIComponent(
+    location.pathname + location.search + location.hash
+  );
 
-          location.href =
-            "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+  location.href =
+    '/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=' + to;
 
-          return;
-        }
+  return;
+}
 
-        try {
-          const creditGetRes = await fetch('/api/credits/get', {
-            credentials: 'include',
-            cache: 'no-store',
-            headers: { 'accept': 'application/json' }
-          });
+consumed = true;
+consumeTransactionId =
+  creditData?.transaction_id ||
+  creditData?.transaction?.id ||
+  null;
 
-          const creditGetData = await creditGetRes.json().catch(() => null);
+window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ = consumeRequestId;
+window.__CARTOON_STUDIO_LAST_TRANSACTION_ID__ = consumeTransactionId || '';
+window.__CARTOON_STUDIO_LAST_CREDIT_COST__ = creditCost;
+window.__CARTOON_STUDIO_LAST_CREDIT_REASON__ = creditReason;
 
-          if (creditGetData?.ok && typeof creditGetData.credits === 'number') {
-            const topCreditCountEl = document.getElementById('topCreditCount');
-            if (topCreditCountEl) {
-              topCreditCountEl.textContent = String(creditGetData.credits);
-            }
+await refreshCreditsUI();
 
-            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === 'function') {
-              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-            }
-          }
-        } catch {}
+const res = await fetch('/api/cartoon/studio/export-create', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload)
+});
 
-        const res = await fetch('/api/cartoon/studio/export-create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+const data = await res.json().catch(() => null);
 
-        const data = await res.json().catch(() => null);
+console.log('[CARTOON][STUDIO_EXPORT_CREATE_RESPONSE]', {
+  status: res.status,
+  ok: res.ok,
+  data
+});
 
-        console.log('[CARTOON][STUDIO_EXPORT_CREATE_RESPONSE]', {
-          status: res.status,
-          ok: res.ok,
-          data
-        });
+if (!res.ok || !data || data.ok === false) {
+  const refunded = await tryRefund('studio_export_create_failed', {
+    error: String(data?.error || `studio_export_create_failed_${res.status}`)
+  });
 
-        if (!res.ok || !data || data.ok === false) {
-          throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
-        }
+  if (!refunded) {
+    throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
+  }
 
-        window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
+  throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
+}
+
+window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
 if (data?.job_id) {
+  window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = String(data.job_id || '');
+
   const createdDetail = {
     app: 'cartoon',
     mode: 'studio_export',
