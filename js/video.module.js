@@ -1089,150 +1089,158 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     }
   }
 
-  async function createImage() {
-    const root = getRoot();
-    resetVideoPolicyUI(root);
+async function createImage() {
+  const root = getRoot();
+  resetVideoPolicyUI(root);
 
-    const file = qs("#videoImageInput", root)?.files?.[0];
-    const policyText = buildVideoPolicyText(root, "image");
-    const createBtn = qs("#videoGenerateImageBtn", root);
-    const policyNote = ensureVideoPolicyNote(root, createBtn);
+  const file = qs("#videoImageInput", root)?.files?.[0];
+  const policyText = buildVideoPolicyText(root, "image");
+  const createBtn = qs("#videoGenerateImageBtn", root);
+  const policyNote = ensureVideoPolicyNote(root, createBtn);
 
-    if (isVideoPolicyBlocked(policyText)) {
-      const promptEl = qs("#videoImagePrompt", root);
+  if (isVideoPolicyBlocked(policyText)) {
+    const promptEl = qs("#videoImagePrompt", root);
 
-      if (promptEl) {
-        promptEl.style.borderColor = "rgba(255,110,140,.92)";
-        promptEl.style.boxShadow =
-          "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-        promptEl.focus();
-      }
-
-      if (createBtn) {
-        createBtn.style.background =
-          "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-        createBtn.style.borderColor = "rgba(255,110,140,.95)";
-        createBtn.style.boxShadow =
-          "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-        createBtn.style.cursor = "not-allowed";
-        createBtn.style.filter = "saturate(1.05)";
-      }
-
-      if (policyNote) {
-        policyNote.textContent =
-          "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
-        policyNote.style.display = "block";
-      }
-
-      return;
+    if (promptEl) {
+      promptEl.style.borderColor = "rgba(255,110,140,.92)";
+      promptEl.style.boxShadow =
+        "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      promptEl.focus();
     }
 
-    if (!file) {
-      try { window.toast?.info?.("Resim seçmelisin"); } catch {}
-      return;
+    if (createBtn) {
+      createBtn.style.background =
+        "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      createBtn.style.borderColor = "rgba(255,110,140,.95)";
+      createBtn.style.boxShadow =
+        "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      createBtn.style.cursor = "not-allowed";
+      createBtn.style.filter = "saturate(1.05)";
     }
 
-    const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
+    if (policyNote) {
+      policyNote.textContent =
+        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+      policyNote.style.display = "block";
+    }
 
-    const payload = {
-      ...buildCommonPayload(root),
+    return;
+  }
+
+  if (!file) {
+    try {
+      window.toast?.info?.("Resim seçmelisin");
+    } catch {}
+    return;
+  }
+
+  const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
+
+  const payload = {
+    ...buildCommonPayload(root),
+    mode: "image",
+    prompt,
+  };
+
+  console.log("[video] file selected:", file.name);
+
+  const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
+  const creditReason = "studio_video_image_generate";
+
+  const consumed = await consumeVideoCredits({ creditCost, creditReason });
+  if (!consumed) return;
+
+  try {
+    window.toast?.success?.(`${creditCost} kredi düşüldü`);
+  } catch {}
+
+  try {
+    const presign = await postJSON("/api/r2/presign-put", {
+      filename: file.name,
+      contentType: file.type || "image/jpeg",
+      prefix: "files/runway/input-images/",
+      app: "video",
+      kind: "runway-input-image",
+    });
+
+    const up = await fetch(presign.upload_url, {
+      method: "PUT",
+      headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
+      body: file,
+    });
+
+    if (!up.ok) {
+      throw new Error("r2_upload_failed_" + up.status);
+    }
+
+    payload.image_url = presign.public_url;
+    console.log("[video] uploaded to R2:", payload.image_url);
+
+    const j = await postJSON("/api/providers/runway/video/create", payload);
+    const job = j.job || j;
+
+    job.app = "video";
+    window.AIVO_JOBS?.upsert?.(job);
+
+    const job_id = job.job_id || job.id;
+    console.log("[video] created(image)", { job_id, job, creditCost });
+
+    emitVideoJobCreated({
+      app: "video",
+      job_id,
+      createdAt: Date.now(),
       mode: "image",
-      prompt,
-    };
-
-    console.log("[video] file selected:", file.name);
-
-    const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
-    const creditReason = "studio_video_image_generate";
-
-    const consumed = await consumeVideoCredits({ creditCost, creditReason });
-    if (!consumed) return;
-
-    try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+      model: payload.model,
+      prompt: payload.prompt || "",
+      image_url: payload.image_url,
+      ratio: payload.ratio,
+      duration: payload.duration,
+      resolution: payload.resolution,
+      audio: payload.audio,
+      credit_cost: creditCost,
+      request_id: consumed.consumeRequestId,
+    });
 
     try {
-      const presign = await postJSON("/api/r2/presign-put", {
-        filename: file.name,
-        contentType: file.type || "image/jpeg",
-        prefix: "files/runway/input-images/",
-        app: "video",
-        kind: "runway-input-image",
-      });
+      window.toast?.success?.("Video hazırlanıyor");
+    } catch {}
 
-      const up = await fetch(presign.upload_url, {
-        method: "PUT",
-        headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
-        body: file,
-      });
+    await pollJob(job_id, {
+      mode: "image",
+      prompt: payload.prompt || "",
+      image_url: payload.image_url || "",
+      duration: payload.duration,
+      ratio: payload.ratio,
+      creditCost,
+      creditReason,
+      consumeRequestId: consumed.consumeRequestId,
+      transactionId: consumed.transactionId,
+    });
+  } catch (err) {
+    console.error("[video] create(image) error =", err);
 
-      if (!up.ok) throw "r2_upload_failed_" + up.status;
-
-      payload.image_url = presign.public_url;
-      console.log("[video] uploaded to R2:", payload.image_url);
-
-      const j = await postJSON("/api/providers/runway/video/create", payload);
-      const job = j.job || j;
-
-      job.app = "video";
-      window.AIVO_JOBS?.upsert?.(job);
-
-      const job_id = job.job_id || job.id;
-      console.log("[video] created(image)", { job_id, job, creditCost });
-
-      emitVideoJobCreated({
-        app: "video",
-        job_id,
-        createdAt: Date.now(),
+    const refunded = await refundVideoCredits({
+      creditCost,
+      creditReason,
+      consumeRequestId: consumed.consumeRequestId,
+      transactionId: consumed.transactionId,
+      reason: "video_image_create_failed",
+      meta: {
+        source: "video.create",
         mode: "image",
-        model: payload.model,
-        prompt: payload.prompt || "",
-        image_url: payload.image_url,
-        ratio: payload.ratio,
         duration: payload.duration,
-        resolution: payload.resolution,
-        audio: payload.audio,
-        credit_cost: creditCost,
-        request_id: consumed.consumeRequestId
-      });
-
-      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
-
-      await pollJob(job_id, {
-        mode: "image",
+        aspect_ratio: payload.ratio,
         prompt: payload.prompt || "",
         image_url: payload.image_url || "",
-        duration: payload.duration,
-        ratio: payload.ratio,
-        creditCost,
-        creditReason,
-        consumeRequestId: consumed.consumeRequestId,
-        transactionId: consumed.transactionId
-      });
-    } catch (err) {
-      console.error("[video] create(image) error =", err);
+        error: String(err?.message || err || "video_image_create_failed"),
+      },
+    });
 
-      const refunded = await refundVideoCredits({
-        creditCost,
-        creditReason,
-        consumeRequestId: consumed.consumeRequestId,
-        transactionId: consumed.transactionId,
-        reason: "video_image_create_failed",
-        meta: {
-          source: "video.create",
-          mode: "image",
-          duration: payload.duration,
-          aspect_ratio: payload.ratio,
-          prompt: payload.prompt || "",
-          image_url: payload.image_url || "",
-          error: String(err?.message || err || "video_image_create_failed")
-        }
-      });
-
-      if (!refunded) {
-        throw err;
-      }
+    if (!refunded) {
+      throw err;
     }
   }
+}
 
   function bindVideoPricingUI(root) {
     if (!root || root.__videoPricingBound) return;
