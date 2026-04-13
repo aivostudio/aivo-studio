@@ -1262,7 +1262,7 @@ function completeStoryGenerateIfAllSettled() {
     completeStoryGenerateIfAllSettled();
   }
 
-  function markStoryJobFailed(jobId, item, raw) {
+  async function markStoryJobFailed(jobId, item, raw) {
     const key = safeText(jobId);
     const entry = ensureStoryJobState(key, item);
     if (!entry || entry.done || entry.failed) return;
@@ -1270,7 +1270,7 @@ function completeStoryGenerateIfAllSettled() {
     entry.failed = true;
     entry.done = false;
     entry.lastResponse = raw || null;
-    entry.lastStatus = safeText(raw?.status || raw?.db_status || raw?.state).toLowerCase();
+    entry.lastStatus = safeText(raw?.status || raw?.db_status || raw?.state || raw?.error).toLowerCase();
     clearStoryJobTimer(key);
     storyPollState.failed += 1;
 
@@ -1280,9 +1280,100 @@ function completeStoryGenerateIfAllSettled() {
       raw
     });
 
+    const shouldRefund =
+      !window.__CARTOON_STORY_REFUND_DONE__ &&
+      !window.__CARTOON_STORY_REFUND_IN_FLIGHT__;
+
+    if (shouldRefund) {
+      window.__CARTOON_STORY_REFUND_IN_FLIGHT__ = true;
+
+      const refundMeta = {
+        source: "cartoon.story.poll",
+        mode: "story",
+        failed_job_id: key,
+        failed_scene_id: safeText(item?.scene_id),
+        failed_scene_title: safeText(item?.scene_title),
+        status: safeText(raw?.status || raw?.db_status || raw?.state || "error").toLowerCase(),
+        error: String(
+          raw?.error ||
+          raw?.error_reason ||
+          raw?.reason ||
+          "story_job_failed"
+        ),
+        total_jobs: Number(storyPollState.total || 0),
+        ready_jobs: Number(storyPollState.ready || 0),
+        failed_jobs: Number(storyPollState.failed || 0)
+      };
+
+      try {
+        const activeRequestId = String(window.__CARTOON_STORY_LAST_CONSUME_REQUEST_ID__ || "").trim();
+        const activeTransactionId = String(window.__CARTOON_STORY_LAST_TRANSACTION_ID__ || "").trim();
+        const activeCreditCost = Number(window.__CARTOON_STORY_LAST_CREDIT_COST__ || 0);
+        const activeCreditReason = String(window.__CARTOON_STORY_LAST_CREDIT_REASON__ || "studio_cartoon_story_generate").trim();
+
+        if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
+          const refundRes = await fetch("/api/credits/refund", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              app: "cartoon",
+              action: activeCreditReason,
+              amount: activeCreditCost,
+              request_id: activeRequestId,
+              related_transaction_id: activeTransactionId,
+              reason: "cartoon_story_job_failed",
+              meta: refundMeta
+            })
+          });
+
+          const refundData = await refundRes.json().catch(() => null);
+
+          if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+            try {
+              const creditGetRes = await fetch("/api/credits/get", {
+                credentials: "include",
+                cache: "no-store",
+                headers: { "accept": "application/json" }
+              });
+
+              const creditGetData = await creditGetRes.json().catch(() => null);
+
+              if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+                const topCreditCountEl = document.getElementById("topCreditCount");
+                if (topCreditCountEl) {
+                  topCreditCountEl.textContent = String(creditGetData.credits);
+                }
+
+                if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                  window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+                }
+              }
+            } catch (_) {}
+
+            try { window.syncCreditsUI?.({ force: true }); } catch {}
+            try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+
+            window.__CARTOON_STORY_REFUND_DONE__ = true;
+          } else {
+            try { window.toast?.error?.("Hikaye oluşturma hatası"); } catch {}
+          }
+        } else {
+          try { window.toast?.error?.("Hikaye oluşturma hatası"); } catch {}
+        }
+      } catch (refundErr) {
+        console.error("[CARTOON][STORY] poll refund failed =", refundErr);
+        try { window.toast?.error?.("Hikaye oluşturma hatası"); } catch {}
+      } finally {
+        window.__CARTOON_STORY_REFUND_IN_FLIGHT__ = false;
+      }
+    }
+
     completeStoryGenerateIfAllSettled();
   }
-
   function getStoryCharacterImage(slot) {
     const key = String(slot || "").trim();
     return state.characterImages?.[key] || null;
