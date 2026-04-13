@@ -1542,20 +1542,36 @@ document.addEventListener(
       }
     }
 
-  if (mode === "basic") {
-  const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-  const sceneKey = String(state.scene || "").trim();
+if (mode === "basic") {
+  const activeSceneBtn = root
+    ? qs('#atmScenes .smpack-choice.is-active[data-atm-scene]', root)
+    : null;
 
-  if (!activeSceneBtn || !sceneKey) {
+  const sceneKeyFromDom = String(activeSceneBtn?.dataset?.atmScene || "").trim();
+
+  const selectedEffectBtns = root
+    ? qsa('#atmEffects [data-atm-eff].is-active, #atmEffects [data-atm-eff][aria-pressed="true"]', root)
+    : [];
+
+  const selectedEffectsFromDom = selectedEffectBtns
+    .map((btn) => String(btn?.dataset?.atmEff || "").trim())
+    .filter(Boolean);
+
+  if (sceneKeyFromDom) {
+    state.scene = sceneKeyFromDom;
+  }
+
+  state.effects = selectedEffectsFromDom;
+  syncLegacyEffectsInput(root);
+
+  if (!activeSceneBtn || !sceneKeyFromDom) {
     try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
     const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
     if (firstScene) firstScene.focus();
     return;
   }
 
-  const selectedEffects = Array.isArray(state.effects) ? state.effects.filter(Boolean) : [];
-
-  if (!selectedEffects.length) {
+  if (!selectedEffectsFromDom.length) {
     try { window.toast?.info?.("En az 1 atmosfer seçmelisin."); } catch {}
     const firstEffect = document.querySelector('#atmEffects [data-atm-eff]');
     if (firstEffect) firstEffect.focus();
