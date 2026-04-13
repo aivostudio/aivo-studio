@@ -1730,11 +1730,16 @@
           return;
         }
 
-        consumed = true;
+             consumed = true;
         consumeTransactionId =
           creditData?.transaction_id ||
           creditData?.transaction?.id ||
           null;
+
+        window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ = consumeRequestId;
+        window.__CARTOON_BASIC_LAST_TRANSACTION_ID__ = consumeTransactionId || "";
+        window.__CARTOON_BASIC_LAST_CREDIT_COST__ = creditCost;
+        window.__CARTOON_BASIC_LAST_CREDIT_REASON__ = creditReason;
 
         await refreshCreditsUI();
 
