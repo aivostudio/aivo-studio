@@ -1746,7 +1746,6 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
 
       throw new Error('studio_export_timeout');
     } catch (err) {
-    } catch (err) {
       console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
 
       button.disabled = false;
