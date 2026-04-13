@@ -869,13 +869,35 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       const outs = pickVideoOutputs(j.outputs);
 
       if (ready && outs.length) {
+        const normalizedOutputs = outs.map((o) => ({
+          ...o,
+          meta: { ...(o.meta || {}), app: "video" },
+        }));
+
         window.PPE?.apply?.({
           state: "COMPLETED",
-          outputs: outs.map((o) => ({
-            ...o,
-            meta: { ...(o.meta || {}), app: "video" },
-          })),
+          outputs: normalizedOutputs,
         });
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:video:job_ready", {
+            detail: {
+              app: "video",
+              job_id,
+              status: String(j.status || "ready").toLowerCase(),
+              mode: refundCtx?.mode || "",
+              video: {
+                url:
+                  normalizedOutputs[0]?.url ||
+                  normalizedOutputs[0]?.video_url ||
+                  normalizedOutputs[0]?.archive_url ||
+                  ""
+              },
+              outputs: normalizedOutputs,
+              raw: j
+            }
+          })
+        );
 
         try { window.toast?.success?.("Video hazır"); } catch {}
         return;
@@ -902,6 +924,29 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
           });
         }
 
+        window.dispatchEvent(
+          new CustomEvent("aivo:video:job_failed", {
+            detail: {
+              app: "video",
+              job_id,
+              status: "error",
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:video:job_remove", {
+            detail: {
+              app: "video",
+              job_id,
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
         throw j.error || "video_job_error";
       }
     }
@@ -925,6 +970,29 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         }
       });
     }
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:video:job_failed", {
+        detail: {
+          app: "video",
+          job_id,
+          status: "timeout",
+          remove_placeholder: true,
+          raw: { ok: false, error: "video_poll_timeout" }
+        }
+      })
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:video:job_remove", {
+        detail: {
+          app: "video",
+          job_id,
+          remove_placeholder: true,
+          raw: { ok: false, error: "video_poll_timeout" }
+        }
+      })
+    );
 
     throw "video_poll_timeout";
   }
