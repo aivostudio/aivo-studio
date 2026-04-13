@@ -263,9 +263,13 @@ const items = rows
       return hasAudio;
     }
 
-    if (["cover", "photofx", "cartoon"].includes(appKey)) {
-      return hasImage;
-    }
+  if (["cover", "photofx"].includes(appKey)) {
+  return hasImage;
+}
+
+if (["cartoon"].includes(appKey)) {
+  return hasVideo || hasImage;
+}
 
     return hasVideo || hasImage || hasAudio;
   });
