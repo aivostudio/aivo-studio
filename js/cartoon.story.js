@@ -3080,94 +3080,172 @@ if (!selectedScenes.length) {
           return;
         }
         const creditReason = "studio_cartoon_story_generate";
+        const consumeRequestId = `cartoon-story:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
-const creditRes = await fetch("/api/credits/consume", {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "content-type": "application/json",
-    "accept": "application/json"
-  },
-  body: JSON.stringify({
-    cost: creditCost,
-    reason: creditReason
-  })
-});
+        let consumed = false;
+        let consumeTransactionId = null;
 
-let creditData = null;
-try {
-  creditData = await creditRes.json();
-} catch {
-  creditData = { ok: false, error: "non_json_response", status: creditRes.status };
-}
+        async function refreshCreditsUI() {
+          try {
+            const creditGetRes = await fetch("/api/credits/get", {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "accept": "application/json" }
+            });
 
-if (!creditRes.ok || !creditData?.ok) {
-  const to = encodeURIComponent(
-    location.pathname + location.search + location.hash
-  );
+            const creditGetData = await creditGetRes.json().catch(() => null);
 
-  location.href =
-    "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+            if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+              const topCreditCountEl = document.getElementById("topCreditCount");
+              if (topCreditCountEl) {
+                topCreditCountEl.textContent = String(creditGetData.credits);
+              }
 
-  return;
-}
+              if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+              }
+            }
+          } catch (_) {}
 
-try {
-  const creditGetRes = await fetch("/api/credits/get", {
-    credentials: "include",
-    cache: "no-store",
-    headers: { "accept": "application/json" }
-  });
+          try { window.syncCreditsUI?.({ force: true }); } catch {}
+        }
 
-  const creditGetData = await creditGetRes.json().catch(() => null);
+        async function tryRefund(reason, extraMeta = {}) {
+          if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
 
-  if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-    const topCreditCountEl = document.getElementById("topCreditCount");
-    if (topCreditCountEl) {
-      topCreditCountEl.textContent = String(creditGetData.credits);
-    }
+          try {
+            const refundRes = await fetch("/api/credits/refund", {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "content-type": "application/json",
+                "accept": "application/json"
+              },
+              body: JSON.stringify({
+                app: "cartoon",
+                action: creditReason,
+                amount: creditCost,
+                request_id: consumeRequestId,
+                related_transaction_id: consumeTransactionId,
+                reason,
+                meta: {
+                  source: "cartoon.story.create",
+                  mode: "story",
+                  flow_duration: String(state.flowDuration || "3"),
+                  selected_scene_count: Number(selectedScenes.length || 0),
+                  total_selected_duration_seconds: Number(totalSeconds || 0),
+                  include_music: safeText(state.includeMusic).toLowerCase() === "yes",
+                  story_idea: safeText(state.storyIdea),
+                  theme: safeText(state.theme),
+                  age_group: safeText(state.ageGroup),
+                  ...extraMeta
+                }
+              })
+            });
 
-    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-      window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-    }
-  }
-} catch {}
+            const refundData = await refundRes.json().catch(() => null);
 
-const payload = buildStoryPayload();
-payload.estimatedCredits = creditCost;
+            if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+              await refreshCreditsUI();
+              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              return true;
+            }
+          } catch (refundErr) {
+            console.error("[CARTOON][STORY] refund failed:", refundErr);
+          }
 
-window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
-console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
+          return false;
+        }
 
-state.isGenerating = true;
-setStoryGenerateButton(root, true);
+        const creditRes = await fetch("/api/credits/consume-ledger", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "cartoon",
+            action: creditReason,
+            cost: creditCost,
+            request_id: consumeRequestId,
+            reason: creditReason
+          })
+        });
 
-try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
-try { window.toast?.success?.("Hikaye üretimi başladı"); } catch {}
+        let creditData = null;
+        try {
+          creditData = await creditRes.json();
+        } catch {
+          creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+        }
 
-try {
-  const created = await createStoryScenesFromPayload(payload);
+        if (!creditRes.ok || !creditData?.ok) {
+          const to = encodeURIComponent(
+            location.pathname + location.search + location.hash
+          );
 
-  window.__LAST_CARTOON_STORY_CREATED__ = created;
-  console.log("[CARTOON][STORY_CREATE_OK]", created);
+          location.href =
+            "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
 
-  window.dispatchEvent(
-    new CustomEvent("aivo:cartoon:story_payload_ready", {
-      detail: {
-        payload,
-        created
-      }
-    })
-  );
-} catch (err) {
-  console.error("[CARTOON][STORY_CREATE_ERROR]", err);
-  try { window.toast?.error?.(String(err?.message || err || "story_scene_create_failed")); } catch {}
-state.isGenerating = false;
-setStoryGenerateButton(root, false);
-} finally {
-  render(root);
-}
+          return;
+        }
 
+        consumed = true;
+        consumeTransactionId =
+          creditData?.transaction_id ||
+          creditData?.transaction?.id ||
+          null;
+
+        window.__CARTOON_STORY_LAST_CONSUME_REQUEST_ID__ = consumeRequestId;
+        window.__CARTOON_STORY_LAST_TRANSACTION_ID__ = consumeTransactionId || "";
+        window.__CARTOON_STORY_LAST_CREDIT_COST__ = creditCost;
+        window.__CARTOON_STORY_LAST_CREDIT_REASON__ = creditReason;
+
+        await refreshCreditsUI();
+
+        const payload = buildStoryPayload();
+        payload.estimatedCredits = creditCost;
+
+        window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
+        console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
+
+        state.isGenerating = true;
+        setStoryGenerateButton(root, true);
+
+        try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+        try { window.toast?.success?.("Hikaye üretimi başladı"); } catch {}
+
+        try {
+          const created = await createStoryScenesFromPayload(payload);
+
+          window.__LAST_CARTOON_STORY_CREATED__ = created;
+          console.log("[CARTOON][STORY_CREATE_OK]", created);
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:cartoon:story_payload_ready", {
+              detail: {
+                payload,
+                created
+              }
+            })
+          );
+        } catch (err) {
+          console.error("[CARTOON][STORY_CREATE_ERROR]", err);
+
+          state.isGenerating = false;
+          setStoryGenerateButton(root, false);
+
+          const refunded = await tryRefund("cartoon_story_create_failed", {
+            error: String(err?.message || err || "failed")
+          });
+
+          if (!refunded) {
+            try { window.toast?.error?.(String(err?.message || err || "story_scene_create_failed")); } catch {}
+          }
+        } finally {
+          render(root);
+        }
         return;
       }
     });
