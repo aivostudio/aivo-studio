@@ -1075,27 +1075,26 @@
 .main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-inline .cartoon-upload-row--compact{
   margin:0;
 }
-/* Studio / Montaj: ses ve logo dosya adını logo gibi kısalt */
-[data-cartoon-view="studio"] .cartoon-upload-row {
-  position: relative;
+/* ===== Studio / Ses-Logo upload satırı gerçekten daralsın ===== */
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-inline{
   width: 100%;
   min-width: 0;
-  padding-right: 52px;
+  flex-wrap: nowrap;
 }
 
-[data-cartoon-view="studio"] .cartoon-upload-text {
-  display: inline-block;
-  max-width: 100%;
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-credit-inline .cartoon-upload-row--compact{
+  flex: 1 1 auto;
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
+  width: auto;
 }
 
-[data-cartoon-view="studio"] .cartoon-upload-clear {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card .cartoon-upload-text,
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-voice-upload-text],
+.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] .studio-card [data-studio-logo-upload-text]{
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
