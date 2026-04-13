@@ -1052,10 +1052,12 @@ function isAtmoPolicyBlocked(raw) {
     true
   );
 
-  // ------------------------------------------------------------
-  // 5) Basic: Scene select
-  // ------------------------------------------------------------
-  document.addEventListener("click", (e) => {
+// ------------------------------------------------------------
+// 5) Basic: Scene select — CAPTURE
+// ------------------------------------------------------------
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
@@ -1063,14 +1065,24 @@ function isAtmoPolicyBlocked(raw) {
     if (!btn) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
     const scenes = qs("#atmScenes", root);
-    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => b.classList.remove("is-active"));
-    btn.classList.add("is-active");
+    if (!scenes) return;
 
-    state.scene = btn.dataset.atmScene || state.scene;
-  });
+    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
 
+    state.scene = String(btn.dataset.atmScene || "").trim();
+
+    console.log("[ATM] scene ->", state.scene);
+  },
+  true
+);
   // ------------------------------------------------------------
   // 6) Basic: Effects multi-select
   // ------------------------------------------------------------
