@@ -759,11 +759,10 @@
 
     if (state.characterImage) total += 10;
     if (state.logoFile) total += 10;
-    if (state.audioSource === "upload" && state.audioFile) total += 10;
+    if (state.audioFile) total += 10;
 
     return total;
   }
-
   function updatePromptCount(root) {
     const input = qs("[data-cartoon-prompt-input]", root);
     const out = qs("[data-cartoon-prompt-count]", root);
@@ -1165,6 +1164,8 @@
   }
 
   function buildBasicPayload() {
+    const hasAudio = !!state.audioFile;
+
     return {
       app: "cartoon",
       mode: "basic",
@@ -1177,10 +1178,10 @@
       duration: state.duration,
       aspectRatio: state.ratio,
       style: state.style || "soft-cartoon",
-      audioSource: state.audioSource || "none",
-      audioMode: state.audioSource === "upload" ? "upload" : "none",
-      audioFileName: state.audioSource === "upload" ? state.audioFileName : "",
-      audioFileUrl: state.audioSource === "upload" ? (state.audioFileUrl || "") : "",
+      audioSource: hasAudio ? "upload" : "none",
+      audioMode: hasAudio ? "upload" : "none",
+      audioFileName: hasAudio ? state.audioFileName : "",
+      audioFileUrl: hasAudio ? (state.audioFileUrl || "") : "",
       logoFileName: state.logoFileName || "",
       logoFileUrl: state.logoFileUrl || "",
       logoPosition:
@@ -1580,12 +1581,7 @@
           }
         }
 
-        if (state.audioSource === "upload") {
-          if (!state.audioFile) {
-            try { window.toast?.info?.("Müzik seçmelisin"); } catch {}
-            return;
-          }
-
+          if (state.audioFile) {
           if (
             state.audioFileUploadStatus === "uploading" &&
             state.audioFileUploadPromise
@@ -1602,7 +1598,6 @@
             return;
           }
         }
-
         const policyText = [
           payload.extraPrompt,
           payload.style,
@@ -1919,12 +1914,12 @@
         return;
       }
 
-      const audioSource = e.target.closest("[data-audio-source]");
+        const audioSource = e.target.closest("[data-audio-source]");
       if (audioSource && root.contains(audioSource)) {
-        state.audioSource = audioSource.value || "none";
+        state.audioSource = state.audioFile ? "upload" : "none";
 
-        if (state.audioSource !== "upload") {
-          clearBasicAudioFile(root, { silent: true });
+        if (audioSource.value !== state.audioSource) {
+          audioSource.value = state.audioSource;
         }
 
         resetBasicPolicyUI(root);
@@ -1986,9 +1981,7 @@
       const audioUpload = e.target.closest("[data-audio-upload]");
       if (audioUpload && root.contains(audioUpload)) {
         const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
-        if (state.audioSource !== "upload") {
-          state.audioSource = "upload";
-        }
+             state.audioSource = file ? "upload" : "none";
 
         state.audioFile = file;
         state.audioFileName = file ? file.name : "";
