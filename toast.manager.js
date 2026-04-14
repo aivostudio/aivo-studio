@@ -129,16 +129,18 @@ if (activeCta) {
   x.textContent = "✕";
   x.addEventListener("click", () => dismiss(id, false));
 
-  el.appendChild(icon);
-  el.appendChild(body);
-  el.appendChild(x);
+el.appendChild(icon);
+el.appendChild(body);
+el.appendChild(x);
 
-  container.prepend(el);
+active.slice().forEach(t => dismiss(t.id, true));
+active = [];
 
-  const item = { id, el, timer: null };
-  active.push(item);
-  clampActive();
+container.innerHTML = '';
+container.prepend(el);
 
+const item = { id, el, timer: null };
+active.push(item);
   requestAnimationFrame(() => el.classList.add("is-in"));
 
   const dur = duration ?? DEFAULTS.duration;
