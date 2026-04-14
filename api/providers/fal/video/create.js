@@ -101,20 +101,24 @@ export default async function handler(req, res) {
 
   // 🔑 Eğer create-atmo iç çağrısıysa job_id gelir; yeni job açmak YASAK.
   const incomingJobId = body.job_id ? String(body.job_id) : null;
+const {
+  app = "atmo",
+  prompt,
+  duration = 10,
+  generate_audio = false,
+  shot_type = "customize",
+  negative_prompt = "blur, distort, and low quality",
+  cfg_scale = 0.5,
+  multi_prompt = null,
+  voice_ids = null,
+  meta = null,
+} = body;
 
-  const {
-    app = "atmo",
-    prompt,
-    duration = 10,
-    aspect_ratio = "16:9",
-    generate_audio = false, // ✅ default maliyetsiz: ses yok
-    shot_type = "customize",
-    negative_prompt = "blur, distort, and low quality",
-    cfg_scale = 0.5,
-    multi_prompt = null,
-    voice_ids = null,
-    meta = null,
-  } = body;
+const aspect_ratio = String(
+  body?.aspect_ratio ||
+  body?.aspect ||
+  "16:9"
+).trim();
 
 // ✅ BASIC MODE için structured seçimlerden prompt üret
 let promptSafe = prompt;
