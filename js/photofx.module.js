@@ -1411,8 +1411,7 @@ const PFX_HARD_BLOCK_PATTERNS = [
       transitionSpeed: qs("#pfxTransitionSpeed", root)?.value || "normal",
       zoomLevel: qs("#pfxZoomLevel", root)?.value || "normal",
       logoPosition: qs("#pfxLogoPosition", root)?.value || "bottom-right",
-      includeAudio:
-        String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
+       includeAudio: !!state.audioFile,
       imageFile: state.imageFile || null,
       endImageFile: state.endImageFile || null,
       logoFile: state.logoFile || null,
