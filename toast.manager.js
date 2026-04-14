@@ -54,62 +54,103 @@
     setTimeout(finalize, 320);
   }
 
-  function makeToast({ variant, title, message, duration }) {
-    ensureContainer();
+function makeToast({ variant, title, message, duration }) {
+  ensureContainer();
 
-    const id = String(++uid);
-    const el = document.createElement("div");
-    el.className = "aivo-toast";
-    el.dataset.variant = variant;
-    el.dataset.id = id;
+  const activeCta =
+    document.querySelector(
+      'button[aria-busy="true"], button.is-loading, button.loading, .primary-btn[disabled][data-generate], .aivoBtnPrimary[disabled][data-generate]'
+    ) ||
+    [...document.querySelectorAll('button, .btn, [role="button"]')].find((el) => {
+      if (!el || el.offsetParent === null) return false;
+      const txt = (el.textContent || '').trim();
+      return /üretiliyor|oluşturuluyor|olusturuluyor|hazırlanıyor|hazirlaniyor/i.test(txt);
+    }) ||
+    document.activeElement?.closest?.('button, .btn, [role="button"]');
 
-    const icon = document.createElement("div");
-    icon.className = "aivo-toast__icon";
-    icon.textContent = ICONS[variant] || "•";
+  if (activeCta) {
+    const rect = activeCta.getBoundingClientRect();
+    const centerX = rect.left + (rect.width / 2);
+    const topY = rect.bottom + 12;
 
-   const body = document.createElement("div");
-body.className = "aivo-toast__body"; // ✅ EKLE
-
-    const h = document.createElement("p");
-    h.className = "aivo-toast__title";
-    h.textContent =
-      title ||
-      (variant === "success" ? "Başarılı" :
-       variant === "error" ? "Hata" :
-       variant === "warning" ? "Uyarı" : "Bilgi");
-
-    const p = document.createElement("p");
-    p.className = "aivo-toast__msg";
-    p.textContent = message || "";
-
-    body.appendChild(h);
-    if (message) body.appendChild(p);
-
-    const x = document.createElement("button");
-    x.type = "button";
-    x.className = "aivo-toast__x";
-    x.textContent = "✕";
-    x.addEventListener("click", () => dismiss(id, false));
-
-    el.appendChild(icon);
-    el.appendChild(body);
-    el.appendChild(x);
-
-    container.prepend(el);
-
-    const item = { id, el, timer: null };
-    active.push(item);
-    clampActive();
-
-    requestAnimationFrame(() => el.classList.add("is-in"));
-
-    const dur = duration ?? DEFAULTS.duration;
-    if (dur > 0) {
-      item.timer = setTimeout(() => dismiss(id, false), dur);
-    }
-
-    return { id, dismiss: () => dismiss(id, false) };
+    container.style.position = 'fixed';
+    container.style.left = `${centerX}px`;
+    container.style.top = `${topY}px`;
+    container.style.bottom = 'auto';
+    container.style.right = 'auto';
+    container.style.transform = 'translateX(-50%)';
+    container.style.zIndex = '999999';
+    container.style.pointerEvents = 'none';
+    container.style.width = 'min(520px, calc(100vw - 24px))';
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+  } else {
+    container.style.position = 'fixed';
+    container.style.left = '50%';
+    container.style.bottom = '16px';
+    container.style.top = 'auto';
+    container.style.right = 'auto';
+    container.style.transform = 'translateX(-50%)';
+    container.style.zIndex = '999999';
+    container.style.pointerEvents = 'none';
+    container.style.width = 'min(520px, calc(100vw - 24px))';
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
   }
+
+  const id = String(++uid);
+  const el = document.createElement("div");
+  el.className = "aivo-toast";
+  el.dataset.variant = variant;
+  el.dataset.id = id;
+
+  const icon = document.createElement("div");
+  icon.className = "aivo-toast__icon";
+  icon.textContent = ICONS[variant] || "•";
+
+  const body = document.createElement("div");
+  body.className = "aivo-toast__body";
+
+  const h = document.createElement("p");
+  h.className = "aivo-toast__title";
+  h.textContent =
+    title ||
+    (variant === "success" ? "Başarılı" :
+     variant === "error" ? "Hata" :
+     variant === "warning" ? "Uyarı" : "Bilgi");
+
+  const p = document.createElement("p");
+  p.className = "aivo-toast__msg";
+  p.textContent = message || "";
+
+  body.appendChild(h);
+  if (message) body.appendChild(p);
+
+  const x = document.createElement("button");
+  x.type = "button";
+  x.className = "aivo-toast__x";
+  x.textContent = "✕";
+  x.addEventListener("click", () => dismiss(id, false));
+
+  el.appendChild(icon);
+  el.appendChild(body);
+  el.appendChild(x);
+
+  container.prepend(el);
+
+  const item = { id, el, timer: null };
+  active.push(item);
+  clampActive();
+
+  requestAnimationFrame(() => el.classList.add("is-in"));
+
+  const dur = duration ?? DEFAULTS.duration;
+  if (dur > 0) {
+    item.timer = setTimeout(() => dismiss(id, false), dur);
+  }
+
+  return { id, dismiss: () => dismiss(id, false) };
+}
 
   function normalizeArgs(a, b, c) {
     if (typeof a === "object" && a) return a;
