@@ -16,16 +16,29 @@
   let active = [];
   let uid = 0;
 
-  function ensureContainer() {
-    if (container) return container;
-    container = document.getElementById("aivoToasts");
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "aivoToasts";
-      document.body.appendChild(container);
-    }
+function ensureContainer() {
+  const host =
+    document.querySelector('.pfxActions') ||
+    document.querySelector('.musicActions') ||
+    document.querySelector('.mfxActions') ||
+    document.body;
+
+  let found = document.getElementById("aivoToasts");
+  if (found && found.parentNode !== host) {
+    found.parentNode.removeChild(found);
+    found = null;
+  }
+
+  if (found) {
+    container = found;
     return container;
   }
+
+  container = document.createElement("div");
+  container.id = "aivoToasts";
+  host.appendChild(container);
+  return container;
+}
 
   function clampActive() {
     while (active.length > DEFAULTS.maxToasts) {
