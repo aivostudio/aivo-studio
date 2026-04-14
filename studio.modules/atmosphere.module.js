@@ -79,54 +79,136 @@
     });
   }
 
-   async function withGenerateLoading(btn, run, root) {
-    if (!btn) return;
-    if (btn.__atmBusy) return;
-    btn.__atmBusy = true;
+async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
+  const startedAt = Date.now();
+  let tries = 0;
 
-    const r = root || getAtmoPanelRoot() || document.body;
-
-    btn.disabled = true;
-    btn.classList.add("is-loading");
-    btn.setAttribute("aria-busy", "true");
-    if (r) r.dataset.atmBusy = "1";
-    btn.classList.add("is-pressed");
-
-    const prevText = typeof btn.textContent === "string" ? btn.textContent : "";
-    if (prevText) btn.textContent = "Üretiliyor…";
-
-    const startedAt = Date.now();
+  while ((Date.now() - startedAt) < timeoutMs && tries < 60) {
+    tries += 1;
 
     try {
-      try { window.toast?.success?.("Atmosfer video üretimi başladı"); } catch {}
+      const rr = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`, {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
 
-      const res = await Promise.resolve().then(run);
-      const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
-      const evt = await waitForAtmoJobCreated(remainingForEvent);
+      const jj = await rr.json().catch(() => null);
+      console.log("[ATM][FINAL POLL]", jj);
 
-      const elapsed = Date.now() - startedAt;
-      if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
+      if (jj && jj.ok !== false) {
+        const normalizedStatus = String(
+          jj?.status ||
+          jj?.db_status ||
+          jj?.state ||
+          ""
+        ).trim().toLowerCase();
 
-      
+        const readyVideoUrl = String(
+          jj?.video?.url ||
+          jj?.video_url ||
+          ""
+        ).trim();
 
-      return { ok: true, res, evt };
-    } catch (err) {
-      console.error("[ATM] generate error:", err);
-      try { window.toast?.error?.(String(err?.message || err || "generate_error")); } catch {}
-      return { ok: false, error: err };
-    } finally {
-      try {
-        btn.disabled = false;
-        btn.classList.remove("is-loading", "is-pressed");
-        btn.removeAttribute("aria-busy");
-        if (prevText) btn.textContent = prevText;
-      } catch {}
+        const hasReadyOutput =
+          Array.isArray(jj?.outputs) &&
+          jj.outputs.some((o) => {
+            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+            const u = String(o?.url || o?.video_url || o?.image_url || "").trim();
+            return !!u && (t === "video" || t === "image");
+          });
 
-      try { if (r && r.dataset) delete r.dataset.atmBusy; } catch {}
-      btn.__atmBusy = false;
+        if (
+          ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
+          (readyVideoUrl || hasReadyOutput)
+        ) {
+          window.__LAST_ATMO_STATUS__ = jj;
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:atmo:job_ready", {
+              detail: {
+                job_id: jobId,
+                status: normalizedStatus,
+                video: readyVideoUrl ? { url: readyVideoUrl } : null,
+                outputs: jj.outputs || [],
+                raw: jj
+              }
+            })
+          );
+
+          return { ok: true, status: jj };
+        }
+
+        if (["error", "failed", "cancelled", "canceled"].includes(normalizedStatus)) {
+          return { ok: false, error: jj };
+        }
+      }
+    } catch (pollErr) {
+      console.error("[ATM][FINAL POLL ERROR]", pollErr);
     }
+
+    await sleep(3000);
   }
 
+  return { ok: false, error: "atmo_final_poll_timeout" };
+}
+
+async function withGenerateLoading(btn, run, root) {
+  if (!btn) return;
+  if (btn.__atmBusy) return;
+  btn.__atmBusy = true;
+
+  const r = root || getAtmoPanelRoot() || document.body;
+
+  btn.disabled = true;
+  btn.classList.add("is-loading");
+  btn.setAttribute("aria-busy", "true");
+  if (r) r.dataset.atmBusy = "1";
+  btn.classList.add("is-pressed");
+
+  const prevText = typeof btn.textContent === "string" ? btn.textContent : "";
+  if (prevText) btn.textContent = "Üretiliyor…";
+
+  const startedAt = Date.now();
+
+  try {
+    try { window.toast?.success?.("Atmosfer video üretimi başladı"); } catch {}
+
+    const res = await Promise.resolve().then(run);
+    const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
+    const evt = await waitForAtmoJobCreated(remainingForEvent);
+
+    const createdJobId = String(
+      res?.job_id ||
+      evt?.job_id ||
+      evt?.detail?.job_id ||
+      ""
+    ).trim();
+
+    if (createdJobId) {
+      await waitForAtmoFinalReady(createdJobId, 90000);
+    }
+
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
+
+    return { ok: true, res, evt };
+  } catch (err) {
+    console.error("[ATM] generate error:", err);
+    try { window.toast?.error?.(String(err?.message || err || "generate_error")); } catch {}
+    return { ok: false, error: err };
+  } finally {
+    try {
+      btn.disabled = false;
+      btn.classList.remove("is-loading", "is-pressed");
+      btn.removeAttribute("aria-busy");
+      if (prevText) btn.textContent = prevText;
+    } catch {}
+
+    try { if (r && r.dataset) delete r.dataset.atmBusy; } catch {}
+    btn.__atmBusy = false;
+  }
+}
   // ------------------------------------------------------------
   // 1) Scope finder
   // ------------------------------------------------------------
