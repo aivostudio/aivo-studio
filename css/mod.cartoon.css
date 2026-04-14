@@ -3579,3 +3579,35 @@
 [data-cartoon-view="basic"] .cartoon-field {
   min-width: 0;
 }
+/* Basic mode - alt 3 upload alanini simetrik ortala */
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] {
+  justify-items: center;
+  column-gap: 24px;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] > .cartoon-field {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  justify-content: center;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] > .cartoon-field > div {
+  width: 100%;
+  align-items: center !important;
+  text-align: center;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] .cartoon-credit-inline {
+  width: 100%;
+  align-items: center !important;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] .cartoon-upload-row {
+  justify-content: center;
+}
+
+.main-panel[data-module="cartoon"] .cartoon-mode-view[data-cartoon-view="basic"] .cartoon-field--full[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] .cartoon-upload-text {
+  width: 100%;
+  text-align: center;
+}
