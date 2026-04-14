@@ -28,13 +28,15 @@ function pick(obj, paths) {
   return null;
 }
 
-function normalizeStatus(rawStatus, videoUrl) {
+function normalizeStatus(rawStatus, deliveredAssetUrl) {
   const st = String(rawStatus || "").toUpperCase();
 
-  if (videoUrl) return "COMPLETED";
+  // Gerçek teslim asset varsa başarıdır
+  if (deliveredAssetUrl) return "COMPLETED";
 
+  // Provider completed dese bile teslim asset yoksa başarı sayma
   if (["COMPLETED", "COMPLETE", "SUCCEEDED", "READY", "DONE"].includes(st))
-    return "COMPLETED";
+    return "FAILED";
 
   if (["IN_PROGRESS", "PROCESSING", "RUNNING", "STARTED"].includes(st))
     return "RUNNING";
