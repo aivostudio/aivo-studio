@@ -181,7 +181,7 @@ const effectPromptMap = {
 
   if (body.camera) parts.push(`Camera style: ${body.camera}.`);
   if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
- if (aspect_ratio) parts.push(`Aspect ratio: ${aspect_ratio}.`);
+  if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
 
   if (!parts.length) {
     return res.status(400).json({ ok: false, error: "missing_prompt" });
