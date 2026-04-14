@@ -78,7 +78,6 @@
       window.addEventListener("aivo:atmo:job_created", onEvt);
     });
   }
-
 async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
   const startedAt = Date.now();
   let tries = 0;
@@ -104,24 +103,42 @@ async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
           ""
         ).trim().toLowerCase();
 
-        const readyVideoUrl = String(
-          jj?.video?.url ||
-          jj?.video_url ||
+        const outputs = Array.isArray(jj?.outputs) ? jj.outputs : [];
+
+        const finalOutput = outputs.find((o) => {
+          const type = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+          const url = String(
+            o?.archive_url ||
+            o?.url ||
+            o?.video_url ||
+            o?.raw_url ||
+            o?.src ||
+            ""
+          ).trim();
+
+          return type === "video" && o?.meta?.is_final === true && !!url;
+        });
+
+        const finalOutputUrl = String(
+          finalOutput?.archive_url ||
+          finalOutput?.url ||
+          finalOutput?.video_url ||
+          finalOutput?.raw_url ||
+          finalOutput?.src ||
           ""
         ).trim();
 
-        const hasReadyOutput =
-          Array.isArray(jj?.outputs) &&
-          jj.outputs.some((o) => {
-            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
-            const u = String(o?.url || o?.video_url || o?.image_url || "").trim();
-            return !!u && (t === "video" || t === "image");
-          });
+        const finalVideoUrl = String(
+          jj?.final_video_url ||
+          jj?.meta?.final_video_url ||
+          finalOutputUrl ||
+          ""
+        ).trim();
 
-        if (
-          ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
-          (readyVideoUrl || hasReadyOutput)
-        ) {
+        const isReadyStatus = ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus);
+        const hasTrueFinal = !!finalVideoUrl;
+
+        if (isReadyStatus && hasTrueFinal) {
           window.__LAST_ATMO_STATUS__ = jj;
 
           window.dispatchEvent(
@@ -129,8 +146,8 @@ async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
               detail: {
                 job_id: jobId,
                 status: normalizedStatus,
-                video: readyVideoUrl ? { url: readyVideoUrl } : null,
-                outputs: jj.outputs || [],
+                video: { url: finalVideoUrl },
+                outputs: outputs,
                 raw: jj
               }
             })
