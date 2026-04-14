@@ -1954,11 +1954,7 @@ try {
     const fallbackFirstVideo =
       outputs.find((x) => normType(x?.type) === "video") || null;
 
-    const outVideoUrl =
-      finalMetaUrl ||
-      finalFromOutputs ||
-      (fallbackFirstVideo ? pickUrl(fallbackFirstVideo) : null);
-
+    const outVideoUrl = finalMetaUrl || finalFromOutputs || (fallbackFirstVideo ? pickUrl(fallbackFirstVideo) : null);
     const outVideo = outVideoUrl ? { url: outVideoUrl } : null;
 
     const outAudio =
@@ -1966,61 +1962,46 @@ try {
 
     const outImage =
       outputs.find((x) => normType(x?.type) === "image") || null;
-
+    
     const responseMeta = {
-      ...(job?.meta || {}),
-      final_video_url:
-        job?.meta?.final_video_url ||
-        outVideoUrl ||
-        null,
-      preview_video_url:
-        job?.meta?.preview_video_url ||
-        pickVideoByVariant(outputs, "preview") ||
-        null,
-      muxed_url:
-        job?.meta?.muxed_url ||
-        pickVideoByVariant(outputs, "mux") ||
-        null,
-      logo_overlay_url:
-        job?.meta?.logo_overlay_url ||
-        pickVideoByVariant(outputs, "logo_overlay") ||
-        null,
-    };
+  ...(job?.meta || {}),
+  final_video_url:
+    job?.meta?.final_video_url ||
+    outVideoUrl ||
+    null,
+  preview_video_url:
+    job?.meta?.preview_video_url ||
+    pickVideoByVariant(outputs, "preview") ||
+    null,
+  muxed_url:
+    job?.meta?.muxed_url ||
+    pickVideoByVariant(outputs, "mux") ||
+    null,
+  logo_overlay_url:
+    job?.meta?.logo_overlay_url ||
+    pickVideoByVariant(outputs, "logo_overlay") ||
+    null,
+};
 
     const failureReason =
       job?.meta?.runway?.failure ||
       job?.meta?.fal?.failure ||
       job?.meta?.failure ||
       null;
-
-    const dbStatusLower = String(job.status || "").toLowerCase();
-    const hasAnyOutput = Array.isArray(outputs) && outputs.length > 0;
-    const hasRenderableVideo = !!outVideoUrl;
-    const hasFinalVideo = !!String(responseMeta.final_video_url || "").trim();
-
-    const responseStatus =
-      dbStatusLower === "error"
-        ? "error"
-        : dbStatusLower === "done" && (hasRenderableVideo || hasFinalVideo || hasAnyOutput)
-          ? "ready"
-          : "processing";
-
     console.log("[JOBS_STATUS_RESPONSE_DEBUG]", JSON.stringify({
-      job_id,
-      db_status: job.status,
-      response_status: responseStatus,
-      final_video_url: job?.meta?.final_video_url || null,
-      outputs_count: Array.isArray(outputs) ? outputs.length : 0,
-      first_output: Array.isArray(outputs) && outputs[0] ? outputs[0] : null,
-      response_video_url: outVideoUrl || null
-    }, null, 2));
-
+  job_id,
+  db_status: job.status,
+  final_video_url: job?.meta?.final_video_url || null,
+  outputs_count: Array.isArray(outputs) ? outputs.length : 0,
+  first_output: Array.isArray(outputs) && outputs[0] ? outputs[0] : null,
+  response_video_url: outVideoUrl || null
+}, null, 2));
     return res.status(200).json({
       ok: true,
       job_id,
-      status: responseStatus,
+      status: toApiStatus(job.status),
       error_reason:
-        dbStatusLower === "error"
+        String(job.status).toLowerCase() === "error"
           ? failureReason || "provider_failed"
           : null,
       video: outVideo,
