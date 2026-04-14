@@ -56,44 +56,17 @@
 
 function makeToast({ variant, title, message, duration }) {
   ensureContainer();
-const activeCta = document.querySelector(
-  'button[data-generate][aria-busy="true"], ' +
-  'button[data-generate].is-loading, ' +
-  'button[data-generate].loading, ' +
-  'button[data-generate][disabled], ' +
-  '.primary-btn[data-generate][disabled], ' +
-  '.aivoBtnPrimary[data-generate][disabled]'
-);
-
-if (activeCta) {
-  const rect = activeCta.getBoundingClientRect();
-  const centerX = rect.left + (rect.width / 2);
-  const topY = rect.bottom + 12;
-
-  container.style.position = 'fixed';
-  container.style.left = `${centerX}px`;
-  container.style.top = `${topY}px`;
-  container.style.bottom = 'auto';
-  container.style.right = 'auto';
-  container.style.transform = 'translateX(-50%)';
-  container.style.zIndex = '999999';
-  container.style.pointerEvents = 'none';
-  container.style.width = 'min(520px, calc(100vw - 24px))';
-  container.style.display = 'flex';
-  container.style.justifyContent = 'center';
-} else {
-  container.style.position = 'fixed';
-  container.style.left = '50%';
-  container.style.bottom = '16px';
-  container.style.top = 'auto';
-  container.style.right = 'auto';
-  container.style.transform = 'translateX(-50%)';
-  container.style.zIndex = '999999';
-  container.style.pointerEvents = 'none';
-  container.style.width = 'min(520px, calc(100vw - 24px))';
-  container.style.display = 'flex';
-  container.style.justifyContent = 'center';
-}
+container.style.position = 'fixed';
+container.style.left = '50%';
+container.style.bottom = '22px';
+container.style.top = 'auto';
+container.style.right = 'auto';
+container.style.transform = 'translateX(-50%)';
+container.style.zIndex = '999999';
+container.style.pointerEvents = 'none';
+container.style.width = 'min(520px, calc(100vw - 24px))';
+container.style.display = 'flex';
+container.style.justifyContent = 'center';
 
   const id = String(++uid);
   const el = document.createElement("div");
