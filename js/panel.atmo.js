@@ -1149,147 +1149,224 @@ const onJobCreated = (e) => {
       });
     }
 
-    async function pollFalOnce(rid, promptMaybe) {
-      if (destroyed) return;
-      rid = safeStr(rid);
-      if (!rid) return;
+async function pollFalOnce(rid, promptMaybe) {
+  if (destroyed) return;
+  rid = safeStr(rid);
+  if (!rid) return;
 
-      let data;
-      try {
-        const r = await fetch(STATUS_URL(rid), { credentials: "include" });
-        data = await r.json();
-      } catch {
-        setHeaderMeta("Bağlantı sorunu");
-        return;
+  const existing = (state.ephemerals || []).find(
+    (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
+  );
+
+  const jobId = safeStr(existing?.job_id || "");
+  if (!jobId) {
+    setHeaderMeta("İşleniyor…");
+    return;
+  }
+
+  let providerData = null;
+  try {
+    const providerRes = await fetch(STATUS_URL(rid), { credentials: "include" });
+    providerData = await providerRes.json().catch(() => null);
+  } catch {
+    setHeaderMeta("Bağlantı sorunu");
+    return;
+  }
+
+  const providerStatus = safeStr(
+    providerData?.status || providerData?.state || providerData?.result?.status
+  ).toLowerCase();
+
+  if (providerStatus.includes("fail") || providerStatus === "error") {
+    state.ephemerals = [
+      {
+        ...(existing || {}),
+        job_id: jobId || `tmp_${rid}`,
+        status: "ERROR",
+        db_status: "error",
+        state: "ERROR",
+        created_at: existing?.created_at || Date.now(),
+        prompt: safeStr(existing?.prompt || promptMaybe || ""),
+        _fresh: false,
+        meta: {
+          ...(existing?.meta || {}),
+          app: APP_KEY,
+          request_id: rid,
+        },
+        outputs: Array.isArray(existing?.outputs) ? existing.outputs : [],
+      },
+      ...(state.ephemerals || []).filter((x) => !sameJob(x, existing)),
+    ];
+
+    render();
+    setHeaderMeta("Hata");
+    if (timer) clearInterval(timer);
+    timer = null;
+    return;
+  }
+
+  let finalData = null;
+  try {
+    const finalRes = await fetch(
+      `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`,
+      {
+        credentials: "include",
+        cache: "no-store",
+        headers: { accept: "application/json" },
       }
+    );
 
-      const st = safeStr(
-        data?.status || data?.state || data?.result?.status
-      ).toLowerCase();
+    finalData = await finalRes.json().catch(() => null);
+  } catch {
+    setHeaderMeta("İşleniyor…");
+    return;
+  }
 
-      if (st.includes("fail") || st === "error") {
-        const existing = (state.ephemerals || []).find(
-          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
-        );
+  const finalStatus = safeStr(
+    finalData?.status || finalData?.db_status || finalData?.state
+  ).toLowerCase();
 
-        if (existing) {
-          state.ephemerals = [
-            {
-              ...existing,
-              status: "ERROR",
-              db_status: "error",
-              state: "ERROR",
-            },
-            ...(state.ephemerals || []).filter((x) => !sameJob(x, existing)),
-          ];
-          render();
-        }
+  const finalOutputs = Array.isArray(finalData?.outputs) ? finalData.outputs : [];
 
-        setHeaderMeta("Hata");
-        return;
-      }
+  const finalOutput = finalOutputs.find(
+    (o) => isVideoOutput(o) && o?.meta?.is_final === true
+  );
 
-      if (
-        st.includes("complete") ||
-        st.includes("success") ||
-        st === "succeeded"
-      ) {
-        const url = pickVideoUrl(data);
+  const finalizedVariant = finalOutputs.find(
+    (o) => isVideoOutput(o) && outputVariant(o) === "finalized"
+  );
 
-        if (!url) {
-          setHeaderMeta("Tamamlandı (url yok)");
-          return;
-        }
+  const finalUrl = safeStr(
+    finalOutput?.url ||
+    finalizedVariant?.url ||
+    finalData?.video?.url ||
+    finalData?.final_video_url ||
+    finalData?.meta?.final_video_url ||
+    finalData?.meta?.logo_overlay_url ||
+    ""
+  );
 
-        const playbackResolved = resolvePlaybackUrl(url);
-        const playable = await waitUntilPlayable(playbackResolved, 12000);
+  const finalReady =
+    ["ready", "done", "completed", "complete", "succeeded"].includes(finalStatus) &&
+    !!finalUrl;
 
-        if (!playable) {
-          setHeaderMeta("İşleniyor…");
-          return;
-        }
+  if (!finalReady) {
+    setHeaderMeta("İşleniyor…");
+    return;
+  }
 
-        playableUrls.add(playbackResolved);
-        setHeaderMeta("Tamamlandı");
+  const playbackResolved = resolvePlaybackUrl(finalUrl);
+  const playable = await waitUntilPlayable(playbackResolved, 12000);
 
-        const existing = (state.ephemerals || []).find(
-          (x) => safeStr(x?.meta?.request_id || x?.request_id) === rid
-        );
+  if (!playable) {
+    setHeaderMeta("İşleniyor…");
+    return;
+  }
 
-        const nextFresh = {
-          job_id: safeStr(existing?.job_id) || `tmp_${rid}`,
-          url,
-          status: "DONE",
-          db_status: "done",
-          state: "COMPLETED",
-          created_at: existing?.created_at || Date.now(),
-          prompt: safeStr(existing?.prompt || promptMaybe || ""),
-          _fresh: true,
+  playableUrls.add(playbackResolved);
+  setHeaderMeta("Tamamlandı");
+
+  const nextFresh = {
+    job_id: jobId,
+    url: finalUrl,
+    status: "DONE",
+    db_status: "done",
+    state: "COMPLETED",
+    created_at: existing?.created_at || Date.now(),
+    prompt: safeStr(
+      existing?.prompt ||
+      finalData?.prompt ||
+      finalData?.meta?.prompt ||
+      promptMaybe ||
+      ""
+    ),
+    _fresh: true,
+    meta: {
+      ...(existing?.meta || {}),
+      ...(finalData?.meta || {}),
+      app: APP_KEY,
+      provider: safeStr(
+        finalData?.provider ||
+        finalData?.meta?.provider ||
+        existing?.meta?.provider ||
+        "Atmos"
+      ),
+      request_id: rid,
+      aspect_ratio: safeStr(
+        finalData?.aspect_ratio ||
+        finalData?.meta?.aspect_ratio ||
+        existing?.meta?.aspect_ratio ||
+        ""
+      ),
+    },
+    outputs: finalOutputs,
+  };
+
+  state.ephemerals = [
+    nextFresh,
+    ...(state.ephemerals || []).filter((x) => !sameJob(x, existing)),
+  ];
+
+  render();
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("aivo:atmo:job_ready", {
+        detail: {
+          app: "atmo",
+          job_id: jobId,
+          request_id: rid,
+          status: finalStatus || "completed",
+          video: { url: finalUrl },
+          outputs: finalOutputs.length
+            ? finalOutputs
+            : [{ type: "video", url: finalUrl, meta: { app: "atmo", is_final: true } }],
+          raw: finalData,
           meta: {
+            ...(finalData?.meta || {}),
             app: APP_KEY,
-            provider: safeStr(existing?.meta?.provider || "Atmos"),
-            request_id: rid,
+            provider: safeStr(
+              finalData?.provider ||
+              finalData?.meta?.provider ||
+              existing?.meta?.provider ||
+              "Atmos"
+            ),
+            prompt: safeStr(
+              nextFresh.prompt ||
+              finalData?.meta?.prompt ||
+              promptMaybe ||
+              ""
+            ),
             aspect_ratio: safeStr(
-              data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
+              finalData?.aspect_ratio ||
+              finalData?.meta?.aspect_ratio ||
+              existing?.meta?.aspect_ratio ||
+              ""
             ),
           },
-          outputs: [],
-        };
+        },
+      })
+    );
+  } catch {}
 
-        state.ephemerals = [
-          nextFresh,
-          ...(state.ephemerals || []).filter((x) => !sameJob(x, nextFresh)),
-        ];
-
-        render();
-
-        try {
-          window.dispatchEvent(
-            new CustomEvent("aivo:atmo:job_ready", {
-              detail: {
-                app: "atmo",
-                job_id: safeStr(existing?.job_id || data?.job_id),
-                request_id: rid,
-                status: "completed",
-                video: { url },
-                outputs: Array.isArray(data?.outputs)
-                  ? data.outputs
-                  : [{ type: "video", url, meta: { app: "atmo", is_final: true } }],
-                raw: data,
-                meta: {
-                  app: "atmo",
-                  provider: safeStr(existing?.meta?.provider || "Atmos"),
-                  prompt: safeStr(existing?.prompt || promptMaybe || ""),
-                  aspect_ratio: safeStr(
-                    data?.aspect_ratio || existing?.meta?.aspect_ratio || ""
-                  ),
-                },
-              },
-            })
-          );
-        } catch {}
-
-        try {
-          if (window.PPE && typeof window.PPE.apply === "function") {
-            window.PPE.apply({
-              outputs: [{ type: "video", url, src: url, meta: { app: APP_KEY } }],
-              meta: { app: APP_KEY, request_id: rid },
-            });
-          }
-        } catch {}
-
-        try {
-          db && db.hydrate(true);
-        } catch {}
-
-        if (timer) clearInterval(timer);
-        timer = null;
-        return;
-      }
-
-      setHeaderMeta("İşleniyor…");
+  try {
+    if (window.PPE && typeof window.PPE.apply === "function") {
+      window.PPE.apply({
+        outputs: finalOutputs.length
+          ? finalOutputs
+          : [{ type: "video", url: finalUrl, src: finalUrl, meta: { app: APP_KEY, is_final: true } }],
+        meta: { app: APP_KEY, request_id: rid, job_id: jobId },
+      });
     }
+  } catch {}
 
+  try {
+    db && db.hydrate(true);
+  } catch {}
+
+  if (timer) clearInterval(timer);
+  timer = null;
+}
    
     render();
 
