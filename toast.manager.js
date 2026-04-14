@@ -17,16 +17,16 @@
   let uid = 0;
 
 function ensureContainer() {
-  const activeButton = [...document.querySelectorAll('button, .btn, [role="button"]')].find(el => {
-    if (!el || el.offsetParent === null) return false;
-    const txt = (el.textContent || '').trim();
-    return /üretiliyor|olusturuluyor|oluşturuluyor|hazirlaniyor|hazırlanıyor/i.test(txt);
-  });
+ const activeButton = [...document.querySelectorAll('button, .btn, [role="button"]')].find(el => {
+  if (!el || el.offsetParent === null) return false;
+  const txt = (el.textContent || '').trim();
+  return /üretiliyor|olusturuluyor|oluşturuluyor|hazirlaniyor|hazırlanıyor/i.test(txt);
+});
 
-  const host =
-    activeButton?.parentElement ||
-    activeButton?.closest('.pfxActions, .musicActions, .mfxActions, .actions, .moduleActions, form, [data-module]') ||
-    document.body;
+const host =
+  activeButton?.closest('[data-module], section, .page, .module, .studioPage, .studioSection') ||
+  activeButton?.closest('.pfxPage, .musicPage, .mfxPage') ||
+  document.body;
 
   let found = document.getElementById("aivoToasts");
 
