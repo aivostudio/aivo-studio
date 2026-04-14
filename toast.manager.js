@@ -17,29 +17,31 @@
   let uid = 0;
 
 function ensureContainer() {
+  const activeButton = [...document.querySelectorAll('button, .btn, [role="button"]')].find(el => {
+    if (!el || el.offsetParent === null) return false;
+    const txt = (el.textContent || '').trim();
+    return /üretiliyor|olusturuluyor|oluşturuluyor|hazirlaniyor|hazırlanıyor/i.test(txt);
+  });
+
   const host =
-    document.querySelector('.pfxActions') ||
-    document.querySelector('.musicActions') ||
-    document.querySelector('.mfxActions') ||
+    activeButton?.parentElement ||
+    activeButton?.closest('.pfxActions, .musicActions, .mfxActions, .actions, .moduleActions, form, [data-module]') ||
     document.body;
 
   let found = document.getElementById("aivoToasts");
-  if (found && found.parentNode !== host) {
-    found.parentNode.removeChild(found);
-    found = null;
+
+  if (!found) {
+    found = document.createElement("div");
+    found.id = "aivoToasts";
   }
 
-  if (found) {
-    container = found;
-    return container;
+  if (found.parentNode !== host) {
+    host.appendChild(found);
   }
 
-  container = document.createElement("div");
-  container.id = "aivoToasts";
-  host.appendChild(container);
+  container = found;
   return container;
 }
-
   function clampActive() {
     while (active.length > DEFAULTS.maxToasts) {
       const oldest = active.shift();
