@@ -1563,7 +1563,7 @@ const builtEffects = {
             effectStrength: form.effectStrength,
             colorMood: form.colorMood,
             transitionSpeed: form.transitionSpeed,
-            includeAudio: form.includeAudio,
+             includeAudio: !!audioUrl,
             imageUrl,
             endImageUrl,
             logoUrl,
