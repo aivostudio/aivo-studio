@@ -1670,8 +1670,7 @@ const builtEffects = {
 
       const state = getState(root);
 
-          if (
-        e.target.matches("#pfxIncludeMusic") ||
+                if (
         e.target.matches("#pfxDuration") ||
         e.target.matches("#pfxMotionLevel") ||
         e.target.matches("#pfxEffectPower") ||
@@ -1684,12 +1683,6 @@ const builtEffects = {
         e.target.matches("#pfxAudioInput")
       ) {
         resetPhotoFxPolicyUI(root);
-      }
-
-      if (e.target.matches("#pfxIncludeMusic")) {
-        syncIncludeMusic(root);
-        syncCreateButton(root);
-        return;
       }
 
       if (e.target.matches("#pfxDuration")) {
