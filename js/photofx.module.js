@@ -1498,14 +1498,14 @@ const builtEffects = {
               : form.logoPosition === "bottom-right"
                 ? "br"
                 : "br",
-      include_audio: form.includeAudio,
+          include_audio: !!audioUrl,
       meta: {
         app: "photofx",
         provider_variant: providerVariant,
         provider_model: providerModel,
         styles: form.styles,
         effects: builtEffects,
-        include_audio: form.includeAudio,
+              include_audio: !!audioUrl,
         duration: Number(form.duration || 6),
         resolution: form.resolution,
         fps: Number(form.fps || 25),
