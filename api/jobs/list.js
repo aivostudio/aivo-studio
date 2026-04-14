@@ -130,12 +130,18 @@ const items = rows
     };
 
     const pickFinalFromOutputs = () => {
-      const fin = outputs.find(
+      const finalMarked = outputs.find(
         (o) =>
           String(o?.type || "").toLowerCase() === "video" &&
           o?.meta?.is_final === true
       );
-      if (fin) return pickUrl(fin);
+      if (finalMarked) {
+        const u = pickUrl(finalMarked);
+        if (u) return u;
+      }
+
+      const finalized = pickVideoByVariant("finalized");
+      if (finalized) return finalized;
 
       const overlay = pickVideoByVariant("logo_overlay");
       if (overlay) return overlay;
@@ -152,26 +158,51 @@ const items = rows
       return firstVideo ? pickUrl(firstVideo) : null;
     };
 
+    const resolvedPreviewUrl =
+      meta.preview_video_url ||
+      pickVideoByVariant("preview") ||
+      null;
+
+    const resolvedMuxUrl =
+      meta.muxed_url ||
+      pickVideoByVariant("mux") ||
+      null;
+
+    const resolvedLogoOverlayUrl =
+      meta.logo_overlay_url ||
+      pickVideoByVariant("logo_overlay") ||
+      null;
+
+    const resolvedFinalizedUrl =
+      pickVideoByVariant("finalized") ||
+      null;
+
+    const resolvedFinalFromOutputs =
+      pickFinalFromOutputs() ||
+      null;
+
+    const resolvedFinalVideoUrl =
+      meta.logo_overlay_done && resolvedLogoOverlayUrl
+        ? resolvedLogoOverlayUrl
+        : meta.final_variant === "logo_overlay" && resolvedLogoOverlayUrl
+          ? resolvedLogoOverlayUrl
+          : meta.final_variant === "finalized" && resolvedFinalizedUrl
+            ? resolvedFinalizedUrl
+            : resolvedFinalFromOutputs
+              ? resolvedFinalFromOutputs
+              : meta.final_video_url ||
+                resolvedLogoOverlayUrl ||
+                resolvedFinalizedUrl ||
+                resolvedMuxUrl ||
+                null;
+
     const responseMeta = {
       ...meta,
-      final_video_url:
-        meta.final_video_url ||
-        pickFinalFromOutputs() ||
-        null,
-      preview_video_url:
-        meta.preview_video_url ||
-        pickVideoByVariant("preview") ||
-        null,
-      muxed_url:
-        meta.muxed_url ||
-        pickVideoByVariant("mux") ||
-        null,
-      logo_overlay_url:
-        meta.logo_overlay_url ||
-        pickVideoByVariant("logo_overlay") ||
-        null,
+      final_video_url: resolvedFinalVideoUrl,
+      preview_video_url: resolvedPreviewUrl,
+      muxed_url: resolvedMuxUrl,
+      logo_overlay_url: resolvedLogoOverlayUrl,
     };
-
     return {
       job_id: r.id,
       user_id: r.user_id || null,
