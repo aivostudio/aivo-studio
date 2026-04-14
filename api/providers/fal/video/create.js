@@ -312,7 +312,7 @@ const falUrl = hasImageRef
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-body: JSON.stringify({
+     body: JSON.stringify({
   ...(multi_prompt ? { multi_prompt } : { prompt: promptSafe }),
   duration,
   aspect_ratio,
@@ -322,14 +322,12 @@ body: JSON.stringify({
   cfg_scale,
   ...(Array.isArray(voice_ids) ? { voice_ids } : {}),
 
-  ...(body.image_url ? { start_image_url: body.image_url } : {}),
-  ...(body.logo_url ? { logo_url: body.logo_url } : {}),
-  ...(body.logo_pos ? { logo_pos: body.logo_pos } : {}),
-  ...(body.logo_size ? { logo_size: body.logo_size } : {}),
-  ...(body.logo_opacity ? { logo_opacity: body.logo_opacity } : {}),
-  ...(body.audio_url ? { audio_url: body.audio_url } : {}),
-  ...(body.audio_mode ? { audio_mode: body.audio_mode } : {}),
-  ...(body.audio_trim ? { audio_trim: body.audio_trim } : {}),
+  // 🔥 EKLE
+ ...(body.image_url ? { start_image_url: body.image_url } : {}),
+...(body.logo_url ? { logo_url: body.logo_url } : {}),
+...(body.logo_pos ? { logo_pos: body.logo_pos } : {}),
+...(body.logo_size ? { logo_size: body.logo_size } : {}),
+...(body.logo_opacity ? { logo_opacity: body.logo_opacity } : {}),
 }),
       signal: ctrl.signal,
     });
