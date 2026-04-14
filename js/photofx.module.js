@@ -774,13 +774,7 @@ const PFX_HARD_BLOCK_PATTERNS = [
     total += selected.length * 5;
 
     if (state?.logoFile) total += 10;
-
-    const includeMusic =
-      String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes";
-
-    if (includeMusic && state?.audioFile) {
-      total += 10;
-    }
+    if (state?.audioFile) total += 10;
 
     return total;
   }
