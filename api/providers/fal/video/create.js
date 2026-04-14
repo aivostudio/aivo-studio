@@ -387,48 +387,33 @@ const falUrl = hasImageRef
   const audio_mode = audio_url ? "embed" : null;
   const silent_copy = audio_url ? false : null;
 
-const logo_url = body?.logo_url ? String(body.logo_url).trim() : null;
-const logo_pos = body?.logo_pos ? String(body.logo_pos).trim() : null;
-const logo_size = body?.logo_size ? String(body.logo_size).trim() : null;
-const logo_opacity =
-  body?.logo_opacity == null ? null : Number(body.logo_opacity);
+  const metaObj = {
+    ...(meta && typeof meta === "object" ? meta : {}),
+    app,
+    kind: "atmo_video",
+    provider: "fal",
+    request_id,
 
-const metaObj = {
-  ...(meta && typeof meta === "object" ? meta : {}),
-  app,
-  kind: "atmo_video",
-  provider: "fal",
-  request_id,
+    // ✅ mux koşulları (status.js mux bloğu için)
+    ...(audio_url
+      ? {
+          audio_mode, // "embed"
+          audio_url, // R2 public url
+          silent_copy, // false
+        }
+      : {}),
 
-  ...(audio_url
-    ? {
-        audio_mode,
-        audio_url,
-        silent_copy,
-      }
-    : {}),
-
-  ...(logo_url
-    ? {
-        logo_url,
-        logo_pos: logo_pos || "br",
-        logo_size: logo_size || "sm",
-        logo_opacity:
-          Number.isFinite(logo_opacity) ? logo_opacity : 0.9,
-      }
-    : {}),
-
-  provider_response: {
-    status_url: status_url || null,
-    response_url: status_url || null,
-    raw: {
-      ...(data && typeof data === "object" ? data : { raw_text: text }),
-      status_url: status_url || data?.status_url || data?.statusUrl || null,
-      response_url:
-        status_url || data?.response_url || data?.responseUrl || null,
+    provider_response: {
+      status_url: status_url || null,
+      response_url: status_url || null,
+      raw: {
+        ...(data && typeof data === "object" ? data : { raw_text: text }),
+        status_url: status_url || data?.status_url || data?.statusUrl || null,
+        response_url:
+          status_url || data?.response_url || data?.responseUrl || null,
+      },
     },
-  },
-};
+  };
 
   // ✅ KRİTİK: job_id geldiyse INSERT YOK, UPDATE VAR
   if (incomingJobId) {
