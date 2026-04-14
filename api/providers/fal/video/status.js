@@ -103,31 +103,14 @@ function pickConn() {
     process.env.DATABASE_URL_UNPOOLED
   );
 }
-
-async function resolveStatusUrlFromDB(job_id) {
+async function resolveStatusUrlFromDB({ job_id = "", request_id = "" } = {}) {
   const conn = pickConn();
   if (!conn) return null;
 
   const sql = neon(conn);
 
-  // job_id uuid değilse DB'ye hiç gitme
-  const UUID_RE =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!UUID_RE.test(String(job_id || ""))) return null;
-
-  const rows = await sql`
-    select meta
-    from jobs
-    where id = ${job_id}::uuid
-    limit 1
-  `;
-
-  if (!rows.length) return null;
-
-  const meta = rows[0]?.meta || {};
-
-  return (
-    pick(meta, [
+  const byMeta = (meta) =>
+    pick(meta || {}, [
       "provider_response.raw.status_url",
       "provider_response.status_url",
       "provider_response.raw.response_url",
@@ -138,8 +121,43 @@ async function resolveStatusUrlFromDB(job_id) {
       "fal.response_url",
       "raw.status_url",
       "raw.response_url",
-    ]) || null
-  );
+    ]) || null;
+
+  const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  if (UUID_RE.test(String(job_id || ""))) {
+    const rows = await sql`
+      select meta
+      from jobs
+      where id = ${job_id}::uuid
+      limit 1
+    `;
+
+    if (rows.length) {
+      const hit = byMeta(rows[0]?.meta || {});
+      if (hit) return hit;
+    }
+  }
+
+  if (String(request_id || "").trim()) {
+    const rows = await sql`
+      select meta
+      from jobs
+      where meta->>'request_id' = ${String(request_id).trim()}
+         or meta->'provider_response'->'raw'->>'request_id' = ${String(request_id).trim()}
+         or meta->'provider_response'->>'request_id' = ${String(request_id).trim()}
+      order by updated_at desc nulls last, created_at desc nulls last
+      limit 1
+    `;
+
+    if (rows.length) {
+      const hit = byMeta(rows[0]?.meta || {});
+      if (hit) return hit;
+    }
+  }
+
+  return null;
 }
 
 // ---------- main ----------
@@ -161,9 +179,11 @@ export default async function handler(req, res) {
     ).trim();
 
     const job_id = String(q.job_id || b.job_id || "").trim();
+    const request_id = String(q.request_id || b.request_id || "").trim();
 
-    if (!status_url && job_id) {
-      status_url = (await resolveStatusUrlFromDB(job_id)) || "";
+    if (!status_url) {
+      status_url =
+        (await resolveStatusUrlFromDB({ job_id, request_id })) || "";
     }
 
     if (!status_url) {
