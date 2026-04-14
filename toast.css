@@ -6,17 +6,18 @@
 }
 
 #aivoToasts{
-  position: fixed;
-  left: 50%;
-  bottom: var(--aivo-toast-bottom);
+  position: static;
+  left: auto;
+  bottom: auto;
   top: auto;
   right: auto;
-  transform: translateX(-50%);
-  z-index: 999999;
+  transform: none;
+  z-index: auto;
   pointer-events: none;
-  width: min(520px, calc(100vw - 24px));
+  width: 100%;
   display: flex;
   justify-content: center;
+  margin-top: 10px;
 }
 
 .aivo-toast{
