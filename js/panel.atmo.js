@@ -72,51 +72,15 @@ function bestVideoFromJob(job) {
     if (u) return u;
   }
 
-  const finalizedVariant = outs.find(
-    (o) => isVideoOutput(o) && outputVariant(o) === "finalized"
-  );
-  if (finalizedVariant) {
-    const u = pickOutputUrl(finalizedVariant);
-    if (u) return u;
-  }
-
   const directFinal =
-    safeStr(job?.final) ||
-    safeStr(job?.final_url) ||
     safeStr(job?.final_video_url) ||
-    safeStr(meta?.final) ||
-    safeStr(meta?.final_url) ||
     safeStr(meta?.final_video_url);
-
   if (directFinal) return directFinal;
 
-  const previewFromOutputs = outs.find(
-    (o) => isVideoOutput(o) && outputVariant(o) === "preview"
-  );
-  if (previewFromOutputs) {
-    const u = pickOutputUrl(previewFromOutputs);
-    if (u) return u;
-  }
-
-  const directPreview =
-    safeStr(job?.preview) ||
-    safeStr(job?.preview_url) ||
-    safeStr(job?.preview_video_url) ||
-    safeStr(meta?.preview) ||
-    safeStr(meta?.preview_url) ||
-    safeStr(meta?.preview_video_url);
-
-  if (directPreview) return directPreview;
-
-  const directLogo =
-    safeStr(job?.logo) ||
-    safeStr(job?.logo_url) ||
+  const directLogoOverlay =
     safeStr(job?.logo_overlay_url) ||
-    safeStr(meta?.logo) ||
-    safeStr(meta?.logo_url) ||
     safeStr(meta?.logo_overlay_url);
-
-  if (directLogo) return directLogo;
+  if (directLogoOverlay) return directLogoOverlay;
 
   const logoVariant = outs.find(
     (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
@@ -127,13 +91,8 @@ function bestVideoFromJob(job) {
   }
 
   const directMux =
-    safeStr(job?.mux) ||
-    safeStr(job?.mux_url) ||
     safeStr(job?.muxed_url) ||
-    safeStr(meta?.mux) ||
-    safeStr(meta?.mux_url) ||
     safeStr(meta?.muxed_url);
-
   if (directMux) return directMux;
 
   const muxVariant = outs.find(
@@ -144,16 +103,7 @@ function bestVideoFromJob(job) {
     if (u) return u;
   }
 
-  const providerVariant = outs.find(
-    (o) => isVideoOutput(o) && outputVariant(o) === "provider"
-  );
-  if (providerVariant) {
-    const u = pickOutputUrl(providerVariant);
-    if (u) return u;
-  }
-
-  const anyVideo = outs.find((o) => isVideoOutput(o)) || outs[0];
-  return pickOutputUrl(anyVideo);
+  return "";
 }
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
