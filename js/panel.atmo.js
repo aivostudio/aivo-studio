@@ -60,73 +60,101 @@
   function outputVariant(o) {
     return String(o?.meta?.variant || "").toLowerCase().trim();
   }
+function bestVideoFromJob(job) {
+  const meta = job?.meta || {};
+  const outs = Array.isArray(job?.outputs) ? job.outputs : [];
 
-  function bestVideoFromJob(job) {
-    const meta = job?.meta || {};
-    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-
-    const directFinal =
-      safeStr(job?.final) ||
-      safeStr(job?.final_url) ||
-      safeStr(job?.final_video_url) ||
-      safeStr(meta?.final) ||
-      safeStr(meta?.final_url) ||
-      safeStr(meta?.final_video_url);
-
-    if (directFinal) return directFinal;
-
-    const directLogo =
-      safeStr(job?.logo) ||
-      safeStr(job?.logo_url) ||
-      safeStr(job?.logo_overlay_url) ||
-      safeStr(meta?.logo) ||
-      safeStr(meta?.logo_url) ||
-      safeStr(meta?.logo_overlay_url);
-
-    if (directLogo) return directLogo;
-
-    const directMux =
-      safeStr(job?.mux) ||
-      safeStr(job?.mux_url) ||
-      safeStr(job?.muxed_url) ||
-      safeStr(meta?.mux) ||
-      safeStr(meta?.mux_url) ||
-      safeStr(meta?.muxed_url);
-
-    if (directMux) return directMux;
-
-    const fin = outs.find((o) => isVideoOutput(o) && o?.meta?.is_final === true);
-    if (fin) {
-      const u = pickOutputUrl(fin);
-      if (u) return u;
-    }
-
-    const ov = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
-    );
-    if (ov) {
-      const u = pickOutputUrl(ov);
-      if (u) return u;
-    }
-
-    const mx = outs.find((o) => isVideoOutput(o) && outputVariant(o) === "mux");
-    if (mx) {
-      const u = pickOutputUrl(mx);
-      if (u) return u;
-    }
-
-    const pv = outs.find(
-      (o) => isVideoOutput(o) && outputVariant(o) === "provider"
-    );
-    if (pv) {
-      const u = pickOutputUrl(pv);
-      if (u) return u;
-    }
-
-    const vid = outs.find((o) => isVideoOutput(o)) || outs[0];
-    return pickOutputUrl(vid);
+  const finalFromOutputs = outs.find(
+    (o) => isVideoOutput(o) && o?.meta?.is_final === true
+  );
+  if (finalFromOutputs) {
+    const u = pickOutputUrl(finalFromOutputs);
+    if (u) return u;
   }
 
+  const finalizedVariant = outs.find(
+    (o) => isVideoOutput(o) && outputVariant(o) === "finalized"
+  );
+  if (finalizedVariant) {
+    const u = pickOutputUrl(finalizedVariant);
+    if (u) return u;
+  }
+
+  const directFinal =
+    safeStr(job?.final) ||
+    safeStr(job?.final_url) ||
+    safeStr(job?.final_video_url) ||
+    safeStr(meta?.final) ||
+    safeStr(meta?.final_url) ||
+    safeStr(meta?.final_video_url);
+
+  if (directFinal) return directFinal;
+
+  const previewFromOutputs = outs.find(
+    (o) => isVideoOutput(o) && outputVariant(o) === "preview"
+  );
+  if (previewFromOutputs) {
+    const u = pickOutputUrl(previewFromOutputs);
+    if (u) return u;
+  }
+
+  const directPreview =
+    safeStr(job?.preview) ||
+    safeStr(job?.preview_url) ||
+    safeStr(job?.preview_video_url) ||
+    safeStr(meta?.preview) ||
+    safeStr(meta?.preview_url) ||
+    safeStr(meta?.preview_video_url);
+
+  if (directPreview) return directPreview;
+
+  const directLogo =
+    safeStr(job?.logo) ||
+    safeStr(job?.logo_url) ||
+    safeStr(job?.logo_overlay_url) ||
+    safeStr(meta?.logo) ||
+    safeStr(meta?.logo_url) ||
+    safeStr(meta?.logo_overlay_url);
+
+  if (directLogo) return directLogo;
+
+  const logoVariant = outs.find(
+    (o) => isVideoOutput(o) && outputVariant(o) === "logo_overlay"
+  );
+  if (logoVariant) {
+    const u = pickOutputUrl(logoVariant);
+    if (u) return u;
+  }
+
+  const directMux =
+    safeStr(job?.mux) ||
+    safeStr(job?.mux_url) ||
+    safeStr(job?.muxed_url) ||
+    safeStr(meta?.mux) ||
+    safeStr(meta?.mux_url) ||
+    safeStr(meta?.muxed_url);
+
+  if (directMux) return directMux;
+
+  const muxVariant = outs.find(
+    (o) => isVideoOutput(o) && outputVariant(o) === "mux"
+  );
+  if (muxVariant) {
+    const u = pickOutputUrl(muxVariant);
+    if (u) return u;
+  }
+
+  const providerVariant = outs.find(
+    (o) => isVideoOutput(o) && outputVariant(o) === "provider"
+  );
+  if (providerVariant) {
+    const u = pickOutputUrl(providerVariant);
+    if (u) return u;
+  }
+
+  const anyVideo = outs.find((o) => isVideoOutput(o)) || outs[0];
+  return pickOutputUrl(anyVideo);
+}
   function previewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
