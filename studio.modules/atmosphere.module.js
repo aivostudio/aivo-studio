@@ -79,54 +79,136 @@
     });
   }
 
-   async function withGenerateLoading(btn, run, root) {
-    if (!btn) return;
-    if (btn.__atmBusy) return;
-    btn.__atmBusy = true;
+async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
+  const startedAt = Date.now();
+  let tries = 0;
 
-    const r = root || getAtmoPanelRoot() || document.body;
-
-    btn.disabled = true;
-    btn.classList.add("is-loading");
-    btn.setAttribute("aria-busy", "true");
-    if (r) r.dataset.atmBusy = "1";
-    btn.classList.add("is-pressed");
-
-    const prevText = typeof btn.textContent === "string" ? btn.textContent : "";
-    if (prevText) btn.textContent = "Üretiliyor…";
-
-    const startedAt = Date.now();
+  while ((Date.now() - startedAt) < timeoutMs && tries < 60) {
+    tries += 1;
 
     try {
-      try { window.toast?.success?.("Atmosfer video üretimi başladı"); } catch {}
+      const rr = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`, {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
 
-      const res = await Promise.resolve().then(run);
-      const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
-      const evt = await waitForAtmoJobCreated(remainingForEvent);
+      const jj = await rr.json().catch(() => null);
+      console.log("[ATM][FINAL POLL]", jj);
 
-      const elapsed = Date.now() - startedAt;
-      if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
+      if (jj && jj.ok !== false) {
+        const normalizedStatus = String(
+          jj?.status ||
+          jj?.db_status ||
+          jj?.state ||
+          ""
+        ).trim().toLowerCase();
 
-      
+        const readyVideoUrl = String(
+          jj?.video?.url ||
+          jj?.video_url ||
+          ""
+        ).trim();
 
-      return { ok: true, res, evt };
-    } catch (err) {
-      console.error("[ATM] generate error:", err);
-      try { window.toast?.error?.(String(err?.message || err || "generate_error")); } catch {}
-      return { ok: false, error: err };
-    } finally {
-      try {
-        btn.disabled = false;
-        btn.classList.remove("is-loading", "is-pressed");
-        btn.removeAttribute("aria-busy");
-        if (prevText) btn.textContent = prevText;
-      } catch {}
+        const hasReadyOutput =
+          Array.isArray(jj?.outputs) &&
+          jj.outputs.some((o) => {
+            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+            const u = String(o?.url || o?.video_url || o?.image_url || "").trim();
+            return !!u && (t === "video" || t === "image");
+          });
 
-      try { if (r && r.dataset) delete r.dataset.atmBusy; } catch {}
-      btn.__atmBusy = false;
+        if (
+          ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
+          (readyVideoUrl || hasReadyOutput)
+        ) {
+          window.__LAST_ATMO_STATUS__ = jj;
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:atmo:job_ready", {
+              detail: {
+                job_id: jobId,
+                status: normalizedStatus,
+                video: readyVideoUrl ? { url: readyVideoUrl } : null,
+                outputs: jj.outputs || [],
+                raw: jj
+              }
+            })
+          );
+
+          return { ok: true, status: jj };
+        }
+
+        if (["error", "failed", "cancelled", "canceled"].includes(normalizedStatus)) {
+          return { ok: false, error: jj };
+        }
+      }
+    } catch (pollErr) {
+      console.error("[ATM][FINAL POLL ERROR]", pollErr);
     }
+
+    await sleep(3000);
   }
 
+  return { ok: false, error: "atmo_final_poll_timeout" };
+}
+
+async function withGenerateLoading(btn, run, root) {
+  if (!btn) return;
+  if (btn.__atmBusy) return;
+  btn.__atmBusy = true;
+
+  const r = root || getAtmoPanelRoot() || document.body;
+
+  btn.disabled = true;
+  btn.classList.add("is-loading");
+  btn.setAttribute("aria-busy", "true");
+  if (r) r.dataset.atmBusy = "1";
+  btn.classList.add("is-pressed");
+
+  const prevText = typeof btn.textContent === "string" ? btn.textContent : "";
+  if (prevText) btn.textContent = "Üretiliyor…";
+
+  const startedAt = Date.now();
+
+  try {
+    try { window.toast?.success?.("Atmosfer video üretimi başladı"); } catch {}
+
+    const res = await Promise.resolve().then(run);
+    const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
+    const evt = await waitForAtmoJobCreated(remainingForEvent);
+
+    const createdJobId = String(
+      res?.job_id ||
+      evt?.job_id ||
+      evt?.detail?.job_id ||
+      ""
+    ).trim();
+
+    if (createdJobId) {
+      await waitForAtmoFinalReady(createdJobId, 90000);
+    }
+
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < GEN_MIN_MS) await sleep(GEN_MIN_MS - elapsed);
+
+    return { ok: true, res, evt };
+  } catch (err) {
+    console.error("[ATM] generate error:", err);
+    try { window.toast?.error?.(String(err?.message || err || "generate_error")); } catch {}
+    return { ok: false, error: err };
+  } finally {
+    try {
+      btn.disabled = false;
+      btn.classList.remove("is-loading", "is-pressed");
+      btn.removeAttribute("aria-busy");
+      if (prevText) btn.textContent = prevText;
+    } catch {}
+
+    try { if (r && r.dataset) delete r.dataset.atmBusy; } catch {}
+    btn.__atmBusy = false;
+  }
+}
   // ------------------------------------------------------------
   // 1) Scope finder
   // ------------------------------------------------------------
@@ -854,6 +936,7 @@ function isAtmoPolicyBlocked(raw) {
 
   async function handleUpload(root, kind, file) {
     const r = root || getAtmoPanelRoot() || document;
+     console.log("[ATM HANDLE UPLOAD]", kind, file?.name || null);
 
     if (!file) {
       setUploadUI(r, kind, { status: "empty", url: "", name: "" });
@@ -1052,10 +1135,12 @@ function isAtmoPolicyBlocked(raw) {
     true
   );
 
-  // ------------------------------------------------------------
-  // 5) Basic: Scene select
-  // ------------------------------------------------------------
-  document.addEventListener("click", (e) => {
+// ------------------------------------------------------------
+// 5) Basic: Scene select — CAPTURE
+// ------------------------------------------------------------
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
@@ -1063,18 +1148,30 @@ function isAtmoPolicyBlocked(raw) {
     if (!btn) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
     const scenes = qs("#atmScenes", root);
-    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => b.classList.remove("is-active"));
-    btn.classList.add("is-active");
+    if (!scenes) return;
 
-    state.scene = btn.dataset.atmScene || state.scene;
-  });
+    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
 
-  // ------------------------------------------------------------
-  // 6) Basic: Effects multi-select
-  // ------------------------------------------------------------
-  document.addEventListener("click", (e) => {
+    state.scene = String(btn.dataset.atmScene || "").trim();
+
+    console.log("[ATM] scene ->", state.scene);
+  },
+  true
+);
+// ------------------------------------------------------------
+// 6) Basic: Effects multi-select — CAPTURE
+// ------------------------------------------------------------
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
@@ -1082,22 +1179,40 @@ function isAtmoPolicyBlocked(raw) {
     if (!btn) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
-    const eff = btn.dataset.atmEff;
+    const eff = String(btn.dataset.atmEff || "").trim();
     if (!eff) return;
 
     const on = !btn.classList.contains("is-active");
+    const next = new Set((state.effects || []).map(String));
+
+    if (eff === "snow" && on) {
+      next.delete("rain");
+      const rainBtn = qs('#atmEffects [data-atm-eff="rain"]', root);
+      if (rainBtn) setActive(rainBtn, false);
+    }
+
+    if (eff === "rain" && on) {
+      next.delete("snow");
+      const snowBtn = qs('#atmEffects [data-atm-eff="snow"]', root);
+      if (snowBtn) setActive(snowBtn, false);
+    }
+
     setActive(btn, on);
 
-    const set = new Set(state.effects || []);
-    if (on) set.add(eff);
-    else set.delete(eff);
+    if (on) next.add(eff);
+    else next.delete(eff);
 
-    state.effects = Array.from(set);
+    state.effects = Array.from(next);
+
     syncLegacyEffectsInput(root);
     syncAtmoGenerateCredits(root);
-  });
 
+    console.log("[ATM] effects ->", state.effects);
+  },
+  true
+);
   // ------------------------------------------------------------
   // 6.5) Aspect ratio (Basic + Pro) — CAPTURE
   // ------------------------------------------------------------
@@ -1157,6 +1272,7 @@ function isAtmoPolicyBlocked(raw) {
     if (!root) return;
 
     const file = e.target?.files?.[0] || null;
+     console.log("[ATM UPLOAD CHANGE]", e.target?.id, file?.name || null, file?.type || null);
 
     if (closestWithin(e.target, "#atmImageFile", root)) {
       state.imageFile = file;
@@ -1382,39 +1498,45 @@ function isAtmoPolicyBlocked(raw) {
   // ------------------------------------------------------------
   // 13) Payload builders
   // ------------------------------------------------------------
-  function buildBasicPayload() {
-    const root = getAtmoPanelRoot();
-    const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-    const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
-    const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
-    const basicPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
+function buildBasicPayload() {
+  const root = getAtmoPanelRoot();
+  const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
+  const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
+  const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
+  const basicDisplayPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
 
-    return {
-      app: "atmo",
-      mode: "basic",
-      aspect: state.aspect || "16:9",
+  return {
+    app: "atmo",
+    mode: "basic",
+    aspect: state.aspect || "16:9",
 
-      scene: state.scene || null,
-      prompt: basicPrompt,
+    scene: state.scene || null,
+    prompt: "",
+    scene_label: sceneTitle,
+    scene_desc: sceneDesc,
+    effects: (state.effects || []).slice(),
+    camera: state.camera || "kenburns_soft",
+    duration: state.duration || "8",
+
+    meta: {
+      prompt: basicDisplayPrompt,
       scene_label: sceneTitle,
-      scene_desc: sceneDesc,
-      effects: (state.effects || []).slice(),
-      camera: state.camera || "kenburns_soft",
-      duration: state.duration || "8",
+      scene_desc: sceneDesc
+    },
 
-      image_url: state.uploads?.basicImage?.url || "",
+    image_url: state.uploads?.basicImage?.url || "",
 
-      logo_url: state.uploads?.logo?.url || "",
-      logo_pos: state.logoPos || "br",
-      logo_size: state.logoSize || "sm",
-      logo_opacity: state.logoOpacity ?? 0.9,
+    logo_url: state.uploads?.logo?.url || "",
+    logo_pos: state.logoPos || "br",
+    logo_size: state.logoSize || "sm",
+    logo_opacity: state.logoOpacity ?? 0.9,
 
-      audio_url: state.uploads?.audio?.url || "",
-      audio_mode: state.audioMode || "none",
-      audio_trim: state.audioTrim || "loop_to_fit",
-      silent_copy: !!state.silentCopy
-    };
-  }
+    audio_url: state.uploads?.audio?.url || "",
+    audio_mode: state.audioMode || "none",
+    audio_trim: state.audioTrim || "loop_to_fit",
+    silent_copy: !!state.silentCopy
+  };
+}
 
   function buildProPayload() {
     return {
@@ -1522,20 +1644,36 @@ function isAtmoPolicyBlocked(raw) {
       }
     }
 
-  if (mode === "basic") {
-  const activeSceneBtn = root ? qs('#atmScenes .smpack-choice.is-active', root) : null;
-  const sceneKey = String(state.scene || "").trim();
+if (mode === "basic") {
+  const activeSceneBtn = root
+    ? qs('#atmScenes .smpack-choice.is-active[data-atm-scene]', root)
+    : null;
 
-  if (!activeSceneBtn || !sceneKey) {
+  const sceneKeyFromDom = String(activeSceneBtn?.dataset?.atmScene || "").trim();
+
+  const selectedEffectBtns = root
+    ? qsa('#atmEffects [data-atm-eff].is-active, #atmEffects [data-atm-eff][aria-pressed="true"]', root)
+    : [];
+
+  const selectedEffectsFromDom = selectedEffectBtns
+    .map((btn) => String(btn?.dataset?.atmEff || "").trim())
+    .filter(Boolean);
+
+  if (sceneKeyFromDom) {
+    state.scene = sceneKeyFromDom;
+  }
+
+  state.effects = selectedEffectsFromDom;
+  syncLegacyEffectsInput(root);
+
+  if (!activeSceneBtn || !sceneKeyFromDom) {
     try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
     const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
     if (firstScene) firstScene.focus();
     return;
   }
 
-  const selectedEffects = Array.isArray(state.effects) ? state.effects.filter(Boolean) : [];
-
-  if (!selectedEffects.length) {
+  if (!selectedEffectsFromDom.length) {
     try { window.toast?.info?.("En az 1 atmosfer seçmelisin."); } catch {}
     const firstEffect = document.querySelector('#atmEffects [data-atm-eff]');
     if (firstEffect) firstEffect.focus();
