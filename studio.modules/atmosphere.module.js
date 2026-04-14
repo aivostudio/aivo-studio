@@ -1052,10 +1052,12 @@ function isAtmoPolicyBlocked(raw) {
     true
   );
 
-  // ------------------------------------------------------------
-  // 5) Basic: Scene select
-  // ------------------------------------------------------------
-  document.addEventListener("click", (e) => {
+// ------------------------------------------------------------
+// 5) Basic: Scene select — CAPTURE
+// ------------------------------------------------------------
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
@@ -1063,18 +1065,31 @@ function isAtmoPolicyBlocked(raw) {
     if (!btn) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
     const scenes = qs("#atmScenes", root);
-    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => b.classList.remove("is-active"));
-    btn.classList.add("is-active");
+    if (!scenes) return;
 
-    state.scene = btn.dataset.atmScene || state.scene;
-  });
+    qsa(".smpack-choice[data-atm-scene]", scenes).forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
 
-  // ------------------------------------------------------------
-  // 6) Basic: Effects multi-select
-  // ------------------------------------------------------------
-  document.addEventListener("click", (e) => {
+    state.scene = String(btn.dataset.atmScene || "").trim();
+
+    console.log("[ATM] scene ->", state.scene);
+  },
+  true
+);
+
+// ------------------------------------------------------------
+// 6) Basic: Effects multi-select — CAPTURE
+// ------------------------------------------------------------
+document.addEventListener(
+  "click",
+  (e) => {
     const root = getAtmoPanelRoot();
     if (!root) return;
 
@@ -1082,22 +1097,40 @@ function isAtmoPolicyBlocked(raw) {
     if (!btn) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
-    const eff = btn.dataset.atmEff;
+    const eff = String(btn.dataset.atmEff || "").trim();
     if (!eff) return;
 
     const on = !btn.classList.contains("is-active");
+    const next = new Set((state.effects || []).map(String));
+
+    if (eff === "snow" && on) {
+      next.delete("rain");
+      const rainBtn = qs('#atmEffects [data-atm-eff="rain"]', root);
+      if (rainBtn) setActive(rainBtn, false);
+    }
+
+    if (eff === "rain" && on) {
+      next.delete("snow");
+      const snowBtn = qs('#atmEffects [data-atm-eff="snow"]', root);
+      if (snowBtn) setActive(snowBtn, false);
+    }
+
     setActive(btn, on);
 
-    const set = new Set(state.effects || []);
-    if (on) set.add(eff);
-    else set.delete(eff);
+    if (on) next.add(eff);
+    else next.delete(eff);
 
-    state.effects = Array.from(set);
+    state.effects = Array.from(next);
+
     syncLegacyEffectsInput(root);
     syncAtmoGenerateCredits(root);
-  });
 
+    console.log("[ATM] effects ->", state.effects);
+  },
+  true
+);
   // ------------------------------------------------------------
   // 6.5) Aspect ratio (Basic + Pro) — CAPTURE
   // ------------------------------------------------------------
