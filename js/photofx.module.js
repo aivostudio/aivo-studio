@@ -1644,7 +1644,6 @@ const builtEffects = {
     syncCreateButton(root);
     renderPresets(root);
     renderUploads(root);
-    syncIncludeMusic(root);
     syncDurationRules(root);
     bindEvents(root);
   }
