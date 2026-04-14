@@ -1761,7 +1761,6 @@ const builtEffects = {
 
     const state = getState(root);
 
-    const includeMusic = qs("#pfxIncludeMusic", root);
     const durationEl = qs("#pfxDuration", root);
     const imageInput = qs("#pfxImageInput", root);
     const endImageInput = qs("#pfxEndImageInput", root);
@@ -1774,13 +1773,6 @@ const builtEffects = {
     const audioBtn = qs("#pfxAudioUploadBtn", root);
 
     const createBtn = qs(".pfxCreateBtn", root);
-
-    if (includeMusic && !includeMusic.__bound) {
-      includeMusic.__bound = true;
-      includeMusic.addEventListener("change", () => {
-        syncIncludeMusic(root);
-      });
-    }
 
     if (durationEl && !durationEl.__bound) {
       durationEl.__bound = true;
