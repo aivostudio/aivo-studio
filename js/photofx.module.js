@@ -1462,10 +1462,9 @@ const builtEffects = {
       ? await uploadFile(form.endImageFile, "end-image")
       : "";
     const logoUrl = form.logoFile ? await uploadFile(form.logoFile, "logo") : "";
-    const audioUrl =
-      form.includeAudio && form.audioFile
-        ? statefulAudioUrlOrUploaded(root, form.audioFile)
-        : "";
+      const audioUrl = form.audioFile
+      ? await statefulAudioUrlOrUploaded(root, form.audioFile)
+      : "";
 
     const providerVariant = "fast";
     const providerModel = "fal-ai/ltx-2.3/image-to-video/fast";
