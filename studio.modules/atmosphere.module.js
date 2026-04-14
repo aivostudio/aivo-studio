@@ -637,15 +637,7 @@ function isAtmoPolicyBlocked(raw) {
   }
 
   function hasAtmoAudioSelected(mode) {
-    const m = String(mode || state.mode || "basic").toLowerCase();
-
-    if (!String(state?.uploads?.audio?.url || "").trim()) return false;
-
-    if (m === "pro") {
-      return String(state.audioMode || "none") !== "none";
-    }
-
-    return String(state.audioMode || "none") !== "none";
+    return !!String(state?.uploads?.audio?.url || "").trim();
   }
 
   function computeAtmoCredit(mode) {
@@ -1504,6 +1496,7 @@ function buildBasicPayload() {
   const sceneTitle = activeSceneBtn ? (qs('.smpack-choice__title', activeSceneBtn)?.textContent || '').trim() : '';
   const sceneDesc = activeSceneBtn ? (qs('.smpack-choice__desc', activeSceneBtn)?.textContent || '').trim() : '';
   const basicDisplayPrompt = [sceneTitle, sceneDesc].filter(Boolean).join(' — ');
+  const hasAudio = !!String(state.uploads?.audio?.url || "").trim();
 
   return {
     app: "atmo",
@@ -1531,14 +1524,16 @@ function buildBasicPayload() {
     logo_size: state.logoSize || "sm",
     logo_opacity: state.logoOpacity ?? 0.9,
 
-    audio_url: state.uploads?.audio?.url || "",
-    audio_mode: state.audioMode || "none",
-    audio_trim: state.audioTrim || "loop_to_fit",
-    silent_copy: !!state.silentCopy
+    audio_url: hasAudio ? (state.uploads?.audio?.url || "") : "",
+    audio_mode: hasAudio ? "embed" : "none",
+    audio_trim: hasAudio ? (state.audioTrim || "loop_to_fit") : "loop_to_fit",
+    silent_copy: hasAudio ? false : !!state.silentCopy
   };
 }
 
   function buildProPayload() {
+    const hasAudio = !!String(state.uploads?.audio?.url || "").trim();
+
     return {
       app: "atmo",
       mode: "pro",
@@ -1560,10 +1555,10 @@ function buildBasicPayload() {
       logo_size: state.logoSize || "sm",
       logo_opacity: state.logoOpacity ?? 0.9,
 
-      audio_url: state.uploads?.audio?.url || "",
-      audio_mode: state.audioMode || "none",
-      audio_trim: state.audioTrim || "loop_to_fit",
-      silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
+      audio_url: hasAudio ? (state.uploads?.audio?.url || "") : "",
+      audio_mode: hasAudio ? "embed" : "none",
+      audio_trim: hasAudio ? (state.audioTrim || "loop_to_fit") : "loop_to_fit",
+      silent_copy: hasAudio ? false : !!state.silentCopy,
 
       details: { ...(state.details || {}) }
     };
