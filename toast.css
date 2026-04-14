@@ -1,9 +1,8 @@
 /* ===== AIVO TOAST — TRUE GLASS / MINIMAL ===== */
 
 :root{
-  --aivo-toast-gap: 6px;
   --aivo-safe-b: env(safe-area-inset-bottom, 0px);
-  --aivo-toast-bottom: calc(var(--aivo-safe-b) + var(--aivo-toast-gap));
+  --aivo-toast-bottom: calc(var(--aivo-safe-b) + 1px);
 }
 
 #aivoToasts{
