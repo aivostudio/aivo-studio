@@ -116,25 +116,77 @@ export default async function handler(req, res) {
     meta = null,
   } = body;
 
-  // ✅ BASIC MODE için structured seçimlerden prompt üret
-  let promptSafe = prompt;
+// ✅ BASIC MODE için structured seçimlerden prompt üret
+let promptSafe = prompt;
 
-  if (!promptSafe && !multi_prompt) {
-    const parts = [];
+if (!promptSafe && !multi_prompt) {
+  const scenePromptMap = {
+    winter_cafe:
+      "A cozy winter cafe at night, neon reflections on glass, soft snowfall outside, warm interior lighting, cinematic atmosphere, subtle motion, realistic, no people, no text.",
+    cozy_cabin:
+      "A warm mountain cabin with wooden textures and fireplace glow, cozy interior, gentle cinematic ambience, subtle movement, realistic, no people, no text.",
+    lake_cabin:
+      "A peaceful lakeside scene with soft reflections on water, calm cinematic mood, gentle ambient movement, realistic, no people, no text.",
+    city_night:
+      "A cinematic city night scene with street lamps, soft bokeh, urban depth, subtle motion, realistic, no people, no text.",
+    rainy_window:
+      "A moody rainy window scene with raindrops sliding on glass, dim warm interior light, emotional cinematic atmosphere, subtle movement, realistic, no people, no text.",
+    city_rooftop_night:
+      "A rooftop overlooking the city at night, distant glowing skyline, light wind, cinematic urban mood, subtle movement, realistic, no people, no text.",
+    old_stone_street:
+      "An old stone street at night with wet ground and warm street lamps, romantic cinematic ambience, subtle motion, realistic, no people, no text.",
+    attic_window:
+      "An attic window scene with soft warm indoor light and night ambience outside, intimate cinematic mood, subtle movement, realistic, no people, no text.",
+    sea_cliffs:
+      "Cinematic sea cliffs by the shore, open horizon, wind moving through the scene, atmospheric and emotional, realistic, no people, no text.",
+    pine_mountain_road:
+      "A pine-lined mountain road with cool natural air, quiet cinematic solitude, subtle environmental motion, realistic, no people, no text.",
+    sunset_highway:
+      "A roadside highway scene at sunset, glowing horizon, melancholic cinematic mood, subtle motion, realistic, no people, no text.",
+    dim_motel_corridor:
+      "A dim motel corridor with quiet lonely cinematic tension, low warm lighting, subtle ambient movement, realistic, no people, no text.",
+  };
 
-    if (body.scene) parts.push(`Scene: ${body.scene}.`);
-    if (Array.isArray(body.effects) && body.effects.length)
-      parts.push(`Effects: ${body.effects.join(", ")}.`);
-    if (body.camera) parts.push(`Camera: ${body.camera}.`);
-    if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
-    if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
+const effectPromptMap = {
+  snow: "heavy blizzard snowfall, large dense snowflakes hitting the camera, visible snow particles across the whole frame, intense foreground snow, strong winter storm atmosphere, snow clearly moving in front of the lens",
+  rain: "steady rainfall, visible rain streaks, wet reflective surfaces, cinematic rainy atmosphere",
+  leaf: "falling leaves drifting through the air, visible leaf motion, soft windy autumn atmosphere",
+  fog: "dense cinematic fog, misty air, atmospheric haze, low visibility depth",
+  light: "cinematic light rays, glowing highlights, soft volumetric lighting, subtle flickering illumination",
+  fire: "visible open flames, strong fire movement, flickering orange firelight, dancing flame reflections, clearly noticeable fire ambience in the scene",
+  wind: "strong visible wind movement, particles drifting in air, environmental motion, cinematic breeze",
+};
 
-    if (!parts.length) {
-      return res.status(400).json({ ok: false, error: "missing_prompt" });
+  const parts = [];
+  const selectedSceneKey = body.scene ? String(body.scene).trim() : "";
+  const selectedScenePrompt =
+    scenePromptMap[selectedSceneKey] || (selectedSceneKey ? `Scene: ${selectedSceneKey}.` : "");
+
+  if (selectedScenePrompt) parts.push(selectedScenePrompt);
+
+  if (Array.isArray(body.effects) && body.effects.length) {
+    const effectText = body.effects
+      .map((key) => effectPromptMap[String(key).trim()] || String(key).trim())
+      .filter(Boolean)
+      .join(", ");
+
+    if (effectText) {
+      parts.push(`Atmospheric effects: ${effectText}.`);
     }
-
-    promptSafe = parts.join(" ") + " Seamless loop. Cinematic. No text.";
   }
+
+  if (body.camera) parts.push(`Camera style: ${body.camera}.`);
+  if (body.duration) parts.push(`Duration: ${body.duration} seconds.`);
+  if (body.aspect_ratio) parts.push(`Aspect ratio: ${body.aspect_ratio}.`);
+
+  if (!parts.length) {
+    return res.status(400).json({ ok: false, error: "missing_prompt" });
+  }
+
+  promptSafe =
+    parts.join(" ") +
+    " Seamless loop, cinematic composition, premium atmosphere video, realistic motion, no text, no watermark, no people.";
+}
 
   // ---- canonical user_uuid resolve ----
   const userRow = await sql`
@@ -335,33 +387,48 @@ const falUrl = hasImageRef
   const audio_mode = audio_url ? "embed" : null;
   const silent_copy = audio_url ? false : null;
 
-  const metaObj = {
-    ...(meta && typeof meta === "object" ? meta : {}),
-    app,
-    kind: "atmo_video",
-    provider: "fal",
-    request_id,
+const logo_url = body?.logo_url ? String(body.logo_url).trim() : null;
+const logo_pos = body?.logo_pos ? String(body.logo_pos).trim() : null;
+const logo_size = body?.logo_size ? String(body.logo_size).trim() : null;
+const logo_opacity =
+  body?.logo_opacity == null ? null : Number(body.logo_opacity);
 
-    // ✅ mux koşulları (status.js mux bloğu için)
-    ...(audio_url
-      ? {
-          audio_mode, // "embed"
-          audio_url, // R2 public url
-          silent_copy, // false
-        }
-      : {}),
+const metaObj = {
+  ...(meta && typeof meta === "object" ? meta : {}),
+  app,
+  kind: "atmo_video",
+  provider: "fal",
+  request_id,
 
-    provider_response: {
-      status_url: status_url || null,
-      response_url: status_url || null,
-      raw: {
-        ...(data && typeof data === "object" ? data : { raw_text: text }),
-        status_url: status_url || data?.status_url || data?.statusUrl || null,
-        response_url:
-          status_url || data?.response_url || data?.responseUrl || null,
-      },
+  ...(audio_url
+    ? {
+        audio_mode,
+        audio_url,
+        silent_copy,
+      }
+    : {}),
+
+  ...(logo_url
+    ? {
+        logo_url,
+        logo_pos: logo_pos || "br",
+        logo_size: logo_size || "sm",
+        logo_opacity:
+          Number.isFinite(logo_opacity) ? logo_opacity : 0.9,
+      }
+    : {}),
+
+  provider_response: {
+    status_url: status_url || null,
+    response_url: status_url || null,
+    raw: {
+      ...(data && typeof data === "object" ? data : { raw_text: text }),
+      status_url: status_url || data?.status_url || data?.statusUrl || null,
+      response_url:
+        status_url || data?.response_url || data?.responseUrl || null,
     },
-  };
+  },
+};
 
   // ✅ KRİTİK: job_id geldiyse INSERT YOK, UPDATE VAR
   if (incomingJobId) {
