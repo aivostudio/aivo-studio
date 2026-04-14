@@ -23,9 +23,12 @@ function ensureContainer() {
   return /üretiliyor|olusturuluyor|oluşturuluyor|hazirlaniyor|hazırlanıyor/i.test(txt);
 });
 
+const actionsWrap =
+  activeButton?.closest('.pfxActions, .musicActions, .mfxActions, .actions, .moduleActions');
+
 const host =
-  activeButton?.closest('[data-module], section, .page, .module, .studioPage, .studioSection') ||
-  activeButton?.closest('.pfxPage, .musicPage, .mfxPage') ||
+  actionsWrap?.parentElement ||
+  activeButton?.closest('[data-module]') ||
   document.body;
 
   let found = document.getElementById("aivoToasts");
