@@ -67,14 +67,14 @@ function ensureContainer() {
     setTimeout(finalize, 320);
   }
 
-  function makeToast({ variant, title, message, duration }) {
-    ensureContainer();
+function makeToast({ variant, title, message, duration, host }) {
+  ensureContainer(host);
 
-    const id = String(++uid);
-    const el = document.createElement("div");
-    el.className = "aivo-toast";
-    el.dataset.variant = variant;
-    el.dataset.id = id;
+  const id = String(++uid);
+  const el = document.createElement("div");
+  el.className = "aivo-toast";
+  el.dataset.variant = variant;
+  el.dataset.id = id;
 
     const icon = document.createElement("div");
     icon.className = "aivo-toast__icon";
