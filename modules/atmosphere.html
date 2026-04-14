@@ -428,11 +428,15 @@
 #atmScenes .smpack-choice.is-active,
 #atmScenes .smpack-choice[aria-pressed="true"],
 #atmScenes .smpack-choice[aria-selected="true"]{
-  background:linear-gradient(180deg, rgba(124,92,255,.10), rgba(255,77,184,.06));
-  border-color:rgba(255,255,255,.14);
+  background:
+    radial-gradient(120% 140% at 18% 12%, rgba(150,116,255,.18), transparent 42%),
+    linear-gradient(180deg, rgba(124,92,255,.18), rgba(255,77,184,.10));
+  border-color:rgba(214,196,255,.28);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.10),
-    0 16px 38px rgba(0,0,0,.30);
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 0 0 1px rgba(160,120,255,.18),
+    0 18px 42px rgba(58,20,120,.34),
+    0 0 0 1px rgba(170,130,255,.12);
 }
 
 #atmScenes .smpack-choice.is-active::after,
@@ -440,10 +444,22 @@
 #atmScenes .smpack-choice[aria-selected="true"]::after{
   opacity:1;
   filter:
-    drop-shadow(0 0 14px rgba(124,92,255,.38))
-    drop-shadow(0 0 24px rgba(255,77,184,.22));
+    drop-shadow(0 0 18px rgba(124,92,255,.52))
+    drop-shadow(0 0 30px rgba(255,77,184,.30));
 }
 
+#atmScenes .smpack-choice.is-active .smpack-choice__title,
+#atmScenes .smpack-choice[aria-pressed="true"] .smpack-choice__title,
+#atmScenes .smpack-choice[aria-selected="true"] .smpack-choice__title{
+  color:#ffffff;
+  text-shadow:0 0 14px rgba(255,255,255,.10);
+}
+
+#atmScenes .smpack-choice.is-active .smpack-choice__desc,
+#atmScenes .smpack-choice[aria-pressed="true"] .smpack-choice__desc,
+#atmScenes .smpack-choice[aria-selected="true"] .smpack-choice__desc{
+  color:rgba(255,255,255,.92);
+}
 @media (max-width: 980px){
   #atmPersonalCard .atmPersGrid{ grid-template-columns: 1fr; }
 }
