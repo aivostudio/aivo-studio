@@ -418,19 +418,33 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const input_url =
-      String(meta?.final_video_url || "").trim() ||
-      pickUrl(providerOut) ||
-      pickUrl(outputs.find((o) => isVideo(o))) ||
-      "";
+const input_url =
+  String(meta?.final_video_url || "").trim() ||
+  pickUrl(providerOut) ||
+  pickUrl(outputs.find((o) => isVideo(o))) ||
+  "";
 
-    if (!input_url) {
-      return res.status(400).json({
-        ok: false,
-        error: "finalize_input_missing",
-        job_id,
-      });
-    }
+if (!input_url) {
+  const failMeta = {
+    finalize_error: "finalize_input_missing",
+    finalize_failed_at: new Date().toISOString(),
+  };
+
+  await sql`
+    update jobs
+    set
+      status = 'failed',
+      meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(failMeta)}::jsonb,
+      updated_at = now()
+    where id = ${job_id}::uuid
+  `;
+
+  return res.status(400).json({
+    ok: false,
+    error: "finalize_input_missing",
+    job_id,
+  });
+}
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-cartoon-finalize-"));
 
