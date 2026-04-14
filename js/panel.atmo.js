@@ -704,13 +704,12 @@ function render() {
     .map((job) => {
       const badge = badgeFor(job);
       const isFreshCard = job?._fresh === true;
-
       const finalUrl = safeStr(job?.url || bestVideoFromJob(job));
       const previewUrlResolved = safeStr(previewVideoFromJob(job));
 
-      const selectedPlaybackRawUrl = isFreshCard
-        ? finalUrl || previewUrlResolved
-        : previewUrlResolved || finalUrl;
+      const selectedPlaybackRawUrl =
+        finalUrl ||
+        previewUrlResolved;
 
       const hasUrl = !!selectedPlaybackRawUrl;
 
