@@ -1,8 +1,9 @@
 // /api/jobs/list.js
-// Lists user jobs from Postgres (source of truth)
+export const config = { runtime: "nodejs" };
 
-const { neon } = require("@neondatabase/serverless");
-const { requireAuth } = require("../_lib/auth");
+import { neon } from "@neondatabase/serverless";
+import authModule from "../_lib/auth.js";
+const { requireAuth } = authModule;
 
 function firstQueryValue(v) {
   if (Array.isArray(v)) return v[0];
@@ -10,18 +11,22 @@ function firstQueryValue(v) {
 }
 
 function normalizeApp(x) {
-  return String(firstQueryValue(x) || "").trim().toLowerCase();
+  return String(firstQueryValue(x) || "")
+    .trim()
+    .toLowerCase();
 }
 
 function mapState(statusRaw) {
   const s = String(statusRaw || "").toLowerCase();
-  if (["completed", "ready", "succeeded"].includes(s)) return "COMPLETED";
+
+  if (["completed", "ready", "succeeded", "done"].includes(s)) return "COMPLETED";
   if (["failed", "error", "canceled", "cancelled"].includes(s)) return "FAILED";
   if (["running", "processing", "in_progress"].includes(s)) return "RUNNING";
+
   return "PENDING";
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
@@ -43,9 +48,16 @@ module.exports = async (req, res) => {
     return res.status(500).json({ ok: false, error: "missing_db_env" });
   }
 
-  let auth = null;
+  const __t0 = Date.now();
+  const __mark = (label) => {
+    const ms = Date.now() - __t0;
+    console.log(`[jobs/list][${app}] ${label} ${ms}ms`);
+  };
+
+  let auth;
   try {
     auth = await requireAuth(req);
+    __mark("after requireAuth");
   } catch (e) {
     return res.status(401).json({
       ok: false,
@@ -54,52 +66,181 @@ module.exports = async (req, res) => {
     });
   }
 
-  if (!auth?.user_id) {
+  const email = auth?.email ? String(auth.email) : null;
+
+  if (!email) {
     return res.status(401).json({
       ok: false,
       error: "unauthorized",
+      message: "missing_email",
     });
   }
 
   const sql = neon(conn);
 
   try {
+    const userRow = await sql`
+      select id
+      from users
+      where email = ${email}
+      limit 1
+    `;
+    __mark("after user lookup");
+
+    if (!userRow.length) {
+      return res.status(401).json({
+        ok: false,
+        error: "user_not_found",
+        email,
+      });
+    }
+
+    const user_uuid = String(userRow[0].id);
+
     const rows = await sql`
-      select
-        id,
-        user_id,
-        app,
-        status,
-        prompt,
-        meta,
-        outputs,
-        error,
-        created_at,
-        updated_at
+      select id, user_id, user_uuid, app, type, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
       where app = ${app}
-        and user_id::text = ${String(auth.user_id)}
+        and deleted_at is null
+        and (
+          user_uuid = ${user_uuid}::uuid
+          OR user_id = ${email}
+        )
       order by created_at desc
       limit 50
     `;
+    __mark("after jobs query");
+
+const items = rows
+  .map((r) => {
+    const outputs = Array.isArray(r.outputs) ? r.outputs : [];
+    const meta = (r.meta && typeof r.meta === "object") ? r.meta : {};
+
+    const pickUrl = (o) =>
+      String(o?.archive_url || o?.url || o?.raw_url || o?.src || "").trim();
+
+    const pickVideoByVariant = (variant) => {
+      const v = String(variant || "").toLowerCase().trim();
+      const hit = outputs.find(
+        (o) =>
+          String(o?.type || "").toLowerCase() === "video" &&
+          String(o?.meta?.variant || "").toLowerCase().trim() === v
+      );
+      return hit ? pickUrl(hit) : null;
+    };
+
+    const pickFinalFromOutputs = () => {
+      const finalMarked = outputs.find(
+        (o) =>
+          String(o?.type || "").toLowerCase() === "video" &&
+          o?.meta?.is_final === true
+      );
+      if (finalMarked) {
+        const u = pickUrl(finalMarked);
+        if (u) return u;
+      }
+
+      const finalized = pickVideoByVariant("finalized");
+      if (finalized) return finalized;
+
+      const overlay = pickVideoByVariant("logo_overlay");
+      if (overlay) return overlay;
+
+      const mux = pickVideoByVariant("mux");
+      if (mux) return mux;
+
+      const provider = pickVideoByVariant("provider");
+      if (provider) return provider;
+
+      const firstVideo = outputs.find(
+        (o) => String(o?.type || "").toLowerCase() === "video"
+      );
+      return firstVideo ? pickUrl(firstVideo) : null;
+    };
+
+    const resolvedPreviewUrl =
+      meta.preview_video_url ||
+      pickVideoByVariant("preview") ||
+      null;
+
+    const resolvedMuxUrl =
+      meta.muxed_url ||
+      pickVideoByVariant("mux") ||
+      null;
+
+    const resolvedLogoOverlayUrl =
+      meta.logo_overlay_url ||
+      pickVideoByVariant("logo_overlay") ||
+      null;
+
+    const resolvedFinalizedUrl =
+      pickVideoByVariant("finalized") ||
+      null;
+
+    const resolvedFinalFromOutputs =
+      pickFinalFromOutputs() ||
+      null;
+
+    const resolvedFinalVideoUrl =
+      meta.logo_overlay_done && resolvedLogoOverlayUrl
+        ? resolvedLogoOverlayUrl
+        : meta.final_variant === "logo_overlay" && resolvedLogoOverlayUrl
+          ? resolvedLogoOverlayUrl
+          : meta.final_variant === "finalized" && resolvedFinalizedUrl
+            ? resolvedFinalizedUrl
+            : resolvedFinalFromOutputs
+              ? resolvedFinalFromOutputs
+              : meta.final_video_url ||
+                resolvedLogoOverlayUrl ||
+                resolvedFinalizedUrl ||
+                resolvedMuxUrl ||
+                null;
+
+    const responseMeta = {
+      ...meta,
+      final_video_url: resolvedFinalVideoUrl,
+      preview_video_url: resolvedPreviewUrl,
+      muxed_url: resolvedMuxUrl,
+      logo_overlay_url: resolvedLogoOverlayUrl,
+    };
+    return {
+      job_id: r.id,
+      user_id: r.user_id || null,
+      user_uuid: r.user_uuid || null,
+      app: r.app,
+      type: r.type || r.app || null,
+      status: r.status,
+      state: mapState(r.status),
+      prompt: r.prompt || null,
+      meta: responseMeta,
+      outputs,
+      error: r.error || null,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    };
+  })
+  .filter((item) => {
+    const appKey = String(item.app || item.type || "").trim().toLowerCase();
+
+    if (["video", "atmo", "atmos", "atmosphere", "atmosfer"].includes(appKey)) {
+      const state = String(item.state || "").toUpperCase();
+      const hasVideo = !!String(item?.meta?.final_video_url || "").trim();
+      return state === "COMPLETED" && hasVideo;
+    }
+
+    return true;
+  });
+
+    __mark("before response");
 
     return res.status(200).json({
       ok: true,
       app,
-      user_id: auth.user_id,
-      items: rows.map((r) => ({
-        job_id: r.id,
-        user_id: r.user_id,
-        app: r.app,
-        status: r.status,
-        state: mapState(r.status),
-        prompt: r.prompt || null,
-        meta: r.meta || null,
-        outputs: r.outputs || [],
-        error: r.error || null,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-      })),
+      auth: true,
+      user_uuid,
+      email,
+      count: items.length,
+      items,
     });
   } catch (e) {
     console.error("jobs/list failed:", e);
@@ -109,4 +250,4 @@ module.exports = async (req, res) => {
       message: String(e?.message || e),
     });
   }
-};
+}
