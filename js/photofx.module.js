@@ -2091,7 +2091,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
                   resolution: String(qs("#pfxResolution", root)?.value || "1080p"),
                   fps: String(qs("#pfxFps", root)?.value || "25"),
                   prompt: String(qs("#pfxPrompt", root)?.value || "").trim(),
-                  include_audio: String(qs("#pfxIncludeMusic", root)?.value || "no") === "yes",
+                     include_audio: !!getState(root)?.audioFile,
                   styles: getSelectedPresets(root),
                   ...extraMeta
                 }
