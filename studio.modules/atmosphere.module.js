@@ -854,6 +854,7 @@ function isAtmoPolicyBlocked(raw) {
 
   async function handleUpload(root, kind, file) {
     const r = root || getAtmoPanelRoot() || document;
+     console.log("[ATM HANDLE UPLOAD]", kind, file?.name || null);
 
     if (!file) {
       setUploadUI(r, kind, { status: "empty", url: "", name: "" });
@@ -1189,6 +1190,7 @@ document.addEventListener(
     if (!root) return;
 
     const file = e.target?.files?.[0] || null;
+     console.log("[ATM UPLOAD CHANGE]", e.target?.id, file?.name || null, file?.type || null);
 
     if (closestWithin(e.target, "#atmImageFile", root)) {
       state.imageFile = file;
