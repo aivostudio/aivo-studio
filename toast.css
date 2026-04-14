@@ -1,10 +1,9 @@
 /* ===== AIVO TOAST — TRUE GLASS / MINIMAL ===== */
 
 :root{
-  --aivo-player-h: 84px; /* global player yüksekliği (70–90 arası ayarlanır) */
-  --aivo-toast-gap: 12px;
+  --aivo-toast-gap: 18px;
   --aivo-safe-b: env(safe-area-inset-bottom, 0px);
-  --aivo-toast-bottom: calc(var(--aivo-player-h) + var(--aivo-toast-gap) + var(--aivo-safe-b));
+  --aivo-toast-bottom: calc(var(--aivo-safe-b) + var(--aivo-toast-gap));
 }
 
 #aivoToasts{
@@ -17,6 +16,8 @@
   z-index: 999999;
   pointer-events: none;
   width: min(520px, calc(100vw - 24px));
+  display: flex;
+  justify-content: center;
 }
 
 .aivo-toast{
