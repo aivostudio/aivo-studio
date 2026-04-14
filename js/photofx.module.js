@@ -1449,9 +1449,8 @@ const builtEffects = {
       return;
     }
 
-    if (form.includeAudio && !form.audioFile) {
-      alert("Müziği videoya dahil etmek için bir audio dosyası seç.");
-      return;
+      if (!form.includeAudio) {
+      // audio opsiyonel
     }
 
     if (LONG_DURATION_VALUES.has(String(form.duration || ""))) {
