@@ -16,35 +16,17 @@
   let active = [];
   let uid = 0;
 
-function ensureContainer() {
- const activeButton = [...document.querySelectorAll('button, .btn, [role="button"]')].find(el => {
-  if (!el || el.offsetParent === null) return false;
-  const txt = (el.textContent || '').trim();
-  return /üretiliyor|olusturuluyor|oluşturuluyor|hazirlaniyor|hazırlanıyor/i.test(txt);
-});
-
-const actionsWrap =
-  activeButton?.closest('.pfxActions, .musicActions, .mfxActions, .actions, .moduleActions');
-
-const host =
-  actionsWrap?.parentElement ||
-  activeButton?.closest('[data-module]') ||
-  document.body;
-
-  let found = document.getElementById("aivoToasts");
-
-  if (!found) {
-    found = document.createElement("div");
-    found.id = "aivoToasts";
+  function ensureContainer() {
+    if (container) return container;
+    container = document.getElementById("aivoToasts");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "aivoToasts";
+      document.body.appendChild(container);
+    }
+    return container;
   }
 
-  if (found.parentNode !== host) {
-    host.appendChild(found);
-  }
-
-  container = found;
-  return container;
-}
   function clampActive() {
     while (active.length > DEFAULTS.maxToasts) {
       const oldest = active.shift();
@@ -72,14 +54,14 @@ const host =
     setTimeout(finalize, 320);
   }
 
-function makeToast({ variant, title, message, duration, host }) {
-  ensureContainer(host);
+  function makeToast({ variant, title, message, duration }) {
+    ensureContainer();
 
-  const id = String(++uid);
-  const el = document.createElement("div");
-  el.className = "aivo-toast";
-  el.dataset.variant = variant;
-  el.dataset.id = id;
+    const id = String(++uid);
+    const el = document.createElement("div");
+    el.className = "aivo-toast";
+    el.dataset.variant = variant;
+    el.dataset.id = id;
 
     const icon = document.createElement("div");
     icon.className = "aivo-toast__icon";
