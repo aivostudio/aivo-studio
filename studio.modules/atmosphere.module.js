@@ -1555,37 +1555,44 @@ function buildBasicPayload() {
   };
 }
 
-  function buildProPayload() {
-    return {
-      app: "atmo",
-      mode: "pro",
-      aspect: state.aspect || "16:9",
+function buildProPayload() {
+  return {
+    app: "atmo",
+    mode: "pro",
 
-      prompt: state.prompt || "",
-      light: state.light || null,
-      mood: state.mood || null,
+    aspect: state.aspect || "16:9",
+    aspect_ratio: state.aspect || "16:9",
+    ratio: state.aspect || "16:9",
 
-      image_url: state.uploads?.proImage?.url || "",
+    prompt: state.prompt || "",
+    light: state.light || null,
+    mood: state.mood || null,
 
-      fps: state.fps || "24",
-      format: state.format || "mp4",
-      duration: state.proDuration || undefined,
-      seam_fix: !!state.seamFix,
+    image_url: state.uploads?.proImage?.url || "",
 
-      logo_url: state.uploads?.logo?.url || "",
-      logo_pos: state.logoPos || "br",
-      logo_size: state.logoSize || "sm",
-      logo_opacity: state.logoOpacity ?? 0.9,
+    fps: state.fps || "24",
+    format: state.format || "mp4",
+    duration: state.proDuration || undefined,
+    seam_fix: !!state.seamFix,
 
-      audio_url: state.uploads?.audio?.url || "",
-      audio_mode: state.audioMode || "none",
-      audio_trim: state.audioTrim || "loop_to_fit",
-      silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
+    logo_url: state.uploads?.logo?.url || "",
+    logo_pos: state.logoPos || "br",
+    logo_size: state.logoSize || "sm",
+    logo_opacity: state.logoOpacity ?? 0.9,
 
-      details: { ...(state.details || {}) }
-    };
-  }
+    audio_url: state.uploads?.audio?.url || "",
+    audio_mode: state.audioMode || "none",
+    audio_trim: state.audioTrim || "loop_to_fit",
+    silent_copy: (state.audioMode === "embed") ? false : !!state.silentCopy,
 
+    details: { ...(state.details || {}) },
+
+    meta: {
+      aspect_ratio: state.aspect || "16:9",
+      ratio: state.aspect || "16:9"
+    }
+  };
+}
   // ------------------------------------------------------------
   // 14) Generate (delegated) — CAPTURE
   // ------------------------------------------------------------
