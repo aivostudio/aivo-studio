@@ -1603,11 +1603,20 @@ const builtEffects = {
     });
   }
 
-  function statefulAudioUrlOrUploaded(root, audioFile) {
+  async function statefulAudioUrlOrUploaded(root, audioFile) {
     const state = getState(root);
     const readyUrl = String(state?.audioFileUrl || "").trim();
     if (readyUrl) return readyUrl;
-    return uploadFile(audioFile, "audio");
+
+    if (
+      state?.audioFileUploadStatus === "uploading" &&
+      state?.audioFileUploadPromise
+    ) {
+      const uploadedUrl = await state.audioFileUploadPromise;
+      return String(uploadedUrl || state?.audioFileUrl || "").trim();
+    }
+
+    return await uploadFile(audioFile, "audio");
   }
 
   function initStateFromDOM(root) {
