@@ -115,8 +115,8 @@ function positionToastContainer(container) {
   }
 
 const host =
-  document.getElementById("moduleHost") ||
   document.getElementById("mainWorkspace") ||
+  document.getElementById("twoPanelWrap") ||
   btn.parentElement;
 
 if (container.parentNode !== host) {
