@@ -84,7 +84,6 @@ function getActiveGenerateButton() {
 
   return candidates[0];
 }
-
 function positionToastContainer(container) {
   const btn = getActiveGenerateButton();
 
@@ -100,24 +99,32 @@ function positionToastContainer(container) {
     container.style.width = "min(560px, calc(100vw - 32px))";
     container.style.maxWidth = "min(560px, calc(100vw - 32px))";
     container.style.display = "block";
+    container.style.margin = "0 auto";
     return;
   }
 
-  const r = btn.getBoundingClientRect();
-  const width = Math.min(560, Math.max(320, Math.round(r.width)));
-  const left = Math.round(r.left + (r.width / 2));
+  const host =
+    btn.closest(".mod-card, .panel-card, .section-card, .music-form, .studio-card") ||
+    btn.parentElement;
 
-  container.style.position = "fixed";
-  container.style.left = `${left}px`;
-container.style.top = `${Math.round(r.bottom + 34)}px`;
+  if (container.parentNode !== host) {
+    host.appendChild(container);
+  }
+
+  container.style.position = "relative";
+  container.style.left = "auto";
   container.style.right = "auto";
+  container.style.top = "auto";
   container.style.bottom = "auto";
-  container.style.transform = "translateX(-50%)";
-  container.style.zIndex = "999999";
+  container.style.transform = "none";
+  container.style.zIndex = "20";
   container.style.pointerEvents = "none";
-  container.style.width = `${width}px`;
-  container.style.maxWidth = "calc(100vw - 32px)";
+  container.style.width = `${Math.round(btn.offsetWidth)}px`;
+  container.style.maxWidth = `${Math.round(btn.offsetWidth)}px`;
   container.style.display = "block";
+  container.style.marginLeft = "auto";
+  container.style.marginRight = "auto";
+  container.style.marginTop = "14px";
 }
 function makeToast({ variant, title, message, duration }) {
   container = ensureContainer();
