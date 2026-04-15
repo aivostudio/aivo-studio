@@ -288,9 +288,8 @@ register(key, impl){
       callPanelShow(key, payload);
 
       currentUnmount = cached.unmount || null;
-
-      if(lastQuery && typeof impl.onSearch === "function"){
-        safeCall(impl.onSearch, lastQuery);
+      if(typeof impl.onSearch === "function"){
+        safeCall(impl.onSearch, "");
       }
     },
 
