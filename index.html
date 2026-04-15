@@ -2543,30 +2543,33 @@
       <div class="card-title" id="authCardTitle">Email ile Giriş</div>
       <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
 
-           <div class="email-row email-row-2">
-        <input
-          id="loginEmail"
-          name="username"
-          type="email"
-          placeholder="ornek@aivo.tr"
-          autocomplete="username"
-          autocapitalize="off"
-          autocorrect="off"
-          spellcheck="false"
-          inputmode="email"
-        />
-        <input
-          id="loginPass"
-          name="password"
-          type="password"
-          placeholder="Şifre"
-          autocomplete="current-password"
-          autocapitalize="off"
-          autocorrect="off"
-          spellcheck="false"
-        />
-      </div>
-
+       <div class="email-row email-row-2">
+  <input
+    id="loginEmail"
+    name="aivo_login_email"
+    type="text"
+    placeholder="ornek@aivo.tr"
+    autocomplete="off"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+    inputmode="email"
+    data-lpignore="true"
+    data-1p-ignore="true"
+  />
+  <input
+    id="loginPass"
+    name="aivo_login_pass"
+    type="password"
+    placeholder="Şifre"
+    autocomplete="off"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+    data-lpignore="true"
+    data-1p-ignore="true"
+  />
+</div>
       <!-- REGISTER EXTRA -->
       <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
         <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
