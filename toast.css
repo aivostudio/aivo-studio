@@ -282,3 +282,50 @@
   -webkit-backdrop-filter: none !important;
   border-radius: 0 !important;
 }
+/* TOAST TEXT TRUE CENTER — final */
+.aivo-toast{
+  display: grid !important;
+  grid-template-columns: 44px 1fr 44px !important;
+  align-items: center !important;
+  column-gap: 12px !important;
+}
+
+.aivo-toast > div{
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.aivo-toast__icon{
+  justify-self: start !important;
+  align-self: center !important;
+  margin: 0 !important;
+}
+
+.aivo-toast__x{
+  justify-self: end !important;
+  align-self: center !important;
+  margin: 0 !important;
+}
+
+.aivo-toast__title,
+.aivo-toast__msg{
+  width: 100% !important;
+  text-align: center !important;
+}
