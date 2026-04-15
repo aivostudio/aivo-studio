@@ -19,33 +19,27 @@
   justify-content: center;
   margin-top: 10px;
 }
-
 .aivo-toast{
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
 
-  padding: 10px 14px;
-  min-width: 220px;
-  max-width: 360px;
+  padding: 12px 18px;
+  min-width: 520px;
+  max-width: 680px;
 
-  border-radius: 12px;
+  border-radius: 18px;
 
-  /* 🔥 CAM ETKİSİ */
   background: rgba(20, 20, 30, 0.45);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-
-  /* 🔥 İNCE BEYAZ KENAR */
   border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 
-  color: rgba(255,255,255,0.92);
-  font-size: 13px;
+  color: rgba(255,255,255,0.94);
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.35;
-
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.35);
+  line-height: 1.4;
+  text-align: center;
 
   opacity: 0;
   transform: translateY(-6px);
