@@ -724,6 +724,125 @@ if (r.status === 200) {
   setOpen(false);
 })();
 </script>
+<script>
+(function AIVO_MODULEHOST_VISIBLE_INPUT_GUARD(){
+  if (window.__AIVO_MODULEHOST_VISIBLE_INPUT_GUARD__) return;
+  window.__AIVO_MODULEHOST_VISIBLE_INPUT_GUARD__ = true;
 
+  function looksLikeEmail(v){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
+  }
+
+  function isVisible(el){
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden") return false;
+    if (el.offsetParent === null && cs.position !== "fixed") return false;
+    return true;
+  }
+
+  function isProtected(el){
+    if (!el) return true;
+    if (el.closest('#rightPanelHost')) return true;
+    if (el.closest('#authGuest, #authUser, #loginModal, .login-modal, .auth-user, .auth-guest')) return true;
+    if (el.matches('#profile-email, [data-profile-input-email]')) return true;
+
+    const type = String(el.getAttribute("type") || "").toLowerCase();
+    const name = String(el.getAttribute("name") || "").toLowerCase();
+    const id   = String(el.id || "").toLowerCase();
+
+    if (type === "password" || type === "hidden" || type === "checkbox" || type === "radio" || type === "file") return true;
+    if (name === "username" || name === "password") return true;
+    if (id === "loginemail" || id === "loginpass") return true;
+
+    return false;
+  }
+
+  function harden(el){
+    if (!el || isProtected(el)) return;
+
+    el.setAttribute("autocomplete", "off");
+    el.setAttribute("autocapitalize", "off");
+    el.setAttribute("autocorrect", "off");
+    el.setAttribute("spellcheck", "false");
+
+    if (el.tagName === "INPUT") {
+      const type = String(el.getAttribute("type") || "text").toLowerCase();
+      if (type === "email" || type === "search") {
+        el.setAttribute("type", "text");
+      }
+      if (!el.hasAttribute("inputmode")) {
+        el.setAttribute("inputmode", "text");
+      }
+    }
+  }
+
+  function clean(el){
+    if (!el || isProtected(el) || !isVisible(el)) return;
+    harden(el);
+
+    const val = String(el.value || "").trim();
+    if (!val) return;
+
+    if (looksLikeEmail(val)) {
+      el.value = "";
+      try { el.dispatchEvent(new Event("input", { bubbles:true })); } catch (_) {}
+      try { el.dispatchEvent(new Event("change", { bubbles:true })); } catch (_) {}
+    }
+  }
+
+  function sweep(){
+    const host = document.getElementById("moduleHost");
+    if (!host) return;
+
+    const nodes = host.querySelectorAll('input[type="text"], input[type="search"], input[type="email"], textarea, input:not([type])');
+    for (const el of nodes) {
+      clean(el);
+    }
+  }
+
+  function burst(){
+    sweep();
+    setTimeout(sweep, 60);
+    setTimeout(sweep, 180);
+    setTimeout(sweep, 400);
+    setTimeout(sweep, 900);
+  }
+
+  document.addEventListener("focusin", function(e){
+    const el = e.target;
+    if (!el) return;
+    if (!el.closest || !el.closest("#moduleHost")) return;
+    clean(el);
+  }, true);
+
+  document.addEventListener("aivo:module-mounted", burst);
+  window.addEventListener("hashchange", burst, { passive:true });
+  window.addEventListener("pageshow", burst, { passive:true });
+  window.addEventListener("focus", burst, { passive:true });
+
+  const obs = new MutationObserver(function(muts){
+    for (const m of muts) {
+      if (m.addedNodes && m.addedNodes.length) {
+        burst();
+        return;
+      }
+    }
+  });
+
+  function start(){
+    const host = document.getElementById("moduleHost");
+    if (!host) return;
+    burst();
+    obs.observe(host, { childList:true, subtree:true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once:true });
+  } else {
+    start();
+  }
+})();
+</script>
 </body>
 </html>
