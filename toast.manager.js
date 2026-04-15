@@ -138,8 +138,8 @@ container.style.bottom = "-20px";
 container.style.transform = "translateX(-50%)";
 container.style.zIndex = "41";
 container.style.pointerEvents = "none";
-container.style.width = "500px";
-container.style.maxWidth = "calc(100% - 120px)";
+container.style.width = "460px";
+container.style.maxWidth = "calc(100% - 168px)";
 container.style.display = "block";
 container.style.margin = "0";
 }
