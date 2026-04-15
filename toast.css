@@ -160,31 +160,60 @@
   background: transparent !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 12px !important;
-}
-/* ✅ Toast konumu: Topbar altında, sağ üst */
-:root{
-  --aivo-topbar-h: 72px; /* topbar gerçek yüksekliğine göre 64/72/80 ayarla */
-}
-
-/* senin container classın neyse ona uygula:
-   .toast-stack / .toast-container / #toastRoot gibi */
+/* TOAST: button altına otursun + incelsin */
+#aivoToasts,
 .toast-container,
 .toast-stack,
-#aivoToastRoot {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + var(--aivo-topbar-h) + 12px);
-  right: calc(env(safe-area-inset-right, 0px) + 12px);
-  left: auto;
-  bottom: auto;
-  z-index: 99999;
-  max-width: min(360px, calc(100vw - 24px));
-  pointer-events: none; /* toast üstüne tıklanmasın */
+#aivoToastRoot{
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin-top: 10px !important;
+  display: flex !important;
+  justify-content: center !important;
+  pointer-events: none !important;
 }
 
-.toast-container .toast,
-.toast-stack .toast,
-#aivoToastRoot .toast {
-  pointer-events: auto; /* kapatma butonu çalışsın */
+.aivo-toast{
+  position: relative !important;
+  min-height: 58px !important;
+  padding: 8px 16px !important;
+  min-width: 420px !important;
+  max-width: 560px !important;
+  border-radius: 16px !important;
+}
+
+.aivo-toast > div{
+  width: calc(100% - 120px) !important;
+}
+
+.aivo-toast__title{
+  font-size: 15px !important;
+  line-height: 1.05 !important;
+  margin: 0 0 2px 0 !important;
+}
+
+.aivo-toast__msg{
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+  margin: 0 !important;
+}
+
+.aivo-toast__icon{
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 13px !important;
+}
+
+.aivo-toast__x{
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 14px !important;
 }
 /* HARD KILL: tint/boyanmayı kes */
 #aivoToasts .aivo-toast{
