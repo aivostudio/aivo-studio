@@ -102,64 +102,46 @@ function getActiveGenerateButton() {
   return candidates[0];
 }
 function positionToastContainer(container) {
-  const btn = getActiveGenerateButton();
+  const portal =
+    document.getElementById("studioToastPortal") ||
+    document.getElementById("mainWorkspace") ||
+    document.body;
 
-  if (!btn) {
-    container.style.position = "fixed";
-    container.style.left = "50%";
-    container.style.bottom = "24px";
-    container.style.top = "auto";
-    container.style.right = "auto";
-    container.style.transform = "translateX(-50%)";
-    container.style.zIndex = "999999";
-    container.style.pointerEvents = "none";
-    container.style.width = "min(560px, calc(100vw - 32px))";
-    container.style.maxWidth = "min(560px, calc(100vw - 32px))";
-    container.style.display = "block";
-    container.style.margin = "0 auto";
-    return;
+  if (container.parentNode !== portal) {
+    portal.appendChild(container);
   }
 
-const portal =
-  document.getElementById("studioToastPortal") ||
-  document.getElementById("mainWorkspace") ||
-  document.body;
+  const studioRoot = document.getElementById("studioRoot");
+  const moduleHost = document.getElementById("moduleHost");
 
-if (container.parentNode !== portal) {
-  portal.appendChild(container);
-}
+  if (studioRoot && moduleHost && portal === document.getElementById("studioToastPortal")) {
+    const rootRect = studioRoot.getBoundingClientRect();
+    const moduleRect = moduleHost.getBoundingClientRect();
 
-const studioRoot = document.getElementById("studioRoot");
-const moduleHost = document.getElementById("moduleHost");
+    portal.style.position = "absolute";
+    portal.style.left = `${Math.round(moduleRect.left - rootRect.left)}px`;
+    portal.style.top = "auto";
+    portal.style.right = "auto";
+    portal.style.bottom = "-26px";
+    portal.style.width = `${Math.round(moduleRect.width)}px`;
+    portal.style.maxWidth = `${Math.round(moduleRect.width)}px`;
+    portal.style.pointerEvents = "none";
+    portal.style.zIndex = "40";
+    portal.style.margin = "0";
+  }
 
-if (studioRoot && moduleHost && portal === document.getElementById("studioToastPortal")) {
-  const rootRect = studioRoot.getBoundingClientRect();
-  const moduleRect = moduleHost.getBoundingClientRect();
-
-  portal.style.position = "absolute";
-  portal.style.left = `${Math.round(moduleRect.left - rootRect.left)}px`;
-  portal.style.top = "auto";
-  portal.style.right = "auto";
-portal.style.bottom = "-20px";
-  portal.style.width = `${Math.round(moduleRect.width)}px`;
-  portal.style.maxWidth = `${Math.round(moduleRect.width)}px`;
-  portal.style.pointerEvents = "none";
-  portal.style.zIndex = "40";
-  portal.style.margin = "0";
-}
-
-container.style.position = "absolute";
-container.style.left = "50%";
-container.style.top = "auto";
-container.style.right = "auto";
-container.style.bottom = "-20px";
-container.style.transform = "translateX(-50%)";
-container.style.zIndex = "41";
-container.style.pointerEvents = "none";
-container.style.width = "560px";
-container.style.maxWidth = "calc(100% - 48px)";
-container.style.display = "block";
-container.style.margin = "0";
+  container.style.position = "absolute";
+  container.style.left = "50%";
+  container.style.top = "auto";
+  container.style.right = "auto";
+  container.style.bottom = "-20px";
+  container.style.transform = "translateX(-50%)";
+  container.style.zIndex = "41";
+  container.style.pointerEvents = "none";
+  container.style.width = "560px";
+  container.style.maxWidth = "calc(100% - 48px)";
+  container.style.display = "block";
+  container.style.margin = "0";
 }
 function makeToast({ variant, title, message, duration }) {
   container = ensureContainer();
