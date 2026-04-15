@@ -2542,14 +2542,13 @@
     <div class="login-card login-email">
       <div class="card-title" id="authCardTitle">Email ile Giriş</div>
       <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
-
-       <div class="email-row email-row-2">
+<div class="email-row email-row-2">
   <input
     id="loginEmail"
-    name="aivo_login_email"
-    type="text"
+    name="username"
+    type="email"
     placeholder="ornek@aivo.tr"
-    autocomplete="off"
+    autocomplete="username"
     autocapitalize="off"
     autocorrect="off"
     spellcheck="false"
@@ -2559,10 +2558,10 @@
   />
   <input
     id="loginPass"
-    name="aivo_login_pass"
+    name="current-password"
     type="password"
     placeholder="Şifre"
-    autocomplete="off"
+    autocomplete="current-password"
     autocapitalize="off"
     autocorrect="off"
     spellcheck="false"
