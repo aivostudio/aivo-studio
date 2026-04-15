@@ -130,18 +130,18 @@ function positionToastContainer(container) {
     portal.style.margin = "0";
   }
 
-  container.style.position = "absolute";
-  container.style.left = "50%";
-  container.style.top = "auto";
-  container.style.right = "auto";
-  container.style.bottom = "-20px";
-  container.style.transform = "translateX(-50%)";
-  container.style.zIndex = "41";
-  container.style.pointerEvents = "none";
-  container.style.width = "560px";
-  container.style.maxWidth = "calc(100% - 48px)";
-  container.style.display = "block";
-  container.style.margin = "0";
+container.style.position = "absolute";
+container.style.left = "50%";
+container.style.top = "auto";
+container.style.right = "auto";
+container.style.bottom = "-20px";
+container.style.transform = "translateX(-50%)";
+container.style.zIndex = "41";
+container.style.pointerEvents = "none";
+container.style.width = "500px";
+container.style.maxWidth = "calc(100% - 96px)";
+container.style.display = "block";
+container.style.margin = "0";
 }
 function makeToast({ variant, title, message, duration }) {
   container = ensureContainer();
