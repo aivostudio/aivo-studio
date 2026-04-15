@@ -109,7 +109,7 @@ function positionToastContainer(container) {
 
   container.style.position = "fixed";
   container.style.left = `${left}px`;
-  container.style.top = `${Math.round(r.bottom + 12)}px`;
+container.style.top = `${Math.round(r.bottom + 34)}px`;
   container.style.right = "auto";
   container.style.bottom = "auto";
   container.style.transform = "translateX(-50%)";
