@@ -1,20 +1,25 @@
 /* ===== AIVO TOAST — CLEAN FINAL ===== */
 
 #aivoToasts{
-  position: static !important;
-  width: 100% !important;
-  max-width: 560px !important;
-  margin: 14px auto 0 auto !important;
+  position: fixed !important;
+  top: 92px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  width: min(560px, calc(100vw - 32px)) !important;
+  max-width: min(560px, calc(100vw - 32px)) !important;
+  margin: 0 !important;
+
   display: flex !important;
   justify-content: center !important;
-  align-items: flex-start !important;
+  align-items: center !important;
+
   pointer-events: none !important;
-  left: auto !important;
+  z-index: 99999 !important;
+
   right: auto !important;
-  top: auto !important;
   bottom: auto !important;
-  transform: none !important;
-  clear: both !important;
+  clear: none !important;
 }
 .aivo-toast{
   position: relative !important;
