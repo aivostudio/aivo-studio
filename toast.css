@@ -2,10 +2,11 @@
 
 #aivoToasts{
   position: fixed !important;
-  top: 92px !important;
-  left: 0 !important;
-  right: 0 !important;
-  transform: none !important;
+  left: 50% !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: 24px !important;
+  transform: translateX(-50%) !important;
 
   width: min(560px, calc(100vw - 32px)) !important;
   max-width: min(560px, calc(100vw - 32px)) !important;
@@ -15,7 +16,6 @@
   pointer-events: none !important;
   z-index: 99999 !important;
 
-  bottom: auto !important;
   clear: none !important;
 }
 .aivo-toast{
