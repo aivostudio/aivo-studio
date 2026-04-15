@@ -89,14 +89,14 @@ max-width: min(460px, calc(100vw - 96px)) !important;
   cursor: pointer !important;
   z-index: 2 !important;
 }
-.aivo-toast > div{
+.aivo-toast__body{
   position: absolute !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
 
-  width: calc(100% - 84px) !important;
-  max-width: calc(100% - 84px) !important;
+  width: calc(100% - 96px) !important;
+  max-width: calc(100% - 96px) !important;
 
   display: flex !important;
   flex-direction: column !important;
