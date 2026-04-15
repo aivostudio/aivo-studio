@@ -91,7 +91,6 @@
       });
     }
   }
-
   function setHeader(opts){
     opts = opts || {};
     if(titleEl && (opts.title != null)) titleEl.textContent = String(opts.title);
@@ -108,8 +107,6 @@
       if(opts.resetSearch){
         lastQuery = "";
         searchEl.value = "";
-      }else{
-        searchEl.value = lastQuery || "";
       }
     }
   }
