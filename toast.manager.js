@@ -53,10 +53,75 @@
 
     setTimeout(finalize, 320);
   }
+function getActiveGenerateButton() {
+  const candidates = Array.from(document.querySelectorAll("button, [role='button'], .btn"))
+    .filter((el) => {
+      if (!el) return false;
+      const txt = String(el.textContent || "").trim().toLowerCase();
+      if (!txt) return false;
 
+      const looksLikeGenerate =
+        txt.includes("oluştur") ||
+        txt.includes("üret") ||
+        txt.includes("üretiliyor");
+
+      if (!looksLikeGenerate) return false;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 180 || r.height < 36) return false;
+      if (r.bottom <= 0 || r.top >= window.innerHeight) return false;
+
+      return true;
+    });
+
+  if (!candidates.length) return null;
+
+  candidates.sort((a, b) => {
+    const ra = a.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    return rb.top - ra.top; // en aşağıdaki üret butonunu seç
+  });
+
+  return candidates[0];
+}
+
+function positionToastContainer(container) {
+  const btn = getActiveGenerateButton();
+
+  if (!btn) {
+    container.style.position = "fixed";
+    container.style.left = "50%";
+    container.style.bottom = "24px";
+    container.style.top = "auto";
+    container.style.right = "auto";
+    container.style.transform = "translateX(-50%)";
+    container.style.zIndex = "999999";
+    container.style.pointerEvents = "none";
+    container.style.width = "min(560px, calc(100vw - 32px))";
+    container.style.maxWidth = "min(560px, calc(100vw - 32px))";
+    container.style.display = "block";
+    return;
+  }
+
+  const r = btn.getBoundingClientRect();
+  const width = Math.min(560, Math.max(320, Math.round(r.width)));
+  const left = Math.round(r.left + (r.width / 2));
+
+  container.style.position = "fixed";
+  container.style.left = `${left}px`;
+  container.style.top = `${Math.round(r.bottom + 12)}px`;
+  container.style.right = "auto";
+  container.style.bottom = "auto";
+  container.style.transform = "translateX(-50%)";
+  container.style.zIndex = "999999";
+  container.style.pointerEvents = "none";
+  container.style.width = `${width}px`;
+  container.style.maxWidth = "calc(100vw - 32px)";
+  container.style.display = "block";
+}
 function makeToast({ variant, title, message, duration }) {
   container = ensureContainer();
-  container.removeAttribute("style");
+  positionToastContainer(container);
 
   const id = String(++uid);
   const el = document.createElement("div");
