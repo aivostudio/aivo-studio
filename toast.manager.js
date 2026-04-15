@@ -123,20 +123,25 @@ if (container.parentNode !== host) {
   host.appendChild(container);
 }
 
-  container.style.position = "relative";
-  container.style.left = "auto";
-  container.style.right = "auto";
-  container.style.top = "auto";
-  container.style.bottom = "auto";
-  container.style.transform = "none";
-  container.style.zIndex = "20";
-  container.style.pointerEvents = "none";
-  container.style.width = `${Math.round(btn.offsetWidth)}px`;
-  container.style.maxWidth = `${Math.round(btn.offsetWidth)}px`;
-  container.style.display = "block";
-  container.style.marginLeft = "auto";
-  container.style.marginRight = "auto";
-  container.style.marginTop = "14px";
+const hostRect = host.getBoundingClientRect();
+const btnRect = btn.getBoundingClientRect();
+
+const left = Math.round((btnRect.left - hostRect.left) + (btnRect.width / 2));
+const top = Math.round((btnRect.bottom - hostRect.top) + 14);
+const width = Math.min(560, Math.round(btnRect.width));
+
+container.style.position = "absolute";
+container.style.left = `${left}px`;
+container.style.top = `${top}px`;
+container.style.right = "auto";
+container.style.bottom = "auto";
+container.style.transform = "translateX(-50%)";
+container.style.zIndex = "30";
+container.style.pointerEvents = "none";
+container.style.width = `${width}px`;
+container.style.maxWidth = `${width}px`;
+container.style.display = "block";
+container.style.margin = "0";
 }
 function makeToast({ variant, title, message, duration }) {
   container = ensureContainer();
