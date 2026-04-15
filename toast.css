@@ -122,11 +122,11 @@ max-width: min(460px, calc(100vw - 96px)) !important;
   font-size: 17px !important;
   font-weight: 800 !important;
   line-height: 1.08 !important;
-  letter-spacing: -0.02em !important;
-  color: rgba(255,255,255,0.92) !important;
+  letter-spacing: 0.012em !important;
+  color: rgba(255,255,255,0.86) !important;
   text-shadow:
-    0 1px 0 rgba(255,255,255,0.08),
-    0 10px 24px rgba(0,0,0,0.28) !important;
+    0 1px 0 rgba(255,255,255,0.04),
+    0 8px 22px rgba(0,0,0,0.24) !important;
 }
 
 .aivo-toast__msg{
@@ -136,11 +136,11 @@ max-width: min(460px, calc(100vw - 96px)) !important;
   font-size: 14px !important;
   font-weight: 600 !important;
   line-height: 1.2 !important;
-  letter-spacing: -0.01em !important;
-  color: rgba(255,255,255,0.74) !important;
+  letter-spacing: 0.006em !important;
+  color: rgba(255,255,255,0.68) !important;
   text-shadow:
-    0 1px 0 rgba(255,255,255,0.05),
-    0 8px 20px rgba(0,0,0,0.22) !important;
+    0 1px 0 rgba(255,255,255,0.03),
+    0 6px 18px rgba(0,0,0,0.18) !important;
   opacity: 1 !important;
 }
 /* TOAST SELF CENTER FIX */
