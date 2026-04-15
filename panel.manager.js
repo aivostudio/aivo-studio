@@ -62,8 +62,39 @@
             <div class="rpTitle">Panel</div>
             <div class="rpMeta"></div>
           </div>
-          <div class="rpHeaderBottom">
-               <input class="rpSearch" type="search" name="aivo_panel_search" placeholder="Ara..." autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="search" data-form-type="other" />
+                  <div class="rpHeaderBottom">
+            <form autocomplete="off" onsubmit="return false">
+              <input
+                type="text"
+                name="fake_username"
+                autocomplete="username"
+                tabindex="-1"
+                aria-hidden="true"
+                style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"
+              />
+              <input
+                type="password"
+                name="fake_password"
+                autocomplete="current-password"
+                tabindex="-1"
+                aria-hidden="true"
+                style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"
+              />
+              <input
+                class="rpSearch"
+                type="search"
+                name="aivo_panel_search_q"
+                placeholder="Ara..."
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                inputmode="search"
+                data-form-type="other"
+                data-lpignore="true"
+                data-1p-ignore="true"
+              />
+            </form>
           </div>
         </div>
 
