@@ -193,4 +193,52 @@
   filter: none !important;
   mix-blend-mode: normal !important;
 }
+/* TOAST TEXT TRUE CENTER */
+.aivo-toast{
+  position: relative !important;
+  min-height: 84px !important;
+}
 
+.aivo-toast > div{
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+
+  width: calc(100% - 140px) !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}
+
+.aivo-toast__title{
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  margin: 0 0 4px 0 !important;
+  text-align: center !important;
+}
+
+.aivo-toast__msg{
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  opacity: .92 !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+
+.aivo-toast__icon{
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.aivo-toast__x{
+  position: relative !important;
+  z-index: 2 !important;
+  margin-left: auto !important;
+}
