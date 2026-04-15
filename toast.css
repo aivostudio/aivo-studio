@@ -1,9 +1,14 @@
 /* ===== AIVO TOAST — CLEAN FINAL ===== */
 
 #aivoToasts{
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 22px !important;
+  transform: translateX(-50%) !important;
+
   width: min(560px, calc(100vw - 32px)) !important;
   max-width: min(560px, calc(100vw - 32px)) !important;
-  margin: 14px auto 0 auto !important;
+  margin: 0 !important;
 
   display: block !important;
   pointer-events: none !important;
