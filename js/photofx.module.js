@@ -2019,6 +2019,62 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
           return;
         }
+        const form = collectForm(root);
+
+        if (!String(form.prompt || "").trim()) {
+          try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+          const promptEl = qs("#pfxPrompt", root);
+          if (promptEl) promptEl.focus();
+          return;
+        }
+
+        if (form.imageFile) {
+          const imageInput = qs("#pfxImageInput", root);
+
+          if (
+            imageInput &&
+            imageInput.files &&
+            imageInput.files[0] &&
+            !form.imageFile
+          ) {
+            try { window.toast?.info?.("Ana görsel henüz hazır değil"); } catch {}
+            return;
+          }
+        }
+
+        if (!form.imageFile) {
+          alert("Lütfen bir ana görsel seç.");
+          return;
+        }
+
+        if (!Array.isArray(form.styles) || !form.styles.length) {
+          alert("Lütfen en az 1 efekt stili seç.");
+          return;
+        }
+
+        if (form.audioFile) {
+          const currentState = getState(root);
+
+          if (
+            currentState?.audioFileUploadStatus === "uploading" &&
+            currentState?.audioFileUploadPromise
+          ) {
+            try {
+              await currentState.audioFileUploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (
+            !String(currentState?.audioFileUrl || "").trim() ||
+            currentState?.audioFileUploadStatus !== "ready"
+          ) {
+            try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
+            return;
+          }
+        }
+
         const creditCost = getPhotoFxEstimatedCredits(root);
         const creditReason = "studio_photofx_generate";
         const consumeRequestId = `photofx:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
@@ -2081,7 +2137,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
                   resolution: String(qs("#pfxResolution", root)?.value || "1080p"),
                   fps: String(qs("#pfxFps", root)?.value || "25"),
                   prompt: String(qs("#pfxPrompt", root)?.value || "").trim(),
-                     include_audio: !!getState(root)?.audioFile,
+                  include_audio: !!getState(root)?.audioFile,
                   styles: getSelectedPresets(root),
                   ...extraMeta
                 }
