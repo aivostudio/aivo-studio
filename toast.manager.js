@@ -122,24 +122,18 @@ const host =
 if (container.parentNode !== host) {
   host.appendChild(container);
 }
-
-const hostRect = host.getBoundingClientRect();
-const btnRect = btn.getBoundingClientRect();
-
-const left = Math.round((btnRect.left - hostRect.left) + (btnRect.width / 2));
-const top = Math.round((btnRect.bottom - hostRect.top) + 14);
-const width = Math.min(560, Math.round(btnRect.width));
+const width = 560;
 
 container.style.position = "absolute";
-container.style.left = `${left}px`;
-container.style.top = `${top}px`;
+container.style.left = "50%";
+container.style.top = "auto";
 container.style.right = "auto";
-container.style.bottom = "auto";
+container.style.bottom = "18px";
 container.style.transform = "translateX(-50%)";
 container.style.zIndex = "30";
 container.style.pointerEvents = "none";
 container.style.width = `${width}px`;
-container.style.maxWidth = `${width}px`;
+container.style.maxWidth = "calc(100% - 48px)";
 container.style.display = "block";
 container.style.margin = "0";
 }
