@@ -2,8 +2,8 @@
 
 #aivoToasts{
   position: static !important;
-  width: min(1180px, calc(100% - 96px)) !important;
-  max-width: none !important;
+  width: 100% !important;
+  max-width: 560px !important;
   margin: 14px auto 0 auto !important;
   display: flex !important;
   justify-content: center !important;
@@ -16,7 +16,6 @@
   transform: none !important;
   clear: both !important;
 }
-
 .aivo-toast{
   position: relative !important;
   width: 100% !important;
