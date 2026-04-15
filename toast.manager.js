@@ -120,25 +120,43 @@ function positionToastContainer(container) {
     return;
   }
 
-const host =
+const portal =
   document.getElementById("studioToastPortal") ||
   document.getElementById("mainWorkspace") ||
   document.body;
 
-if (container.parentNode !== host) {
-  host.appendChild(container);
+if (container.parentNode !== portal) {
+  portal.appendChild(container);
 }
-const width = 560;
+
+const studioRoot = document.getElementById("studioRoot");
+const moduleHost = document.getElementById("moduleHost");
+
+if (studioRoot && moduleHost && portal === document.getElementById("studioToastPortal")) {
+  const rootRect = studioRoot.getBoundingClientRect();
+  const moduleRect = moduleHost.getBoundingClientRect();
+
+  portal.style.position = "absolute";
+  portal.style.left = `${Math.round(moduleRect.left - rootRect.left)}px`;
+  portal.style.top = "auto";
+  portal.style.right = "auto";
+  portal.style.bottom = "18px";
+  portal.style.width = `${Math.round(moduleRect.width)}px`;
+  portal.style.maxWidth = `${Math.round(moduleRect.width)}px`;
+  portal.style.pointerEvents = "none";
+  portal.style.zIndex = "40";
+  portal.style.margin = "0";
+}
 
 container.style.position = "absolute";
 container.style.left = "50%";
 container.style.top = "auto";
 container.style.right = "auto";
-container.style.bottom = "18px";
+container.style.bottom = "0";
 container.style.transform = "translateX(-50%)";
-container.style.zIndex = "30";
+container.style.zIndex = "41";
 container.style.pointerEvents = "none";
-container.style.width = `${width}px`;
+container.style.width = "560px";
 container.style.maxWidth = "calc(100% - 48px)";
 container.style.display = "block";
 container.style.margin = "0";
