@@ -82,7 +82,7 @@
               />
               <input
                 class="rpSearch"
-                type="search"
+              type="text"
                 name="aivo_panel_search_q"
                 placeholder="Ara..."
                 autocomplete="off"
