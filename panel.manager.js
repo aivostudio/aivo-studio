@@ -63,7 +63,7 @@
             <div class="rpMeta"></div>
           </div>
           <div class="rpHeaderBottom">
-            <input class="rpSearch" type="search" placeholder="Ara..." autocomplete="off" />
+               <input class="rpSearch" type="search" name="aivo_panel_search" placeholder="Ara..." autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="search" data-form-type="other" />
           </div>
         </div>
 
