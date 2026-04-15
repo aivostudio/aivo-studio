@@ -140,7 +140,7 @@ if (studioRoot && moduleHost && portal === document.getElementById("studioToastP
   portal.style.left = `${Math.round(moduleRect.left - rootRect.left)}px`;
   portal.style.top = "auto";
   portal.style.right = "auto";
-portal.style.bottom = "2px";
+portal.style.bottom = "-26px";
   portal.style.width = `${Math.round(moduleRect.width)}px`;
   portal.style.maxWidth = `${Math.round(moduleRect.width)}px`;
   portal.style.pointerEvents = "none";
