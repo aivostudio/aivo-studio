@@ -5,9 +5,8 @@
   left: 50% !important;
   bottom: 22px !important;
   transform: translateX(-50%) !important;
-
-  width: min(560px, calc(100vw - 32px)) !important;
-  max-width: min(560px, calc(100vw - 32px)) !important;
+width: min(460px, calc(100vw - 96px)) !important;
+max-width: min(460px, calc(100vw - 96px)) !important;
   margin: 0 !important;
 
   display: block !important;
