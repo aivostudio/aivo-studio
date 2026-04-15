@@ -114,13 +114,14 @@ function positionToastContainer(container) {
     return;
   }
 
-  const host =
-    btn.closest(".mod-card, .panel-card, .section-card, .music-form, .studio-card") ||
-    btn.parentElement;
+const host =
+  document.getElementById("moduleHost") ||
+  document.getElementById("mainWorkspace") ||
+  btn.parentElement;
 
-  if (container.parentNode !== host) {
-    host.appendChild(container);
-  }
+if (container.parentNode !== host) {
+  host.appendChild(container);
+}
 
   container.style.position = "relative";
   container.style.left = "auto";
