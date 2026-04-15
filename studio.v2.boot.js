@@ -87,16 +87,7 @@
 
     const g = window.toast;
     if (g && typeof g === "object") {
-      const wrap = (fn, type) => (msg) => {
-        try { fn(msg); } catch {}
-        pushToast(type, msg);
-      };
-
-      if (typeof g.success === "function") g.success = wrap(g.success, "success");
-      if (typeof g.error === "function") g.error = wrap(g.error, "error");
-      if (typeof g.info === "function") g.info = wrap(g.info, "info");
-
-      console.log("[BOOT] toast wrapped with DOM fallback");
+    console.log("[BOOT] toast fallback SKIPPED (real toast active)");
     } else {
       window.toast = {
         success: (m) => pushToast("success", m),
@@ -278,7 +269,7 @@ window.addEventListener("DOMContentLoaded", () => {
   installToastFallback();
 
   console.log("[BOOT] AIVO_PLAYER:", window.AIVO_PLAYER);
-  if (window.toast?.success) window.toast.success("Boot OK ✅");
+
 
   if (!location.hash) location.hash = "music";
 
