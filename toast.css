@@ -8,8 +8,8 @@
   bottom: auto !important;
   transform: none !important;
 
-  width: 0 !important;
-  max-width: none !important;
+  width: 560px !important;
+  max-width: calc(100vw - 32px) !important;
   margin: 0 !important;
 
   display: block !important;
