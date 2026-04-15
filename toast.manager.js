@@ -54,21 +54,32 @@
     setTimeout(finalize, 320);
   }
 function getActiveGenerateButton() {
-  const candidates = Array.from(document.querySelectorAll("button, [role='button'], .btn"))
+  const root =
+    document.querySelector(".music-form") ||
+    document.querySelector(".mod-card") ||
+    document.querySelector(".section-card") ||
+    document.querySelector("main") ||
+    document;
+
+  const candidates = Array.from(root.querySelectorAll("button, [role='button'], .btn"))
     .filter((el) => {
       if (!el) return false;
+
       const txt = String(el.textContent || "").trim().toLowerCase();
       if (!txt) return false;
 
       const looksLikeGenerate =
-        txt.includes("oluştur") ||
-        txt.includes("üret") ||
+        txt.includes("müzik üret") ||
         txt.includes("üretiliyor");
 
       if (!looksLikeGenerate) return false;
 
+      if (el.closest(".navCard, .sideCard, nav, aside, .leftbar, .sidebar")) {
+        return false;
+      }
+
       const r = el.getBoundingClientRect();
-      if (r.width < 180 || r.height < 36) return false;
+      if (r.width < 260 || r.height < 44) return false;
       if (r.bottom <= 0 || r.top >= window.innerHeight) return false;
 
       return true;
@@ -79,7 +90,7 @@ function getActiveGenerateButton() {
   candidates.sort((a, b) => {
     const ra = a.getBoundingClientRect();
     const rb = b.getBoundingClientRect();
-    return rb.top - ra.top; // en aşağıdaki üret butonunu seç
+    return rb.top - ra.top;
   });
 
   return candidates[0];
