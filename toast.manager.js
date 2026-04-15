@@ -121,9 +121,9 @@ function positionToastContainer(container) {
   }
 
 const host =
+  document.getElementById("studioToastPortal") ||
   document.getElementById("mainWorkspace") ||
-  document.getElementById("twoPanelWrap") ||
-  btn.parentElement;
+  document.body;
 
 if (container.parentNode !== host) {
   host.appendChild(container);
