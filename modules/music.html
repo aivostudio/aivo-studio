@@ -45,18 +45,16 @@
       <div class="form-grid">
 
         <!-- 1) ŞARKI ADI (FULL WIDTH) -->
-      <div class="form-field full">
-  <label for="songName">Şarkı Adı</label>
+<div aria-hidden="true"
+     style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none;">
   <input type="text"
-         id="songName"
-         name="aivo_song_title"
-         autocomplete="off"
-         autocapitalize="off"
-         autocorrect="off"
-         spellcheck="false"
-         data-lpignore="true"
-         data-form-type="other"
-         placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+         name="username"
+         autocomplete="username"
+         tabindex="-1" />
+  <input type="password"
+         name="password"
+         autocomplete="current-password"
+         tabindex="-1" />
 </div>
         <!-- 2) PROMPT (SOL / HALF) -->
         <div class="form-field half">
