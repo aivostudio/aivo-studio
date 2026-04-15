@@ -55,8 +55,8 @@
   }
 
 function makeToast({ variant, title, message, duration }) {
-  ensureContainer();
-container.removeAttribute('style');
+  container = ensureContainer();
+  container.removeAttribute("style");
 
   const id = String(++uid);
   const el = document.createElement("div");
@@ -92,18 +92,19 @@ container.removeAttribute('style');
   x.textContent = "✕";
   x.addEventListener("click", () => dismiss(id, false));
 
-el.appendChild(icon);
-el.appendChild(body);
-el.appendChild(x);
+  el.appendChild(icon);
+  el.appendChild(body);
+  el.appendChild(x);
 
-active.slice().forEach(t => dismiss(t.id, true));
-active = [];
+  active.slice().forEach(t => dismiss(t.id, true));
+  active = [];
 
-container.innerHTML = '';
-container.prepend(el);
+  container.innerHTML = "";
+  container.prepend(el);
 
-const item = { id, el, timer: null };
-active.push(item);
+  const item = { id, el, timer: null };
+  active.push(item);
+
   requestAnimationFrame(() => el.classList.add("is-in"));
 
   const dur = duration ?? DEFAULTS.duration;
