@@ -90,15 +90,14 @@
   cursor: pointer !important;
   z-index: 2 !important;
 }
-
 .aivo-toast > div{
   position: absolute !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
 
-  width: calc(100% - 120px) !important;
-  max-width: calc(100% - 120px) !important;
+  width: calc(100% - 84px) !important;
+  max-width: calc(100% - 84px) !important;
 
   display: flex !important;
   flex-direction: column !important;
