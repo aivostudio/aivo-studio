@@ -282,23 +282,38 @@
   -webkit-backdrop-filter: none !important;
   border-radius: 0 !important;
 }
-/* TOAST TEXT TRUE CENTER — final */
+
+/* TOAST TEXT DEAD CENTER — tek otorite */
 .aivo-toast{
-  display: grid !important;
-  grid-template-columns: 44px 1fr 44px !important;
-  align-items: center !important;
-  column-gap: 12px !important;
+  position: relative !important;
+}
+
+.aivo-toast__icon{
+  position: absolute !important;
+  left: 18px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  z-index: 2 !important;
+}
+
+.aivo-toast__x{
+  position: absolute !important;
+  right: 18px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  z-index: 2 !important;
 }
 
 .aivo-toast > div{
-  position: static !important;
-  left: auto !important;
-  top: auto !important;
-  transform: none !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
 
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  width: max-content !important;
+  max-width: calc(100% - 140px) !important;
 
   display: flex !important;
   flex-direction: column !important;
@@ -306,26 +321,19 @@
   justify-content: center !important;
   text-align: center !important;
 
+  padding: 0 !important;
+  margin: 0 !important;
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
   outline: none !important;
-}
-
-.aivo-toast__icon{
-  justify-self: start !important;
-  align-self: center !important;
-  margin: 0 !important;
-}
-
-.aivo-toast__x{
-  justify-self: end !important;
-  align-self: center !important;
-  margin: 0 !important;
+  border-radius: 0 !important;
 }
 
 .aivo-toast__title,
 .aivo-toast__msg{
   width: 100% !important;
   text-align: center !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
