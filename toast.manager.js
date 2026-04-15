@@ -16,17 +16,23 @@
   let active = [];
   let uid = 0;
 
-  function ensureContainer() {
-    if (container) return container;
-    container = document.getElementById("aivoToasts");
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "aivoToasts";
-      document.body.appendChild(container);
-    }
-    return container;
-  }
+function ensureContainer() {
+  if (container) return container;
 
+  container = document.getElementById("aivoToasts");
+  if (container) return container;
+
+  const mountRoot =
+    document.getElementById("studioToastPortal") ||
+    document.getElementById("mainWorkspace") ||
+    document.body;
+
+  container = document.createElement("div");
+  container.id = "aivoToasts";
+  mountRoot.appendChild(container);
+
+  return container;
+}
   function clampActive() {
     while (active.length > DEFAULTS.maxToasts) {
       const oldest = active.shift();
