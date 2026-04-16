@@ -269,7 +269,7 @@ document.addEventListener("click", async function (e) {
         return;
       }
 
-       var submit = t.closest && t.closest("[data-pw-submit]");
+          var submit = t.closest && t.closest("[data-pw-submit]");
       if (submit) {
         e.preventDefault();
 
@@ -286,15 +286,15 @@ document.addEventListener("click", async function (e) {
         var n2V = ((n2 && n2.value) || "").trim();
 
         if (!curV || !n1V || !n2V) {
-          toast("error", "Lütfen tüm alanları doldurun.");
+          if (window.toast && window.toast.error) window.toast.error("Lütfen tüm alanları doldurun.");
           return;
         }
         if (n1V.length < 8) {
-          toast("error", "Yeni şifre en az 8 karakter olmalı.");
+          if (window.toast && window.toast.error) window.toast.error("Yeni şifre en az 8 karakter olmalı.");
           return;
         }
         if (n1V !== n2V) {
-          toast("error", "Yeni şifreler eşleşmiyor.");
+          if (window.toast && window.toast.error) window.toast.error("Yeni şifreler eşleşmiyor.");
           return;
         }
 
@@ -320,24 +320,24 @@ document.addEventListener("click", async function (e) {
             var code = (json && (json.error || json.message)) || "password_update_failed";
 
             if (code === "current_password_invalid") {
-              toast("error", "Mevcut şifre yanlış.");
+              if (window.toast && window.toast.error) window.toast.error("Mevcut şifre yanlış.");
             } else if (code === "password_too_short") {
-              toast("error", "Yeni şifre en az 8 karakter olmalı.");
+              if (window.toast && window.toast.error) window.toast.error("Yeni şifre en az 8 karakter olmalı.");
             } else if (code === "password_mismatch") {
-              toast("error", "Yeni şifreler eşleşmiyor.");
+              if (window.toast && window.toast.error) window.toast.error("Yeni şifreler eşleşmiyor.");
             } else if (code === "password_same_as_old") {
-              toast("error", "Yeni şifre mevcut şifreyle aynı olamaz.");
+              if (window.toast && window.toast.error) window.toast.error("Yeni şifre mevcut şifreyle aynı olamaz.");
             } else {
-              toast("error", "Şifre güncellenemedi.");
+              if (window.toast && window.toast.error) window.toast.error("Şifre güncellenemedi.");
             }
             return;
           }
 
-          toast("ok", "Şifre başarıyla güncellendi.");
+          if (window.toast && window.toast.success) window.toast.success("Şifre başarıyla güncellendi.");
           closeModal();
         } catch (err) {
           console.error("[AIVO_PASSWORD_UPDATE_FAIL]", err);
-          toast("error", "Şifre güncellenemedi.");
+          if (window.toast && window.toast.error) window.toast.error("Şifre güncellenemedi.");
         } finally {
           submit.disabled = false;
         }
