@@ -1,11 +1,11 @@
 // api/r2/scan-and-presign.js
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "crypto";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const { enforceMediaPolicy, mediaPolicyError } = require("../_lib/media-policy.js");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const crypto = require("crypto");
+const {
+  enforceMediaPolicy,
+  mediaPolicyError,
+} = require("../_lib/media-policy.cjs");
 
 function safeName(name = "upload") {
   return String(name)
@@ -94,10 +94,7 @@ function makeObjectKey({ app, prefix, filename, keyFromBody }) {
   const appValue = String(app || "").toLowerCase().trim();
 
   const basePrefix = safePrefix(
-    prefix ||
-      (appValue
-        ? `uploads/${appValue}/tmp/`
-        : "uploads/tmp/")
+    prefix || (appValue ? `uploads/${appValue}/tmp/` : "uploads/tmp/")
   );
 
   const id = crypto.randomUUID
@@ -107,7 +104,7 @@ function makeObjectKey({ app, prefix, filename, keyFromBody }) {
   return `${basePrefix}${Date.now()}-${id}-${safeName(filename || "upload")}`;
 }
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -177,7 +174,7 @@ export default async function handler(req, res) {
         style: style || "",
       });
 
-      if (policyResult?.decision === "block") {
+      if (policyResult && policyResult.decision === "block") {
         return res.status(403).json(mediaPolicyError(policyResult));
       }
     }
@@ -212,6 +209,10 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("scan-and-presign error:", err);
-    return res.status(500).json({ ok: false, error: "server_error" });
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      detail: err && err.message ? String(err.message) : String(err),
+    });
   }
-}
+};
