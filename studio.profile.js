@@ -252,7 +252,7 @@ function observePage() {
     }
 
     // Delegated click (tek kez)
-    document.addEventListener("click", function (e) {
+document.addEventListener("click", async function (e) {
       var t = e.target;
 
       var openBtn = t.closest && t.closest("[data-open-password]");
