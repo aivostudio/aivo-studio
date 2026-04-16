@@ -241,13 +241,18 @@ async function runVisionScan(input = {}) {
     const fileBuffer = fs.readFileSync(filePath);
     const base64 = fileBuffer.toString("base64");
 
-    const payload = {
-      app,
-      fileName,
-      mimeType,
-      imageBase64: base64,
-      referenceIndex: input.referenceIndex || null,
-    };
+ const payload = {
+  app,
+  fileName,
+  mimeType,
+  prompt: input.prompt || "",
+  title: input.title || "",
+  description: input.description || "",
+  personName: input.personName || "",
+  style: input.style || "",
+  imageBase64: base64,
+  referenceIndex: input.referenceIndex || null,
+};
 
     const headers = {
       "content-type": "application/json",
@@ -407,13 +412,18 @@ async function enforceMediaPolicy(input = {}) {
     style: input.style,
   });
 
-  const visionScan = await runVisionScan({
-    app,
-    filePath,
-    fileName,
-    mimeType,
-    referenceIndex: REFERENCE_INDEX,
-  });
+const visionScan = await runVisionScan({
+  app,
+  filePath,
+  fileName,
+  mimeType,
+  prompt: input.prompt,
+  title: input.title,
+  description: input.description,
+  personName: input.personName,
+  style: input.style,
+  referenceIndex: REFERENCE_INDEX,
+});
 
   if (visionScan) {
     return blockForHighRiskScan({
