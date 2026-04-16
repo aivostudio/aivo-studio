@@ -1045,12 +1045,28 @@ function isAtmoPolicyBlocked(raw) {
       }
 
       return out;
-    } catch (e) {
-      console.error("[ATM][R2] upload error:", kind, e);
-      setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
-      try { window.toast?.error?.("Yükleme hatası"); } catch {}
-      return null;
+} catch (e) {
+  console.error("[ATM][R2] upload error:", kind, e);
+  setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
+
+  const errText = String(e?.message || e || "").toLowerCase();
+  const isPolicyBlocked =
+    errText.includes("media_policy_blocked") ||
+    errText.includes("real_person_image_risk") ||
+    errText.includes("public_figure") ||
+    errText.includes("not_allowed") ||
+    errText.includes("forbidden");
+
+  try {
+    if (isPolicyBlocked) {
+      window.toast?.error?.("Bu görsel kullanılamıyor. Tanınmış kişi, kamu figürü veya gerçek kişi içeren görseller desteklenmiyor.");
+    } else {
+      window.toast?.error?.("Yükleme hatası");
     }
+  } catch {}
+
+  return null;
+}
   }
 
   // ------------------------------------------------------------
