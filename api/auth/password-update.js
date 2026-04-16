@@ -1,6 +1,7 @@
 /* /api/auth/password-update.js */
 import kvMod from "../_kv.js";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 const kv = kvMod?.default || kvMod || {};
 const kvGetJson = kv.kvGetJson;
