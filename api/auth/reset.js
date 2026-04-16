@@ -54,18 +54,29 @@ module.exports = async function handler(req, res) {
     return json(res, 200, { ok: false, reason: "expired" });
   }
 
-  // “Şifre güncelleme” (KV user store — login/password-update ile aynı source of truth)
+  // “Şifre güncelleme” (password-update.js ile aynı KV JSON mantığı)
   const email = String(rec.email || "").toLowerCase();
   if (!email) {
     await kv.del(key);
     return json(res, 200, { ok: false, reason: "invalid" });
   }
 
+  const kvMod = require("../_kv.js");
+  const kvApi = kvMod?.default || kvMod || {};
+  const kvGetJson = kvApi.kvGetJson;
+  const kvSetJson = kvApi.kvSetJson;
+  const bcrypt = require("bcryptjs");
+
+  if (typeof kvGetJson !== "function" || typeof kvSetJson !== "function") {
+    await kv.del(key);
+    return json(res, 200, { ok: false, reason: "kv_not_available" });
+  }
+
   const userKeyPrimary = `user:${email}`;
   const userKeyLegacy = `users:${email}`;
 
-  const u1 = await kv.get(userKeyPrimary);
-  const u2 = await kv.get(userKeyLegacy);
+  const u1 = await kvGetJson(userKeyPrimary).catch(() => null);
+  const u2 = await kvGetJson(userKeyLegacy).catch(() => null);
 
   const existingUser =
     u1 && typeof u1 === "object"
@@ -77,9 +88,6 @@ module.exports = async function handler(req, res) {
     return json(res, 200, { ok: false, reason: "user_not_found" });
   }
 
-  const nextHash = await require("bcryptjs").hash(String(password || ""), 10);
-  const nowTs = Date.now();
-
   const pwField =
     existingUser.passwordHash ? "passwordHash" :
     existingUser.password_hash ? "password_hash" :
@@ -87,32 +95,39 @@ module.exports = async function handler(req, res) {
     existingUser.hash ? "hash" :
     "password";
 
+  const nextValue =
+    pwField === "password"
+      ? String(password || "")
+      : await bcrypt.hash(String(password || ""), 10);
+
+  const nowTs = Date.now();
+
   const nextUser = {
     ...existingUser,
     email,
     updatedAt: nowTs,
-    [pwField]: pwField === "password" ? String(password || "") : nextHash
+    [pwField]: nextValue
   };
 
   if (pwField !== "password" && Object.prototype.hasOwnProperty.call(nextUser, "password")) {
     delete nextUser.password;
   }
 
-  await kv.set(userKeyPrimary, nextUser);
+  await kvSetJson(userKeyPrimary, nextUser);
 
   if (u2 && typeof u2 === "object") {
     const nextLegacy = {
       ...u2,
       email,
       updatedAt: nowTs,
-      [pwField]: pwField === "password" ? String(password || "") : nextHash
+      [pwField]: nextValue
     };
 
     if (pwField !== "password" && Object.prototype.hasOwnProperty.call(nextLegacy, "password")) {
       delete nextLegacy.password;
     }
 
-    await kv.set(userKeyLegacy, nextLegacy);
+    await kvSetJson(userKeyLegacy, nextLegacy);
   }
 
   // Tek kullanımlık: token'ı sil
