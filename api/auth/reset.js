@@ -54,21 +54,66 @@ module.exports = async function handler(req, res) {
     return json(res, 200, { ok: false, reason: "expired" });
   }
 
-  // “Şifre güncelleme” (MVP user store)
+  // “Şifre güncelleme” (KV user store — login/password-update ile aynı source of truth)
   const email = String(rec.email || "").toLowerCase();
   if (!email) {
     await kv.del(key);
     return json(res, 200, { ok: false, reason: "invalid" });
   }
 
-  const saltHex = crypto.randomBytes(16).toString("hex");
-  const passHash = hashPassword(password, saltHex);
+  const userKeyPrimary = `user:${email}`;
+  const userKeyLegacy = `users:${email}`;
 
-  global.__AIVO_USER_STORE__.set(email, {
-    password_hash: passHash,
-    salt: saltHex,
-    updatedAt: now
-  });
+  const u1 = await kv.get(userKeyPrimary);
+  const u2 = await kv.get(userKeyLegacy);
+
+  const existingUser =
+    u1 && typeof u1 === "object"
+      ? u1
+      : (u2 && typeof u2 === "object" ? u2 : null);
+
+  if (!existingUser) {
+    await kv.del(key);
+    return json(res, 200, { ok: false, reason: "user_not_found" });
+  }
+
+  const nextHash = await require("bcryptjs").hash(String(password || ""), 10);
+  const nowTs = Date.now();
+
+  const pwField =
+    existingUser.passwordHash ? "passwordHash" :
+    existingUser.password_hash ? "password_hash" :
+    existingUser.passHash ? "passHash" :
+    existingUser.hash ? "hash" :
+    "password";
+
+  const nextUser = {
+    ...existingUser,
+    email,
+    updatedAt: nowTs,
+    [pwField]: pwField === "password" ? String(password || "") : nextHash
+  };
+
+  if (pwField !== "password" && Object.prototype.hasOwnProperty.call(nextUser, "password")) {
+    delete nextUser.password;
+  }
+
+  await kv.set(userKeyPrimary, nextUser);
+
+  if (u2 && typeof u2 === "object") {
+    const nextLegacy = {
+      ...u2,
+      email,
+      updatedAt: nowTs,
+      [pwField]: pwField === "password" ? String(password || "") : nextHash
+    };
+
+    if (pwField !== "password" && Object.prototype.hasOwnProperty.call(nextLegacy, "password")) {
+      delete nextLegacy.password;
+    }
+
+    await kv.set(userKeyLegacy, nextLegacy);
+  }
 
   // Tek kullanımlık: token'ı sil
   await kv.del(key);
