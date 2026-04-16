@@ -881,39 +881,85 @@ function isAtmoPolicyBlocked(raw) {
     });
   }
 
-  async function presignR2({ app, kind, filename, contentType }) {
-    const res = await fetch("/api/r2/presign-put", {
+  async function presignR2({
+    app,
+    kind,
+    filename,
+    contentType,
+    prompt = "",
+    title = "",
+    description = "",
+    personName = "",
+    style = "",
+    source = "atmo_browser_upload"
+  }) {
+    const res = await fetch("/api/r2/scan-and-presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         app: app || "atmo",
         kind,
         filename,
-        contentType
+        contentType,
+        prompt,
+        title,
+        description,
+        personName,
+        style,
+        source
       })
     });
 
-    if (!res.ok) throw new Error("presign_failed");
-    const data = await res.json();
-    if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        (res.status === 403 ? "media_policy_blocked" : "presign_failed");
+      throw new Error(msg);
+    }
+
+    if (!data || data.ok === false) {
+      throw new Error(data?.message || data?.error || "presign_error");
+    }
 
     const uploadUrl = data.uploadUrl || data.upload_url;
     const publicUrl = data.publicUrl || data.public_url || data.url;
 
     if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
-    return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
+    return {
+      uploadUrl,
+      publicUrl,
+      key: data.key || data.objectKey || "",
+      policy: data.policy || null
+    };
   }
 
   async function uploadToR2(file, { app = "atmo", kind }) {
     if (!file) throw new Error("missing_file");
+
     const contentType = file.type || "application/octet-stream";
     const filename = file.name || `${kind || "file"}-${Date.now()}`;
+
+    const promptText = String(state?.prompt || "").trim();
+    const titleText = String(filename || "").trim();
+    const descriptionText =
+      kind === "image"
+        ? String(promptText || filename || "").trim()
+        : String(filename || "").trim();
 
     const { uploadUrl, publicUrl } = await presignR2({
       app,
       kind,
       filename,
-      contentType
+      contentType,
+      prompt: kind === "image" ? promptText : "",
+      title: titleText,
+      description: descriptionText,
+      personName: "",
+      style: "",
+      source: "atmo_browser_upload"
     });
 
     const put = await fetch(uploadUrl, {
@@ -921,11 +967,11 @@ function isAtmoPolicyBlocked(raw) {
       headers: { "Content-Type": contentType },
       body: file
     });
+
     if (!put.ok) throw new Error("r2_put_failed");
 
     return { url: publicUrl, name: filename };
   }
-
   async function handleUpload(root, kind, file) {
     const r = root || getAtmoPanelRoot() || document;
      console.log("[ATM HANDLE UPLOAD]", kind, file?.name || null);
