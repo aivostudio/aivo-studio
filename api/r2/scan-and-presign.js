@@ -170,17 +170,17 @@ const normalizedApp = String(app || "").toLowerCase().trim();
     const upload_url = await getSignedUrl(client, cmd, { expiresIn: 60 * 10 });
     const public_url = `${publicBase.replace(/\/$/, "")}/${key}`;
 
-    return res.status(200).json({
-      ok: true,
-      key,
-      upload_url,
-      public_url,
-      required_headers: { "Content-Type": ct },
-      policy: {
-        scanned: shouldRunMediaPolicy,
-        decision: "allow",
-      },
-    });
+ return res.status(200).json({
+  ok: true,
+  key,
+  upload_url,
+  public_url,
+  required_headers: { "Content-Type": ct },
+  policy: {
+    scanned: false,
+    decision: "pending_scan",
+  },
+});
   } catch (err) {
     console.error("scan-and-presign error:", err);
     return res.status(500).json({
