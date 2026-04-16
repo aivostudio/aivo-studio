@@ -1531,28 +1531,15 @@ let data = {};
 try { data = JSON.parse(text); } catch (_) {}
 
 if (!res.ok || data?.ok === false) {
-  const code = String(data?.error || "").trim();
-
-  let msg = "Giriş başarısız.";
-
-  if (code === "invalid_credentials") {
-    msg = "Yanlış şifre girdin.";
-  } else if (code === "email_not_verified") {
-    msg = "Email adresini doğrulamadan giriş yapamazsın.";
-  } else if (code === "user_not_found") {
-    msg = "Bu email ile kayıtlı kullanıcı bulunamadı.";
-  }
-
-  try {
-    if (window.toast && typeof window.toast.error === "function") {
-      window.toast.error(msg);
-    } else {
-      alert(msg);
-    }
-  } catch (e) {
-    alert(msg);
-  }
-
+ window.toast.error(
+  data?.error === "invalid_credentials"
+    ? "E-posta adresin ya da şifren hatalı."
+    : data?.error === "email_not_verified"
+      ? "Email adresini doğrulamadan giriş yapamazsın."
+      : data?.error === "user_not_found"
+        ? "Bu email ile kayıtlı kullanıcı bulunamadı."
+        : safeMsg(data?.error || data?.message || text || "Giriş başarısız.")
+);
   return;
 }
 // ✅ LOGIN SUCCESS — URL TOAST (storage'siz kesin çözüm)
