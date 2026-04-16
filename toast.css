@@ -1,7 +1,7 @@
 /* ===== AIVO TOAST — CLEAN FINAL ===== */
 
 #aivoToasts{
-  position: absolute !important;
+position: fixed !important;
   left: 50% !important;
   bottom: 22px !important;
   transform: translateX(-50%) !important;
