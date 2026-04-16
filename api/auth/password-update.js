@@ -175,7 +175,7 @@ export default async function handler(req, res) {
       return json(res, 404, { ok: false, error: "user_not_found" });
     }
 
-    if (!verifyPasswordAgainstUser(existingUser, currentPassword)) {
+ if (!(await verifyPasswordAgainstUser(existingUser, currentPassword))) {
       return json(res, 400, { ok: false, error: "current_password_invalid" });
     }
 
