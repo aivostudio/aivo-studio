@@ -949,7 +949,7 @@ function isAtmoPolicyBlocked(raw) {
         ? String(promptText || filename || "").trim()
         : String(filename || "").trim();
 
-    const { uploadUrl, publicUrl } = await presignR2({
+    const { uploadUrl, publicUrl, key } = await presignR2({
       app,
       kind,
       filename,
@@ -970,7 +970,48 @@ function isAtmoPolicyBlocked(raw) {
 
     if (!put.ok) throw new Error("r2_put_failed");
 
-    return { url: publicUrl, name: filename };
+    const scanRes = await fetch("/api/r2/scan-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app,
+        key,
+        filename,
+        contentType,
+        public_url: publicUrl,
+        prompt: kind === "image" ? promptText : "",
+        title: titleText,
+        description: descriptionText,
+        personName: "",
+        style: "",
+        source: "atmo_browser_upload"
+      })
+    });
+
+    const scanData = await scanRes.json().catch(() => null);
+
+    if (!scanRes.ok) {
+      const msg =
+        scanData?.message ||
+        scanData?.error ||
+        (scanRes.status === 403 ? "media_policy_blocked" : "scan_upload_failed");
+      throw new Error(msg);
+    }
+
+    if (!scanData || scanData.ok === false) {
+      throw new Error(scanData?.message || scanData?.error || "scan_upload_error");
+    }
+
+    if (scanData.decision && scanData.decision !== "allow") {
+      throw new Error(`media_policy_${scanData.decision}`);
+    }
+
+    return {
+      url: scanData.public_url || publicUrl,
+      name: filename,
+      key,
+      policy: scanData.policy || null
+    };
   }
   async function handleUpload(root, kind, file) {
     const r = root || getAtmoPanelRoot() || document;
