@@ -1050,7 +1050,15 @@ function isAtmoPolicyBlocked(raw) {
   setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
 
   const errText = String(e?.message || e || "").toLowerCase();
-  const isPolicyBlocked = errText.includes("media_policy");
+const isPolicyBlocked =
+  errText.includes("media_policy") ||
+  errText.includes("kamu figürü") ||
+  errText.includes("kamu figuru") ||
+  errText.includes("tanınmış kişi") ||
+  errText.includes("taninmis kisi") ||
+  errText.includes("gerçek kişi") ||
+  errText.includes("gercek kisi") ||
+  errText.includes("impersonation");
 
   try {
     window.toast?.error?.(
