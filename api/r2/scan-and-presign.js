@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const {
   enforceMediaPolicy,
   mediaPolicyError,
-} = require("../_lib/media-policy.cjs");
+} = require("../_lib/media-policy.js");
 
 function safeName(name = "upload") {
   return String(name)
