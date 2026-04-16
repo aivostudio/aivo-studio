@@ -155,30 +155,7 @@ module.exports = async (req, res) => {
     if (!accountId || !bucket || !publicBase) {
       return res.status(500).json({ ok: false, error: "missing_env" });
     }
-
-    const normalizedApp = String(app || "").toLowerCase().trim();
-    const mediaPolicyApps = new Set(["atmo", "video", "photofx", "cartoon"]);
-    const shouldRunMediaPolicy =
-      isImageContentType(ct) && mediaPolicyApps.has(normalizedApp);
-
-    if (shouldRunMediaPolicy) {
-      const policyResult = await enforceMediaPolicy({
-        app: normalizedApp,
-        fileName: finalName,
-        mimeType: ct,
-        source: source || "scan_and_presign",
-        title: title || finalName,
-        description: description || finalName,
-        prompt: prompt || "",
-        personName: personName || "",
-        style: style || "",
-      });
-
-      if (policyResult && policyResult.decision === "block") {
-        return res.status(403).json(mediaPolicyError(policyResult));
-      }
-    }
-
+const normalizedApp = String(app || "").toLowerCase().trim();
     const client = buildR2Client();
     const key = makeObjectKey({
       app: normalizedApp,
