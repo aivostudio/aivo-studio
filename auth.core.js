@@ -378,15 +378,22 @@ const resolvedSurname = firstNonEmpty(
         }
       } catch (_) {}
 
-      let after = "/studio.v2.html";
+         let after = "/studio.v2.html";
       try {
         after = sessionStorage.getItem("aivo_after_login") || "/studio.v2.html";
         sessionStorage.removeItem("aivo_after_login");
       } catch (_) {}
 
       const msg = encodeURIComponent("Girişiniz başarılı");
-      const sep = String(after).includes("?") ? "&" : "?";
-      window.location.href = `${after}${sep}tf=success&tm=${msg}`;
+
+      const rawAfter = String(after || "/studio.v2.html");
+      const hashIndex = rawAfter.indexOf("#");
+
+      const basePart = hashIndex >= 0 ? rawAfter.slice(0, hashIndex) : rawAfter;
+      const hashPart = hashIndex >= 0 ? rawAfter.slice(hashIndex) : "";
+
+      const sep = basePart.includes("?") ? "&" : "?";
+      window.location.href = `${basePart}${sep}tf=success&tm=${msg}${hashPart}`;
       return;
     } catch (_) {
       try {
