@@ -5,52 +5,26 @@
 // işlem: ffmpeg faststart + hafif preview encode + R2 upload
 // output: final_url + preview_url
 
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const { spawn } = require("node:child_process");
-const ffmpegPath = require("ffmpeg-static");
-const fs = require("node:fs");
-const fsp = require("node:fs/promises");
-const os = require("node:os");
-const path = require("node:path");
+import { putObject } from "../_lib/r2.js";
+import { spawn } from "node:child_process";
+import ffmpegPath from "ffmpeg-static";
+import fs from "node:fs";
+import fsp from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
 const ALLOWED_SLUGS = new Set(["hero", "atmo", "cartoon", "photofx"]);
 
-function getR2Client() {
-  if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
-
-  return new S3Client({
-    region: "auto",
-    endpoint: process.env.R2_ENDPOINT,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    },
-  });
-}
-
 async function uploadFileToR2({ filePath, key, contentType }) {
-  if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
+  const body = fs.createReadStream(filePath);
 
-  const publicBase =
-    process.env.R2_PUBLIC_BASE_URL ||
-    process.env.R2_PUBLIC_BASE ||
-    "https://media.aivo.tr";
-
-  const r2 = getR2Client();
-
-  await r2.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET,
-      Key: key,
-      Body: fs.createReadStream(filePath),
-      ContentType: contentType || "video/mp4",
-      CacheControl: "public, max-age=31536000, immutable",
-    })
-  );
-
-  return `${String(publicBase).replace(/\/$/, "")}/${key}`;
+  return await putObject({
+    key,
+    body,
+    contentType: contentType || "video/mp4",
+    cacheControl: "public, max-age=31536000, immutable",
+    contentDisposition: "inline",
+  });
 }
 
 async function downloadToFile(url, outPath) {
