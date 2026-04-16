@@ -220,8 +220,99 @@ function evaluateTextHints({ app, prompt, title, description, personName, style 
  *   raw: {...}
  * }
  */
-async function runVisionScan() {
-  return null;
+async function runVisionScan(input = {}) {
+  const providerUrl = String(process.env.MEDIA_POLICY_VISION_URL || "").trim();
+  const providerToken = String(process.env.MEDIA_POLICY_VISION_TOKEN || "").trim();
+
+  const filePath = input.filePath || input.path || null;
+  const fileName = input.fileName || basenameSafe(filePath, "");
+  const mimeType = String(input.mimeType || "").toLowerCase().trim();
+  const app = normalizeText(input.app || "generic") || "generic";
+
+  if (!filePath || !fs.existsSync(filePath)) {
+    return null;
+  }
+
+  if (!providerUrl) {
+    return null;
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(filePath);
+    const base64 = fileBuffer.toString("base64");
+
+    const payload = {
+      app,
+      fileName,
+      mimeType,
+      imageBase64: base64,
+      referenceIndex: input.referenceIndex || null,
+    };
+
+    const headers = {
+      "content-type": "application/json",
+      "accept": "application/json",
+    };
+
+    if (providerToken) {
+      headers.authorization = `Bearer ${providerToken}`;
+    }
+
+    const res = await fetch(providerUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      return {
+        hasFace: false,
+        faceCount: 0,
+        publicFigureRisk: 0,
+        celebrityRisk: 0,
+        matchedLabel: null,
+        matchedGroup: null,
+        provider: "vision-provider",
+        providerVersion: null,
+        raw: {
+          providerUrl,
+          httpStatus: res.status,
+          response: data,
+          note: "vision_provider_request_failed",
+        },
+      };
+    }
+
+    return {
+      hasFace: !!data.hasFace,
+      faceCount: Number(data.faceCount || 0),
+      publicFigureRisk: Number(data.publicFigureRisk || 0),
+      celebrityRisk: Number(data.celebrityRisk || 0),
+      matchedLabel: data.matchedLabel || null,
+      matchedGroup: data.matchedGroup || null,
+      provider: data.provider || "vision-provider",
+      providerVersion: data.providerVersion || null,
+      raw: data.raw || data || null,
+    };
+  } catch (err) {
+    return {
+      hasFace: false,
+      faceCount: 0,
+      publicFigureRisk: 0,
+      celebrityRisk: 0,
+      matchedLabel: null,
+      matchedGroup: null,
+      provider: "vision-provider",
+      providerVersion: null,
+      raw: {
+        providerUrl,
+        error: err && err.message ? String(err.message) : String(err),
+        note: "vision_provider_exception",
+      },
+    };
+  }
 }
 
 function blockForHighRiskScan({ app, fileMeta, scanResult }) {
