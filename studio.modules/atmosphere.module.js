@@ -1045,12 +1045,23 @@ function isAtmoPolicyBlocked(raw) {
       }
 
       return out;
-    } catch (e) {
-      console.error("[ATM][R2] upload error:", kind, e);
-      setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
-      try { window.toast?.error?.("Yükleme hatası"); } catch {}
-      return null;
-    }
+ } catch (e) {
+  console.error("[ATM][R2] upload error:", kind, e);
+  setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
+
+  const errText = String(e?.message || e || "").toLowerCase();
+  const isPolicyBlocked = errText.includes("media_policy");
+
+  try {
+    window.toast?.error?.(
+      isPolicyBlocked
+        ? "Bu görsel kullanılamaz."
+        : "Yükleme hatası"
+    );
+  } catch {}
+
+  return null;
+}
   }
 
   // ------------------------------------------------------------
