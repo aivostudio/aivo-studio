@@ -2,10 +2,7 @@
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const crypto = require("crypto");
-const {
-  enforceMediaPolicy,
-  mediaPolicyError,
-} = require("../_lib/media-policy.js");
+// bu blok tamamen silinecek
 
 function safeName(name = "upload") {
   return String(name)
