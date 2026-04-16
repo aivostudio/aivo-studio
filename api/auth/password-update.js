@@ -56,22 +56,35 @@ function sha256(value) {
   return crypto.createHash("sha256").update(String(value || ""), "utf8").digest("hex");
 }
 
-function verifyPasswordAgainstUser(user, plainPassword) {
+async function verifyPasswordAgainstUser(user, plainPassword) {
   const plain = String(plainPassword || "");
   if (!plain) return false;
 
-  const directFields = [
-    user?.password,
+  const directPlain = user?.password;
+  if (directPlain && String(directPlain) === plain) {
+    return true;
+  }
+
+  const hashFields = [
     user?.passwordHash,
     user?.password_hash,
     user?.passHash,
     user?.hash
   ];
 
-  for (const val of directFields) {
+  for (const val of hashFields) {
     if (!val) continue;
-    if (String(val) === plain) return true;
-    if (String(val) === sha256(plain)) return true;
+
+    const strVal = String(val);
+
+    if (strVal === sha256(plain)) {
+      return true;
+    }
+
+    const ok = await bcrypt.compare(plain, strVal).catch(() => false);
+    if (ok) {
+      return true;
+    }
   }
 
   return false;
