@@ -267,13 +267,31 @@
       try {
         const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
 
-        if (!res.ok || data?.ok === false) {
-          try {
-            if (window.toast) toast.error("Kayıt başarısız", safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
-          } catch (_) {}
-          return;
-        }
+      if (!res.ok || data?.ok === false) {
+  const code = String(data?.error || "").trim();
 
+  let msg = "Giriş başarısız.";
+
+  if (code === "invalid_credentials") {
+    msg = "E-posta adresin ya da şifren hatalı.";
+  } else if (code === "email_not_verified") {
+    msg = "Email adresini doğrulamadan giriş yapamazsın.";
+  } else if (code === "user_not_found") {
+    msg = "Bu email ile kayıtlı kullanıcı bulunamadı.";
+  }
+
+  try {
+    if (window.toast && typeof window.toast.error === "function") {
+      window.toast.error(msg);
+    } else {
+      alert(msg);
+    }
+  } catch (e) {
+    alert(msg);
+  }
+
+  return;
+}
         try {
           if (window.toast) toast.success("Kayıt başarılı", "Doğrulama için e-postanı kontrol et. (Spam’i de kontrol et)");
         } catch (_) {}
