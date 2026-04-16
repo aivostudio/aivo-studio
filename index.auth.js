@@ -1562,7 +1562,7 @@ return;
 }
 } // doLogin BİTTİ
 btn.addEventListener("click", async (e) => {
-   alert("INDEX.AUTH CLICK ÇALIŞTI");
+  
   e.preventDefault();
   e.stopPropagation();
   if (e.stopImmediatePropagation) e.stopImmediatePropagation();
