@@ -90,20 +90,28 @@ async function verifyPasswordAgainstUser(user, plainPassword) {
   return false;
 }
 
-function buildNextPasswordValue(existingUser, newPassword) {
-  if (existingUser?.passwordHash || existingUser?.password_hash || existingUser?.passHash || existingUser?.hash) {
+async function buildNextPasswordValue(existingUser, newPassword) {
+  if (
+    existingUser?.passwordHash ||
+    existingUser?.password_hash ||
+    existingUser?.passHash ||
+    existingUser?.hash
+  ) {
     return {
-      field: existingUser.passwordHash ? "passwordHash"
-        : existingUser.password_hash ? "password_hash"
-        : existingUser.passHash ? "passHash"
-        : "hash",
-      value: sha256(newPassword)
+      field: existingUser.passwordHash
+        ? "passwordHash"
+        : existingUser.password_hash
+          ? "password_hash"
+          : existingUser.passHash
+            ? "passHash"
+            : "hash",
+      value: await bcrypt.hash(String(newPassword || ""), 10)
     };
   }
 
   return {
     field: "password",
-    value: newPassword
+    value: String(newPassword || "")
   };
 }
 
@@ -175,11 +183,11 @@ export default async function handler(req, res) {
       return json(res, 404, { ok: false, error: "user_not_found" });
     }
 
- if (!(await verifyPasswordAgainstUser(existingUser, currentPassword))) {
+    if (!(await verifyPasswordAgainstUser(existingUser, currentPassword))) {
       return json(res, 400, { ok: false, error: "current_password_invalid" });
     }
 
-    const pwWrite = buildNextPasswordValue(existingUser, newPassword);
+    const pwWrite = await buildNextPasswordValue(existingUser, newPassword);
     const now = Date.now();
 
     const nextUser = {
