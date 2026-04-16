@@ -269,20 +269,21 @@ function observePage() {
         return;
       }
 
-      var submit = t.closest && t.closest("[data-pw-submit]");
+       var submit = t.closest && t.closest("[data-pw-submit]");
       if (submit) {
         e.preventDefault();
 
         var modal = getModal();
         if (!modal) return;
+        if (submit.disabled) return;
 
         var cur = qs("[data-pw-current]", modal);
         var n1 = qs("[data-pw-new]", modal);
         var n2 = qs("[data-pw-new2]", modal);
 
-        var curV = (cur?.value || "").trim();
-        var n1V = (n1?.value || "").trim();
-        var n2V = (n2?.value || "").trim();
+        var curV = ((cur && cur.value) || "").trim();
+        var n1V = ((n1 && n1.value) || "").trim();
+        var n2V = ((n2 && n2.value) || "").trim();
 
         if (!curV || !n1V || !n2V) {
           toast("error", "Lütfen tüm alanları doldurun.");
@@ -297,9 +298,49 @@ function observePage() {
           return;
         }
 
-        console.log("PASSWORD CHANGE OK (frontend):", { current: curV, next: n1V });
-        toast("ok", "Şifre başarıyla güncellendi.");
-        closeModal();
+        submit.disabled = true;
+
+        try {
+          var res = await fetch("/api/auth/password-update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              currentPassword: curV,
+              newPassword: n1V,
+              newPassword2: n2V
+            })
+          });
+
+          var raw = await res.text();
+          var json = {};
+          try { json = JSON.parse(raw || "{}"); } catch (err) { json = {}; }
+
+          if (!res.ok || !json || json.ok !== true) {
+            var code = (json && (json.error || json.message)) || "password_update_failed";
+
+            if (code === "current_password_invalid") {
+              toast("error", "Mevcut şifre yanlış.");
+            } else if (code === "password_too_short") {
+              toast("error", "Yeni şifre en az 8 karakter olmalı.");
+            } else if (code === "password_mismatch") {
+              toast("error", "Yeni şifreler eşleşmiyor.");
+            } else if (code === "password_same_as_old") {
+              toast("error", "Yeni şifre mevcut şifreyle aynı olamaz.");
+            } else {
+              toast("error", "Şifre güncellenemedi.");
+            }
+            return;
+          }
+
+          toast("ok", "Şifre başarıyla güncellendi.");
+          closeModal();
+        } catch (err) {
+          console.error("[AIVO_PASSWORD_UPDATE_FAIL]", err);
+          toast("error", "Şifre güncellenemedi.");
+        } finally {
+          submit.disabled = false;
+        }
       }
     }, true);
 
