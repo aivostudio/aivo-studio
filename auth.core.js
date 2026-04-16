@@ -318,7 +318,7 @@
 
       if (!res.ok || data?.ok === false) {
         try {
-          if (window.toast) toast.error("Giriş başarısız", safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı."));
+         if (window.toast) window.toast.error("Şifre yanlış.");
         } catch (_) {}
         return;
       }
