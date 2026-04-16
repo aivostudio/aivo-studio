@@ -267,12 +267,12 @@
       try {
         const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
 
-           if (!res.ok || data?.ok === false) {
-        try {
-          if (window.toast) window.toast.error(safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı."));
-        } catch (_) {}
-        return;
-      }
+        if (!res.ok || data?.ok === false) {
+          try {
+            if (window.toast) toast.error("Kayıt başarısız", safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+          } catch (_) {}
+          return;
+        }
 
         try {
           if (window.toast) toast.success("Kayıt başarılı", "Doğrulama için e-postanı kontrol et. (Spam’i de kontrol et)");
