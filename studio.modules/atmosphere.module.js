@@ -2011,25 +2011,26 @@ if (logoClearBtn) {
   return;
 }
 
-      const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
-      if (imageClearBtn) {
-        e.preventDefault();
-        e.stopPropagation();
+   const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
+if (imageClearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
 
-        const imageInput = document.getElementById("atmProRefImageFile");
-        if (imageInput) imageInput.value = "";
+  const imageInput = document.getElementById("atmProRefImageFile");
+  if (imageInput) imageInput.value = "";
 
-        state.refImageFile = null;
+  state.refImageFile = null;
 
-        const panel =
-          imageClearBtn.closest('[data-mode-panel="pro"]') ||
-          qs('[data-mode-panel="pro"]', root) ||
-          root;
+  const panel =
+    imageClearBtn.closest('[data-mode-panel="pro"]') ||
+    qs('[data-mode-panel="pro"]', root) ||
+    root;
 
-        setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
-        syncAtmoGenerateCredits(root);
-        return;
-      }
+  setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
+  syncAtmoGenerateCredits(root);
+  try { window.toast?.success?.("Görsel kaldırıldı"); } catch {}
+  return;
+}
 
   const audioClearBtn = closestWithin(e.target, "#atmProAudioClear", root);
 if (audioClearBtn) {
