@@ -1975,12 +1975,13 @@ const builtEffects = {
         console.log("[photofx] audio uploading =", file?.name || null);
 
         state.audioFileUploadPromise = uploadFile(file, "audio")
-               .then((publicUrl) => {
+          .then((publicUrl) => {
             state.audioFile = file;
             state.audioFileUrl = String(publicUrl || "").trim();
             state.audioFileUploadStatus = "ready";
             state.audioFileUploadError = "";
             renderUploads(root);
+            syncCreateButton(root);
             try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
             console.log("[photofx] audio ready =", state.audioFileUrl);
             return state.audioFileUrl;
@@ -2001,17 +2002,36 @@ const builtEffects = {
               const name = document.createElement("div");
               name.className = "pfxUploadChipName";
               name.title = file.name || "";
-              name.textContent = `${truncateName(
-                file.name || "",
-                20
-              )} · Yükleme hatası`;
+
+              const errText = String(err?.message || err || "").toLowerCase();
+              const isPolicyBlocked =
+                errText.includes("media_policy") ||
+                errText.includes("kamu figürü") ||
+                errText.includes("kamu figuru") ||
+                errText.includes("tanınmış kişi") ||
+                errText.includes("taninmis kisi") ||
+                errText.includes("gerçek kişi") ||
+                errText.includes("gercek kisi") ||
+                errText.includes("impersonation");
+
+              name.textContent = isPolicyBlocked
+                ? `${truncateName(file.name || "", 20)} · Bu dosya kullanılamaz`
+                : `${truncateName(file.name || "", 20)} · Yükleme hatası`;
 
               chip.appendChild(name);
               audioMeta.appendChild(chip);
+
+              try {
+                window.toast?.error?.(
+                  isPolicyBlocked
+                    ? "Bu görsel kullanılamaz."
+                    : "Yükleme hatası"
+                );
+              } catch {}
             }
 
             console.error("[photofx] audio upload error =", err);
-            alert(state.audioFileUploadError);
+            syncCreateButton(root);
             throw err;
           });
       });
