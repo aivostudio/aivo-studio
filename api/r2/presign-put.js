@@ -2,10 +2,6 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const { enforceMediaPolicy, mediaPolicyError } = require("../_lib/media-policy.js");
 
 function safeName(name = "upload") {
   return String(name)
@@ -109,27 +105,6 @@ export default async function handler(req, res) {
           video: Array.from(ALLOWED_VIDEO),
         },
       });
-    }
-
-    const normalizedApp = String(app || "").toLowerCase().trim();
-    const mediaPolicyApps = new Set(["atmo", "video", "photofx", "cartoon"]);
-    const isImageUpload = ct.startsWith("image/");
-    const shouldRunMediaPolicy =
-      isImageUpload && mediaPolicyApps.has(normalizedApp);
-
-    if (shouldRunMediaPolicy) {
-      const policyResult = await enforceMediaPolicy({
-        app: normalizedApp,
-        fileName: finalName,
-        mimeType: ct,
-        source: "r2_presign",
-        title: finalName,
-        description: finalName,
-      });
-
-      if (policyResult?.decision === "block") {
-        return res.status(403).json(mediaPolicyError(policyResult));
-      }
     }
 
     const accountId = process.env.R2_ACCOUNT_ID;
