@@ -1611,15 +1611,32 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         syncCharacterCreateCredit(root);
         try { window.toast?.success?.("10 kredi eklendi"); } catch {}
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
-      } catch (err) {
+         } catch (err) {
         state.characterReferenceImageUrl = "";
         state.characterReferenceUploadStatus = "error";
         state.characterReferenceUploadError = String(err?.message || err || "reference_upload_failed");
         updateCharacterCreateUploadUI(root);
         console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
-        alert(state.characterReferenceUploadError);
-      }
 
+        const errText = String(err?.message || err || "").toLowerCase();
+        const isPolicyBlocked =
+          errText.includes("media_policy") ||
+          errText.includes("kamu figürü") ||
+          errText.includes("kamu figuru") ||
+          errText.includes("tanınmış kişi") ||
+          errText.includes("taninmis kisi") ||
+          errText.includes("gerçek kişi") ||
+          errText.includes("gercek kisi") ||
+          errText.includes("impersonation");
+
+        try {
+          window.toast?.error?.(
+            isPolicyBlocked
+              ? "Bu görsel kullanılamaz."
+              : "Yükleme hatası"
+          );
+        } catch {}
+      }
       return;
     }
 
