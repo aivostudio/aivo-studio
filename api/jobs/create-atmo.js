@@ -147,25 +147,114 @@ export default async function handler(req, res) {
 
     // 2) Fal create çağrısı (internal endpoint)
     // Burada body’yi pass-through yapıyoruz: duration/camera/scene vs ne gönderiyorsan aynen gider.
-    const baseUrl = getBaseUrl(req);
+const baseUrl = getBaseUrl(req);
 
-    const falCreateResp = await fetch(
-      `${baseUrl}/api/providers/fal/video/create?app=atmo`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          // cookie forward: auth gerektiriyorsa iç endpoint de aynı session’ı görsün
-          cookie: req.headers.cookie || "",
-        },
-        body: JSON.stringify({
-          ...body,
-          // job ile ilişkilendirme için (istersen create endpoint bunu loglayabilir)
-          job_id,
-          app: "atmo",
-        }),
-      }
-    );
+const imageUrl = String(body.image_url || "").trim();
+
+if (imageUrl) {
+  try {
+    const probeResp = await fetch(imageUrl, {
+      method: "GET",
+      headers: {
+        cookie: req.headers.cookie || "",
+      },
+    });
+
+    if (!probeResp.ok) {
+      await sql`
+        update jobs
+        set status = 'error',
+            error = ${JSON.stringify({
+              error: "image_probe_failed",
+              status: probeResp.status,
+              image_url: imageUrl,
+            })}::jsonb,
+            updated_at = now()
+        where id = ${job_id}::uuid
+      `;
+
+      return res.status(400).json({
+        ok: false,
+        error: "image_probe_failed",
+        message: "Görsel okunamadı.",
+        job_id,
+      });
+    }
+
+    const imageBuffer = Buffer.from(await probeResp.arrayBuffer());
+    const sizeOf = (await import("image-size")).imageSize;
+    const dim = sizeOf(imageBuffer);
+
+    const width = Number(dim?.width || 0);
+    const height = Number(dim?.height || 0);
+
+    if (width < 300 || height < 300) {
+      await sql`
+        update jobs
+        set status = 'error',
+            error = ${JSON.stringify({
+              error: "image_too_small",
+              min_width: 300,
+              min_height: 300,
+              width,
+              height,
+              image_url: imageUrl,
+            })}::jsonb,
+            updated_at = now()
+        where id = ${job_id}::uuid
+      `;
+
+      return res.status(400).json({
+        ok: false,
+        error: "image_too_small",
+        message: "Yüklenen görsel en az 300x300 olmalı.",
+        job_id,
+        width,
+        height,
+        min_width: 300,
+        min_height: 300,
+      });
+    }
+  } catch (probeErr) {
+    await sql`
+      update jobs
+      set status = 'error',
+          error = ${JSON.stringify({
+            error: "image_probe_exception",
+            detail: String(probeErr?.message || probeErr),
+            image_url: imageUrl,
+          })}::jsonb,
+          updated_at = now()
+      where id = ${job_id}::uuid
+    `;
+
+    return res.status(400).json({
+      ok: false,
+      error: "image_probe_exception",
+      message: "Görsel boyutu doğrulanamadı.",
+      detail: String(probeErr?.message || probeErr),
+      job_id,
+    });
+  }
+}
+
+const falCreateResp = await fetch(
+  `${baseUrl}/api/providers/fal/video/create?app=atmo`,
+  {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      // cookie forward: auth gerektiriyorsa iç endpoint de aynı session’ı görsün
+      cookie: req.headers.cookie || "",
+    },
+    body: JSON.stringify({
+      ...body,
+      // job ile ilişkilendirme için (istersen create endpoint bunu loglayabilir)
+      job_id,
+      app: "atmo",
+    }),
+  }
+);
 
     const falText = await falCreateResp.text();
     let falJson = null;
