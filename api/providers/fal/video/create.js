@@ -304,6 +304,61 @@ const falUrl = hasImageRef
         ? "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video"
         : "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video"
     );
+
+  const rawDetails =
+  mode === "pro"
+    ? (
+        (body.details && typeof body.details === "object" ? body.details : null) ||
+        (meta && meta.details && typeof meta.details === "object" ? meta.details : null) ||
+        null
+      )
+    : null;
+
+if (mode === "pro" && rawDetails && typeof promptSafe === "string" && promptSafe.trim()) {
+  const detailParts = [];
+
+  if (rawDetails.grain) {
+    detailParts.push("subtle cinematic film grain texture");
+  }
+
+  if (rawDetails.glow) {
+    detailParts.push("soft bloom, gentle lens glow, delicate halation around highlights");
+  }
+
+  if (rawDetails.vignette) {
+    detailParts.push("subtle dark vignette around the frame edges, stronger cinematic focus");
+  }
+
+  if (rawDetails.dust) {
+    detailParts.push("light film dust particles, tiny organic floating imperfections, analog texture");
+  }
+
+  if (rawDetails.sharpen) {
+    detailParts.push("lightly enhanced local clarity and crisp detail");
+  }
+
+  if (rawDetails.motionBlur) {
+    detailParts.push("very subtle cinematic motion blur on movement");
+  }
+
+  const lutKey = rawDetails.lut ? String(rawDetails.lut).trim().toLowerCase() : "";
+
+  if (lutKey === "warm") {
+    detailParts.push("warm cinematic color grade, slightly amber highlights, rich warm atmosphere");
+  } else if (lutKey === "cold") {
+    detailParts.push("cool cinematic color grade, slightly blue tones, colder atmospheric mood");
+  } else if (lutKey === "cinematic") {
+    detailParts.push("premium cinematic color grade, balanced contrast, polished film look");
+  } else if (lutKey === "lofi") {
+    detailParts.push("lo-fi color grade, slightly faded tones, nostalgic soft contrast");
+  }
+
+  if (detailParts.length) {
+    promptSafe =
+      `${promptSafe.trim()} Detail effects: ${detailParts.join(", ")}.` +
+      " Keep these enhancements elegant, subtle, cinematic, and premium.";
+  }
+}
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
 
