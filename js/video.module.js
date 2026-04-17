@@ -1668,11 +1668,11 @@ async function createImage() {
         if (clearBtn) clearBtn.style.display = "none";
 
         try {
-          const uploaded = await uploadVideoFileWithPolicy(f, "runway-input-image", {
-            prompt: String(qs("#videoImagePrompt", root)?.value || "").trim(),
-            description: String(qs("#videoImagePrompt", root)?.value || "").trim() || f.name,
-            source: "video_image_browser_upload"
-          });
+         const uploaded = await uploadVideoFileWithPolicy(f, "image", {
+  prompt: String(qs("#videoImagePrompt", root)?.value || "").trim(),
+  description: String(qs("#videoImagePrompt", root)?.value || "").trim() || f.name,
+  source: "video_image_browser_upload"
+});
 
           input.dataset.uploadStatus = "ready";
           input.dataset.uploadUrl = String(uploaded?.url || "").trim();
