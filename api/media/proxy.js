@@ -5,6 +5,8 @@
 // ✅ Debug: X-AIVO-Proxy header
 
 const { URL } = require("url");
+const { Readable } = require("stream");
+const { pipeline } = require("stream/promises");
 
 const ALLOWED_HOSTS = new Set([
   "dnznrvs05pmza.cloudfront.net", // runway signed cloudfront
@@ -155,18 +157,22 @@ if (reqFilename) {
       return res.end();
     }
 
-    if (!upstream.body) {
-      return res.end();
-    }
+if (!upstream.body) {
+  return res.end();
+}
 
-    const reader = upstream.body.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(Buffer.from(value));
-    }
+const nodeStream = Readable.fromWeb(upstream.body);
 
-    res.end();
+req.on("close", () => {
+  try { nodeStream.destroy(); } catch {}
+});
+
+res.on("close", () => {
+  try { nodeStream.destroy(); } catch {}
+});
+
+await pipeline(nodeStream, res);
+return;
   } catch (err) {
     console.error("proxy_error:", err);
     return res.status(500).end("proxy_failed");
