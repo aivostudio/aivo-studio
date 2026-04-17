@@ -3815,9 +3815,29 @@ if (file && slotConfig) {
         syncSceneRows(nextRoot);
       }
     }
-console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
-try { window.toast?.error?.(String(err?.message || err || "story_reference_upload_failed")); } catch {}
-throw err;
+
+    console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
+
+    const errText = String(err?.message || err || "").toLowerCase();
+    const isPolicyBlocked =
+      errText.includes("media_policy") ||
+      errText.includes("kamu figürü") ||
+      errText.includes("kamu figuru") ||
+      errText.includes("tanınmış kişi") ||
+      errText.includes("taninmis kisi") ||
+      errText.includes("gerçek kişi") ||
+      errText.includes("gercek kisi") ||
+      errText.includes("impersonation");
+
+    try {
+      window.toast?.error?.(
+        isPolicyBlocked
+          ? "Bu görsel kullanılamaz."
+          : "Yükleme hatası"
+      );
+    } catch {}
+
+    throw err;
   });
 
         setStoryCharacterImage(slot, { uploadPromise });
