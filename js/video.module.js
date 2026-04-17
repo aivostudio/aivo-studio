@@ -691,31 +691,77 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   // ===============================
   // Robust JSON POST (500'lerde text dönebilir)
   // ===============================
-  async function postJSON(url, payload) {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+  async function uploadVideoFileWithPolicy(file, kind, extra = {}) {
+    if (!file) {
+      throw new Error("video_missing_file");
+    }
+
+    const filename = file.name || `video-${kind || "file"}-${Date.now()}`;
+    const contentType = file.type || "application/octet-stream";
+    const promptText = String(extra.prompt || "").trim();
+    const titleText = String(filename || "").trim();
+    const descriptionText = String(
+      extra.description ||
+      promptText ||
+      filename ||
+      ""
+    ).trim();
+
+    const presign = await postJSON("/api/r2/scan-and-presign", {
+      app: "video",
+      kind,
+      filename,
+      contentType,
+      prompt: promptText,
+      title: titleText,
+      description: descriptionText,
+      personName: "",
+      style: String(extra.style || "").trim(),
+      source: String(extra.source || "video_browser_upload").trim()
     });
 
-    const text = await r.text().catch(() => "");
-    let j = null;
-    try {
-      j = text ? JSON.parse(text) : null;
-    } catch (_) {
-      j = null;
+    const uploadUrl = presign.uploadUrl || presign.upload_url || "";
+    const publicUrl = presign.publicUrl || presign.public_url || presign.url || "";
+    const key = presign.key || presign.objectKey || "";
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("video_upload_presign_invalid");
     }
 
-    if (!r.ok) {
-      const err =
-        (j && (j.error || j.message)) ||
-        (text ? text.slice(0, 180) : "") ||
-        `request_failed_${r.status}`;
-      throw err;
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error(`video_upload_put_failed_${put.status}`);
     }
 
-    if (!j) throw "bad_json_response";
-    return j;
+    const scan = await postJSON("/api/r2/scan-upload", {
+      app: "video",
+      key,
+      filename,
+      contentType,
+      public_url: publicUrl,
+      prompt: promptText,
+      title: titleText,
+      description: descriptionText,
+      personName: "",
+      style: String(extra.style || "").trim(),
+      source: String(extra.source || "video_browser_upload").trim()
+    });
+
+    if (scan.decision && scan.decision !== "allow") {
+      throw new Error(`media_policy_${scan.decision}`);
+    }
+
+    return {
+      url: String(scan.public_url || publicUrl || "").trim(),
+      key,
+      filename,
+      contentType
+    };
   }
 
   // ===============================
