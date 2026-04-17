@@ -1223,17 +1223,34 @@ async function createImage() {
   } catch {}
 
   try {
-    const presign = await postJSON("/api/r2/presign-put", {
-      filename: file.name,
-      contentType: file.type || "image/jpeg",
-      prefix: "files/runway/input-images/",
+    const promptText = String(payload.prompt || "").trim();
+    const filename = file.name || `video-image-${Date.now()}.jpg`;
+    const contentType = file.type || "image/jpeg";
+
+    const presign = await postJSON("/api/r2/scan-and-presign", {
       app: "video",
       kind: "runway-input-image",
+      filename,
+      contentType,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      personName: "",
+      style: "",
+      source: "video_image_browser_upload"
     });
 
-    const up = await fetch(presign.upload_url, {
+    const uploadUrl = presign.uploadUrl || presign.upload_url || "";
+    const publicUrl = presign.publicUrl || presign.public_url || presign.url || "";
+    const key = presign.key || presign.objectKey || "";
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("video_upload_presign_invalid");
+    }
+
+    const up = await fetch(uploadUrl, {
       method: "PUT",
-      headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
+      headers: { "Content-Type": contentType },
       body: file,
     });
 
@@ -1241,9 +1258,26 @@ async function createImage() {
       throw new Error("r2_upload_failed_" + up.status);
     }
 
-    payload.image_url = presign.public_url;
-    console.log("[video] uploaded to R2:", payload.image_url);
+    const scan = await postJSON("/api/r2/scan-upload", {
+      app: "video",
+      key,
+      filename,
+      contentType,
+      public_url: publicUrl,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      personName: "",
+      style: "",
+      source: "video_image_browser_upload"
+    });
 
+    if (scan.decision && scan.decision !== "allow") {
+      throw new Error(`media_policy_${scan.decision}`);
+    }
+
+    payload.image_url = String(scan.public_url || publicUrl || "").trim();
+    console.log("[video] uploaded to R2:", payload.image_url);
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
 
