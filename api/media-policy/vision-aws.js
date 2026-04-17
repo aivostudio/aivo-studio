@@ -321,14 +321,13 @@ const PROTECTED_PERSONS = new Set(
 // Bilinmeyen Id'leri uydurma ekleme. Isim bazli koruma zaten aktif.
 // Yeni Id buldukca bu listeye ekleyebilirsin.
 const PROTECTED_PERSON_IDS = new Set([
-  "1DE0PR", // Recep Tayyip Erdoğan
-  "I4ma5e", // Donald Trump
-    "3CI7QV9d", // Elon Musk
-    "2Qq1gs5j", // Tarkan
-    "2U6Hd1c", // Cem Yılmaz
-    "2lt8k2w", // Sibel Can
+  "1DE0PR",   // Recep Tayyip Erdoğan
+  "I4ma5e",   // Donald Trump
+  "3CI7QV9d", // Elon Musk
+  "2Qq1gs5j", // Tarkan
+  "2U6Hd1c",  // Cem Yılmaz
+  "2lt8k2w",  // Sibel Can
 ]);
-
 function isProtectedCelebrityMatch(bestCelebrity) {
   if (!bestCelebrity || !bestCelebrity.name) return false;
 
@@ -416,7 +415,7 @@ module.exports = async (req, res) => {
       matchedLabel: protectedMatch && bestCelebrity ? bestCelebrity.name : null,
       matchedGroup: protectedMatch ? "public_figure" : null,
       provider: "aws-rekognition",
-      providerVersion: "2026-04-17-protected-list",
+    providerVersion: "2026-04-17-protected-list-verified",
       raw: {
         app: app || null,
         fileName: fileName || null,
