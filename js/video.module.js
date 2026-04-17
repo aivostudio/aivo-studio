@@ -1638,13 +1638,15 @@ async function createImage() {
         });
       }
 
-      input.addEventListener("change", () => {
+      input.addEventListener("change", async () => {
         const f = input.files?.[0];
 
         resetVideoPolicyUI(root);
 
         if (!f) {
           input.style.pointerEvents = "auto";
+          input.dataset.uploadStatus = "";
+          input.dataset.uploadUrl = "";
           if (fb) fb.style.display = "none";
           if (name) name.textContent = "";
           if (bar) bar.style.width = "0%";
@@ -1654,37 +1656,81 @@ async function createImage() {
         }
 
         input.style.pointerEvents = "none";
+        input.dataset.uploadStatus = "uploading";
+        input.dataset.uploadUrl = "";
 
         if (fb) fb.style.display = "block";
         if (name) {
           name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Yükleniyor...`;
         }
-        if (bar) bar.style.width = "0%";
-        if (pct) pct.textContent = "0%";
+        if (bar) bar.style.width = "10%";
+        if (pct) pct.textContent = "10%";
         if (clearBtn) clearBtn.style.display = "none";
 
-        let p = 0;
+        try {
+          const uploaded = await uploadVideoFileWithPolicy(f, "runway-input-image", {
+            prompt: String(qs("#videoImagePrompt", root)?.value || "").trim(),
+            description: String(qs("#videoImagePrompt", root)?.value || "").trim() || f.name,
+            source: "video_image_browser_upload"
+          });
 
-        const t = setInterval(() => {
-          p += 10;
+          input.dataset.uploadStatus = "ready";
+          input.dataset.uploadUrl = String(uploaded?.url || "").trim();
 
-          if (p >= 100) {
-            p = 100;
-            clearInterval(t);
+          if (bar) bar.style.width = "100%";
+          if (pct) pct.textContent = "100%";
 
-            if (name) {
-              name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Hazır ✓`;
-            }
-
-            if (clearBtn) {
-              clearBtn.style.display = "inline-grid";
-              clearBtn.style.placeItems = "center";
-            }
+          if (name) {
+            name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Hazır ✓`;
           }
 
-          if (bar) bar.style.width = p + "%";
-          if (pct) pct.textContent = p + "%";
-        }, 80);
+          if (clearBtn) {
+            clearBtn.style.display = "inline-grid";
+            clearBtn.style.placeItems = "center";
+          }
+
+          try { window.toast?.success?.("Resim eklendi"); } catch {}
+        } catch (err) {
+          const errText = String(err?.message || err || "").toLowerCase();
+          const isPolicyBlocked =
+            errText.includes("media_policy") ||
+            errText.includes("kamu figürü") ||
+            errText.includes("kamu figuru") ||
+            errText.includes("tanınmış kişi") ||
+            errText.includes("taninmis kisi") ||
+            errText.includes("gerçek kişi") ||
+            errText.includes("gercek kisi") ||
+            errText.includes("impersonation");
+
+          input.dataset.uploadStatus = "error";
+          input.dataset.uploadUrl = "";
+          input.value = "";
+          input.style.pointerEvents = "auto";
+
+          if (bar) bar.style.width = "100%";
+          if (pct) pct.textContent = "100%";
+
+          if (name) {
+            name.textContent = isPolicyBlocked
+              ? `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Bu görsel kullanılamaz`
+              : `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Yükleme hatası`;
+          }
+
+          if (clearBtn) {
+            clearBtn.style.display = "inline-grid";
+            clearBtn.style.placeItems = "center";
+          }
+
+          try {
+            window.toast?.error?.(
+              isPolicyBlocked
+                ? "Bu görsel kullanılamaz."
+                : "Yükleme hatası"
+            );
+          } catch {}
+
+          console.error("[video] image upload error =", err);
+        }
       });
     }
 
