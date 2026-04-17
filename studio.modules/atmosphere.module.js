@@ -2074,26 +2074,26 @@ if (basicLogoClearBtn) {
   return;
 }
 
-      const basicAudioClearBtn = closestWithin(e.target, "#atmAudioClear", root);
-      if (basicAudioClearBtn) {
-        e.preventDefault();
-        e.stopPropagation();
+  const basicAudioClearBtn = closestWithin(e.target, "#atmAudioClear", root);
+if (basicAudioClearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
 
-        const audioInput = document.getElementById("atmAudioFile");
-        if (audioInput) audioInput.value = "";
+  const audioInput = document.getElementById("atmAudioFile");
+  if (audioInput) audioInput.value = "";
 
-        state.audioFile = null;
+  state.audioFile = null;
 
-        const panel =
-          basicAudioClearBtn.closest('[data-mode-panel="basic"]') ||
-          qs('[data-mode-panel="basic"]', root) ||
-          root;
+  const panel =
+    basicAudioClearBtn.closest('[data-mode-panel="basic"]') ||
+    qs('[data-mode-panel="basic"]', root) ||
+    root;
 
-        setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
-        syncAtmoGenerateCredits(root);
-        return;
-      }
-
+  setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
+  syncAtmoGenerateCredits(root);
+  try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+  return;
+}
       const btn = closestWithin(e.target, "[data-atm-generate]", root);
       if (!btn) return;
 
