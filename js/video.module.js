@@ -1482,135 +1482,316 @@ async function createImage() {
   // ===============================
   // Tabs + Image upload UX (bind once per root)
   // ===============================
-  function bindTabs(root) {
-    if (!root || root.__videoTabsBound) return;
+function bindTabs(root) {
+  if (!root || root.__videoTabsBound) return;
 
-    const tabText = root.querySelector('[data-video-tab="text"]');
-    const tabImage = root.querySelector('[data-video-tab="image"]');
-    const viewText = root.querySelector('[data-video-subview="text"]');
-    const viewImage = root.querySelector('[data-video-subview="image"]');
+  const tabText = root.querySelector('[data-video-tab="text"]');
+  const tabImage = root.querySelector('[data-video-tab="image"]');
+  const viewText = root.querySelector('[data-video-subview="text"]');
+  const viewImage = root.querySelector('[data-video-subview="image"]');
 
-    if (!tabText || !tabImage || !viewText || !viewImage) return;
+  if (!tabText || !tabImage || !viewText || !viewImage) return;
 
-    root.__videoTabsBound = true;
+  root.__videoTabsBound = true;
 
-    function bindImageUploadUX() {
-      const input = root.querySelector("#videoImageInput");
-      const fb = root.querySelector("#videoImageFeedback");
-      const name = root.querySelector("#videoImageName");
-      const clearBtn = root.querySelector("#videoImageClearBtn");
-      const bar = root.querySelector("#videoImageBar");
-      const pct = root.querySelector("#videoImagePct");
-      if (!input || input.__uxBound) return;
+  function getImageUploadRefs() {
+    return {
+      input: root.querySelector("#videoImageInput"),
+      fb: root.querySelector("#videoImageFeedback"),
+      name: root.querySelector("#videoImageName"),
+      clearBtn: root.querySelector("#videoImageClearBtn"),
+      bar: root.querySelector("#videoImageBar"),
+      pct: root.querySelector("#videoImagePct")
+    };
+  }
 
-      input.__uxBound = true;
+  function setImageUploadState(next = {}) {
+    const { input, fb, name, clearBtn, bar, pct } = getImageUploadRefs();
+    if (!input) return;
 
-      if (clearBtn && !clearBtn.__bound) {
-        clearBtn.__bound = true;
+    const status = String(next.status || "empty").trim();
+    const uploadUrl = String(next.uploadUrl || "").trim();
+    const fileName = String(next.fileName || "").trim();
+    const errorReason = String(next.errorReason || "").trim();
+    const fileSizeText = next.fileSizeText ? String(next.fileSizeText) : "";
 
-        clearBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation?.();
+    input.dataset.uploadStatus = status;
+    input.dataset.uploadUrl = uploadUrl;
+    input.dataset.uploadErrorReason = errorReason;
 
-          input.value = "";
-          input.style.pointerEvents = "auto";
+    if (status === "empty") {
+      input.style.pointerEvents = "auto";
+      if (fb) fb.style.display = "none";
+      if (name) name.textContent = "";
+      if (bar) bar.style.width = "0%";
+      if (pct) pct.textContent = "0%";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
 
-          resetVideoPolicyUI(root);
+    if (fb) fb.style.display = "block";
 
-          if (fb) fb.style.display = "none";
-          if (name) name.textContent = "";
-          if (bar) bar.style.width = "0%";
-          if (pct) pct.textContent = "0%";
-          clearBtn.style.display = "none";
-        });
+    if (status === "uploading") {
+      input.style.pointerEvents = "none";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Yükleniyor...`;
       }
+      if (bar) bar.style.width = "35%";
+      if (pct) pct.textContent = "35%";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
 
-      input.addEventListener("change", () => {
-        const f = input.files?.[0];
+    if (status === "ready") {
+      input.style.pointerEvents = "auto";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Hazır ✓`;
+      }
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
 
+    if (status === "policy_blocked") {
+      input.style.pointerEvents = "auto";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Bu görsel kullanılamaz`;
+      }
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+
+    if (status === "error") {
+      input.style.pointerEvents = "auto";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Yükleme hatası`;
+      }
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+  }
+
+  async function uploadVideoFileWithPolicy(file, kind = "image") {
+    if (!file) throw new Error("missing_file");
+
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `video-input-${Date.now()}`;
+    const promptText = String(qs("#videoImagePrompt", root)?.value || "").trim();
+
+    const presign = await postJSON("/api/r2/scan-and-presign", {
+      app: "video",
+      kind,
+      filename,
+      contentType,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      source: "video_image_upload"
+    });
+
+    const uploadUrl = String(
+      presign.uploadUrl ||
+      presign.upload_url ||
+      ""
+    ).trim();
+
+    const publicUrl = String(
+      presign.publicUrl ||
+      presign.public_url ||
+      presign.url ||
+      ""
+    ).trim();
+
+    const key = String(
+      presign.key ||
+      presign.objectKey ||
+      ""
+    ).trim();
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("video_image_missing_upload_urls");
+    }
+
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": contentType
+      },
+      body: file
+    });
+
+    if (!putRes.ok) {
+      throw new Error(`video_image_r2_put_failed_${putRes.status}`);
+    }
+
+    const scanData = await postJSON("/api/r2/scan-upload", {
+      app: "video",
+      key,
+      filename,
+      contentType,
+      public_url: publicUrl,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      source: "video_image_upload"
+    });
+
+    const decision = String(scanData?.decision || "allow").trim().toLowerCase();
+    const finalUrl = String(scanData?.public_url || publicUrl).trim();
+
+    if (decision && decision !== "allow") {
+      throw new Error(`media_policy_${decision}`);
+    }
+
+    if (!finalUrl) {
+      throw new Error("video_image_missing_public_url");
+    }
+
+    return {
+      url: finalUrl,
+      key,
+      decision
+    };
+  }
+
+  function bindImageUploadUX() {
+    const { input, clearBtn } = getImageUploadRefs();
+    if (!input || input.__uxBound) return;
+
+    input.__uxBound = true;
+    input.dataset.uploadStatus = input.dataset.uploadStatus || "empty";
+    input.dataset.uploadUrl = input.dataset.uploadUrl || "";
+    input.dataset.uploadErrorReason = input.dataset.uploadErrorReason || "";
+
+    if (clearBtn && !clearBtn.__bound) {
+      clearBtn.__bound = true;
+
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation?.();
+
+        input.value = "";
         resetVideoPolicyUI(root);
 
-        if (!f) {
-          input.style.pointerEvents = "auto";
-          if (fb) fb.style.display = "none";
-          if (name) name.textContent = "";
-          if (bar) bar.style.width = "0%";
-          if (pct) pct.textContent = "0%";
-          if (clearBtn) clearBtn.style.display = "none";
-          return;
-        }
-
-        input.style.pointerEvents = "none";
-
-        if (fb) fb.style.display = "block";
-        if (name) {
-          name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Yükleniyor...`;
-        }
-        if (bar) bar.style.width = "0%";
-        if (pct) pct.textContent = "0%";
-        if (clearBtn) clearBtn.style.display = "none";
-
-        let p = 0;
-
-        const t = setInterval(() => {
-          p += 10;
-
-          if (p >= 100) {
-            p = 100;
-            clearInterval(t);
-
-            if (name) {
-              name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Hazır ✓`;
-            }
-
-            if (clearBtn) {
-              clearBtn.style.display = "inline-grid";
-              clearBtn.style.placeItems = "center";
-            }
-          }
-
-          if (bar) bar.style.width = p + "%";
-          if (pct) pct.textContent = p + "%";
-        }, 80);
+        setImageUploadState({
+          status: "empty",
+          uploadUrl: "",
+          fileName: "",
+          errorReason: ""
+        });
       });
     }
 
-    function setMode(mode) {
-      const isText = mode === "text";
-      tabText.classList.toggle("is-active", isText);
-      tabImage.classList.toggle("is-active", !isText);
-
-      viewText.classList.toggle("is-active", isText);
-      viewImage.classList.toggle("is-active", !isText);
-
-      viewText.style.display = isText ? "" : "none";
-      viewImage.style.display = !isText ? "" : "none";
-
+    input.addEventListener("change", async () => {
+      const f = input.files?.[0];
       resetVideoPolicyUI(root);
 
-      if (mode === "image") bindImageUploadUX();
+      if (!f) {
+        setImageUploadState({
+          status: "empty",
+          uploadUrl: "",
+          fileName: "",
+          errorReason: ""
+        });
+        return;
+      }
 
-      root.dataset.videoMode = mode;
-      syncVideoCreditUI(root);
-      console.log("[video.tabs] mode =", mode);
-    }
+      const fileSizeText = `${(f.size / 1024 / 1024).toFixed(2)}MB`;
 
-    tabText.addEventListener("click", (e) => {
-      e.preventDefault();
-      setMode("text");
+      setImageUploadState({
+        status: "uploading",
+        uploadUrl: "",
+        fileName: f.name,
+        fileSizeText,
+        errorReason: ""
+      });
+
+      try {
+        const uploaded = await uploadVideoFileWithPolicy(f, "image");
+
+        setImageUploadState({
+          status: "ready",
+          uploadUrl: uploaded.url,
+          fileName: f.name,
+          fileSizeText,
+          errorReason: ""
+        });
+      } catch (err) {
+        const errText = String(err?.message || err || "").toLowerCase();
+        const isPolicyBlocked =
+          errText.includes("media_policy") ||
+          errText.includes("public_figure") ||
+          errText.includes("celebrity") ||
+          errText.includes("protected_person");
+
+        setImageUploadState({
+          status: isPolicyBlocked ? "policy_blocked" : "error",
+          uploadUrl: "",
+          fileName: f.name,
+          fileSizeText,
+          errorReason: errText
+        });
+
+        try {
+          window.toast?.error?.(
+            isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası"
+          );
+        } catch {}
+
+        console.error("[video] image upload error =", err);
+      }
     });
-
-    tabImage.addEventListener("click", (e) => {
-      e.preventDefault();
-      setMode("image");
-    });
-
-    setMode(root.dataset.videoMode || "text");
-    bindImageUploadUX();
-    console.log("[video.tabs] bound ✅");
   }
 
+  function setMode(mode) {
+    const isText = mode === "text";
+    tabText.classList.toggle("is-active", isText);
+    tabImage.classList.toggle("is-active", !isText);
+
+    viewText.classList.toggle("is-active", isText);
+    viewImage.classList.toggle("is-active", !isText);
+
+    viewText.style.display = isText ? "" : "none";
+    viewImage.style.display = !isText ? "" : "none";
+
+    resetVideoPolicyUI(root);
+
+    if (mode === "image") bindImageUploadUX();
+
+    root.dataset.videoMode = mode;
+    syncVideoCreditUI(root);
+    console.log("[video.tabs] mode =", mode);
+  }
+
+  tabText.addEventListener("click", (e) => {
+    e.preventDefault();
+    setMode("text");
+  });
+
+  tabImage.addEventListener("click", (e) => {
+    e.preventDefault();
+    setMode("image");
+  });
+
+  setMode(root.dataset.videoMode || "text");
+  bindImageUploadUX();
+  console.log("[video.tabs] bound ✅");
+}
   // ===============================
   // Single observer: root geldiğinde bind et, sonra hafif çalışsın
   // ===============================
