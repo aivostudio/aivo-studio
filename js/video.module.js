@@ -691,77 +691,31 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   // ===============================
   // Robust JSON POST (500'lerde text dönebilir)
   // ===============================
-  async function uploadVideoFileWithPolicy(file, kind, extra = {}) {
-    if (!file) {
-      throw new Error("video_missing_file");
-    }
-
-    const filename = file.name || `video-${kind || "file"}-${Date.now()}`;
-    const contentType = file.type || "application/octet-stream";
-    const promptText = String(extra.prompt || "").trim();
-    const titleText = String(filename || "").trim();
-    const descriptionText = String(
-      extra.description ||
-      promptText ||
-      filename ||
-      ""
-    ).trim();
-
-    const presign = await postJSON("/api/r2/scan-and-presign", {
-      app: "video",
-      kind,
-      filename,
-      contentType,
-      prompt: promptText,
-      title: titleText,
-      description: descriptionText,
-      personName: "",
-      style: String(extra.style || "").trim(),
-      source: String(extra.source || "video_browser_upload").trim()
+  async function postJSON(url, payload) {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
-    const uploadUrl = presign.uploadUrl || presign.upload_url || "";
-    const publicUrl = presign.publicUrl || presign.public_url || presign.url || "";
-    const key = presign.key || presign.objectKey || "";
-
-    if (!uploadUrl || !publicUrl || !key) {
-      throw new Error("video_upload_presign_invalid");
+    const text = await r.text().catch(() => "");
+    let j = null;
+    try {
+      j = text ? JSON.parse(text) : null;
+    } catch (_) {
+      j = null;
     }
 
-    const put = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": contentType },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error(`video_upload_put_failed_${put.status}`);
+    if (!r.ok) {
+      const err =
+        (j && (j.error || j.message)) ||
+        (text ? text.slice(0, 180) : "") ||
+        `request_failed_${r.status}`;
+      throw err;
     }
 
-    const scan = await postJSON("/api/r2/scan-upload", {
-      app: "video",
-      key,
-      filename,
-      contentType,
-      public_url: publicUrl,
-      prompt: promptText,
-      title: titleText,
-      description: descriptionText,
-      personName: "",
-      style: String(extra.style || "").trim(),
-      source: String(extra.source || "video_browser_upload").trim()
-    });
-
-    if (scan.decision && scan.decision !== "allow") {
-      throw new Error(`media_policy_${scan.decision}`);
-    }
-
-    return {
-      url: String(scan.public_url || publicUrl || "").trim(),
-      key,
-      filename,
-      contentType
-    };
+    if (!j) throw "bad_json_response";
+    return j;
   }
 
   // ===============================
@@ -1178,61 +1132,29 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         consumeRequestId: consumed.consumeRequestId,
         transactionId: consumed.transactionId
       });
-  } catch (err) {
-    console.error("[video] create(image) error =", err);
+    } catch (err) {
+      console.error("[video] create(text) error =", err);
 
-    const errText = String(err?.message || err || "").toLowerCase();
-    const isPolicyBlocked =
-      errText.includes("media_policy") ||
-      errText.includes("kamu figürü") ||
-      errText.includes("kamu figuru") ||
-      errText.includes("tanınmış kişi") ||
-      errText.includes("taninmis kisi") ||
-      errText.includes("gerçek kişi") ||
-      errText.includes("gercek kisi") ||
-      errText.includes("impersonation");
+      const refunded = await refundVideoCredits({
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId,
+        reason: "video_text_create_failed",
+        meta: {
+          source: "video.create",
+          mode: "text",
+          duration: payload.duration,
+          aspect_ratio: payload.ratio,
+          prompt,
+          error: String(err?.message || err || "video_text_create_failed")
+        }
+      });
 
-    const refunded = await refundVideoCredits({
-      creditCost,
-      creditReason,
-      consumeRequestId: consumed.consumeRequestId,
-      transactionId: consumed.transactionId,
-      reason: isPolicyBlocked
-        ? "video_image_policy_blocked"
-        : "video_image_create_failed",
-      meta: {
-        source: "video.create",
-        mode: "image",
-        duration: payload.duration,
-        aspect_ratio: payload.ratio,
-        prompt: payload.prompt || "",
-        image_url: payload.image_url || "",
-        error: String(err?.message || err || "video_image_create_failed"),
-        policy_blocked: isPolicyBlocked
-      },
-    });
-
-    if (refunded) {
-      try {
-        window.toast?.error?.(
-          isPolicyBlocked
-            ? "Bu görsel kullanılamaz."
-            : "Yükleme hatası"
-        );
-      } catch {}
-      return;
+      if (!refunded) {
+        throw err;
+      }
     }
-
-    try {
-      window.toast?.error?.(
-        isPolicyBlocked
-          ? "Bu görsel kullanılamaz."
-          : "Yükleme hatası"
-      );
-    } catch {}
-
-    throw err;
-  }
   }
 
 async function createImage() {
@@ -1290,31 +1212,6 @@ async function createImage() {
 
   console.log("[video] file selected:", file.name);
 
-  const uploadedImageUrl = String(
-    qs("#videoImageInput", root)?.dataset?.uploadUrl || ""
-  ).trim();
-
-  const uploadStatus = String(
-    qs("#videoImageInput", root)?.dataset?.uploadStatus || ""
-  ).trim().toLowerCase();
-
-  if (uploadStatus === "uploading") {
-    try { window.toast?.info?.("Resim henüz yükleniyor"); } catch {}
-    return;
-  }
-
-  if (uploadStatus === "error") {
-    try { window.toast?.error?.("Bu görsel kullanılamaz."); } catch {}
-    return;
-  }
-
-  if (!uploadedImageUrl || uploadStatus !== "ready") {
-    try { window.toast?.info?.("Resim henüz hazır değil"); } catch {}
-    return;
-  }
-
-  payload.image_url = uploadedImageUrl;
-
   const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
   const creditReason = "studio_video_image_generate";
 
@@ -1326,7 +1223,26 @@ async function createImage() {
   } catch {}
 
   try {
-    console.log("[video] using uploaded image url:", payload.image_url);
+    const presign = await postJSON("/api/r2/presign-put", {
+      filename: file.name,
+      contentType: file.type || "image/jpeg",
+      prefix: "files/runway/input-images/",
+      app: "video",
+      kind: "runway-input-image",
+    });
+
+    const up = await fetch(presign.upload_url, {
+      method: "PUT",
+      headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
+      body: file,
+    });
+
+    if (!up.ok) {
+      throw new Error("r2_upload_failed_" + up.status);
+    }
+
+    payload.image_url = presign.public_url;
+    console.log("[video] uploaded to R2:", payload.image_url);
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
@@ -1371,25 +1287,12 @@ async function createImage() {
   } catch (err) {
     console.error("[video] create(image) error =", err);
 
-    const errText = String(err?.message || err || "").toLowerCase();
-    const isPolicyBlocked =
-      errText.includes("media_policy") ||
-      errText.includes("kamu figürü") ||
-      errText.includes("kamu figuru") ||
-      errText.includes("tanınmış kişi") ||
-      errText.includes("taninmis kisi") ||
-      errText.includes("gerçek kişi") ||
-      errText.includes("gercek kisi") ||
-      errText.includes("impersonation");
-
     const refunded = await refundVideoCredits({
       creditCost,
       creditReason,
       consumeRequestId: consumed.consumeRequestId,
       transactionId: consumed.transactionId,
-      reason: isPolicyBlocked
-        ? "video_image_policy_blocked"
-        : "video_image_create_failed",
+      reason: "video_image_create_failed",
       meta: {
         source: "video.create",
         mode: "image",
@@ -1398,17 +1301,8 @@ async function createImage() {
         prompt: payload.prompt || "",
         image_url: payload.image_url || "",
         error: String(err?.message || err || "video_image_create_failed"),
-        policy_blocked: isPolicyBlocked
       },
     });
-
-    try {
-      window.toast?.error?.(
-        isPolicyBlocked
-          ? "Bu görsel kullanılamaz."
-          : "Yükleme hatası"
-      );
-    } catch {}
 
     if (!refunded) {
       throw err;
@@ -1632,15 +1526,13 @@ async function createImage() {
         });
       }
 
-      input.addEventListener("change", async () => {
+      input.addEventListener("change", () => {
         const f = input.files?.[0];
 
         resetVideoPolicyUI(root);
 
         if (!f) {
           input.style.pointerEvents = "auto";
-          input.dataset.uploadStatus = "";
-          input.dataset.uploadUrl = "";
           if (fb) fb.style.display = "none";
           if (name) name.textContent = "";
           if (bar) bar.style.width = "0%";
@@ -1650,81 +1542,37 @@ async function createImage() {
         }
 
         input.style.pointerEvents = "none";
-        input.dataset.uploadStatus = "uploading";
-        input.dataset.uploadUrl = "";
 
         if (fb) fb.style.display = "block";
         if (name) {
           name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Yükleniyor...`;
         }
-        if (bar) bar.style.width = "10%";
-        if (pct) pct.textContent = "10%";
+        if (bar) bar.style.width = "0%";
+        if (pct) pct.textContent = "0%";
         if (clearBtn) clearBtn.style.display = "none";
 
-        try {
-         const uploaded = await uploadVideoFileWithPolicy(f, "image", {
-  prompt: String(qs("#videoImagePrompt", root)?.value || "").trim(),
-  description: String(qs("#videoImagePrompt", root)?.value || "").trim() || f.name,
-  source: "video_image_browser_upload"
-});
+        let p = 0;
 
-          input.dataset.uploadStatus = "ready";
-          input.dataset.uploadUrl = String(uploaded?.url || "").trim();
+        const t = setInterval(() => {
+          p += 10;
 
-          if (bar) bar.style.width = "100%";
-          if (pct) pct.textContent = "100%";
+          if (p >= 100) {
+            p = 100;
+            clearInterval(t);
 
-          if (name) {
-            name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Hazır ✓`;
+            if (name) {
+              name.textContent = `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Hazır ✓`;
+            }
+
+            if (clearBtn) {
+              clearBtn.style.display = "inline-grid";
+              clearBtn.style.placeItems = "center";
+            }
           }
 
-          if (clearBtn) {
-            clearBtn.style.display = "inline-grid";
-            clearBtn.style.placeItems = "center";
-          }
-
-          try { window.toast?.success?.("Resim eklendi"); } catch {}
-        } catch (err) {
-          const errText = String(err?.message || err || "").toLowerCase();
-          const isPolicyBlocked =
-            errText.includes("media_policy") ||
-            errText.includes("kamu figürü") ||
-            errText.includes("kamu figuru") ||
-            errText.includes("tanınmış kişi") ||
-            errText.includes("taninmis kisi") ||
-            errText.includes("gerçek kişi") ||
-            errText.includes("gercek kisi") ||
-            errText.includes("impersonation");
-
-          input.dataset.uploadStatus = "error";
-          input.dataset.uploadUrl = "";
-          input.value = "";
-          input.style.pointerEvents = "auto";
-
-          if (bar) bar.style.width = "100%";
-          if (pct) pct.textContent = "100%";
-
-          if (name) {
-            name.textContent = isPolicyBlocked
-              ? `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Bu görsel kullanılamaz`
-              : `Seçildi: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB) · Yükleme hatası`;
-          }
-
-          if (clearBtn) {
-            clearBtn.style.display = "inline-grid";
-            clearBtn.style.placeItems = "center";
-          }
-
-          try {
-            window.toast?.error?.(
-              isPolicyBlocked
-                ? "Bu görsel kullanılamaz."
-                : "Yükleme hatası"
-            );
-          } catch {}
-
-          console.error("[video] image upload error =", err);
-        }
+          if (bar) bar.style.width = p + "%";
+          if (pct) pct.textContent = p + "%";
+        }, 80);
       });
     }
 
