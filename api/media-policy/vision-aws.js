@@ -67,14 +67,139 @@ function pickBestCelebrity(celebrityFaces = []) {
 // Mantık: default allow. Sadece açık koruma listesi + çok yüksek confidence => block riski.
 const PROTECTED_PERSONS = new Set(
   [
+    // TURKIYE - SIYASET
     "recep tayyip erdogan",
     "recep tayyip erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "meral aksener",
+    "meral akşener",
+    "abdullah gul",
+    "abdullah gül",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "ali babacan",
+
+    // TURKIYE - MUZIK / MAGAZIN / MEDYA
+    "tarkan",
+    "sibel can",
+    "sezen aksu",
+    "ajda pekkan",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "gulben ergen",
+    "gülben ergen",
+    "hadise",
+    "demet akalin",
+    "demet akalın",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+
+    // TURKIYE - OYUNCU / EKRAN YUZLERI
+    "kivanc tatlitug",
+    "kıvanc tatlıtuğ",
+    "kivanc tatlıtuğ",
+    "kıvanç tatlitug",
+    "kıvanç tatlıtuğ",
+    "kenan imirzalioglu",
+    "kenan imirzalıoğlu",
+    "haluk bilginer",
+    "cem yilmaz",
+    "cem yılmaz",
+    "sahan gokbakar",
+    "şahan gökbakar",
+    "acun ilicali",
+    "acun ılıcalı",
+    "muge anli",
+    "müge anlı",
+    "esra erol",
+    "burak ozcivit",
+    "burak özçivit",
+    "serenay sarikaya",
+    "serenay sarıkaya",
+
+    // DUNYA - SIYASET / DEVLET
     "donald trump",
+    "joe biden",
+    "barack obama",
+    "vladimir putin",
+    "volodymyr zelenskyy",
+    "xi jinping",
+    "narendra modi",
+    "emmanuel macron",
+    "benjamin netanyahu",
+    "kim jong un",
+
+    // DUNYA - TEKNOLOJI / IS DUNYASI
+    "elon musk",
+    "bill gates",
+    "mark zuckerberg",
+    "jeff bezos",
+    "tim cook",
+    "sam altman",
+    "warren buffett",
+    "jensen huang",
+
+    // DUNYA - MUZIK / POP KULTUR
+    "rihanna",
+    "taylor swift",
+    "beyonce",
+    "beyoncé",
+    "drake",
+    "justin bieber",
+    "ariana grande",
+    "ed sheeran",
+    "the weeknd",
+    "bad bunny",
+    "dua lipa",
+
+    // DUNYA - SINEMA / TV
+    "leonardo dicaprio",
+    "brad pitt",
+    "angelina jolie",
+    "tom cruise",
+    "dwayne johnson",
+    "jennifer lawrence",
+    "margot robbie",
+    "scarlett johansson",
+    "keanu reeves",
+    "robert downey jr",
+    "robert downey junior",
+
+    // DUNYA - SPOR
+    "cristiano ronaldo",
+    "lionel messi",
+    "lebron james",
+    "michael jordan",
+    "kylian mbappe",
+    "kylian mbappé",
+    "neymar",
+    "serena williams",
+    "novak djokovic",
+    "novak djoković",
+
+    // DUNYA - ESTATE / OLUM SONRASI RISKLI IKONLAR
+    "michael jackson",
+    "elvis presley",
+    "marilyn monroe",
+    "freddie mercury",
+    "prince",
+    "whitney houston",
   ].map(normalize)
 );
 
-// İleride daha güvenli genişletme için ID bazlı kontrol de açık.
-// Rekognition response içindeki Id değeri daha stabil olabilir.
+// SADECE dogruladigin Rekognition celebrity Id degerlerini burada tut.
+// Bilinmeyen Id'leri uydurma ekleme. Isim bazli koruma zaten aktif.
+// Yeni Id buldukca bu listeye ekleyebilirsin.
 const PROTECTED_PERSON_IDS = new Set([
   "1DE0PR", // Recep Tayyip Erdoğan
   "I4ma5e", // Donald Trump
