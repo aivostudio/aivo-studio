@@ -109,10 +109,13 @@ module.exports = async (req, res) => {
     const faceCount = faceDetails.length;
     const hasFace = faceCount > 0;
 
-    const bestCelebrity = pickBestCelebrity(celebrityFaces);
-    const celebrityRisk = bestCelebrity ? Math.min(1, safeNumber(bestCelebrity.confidence, 0) / 100) : 0;
-    const publicFigureRisk = celebrityRisk;
+   const bestCelebrity = pickBestCelebrity(celebrityFaces);
+const bestConfidence = bestCelebrity ? safeNumber(bestCelebrity.confidence, 0) : 0;
 
+// Celebrity match tek başına nihai block sebebi olmasın.
+// Daha agresif false positive azaltımı için sadece çok yüksek confidence'ı block riskine taşıyoruz.
+const celebrityRisk = bestConfidence >= 98.5 ? Math.min(1, bestConfidence / 100) : 0;
+const publicFigureRisk = 0;
     return res.status(200).json({
       ok: true,
       hasFace,
