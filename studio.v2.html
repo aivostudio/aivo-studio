@@ -57,24 +57,34 @@
     html { visibility: hidden; }
   </style>
 
-<script>
+  <script>
   (function AIVO_STUDIO_HARD_GATE(){
     if (window.__AIVO_STUDIO_HARD_GATE__) return;
     window.__AIVO_STUDIO_HARD_GATE__ = true;
 
-    var finished = false;
-    var presenceTimer = null;
-
-    function revealPage() {
-      var st = document.getElementById("aivo-auth-gate-style");
-      if (st) st.remove();
-      document.documentElement.style.visibility = "visible";
-    }
-
-    function goIndexLogin() {
+    function goIndexLogin(){
       var from = encodeURIComponent(location.href);
       location.replace("/?open=login&from=" + from);
     }
+
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      signal: ctrl.signal
+    })
+    .then(async function(r){
+      clearTimeout(t);
+
+if (r.status === 200) {
+  const me = await r.json();
+
+  try {
+    var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+    var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
+    var nextEmail = String((me && me.email) || "").trim().toLowerCase();
 
     function firstNonEmpty() {
       for (var i = 0; i < arguments.length; i++) {
@@ -96,135 +106,87 @@
       return baseKey + ":" + normalized;
     }
 
-    function persistAuth(me) {
-      try {
-        var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
-        var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
-        var nextEmail = String((me && me.email) || "").trim().toLowerCase();
-
-        if (prevEmail && prevEmail !== nextEmail) {
-          localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
-          localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
-        }
-
-        var firstName = firstNonEmpty(
-          me && me.first_name,
-          me && me.firstName,
-          me && me.name,
-          emailToName(nextEmail),
-          "Kullanıcı"
-        );
-
-        var surname = firstNonEmpty(
-          me && me.last_name,
-          me && me.lastName,
-          me && me.surname,
-          ""
-        );
-
-        var fullName = firstNonEmpty(
-          firstName && surname ? (firstName + " " + surname) : "",
-          firstName,
-          "Kullanıcı"
-        );
-
-        localStorage.setItem("aivo_logged_in", "1");
-        localStorage.setItem("aivo_user_email", nextEmail);
-        localStorage.setItem("aivo_profile_name", "");
-        localStorage.setItem("aivo_profile_surname", "");
-        localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
-          loggedIn: true,
-          email: nextEmail,
-          name: firstName,
-          first_name: firstName,
-          surname: surname,
-          last_name: surname,
-          full_name: fullName,
-          ts: Date.now()
-        }));
-        localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
-        localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
-      } catch (e) {}
+    if (prevEmail && prevEmail !== nextEmail) {
+      localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
+      localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
     }
 
-    function startPresence(me) {
-      if (!me || !me.email || presenceTimer) return;
+    var firstName = firstNonEmpty(
+      me && me.first_name,
+      me && me.firstName,
+      me && me.name,
+      emailToName(nextEmail),
+      "Kullanıcı"
+    );
 
-      function ping() {
-        fetch("/api/presence/ping", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: me.email })
-        }).catch(function(){});
-      }
+    var surname = firstNonEmpty(
+      me && me.last_name,
+      me && me.lastName,
+      me && me.surname,
+      ""
+    );
 
-      ping();
-      presenceTimer = setInterval(ping, 30000);
-    }
+    var fullName = firstNonEmpty(
+      firstName && surname ? (firstName + " " + surname) : "",
+      firstName,
+      "Kullanıcı"
+    );
 
-    function finishAuthorized(me) {
-      if (finished) return;
-      finished = true;
+    localStorage.setItem("aivo_logged_in", "1");
+    localStorage.setItem("aivo_user_email", nextEmail);
+    localStorage.setItem("aivo_profile_name", "");
+    localStorage.setItem("aivo_profile_surname", "");
+    localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+      loggedIn: true,
+      email: nextEmail,
+      name: firstName,
+      first_name: firstName,
+      surname: surname,
+      last_name: surname,
+      full_name: fullName,
+      ts: Date.now()
+    }));
+    localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
+    localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
+  } catch (e) {}
 
-      persistAuth(me);
-      revealPage();
+  // ✅ Auth OK -> sayfayı göster
+  var st = document.getElementById("aivo-auth-gate-style");
+  if (st) st.remove();
+  document.documentElement.style.visibility = "visible";
 
-      try {
-        document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-          detail: { me: me }
-        }));
-      } catch (e) {}
+  try {
+    document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+      detail: { me: me }
+    }));
+  } catch (e) {}
 
-      startPresence(me);
-    }
+  // 🟢 ONLINE PRESENCE PING
+  if (me && me.email) {
+    fetch("/api/presence/ping", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: me.email })
+    });
 
-    function finishGuestRedirect() {
-      if (finished) return;
-      finished = true;
+    setInterval(function(){
+      fetch("/api/presence/ping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: me.email })
+      });
+    }, 30000);
+  }
+  return;
+}
+
       goIndexLogin();
-    }
-
-    function finishSoftFail() {
-      if (finished) return;
-      finished = true;
-      revealPage();
-
-      try {
-        document.dispatchEvent(new CustomEvent("aivo:auth-soft-fail"));
-      } catch (e) {}
-    }
-
-    var softTimeout = setTimeout(function(){
-      finishSoftFail();
-    }, 6000);
-
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store"
-    })
-    .then(async function(r){
-      if (finished) return;
-      clearTimeout(softTimeout);
-
-      if (r.status === 200) {
-        var me = await r.json();
-        finishAuthorized(me);
-        return;
-      }
-
-      if (r.status === 401 || r.status === 403) {
-        finishGuestRedirect();
-        return;
-      }
-
-      finishSoftFail();
     })
     .catch(function(){
-      clearTimeout(softTimeout);
-      finishSoftFail();
+      goIndexLogin();
     });
   })();
-</script>
+  </script>
 
   <style>
     /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
