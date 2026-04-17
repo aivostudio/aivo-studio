@@ -310,43 +310,94 @@ function showStoryCharacterLimitAlert() {
 
   async function presignStoryCharacterReference(file, slot) {
     const safeSlot = String(slot || "main").trim() || "main";
+    const root = getCartoonRoot();
 
-    const res = await fetch("/api/r2/presign-put", {
+    const contentType = file?.type || "application/octet-stream";
+    const filename = file?.name || `${safeSlot}-${Date.now()}.png`;
+
+    const storyIdeaText = String(state?.storyIdea || "").trim();
+    const extraPromptText = String(state?.extraPrompt || "").trim();
+    const styleText = String(state?.style || "").trim();
+    const personName = String(getStoryCharacterLabelBySlot(safeSlot) || "").trim();
+
+    const promptText = [storyIdeaText, extraPromptText].filter(Boolean).join(" · ");
+    const titleText = String(filename || "").trim();
+    const descriptionText = String(promptText || filename || "").trim();
+
+    const res = await fetch("/api/r2/scan-and-presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         app: "cartoon",
         kind: `story-reference-${safeSlot}`,
-        filename: file?.name || `${safeSlot}-${Date.now()}.png`,
-        contentType: file?.type || "application/octet-stream"
+        filename,
+        contentType,
+        prompt: promptText,
+        title: titleText,
+        description: descriptionText,
+        personName,
+        style: styleText,
+        source: `cartoon_story_reference_upload_${safeSlot}`
       })
     });
 
     const data = await res.json().catch(() => null);
 
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || "story_reference_presign_failed");
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        (res.status === 403 ? "media_policy_blocked" : "story_reference_presign_failed");
+      throw new Error(msg);
+    }
+
+    if (!data || data.ok === false) {
+      throw new Error(data?.message || data?.error || "story_reference_presign_failed");
+    }
+
+    const uploadUrl = data.uploadUrl || data.upload_url;
+    const publicUrl = data.publicUrl || data.public_url || data.url || "";
+    const key = data.key || data.objectKey || "";
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("story_reference_missing_upload_urls");
     }
 
     return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || ""
+      uploadUrl,
+      publicUrl,
+      key,
+      policy: data.policy || null
     };
   }
 
   async function uploadStoryCharacterReferenceToR2(file, slot) {
+    const safeSlot = String(slot || "main").trim() || "main";
+
     if (!file) throw new Error("missing_story_reference_file");
 
-    const { uploadUrl, publicUrl } = await presignStoryCharacterReference(file, slot);
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `${safeSlot}-${Date.now()}.png`;
 
-    if (!uploadUrl || !publicUrl) {
+    const storyIdeaText = String(state?.storyIdea || "").trim();
+    const extraPromptText = String(state?.extraPrompt || "").trim();
+    const styleText = String(state?.style || "").trim();
+    const personName = String(getStoryCharacterLabelBySlot(safeSlot) || "").trim();
+
+    const promptText = [storyIdeaText, extraPromptText].filter(Boolean).join(" · ");
+    const titleText = String(filename || "").trim();
+    const descriptionText = String(promptText || filename || "").trim();
+
+    const { uploadUrl, publicUrl, key } = await presignStoryCharacterReference(file, safeSlot);
+
+    if (!uploadUrl || !publicUrl || !key) {
       throw new Error("story_reference_missing_upload_urls");
     }
 
     const put = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
-        "Content-Type": file.type || "application/octet-stream"
+        "Content-Type": contentType
       },
       body: file
     });
@@ -355,7 +406,43 @@ function showStoryCharacterLimitAlert() {
       throw new Error("story_reference_r2_put_failed");
     }
 
-    return publicUrl;
+    const scanRes = await fetch("/api/r2/scan-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        key,
+        filename,
+        contentType,
+        public_url: publicUrl,
+        prompt: promptText,
+        title: titleText,
+        description: descriptionText,
+        personName,
+        style: styleText,
+        source: `cartoon_story_reference_upload_${safeSlot}`
+      })
+    });
+
+    const scanData = await scanRes.json().catch(() => null);
+
+    if (!scanRes.ok) {
+      const msg =
+        scanData?.message ||
+        scanData?.error ||
+        (scanRes.status === 403 ? "media_policy_blocked" : "story_reference_scan_upload_failed");
+      throw new Error(msg);
+    }
+
+    if (!scanData || scanData.ok === false) {
+      throw new Error(scanData?.message || scanData?.error || "story_reference_scan_upload_failed");
+    }
+
+    if (scanData.decision && scanData.decision !== "allow") {
+      throw new Error(`media_policy_${scanData.decision}`);
+    }
+
+    return scanData.public_url || publicUrl;
   }
 
   async function presignStoryAudio(file) {
