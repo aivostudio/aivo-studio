@@ -1818,17 +1818,90 @@ const builtEffects = {
         return;
       }
 
-         if (e.target.matches("#pfxLogoInput")) {
+           if (e.target.matches("#pfxLogoInput")) {
         const file = e.target.files?.[0] || null;
-        state.logoFile = file;
-        renderUploads(root);
-        syncCreateButton(root);
+        const logoMeta = ensureUploadMetaNode(
+          root,
+          "pfxLogoUploadBtn",
+          "pfxLogoMeta"
+        );
 
-        if (file) {
-          try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+        state.logoFile = null;
+
+        if (!file) {
+          renderUploads(root);
+          syncCreateButton(root);
+          console.log("[photofx] logo selected =", null);
+          return;
         }
 
-        console.log("[photofx] logo selected =", file?.name || null);
+        if (logoMeta) {
+          logoMeta.innerHTML = "";
+          const chip = document.createElement("div");
+          chip.className = "pfxUploadChip";
+
+          const name = document.createElement("div");
+          name.className = "pfxUploadChipName";
+          name.title = file.name || "";
+          name.textContent = `${truncateName(file.name || "", 22)} · Yükleniyor...`;
+
+          chip.appendChild(name);
+          logoMeta.appendChild(chip);
+        }
+
+        uploadFile(file, "logo")
+          .then((publicUrl) => {
+            state.logoFile = file;
+            state.logoFileUrl = String(publicUrl || "").trim();
+            renderUploads(root);
+            syncCreateButton(root);
+            try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+            console.log("[photofx] logo ready =", state.logoFileUrl);
+          })
+          .catch((err) => {
+            state.logoFile = null;
+            state.logoFileUrl = "";
+
+            if (logoMeta) {
+              logoMeta.innerHTML = "";
+              const chip = document.createElement("div");
+              chip.className = "pfxUploadChip";
+
+              const name = document.createElement("div");
+              name.className = "pfxUploadChipName";
+              name.title = file.name || "";
+
+              const errText = String(err?.message || err || "").toLowerCase();
+              const isPolicyBlocked =
+                errText.includes("media_policy") ||
+                errText.includes("kamu figürü") ||
+                errText.includes("kamu figuru") ||
+                errText.includes("tanınmış kişi") ||
+                errText.includes("taninmis kisi") ||
+                errText.includes("gerçek kişi") ||
+                errText.includes("gercek kisi") ||
+                errText.includes("impersonation");
+
+              name.textContent = isPolicyBlocked
+                ? `${truncateName(file.name || "", 20)} · Bu dosya kullanılamaz`
+                : `${truncateName(file.name || "", 20)} · Yükleme hatası`;
+
+              chip.appendChild(name);
+              logoMeta.appendChild(chip);
+
+              try {
+                window.toast?.error?.(
+                  isPolicyBlocked
+                    ? "Bu görsel kullanılamaz."
+                    : "Yükleme hatası"
+                );
+              } catch {}
+            }
+
+            console.error("[photofx] logo upload error =", err);
+            syncCreateButton(root);
+          });
+
         return;
       }
 
