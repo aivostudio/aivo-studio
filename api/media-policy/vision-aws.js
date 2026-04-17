@@ -1,11 +1,16 @@
 // api/media-policy/vision-aws.js
-const { RekognitionClient, DetectFacesCommand, RecognizeCelebritiesCommand } = require("@aws-sdk/client-rekognition");
+const {
+  RekognitionClient,
+  DetectFacesCommand,
+  RecognizeCelebritiesCommand,
+} = require("@aws-sdk/client-rekognition");
 
 function normalize(value) {
   return String(value || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -58,18 +63,46 @@ function pickBestCelebrity(celebrityFaces = []) {
   return best;
 }
 
+// Buraya SADECE gerçekten engellenmesi gereken isimleri koy.
+// Mantık: default allow. Sadece açık koruma listesi + çok yüksek confidence => block riski.
+const PROTECTED_PERSONS = new Set(
+  [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "donald trump",
+  ].map(normalize)
+);
+
+// İleride daha güvenli genişletme için ID bazlı kontrol de açık.
+// Rekognition response içindeki Id değeri daha stabil olabilir.
+const PROTECTED_PERSON_IDS = new Set([
+  "1DE0PR", // Recep Tayyip Erdoğan
+  "I4ma5e", // Donald Trump
+]);
+
+function isProtectedCelebrityMatch(bestCelebrity) {
+  if (!bestCelebrity || !bestCelebrity.name) return false;
+
+  const normalizedName = normalize(bestCelebrity.name);
+  const celebId = String(bestCelebrity.id || "").trim();
+  const confidence = safeNumber(bestCelebrity.confidence, 0);
+
+  const isProtectedByName = PROTECTED_PERSONS.has(normalizedName);
+  const isProtectedById = celebId && PROTECTED_PERSON_IDS.has(celebId);
+
+  // Çok net olmayan eşleşmeleri block sebebi yapmıyoruz.
+  const isVeryHighConfidence = confidence >= 99.5;
+
+  return (isProtectedByName || isProtectedById) && isVeryHighConfidence;
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const {
-      app,
-      fileName,
-      mimeType,
-      imageBase64,
-    } = req.body || {};
+    const { app, fileName, mimeType, imageBase64 } = req.body || {};
 
     if (!imageBase64) {
       return res.status(400).json({
@@ -102,30 +135,39 @@ module.exports = async (req, res) => {
       ),
     ]);
 
-    const faceDetails = Array.isArray(facesResp && facesResp.FaceDetails) ? facesResp.FaceDetails : [];
-    const celebrityFaces = Array.isArray(celebResp && celebResp.CelebrityFaces) ? celebResp.CelebrityFaces : [];
-    const unrecognizedFaces = Array.isArray(celebResp && celebResp.UnrecognizedFaces) ? celebResp.UnrecognizedFaces : [];
+    const faceDetails = Array.isArray(facesResp && facesResp.FaceDetails)
+      ? facesResp.FaceDetails
+      : [];
+    const celebrityFaces = Array.isArray(celebResp && celebResp.CelebrityFaces)
+      ? celebResp.CelebrityFaces
+      : [];
+    const unrecognizedFaces = Array.isArray(celebResp && celebResp.UnrecognizedFaces)
+      ? celebResp.UnrecognizedFaces
+      : [];
 
     const faceCount = faceDetails.length;
     const hasFace = faceCount > 0;
 
-   const bestCelebrity = pickBestCelebrity(celebrityFaces);
-const bestConfidence = bestCelebrity ? safeNumber(bestCelebrity.confidence, 0) : 0;
+    const bestCelebrity = pickBestCelebrity(celebrityFaces);
+    const bestConfidence = bestCelebrity ? safeNumber(bestCelebrity.confidence, 0) : 0;
+    const protectedMatch = isProtectedCelebrityMatch(bestCelebrity);
 
-// Celebrity match tek başına nihai block sebebi olmasın.
-// Daha agresif false positive azaltımı için sadece çok yüksek confidence'ı block riskine taşıyoruz.
-const celebrityRisk = bestConfidence >= 98.5 ? Math.min(1, bestConfidence / 100) : 0;
-const publicFigureRisk = 0;
+    // Ana kural:
+    // - Korunan kişi değilse block riski üretme
+    // - Korunan kişi + çok yüksek confidence ise risk üret
+    const celebrityRisk = protectedMatch ? Math.min(1, bestConfidence / 100) : 0;
+    const publicFigureRisk = 0;
+
     return res.status(200).json({
       ok: true,
       hasFace,
       faceCount,
       publicFigureRisk,
       celebrityRisk,
-      matchedLabel: bestCelebrity ? bestCelebrity.name : null,
-      matchedGroup: bestCelebrity ? "public_figure" : null,
+      matchedLabel: protectedMatch && bestCelebrity ? bestCelebrity.name : null,
+      matchedGroup: protectedMatch ? "public_figure" : null,
       provider: "aws-rekognition",
-      providerVersion: "2026-04-17",
+      providerVersion: "2026-04-17-protected-list",
       raw: {
         app: app || null,
         fileName: fileName || null,
@@ -134,17 +176,28 @@ const publicFigureRisk = 0;
         detectFacesFaceCount: faceCount,
         celebrityFaceCount: celebrityFaces.length,
         unrecognizedFaceCount: unrecognizedFaces.length,
+        bestCelebrity: bestCelebrity
+          ? {
+              name: bestCelebrity.name,
+              matchConfidence: bestConfidence,
+              id: bestCelebrity.id,
+              urls: bestCelebrity.urls,
+            }
+          : null,
+        protectedMatch,
         celebrityFaces: celebrityFaces.map((item) => ({
           name: item && item.Name ? item.Name : null,
           matchConfidence: safeNumber(item && item.MatchConfidence, 0),
           id: item && item.Id ? item.Id : null,
           urls: Array.isArray(item && item.Urls) ? item.Urls : [],
         })),
-        note: bestCelebrity
-          ? "aws rekognition celebrity match detected"
-          : hasFace
-            ? "aws rekognition face detected but no celebrity match"
-            : "aws rekognition no face detected",
+        note: protectedMatch
+          ? "aws rekognition protected person match detected"
+          : bestCelebrity
+            ? "aws rekognition celebrity-like match ignored because not in protected list"
+            : hasFace
+              ? "aws rekognition face detected but no protected person match"
+              : "aws rekognition no face detected",
       },
     });
   } catch (err) {
