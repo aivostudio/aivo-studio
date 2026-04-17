@@ -1132,29 +1132,61 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         consumeRequestId: consumed.consumeRequestId,
         transactionId: consumed.transactionId
       });
-    } catch (err) {
-      console.error("[video] create(text) error =", err);
+  } catch (err) {
+    console.error("[video] create(image) error =", err);
 
-      const refunded = await refundVideoCredits({
-        creditCost,
-        creditReason,
-        consumeRequestId: consumed.consumeRequestId,
-        transactionId: consumed.transactionId,
-        reason: "video_text_create_failed",
-        meta: {
-          source: "video.create",
-          mode: "text",
-          duration: payload.duration,
-          aspect_ratio: payload.ratio,
-          prompt,
-          error: String(err?.message || err || "video_text_create_failed")
-        }
-      });
+    const errText = String(err?.message || err || "").toLowerCase();
+    const isPolicyBlocked =
+      errText.includes("media_policy") ||
+      errText.includes("kamu figürü") ||
+      errText.includes("kamu figuru") ||
+      errText.includes("tanınmış kişi") ||
+      errText.includes("taninmis kisi") ||
+      errText.includes("gerçek kişi") ||
+      errText.includes("gercek kisi") ||
+      errText.includes("impersonation");
 
-      if (!refunded) {
-        throw err;
-      }
+    const refunded = await refundVideoCredits({
+      creditCost,
+      creditReason,
+      consumeRequestId: consumed.consumeRequestId,
+      transactionId: consumed.transactionId,
+      reason: isPolicyBlocked
+        ? "video_image_policy_blocked"
+        : "video_image_create_failed",
+      meta: {
+        source: "video.create",
+        mode: "image",
+        duration: payload.duration,
+        aspect_ratio: payload.ratio,
+        prompt: payload.prompt || "",
+        image_url: payload.image_url || "",
+        error: String(err?.message || err || "video_image_create_failed"),
+        policy_blocked: isPolicyBlocked
+      },
+    });
+
+    if (refunded) {
+      try {
+        window.toast?.error?.(
+          isPolicyBlocked
+            ? "Bu görsel kullanılamaz."
+            : "Yükleme hatası"
+        );
+      } catch {}
+      return;
     }
+
+    try {
+      window.toast?.error?.(
+        isPolicyBlocked
+          ? "Bu görsel kullanılamaz."
+          : "Yükleme hatası"
+      );
+    } catch {}
+
+    throw err;
+  }
   }
 
 async function createImage() {
