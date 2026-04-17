@@ -1818,54 +1818,71 @@ if (mode === "basic") {
       try { window.syncCreditsUI?.({ force: true }); } catch {}
     }
 
-    async function tryRefund(reason, extraMeta = {}) {
-      if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+async function tryRefund(reason, extraMeta = {}) {
+  if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+
+  try {
+    const refundRes = await fetch("/api/credits/refund", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "atmo",
+        action: creditReason,
+        amount: creditCost,
+        request_id: consumeRequestId,
+        related_transaction_id: consumeTransactionId,
+        reason,
+        meta: {
+          source: "atmosphere.module.onGenerate",
+          mode,
+          aspect_ratio: state.aspect || "16:9",
+          duration: mode === "pro" ? (state.proDuration || "4") : (state.duration || "4"),
+          prompt: mode === "pro" ? String(state.prompt || "") : "",
+          ...extraMeta
+        }
+      })
+    });
+
+    const refundData = await refundRes.json().catch(() => null);
+
+    if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+      await refreshCreditsUI();
+
+      try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+
+      const errText = String(
+        extraMeta?.message ||
+        extraMeta?.error ||
+        ""
+      ).toLowerCase();
 
       try {
-        const refundRes = await fetch("/api/credits/refund", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "content-type": "application/json",
-            "accept": "application/json"
-          },
-          body: JSON.stringify({
-            app: "atmo",
-            action: creditReason,
-            amount: creditCost,
-            request_id: consumeRequestId,
-            related_transaction_id: consumeTransactionId,
-            reason,
-            meta: {
-              source: "atmosphere.module.onGenerate",
-              mode,
-              aspect_ratio: state.aspect || "16:9",
-              duration: mode === "pro" ? (state.proDuration || "4") : (state.duration || "4"),
-              prompt: mode === "pro" ? String(state.prompt || "") : "",
-              ...extraMeta
-            }
-          })
-        });
-
-        const refundData = await refundRes.json().catch(() => null);
-
-        if (refundRes.ok && refundData?.ok && refundData?.refunded) {
-          await refreshCreditsUI();
-          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
-          return true;
+        if (errText.includes("image_too_small") || errText.includes("300x300")) {
+          window.toast?.error?.("Yüklenen görsel en az 300x300 olmalı.");
+        } else if (errText.includes("image_probe_exception")) {
+          window.toast?.error?.("Görsel boyutu doğrulanamadı.");
+        } else if (errText.includes("image_probe_failed")) {
+          window.toast?.error?.("Görsel okunamadı.");
         }
+      } catch {}
 
-        if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
-          await refreshCreditsUI();
-          return true;
-        }
-      } catch (refundErr) {
-        console.error("[ATM] refund failed:", refundErr);
-      }
-
-      return false;
+      return true;
     }
 
+    if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+      await refreshCreditsUI();
+      return true;
+    }
+  } catch (refundErr) {
+    console.error("[ATM] refund failed:", refundErr);
+  }
+
+  return false;
+}
     const creditRes = await fetch("/api/credits/consume-ledger", {
       method: "POST",
       credentials: "include",
