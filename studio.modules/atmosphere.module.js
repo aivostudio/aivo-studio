@@ -2052,26 +2052,27 @@ if (audioClearBtn) {
   try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
   return;
 }
-      const basicLogoClearBtn = closestWithin(e.target, "#atmLogoClear", root);
-      if (basicLogoClearBtn) {
-        e.preventDefault();
-        e.stopPropagation();
+const basicLogoClearBtn = closestWithin(e.target, "#atmLogoClear", root);
+if (basicLogoClearBtn) {
+  e.preventDefault();
+  e.stopPropagation();
 
-        const logoInput = document.getElementById("atmLogoFile");
-        if (logoInput) logoInput.value = "";
+  const logoInput = document.getElementById("atmLogoFile");
+  if (logoInput) logoInput.value = "";
 
-        state.logoFile = null;
+  state.logoFile = null;
 
-        const panel =
-          basicLogoClearBtn.closest('[data-mode-panel="basic"]') ||
-          qs('[data-mode-panel="basic"]', root) ||
-          root;
+  const panel =
+    basicLogoClearBtn.closest('[data-mode-panel="basic"]') ||
+    qs('[data-mode-panel="basic"]', root) ||
+    root;
 
-        setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
-        try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-        syncAtmoGenerateCredits(root);
-        return;
-      }
+  setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
+  try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+  syncAtmoGenerateCredits(root);
+  try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+  return;
+}
 
       const basicAudioClearBtn = closestWithin(e.target, "#atmAudioClear", root);
       if (basicAudioClearBtn) {
