@@ -2134,7 +2134,7 @@
 
             return state.characterImageUrl;
           })
-          .catch((err) => {
+                  .catch((err) => {
             state.characterImageUrl = "";
             state.characterImageUploadStatus = "error";
             state.characterImageUploadError = String(err?.message || err || "basic_reference_upload_failed");
@@ -2147,7 +2147,25 @@
               syncGenerateButtonCredit(nextRoot);
             }
 
-            try { window.toast?.error?.("Resim yükleme hatası"); } catch {}
+            const errText = String(err?.message || err || "").toLowerCase();
+            const isPolicyBlocked =
+              errText.includes("media_policy") ||
+              errText.includes("kamu figürü") ||
+              errText.includes("kamu figuru") ||
+              errText.includes("tanınmış kişi") ||
+              errText.includes("taninmis kisi") ||
+              errText.includes("gerçek kişi") ||
+              errText.includes("gercek kisi") ||
+              errText.includes("impersonation");
+
+            try {
+              window.toast?.error?.(
+                isPolicyBlocked
+                  ? "Bu görsel kullanılamaz."
+                  : "Yükleme hatası"
+              );
+            } catch {}
+
             throw err;
           });
 
