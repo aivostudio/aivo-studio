@@ -665,15 +665,13 @@ ensureFullscreenBinding();
                 </div>
               `
           }
-        </div>
+          </div>
 
-                      <div class="svcBody">
+        <div class="svcBody">
           <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
           <div class="svcProgress">
             <div class="svcProgressBar"></div>
           </div>
-          <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
-        </div>
           <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
         </div>
       </div>
