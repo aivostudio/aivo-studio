@@ -38,53 +38,114 @@
     });
   }
 
-  async function presignCartoonReference(file) {
-    const res = await fetch("/api/r2/presign-put", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app: "cartoon",
-        kind: "reference",
-        filename: file?.name || `reference-${Date.now()}.png`,
-        contentType: file?.type || "application/octet-stream"
-      })
-    });
+async function presignCartoonReference(file) {
+  const contentType = file?.type || "application/octet-stream";
+  const filename = file?.name || `reference-${Date.now()}.png`;
 
-    const data = await res.json().catch(() => null);
+  const res = await fetch("/api/r2/scan-and-presign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: "cartoon",
+      kind: "reference",
+      filename,
+      contentType,
+      prompt: "",
+      title: filename,
+      description: filename,
+      personName: "",
+      style: "",
+      source: "cartoon_character_reference_upload"
+    })
+  });
 
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || "cartoon_reference_presign_failed");
-    }
+  const data = await res.json().catch(() => null);
 
-    return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || "",
-    };
+  if (!res.ok) {
+    const msg =
+      data?.message ||
+      data?.error ||
+      (res.status === 403 ? "media_policy_blocked" : "cartoon_reference_presign_failed");
+    throw new Error(msg);
   }
 
-  async function uploadCartoonReferenceToR2(file) {
-    if (!file) throw new Error("missing_reference_file");
-
-    const { uploadUrl, publicUrl } = await presignCartoonReference(file);
-
-    if (!uploadUrl || !publicUrl) {
-      throw new Error("cartoon_reference_missing_upload_urls");
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type || "application/octet-stream"
-      },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error("cartoon_reference_r2_put_failed");
-    }
-
-    return publicUrl;
+  if (!data || data.ok === false) {
+    throw new Error(data?.message || data?.error || "cartoon_reference_presign_failed");
   }
+
+  const uploadUrl = data.uploadUrl || data.upload_url;
+  const publicUrl = data.publicUrl || data.public_url || data.url || "";
+  const key = data.key || data.objectKey || "";
+
+  if (!uploadUrl || !publicUrl || !key) {
+    throw new Error("cartoon_reference_missing_upload_urls");
+  }
+
+  return {
+    uploadUrl,
+    publicUrl,
+    key
+  };
+}
+
+async function uploadCartoonReferenceToR2(file) {
+  if (!file) throw new Error("missing_reference_file");
+
+  const contentType = file.type || "application/octet-stream";
+  const filename = file.name || `reference-${Date.now()}.png`;
+
+  const { uploadUrl, publicUrl, key } = await presignCartoonReference(file);
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error("cartoon_reference_r2_put_failed");
+  }
+
+  const scanRes = await fetch("/api/r2/scan-upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      app: "cartoon",
+      key,
+      filename,
+      contentType,
+      public_url: publicUrl,
+      prompt: "",
+      title: filename,
+      description: filename,
+      personName: "",
+      style: "",
+      source: "cartoon_character_reference_upload"
+    })
+  });
+
+  const scanData = await scanRes.json().catch(() => null);
+
+  if (!scanRes.ok) {
+    const msg =
+      scanData?.message ||
+      scanData?.error ||
+      (scanRes.status === 403 ? "media_policy_blocked" : "cartoon_reference_scan_failed");
+    throw new Error(msg);
+  }
+
+  if (!scanData || scanData.ok === false) {
+    throw new Error(scanData?.message || scanData?.error || "cartoon_reference_scan_failed");
+  }
+
+  if (scanData.decision && scanData.decision !== "allow") {
+    throw new Error(`media_policy_${scanData.decision}`);
+  }
+
+  return scanData.public_url || publicUrl;
+}
    // ------------------------------------------------------------
   // Policy helpers (Character)
   // ------------------------------------------------------------
