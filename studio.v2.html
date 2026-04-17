@@ -67,14 +67,10 @@
       location.replace("/?open=login&from=" + from);
     }
 
-    var ctrl = new AbortController();
-  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 8000);
-
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    })
+fetch("/api/auth/me", {
+  credentials: "include",
+  cache: "no-store"
+})
     .then(async function(r){
       clearTimeout(t);
 
