@@ -1912,6 +1912,44 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       return;
     }
 
+    const referenceInput = qs("[data-character-create-upload]", root);
+    const hasReferenceFile = !!(referenceInput?.files?.[0]);
+
+    if (hasReferenceFile) {
+      if (
+        state.characterReferenceUploadStatus === "uploading"
+      ) {
+        try { window.toast?.info?.("Referans görsel henüz yükleniyor"); } catch {}
+        return;
+      }
+
+      if (
+        !state.characterReferenceImageUrl ||
+        state.characterReferenceUploadStatus !== "ready"
+      ) {
+        const refErrText = String(state.characterReferenceUploadError || "").toLowerCase();
+        const isPolicyBlocked =
+          refErrText.includes("media_policy") ||
+          refErrText.includes("kamu figürü") ||
+          refErrText.includes("kamu figuru") ||
+          refErrText.includes("tanınmış kişi") ||
+          refErrText.includes("taninmis kisi") ||
+          refErrText.includes("gerçek kişi") ||
+          refErrText.includes("gercek kisi") ||
+          refErrText.includes("impersonation");
+
+        try {
+          window.toast?.error?.(
+            isPolicyBlocked
+              ? "Bu görsel kullanılamaz."
+              : "Görseli değiştir veya yeniden yükle."
+          );
+        } catch {}
+
+        return;
+      }
+    }
+
     const policyText = [
       payload.name,
       payload.prompt,
