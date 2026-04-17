@@ -374,11 +374,39 @@ const SESSION_KEYS_TO_CLEAR = [
   "aivo_auth_target"
 ];
 
-window.AIVO_LOGOUT = function () {
-  AUTH_KEYS_TO_CLEAR.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
-  SESSION_KEYS_TO_CLEAR.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
-  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch (_) {}
-  location.href = "/";
+window.AIVO_LOGOUT = async function () {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+  } catch (_) {}
+
+  AUTH_KEYS_TO_CLEAR.forEach((k) => {
+    try { localStorage.removeItem(k); } catch (_) {}
+  });
+
+  [
+    "aivo_auth_unified_v1",
+    "aivo_profile_name",
+    "aivo_profile_surname"
+  ].forEach((k) => {
+    try { localStorage.removeItem(k); } catch (_) {}
+  });
+
+  SESSION_KEYS_TO_CLEAR.forEach((k) => {
+    try { sessionStorage.removeItem(k); } catch (_) {}
+  });
+
+  try {
+    if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI();
+  } catch (_) {}
+
+  location.href = "/?logout=1";
 };
 
 function OPEN_AUTH(mode){
