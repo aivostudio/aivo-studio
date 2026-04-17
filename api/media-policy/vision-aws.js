@@ -323,6 +323,10 @@ const PROTECTED_PERSONS = new Set(
 const PROTECTED_PERSON_IDS = new Set([
   "1DE0PR", // Recep Tayyip Erdoğan
   "I4ma5e", // Donald Trump
+    "3CI7QV9d", // Elon Musk
+    "2Qq1gs5j", // Tarkan
+    "2U6Hd1c", // Cem Yılmaz
+    "2lt8k2w", // Sibel Can
 ]);
 
 function isProtectedCelebrityMatch(bestCelebrity) {
