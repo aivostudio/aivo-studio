@@ -1852,23 +1852,23 @@ async function tryRefund(reason, extraMeta = {}) {
     if (refundRes.ok && refundData?.ok && refundData?.refunded) {
       await refreshCreditsUI();
 
-      try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
-
       const errText = String(
         extraMeta?.message ||
         extraMeta?.error ||
         ""
       ).toLowerCase();
 
-      try {
-        if (errText.includes("image_too_small") || errText.includes("300x300")) {
-          window.toast?.error?.("Yüklenen görsel en az 300x300 olmalı.");
-        } else if (errText.includes("image_probe_exception")) {
-          window.toast?.error?.("Görsel boyutu doğrulanamadı.");
-        } else if (errText.includes("image_probe_failed")) {
-          window.toast?.error?.("Görsel okunamadı.");
-        }
-      } catch {}
+      let toastText = "İşlem başarısız oldu. Krediniz iade edildi.";
+
+      if (errText.includes("image_too_small") || errText.includes("300x300")) {
+        toastText = "Yüklenen görsel en az 300x300 olmalı. Krediniz iade edildi.";
+      } else if (errText.includes("image_probe_exception")) {
+        toastText = "Görsel boyutu doğrulanamadı. Krediniz iade edildi.";
+      } else if (errText.includes("image_probe_failed")) {
+        toastText = "Görsel okunamadı. Krediniz iade edildi.";
+      }
+
+      try { window.toast?.error?.(toastText); } catch {}
 
       return true;
     }
