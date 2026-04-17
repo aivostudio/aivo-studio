@@ -1156,12 +1156,16 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       }
     }
   }
-
 async function createImage() {
   const root = getRoot();
   resetVideoPolicyUI(root);
 
-  const file = qs("#videoImageInput", root)?.files?.[0];
+  const input = qs("#videoImageInput", root);
+  const file = input?.files?.[0];
+  const uploadStatus = String(input?.dataset?.uploadStatus || "empty").trim();
+  const uploadedImageUrl = String(input?.dataset?.uploadUrl || "").trim();
+  const uploadErrorReason = String(input?.dataset?.uploadErrorReason || "").trim();
+
   const policyText = buildVideoPolicyText(root, "image");
   const createBtn = qs("#videoGenerateImageBtn", root);
   const policyNote = ensureVideoPolicyNote(root, createBtn);
@@ -1202,15 +1206,39 @@ async function createImage() {
     return;
   }
 
+  if (uploadStatus === "uploading") {
+    try {
+      window.toast?.info?.("Görsel hâlâ yükleniyor");
+    } catch {}
+    return;
+  }
+
+  if (uploadStatus === "policy_blocked") {
+    try {
+      window.toast?.error?.("Bu görsel kullanılamaz.");
+    } catch {}
+    return;
+  }
+
+  if (uploadStatus !== "ready" || !uploadedImageUrl) {
+    try {
+      window.toast?.error?.("Yükleme hatası");
+    } catch {}
+    console.warn("[video] create(image) blocked: upload not ready", {
+      uploadStatus,
+      uploadErrorReason
+    });
+    return;
+  }
+
   const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
 
   const payload = {
     ...buildCommonPayload(root),
     mode: "image",
     prompt,
+    image_url: uploadedImageUrl
   };
-
-  console.log("[video] file selected:", file.name);
 
   const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
   const creditReason = "studio_video_image_generate";
@@ -1223,27 +1251,6 @@ async function createImage() {
   } catch {}
 
   try {
-    const presign = await postJSON("/api/r2/presign-put", {
-      filename: file.name,
-      contentType: file.type || "image/jpeg",
-      prefix: "files/runway/input-images/",
-      app: "video",
-      kind: "runway-input-image",
-    });
-
-    const up = await fetch(presign.upload_url, {
-      method: "PUT",
-      headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
-      body: file,
-    });
-
-    if (!up.ok) {
-      throw new Error("r2_upload_failed_" + up.status);
-    }
-
-    payload.image_url = presign.public_url;
-    console.log("[video] uploaded to R2:", payload.image_url);
-
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
 
@@ -1251,7 +1258,7 @@ async function createImage() {
     window.AIVO_JOBS?.upsert?.(job);
 
     const job_id = job.job_id || job.id;
-    console.log("[video] created(image)", { job_id, job, creditCost });
+    console.log("[video] created(image)", { job_id, job, creditCost, image_url: payload.image_url });
 
     emitVideoJobCreated({
       app: "video",
@@ -1266,7 +1273,7 @@ async function createImage() {
       resolution: payload.resolution,
       audio: payload.audio,
       credit_cost: creditCost,
-      request_id: consumed.consumeRequestId,
+      request_id: consumed.consumeRequestId
     });
 
     try {
@@ -1282,7 +1289,7 @@ async function createImage() {
       creditCost,
       creditReason,
       consumeRequestId: consumed.consumeRequestId,
-      transactionId: consumed.transactionId,
+      transactionId: consumed.transactionId
     });
   } catch (err) {
     console.error("[video] create(image) error =", err);
@@ -1300,8 +1307,8 @@ async function createImage() {
         aspect_ratio: payload.ratio,
         prompt: payload.prompt || "",
         image_url: payload.image_url || "",
-        error: String(err?.message || err || "video_image_create_failed"),
-      },
+        error: String(err?.message || err || "video_image_create_failed")
+      }
     });
 
     if (!refunded) {
@@ -1309,7 +1316,6 @@ async function createImage() {
     }
   }
 }
-
   function bindVideoPricingUI(root) {
     if (!root || root.__videoPricingBound) return;
     root.__videoPricingBound = true;
