@@ -2100,18 +2100,38 @@
             console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
             return state.logoFileUrl;
           })
-          .catch((err) => {
+                .catch((err) => {
             state.logoFileUrl = "";
             state.logoFileUploadStatus = "error";
             state.logoFileUploadError = String(err?.message || err || "basic_logo_upload_failed");
             console.error("[CARTOON][BASIC_LOGO_UPLOAD_ERROR]", err);
+
             const nextRoot = getCartoonRoot();
             if (nextRoot) {
               updateBasicLogoUploadStatusUI(nextRoot);
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
-            try { window.toast?.error?.("Logo yükleme hatası"); } catch {}
+
+            const errText = String(err?.message || err || "").toLowerCase();
+            const isPolicyBlocked =
+              errText.includes("media_policy") ||
+              errText.includes("kamu figürü") ||
+              errText.includes("kamu figuru") ||
+              errText.includes("tanınmış kişi") ||
+              errText.includes("taninmis kisi") ||
+              errText.includes("gerçek kişi") ||
+              errText.includes("gercek kisi") ||
+              errText.includes("impersonation");
+
+            try {
+              window.toast?.error?.(
+                isPolicyBlocked
+                  ? "Bu görsel kullanılamaz."
+                  : "Yükleme hatası"
+              );
+            } catch {}
+
             throw err;
           });
 
