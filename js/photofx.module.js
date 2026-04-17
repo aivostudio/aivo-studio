@@ -1778,8 +1778,14 @@ const builtEffects = {
         return;
       }
 
-             if (e.target.matches("#pfxImageInput")) {
+        if (e.target.matches("#pfxImageInput")) {
         const file = e.target.files?.[0] || null;
+        const imageMeta = ensureUploadMetaNode(
+          root,
+          "pfxInlineUploadBtn",
+          "pfxImageMeta"
+        );
+
         const fileName = String(file?.name || "").toLowerCase();
         const fileType = String(file?.type || "").toLowerCase();
         const isHeic =
@@ -1797,15 +1803,82 @@ const builtEffects = {
           return;
         }
 
-        state.imageFile = file;
-        renderUploads(root);
-        syncCreateButton(root);
+        state.imageFile = null;
 
-        if (file) {
-          try { window.toast?.success?.("Resim eklendi"); } catch {}
+        if (!file) {
+          renderUploads(root);
+          syncCreateButton(root);
+          console.log("[photofx] image selected =", null);
+          return;
         }
 
-        console.log("[photofx] image selected =", file?.name || null);
+        if (imageMeta) {
+          imageMeta.innerHTML = "";
+          const chip = document.createElement("div");
+          chip.className = "pfxUploadChip";
+
+          const name = document.createElement("div");
+          name.className = "pfxUploadChipName";
+          name.title = file.name || "";
+          name.textContent = `${truncateName(file.name || "", 22)} · Yükleniyor...`;
+
+          chip.appendChild(name);
+          imageMeta.appendChild(chip);
+        }
+
+        uploadFile(file, "image")
+          .then((publicUrl) => {
+            state.imageFile = file;
+            state.imageFileUrl = String(publicUrl || "").trim();
+            renderUploads(root);
+            syncCreateButton(root);
+            try { window.toast?.success?.("Resim eklendi"); } catch {}
+            console.log("[photofx] image ready =", state.imageFileUrl);
+          })
+          .catch((err) => {
+            state.imageFile = null;
+            state.imageFileUrl = "";
+
+            if (imageMeta) {
+              imageMeta.innerHTML = "";
+              const chip = document.createElement("div");
+              chip.className = "pfxUploadChip";
+
+              const name = document.createElement("div");
+              name.className = "pfxUploadChipName";
+              name.title = file.name || "";
+
+              const errText = String(err?.message || err || "").toLowerCase();
+              const isPolicyBlocked =
+                errText.includes("media_policy") ||
+                errText.includes("kamu figürü") ||
+                errText.includes("kamu figuru") ||
+                errText.includes("tanınmış kişi") ||
+                errText.includes("taninmis kisi") ||
+                errText.includes("gerçek kişi") ||
+                errText.includes("gercek kisi") ||
+                errText.includes("impersonation");
+
+              name.textContent = isPolicyBlocked
+                ? `${truncateName(file.name || "", 20)} · Bu görsel kullanılamaz`
+                : `${truncateName(file.name || "", 20)} · Yükleme hatası`;
+
+              chip.appendChild(name);
+              imageMeta.appendChild(chip);
+
+              try {
+                window.toast?.error?.(
+                  isPolicyBlocked
+                    ? "Bu görsel kullanılamaz."
+                    : "Yükleme hatası"
+                );
+              } catch {}
+            }
+
+            console.error("[photofx] image upload error =", err);
+            syncCreateButton(root);
+          });
+
         return;
       }
 
