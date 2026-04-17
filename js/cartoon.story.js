@@ -446,42 +446,84 @@ function showStoryCharacterLimitAlert() {
   }
 
   async function presignStoryAudio(file) {
-    const res = await fetch("/api/r2/presign-put", {
+    const contentType = file?.type || "application/octet-stream";
+    const filename = file?.name || `story-audio-${Date.now()}.mp3`;
+    const storyIdeaText = String(state?.storyIdea || "").trim();
+    const extraPromptText = String(state?.extraPrompt || "").trim();
+    const styleText = String(state?.style || "").trim();
+    const promptText = [storyIdeaText, extraPromptText].filter(Boolean).join(" · ");
+    const titleText = String(filename || "").trim();
+    const descriptionText = String(filename || "").trim();
+
+    const res = await fetch("/api/r2/scan-and-presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         app: "cartoon",
         kind: "story-audio",
-        filename: file?.name || `story-audio-${Date.now()}.mp3`,
-        contentType: file?.type || "application/octet-stream"
+        filename,
+        contentType,
+        prompt: "",
+        title: titleText,
+        description: descriptionText,
+        personName: "",
+        style: styleText,
+        source: "cartoon_story_audio_upload"
       })
     });
 
     const data = await res.json().catch(() => null);
 
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || "story_audio_presign_failed");
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        (res.status === 403 ? "media_policy_blocked" : "story_audio_presign_failed");
+      throw new Error(msg);
+    }
+
+    if (!data || data.ok === false) {
+      throw new Error(data?.message || data?.error || "story_audio_presign_failed");
+    }
+
+    const uploadUrl = data.uploadUrl || data.upload_url;
+    const publicUrl = data.publicUrl || data.public_url || data.url || "";
+    const key = data.key || data.objectKey || "";
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("story_audio_missing_upload_urls");
     }
 
     return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || ""
+      uploadUrl,
+      publicUrl,
+      key,
+      policy: data.policy || null
     };
   }
 
   async function uploadStoryAudioToR2(file) {
     if (!file) throw new Error("missing_story_audio_file");
 
-    const { uploadUrl, publicUrl } = await presignStoryAudio(file);
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `story-audio-${Date.now()}.mp3`;
+    const storyIdeaText = String(state?.storyIdea || "").trim();
+    const extraPromptText = String(state?.extraPrompt || "").trim();
+    const styleText = String(state?.style || "").trim();
+    const promptText = [storyIdeaText, extraPromptText].filter(Boolean).join(" · ");
+    const titleText = String(filename || "").trim();
+    const descriptionText = String(filename || "").trim();
 
-    if (!uploadUrl || !publicUrl) {
+    const { uploadUrl, publicUrl, key } = await presignStoryAudio(file);
+
+    if (!uploadUrl || !publicUrl || !key) {
       throw new Error("story_audio_missing_upload_urls");
     }
 
     const put = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
-        "Content-Type": file.type || "application/octet-stream"
+        "Content-Type": contentType
       },
       body: file
     });
@@ -490,9 +532,44 @@ function showStoryCharacterLimitAlert() {
       throw new Error("story_audio_r2_put_failed");
     }
 
-    return publicUrl;
-  }
+    const scanRes = await fetch("/api/r2/scan-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        key,
+        filename,
+        contentType,
+        public_url: publicUrl,
+        prompt: "",
+        title: titleText,
+        description: descriptionText,
+        personName: "",
+        style: styleText,
+        source: "cartoon_story_audio_upload"
+      })
+    });
 
+    const scanData = await scanRes.json().catch(() => null);
+
+    if (!scanRes.ok) {
+      const msg =
+        scanData?.message ||
+        scanData?.error ||
+        (scanRes.status === 403 ? "media_policy_blocked" : "story_audio_scan_upload_failed");
+      throw new Error(msg);
+    }
+
+    if (!scanData || scanData.ok === false) {
+      throw new Error(scanData?.message || scanData?.error || "story_audio_scan_upload_failed");
+    }
+
+    if (scanData.decision && scanData.decision !== "allow") {
+      throw new Error(`media_policy_${scanData.decision}`);
+    }
+
+    return scanData.public_url || publicUrl;
+  }
   async function presignStoryLogo(file) {
     const contentType = file?.type || "application/octet-stream";
     const filename = file?.name || `story-logo-${Date.now()}.png`;
