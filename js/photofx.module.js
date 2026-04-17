@@ -1327,55 +1327,101 @@ const PFX_HARD_BLOCK_PATTERNS = [
 
     throw new Error("photofx_poll_timeout");
   }
-
-  async function uploadViaPresign(file, kind = "asset") {
+  async function presignPhotoFxUpload(file, kind = "asset") {
     if (!file) {
       throw new Error("photofx_missing_file");
     }
 
-    const res = await fetch("/api/r2/presign-put", {
+    const root = getRoot();
+    const promptText = String(qs("#pfxPrompt", root)?.value || "").trim();
+    const filename = file?.name || `photofx-${Date.now()}`;
+    const contentType = file?.type || "application/octet-stream";
+
+    const titleText = String(filename || "").trim();
+    const descriptionText =
+      kind === "image" || kind === "end-image"
+        ? String(promptText || filename || "").trim()
+        : String(filename || "").trim();
+
+    const styleList = Array.isArray(getSelectedPresets(root))
+      ? getSelectedPresets(root)
+      : [];
+
+    const styleText = String(styleList[0] || "").trim();
+
+    const res = await fetch("/api/r2/scan-and-presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         app: "photofx",
         kind,
-        filename: file?.name || `photofx-${Date.now()}`,
-        contentType: file?.type || "application/octet-stream",
-        folder: "photofx",
+        filename,
+        contentType,
+        prompt: kind === "image" || kind === "end-image" ? promptText : "",
+        title: titleText,
+        description: descriptionText,
+        personName: "",
+        style: styleText,
+        source: "photofx_browser_upload"
       }),
     });
 
     const data = await res.json().catch(() => null);
 
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || "photofx_presign_failed");
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        (res.status === 403 ? "media_policy_blocked" : "photofx_presign_failed");
+      throw new Error(msg);
     }
 
-    const uploadUrl =
-      data.uploadUrl ||
-      data.upload_url ||
-      data.presignedUrl ||
-      data.presigned_url ||
-      data.putUrl ||
-      data.put_url ||
-      "";
+    if (!data || data.ok === false) {
+      throw new Error(data?.message || data?.error || "photofx_presign_failed");
+    }
 
-    const publicUrl =
-      data.publicUrl ||
-      data.public_url ||
-      data.fileUrl ||
-      data.file_url ||
-      data.url ||
-      "";
+    const uploadUrl = data.uploadUrl || data.upload_url || "";
+    const publicUrl = data.publicUrl || data.public_url || data.url || "";
+    const key = data.key || data.objectKey || "";
 
-    if (!uploadUrl || !publicUrl) {
+    if (!uploadUrl || !publicUrl || !key) {
       throw new Error("photofx_upload_presign_invalid");
     }
+
+    return {
+      uploadUrl,
+      publicUrl,
+      key,
+      filename,
+      contentType,
+      promptText,
+      titleText,
+      descriptionText,
+      styleText
+    };
+  }
+
+  async function uploadViaPolicyChain(file, kind = "asset") {
+    if (!file) {
+      throw new Error("photofx_missing_file");
+    }
+
+    const {
+      uploadUrl,
+      publicUrl,
+      key,
+      filename,
+      contentType,
+      promptText,
+      titleText,
+      descriptionText,
+      styleText
+    } = await presignPhotoFxUpload(file, kind);
 
     const put = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
-        "Content-Type": file.type || "application/octet-stream",
+        "Content-Type": contentType,
       },
       body: file,
     });
@@ -1384,12 +1430,48 @@ const PFX_HARD_BLOCK_PATTERNS = [
       throw new Error(`photofx_upload_put_failed_${put.status}`);
     }
 
-    return String(publicUrl).trim();
+    const scanRes = await fetch("/api/r2/scan-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "photofx",
+        key,
+        filename,
+        contentType,
+        public_url: publicUrl,
+        prompt: kind === "image" || kind === "end-image" ? promptText : "",
+        title: titleText,
+        description: descriptionText,
+        personName: "",
+        style: styleText,
+        source: "photofx_browser_upload"
+      }),
+    });
+
+    const scanData = await scanRes.json().catch(() => null);
+
+    if (!scanRes.ok) {
+      const msg =
+        scanData?.message ||
+        scanData?.error ||
+        (scanRes.status === 403 ? "media_policy_blocked" : "photofx_scan_upload_failed");
+      throw new Error(msg);
+    }
+
+    if (!scanData || scanData.ok === false) {
+      throw new Error(scanData?.message || scanData?.error || "photofx_scan_upload_failed");
+    }
+
+    if (scanData.decision && scanData.decision !== "allow") {
+      throw new Error(`media_policy_${scanData.decision}`);
+    }
+
+    return String(scanData.public_url || publicUrl || "").trim();
   }
 
   async function uploadFile(file, kind = "asset") {
     if (!file) return "";
-    return await uploadViaPresign(file, kind);
+    return await uploadViaPolicyChain(file, kind);
   }
 
   function collectForm(root) {
