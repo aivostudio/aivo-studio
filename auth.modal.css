@@ -31,11 +31,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(560px, calc(100vw - 28px));
+  width: min(500px, calc(100vw - 28px));
   max-height: calc(100vh - 28px);
   overflow: auto;
   padding: 0;
-  border-radius: 30px;
+  border-radius: 28px;
   border: 1px solid rgba(255,255,255,.10);
   background:
     radial-gradient(140% 140% at 0% 0%, rgba(124,92,255,.18) 0%, rgba(10,14,34,.97) 56%),
