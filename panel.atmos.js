@@ -575,39 +575,82 @@
           if (dl) can ? dl.removeAttribute("disabled") : dl.setAttribute("disabled", "");
           if (sh) can ? sh.removeAttribute("disabled") : sh.setAttribute("disabled", "");
 
-          const skel = el.querySelector(".atmoSkel");
-          let vid = el.querySelector("video.atmoThumbVideo");
+const posterUrl = String(
+  job?.poster_url ||
+  job?.thumbnail_url ||
+  job?.thumb_url ||
+  job?.meta?.poster_url ||
+  job?.meta?.thumbnail_url ||
+  job?.meta?.thumb_url ||
+  ""
+).trim();
 
-          if (can) {
-            if (skel) skel.style.display = "none";
+const skel = el.querySelector(".atmoSkel");
+let poster = el.querySelector("img.atmoThumbPoster");
+let vid = el.querySelector("video.atmoThumbVideo");
 
-            if (!vid) {
-              vid = document.createElement("video");
-              vid.className = "atmoThumbVideo";
-              vid.setAttribute("playsinline", "");
-              vid.setAttribute("webkit-playsinline", "");
-              vid.setAttribute("preload", "metadata");
-              vid.setAttribute("controls", "");
-              vid.muted = true;
-              thumb?.appendChild(vid);
-            }
+if (can) {
+  if (skel) skel.style.display = "none";
 
-          const prev = vid.getAttribute("data-src") || "";
-         const current = String(vid.currentSrc || vid.src || "").trim();
+  if (posterUrl) {
+    if (!poster) {
+      poster = document.createElement("img");
+      poster.className = "atmoThumbPoster";
+      poster.alt = "";
+      poster.style.position = "absolute";
+      poster.style.inset = "0";
+      poster.style.width = "100%";
+      poster.style.height = "100%";
+      poster.style.objectFit = "cover";
+      poster.style.display = "block";
+      thumb?.appendChild(poster);
+    }
+    if (poster.getAttribute("data-src") !== posterUrl) {
+      poster.setAttribute("data-src", posterUrl);
+      poster.src = posterUrl;
+    }
+    poster.style.display = "block";
+  }
 
-          if (prev !== url && current !== url) {
-         vid.setAttribute("data-src", url);
-         vid.src = url;
-         }
-         vid.style.display = "";
-          } else {
-            if (skel) skel.style.display = "";
-            if (vid) {
-              // KALDIRMA: kaldırırsan yeniden yaratılır ve reload artar
-              vid.pause?.();
-              vid.style.display = "none";
-            }
-          }
+  if (!vid) {
+    vid = document.createElement("video");
+    vid.className = "atmoThumbVideo";
+    vid.setAttribute("playsinline", "");
+    vid.setAttribute("webkit-playsinline", "");
+    vid.setAttribute("preload", "none");
+    vid.setAttribute("controls", "");
+    vid.muted = true;
+    vid.style.display = "none";
+    thumb?.appendChild(vid);
+  }
+
+  const prev = vid.getAttribute("data-src") || "";
+  const current = String(vid.currentSrc || vid.src || "").trim();
+
+  if (prev !== url && current !== url) {
+    vid.setAttribute("data-src", url);
+    vid.src = url;
+  }
+
+  if (!vid.__aivoPosterBound) {
+    vid.__aivoPosterBound = true;
+
+    const hidePoster = () => {
+      if (poster) poster.style.display = "none";
+      vid.style.display = "";
+    };
+
+    vid.addEventListener("loadeddata", hidePoster);
+    vid.addEventListener("playing", hidePoster);
+  }
+} else {
+  if (skel) skel.style.display = "";
+  if (poster) poster.style.display = "none";
+  if (vid) {
+    vid.pause?.();
+    vid.style.display = "none";
+  }
+}
         }
 
         function render(items) {
