@@ -737,10 +737,13 @@ function render() {
                   ? "ready"
                   : (badge.kind === "bad" ? "error" : "loading"),
                 videoUrl,
-                posterUrl: safeStr(
+                            posterUrl: safeStr(
                   job?.poster_url ||
                   job?.thumbnail_url ||
                   job?.thumb_url ||
+                  job?.meta_poster_url ||
+                  job?.meta_thumbnail_url ||
+                  job?.meta_thumb_url ||
                   job?.meta?.poster_url ||
                   job?.meta?.thumbnail_url ||
                   job?.meta?.thumb_url ||
