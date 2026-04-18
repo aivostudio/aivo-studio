@@ -137,41 +137,55 @@
     modal.setAttribute("data-mode", mode);
   }
 
-  function applyModeUI(modal) {
-    if (!modal) return;
+function applyModeUI(modal) {
+  if (!modal) return;
 
-    const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
-    const isReg = mode === "register";
+  const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
+  const isReg = mode === "register";
 
-    const show = (id, on) => {
-      const el = byId(id);
-      if (el) el.style.display = on ? "" : "none";
-    };
+  const show = (id, on, displayValue = "") => {
+    const el = byId(id);
+    if (el) el.style.display = on ? displayValue : "none";
+  };
 
-    const setText = (id, txt) => {
-      const el = byId(id);
-      if (el) el.textContent = txt;
-    };
+  const setText = (id, txt) => {
+    const el = byId(id);
+    if (el) el.textContent = txt;
+  };
 
-    setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
-    setText(
-      "loginDesc",
-      isReg
-        ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
-        : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
-    );
+  setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
+  setText(
+    "loginDesc",
+    isReg
+      ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+      : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
+  );
 
-    show("registerName", isReg);
-    show("registerPass2", isReg);
-    show("kvkkRow", isReg);
+  setText("authCardTitle", isReg ? "Email ile Kayıt" : "Email ile Giriş");
+  setText(
+    "authCardSub",
+    isReg
+      ? "Ücretsiz hesap oluştur ve 5 kredi kazan."
+      : "Hesabına email adresinle giriş yap."
+  );
 
-    show("googleBlock", !isReg);
-    show("loginMeta", !isReg);
-    show("registerMeta", isReg);
+  show("registerExtra", isReg, "grid");
+  show("kvkkRow", isReg, "inline-flex");
 
-    const btn = getSubmitBtn();
-    if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
-  }
+  show("googleBlock", !isReg, "block");
+  show("loginMeta", !isReg, "flex");
+
+  show("rememberRow", !isReg, "inline-flex");
+  show("forgotPass", !isReg, "");
+
+  show("goRegister", !isReg, "");
+  show("goLogin", isReg, "");
+  show("authFooterText", !isReg, "");
+  show("authFooterText2", isReg, "");
+
+  const btn = getSubmitBtn();
+  if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
+}
 
   function openModal(mode) {
     const modal = getModal();
