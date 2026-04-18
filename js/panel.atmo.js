@@ -642,6 +642,75 @@ setTimeout(syncSearchFromInput, 0);
 }
 function render() {
   if (destroyed || !$grid) return;
+  try {
+  const _items =
+    Array.isArray(this.items) ? this.items :
+    Array.isArray(this._items) ? this._items :
+    Array.isArray(this.state?.items) ? this.state.items :
+    [];
+
+  const _firstReady = _items.find(function (x) {
+    const s = String(
+      x?.status ||
+      x?.state ||
+      x?.job_status ||
+      ''
+    ).toLowerCase();
+
+    return (
+      s === 'ready' ||
+      s === 'completed' ||
+      s === 'complete' ||
+      s === 'done' ||
+      !!x?.video_url ||
+      !!x?.output_url ||
+      !!x?.outputs?.video_url ||
+      !!x?.result?.video_url
+    );
+  });
+
+  console.log('[ATMO_RENDER_FIRST_READY]', {
+    totalItems: _items.length,
+    firstReady: !_firstReady ? null : {
+      id: _firstReady.id ?? _firstReady.job_id ?? _firstReady.uuid ?? null,
+      job_id: _firstReady.job_id ?? null,
+      status: _firstReady.status ?? _firstReady.state ?? _firstReady.job_status ?? null,
+      source:
+        _firstReady.__source ??
+        _firstReady.source ??
+        (_firstReady.isEphemeral ? 'ephemeral' : null) ??
+        (_firstReady._fresh ? 'fresh' : null) ??
+        null,
+      poster_url: _firstReady.poster_url ?? null,
+      thumbnail_url: _firstReady.thumbnail_url ?? null,
+      thumb_url: _firstReady.thumb_url ?? null,
+      meta_poster_url: _firstReady.meta?.poster_url ?? null,
+      meta_thumbnail_url: _firstReady.meta?.thumbnail_url ?? null,
+      meta_thumb_url: _firstReady.meta?.thumb_url ?? null,
+      image_url: _firstReady.image_url ?? null,
+      preview_url: _firstReady.preview_url ?? null,
+      video_url:
+        _firstReady.video_url ??
+        _firstReady.output_url ??
+        _firstReady.outputs?.video_url ??
+        _firstReady.result?.video_url ??
+        null,
+      hasPoster:
+        !!(
+          _firstReady.poster_url ||
+          _firstReady.thumbnail_url ||
+          _firstReady.thumb_url ||
+          _firstReady.meta?.poster_url ||
+          _firstReady.meta?.thumbnail_url ||
+          _firstReady.meta?.thumb_url ||
+          _firstReady.image_url ||
+          _firstReady.preview_url
+        )
+    }
+  });
+} catch (e) {
+  console.warn('[ATMO_RENDER_FIRST_READY][LOG_ERROR]', e);
+}
 
   const items = combinedItems();
 
