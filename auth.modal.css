@@ -442,3 +442,75 @@
     font-size: 16px;
   }
 }
+/* =========================================================
+   AIVO AUTH — PASSWORD PREMIUM FIELD OVERRIDE
+   KONUM: auth.modal.css en altı
+   ========================================================= */
+
+#loginModal .aivo-float-field--icon{
+  position: relative;
+}
+
+#loginModal .aivo-float-field--icon input{
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+}
+
+#loginModal .aivo-field-ico{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 3;
+  font-size: 15px;
+  line-height: 1;
+  opacity: .88;
+}
+
+#loginModal .aivo-field-ico--left{
+  left: 16px;
+  color: rgba(210,218,242,.78);
+}
+
+#loginModal .aivo-pass-toggle{
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(220,225,243,.68);
+  cursor: pointer;
+  z-index: 4;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 999px;
+  transition: color .18s ease, background .18s ease, transform .18s ease;
+}
+
+#loginModal .aivo-pass-toggle:hover{
+  color: rgba(255,255,255,.96);
+  background: rgba(255,255,255,.06);
+}
+
+#loginModal .aivo-pass-toggle:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(129,110,255,.20);
+}
+
+#loginModal .aivo-float-field--icon .aivo-float-label{
+  left: 50px;
+}
+
+#loginModal .aivo-float-field--icon input::placeholder{
+  color: transparent;
+}
