@@ -2607,26 +2607,42 @@
             </label>
 
             <label class="aivo-float-field aivo-float-field--icon">
-              <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
-
+                     <div class="email-row email-row-2 auth-register-stack" id="registerExtra" style="display:none; margin-top:12px;">
+            <label class="aivo-float-field">
               <input
-                id="registerPass2"
-                type="password"
+                id="registerName"
+                type="text"
                 placeholder=" "
-                autocomplete="new-password"
+                autocomplete="name"
               />
-
-              <span class="aivo-float-label">Şifre tekrar</span>
-
-              <button
-                type="button"
-                class="aivo-pass-toggle"
-                data-toggle-pass="registerPass2"
-                aria-label="Şifre tekrar alanını göster"
-              >
-                👁
-              </button>
+              <span class="aivo-float-label">Ad Soyad</span>
             </label>
+
+            <div class="auth-pass-field">
+              <div class="auth-pass-label">Şifre tekrar</div>
+
+              <label class="aivo-float-field aivo-float-field--icon">
+                <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+
+                <input
+                  id="registerPass2"
+                  type="password"
+                  placeholder=" "
+                  autocomplete="new-password"
+                />
+
+                <span class="aivo-float-label">Şifre tekrar</span>
+
+                <button
+                  type="button"
+                  class="aivo-pass-toggle"
+                  data-toggle-pass="registerPass2"
+                  aria-label="Şifre tekrar alanını göster"
+                >
+                  👁
+                </button>
+              </label>
+            </div>
           </div>
 
           <label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
