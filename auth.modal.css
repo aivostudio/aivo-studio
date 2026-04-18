@@ -612,7 +612,7 @@
   display: block !important;
   width: 100% !important;
   min-width: 0 !important;
-  padding-top: 22px !important;
+  padding-top: 24px !important;
 }
 
 #loginModal[data-mode="login"] #loginFields .aivo-float-label{
@@ -637,6 +637,7 @@
   height: 50px !important;
   padding: 0 16px !important;
   box-sizing: border-box !important;
+  border-radius: 14px !important;
 }
 
 #loginModal[data-mode="login"] #loginFields .aivo-float-field--icon input{
@@ -645,23 +646,27 @@
 }
 
 #loginModal[data-mode="login"] #loginFields .aivo-field-ico{
-  top: calc(22px + 25px) !important;
+  top: calc(24px + 25px) !important;
   transform: translateY(-50%) !important;
 }
 
 #loginModal[data-mode="login"] #loginFields .aivo-pass-toggle{
-  top: calc(22px + 25px) !important;
+  top: calc(24px + 25px) !important;
   transform: translateY(-50%) !important;
 }
 
 #loginModal .login-hero{
-  padding-right: 78px !important;
+  padding-right: 96px !important;
 }
 
 #loginModal #loginTitle{
-  max-width: none !important;
+  max-width: 8ch !important;
+  margin: 0 0 6px !important;
+  line-height: .92 !important;
 }
 
 #loginModal #loginDesc{
-  max-width: 24ch !important;
+  max-width: 22ch !important;
+  margin: 0 !important;
+  line-height: 1.32 !important;
 }
