@@ -645,6 +645,7 @@
     const posterUrl = String(opts?.posterUrl || "").trim();
     const ratio = String(opts?.ratio || "").trim();
     const ready = !!opts?.ready;
+    const eagerReady = !!opts?.eagerReady;
     const portrait = false;
 
     const canDownload = !!opts?.canDownload;
@@ -666,11 +667,13 @@
       ${posterUrl ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}">` : ``}
       <video
         class="svcVideo"
-        preload="none"
+        preload="${eagerReady ? "metadata" : "none"}"
         playsinline
         webkit-playsinline
         muted
         data-video-url="${esc(videoUrl)}"
+        data-svc-eager-ready="${eagerReady ? "1" : "0"}"
+        ${eagerReady ? `src="${esc(videoUrl)}"` : ""}
         style="display:none"
         ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
       ></video>
