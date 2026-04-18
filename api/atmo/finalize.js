@@ -533,118 +533,164 @@ module.exports = async function handler(req, res) {
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-atmo-finalize-"));
 
-    const inputPath = path.join(tmpDir, "input.mp4");
-    const audioPath = path.join(tmpDir, "audio-input");
-    const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
-    const outputPath = path.join(tmpDir, "finalized.mp4");
-    const previewPath = path.join(tmpDir, "preview.mp4");
+const inputPath = path.join(tmpDir, "input.mp4");
+const audioPath = path.join(tmpDir, "audio-input");
+const muxedInputPath = path.join(tmpDir, "muxed-input.mp4");
+const outputPath = path.join(tmpDir, "finalized.mp4");
+const previewPath = path.join(tmpDir, "preview.mp4");
+const posterPath = path.join(tmpDir, "poster.jpg");
 
-    await downloadToFile(selectedFinalSourceUrl, inputPath);
+await downloadToFile(selectedFinalSourceUrl, inputPath);
 
-    let effectiveInputPath = inputPath;
+let effectiveInputPath = inputPath;
 
-    // Sadece gercek final kaynagi henuz mux edilmemisse inline mux yap.
-    // logo overlay veya mux varsa artik onlar final kaynaktir; tekrar mux yapma.
-    const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
+// Sadece gercek final kaynagi henuz mux edilmemisse inline mux yap.
+// logo overlay veya mux varsa artik onlar final kaynaktir; tekrar mux yapma.
+const needsInlineMux = hasAudio && !logoOverlayUrl && !muxUrl;
 
-    if (needsInlineMux) {
-      await downloadToFile(audioUrl, audioPath);
-      await runFfmpegMuxVideoAndAudio({
-        videoPath: inputPath,
-        audioPath,
-        outputPath: muxedInputPath,
-      });
-      effectiveInputPath = muxedInputPath;
-    }
+if (needsInlineMux) {
+  await downloadToFile(audioUrl, audioPath);
+  await runFfmpegMuxVideoAndAudio({
+    videoPath: inputPath,
+    audioPath,
+    outputPath: muxedInputPath,
+  });
+  effectiveInputPath = muxedInputPath;
+}
 
-    const input_url = selectedFinalSourceUrl;
+const input_url = selectedFinalSourceUrl;
 
-    await runFfmpegFaststart(effectiveInputPath, outputPath);
+await runFfmpegFaststart(effectiveInputPath, outputPath);
 
-    const finalStat = await fsp.stat(outputPath);
-    const durationSec = await probeVideoDurationSec(outputPath);
+const finalStat = await fsp.stat(outputPath);
+const durationSec = await probeVideoDurationSec(outputPath);
 
-    const previewBitrateCfg = calcPreviewVideoBitrateKbps({
-      finalBytes: finalStat?.size || 0,
-      durationSec,
-    });
+const previewBitrateCfg = calcPreviewVideoBitrateKbps({
+  finalBytes: finalStat?.size || 0,
+  durationSec,
+});
 
-    await runFfmpegPreview(outputPath, previewPath, previewBitrateCfg);
+await runFfmpegPreview(outputPath, previewPath, previewBitrateCfg);
 
-    const outputId = `finalized-${Date.now()}`;
-    const key = `outputs/atmo/${job_id}/${outputId}.mp4`;
-    const previewKey = `outputs/atmo/${job_id}/${outputId}-preview.mp4`;
+// preview videodan 1 kare poster üret
+await new Promise((resolve, reject) => {
+  const args = [
+    "-y",
+    "-ss",
+    "0.2",
+    "-i",
+    previewPath,
+    "-frames:v",
+    "1",
+    "-vf",
+    "scale='min(640,iw)':-2",
+    "-q:v",
+    "3",
+    posterPath,
+  ];
 
-    const muxOutputId = `mux-${Date.now()}`;
-    const muxKey = `outputs/atmo/${job_id}/${muxOutputId}.mp4`;
+  const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
-    let mux_url = String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
+  let stderr = "";
+  p.stderr.on("data", (d) => {
+    stderr += String(d || "");
+  });
 
-    if (needsInlineMux) {
-      mux_url = await uploadFileToR2({
-        filePath: muxedInputPath,
-        key: muxKey,
-        contentType: "video/mp4",
-      });
+  p.on("error", reject);
 
-      await verifyPublicUrl(mux_url, "mux");
-    }
+  p.on("close", (code) => {
+    if (code === 0) return resolve();
+    reject(new Error(`ffmpeg_poster_failed:${code}:${stderr.slice(-1000)}`));
+  });
+});
 
-    const final_url = await uploadFileToR2({
-      filePath: outputPath,
-      key,
-      contentType: "video/mp4",
-    });
+const outputId = `finalized-${Date.now()}`;
+const key = `outputs/atmo/${job_id}/${outputId}.mp4`;
+const previewKey = `outputs/atmo/${job_id}/${outputId}-preview.mp4`;
+const posterKey = `outputs/atmo/${job_id}/${outputId}-poster.jpg`;
 
-    await verifyPublicUrl(final_url, "final");
+const muxOutputId = `mux-${Date.now()}`;
+const muxKey = `outputs/atmo/${job_id}/${muxOutputId}.mp4`;
 
-    const preview_url = await uploadFileToR2({
-      filePath: previewPath,
-      key: previewKey,
-      contentType: "video/mp4",
-    });
+let mux_url = String(meta?.muxed_url || "").trim() || pickUrl(muxOut) || "";
 
-    await verifyPublicUrl(preview_url, "preview");
+if (needsInlineMux) {
+  mux_url = await uploadFileToR2({
+    filePath: muxedInputPath,
+    key: muxKey,
+    contentType: "video/mp4",
+  });
 
-    let nextOutputs = upsertFinalizedAndPreviewOutputs(
-      outputs,
-      final_url,
-      preview_url
-    );
+  await verifyPublicUrl(mux_url, "mux");
+}
 
-    if (needsInlineMux && mux_url) {
-      nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
-        is_mux: true,
-        is_final: false,
-        source: "finalize_inline_mux",
-      });
-    }
+const final_url = await uploadFileToR2({
+  filePath: outputPath,
+  key,
+  contentType: "video/mp4",
+});
 
-    const patchMeta = {
-      final_video_url: final_url,
-      preview_video_url: preview_url,
-      final_variant: "finalized",
-      finalized_at: new Date().toISOString(),
-      finalized_from_url: input_url,
-      finalized_key: key,
-      preview_key: previewKey,
-      preview_target_ratio: "1/4",
-      preview_min_mb: 3,
-      preview_max_mb: 5,
-      preview_target_kbps: previewBitrateCfg.targetKbps,
-      preview_maxrate_kbps: previewBitrateCfg.maxrateKbps,
-      preview_bufsize_kbps: previewBitrateCfg.bufsizeKbps,
-      preview_source_final_bytes: finalStat?.size || 0,
-      preview_source_duration_sec: durationSec || 0,
-      preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
-      preview_source_url: selectedFinalSourceUrl,
-      ...(needsInlineMux && mux_url
-        ? {
-            muxed_url: mux_url,
-            mux_key: muxKey,
-          }
-        : {}),
-    };
+await verifyPublicUrl(final_url, "final");
+
+const preview_url = await uploadFileToR2({
+  filePath: previewPath,
+  key: previewKey,
+  contentType: "video/mp4",
+});
+
+await verifyPublicUrl(preview_url, "preview");
+
+const poster_url = await uploadFileToR2({
+  filePath: posterPath,
+  key: posterKey,
+  contentType: "image/jpeg",
+});
+
+await verifyPublicUrl(poster_url, "poster");
+
+let nextOutputs = upsertFinalizedAndPreviewOutputs(
+  outputs,
+  final_url,
+  preview_url
+);
+
+if (needsInlineMux && mux_url) {
+  nextOutputs = upsertVideoOutput(nextOutputs, "mux", mux_url, {
+    is_mux: true,
+    is_final: false,
+    source: "finalize_inline_mux",
+  });
+}
+
+const patchMeta = {
+  final_video_url: final_url,
+  preview_video_url: preview_url,
+  poster_url: poster_url,
+  thumbnail_url: poster_url,
+  thumb_url: poster_url,
+  final_variant: "finalized",
+  finalized_at: new Date().toISOString(),
+  finalized_from_url: input_url,
+  finalized_key: key,
+  preview_key: previewKey,
+  poster_key: posterKey,
+  preview_target_ratio: "1/4",
+  preview_min_mb: 3,
+  preview_max_mb: 5,
+  preview_target_kbps: previewBitrateCfg.targetKbps,
+  preview_maxrate_kbps: previewBitrateCfg.maxrateKbps,
+  preview_bufsize_kbps: previewBitrateCfg.bufsizeKbps,
+  preview_source_final_bytes: finalStat?.size || 0,
+  preview_source_duration_sec: durationSec || 0,
+  preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
+  preview_source_url: selectedFinalSourceUrl,
+  ...(needsInlineMux && mux_url
+    ? {
+        muxed_url: mux_url,
+        mux_key: muxKey,
+      }
+    : {}),
+};
 
     await sql`
       update jobs
