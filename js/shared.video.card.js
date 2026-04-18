@@ -445,15 +445,31 @@
         video.style.display = "block";
         video.src = lazyUrl;
 
-        if (!video.__aivoPosterBound) {
+           if (!video.__aivoPosterBound) {
           video.__aivoPosterBound = true;
 
-          const hidePoster = () => {
-            if (poster) poster.style.display = "none";
+          const hidePosterWhenFrameIsVisible = () => {
+            if (!poster) return;
+            if (video.currentTime > 0.08 || video.readyState >= 3) {
+              poster.style.display = "none";
+              cleanupPosterBindings();
+            }
           };
 
-          video.addEventListener("loadeddata", hidePoster, { once: true });
-          video.addEventListener("playing", hidePoster, { once: true });
+          const onEndedRestorePoster = () => {
+            if (poster) poster.style.display = "block";
+          };
+
+          const cleanupPosterBindings = () => {
+            video.removeEventListener("timeupdate", hidePosterWhenFrameIsVisible);
+            video.removeEventListener("playing", hidePosterWhenFrameIsVisible);
+            video.removeEventListener("canplay", hidePosterWhenFrameIsVisible);
+          };
+
+          video.addEventListener("timeupdate", hidePosterWhenFrameIsVisible);
+          video.addEventListener("playing", hidePosterWhenFrameIsVisible);
+          video.addEventListener("canplay", hidePosterWhenFrameIsVisible);
+          video.addEventListener("ended", onEndedRestorePoster);
         }
 
         try { video.load(); } catch (_) {}
