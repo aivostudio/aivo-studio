@@ -2520,110 +2520,114 @@
   <div class="login-backdrop" data-close="1"></div>
 
   <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <!-- HEADER -->
-    <div class="login-card login-header">
-      <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
-      <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-      <p class="login-desc" id="loginDesc">
-        AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
-      </p>
-    </div>
+    <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
 
-    <!-- GOOGLE -->
-    <div class="login-card login-google" id="googleBlock">
-      <div class="card-title">Hızlı Giriş</div>
-      <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
-      <button id="btnGoogleLogin" type="button" class="btn-google">
-        Google ile Giriş Yap
-      </button>
-    </div>
-
-    <!-- EMAIL -->
-    <div class="login-card login-email">
-      <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-      <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
-
-<div class="email-row email-row-2 aivo-float-row">
-  <label class="aivo-float-field">
-    <input
-      id="loginEmail"
-      name="aivo_login_email"
-      type="text"
-      placeholder=" "
-      autocomplete="off"
-      autocapitalize="off"
-      autocorrect="off"
-      spellcheck="false"
-      inputmode="email"
-      data-lpignore="true"
-      data-1p-ignore="true"
-    />
-    <span class="aivo-float-label">E-posta</span>
-  </label>
-
-  <label class="aivo-float-field">
-    <input
-      id="loginPass"
-      name="aivo_login_pass"
-      type="password"
-      placeholder=" "
-      autocomplete="off"
-      autocapitalize="off"
-      autocorrect="off"
-      spellcheck="false"
-      data-lpignore="true"
-      data-1p-ignore="true"
-    />
-    <span class="aivo-float-label">Şifre</span>
-  </label>
-</div>
-      <!-- REGISTER EXTRA -->
-      <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
-        <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
-        <input id="registerPass2" type="password" placeholder="Şifre tekrar" autocomplete="new-password" />
+    <div class="login-shell">
+      <div class="login-hero">
+        <div class="login-hero-badge">AIVO Studio Access</div>
+        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+        <p class="login-desc" id="loginDesc">
+          AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
+        </p>
       </div>
 
-      <!-- KVKK -->
-      <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
-       <input id="kvkkCheck" type="checkbox" />
+      <div class="login-body">
+        <div class="login-social" id="googleBlock">
+          <div class="card-title">Hızlı giriş</div>
+          <div class="card-sub">Google hesabınla saniyeler içinde devam et.</div>
 
-        <span>KVKK ve şartları kabul ediyorum</span>
-      </label>
+          <button id="btnGoogleLogin" type="button" class="btn-google">
+            Google ile Giriş Yap
+          </button>
+        </div>
 
-      <!-- SUBMIT -->
-      <button
-        id="btnAuthSubmit"
-        type="button"
-        class="btn-primary btn-login-full"
-        data-auth-submit
-        style="margin-top:10px;"
-      >
-        Giriş Yap
-      </button>
+        <div class="login-divider" aria-hidden="true">
+          <span>veya email ile devam et</span>
+        </div>
 
-    
+        <div class="login-form-block login-email">
+          <div class="card-title" id="authCardTitle">Email ile Giriş</div>
+          <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
 
-      <!-- FOOTER SWITCH -->
-      <div class="login-card login-footer" id="loginFooter" style="margin-top:10px;">
-        <span id="authFooterText">AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
+          <div class="email-row email-row-2 aivo-float-row">
+            <label class="aivo-float-field">
+              <input
+                id="loginEmail"
+                name="aivo_login_email"
+                type="text"
+                placeholder=" "
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                inputmode="email"
+                data-lpignore="true"
+                data-1p-ignore="true"
+              />
+              <span class="aivo-float-label">E-posta</span>
+            </label>
 
-        <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
-        <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+            <label class="aivo-float-field">
+              <input
+                id="loginPass"
+                name="aivo_login_pass"
+                type="password"
+                placeholder=" "
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                data-lpignore="true"
+                data-1p-ignore="true"
+              />
+              <span class="aivo-float-label">Şifre</span>
+            </label>
+          </div>
 
-        <div style="display:flex; justify-content:space-between; margin-top:10px;">
-          <label class="remember-row" id="rememberRow">
-            <input type="checkbox" id="rememberMe" />
-            <span>Beni hatırla</span>
+          <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:12px;">
+            <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
+            <input id="registerPass2" type="password" placeholder="Şifre tekrar" autocomplete="new-password" />
+          </div>
+
+          <label class="remember-row" id="kvkkRow" style="display:none; margin-top:12px;">
+            <input id="kvkkCheck" type="checkbox" />
+            <span>KVKK ve şartları kabul ediyorum</span>
           </label>
-          <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+
+          <div class="login-meta-row" id="loginMeta">
+            <label class="remember-row" id="rememberRow">
+              <input type="checkbox" id="rememberMe" />
+              <span>Beni hatırla</span>
+            </label>
+
+            <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+          </div>
+
+          <button
+            id="btnAuthSubmit"
+            type="button"
+            class="btn-primary btn-login-full"
+            data-auth-submit
+          >
+            Giriş Yap
+          </button>
         </div>
       </div>
 
+      <div class="login-bottom" id="loginFooter">
+        <div class="login-bottom-copy">
+          <span id="authFooterText">AIVO’da yeni misin?</span>
+          <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+        </div>
+
+        <div class="login-bottom-actions">
+          <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
+          <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-
 
 
 
