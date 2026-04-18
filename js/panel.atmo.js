@@ -714,34 +714,42 @@ function render() {
         playableUrls.has(playbackUrl) &&
         badge.kind !== "bad";
 
-   return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-  ? (
-      '<div class="atmoPanelCardInner"' +
-        ' data-job="' + esc(job.job_id || "") + '"' +
-        ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-        ' data-final-url="' + esc(finalUrl) + '"' +
-        ' data-preview-url="' + esc(previewUrlResolved) + '"' +
-        ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-      '>' +
-        window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-          id: safeStr(job.job_id || ""),
-          title: promptLine || "—",
-          sub: metaLine,
-          badgeText: badge.text,
-          badgeKind: isPlayableNow
-            ? "ready"
-            : (badge.kind === "bad" ? "error" : "loading"),
-          videoUrl,
-          posterUrl: "",
-          ratio: portrait ? "9:16" : "16:9",
-          ready: isPlayableNow,
-          canDownload: !!finalUrl,
-          canShare: isPlayableNow,
-          canDelete: true
-        }) +
-      '</div>'
-    )
-  : "";
+      return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+        ? (
+            '<div class="atmoCard"' +
+              ' data-job="' + esc(job.job_id || "") + '"' +
+              ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+              ' data-final-url="' + esc(finalUrl) + '"' +
+              ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+              ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+            '>' +
+              window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                id: safeStr(job.job_id || ""),
+                title: promptLine || "—",
+                sub: metaLine,
+                badgeText: badge.text,
+                badgeKind: isPlayableNow
+                  ? "ready"
+                  : (badge.kind === "bad" ? "error" : "loading"),
+                videoUrl,
+              posterUrl: safeStr(
+               job?.poster_url ||
+               job?.thumbnail_url ||
+               job?.thumb_url ||
+              job?.meta?.poster_url ||
+              job?.meta?.thumbnail_url ||
+              job?.meta?.thumb_url ||
+               ""
+             ),
+                ratio: portrait ? "9:16" : "16:9",
+                ready: isPlayableNow,
+                canDownload: !!finalUrl,
+                canShare: isPlayableNow,
+                canDelete: true
+              }) +
+            '</div>'
+          )
+        : "";
     })
     .join("");
 
