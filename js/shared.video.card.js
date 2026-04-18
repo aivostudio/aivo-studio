@@ -423,28 +423,49 @@
 function ensurePlayBinding() {
   if (window.__AIVO_SHARED_VIDEO_PLAY_BOUND__) return;
   window.__AIVO_SHARED_VIDEO_PLAY_BOUND__ = true;
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
   const btn = e.target?.closest?.('[data-svc-act="play"]');
   if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
 
   const card = btn.closest(".svcCard");
   const video = card?.querySelector(".svcVideo");
   if (!video) return;
 
-  if (video.__aivoPlaySyncBound) return;
-  video.__aivoPlaySyncBound = true;
+  const lazyUrl = String(video.dataset.videoUrl || "").trim();
 
-  const sync = () => {
-    btn.textContent = video.paused ? "▶" : "❚❚";
-    btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
-    btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
-  };
+  if (!video.src && lazyUrl) {
+    video.preload = "metadata";
+    video.src = lazyUrl;
+    try { video.load(); } catch (_) {}
+  }
 
-  video.addEventListener("play", sync);
-  video.addEventListener("pause", sync);
-  video.addEventListener("ended", sync);
+  if (!video.__aivoPlaySyncBound) {
+    video.__aivoPlaySyncBound = true;
 
-  sync();
+    const sync = () => {
+      btn.textContent = video.paused ? "▶" : "❚❚";
+      btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
+      btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
+    };
+
+    video.addEventListener("play", sync);
+    video.addEventListener("pause", sync);
+    video.addEventListener("ended", sync);
+
+    sync();
+  }
+
+  try {
+    if (video.paused) {
+      await video.play();
+    } else {
+      video.pause();
+    }
+  } catch (_) {}
 }, true);
 
   document.addEventListener("play", (e) => {
@@ -621,15 +642,15 @@ ensureFullscreenBinding();
           ${
             ready && videoUrl
               ? `
-                <video
-                  class="svcVideo"
-                  preload="metadata"
-                  playsinline
-                  webkit-playsinline
-                  muted
-                  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-                  src="${esc(videoUrl)}"
-                ></video>
+            <video
+  class="svcVideo"
+  preload="none"
+  playsinline
+  webkit-playsinline
+  muted
+  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+  data-video-url="${esc(videoUrl)}"
+></video>
 <div class="svcOverlay">
   <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
