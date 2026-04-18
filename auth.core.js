@@ -491,7 +491,25 @@ const resolvedSurname = firstNonEmpty(
       applyModeUI(modal);
       return;
     }
+       const passToggle = t?.closest?.(".aivo-pass-toggle");
+    if (passToggle) {
+      e.preventDefault();
+      e.stopPropagation();
 
+      const targetId = passToggle.getAttribute("data-toggle-pass");
+      const input = targetId ? byId(targetId) : null;
+      if (!input) return;
+
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      passToggle.textContent = isHidden ? "🙈" : "👁";
+      passToggle.setAttribute(
+        "aria-label",
+        isHidden ? "Şifreyi gizle" : "Şifreyi göster"
+      );
+      return;
+    }
+     
     if (t?.closest?.("#btnAuthSubmit")) {
       e.preventDefault();
       e.stopPropagation();
