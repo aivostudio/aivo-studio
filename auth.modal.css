@@ -31,298 +31,189 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(500px, calc(100vw - 28px));
-  max-height: calc(100vh - 28px);
+  width: min(440px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
   overflow: auto;
   padding: 0;
-  border-radius: 28px;
+  border-radius: 24px;
   border: 1px solid rgba(255,255,255,.10);
   background:
     radial-gradient(140% 140% at 0% 0%, rgba(124,92,255,.18) 0%, rgba(10,14,34,.97) 56%),
     linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
   box-shadow:
-    0 40px 120px rgba(0,0,0,.62),
+    0 34px 92px rgba(0,0,0,.58),
     inset 0 1px 0 rgba(255,255,255,.08);
   color: #fff;
   opacity: 0;
   transition: opacity .24s ease, transform .24s ease;
 }
 
-#loginModal.is-open .login-panel{
-  opacity: 1;
-}
-
 #loginModal .login-stage{
   position: relative;
-  padding: 26px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-#loginModal .login-x{
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(243,246,255,.96);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 5;
-  box-shadow: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-#loginModal .login-x:hover{
-  background: rgba(255,255,255,.10);
-  border-color: rgba(255,255,255,.16);
+  gap: 14px;
 }
 
 #loginModal .login-hero{
   position: relative;
-  padding: 18px 6px 8px;
+  padding: 8px 4px 2px;
 }
 
 #loginModal .login-kicker{
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
-  padding: 0 14px;
-  margin-bottom: 18px;
+  min-height: 28px;
+  padding: 0 12px;
+  margin-bottom: 12px;
   border-radius: 999px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
   color: rgba(230,235,255,.88);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: .05em;
+  letter-spacing: .045em;
   text-transform: uppercase;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 #loginModal #loginTitle{
-  margin: 0 0 8px;
-  max-width: 8ch;
-  font-size: clamp(32px, 4.2vw, 46px);
-  line-height: .94;
-  letter-spacing: -0.05em;
+  margin: 0 0 6px;
+  max-width: 7ch;
+  font-size: clamp(24px, 3.3vw, 34px);
+  line-height: .90;
+  letter-spacing: -0.06em;
   font-weight: 800;
   color: rgba(255,255,255,.98);
 }
 
 #loginModal #loginDesc{
   margin: 0;
-  max-width: 28ch;
-  font-size: 16px;
-  line-height: 1.55;
-  color: rgba(230,234,246,.72);
+  max-width: 26ch;
+  font-size: 14px;
+  line-height: 1.42;
+  color: rgba(230,234,246,.70);
 }
 
 #loginModal .login-flow{
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 22px;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02));
   border: 1px solid rgba(255,255,255,.10);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.05),
-    0 22px 50px rgba(0,0,0,.24);
-}
-
-#loginModal .login-social-row{
-  display: block;
+    0 18px 38px rgba(0,0,0,.22);
 }
 
 #loginModal .btn-google{
   width: 100%;
-  height: 60px;
+  height: 52px;
   border: 1px solid rgba(255,255,255,.18);
-  border-radius: 18px;
+  border-radius: 16px;
   background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
   color: #12141a;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   box-shadow:
-    0 14px 28px rgba(0,0,0,.20),
+    0 10px 20px rgba(0,0,0,.18),
     inset 0 1px 0 rgba(255,255,255,.68);
   cursor: pointer;
 }
 
-#loginModal .btn-google:hover{
-  transform: translateY(-1px);
-}
-
-#loginModal .login-or{
-  position: relative;
-  text-align: center;
-}
-
-#loginModal .login-or::before{
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(255,255,255,.08);
-}
-
-#loginModal .login-or span{
-  position: relative;
-  display: inline-block;
-  padding: 0 14px;
-  background: rgba(14,18,36,.96);
-  color: rgba(228,233,248,.42);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-#loginModal .login-form-block{
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
 #loginModal .login-form-head{
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 #loginModal .card-title{
-  margin: 0 0 6px;
-  font-size: 18px;
-  line-height: 1.2;
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 1.15;
   font-weight: 700;
   color: rgba(255,255,255,.96);
 }
 
 #loginModal .card-sub{
   margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   color: rgba(231,236,250,.62);
 }
+
 #loginModal .email-row{
   display: grid !important;
   grid-template-columns: 1fr !important;
-  gap: 14px !important;
+  gap: 10px !important;
   align-items: stretch !important;
   margin-top: 0 !important;
-}
-
-#loginModal .aivo-float-field{
-  position: relative;
-  display: block;
-  min-width: 0;
 }
 
 #loginModal .aivo-float-field input,
 #loginModal #registerExtra input{
   width: 100% !important;
   min-width: 0 !important;
-  height: 68px;
-  padding: 30px 18px 12px 18px;
-  border-radius: 18px;
+  height: 58px;
+  padding: 24px 16px 10px 16px;
+  border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(52,61,89,.72);
   color: rgba(255,255,255,.98);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   box-sizing: border-box !important;
   outline: none;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.05),
-    0 8px 20px rgba(0,0,0,.14);
-}
-
-#loginModal .aivo-float-field input:focus,
-#loginModal #registerExtra input:focus{
-  border-color: rgba(129,110,255,.76);
-  box-shadow:
-    0 0 0 4px rgba(129,110,255,.18),
-    inset 0 1px 0 rgba(255,255,255,.03);
+    0 6px 16px rgba(0,0,0,.14);
 }
 
 #loginModal .aivo-float-label{
   position: absolute;
-  left: 18px;
-  top: 12px;
-  font-size: 13px;
+  left: 16px;
+  top: 10px;
+  font-size: 12px;
   line-height: 1;
   color: rgba(220,225,243,.68);
   pointer-events: none;
-}
-#loginModal #registerExtra{
-  margin-top: 12px !important;
-}
-
-#loginModal #kvkkRow{
-  margin-top: 14px !important;
-}
-
-#loginModal .remember-row{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  user-select: none;
-  font-size: 13px;
-  color: rgba(234,238,250,.78);
-}
-
-#loginModal .remember-row input{
-  width: 16px;
-  height: 16px;
 }
 
 #loginModal .login-inline-meta{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin-top: 14px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 12px;
 }
 
 #loginModal #btnAuthSubmit{
   width: 100%;
-  height: 60px;
+  height: 52px;
   margin-top: 0 !important;
   border: 0;
-  border-radius: 18px;
+  border-radius: 16px;
   background: linear-gradient(135deg, #8b5cf6 0%, #4f7cff 100%);
   color: #fff;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.03em;
   box-shadow:
-    0 22px 44px rgba(86,76,255,.34),
+    0 16px 30px rgba(86,76,255,.28),
     inset 0 1px 0 rgba(255,255,255,.20);
   cursor: pointer;
-}
-
-#loginModal #btnAuthSubmit:hover{
-  transform: translateY(-1px);
 }
 
 #loginModal .login-switchbar{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 20px;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
@@ -331,84 +222,38 @@
 #loginModal .login-switchcopy{
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   color: rgba(230,234,246,.74);
-  font-size: 14px;
-}
-
-#loginModal .login-switchactions{
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-#loginModal .link-accent{
-  color: #b8a7ff;
-  text-decoration: none;
-  font-weight: 700;
-}
-
-#loginModal .link-muted{
-  color: rgba(230,234,246,.62);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-#loginModal .link-accent:hover,
-#loginModal .link-muted:hover{
-  color: #fff;
-}
-
-#loginModal .login-card,
-#loginModal .login-header,
-#loginModal .login-google,
-#loginModal .login-email,
-#loginModal .login-footer{
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-}
-
-#loginModal input:-webkit-autofill,
-#loginModal input:-webkit-autofill:hover,
-#loginModal input:-webkit-autofill:focus,
-#loginModal input:-webkit-autofill:active{
-  -webkit-text-fill-color: rgba(255,255,255,.96) !important;
-  transition: background-color 9999s ease-in-out 0s;
-  box-shadow: 0 0 0 1000px rgba(8,11,27,.76) inset !important;
-  caret-color: rgba(255,255,255,.96) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
+  font-size: 13px;
 }
 
 @media (max-width: 640px){
   #loginModal .login-panel{
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
-    border-radius: 24px;
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    border-radius: 20px;
   }
 
   #loginModal .login-stage{
-    padding: 18px;
-    gap: 16px;
+    padding: 14px;
+    gap: 12px;
   }
 
   #loginModal #loginTitle{
     max-width: none;
-    font-size: 38px;
-    line-height: .98;
-    padding-right: 34px;
+    font-size: 30px;
+    line-height: .92;
+    padding-right: 28px;
   }
 
   #loginModal #loginDesc{
-    font-size: 14px;
+    font-size: 13px;
     max-width: none;
   }
 
   #loginModal .login-flow{
-    padding: 18px;
-    border-radius: 20px;
+    padding: 12px;
+    border-radius: 16px;
   }
 
   #loginModal .email-row{
@@ -427,7 +272,7 @@
 
   #loginModal .btn-google,
   #loginModal #btnAuthSubmit{
-    height: 56px;
-    font-size: 18px;
+    height: 50px;
+    font-size: 16px;
   }
 }
