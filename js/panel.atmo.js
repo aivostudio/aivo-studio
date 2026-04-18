@@ -997,6 +997,7 @@ $grid?.addEventListener(
 
 const onJobCreated = (e) => {
   const d = e?.detail || {};
+  console.log('[ATMO_ON_JOB_READY]', d);
   if (!d) return;
 
   const appKey = safeStr(
