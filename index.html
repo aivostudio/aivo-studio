@@ -2596,33 +2596,42 @@
           </div>
 
           <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:12px;">
-            <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
-          <label class="aivo-float-field aivo-float-field--icon">
-  <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+            <label class="aivo-float-field">
+              <input
+                id="registerName"
+                type="text"
+                placeholder=" "
+                autocomplete="name"
+              />
+              <span class="aivo-float-label">Ad Soyad</span>
+            </label>
 
-  <input
-    id="registerPass2"
-    type="password"
-    placeholder=" "
-    autocomplete="new-password"
-  />
+            <label class="aivo-float-field aivo-float-field--icon">
+              <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
 
-  <span class="aivo-float-label">Şifre tekrar</span>
+              <input
+                id="registerPass2"
+                type="password"
+                placeholder=" "
+                autocomplete="new-password"
+              />
 
-  <button
-    type="button"
-    class="aivo-pass-toggle"
-    data-toggle-pass="registerPass2"
-    aria-label="Şifre tekrar alanını göster"
-  >
-    👁
-  </button>
-</label>
+              <span class="aivo-float-label">Şifre tekrar</span>
+
+              <button
+                type="button"
+                class="aivo-pass-toggle"
+                data-toggle-pass="registerPass2"
+                aria-label="Şifre tekrar alanını göster"
+              >
+                👁
+              </button>
+            </label>
           </div>
 
-          <label class="remember-row" id="kvkkRow" style="display:none; margin-top:12px;">
+          <label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
             <input id="kvkkCheck" type="checkbox" />
-            <span>KVKK ve şartları kabul ediyorum</span>
+            <span>Kullanım Şartları ve Gizlilik Politikası'nı kabul ediyorum</span>
           </label>
 
           <div class="login-inline-meta" id="loginMeta">
