@@ -529,9 +529,11 @@ setTimeout(syncSearchFromInput, 0);
         prompt: safeStr(detail?.meta?.prompt || raw?.meta?.prompt || existing?.prompt || ""),
         _fresh: true,
 
-        poster_url: safeStr(
+              poster_url: safeStr(
           detail?.poster_url ||
           raw?.poster_url ||
+          detail?.meta_poster_url ||
+          raw?.meta_poster_url ||
           detail?.meta?.poster_url ||
           raw?.meta?.poster_url ||
           ""
@@ -539,6 +541,8 @@ setTimeout(syncSearchFromInput, 0);
         thumbnail_url: safeStr(
           detail?.thumbnail_url ||
           raw?.thumbnail_url ||
+          detail?.meta_thumbnail_url ||
+          raw?.meta_thumbnail_url ||
           detail?.meta?.thumbnail_url ||
           raw?.meta?.thumbnail_url ||
           ""
@@ -546,6 +550,8 @@ setTimeout(syncSearchFromInput, 0);
         thumb_url: safeStr(
           detail?.thumb_url ||
           raw?.thumb_url ||
+          detail?.meta_thumb_url ||
+          raw?.meta_thumb_url ||
           detail?.meta?.thumb_url ||
           raw?.meta?.thumb_url ||
           ""
