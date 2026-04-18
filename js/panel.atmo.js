@@ -709,47 +709,53 @@ function render() {
         probePlayableUrl(playbackUrl);
       }
 
-      const isPlayableNow =
-        !!playbackUrl &&
-        playableUrls.has(playbackUrl) &&
-        badge.kind !== "bad";
+ const posterUrl = safeStr(
+  job?.poster_url ||
+  job?.thumbnail_url ||
+  job?.thumb_url ||
+  job?.meta?.poster_url ||
+  job?.meta?.thumbnail_url ||
+  job?.meta?.thumb_url ||
+  ""
+);
 
-      return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
-        ? (
-            '<div class="atmoCard"' +
-              ' data-job="' + esc(job.job_id || "") + '"' +
-              ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
-              ' data-final-url="' + esc(finalUrl) + '"' +
-              ' data-preview-url="' + esc(previewUrlResolved) + '"' +
-              ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
-            '>' +
-              window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-                id: safeStr(job.job_id || ""),
-                title: promptLine || "—",
-                sub: metaLine,
-                badgeText: badge.text,
-                badgeKind: isPlayableNow
-                  ? "ready"
-                  : (badge.kind === "bad" ? "error" : "loading"),
-                videoUrl,
-              posterUrl: safeStr(
-               job?.poster_url ||
-               job?.thumbnail_url ||
-               job?.thumb_url ||
-              job?.meta?.poster_url ||
-              job?.meta?.thumbnail_url ||
-              job?.meta?.thumb_url ||
-               ""
-             ),
-                ratio: portrait ? "9:16" : "16:9",
-                ready: isPlayableNow,
-                canDownload: !!finalUrl,
-                canShare: isPlayableNow,
-                canDelete: true
-              }) +
-            '</div>'
-          )
-        : "";
+const isReadyCard =
+  badge.kind !== "bad" &&
+  (!!videoUrl || !!posterUrl);
+
+const isPlayableNow =
+  !!playbackUrl &&
+  playableUrls.has(playbackUrl) &&
+  badge.kind !== "bad";
+
+return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
+  ? (
+      '<div class="atmoCard"' +
+        ' data-job="' + esc(job.job_id || "") + '"' +
+        ' data-url="' + esc(selectedPlaybackRawUrl) + '"' +
+        ' data-final-url="' + esc(finalUrl) + '"' +
+        ' data-preview-url="' + esc(previewUrlResolved) + '"' +
+        ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
+      '>' +
+        window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+          id: safeStr(job.job_id || ""),
+          title: promptLine || "—",
+          sub: metaLine,
+          badgeText: badge.text,
+          badgeKind: isReadyCard
+            ? "ready"
+            : (badge.kind === "bad" ? "error" : "loading"),
+          videoUrl,
+          posterUrl,
+          ratio: portrait ? "9:16" : "16:9",
+          ready: isReadyCard,
+          canDownload: !!finalUrl,
+          canShare: isPlayableNow,
+          canDelete: true
+        }) +
+      '</div>'
+    )
+  : "";
     })
     .join("");
 
