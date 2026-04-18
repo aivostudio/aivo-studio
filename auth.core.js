@@ -143,31 +143,77 @@
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
     const isReg = mode === "register";
 
-    const show = (id, on) => {
-      const el = byId(id);
-      if (el) el.style.display = on ? "" : "none";
+    const pick = function () {
+      for (let i = 0; i < arguments.length; i++) {
+        const sel = arguments[i];
+        if (!sel) continue;
+
+        let el = null;
+
+        if (sel[0] === "#") el = q(sel);
+        else el = byId(sel) || q("#" + sel);
+
+        if (el) return el;
+      }
+      return null;
     };
 
-    const setText = (id, txt) => {
-      const el = byId(id);
+    const showEl = (el, on, displayValue = "") => {
+      if (!el) return;
+      el.style.display = on ? displayValue : "none";
+      el.setAttribute("aria-hidden", on ? "false" : "true");
+    };
+
+    const setTextEl = (el, txt) => {
       if (el) el.textContent = txt;
     };
 
-    setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
-    setText(
-      "loginDesc",
+    const titleEl = pick("authCardTitle", "loginTitle");
+    const subEl = pick("authCardSub", "loginDesc");
+
+    const registerExtraEl = pick("registerExtra");
+    const registerNameEl = pick("registerName");
+    const registerPass2El = pick("registerPass2");
+    const kvkkRowEl = pick("kvkkRow");
+
+    const googleBlockEl =
+      pick("googleBlock", "authGoogleBlock", "authGoogleRow") ||
+      modal.querySelector('[data-auth-google], .google-auth, .auth-google, .social-auth');
+
+    const loginMetaEl =
+      pick("loginMeta") ||
+      modal.querySelector('[data-auth-login-meta], .login-meta, .auth-login-meta');
+
+    const registerMetaEl =
+      pick("registerMeta") ||
+      modal.querySelector('[data-auth-register-meta], .register-meta, .auth-register-meta');
+
+    const footerLoginTextEl = pick("authFooterText");
+    const footerRegisterTextEl = pick("authFooterText2");
+    const goRegisterEl = pick("goRegister");
+    const goLoginEl = pick("goLogin");
+
+    setTextEl(titleEl, isReg ? "Ücretsiz hesap oluştur" : "Tekrar hoş geldin 👋");
+    setTextEl(
+      subEl,
       isReg
         ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
         : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
     );
 
-    show("registerName", isReg);
-    show("registerPass2", isReg);
-    show("kvkkRow", isReg);
+    showEl(registerExtraEl, isReg);
+    showEl(registerNameEl, isReg);
+    showEl(registerPass2El, isReg);
+    showEl(kvkkRowEl, isReg);
 
-    show("googleBlock", !isReg);
-    show("loginMeta", !isReg);
-    show("registerMeta", isReg);
+    showEl(googleBlockEl, !isReg);
+    showEl(loginMetaEl, !isReg);
+    showEl(registerMetaEl, isReg);
+
+    showEl(footerLoginTextEl, !isReg);
+    showEl(goRegisterEl, !isReg, "inline");
+    showEl(footerRegisterTextEl, isReg);
+    showEl(goLoginEl, isReg, "inline");
 
     const btn = getSubmitBtn();
     if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
