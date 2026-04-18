@@ -517,6 +517,8 @@ setTimeout(syncSearchFromInput, 0);
 
       if (!readyUrl) return;
 
+      const raw = detail?.raw || {};
+
       const nextReady = {
         job_id: jobId || safeStr(existing?.job_id) || `tmp_${rid}`,
         url: readyUrl,
@@ -524,19 +526,47 @@ setTimeout(syncSearchFromInput, 0);
         db_status: "done",
         state: "COMPLETED",
         created_at: existing?.created_at || Date.now(),
-        prompt: safeStr(detail?.meta?.prompt || existing?.prompt || ""),
+        prompt: safeStr(detail?.meta?.prompt || raw?.meta?.prompt || existing?.prompt || ""),
         _fresh: true,
+
+        poster_url: safeStr(
+          detail?.poster_url ||
+          raw?.poster_url ||
+          detail?.meta?.poster_url ||
+          raw?.meta?.poster_url ||
+          ""
+        ),
+        thumbnail_url: safeStr(
+          detail?.thumbnail_url ||
+          raw?.thumbnail_url ||
+          detail?.meta?.thumbnail_url ||
+          raw?.meta?.thumbnail_url ||
+          ""
+        ),
+        thumb_url: safeStr(
+          detail?.thumb_url ||
+          raw?.thumb_url ||
+          detail?.meta?.thumb_url ||
+          raw?.meta?.thumb_url ||
+          ""
+        ),
+
         meta: {
+          ...(existing?.meta || {}),
+          ...(raw?.meta || {}),
+          ...(detail?.meta || {}),
           app: APP_KEY,
-          provider: safeStr(detail?.meta?.provider || existing?.meta?.provider || "Atmos"),
+          provider: safeStr(detail?.meta?.provider || raw?.meta?.provider || existing?.meta?.provider || "Atmos"),
           request_id: rid || safeStr(existing?.meta?.request_id),
           aspect_ratio: safeStr(
             detail?.meta?.aspect_ratio ||
-              detail?.aspect_ratio ||
-              existing?.meta?.aspect_ratio ||
-              ""
+            raw?.meta?.aspect_ratio ||
+            detail?.aspect_ratio ||
+            existing?.meta?.aspect_ratio ||
+            ""
           ),
         },
+
         outputs: Array.isArray(detail?.outputs) ? detail.outputs : [],
       };
 
