@@ -709,15 +709,10 @@ function render() {
         probePlayableUrl(playbackUrl);
       }
 
-         const isFreshReadyCard =
-        isFreshCard &&
-        !!playbackUrl &&
-        badge.kind === "ok";
-
       const isPlayableNow =
         !!playbackUrl &&
-        badge.kind !== "bad" &&
-        (isFreshReadyCard || playableUrls.has(playbackUrl));
+        playableUrls.has(playbackUrl) &&
+        badge.kind !== "bad";
 
       return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
         ? (
