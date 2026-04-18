@@ -732,58 +732,15 @@ function render() {
                   ? "ready"
                   : (badge.kind === "bad" ? "error" : "loading"),
                 videoUrl,
-             posterUrl: safeStr(
-  job?.poster_url ||
-  job?.thumbnail_url ||
-  job?.thumb_url ||
-  job?.image_url ||
-  job?.preview_image_url ||
-  job?.preview_url ||
-  job?.meta?.poster_url ||
-  job?.meta?.thumbnail_url ||
-  job?.meta?.thumb_url ||
-  job?.meta?.image_url ||
-  job?.meta?.preview_image_url ||
-  job?.meta?.preview_url ||
-  (
-    Array.isArray(job?.outputs)
-      ? (
-          job.outputs.find((o) => {
-            const t = String(o?.type || o?.kind || o?.meta?.type || "").toLowerCase().trim();
-            const v = String(o?.meta?.variant || "").toLowerCase().trim();
-            const u = safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
-            if (!u) return false;
-            return (
-              t === "image" ||
-              v === "poster" ||
-              v === "thumbnail" ||
-              v === "thumb" ||
-              u.includes("-poster.") ||
-              u.includes("_poster.") ||
-              u.includes("/poster.")
-            );
-          })?.archive_url ||
-          job.outputs.find((o) => {
-            const t = String(o?.type || o?.kind || o?.meta?.type || "").toLowerCase().trim();
-            const v = String(o?.meta?.variant || "").toLowerCase().trim();
-            const u = safeStr(o?.archive_url || o?.url || o?.raw_url || o?.src || "");
-            if (!u) return false;
-            return (
-              t === "image" ||
-              v === "poster" ||
-              v === "thumbnail" ||
-              v === "thumb" ||
-              u.includes("-poster.") ||
-              u.includes("_poster.") ||
-              u.includes("/poster.")
-            );
-          })?.url ||
-          ""
-        )
-      : ""
-  ) ||
-  ""
-),
+              posterUrl: safeStr(
+               job?.poster_url ||
+               job?.thumbnail_url ||
+               job?.thumb_url ||
+              job?.meta?.poster_url ||
+              job?.meta?.thumbnail_url ||
+              job?.meta?.thumb_url ||
+               ""
+             ),
                 ratio: portrait ? "9:16" : "16:9",
                 ready: isPlayableNow,
                 canDownload: !!finalUrl,
