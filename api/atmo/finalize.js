@@ -294,50 +294,60 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
   const bufsizeKbps = Number(bitrateCfg?.bufsizeKbps || 6400);
 
   await new Promise((resolve, reject) => {
-    const args = [
-      "-y",
-      "-i",
-      inputPath,
+const args = [
+  "-y",
+  "-i",
+  inputPath,
 
-      // video + varsa audio map et
-      "-map",
-      "0:v:0",
-      "-map",
-      "0:a:0?",
+  "-map",
+  "0:v:0",
+  "-map",
+  "0:a:0?",
 
-      // preview için hafif küçültme
-      "-vf",
-      "scale='min(640,iw)':-2",
-      "-c:v",
-      "libx264",
-      "-preset",
-      "veryfast",
+  "-vf",
+  "scale='min(640,iw)':-2",
+  "-c:v",
+  "libx264",
+  "-preset",
+  "veryfast",
 
-      // dinamik bitrate: final/4, min 3MB, max 5MB
-      "-b:v",
-      `${targetKbps}k`,
-      "-maxrate",
-      `${maxrateKbps}k`,
-      "-bufsize",
-      `${bufsizeKbps}k`,
+  "-profile:v",
+  "main",
+  "-level",
+  "3.1",
+  "-pix_fmt",
+  "yuv420p",
+  "-tag:v",
+  "avc1",
 
-      // audio'yu koru
-      "-c:a",
-      "aac",
-      "-b:a",
-      "128k",
-      "-ac",
-      "2",
+  "-b:v",
+  `${targetKbps}k`,
+  "-maxrate",
+  `${maxrateKbps}k`,
+  "-bufsize",
+  `${bufsizeKbps}k`,
 
-      "-movflags",
-      "+faststart",
-      "-pix_fmt",
-      "yuv420p",
-      "-shortest",
+  "-g",
+  "48",
+  "-keyint_min",
+  "48",
+  "-sc_threshold",
+  "0",
 
-      outputPath,
-    ];
+  "-c:a",
+  "aac",
+  "-b:a",
+  "128k",
+  "-ar",
+  "48000",
+  "-ac",
+  "2",
 
+  "-movflags",
+  "+faststart",
+
+  outputPath,
+];
     const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
     let stderr = "";
