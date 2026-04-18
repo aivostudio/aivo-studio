@@ -467,6 +467,26 @@ const resolvedSurname = firstNonEmpty(
       return;
     }
 
+    if (t?.closest?.("#goRegister")) {
+      e.preventDefault();
+      e.stopPropagation();
+      const modal = getModal();
+      if (!modal) return;
+      setMode(modal, "register");
+      applyModeUI(modal);
+      return;
+    }
+
+    if (t?.closest?.("#goLogin")) {
+      e.preventDefault();
+      e.stopPropagation();
+      const modal = getModal();
+      if (!modal) return;
+      setMode(modal, "login");
+      applyModeUI(modal);
+      return;
+    }
+
     if (t?.closest?.("#btnAuthSubmit")) {
       e.preventDefault();
       e.stopPropagation();
