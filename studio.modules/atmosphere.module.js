@@ -881,85 +881,39 @@ function isAtmoPolicyBlocked(raw) {
     });
   }
 
-  async function presignR2({
-    app,
-    kind,
-    filename,
-    contentType,
-    prompt = "",
-    title = "",
-    description = "",
-    personName = "",
-    style = "",
-    source = "atmo_browser_upload"
-  }) {
-    const res = await fetch("/api/r2/scan-and-presign", {
+  async function presignR2({ app, kind, filename, contentType }) {
+    const res = await fetch("/api/r2/presign-put", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         app: app || "atmo",
         kind,
         filename,
-        contentType,
-        prompt,
-        title,
-        description,
-        personName,
-        style,
-        source
+        contentType
       })
     });
 
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      const msg =
-        data?.message ||
-        data?.error ||
-        (res.status === 403 ? "media_policy_blocked" : "presign_failed");
-      throw new Error(msg);
-    }
-
-    if (!data || data.ok === false) {
-      throw new Error(data?.message || data?.error || "presign_error");
-    }
+    if (!res.ok) throw new Error("presign_failed");
+    const data = await res.json();
+    if (!data || data.ok === false) throw new Error(data?.error || "presign_error");
 
     const uploadUrl = data.uploadUrl || data.upload_url;
     const publicUrl = data.publicUrl || data.public_url || data.url;
 
     if (!uploadUrl || !publicUrl) throw new Error("presign_missing_urls");
-    return {
-      uploadUrl,
-      publicUrl,
-      key: data.key || data.objectKey || "",
-      policy: data.policy || null
-    };
+    return { uploadUrl, publicUrl, key: data.key || data.objectKey || "" };
   }
 
   async function uploadToR2(file, { app = "atmo", kind }) {
     if (!file) throw new Error("missing_file");
-
     const contentType = file.type || "application/octet-stream";
     const filename = file.name || `${kind || "file"}-${Date.now()}`;
 
-    const promptText = String(state?.prompt || "").trim();
-    const titleText = String(filename || "").trim();
-    const descriptionText =
-      kind === "image"
-        ? String(promptText || filename || "").trim()
-        : String(filename || "").trim();
-
-    const { uploadUrl, publicUrl, key } = await presignR2({
+    const { uploadUrl, publicUrl } = await presignR2({
       app,
       kind,
       filename,
-      contentType,
-      prompt: kind === "image" ? promptText : "",
-      title: titleText,
-      description: descriptionText,
-      personName: "",
-      style: "",
-      source: "atmo_browser_upload"
+      contentType
     });
 
     const put = await fetch(uploadUrl, {
@@ -967,52 +921,11 @@ function isAtmoPolicyBlocked(raw) {
       headers: { "Content-Type": contentType },
       body: file
     });
-
     if (!put.ok) throw new Error("r2_put_failed");
 
-    const scanRes = await fetch("/api/r2/scan-upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app,
-        key,
-        filename,
-        contentType,
-        public_url: publicUrl,
-        prompt: kind === "image" ? promptText : "",
-        title: titleText,
-        description: descriptionText,
-        personName: "",
-        style: "",
-        source: "atmo_browser_upload"
-      })
-    });
-
-    const scanData = await scanRes.json().catch(() => null);
-
-    if (!scanRes.ok) {
-      const msg =
-        scanData?.message ||
-        scanData?.error ||
-        (scanRes.status === 403 ? "media_policy_blocked" : "scan_upload_failed");
-      throw new Error(msg);
-    }
-
-    if (!scanData || scanData.ok === false) {
-      throw new Error(scanData?.message || scanData?.error || "scan_upload_error");
-    }
-
-    if (scanData.decision && scanData.decision !== "allow") {
-      throw new Error(`media_policy_${scanData.decision}`);
-    }
-
-    return {
-      url: scanData.public_url || publicUrl,
-      name: filename,
-      key,
-      policy: scanData.policy || null
-    };
+    return { url: publicUrl, name: filename };
   }
+
   async function handleUpload(root, kind, file) {
     const r = root || getAtmoPanelRoot() || document;
      console.log("[ATM HANDLE UPLOAD]", kind, file?.name || null);
@@ -1045,31 +958,12 @@ function isAtmoPolicyBlocked(raw) {
       }
 
       return out;
- } catch (e) {
-  console.error("[ATM][R2] upload error:", kind, e);
-  setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
-
-  const errText = String(e?.message || e || "").toLowerCase();
-const isPolicyBlocked =
-  errText.includes("media_policy") ||
-  errText.includes("kamu figürü") ||
-  errText.includes("kamu figuru") ||
-  errText.includes("tanınmış kişi") ||
-  errText.includes("taninmis kisi") ||
-  errText.includes("gerçek kişi") ||
-  errText.includes("gercek kisi") ||
-  errText.includes("impersonation");
-
-  try {
-    window.toast?.error?.(
-      isPolicyBlocked
-        ? "Bu görsel kullanılamaz."
-        : "Yükleme hatası"
-    );
-  } catch {}
-
-  return null;
-}
+    } catch (e) {
+      console.error("[ATM][R2] upload error:", kind, e);
+      setUploadUI(r, kind, { status: "error", url: "", name: file.name || "" });
+      try { window.toast?.error?.("Yükleme hatası"); } catch {}
+      return null;
+    }
   }
 
   // ------------------------------------------------------------
@@ -1818,71 +1712,54 @@ if (mode === "basic") {
       try { window.syncCreditsUI?.({ force: true }); } catch {}
     }
 
-async function tryRefund(reason, extraMeta = {}) {
-  if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+    async function tryRefund(reason, extraMeta = {}) {
+      if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
 
-  try {
-    const refundRes = await fetch("/api/credits/refund", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "content-type": "application/json",
-        "accept": "application/json"
-      },
-      body: JSON.stringify({
-        app: "atmo",
-        action: creditReason,
-        amount: creditCost,
-        request_id: consumeRequestId,
-        related_transaction_id: consumeTransactionId,
-        reason,
-        meta: {
-          source: "atmosphere.module.onGenerate",
-          mode,
-          aspect_ratio: state.aspect || "16:9",
-          duration: mode === "pro" ? (state.proDuration || "4") : (state.duration || "4"),
-          prompt: mode === "pro" ? String(state.prompt || "") : "",
-          ...extraMeta
+      try {
+        const refundRes = await fetch("/api/credits/refund", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "atmo",
+            action: creditReason,
+            amount: creditCost,
+            request_id: consumeRequestId,
+            related_transaction_id: consumeTransactionId,
+            reason,
+            meta: {
+              source: "atmosphere.module.onGenerate",
+              mode,
+              aspect_ratio: state.aspect || "16:9",
+              duration: mode === "pro" ? (state.proDuration || "4") : (state.duration || "4"),
+              prompt: mode === "pro" ? String(state.prompt || "") : "",
+              ...extraMeta
+            }
+          })
+        });
+
+        const refundData = await refundRes.json().catch(() => null);
+
+        if (refundRes.ok && refundData?.ok && refundData?.refunded) {
+          await refreshCreditsUI();
+          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+          return true;
         }
-      })
-    });
 
-    const refundData = await refundRes.json().catch(() => null);
-
-    if (refundRes.ok && refundData?.ok && refundData?.refunded) {
-      await refreshCreditsUI();
-
-      const errText = String(
-        extraMeta?.message ||
-        extraMeta?.error ||
-        ""
-      ).toLowerCase();
-
-      let toastText = "İşlem başarısız oldu. Krediniz iade edildi.";
-
-      if (errText.includes("image_too_small") || errText.includes("300x300")) {
-        toastText = "Yüklenen görsel en az 300x300 olmalı. Krediniz iade edildi.";
-      } else if (errText.includes("image_probe_exception")) {
-        toastText = "Görsel boyutu doğrulanamadı. Krediniz iade edildi.";
-      } else if (errText.includes("image_probe_failed")) {
-        toastText = "Görsel okunamadı. Krediniz iade edildi.";
+        if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
+          await refreshCreditsUI();
+          return true;
+        }
+      } catch (refundErr) {
+        console.error("[ATM] refund failed:", refundErr);
       }
 
-      try { window.toast?.error?.(toastText); } catch {}
-
-      return true;
+      return false;
     }
 
-    if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
-      await refreshCreditsUI();
-      return true;
-    }
-  } catch (refundErr) {
-    console.error("[ATM] refund failed:", refundErr);
-  }
-
-  return false;
-}
     const creditRes = await fetch("/api/credits/consume-ledger", {
       method: "POST",
       credentials: "include",
@@ -2011,26 +1888,25 @@ if (logoClearBtn) {
   return;
 }
 
-   const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
-if (imageClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
+      const imageClearBtn = closestWithin(e.target, "#atmProRefImageClear", root);
+      if (imageClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
 
-  const imageInput = document.getElementById("atmProRefImageFile");
-  if (imageInput) imageInput.value = "";
+        const imageInput = document.getElementById("atmProRefImageFile");
+        if (imageInput) imageInput.value = "";
 
-  state.refImageFile = null;
+        state.refImageFile = null;
 
-  const panel =
-    imageClearBtn.closest('[data-mode-panel="pro"]') ||
-    qs('[data-mode-panel="pro"]', root) ||
-    root;
+        const panel =
+          imageClearBtn.closest('[data-mode-panel="pro"]') ||
+          qs('[data-mode-panel="pro"]', root) ||
+          root;
 
-  setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
-  syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Görsel kaldırıldı"); } catch {}
-  return;
-}
+        setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
+        syncAtmoGenerateCredits(root);
+        return;
+      }
 
   const audioClearBtn = closestWithin(e.target, "#atmProAudioClear", root);
 if (audioClearBtn) {
@@ -2052,48 +1928,47 @@ if (audioClearBtn) {
   try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
   return;
 }
-const basicLogoClearBtn = closestWithin(e.target, "#atmLogoClear", root);
-if (basicLogoClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
+      const basicLogoClearBtn = closestWithin(e.target, "#atmLogoClear", root);
+      if (basicLogoClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
 
-  const logoInput = document.getElementById("atmLogoFile");
-  if (logoInput) logoInput.value = "";
+        const logoInput = document.getElementById("atmLogoFile");
+        if (logoInput) logoInput.value = "";
 
-  state.logoFile = null;
+        state.logoFile = null;
 
-  const panel =
-    basicLogoClearBtn.closest('[data-mode-panel="basic"]') ||
-    qs('[data-mode-panel="basic"]', root) ||
-    root;
+        const panel =
+          basicLogoClearBtn.closest('[data-mode-panel="basic"]') ||
+          qs('[data-mode-panel="basic"]', root) ||
+          root;
 
-  setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
-  try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
-  syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
-  return;
-}
+        setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
+        try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
+        syncAtmoGenerateCredits(root);
+        return;
+      }
 
-  const basicAudioClearBtn = closestWithin(e.target, "#atmAudioClear", root);
-if (basicAudioClearBtn) {
-  e.preventDefault();
-  e.stopPropagation();
+      const basicAudioClearBtn = closestWithin(e.target, "#atmAudioClear", root);
+      if (basicAudioClearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
 
-  const audioInput = document.getElementById("atmAudioFile");
-  if (audioInput) audioInput.value = "";
+        const audioInput = document.getElementById("atmAudioFile");
+        if (audioInput) audioInput.value = "";
 
-  state.audioFile = null;
+        state.audioFile = null;
 
-  const panel =
-    basicAudioClearBtn.closest('[data-mode-panel="basic"]') ||
-    qs('[data-mode-panel="basic"]', root) ||
-    root;
+        const panel =
+          basicAudioClearBtn.closest('[data-mode-panel="basic"]') ||
+          qs('[data-mode-panel="basic"]', root) ||
+          root;
 
-  setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
-  syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
-  return;
-}
+        setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
+        syncAtmoGenerateCredits(root);
+        return;
+      }
+
       const btn = closestWithin(e.target, "[data-atm-generate]", root);
       if (!btn) return;
 
