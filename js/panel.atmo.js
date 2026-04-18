@@ -494,108 +494,66 @@ setTimeout(syncSearchFromInput, 0);
       render();
     }
 
-function upsertEphemeralReady(detail = {}) {
-  const jobId = safeStr(detail?.job_id);
-  const rid =
-    safeStr(detail?.request_id) ||
-    safeStr(detail?.fal_request_id) ||
-    safeStr(detail?.meta?.request_id);
+    function upsertEphemeralReady(detail = {}) {
+      const jobId = safeStr(detail?.job_id);
+      const rid =
+        safeStr(detail?.request_id) ||
+        safeStr(detail?.fal_request_id) ||
+        safeStr(detail?.meta?.request_id);
 
-  const existing =
-    (state.ephemerals || []).find((x) => {
-      const xJobId = safeStr(x?.job_id);
-      const xRid = safeStr(x?.meta?.request_id || x?.request_id);
-      return (jobId && xJobId === jobId) || (rid && xRid === rid);
-    }) || null;
+      const existing =
+        (state.ephemerals || []).find((x) => {
+          const xJobId = safeStr(x?.job_id);
+          const xRid = safeStr(x?.meta?.request_id || x?.request_id);
+          return (jobId && xJobId === jobId) || (rid && xRid === rid);
+        }) || null;
 
-  const raw = detail?.raw || detail || {};
+      const readyUrl = safeStr(
+        detail?.video?.url ||
+        detail?.url ||
+        pickVideoUrl(detail?.raw || detail) ||
+        (Array.isArray(detail?.outputs) ? detail.outputs?.[0]?.url : "")
+      );
 
-  const readyUrl = safeStr(
-    detail?.video?.url ||
-    detail?.url ||
-    pickVideoUrl(raw) ||
-    (Array.isArray(detail?.outputs) ? detail.outputs?.[0]?.url : "")
-  );
+      if (!readyUrl) return;
 
-  const posterUrl = safeStr(
-    detail?.poster_url ||
-    detail?.thumbnail_url ||
-    detail?.thumb_url ||
-    detail?.image_url ||
-    detail?.preview_url ||
-    raw?.poster_url ||
-    raw?.thumbnail_url ||
-    raw?.thumb_url ||
-    raw?.image_url ||
-    raw?.preview_url ||
-    detail?.meta?.poster_url ||
-    detail?.meta?.thumbnail_url ||
-    detail?.meta?.thumb_url ||
-    raw?.meta?.poster_url ||
-    raw?.meta?.thumbnail_url ||
-    raw?.meta?.thumb_url ||
-    existing?.poster_url ||
-    existing?.thumbnail_url ||
-    existing?.thumb_url ||
-    existing?.meta?.poster_url ||
-    existing?.meta?.thumbnail_url ||
-    existing?.meta?.thumb_url ||
-    ""
-  );
+      const nextReady = {
+        job_id: jobId || safeStr(existing?.job_id) || `tmp_${rid}`,
+        url: readyUrl,
+        status: "DONE",
+        db_status: "done",
+        state: "COMPLETED",
+        created_at: existing?.created_at || Date.now(),
+        prompt: safeStr(detail?.meta?.prompt || existing?.prompt || ""),
+        _fresh: true,
+        meta: {
+          app: APP_KEY,
+          provider: safeStr(detail?.meta?.provider || existing?.meta?.provider || "Atmos"),
+          request_id: rid || safeStr(existing?.meta?.request_id),
+          aspect_ratio: safeStr(
+            detail?.meta?.aspect_ratio ||
+              detail?.aspect_ratio ||
+              existing?.meta?.aspect_ratio ||
+              ""
+          ),
+        },
+        outputs: Array.isArray(detail?.outputs) ? detail.outputs : [],
+      };
 
-  if (!readyUrl && !posterUrl) return;
+      const resolved = resolvePlaybackUrl(readyUrl);
+      if (resolved) playableUrls.add(resolved);
 
-  const nextReady = {
-    job_id: jobId || safeStr(existing?.job_id) || `tmp_${rid}`,
-    url: readyUrl || safeStr(existing?.url),
-    poster_url: posterUrl,
-    thumbnail_url: posterUrl,
-    thumb_url: posterUrl,
-    status: "DONE",
-    db_status: "done",
-    state: "COMPLETED",
-    created_at: existing?.created_at || Date.now(),
-    prompt: safeStr(detail?.meta?.prompt || raw?.meta?.prompt || existing?.prompt || ""),
-    _fresh: true,
-    meta: {
-      app: APP_KEY,
-      provider: safeStr(
-        detail?.meta?.provider ||
-        raw?.meta?.provider ||
-        existing?.meta?.provider ||
-        "Atmos"
-      ),
-      request_id: rid || safeStr(existing?.meta?.request_id),
-      aspect_ratio: safeStr(
-        detail?.meta?.aspect_ratio ||
-        detail?.aspect_ratio ||
-        raw?.meta?.aspect_ratio ||
-        raw?.aspect_ratio ||
-        existing?.meta?.aspect_ratio ||
-        ""
-      ),
-      poster_url: posterUrl,
-      thumbnail_url: posterUrl,
-      thumb_url: posterUrl,
-    },
-    outputs: Array.isArray(detail?.outputs)
-      ? detail.outputs
-      : Array.isArray(raw?.outputs)
-      ? raw.outputs
-      : [],
-  };
+      state.ephemerals = [
+        nextReady,
+        ...(state.ephemerals || []).filter((x) => !sameJob(x, nextReady)),
+      ];
 
-  state.ephemerals = [
-    nextReady,
-    ...(state.ephemerals || []).filter((x) => !sameJob(x, nextReady)),
-  ];
+      render();
 
-  render();
-
-  try {
-    db && db.hydrate(true);
-  } catch {}
-}
+      try {
+        db && db.hydrate(true);
+      } catch {}
+    }
 
     function cleanupEphemeralsAgainstDb() {
       const dbItems = Array.isArray(state.items) ? state.items : [];
