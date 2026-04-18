@@ -605,3 +605,92 @@
 #loginModal[data-mode="register"] #loginMeta{
   display: none !important;
 }
+/* =========================================================
+   AIVO AUTH — MODE SEPARATION FIX
+   KONUM: auth.modal.css en altı
+   ========================================================= */
+
+/* LOGIN modunda sadece login alanları kalsın */
+#loginModal[data-mode="login"] #registerExtra,
+#loginModal[data-mode="login"] #kvkkRow{
+  display: none !important;
+}
+
+#loginModal[data-mode="login"] #loginMeta{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+/* REGISTER modunda register alanları görünsün, login meta kapansın */
+#loginModal[data-mode="register"] #registerExtra{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+#loginModal[data-mode="register"] #kvkkRow{
+  display: flex !important;
+}
+
+#loginModal[data-mode="register"] #loginMeta{
+  display: none !important;
+}
+
+/* Register alan hizası */
+#loginModal #registerExtra > *{
+  min-width: 0;
+  width: 100%;
+}
+
+#loginModal #registerExtra .aivo-float-field{
+  display: block;
+  width: 100%;
+}
+
+#loginModal #registerExtra .aivo-float-field input{
+  width: 100% !important;
+  height: 58px !important;
+}
+
+#loginModal #registerExtra .aivo-float-field--icon input{
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+}
+
+#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) input{
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) .aivo-float-label{
+  left: 16px !important;
+}
+
+#loginModal #registerExtra .aivo-float-field--icon .aivo-float-label{
+  left: 50px !important;
+}
+
+/* Login'deki Beni hatırla satırını daha temiz yap */
+#loginModal #rememberRow{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  color: rgba(236,240,250,.92) !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+#loginModal #rememberRow input{
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  accent-color: #8b5cf6;
+  flex: 0 0 20px !important;
+}
+
+#loginModal #forgotPass{
+  color: rgba(236,240,250,.78) !important;
+  font-weight: 600 !important;
+}
