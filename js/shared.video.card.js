@@ -654,16 +654,15 @@ ${
   ready && videoUrl
     ? `
       ${posterUrl ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}">` : ``}
-  <video
-  class="svcVideo"
-  preload="none"
-  playsinline
-  webkit-playsinline
-  muted
-  data-video-url="${esc(videoUrl)}"
-  style="opacity:0;background:transparent"
-  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-></video>
+      <video
+        class="svcVideo"
+        preload="none"
+        playsinline
+        webkit-playsinline
+        muted
+        data-video-url="${esc(videoUrl)}"
+        ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+      ></video>
 <div class="svcOverlay">
   <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
