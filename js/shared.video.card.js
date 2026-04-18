@@ -433,6 +433,7 @@ document.addEventListener("click", async (e) => {
 
   const card = btn.closest(".svcCard");
   const video = card?.querySelector(".svcVideo");
+  const poster = card?.querySelector(".svcPoster");
   if (!video) return;
 
   const lazyUrl = String(video.dataset.videoUrl || "").trim();
@@ -441,6 +442,17 @@ document.addEventListener("click", async (e) => {
     video.preload = "metadata";
     video.src = lazyUrl;
     try { video.load(); } catch (_) {}
+  }
+
+  if (!video.__aivoPosterBound) {
+    video.__aivoPosterBound = true;
+
+    const hidePoster = () => {
+      if (poster) poster.style.display = "none";
+    };
+
+    video.addEventListener("loadeddata", hidePoster, { once: true });
+    video.addEventListener("playing", hidePoster, { once: true });
   }
 
   if (!video.__aivoPlaySyncBound) {
@@ -467,7 +479,6 @@ document.addEventListener("click", async (e) => {
     }
   } catch (_) {}
 }, true);
-
   document.addEventListener("play", (e) => {
     const video = e.target;
     if (!(video instanceof HTMLVideoElement)) return;
@@ -639,18 +650,19 @@ ensureFullscreenBinding();
 ></div>
 
          
-          ${
-            ready && videoUrl
-              ? `
-            <video
-  class="svcVideo"
-  preload="none"
-  playsinline
-  webkit-playsinline
-  muted
-  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-  data-video-url="${esc(videoUrl)}"
-></video>
+${
+  ready && videoUrl
+    ? `
+      ${posterUrl ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}">` : ``}
+      <video
+        class="svcVideo"
+        preload="none"
+        playsinline
+        webkit-playsinline
+        muted
+        data-video-url="${esc(videoUrl)}"
+        ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+      ></video>
 <div class="svcOverlay">
   <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
@@ -678,7 +690,7 @@ ensureFullscreenBinding();
     </button>
   </div>
 </div>
-              `
+    `
               : `
                 <div class="svcSkel"></div>
                 <div class="svcFallback">
