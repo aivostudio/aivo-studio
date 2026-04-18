@@ -48,12 +48,42 @@
   transition: opacity .24s ease, transform .24s ease;
 }
 
+#loginModal.is-open .login-panel{
+  opacity: 1;
+}
+
 #loginModal .login-stage{
   position: relative;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+#loginModal .login-x{
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: rgba(243,246,255,.96);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#loginModal .login-x:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
 }
 
 #loginModal .login-hero{
@@ -110,6 +140,10 @@
     0 18px 38px rgba(0,0,0,.22);
 }
 
+#loginModal .login-social-row{
+  display: block;
+}
+
 #loginModal .btn-google{
   width: 100%;
   height: 52px;
@@ -123,6 +157,43 @@
     0 10px 20px rgba(0,0,0,.18),
     inset 0 1px 0 rgba(255,255,255,.68);
   cursor: pointer;
+}
+
+#loginModal .btn-google:hover{
+  transform: translateY(-1px);
+}
+
+#loginModal .login-or{
+  position: relative;
+  text-align: center;
+}
+
+#loginModal .login-or::before{
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255,255,255,.08);
+}
+
+#loginModal .login-or span{
+  position: relative;
+  display: inline-block;
+  padding: 0 12px;
+  background: rgba(14,18,36,.96);
+  color: rgba(228,233,248,.42);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+#loginModal .login-form-block{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 #loginModal .login-form-head{
@@ -152,6 +223,12 @@
   margin-top: 0 !important;
 }
 
+#loginModal .aivo-float-field{
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
 #loginModal .aivo-float-field input,
 #loginModal #registerExtra input{
   width: 100% !important;
@@ -171,6 +248,14 @@
     0 6px 16px rgba(0,0,0,.14);
 }
 
+#loginModal .aivo-float-field input:focus,
+#loginModal #registerExtra input:focus{
+  border-color: rgba(129,110,255,.76);
+  box-shadow:
+    0 0 0 4px rgba(129,110,255,.18),
+    inset 0 1px 0 rgba(255,255,255,.03);
+}
+
 #loginModal .aivo-float-label{
   position: absolute;
   left: 16px;
@@ -179,6 +264,28 @@
   line-height: 1;
   color: rgba(220,225,243,.68);
   pointer-events: none;
+}
+
+#loginModal #registerExtra{
+  margin-top: 10px !important;
+}
+
+#loginModal #kvkkRow{
+  margin-top: 12px !important;
+}
+
+#loginModal .remember-row{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  font-size: 12px;
+  color: rgba(234,238,250,.78);
+}
+
+#loginModal .remember-row input{
+  width: 14px;
+  height: 14px;
 }
 
 #loginModal .login-inline-meta{
@@ -207,6 +314,10 @@
   cursor: pointer;
 }
 
+#loginModal #btnAuthSubmit:hover{
+  transform: translateY(-1px);
+}
+
 #loginModal .login-switchbar{
   display: flex;
   align-items: center;
@@ -227,6 +338,52 @@
   font-size: 13px;
 }
 
+#loginModal .login-switchactions{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#loginModal .link-accent{
+  color: #b8a7ff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+#loginModal .link-muted{
+  color: rgba(230,234,246,.62);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+#loginModal .link-accent:hover,
+#loginModal .link-muted:hover{
+  color: #fff;
+}
+
+#loginModal .login-card,
+#loginModal .login-header,
+#loginModal .login-google,
+#loginModal .login-email,
+#loginModal .login-footer{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+#loginModal input:-webkit-autofill,
+#loginModal input:-webkit-autofill:hover,
+#loginModal input:-webkit-autofill:focus,
+#loginModal input:-webkit-autofill:active{
+  -webkit-text-fill-color: rgba(255,255,255,.96) !important;
+  transition: background-color 9999s ease-in-out 0s;
+  box-shadow: 0 0 0 1000px rgba(8,11,27,.76) inset !important;
+  caret-color: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+}
+
 @media (max-width: 640px){
   #loginModal .login-panel{
     width: calc(100vw - 16px);
@@ -237,6 +394,15 @@
   #loginModal .login-stage{
     padding: 14px;
     gap: 12px;
+  }
+
+  #loginModal .login-x{
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    font-size: 18px;
   }
 
   #loginModal #loginTitle{
