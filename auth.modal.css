@@ -1,7 +1,6 @@
 /* =========================================================
-   AIVO AUTH MODAL — SINGLE SURFACE PREMIUM OVERRIDE
-   KONUM: auth.modal.css DOSYASININ EN ALTINA
-   NOT: onceki verdigim premium override blogunu SIL, sadece bu kalsin
+   AIVO AUTH — FINAL CLEAN MODAL OVERRIDE
+   KONUM: auth.modal.css EN ALTI
    ========================================================= */
 
 #loginModal.login-modal{
@@ -140,10 +139,6 @@
     0 18px 38px rgba(0,0,0,.22);
 }
 
-#loginModal .login-social-row{
-  display: block;
-}
-
 #loginModal .btn-google{
   width: 100%;
   height: 52px;
@@ -157,10 +152,6 @@
     0 10px 20px rgba(0,0,0,.18),
     inset 0 1px 0 rgba(255,255,255,.68);
   cursor: pointer;
-}
-
-#loginModal .btn-google:hover{
-  transform: translateY(-1px);
 }
 
 #loginModal .login-or{
@@ -215,22 +206,15 @@
   color: rgba(231,236,250,.62);
 }
 
-#loginModal .email-row{
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 10px !important;
-  align-items: stretch !important;
-  margin-top: 0 !important;
-}
-
+/* ortak field yapısı */
 #loginModal .aivo-float-field{
   position: relative;
   display: block;
+  width: 100%;
   min-width: 0;
 }
 
-#loginModal .aivo-float-field input,
-#loginModal #registerExtra input{
+#loginModal .aivo-float-field input{
   width: 100% !important;
   min-width: 0 !important;
   height: 58px;
@@ -248,8 +232,7 @@
     0 6px 16px rgba(0,0,0,.14);
 }
 
-#loginModal .aivo-float-field input:focus,
-#loginModal #registerExtra input:focus{
+#loginModal .aivo-float-field input:focus{
   border-color: rgba(129,110,255,.76);
   box-shadow:
     0 0 0 4px rgba(129,110,255,.18),
@@ -266,12 +249,159 @@
   pointer-events: none;
 }
 
-#loginModal #registerExtra{
-  margin-top: 10px !important;
+/* ikonlu input */
+#loginModal .aivo-float-field--icon{
+  position: relative;
 }
 
-#loginModal #kvkkRow{
+#loginModal .aivo-float-field--icon input{
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+}
+
+#loginModal .aivo-field-ico{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 3;
+  font-size: 15px;
+  line-height: 1;
+  opacity: .88;
+}
+
+#loginModal .aivo-field-ico--left{
+  left: 16px;
+  color: rgba(210,218,242,.78);
+}
+
+#loginModal .aivo-pass-toggle{
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(220,225,243,.68);
+  cursor: pointer;
+  z-index: 4;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 999px;
+}
+
+#loginModal .aivo-float-field--icon .aivo-float-label{
+  left: 50px;
+}
+
+#loginModal .aivo-float-field--icon input::placeholder{
+  color: transparent;
+}
+
+/* login alanları */
+#loginModal #loginFields{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* register referans düzeni */
+#loginModal #registerExtra{
+  display: none;
   margin-top: 12px !important;
+}
+
+#loginModal .auth-register-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+#loginModal .auth-form-field{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+#loginModal .auth-form-label{
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: rgba(244,247,255,.94);
+}
+
+#loginModal #registerExtra .aivo-float-field input{
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#loginModal #registerExtra .aivo-float-label{
+  display: none !important;
+}
+
+#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) input{
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+#loginModal #registerExtra .aivo-float-field--icon input{
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+}
+
+/* checkbox */
+#loginModal .auth-consent-row{
+  display: none;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  margin-top: 12px !important;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 8px 18px rgba(0,0,0,.12);
+  color: rgba(240,244,255,.92);
+  font-size: 13px;
+  line-height: 1.45;
+  user-select: none;
+}
+
+#loginModal .auth-consent-row input{
+  margin: 2px 0 0 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  accent-color: #8b5cf6;
+}
+
+#loginModal .auth-consent-row span{
+  display: block;
+  color: rgba(236,240,250,.90);
+}
+
+/* login meta */
+#loginModal .login-inline-meta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 12px;
 }
 
 #loginModal .remember-row{
@@ -286,15 +416,6 @@
 #loginModal .remember-row input{
   width: 14px;
   height: 14px;
-}
-
-#loginModal .login-inline-meta{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px;
-  margin-bottom: 12px;
 }
 
 #loginModal #btnAuthSubmit{
@@ -312,10 +433,6 @@
     0 16px 30px rgba(86,76,255,.28),
     inset 0 1px 0 rgba(255,255,255,.20);
   cursor: pointer;
-}
-
-#loginModal #btnAuthSubmit:hover{
-  transform: translateY(-1px);
 }
 
 #loginModal .login-switchbar{
@@ -356,23 +473,37 @@
   font-weight: 500;
 }
 
-#loginModal .link-accent:hover,
-#loginModal .link-muted:hover{
-  color: #fff;
+/* mod ayrımı - en kritik bölüm */
+#loginModal[data-mode="login"] #loginFields{
+  display: grid !important;
 }
 
-#loginModal .login-card,
-#loginModal .login-header,
-#loginModal .login-google,
-#loginModal .login-email,
-#loginModal .login-footer{
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
+#loginModal[data-mode="login"] #registerExtra,
+#loginModal[data-mode="login"] #kvkkRow{
+  display: none !important;
 }
 
+#loginModal[data-mode="login"] #loginMeta{
+  display: flex !important;
+}
+
+#loginModal[data-mode="register"] #loginFields{
+  display: none !important;
+}
+
+#loginModal[data-mode="register"] #registerExtra{
+  display: block !important;
+}
+
+#loginModal[data-mode="register"] #kvkkRow{
+  display: flex !important;
+}
+
+#loginModal[data-mode="register"] #loginMeta{
+  display: none !important;
+}
+
+/* autofill */
 #loginModal input:-webkit-autofill,
 #loginModal input:-webkit-autofill:hover,
 #loginModal input:-webkit-autofill:focus,
@@ -422,8 +553,9 @@
     border-radius: 16px;
   }
 
-  #loginModal .email-row{
-    grid-template-columns: 1fr !important;
+  #loginModal .auth-register-grid{
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   #loginModal .login-inline-meta,
@@ -441,256 +573,4 @@
     height: 50px;
     font-size: 16px;
   }
-}
-/* =========================================================
-   AIVO AUTH — PASSWORD PREMIUM FIELD OVERRIDE
-   KONUM: auth.modal.css en altı
-   ========================================================= */
-
-#loginModal .aivo-float-field--icon{
-  position: relative;
-}
-
-#loginModal .aivo-float-field--icon input{
-  padding-left: 50px !important;
-  padding-right: 50px !important;
-}
-
-#loginModal .aivo-field-ico{
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  z-index: 3;
-  font-size: 15px;
-  line-height: 1;
-  opacity: .88;
-}
-
-#loginModal .aivo-field-ico--left{
-  left: 16px;
-  color: rgba(210,218,242,.78);
-}
-
-#loginModal .aivo-pass-toggle{
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: rgba(220,225,243,.68);
-  cursor: pointer;
-  z-index: 4;
-  font-size: 15px;
-  line-height: 1;
-  border-radius: 999px;
-  transition: color .18s ease, background .18s ease, transform .18s ease;
-}
-
-#loginModal .aivo-pass-toggle:hover{
-  color: rgba(255,255,255,.96);
-  background: rgba(255,255,255,.06);
-}
-
-#loginModal .aivo-pass-toggle:focus-visible{
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(129,110,255,.20);
-}
-
-#loginModal .aivo-float-field--icon .aivo-float-label{
-  left: 50px;
-}
-
-#loginModal .aivo-float-field--icon input::placeholder{
-  color: transparent;
-}
-/* =========================================================
-   AIVO AUTH — REGISTER LAYOUT FIX
-   KONUM: auth.modal.css en altı
-   ========================================================= */
-
-#loginModal #registerExtra{
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 12px !important;
-  align-items: stretch !important;
-  margin-top: 12px !important;
-}
-
-#loginModal #registerExtra > *{
-  min-width: 0;
-}
-
-#loginModal #registerExtra .aivo-float-field{
-  width: 100%;
-  display: block;
-}
-
-#loginModal #registerExtra .aivo-float-field input{
-  width: 100% !important;
-  height: 58px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field--icon input{
-  padding-left: 50px !important;
-  padding-right: 50px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) input{
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) .aivo-float-label{
-  left: 16px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field--icon .aivo-float-label{
-  left: 50px !important;
-}
-
-#loginModal #registerExtra .aivo-field-ico--left{
-  left: 16px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-}
-
-#loginModal #registerExtra .aivo-pass-toggle{
-  right: 14px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-}
-
-#loginModal .auth-consent-row{
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 12px !important;
-  width: 100% !important;
-  padding: 14px 16px !important;
-  border-radius: 16px !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  background: rgba(255,255,255,.03) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    0 8px 18px rgba(0,0,0,.12) !important;
-  color: rgba(240,244,255,.92) !important;
-  font-size: 13px !important;
-  line-height: 1.45 !important;
-  user-select: none;
-}
-
-#loginModal .auth-consent-row input{
-  margin: 2px 0 0 0 !important;
-  width: 20px !important;
-  height: 20px !important;
-  flex: 0 0 20px !important;
-  accent-color: #8b5cf6;
-}
-
-#loginModal .auth-consent-row span{
-  display: block !important;
-  color: rgba(236,240,250,.90) !important;
-}
-
-#loginModal[data-mode="register"] #loginMeta{
-  display: none !important;
-}
-/* =========================================================
-   AIVO AUTH — MODE SEPARATION FIX
-   KONUM: auth.modal.css en altı
-   ========================================================= */
-
-/* LOGIN modunda sadece login alanları kalsın */
-#loginModal[data-mode="login"] #registerExtra,
-#loginModal[data-mode="login"] #kvkkRow{
-  display: none !important;
-}
-
-#loginModal[data-mode="login"] #loginMeta{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-}
-
-/* REGISTER modunda register alanları görünsün, login meta kapansın */
-#loginModal[data-mode="register"] #registerExtra{
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 12px !important;
-}
-
-#loginModal[data-mode="register"] #kvkkRow{
-  display: flex !important;
-}
-
-#loginModal[data-mode="register"] #loginMeta{
-  display: none !important;
-}
-
-/* Register alan hizası */
-#loginModal #registerExtra > *{
-  min-width: 0;
-  width: 100%;
-}
-
-#loginModal #registerExtra .aivo-float-field{
-  display: block;
-  width: 100%;
-}
-
-#loginModal #registerExtra .aivo-float-field input{
-  width: 100% !important;
-  height: 58px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field--icon input{
-  padding-left: 50px !important;
-  padding-right: 50px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) input{
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field:not(.aivo-float-field--icon) .aivo-float-label{
-  left: 16px !important;
-}
-
-#loginModal #registerExtra .aivo-float-field--icon .aivo-float-label{
-  left: 50px !important;
-}
-
-/* Login'deki Beni hatırla satırını daha temiz yap */
-#loginModal #rememberRow{
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  color: rgba(236,240,250,.92) !important;
-  font-size: 13px !important;
-  line-height: 1.2 !important;
-}
-
-#loginModal #rememberRow input{
-  width: 20px !important;
-  height: 20px !important;
-  margin: 0 !important;
-  accent-color: #8b5cf6;
-  flex: 0 0 20px !important;
-}
-
-#loginModal #forgotPass{
-  color: rgba(236,240,250,.78) !important;
-  font-weight: 600 !important;
 }
