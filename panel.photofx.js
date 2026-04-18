@@ -475,7 +475,15 @@ function pickPreviewVideoFromJob(job) {
               badgeText,
               badgeKind,
               videoUrl: previewVideoUrl,
-              posterUrl: "",
+             posterUrl: safeStr(
+             job?.poster_url ||
+            job?.thumbnail_url ||
+            job?.thumb_url ||
+            job?.meta?.poster_url ||
+            job?.meta?.thumbnail_url ||
+            job?.meta?.thumb_url ||
+            ""
+           ),
               ratio,
               ready,
               canDownload: !!finalUrl,
