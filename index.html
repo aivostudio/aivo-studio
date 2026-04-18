@@ -2597,7 +2597,27 @@
 
           <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:12px;">
             <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
-            <input id="registerPass2" type="password" placeholder="Şifre tekrar" autocomplete="new-password" />
+          <label class="aivo-float-field aivo-float-field--icon">
+  <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+
+  <input
+    id="registerPass2"
+    type="password"
+    placeholder=" "
+    autocomplete="new-password"
+  />
+
+  <span class="aivo-float-label">Şifre tekrar</span>
+
+  <button
+    type="button"
+    class="aivo-pass-toggle"
+    data-toggle-pass="registerPass2"
+    aria-label="Şifre tekrar alanını göster"
+  >
+    👁
+  </button>
+</label>
           </div>
 
           <label class="remember-row" id="kvkkRow" style="display:none; margin-top:12px;">
