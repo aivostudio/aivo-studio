@@ -526,15 +526,24 @@ setTimeout(syncSearchFromInput, 0);
         created_at: existing?.created_at || Date.now(),
         prompt: safeStr(detail?.meta?.prompt || existing?.prompt || ""),
         _fresh: true,
-        meta: {
+           meta: {
+          ...(existing?.meta || {}),
+          ...((detail?.raw && detail.raw.meta) || {}),
+          ...(detail?.meta || {}),
           app: APP_KEY,
-          provider: safeStr(detail?.meta?.provider || existing?.meta?.provider || "Atmos"),
+          provider: safeStr(
+            detail?.meta?.provider ||
+            detail?.raw?.meta?.provider ||
+            existing?.meta?.provider ||
+            "Atmos"
+          ),
           request_id: rid || safeStr(existing?.meta?.request_id),
           aspect_ratio: safeStr(
             detail?.meta?.aspect_ratio ||
-              detail?.aspect_ratio ||
-              existing?.meta?.aspect_ratio ||
-              ""
+            detail?.raw?.meta?.aspect_ratio ||
+            detail?.aspect_ratio ||
+            existing?.meta?.aspect_ratio ||
+            ""
           ),
         },
         outputs: Array.isArray(detail?.outputs) ? detail.outputs : [],
