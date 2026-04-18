@@ -1129,10 +1129,105 @@ const onJobCreated = (e) => {
       });
     }
 
-  async function pollFalOnce(rid, promptMaybe) {
-  return;
-}
+async function pollFalOnce(rid, promptMaybe) {
+  rid = safeStr(rid);
+  if (!rid) return;
 
+  try {
+    const res = await fetch(STATUS_URL(rid), {
+      credentials: "include",
+      cache: "no-store",
+      headers: { accept: "application/json" }
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data) return;
+
+    const rawStatus = String(
+      data?.status ||
+      data?.state ||
+      data?.request?.status ||
+      data?.data?.status ||
+      ""
+    ).trim().toLowerCase();
+
+    const readyUrl = safeStr(
+      data?.video?.url ||
+      data?.video_url ||
+      data?.output?.video?.url ||
+      data?.output?.url ||
+      (Array.isArray(data?.outputs) ? data.outputs?.[0]?.url : "") ||
+      (Array.isArray(data?.output) ? data.output?.[0]?.url : "") ||
+      data?.result?.url ||
+      data?.result?.video?.url ||
+      ""
+    );
+
+    const matchingEphemeral =
+      (state.ephemerals || []).find((x) => {
+        const xRid = safeStr(x?.meta?.request_id || x?.request_id);
+        return xRid && xRid === rid;
+      }) || null;
+
+    const jobId = safeStr(
+      data?.job_id ||
+      data?.id ||
+      matchingEphemeral?.job_id ||
+      ""
+    );
+
+    if (["completed", "complete", "succeeded", "success", "done", "ready"].includes(rawStatus) && readyUrl) {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+
+      upsertEphemeralReady({
+        job_id: jobId,
+        request_id: rid,
+        url: readyUrl,
+        video: { url: readyUrl },
+        outputs: Array.isArray(data?.outputs) ? data.outputs : [],
+        meta: {
+          ...(matchingEphemeral?.meta || {}),
+          ...(data?.meta || {}),
+          prompt: safeStr(
+            data?.meta?.prompt ||
+            promptMaybe ||
+            matchingEphemeral?.prompt ||
+            ""
+          ),
+          provider: safeStr(
+            data?.meta?.provider ||
+            matchingEphemeral?.meta?.provider ||
+            "Atmos"
+          ),
+          request_id: rid,
+          poster_url: safeStr(
+            data?.poster_url ||
+            data?.thumbnail_url ||
+            data?.thumb_url ||
+            data?.meta?.poster_url ||
+            data?.meta?.thumbnail_url ||
+            data?.meta?.thumb_url ||
+            ""
+          )
+        },
+        raw: data
+      });
+
+      return;
+    }
+
+    if (["failed", "error", "canceled", "cancelled"].includes(rawStatus)) {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      render();
+    }
+  } catch (_) {}
+}
    
     render();
 
