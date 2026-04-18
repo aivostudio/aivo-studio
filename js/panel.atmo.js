@@ -709,10 +709,15 @@ function render() {
         probePlayableUrl(playbackUrl);
       }
 
+      const isEagerReady =
+        isFreshCard &&
+        badge.kind === "ok" &&
+        !!playbackUrl;
+
       const isPlayableNow =
         !!playbackUrl &&
-        playableUrls.has(playbackUrl) &&
-        badge.kind !== "bad";
+        badge.kind !== "bad" &&
+        (isEagerReady || playableUrls.has(playbackUrl));
 
       return window.AIVO_SHARED_VIDEO_CARD?.createCardHtml
         ? (
@@ -732,17 +737,18 @@ function render() {
                   ? "ready"
                   : (badge.kind === "bad" ? "error" : "loading"),
                 videoUrl,
-              posterUrl: safeStr(
-               job?.poster_url ||
-               job?.thumbnail_url ||
-               job?.thumb_url ||
-              job?.meta?.poster_url ||
-              job?.meta?.thumbnail_url ||
-              job?.meta?.thumb_url ||
-               ""
-             ),
+                posterUrl: safeStr(
+                  job?.poster_url ||
+                  job?.thumbnail_url ||
+                  job?.thumb_url ||
+                  job?.meta?.poster_url ||
+                  job?.meta?.thumbnail_url ||
+                  job?.meta?.thumb_url ||
+                  ""
+                ),
                 ratio: portrait ? "9:16" : "16:9",
                 ready: isPlayableNow,
+                eagerReady: isEagerReady,
                 canDownload: !!finalUrl,
                 canShare: isPlayableNow,
                 canDelete: true
