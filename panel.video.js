@@ -6,6 +6,7 @@
 // Fix 3: shared video card ile tek kart akışı
 // Fix 4: play handler doğru yere taşındı
 
+
 (function () {
   if (!window.RightPanel) return;
 
