@@ -601,3 +601,45 @@
 #loginModal .login-switchcopy{
   font-size: 12px;
 }
+#loginModal[data-mode="login"] #loginFields{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+#loginModal[data-mode="login"] #loginFields .aivo-float-field{
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+#loginModal[data-mode="login"] #loginFields .aivo-float-label{
+  position: static !important;
+  display: block !important;
+  order: -1 !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  color: rgba(244,247,255,.94) !important;
+  pointer-events: none !important;
+}
+
+#loginModal[data-mode="login"] #loginFields .aivo-float-field input{
+  height: 50px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#loginModal[data-mode="login"] #loginFields .aivo-float-field:not(.aivo-float-field--icon) input{
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+#loginModal[data-mode="login"] #loginFields .aivo-float-field--icon input{
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+}
