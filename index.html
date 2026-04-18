@@ -2548,95 +2548,141 @@
             <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
           </div>
 
-          <div class="email-row email-row-2 aivo-float-row">
-            <label class="aivo-float-field">
-              <input
-                id="loginEmail"
-                name="aivo_login_email"
-                type="text"
-                placeholder=" "
-                autocomplete="off"
-                autocapitalize="off"
-                autocorrect="off"
-                spellcheck="false"
-                inputmode="email"
-                data-lpignore="true"
-                data-1p-ignore="true"
-              />
-              <span class="aivo-float-label">E-posta</span>
-            </label>
+    <div class="email-row email-row-2 aivo-float-row" id="loginFields">
+  <label class="aivo-float-field">
+    <input
+      id="loginEmail"
+      name="aivo_login_email"
+      type="text"
+      placeholder=" "
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="email"
+      data-lpignore="true"
+      data-1p-ignore="true"
+    />
+    <span class="aivo-float-label">E-posta</span>
+  </label>
 
-            <label class="aivo-float-field aivo-float-field--icon">
-              <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+  <label class="aivo-float-field aivo-float-field--icon">
+    <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
 
-              <input
-                id="loginPass"
-                name="aivo_login_pass"
-                type="password"
-                placeholder=" "
-                autocomplete="off"
-                autocapitalize="off"
-                autocorrect="off"
-                spellcheck="false"
-                data-lpignore="true"
-                data-1p-ignore="true"
-              />
+    <input
+      id="loginPass"
+      name="aivo_login_pass"
+      type="password"
+      placeholder=" "
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      data-lpignore="true"
+      data-1p-ignore="true"
+    />
 
-              <span class="aivo-float-label">Şifre</span>
+    <span class="aivo-float-label">Şifre</span>
 
-              <button
-                type="button"
-                class="aivo-pass-toggle"
-                data-toggle-pass="loginPass"
-                aria-label="Şifreyi göster"
-              >
-                👁
-              </button>
-            </label>
-          </div>
+    <button
+      type="button"
+      class="aivo-pass-toggle"
+      data-toggle-pass="loginPass"
+      aria-label="Şifreyi göster"
+    >
+      👁
+    </button>
+  </label>
+</div>
 
-          <div class="email-row email-row-2 auth-register-stack" id="registerExtra" style="display:none; margin-top:12px;">
-            <label class="aivo-float-field">
-              <input
-                id="registerName"
-                type="text"
-                placeholder=" "
-                autocomplete="name"
-              />
-              <span class="aivo-float-label">Ad Soyad</span>
-            </label>
+<div id="registerExtra" style="display:none; margin-top:12px;">
+  <div class="auth-register-grid">
+    <div class="auth-form-field">
+      <div class="auth-form-label">Ad</div>
+      <label class="aivo-float-field aivo-float-field--icon">
+        <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">👤</span>
+        <input
+          id="registerName"
+          type="text"
+          placeholder="Adınız"
+          autocomplete="given-name"
+        />
+      </label>
+    </div>
 
-            <div class="auth-pass-field">
-              <div class="auth-pass-label">Şifre tekrar</div>
+    <div class="auth-form-field">
+      <div class="auth-form-label">Soyad</div>
+      <label class="aivo-float-field">
+        <input
+          id="registerSurname"
+          type="text"
+          placeholder="Soyadınız"
+          autocomplete="family-name"
+        />
+      </label>
+    </div>
+  </div>
 
-              <label class="aivo-float-field aivo-float-field--icon">
-                <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+  <div class="auth-form-field" style="margin-top:12px;">
+    <div class="auth-form-label">Email Adresi</div>
+    <label class="aivo-float-field aivo-float-field--icon">
+      <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">✉️</span>
+      <input
+        id="registerEmailView"
+        type="text"
+        placeholder="ornek@email.com"
+        autocomplete="email"
+      />
+    </label>
+  </div>
 
-                <input
-                  id="registerPass2"
-                  type="password"
-                  placeholder=" "
-                  autocomplete="new-password"
-                />
+  <div class="auth-form-field" style="margin-top:12px;">
+    <div class="auth-form-label">Şifre</div>
+    <label class="aivo-float-field aivo-float-field--icon">
+      <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+      <input
+        id="registerPassView"
+        type="password"
+        placeholder="Şifreniz"
+        autocomplete="new-password"
+      />
+      <button
+        type="button"
+        class="aivo-pass-toggle"
+        data-toggle-pass="registerPassView"
+        aria-label="Şifreyi göster"
+      >
+        👁
+      </button>
+    </label>
+  </div>
 
-                <span class="aivo-float-label">Şifre tekrar</span>
+  <div class="auth-form-field" style="margin-top:12px;">
+    <div class="auth-form-label">Şifre Tekrar</div>
+    <label class="aivo-float-field aivo-float-field--icon">
+      <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+      <input
+        id="registerPass2"
+        type="password"
+        placeholder="Şifrenizi tekrar girin"
+        autocomplete="new-password"
+      />
+      <button
+        type="button"
+        class="aivo-pass-toggle"
+        data-toggle-pass="registerPass2"
+        aria-label="Şifre tekrar alanını göster"
+      >
+        👁
+      </button>
+    </label>
+  </div>
+</div>
 
-                <button
-                  type="button"
-                  class="aivo-pass-toggle"
-                  data-toggle-pass="registerPass2"
-                  aria-label="Şifre tekrar alanını göster"
-                >
-                  👁
-                </button>
-              </label>
-            </div>
-          </div>
-
-          <label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
-            <input id="kvkkCheck" type="checkbox" />
-            <span>Kullanım Şartları ve Gizlilik Politikası'nı kabul ediyorum</span>
-          </label>
+<label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
+  <input id="kvkkCheck" type="checkbox" />
+  <span>Kullanım Şartları ve Gizlilik Politikası'nı kabul ediyorum</span>
+</label>
 
           <div class="login-inline-meta" id="loginMeta">
             <label class="remember-row" id="rememberRow">
