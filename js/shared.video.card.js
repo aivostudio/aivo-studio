@@ -386,7 +386,7 @@
     document.head.appendChild(style);
   }
 
-   function badgeClass(kind) {
+  function badgeClass(kind) {
     const k = norm(kind);
     if (k === "ready" || k === "ok" || k === "hazır") return "is-ready";
     if (k === "error" || k === "bad" || k === "hata") return "is-error";
@@ -420,210 +420,221 @@
       }
     }, true);
   }
-function ensurePlayBinding() {
-  if (window.__AIVO_SHARED_VIDEO_PLAY_BOUND__) return;
-  window.__AIVO_SHARED_VIDEO_PLAY_BOUND__ = true;
-document.addEventListener("click", async (e) => {
-  const btn = e.target?.closest?.('[data-svc-act="play"]');
-  if (!btn) return;
 
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation();
+  function ensurePlayBinding() {
+    if (window.__AIVO_SHARED_VIDEO_PLAY_BOUND__) return;
+    window.__AIVO_SHARED_VIDEO_PLAY_BOUND__ = true;
 
-  const card = btn.closest(".svcCard");
-  const video = card?.querySelector(".svcVideo");
-  const poster = card?.querySelector(".svcPoster");
-  if (!video) return;
+    document.addEventListener("click", async (e) => {
+      const btn = e.target?.closest?.('[data-svc-act="play"]');
+      if (!btn) return;
 
-  const lazyUrl = String(video.dataset.videoUrl || "").trim();
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
 
-  if (!video.src && lazyUrl) {
-    video.preload = "metadata";
-    video.src = lazyUrl;
-    try { video.load(); } catch (_) {}
-  }
+      const card = btn.closest(".svcCard");
+      const video = card?.querySelector(".svcVideo");
+      const poster = card?.querySelector(".svcPoster");
+      if (!video) return;
 
-  if (!video.__aivoPosterBound) {
-    video.__aivoPosterBound = true;
+      const lazyUrl = String(video.dataset.videoUrl || "").trim();
 
-    const hidePoster = () => {
-      if (poster) poster.style.display = "none";
-    };
+      if (!video.src && lazyUrl) {
+        video.preload = "metadata";
+        video.style.display = "block";
+        video.src = lazyUrl;
 
-    video.addEventListener("loadeddata", hidePoster, { once: true });
-    video.addEventListener("playing", hidePoster, { once: true });
-  }
+        if (!video.__aivoPosterBound) {
+          video.__aivoPosterBound = true;
 
-  if (!video.__aivoPlaySyncBound) {
-    video.__aivoPlaySyncBound = true;
+          const hidePoster = () => {
+            if (poster) poster.style.display = "none";
+          };
 
-    const sync = () => {
-      btn.textContent = video.paused ? "▶" : "❚❚";
-      btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
-      btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
-    };
+          video.addEventListener("loadeddata", hidePoster, { once: true });
+          video.addEventListener("playing", hidePoster, { once: true });
+        }
 
-    video.addEventListener("play", sync);
-    video.addEventListener("pause", sync);
-    video.addEventListener("ended", sync);
+        try { video.load(); } catch (_) {}
+      } else {
+        video.style.display = "block";
+        if (poster) poster.style.display = "none";
+      }
 
-    sync();
-  }
+      if (!video.__aivoPlaySyncBound) {
+        video.__aivoPlaySyncBound = true;
 
-  try {
-    if (video.paused) {
-      await video.play();
-    } else {
-      video.pause();
-    }
-  } catch (_) {}
-}, true);
-  document.addEventListener("play", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
+        const sync = () => {
+          btn.textContent = video.paused ? "▶" : "❚❚";
+          btn.setAttribute("title", video.paused ? "Oynat" : "Duraklat");
+          btn.setAttribute("aria-label", video.paused ? "Oynat" : "Duraklat");
+        };
 
-    const card = video.closest(".svcCard");
-    const btn = card?.querySelector('[data-svc-act="play"]');
-    if (!btn) return;
+        video.addEventListener("play", sync);
+        video.addEventListener("pause", sync);
+        video.addEventListener("ended", sync);
 
-    btn.textContent = "❚❚";
-    btn.setAttribute("title", "Duraklat");
-    btn.setAttribute("aria-label", "Duraklat");
-  }, true);
+        sync();
+      }
 
-  document.addEventListener("pause", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
+      try {
+        if (video.paused) {
+          await video.play();
+        } else {
+          video.pause();
+        }
+      } catch (_) {}
+    }, true);
 
-    const card = video.closest(".svcCard");
-    const btn = card?.querySelector('[data-svc-act="play"]');
-    if (!btn) return;
+    document.addEventListener("play", (e) => {
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
 
-    btn.textContent = "▶";
-    btn.setAttribute("title", "Oynat");
-    btn.setAttribute("aria-label", "Oynat");
-  }, true);
+      const card = video.closest(".svcCard");
+      const btn = card?.querySelector('[data-svc-act="play"]');
+      if (!btn) return;
 
-  document.addEventListener("ended", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
+      btn.textContent = "❚❚";
+      btn.setAttribute("title", "Duraklat");
+      btn.setAttribute("aria-label", "Duraklat");
+    }, true);
 
-    const card = video.closest(".svcCard");
-    const btn = card?.querySelector('[data-svc-act="play"]');
-    if (!btn) return;
+    document.addEventListener("pause", (e) => {
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
 
-    btn.textContent = "▶";
-    btn.setAttribute("title", "Oynat");
-    btn.setAttribute("aria-label", "Oynat");
-  }, true);
+      const card = video.closest(".svcCard");
+      const btn = card?.querySelector('[data-svc-act="play"]');
+      if (!btn) return;
+
+      btn.textContent = "▶";
+      btn.setAttribute("title", "Oynat");
+      btn.setAttribute("aria-label", "Oynat");
+    }, true);
+
+    document.addEventListener("ended", (e) => {
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
+
+      const card = video.closest(".svcCard");
+      const btn = card?.querySelector('[data-svc-act="play"]');
+      if (!btn) return;
+
+      btn.textContent = "▶";
+      btn.setAttribute("title", "Oynat");
+      btn.setAttribute("aria-label", "Oynat");
+    }, true);
+
     document.addEventListener("loadedmetadata", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
 
-    const card = video.closest(".svcCard");
-    const bar = card?.querySelector(".svcProgressBar");
-    if (!bar) return;
+      const card = video.closest(".svcCard");
+      const bar = card?.querySelector(".svcProgressBar");
+      if (!bar) return;
 
-    const duration = Number(video.duration);
-    if (!Number.isFinite(duration) || duration <= 0) {
-      bar.style.width = "0%";
-      return;
-    }
-
-    const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
-    bar.style.width = pct + "%";
-  }, true);
-
-  document.addEventListener("timeupdate", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
-
-    const card = video.closest(".svcCard");
-    const bar = card?.querySelector(".svcProgressBar");
-    if (!bar) return;
-
-    const duration = Number(video.duration);
-    if (!Number.isFinite(duration) || duration <= 0) {
-      bar.style.width = "0%";
-      return;
-    }
-
-    const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
-    bar.style.width = pct + "%";
-  }, true);
-
-  document.addEventListener("seeking", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
-
-    const card = video.closest(".svcCard");
-    const bar = card?.querySelector(".svcProgressBar");
-    if (!bar) return;
-
-    const duration = Number(video.duration);
-    if (!Number.isFinite(duration) || duration <= 0) {
-      bar.style.width = "0%";
-      return;
-    }
-
-    const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
-    bar.style.width = pct + "%";
-  }, true);
-
-  document.addEventListener("ended", (e) => {
-    const video = e.target;
-    if (!(video instanceof HTMLVideoElement)) return;
-    if (!video.classList.contains("svcVideo")) return;
-
-    const card = video.closest(".svcCard");
-    const bar = card?.querySelector(".svcProgressBar");
-    if (!bar) return;
-
-    bar.style.width = "100%";
-  }, true);
-}
-  function ensureFullscreenBinding() {
-  if (window.__AIVO_SHARED_VIDEO_FULLSCREEN_BOUND__) return;
-  window.__AIVO_SHARED_VIDEO_FULLSCREEN_BOUND__ = true;
-
-  document.addEventListener("click", async (e) => {
-    const btn = e.target?.closest?.('[data-svc-act="fullscreen"]');
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    const card = btn.closest(".svcCard");
-    const video = card?.querySelector(".svcVideo");
-    const media = card?.querySelector(".svcMedia");
-    const target = video || media;
-    if (!target) return;
-
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
+      const duration = Number(video.duration);
+      if (!Number.isFinite(duration) || duration <= 0) {
+        bar.style.width = "0%";
         return;
       }
 
-      if (target.requestFullscreen) {
-        await target.requestFullscreen();
+      const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
+      bar.style.width = pct + "%";
+    }, true);
+
+    document.addEventListener("timeupdate", (e) => {
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
+
+      const card = video.closest(".svcCard");
+      const bar = card?.querySelector(".svcProgressBar");
+      if (!bar) return;
+
+      const duration = Number(video.duration);
+      if (!Number.isFinite(duration) || duration <= 0) {
+        bar.style.width = "0%";
+        return;
       }
-    } catch (_) {}
-  }, true);
-}
+
+      const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
+      bar.style.width = pct + "%";
+    }, true);
+
+    document.addEventListener("seeking", (e) => {
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
+
+      const card = video.closest(".svcCard");
+      const bar = card?.querySelector(".svcProgressBar");
+      if (!bar) return;
+
+      const duration = Number(video.duration);
+      if (!Number.isFinite(duration) || duration <= 0) {
+        bar.style.width = "0%";
+        return;
+      }
+
+      const pct = Math.max(0, Math.min(100, (video.currentTime / duration) * 100));
+      bar.style.width = pct + "%";
+    }, true);
+
+    document.addEventListener("ended", (e) => {
+      const video = e.target;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (!video.classList.contains("svcVideo")) return;
+
+      const card = video.closest(".svcCard");
+      const bar = card?.querySelector(".svcProgressBar");
+      if (!bar) return;
+
+      bar.style.width = "100%";
+    }, true);
+  }
+
+  function ensureFullscreenBinding() {
+    if (window.__AIVO_SHARED_VIDEO_FULLSCREEN_BOUND__) return;
+    window.__AIVO_SHARED_VIDEO_FULLSCREEN_BOUND__ = true;
+
+    document.addEventListener("click", async (e) => {
+      const btn = e.target?.closest?.('[data-svc-act="fullscreen"]');
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const card = btn.closest(".svcCard");
+      const video = card?.querySelector(".svcVideo");
+      const media = card?.querySelector(".svcMedia");
+      const target = video || media;
+      if (!target) return;
+
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+          return;
+        }
+
+        if (target.requestFullscreen) {
+          await target.requestFullscreen();
+        }
+      } catch (_) {}
+    }, true);
+  }
+
   function createCardHtml(opts) {
- ensureStyles();
-ensureSoundBinding();
-ensurePlayBinding();
-ensureFullscreenBinding();
+    ensureStyles();
+    ensureSoundBinding();
+    ensurePlayBinding();
+    ensureFullscreenBinding();
 
     const id = String(opts?.id || "").trim();
     const title = String(opts?.title || "Video").trim();
@@ -633,26 +644,25 @@ ensureFullscreenBinding();
     const videoUrl = String(opts?.videoUrl || "").trim();
     const posterUrl = String(opts?.posterUrl || "").trim();
     const ratio = String(opts?.ratio || "").trim();
-      const ready = !!opts?.ready;
+    const ready = !!opts?.ready;
     const portrait = false;
 
     const canDownload = !!opts?.canDownload;
     const canShare = !!opts?.canShare;
     const canDelete = opts?.canDelete !== false;
 
-   return `
+    return `
       <div class="svcCard" data-svc-id="${esc(id)}">
         <div class="svcMedia ${portrait ? "is-portrait" : ""}">
-         <div
-  class="svcBadgeDot ${badgeClass(badgeKind)}"
-  title="${esc(badgeText)}"
-  aria-label="${esc(badgeText)}"
-></div>
+          <div
+            class="svcBadgeDot ${badgeClass(badgeKind)}"
+            title="${esc(badgeText)}"
+            aria-label="${esc(badgeText)}"
+          ></div>
 
-         
-${
-  ready && videoUrl
-    ? `
+          ${
+            ready && videoUrl
+              ? `
       ${posterUrl ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}">` : ``}
       <video
         class="svcVideo"
@@ -661,6 +671,7 @@ ${
         webkit-playsinline
         muted
         data-video-url="${esc(videoUrl)}"
+        style="display:none"
         ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
       ></video>
 <div class="svcOverlay">
@@ -700,19 +711,17 @@ ${
           }
         </div>
 
-                      <div class="svcBody">
+        <div class="svcBody">
           <div class="svcTitle" title="${esc(title)}">${esc(title)}</div>
           <div class="svcProgress">
             <div class="svcProgressBar"></div>
           </div>
           <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
         </div>
-          <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
-        </div>
+        <div class="svcSub" title="${esc(sub)}">${esc(sub)}</div>
       </div>
     `;
   }
-
 
   window.AIVO_SHARED_VIDEO_CARD = {
     createCardHtml,
