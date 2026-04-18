@@ -618,18 +618,18 @@ ensureFullscreenBinding();
 ></div>
 
          
-          ${
-            ready && videoUrl
-              ? `
-                <video
-                  class="svcVideo"
-                  preload="metadata"
-                  playsinline
-                  webkit-playsinline
-                  muted
-                  ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
-                  src="${esc(videoUrl)}"
-                ></video>
+     ${
+  ready && videoUrl
+    ? `
+      <video
+        class="svcVideo"
+        preload="none"
+        playsinline
+        webkit-playsinline
+        muted
+        data-video-src="${esc(videoUrl)}"
+        ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
+      ></video>
 <div class="svcOverlay">
   <button class="svcHeroPlay" type="button" data-svc-act="play" data-id="${esc(id)}" title="Oynat">▶</button>
 
@@ -657,7 +657,7 @@ ensureFullscreenBinding();
     </button>
   </div>
 </div>
-              `
+    `
               : `
                 <div class="svcSkel"></div>
                 <div class="svcFallback">
