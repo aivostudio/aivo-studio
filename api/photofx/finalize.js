@@ -497,71 +497,116 @@ module.exports = async function handler(req, res) {
     tmpDir = await fsp.mkdtemp(
       path.join(os.tmpdir(), "aivo-photofx-finalize-")
     );
+const inputPath = path.join(tmpDir, "input.mp4");
+const outputPath = path.join(tmpDir, "finalized.mp4");
+const previewPath = path.join(tmpDir, "preview.mp4");
+const posterPath = path.join(tmpDir, "poster.jpg");
 
-    const inputPath = path.join(tmpDir, "input.mp4");
-    const outputPath = path.join(tmpDir, "finalized.mp4");
-    const previewPath = path.join(tmpDir, "preview.mp4");
+await downloadToFile(input_url, inputPath);
+await runFfmpegFaststart(inputPath, outputPath);
 
-    await downloadToFile(input_url, inputPath);
-    await runFfmpegFaststart(inputPath, outputPath);
+const finalStat = await fsp.stat(outputPath);
+const durationSec = await probeVideoDurationSec(outputPath);
 
-    const finalStat = await fsp.stat(outputPath);
-    const durationSec = await probeVideoDurationSec(outputPath);
+const previewBitrateCfg = calcPreviewVideoBitrateKbps({
+  finalBytes: finalStat?.size || 0,
+  durationSec,
+});
 
-    const previewBitrateCfg = calcPreviewVideoBitrateKbps({
-      finalBytes: finalStat?.size || 0,
-      durationSec,
-    });
+await runFfmpegPreview(outputPath, previewPath, previewBitrateCfg);
 
-    await runFfmpegPreview(outputPath, previewPath, previewBitrateCfg);
+// preview videodan 1 kare poster üret
+await new Promise((resolve, reject) => {
+  const args = [
+    "-y",
+    "-ss",
+    "0.2",
+    "-i",
+    previewPath,
+    "-frames:v",
+    "1",
+    "-vf",
+    "scale='min(640,iw)':-2",
+    "-q:v",
+    "3",
+    posterPath,
+  ];
 
-    const outputId = `finalized-${Date.now()}`;
-    const key = `outputs/photofx/${job_id}/${outputId}.mp4`;
-    const previewKey = `outputs/photofx/${job_id}/${outputId}-preview.mp4`;
+  const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 
-    const final_url = await uploadFileToR2({
-      filePath: outputPath,
-      key,
-      contentType: "video/mp4",
-    });
+  let stderr = "";
+  p.stderr.on("data", (d) => {
+    stderr += String(d || "");
+  });
 
-    await verifyPublicUrl(final_url, "final");
+  p.on("error", reject);
 
-    const preview_url = await uploadFileToR2({
-      filePath: previewPath,
-      key: previewKey,
-      contentType: "video/mp4",
-    });
+  p.on("close", (code) => {
+    if (code === 0) return resolve();
+    reject(new Error(`ffmpeg_poster_failed:${code}:${stderr.slice(-1000)}`));
+  });
+});
 
-    await verifyPublicUrl(preview_url, "preview");
+const outputId = `finalized-${Date.now()}`;
+const key = `outputs/photofx/${job_id}/${outputId}.mp4`;
+const previewKey = `outputs/photofx/${job_id}/${outputId}-preview.mp4`;
+const posterKey = `outputs/photofx/${job_id}/${outputId}-poster.jpg`;
 
-    const nextOutputs = upsertFinalizedAndPreviewOutputs(
-      outputs,
-      final_url,
-      preview_url
-    );
+const final_url = await uploadFileToR2({
+  filePath: outputPath,
+  key,
+  contentType: "video/mp4",
+});
 
-    const patchMeta = {
-      final_video_url: final_url,
-      preview_video_url: preview_url,
-      final_variant: "finalized",
-      finalized_at: new Date().toISOString(),
-      finalized_from_url: input_url,
-      finalized_from_variant: selected_final_source_variant,
-      finalized_key: key,
-      preview_key: previewKey,
-      preview_target_ratio: "1/4",
-      preview_min_mb: 3,
-      preview_max_mb: 5,
-      preview_target_kbps: previewBitrateCfg.targetKbps,
-      preview_maxrate_kbps: previewBitrateCfg.maxrateKbps,
-      preview_bufsize_kbps: previewBitrateCfg.bufsizeKbps,
-      preview_source_final_bytes: finalStat?.size || 0,
-      preview_source_duration_sec: durationSec || 0,
-      preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
-      preview_source_url: input_url,
-      selected_final_source_variant,
-    };
+await verifyPublicUrl(final_url, "final");
+
+const preview_url = await uploadFileToR2({
+  filePath: previewPath,
+  key: previewKey,
+  contentType: "video/mp4",
+});
+
+await verifyPublicUrl(preview_url, "preview");
+
+const poster_url = await uploadFileToR2({
+  filePath: posterPath,
+  key: posterKey,
+  contentType: "image/jpeg",
+});
+
+await verifyPublicUrl(poster_url, "poster");
+
+const nextOutputs = upsertFinalizedAndPreviewOutputs(
+  outputs,
+  final_url,
+  preview_url
+);
+
+const patchMeta = {
+  final_video_url: final_url,
+  preview_video_url: preview_url,
+  poster_url: poster_url,
+  thumbnail_url: poster_url,
+  thumb_url: poster_url,
+  final_variant: "finalized",
+  finalized_at: new Date().toISOString(),
+  finalized_from_url: input_url,
+  finalized_from_variant: selected_final_source_variant,
+  finalized_key: key,
+  preview_key: previewKey,
+  poster_key: posterKey,
+  preview_target_ratio: "1/4",
+  preview_min_mb: 3,
+  preview_max_mb: 5,
+  preview_target_kbps: previewBitrateCfg.targetKbps,
+  preview_maxrate_kbps: previewBitrateCfg.maxrateKbps,
+  preview_bufsize_kbps: previewBitrateCfg.bufsizeKbps,
+  preview_source_final_bytes: finalStat?.size || 0,
+  preview_source_duration_sec: durationSec || 0,
+  preview_target_bytes: previewBitrateCfg.targetPreviewBytes || 0,
+  preview_source_url: input_url,
+  selected_final_source_variant,
+};
 
     await sql`
       update jobs
