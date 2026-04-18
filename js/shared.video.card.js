@@ -445,31 +445,15 @@
         video.style.display = "block";
         video.src = lazyUrl;
 
-           if (!video.__aivoPosterBound) {
+        if (!video.__aivoPosterBound) {
           video.__aivoPosterBound = true;
 
-          const hidePosterWhenFrameIsVisible = () => {
-            if (!poster) return;
-            if (video.currentTime > 0.08 || video.readyState >= 3) {
-              poster.style.display = "none";
-              cleanupPosterBindings();
-            }
+          const hidePoster = () => {
+            if (poster) poster.style.display = "none";
           };
 
-          const onEndedRestorePoster = () => {
-            if (poster) poster.style.display = "block";
-          };
-
-          const cleanupPosterBindings = () => {
-            video.removeEventListener("timeupdate", hidePosterWhenFrameIsVisible);
-            video.removeEventListener("playing", hidePosterWhenFrameIsVisible);
-            video.removeEventListener("canplay", hidePosterWhenFrameIsVisible);
-          };
-
-          video.addEventListener("timeupdate", hidePosterWhenFrameIsVisible);
-          video.addEventListener("playing", hidePosterWhenFrameIsVisible);
-          video.addEventListener("canplay", hidePosterWhenFrameIsVisible);
-          video.addEventListener("ended", onEndedRestorePoster);
+          video.addEventListener("loadeddata", hidePoster, { once: true });
+          video.addEventListener("playing", hidePoster, { once: true });
         }
 
         try { video.load(); } catch (_) {}
@@ -661,7 +645,6 @@
     const posterUrl = String(opts?.posterUrl || "").trim();
     const ratio = String(opts?.ratio || "").trim();
     const ready = !!opts?.ready;
-    const eagerReady = !!opts?.eagerReady;
     const portrait = false;
 
     const canDownload = !!opts?.canDownload;
@@ -683,13 +666,11 @@
       ${posterUrl ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}">` : ``}
       <video
         class="svcVideo"
-        preload="${eagerReady ? "metadata" : "none"}"
+        preload="none"
         playsinline
         webkit-playsinline
         muted
         data-video-url="${esc(videoUrl)}"
-        data-svc-eager-ready="${eagerReady ? "1" : "0"}"
-        ${eagerReady ? `src="${esc(videoUrl)}"` : ""}
         style="display:none"
         ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
       ></video>
