@@ -206,9 +206,14 @@
     showEl(registerPass2El, isReg);
     showEl(kvkkRowEl, isReg);
 
-    showEl(googleBlockEl, !isReg);
+    showEl(googleBlockEl, true);
     showEl(loginMetaEl, !isReg);
     showEl(registerMetaEl, isReg);
+
+    const googleBtnEl = pick("btnGoogleLogin");
+    if (googleBtnEl) {
+      googleBtnEl.textContent = isReg ? "Google ile Kayıt Ol" : "Google ile Giriş Yap";
+    }
 
     showEl(footerLoginTextEl, !isReg);
     showEl(goRegisterEl, !isReg, "inline");
