@@ -732,7 +732,15 @@ function render() {
                   ? "ready"
                   : (badge.kind === "bad" ? "error" : "loading"),
                 videoUrl,
-                posterUrl: "",
+              posterUrl: safeStr(
+               job?.poster_url ||
+               job?.thumbnail_url ||
+               job?.thumb_url ||
+              job?.meta?.poster_url ||
+              job?.meta?.thumbnail_url ||
+              job?.meta?.thumb_url ||
+               ""
+             ),
                 ratio: portrait ? "9:16" : "16:9",
                 ready: isPlayableNow,
                 canDownload: !!finalUrl,
