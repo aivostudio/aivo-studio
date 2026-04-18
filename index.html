@@ -2548,20 +2548,18 @@
             <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
           </div>
 
-    <div class="email-row email-row-2 aivo-float-row" id="loginFields">
+<div class="email-row email-row-2 aivo-float-row" id="loginFields">
   <label class="aivo-float-field">
     <input
       id="loginEmail"
-      name="aivo_login_email"
-      type="text"
+      name="email"
+      type="email"
       placeholder=" "
-      autocomplete="off"
+      autocomplete="username"
       autocapitalize="off"
       autocorrect="off"
       spellcheck="false"
       inputmode="email"
-      data-lpignore="true"
-      data-1p-ignore="true"
     />
     <span class="aivo-float-label">E-posta</span>
   </label>
@@ -2571,15 +2569,13 @@
 
     <input
       id="loginPass"
-      name="aivo_login_pass"
+      name="password"
       type="password"
       placeholder=" "
-      autocomplete="off"
+      autocomplete="current-password"
       autocapitalize="off"
       autocorrect="off"
       spellcheck="false"
-      data-lpignore="true"
-      data-1p-ignore="true"
     />
 
     <span class="aivo-float-label">Şifre</span>
