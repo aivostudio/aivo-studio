@@ -340,6 +340,7 @@ const syncSearchFromInput = () => {
   searchTimer = setTimeout(() => {
     state.query = nextQuery;
     render();
+    console.log('[ATMO_EPHEMERAL_READY_STATE]', { ephemerals: state.ephemerals, ephemeralsLen: Array.isArray(state.ephemerals) ? state.ephemerals.length : -1 });
   }, 120);
 };
 
