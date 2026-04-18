@@ -40,13 +40,97 @@ var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 /* =========================
    AUTH STATE
    ========================= */
-function isLoggedIn() {
-  return localStorage.getItem(LOGIN_KEY) === "1";
-}
-function setLoggedIn(v) {
-  localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+function getStoredEmail() {
+  try {
+    const directEmail = String(localStorage.getItem(EMAIL_KEY) || "").trim().toLowerCase();
+    if (directEmail) return directEmail;
+
+    const unified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+    const unifiedEmail = String((unified && unified.email) || "").trim().toLowerCase();
+    if (unifiedEmail) return unifiedEmail;
+
+    const user = JSON.parse(localStorage.getItem("aivo_user") || "null");
+    const userEmail = String((user && user.email) || "").trim().toLowerCase();
+    if (userEmail) return userEmail;
+
+    const tokenEmail = String(localStorage.getItem("user_email") || localStorage.getItem("email") || "").trim().toLowerCase();
+    if (tokenEmail) return tokenEmail;
+  } catch (_) {}
+
+  return "";
 }
 
+function isLoggedIn() {
+  try {
+    const hasFlag = localStorage.getItem(LOGIN_KEY) === "1";
+    const hasEmail = !!getStoredEmail();
+    const hasToken = !!String(localStorage.getItem("aivo_token") || "").trim();
+    const hasAuth  = !!String(localStorage.getItem("aivo_auth") || "").trim();
+    const hasUser  = !!String(localStorage.getItem("aivo_user") || "").trim();
+
+    return !!(hasFlag || hasEmail || hasToken || hasAuth || hasUser);
+  } catch (_) {
+    return false;
+  }
+}
+
+function setLoggedIn(v) {
+  try {
+    localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+  } catch (_) {}
+}
+
+async function hydrateAuthFromSession() {
+  try {
+    const r = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    if (!r.ok) return;
+
+    const me = await r.json();
+    const email = String((me && me.email) || "").trim().toLowerCase();
+    if (!email) return;
+
+    localStorage.setItem(LOGIN_KEY, "1");
+    localStorage.setItem(EMAIL_KEY, email);
+
+    try {
+      const firstName =
+        String(me.first_name || me.firstName || me.name || "").trim();
+      const surname =
+        String(me.last_name || me.lastName || me.surname || "").trim();
+      const fullName =
+        String(
+          me.full_name ||
+          me.fullName ||
+          [firstName, surname].filter(Boolean).join(" ")
+        ).trim();
+
+      localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+        loggedIn: true,
+        email: email,
+        name: firstName || fullName || email.split("@")[0],
+        first_name: firstName || "",
+        surname: surname || "",
+        last_name: surname || "",
+        full_name: fullName || firstName || email.split("@")[0],
+        ts: Date.now()
+      }));
+    } catch (_) {}
+
+    try {
+      if (typeof window.__AIVO_SYNC_AUTH_UI__ === "function") {
+        window.__AIVO_SYNC_AUTH_UI__();
+      }
+    } catch (_) {}
+  } catch (_) {}
+}
+
+if (!isLoggedIn()) {
+  hydrateAuthFromSession();
+}
 /* =========================
    MODAL FINDER (SINGLE SOURCE)
    ========================= */
@@ -290,11 +374,39 @@ const SESSION_KEYS_TO_CLEAR = [
   "aivo_auth_target"
 ];
 
-window.AIVO_LOGOUT = function () {
-  AUTH_KEYS_TO_CLEAR.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
-  SESSION_KEYS_TO_CLEAR.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
-  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch (_) {}
-  location.href = "/";
+window.AIVO_LOGOUT = async function () {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+  } catch (_) {}
+
+  AUTH_KEYS_TO_CLEAR.forEach((k) => {
+    try { localStorage.removeItem(k); } catch (_) {}
+  });
+
+  [
+    "aivo_auth_unified_v1",
+    "aivo_profile_name",
+    "aivo_profile_surname"
+  ].forEach((k) => {
+    try { localStorage.removeItem(k); } catch (_) {}
+  });
+
+  SESSION_KEYS_TO_CLEAR.forEach((k) => {
+    try { sessionStorage.removeItem(k); } catch (_) {}
+  });
+
+  try {
+    if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI();
+  } catch (_) {}
+
+  location.href = "/?logout=1";
 };
 
 function OPEN_AUTH(mode){
