@@ -526,6 +526,94 @@ async function adminAuth() {
     const usersStatus = $("usersStatus");
     const usersTable = $("usersTable");
 
+        // ===== PRODUCTION STATS =====
+    const btnProductionStats = $("btnProductionStats");
+    const prodStatsStatus = $("prodStatsStatus");
+    const prodStatsTbody = $("prodStatsTbody");
+    const prodStatsOut = $("prodStatsOut");
+
+    function renderProductionStats(rows) {
+      if (!prodStatsTbody) return;
+
+      const list = Array.isArray(rows) ? rows : [];
+      prodStatsTbody.innerHTML = "";
+
+      if (!list.length) {
+        prodStatsTbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="muted" style="padding:10px 6px;">
+              Veri bulunamadı.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      for (const item of list) {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td style="padding:10px 6px; font-weight:700;">${String(item.label || item.key || "-")}</td>
+          <td style="padding:10px 6px;">${Number(item.daily || 0)}</td>
+          <td style="padding:10px 6px;">${Number(item.total || 0)}</td>
+        `;
+
+        prodStatsTbody.appendChild(tr);
+      }
+    }
+
+    async function loadProductionStats() {
+      const s = await adminAuth();
+      if (!s.ok) return;
+
+      if (prodStatsStatus) prodStatsStatus.textContent = "Yükleniyor...";
+
+      try {
+        const r = await fetch("/api/admin/production-stats", {
+          cache: "no-store",
+          credentials: "include"
+        });
+
+        const j = await r.json().catch(() => null);
+
+        if (!r.ok || !j || !j.ok) {
+          throw new Error((j && (j.error || j.message)) || "production_stats_failed");
+        }
+
+        renderProductionStats(j.stats || []);
+
+        if (prodStatsOut) {
+          prodStatsOut.style.display = "none";
+          prodStatsOut.textContent = JSON.stringify(j, null, 2);
+        }
+
+        if (prodStatsStatus) {
+          prodStatsStatus.textContent = `Gün: ${String(j.day || "-")}`;
+        }
+      } catch (err) {
+        if (prodStatsTbody) {
+          prodStatsTbody.innerHTML = `
+            <tr>
+              <td colspan="3" class="muted" style="padding:10px 6px;">
+                Veri alınamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        if (prodStatsOut) {
+          prodStatsOut.style.display = "block";
+          prodStatsOut.textContent = String(err && err.message ? err.message : err);
+        }
+
+        if (prodStatsStatus) prodStatsStatus.textContent = "Hata oluştu.";
+      }
+    }
+
+    if (btnProductionStats) {
+      btnProductionStats.addEventListener("click", loadProductionStats);
+    }
+
     async function loadUsers() {
       const s = await adminAuth();
       if (!s.ok) return;
