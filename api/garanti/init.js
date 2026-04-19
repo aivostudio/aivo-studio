@@ -217,9 +217,10 @@ export default async function handler(req, res) {
     oid,
     provider: "garanti",
     gateway: {
-      mode: "3d_form",
+      mode: "3d_pay",
       action: garanti3dUrl,
       method: "POST",
+      card_fields: ["cardnumber", "cardexpiredatemonth", "cardexpiredateyear", "cardcvv2"],
       fields: {
         mode: garantiMode,
         apiversion: garantiApiVersion,
@@ -237,9 +238,6 @@ export default async function handler(req, res) {
         errorurl: failUrl,
         customeremailaddress: email,
         customeripaddress: customerIpAddress,
-        companyname: "AIVO",
-        lang: "TR",
-        txntimestamp,
         secure3dhash,
       },
     },
