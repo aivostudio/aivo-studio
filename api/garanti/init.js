@@ -1,6 +1,6 @@
 // /api/garanti/init.js
 // Garanti ödeme başlangıcı
-// Amaç: checkout'tan gelen POST'u al, order_init KV kaydı yaz, frontend'e form alanları dön
+// Amaç: checkout'tan gelen POST'u al, order_init KV kaydı yaz, frontend'e Garanti yönlendirme alanları dön
 
 function json(res, status, data) {
   res.statusCode = status;
@@ -41,6 +41,16 @@ function normEmail(v) {
 function safeNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
+}
+
+function getSiteBase() {
+  const raw =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    process.env.APP_URL ||
+    "";
+
+  return String(raw).replace(/\/$/, "");
 }
 
 export default async function handler(req, res) {
@@ -87,6 +97,15 @@ export default async function handler(req, res) {
       : (creditsMap[String(amount)] || 0);
 
   const now = new Date().toISOString();
+  const siteBase = getSiteBase();
+
+  const okUrl = siteBase
+    ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
+    : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
+
+  const failUrl = siteBase
+    ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
+    : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
 
   await kvSetJson(`aivo:garanti:order_init:${oid}`, {
     oid,
@@ -98,6 +117,8 @@ export default async function handler(req, res) {
     currency: "TRY",
     provider: "garanti",
     status: "init",
+    ok_url: okUrl,
+    fail_url: failUrl,
     created_at: now,
   }, { exSec: 60 * 60 * 24 });
 
@@ -115,6 +136,8 @@ export default async function handler(req, res) {
         email,
         user_id,
         plan,
+        success_url: okUrl,
+        fail_url: failUrl,
       },
     },
   });
