@@ -603,6 +603,14 @@ module.exports = async function handler(req, res) {
     returning id
   `;
 
+  const { getRedis } = require("../../../_kv");
+  const redis = getRedis();
+
+  await Promise.all([
+    redis.incr("stats:cartoon:total"),
+    redis.incr(`stats:cartoon:daily:${new Date().toISOString().slice(0, 10)}`)
+  ]);
+
   return res.status(200).json({
     ok: true,
     provider: "fal",
