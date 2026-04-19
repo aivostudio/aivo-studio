@@ -56,61 +56,6 @@
       </div>
     </section>
 
-    <section class="card" id="cardSoldCredits">
-      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <span>💰 Satılan Krediler</span>
-        <span class="muted" id="soldCreditsStatus">Hazır.</span>
-      </h3>
-
-      <div class="row" style="gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-        <button id="btnSoldCredits" class="btn">Yenile</button>
-        <input id="soldCreditsDate" type="date" />
-        <span class="muted">Seçilen gün için satılan toplam kredi ve sipariş adedi</span>
-      </div>
-
-      <div style="overflow:auto;">
-        <table id="soldCreditsTable" style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="text-align:left; opacity:.85;">
-              <th style="padding:8px 6px;">Alan</th>
-              <th style="padding:8px 6px;">Değer</th>
-            </tr>
-          </thead>
-          <tbody id="soldCreditsTbody">
-            <tr>
-              <td style="padding:10px 6px; font-weight:700;">Toplam Satılan Kredi</td>
-              <td id="soldCreditsTotalValue" style="padding:10px 6px;">0</td>
-            </tr>
-            <tr>
-              <td style="padding:10px 6px; font-weight:700;">Toplam Sipariş</td>
-              <td id="soldCreditsOrdersValue" style="padding:10px 6px;">0</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <pre id="soldCreditsOut" class="out" style="margin-top:12px; display:none;"></pre>
-    </section>
-
-    <section class="card" id="cardBans">
-      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <span>Banlı Mailler</span>
-        <span class="muted" id="bansStatus">Hazır.</span>
-      </h3>
-
-      <div class="row" style="gap:10px; flex-wrap:wrap;">
-        <button id="btnBansRefresh" class="btn">Listele</button>
-        <input id="bansEmail" placeholder="email@domain.com" style="min-width:220px;" />
-        <button id="btnUnban" class="btn btn-primary">Ban Kaldır</button>
-      </div>
-
-      <pre id="bansOut" class="out"></pre>
-
-      <p class="muted" style="margin:10px 0 0; opacity:.75;">
-        Not: Hard delete işlemi <code>ban:email</code> yazar. Bu bölüm ban listesini <code>ban_index</code> üzerinden gösterir.
-      </p>
-    </section>
-
     <section class="card" id="cardAudit">
       <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
         <span>🧾 Audit Log</span>
@@ -161,6 +106,61 @@
       <p class="muted" style="margin:10px 0 0; opacity:.75;">
         İpucu: Aşağıdaki listede Email’e tıklayınca yukarıdaki “Kredi Sorgula” otomatik dolar ve kredi getirir.
       </p>
+    </section>
+
+    <section class="card" id="cardBans">
+      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span>Banlı Mailler</span>
+        <span class="muted" id="bansStatus">Hazır.</span>
+      </h3>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button id="btnBansRefresh" class="btn">Listele</button>
+        <input id="bansEmail" placeholder="email@domain.com" style="min-width:220px;" />
+        <button id="btnUnban" class="btn btn-primary">Ban Kaldır</button>
+      </div>
+
+      <pre id="bansOut" class="out"></pre>
+
+      <p class="muted" style="margin:10px 0 0; opacity:.75;">
+        Not: Hard delete işlemi <code>ban:email</code> yazar. Bu bölüm ban listesini <code>ban_index</code> üzerinden gösterir.
+      </p>
+    </section>
+
+    <section class="card" id="cardSoldCredits">
+      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span>💰 Satılan Krediler</span>
+        <span class="muted" id="soldCreditsStatus">Hazır.</span>
+      </h3>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+        <button id="btnSoldCredits" class="btn">Yenile</button>
+        <input id="soldCreditsDate" type="date" />
+        <span class="muted">Seçilen gün için satılan toplam kredi ve sipariş adedi</span>
+      </div>
+
+      <div style="overflow:auto;">
+        <table id="soldCreditsTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="text-align:left; opacity:.85;">
+              <th style="padding:8px 6px;">Alan</th>
+              <th style="padding:8px 6px;">Değer</th>
+            </tr>
+          </thead>
+          <tbody id="soldCreditsTbody">
+            <tr>
+              <td style="padding:10px 6px; font-weight:700;">Toplam Satılan Kredi</td>
+              <td id="soldCreditsTotalValue" style="padding:10px 6px;">0</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 6px; font-weight:700;">Toplam Sipariş</td>
+              <td id="soldCreditsOrdersValue" style="padding:10px 6px;">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre id="soldCreditsOut" class="out" style="margin-top:12px; display:none;"></pre>
     </section>
 
     <section class="card" id="cardProductionStats">
@@ -271,28 +271,14 @@
       if (!payload.email) return null;
 
       try {
-        var r1 = await fetch("/api/admin/credits/get", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          cache: "no-store",
-          body: JSON.stringify(payload)
-        });
-        if (r1 && r1.ok) {
-          var j1 = await r1.json().catch(function(){ return null; });
-          return j1;
-        }
-      } catch(e){}
-
-      try {
-        var r2 = await fetch("/api/admin/credits/get?email=" + encodeURIComponent(payload.email), {
+        var r = await fetch("/api/credits/get?email=" + encodeURIComponent(payload.email), {
           method: "GET",
           credentials: "include",
           cache: "no-store"
         });
-        if (r2 && r2.ok) {
-          var j2 = await r2.json().catch(function(){ return null; });
-          return j2;
+        if (r && r.ok) {
+          var j = await r.json().catch(function(){ return null; });
+          return j;
         }
       } catch(e){}
 
