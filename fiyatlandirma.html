@@ -1027,12 +1027,81 @@
     setReturnAfterPayment();
 
     try {
-      var url = "/checkout.html?plan=" + encodeURIComponent(String(pack)) + "&price=" + encodeURIComponent(String(pack));
-      location.href = url;
+      var meRes = await fetch("/api/auth/me", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store"
+      });
+
+      var meRaw = await meRes.text();
+      var meData = null;
+      try { meData = JSON.parse(meRaw); } catch (_) {}
+
+      var user = (meData && (meData.user || meData)) || {};
+      var userId = String(
+        user.id ||
+        user.user_id ||
+        user.uid ||
+        user.email ||
+        ""
+      ).trim();
+
+      if (!meRes.ok || !userId || !email) {
+        throw new Error("AUTH_ME_FAILED");
+      }
+
+      var initRes = await fetch("/api/garanti/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          user_id: userId,
+          email: email,
+          plan: String(pack),
+          amount: Number(pack)
+        })
+      });
+
+      var initRaw = await initRes.text();
+      var initData = null;
+      try { initData = JSON.parse(initRaw); } catch (_) {}
+
+      if (!initRes.ok || !initData || !initData.gateway || !initData.gateway.fields) {
+        var errMsg =
+          (initData && initData.error)
+            ? initData.error
+            : ("GARANTI_INIT_FAILED HTTP " + initRes.status + " RAW=" + initRaw.slice(0, 160));
+        throw new Error(errMsg);
+      }
+
+      var gateway = initData.gateway;
+      var fields = gateway.fields || {};
+      var oid = initData.oid || fields.oid || "";
+
+      if (oid) {
+        try { localStorage.setItem("aivo_pending_garanti_oid", String(oid)); } catch (e) {}
+      }
+
+      var form = document.createElement("form");
+      form.method = String(gateway.method || "POST").toUpperCase();
+      form.action = String(gateway.action || "/api/garanti/callback");
+      form.style.display = "none";
+
+      Object.keys(fields).forEach(function (key) {
+        var input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = fields[key] == null ? "" : String(fields[key]);
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
       return;
     } catch (err) {
-      console.error("[AIVO] garanti checkout redirect exception:", err);
-      window.toast.error("Ödeme sayfasına yönlendirilemedi.");
+      console.error("[AIVO] garanti init/direct submit exception:", err);
+      window.toast.error("Ödeme başlatılamadı.");
     }
   }
   // ✅ C-1) Click handler async
