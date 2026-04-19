@@ -120,9 +120,9 @@ export default async function handler(req, res) {
     ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
     : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
 
-  const failUrl = siteBase
-    ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
-    : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
+   const failUrl = siteBase
+    ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`
+    : `/api/garanti/fail?oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`;
 
   const garanti3dUrl = String(
     process.env.GARANTI_3D_URL ||
