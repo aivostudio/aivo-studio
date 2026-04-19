@@ -131,13 +131,15 @@ export default async function handler(req, res) {
   ).trim();
 
   const garantiMode = String(process.env.GARANTI_MODE || "PROD").trim().toUpperCase();
-const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "3D_PAY").trim();
+  const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "3D_PAY").trim();
   const garantiApiVersion = String(process.env.GARANTI_API_VERSION || "v0.01").trim();
 
   const garantiMerchantId = String(process.env.GARANTI_MERCHANT_ID || "").trim();
   const garantiTerminalId = String(process.env.GARANTI_TERMINAL_ID || "").trim();
   const garantiTerminalUserId = String(process.env.GARANTI_TERMINAL_USER_ID || "").trim();
-  const garantiProvisionUserId = String(process.env.GARANTI_PROVISION_USER_ID || "").trim();
+  const garantiProvisionUserId = String(
+    process.env.GARANTI_PROVISION_USER_ID || "PROVAUT"
+  ).trim();
   const garantiStoreKey = String(process.env.GARANTI_STORE_KEY || "").trim();
   const garanti3dSecureKey = String(process.env.GARANTI_3D_SECURE_KEY || "").trim();
   const garantiProvisionPassword = String(
