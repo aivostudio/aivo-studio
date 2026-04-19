@@ -139,9 +139,9 @@ export default async function handler(req, res) {
   const garantiTerminalUserId = String(process.env.GARANTI_TERMINAL_USER_ID || "").trim();
   const garantiProvisionUserId = String(process.env.GARANTI_PROVISION_USER_ID || "").trim();
   const garantiStoreKey = String(process.env.GARANTI_STORE_KEY || "").trim();
-  const garanti3dSecureKey = String(
-    process.env.GARANTI_3D_SECURE_KEY ||
-      process.env.GARANTI_PROVISION_PASSWORD ||
+  const garanti3dSecureKey = String(process.env.GARANTI_3D_SECURE_KEY || "").trim();
+  const garantiProvisionPassword = String(
+    process.env.GARANTI_PROVISION_PASSWORD ||
       process.env.GARANTI_PASSWORD ||
       ""
   ).trim();
@@ -154,6 +154,7 @@ export default async function handler(req, res) {
     !garantiProvisionUserId && "GARANTI_PROVISION_USER_ID",
     !garantiStoreKey && "GARANTI_STORE_KEY",
     !garanti3dSecureKey && "GARANTI_3D_SECURE_KEY",
+    !garantiProvisionPassword && "GARANTI_PROVISION_PASSWORD",
   ].filter(Boolean);
 
   await kvSetJson(
