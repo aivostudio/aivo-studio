@@ -21,10 +21,11 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    const me = await getMe(req);
+     const me = await getMe(req);
     if (!me) return res.status(401).json({ ok: false, error: "unauthorized" });
 
-    const email = String(me.email).trim().toLowerCase();
+    const requestedEmail = String(req.query?.email || "").trim().toLowerCase();
+    const email = requestedEmail || String(me.email).trim().toLowerCase();
     const creditsKey = `credits:${email}`;
 
     // ✅ Upstash helper bağla
