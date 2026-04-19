@@ -433,6 +433,152 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
     max-width: 100%;
   }
 }
+
+/* =========================
+   USERS CARD
+   ========================= */
+
+#cardUsers{
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 260px at 0% 0%, rgba(120,200,255,.10), transparent 58%),
+    radial-gradient(700px 220px at 100% 0%, rgba(120,140,255,.08), transparent 56%),
+    rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+#cardUsers::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+}
+
+#cardUsers h3{
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: .2px;
+}
+
+#usersStatus{
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#btnUsersRefresh{
+  min-width: 110px;
+  font-weight: 800;
+  background: linear-gradient(135deg, rgba(120,200,255,.16), rgba(120,140,255,.12));
+  border-color: rgba(120,200,255,.26);
+  box-shadow: 0 10px 24px rgba(0,0,0,.14);
+}
+
+#btnUsersRefresh:hover{
+  background: linear-gradient(135deg, rgba(120,200,255,.22), rgba(120,140,255,.16));
+}
+
+#usersSearch{
+  min-width: 260px;
+}
+
+#usersTable{
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+}
+
+#usersTable thead th{
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(232,238,247,.66);
+  padding: 0 10px 6px !important;
+}
+
+#usersTable tbody tr{
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.025));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 24px rgba(0,0,0,.14);
+}
+
+#usersTable tbody td{
+  padding: 14px 12px !important;
+  border-top: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #e8eef7;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+#usersTable tbody td:first-child{
+  border-left: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px 0 0 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+#usersTable tbody td:last-child{
+  border-right: 1px solid rgba(255,255,255,.08);
+  border-radius: 0 14px 14px 0;
+}
+
+#usersTable tbody td:nth-child(2),
+#usersTable tbody td:nth-child(3),
+#usersTable tbody td:nth-child(4){
+  font-variant-numeric: tabular-nums;
+}
+
+#usersTable tbody td:nth-child(2){
+  color: #dbe7ff;
+  font-weight: 700;
+}
+
+#usersTable tbody td:nth-child(3),
+#usersTable tbody td:nth-child(4){
+  color: #eef3ff;
+}
+
+#usersTable [data-act="pick"]{
+  display: inline-block;
+  color: #ffffff;
+}
+
+#usersTable [data-act="pick"]:hover{
+  text-decoration: underline;
+}
+
+#cardUsers .muted code{
+  color: #dbe7ff;
+}
+
+@media (max-width: 900px){
+  #usersSearch{
+    min-width: 100%;
+  }
+
+  #usersTable thead th,
+  #usersTable tbody td{
+    font-size: 13px;
+  }
+
+  #usersTable tbody td{
+    padding: 12px 10px !important;
+  }
+}
 /* --- USERS STATUS PILLS --- */
 .pill{
   display:inline-flex;
