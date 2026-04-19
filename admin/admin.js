@@ -439,23 +439,6 @@ async function adminAuth() {
       });
     }
 
-    // Satın alımlar
-    const btnPurchases = $("btnPurchases");
-    if (btnPurchases) {
-      btnPurchases.addEventListener("click", async () => {
-        const s = await adminAuth();
-        if (!s.ok) return;
-
-        const out = $("pOut");
-        try {
-          const r = await fetch("/api/admin/purchases", { cache: "no-store", credentials: "include" });
-          const j = await r.json();
-          jsonPrint(out, j);
-        } catch (_) {
-          jsonPrint(out, { ok: false, error: "fetch_failed" });
-        }
-      });
-    }
 
     // ✅ BAN UI (index.html’de cardBans varsa)
     const btnBansRefresh = $("btnBansRefresh");
