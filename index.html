@@ -2785,7 +2785,95 @@
 </div>
 
 
+<script>
+(function AIVO_SUPPRESS_HOME_AUTOFILL_UNTIL_MODAL_OPEN(){
+  const modal = document.getElementById('loginModal');
+  if (!modal) return;
 
+  const fieldIds = [
+    'loginEmail',
+    'loginPass',
+    'registerName',
+    'registerSurname',
+    'registerEmailView',
+    'registerPassView',
+    'registerPass2'
+  ];
+
+  const original = new Map();
+
+  function getFields(){
+    return fieldIds
+      .map(id => document.getElementById(id))
+      .filter(Boolean);
+  }
+
+  function lockFields(){
+    getFields().forEach((el) => {
+      if (!original.has(el.id)) {
+        original.set(el.id, {
+          name: el.getAttribute('name'),
+          autocomplete: el.getAttribute('autocomplete'),
+          disabled: el.disabled
+        });
+      }
+
+      el.setAttribute('data-aivo-lock', '1');
+      el.setAttribute('autocomplete', 'off');
+      el.setAttribute('data-lpignore', 'true');
+      el.setAttribute('data-1p-ignore', 'true');
+      el.disabled = true;
+
+      if (el.hasAttribute('name')) {
+        el.setAttribute('data-orig-name', el.getAttribute('name'));
+        el.removeAttribute('name');
+      }
+    });
+  }
+
+  function unlockFields(){
+    getFields().forEach((el) => {
+      const meta = original.get(el.id) || {};
+      el.disabled = !!meta.disabled ? true : false;
+
+      if (meta.name) el.setAttribute('name', meta.name);
+      else if (el.hasAttribute('data-orig-name')) el.setAttribute('name', el.getAttribute('data-orig-name'));
+
+      if (meta.autocomplete) el.setAttribute('autocomplete', meta.autocomplete);
+      else el.removeAttribute('autocomplete');
+
+      el.removeAttribute('data-aivo-lock');
+    });
+  }
+
+  function isModalOpen(){
+    return modal.classList.contains('is-open') || modal.getAttribute('aria-hidden') === 'false';
+  }
+
+  function sync(){
+    if (isModalOpen()) unlockFields();
+    else lockFields();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', sync, { once:true });
+  } else {
+    sync();
+  }
+
+  const mo = new MutationObserver(sync);
+  mo.observe(modal, {
+    attributes: true,
+    attributeFilter: ['class', 'aria-hidden', 'style']
+  });
+
+  document.addEventListener('click', function(e){
+    const opener = e.target.closest('#btnLoginTop, #btnRegisterTop, #goRegister, #goLogin, [data-open-login], [data-open-auth]');
+    if (!opener) return;
+    setTimeout(sync, 0);
+  }, true);
+})();
+</script>
 
 
 
