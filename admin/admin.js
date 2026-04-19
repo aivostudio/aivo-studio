@@ -505,6 +505,7 @@ async function adminAuth() {
 
           const j = await unbanEmail(s.email, email);
           renderBansOut(j);
+          await auditUnban(s, email, j);
           setBansStatus("Hazır.");
 
           // listeyi yenile
