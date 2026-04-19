@@ -67,8 +67,7 @@ export default async function handler(req, res) {
 
   const user_id = String(body.user_id || "").trim();
   const email = normEmail(body.email);
-  const plan = String(body.plan || "").trim();
-  const amount = safeNum(body.amount);
+  const plan = String(body.plan || "").trim().toLowerCase();
 
   if (!user_id || !email) {
     return json(res, 400, {
@@ -78,30 +77,27 @@ export default async function handler(req, res) {
     });
   }
 
-  if (!plan || amount <= 0) {
-    return json(res, 400, { ok: false, error: "PLAN_OR_AMOUNT_INVALID" });
-  }
-
-  const oid = `GARANTI_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-
-  const creditsMap = {
-    "199": 25,
-    "699": 100,
-    "1299": 200,
-    "2999": 500,
+  const PLAN_CATALOG = {
+    baslangic: { plan: "baslangic", amount: 199, credits: 25 },
+    standart: { plan: "standart", amount: 699, credits: 100 },
+    pro: { plan: "pro", amount: 1299, credits: 200 },
+    studyo: { plan: "studyo", amount: 2999, credits: 500 },
   };
 
-  const credits =
-    Number(body.credits) > 0
-      ? Number(body.credits)
-      : (creditsMap[String(amount)] || 0);
+  const selectedPlan = PLAN_CATALOG[plan];
 
-  const now = new Date().toISOString();
-  const siteBase = getSiteBase();
+  if (!selectedPlan) {
+    return json(res, 400, {
+      ok: false,
+      error: "PLAN_INVALID",
+      allowed: Object.keys(PLAN_CATALOG),
+    });
+  }
 
-  const okUrl = siteBase
-    ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
-    : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
+  const amount = selectedPlan.amount;
+  const credits = selectedPlan.credits;
+
+  const oid = `GARANTI_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
   const failUrl = siteBase
     ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
