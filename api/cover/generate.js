@@ -166,6 +166,14 @@ export default async function handler(req, res) {
 
     const job_id = String(inserted[0].id);
 
+        const { getRedis } = await import("../_kv.js");
+    const redis = getRedis();
+
+    await Promise.all([
+      redis.incr("stats:cover:total"),
+      redis.incr(`stats:cover:daily:${new Date().toISOString().slice(0, 10)}`)
+    ]);
+
     return res.status(200).json({
       ok: true,
       job_id,
