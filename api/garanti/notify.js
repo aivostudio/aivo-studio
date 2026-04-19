@@ -1,6 +1,8 @@
 // /api/garanti/notify.js
 // Garanti bildirim/callback endpoint'i
-// Geçici güvenlik: gerçek banka imzası bağlanana kadar sadece secret doğrulanan istek paid yazabilir
+// Gerçek banka hash doğrulaması ile ödeme sonucunu işler
+
+import crypto from "crypto";
 
 async function kvGet(key) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
@@ -79,16 +81,6 @@ function pickOid(post) {
   ).trim();
 }
 
-function pickRawStatus(post) {
-  return String(
-    post.status ||
-    post.mdStatus ||
-    post.procreturncode ||
-    post.Response ||
-    ""
-  ).trim().toLowerCase();
-}
-
 function pickAmount(post, initData) {
   const raw =
     post.txnamount ||
@@ -98,7 +90,10 @@ function pickAmount(post, initData) {
     initData?.amount ||
     null;
 
-  const n = Number(raw);
+  if (raw == null || raw === "") return null;
+
+  const normalized = String(raw).replace(",", ".").trim();
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -113,18 +108,37 @@ function redirectToCheckout(res, state, oid) {
   return;
 }
 
-function isApprovedStatus(raw) {
-  return raw === "approved" || raw === "success" || raw === "paid" || raw === "1" || raw === "00";
+function garantiHashVerify(post) {
+  const incomingHash = String(post.hash || "").trim();
+  const responseHashparams = String(post.hashparams || "").trim();
+  const storeKey = String(process.env.GARANTI_STORE_KEY || "").trim();
+
+  if (!incomingHash || !responseHashparams || !storeKey) {
+    return false;
+  }
+
+  const paramList = responseHashparams.split(":").filter(Boolean);
+  let digestData = "";
+
+  for (const param of paramList) {
+    const key = String(param || "").trim().toLowerCase();
+    const value = post[key] == null ? "" : String(post[key]);
+    digestData += value;
+  }
+
+  digestData += storeKey;
+
+  const calculatedHash = crypto
+    .createHash("sha1")
+    .update(digestData, "utf8")
+    .digest("base64");
+
+  return calculatedHash === incomingHash;
 }
 
-function hasValidTempSecret(req, post) {
-  const secret = String(process.env.GARANTI_NOTIFY_SECRET || "").trim();
-  if (!secret) return false;
-
-  const headerSecret = String(req.headers["x-garanti-notify-secret"] || "").trim();
-  const bodySecret = String(post.notify_secret || "").trim();
-
-  return headerSecret === secret || bodySecret === secret;
+function isApprovedByBank(post) {
+  const procReturnCode = String(post.procreturncode || "").trim();
+  return procReturnCode === "00";
 }
 
 export default async function handler(req, res) {
@@ -147,12 +161,9 @@ export default async function handler(req, res) {
     const initData = await kvGet(initKey);
 
     const now = new Date().toISOString();
-    const rawStatus = pickRawStatus(post);
-    const approved = isApprovedStatus(rawStatus);
-    const trusted = hasValidTempSecret(req, post);
-
-    const devFlowEnabled = String(process.env.GARANTI_DEV_FLOW || "") === "true";
-    const status = devFlowEnabled && approved && trusted ? "paid" : "failed";
+    const hashValid = garantiHashVerify(post);
+    const approved = isApprovedByBank(post);
+    const status = hashValid && approved ? "paid" : "failed";
     const amount = pickAmount(post, initData);
 
     const record = {
@@ -171,7 +182,10 @@ export default async function handler(req, res) {
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
       notify_payload: post,
-      notify_trusted: trusted,
+      notify_hash_valid: hashValid,
+      notify_proc_return_code: String(post.procreturncode || ""),
+      notify_authcode: String(post.authcode || ""),
+      notify_errmsg: String(post.errmsg || ""),
     };
 
     await kvSet(orderKey, record);
