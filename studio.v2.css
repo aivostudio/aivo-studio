@@ -198,20 +198,34 @@ body{
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1200px){
-  #twoPanelWrap{
-    grid-template-columns: 1fr; /* küçük ekranda alt alta */
-    height: auto;
+  #studioRoot.studioShell{
+    min-width: 1480px !important;
   }
 
   #mainWorkspace{
-    overflow: auto;
-    height: auto;
+    min-width: 1160px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    height: calc(100vh - var(--topbar-h) - var(--gap)) !important;
   }
 
-  #moduleHost,
+  #twoPanelWrap{
+    height: calc(100% - 40px) !important;
+    min-width: 1160px !important;
+    grid-template-columns: minmax(680px, 1.14fr) minmax(420px, 0.86fr) !important;
+    gap: var(--gap) !important;
+  }
+
+  #moduleHost{
+    min-width: 680px !important;
+    height: 100% !important;
+    max-height: none !important;
+  }
+
   .outputsCard{
-    height: auto;
-    max-height: none;
+    min-width: 420px !important;
+    height: 100% !important;
+    max-height: none !important;
   }
 }
 :root{
