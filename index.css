@@ -3647,12 +3647,16 @@ body{
   opacity: .6;
 }
 
-/* Dropdown panel */
+/* =========================================================
+   TOPBAR USER MENU — PREMIUM FIX
+   ========================================================= */
+
 .user-menu{
   position: absolute;
-  top: calc(100% + 14px);
+  top: calc(100% + 16px);
   right: 0;
-  width: 320px;
+  width: 372px;
+  max-width: min(372px, calc(100vw - 24px));
   display: none;
   z-index: 99999;
 }
@@ -3661,170 +3665,187 @@ body{
   display: block;
 }
 
-/* Kart */
 .user-menu-card{
-  padding: 16px;
-  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 24px;
   background:
-    radial-gradient(900px 300px at 10% 0%, rgba(123,108,255,.25), transparent 60%),
-    radial-gradient(800px 260px at 90% 20%, rgba(95,212,255,.18), transparent 60%),
-    rgba(10,12,22,.92);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    radial-gradient(820px 300px at 10% 0%, rgba(123,108,255,.22), transparent 58%),
+    radial-gradient(760px 260px at 100% 10%, rgba(95,212,255,.14), transparent 56%),
+    linear-gradient(180deg, rgba(64,74,122,.92), rgba(13,18,34,.94));
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.52),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
 }
 
-/* Üst kullanıcı bilgisi */
+.user-menu-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.05),
+    rgba(255,255,255,0)
+  );
+}
+
 .um-head{
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 62px minmax(0,1fr);
+  gap: 14px;
   align-items: center;
+  margin-bottom: 14px;
 }
 
 .um-ava{
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg,#7b6cff,#5fd4ff);
-  font-size: 20px;
-  font-weight: 800;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(230,220,255,.96), rgba(149,116,255,.72));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow:
+    0 12px 28px rgba(109,86,255,.30),
+    inset 0 1px 0 rgba(255,255,255,.28);
+  font-size: 30px;
+  font-weight: 900;
+  color: #fff;
+  flex: 0 0 auto;
+}
+
+.um-meta{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .um-title{
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.um-sub{
-  font-size: 13px;
-  opacity: .65;
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 900;
+  color: rgba(255,255,255,.98);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Plan */
-.um-plan{
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 700;
+.um-sub{
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(220,226,255,.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Ayraç */
+.um-plan{
+  min-height: 68px;
+  margin-top: 2px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.10);
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.um-plan-ico{
+  font-size: 20px;
+  line-height: 1;
+  opacity: .95;
+}
+
+.um-plan-txt{
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(255,255,255,.98);
+  text-align: center;
+  transform: translateX(-10px);
+}
+
 .um-sep{
   height: 1px;
-  margin: 14px 0;
+  margin: 16px 0;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255,255,255,.18),
+    rgba(255,255,255,.14),
     transparent
   );
 }
 
-/* Menü item */
 .um-item{
-  display: flex;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.25);
-  color: #fff;
+  gap: 14px;
+  padding: 0 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  color: rgba(255,255,255,.96);
   text-decoration: none;
   cursor: pointer;
   margin-bottom: 10px;
-  transition: all .15s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+  transition:
+    transform .14s ease,
+    border-color .14s ease,
+    background .14s ease,
+    box-shadow .14s ease;
 }
 
 .um-item:hover{
-  background: rgba(255,255,255,.08);
-  border-color: rgba(255,255,255,.22);
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+  border-color: rgba(255,255,255,.18);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.05);
   transform: translateY(-1px);
+}
+
+.um-item:last-child{
+  margin-bottom: 0;
 }
 
 .um-i{
   width: 22px;
   display: flex;
   justify-content: center;
-  opacity: .9;
-}
-
-/* Logout */
-.um-logout{
-  border-color: rgba(255,90,90,.35);
-}
-
-.um-logout:hover{
-  border-color: rgba(255,90,90,.6);
-  background: rgba(255,90,90,.08);
-}
-/* =========================================================
-   ADMIN PANEL — SIZE TUNING (KÜÇÜLTME)
-   ========================================================= */
-
-/* Panel genel genişlik */
-.user-menu{
-  width: 300px; /* 320 → 300 */
-}
-
-/* Kart iç boşluk */
-.user-menu-card{
-  padding: 14px; /* 16 → 14 */
-  border-radius: 20px; /* 22 → 20 */
-}
-
-/* Üst avatar */
-.um-ava{
-  width: 46px;   /* 52 → 46 */
-  height: 46px;
+  align-items: center;
+  opacity: .92;
   font-size: 18px;
 }
 
-/* İsim */
-.um-title{
-  font-size: 18px; /* 20 → 18 */
+.um-item span:last-child{
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
 }
 
-/* Email */
-.um-sub{
-  font-size: 12px;
-}
-
-/* Plan badge */
-.um-plan{
-  padding: 8px 10px;
-  font-size: 14px;
-}
-
-/* Menü itemleri */
-.um-item{
-  padding: 10px 12px; /* 12/14 → 10/12 */
-  border-radius: 14px;
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-/* Logout butonu */
 .um-logout{
   margin-top: 6px;
-  padding: 10px 12px;
+  border-color: rgba(255,90,90,.22);
+  background: linear-gradient(180deg, rgba(60,14,22,.20), rgba(35,10,16,.14));
 }
 
-/* Ayraç */
-.um-sep{
-  margin: 12px 0;
+.um-logout:hover{
+  border-color: rgba(255,90,90,.42);
+  background: linear-gradient(180deg, rgba(80,18,28,.26), rgba(45,12,18,.18));
 }
 /* =========================================================
    TOPBAR — FULL WIDTH (Sadece üst bar)
