@@ -613,7 +613,163 @@ async function adminAuth() {
     if (btnProductionStats) {
       btnProductionStats.addEventListener("click", loadProductionStats);
     }
+       // ===== DAILY CREDIT STATS =====
+    const btnDailyCreditStats = $("btnDailyCreditStats");
+    const btnDailyCreditStatsPdf = $("btnDailyCreditStatsPdf");
+    const dailyCreditStatsDate = $("dailyCreditStatsDate");
+    const dailyCreditStatsStatus = $("dailyCreditStatsStatus");
+    const dailyCreditStatsTbody = $("dailyCreditStatsTbody");
+    const dailyCreditStatsOut = $("dailyCreditStatsOut");
+    const dailyCreditTotalSpent = $("dailyCreditTotalSpent");
+    const dailyCreditTotalRefund = $("dailyCreditTotalRefund");
+    const dailyCreditTotalNet = $("dailyCreditTotalNet");
+    const dailyCreditTotalCount = $("dailyCreditTotalCount");
 
+    function todayDateInputValue() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function escapeHtml(v) {
+      return String(v == null ? "" : v)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function setDailyCreditTotals(totals) {
+      const t = totals || {};
+      if (dailyCreditTotalSpent) dailyCreditTotalSpent.textContent = String(Number(t.spent_credits || 0));
+      if (dailyCreditTotalRefund) dailyCreditTotalRefund.textContent = String(Number(t.refund_credits || 0));
+      if (dailyCreditTotalNet) dailyCreditTotalNet.textContent = String(Number(t.net_credits || 0));
+      if (dailyCreditTotalCount) dailyCreditTotalCount.textContent = String(Number(t.transaction_count || 0));
+    }
+
+    function renderDailyCreditStats(rows, totals) {
+      if (!dailyCreditStatsTbody) return;
+
+      const list = Array.isArray(rows) ? rows : [];
+      dailyCreditStatsTbody.innerHTML = "";
+
+      if (!list.length) {
+        dailyCreditStatsTbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="muted" style="padding:10px 6px;">
+              Veri bulunamadı.
+            </td>
+          </tr>
+        `;
+        setDailyCreditTotals({
+          spent_credits: 0,
+          refund_credits: 0,
+          net_credits: 0,
+          transaction_count: 0
+        });
+        return;
+      }
+
+      for (const item of list) {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td style="padding:10px 6px; font-weight:700;">${escapeHtml(item.label || item.key || "-")}</td>
+          <td style="padding:10px 6px;">${Number(item.spent_credits || 0)}</td>
+          <td style="padding:10px 6px;">${Number(item.refund_credits || 0)}</td>
+          <td style="padding:10px 6px;">${Number(item.net_credits || 0)}</td>
+          <td style="padding:10px 6px;">${Number(item.transaction_count || 0)}</td>
+        `;
+
+        dailyCreditStatsTbody.appendChild(tr);
+      }
+
+      setDailyCreditTotals(totals || {});
+    }
+
+    async function loadDailyCreditStats() {
+      const s = await adminAuth();
+      if (!s.ok) return;
+
+      const selectedDate =
+        String(dailyCreditStatsDate && dailyCreditStatsDate.value
+          ? dailyCreditStatsDate.value
+          : todayDateInputValue()).trim();
+
+      if (dailyCreditStatsStatus) dailyCreditStatsStatus.textContent = "Yükleniyor...";
+
+      try {
+        const r = await fetch(
+          "/api/admin/daily-credit-stats?date=" + encodeURIComponent(selectedDate),
+          {
+            cache: "no-store",
+            credentials: "include"
+          }
+        );
+
+        const j = await r.json().catch(() => null);
+
+        if (!r.ok || !j || !j.ok) {
+          throw new Error((j && (j.error || j.message)) || "daily_credit_stats_failed");
+        }
+
+        renderDailyCreditStats(j.modules || [], j.totals || {});
+
+        if (dailyCreditStatsOut) {
+          dailyCreditStatsOut.style.display = "none";
+          dailyCreditStatsOut.textContent = JSON.stringify(j, null, 2);
+        }
+
+        if (dailyCreditStatsStatus) {
+          dailyCreditStatsStatus.textContent = `Gün: ${String(j.date || selectedDate || "-")}`;
+        }
+      } catch (err) {
+        if (dailyCreditStatsTbody) {
+          dailyCreditStatsTbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="muted" style="padding:10px 6px;">
+                Veri alınamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        setDailyCreditTotals({
+          spent_credits: 0,
+          refund_credits: 0,
+          net_credits: 0,
+          transaction_count: 0
+        });
+
+        if (dailyCreditStatsOut) {
+          dailyCreditStatsOut.style.display = "block";
+          dailyCreditStatsOut.textContent = String(err && err.message ? err.message : err);
+        }
+
+        if (dailyCreditStatsStatus) dailyCreditStatsStatus.textContent = "Hata oluştu.";
+      }
+    }
+
+    if (dailyCreditStatsDate && !dailyCreditStatsDate.value) {
+      dailyCreditStatsDate.value = todayDateInputValue();
+    }
+
+    if (btnDailyCreditStats) {
+      btnDailyCreditStats.addEventListener("click", loadDailyCreditStats);
+    }
+
+    if (dailyCreditStatsDate) {
+      dailyCreditStatsDate.addEventListener("change", loadDailyCreditStats);
+    }
+
+    if (btnDailyCreditStatsPdf) {
+      btnDailyCreditStatsPdf.addEventListener("click", () => {
+        try { window.print(); } catch (_) {}
+      });
+    }
     async function loadUsers() {
       const s = await adminAuth();
       if (!s.ok) return;
@@ -724,6 +880,7 @@ async function adminAuth() {
     // ilk yükleme
     await loadUsers();
    await loadProductionStats();
+    await loadDailyCreditStats();
     // presence poll: üst sayacı + tabloda online pill
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
