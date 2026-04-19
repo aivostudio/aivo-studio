@@ -15,6 +15,94 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
 .out{ margin-top:10px; background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; overflow:auto; min-height:44px; }
 .who{ opacity:.8; margin-right:10px; }
 /* =========================
+   ADMIN LAYOUT TUNING
+   ========================= */
+
+.wrap{
+  max-width: 1180px;
+  padding: 24px 20px 42px;
+  gap: 18px;
+}
+
+.card{
+  padding: 18px;
+}
+
+.grid{
+  gap: 18px;
+}
+
+#cardAudit,
+#cardUsers,
+#cardBans,
+#cardSoldCredits,
+#cardProductionStats,
+#cardDailyCreditStats{
+  scroll-margin-top: 90px;
+}
+
+#cardAudit,
+#cardUsers,
+#cardBans,
+#cardSoldCredits,
+#cardProductionStats,
+#cardDailyCreditStats{
+  margin-top: 2px;
+}
+
+#cardAudit h3,
+#cardUsers h3,
+#cardBans h3,
+#cardSoldCredits h3,
+#cardProductionStats h3,
+#cardDailyCreditStats h3{
+  margin-bottom: 12px;
+}
+
+#cardAudit .row,
+#cardUsers .row,
+#cardBans .row,
+#cardSoldCredits .row,
+#cardProductionStats .row,
+#cardDailyCreditStats .row{
+  margin-top: 0;
+}
+
+#cardUsers{
+  margin-top: 6px;
+}
+
+#cardBans{
+  margin-top: 2px;
+}
+
+#cardSoldCredits{
+  margin-top: 2px;
+}
+
+#cardProductionStats{
+  margin-top: 2px;
+}
+
+#cardDailyCreditStats{
+  margin-top: 2px;
+}
+
+@media (max-width: 900px){
+  .wrap{
+    padding: 18px 14px 34px;
+    gap: 14px;
+  }
+
+  .card{
+    padding: 16px;
+  }
+
+  .grid{
+    gap: 14px;
+  }
+}
+/* =========================
    PRODUCTION STATS CARD
    ========================= */
 
