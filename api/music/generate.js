@@ -393,11 +393,16 @@ module.exports = async (req, res) => {
         db_job_id = rows?.[0]?.id ? String(rows[0].id) : null;
         db_insert_ok = !!db_job_id;
 
-        if (db_job_id) {
+              if (db_job_id) {
           jobObj.db_job_id = db_job_id;
           jobObj.updated_at = nowISO();
           await redis.set(jobMetaKey, JSON.stringify(jobObj));
           await redis.set(jobKey, JSON.stringify(jobObj));
+
+          await Promise.all([
+            redis.incr("stats:music:total"),
+            redis.incr(`stats:music:daily:${new Date().toISOString().slice(0, 10)}`)
+          ]);
         }
       } catch (e) {
         db_insert_ok = false;
