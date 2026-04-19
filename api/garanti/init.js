@@ -121,6 +121,12 @@ const failUrl = siteBase
   const garantiTerminalUserId = String(process.env.GARANTI_TERMINAL_USER_ID || "").trim();
   const garantiProvisionUserId = String(process.env.GARANTI_PROVISION_USER_ID || "").trim();
   const garantiStoreKey = String(process.env.GARANTI_STORE_KEY || "").trim();
+  const garanti3dSecureKey = String(
+    process.env.GARANTI_3D_SECURE_KEY ||
+    process.env.GARANTI_PROVISION_PASSWORD ||
+    process.env.GARANTI_PASSWORD ||
+    ""
+  ).trim();
 
   const missingConfig = [
     !garanti3dUrl && "GARANTI_3D_URL",
@@ -129,6 +135,7 @@ const failUrl = siteBase
     !garantiTerminalUserId && "GARANTI_TERMINAL_USER_ID",
     !garantiProvisionUserId && "GARANTI_PROVISION_USER_ID",
     !garantiStoreKey && "GARANTI_STORE_KEY",
+    !garanti3dSecureKey && "GARANTI_3D_SECURE_KEY",
   ].filter(Boolean);
 
   await kvSetJson(`aivo:garanti:order_init:${oid}`, {
@@ -158,6 +165,19 @@ const failUrl = siteBase
   }
 
   const amountMinor = Math.round(amount * 100);
+  const securityData = `${garanti3dSecureKey}${String(garantiTerminalId).padStart(9, "0")}`;
+  const hashData = [
+    garantiTerminalId,
+    oid,
+    String(amountMinor),
+    "949",
+    okUrl,
+    failUrl,
+    "sales",
+    "tr",
+    garantiStoreKey,
+    securityData,
+  ].join("|");
 
   return json(res, 200, {
     ok: true,
@@ -173,9 +193,11 @@ const failUrl = siteBase
         terminaluserid: garantiTerminalUserId,
         provisionuserid: garantiProvisionUserId,
         storekey: garantiStoreKey,
+        secure3dsecuritylevel: "3D_PAY",
+        txntype: "sales",
+        txnamount: String(amountMinor),
+        txncurrencycode: "949",
         orderid: oid,
-        amount: String(amountMinor),
-        currencycode: "949",
         successurl: okUrl,
         errorurl: failUrl,
         customeremailaddress: email,
@@ -189,8 +211,8 @@ const failUrl = siteBase
             .split(",")[0]
             .trim() || "127.0.0.1",
         companyname: "AIVO",
-        txnType: "sales",
         lang: "tr",
+        hash: hashData,
       },
     },
   });
