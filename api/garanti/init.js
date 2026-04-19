@@ -116,13 +116,13 @@ export default async function handler(req, res) {
   const now = new Date().toISOString();
   const siteBase = getSiteBase();
 
-  const okUrl = siteBase
-    ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
-    : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
+   const okUrl = siteBase
+    ? `${siteBase}/api/garanti/callback`
+    : `/api/garanti/callback`;
 
-   const failUrl = siteBase
-    ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`
-    : `/api/garanti/fail?oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`;
+  const failUrl = siteBase
+    ? `${siteBase}/api/garanti/callback`
+    : `/api/garanti/callback`;
 
   const garanti3dUrl = String(
     process.env.GARANTI_3D_URL ||
