@@ -1018,6 +1018,25 @@
   async function startCheckout(pack){
     if (!pack) { scrollToPacks(); return; }
 
+    var planMap = {
+      "199": "baslangic",
+      "699": "standart",
+      "1299": "pro",
+      "2999": "studyo",
+      "baslangic": "baslangic",
+      "standart": "standart",
+      "pro": "pro",
+      "studyo": "studyo"
+    };
+
+    var rawPack = String(pack || "").trim().toLowerCase();
+    var plan = planMap[rawPack] || "";
+
+    if (!plan) {
+      window.toast.error("Geçersiz paket seçimi.");
+      return;
+    }
+
     var email = await getUserEmail();
     if (!email) {
       window.toast.error("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
@@ -1054,12 +1073,12 @@
       var initRes = await fetch("/api/garanti/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         cache: "no-store",
         body: JSON.stringify({
           user_id: userId,
           email: email,
-          plan: String(pack),
-          amount: Number(pack)
+          plan: plan
         })
       });
 
@@ -1067,7 +1086,7 @@
       var initData = null;
       try { initData = JSON.parse(initRaw); } catch (_) {}
 
-      if (!initRes.ok || !initData || !initData.gateway || !initData.gateway.fields) {
+      if (!initRes.ok || !initData || !initData.gateway || !initData.gateway.fields || !initData.gateway.action) {
         var errMsg =
           (initData && initData.error)
             ? initData.error
@@ -1077,7 +1096,7 @@
 
       var gateway = initData.gateway;
       var fields = gateway.fields || {};
-      var oid = initData.oid || fields.oid || "";
+      var oid = initData.oid || fields.orderid || fields.oid || "";
 
       if (oid) {
         try { localStorage.setItem("aivo_pending_garanti_oid", String(oid)); } catch (e) {}
@@ -1085,7 +1104,7 @@
 
       var form = document.createElement("form");
       form.method = String(gateway.method || "POST").toUpperCase();
-      form.action = String(gateway.action || "/api/garanti/callback");
+      form.action = String(gateway.action || "");
       form.style.display = "none";
 
       Object.keys(fields).forEach(function (key) {
@@ -1130,10 +1149,6 @@
 
     if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
 
-    // Debug kanıtları (senin planındaki 2 log)
-    console.log('is-auth?', document.documentElement.classList.contains('is-auth'));
-    console.log('umEmail', (document.getElementById('umEmail')||{}).textContent);
-
     // ✅ C-1) await isAuthed()
     if (!(await isAuthed())) {
       try { sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs"); } catch(e){}
@@ -1143,9 +1158,8 @@
       return;
     }
 
-    startCheckout(pack);
+    await startCheckout(pack);
   }, true);
-
 })();
 </script>
 
