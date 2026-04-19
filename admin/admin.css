@@ -310,7 +310,129 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
     max-width: 100%;
   }
 }
+/* =========================
+   SOLD CREDITS CARD
+   ========================= */
 
+#cardSoldCredits{
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 260px at 0% 0%, rgba(255,210,120,.12), transparent 58%),
+    radial-gradient(700px 220px at 100% 0%, rgba(120,140,255,.10), transparent 56%),
+    rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+#cardSoldCredits::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+}
+
+#cardSoldCredits h3{
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: .2px;
+}
+
+#soldCreditsStatus{
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#btnSoldCredits{
+  min-width: 110px;
+  font-weight: 800;
+  background: linear-gradient(135deg, rgba(255,210,120,.18), rgba(120,140,255,.10));
+  border-color: rgba(255,210,120,.26);
+  box-shadow: 0 10px 24px rgba(0,0,0,.14);
+}
+
+#btnSoldCredits:hover{
+  background: linear-gradient(135deg, rgba(255,210,120,.24), rgba(120,140,255,.14));
+}
+
+#soldCreditsDate{
+  max-width: 180px;
+}
+
+#soldCreditsTable{
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+}
+
+#soldCreditsTable thead th{
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(232,238,247,.66);
+  padding: 0 10px 6px !important;
+}
+
+#soldCreditsTbody tr{
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.025));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 24px rgba(0,0,0,.14);
+}
+
+#soldCreditsTbody td{
+  padding: 14px 12px !important;
+  border-top: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #e8eef7;
+  font-size: 14px;
+}
+
+#soldCreditsTbody td:first-child{
+  border-left: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px 0 0 14px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+#soldCreditsTbody td:last-child{
+  border-right: 1px solid rgba(255,255,255,.08);
+  border-radius: 0 14px 14px 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #ffd7a8;
+}
+
+#soldCreditsOut{
+  background: rgba(0,0,0,.24);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+@media (max-width: 700px){
+  #soldCreditsTable thead th,
+  #soldCreditsTbody td{
+    font-size: 13px;
+  }
+
+  #soldCreditsTbody td{
+    padding: 12px 10px !important;
+  }
+
+  #soldCreditsDate{
+    max-width: 100%;
+  }
+}
 /* --- USERS STATUS PILLS --- */
 .pill{
   display:inline-flex;
@@ -343,6 +465,8 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
   color:#c9ffd9;
   box-shadow:0 0 10px rgba(29,185,84,.55);
 }
+
+
 /* =========================
    ONLINE USER – STRONG GLOW
    ========================= */
