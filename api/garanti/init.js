@@ -130,12 +130,13 @@ export default async function handler(req, res) {
       mode: "3d_form",
       action: "/api/garanti/notify",
       method: "POST",
-      fields: {
+       fields: {
         oid,
         amount,
         email,
         user_id,
         plan,
+        status: "approved",
         success_url: okUrl,
         fail_url: failUrl,
       },
