@@ -131,7 +131,7 @@ export default async function handler(req, res) {
   ).trim();
 
   const garantiMode = String(process.env.GARANTI_MODE || "PROD").trim().toUpperCase();
-  const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "3D_OOS_PAY").trim();
+const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "3D_PAY").trim();
   const garantiApiVersion = String(process.env.GARANTI_API_VERSION || "v0.01").trim();
 
   const garantiMerchantId = String(process.env.GARANTI_MERCHANT_ID || "").trim();
