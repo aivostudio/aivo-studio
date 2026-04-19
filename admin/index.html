@@ -57,11 +57,41 @@
       </div>
     </section>
 
-    <section class="card">
-      <h3>Satın Alımlar</h3>
-      <button id="btnPurchases" class="btn">Listele</button>
-      <pre id="pOut" class="out"></pre>
-    </section>
+   <section class="card" id="cardSoldCredits">
+  <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+    <span>💰 Satılan Krediler</span>
+    <span class="muted" id="soldCreditsStatus">Hazır.</span>
+  </h3>
+
+  <div class="row" style="gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+    <button id="btnSoldCredits" class="btn">Yenile</button>
+    <input id="soldCreditsDate" type="date" />
+    <span class="muted">Seçilen gün için toplam satılan kredi ve satış adedi</span>
+  </div>
+
+  <div style="overflow:auto;">
+    <table id="soldCreditsTable" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; opacity:.85;">
+          <th style="padding:8px 6px;">Alan</th>
+          <th style="padding:8px 6px;">Değer</th>
+        </tr>
+      </thead>
+      <tbody id="soldCreditsTbody">
+        <tr>
+          <td style="padding:10px 6px; font-weight:700;">Toplam Satılan Kredi</td>
+          <td id="soldCreditsTotalValue" style="padding:10px 6px;">0</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 6px; font-weight:700;">Toplam Sipariş</td>
+          <td id="soldCreditsOrdersValue" style="padding:10px 6px;">0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <pre id="soldCreditsOut" class="out" style="margin-top:12px; display:none;"></pre>
+</section>
 
     <!-- ✅ YENİ: BANLI MAİLLER -->
     <section class="card" id="cardBans">
