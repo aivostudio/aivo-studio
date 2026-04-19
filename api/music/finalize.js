@@ -213,6 +213,12 @@ if (!_probe || !_probe.mp3_url) {
 
     await redis.set(jobKey, JSON.stringify(job));
 
+        // production stats counters
+    await Promise.all([
+      redis.incr("stats:music:total"),
+      redis.incr(`stats:music:daily:${new Date().toISOString().slice(0, 10)}`)
+    ]);
+
     return res.json({
       ok: true,
       provider_job_id,
