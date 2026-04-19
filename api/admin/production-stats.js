@@ -4,8 +4,7 @@ const { getRedis } = require("../_kv");
 module.exports = async (req, res) => {
   try {
     const redis = getRedis();
-
-     const modules = [
+    const modules = [
       { key: "music", label: "AI Müzik Üret", type: "plain" },
       { key: "cover", label: "AI Kapak Üret", type: "plain" },
       { key: "atmo", label: "AI Atmosfer Video", type: "plain" },
@@ -13,6 +12,7 @@ module.exports = async (req, res) => {
       { key: "cartoon", mode: "character", label: "AI Çocuk Çizgifilm — Karakter Yarat", type: "cartoon-mode" },
       { key: "cartoon", mode: "basic", label: "AI Çocuk Çizgifilm — Basit Mod", type: "cartoon-mode" },
       { key: "cartoon", mode: "story", label: "AI Çocuk Çizgifilm — Hikaye Modu", type: "cartoon-mode" },
+      { key: "cartoon", mode: "studio_export", label: "AI Çocuk Çizgifilm — Montaj Stüdyosu", type: "cartoon-mode" },
 
       { key: "photofx", label: "AI Foto Efekt Video Clip", type: "plain" },
       { key: "video", label: "AI Resimden Video Üret", type: "plain" }
