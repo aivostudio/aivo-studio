@@ -215,6 +215,15 @@ const logoPos = safeText(brandingBlock?.logoPos || "br");
 
     const job_id = String(inserted[0].id);
 
+        const { getRedis } = await import("../../_kv.js");
+    const redis = getRedis();
+    const dayKey = new Date().toISOString().slice(0, 10);
+
+    await Promise.all([
+      redis.incr("stats:cartoon:studio_export:total"),
+      redis.incr(`stats:cartoon:studio_export:daily:${dayKey}`)
+    ]);
+
     return res.status(200).json({
       ok: true,
       job_id,
