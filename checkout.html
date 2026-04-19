@@ -2,8 +2,6 @@
 (function () {
   "use strict";
 
-  /* ================= UI HELPERS ================= */
-
   function setNote(msg) {
     const el = document.getElementById("checkoutNote");
     if (!el) return;
@@ -27,38 +25,14 @@
     return "";
   }
 
-  function resolvePayTREnabledFlag() {
-    let enabled = false;
-    try {
-      const url = new URL(window.location.href);
-
-      // query override (?paytr=1 | ?paytr=0)
-      if (url.searchParams.has("paytr")) {
-        const q = url.searchParams.get("paytr");
-        if (q === "1") localStorage.setItem("AIVO_PAYTR_ENABLED", "1");
-        if (q === "0") localStorage.setItem("AIVO_PAYTR_ENABLED", "0");
-
-        url.searchParams.delete("paytr");
-        history.replaceState({}, "", url.pathname);
-      }
-
-      enabled = localStorage.getItem("AIVO_PAYTR_ENABLED") === "1";
-    } catch (e) {}
-
-    console.log("[PayTR][FLAG]", enabled ? "ENABLED" : "DISABLED");
-    return enabled;
-  }
-
-  /* ================= DISPLAY ================= */
-
   const params = new URLSearchParams(location.search);
-    const paytrState = (params.get("paytr") || "").trim();
-  const paytrOid = (params.get("oid") || localStorage.getItem("aivo_pending_paytr_oid") || "").trim();
+  const garantiState = (params.get("garanti") || "").trim();
+  const garantiOid = (params.get("oid") || localStorage.getItem("aivo_pending_garanti_oid") || "").trim();
 
-  if (paytrState === "ok" && paytrOid) {
+  if (garantiState === "ok" && garantiOid) {
     setNote("Ödeme doğrulanıyor…");
 
-    fetch(`/api/paytr/verify?oid=${encodeURIComponent(paytrOid)}`, {
+    fetch(`/api/garanti/verify?oid=${encodeURIComponent(garantiOid)}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" }
     })
@@ -68,44 +42,42 @@
         try { data = JSON.parse(raw); } catch (_) {}
 
         if (!r.ok || !data || !data.ok) {
-          throw new Error((data && data.error) ? data.error : "PAYTR_VERIFY_FAILED");
+          throw new Error((data && data.error) ? data.error : "GARANTI_VERIFY_FAILED");
         }
 
         if (data.status === "paid") {
           setNote("Ödeme başarılı. Krediniz hesabınıza tanımlanıyor…");
-          try { localStorage.removeItem("aivo_pending_paytr_oid"); } catch (e) {}
+          try { localStorage.removeItem("aivo_pending_garanti_oid"); } catch (e) {}
           return;
         }
 
         throw new Error("PAYMENT_NOT_PAID");
       })
       .catch(function (err) {
-        console.error("[Checkout][PayTR Verify]", err);
+        console.error("[Checkout][Garanti Verify]", err);
         setNote("Ödeme doğrulanamadı: " + (err && err.message ? err.message : "Bilinmeyen hata"));
       });
   }
 
-  if (paytrState === "fail") {
+  if (garantiState === "fail") {
     setNote("Ödeme tamamlanmadı veya iptal edildi.");
   }
-  const storePack = safeGetSelectedPack();
 
-  const urlPlan  = (params.get("plan") || "").trim();
+  const storePack = safeGetSelectedPack();
+  const urlPlan = (params.get("plan") || "").trim();
   const urlPrice = parseAmount(params.get("price"));
 
-  const planEl  = document.getElementById("checkoutPlan");
+  const planEl = document.getElementById("checkoutPlan");
   const priceEl = document.getElementById("checkoutPrice");
 
   const displayPrice = storePack ? parseAmount(storePack) : urlPrice;
-  const displayPlan  = urlPlan || "Paket";
+  const displayPlan = urlPlan || "Paket";
 
-  if (planEl)  planEl.textContent  = displayPlan;
+  if (planEl) planEl.textContent = displayPlan;
   if (priceEl) priceEl.textContent = displayPrice ? `${displayPrice} ₺` : "—";
 
   const backBtn = document.querySelector("[data-checkout-back]");
-  if (backBtn) backBtn.onclick = () => history.back();
-
-  /* ================= CHECKOUT BUTTON ================= */
+  if (backBtn) backBtn.onclick = function () { history.back(); };
 
   const payBtn = document.getElementById("payBtn");
   if (!payBtn) return;
@@ -123,26 +95,20 @@
     setNote("Ödeme hazırlanıyor…");
 
     try {
-      const PAYTR_ENABLED = resolvePayTREnabledFlag();
       const amount = displayPrice;
 
-      // Store varsa pack oradan, yoksa amount’tan türet
       let pack = (storePack || "").trim();
       if (!pack) pack = String(Math.round(amount || 0));
 
-      // Allowed liste
-     const ALLOWED = ["199","699","1299","2999"];
+      const ALLOWED = ["199", "699", "1299", "2999"];
       if (!ALLOWED.includes(pack)) {
         throw new Error("INVALID_PACK:" + pack + " amount=" + amount);
       }
 
-      /* ================= PAYMENT INIT ================= */
+      setNote("Garanti ödeme bağlantısı hazırlanıyor…");
 
-      console.log("[Checkout] paytr pack =", pack);
-      setNote("Ödeme bağlantısı hazırlanıyor…");
-
-      // Eski stripe pending bilgisini temizle
       try { localStorage.removeItem("aivo_pending_stripe_session"); } catch (e) {}
+      try { localStorage.removeItem("aivo_pending_paytr_oid"); } catch (e) {}
 
       const meRes = await fetch("/api/auth/me", {
         method: "GET",
@@ -158,27 +124,25 @@
       }
 
       const user = meData.user || {};
-      const userId =
-        String(
-          user.id ||
-          user.user_id ||
-          user.uid ||
-          user.email ||
-          ""
-        ).trim();
+      const userId = String(
+        user.id ||
+        user.user_id ||
+        user.uid ||
+        user.email ||
+        ""
+      ).trim();
 
-      const email =
-        String(
-          user.email ||
-          user.user_email ||
-          ""
-        ).trim();
+      const email = String(
+        user.email ||
+        user.user_email ||
+        ""
+      ).trim();
 
       if (!userId || !email) {
         throw new Error("USER_ID_OR_EMAIL_MISSING");
       }
 
-      const initRes = await fetch("/api/paytr/init", {
+      const initRes = await fetch("/api/garanti/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -193,46 +157,47 @@
       let initData = null;
       try { initData = JSON.parse(initRaw); } catch (_) {}
 
-      if (!initRes.ok || !initData || !initData.form) {
+      if (!initRes.ok || !initData || !initData.gateway || !initData.gateway.fields) {
         const errMsg =
           (initData && initData.error) ? initData.error :
-          ("PAYTR_INIT_FAILED HTTP " + initRes.status + " RAW=" + initRaw.slice(0, 160));
+          ("GARANTI_INIT_FAILED HTTP " + initRes.status + " RAW=" + initRaw.slice(0, 160));
         throw new Error(errMsg);
       }
 
-      const form = initData.form;
-      const oid = initData.oid || form.merchant_oid;
+      const gateway = initData.gateway;
+      const fields = gateway.fields || {};
+      const oid = initData.oid || fields.oid;
+
       if (!oid) {
-        throw new Error("PAYTR_OID_MISSING");
+        throw new Error("GARANTI_OID_MISSING");
       }
 
       try {
-        localStorage.setItem("aivo_pending_paytr_oid", String(oid));
-        console.log("[Checkout] pending paytr oid saved:", oid);
+        localStorage.setItem("aivo_pending_garanti_oid", String(oid));
+        console.log("[Checkout] pending garanti oid saved:", oid);
       } catch (e) {
         throw new Error("LOCALSTORAGE_WRITE_FAILED");
       }
 
-      const paytrForm = document.createElement("form");
-      paytrForm.method = "POST";
-      paytrForm.action = "https://www.paytr.com/odeme";
-      paytrForm.style.display = "none";
+      const garantiForm = document.createElement("form");
+      garantiForm.method = String(gateway.method || "POST").toUpperCase();
+      garantiForm.action = String(gateway.action || "/api/garanti/notify");
+      garantiForm.style.display = "none";
 
-      Object.keys(form).forEach(function (key) {
+      Object.keys(fields).forEach(function (key) {
         const input = document.createElement("input");
         input.type = "hidden";
         input.name = key;
-        input.value = form[key] == null ? "" : String(form[key]);
-        paytrForm.appendChild(input);
+        input.value = fields[key] == null ? "" : String(fields[key]);
+        garantiForm.appendChild(input);
       });
 
-      document.body.appendChild(paytrForm);
-      setNote("Ödeme sayfasına yönlendiriliyorsunuz…");
-      paytrForm.submit();
+      document.body.appendChild(garantiForm);
+      setNote("Garanti ödeme sayfasına yönlendiriliyorsunuz…");
+      garantiForm.submit();
       return;
-
     } catch (err) {
-      console.error("[Checkout]", err);
+      console.error("[Checkout][Garanti]", err);
       setNote("Checkout başarısız: " + (err && err.message ? err.message : "Bilinmeyen hata"));
 
       payBtn.disabled = false;
