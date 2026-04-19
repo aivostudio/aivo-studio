@@ -14,9 +14,9 @@ module.exports = async (req, res) => {
       null;
 
     // 2) Email fallback (query opsiyonel)
-    const email =
-      (user?.email || "").toLowerCase() ||
+     const email =
       String(req.query.email || "").trim().toLowerCase() ||
+      (user?.email || "").toLowerCase() ||
       "";
 
     // ❗ Email yoksa 400 DEĞİL, 401
