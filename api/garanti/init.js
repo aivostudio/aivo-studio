@@ -128,7 +128,7 @@ export default async function handler(req, res) {
     provider: "garanti",
     gateway: {
       mode: "3d_form",
-      action: "/api/garanti/notify",
+       action: "/api/garanti/callback",
       method: "POST",
         fields: {
         oid,
