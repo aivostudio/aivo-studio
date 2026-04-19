@@ -107,6 +107,27 @@ export default async function handler(req, res) {
     ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
     : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
 
+  const garanti3dUrl = String(
+    process.env.GARANTI_3D_URL ||
+    process.env.GARANTI_3D_GATEWAY_URL ||
+    ""
+  ).trim();
+
+  const garantiMerchantId = String(process.env.GARANTI_MERCHANT_ID || "").trim();
+  const garantiTerminalId = String(process.env.GARANTI_TERMINAL_ID || "").trim();
+  const garantiTerminalUserId = String(process.env.GARANTI_TERMINAL_USER_ID || "").trim();
+  const garantiProvisionUserId = String(process.env.GARANTI_PROVISION_USER_ID || "").trim();
+  const garantiStoreKey = String(process.env.GARANTI_STORE_KEY || "").trim();
+
+  const missingConfig = [
+    !garanti3dUrl && "GARANTI_3D_URL",
+    !garantiMerchantId && "GARANTI_MERCHANT_ID",
+    !garantiTerminalId && "GARANTI_TERMINAL_ID",
+    !garantiTerminalUserId && "GARANTI_TERMINAL_USER_ID",
+    !garantiProvisionUserId && "GARANTI_PROVISION_USER_ID",
+    !garantiStoreKey && "GARANTI_STORE_KEY",
+  ].filter(Boolean);
+
   await kvSetJson(`aivo:garanti:order_init:${oid}`, {
     oid,
     email,
@@ -119,8 +140,21 @@ export default async function handler(req, res) {
     status: "init",
     ok_url: okUrl,
     fail_url: failUrl,
+    gateway_url: garanti3dUrl || null,
     created_at: now,
   }, { exSec: 60 * 60 * 24 });
+
+  if (missingConfig.length) {
+    return json(res, 503, {
+      ok: false,
+      error: "GARANTI_3D_CONFIG_MISSING",
+      oid,
+      missing: missingConfig,
+      note: "Internal callback akisi kapatildi. Gercek Garanti 3D alanlari baglanmadan gateway formu donulmuyor.",
+    });
+  }
+
+  const amountMinor = Math.round(amount * 100);
 
   return json(res, 200, {
     ok: true,
@@ -128,17 +162,32 @@ export default async function handler(req, res) {
     provider: "garanti",
     gateway: {
       mode: "3d_form",
-       action: "/api/garanti/callback",
+      action: garanti3dUrl,
       method: "POST",
-        fields: {
-        oid,
-        amount,
-        email,
-        user_id,
-        plan,
-        status: "approved",
-        success_url: okUrl,
-        fail_url: failUrl,
+      fields: {
+        merchantid: garantiMerchantId,
+        terminalid: garantiTerminalId,
+        terminaluserid: garantiTerminalUserId,
+        provisionuserid: garantiProvisionUserId,
+        storekey: garantiStoreKey,
+        orderid: oid,
+        amount: String(amountMinor),
+        currencycode: "949",
+        successurl: okUrl,
+        errorurl: failUrl,
+        customeremailaddress: email,
+        customeripaddress:
+          String(
+            req.headers["x-forwarded-for"] ||
+            req.headers["x-real-ip"] ||
+            req.socket?.remoteAddress ||
+            ""
+          )
+            .split(",")[0]
+            .trim() || "127.0.0.1",
+        companyname: "AIVO",
+        txnType: "sales",
+        lang: "tr",
       },
     },
   });
