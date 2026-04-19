@@ -304,6 +304,14 @@ const falCreateResp = await fetch(
       where id = ${job_id}::uuid
     `;
 
+    const { getRedis } = await import("../_kv.js");
+    const redis = getRedis();
+
+    await Promise.all([
+      redis.incr("stats:atmo:total"),
+      redis.incr(`stats:atmo:daily:${new Date().toISOString().slice(0, 10)}`)
+    ]);
+
     // 4) response
     return res.status(200).json({
       ok: true,
