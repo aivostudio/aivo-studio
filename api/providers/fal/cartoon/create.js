@@ -605,10 +605,12 @@ module.exports = async function handler(req, res) {
 
   const { getRedis } = require("../../../_kv");
   const redis = getRedis();
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const modeKey = String(mode || "basic").toLowerCase();
 
   await Promise.all([
-    redis.incr("stats:cartoon:total"),
-    redis.incr(`stats:cartoon:daily:${new Date().toISOString().slice(0, 10)}`)
+    redis.incr(`stats:cartoon:${modeKey}:total`),
+    redis.incr(`stats:cartoon:${modeKey}:daily:${dayKey}`)
   ]);
 
   return res.status(200).json({
