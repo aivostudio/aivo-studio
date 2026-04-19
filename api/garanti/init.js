@@ -191,7 +191,7 @@ export default async function handler(req, res) {
   const installmentCount = "";
   const terminalIdPadded = String(garantiTerminalId).padStart(9, "0");
 
-  const hashedPassword = sha1Upper(`${garanti3dSecureKey}${terminalIdPadded}`);
+  const hashedPassword = sha1Upper(`${garantiProvisionPassword}${terminalIdPadded}`);
 
   const securityData = [
     garantiTerminalId,
