@@ -673,6 +673,33 @@ if (r.status === 200) {
   setOpen(false);
 })();
 </script>
+<script>
+(function AIVO_STUDIO_TOPBAR_PRODUCT_ROUTER(){
+  if (window.__AIVO_STUDIO_TOPBAR_PRODUCT_ROUTER__) return;
+  window.__AIVO_STUDIO_TOPBAR_PRODUCT_ROUTER__ = true;
 
+  document.addEventListener('click', function(e){
+    const card = e.target && e.target.closest
+      ? e.target.closest('#navProducts .product-card[data-target]')
+      : null;
+
+    if (!card) return;
+
+    const target = (card.getAttribute('data-target') || '').trim();
+    if (!target) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    if (location.pathname + location.hash === target) {
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      return;
+    }
+
+    location.href = target;
+  }, true);
+})();
+</script>
 </body>
 </html>
