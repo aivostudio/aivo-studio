@@ -765,11 +765,29 @@ async function adminAuth() {
       dailyCreditStatsDate.addEventListener("change", loadDailyCreditStats);
     }
 
-    if (btnDailyCreditStatsPdf) {
-      btnDailyCreditStatsPdf.addEventListener("click", () => {
-        try { window.print(); } catch (_) {}
-      });
+  if (btnDailyCreditStatsPdf) {
+  btnDailyCreditStatsPdf.addEventListener("click", async () => {
+    const s = await adminAuth();
+    if (!s.ok) return;
+
+    const selectedDate =
+      String(
+        dailyCreditStatsDate && dailyCreditStatsDate.value
+          ? dailyCreditStatsDate.value
+          : todayDateInputValue()
+      ).trim();
+
+    const url =
+      "/api/admin/daily-credit-stats-pdf?date=" +
+      encodeURIComponent(selectedDate);
+
+    try {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (_) {
+      location.href = url;
     }
+  });
+}
     async function loadUsers() {
       const s = await adminAuth();
       if (!s.ok) return;
