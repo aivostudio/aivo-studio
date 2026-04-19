@@ -117,12 +117,12 @@ export default async function handler(req, res) {
   const siteBase = getSiteBase();
 
    const okUrl = siteBase
-    ? `${siteBase}/checkout.html?garanti=ok&oid=${encodeURIComponent(oid)}`
-    : `/checkout.html?garanti=ok&oid=${encodeURIComponent(oid)}`;
+    ? `${siteBase}/api/garanti/callback`
+    : `/api/garanti/callback`;
 
   const failUrl = siteBase
-    ? `${siteBase}/checkout.html?garanti=fail&oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`
-    : `/checkout.html?garanti=fail&oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`;
+    ? `${siteBase}/api/garanti/callback`
+    : `/api/garanti/callback`;
 
   const garanti3dUrl = String(
     process.env.GARANTI_3D_URL ||
