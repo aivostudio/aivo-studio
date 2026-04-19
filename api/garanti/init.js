@@ -97,11 +97,18 @@ export default async function handler(req, res) {
   const amount = selectedPlan.amount;
   const credits = selectedPlan.credits;
 
-  const oid = `GARANTI_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+const oid = `GARANTI_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
-  const failUrl = siteBase
-    ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
-    : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
+const now = new Date().toISOString();
+const siteBase = getSiteBase();
+
+const okUrl = siteBase
+  ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
+  : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
+
+const failUrl = siteBase
+  ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
+  : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
 
   const garanti3dUrl = String(
     process.env.GARANTI_3D_URL ||
