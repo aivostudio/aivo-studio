@@ -3648,15 +3648,15 @@ body{
 }
 
 /* =========================================================
-   TOPBAR USER MENU — PREMIUM FIX
+   TOPBAR USER MENU — CLEANER / SMALLER / CALMER
    ========================================================= */
 
 .user-menu{
   position: absolute;
-  top: calc(100% + 16px);
+  top: calc(100% + 14px);
   right: 0;
-  width: 372px;
-  max-width: min(372px, calc(100vw - 24px));
+  width: 332px;
+  max-width: min(332px, calc(100vw - 20px));
   display: none;
   z-index: 99999;
 }
@@ -3668,18 +3668,16 @@ body{
 .user-menu-card{
   position: relative;
   overflow: hidden;
-  padding: 18px;
-  border-radius: 24px;
+  padding: 14px;
+  border-radius: 22px;
   background:
-    radial-gradient(820px 300px at 10% 0%, rgba(123,108,255,.22), transparent 58%),
-    radial-gradient(760px 260px at 100% 10%, rgba(95,212,255,.14), transparent 56%),
-    linear-gradient(180deg, rgba(64,74,122,.92), rgba(13,18,34,.94));
-  border: 1px solid rgba(255,255,255,.12);
+    linear-gradient(180deg, rgba(58,68,112,.88), rgba(10,14,28,.94));
+  border: 1px solid rgba(255,255,255,.10);
   box-shadow:
-    0 24px 80px rgba(0,0,0,.52),
-    inset 0 1px 0 rgba(255,255,255,.08);
-  backdrop-filter: blur(18px) saturate(125%);
-  -webkit-backdrop-filter: blur(18px) saturate(125%);
+    0 20px 56px rgba(0,0,0,.44),
+    inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter: blur(14px) saturate(112%);
+  -webkit-backdrop-filter: blur(14px) saturate(112%);
 }
 
 .user-menu-card::before{
@@ -3688,35 +3686,33 @@ body{
   inset:0;
   pointer-events:none;
   border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.05),
-    rgba(255,255,255,0)
-  );
+  background:
+    radial-gradient(320px 140px at 12% 0%, rgba(125,108,255,.10), transparent 62%),
+    radial-gradient(300px 120px at 100% 10%, rgba(95,212,255,.06), transparent 64%);
+  opacity: .65;
 }
 
 .um-head{
   display: grid;
-  grid-template-columns: 62px minmax(0,1fr);
-  gap: 14px;
+  grid-template-columns: 50px minmax(0,1fr);
+  gap: 12px;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .um-ava{
-  width: 62px;
-  height: 62px;
-  border-radius: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(230,220,255,.96), rgba(149,116,255,.72));
-  border: 1px solid rgba(255,255,255,.18);
+  background: linear-gradient(135deg, rgba(214,197,255,.92), rgba(137,109,255,.72));
+  border: 1px solid rgba(255,255,255,.16);
   box-shadow:
-    0 12px 28px rgba(109,86,255,.30),
-    inset 0 1px 0 rgba(255,255,255,.28);
-  font-size: 30px;
+    0 8px 18px rgba(109,86,255,.18),
+    inset 0 1px 0 rgba(255,255,255,.20);
+  font-size: 18px;
   font-weight: 900;
   color: #fff;
   flex: 0 0 auto;
@@ -3730,91 +3726,87 @@ body{
 }
 
 .um-title{
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.1;
-  font-weight: 900;
-  color: rgba(255,255,255,.98);
+  font-weight: 800;
+  color: rgba(255,255,255,.97);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .um-sub{
-  font-size: 12px;
-  line-height: 1.35;
-  color: rgba(220,226,255,.72);
+  font-size: 11px;
+  line-height: 1.3;
+  color: rgba(220,226,255,.64);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .um-plan{
-  min-height: 68px;
-  margin-top: 2px;
-  padding: 0 18px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.10);
+  min-height: 56px;
+  margin-top: 0;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
   display: grid;
-  grid-template-columns: 28px 1fr;
+  grid-template-columns: 22px 1fr;
   align-items: center;
-  gap: 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  gap: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
 }
 
 .um-plan-ico{
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1;
-  opacity: .95;
+  opacity: .92;
 }
 
 .um-plan-txt{
-  font-size: 18px;
-  font-weight: 900;
-  color: rgba(255,255,255,.98);
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(255,255,255,.95);
   text-align: center;
-  transform: translateX(-10px);
+  transform: translateX(-6px);
 }
 
 .um-sep{
   height: 1px;
-  margin: 16px 0;
+  margin: 14px 0;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255,255,255,.14),
+    rgba(255,255,255,.10),
     transparent
   );
 }
 
 .um-item{
-  min-height: 60px;
+  min-height: 54px;
   display: grid;
-  grid-template-columns: 22px 1fr;
+  grid-template-columns: 18px 1fr;
   align-items: center;
-  gap: 14px;
-  padding: 0 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  color: rgba(255,255,255,.96);
+  gap: 12px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.95);
   text-decoration: none;
   cursor: pointer;
-  margin-bottom: 10px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+  margin-bottom: 8px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
   transition:
     transform .14s ease,
     border-color .14s ease,
-    background .14s ease,
-    box-shadow .14s ease;
+    background .14s ease;
 }
 
 .um-item:hover{
-  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-  border-color: rgba(255,255,255,.18);
-  box-shadow:
-    0 10px 24px rgba(0,0,0,.20),
-    inset 0 1px 0 rgba(255,255,255,.05);
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.14);
   transform: translateY(-1px);
 }
 
@@ -3823,29 +3815,29 @@ body{
 }
 
 .um-i{
-  width: 22px;
+  width: 18px;
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: .92;
-  font-size: 18px;
+  opacity: .90;
+  font-size: 16px;
 }
 
 .um-item span:last-child{
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -.01em;
 }
 
 .um-logout{
-  margin-top: 6px;
-  border-color: rgba(255,90,90,.22);
-  background: linear-gradient(180deg, rgba(60,14,22,.20), rgba(35,10,16,.14));
+  margin-top: 4px;
+  border-color: rgba(255,90,90,.18);
+  background: rgba(72,16,26,.12);
 }
 
 .um-logout:hover{
-  border-color: rgba(255,90,90,.42);
-  background: linear-gradient(180deg, rgba(80,18,28,.26), rgba(45,12,18,.18));
+  border-color: rgba(255,90,90,.34);
+  background: rgba(88,20,32,.16);
 }
 /* =========================================================
    TOPBAR — FULL WIDTH (Sadece üst bar)
