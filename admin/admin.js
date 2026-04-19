@@ -723,7 +723,7 @@ async function adminAuth() {
     }
     // ilk yükleme
     await loadUsers();
-
+   await loadProductionStats();
     // presence poll: üst sayacı + tabloda online pill
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
