@@ -1018,46 +1018,23 @@
   async function startCheckout(pack){
     if (!pack) { scrollToPacks(); return; }
 
-    // ✅ C-2) startCheckout içinde await
     var email = await getUserEmail();
     if (!email) {
       window.toast.error("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
-
       return;
     }
 
     setReturnAfterPayment();
 
     try {
-      var res = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ pack: String(pack), user_email: email })
-      });
-
-      var data = null;
-      try { data = await res.json(); } catch(e){}
-
-      if (!res.ok) {
-        console.error("[AIVO] checkout-session failed:", res.status, data);
-       window.toast.error("Ödeme başlatılamadı. (checkout-session error)");
-
-        return;
-      }
-
-      if (data && data.url) { location.href = data.url; return; }
-
-      console.error("[AIVO] checkout-session missing url:", data);
-     window.toast.error("Ödeme başlatılamadı. (missing url)");
-
+      var url = "/checkout.html?plan=" + encodeURIComponent(String(pack)) + "&price=" + encodeURIComponent(String(pack));
+      location.href = url;
+      return;
     } catch (err) {
-      console.error("[AIVO] checkout-session exception:", err);
-     window.toast.error("Ödeme başlatılamadı. (network/exception)");
-
+      console.error("[AIVO] garanti checkout redirect exception:", err);
+      window.toast.error("Ödeme sayfasına yönlendirilemedi.");
     }
   }
-
   // ✅ C-1) Click handler async
   document.addEventListener("click", async function(e){
     var t = e.target;
