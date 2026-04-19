@@ -1,7 +1,6 @@
 // /api/garanti/notify.js
 // Garanti bildirim/callback endpoint'i
-// Amaç: bankadan dönen sonucu doğrula, aivo:garanti:order:<oid> kaydını paid/failed yaz
-// Geçici iskelet akışta browser redirect de yapar
+// Geçici güvenlik: gerçek banka imzası bağlanana kadar sadece secret doğrulanan istek paid yazabilir
 
 async function kvGet(key) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
@@ -80,20 +79,14 @@ function pickOid(post) {
   ).trim();
 }
 
-function pickStatus(post) {
-  const raw = String(
+function pickRawStatus(post) {
+  return String(
     post.status ||
     post.mdStatus ||
     post.procreturncode ||
     post.Response ||
     ""
   ).trim().toLowerCase();
-
-  if (raw === "approved" || raw === "success" || raw === "paid" || raw === "1" || raw === "00") {
-    return "paid";
-  }
-
-  return "failed";
 }
 
 function pickAmount(post, initData) {
@@ -116,6 +109,20 @@ function redirectToCheckout(res, state, oid) {
   return res.redirect(`/checkout.html?${qs.toString()}`);
 }
 
+function isApprovedStatus(raw) {
+  return raw === "approved" || raw === "success" || raw === "paid" || raw === "1" || raw === "00";
+}
+
+function hasValidTempSecret(req, post) {
+  const secret = String(process.env.GARANTI_NOTIFY_SECRET || "").trim();
+  if (!secret) return false;
+
+  const headerSecret = String(req.headers["x-garanti-notify-secret"] || "").trim();
+  const bodySecret = String(post.notify_secret || "").trim();
+
+  return headerSecret === secret || bodySecret === secret;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
@@ -136,7 +143,11 @@ export default async function handler(req, res) {
     const initData = await kvGet(initKey);
 
     const now = new Date().toISOString();
-    const status = pickStatus(post);
+    const rawStatus = pickRawStatus(post);
+    const approved = isApprovedStatus(rawStatus);
+    const trusted = hasValidTempSecret(req, post);
+
+    const status = approved && trusted ? "paid" : "failed";
     const amount = pickAmount(post, initData);
 
     const record = {
@@ -155,6 +166,7 @@ export default async function handler(req, res) {
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
       notify_payload: post,
+      notify_trusted: trusted,
     };
 
     await kvSet(orderKey, record);
