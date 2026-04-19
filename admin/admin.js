@@ -792,6 +792,80 @@ async function adminAuth() {
     }
   });
 }
+        // ===== SOLD CREDITS =====
+    const btnSoldCredits = $("btnSoldCredits");
+    const soldCreditsDate = $("soldCreditsDate");
+    const soldCreditsStatus = $("soldCreditsStatus");
+    const soldCreditsTotalValue = $("soldCreditsTotalValue");
+    const soldCreditsOrdersValue = $("soldCreditsOrdersValue");
+    const soldCreditsOut = $("soldCreditsOut");
+
+    function setSoldCreditsValues(totalCredits, totalOrders) {
+      if (soldCreditsTotalValue) soldCreditsTotalValue.textContent = String(Number(totalCredits || 0));
+      if (soldCreditsOrdersValue) soldCreditsOrdersValue.textContent = String(Number(totalOrders || 0));
+    }
+
+    async function loadSoldCredits() {
+      const s = await adminAuth();
+      if (!s.ok) return;
+
+      const selectedDate =
+        String(
+          soldCreditsDate && soldCreditsDate.value
+            ? soldCreditsDate.value
+            : todayDateInputValue()
+        ).trim();
+
+      if (soldCreditsStatus) soldCreditsStatus.textContent = "Yükleniyor...";
+
+      try {
+        const r = await fetch(
+          "/api/admin/daily-sold-credits?date=" + encodeURIComponent(selectedDate),
+          {
+            cache: "no-store",
+            credentials: "include"
+          }
+        );
+
+        const j = await r.json().catch(() => null);
+
+        if (!r.ok || !j || !j.ok) {
+          throw new Error((j && (j.error || j.message)) || "daily_sold_credits_failed");
+        }
+
+        setSoldCreditsValues(j.total_credits_sold || 0, j.total_orders || 0);
+
+        if (soldCreditsOut) {
+          soldCreditsOut.style.display = "none";
+          soldCreditsOut.textContent = JSON.stringify(j, null, 2);
+        }
+
+        if (soldCreditsStatus) {
+          soldCreditsStatus.textContent = `Gün: ${String(j.date || selectedDate || "-")}`;
+        }
+      } catch (err) {
+        setSoldCreditsValues(0, 0);
+
+        if (soldCreditsOut) {
+          soldCreditsOut.style.display = "block";
+          soldCreditsOut.textContent = String(err && err.message ? err.message : err);
+        }
+
+        if (soldCreditsStatus) soldCreditsStatus.textContent = "Hata oluştu.";
+      }
+    }
+
+    if (soldCreditsDate && !soldCreditsDate.value) {
+      soldCreditsDate.value = todayDateInputValue();
+    }
+
+    if (btnSoldCredits) {
+      btnSoldCredits.addEventListener("click", loadSoldCredits);
+    }
+
+    if (soldCreditsDate) {
+      soldCreditsDate.addEventListener("change", loadSoldCredits);
+    }
     async function loadUsers() {
       const s = await adminAuth();
       if (!s.ok) return;
@@ -903,6 +977,7 @@ async function adminAuth() {
     await loadUsers();
    await loadProductionStats();
     await loadDailyCreditStats();
+    await loadSoldCredits();
     // presence poll: üst sayacı + tabloda online pill
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
