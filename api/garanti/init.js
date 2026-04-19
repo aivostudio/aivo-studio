@@ -120,7 +120,7 @@ export default async function handler(req, res) {
     ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
     : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
 
-  const failUrl = siteBase
+   const failUrl = siteBase
     ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`
     : `/api/garanti/fail?oid=${encodeURIComponent(oid)}&plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(String(amount))}`;
 
@@ -131,7 +131,7 @@ export default async function handler(req, res) {
   ).trim();
 
   const garantiMode = String(process.env.GARANTI_MODE || "PROD").trim().toUpperCase();
-  const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "OOS_PAY").trim();
+  const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "3D_OOS_PAY").trim();
   const garantiApiVersion = String(process.env.GARANTI_API_VERSION || "v0.01").trim();
 
   const garantiMerchantId = String(process.env.GARANTI_MERCHANT_ID || "").trim();
@@ -139,6 +139,7 @@ export default async function handler(req, res) {
   const garantiTerminalUserId = String(process.env.GARANTI_TERMINAL_USER_ID || "").trim();
   const garantiProvisionUserId = String(process.env.GARANTI_PROVISION_USER_ID || "").trim();
   const garantiStoreKey = String(process.env.GARANTI_STORE_KEY || "").trim();
+  const garanti3dSecureKey = String(process.env.GARANTI_3D_SECURE_KEY || "").trim();
   const garantiProvisionPassword = String(
     process.env.GARANTI_PROVISION_PASSWORD ||
       process.env.GARANTI_PASSWORD ||
@@ -152,6 +153,7 @@ export default async function handler(req, res) {
     !garantiTerminalUserId && "GARANTI_TERMINAL_USER_ID",
     !garantiProvisionUserId && "GARANTI_PROVISION_USER_ID",
     !garantiStoreKey && "GARANTI_STORE_KEY",
+    !garanti3dSecureKey && "GARANTI_3D_SECURE_KEY",
     !garantiProvisionPassword && "GARANTI_PROVISION_PASSWORD",
   ].filter(Boolean);
 
@@ -187,9 +189,10 @@ export default async function handler(req, res) {
 
   const amountMinor = Math.round(amount * 100);
   const installmentCount = "";
+  const terminalIdPadded = String(garantiTerminalId).padStart(9, "0");
 
-  // Garanti 3D/OOS örneğine göre:
-  // terminalId + orderid + amount + successurl + errorurl + txntype + installment + storekey + provisionPassword
+  const hashedPassword = sha1Upper(`${garantiProvisionPassword}${terminalIdPadded}`);
+
   const securityData = [
     garantiTerminalId,
     oid,
@@ -199,7 +202,7 @@ export default async function handler(req, res) {
     "sales",
     installmentCount,
     garantiStoreKey,
-    garantiProvisionPassword,
+    hashedPassword,
   ].join("");
 
   const secure3dhash = sha1Upper(securityData);
@@ -233,7 +236,7 @@ export default async function handler(req, res) {
         customeremailaddress: email,
         customeripaddress: customerIpAddress,
         companyname: "AIVO",
-        lang: "tr",
+        lang: "TR",
         txntimestamp,
         secure3dhash,
       },
