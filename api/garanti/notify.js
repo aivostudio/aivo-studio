@@ -106,7 +106,11 @@ function redirectToCheckout(res, state, oid) {
   const qs = new URLSearchParams();
   qs.set("garanti", state);
   if (oid) qs.set("oid", oid);
-  return res.redirect(`/checkout.html?${qs.toString()}`);
+
+  res.statusCode = 303;
+  res.setHeader("Location", `/checkout.html?${qs.toString()}`);
+  res.end();
+  return;
 }
 
 function isApprovedStatus(raw) {
