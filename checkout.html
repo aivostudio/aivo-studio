@@ -112,11 +112,17 @@
             throw new Error((data && data.error) ? data.error : "GARANTI_VERIFY_FAILED");
           }
 
-          if (data.status === "paid") {
-            setNote("Ödeme başarılı. Krediniz hesabınıza tanımlanıyor…");
-            try { localStorage.removeItem("aivo_pending_garanti_oid"); } catch (e) {}
-            return;
-          }
+         if (data.status === "paid") {
+  setNote("Ödeme başarılı. Yönlendiriliyorsunuz…");
+
+  try { localStorage.removeItem("aivo_pending_garanti_oid"); } catch (e) {}
+
+  setTimeout(function () {
+    window.location.href = "/studio.v2.html?payment=success&provider=garanti";
+  }, 1200);
+
+  return;
+}
 
           throw new Error("PAYMENT_NOT_PAID");
         })
