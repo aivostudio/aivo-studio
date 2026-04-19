@@ -421,6 +421,7 @@ async function adminAuth() {
         if (!Number.isFinite(delta) || delta === 0) return jsonPrint(out, { ok: false, error: "delta_invalid" });
 
         try {
+                try {
           const r = await fetch("/api/admin/credits/set", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -429,7 +430,9 @@ async function adminAuth() {
             body: JSON.stringify({ admin: s.email, email, delta, reason }),
           });
           const j = await r.json();
+
           jsonPrint(out, j);
+          await auditCreditAdjust(s, email, delta, reason, j);
         } catch (_) {
           jsonPrint(out, { ok: false, error: "fetch_failed" });
         }
