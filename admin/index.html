@@ -176,6 +176,54 @@
     </section>
     <!-- /📊 ÜRETİM İSTATİSTİKLERİ -->
 
+    
+      <!--💳 Günlük Kredi İstatistikleri-->
+<section class="card" id="cardDailyCreditStats">
+  <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+    <span>💳 Günlük Kredi İstatistikleri</span>
+    <span class="muted" id="dailyCreditStatsStatus">Hazır.</span>
+  </h3>
+
+  <div class="row" style="gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+    <button id="btnDailyCreditStats" class="btn">Yenile</button>
+    <input id="dailyCreditStatsDate" type="date" />
+    <button id="btnDailyCreditStatsPdf" class="btn">PDF İndir</button>
+    <span class="muted">Seçilen gün için harcanan / iade / net kredi raporu</span>
+  </div>
+
+  <div style="overflow:auto;">
+    <table id="dailyCreditStatsTable" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; opacity:.85;">
+          <th style="padding:8px 6px;">Modül</th>
+          <th style="padding:8px 6px;">Harcanan</th>
+          <th style="padding:8px 6px;">Refund</th>
+          <th style="padding:8px 6px;">Net</th>
+          <th style="padding:8px 6px;">İşlem</th>
+        </tr>
+      </thead>
+      <tbody id="dailyCreditStatsTbody">
+        <tr>
+          <td colspan="5" class="muted" style="padding:10px 6px;">
+            Henüz veri yüklenmedi.
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; border-top:1px solid rgba(255,255,255,.08);">
+          <td style="padding:10px 6px;">Toplam</td>
+          <td style="padding:10px 6px;" id="dailyCreditTotalSpent">0</td>
+          <td style="padding:10px 6px;" id="dailyCreditTotalRefund">0</td>
+          <td style="padding:10px 6px;" id="dailyCreditTotalNet">0</td>
+          <td style="padding:10px 6px;" id="dailyCreditTotalCount">0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <pre id="dailyCreditStatsOut" class="out" style="margin-top:12px; display:none;"></pre>
+</section>
+<!-- /💳 GÜNLÜK KREDİ İSTATİSTİKLERİ -->
     <!-- 🚫 Banlı Mailler -->
     <section class="card">
       <h3>🚫 Banlı Mailler</h3>
