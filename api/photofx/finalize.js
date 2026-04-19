@@ -617,6 +617,13 @@ const patchMeta = {
       where id = ${job_id}::uuid
     `;
 
+         const { getRedis } = require("../_kv");
+    const redis = getRedis();
+
+    await Promise.all([
+      redis.incr("stats:photofx:total"),
+      redis.incr(`stats:photofx:daily:${new Date().toISOString().slice(0, 10)}`)
+    ]);
     return res.status(200).json({
       ok: true,
       job_id,
