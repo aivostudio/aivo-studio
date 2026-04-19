@@ -390,12 +390,26 @@ async function adminAuth() {
 
         setQuickView(email, "…");
 
-            try {
+               try {
           const r = await fetch(
             "/api/credits/get?email=" + encodeURIComponent(email),
             { cache: "no-store", credentials: "include" }
           );
           const j = await r.json();
+
+          const returnedEmail = norm(j && j.email);
+          if (returnedEmail && returnedEmail !== email) {
+            jsonPrint(out, {
+              ok: false,
+              error: "email_mismatch",
+              message: "Seçilen kullanıcı yerine oturum kullanıcısı döndü. Güvenlik için kredi gösterilmedi.",
+              selected_email: email,
+              returned_email: returnedEmail
+            });
+            setQuickView(email, "—");
+            return;
+          }
+
           jsonPrint(out, j);
           setQuickView(email, extractCredits(j));
         } catch (_) {
