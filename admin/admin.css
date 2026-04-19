@@ -652,7 +652,35 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
 #cardUsers .muted code{
   color: #dbe7ff;
 }
+#cardUsers > div[style*="overflow:auto"]{
+  max-height: 620px;
+  overflow: auto !important;
+  padding-right: 4px;
+  margin-top: 10px;
+}
 
+/* scroll bar biraz temiz görünsün */
+#cardUsers > div[style*="overflow:auto"]::-webkit-scrollbar{
+  width: 10px;
+  height: 10px;
+}
+
+#cardUsers > div[style*="overflow:auto"]::-webkit-scrollbar-track{
+  background: rgba(255,255,255,.04);
+  border-radius: 999px;
+}
+
+#cardUsers > div[style*="overflow:auto"]::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.18);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+#cardUsers > div[style*="overflow:auto"]::-webkit-scrollbar-thumb:hover{
+  background: rgba(255,255,255,.26);
+  background-clip: padding-box;
+}
 @media (max-width: 900px){
   #usersSearch{
     min-width: 100%;
