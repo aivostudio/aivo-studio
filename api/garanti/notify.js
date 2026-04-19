@@ -1,6 +1,7 @@
 // /api/garanti/notify.js
 // Garanti bildirim/callback endpoint'i
 // Amaç: bankadan dönen sonucu doğrula, aivo:garanti:order:<oid> kaydını paid/failed yaz
+// Geçici iskelet akışta browser redirect de yapar
 
 async function kvGet(key) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
@@ -108,6 +109,13 @@ function pickAmount(post, initData) {
   return Number.isFinite(n) ? n : null;
 }
 
+function redirectToCheckout(res, state, oid) {
+  const qs = new URLSearchParams();
+  qs.set("garanti", state);
+  if (oid) qs.set("oid", oid);
+  return res.redirect(`/checkout.html?${qs.toString()}`);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
@@ -125,11 +133,8 @@ export default async function handler(req, res) {
     const initKey = `aivo:garanti:order_init:${oid}`;
 
     const existing = await kvGet(orderKey);
-    if (existing && typeof existing === "object" && existing.status === "paid") {
-      return res.status(200).send("OK");
-    }
-
     const initData = await kvGet(initKey);
+
     const now = new Date().toISOString();
     const status = pickStatus(post);
     const amount = pickAmount(post, initData);
@@ -154,8 +159,12 @@ export default async function handler(req, res) {
 
     await kvSet(orderKey, record);
 
-    return res.status(200).send("OK");
+    if (status === "paid") {
+      return redirectToCheckout(res, "ok", oid);
+    }
+
+    return redirectToCheckout(res, "fail", oid);
   } catch (e) {
-    return res.status(200).send("OK");
+    return redirectToCheckout(res, "fail", "");
   }
 }
