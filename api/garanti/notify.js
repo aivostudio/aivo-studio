@@ -147,7 +147,8 @@ export default async function handler(req, res) {
     const approved = isApprovedStatus(rawStatus);
     const trusted = hasValidTempSecret(req, post);
 
-    const status = approved && trusted ? "paid" : "failed";
+    const devFlowEnabled = String(process.env.GARANTI_DEV_FLOW || "") === "true";
+    const status = devFlowEnabled && approved && trusted ? "paid" : "failed";
     const amount = pickAmount(post, initData);
 
     const record = {
