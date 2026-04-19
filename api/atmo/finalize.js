@@ -490,6 +490,14 @@ module.exports = async function handler(req, res) {
       String(meta?.preview_video_url || "").trim() || pickUrl(previewOut);
 
     if (existingFinalized && existingPreview && !body.force) {
+
+          const { getRedis } = require("../_kv");
+    const redis = getRedis();
+
+    await Promise.all([
+      redis.incr("stats:atmo:total"),
+      redis.incr(`stats:atmo:daily:${new Date().toISOString().slice(0, 10)}`)
+    ]);
       return res.status(200).json({
         ok: true,
         job_id,
