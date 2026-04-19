@@ -390,9 +390,9 @@ async function adminAuth() {
 
         setQuickView(email, "…");
 
-        try {
+            try {
           const r = await fetch(
-            "/api/admin/credits/get?admin=" + encodeURIComponent(s.email) + "&email=" + encodeURIComponent(email),
+            "/api/credits/get?email=" + encodeURIComponent(email),
             { cache: "no-store", credentials: "include" }
           );
           const j = await r.json();
