@@ -1015,95 +1015,47 @@
    try { sessionStorage.setItem("aivo_return_after_payment", "/studio.v2.html#dashboard"); } catch(e){}
   }
 
-  async function startCheckout(pack){
-    if (!pack) { scrollToPacks(); return; }
+  // ✅ C-1) Click handler async
+  document.addEventListener("click", async function(e){
+    var t = e.target;
+    if (!t || !t.closest) return;
 
-    var email = await getUserEmail();
-    if (!email) {
-      window.toast.error("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+    // Top “Kredi Al” sadece packs’e scroll
+    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
+    if (topBuy && !t.closest("#packs .p-btn[data-pack]")) {
+      e.preventDefault();
+      scrollToPacks();
       return;
     }
 
-    setReturnAfterPayment();
+    // Pack seçim
+    var packBtn = t.closest("#packs .p-btn[data-pack]");
+    if (!packBtn) return;
 
-    try {
-      var meRes = await fetch("/api/auth/me", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        cache: "no-store"
-      });
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-      var meRaw = await meRes.text();
-      var meData = null;
-      try { meData = JSON.parse(meRaw); } catch (_) {}
+    var pack = (packBtn.getAttribute("data-pack") || "").trim();
+    if (!pack) return;
 
-      var user = (meData && (meData.user || meData)) || {};
-      var userId = String(
-        user.id ||
-        user.user_id ||
-        user.uid ||
-        user.email ||
-        ""
-      ).trim();
+    if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
 
-      if (!meRes.ok || !userId || !email) {
-        throw new Error("AUTH_ME_FAILED");
-      }
+    // Debug kanıtları (senin planındaki 2 log)
+    console.log('is-auth?', document.documentElement.classList.contains('is-auth'));
+    console.log('umEmail', (document.getElementById('umEmail')||{}).textContent);
 
-      var initRes = await fetch("/api/garanti/init", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          user_id: userId,
-          email: email,
-          plan: String(pack),
-          amount: Number(pack)
-        })
-      });
-
-      var initRaw = await initRes.text();
-      var initData = null;
-      try { initData = JSON.parse(initRaw); } catch (_) {}
-
-      if (!initRes.ok || !initData || !initData.gateway || !initData.gateway.fields) {
-        var errMsg =
-          (initData && initData.error)
-            ? initData.error
-            : ("GARANTI_INIT_FAILED HTTP " + initRes.status + " RAW=" + initRaw.slice(0, 160));
-        throw new Error(errMsg);
-      }
-
-      var gateway = initData.gateway;
-      var fields = gateway.fields || {};
-      var oid = initData.oid || fields.oid || "";
-
-      if (oid) {
-        try { localStorage.setItem("aivo_pending_garanti_oid", String(oid)); } catch (e) {}
-      }
-
-      var form = document.createElement("form");
-      form.method = String(gateway.method || "POST").toUpperCase();
-      form.action = String(gateway.action || "/api/garanti/callback");
-      form.style.display = "none";
-
-      Object.keys(fields).forEach(function (key) {
-        var input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = fields[key] == null ? "" : String(fields[key]);
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
+    // ✅ C-1) await isAuthed()
+    if (!(await isAuthed())) {
+      try { sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs"); } catch(e){}
+      try { sessionStorage.setItem("aivo_selected_pack", String(pack)); } catch(e){}
+      setReturnAfterPayment();
+      openAuth("login");
       return;
-    } catch (err) {
-      console.error("[AIVO] garanti init/direct submit exception:", err);
-      window.toast.error("Ödeme başlatılamadı.");
     }
-  }
+
+    startCheckout(pack);
+  }, true);
   // ✅ C-1) Click handler async
   document.addEventListener("click", async function(e){
     var t = e.target;
