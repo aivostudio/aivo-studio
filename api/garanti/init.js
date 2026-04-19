@@ -1,6 +1,9 @@
+import crypto from "node:crypto";
+
 // /api/garanti/init.js
 // Garanti ödeme başlangıcı
-// Amaç: checkout'tan gelen POST'u al, order_init KV kaydı yaz, frontend'e Garanti yönlendirme alanları dön
+// Amaç: fiyatlandırmadan gelen POST'u al, order_init KV kaydı yaz,
+// frontend'e Garanti 3D/OOS yönlendirme alanları dön
 
 function json(res, status, data) {
   res.statusCode = status;
@@ -38,11 +41,6 @@ function normEmail(v) {
   return String(v || "").trim().toLowerCase();
 }
 
-function safeNum(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
 function getSiteBase() {
   const raw =
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -51,6 +49,23 @@ function getSiteBase() {
     "";
 
   return String(raw).replace(/\/$/, "");
+}
+
+function sha1Upper(value) {
+  return crypto.createHash("sha1").update(String(value), "utf8").digest("hex").toUpperCase();
+}
+
+function getClientIp(req) {
+  return (
+    String(
+      req.headers["x-forwarded-for"] ||
+      req.headers["x-real-ip"] ||
+      req.socket?.remoteAddress ||
+      ""
+    )
+      .split(",")[0]
+      .trim() || "127.0.0.1"
+  );
 }
 
 export default async function handler(req, res) {
@@ -97,24 +112,27 @@ export default async function handler(req, res) {
   const amount = selectedPlan.amount;
   const credits = selectedPlan.credits;
 
-const oid = `GARANTI_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const oid = `GARANTI_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const now = new Date().toISOString();
+  const siteBase = getSiteBase();
 
-const now = new Date().toISOString();
-const siteBase = getSiteBase();
+  const okUrl = siteBase
+    ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
+    : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
 
-const okUrl = siteBase
-  ? `${siteBase}/api/garanti/ok?oid=${encodeURIComponent(oid)}`
-  : `/api/garanti/ok?oid=${encodeURIComponent(oid)}`;
-
-const failUrl = siteBase
-  ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
-  : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
+  const failUrl = siteBase
+    ? `${siteBase}/api/garanti/fail?oid=${encodeURIComponent(oid)}`
+    : `/api/garanti/fail?oid=${encodeURIComponent(oid)}`;
 
   const garanti3dUrl = String(
     process.env.GARANTI_3D_URL ||
-    process.env.GARANTI_3D_GATEWAY_URL ||
-    ""
+      process.env.GARANTI_3D_GATEWAY_URL ||
+      "https://sanalposprov.garanti.com.tr/servlet/gt3dengine"
   ).trim();
+
+  const garantiMode = String(process.env.GARANTI_MODE || "PROD").trim().toUpperCase();
+  const garanti3dModel = String(process.env.GARANTI_3D_MODEL || "3D_OOS_PAY").trim();
+  const garantiApiVersion = String(process.env.GARANTI_API_VERSION || "v0.01").trim();
 
   const garantiMerchantId = String(process.env.GARANTI_MERCHANT_ID || "").trim();
   const garantiTerminalId = String(process.env.GARANTI_TERMINAL_ID || "").trim();
@@ -123,9 +141,9 @@ const failUrl = siteBase
   const garantiStoreKey = String(process.env.GARANTI_STORE_KEY || "").trim();
   const garanti3dSecureKey = String(
     process.env.GARANTI_3D_SECURE_KEY ||
-    process.env.GARANTI_PROVISION_PASSWORD ||
-    process.env.GARANTI_PASSWORD ||
-    ""
+      process.env.GARANTI_PROVISION_PASSWORD ||
+      process.env.GARANTI_PASSWORD ||
+      ""
   ).trim();
 
   const missingConfig = [
@@ -138,21 +156,25 @@ const failUrl = siteBase
     !garanti3dSecureKey && "GARANTI_3D_SECURE_KEY",
   ].filter(Boolean);
 
-  await kvSetJson(`aivo:garanti:order_init:${oid}`, {
-    oid,
-    email,
-    user_id,
-    plan,
-    amount,
-    credits,
-    currency: "TRY",
-    provider: "garanti",
-    status: "init",
-    ok_url: okUrl,
-    fail_url: failUrl,
-    gateway_url: garanti3dUrl || null,
-    created_at: now,
-  }, { exSec: 60 * 60 * 24 });
+  await kvSetJson(
+    `aivo:garanti:order_init:${oid}`,
+    {
+      oid,
+      email,
+      user_id,
+      plan,
+      amount,
+      credits,
+      currency: "TRY",
+      provider: "garanti",
+      status: "init",
+      ok_url: okUrl,
+      fail_url: failUrl,
+      gateway_url: garanti3dUrl || null,
+      created_at: now,
+    },
+    { exSec: 60 * 60 * 24 }
+  );
 
   if (missingConfig.length) {
     return json(res, 503, {
@@ -160,24 +182,32 @@ const failUrl = siteBase
       error: "GARANTI_3D_CONFIG_MISSING",
       oid,
       missing: missingConfig,
-      note: "Internal callback akisi kapatildi. Gercek Garanti 3D alanlari baglanmadan gateway formu donulmuyor.",
+      note: "Garanti OOS/3D formu olusturulamadi. Env alanlari eksik.",
     });
   }
 
   const amountMinor = Math.round(amount * 100);
-  const securityData = `${garanti3dSecureKey}${String(garantiTerminalId).padStart(9, "0")}`;
-  const hashData = [
+  const installmentCount = "";
+  const terminalIdPadded = String(garantiTerminalId).padStart(9, "0");
+
+  const hashedPassword = sha1Upper(`${garanti3dSecureKey}${terminalIdPadded}`);
+
+  const securityData = [
     garantiTerminalId,
     oid,
     String(amountMinor),
-    "949",
     okUrl,
     failUrl,
     "sales",
-    "tr",
+    installmentCount,
     garantiStoreKey,
-    securityData,
-  ].join("|");
+    hashedPassword,
+  ].join("");
+
+  const secure3dhash = sha1Upper(securityData);
+
+  const txntimestamp = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  const customerIpAddress = getClientIp(req);
 
   return json(res, 200, {
     ok: true,
@@ -187,10 +217,10 @@ const failUrl = siteBase
       mode: "3d_form",
       action: garanti3dUrl,
       method: "POST",
-       fields: {
-        mode: process.env.GARANTI_MODE || "PROD",
-        apiversion: "v0.01",
-        secure3dsecuritylevel: process.env.GARANTI_3D_MODEL || "3D_OOS_PAY",
+      fields: {
+        mode: garantiMode,
+        apiversion: garantiApiVersion,
+        secure3dsecuritylevel: garanti3dModel,
         terminalprovuserid: garantiProvisionUserId,
         terminaluserid: garantiTerminalUserId,
         terminalid: garantiTerminalId,
@@ -199,21 +229,15 @@ const failUrl = siteBase
         txntype: "sales",
         txnamount: String(amountMinor),
         txncurrencycode: "949",
+        txninstallmentcount: installmentCount,
         successurl: okUrl,
         errorurl: failUrl,
         customeremailaddress: email,
-        customeripaddress:
-          String(
-            req.headers["x-forwarded-for"] ||
-            req.headers["x-real-ip"] ||
-            req.socket?.remoteAddress ||
-            ""
-          )
-            .split(",")[0]
-            .trim() || "127.0.0.1",
+        customeripaddress: customerIpAddress,
         companyname: "AIVO",
-        lang: "tr",
-        hash: hashData,
+        lang: "TR",
+        txntimestamp,
+        secure3dhash,
       },
     },
   });
