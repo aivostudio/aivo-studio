@@ -31,7 +31,6 @@ async function readInvoicesByEmail(email) {
 
   const redis = getRedis();
   const key = `invoices:${email}`;
-
   const keyType = await redis.type(key);
 
   if (keyType === "list") {
@@ -46,7 +45,9 @@ async function readInvoicesByEmail(email) {
   if (keyType === "string") {
     const raw = await redis.get(key);
     const arr = safeJsonParse(raw, []);
-    return Array.isArray(arr) ? arr.filter((x) => x && typeof x === "object") : [];
+    return Array.isArray(arr)
+      ? arr.filter((x) => x && typeof x === "object")
+      : [];
   }
 
   if (keyType === "none") {
@@ -115,12 +116,12 @@ function resolveCreditCount(invoice) {
 function resolveAmountTRY(invoice) {
   if (invoice?.amountTRY != null) return Number(invoice.amountTRY) || 0;
   if (invoice?.amount_try != null) return Number(invoice.amount_try) || 0;
+  if (invoice?.total_amount != null) return Number(invoice.total_amount) || 0;
   if (invoice?.amount != null) return Number(invoice.amount) || 0;
   if (invoice?.total != null) return Number(invoice.total) || 0;
   if (invoice?.price != null) return Number(invoice.price) || 0;
   return 0;
 }
-
 function buildInvoiceHtml(data) {
   const companyName = safeStr(data.companyName || "AIVO");
   const companyCountry = safeStr(data.companyCountry || "Türkiye");
@@ -617,7 +618,7 @@ function buildInvoiceHtml(data) {
           </div>
           <div class="detail-row">
             <div class="detail-label">Kanal</div>
-            <div class="detail-value">Online ödeme / Stripe</div>
+          <div class="detail-value">${escapeHtml(providerLabel)}</div>
           </div>
         </div>
       </div>
@@ -703,112 +704,97 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "ID_REQUIRED" });
     }
 
-    const invoicesKey = `invoices:${email}`;
-    const rawInvoices = await kvGet(invoicesKey);
-    const invoices = parseInvoices(rawInvoices);
-
+    const invoices = await readInvoicesByEmail(email);
     const invoice = invoices.find((x) => safeStr(x?.id) === id);
 
     if (!invoice) {
       return res.status(404).json({ ok: false, error: "INVOICE_NOT_FOUND" });
     }
 
-const amountTry =
-  invoice?.amount_try != null ? Number(invoice.amount_try) :
-  invoice?.amount != null ? Number(invoice.amount) :
-  invoice?.total != null ? Number(invoice.total) :
-  invoice?.price != null ? Number(invoice.price) :
-  0;
+    const amountTry = resolveAmountTRY(invoice);
 
-const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
-const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
-const reqOrigin = `${reqProto}://${reqHost}`;
+    const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
+    const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
+    const reqOrigin = `${reqProto}://${reqHost}`;
 
-let resolvedCustomerName = "";
+    let resolvedCustomerName = "";
 
-try {
-  const meRes = await fetch(`${reqOrigin}/api/auth/me`, {
-    method: "GET",
-    headers: {
-      cookie: req.headers.cookie || "",
-      accept: "application/json",
-    },
-  });
+    try {
+      const meRes = await fetch(`${reqOrigin}/api/auth/me`, {
+        method: "GET",
+        headers: {
+          cookie: req.headers.cookie || "",
+          accept: "application/json",
+        },
+      });
 
-  const meJson = await meRes.json().catch(() => null);
+      const meJson = await meRes.json().catch(() => null);
 
-  const firstName =
-    safeStr(meJson?.name) ||
-    safeStr(meJson?.first_name) ||
-    safeStr(meJson?.firstName) ||
-    safeStr(meJson?.user?.name) ||
-    safeStr(meJson?.user?.first_name) ||
-    safeStr(meJson?.user?.firstName) ||
-    safeStr(meJson?.profile?.name) ||
-    safeStr(meJson?.profile?.first_name) ||
-    safeStr(meJson?.profile?.firstName);
+      const firstName =
+        safeStr(meJson?.name) ||
+        safeStr(meJson?.first_name) ||
+        safeStr(meJson?.firstName) ||
+        safeStr(meJson?.user?.name) ||
+        safeStr(meJson?.user?.first_name) ||
+        safeStr(meJson?.user?.firstName) ||
+        safeStr(meJson?.profile?.name) ||
+        safeStr(meJson?.profile?.first_name) ||
+        safeStr(meJson?.profile?.firstName);
 
-  const lastName =
-    safeStr(meJson?.surname) ||
-    safeStr(meJson?.last_name) ||
-    safeStr(meJson?.lastName) ||
-    safeStr(meJson?.user?.surname) ||
-    safeStr(meJson?.user?.last_name) ||
-    safeStr(meJson?.user?.lastName) ||
-    safeStr(meJson?.profile?.surname) ||
-    safeStr(meJson?.profile?.last_name) ||
-    safeStr(meJson?.profile?.lastName);
+      const lastName =
+        safeStr(meJson?.surname) ||
+        safeStr(meJson?.last_name) ||
+        safeStr(meJson?.lastName) ||
+        safeStr(meJson?.user?.surname) ||
+        safeStr(meJson?.user?.last_name) ||
+        safeStr(meJson?.user?.lastName) ||
+        safeStr(meJson?.profile?.surname) ||
+        safeStr(meJson?.profile?.last_name) ||
+        safeStr(meJson?.profile?.lastName);
 
-  resolvedCustomerName = safeStr(`${firstName} ${lastName}`);
-} catch (_) {}
+      resolvedCustomerName = safeStr(`${firstName} ${lastName}`);
+    } catch (_) {}
 
-const html = buildInvoiceHtml({
-  invoiceNo:
-    safeStr(invoice?.invoice_no) ||
-    safeStr(invoice?.invoiceNo) ||
-    safeStr(invoice?.stripe?.invoice_id) ||
-    safeStr(invoice?.id) ||
-    "AIVO-0001",
-  issueDate:
-    invoice?.created_at ||
-    invoice?.createdAt ||
-    invoice?.created ||
-    invoice?.date ||
-    new Date().toISOString(),
-  dueDate:
-    invoice?.paid_at ||
-    invoice?.updated_at ||
-    invoice?.created_at ||
-    invoice?.createdAt ||
-    invoice?.created ||
-    new Date().toISOString(),
-  email: email,
-  customerName:
-    resolvedCustomerName ||
-    safeStr(invoice?.customer_name) ||
-    safeStr(invoice?.customerName) ||
-    "-",
-  customerCountry:
-    safeStr(invoice?.customer_country) ||
-    safeStr(invoice?.customerCountry) ||
-    "Türkiye",
-  companyName: "AIVO",
-  companyCountry: "Türkiye",
-  itemTitle:
-    safeStr(invoice?.item_title) ||
-    safeStr(invoice?.title) ||
-    safeStr(invoice?.plan) ||
-    "AIVO Pro",
-  quantity: Number(invoice?.quantity || 1),
-  creditCount:
-    invoice?.credit_count != null ? Number(invoice.credit_count) :
-    invoice?.credits != null ? Number(invoice.credits) :
-    invoice?.credit_amount != null ? Number(invoice.credit_amount) :
-    invoice?.quantity != null ? Number(invoice.quantity) :
-    1,
-  amount_try: amountTry,
-  logoUrl: `${ORIGIN}/aivo-logo.png`,
-});
+    const html = buildInvoiceHtml({
+      invoiceNo:
+        safeStr(invoice?.invoice_id) ||
+        safeStr(invoice?.invoice_no) ||
+        safeStr(invoice?.invoiceNo) ||
+        safeStr(invoice?.stripe?.invoice_id) ||
+        safeStr(invoice?.id) ||
+        "AIVO-0001",
+      issueDate:
+        invoice?.created_at ||
+        invoice?.createdAt ||
+        invoice?.created ||
+        invoice?.date ||
+        new Date().toISOString(),
+      dueDate:
+        invoice?.paid_at ||
+        invoice?.updated_at ||
+        invoice?.created_at ||
+        invoice?.createdAt ||
+        invoice?.created ||
+        new Date().toISOString(),
+      email,
+      customerName:
+        resolvedCustomerName ||
+        safeStr(invoice?.customer_name) ||
+        safeStr(invoice?.customerName) ||
+        "-",
+      customerCountry:
+        safeStr(invoice?.customer_country) ||
+        safeStr(invoice?.customerCountry) ||
+        "Türkiye",
+      companyName: "AIVO",
+      companyCountry: "Türkiye",
+      itemTitle: resolveItemTitle(invoice),
+      quantity: 1,
+      creditCount: resolveCreditCount(invoice),
+      amount_try: amountTry,
+      providerLabel: resolveProviderLabel(invoice),
+      logoUrl: `${ORIGIN}/aivo-logo.png`,
+    });
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(html);
