@@ -217,10 +217,12 @@
       title: inv.pack || inv.pack_key || inv.plan || inv.title || "Satın Alım",
       statusRaw: String(inv.status || "").toLowerCase().trim(),
       status: mapStatusLabel(inv.status || ""),
-      amount:
+          amount:
+        inv.amountTRY != null ? inv.amountTRY :
         inv.amount_try != null ? inv.amount_try :
         inv.price != null ? inv.price :
         inv.amount != null ? inv.amount :
+        inv.total_amount != null ? inv.total_amount :
         inv.total != null ? inv.total :
         null,
       createdAt:
