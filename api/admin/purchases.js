@@ -28,11 +28,13 @@ function normalizeInvoice(raw, email) {
     safeInt(item.credit) ||
     safeInt(item.credit_amount);
 
-  const amountTotal =
+  let amountTotal =
     safeInt(item.amount_total) ||
     safeInt(item.amount) ||
     safeInt(item.price) ||
-    safeInt(item.total);
+    safeInt(item.total) ||
+    safeInt(item.payment_amount) ||
+    safeInt(item.paid_amount);
 
   let pack = safeText(item.pack) || safeText(item.plan);
   pack = pack.toLowerCase();
@@ -48,6 +50,28 @@ function normalizeInvoice(raw, email) {
     else if (credits === 500 || amountTotal === 2999) pack = "studyo";
   }
 
+  if (!amountTotal) {
+    if (pack === "baslangic") amountTotal = 199;
+    else if (pack === "standart") amountTotal = 699;
+    else if (pack === "pro") amountTotal = 1299;
+    else if (pack === "studyo") amountTotal = 2999;
+  }
+
+  const currency =
+    safeText(item.currency) ||
+    safeText(item.currency_code) ||
+    safeText(item.money_currency) ||
+    (amountTotal ? "TRY" : "");
+
+  const orderId =
+    safeText(item.order_id) ||
+    safeText(item.merchant_oid) ||
+    safeText(item.oid) ||
+    safeText(item.payment_id) ||
+    safeText(item.transaction_id) ||
+    safeText(item.session_id) ||
+    safeText(item.id);
+
   return {
     id: safeText(item.id),
     email: safeText(item.email) || safeText(email),
@@ -56,13 +80,12 @@ function normalizeInvoice(raw, email) {
     credits,
     pack,
     amount_total: amountTotal,
-    currency: safeText(item.currency),
+    currency,
     created_at: safeText(item.created_at || item.ts),
-    order_id: safeText(item.order_id),
+    order_id: orderId,
     session_id: safeText(item.session_id)
   };
 }
-
 async function scanKeys(redis, pattern) {
   let cursor = "0";
   const found = [];
