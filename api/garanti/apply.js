@@ -207,7 +207,7 @@ export default async function handler(req, res) {
       const newTotal = await kvIncr(creditsKey, creditsToAdd);
 
       const invoiceId = `garanti_${oid}`;
-      const invoice = {
+        const invoice = {
         id: invoiceId,
         provider: "garanti",
         type: "purchase",
@@ -216,10 +216,11 @@ export default async function handler(req, res) {
         plan: fresh.plan || init?.plan || null,
         credits: creditsToAdd,
         amountTRY: fresh.amount || init?.amount || null,
+        amount_total: fresh.amount || init?.amount || null,
+        currency: "TRY",
         created_at: new Date().toISOString(),
         status: "paid",
       };
-
       await lpushJson(redis, invoicesKey, invoice);
 
       fresh.credit_applied = true;
