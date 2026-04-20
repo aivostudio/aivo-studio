@@ -23,14 +23,39 @@ function safeJson(res, code, obj) {
 function normalizeInvoice(raw, email) {
   const item = raw && typeof raw === "object" ? raw : {};
 
+  const credits =
+    safeInt(item.credits) ||
+    safeInt(item.credit) ||
+    safeInt(item.credit_amount);
+
+  const amountTotal =
+    safeInt(item.amount_total) ||
+    safeInt(item.amount) ||
+    safeInt(item.price) ||
+    safeInt(item.total);
+
+  let pack = safeText(item.pack) || safeText(item.plan);
+  pack = pack.toLowerCase();
+
+  if (pack === "199" || pack === "699" || pack === "1299" || pack === "2999") {
+    pack = "";
+  }
+
+  if (!pack) {
+    if (credits === 25 || amountTotal === 199) pack = "baslangic";
+    else if (credits === 100 || amountTotal === 699) pack = "standart";
+    else if (credits === 200 || amountTotal === 1299) pack = "pro";
+    else if (credits === 500 || amountTotal === 2999) pack = "studyo";
+  }
+
   return {
     id: safeText(item.id),
     email: safeText(item.email) || safeText(email),
     provider: "garanti",
     status: safeText(item.status),
-    credits: safeInt(item.credits),
-    pack: safeText(item.pack) || safeText(item.plan),
-    amount_total: safeInt(item.amount_total),
+    credits,
+    pack,
+    amount_total: amountTotal,
     currency: safeText(item.currency),
     created_at: safeText(item.created_at || item.ts),
     order_id: safeText(item.order_id),
