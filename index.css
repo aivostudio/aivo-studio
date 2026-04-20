@@ -5408,6 +5408,11 @@ html.is-studio .aivo-topbar {
 .aivo-footer .aivo-contact .aivo-contact-item--address{
   max-width: 920px !important;
   white-space: normal !important;
+  color: #cfd3ff !important;
+}
+
+.aivo-footer .aivo-contact .aivo-contact-item--address .aivo-contact-text{
+  color: #cfd3ff !important;
 }
 
 .aivo-footer .aivo-contact .aivo-contact-icon{
