@@ -224,6 +224,9 @@ export default async function handler(req, res) {
       ]) || null;
 
     let video_url = extractVideoUrl(fal);
+    if (!video_url && fal?.request_id) {
+    video_url = fal?.video_url || null;
+   }
     const stUpper = String(rawStatus || "").toUpperCase();
 
     if (
