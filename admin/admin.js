@@ -874,7 +874,8 @@ async function adminAuth() {
           throw new Error((j && (j.error || j.message)) || "daily_sold_credits_failed");
         }
 
-        setSoldCreditsValues(j.total_credits_sold || 0, j.total_orders || 0);
+           setSoldCreditsValues(j.total_credits_sold || 0, j.total_orders || 0);
+        renderSoldCreditsPackages(j.items || []);
 
         if (soldCreditsOut) {
           soldCreditsOut.style.display = "none";
@@ -885,7 +886,8 @@ async function adminAuth() {
           soldCreditsStatus.textContent = `Gün: ${String(j.date || selectedDate || "-")}`;
         }
       } catch (err) {
-        setSoldCreditsValues(0, 0);
+           setSoldCreditsValues(0, 0);
+        renderSoldCreditsPackages([]);
 
         if (soldCreditsOut) {
           soldCreditsOut.style.display = "block";
