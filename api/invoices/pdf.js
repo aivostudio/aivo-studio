@@ -3,7 +3,7 @@ import puppeteer from "puppeteer-core";
 import kvMod from "../_kv.js";
 
 const kv = kvMod?.default || kvMod || {};
-const kvGet = kv.kvGet;
+const getRedis = kv.getRedis;
 
 function safeStr(v) {
   return String(v || "").trim();
@@ -14,19 +14,47 @@ function normEmail(v) {
   return s.includes("@") ? s : "";
 }
 
-function parseInvoices(raw) {
-  if (Array.isArray(raw)) return raw;
+function safeJsonParse(v, fallback = null) {
+  try {
+    if (v == null) return fallback;
+    if (typeof v === "object") return v;
+    return JSON.parse(String(v));
+  } catch {
+    return fallback;
+  }
+}
 
-  if (typeof raw === "string" && raw.trim()) {
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (_) {
-      return [];
-    }
+async function readInvoicesByEmail(email) {
+  if (typeof getRedis !== "function") {
+    throw new Error("KV_GETREDIS_MISSING");
   }
 
-  return [];
+  const redis = getRedis();
+  const key = `invoices:${email}`;
+  const keyType = await redis.type(key);
+
+  if (keyType === "list") {
+    const rows = await redis.lrange(key, 0, -1);
+    return Array.isArray(rows)
+      ? rows
+          .map((row) => safeJsonParse(row, null))
+          .filter((x) => x && typeof x === "object")
+      : [];
+  }
+
+  if (keyType === "string") {
+    const raw = await redis.get(key);
+    const arr = safeJsonParse(raw, []);
+    return Array.isArray(arr)
+      ? arr.filter((x) => x && typeof x === "object")
+      : [];
+  }
+
+  if (keyType === "none") {
+    return [];
+  }
+
+  throw new Error(`Unexpected Redis type for ${key}: ${keyType}`);
 }
 
 async function resolveExecutablePath() {
@@ -45,8 +73,8 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    if (typeof kvGet !== "function") {
-      return res.status(500).json({ ok: false, error: "KV_GET_MISSING" });
+    if (typeof getRedis !== "function") {
+      return res.status(500).json({ ok: false, error: "KV_GETREDIS_MISSING" });
     }
 
     const email = normEmail(req.query?.email);
@@ -60,17 +88,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "ID_REQUIRED" });
     }
 
-    const invoicesKey = `invoices:${email}`;
-    const rawInvoices = await kvGet(invoicesKey);
-    const invoices = parseInvoices(rawInvoices);
-
+    const invoices = await readInvoicesByEmail(email);
     const invoice = invoices.find((x) => safeStr(x?.id) === id);
 
     if (!invoice) {
       return res.status(404).json({ ok: false, error: "INVOICE_NOT_FOUND" });
     }
 
-    const aivoHtml = safeStr(invoice?.aivo_html);
+    const aivoHtml =
+      safeStr(invoice?.aivo_html) ||
+      safeStr(invoice?.html) ||
+      safeStr(invoice?.invoice_html);
 
     if (!aivoHtml) {
       return res.status(404).json({ ok: false, error: "AIVO_HTML_NOT_FOUND" });
@@ -83,16 +111,16 @@ export default async function handler(req, res) {
       defaultViewport: {
         width: 1400,
         height: 1800,
-        deviceScaleFactor: 2
+        deviceScaleFactor: 2,
       },
       executablePath,
-      headless: true
+      headless: true,
     });
 
     const page = await browser.newPage();
 
     await page.setContent(aivoHtml, {
-      waitUntil: ["domcontentloaded", "networkidle0"]
+      waitUntil: ["domcontentloaded", "networkidle0"],
     });
 
     const pdfBuffer = await page.pdf({
@@ -103,8 +131,8 @@ export default async function handler(req, res) {
         top: "16mm",
         right: "16mm",
         bottom: "16mm",
-        left: "16mm"
-      }
+        left: "16mm",
+      },
     });
 
     const filename = `aivo-invoice-${safeStr(invoice?.id || "document")}.pdf`;
@@ -118,7 +146,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       ok: false,
       error: "INVOICE_PDF_FAILED",
-      message: err?.message || "UNKNOWN_ERROR"
+      message: err?.message || "UNKNOWN_ERROR",
     });
   } finally {
     if (browser) {
