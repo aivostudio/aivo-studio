@@ -26,7 +26,7 @@ function normalizeInvoice(raw, email) {
   return {
     id: safeText(item.id),
     email: safeText(item.email) || safeText(email),
-    provider: safeText(item.provider) || "unknown",
+    provider: "garanti",
     status: safeText(item.status),
     credits: safeInt(item.credits),
     pack: safeText(item.pack) || safeText(item.plan),
