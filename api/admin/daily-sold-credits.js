@@ -54,7 +54,7 @@ function normalizeInvoice(raw, email) {
     provider: safeText(item.provider) || "unknown",
     status,
     credits,
-    pack: safeText(item.pack) || null,
+    pack: safeText(item.pack) || safeText(item.plan) || null,
     amount_total: safeInt(item.amount_total),
     currency: safeText(item.currency) || null,
     session_id: safeText(item.session_id) || safeText(item?.stripe?.session_id) || null,
