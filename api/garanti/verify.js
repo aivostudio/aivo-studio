@@ -136,6 +136,16 @@ export default async function handler(req, res) {
       updated_at: o?.updated_at ?? null,
       paid_at: o?.paid_at ?? null,
 
+      notify_hash_valid: o?.notify_hash_valid ?? null,
+      notify_proc_return_code: o?.notify_proc_return_code ?? null,
+      notify_authcode: o?.notify_authcode ?? null,
+      notify_errmsg: o?.notify_errmsg ?? null,
+      mdstatus:
+        o?.notify_payload?.mdstatus ??
+        o?.notify_payload?.mdStatus ??
+        o?.notify_payload?.MdStatus ??
+        null,
+
       apply_result: applyResult || null,
     });
   } catch (e) {
