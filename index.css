@@ -5388,6 +5388,7 @@ html.is-studio .aivo-topbar {
 }
 
 .aivo-footer .aivo-contact .aivo-contact-item{
+   
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -5403,6 +5404,10 @@ html.is-studio .aivo-topbar {
   font-weight: 500 !important;
   font-size: 17px !important;
   line-height: 1.5 !important;
+}
+   .aivo-footer .aivo-contact .aivo-contact-item--address span,
+.aivo-footer .aivo-contact .aivo-contact-item--address{
+  color: #cfd3ff !important;
 }
 
 .aivo-footer .aivo-contact .aivo-contact-item--address{
