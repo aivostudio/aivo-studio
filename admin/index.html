@@ -151,16 +151,42 @@
         </div>
       </div>
 
-      <div
-        id="soldCreditsPackages"
-        style="display:grid; grid-template-columns:repeat(4, minmax(220px, 1fr)); gap:16px;"
-      >
-        <div class="muted" style="padding:10px 6px;">
-          Henüz veri yüklenmedi.
-        </div>
-      </div>
+  <div
+  id="soldCreditsPackages"
+  style="display:grid; grid-template-columns:repeat(4, minmax(220px, 1fr)); gap:16px;"
+>
+  <div class="muted" style="padding:10px 6px;">
+    Henüz veri yüklenmedi.
+  </div>
+</div>
 
-      <pre id="soldCreditsOut" class="out" style="margin-top:12px; display:none;"></pre>
+<div
+  id="soldCreditsListWrap"
+  style="margin-top:16px; max-height:320px; overflow:auto; border:1px solid rgba(255,255,255,.08); border-radius:16px;"
+>
+  <table id="soldCreditsListTable" style="width:100%; border-collapse:collapse; min-width:860px;">
+    <thead>
+      <tr style="text-align:left; opacity:.85;">
+        <th style="padding:10px 12px;">Email</th>
+        <th style="padding:10px 12px;">Paket</th>
+        <th style="padding:10px 12px;">Kredi</th>
+        <th style="padding:10px 12px;">Tutar</th>
+        <th style="padding:10px 12px;">Para Birimi</th>
+        <th style="padding:10px 12px;">Sipariş</th>
+        <th style="padding:10px 12px;">Tarih</th>
+      </tr>
+    </thead>
+    <tbody id="soldCreditsListTbody">
+      <tr>
+        <td colspan="7" class="muted" style="padding:12px;">
+          Henüz detay veri yüklenmedi.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<pre id="soldCreditsOut" class="out" style="margin-top:12px; display:none;"></pre>
     </section>
 
     <section class="card" id="cardProductionStats">
