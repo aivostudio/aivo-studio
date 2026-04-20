@@ -269,6 +269,26 @@
     inset 0 -8px 18px rgba(20, 14, 48, .22),
     0 10px 22px rgba(24, 18, 58, .34);
 }
+/* === STUDIO PACK CTA — subtle premium accent === */
+.pricing-grid > .p-card:last-child .p-btn{
+  position: relative;
+}
+
+.pricing-grid > .p-card:last-child .p-btn::after{
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: linear-gradient(180deg, rgba(255,205,92,1) 0%, rgba(214,144,18,1) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,214,122,.18),
+    0 0 12px rgba(255,184,77,.28);
+  pointer-events: none;
+}
 /* POP card */
 .p-pop{
   border-color: rgba(185,167,255,.35);
