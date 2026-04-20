@@ -122,6 +122,7 @@ function resolveAmountTRY(invoice) {
   if (invoice?.price != null) return Number(invoice.price) || 0;
   return 0;
 }
+
 function buildInvoiceHtml(data) {
   const companyName = safeStr(data.companyName || "AIVO");
   const companyCountry = safeStr(data.companyCountry || "Türkiye");
@@ -618,7 +619,7 @@ function buildInvoiceHtml(data) {
           </div>
           <div class="detail-row">
             <div class="detail-label">Kanal</div>
-          <div class="detail-value">${escapeHtml(providerLabel)}</div>
+            <div class="detail-value">${escapeHtml(providerLabel)}</div>
           </div>
         </div>
       </div>
@@ -642,7 +643,7 @@ function buildInvoiceHtml(data) {
               <div class="item-name">${escapeHtml(itemTitle)}</div>
               <div class="item-desc">AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi. Satın alınan kredi: ${escapeHtml(String(creditCount))} kredi.</div>
             </td>
-          <td class="num">${escapeHtml(String(creditCount))}</td>
+            <td class="num">${escapeHtml(String(creditCount))}</td>
             <td class="num">${escapeHtml(unitPrice)}</td>
             <td class="num">${escapeHtml(totalPrice)}</td>
           </tr>
@@ -689,8 +690,8 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    if (typeof kvGet !== "function") {
-      return res.status(500).json({ ok: false, error: "KV_GET_MISSING" });
+    if (typeof getRedis !== "function") {
+      return res.status(500).json({ ok: false, error: "KV_GETREDIS_MISSING" });
     }
 
     const email = normEmail(req.query?.email);
@@ -795,6 +796,7 @@ export default async function handler(req, res) {
       providerLabel: resolveProviderLabel(invoice),
       logoUrl: `${ORIGIN}/aivo-logo.png`,
     });
+
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(html);
