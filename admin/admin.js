@@ -781,11 +781,69 @@ async function adminAuth() {
     const soldCreditsStatus = $("soldCreditsStatus");
     const soldCreditsTotalValue = $("soldCreditsTotalValue");
     const soldCreditsOrdersValue = $("soldCreditsOrdersValue");
+    const soldCreditsPackages = $("soldCreditsPackages");
     const soldCreditsOut = $("soldCreditsOut");
 
     function setSoldCreditsValues(totalCredits, totalOrders) {
       if (soldCreditsTotalValue) soldCreditsTotalValue.textContent = String(Number(totalCredits || 0));
       if (soldCreditsOrdersValue) soldCreditsOrdersValue.textContent = String(Number(totalOrders || 0));
+    }
+
+    function escapeHtml(v) {
+      return String(v == null ? "" : v)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderSoldCreditsPackages(items) {
+      if (!soldCreditsPackages) return;
+
+      const list = Array.isArray(items) ? items : [];
+
+      const buckets = {
+        baslangic: { title: "Yeni Kullanıcı", price: "199₺", credits: "25 kredi", orders: 0, sold: 0 },
+        standart: { title: "Standart Paket", price: "699₺", credits: "100 kredi", orders: 0, sold: 0 },
+        pro: { title: "Yaratıcı Üretici", price: "1.299₺", credits: "200 kredi", orders: 0, sold: 0 },
+        studyo: { title: "Stüdyo / Ajans", price: "2.999₺", credits: "500 kredi", orders: 0, sold: 0 }
+      };
+
+      for (const item of list) {
+        const plan = String(item && item.pack ? item.pack : item && item.plan ? item.plan : "").trim().toLowerCase();
+        const credits = Number(item && item.credits ? item.credits : 0) || 0;
+
+        if (!buckets[plan]) continue;
+
+        buckets[plan].orders += 1;
+        buckets[plan].sold += credits;
+      }
+
+      const html = Object.keys(buckets).map((key) => {
+        const x = buckets[key];
+        return `
+          <div style="padding:18px; border:1px solid rgba(255,255,255,.08); border-radius:20px; background:rgba(255,255,255,.02);">
+            <div class="muted" style="margin-bottom:8px; font-size:13px;">${escapeHtml(x.title)}</div>
+            <div style="font-size:44px; font-weight:800; line-height:1; margin-bottom:8px;">${escapeHtml(x.price)}</div>
+            <div class="muted" style="margin-bottom:18px;">/ ${escapeHtml(x.credits)}</div>
+
+            <div style="display:grid; gap:10px;">
+              <div style="padding:12px 14px; border:1px solid rgba(255,255,255,.06); border-radius:14px;">
+                <div class="muted" style="margin-bottom:4px;">Satış Adedi</div>
+                <div style="font-size:28px; font-weight:800;">${x.orders}</div>
+              </div>
+
+              <div style="padding:12px 14px; border:1px solid rgba(255,255,255,.06); border-radius:14px;">
+                <div class="muted" style="margin-bottom:4px;">Satılan Kredi</div>
+                <div style="font-size:28px; font-weight:800;">${x.sold}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      soldCreditsPackages.innerHTML = html;
     }
 
     async function loadSoldCredits() {
