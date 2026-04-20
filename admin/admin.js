@@ -855,6 +855,9 @@ async function adminAuth() {
 const purchasesData = await r2.json().catch(() => null);
 
 console.log("PURCHASES DEBUG:", purchasesData);
+      if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
+  alert("Toplam satış: " + purchasesData.total);
+}
       const s = await adminAuth();
       if (!s.ok) return;
 
