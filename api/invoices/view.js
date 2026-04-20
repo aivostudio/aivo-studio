@@ -1,7 +1,7 @@
 import kvMod from "../_kv.js";
 
 const kv = kvMod?.default || kvMod || {};
-const kvGet = kv.kvGet;
+const getRedis = kv.getRedis;
 
 const ORIGIN = "https://aivo.tr";
 
@@ -14,19 +14,46 @@ function normEmail(v) {
   return s.includes("@") ? s : "";
 }
 
-function parseInvoices(raw) {
-  if (Array.isArray(raw)) return raw;
+function safeJsonParse(v, fallback = null) {
+  try {
+    if (v == null) return fallback;
+    if (typeof v === "object") return v;
+    return JSON.parse(String(v));
+  } catch {
+    return fallback;
+  }
+}
 
-  if (typeof raw === "string" && raw.trim()) {
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (_) {
-      return [];
-    }
+async function readInvoicesByEmail(email) {
+  if (typeof getRedis !== "function") {
+    throw new Error("KV_GETREDIS_MISSING");
   }
 
-  return [];
+  const redis = getRedis();
+  const key = `invoices:${email}`;
+
+  const keyType = await redis.type(key);
+
+  if (keyType === "list") {
+    const rows = await redis.lrange(key, 0, -1);
+    return Array.isArray(rows)
+      ? rows
+          .map((row) => safeJsonParse(row, null))
+          .filter((x) => x && typeof x === "object")
+      : [];
+  }
+
+  if (keyType === "string") {
+    const raw = await redis.get(key);
+    const arr = safeJsonParse(raw, []);
+    return Array.isArray(arr) ? arr.filter((x) => x && typeof x === "object") : [];
+  }
+
+  if (keyType === "none") {
+    return [];
+  }
+
+  throw new Error(`Unexpected Redis type for ${key}: ${keyType}`);
 }
 
 function formatDateTR(input) {
@@ -60,30 +87,57 @@ function escapeHtml(s) {
     .replaceAll("'", "&#39;");
 }
 
+function resolveProviderLabel(invoice) {
+  const provider = safeStr(invoice?.provider).toLowerCase();
+  if (provider === "garanti") return "Online ödeme / Garanti BBVA Sanal POS";
+  if (provider === "stripe") return "Online ödeme / Stripe";
+  return "Online ödeme";
+}
+
+function resolveItemTitle(invoice) {
+  return (
+    safeStr(invoice?.item_title) ||
+    safeStr(invoice?.title) ||
+    safeStr(invoice?.plan) ||
+    (invoice?.credits ? `${invoice.credits} Kredilik Paket` : "") ||
+    "AIVO Paket"
+  );
+}
+
+function resolveCreditCount(invoice) {
+  if (invoice?.credit_count != null) return Number(invoice.credit_count) || 0;
+  if (invoice?.credits != null) return Number(invoice.credits) || 0;
+  if (invoice?.credit_amount != null) return Number(invoice.credit_amount) || 0;
+  if (invoice?.quantity != null) return Number(invoice.quantity) || 0;
+  return 1;
+}
+
+function resolveAmountTRY(invoice) {
+  if (invoice?.amountTRY != null) return Number(invoice.amountTRY) || 0;
+  if (invoice?.amount_try != null) return Number(invoice.amount_try) || 0;
+  if (invoice?.amount != null) return Number(invoice.amount) || 0;
+  if (invoice?.total != null) return Number(invoice.total) || 0;
+  if (invoice?.price != null) return Number(invoice.price) || 0;
+  return 0;
+}
+
 function buildInvoiceHtml(data) {
   const companyName = safeStr(data.companyName || "AIVO");
   const companyCountry = safeStr(data.companyCountry || "Türkiye");
-const customerName = safeStr(data.customerName || "-");
+  const customerName = safeStr(data.customerName || "-");
   const customerCountry = safeStr(data.customerCountry || "Türkiye");
   const email = safeStr(data.email || "-");
   const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
   const issueDate = formatDateTR(data.issueDate || new Date().toISOString());
   const dueDate = formatDateTR(data.dueDate || data.issueDate || new Date().toISOString());
-const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
-const quantity = Number(data.quantity || 1);
-const creditCount = Number(
-  data.creditCount != null
-    ? data.creditCount
-    : data.credits != null
-      ? data.credits
-      : data.credit_amount != null
-        ? data.credit_amount
-        : quantity
-);
-const amountValue = Number(data.amount_try || 0);
-const unitPrice = formatMoneyTRY(amountValue);
-const totalPrice = formatMoneyTRY(amountValue);
-const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
+  const itemTitle = safeStr(data.itemTitle || "AIVO Paket");
+  const creditCount = Number(data.creditCount || 1);
+  const amountValue = Number(data.amount_try || 0);
+  const unitPriceValue = creditCount > 0 ? amountValue / creditCount : amountValue;
+  const unitPrice = formatMoneyTRY(unitPriceValue);
+  const totalPrice = formatMoneyTRY(amountValue);
+  const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
+  const providerLabel = safeStr(data.providerLabel || "Online ödeme");
 
   return `
 <!doctype html>
@@ -94,7 +148,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
   <title>${escapeHtml(companyName)} Fatura</title>
   <style>
     * { box-sizing: border-box; }
-
     html, body {
       margin: 0;
       padding: 0;
@@ -104,7 +157,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
-
     .page {
       width: 1240px;
       min-height: 1754px;
@@ -116,7 +168,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       position: relative;
       overflow: hidden;
     }
-
     .page::before {
       content: "";
       position: absolute;
@@ -127,7 +178,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       background: radial-gradient(circle, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0.00) 68%);
       pointer-events: none;
     }
-
     .page::after {
       content: "";
       position: absolute;
@@ -138,8 +188,7 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, rgba(168,85,247,0.00) 68%);
       pointer-events: none;
     }
-
-         .topbar {
+    .topbar {
       position: relative;
       z-index: 1;
       display: flex;
@@ -150,14 +199,12 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       padding-bottom: 26px;
       border-bottom: 1px solid #e2e8f0;
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 18px;
     }
-
-     .brand-mark {
+    .brand-mark {
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -171,21 +218,18 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       height: auto;
       padding: 0;
     }
-
-       .brand-mark img {
+    .brand-mark img {
       width: 220px;
       height: auto;
       object-fit: contain;
       display: block;
       margin-left: -22px;
     }
-
     .brand-copy {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-
     .brand-eyebrow {
       font-size: 12px;
       font-weight: 700;
@@ -193,28 +237,17 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       text-transform: uppercase;
       color: #64748b;
     }
-
-    .brand-name {
-      font-size: 38px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      color: #0f172a;
-    }
-
     .brand-meta {
       font-size: 15px;
       line-height: 1.6;
       color: #475569;
     }
-
     .invoice-badge-wrap {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
       gap: 14px;
     }
-
     .invoice-badge {
       display: inline-flex;
       align-items: center;
@@ -230,14 +263,12 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       text-transform: uppercase;
       box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
     }
-
     .invoice-code {
       font-size: 18px;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: 0.02em;
     }
-
     .hero {
       position: relative;
       z-index: 1;
@@ -247,11 +278,9 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       gap: 28px;
       align-items: stretch;
     }
-
     .hero-left {
       padding: 0;
     }
-
     .invoice-title {
       margin: 0 0 12px;
       font-size: 64px;
@@ -260,7 +289,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       letter-spacing: -0.05em;
       color: #0f172a;
     }
-
     .invoice-subtitle {
       max-width: 640px;
       margin: 0;
@@ -268,7 +296,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       line-height: 1.7;
       color: #475569;
     }
-
     .hero-panel {
       border-radius: 28px;
       padding: 28px 30px;
@@ -279,18 +306,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       position: relative;
       overflow: hidden;
     }
-
-    .hero-panel::before {
-      content: "";
-      position: absolute;
-      top: -40px;
-      right: -40px;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 70%);
-      pointer-events: none;
-    }
-
     .hero-panel-label {
       position: relative;
       z-index: 1;
@@ -301,7 +316,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       color: rgba(255,255,255,0.72);
       margin-bottom: 16px;
     }
-
     .hero-panel-amount {
       position: relative;
       z-index: 1;
@@ -312,7 +326,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       letter-spacing: -0.04em;
       color: #ffffff;
     }
-
     .hero-panel-copy {
       position: relative;
       z-index: 1;
@@ -321,7 +334,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       line-height: 1.7;
       color: rgba(255,255,255,0.88);
     }
-
     .grid {
       position: relative;
       z-index: 1;
@@ -330,7 +342,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       gap: 24px;
       margin-top: 34px;
     }
-
     .card {
       border: 1px solid rgba(148, 163, 184, 0.18);
       border-radius: 26px;
@@ -341,7 +352,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
         inset 0 1px 0 rgba(255,255,255,0.82);
       padding: 26px 28px;
     }
-
     .card-title {
       margin: 0 0 18px;
       font-size: 14px;
@@ -350,26 +360,22 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       text-transform: uppercase;
       color: #475569;
     }
-
     .detail-list {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-
     .detail-row {
       display: grid;
       grid-template-columns: 170px 1fr;
       gap: 14px;
       align-items: start;
     }
-
     .detail-label {
       font-size: 14px;
       font-weight: 700;
       color: #64748b;
     }
-
     .detail-value {
       font-size: 16px;
       line-height: 1.6;
@@ -377,7 +383,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       color: #0f172a;
       word-break: break-word;
     }
-
     .section-title {
       position: relative;
       z-index: 1;
@@ -388,7 +393,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       text-transform: uppercase;
       color: #64748b;
     }
-
     .items-wrap {
       position: relative;
       z-index: 1;
@@ -398,12 +402,10 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       background: rgba(255,255,255,0.92);
       box-shadow: 0 20px 44px rgba(15, 23, 42, 0.07);
     }
-
     .table {
       width: 100%;
       border-collapse: collapse;
     }
-
     .table thead th {
       padding: 22px 24px;
       text-align: left;
@@ -415,7 +417,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
     }
-
     .table tbody td {
       padding: 24px;
       font-size: 18px;
@@ -424,30 +425,25 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       border-bottom: 1px solid #eef2f7;
       vertical-align: top;
     }
-
     .table tbody tr:last-child td {
       border-bottom: 0;
     }
-
     .table .item-name {
       font-weight: 800;
       font-size: 20px;
       color: #0f172a;
     }
-
     .table .item-desc {
       margin-top: 6px;
       font-size: 14px;
       line-height: 1.6;
       color: #64748b;
     }
-
     .table .num {
       text-align: right;
       white-space: nowrap;
       font-weight: 800;
     }
-
     .totals-wrap {
       position: relative;
       z-index: 1;
@@ -455,7 +451,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       display: flex;
       justify-content: flex-end;
     }
-
     .totals-card {
       width: 420px;
       border-radius: 26px;
@@ -464,26 +459,22 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
       padding: 20px 24px;
     }
-
     .totals {
       width: 100%;
       border-collapse: collapse;
     }
-
     .totals td {
       padding: 12px 0;
       font-size: 16px;
       border-bottom: 1px solid #e2e8f0;
       color: #334155;
     }
-
     .totals td:last-child {
       text-align: right;
       font-weight: 800;
       color: #0f172a;
       white-space: nowrap;
     }
-
     .totals tr:last-child td {
       padding-top: 18px;
       font-size: 28px;
@@ -491,7 +482,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       font-weight: 900;
       color: #0f172a;
     }
-
     .note {
       position: relative;
       z-index: 1;
@@ -504,7 +494,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       font-size: 14px;
       line-height: 1.75;
     }
-
     .footer {
       position: relative;
       z-index: 1;
@@ -518,7 +507,6 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
       color: #64748b;
       font-size: 14px;
     }
-
     .footer strong {
       color: #0f172a;
     }
@@ -532,9 +520,9 @@ const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
           <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)} Logo" />
         </div>
         <div class="brand-copy">
-  <div class="brand-eyebrow">Official Invoice</div>
-  <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
-</div>
+          <div class="brand-eyebrow">Official Invoice</div>
+          <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
+        </div>
       </div>
 
       <div class="invoice-badge-wrap">
