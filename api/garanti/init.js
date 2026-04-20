@@ -1,40 +1,15 @@
 import crypto from "node:crypto";
+import kvMod from "../_kv.js";
 
 // /api/garanti/init.js
 // Garanti ödeme başlangıcı
-// Amaç: fiyatlandırmadan gelen POST'u al, order_init KV kaydı yaz,
+// Amaç: fiyatlandırmadan gelen POST'u al, order_init + order KV kaydı yaz,
 // frontend'e Garanti 3D/OOS yönlendirme alanları dön
 
 function json(res, status, data) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(data));
-}
-
-async function kvCmd(path, { method = "GET", body } = {}) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
-
-  const url = `${process.env.KV_REST_API_URL}${path}`;
-  const r = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-      ...(body ? { "Content-Type": "application/json" } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!r.ok) return null;
-  const data = await r.json().catch(() => null);
-  return data && typeof data === "object" && "result" in data ? data.result : data;
-}
-
-async function kvSetJson(key, obj, { exSec } = {}) {
-  const q = exSec ? `?EX=${encodeURIComponent(String(exSec))}` : "";
-  return kvCmd(`/set/${encodeURIComponent(key)}${q}`, {
-    method: "POST",
-    body: obj,
-  });
 }
 
 function normEmail(v) {
@@ -66,6 +41,17 @@ function getClientIp(req) {
       .split(",")[0]
       .trim() || "127.0.0.1"
   );
+}
+
+function resolveKv() {
+  const kv = kvMod?.default || kvMod || {};
+  const kvSetJson = kv.kvSetJson;
+
+  if (typeof kvSetJson !== "function") {
+    throw new Error("KV_HELPER_MISSING:kvSetJson");
+  }
+
+  return { kvSetJson };
 }
 
 export default async function handler(req, res) {
@@ -116,7 +102,7 @@ export default async function handler(req, res) {
   const now = new Date().toISOString();
   const siteBase = getSiteBase();
 
-   const okUrl = siteBase
+  const okUrl = siteBase
     ? `${siteBase}/api/garanti/callback`
     : `/api/garanti/callback`;
 
@@ -157,43 +143,52 @@ export default async function handler(req, res) {
     !garantiProvisionPassword && "GARANTI_PROVISION_PASSWORD",
   ].filter(Boolean);
 
-  await kvSetJson(
-    `aivo:garanti:order_init:${oid}`,
-    {
-      
-      oid,
-      email,
-      user_id,
-      plan,
-      amount,
-      credits,
-      currency: "TRY",
-      provider: "garanti",
-      status: "init",
-      ok_url: okUrl,
-      fail_url: failUrl,
-      gateway_url: garanti3dUrl || null,
-      created_at: now,
-    },
-    { exSec: 60 * 60 * 24 }
-  );
+  try {
+    const { kvSetJson } = resolveKv();
 
-  await kvSetJson(
-  `aivo:garanti:order:${oid}`,
-  {
-    oid,
-    email,
-    user_id,
-    plan,
-    amount,
-    credits,
-    currency: "TRY",
-    provider: "garanti",
-    status: "pending",
-    created_at: now,
-  },
-  { exSec: 60 * 60 * 24 }
-);
+    await kvSetJson(
+      `aivo:garanti:order_init:${oid}`,
+      {
+        oid,
+        email,
+        user_id,
+        plan,
+        amount,
+        credits,
+        currency: "TRY",
+        provider: "garanti",
+        status: "init",
+        ok_url: okUrl,
+        fail_url: failUrl,
+        gateway_url: garanti3dUrl || null,
+        created_at: now,
+      },
+      { ex: 60 * 60 * 24 }
+    );
+
+    await kvSetJson(
+      `aivo:garanti:order:${oid}`,
+      {
+        oid,
+        email,
+        user_id,
+        plan,
+        amount,
+        credits,
+        currency: "TRY",
+        provider: "garanti",
+        status: "pending",
+        created_at: now,
+      },
+      { ex: 60 * 60 * 24 }
+    );
+  } catch (e) {
+    return json(res, 500, {
+      ok: false,
+      error: "KV_WRITE_FAILED",
+      detail: String(e?.message || e),
+    });
+  }
 
   if (missingConfig.length) {
     return json(res, 503, {
