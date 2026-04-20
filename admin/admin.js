@@ -863,7 +863,26 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
 
   setSoldCreditsValues(purchasedCredits, purchasesData.total || purchasedItems.length || 0);
   renderSoldCreditsPackages(purchasedItems);
+
+  const tbody = document.getElementById("soldCreditsListTbody");
+
+  if (tbody) {
+    tbody.innerHTML = purchasedItems.map(item => {
+      return `
+        <tr>
+          <td style="padding:8px 10px;">${item.email || "-"}</td>
+          <td style="padding:8px 10px;">${item.pack || "-"}</td>
+          <td style="padding:8px 10px;">${item.credits || 0}</td>
+          <td style="padding:8px 10px;">${item.amount || 0}</td>
+          <td style="padding:8px 10px;">${item.currency || "-"}</td>
+          <td style="padding:8px 10px;">${item.order_id || "-"}</td>
+          <td style="padding:8px 10px;">${item.created_at || "-"}</td>
+        </tr>
+      `;
+    }).join("");
+  }
 }
+      
       const s = await adminAuth();
       if (!s.ok) return;
 
