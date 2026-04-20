@@ -74,11 +74,26 @@ if (type === "list") {
   return items;
 }
 
-  if (type === "string") {
-    const raw = await redis.get(key);
-    const arr = JSON.parse(raw || "[]");
-    return arr.map(i => normalizeInvoice(i, email));
+if (type === "string") {
+  const raw = await redis.get(key);
+  let arr = [];
+
+  try {
+    if (typeof raw === "string") {
+      arr = JSON.parse(raw || "[]");
+    } else if (Array.isArray(raw)) {
+      arr = raw;
+    } else if (raw && typeof raw === "object") {
+      arr = [raw];
+    } else {
+      arr = [];
+    }
+  } catch (_) {
+    arr = [];
   }
+
+  return (Array.isArray(arr) ? arr : []).map((i) => normalizeInvoice(i, email));
+}
 
   return [];
 }
