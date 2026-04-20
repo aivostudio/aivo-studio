@@ -1,47 +1,39 @@
 // /api/garanti/notify.js
 // Garanti bildirim/callback endpoint'i
 // Gerçek banka hash doğrulaması ile ödeme sonucunu işler
+// TEK SOURCE OF TRUTH: api/_kv.js kullanır
 
 import crypto from "crypto";
+import kvMod from "../_kv.js";
 
-async function kvGet(key) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+function resolveKv() {
+  const kv = kvMod?.default || kvMod || {};
 
-  const url = `${process.env.KV_REST_API_URL}/get/${encodeURIComponent(key)}`;
-  const r = await fetch(url, {
-    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
-  });
-  if (!r.ok) return null;
+  const kvGet = kv.kvGet;
+  const kvSetJson = kv.kvSetJson;
 
-  const data = await r.json().catch(() => null);
-  return data && typeof data === "object" && "result" in data ? data.result : data;
-}
-
-async function kvSet(key, value) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    return { ok: false, skipped: true };
+  if (typeof kvGet !== "function") {
+    throw new Error("KV_HELPER_MISSING:kvGet");
+  }
+  if (typeof kvSetJson !== "function") {
+    throw new Error("KV_HELPER_MISSING:kvSetJson");
   }
 
-  const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
-  const r = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(value),
-  });
-
-  if (!r.ok) {
-    const t = await r.text().catch(() => "");
-    return { ok: false, status: r.status, error: t || "KV_SET_FAILED" };
-  }
-
-  const data = await r.json().catch(() => ({}));
-  return { ok: true, result: data };
+  return { kvGet, kvSetJson };
 }
 
-function readRawBody(req) {
+function tryJsonParse(x) {
+  if (x == null) return null;
+  if (typeof x === "object") return x;
+
+  try {
+    return JSON.parse(String(x));
+  } catch (_) {
+    return x;
+  }
+}
+
+async function readRawBody(req) {
   return new Promise((resolve, reject) => {
     let data = "";
     req.on("data", (chunk) => (data += chunk));
@@ -73,11 +65,11 @@ async function readPost(req) {
 function pickOid(post) {
   return String(
     post.oid ||
-    post.order_id ||
-    post.merchant_oid ||
-    post.OrderId ||
-    post.orderid ||
-    ""
+      post.order_id ||
+      post.merchant_oid ||
+      post.OrderId ||
+      post.orderid ||
+      ""
   ).trim();
 }
 
@@ -121,8 +113,13 @@ function garantiHashVerify(post) {
   let digestData = "";
 
   for (const param of paramList) {
-    const key = String(param || "").trim().toLowerCase();
-    const value = post[key] == null ? "" : String(post[key]);
+    const rawKey = String(param || "").trim();
+    const keyLower = rawKey.toLowerCase();
+
+    let value = "";
+    if (post[rawKey] != null) value = String(post[rawKey]);
+    else if (post[keyLower] != null) value = String(post[keyLower]);
+
     digestData += value;
   }
 
@@ -137,7 +134,10 @@ function garantiHashVerify(post) {
 }
 
 function isApprovedByBank(post) {
-  const procReturnCode = String(post.procreturncode || "").trim();
+  const procReturnCode = String(
+    post.procreturncode || post.procreturncode || ""
+  ).trim();
+
   return procReturnCode === "00";
 }
 
@@ -147,6 +147,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { kvGet, kvSetJson } = resolveKv();
+
     const post = await readPost(req);
     const oid = pickOid(post);
 
@@ -157,8 +159,11 @@ export default async function handler(req, res) {
     const orderKey = `aivo:garanti:order:${oid}`;
     const initKey = `aivo:garanti:order_init:${oid}`;
 
-    const existing = await kvGet(orderKey);
-    const initData = await kvGet(initKey);
+    const existingRaw = await kvGet(orderKey);
+    const initRaw = await kvGet(initKey);
+
+    const existing = tryJsonParse(existingRaw) || {};
+    const initData = tryJsonParse(initRaw) || {};
 
     const now = new Date().toISOString();
     const hashValid = garantiHashVerify(post);
@@ -171,24 +176,28 @@ export default async function handler(req, res) {
       provider: "garanti",
       status,
       total_amount: amount,
-      currency: initData?.currency || "TRY",
-      plan: initData?.plan || null,
-      credits: initData?.credits || null,
-      amount: initData?.amount || amount || null,
-      email: initData?.email || null,
+      currency: initData?.currency || existing?.currency || "TRY",
+      plan: initData?.plan || existing?.plan || null,
+      credits: initData?.credits || existing?.credits || null,
+      amount: initData?.amount || existing?.amount || amount || null,
+      email: initData?.email || existing?.email || null,
+      user_id: initData?.user_id || existing?.user_id || null,
       created_at: existing?.created_at || initData?.created_at || now,
       updated_at: now,
       paid_at: status === "paid" ? now : existing?.paid_at || null,
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
+      invoice_id: existing?.invoice_id || null,
       notify_payload: post,
       notify_hash_valid: hashValid,
-      notify_proc_return_code: String(post.procreturncode || ""),
+      notify_proc_return_code: String(
+        post.procreturncode || post.procreturncode || ""
+      ),
       notify_authcode: String(post.authcode || ""),
       notify_errmsg: String(post.errmsg || ""),
     };
 
-    await kvSet(orderKey, record);
+    await kvSetJson(orderKey, record, { ex: 60 * 60 * 24 * 30 });
 
     if (status === "paid") {
       return redirectToCheckout(res, "ok", oid);
