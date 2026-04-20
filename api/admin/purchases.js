@@ -60,10 +60,19 @@ async function readInvoices(redis, key) {
   const type = await redis.type(key);
   const email = key.replace("invoices:", "");
 
-  if (type === "list") {
-    const rows = await redis.lrange(key, 0, 200);
-    return rows.map(r => normalizeInvoice(JSON.parse(r), email));
+if (type === "list") {
+  const rows = await redis.lrange(key, 0, 200);
+  const items = [];
+
+  for (const row of Array.isArray(rows) ? rows : []) {
+    try {
+      const parsed = typeof row === "string" ? JSON.parse(row) : row;
+      items.push(normalizeInvoice(parsed, email));
+    } catch (_) {}
   }
+
+  return items;
+}
 
   if (type === "string") {
     const raw = await redis.get(key);
