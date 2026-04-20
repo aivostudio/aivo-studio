@@ -870,8 +870,8 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
     tbody.innerHTML = purchasedItems.map(item => {
       return `
         <tr>
-        <td style="padding:8px 10px; max-width:260px;">
-  <div style="max-width:260px; overflow-x:auto; overflow-y:hidden; white-space:nowrap;">
+ <td style="padding:8px 10px; width:260px; max-width:260px; min-width:260px;">
+  <div style="display:block; width:260px; max-width:260px; overflow-x:auto; overflow-y:hidden; white-space:nowrap;">
     ${item.email || "-"}
   </div>
 </td>
