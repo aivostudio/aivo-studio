@@ -214,20 +214,19 @@
   justify-content: center;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  padding: 13px 14px;
+  border-radius: 16px;
   text-decoration: none;
   font-weight: 900;
   letter-spacing: .01em;
 
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid rgba(162,132,255,.30);
   background:
-    radial-gradient(900px 240px at 50% 0%, rgba(47,183,255,.18), transparent 60%),
-    linear-gradient(180deg, rgba(47,183,255,.16), rgba(139,92,246,.10));
-  color: rgba(255,255,255,.92);
+    linear-gradient(180deg, rgba(124,87,255,.98) 0%, rgba(90,62,198,.98) 100%);
+  color: #ffffff;
   box-shadow:
-    0 16px 42px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 14px 28px rgba(79,45,180,.34);
   transition:
     transform .12s ease,
     filter .12s ease,
@@ -239,27 +238,27 @@
 .p-btn:hover{
   transform: translateY(-1px);
   filter: brightness(1.05);
-  border-color: rgba(255,255,255,.18);
+  border-color: rgba(182,154,255,.40);
   box-shadow:
-    0 18px 46px rgba(0,0,0,.38),
-    inset 0 1px 0 rgba(255,255,255,.10);
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 16px 32px rgba(79,45,180,.40);
 }
 
 .p-btn:active{
   transform: translateY(1px) scale(.985);
-  filter: brightness(.98);
-  border-color: rgba(255,255,255,.14);
+  filter: brightness(.97);
+  border-color: rgba(150,122,245,.34);
   box-shadow:
-    0 8px 20px rgba(0,0,0,.28),
-    inset 0 2px 8px rgba(0,0,0,.22);
+    inset 0 2px 10px rgba(25,18,60,.30),
+    0 8px 18px rgba(55,30,140,.26);
 }
 
 .p-btn:focus-visible{
   outline: none;
   box-shadow:
-    0 0 0 2px rgba(139,92,246,.26),
-    0 16px 42px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    0 0 0 2px rgba(139,92,246,.28),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 14px 28px rgba(79,45,180,.34);
 }
 /* POP card */
 .p-pop{
