@@ -870,7 +870,11 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
     tbody.innerHTML = purchasedItems.map(item => {
       return `
         <tr>
-          <td style="padding:8px 10px;">${item.email || "-"}</td>
+        <td style="padding:8px 10px; max-width:260px;">
+  <div style="max-width:260px; overflow-x:auto; overflow-y:hidden; white-space:nowrap;">
+    ${item.email || "-"}
+  </div>
+</td>
           <td style="padding:8px 10px;">${item.pack || "-"}</td>
           <td style="padding:8px 10px;">${item.credits || 0}</td>
           <td style="padding:8px 10px;">${item.amount || 0}</td>
