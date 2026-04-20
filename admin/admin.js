@@ -847,6 +847,14 @@ async function adminAuth() {
     }
 
     async function loadSoldCredits() {
+      const r2 = await fetch("/api/admin/purchases", {
+  cache: "no-store",
+  credentials: "include"
+});
+
+const purchasesData = await r2.json().catch(() => null);
+
+console.log("PURCHASES DEBUG:", purchasesData);
       const s = await adminAuth();
       if (!s.ok) return;
 
