@@ -61,50 +61,48 @@
     return null;
   }
 
-// 3) Admin AUTH kontrolü (SESSION TABANLI – DOĞRU)
-async function adminAuth() {
-  try {
-    // 1) Önce backend session var mı kontrol et
-    const r = await fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-    });
+  // 3) Admin AUTH kontrolü (SESSION TABANLI – DOĞRU)
+  async function adminAuth() {
+    try {
+      // 1) Önce backend session var mı kontrol et
+      const r = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+      });
 
-    if (r.status !== 200) {
-      showLocked("Giriş bulunamadı. Lütfen tekrar giriş yap.");
-      return { ok: false, reason: "no_session" };
+      if (r.status !== 200) {
+        showLocked("Giriş bulunamadı. Lütfen tekrar giriş yap.");
+        return { ok: false, reason: "no_session" };
+      }
+
+      const user = await r.json();
+      const email = String(user.email || "").trim().toLowerCase();
+
+      if (!email) {
+        showLocked("Session bulundu ama email okunamadı.");
+        return { ok: false, reason: "no_email" };
+      }
+
+      // 2) Admin allowlist kontrolü (backend)
+      const ar = await fetch(
+        "/api/admin/auth?email=" + encodeURIComponent(email),
+        { cache: "no-store" }
+      );
+      const j = await ar.json();
+
+      if (!j || !j.ok) {
+        showLocked("Bu hesap admin yetkisine sahip değil.");
+        return { ok: false, reason: "not_allowed", email };
+      }
+
+      // 3) Her şey OK
+      showUnlocked();
+      return { ok: true, email };
+    } catch (err) {
+      showLocked("Admin auth kontrolü başarısız.");
+      return { ok: false, reason: "exception" };
     }
-
-    const user = await r.json();
-    const email = String(user.email || "").trim().toLowerCase();
-
-    if (!email) {
-      showLocked("Session bulundu ama email okunamadı.");
-      return { ok: false, reason: "no_email" };
-    }
-
-    // 2) Admin allowlist kontrolü (backend)
-    const ar = await fetch(
-      "/api/admin/auth?email=" + encodeURIComponent(email),
-      { cache: "no-store" }
-    );
-    const j = await ar.json();
-
-    if (!j || !j.ok) {
-      showLocked("Bu hesap admin yetkisine sahip değil.");
-      return { ok: false, reason: "not_allowed", email };
-    }
-
-    // 3) Her şey OK
-    showUnlocked();
-    return { ok: true, email };
-
-  } catch (err) {
-    showLocked("Admin auth kontrolü başarısız.");
-    return { ok: false, reason: "exception" };
   }
-}
-
 
   // ---------- USERS (Kayıtlar) ----------
   function fmtTs(ts) {
@@ -390,7 +388,7 @@ async function adminAuth() {
 
         setQuickView(email, "…");
 
-            try {
+        try {
           const r = await fetch(
             "/api/credits/get?email=" + encodeURIComponent(email),
             { cache: "no-store", credentials: "include" }
@@ -421,7 +419,6 @@ async function adminAuth() {
         if (!Number.isFinite(delta) || delta === 0) return jsonPrint(out, { ok: false, error: "delta_invalid" });
 
         try {
-              
           const r = await fetch("/api/admin/credits/set", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -439,7 +436,6 @@ async function adminAuth() {
       });
     }
 
-
     // ✅ BAN UI (index.html’de cardBans varsa)
     const btnBansRefresh = $("btnBansRefresh");
     const btnUnban = $("btnUnban");
@@ -455,9 +451,7 @@ async function adminAuth() {
         setBansStatus("Hazır.");
         renderBansOut(j);
 
-        // convenience: ilk elemanı inputa bas (varsa)
         if (bansEmail && j && Array.isArray(j.items) && j.items[0]) {
-          // input boşsa doldur
           if (!String(bansEmail.value || "").trim()) bansEmail.value = String(j.items[0]);
         }
       } catch (e) {
@@ -491,7 +485,6 @@ async function adminAuth() {
           await auditUnban(s, email, j);
           setBansStatus("Hazır.");
 
-          // listeyi yenile
           await loadBans();
         } catch (e) {
           setBansStatus("Hata: " + (e?.error || "unban_failed"));
@@ -502,10 +495,6 @@ async function adminAuth() {
       });
     }
 
-    // bansOut içindeki JSON’dan email tıklama (basit)
-    // (Kırmamak için minimal: <pre> textini parse edip listeyi inputa basmayacağız)
-    // Sadece input alanı zaten var.
-
     // USERS: ilk yükle
     let usersRaw = [];
     const btnUsersRefresh = $("btnUsersRefresh");
@@ -513,7 +502,7 @@ async function adminAuth() {
     const usersStatus = $("usersStatus");
     const usersTable = $("usersTable");
 
-        // ===== PRODUCTION STATS =====
+    // ===== PRODUCTION STATS =====
     const btnProductionStats = $("btnProductionStats");
     const prodStatsStatus = $("prodStatsStatus");
     const prodStatsTbody = $("prodStatsTbody");
@@ -600,7 +589,8 @@ async function adminAuth() {
     if (btnProductionStats) {
       btnProductionStats.addEventListener("click", loadProductionStats);
     }
-       // ===== DAILY CREDIT STATS =====
+
+    // ===== DAILY CREDIT STATS =====
     const btnDailyCreditStats = $("btnDailyCreditStats");
     const btnDailyCreditStatsPdf = $("btnDailyCreditStatsPdf");
     const dailyCreditStatsDate = $("dailyCreditStatsDate");
@@ -752,30 +742,31 @@ async function adminAuth() {
       dailyCreditStatsDate.addEventListener("change", loadDailyCreditStats);
     }
 
-  if (btnDailyCreditStatsPdf) {
-  btnDailyCreditStatsPdf.addEventListener("click", async () => {
-    const s = await adminAuth();
-    if (!s.ok) return;
+    if (btnDailyCreditStatsPdf) {
+      btnDailyCreditStatsPdf.addEventListener("click", async () => {
+        const s = await adminAuth();
+        if (!s.ok) return;
 
-    const selectedDate =
-      String(
-        dailyCreditStatsDate && dailyCreditStatsDate.value
-          ? dailyCreditStatsDate.value
-          : todayDateInputValue()
-      ).trim();
+        const selectedDate =
+          String(
+            dailyCreditStatsDate && dailyCreditStatsDate.value
+              ? dailyCreditStatsDate.value
+              : todayDateInputValue()
+          ).trim();
 
-    const url =
-      "/api/admin/daily-credit-stats-pdf?date=" +
-      encodeURIComponent(selectedDate);
+        const url =
+          "/api/admin/daily-credit-stats-pdf?date=" +
+          encodeURIComponent(selectedDate);
 
-    try {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (_) {
-      location.href = url;
+        try {
+          window.open(url, "_blank", "noopener,noreferrer");
+        } catch (_) {
+          location.href = url;
+        }
+      });
     }
-  });
-}
-        // ===== SOLD CREDITS =====
+
+    // ===== SOLD CREDITS =====
     const btnSoldCredits = $("btnSoldCredits");
     const soldCreditsDate = $("soldCreditsDate");
     const soldCreditsStatus = $("soldCreditsStatus");
@@ -787,15 +778,6 @@ async function adminAuth() {
     function setSoldCreditsValues(totalCredits, totalOrders) {
       if (soldCreditsTotalValue) soldCreditsTotalValue.textContent = String(Number(totalCredits || 0));
       if (soldCreditsOrdersValue) soldCreditsOrdersValue.textContent = String(Number(totalOrders || 0));
-    }
-
-    function escapeHtml(v) {
-      return String(v == null ? "" : v)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
     }
 
     function renderSoldCreditsPackages(items) {
@@ -848,94 +830,89 @@ async function adminAuth() {
 
     async function loadSoldCredits() {
       const r2 = await fetch("/api/admin/purchases", {
-  cache: "no-store",
-  credentials: "include"
-});
+        cache: "no-store",
+        credentials: "include"
+      });
 
-const purchasesData = await r2.json().catch(() => null);
+      const purchasesData = await r2.json().catch(() => null);
 
-console.log("PURCHASES DEBUG:", purchasesData);
-if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
-  const purchasedItems = purchasesData.items;
-  const purchasedCredits = purchasedItems.reduce((sum, item) => {
-    return sum + Number(item && item.credits ? item.credits : 0);
-  }, 0);
-
-  setSoldCreditsValues(purchasedCredits, purchasesData.total || purchasedItems.length || 0);
-  renderSoldCreditsPackages(purchasedItems);
-
-  const tbody = document.getElementById("soldCreditsListTbody");
-
-  if (tbody) {
-    tbody.innerHTML = purchasedItems.map(item => {
-      return `
-        <tr>
- <td style="padding:8px 10px; width:260px; max-width:260px; min-width:260px;">
-  <div style="display:block; width:260px; max-width:260px; overflow-x:auto; overflow-y:hidden; white-space:nowrap;">
-    ${item.email || "-"}
-  </div>
-</td>
-          <td style="padding:8px 10px;">${item.pack || "-"}</td>
-          <td style="padding:8px 10px;">${item.credits || 0}</td>
-          <td style="padding:8px 10px;">${item.amount || 0}</td>
-          <td style="padding:8px 10px;">${item.currency || "-"}</td>
-          <td style="padding:8px 10px;">${item.order_id || "-"}</td>
-          <td style="padding:8px 10px;">${item.created_at || "-"}</td>
-        </tr>
-      `;
-    }).join("");
-  }
-}
-      
-      const s = await adminAuth();
-      if (!s.ok) return;
-
-      const selectedDate =
-        String(
-          soldCreditsDate && soldCreditsDate.value
-            ? soldCreditsDate.value
-            : todayDateInputValue()
-        ).trim();
+      console.log("PURCHASES DEBUG:", purchasesData);
 
       if (soldCreditsStatus) soldCreditsStatus.textContent = "Yükleniyor...";
 
-      try {
-        const r = await fetch(
-          "/api/admin/daily-sold-credits?date=" + encodeURIComponent(selectedDate),
-          {
-            cache: "no-store",
-            credentials: "include"
-          }
+      if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
+        const purchasedItems = purchasesData.items;
+        const purchasedCredits = purchasedItems.reduce((sum, item) => {
+          return sum + Number(item && item.credits ? item.credits : 0);
+        }, 0);
+
+        setSoldCreditsValues(
+          purchasedCredits,
+          purchasesData.total || purchasedItems.length || 0
         );
+        renderSoldCreditsPackages(purchasedItems);
 
-        const j = await r.json().catch(() => null);
+        const tbody = document.getElementById("soldCreditsListTbody");
 
-        if (!r.ok || !j || !j.ok) {
-          throw new Error((j && (j.error || j.message)) || "daily_sold_credits_failed");
+        if (tbody) {
+          tbody.innerHTML = purchasedItems.map(item => {
+            return `
+              <tr>
+                <td style="padding:8px 10px; width:260px; max-width:260px; min-width:260px;">
+                  <div style="display:block; width:260px; max-width:260px; overflow-x:auto; overflow-y:hidden; white-space:nowrap;">
+                    ${item.email || "-"}
+                  </div>
+                </td>
+                <td style="padding:8px 10px;">${item.pack || "-"}</td>
+                <td style="padding:8px 10px;">${item.credits || 0}</td>
+                <td style="padding:8px 10px;">${item.amount || 0}</td>
+                <td style="padding:8px 10px;">${item.currency || "-"}</td>
+                <td style="padding:8px 10px;">${item.order_id || "-"}</td>
+                <td style="padding:8px 10px;">${item.created_at || "-"}</td>
+              </tr>
+            `;
+          }).join("");
         }
-
-           setSoldCreditsValues(j.total_credits_sold || 0, j.total_orders || 0);
-        renderSoldCreditsPackages(j.items || []);
 
         if (soldCreditsOut) {
           soldCreditsOut.style.display = "none";
-          soldCreditsOut.textContent = JSON.stringify(j, null, 2);
+          soldCreditsOut.textContent = JSON.stringify(purchasesData, null, 2);
         }
 
         if (soldCreditsStatus) {
-          soldCreditsStatus.textContent = `Gün: ${String(j.date || selectedDate || "-")}`;
-        }
-      } catch (err) {
-           setSoldCreditsValues(0, 0);
-        renderSoldCreditsPackages([]);
+          const selectedDate =
+            String(
+              soldCreditsDate && soldCreditsDate.value
+                ? soldCreditsDate.value
+                : todayDateInputValue()
+            ).trim();
 
-        if (soldCreditsOut) {
-          soldCreditsOut.style.display = "block";
-          soldCreditsOut.textContent = String(err && err.message ? err.message : err);
+          soldCreditsStatus.textContent = `Gün: ${selectedDate || "-"}`;
         }
 
-        if (soldCreditsStatus) soldCreditsStatus.textContent = "Hata oluştu.";
+        return;
       }
+
+      setSoldCreditsValues(0, 0);
+      renderSoldCreditsPackages([]);
+
+      const tbody = document.getElementById("soldCreditsListTbody");
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="muted" style="padding:12px;">
+              Veri bulunamadı.
+            </td>
+          </tr>
+        `;
+      }
+
+      if (soldCreditsOut) {
+        soldCreditsOut.style.display = "block";
+        soldCreditsOut.textContent = JSON.stringify(purchasesData, null, 2);
+      }
+
+      if (soldCreditsStatus) soldCreditsStatus.textContent = "Hata oluştu.";
     }
 
     if (soldCreditsDate && !soldCreditsDate.value) {
@@ -949,6 +926,7 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
     if (soldCreditsDate) {
       soldCreditsDate.addEventListener("change", loadSoldCredits);
     }
+
     async function loadUsers() {
       const s = await adminAuth();
       if (!s.ok) return;
@@ -1019,8 +997,7 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
             await setDisabled(s.email, email, nextDisabled);
             await loadUsers();
           } catch (e) {
-            try{ if(window.toast) toast.error("İşlem başarısız", String(e?.error || e?.message || "unknown")); }catch(_){} 
-
+            try { if (window.toast) toast.error("İşlem başarısız", String(e?.error || e?.message || "unknown")); } catch (_) {}
           } finally {
             any.disabled = false;
           }
@@ -1042,13 +1019,11 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
             await deleteUser(s.email, email);
             await loadUsers();
 
-            // ban listesi varsa yenile (silince ban yazılıyor)
             if ($("btnBansRefresh")) {
               try { await loadBans(); } catch (_) {}
             }
           } catch (e) {
-           try{ if(window.toast) toast.error("Silme başarısız", String(e?.error || e?.message || "unknown")); }catch(_){} 
-
+            try { if (window.toast) toast.error("Silme başarısız", String(e?.error || e?.message || "unknown")); } catch (_) {}
           } finally {
             any.disabled = false;
           }
@@ -1056,128 +1031,125 @@ if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
         }
       });
     }
+
     // ilk yükleme
     await loadUsers();
-   await loadProductionStats();
+    await loadProductionStats();
     await loadDailyCreditStats();
     await loadSoldCredits();
+
     // presence poll: üst sayacı + tabloda online pill
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
 
-  // ===== BAN PANEL =====
-const btnBanList = $("btnBanList");
-const banOut = $("banOut");
+    // ===== BAN PANEL =====
+    const btnBanList = $("btnBanList");
+    const banOut = $("banOut");
 
-if (btnBanList) {
-  btnBanList.addEventListener("click", async () => {
-    const s = await adminAuth();
-    if (!s.ok) return;
+    if (btnBanList) {
+      btnBanList.addEventListener("click", async () => {
+        const s = await adminAuth();
+        if (!s.ok) return;
 
-    try {
+        try {
+          const r = await fetch(
+            "/api/admin/users/bans-list?admin=" + encodeURIComponent(s.email),
+            { cache: "no-store", credentials: "include" }
+          );
+
+          const j = await r.json();
+          if (banOut) banOut.textContent = JSON.stringify(j, null, 2);
+        } catch (e) {
+          try { if (window.toast) toast.error("Listeleme hatası", "Ban listesi alınamadı."); } catch (_) {}
+          if (banOut) banOut.textContent = "Listeleme hatası";
+        }
+      });
+    }
+
+    // ===== ADMIN AUDIT LOG (LIST + HOOKS) =====
+    const btnAuditList = $("btnAuditList");
+    const auditOut = $("auditOut");
+
+    async function auditWrite(s, action, target, meta) {
+      try {
+        const r = await fetch("/api/admin/audit/write", {
+          method: "POST",
+          cache: "no-store",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            admin: s.email,
+            action,
+            target: target || null,
+            meta: meta || null,
+          }),
+        });
+        return await r.json().catch(() => null);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    async function auditList(s) {
       const r = await fetch(
-        "/api/admin/users/bans-list?admin=" + encodeURIComponent(s.email),
+        "/api/admin/audit/list?limit=80&admin=" + encodeURIComponent(s.email),
         { cache: "no-store", credentials: "include" }
       );
-
-      const j = await r.json();
-      if (banOut) banOut.textContent = JSON.stringify(j, null, 2);
-    } catch (e) {
-    try{ if(window.toast) toast.error("Listeleme hatası","Ban listesi alınamadı."); }catch(_){} 
-if (banOut) banOut.textContent = "Listeleme hatası";
-
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || "audit_list_failed");
+      return j;
     }
-  });
-}
 
-// ===== ADMIN AUDIT LOG (LIST + HOOKS) =====
-const btnAuditList = $("btnAuditList");
-const auditOut = $("auditOut");
+    // ✅ Audit List button
+    if (btnAuditList) {
+      btnAuditList.addEventListener("click", async () => {
+        const s = await adminAuth();
+        if (!s.ok) return;
 
-async function auditWrite(s, action, target, meta) {
-  try {
-    const r = await fetch("/api/admin/audit/write", {
-      method: "POST",
-      cache: "no-store",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        admin: s.email,
-        action,
-        target: target || null,
-        meta: meta || null,
-      }),
-    });
-    return await r.json().catch(() => null);
-  } catch (_) {
-    return null;
-  }
-}
+        if (auditOut) auditOut.textContent = "Yükleniyor...";
 
-async function auditList(s) {
-  const r = await fetch(
-    "/api/admin/audit/list?limit=80&admin=" + encodeURIComponent(s.email),
-    { cache: "no-store", credentials: "include" }
-  );
-  const j = await r.json().catch(() => null);
-  if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || "audit_list_failed");
-  return j;
-}
+        try {
+          const j = await auditList(s);
 
-// ✅ Audit List button
-if (btnAuditList) {
-  btnAuditList.addEventListener("click", async () => {
-    const s = await adminAuth();
-    if (!s.ok) return;
+          if (!j.items || !j.items.length) {
+            auditOut.textContent = "Kayıt yok.";
+            return;
+          }
 
-    if (auditOut) auditOut.textContent = "Yükleniyor...";
-
-    try {
-      const j = await auditList(s);
-
-      if (!j.items || !j.items.length) {
-        auditOut.textContent = "Kayıt yok.";
-        return;
-      }
-
-      auditOut.textContent = j.items
-        .map((ev) => {
-          let line = `${ev.ts} | ${ev.admin} | ${ev.action}`;
-          if (ev.target) line += " | " + ev.target;
-          if (ev.meta) line += "\n" + JSON.stringify(ev.meta, null, 2);
-          return line;
-        })
-        .join("\n\n");
-    } catch (_) {
-     try{ if(window.toast) toast.error("Audit hatası","Log listesi alınamadı."); }catch(_){} 
-if (auditOut) auditOut.textContent = "Audit hatası";
-
+          auditOut.textContent = j.items
+            .map((ev) => {
+              let line = `${ev.ts} | ${ev.admin} | ${ev.action}`;
+              if (ev.target) line += " | " + ev.target;
+              if (ev.meta) line += "\n" + JSON.stringify(ev.meta, null, 2);
+              return line;
+            })
+            .join("\n\n");
+        } catch (_) {
+          try { if (window.toast) toast.error("Audit hatası", "Log listesi alınamadı."); } catch (_) {}
+          if (auditOut) auditOut.textContent = "Audit hatası";
+        }
+      });
     }
-  });
-}
 
-// ✅ HOOK 1: Kredi Ayarla (btnAdjust handler'ı içinde çağır)
-async function auditCreditAdjust(s, email, delta, reason, result) {
-  await auditWrite(s, "CREDIT_ADJUST", email, {
-    delta,
-    reason,
-    ok: !!(result && result.ok),
-  });
-}
+    // ✅ HOOK 1: Kredi Ayarla
+    async function auditCreditAdjust(s, email, delta, reason, result) {
+      await auditWrite(s, "CREDIT_ADJUST", email, {
+        delta,
+        reason,
+        ok: !!(result && result.ok),
+      });
+    }
 
-// ✅ HOOK 2: Ban Kaldır (btnUnban handler'ı içinde çağır)
-async function auditUnban(s, email, result) {
-  await auditWrite(s, "UNBAN", email, { ok: !!(result && result.ok) });
-}
+    // ✅ HOOK 2: Ban Kaldır
+    async function auditUnban(s, email, result) {
+      await auditWrite(s, "UNBAN", email, { ok: !!(result && result.ok) });
+    }
 
-// ✅ HOOK 3: Hard Delete (delete handler'ı içinde çağır)
-async function auditUserDeleteHard(s, email, result) {
-  await auditWrite(s, "USER_DELETE_HARD", email, { ok: !!(result && result.ok) });
-}
-// ===== /ADMIN AUDIT LOG =====
-
-
-// KAPANIŞLAR (BUNLAR DOSYANDA ZATEN VAR, SİLME / DEĞİŞTİRME)
-}); // <-- adminAuth().then(...)
+    // ✅ HOOK 3: Hard Delete
+    async function auditUserDeleteHard(s, email, result) {
+      await auditWrite(s, "USER_DELETE_HARD", email, { ok: !!(result && result.ok) });
+    }
+    // ===== /ADMIN AUDIT LOG =====
+  }); // <-- adminAuth().then(...)
 })(); // <-- IIFE KAPANIŞI
