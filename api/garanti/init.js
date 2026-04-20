@@ -160,6 +160,7 @@ export default async function handler(req, res) {
   await kvSetJson(
     `aivo:garanti:order_init:${oid}`,
     {
+      
       oid,
       email,
       user_id,
@@ -176,6 +177,23 @@ export default async function handler(req, res) {
     },
     { exSec: 60 * 60 * 24 }
   );
+
+  await kvSetJson(
+  `aivo:garanti:order:${oid}`,
+  {
+    oid,
+    email,
+    user_id,
+    plan,
+    amount,
+    credits,
+    currency: "TRY",
+    provider: "garanti",
+    status: "pending",
+    created_at: now,
+  },
+  { exSec: 60 * 60 * 24 }
+);
 
   if (missingConfig.length) {
     return json(res, 503, {
