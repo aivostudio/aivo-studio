@@ -140,7 +140,12 @@ export default async function handler(req, res) {
 
     const verifyResult = await getVerify(base, oid);
     const v = verifyResult.json || null;
-
+   // ✅ FORCE APPLY (kritik)
+await fetch(`${base}/api/garanti/apply`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ oid }),
+});
     if (
       verifyResult.ok &&
       v &&
