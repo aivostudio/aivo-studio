@@ -1,6 +1,7 @@
 // /api/garanti/callback.js
-// Kullanıcının browser dönüş noktası
-// Amaç: browser'dan gelen form POST'u düzgün oku, notify'ye server-side forward et, sonra checkout'a yönlendir
+// Garanti browser dönüş noktası
+// Akış:
+// banka POST -> callback -> notify -> verify/apply -> studio redirect
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -42,11 +43,76 @@ function pickOid(body) {
   ).trim();
 }
 
-function redirectCheckout(res, state, oid) {
-  const qs = new URLSearchParams();
-  qs.set("garanti", state);
-  if (oid) qs.set("oid", oid);
-  return res.redirect(`/checkout.html?${qs.toString()}`);
+function redirect303(res, to) {
+  res.statusCode = 303;
+  res.setHeader("Location", to);
+  res.end();
+  return;
+}
+
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return String(process.env.NEXT_PUBLIC_SITE_URL).replace(/\/$/, "");
+  }
+
+  if (process.env.SITE_URL) {
+    return String(process.env.SITE_URL).replace(/\/$/, "");
+  }
+
+  if (process.env.APP_URL) {
+    return String(process.env.APP_URL).replace(/\/$/, "");
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${String(process.env.VERCEL_URL).replace(/\/$/, "")}`;
+  }
+
+  return "https://aivo.tr";
+}
+
+async function postNotify(base, body) {
+  const res = await fetch(`${base}/api/garanti/notify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(process.env.GARANTI_NOTIFY_SECRET
+        ? { "x-garanti-notify-secret": String(process.env.GARANTI_NOTIFY_SECRET) }
+        : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  const text = await res.text().catch(() => "");
+  let json = null;
+
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch (_) {
+    json = null;
+  }
+
+  return { ok: res.ok, status: res.status, text, json };
+}
+
+async function getVerify(base, oid) {
+  const res = await fetch(
+    `${base}/api/garanti/verify?oid=${encodeURIComponent(oid)}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    }
+  );
+
+  const text = await res.text().catch(() => "");
+  let json = null;
+
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch (_) {
+    json = null;
+  }
+
+  return { ok: res.ok, status: res.status, text, json };
 }
 
 export default async function handler(req, res) {
@@ -57,34 +123,55 @@ export default async function handler(req, res) {
   try {
     const body = await readPost(req);
     const oid = pickOid(body);
+    const base = getBaseUrl();
 
-    const base = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-
-    if (!base) {
-      return redirectCheckout(res, "fail", oid);
+    if (!oid) {
+      return redirect303(res, `/fiyatlandirma.html?garanti=fail&reason=missing_oid`);
     }
 
-    const notifyRes = await fetch(`${base}/api/garanti/notify`, {
-      method: "POST",
-      redirect: "manual",
-      headers: {
-        "Content-Type": "application/json",
-        ...(process.env.GARANTI_NOTIFY_SECRET
-          ? { "x-garanti-notify-secret": String(process.env.GARANTI_NOTIFY_SECRET) }
-          : {}),
-      },
-      body: JSON.stringify(body),
-    });
+    const notifyResult = await postNotify(base, body);
 
-    const redirectedTo = notifyRes.headers.get("location");
-    if (redirectedTo) {
-      return res.redirect(redirectedTo);
+    if (!notifyResult.ok) {
+      return redirect303(
+        res,
+        `/fiyatlandirma.html?garanti=fail&oid=${encodeURIComponent(oid)}&reason=notify_failed`
+      );
     }
 
-    return redirectCheckout(res, notifyRes.ok ? "ok" : "fail", oid);
+    const verifyResult = await getVerify(base, oid);
+    const v = verifyResult.json || null;
+
+    if (
+      verifyResult.ok &&
+      v &&
+      v.ok === true &&
+      v.status === "paid" &&
+      v.credit_applied === true &&
+      v.invoice_created === true
+    ) {
+      return redirect303(
+        res,
+        `/studio.v2.html?garanti=success&oid=${encodeURIComponent(oid)}`
+      );
+    }
+
+    if (
+      verifyResult.ok &&
+      v &&
+      v.ok === true &&
+      v.status === "paid"
+    ) {
+      return redirect303(
+        res,
+        `/studio.v2.html?garanti=success&oid=${encodeURIComponent(oid)}`
+      );
+    }
+
+    return redirect303(
+      res,
+      `/fiyatlandirma.html?garanti=fail&oid=${encodeURIComponent(oid)}&reason=verify_failed`
+    );
   } catch (_) {
-    return redirectCheckout(res, "fail", "");
+    return redirect303(res, `/fiyatlandirma.html?garanti=fail&reason=callback_exception`);
   }
 }
