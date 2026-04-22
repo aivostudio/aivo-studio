@@ -1488,12 +1488,22 @@ async function actionDelete(card){
     toast("error", "Silme hatası");
   }
 }
-  function onCardClick(e){
-    const btn = e.target.closest("[data-action]");
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
+function onCardClick(e){
+  const btn = e.target.closest("[data-action]");
+  const card = e.target.closest(".aivo-player-card");
+  if (!card) return;
 
-    const act = btn?.dataset?.action || null;
+  document.querySelectorAll(".aivo-player-card").forEach((el) => {
+    el.removeAttribute("data-selected-music-card");
+    el.classList.remove("is-selected");
+    el.removeAttribute("aria-selected");
+  });
+
+  card.setAttribute("data-selected-music-card", "true");
+  card.classList.add("is-selected");
+  card.setAttribute("aria-selected", "true");
+
+  const act = btn?.dataset?.action || null;
     if (!act) {
       if (card.classList.contains("is-ready")) togglePlayFromCard(card);
       return;
