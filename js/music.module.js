@@ -86,14 +86,63 @@
     return raw;
   }
 
-  function getMusicAssistantSelectedCard() {
-    const root = getMusicAssistantModuleRoot() || document;
+function getMusicAssistantSelectedCard() {
+  const selected =
+    document.querySelector("#rightPanelHost .aivo-player-card[data-selected-music-card='true']") ||
+    document.querySelector("#rightPanelHost .aivo-player-card.is-selected") ||
+    document.querySelector('#rightPanelHost .aivo-player-card[aria-selected="true"]') ||
+    document.querySelector(".aivo-player-card[data-selected-music-card='true']") ||
+    document.querySelector(".aivo-player-card.is-selected") ||
+    document.querySelector('.aivo-player-card[aria-selected="true"]') ||
+    null;
 
-    const selected =
-      root.querySelector(".aivo-player-card[data-selected-music-card='true']") ||
-      root.querySelector(".aivo-player-card.is-selected") ||
-      root.querySelector('.aivo-player-card[aria-selected="true"]') ||
-      null;
+  if (!selected) return null;
+
+  const id =
+    selected.getAttribute("data-id") ||
+    selected.getAttribute("data-job-id") ||
+    selected.getAttribute("data-card-id") ||
+    "";
+
+  const providerJobId =
+    selected.getAttribute("data-provider-job-id") ||
+    selected.getAttribute("data-provider-id") ||
+    "";
+
+  const titleEl =
+    selected.querySelector(".aivo-player-title, .aivo-player-titleRow strong, .aivo-player-titleRow, [data-role='title']") ||
+    null;
+
+  const statusClass =
+    Array.from(selected.classList).find((cls) => /^is-/.test(cls) && cls !== "is-selected") ||
+    "";
+
+  const statusEl =
+    selected.querySelector(".aivo-player-status, .aivo-player-meta, [data-role='status']") ||
+    null;
+
+  const title = titleEl
+    ? String(titleEl.textContent || "").trim().split("\n")[0].trim()
+    : "";
+
+  const statusFromDom = statusEl ? String(statusEl.textContent || "").trim() : "";
+  const statusFromClass = statusClass ? statusClass.replace(/^is-/, "") : "";
+
+  const status =
+    selected.getAttribute("data-status") ||
+    statusFromClass ||
+    statusFromDom ||
+    "";
+
+  return {
+    id,
+    title,
+    status: normalizeMusicStatus(status),
+    rawStatus: status,
+    providerJobId,
+    element: selected
+  };
+}
 
     if (!selected) return null;
 
