@@ -1500,9 +1500,10 @@ function onCardClick(e){
     el.removeAttribute("aria-selected");
   });
 
-  card.setAttribute("data-selected-music-card", "true");
-  card.classList.add("is-selected");
-  card.setAttribute("aria-selected", "true");
+card.setAttribute("data-selected-music-card", "true");
+card.classList.add("is-selected");
+card.setAttribute("aria-selected", "true");
+selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
 
   const act = btn?.dataset?.action || null;
    if (!act) {
