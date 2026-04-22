@@ -611,6 +611,12 @@ Sonraki adım: ${brain.followupAction}`;
 Bu işlem onay gerektiriyor.`;
       }
 
+      if (brain?.confidence === "low") {
+        assistantText += `
+
+Daha net yönlendirme için bulunduğun ekranı veya yapmak istediğin işlemi biraz daha açık yaz.`;
+      }
+
       state.messages.push({
         role: "assistant",
         content: assistantText
