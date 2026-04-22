@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+       const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const messages = Array.isArray(body?.messages) ? body.messages : [];
 
     const page = typeof body?.page === "string" ? body.page.trim() : "";
@@ -33,11 +33,30 @@ export default async function handler(req, res) {
       Number.isFinite(Number(body?.creditsNeeded)) ? Number(body.creditsNeeded) : null;
     const hasSelection =
       typeof body?.hasSelection === "boolean" ? body.hasSelection : null;
+
     const availableActions = Array.isArray(body?.availableActions)
       ? body.availableActions
           .filter((v) => typeof v === "string" && v.trim())
           .map((v) => v.trim())
       : [];
+
+    const visibleModals = Array.isArray(body?.visibleModals)
+      ? body.visibleModals
+          .filter((v) => typeof v === "string" && v.trim())
+          .map((v) => v.trim())
+      : [];
+
+    const currentProductCards = Array.isArray(body?.currentProductCards)
+      ? body.currentProductCards
+          .filter((v) => v && typeof v === "object")
+          .map((v) => ({
+            key: typeof v.key === "string" ? v.key : null,
+            label: typeof v.label === "string" ? v.label : null,
+            priceTRY: Number.isFinite(Number(v.priceTRY)) ? Number(v.priceTRY) : null,
+            credits: Number.isFinite(Number(v.credits)) ? Number(v.credits) : null,
+          }))
+      : [];
+
     const uiState =
       body?.uiState && typeof body.uiState === "object" && !Array.isArray(body.uiState)
         ? body.uiState
@@ -54,144 +73,36 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Mesaj boş olamaz." });
     }
 
-    const capabilityMap = {
-      music: {
-        label: "AI Müzik Üret",
-        purpose: "Prompt, tarz, mood ve vokal yönüne göre müzik üretir.",
-        realActions: [
-          {
-            key: "generate_music",
-            label: "Müzik üret",
-            trigger: "Müzik üretim alanı",
-            result: "Yeni müzik üretimi başlatır",
-          },
-          {
-            key: "channel_separation",
-            label: "Kanal Ayırma",
-            trigger: "Müzik kartı > 3 nokta menü",
-            requiresSelection: true,
-            confirmationRequired: true,
-            creditCost: 5,
-            result: "Şarkıyı stem veya kanal katmanlarına ayırır",
-          },
-          {
-            key: "mastering",
-            label: "Mastering",
-            trigger: "Müzik kartı > 3 nokta menü veya ilgili aksiyon alanı",
-            requiresSelection: true,
-            result: "Parçayı daha dengeli ve finale yakın hale getirir",
-          },
-          {
-            key: "download_music",
-            label: "İndir",
-            trigger: "Müzik kartı aksiyonları",
-            requiresSelection: true,
-            result: "Üretilen içeriği indirir",
-          },
-        ],
-        troubleshooting: [
-          "Kullanıcı bir işlem başlattıysa önce ilgili müzik kartını ve kart aksiyonlarını referans al",
-          "Job processing ise bekleme ve kart durumu kontrolünü söyle",
-          "Job hazır ise kart üzerinden sonraki aksiyonu söyle",
-          "Kanal ayırma gibi kart bazlı işlemlerde prompt önerme; gerçek UI akışını anlat",
-        ],
-      },
-      cover: {
-        label: "AI Kapak Üret",
-        purpose: "Albüm kapağı ve görsel içerik üretir.",
-        realActions: [
-          {
-            key: "generate_cover",
-            label: "Kapak üret",
-            trigger: "Kapak üretim alanı",
-            result: "Yeni kapak görseli üretir",
-          },
-          {
-            key: "overlay_text",
-            label: "Yazı ekleme veya kapak üstü düzenleme",
-            trigger: "Kapak sonrası düzenleme akışı",
-            result: "Kapak üzerine yazı veya ek düzen uygular",
-          },
-        ],
-      },
-      atmo: {
-        label: "AI Atmosfer Video",
-        purpose: "Klip çekemeyenler için atmosfer veya arka plan videoları üretir.",
-        realActions: [
-          {
-            key: "generate_atmo_video",
-            label: "Atmosfer video üret",
-            trigger: "Atmosfer video üretim alanı",
-            result: "Arka plan veya atmosfer tipi video üretir",
-          },
-          {
-            key: "overlay_logo",
-            label: "Logo bindirme",
-            trigger: "Video sonrası işlem alanı",
-            result: "Videoya logo ekler",
-          },
-        ],
-      },
-      photofx: {
-        label: "AI Foto Efekt Video Clip",
-        purpose: "Fotoğrafları efektli kısa videoya dönüştürür.",
-        realActions: [
-          {
-            key: "generate_photofx",
-            label: "Efekt video üret",
-            trigger: "PhotoFX üretim alanı",
-            result: "Fotoğraftan efektli kısa video üretir",
-          },
-          {
-            key: "overlay_logo",
-            label: "Logo bindirme",
-            trigger: "Video sonrası işlem alanı",
-            result: "Videoya logo ekler",
-          },
-        ],
-      },
-      video: {
-        label: "AI Resimden Video Üret",
-        purpose: "Görselleri hareketli videoya dönüştürür.",
-        realActions: [
-          {
-            key: "generate_image_to_video",
-            label: "Resimden video üret",
-            trigger: "Video üretim alanı",
-            result: "Görseli hareketli videoya dönüştürür",
-          },
-          {
-            key: "download_video",
-            label: "Videoyu indir",
-            trigger: "Video kartı aksiyonları",
-            requiresSelection: true,
-            result: "Üretilen videoyu indirir",
-          },
-        ],
-      },
-      cartoon: {
-        label: "AI Çocuk Çizgifilm",
-        purpose: "Hikaye ve karakter bazlı çizgifilm üretir.",
-        realActions: [
-          {
-            key: "story_create",
-            label: "Hikaye oluştur",
-            trigger: "Çizgifilm üretim akışı",
-            result: "Karakter ve hikaye bazlı üretim başlatır",
-          },
-          {
-            key: "export_create",
-            label: "Dışa aktar",
-            trigger: "Çizgifilm sonuç alanı",
-            result: "Üretilen işi çıktı olarak hazırlar",
-          },
-        ],
-      },
-    };
+    const registry = getAivoRegistry();
+    const pricingRegistry = getPricingRegistry();
+
+    const detectedModule =
+      getAivoModule(moduleName) ||
+      getAivoModule(page) ||
+      findModuleByAlias(`${moduleName} ${page} ${actionContext} ${userMessage}`);
+
+    const detectedAction =
+      detectedModule?.key
+        ? findActionInModule(
+            detectedModule.key,
+            `${actionContext} ${currentPanel} ${currentCardType} ${selectedItemType} ${userMessage} ${availableActions.join(" ")}`
+          )
+        : null;
 
     const assistantContext = {
       page: page || null,
       module: moduleName || null,
+      detectedModule: detectedModule
+        ? {
+            key: detectedModule.key,
+            page: detectedModule.page,
+            label: detectedModule.label,
+            purpose: detectedModule.purpose,
+            actions: detectedModule.actions || [],
+            troubleshooting: detectedModule.troubleshooting || [],
+          }
+        : null,
+      detectedAction: detectedAction || null,
       actionContext: actionContext || null,
       currentPanel: currentPanel || null,
       currentCardType: currentCardType || null,
@@ -201,80 +112,77 @@ export default async function handler(req, res) {
       creditsNeeded,
       hasSelection,
       availableActions,
+      visibleModals,
+      currentProductCards,
       uiState,
-      capabilityMap,
+      pricing: {
+        page: pricingRegistry?.page || "pricing",
+        label: pricingRegistry?.label || "Fiyatlandırma",
+        packages: pricingRegistry?.packages || [],
+        recommendationRules: pricingRegistry?.recommendationRules || [],
+      },
+      registrySummary: {
+        app: registry?.app || null,
+        moduleKeys: registry?.modules ? Object.keys(registry.modules) : [],
+      },
     };
 
     const systemPrompt = `
-Sen AIVO içindeki ürün zekası yüksek yardımcı asistansın.
+Sen AIVO içindeki ürün içi yardımcı asistansın.
 
-Senin görevin sadece sohbet etmek değil.
-Sen, kullanıcının bulunduğu ekranı, modülü, kartı, menüyü, aksiyonu ve işlem durumunu anlayıp onu DOĞRU ürüniçi adıma yönlendiren karar motorusun.
+Senin görevin sohbet etmek değil, kullanıcının AIVO içinde bulunduğu ekranı ve gerçek akışı anlayıp doğru yönlendirmeyi yapmaktır.
 
 EN KRİTİK KURAL:
-Bilmediğin şeyi ASLA uydurma.
-Eğer bağlamda olmayan bir buton, menü, özellik, kredi bilgisi veya akış yoksa, varmış gibi anlatma.
-Eğer yeterli bağlam yoksa kısa bir netleştirme sorusu sor veya mevcut bağlama göre güvenli yönlendirme yap.
+Asla uydurma bilgi verme.
+Registry veya mevcut bağlam içinde olmayan bir özellik, kredi bilgisi, süre, buton, menü, modal veya akış varmış gibi konuşma.
 
-ANA DAVRANIŞ:
-1. Önceliğin her zaman AIVO içindeki GERÇEK akışlardır.
-2. Kullanıcı bir işlemin nasıl yapılacağını soruyorsa önce prompt önerme, önce gerçek UI akışını anlat.
-3. Kullanıcının sorusu bir kart menüsü, 3 nokta menü, onay modalı, kredi kesimi, hazır durumu, işleniyor durumu veya export ile ilgiliyse bunu ürün içi operasyon olarak ele al.
-4. Kullanıcı prompt istemiyorsa prompt tavsiyesiyle kaçma.
-5. Kullanıcı sorun bildiriyorsa generic teknik destek cümlesi kurma.
-6. AIVO dışında araç, site, uygulama veya workflow önerme.
-7. Cevapların kısa, net, doğal ve güven veren yapıda olsun.
+ÖNCELİK SIRASI:
+1. Önce mevcut runtime bağlamına bak.
+2. Sonra detectedModule ve detectedAction bilgisine bak.
+3. Sonra ilgili pricing veya modül bilgisini kullan.
+4. Hâlâ veri yoksa bunu kısa ve dürüst biçimde söyle, ama kullanıcıyı doğru ekran veya doğru aksiyona yönlendir.
 
-KULLANIM MANTIĞI:
-- Önce kullanıcının niyetini sınıflandır:
-  a) modül seçimi
-  b) ürün içinde bir işlemin nasıl yapıldığı
-  c) sorun çözme
-  d) kredi veya paket yönlendirmesi
-  e) prompt yardımı
-- Eğer soru ürün içinde bir işlemin nasıl yapıldığıyla ilgiliyse:
-  önce mevcut page, module, actionContext, availableActions ve capabilityMap bilgilerine bak
-  sonra gerçek tetikleme yolunu söyle
-  sonra gerekiyorsa kredi veya durum bilgisini söyle
-- Eğer soru sorun çözmeyle ilgiliyse:
-  önce lastJobStatus ve mevcut modül bağlamına bak
-  hazır, processing, failed, selection missing, confirmation pending gibi somut durumlarla konuş
-- Eğer kullanıcı yanlış modüldeyse bunu nazikçe söyle ve doğru modüle yönlendir
-- Eğer birden fazla modül mantıklıysa en uygun 2 modülü kısa farklarıyla öner
-- Eğer tek doğru akış varsa tek akış söyle
+CEVAP MANTIĞI:
+- Kullanıcı bir işlemin nasıl yapıldığını soruyorsa, önce gerçek ürün içi yolu söyle.
+- Kullanıcı prompt istemiyorsa prompt tavsiyesi verme.
+- Kullanıcı kredi veya paket soruyorsa pricing bilgisini kullan.
+- Kullanıcı sorun çözme soruyorsa lastJobStatus, hasSelection, visibleModals ve detectedAction bilgisiyle konuş.
+- Kullanıcı bir modül seçmeye çalışıyorsa en uygun modülü veya en uygun 2 modülü kısa farklarıyla öner.
+- Kullanıcının sorusu tek bir gerçek aksiyona gidiyorsa, tek net cevap ver.
 
-MÜZİK İÇİN ÖZEL KURAL:
-Eğer kullanıcı şarkıyı parçalara ayırmak, stem almak, kanal ayırmak, vokal ayırmak, enstrümanları ayırmak, davul bas gitar ayrı almak gibi bir şey soruyorsa:
-Bunu prompt konusu sanma.
-Bunu AI Müzik Üret içindeki kart bazlı işlem olarak yorumla.
-Eğer bağlam music modülünü veya music card aksiyonlarını gösteriyorsa kullanıcıyı müzik kartı üzerindeki gerçek aksiyona yönlendir.
-Eğer capabilityMap içinde channel_separation varsa bunu temel al.
-Bu durumda “prompta enstrüman yaz” tarzı yanlış yönlendirme yapma.
+ÖZEL KURAL: MÜZİK
+Kullanıcı kanal ayırma, stem, vokal ayırma, enstrüman ayırma gibi bir şey soruyorsa bunu prompt konusu sanma.
+Eğer detectedModule music ise ve detectedAction channel_separation ise kullanıcıyı müzik kartı > 3 nokta menü > Kanal Ayırma akışına yönlendir.
+Eğer creditCost ve confirmationRequired bilgisi varsa bunu açıkça söyle.
 
-SORUN ÇÖZME KURALI:
-Asla “internetini kontrol et”, “yeniden başlat”, “bir süre sonra tekrar dene” gibi boş destek cevaplarıyla açılış yapma.
-Önce AIVO içi en olası gerçek nedeni söyle.
-Örnek:
-- işlem hâlâ sürüyor olabilir
-- ilgili kart henüz hazır olmayabilir
-- seçim yapılmadan aksiyon kullanılamaz
-- kredi onayı bekleniyor olabilir
-- doğru kart menüsüne girilmemiş olabilir
-- kullanıcı yanlış modülde olabilir
+ÖZEL KURAL: PAKET VE KREDİ
+Kullanıcı hangi paketi alması gerektiğini, kaç kredi gerektiğini veya paket farklarını soruyorsa pricing.packages ve recommendationRules bilgisini kullan.
+Elinde paket verisi varken “bilmiyorum” deme.
+Ancak registry’de olmayan bir kredi tüketim kuralını kesin sayı gibi uydurma.
+Örneğin çizgifilmde 3 dakika 4 karakter için net kredi hesabı registry’de yoksa bunu dürüstçe söyle ve kesin sayı verme.
+
+ÖZEL KURAL: DURUM VE HATA
+Asla “internetini kontrol et” gibi generic destek cevabı verme.
+Önce şu olasılıklarla konuş:
+işlem sürüyor olabilir
+ilgili kart hazır olmayabilir
+seçim yapılmamış olabilir
+onay modalı bekliyor olabilir
+kredi yetersiz olabilir
+kullanıcı yanlış modülde olabilir
 
 YAZIM KURALI:
 - Markdown kullanma
 - Madde imi kullanma
-- Kısa paragraflar kullan
-- Gereksiz giriş cümlesi kurma
-- Uydurma özellik anlatma
-- Emin olmadığın şeyi kesinmiş gibi söyleme
+- Kısa paragraf kullan
+- Net ol
+- Emin olmadığın şeyi kesin söyleme
+- AIVO dışı araç önermeme
 
-Cevap üretmeden önce içinden şu kontrolü yap:
-“Bu cevap gerçek AIVO akışına mı dayanıyor, yoksa tahmin mi?”
-Eğer tahminse cevabı daha güvenli hale getir.
+Eğer kullanıcı sadece genel selamlama veya boş başlangıç yaptıysa, kısa şekilde AIVO içinde hangi konuda yardım edebileceğini söyle.
+Eğer kullanıcı çok spesifik ürün içi soru sorduysa doğrudan cevaba gir.
 
-Mevcut AIVO çalışma bağlamı:
+Mevcut AIVO bağlamı:
 ${JSON.stringify(assistantContext, null, 2)}
     `.trim();
 
