@@ -650,16 +650,23 @@
     setLoading(true);
 
     try {
-      const assistantContext = buildAssistantContext(extraContext);
+          const assistantContext = buildAssistantContext(extraContext);
+
+      const atmoDiagnostic =
+        window.__AIVO_ATMO_ASSISTANT_STATE__ &&
+        typeof window.__AIVO_ATMO_ASSISTANT_STATE__ === "object"
+          ? { ...window.__AIVO_ATMO_ASSISTANT_STATE__ }
+          : null;
 
       const response = await fetch("/api/assistant/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
+             body: JSON.stringify({
           ...assistantContext,
           message: content,
+          atmoDiagnostic,
           messages: state.messages
         })
       });
