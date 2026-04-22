@@ -651,31 +651,19 @@
         headers: {
           "Content-Type": "application/json"
         },
+            const assistantContext = buildAssistantContext(extraContext);
+
+      const response = await fetch("/api/assistant/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          page: window.location.pathname,
-          module: extraContext.module || detectModuleFromPath(),
-          intent: extraContext.intent || "",
-          action: extraContext.action || "",
-          actionContext: extraContext.actionContext || detectActionContext(),
-          currentPanel: detectCurrentPanel(),
-          currentCardType: detectCurrentCardType(),
-          selectedItemType: detectSelectedItemType(),
-          lastJobStatus: detectLastJobStatus(),
-          userCredits: detectUserCredits(),
-          creditsNeeded: detectCreditsNeeded(),
-          hasSelection: detectHasSelection(),
-          availableActions: detectAvailableActions(),
-          visibleModals: detectVisibleModals(),
-          currentProductCards: detectCurrentProductCards(),
-          uiState: {
-            title: document.title || "",
-            pathname: window.location.pathname || "",
-            bodyText: getBodyText().slice(0, 4000),
-            quickAction: extraContext
-          },
+          ...assistantContext,
           message: content,
           messages: state.messages
         })
+      });
       });
 
       const data = await response.json();
