@@ -2128,7 +2128,7 @@ async function tryRefund(reason, extraMeta = {}) {
         credit: creditCalc
       });
 
-       const result = await withGenerateLoading(
+      const result = await withGenerateLoading(
       btn,
       async () => {
         return await hook(payload);
@@ -2167,6 +2167,42 @@ async function tryRefund(reason, extraMeta = {}) {
       ).trim(),
       visibleError: ""
     });
+
+    const readyVideoUrl = String(
+      result?.evt?.video?.url ||
+      result?.evt?.raw?.video?.url ||
+      result?.evt?.raw?.video_url ||
+      (
+        Array.isArray(result?.evt?.outputs) &&
+        result.evt.outputs.find((o) => {
+          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+          const u = String(o?.url || o?.video_url || "").trim();
+          return !!u && t === "video";
+        })?.url
+      ) ||
+      (
+        Array.isArray(result?.evt?.raw?.outputs) &&
+        result.evt.raw.outputs.find((o) => {
+          const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+          const u = String(o?.url || o?.video_url || "").trim();
+          return !!u && t === "video";
+        })?.url
+      ) ||
+      ""
+    ).trim();
+
+    if (readyVideoUrl) {
+      syncAtmoAssistantState({
+        lastAction: "job_ready",
+        mode,
+        generationState: "ready",
+        creditsConsumed: true,
+        refundExpected: false,
+        refundDone: false,
+        lastVideoUrl: readyVideoUrl,
+        visibleError: ""
+      });
+    }
 
     const hookFailed =
       !result?.ok ||
