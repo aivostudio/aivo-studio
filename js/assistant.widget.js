@@ -338,7 +338,157 @@
     inputEl.style.height = "46px";
     inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
   }
+  function detectModuleFromPath() {
+    const path = String(window.location.pathname || "").toLowerCase();
 
+    if (path.includes("music")) return "music";
+    if (path.includes("cover")) return "cover";
+    if (path.includes("atmo") || path.includes("atmosphere")) return "atmo";
+    if (path.includes("photofx")) return "photofx";
+    if (path.includes("video")) return "video";
+    if (path.includes("cartoon") || path.includes("child-cartoon")) return "cartoon";
+    if (path.includes("pricing") || path.includes("fiyatlandirma")) return "pricing";
+
+    return "";
+  }
+
+  function getBodyText() {
+    return String(document.body?.innerText || "");
+  }
+
+  function detectActionContext() {
+    const text = getBodyText();
+
+    if (/kanal ayırma/i.test(text) && /devam edilsin mi/i.test(text)) {
+      return "channel_separation_confirm";
+    }
+
+    if (/paketi seç/i.test(text)) {
+      return "package_selection";
+    }
+
+    if (/mastering/i.test(text)) {
+      return "mastering";
+    }
+
+    return "";
+  }
+
+  function detectCurrentPanel() {
+    const path = String(window.location.pathname || "").toLowerCase();
+    return path.replace(/\//g, "") || "unknown";
+  }
+
+  function detectCurrentCardType() {
+    const text = getBodyText();
+
+    if (/kanal ayırma/i.test(text)) return "music_card";
+
+    if (
+      /Yeni Kullanıcı/i.test(text) ||
+      /Standart Paket/i.test(text) ||
+      /Yaratıcı Üretici/i.test(text) ||
+      /Stüdyo \/ Ajans/i.test(text)
+    ) {
+      return "pricing_card";
+    }
+
+    return "";
+  }
+
+  function detectSelectedItemType() {
+    const text = getBodyText();
+
+    if (/kanal ayırma/i.test(text)) return "music_track";
+    if (/paketi seç/i.test(text)) return "pricing_package";
+
+    return "";
+  }
+
+  function detectLastJobStatus() {
+    const text = getBodyText();
+
+    if (/hazır/i.test(text)) return "ready";
+    if (/processing|hazırlanıyor|işleniyor/i.test(text)) return "processing";
+    if (/hata|başarısız/i.test(text)) return "failed";
+
+    return "";
+  }
+
+  function detectUserCredits() {
+    const text = getBodyText();
+    const match = text.match(/Kredi\s+(\d+)/i);
+    return match ? Number(match[1]) : null;
+  }
+
+  function detectCreditsNeeded() {
+    const text = getBodyText();
+
+    if (/Onayla\s*\(\s*5\s*Kredi\s*\)/i.test(text)) return 5;
+
+    const match = text.match(/(\d+)\s*kredi/i);
+    return match ? Number(match[1]) : null;
+  }
+
+  function detectHasSelection() {
+    const text = getBodyText();
+
+    if (/kanal ayırma/i.test(text)) return true;
+    if (/Onayla\s*\(\s*5\s*Kredi\s*\)/i.test(text)) return true;
+
+    return null;
+  }
+
+  function detectAvailableActions() {
+    const text = getBodyText();
+    const actions = [];
+
+    if (/kanal ayırma/i.test(text)) actions.push("channel_separation");
+    if (/mastering/i.test(text)) actions.push("mastering");
+    if (/paketi seç/i.test(text)) actions.push("package_select");
+    if (/indir/i.test(text)) actions.push("download");
+    if (/dışa aktar|export/i.test(text)) actions.push("export");
+
+    return actions;
+  }
+
+  function detectVisibleModals() {
+    const text = getBodyText();
+    const modals = [];
+
+    if (/kanal ayırma/i.test(text) && /devam edilsin mi/i.test(text)) {
+      modals.push("channel_separation_confirm");
+    }
+
+    return modals;
+  }
+
+  function detectCurrentProductCards() {
+    const text = getBodyText();
+    const cards = [];
+
+    if (/Yeni Kullanıcı/i.test(text) && /25 kredi/i.test(text) && /199₺/i.test(text)) {
+      cards.push({ key: "starter", label: "Yeni Kullanıcı", priceTRY: 199, credits: 25 });
+    }
+
+    if (/Standart Paket/i.test(text) && /100 kredi/i.test(text) && /699₺/i.test(text)) {
+      cards.push({ key: "standard", label: "Standart Paket", priceTRY: 699, credits: 100 });
+    }
+
+    if (/Yaratıcı Üretici/i.test(text) && /200 kredi/i.test(text) && /1\.299₺/i.test(text)) {
+      cards.push({ key: "pro", label: "Yaratıcı Üretici", priceTRY: 1299, credits: 200 });
+    }
+
+    if (/Stüdyo \/ Ajans/i.test(text) && /500 kredi/i.test(text) && /2\.999₺/i.test(text)) {
+      cards.push({ key: "studio", label: "Stüdyo / Ajans", priceTRY: 2999, credits: 500 });
+    }
+
+    return cards;
+  }
+
+  async function sendMessage(text) {
+    const content = String(text || "").trim();
+    if (!content || state.loading) return;
   async function sendMessage(text) {
     const content = String(text || "").trim();
     if (!content || state.loading) return;
