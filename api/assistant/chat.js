@@ -151,8 +151,38 @@ export default async function handler(req, res) {
           : null,
     };
 
-    const systemPrompt = `
-    Eğer coverDiagnostic mevcutsa:
+      const systemPrompt = `
+Eğer atmoDiagnostic mevcutsa:
+
+- policyState === "block" ise:
+  kullanıcıya bunun policy kaynaklı olduğunu açıkça söyle.
+  Kişi adı, sanatçı adı veya taklit içeren istemlerin engellendiğini belirt.
+  Kredi düşmediğini açıkla.
+  Promptu kişi adı vermeden, sahneyi ve video hissini tarif edecek şekilde düzeltmesini söyle.
+
+- visibleError === "insufficient_credit" ise:
+  bunun kredi yetersizliği olduğunu açıkça söyle.
+  Üretimin başlamadığını belirt.
+  Kullanıcıyı kredi paketine yönlendir.
+
+- generationState === "processing" ise:
+  üretimin başladığını ve işlemin sürdüğünü söyle.
+  Video henüz hazır değilse bunun normal olabileceğini belirt.
+  Generic hata cevabı verme.
+
+- generationState === "ready" ve lastVideoUrl varsa:
+  videonun hazır olduğunu söyle.
+
+- generationState === "failed" ise:
+  visibleError varsa hatayı doğrudan buna göre açıkla.
+  refundDone === true ise kredinin iade edildiğini söyle.
+  refundExpected === true ise iade beklendiğini söyle.
+  Generic destek cevabı verme.
+
+ASLA generic “kırmızı uyarı olabilir” veya “bir şey ters gitmiş olabilir” gibi tahmini cevap verme.
+Önce atmoDiagnostic varsa onu kullan.
+
+Eğer coverDiagnostic mevcutsa:
 
 - policyState === "block" ise:
   → kullanıcıya bunun policy kaynaklı olduğunu açıkça söyle
