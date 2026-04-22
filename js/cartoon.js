@@ -8,6 +8,181 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
+
+  function getCartoonAssistantState() {
+    if (!window.__AIVO_CARTOON_ASSISTANT_STATE__) {
+      window.__AIVO_CARTOON_ASSISTANT_STATE__ = {
+        currentPanel: "cartoon",
+        currentFlow: "basic_generate",
+        policyState: "allow",
+        generationState: "idle",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost: 0,
+        lastJobId: "",
+        lastRequestId: "",
+        lastOutputUrl: "",
+        visibleError: "",
+        visiblePolicyNote: "",
+        dbSaved: false,
+
+        character: {
+          promptPresent: false,
+          promptText: "",
+          selectedCreatedCharacterId: "",
+          characterCreatePending: false,
+          referenceUploadState: "idle",
+          referenceImageUrl: "",
+          libraryCount: 0
+        },
+
+        basic: {
+          promptPresent: false,
+          promptText: "",
+          selectedScene: "",
+          selectedEffects: [],
+          uploadState: "idle",
+          characterUploadState: "idle",
+          audioUploadState: "idle",
+          logoUploadState: "idle",
+          mainCharacter: "",
+          helperCount: 0,
+          duration: "4",
+          ratio: "16:9",
+          style: "soft-cartoon"
+        },
+
+        story: {
+          storyIdeaPresent: false,
+          selectedSceneCount: 0,
+          readySceneCount: 0,
+          failedSceneCount: 0,
+          lastFailedSceneTitle: ""
+        },
+
+        studio: {
+          selectedExportSceneCount: 0,
+          voiceUploadState: "idle",
+          logoUploadState: "idle",
+          exportReady: false,
+          finalVideoReady: false
+        },
+
+        updatedAt: Date.now()
+      };
+    }
+
+    return window.__AIVO_CARTOON_ASSISTANT_STATE__;
+  }
+
+  function patchCartoonAssistantState(patch) {
+    const prev = getCartoonAssistantState();
+
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "cartoon",
+      updatedAt: Date.now(),
+
+      character: {
+        ...(prev.character || {}),
+        ...((patch && patch.character) || {})
+      },
+
+      basic: {
+        ...(prev.basic || {}),
+        ...((patch && patch.basic) || {})
+      },
+
+      story: {
+        ...(prev.story || {}),
+        ...((patch && patch.story) || {})
+      },
+
+      studio: {
+        ...(prev.studio || {}),
+        ...((patch && patch.studio) || {})
+      }
+    };
+
+    window.__AIVO_CARTOON_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:cartoon_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function getBasicCombinedUploadState() {
+    const states = [
+      String(state.characterImageUploadStatus || "idle"),
+      String(state.audioFileUploadStatus || "idle"),
+      String(state.logoFileUploadStatus || "idle")
+    ];
+
+    if (states.includes("error")) return "error";
+    if (states.includes("uploading")) return "uploading";
+    if (states.includes("ready")) return "ready";
+    return "idle";
+  }
+
+  function syncCartoonBasicAssistantState(extra = {}) {
+    const root = getCartoonRoot();
+    const promptInput = qs("[data-cartoon-prompt-input]", root);
+    const policyNote = qs("#cartoonBasicPolicyNote", root);
+
+    const nextPromptText = String(promptInput?.value || state.extraPrompt || "").trim();
+    const nextEffects = [
+      ...(Array.isArray(state.actions) ? state.actions : [])
+    ];
+
+    return patchCartoonAssistantState({
+      currentFlow: "basic_generate",
+      policyState: String(extra.policyState || "allow"),
+      generationState: String(
+        extra.generationState ||
+        (state.isGenerating ? "processing" : "idle")
+      ),
+      creditsConsumed: typeof extra.creditsConsumed === "boolean" ? extra.creditsConsumed : false,
+      refundExpected: typeof extra.refundExpected === "boolean" ? extra.refundExpected : false,
+      refundDone: typeof extra.refundDone === "boolean" ? extra.refundDone : false,
+      creditCost: Number(extra.creditCost || 0),
+      lastJobId: String(extra.lastJobId || ""),
+      lastRequestId: String(extra.lastRequestId || ""),
+      lastOutputUrl: String(extra.lastOutputUrl || ""),
+      visibleError: String(extra.visibleError || ""),
+      visiblePolicyNote: String(extra.visiblePolicyNote || policyNote?.textContent || "").trim(),
+      dbSaved: typeof extra.dbSaved === "boolean" ? extra.dbSaved : false,
+
+      basic: {
+        promptPresent: !!nextPromptText,
+        promptText: nextPromptText,
+        selectedScene: String(state.scene || ""),
+        selectedEffects: nextEffects,
+        uploadState: getBasicCombinedUploadState(),
+        characterUploadState: String(state.characterImageUploadStatus || "idle"),
+        audioUploadState: String(state.audioFileUploadStatus || "idle"),
+        logoUploadState: String(state.logoFileUploadStatus || "idle"),
+        mainCharacter: String(state.mainCharacter || ""),
+        helperCount: Array.isArray(state.helpers) ? state.helpers.length : 0,
+        duration: String(state.duration || "4"),
+        ratio: String(state.ratio || "16:9"),
+        style: String(state.style || "soft-cartoon"),
+        ...((extra && extra.basic) || {})
+      }
+    });
+  }
+
+  window.getCartoonAssistantState = getCartoonAssistantState;
+  window.patchCartoonAssistantState = patchCartoonAssistantState;
+  window.syncCartoonBasicAssistantState = syncCartoonBasicAssistantState;
+
   async function presignCartoonReference(file) {
     const contentType = file?.type || "application/octet-stream";
     const filename = file?.name || `reference-${Date.now()}.png`;
@@ -127,6 +302,7 @@
 
     return scanData.public_url || publicUrl;
   }
+
   async function presignCartoonAudio(file) {
     const res = await fetch("/api/r2/presign-put", {
       method: "POST",
@@ -174,6 +350,7 @@
 
     return publicUrl;
   }
+
   async function presignCartoonLogo(file) {
     const contentType = file?.type || "application/octet-stream";
     const filename = file?.name || `logo-${Date.now()}.png`;
@@ -293,6 +470,7 @@
 
     return scanData.public_url || publicUrl;
   }
+
   // ------------------------------------------------------------
   // Policy helpers (Basic)
   // ------------------------------------------------------------
@@ -903,6 +1081,7 @@
 
     return total;
   }
+
   function updatePromptCount(root) {
     const input = qs("[data-cartoon-prompt-input]", root);
     const out = qs("[data-cartoon-prompt-count]", root);
@@ -920,7 +1099,6 @@
 
   function clearBasicCharacterImage(root) {
     const input = qs("[data-character-upload]", root);
-
     const hadFile = !!state.characterImage;
 
     state.characterImage = null;
@@ -931,6 +1109,14 @@
     state.characterImageUploadError = "";
 
     if (input) input.value = "";
+
+    syncCartoonBasicAssistantState({
+      visibleError: "",
+      basic: {
+        characterUploadState: "idle",
+        uploadState: getBasicCombinedUploadState()
+      }
+    });
 
     updateBasicUploadStatusUI(root);
     updateSummary(root);
@@ -1035,6 +1221,14 @@
 
     if (input) input.value = "";
 
+    syncCartoonBasicAssistantState({
+      visibleError: "",
+      basic: {
+        audioUploadState: "idle",
+        uploadState: getBasicCombinedUploadState()
+      }
+    });
+
     updateBasicAudioUploadStatusUI(root);
     updateSummary(root);
     syncGenerateButtonCredit(root);
@@ -1120,6 +1314,14 @@
     state.logoFileUploadError = "";
 
     if (input) input.value = "";
+
+    syncCartoonBasicAssistantState({
+      visibleError: "",
+      basic: {
+        logoUploadState: "idle",
+        uploadState: getBasicCombinedUploadState()
+      }
+    });
 
     updateBasicLogoUploadStatusUI(root);
     updateSummary(root);
@@ -1301,6 +1503,7 @@
     updateBasicLogoUploadStatusUI(root);
     updateSummary(root);
     syncGenerateButtonCredit(root);
+    syncCartoonBasicAssistantState();
   }
 
   function buildBasicPayload() {
@@ -1409,6 +1612,22 @@
           state.activeBasicPollToken = 0;
         }
 
+        const finalOutputUrl = readyVideoUrl || readyImageUrl || "";
+
+        syncCartoonBasicAssistantState({
+          policyState: "allow",
+          generationState: "ready",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost: Number(window.__CARTOON_BASIC_LAST_CREDIT_COST__ || 0),
+          lastJobId: currentJobId,
+          lastRequestId: String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || ""),
+          lastOutputUrl: finalOutputUrl,
+          visibleError: "",
+          dbSaved: true
+        });
+
         window.dispatchEvent(
           new CustomEvent("aivo:cartoon:job_ready", {
             detail: {
@@ -1425,7 +1644,7 @@
         return;
       }
 
-         if (normalizedStatus === "error") {
+      if (normalizedStatus === "error") {
         console.error("[CARTOON][BASIC] job error =", j2);
 
         if (String(state.activeBasicJobId || "").trim() === currentJobId) {
@@ -1448,6 +1667,18 @@
               "job_error"
             )
           };
+
+          syncCartoonBasicAssistantState({
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: false,
+            creditCost: Number(window.__CARTOON_BASIC_LAST_CREDIT_COST__ || 0),
+            lastJobId: currentJobId,
+            lastRequestId: String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || ""),
+            lastOutputUrl: "",
+            visibleError: refundMeta.error
+          });
 
           try {
             const activeRequestId = String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || "").trim();
@@ -1499,6 +1730,19 @@
                 } catch (_) {}
 
                 try { window.syncCreditsUI?.({ force: true }); } catch {}
+
+                syncCartoonBasicAssistantState({
+                  generationState: "failed",
+                  creditsConsumed: true,
+                  refundExpected: true,
+                  refundDone: true,
+                  creditCost: Number(window.__CARTOON_BASIC_LAST_CREDIT_COST__ || 0),
+                  lastJobId: currentJobId,
+                  lastRequestId: String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || ""),
+                  lastOutputUrl: "",
+                  visibleError: refundMeta.error
+                });
+
                 try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
               } else {
                 try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
@@ -1511,7 +1755,7 @@
             try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
           }
 
-                 window.dispatchEvent(
+          window.dispatchEvent(
             new CustomEvent("aivo:cartoon:job_failed", {
               detail: {
                 app: "cartoon",
@@ -1562,6 +1806,18 @@
         state.activeBasicPollToken = 0;
         state.isGenerating = false;
 
+        syncCartoonBasicAssistantState({
+          generationState: "failed",
+          creditsConsumed: true,
+          refundExpected: true,
+          refundDone: false,
+          creditCost: Number(window.__CARTOON_BASIC_LAST_CREDIT_COST__ || 0),
+          lastJobId: currentJobId,
+          lastRequestId: String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || ""),
+          lastOutputUrl: "",
+          visibleError: "basic_poll_timeout"
+        });
+
         const root = getCartoonRoot();
         const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
         if (basicGenerateBtn) {
@@ -1585,6 +1841,18 @@
         state.activeBasicJobId = "";
         state.activeBasicPollToken = 0;
         state.isGenerating = false;
+
+        syncCartoonBasicAssistantState({
+          generationState: "failed",
+          creditsConsumed: true,
+          refundExpected: true,
+          refundDone: false,
+          creditCost: Number(window.__CARTOON_BASIC_LAST_CREDIT_COST__ || 0),
+          lastJobId: currentJobId,
+          lastRequestId: String(window.__CARTOON_BASIC_LAST_CONSUME_REQUEST_ID__ || ""),
+          lastOutputUrl: "",
+          visibleError: String(err?.message || err || "basic_poll_failed")
+        });
 
         const root = getCartoonRoot();
         const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
@@ -1679,6 +1947,15 @@
         const payload = buildBasicPayload();
 
         if (!String(payload.extraPrompt || "").trim()) {
+          syncCartoonBasicAssistantState({
+            generationState: "idle",
+            visibleError: "missing_prompt",
+            basic: {
+              promptPresent: false,
+              promptText: ""
+            }
+          });
+
           try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
           const promptEl = qs("[data-cartoon-prompt-input]", root);
           if (promptEl) promptEl.focus();
@@ -1698,6 +1975,14 @@
           }
 
           if (!state.characterImageUrl || state.characterImageUploadStatus !== "ready") {
+            syncCartoonBasicAssistantState({
+              generationState: "idle",
+              visibleError: "character_image_not_ready",
+              basic: {
+                characterUploadState: String(state.characterImageUploadStatus || "idle")
+              }
+            });
+
             try { window.toast?.info?.("Karakter görseli henüz hazır değil"); } catch {}
             return;
           }
@@ -1716,12 +2001,20 @@
           }
 
           if (!state.logoFileUrl || state.logoFileUploadStatus !== "ready") {
+            syncCartoonBasicAssistantState({
+              generationState: "idle",
+              visibleError: "logo_not_ready",
+              basic: {
+                logoUploadState: String(state.logoFileUploadStatus || "idle")
+              }
+            });
+
             try { window.toast?.info?.("Logo henüz hazır değil"); } catch {}
             return;
           }
         }
 
-          if (state.audioFile) {
+        if (state.audioFile) {
           if (
             state.audioFileUploadStatus === "uploading" &&
             state.audioFileUploadPromise
@@ -1734,10 +2027,19 @@
           }
 
           if (!state.audioFileUrl || state.audioFileUploadStatus !== "ready") {
+            syncCartoonBasicAssistantState({
+              generationState: "idle",
+              visibleError: "audio_not_ready",
+              basic: {
+                audioUploadState: String(state.audioFileUploadStatus || "idle")
+              }
+            });
+
             try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
             return;
           }
         }
+
         const policyText = [
           payload.extraPrompt,
           payload.style,
@@ -1768,8 +2070,23 @@
             policyNote.style.display = "block";
           }
 
+          syncCartoonBasicAssistantState({
+            policyState: "block",
+            generationState: "failed",
+            creditsConsumed: false,
+            refundExpected: false,
+            refundDone: false,
+            creditCost: 0,
+            lastJobId: "",
+            lastRequestId: "",
+            lastOutputUrl: "",
+            visibleError: "policy_blocked",
+            visiblePolicyNote: "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve karakter aksiyonunu tarif et."
+          });
+
           return;
         }
+
         console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
         let consumed = false;
@@ -1778,6 +2095,19 @@
         const creditCost = getEstimatedCredits();
         const creditReason = "studio_cartoon_basic_generate";
         const consumeRequestId = `cartoon-basic:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+        syncCartoonBasicAssistantState({
+          policyState: "allow",
+          generationState: "processing",
+          creditsConsumed: false,
+          refundExpected: false,
+          refundDone: false,
+          creditCost,
+          lastJobId: "",
+          lastRequestId: consumeRequestId,
+          lastOutputUrl: "",
+          visibleError: ""
+        });
 
         async function refreshCreditsUI() {
           try {
@@ -1841,12 +2171,38 @@
 
             if (refundRes.ok && refundData?.ok && refundData?.refunded) {
               await refreshCreditsUI();
+
+              syncCartoonBasicAssistantState({
+                generationState: "failed",
+                creditsConsumed: true,
+                refundExpected: true,
+                refundDone: true,
+                creditCost,
+                lastJobId: String(state.activeBasicJobId || ""),
+                lastRequestId: consumeRequestId,
+                lastOutputUrl: "",
+                visibleError: String(extraMeta?.error || reason || "basic_generate_failed")
+              });
+
               try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
               return true;
             }
 
             if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
               await refreshCreditsUI();
+
+              syncCartoonBasicAssistantState({
+                generationState: "failed",
+                creditsConsumed: true,
+                refundExpected: true,
+                refundDone: true,
+                creditCost,
+                lastJobId: String(state.activeBasicJobId || ""),
+                lastRequestId: consumeRequestId,
+                lastOutputUrl: "",
+                visibleError: String(extraMeta?.error || reason || "basic_generate_failed")
+              });
+
               return true;
             }
           } catch (refundErr) {
@@ -1880,6 +2236,18 @@
         }
 
         if (!creditRes.ok || !creditData?.ok) {
+          syncCartoonBasicAssistantState({
+            generationState: "failed",
+            creditsConsumed: false,
+            refundExpected: false,
+            refundDone: false,
+            creditCost,
+            lastJobId: "",
+            lastRequestId: consumeRequestId,
+            lastOutputUrl: "",
+            visibleError: "insufficient_credit"
+          });
+
           const to = encodeURIComponent(
             location.pathname + location.search + location.hash
           );
@@ -1890,7 +2258,7 @@
           return;
         }
 
-             consumed = true;
+        consumed = true;
         consumeTransactionId =
           creditData?.transaction_id ||
           creditData?.transaction?.id ||
@@ -1907,6 +2275,18 @@
         generateBtn.disabled = true;
         generateBtn.textContent = "Üretiliyor...";
         generateBtn.classList.add("is-loading");
+
+        syncCartoonBasicAssistantState({
+          generationState: "processing",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost,
+          lastJobId: "",
+          lastRequestId: consumeRequestId,
+          lastOutputUrl: "",
+          visibleError: ""
+        });
 
         try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
         try { window.toast?.success?.("Sahne üretimi başladı"); } catch {}
@@ -1928,6 +2308,18 @@
           if (j?.job_id) {
             state.activeBasicJobId = String(j.job_id || "");
             state.activeBasicPollToken = Date.now();
+
+            syncCartoonBasicAssistantState({
+              generationState: "processing",
+              creditsConsumed: true,
+              refundExpected: false,
+              refundDone: false,
+              creditCost,
+              lastJobId: String(j.job_id || ""),
+              lastRequestId: consumeRequestId,
+              lastOutputUrl: "",
+              visibleError: ""
+            });
 
             window.dispatchEvent(
               new CustomEvent("aivo:cartoon:job_created", {
@@ -1966,6 +2358,18 @@
           generateBtn.classList.remove("is-loading");
 
           console.error("[CARTOON][BASIC] create error:", err);
+
+          syncCartoonBasicAssistantState({
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: false,
+            creditCost,
+            lastJobId: String(state.activeBasicJobId || ""),
+            lastRequestId: consumeRequestId,
+            lastOutputUrl: "",
+            visibleError: String(err?.message || err || "basic_create_failed")
+          });
 
           const refunded = await tryRefund("cartoon_basic_create_failed", {
             error: String(err?.message || err || "failed")
@@ -2020,6 +2424,17 @@
         updatePromptCount(root);
         updateSummary(root);
         syncGenerateButtonCredit(root);
+
+        syncCartoonBasicAssistantState({
+          policyState: "allow",
+          generationState: state.isGenerating ? "processing" : "idle",
+          visibleError: "",
+          visiblePolicyNote: "",
+          basic: {
+            promptPresent: !!String(prompt.value || "").trim(),
+            promptText: String(prompt.value || "").trim()
+          }
+        });
       }
     });
 
@@ -2033,6 +2448,7 @@
         resetBasicPolicyUI(root);
         updateSummary(root);
         syncGenerateButtonCredit(root);
+        syncCartoonBasicAssistantState();
         return;
       }
 
@@ -2042,6 +2458,7 @@
         resetBasicPolicyUI(root);
         updateSummary(root);
         syncGenerateButtonCredit(root);
+        syncCartoonBasicAssistantState();
         return;
       }
 
@@ -2051,10 +2468,11 @@
         resetBasicPolicyUI(root);
         updateSummary(root);
         syncGenerateButtonCredit(root);
+        syncCartoonBasicAssistantState();
         return;
       }
 
-        const audioSource = e.target.closest("[data-audio-source]");
+      const audioSource = e.target.closest("[data-audio-source]");
       if (audioSource && root.contains(audioSource)) {
         state.audioSource = state.audioFile ? "upload" : "none";
 
@@ -2065,6 +2483,7 @@
         resetBasicPolicyUI(root);
         updateSummary(root);
         syncGenerateButtonCredit(root);
+        syncCartoonBasicAssistantState();
         return;
       }
 
@@ -2083,6 +2502,14 @@
         updateSummary(root);
         syncGenerateButtonCredit(root);
 
+        syncCartoonBasicAssistantState({
+          visibleError: "",
+          basic: {
+            logoUploadState: file ? "uploading" : "idle",
+            uploadState: getBasicCombinedUploadState()
+          }
+        });
+
         if (!file) return;
 
         state.logoFileUploadPromise = uploadCartoonLogoToR2(file)
@@ -2096,11 +2523,20 @@
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+
+            syncCartoonBasicAssistantState({
+              visibleError: "",
+              basic: {
+                logoUploadState: "ready",
+                uploadState: getBasicCombinedUploadState()
+              }
+            });
+
             try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
             console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
             return state.logoFileUrl;
           })
-                .catch((err) => {
+          .catch((err) => {
             state.logoFileUrl = "";
             state.logoFileUploadStatus = "error";
             state.logoFileUploadError = String(err?.message || err || "basic_logo_upload_failed");
@@ -2112,6 +2548,14 @@
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+
+            syncCartoonBasicAssistantState({
+              visibleError: String(err?.message || err || "basic_logo_upload_failed"),
+              basic: {
+                logoUploadState: "error",
+                uploadState: getBasicCombinedUploadState()
+              }
+            });
 
             const errText = String(err?.message || err || "").toLowerCase();
             const isPolicyBlocked =
@@ -2141,7 +2585,7 @@
       const audioUpload = e.target.closest("[data-audio-upload]");
       if (audioUpload && root.contains(audioUpload)) {
         const file = audioUpload.files && audioUpload.files[0] ? audioUpload.files[0] : null;
-             state.audioSource = file ? "upload" : "none";
+        state.audioSource = file ? "upload" : "none";
 
         state.audioFile = file;
         state.audioFileName = file ? file.name : "";
@@ -2153,6 +2597,14 @@
         updateBasicAudioUploadStatusUI(root);
         updateSummary(root);
         syncGenerateButtonCredit(root);
+
+        syncCartoonBasicAssistantState({
+          visibleError: "",
+          basic: {
+            audioUploadState: file ? "uploading" : "idle",
+            uploadState: getBasicCombinedUploadState()
+          }
+        });
 
         if (!file) return;
 
@@ -2167,6 +2619,15 @@
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+
+            syncCartoonBasicAssistantState({
+              visibleError: "",
+              basic: {
+                audioUploadState: "ready",
+                uploadState: getBasicCombinedUploadState()
+              }
+            });
+
             try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
             console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
             return state.audioFileUrl;
@@ -2182,6 +2643,15 @@
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+
+            syncCartoonBasicAssistantState({
+              visibleError: String(err?.message || err || "basic_audio_upload_failed"),
+              basic: {
+                audioUploadState: "error",
+                uploadState: getBasicCombinedUploadState()
+              }
+            });
+
             try { window.toast?.error?.("Müzik yükleme hatası"); } catch {}
             throw err;
           });
@@ -2204,6 +2674,14 @@
         updateSummary(root);
         syncGenerateButtonCredit(root);
 
+        syncCartoonBasicAssistantState({
+          visibleError: "",
+          basic: {
+            characterUploadState: file ? "uploading" : "idle",
+            uploadState: getBasicCombinedUploadState()
+          }
+        });
+
         if (!file) return;
 
         state.characterImageUploadPromise = uploadCartoonReferenceToR2(file)
@@ -2220,11 +2698,19 @@
               syncGenerateButtonCredit(nextRoot);
             }
 
+            syncCartoonBasicAssistantState({
+              visibleError: "",
+              basic: {
+                characterUploadState: "ready",
+                uploadState: getBasicCombinedUploadState()
+              }
+            });
+
             try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
 
             return state.characterImageUrl;
           })
-                  .catch((err) => {
+          .catch((err) => {
             state.characterImageUrl = "";
             state.characterImageUploadStatus = "error";
             state.characterImageUploadError = String(err?.message || err || "basic_reference_upload_failed");
@@ -2236,6 +2722,14 @@
               updateSummary(nextRoot);
               syncGenerateButtonCredit(nextRoot);
             }
+
+            syncCartoonBasicAssistantState({
+              visibleError: String(err?.message || err || "basic_reference_upload_failed"),
+              basic: {
+                characterUploadState: "error",
+                uploadState: getBasicCombinedUploadState()
+              }
+            });
 
             const errText = String(err?.message || err || "").toLowerCase();
             const isPolicyBlocked =
