@@ -1146,6 +1146,7 @@ function publishMusicAssistantContext(extra = {}) {
           generateBtn.style.borderRadius = "";
         }
       }
+     publishMusicAssistantContext({ source: "music_mode_change", mode: m });
     }
 
     // default
