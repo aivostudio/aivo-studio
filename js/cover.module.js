@@ -1190,6 +1190,17 @@ function buildCoverPrompt(prompt, quality) {
             `;
           }
 
+                    syncCoverAssistantState({
+            lastAction: "policy_blocked",
+            policyState: "block",
+            generationState: "failed",
+            dbSaved: false,
+            lastImageUrl: "",
+            lastJobId: "",
+            visibleError: "policy_blocked",
+            visiblePolicyNote: readCoverPolicyNote(root) || "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve görsel hissi tarif et."
+          });
+
           return;
         }
 
