@@ -51,7 +51,90 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
+    function getCoverAssistantState() {
+    if (!window.__AIVO_COVER_ASSISTANT_STATE__) {
+      window.__AIVO_COVER_ASSISTANT_STATE__ = {
+        currentPanel: "cover",
+        lastAction: "idle",
+        promptPresent: false,
+        promptText: "",
+        policyState: "allow",
+        selectedQuality: "artist",
+        creditCost: 6,
+        generationState: "idle",
+        lastImageUrl: "",
+        dbSaved: false,
+        visibleError: "",
+        visiblePolicyNote: "",
+        overlayAttempted: false,
+        overlayApplied: false,
+        lastJobId: "",
+        lastRatio: "1:1",
+        lastStyle: "",
+        updatedAt: Date.now()
+      };
+    }
+    return window.__AIVO_COVER_ASSISTANT_STATE__;
+  }
 
+  function patchCoverAssistantState(patch) {
+    const prev = getCoverAssistantState();
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "cover",
+      updatedAt: Date.now()
+    };
+
+    window.__AIVO_COVER_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:cover_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function readCoverPolicyNote(root) {
+    const note = root?.querySelector("#coverPolicyNote");
+    const text = String(note?.textContent || "").trim();
+    return text;
+  }
+
+  function syncCoverAssistantState(extra = {}) {
+    const root = getRoot();
+    const promptEl = root ? qs("#coverPrompt", root) : null;
+    const genBtn = root ? qs("#coverGenerateBtn", root) : null;
+
+    const selectedQuality = String(root?.dataset?.coverQuality || "artist").toLowerCase() === "ultra"
+      ? "ultra"
+      : "artist";
+
+    const promptText = String(promptEl?.value || "").trim();
+    const visiblePolicyNote = readCoverPolicyNote(root);
+
+    const creditCost =
+      Number(genBtn?.getAttribute("data-credit-cost") || (selectedQuality === "ultra" ? 9 : 6)) ||
+      (selectedQuality === "ultra" ? 9 : 6);
+
+    return patchCoverAssistantState({
+      promptPresent: !!promptText,
+      promptText,
+      selectedQuality,
+      creditCost,
+      lastRatio: String(root ? (qs("#coverRatio", root)?.value || "1:1") : "1:1"),
+      lastStyle: String(root?.dataset?.coverStyle || ""),
+      visiblePolicyNote,
+      ...extra
+    });
+  }
+
+  window.getCoverAssistantState = getCoverAssistantState;
+  window.syncCoverAssistantState = syncCoverAssistantState;
   function qs(sel, root = document) {
     return root.querySelector(sel);
   }
