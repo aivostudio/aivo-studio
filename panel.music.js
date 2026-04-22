@@ -898,25 +898,37 @@ async function togglePlayFromCard(card){
     updateProgressUI();
   }
 
-  function actionDownload(card){
-    const jobId = String(card?.getAttribute("data-job-id") || "").trim();
-    const existing = (jobs || []).find((x) => getJobId(x) === jobId) || {};
-    const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
-    if (!src) {
-      toast("error", "İndirilecek dosya yok");
-      return;
-    }
+function actionDownload(card){
+  const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+  const existing = (jobs || []).find((x) => getJobId(x) === jobId) || {};
+  const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
 
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = "";
-    a.target = "_blank";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast("success", "İndirme başlatıldı");
+  if (!src) {
+    toast("error", "İndirilecek dosya yok");
+    return;
   }
+
+  const title =
+    String(existing?.title || "").trim() ||
+    String(card?.querySelector?.(".aivo-player-title")?.textContent || "").trim() ||
+    "music";
+
+  const safeName = title
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/gi, "_")
+    .replace(/^_+|_+$/g, "") || "music";
+
+  const a = document.createElement("a");
+  a.href = src;
+  a.setAttribute("download", `${safeName}.mp3`);
+  a.removeAttribute("target");
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  toast("success", "İndirme başlatıldı");
+}
 
   if (!window.__AIVO_MUSIC_STEMS_TIMERS__) window.__AIVO_MUSIC_STEMS_TIMERS__ = new Map();
   const STEMS_TMAP = window.__AIVO_MUSIC_STEMS_TIMERS__;
