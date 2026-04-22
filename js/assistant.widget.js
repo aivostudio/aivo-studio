@@ -637,7 +637,14 @@ Bu işlem onay gerektiriyor.`;
   quickButtons.forEach((button) => {
     button.addEventListener("click", function () {
       openPanel();
-      sendMessage(button.getAttribute("data-prompt") || "");
+
+      sendMessage(button.getAttribute("data-prompt") || "", {
+        intent: button.getAttribute("data-intent") || "",
+        module: button.getAttribute("data-module") || "",
+        action: button.getAttribute("data-action") || "",
+        actionContext: button.getAttribute("data-action-context") || "",
+        source: "quick_action_button"
+      });
     });
   });
 
