@@ -1194,6 +1194,18 @@ function buildCoverPrompt(prompt, quality) {
         }
 
         const prev = gen.textContent;
+
+        syncCoverAssistantState({
+          lastAction: "generate_click",
+          policyState: "allow",
+          generationState: "processing",
+          dbSaved: false,
+          lastImageUrl: "",
+          lastJobId: "",
+          visibleError: "",
+          visiblePolicyNote: readCoverPolicyNote(root)
+        });
+
 (async () => {
   let consumed = false;
   let consumeTransactionId = null;
