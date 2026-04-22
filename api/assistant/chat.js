@@ -91,11 +91,14 @@ export default async function handler(req, res) {
       getAivoModule(page) ||
       findModuleByAlias(`${moduleName} ${page} ${actionContext} ${userMessage}`);
 
-    const detectedAction =
+     const detectedAction =
       detectedModule?.key
-        ? findActionInModule(
-            detectedModule.key,
-            `${actionContext} ${currentPanel} ${currentCardType} ${selectedItemType} ${userMessage} ${availableActions.join(" ")}`
+        ? (
+            detectedModule.actions?.find((item) => item?.key === action) ||
+            findActionInModule(
+              detectedModule.key,
+              `${action} ${actionContext} ${currentPanel} ${currentCardType} ${selectedItemType} ${userMessage} ${availableActions.join(" ")}`
+            )
           )
         : null;
 
