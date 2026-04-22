@@ -87,7 +87,7 @@
   }
 
 function getMusicAssistantSelectedCard() {
-  const selected =
+  let selected =
     document.querySelector("#rightPanelHost .aivo-player-card[data-selected-music-card='true']") ||
     document.querySelector("#rightPanelHost .aivo-player-card.is-selected") ||
     document.querySelector('#rightPanelHost .aivo-player-card[aria-selected="true"]') ||
@@ -95,62 +95,65 @@ function getMusicAssistantSelectedCard() {
     document.querySelector(".aivo-player-card.is-selected") ||
     document.querySelector('.aivo-player-card[aria-selected="true"]') ||
     null;
-   if (window.selectedJobId) {
-  const bySelectedJobId =
-    document.querySelector(`#rightPanelHost .aivo-player-card[data-job-id="${window.selectedJobId}"]`) ||
-    document.querySelector(`.aivo-player-card[data-job-id="${window.selectedJobId}"]`) ||
-    null;
 
-  if (bySelectedJobId) {
-    bySelectedJobId.setAttribute("data-selected-music-card", "true");
-    bySelectedJobId.classList.add("is-selected");
-    bySelectedJobId.setAttribute("aria-selected", "true");
-    return bySelectedJobId;
+  if (!selected && window.selectedJobId) {
+    selected =
+      document.querySelector(`#rightPanelHost .aivo-player-card[data-job-id="${window.selectedJobId}"]`) ||
+      document.querySelector(`.aivo-player-card[data-job-id="${window.selectedJobId}"]`) ||
+      null;
+
+    if (selected) {
+      selected.setAttribute("data-selected-music-card", "true");
+      selected.classList.add("is-selected");
+      selected.setAttribute("aria-selected", "true");
+    }
   }
-}
+
   if (!selected) return null;
 
   const id =
-    selected.getAttribute("data-id") ||
     selected.getAttribute("data-job-id") ||
+    selected.getAttribute("data-id") ||
     selected.getAttribute("data-card-id") ||
     "";
 
   const providerJobId =
     selected.getAttribute("data-provider-job-id") ||
+    selected.getAttribute("data-provider-song-id") ||
     selected.getAttribute("data-provider-id") ||
     "";
 
   const titleEl =
-    selected.querySelector(".aivo-player-title, .aivo-player-titleRow strong, .aivo-player-titleRow, [data-role='title']") ||
+    selected.querySelector(".aivo-player-title") ||
+    selected.querySelector(".aivo-player-titleRow strong") ||
+    selected.querySelector(".aivo-player-titleRow") ||
+    selected.querySelector("[data-role='title']") ||
     null;
 
-  const statusClass =
-    Array.from(selected.classList).find((cls) => /^is-/.test(cls) && cls !== "is-selected") ||
-    "";
-
-  const statusEl =
-    selected.querySelector(".aivo-player-status, .aivo-player-meta, [data-role='status']") ||
+  const statusTagEl =
+    selected.querySelector(".aivo-player-tags .aivo-tag") ||
+    selected.querySelector(".aivo-tag") ||
     null;
 
   const title = titleEl
     ? String(titleEl.textContent || "").trim().split("\n")[0].trim()
     : "";
 
-  const statusFromDom = statusEl ? String(statusEl.textContent || "").trim() : "";
-  const statusFromClass = statusClass ? statusClass.replace(/^is-/, "") : "";
+  const statusFromTag = statusTagEl ? String(statusTagEl.textContent || "").trim() : "";
+  const statusFromAttr = String(selected.getAttribute("data-status") || "").trim();
 
-  const status =
-    selected.getAttribute("data-status") ||
-    statusFromClass ||
-    statusFromDom ||
-    "";
+  let statusFromClass = "";
+  if (selected.classList.contains("is-ready")) statusFromClass = "ready";
+  else if (selected.classList.contains("is-loading") || selected.classList.contains("is-processing")) statusFromClass = "processing";
+  else if (selected.classList.contains("is-error")) statusFromClass = "failed";
+
+  const rawStatus = statusFromAttr || statusFromTag || statusFromClass || "";
 
   return {
     id,
     title,
-    status: normalizeMusicStatus(status),
-    rawStatus: status,
+    status: normalizeMusicStatus(rawStatus),
+    rawStatus,
     providerJobId,
     element: selected
   };
