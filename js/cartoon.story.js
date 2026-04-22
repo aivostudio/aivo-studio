@@ -219,6 +219,224 @@ function showStoryCharacterLimitAlert() {
     return qs('.main-panel[data-module="cartoon"]');
   }
 
+  function getCartoonAssistantState() {
+    if (!window.__AIVO_CARTOON_ASSISTANT_STATE__) {
+      window.__AIVO_CARTOON_ASSISTANT_STATE__ = {
+        currentPanel: "cartoon",
+        currentFlow: "story_generate",
+        policyState: "allow",
+        generationState: "idle",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost: 0,
+        lastJobId: "",
+        lastRequestId: "",
+        lastOutputUrl: "",
+        visibleError: "",
+        visiblePolicyNote: "",
+        dbSaved: false,
+
+        character: {
+          promptPresent: false,
+          promptText: "",
+          selectedCreatedCharacterId: "",
+          characterCreatePending: false,
+          referenceUploadState: "idle",
+          referenceImageUrl: "",
+          libraryCount: 0
+        },
+
+        basic: {
+          promptPresent: false,
+          promptText: "",
+          selectedScene: "",
+          selectedEffects: [],
+          uploadState: "idle",
+          characterUploadState: "idle",
+          audioUploadState: "idle",
+          logoUploadState: "idle",
+          mainCharacter: "",
+          helperCount: 0,
+          duration: "4",
+          ratio: "16:9",
+          style: "soft-cartoon"
+        },
+
+        story: {
+          storyIdeaPresent: false,
+          storyIdeaText: "",
+          selectedSceneCount: 0,
+          readySceneCount: 0,
+          failedSceneCount: 0,
+          totalSceneCount: 0,
+          currentOpenSection: "",
+          flowDuration: "3",
+          characterUploadState: "idle",
+          audioUploadState: "idle",
+          logoUploadState: "idle",
+          uploadState: "idle",
+          lastFailedSceneTitle: "",
+          lastReadySceneTitle: ""
+        },
+
+        studio: {
+          selectedExportSceneCount: 0,
+          voiceUploadState: "idle",
+          logoUploadState: "idle",
+          exportReady: false,
+          finalVideoReady: false
+        },
+
+        updatedAt: Date.now()
+      };
+    }
+
+    return window.__AIVO_CARTOON_ASSISTANT_STATE__;
+  }
+
+  function patchCartoonAssistantState(patch) {
+    const prev = getCartoonAssistantState();
+
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "cartoon",
+      updatedAt: Date.now(),
+
+      character: {
+        ...(prev.character || {}),
+        ...((patch && patch.character) || {})
+      },
+
+      basic: {
+        ...(prev.basic || {}),
+        ...((patch && patch.basic) || {})
+      },
+
+      story: {
+        ...(prev.story || {}),
+        ...((patch && patch.story) || {})
+      },
+
+      studio: {
+        ...(prev.studio || {}),
+        ...((patch && patch.studio) || {})
+      }
+    };
+
+    window.__AIVO_CARTOON_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:cartoon_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function getStoryCharacterUploadState() {
+    const slots = STORY_CHARACTER_SLOT_CONFIG.map((config) => config.slot);
+    const statuses = slots.map((slot) => String(getStoryCharacterImage(slot)?.uploadStatus || "idle"));
+
+    if (statuses.includes("error")) return "error";
+    if (statuses.includes("uploading")) return "uploading";
+    if (statuses.includes("ready")) return "ready";
+    return "idle";
+  }
+
+  function getStoryAssetUploadState(kind) {
+    if (kind === "audio") {
+      return String(getStoryAudioAsset()?.uploadStatus || "idle");
+    }
+    if (kind === "logo") {
+      return String(getStoryLogoAsset()?.uploadStatus || "idle");
+    }
+    return "idle";
+  }
+
+  function getStoryCombinedUploadState() {
+    const statuses = [
+      getStoryCharacterUploadState(),
+      getStoryAssetUploadState("audio"),
+      getStoryAssetUploadState("logo")
+    ];
+
+    if (statuses.includes("error")) return "error";
+    if (statuses.includes("uploading")) return "uploading";
+    if (statuses.includes("ready")) return "ready";
+    return "idle";
+  }
+
+  function syncCartoonStoryAssistantState(extra = {}) {
+    const root = getCartoonRoot();
+    const storyIdeaInput = qs("[data-story-idea]", root);
+    const extraPromptInput = qs("[data-story-extra-prompt]", root);
+    const policyNote = qs("#cartoonStoryPolicyNote", root);
+    const selectedScenes = getSelectedScenes();
+    const storyIdeaText = String(storyIdeaInput?.value || state.storyIdea || "").trim();
+    const extraPromptText = String(extraPromptInput?.value || state.extraPrompt || "").trim();
+    const readySceneCount = Number(storyPollState.ready || 0);
+    const failedSceneCount = Number(storyPollState.failed || 0);
+    const totalTrackedJobs = Number(storyPollState.total || 0);
+    const totalSceneCount = Number(Array.isArray(state.scenes) ? state.scenes.length : 0);
+
+    let derivedGenerationState = "idle";
+    if (state.isGenerating) {
+      derivedGenerationState = "processing";
+    } else if (readySceneCount > 0 && failedSceneCount > 0) {
+      derivedGenerationState = "partial_ready";
+    } else if (readySceneCount > 0) {
+      derivedGenerationState = "ready";
+    } else if (failedSceneCount > 0) {
+      derivedGenerationState = "failed";
+    }
+
+    return patchCartoonAssistantState({
+      currentFlow: "story_generate",
+      policyState: String(extra.policyState || "allow"),
+      generationState: String(extra.generationState || derivedGenerationState),
+      creditsConsumed: typeof extra.creditsConsumed === "boolean" ? extra.creditsConsumed : false,
+      refundExpected: typeof extra.refundExpected === "boolean" ? extra.refundExpected : false,
+      refundDone: typeof extra.refundDone === "boolean" ? extra.refundDone : !!window.__CARTOON_STORY_REFUND_DONE__,
+      creditCost: Number(extra.creditCost || 0),
+      lastJobId: String(extra.lastJobId || ""),
+      lastRequestId: String(extra.lastRequestId || ""),
+      lastOutputUrl: String(extra.lastOutputUrl || ""),
+      visibleError: String(extra.visibleError || ""),
+      visiblePolicyNote: String(extra.visiblePolicyNote || policyNote?.textContent || "").trim(),
+      dbSaved: typeof extra.dbSaved === "boolean" ? extra.dbSaved : readySceneCount > 0,
+
+      story: {
+        storyIdeaPresent: !!storyIdeaText,
+        storyIdeaText,
+        promptPresent: !!extraPromptText,
+        promptText: extraPromptText,
+        selectedSceneCount: selectedScenes.length,
+        readySceneCount,
+        failedSceneCount,
+        totalSceneCount: totalTrackedJobs || totalSceneCount,
+        currentOpenSection: String(state.openSection || ""),
+        flowDuration: String(state.flowDuration || "3"),
+        characterUploadState: getStoryCharacterUploadState(),
+        audioUploadState: getStoryAssetUploadState("audio"),
+        logoUploadState: getStoryAssetUploadState("logo"),
+        uploadState: getStoryCombinedUploadState(),
+        lastFailedSceneTitle: String(extra.lastFailedSceneTitle || window.__CARTOON_STORY_LAST_FAILED_SCENE_TITLE__ || ""),
+        lastReadySceneTitle: String(extra.lastReadySceneTitle || window.__CARTOON_STORY_LAST_READY_SCENE_TITLE__ || ""),
+        ...((extra && extra.story) || {})
+      }
+    });
+  }
+
+  window.getCartoonAssistantState = getCartoonAssistantState;
+  window.patchCartoonAssistantState = patchCartoonAssistantState;
+  window.syncCartoonStoryAssistantState = syncCartoonStoryAssistantState;
+
+
   function getStorySceneEditor(root) {
     return (
       qs("[data-story-scene-editor]", root || document) ||
@@ -1407,6 +1625,24 @@ function completeStoryGenerateIfAllSettled() {
     try { window.toast?.success?.("Hikaye hazır"); } catch {}
   }
 
+  syncCartoonStoryAssistantState({
+    generationState:
+      ready > 0 && failed > 0
+        ? "partial_ready"
+        : ready > 0
+          ? "ready"
+          : "failed",
+    creditsConsumed: true,
+    refundExpected: failed > 0,
+    refundDone: !!window.__CARTOON_STORY_REFUND_DONE__,
+    creditCost: Number(window.__CARTOON_STORY_LAST_CREDIT_COST__ || 0),
+    lastJobId: "",
+    lastRequestId: String(window.__CARTOON_STORY_LAST_CONSUME_REQUEST_ID__ || ""),
+    lastOutputUrl: "",
+    visibleError: failed > 0 ? "story_batch_incomplete" : "",
+    dbSaved: ready > 0
+  });
+
   console.log("[CARTOON][STORY_ALL_SETTLED]", {
     total,
     ready,
@@ -1470,6 +1706,7 @@ function completeStoryGenerateIfAllSettled() {
     entry.lastStatus = safeText(payload?.status).toLowerCase();
     clearStoryJobTimer(key);
     storyPollState.ready += 1;
+    window.__CARTOON_STORY_LAST_READY_SCENE_TITLE__ = safeText(item?.scene_title);
 
     const detail = {
       app: "cartoon",
@@ -1501,6 +1738,23 @@ function completeStoryGenerateIfAllSettled() {
       })
     );
 
+    syncCartoonStoryAssistantState({
+      generationState:
+        Number(storyPollState.failed || 0) > 0
+          ? "partial_ready"
+          : (state.isGenerating ? "processing" : "ready"),
+      creditsConsumed: true,
+      refundExpected: Number(storyPollState.failed || 0) > 0,
+      refundDone: !!window.__CARTOON_STORY_REFUND_DONE__,
+      creditCost: Number(window.__CARTOON_STORY_LAST_CREDIT_COST__ || 0),
+      lastJobId: key,
+      lastRequestId: String(window.__CARTOON_STORY_LAST_CONSUME_REQUEST_ID__ || ""),
+      lastOutputUrl: String(payload?.video?.url || ""),
+      visibleError: "",
+      lastReadySceneTitle: safeText(item?.scene_title),
+      dbSaved: true
+    });
+
     completeStoryGenerateIfAllSettled();
   }
 
@@ -1515,6 +1769,7 @@ function completeStoryGenerateIfAllSettled() {
     entry.lastStatus = safeText(raw?.status || raw?.db_status || raw?.state || raw?.error).toLowerCase();
     clearStoryJobTimer(key);
     storyPollState.failed += 1;
+    window.__CARTOON_STORY_LAST_FAILED_SCENE_TITLE__ = safeText(item?.scene_title);
 
     console.error("[CARTOON][STORY_JOB_FAILED_FINAL]", {
       jobId: key,
@@ -1642,6 +1897,28 @@ function completeStoryGenerateIfAllSettled() {
         }
       })
     );
+
+    syncCartoonStoryAssistantState({
+      generationState:
+        Number(storyPollState.ready || 0) > 0
+          ? "partial_ready"
+          : "failed",
+      creditsConsumed: true,
+      refundExpected: true,
+      refundDone: !!window.__CARTOON_STORY_REFUND_DONE__,
+      creditCost: Number(window.__CARTOON_STORY_LAST_CREDIT_COST__ || 0),
+      lastJobId: key,
+      lastRequestId: String(window.__CARTOON_STORY_LAST_CONSUME_REQUEST_ID__ || ""),
+      lastOutputUrl: "",
+      visibleError: String(
+        raw?.error ||
+        raw?.error_reason ||
+        raw?.reason ||
+        "story_job_failed"
+      ),
+      lastFailedSceneTitle: safeText(item?.scene_title),
+      dbSaved: Number(storyPollState.ready || 0) > 0
+    });
 
     completeStoryGenerateIfAllSettled();
   }
@@ -1848,6 +2125,7 @@ function resetStoryCharacterImage(root, slot) {
     textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
     if (clearBtn) clearBtn.style.display = "none";
     syncStoryGenerateButtonCredit(root);
+    syncCartoonStoryAssistantState();
   }
 
   function updateStoryAudioUploadUI(root) {
@@ -2938,6 +3216,11 @@ function syncSceneEditorCreditPreview(root) {
     const note = clampText(qs("[data-scene-editor-note]", editor)?.value, 1000);
 
    if (!title) {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "missing_scene_title"
+  });
+
   try { window.toast?.info?.("Sahne başlığı yazmalısın"); } catch {}
   const titleEl = qs("[data-scene-editor-title]", editor);
   if (titleEl) titleEl.focus();
@@ -2945,6 +3228,11 @@ function syncSceneEditorCreditPreview(root) {
 }
 
 if (!description) {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "missing_scene_description"
+  });
+
   try { window.toast?.info?.("Sahne açıklaması yazmalısın"); } catch {}
   const descriptionEl = qs("[data-scene-editor-description]", editor);
   if (descriptionEl) descriptionEl.focus();
@@ -2952,6 +3240,11 @@ if (!description) {
 }
 
 if (!characterSlots.length) {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "missing_scene_character"
+  });
+
   try { window.toast?.info?.("Bu sahne için en az 1 karakter seçmelisin"); } catch {}
   return;
 }
@@ -2969,6 +3262,10 @@ if (!characterSlots.length) {
 
     state.editingSceneId = "";
     resetStoryPolicyUI(root);
+    syncCartoonStoryAssistantState({
+      generationState: "idle",
+      visibleError: ""
+    });
     render(root);
   }
 
@@ -3108,6 +3405,7 @@ btn.appendChild(badge);
     syncStorySettingsUploadUI(root);
     syncStoryDurationSummary(root);
     syncStoryGenerateButtonCredit(root);
+    syncCartoonStoryAssistantState();
   }
 
   function bindClicks() {
@@ -3337,6 +3635,15 @@ if (role === "helper") {
 const totalSeconds = getSelectedTotalSeconds();
 
 if (!safeText(state.storyIdea)) {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "missing_story_idea",
+    story: {
+      storyIdeaPresent: false,
+      storyIdeaText: ""
+    }
+  });
+
   try { window.toast?.info?.("Hikaye fikri yazmalısın"); } catch {}
 
   const storyIdeaEl = qs("[data-story-idea]", root);
@@ -3345,6 +3652,11 @@ if (!safeText(state.storyIdea)) {
 }
 
 if (!selectedScenes.length) {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "missing_selected_scene"
+  });
+
   try { window.toast?.info?.("Önce en az 1 sahneyi düzenleyip kaydetmelisin"); } catch {}
   return;
 }
@@ -3364,6 +3676,11 @@ if (!selectedScenes.length) {
           }
 
         if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "character_upload_not_ready"
+  });
+
   try { window.toast?.info?.("Karakter görsellerinden biri henüz hazır değil"); } catch {}
   return;
 }
@@ -3380,6 +3697,11 @@ if (!selectedScenes.length) {
           }
 
         if (!logoAsset.fileUrl || logoAsset.uploadStatus !== "ready") {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "logo_not_ready"
+  });
+
   try { window.toast?.info?.("Logo henüz hazır değil"); } catch {}
   return;
 }
@@ -3388,6 +3710,11 @@ if (!selectedScenes.length) {
         const audioAsset = getStoryAudioAsset();
         if (safeText(state.includeMusic).toLowerCase() === "yes") {
          if (!audioAsset.file) {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "missing_audio"
+  });
+
   try { window.toast?.info?.("Müzik seçmelisin"); } catch {}
   return;
 }
@@ -3401,6 +3728,11 @@ if (!selectedScenes.length) {
           }
 
         if (!audioAsset.fileUrl || audioAsset.uploadStatus !== "ready") {
+  syncCartoonStoryAssistantState({
+    generationState: "idle",
+    visibleError: "audio_not_ready"
+  });
+
   try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
   return;
 }
@@ -3433,6 +3765,20 @@ if (!selectedScenes.length) {
             policyNote.style.display = "block";
           }
 
+          syncCartoonStoryAssistantState({
+            policyState: "block",
+            generationState: "failed",
+            creditsConsumed: false,
+            refundExpected: false,
+            refundDone: false,
+            creditCost: 0,
+            lastJobId: "",
+            lastRequestId: "",
+            lastOutputUrl: "",
+            visibleError: "policy_blocked",
+            visiblePolicyNote: "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine hikayeyi, sahneleri ve karakter davranışlarını tarif et."
+          });
+
           return;
         }
 
@@ -3451,6 +3797,19 @@ if (!selectedScenes.length) {
 
         let consumed = false;
         let consumeTransactionId = null;
+
+        syncCartoonStoryAssistantState({
+          policyState: "allow",
+          generationState: "processing",
+          creditsConsumed: false,
+          refundExpected: false,
+          refundDone: false,
+          creditCost,
+          lastJobId: "",
+          lastRequestId: consumeRequestId,
+          lastOutputUrl: "",
+          visibleError: ""
+        });
 
         async function refreshCreditsUI() {
           try {
@@ -3548,6 +3907,18 @@ if (!selectedScenes.length) {
         }
 
         if (!creditRes.ok || !creditData?.ok) {
+          syncCartoonStoryAssistantState({
+            generationState: "failed",
+            creditsConsumed: false,
+            refundExpected: false,
+            refundDone: false,
+            creditCost,
+            lastJobId: "",
+            lastRequestId: consumeRequestId,
+            lastOutputUrl: "",
+            visibleError: "insufficient_credit"
+          });
+
           const to = encodeURIComponent(
             location.pathname + location.search + location.hash
           );
@@ -3580,6 +3951,18 @@ if (!selectedScenes.length) {
         state.isGenerating = true;
         setStoryGenerateButton(root, true);
 
+        syncCartoonStoryAssistantState({
+          generationState: "processing",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost,
+          lastJobId: "",
+          lastRequestId: consumeRequestId,
+          lastOutputUrl: "",
+          visibleError: ""
+        });
+
         try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
         try { window.toast?.success?.("Hikaye üretimi başladı"); } catch {}
 
@@ -3588,6 +3971,22 @@ if (!selectedScenes.length) {
 
           window.__LAST_CARTOON_STORY_CREATED__ = created;
           console.log("[CARTOON][STORY_CREATE_OK]", created);
+
+          syncCartoonStoryAssistantState({
+            generationState: "processing",
+            creditsConsumed: true,
+            refundExpected: false,
+            refundDone: false,
+            creditCost,
+            lastJobId: String(created?.[created.length - 1]?.job_id || ""),
+            lastRequestId: consumeRequestId,
+            lastOutputUrl: "",
+            visibleError: "",
+            story: {
+              selectedSceneCount: selectedScenes.length,
+              totalSceneCount: selectedScenes.length
+            }
+          });
 
           window.dispatchEvent(
             new CustomEvent("aivo:cartoon:story_payload_ready", {
@@ -3605,6 +4004,18 @@ if (!selectedScenes.length) {
 
           const refunded = await tryRefund("cartoon_story_create_failed", {
             error: String(err?.message || err || "failed")
+          });
+
+          syncCartoonStoryAssistantState({
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: !!refunded,
+            creditCost,
+            lastJobId: "",
+            lastRequestId: consumeRequestId,
+            lastOutputUrl: "",
+            visibleError: String(err?.message || err || "story_scene_create_failed")
           });
 
           if (!refunded) {
@@ -3636,6 +4047,15 @@ if (!selectedScenes.length) {
         state.storyIdea = clampText(storyIdea.value, 5000);
         resetStoryPolicyUI(root);
         updateStoryIdeaCount(root);
+        syncCartoonStoryAssistantState({
+          policyState: "allow",
+          visibleError: "",
+          visiblePolicyNote: "",
+          story: {
+            storyIdeaPresent: !!safeText(state.storyIdea),
+            storyIdeaText: safeText(state.storyIdea)
+          }
+        });
         return;
       }
 
@@ -3643,6 +4063,15 @@ if (!selectedScenes.length) {
       if (extraPrompt && root.contains(extraPrompt)) {
         state.extraPrompt = clampText(extraPrompt.value, 5000);
         resetStoryPolicyUI(root);
+        syncCartoonStoryAssistantState({
+          policyState: "allow",
+          visibleError: "",
+          visiblePolicyNote: "",
+          story: {
+            promptPresent: !!safeText(state.extraPrompt),
+            promptText: safeText(state.extraPrompt)
+          }
+        });
       }
     });
   }
@@ -3790,6 +4219,14 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
     const nextRoot = getCartoonRoot();
     if (nextRoot) updateStoryLogoUploadUI(nextRoot);
 
+    syncCartoonStoryAssistantState({
+      visibleError: "",
+      story: {
+        logoUploadState: "ready",
+        uploadState: getStoryCombinedUploadState()
+      }
+    });
+
     try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
     console.log("[CARTOON][STORY_LOGO_UPLOAD_OK]", publicUrl);
     return publicUrl;
@@ -3804,6 +4241,14 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
 
     const nextRoot = getCartoonRoot();
     if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+
+    syncCartoonStoryAssistantState({
+      visibleError: String(err?.message || err || "story_logo_upload_failed"),
+      story: {
+        logoUploadState: "error",
+        uploadState: getStoryCombinedUploadState()
+      }
+    });
 
    console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
 try { window.toast?.error?.(String(err?.message || err || "story_logo_upload_failed")); } catch {}
@@ -3846,6 +4291,14 @@ throw err;
     const nextRoot = getCartoonRoot();
     if (nextRoot) updateStoryAudioUploadUI(nextRoot);
 
+    syncCartoonStoryAssistantState({
+      visibleError: "",
+      story: {
+        audioUploadState: "ready",
+        uploadState: getStoryCombinedUploadState()
+      }
+    });
+
     try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
     console.log("[CARTOON][STORY_AUDIO_UPLOAD_OK]", publicUrl);
     return publicUrl;
@@ -3860,6 +4313,14 @@ throw err;
 
     const nextRoot = getCartoonRoot();
     if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+
+    syncCartoonStoryAssistantState({
+      visibleError: String(err?.message || err || "story_audio_upload_failed"),
+      story: {
+        audioUploadState: "error",
+        uploadState: getStoryCombinedUploadState()
+      }
+    });
 
    console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
 try { window.toast?.error?.(String(err?.message || err || "story_audio_upload_failed")); } catch {}
@@ -3970,6 +4431,14 @@ if (file && slotConfig) {
         syncSceneRows(nextRoot);
       }
     }
+
+    syncCartoonStoryAssistantState({
+      visibleError: String(err?.message || err || "story_reference_upload_failed"),
+      story: {
+        characterUploadState: getStoryCharacterUploadState(),
+        uploadState: getStoryCombinedUploadState()
+      }
+    });
 
     console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
 
