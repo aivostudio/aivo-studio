@@ -1191,7 +1191,8 @@ function publishMusicAssistantContext(extra = {}) {
     // backward compat
     window.switchMusicView = function () { return true; };
 
-    console.log("[AIVO] music.module READY (mode toggle ok, counters ok, record modal ok)");
+    publishMusicAssistantContext({ source: "music_try_init_ready" });
+  console.log("[AIVO] music.module READY (mode toggle ok, counters ok, record modal ok)");
     return true;
   }
 
