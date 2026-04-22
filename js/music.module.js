@@ -5,6 +5,9 @@
    * - Char counters (prompt/lyrics)
    * - Record modal (Suno-style): open → record → stop → preview → save
    *   Save flow: presign-put → PUT blob → store public_url (hidden input)
+   * - Assistant runtime publisher
+   * - Card select / deselect publish
+   * - Overflow menu open / close publish
    ********************************************************************/
 
   /* =========================
@@ -16,7 +19,6 @@
   function $all(root, sel) { return Array.from(root.querySelectorAll(sel)); }
 
   function toast(msg, type = "info") {
-    // prefer existing toast system if present
     if (window.toast && typeof window.toast === "function") return window.toast(msg, type);
     if (window.Toast && typeof window.Toast.show === "function") return window.Toast.show(msg, type);
     console.log(`[toast:${type}]`, msg);
@@ -30,8 +32,6 @@
   }
 
   function ensureHiddenRefUrlInput(module) {
-    // We can’t programmatically set <input type="file"> for security.
-    // Instead store recorded audio URL here so generator can use it.
     let el = module.querySelector("#refAudioUrl");
     if (!el) {
       el = document.createElement("input");
@@ -41,6 +41,448 @@
       module.appendChild(el);
     }
     return el;
+  }
+
+  /* =========================
+   * Assistant Runtime Publisher
+   * ========================= */
+  function getMusicAssistantModuleRoot() {
+    return document.querySelector("#moduleHost section[data-module='music']");
+  }
+
+  function isElementActuallyVisible(el) {
+    if (!el) return false;
+    const style = window.getComputedStyle(el);
+    if (
+      el.hidden ||
+      el.getAttribute("aria-hidden") === "true" ||
+      style.display === "none" ||
+      style.visibility === "hidden" ||
+      Number(style.opacity) === 0
+    ) {
+      return false;
+    }
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+
+  function getMusicAssistantSelectedCard() {
+    const root = getMusicAssistantModuleRoot() || document;
+
+    const selected =
+      root.querySelector(".music-card.is-selected, .music-result-card.is-selected, [data-music-card].is-selected") ||
+      root.querySelector('.music-card[aria-selected="true"], .music-result-card[aria-selected="true"], [data-music-card][aria-selected="true"]') ||
+      root.querySelector("[data-selected-music-card='true']") ||
+      null;
+
+    if (!selected) return null;
+
+    const id =
+      selected.getAttribute("data-id") ||
+      selected.getAttribute("data-job-id") ||
+      selected.getAttribute("data-card-id") ||
+      "";
+
+    const providerJobId =
+      selected.getAttribute("data-provider-job-id") ||
+      selected.getAttribute("data-provider-id") ||
+      "";
+
+    const titleEl =
+      selected.querySelector(".music-card-title, .track-title, [data-role='title']") ||
+      null;
+
+    const statusEl =
+      selected.querySelector(".music-card-status, .track-status, [data-role='status']") ||
+      null;
+
+    const title = titleEl ? String(titleEl.textContent || "").trim() : "";
+    const statusFromDom = statusEl ? String(statusEl.textContent || "").trim().toLowerCase() : "";
+
+    const status =
+      selected.getAttribute("data-status") ||
+      statusFromDom ||
+      "";
+
+    return {
+      id,
+      title,
+      status,
+      providerJobId,
+      element: selected
+    };
+  }
+
+  function getMusicAssistantVisibleOverflowMenu() {
+    const root = getMusicAssistantModuleRoot() || document;
+
+    const selectors = [
+      ".music-card-menu.is-open",
+      ".music-overflow-menu.is-open",
+      ".card-menu.is-open",
+      ".dropdown-menu.is-open",
+      ".menu-popover.is-open",
+      ".popover.is-open",
+      ".dropdown.open .dropdown-menu",
+      ".menu.open",
+      "[data-overflow-menu].is-open",
+      "[data-menu-open='true']",
+      "[role='menu']"
+    ];
+
+    for (const sel of selectors) {
+      const list = Array.from(root.querySelectorAll(sel));
+      const found = list.find((el) => isElementActuallyVisible(el));
+      if (found) return found;
+    }
+
+    return null;
+  }
+
+  function getMusicAssistantVisibleModals() {
+    const modals = [];
+
+    const candidates = Array.from(
+      document.querySelectorAll(
+        [
+          ".modal",
+          ".dialog",
+          "[role='dialog']",
+          ".sheet",
+          ".drawer",
+          ".aivoRecOverlay",
+          ".aivoRecModal"
+        ].join(",")
+      )
+    );
+
+    candidates.forEach((el) => {
+      if (!isElementActuallyVisible(el)) return;
+
+      const text = String(el.innerText || "").toLowerCase();
+      const modalId =
+        el.getAttribute("data-modal") ||
+        el.id ||
+        "";
+
+      if (el.classList.contains("aivoRecOverlay") || el.classList.contains("aivoRecModal")) {
+        modals.push("music_record_modal_open");
+        return;
+      }
+
+      if (/kanal ayırma|stem|vokal ayır|enstrüman ayır/.test(text) || /channel|stem/.test(modalId)) {
+        modals.push("channel_separation_confirm");
+        return;
+      }
+
+      if (/mastering/.test(text) || /master/.test(modalId)) {
+        modals.push("mastering_confirm");
+        return;
+      }
+
+      if (/kayıt|record/.test(text) || /record/.test(modalId)) {
+        modals.push("music_record_modal_open");
+        return;
+      }
+
+      modals.push(modalId || "music_modal");
+    });
+
+    return Array.from(new Set(modals));
+  }
+
+  function getMusicAssistantAvailableActions() {
+    const actions = [];
+    const selectedCard = getMusicAssistantSelectedCard();
+    const visibleModals = getMusicAssistantVisibleModals();
+    const overflowMenu = getMusicAssistantVisibleOverflowMenu();
+    const card = selectedCard?.element || null;
+    const root = getMusicAssistantModuleRoot() || document;
+
+    actions.push("generate_music");
+
+    if (selectedCard) {
+      actions.push("select_card");
+      actions.push("deselect_card");
+    }
+
+    if (root.querySelector("#musicRecordBtn")) {
+      actions.push("open_record_modal");
+    }
+
+    if (card) {
+      const cardText = String(card.innerText || "").toLowerCase();
+
+      if (/indir|download/.test(cardText)) actions.push("download_music");
+      if (/mastering/.test(cardText)) actions.push("mastering");
+      if (/kanal ayırma|stem|vokal ayır|enstrüman ayır/.test(cardText)) actions.push("channel_separation");
+      if (/sil|delete/.test(cardText)) actions.push("delete_music");
+      if (/paylaş|share/.test(cardText)) actions.push("share_music");
+      if (/export|dışa aktar/.test(cardText)) actions.push("export_music");
+      if (/menü|menu|more|actions|işlemler/.test(cardText)) actions.push("open_card_menu");
+    }
+
+    if (overflowMenu) {
+      const menuText = String(overflowMenu.innerText || "").toLowerCase();
+      actions.push("close_card_menu");
+
+      if (/kanal ayırma|stem|vokal ayır|enstrüman ayır/.test(menuText)) actions.push("channel_separation");
+      if (/mastering/.test(menuText)) actions.push("mastering");
+      if (/indir|download/.test(menuText)) actions.push("download_music");
+      if (/sil|delete/.test(menuText)) actions.push("delete_music");
+      if (/export|dışa aktar/.test(menuText)) actions.push("export_music");
+    }
+
+    if (visibleModals.includes("channel_separation_confirm")) {
+      actions.push("confirm_channel_separation");
+    }
+
+    if (visibleModals.includes("mastering_confirm")) {
+      actions.push("confirm_mastering");
+    }
+
+    if (visibleModals.includes("music_record_modal_open")) {
+      actions.push("record_start", "record_stop", "record_save");
+    }
+
+    return Array.from(new Set(actions));
+  }
+
+  function getMusicAssistantCredits() {
+    const runtimeCredits =
+      window.__AIVO_USER_CREDITS__ ??
+      window.AIVO_USER_CREDITS ??
+      window.__AIVO_CREDITS__ ??
+      null;
+
+    if (Number.isFinite(Number(runtimeCredits))) {
+      return Number(runtimeCredits);
+    }
+
+    const bodyText = String(document.body?.innerText || "");
+    const match = bodyText.match(/kredi\s+(\d+)/i);
+    return match ? Number(match[1]) : null;
+  }
+
+  function getMusicAssistantCreditsNeeded() {
+    const visibleModals = getMusicAssistantVisibleModals();
+    if (visibleModals.includes("channel_separation_confirm")) return 5;
+
+    const bodyText = String(document.body?.innerText || "");
+    const confirmMatch = bodyText.match(/onayla\s*\(\s*(\d+)\s*kredi\s*\)/i);
+    if (confirmMatch) return Number(confirmMatch[1]);
+
+    return null;
+  }
+
+  function getMusicAssistantLastJobStatus() {
+    const selectedCard = getMusicAssistantSelectedCard();
+    const raw = String(selectedCard?.status || "").toLowerCase().trim();
+
+    if (raw) {
+      if (/(ready|completed|hazır|tamamlandı)/.test(raw)) return "ready";
+      if (/(processing|işleniyor|hazırlanıyor)/.test(raw)) return "processing";
+      if (/(queued|sırada)/.test(raw)) return "queued";
+      if (/(failed|error|hata|başarısız)/.test(raw)) return "failed";
+      return raw;
+    }
+
+    return "";
+  }
+
+  function getMusicAssistantActionContext() {
+    const visibleModals = getMusicAssistantVisibleModals();
+    const selectedCard = getMusicAssistantSelectedCard();
+    const overflowMenu = getMusicAssistantVisibleOverflowMenu();
+
+    if (visibleModals.includes("channel_separation_confirm")) return "channel_separation_confirm";
+    if (visibleModals.includes("mastering_confirm")) return "mastering_confirm";
+    if (visibleModals.includes("music_record_modal_open")) return "music_record_modal_open";
+    if (overflowMenu) return "music_card_menu_open";
+    if (selectedCard) return "music_card_selected";
+    return "music_main";
+  }
+
+  function publishMusicAssistantContext(extra = {}) {
+    const selectedCard = getMusicAssistantSelectedCard();
+    const visibleModals = getMusicAssistantVisibleModals();
+    const availableActions = getMusicAssistantAvailableActions();
+    const lastJobStatus = getMusicAssistantLastJobStatus();
+    const userCredits = getMusicAssistantCredits();
+    const creditsNeeded = getMusicAssistantCreditsNeeded();
+    const actionContext = extra.actionContext || getMusicAssistantActionContext();
+
+    const ctx = {
+      module: "music",
+      currentPanel: "music",
+      currentCardType: selectedCard ? "music_card" : "",
+      selectedItemType: selectedCard ? "music_track" : "",
+      lastJobStatus,
+      userCredits,
+      creditsNeeded,
+      hasSelection: !!selectedCard,
+      availableActions,
+      visibleModals,
+      actionContext,
+      uiState: {
+        selectedCard: selectedCard
+          ? {
+              id: selectedCard.id || "",
+              title: selectedCard.title || "",
+              status: selectedCard.status || "",
+              providerJobId: selectedCard.providerJobId || ""
+            }
+          : null,
+        ...extra.uiState
+      }
+    };
+
+    window.__AIVO_ASSISTANT_CONTEXT__ = ctx;
+    return ctx;
+  }
+
+  window.publishMusicAssistantContext = publishMusicAssistantContext;
+
+  function queueMusicAssistantPublish(extra = {}) {
+    requestAnimationFrame(() => {
+      publishMusicAssistantContext(extra);
+    });
+  }
+
+  function bindMusicAssistantRuntimeHooks(module) {
+    if (module.__aivoAssistantRuntimeHooksBound) return;
+    module.__aivoAssistantRuntimeHooksBound = true;
+
+    module.addEventListener("click", (e) => {
+      const selectedCardBefore = getMusicAssistantSelectedCard();
+
+      const card = e.target.closest(
+        ".music-card, .music-result-card, [data-music-card]"
+      );
+
+      const overflowTrigger = e.target.closest(
+        ".music-card-more, .music-card-menu-trigger, .card-more-btn, .overflow-btn, [data-overflow-trigger], [aria-haspopup='menu']"
+      );
+
+      const deleteAction = e.target.closest(
+        ".delete-btn, .music-delete, [data-action='delete'], [data-delete-card]"
+      );
+
+      const downloadAction = e.target.closest(
+        ".download-btn, .music-download, [data-action='download']"
+      );
+
+      if (card && !overflowTrigger && !deleteAction && !downloadAction) {
+        queueMusicAssistantPublish({ actionContext: "music_card_selected" });
+        return;
+      }
+
+      if (overflowTrigger) {
+        setTimeout(() => {
+          const menu = getMusicAssistantVisibleOverflowMenu();
+          publishMusicAssistantContext({
+            actionContext: menu ? "music_card_menu_open" : (selectedCardBefore ? "music_card_selected" : "music_main")
+          });
+        }, 0);
+        return;
+      }
+
+      if (deleteAction) {
+        setTimeout(() => {
+          publishMusicAssistantContext({ actionContext: "music_main" });
+        }, 0);
+        return;
+      }
+
+      if (downloadAction) {
+        setTimeout(() => {
+          publishMusicAssistantContext({
+            actionContext: selectedCardBefore ? "music_card_selected" : "music_main"
+          });
+        }, 0);
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const root = getMusicAssistantModuleRoot();
+      if (!root) return;
+
+      const insideMusic = root.contains(e.target);
+      const insideRecordModal = !!e.target.closest(".aivoRecOverlay, .aivoRecModal");
+      const insideAnyMenu = !!e.target.closest(
+        ".music-card-menu, .music-overflow-menu, .card-menu, .dropdown-menu, .menu-popover, .popover, [role='menu']"
+      );
+      const isOverflowTrigger = !!e.target.closest(
+        ".music-card-more, .music-card-menu-trigger, .card-more-btn, .overflow-btn, [data-overflow-trigger], [aria-haspopup='menu']"
+      );
+
+      if (!insideMusic && !insideRecordModal) {
+        setTimeout(() => {
+          publishMusicAssistantContext({ actionContext: "music_main" });
+        }, 0);
+        return;
+      }
+
+      if (insideMusic && !insideAnyMenu && !isOverflowTrigger) {
+        setTimeout(() => {
+          const menu = getMusicAssistantVisibleOverflowMenu();
+          const selected = getMusicAssistantSelectedCard();
+          publishMusicAssistantContext({
+            actionContext: menu
+              ? "music_card_menu_open"
+              : (selected ? "music_card_selected" : "music_main")
+          });
+        }, 0);
+      }
+    }, true);
+
+    const obs = new MutationObserver((mutations) => {
+      let shouldPublish = false;
+
+      for (const m of mutations) {
+        if (m.type === "attributes") {
+          const attr = m.attributeName || "";
+          if (
+            attr === "class" ||
+            attr === "style" ||
+            attr === "hidden" ||
+            attr === "aria-hidden" ||
+            attr === "aria-selected" ||
+            attr === "data-status" ||
+            attr === "data-menu-open" ||
+            attr === "open"
+          ) {
+            shouldPublish = true;
+            break;
+          }
+        }
+
+        if (m.type === "childList") {
+          shouldPublish = true;
+          break;
+        }
+      }
+
+      if (shouldPublish) {
+        queueMusicAssistantPublish();
+      }
+    });
+
+    obs.observe(module, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: [
+        "class",
+        "style",
+        "hidden",
+        "aria-hidden",
+        "aria-selected",
+        "data-status",
+        "data-menu-open",
+        "open"
+      ]
+    });
   }
 
   /* =========================
@@ -116,7 +558,6 @@
       </div>
     `;
 
-    // Minimal inline CSS (keeps it self-contained). If you already have modal CSS, you can remove this.
     const style = document.createElement("style");
     style.textContent = `
       .aivoRecOverlay{
@@ -198,8 +639,6 @@
   }
 
   async function presignAndUploadAudio(blob) {
-    // Uses your existing endpoint pattern from other modules.
-    // Expected response: { ok:true, upload_url, public_url }
     const filename = `record-${Date.now()}.webm`;
     const contentType = blob.type || "audio/webm";
 
@@ -223,11 +662,11 @@
   }
 
   function openRecordFlow(module) {
-    // Idempotent: one modal at a time
     if (document.querySelector(".aivoRecOverlay")) return;
 
     const overlay = buildRecordModal();
     document.body.appendChild(overlay);
+    publishMusicAssistantContext({ actionContext: "music_record_modal_open" });
 
     const btnClose = overlay.querySelector(".aivoRecClose");
     const timerEl = overlay.querySelector(".aivoRecTimer");
@@ -268,6 +707,7 @@
     function close() {
       cleanupMedia();
       overlay.remove();
+      publishMusicAssistantContext({ actionContext: "music_main" });
     }
 
     function setTimer() {
@@ -281,7 +721,6 @@
     });
 
     btnReset.addEventListener("click", () => {
-      // Reset to initial state
       try {
         if (recordedUrl) URL.revokeObjectURL(recordedUrl);
       } catch(e) {}
@@ -291,18 +730,17 @@
       actions.style.display = "none";
       recBtn.style.display = "";
       timerEl.textContent = "00:00";
+      publishMusicAssistantContext({ actionContext: "music_record_modal_open" });
     });
 
     recBtn.addEventListener("click", async () => {
-      // Toggle record start/stop
       if (recorder && recorder.state === "recording") {
-        // STOP
         try { recorder.stop(); } catch(e) {}
         recBtn.classList.remove("isRecording");
+        publishMusicAssistantContext({ actionContext: "music_record_modal_open" });
         return;
       }
 
-      // START
       try {
         chunks = [];
         recordedBlob = null;
@@ -319,7 +757,6 @@
           try { if (tick) clearInterval(tick); } catch(e) {}
           tick = null;
 
-          // stop mic tracks
           try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch(e) {}
           stream = null;
 
@@ -329,6 +766,7 @@
           audioEl.src = recordedUrl;
           actions.style.display = "";
           recBtn.style.display = "none";
+          publishMusicAssistantContext({ actionContext: "music_record_modal_open" });
         };
 
         startedAt = Date.now();
@@ -337,10 +775,15 @@
 
         recBtn.classList.add("isRecording");
         recorder.start();
+        publishMusicAssistantContext({
+          actionContext: "music_record_modal_open",
+          uiState: { recording: true }
+        });
       } catch (err) {
         console.error("[AIVO] record start failed:", err);
         toast("Mikrofon izni gerekli. Tarayıcıdan izin ver.", "error");
         cleanupMedia();
+        publishMusicAssistantContext({ actionContext: "music_record_modal_open" });
       }
     });
 
@@ -353,13 +796,9 @@
       try {
         const { public_url } = await presignAndUploadAudio(recordedBlob);
 
-        // Store URL for generator to consume later
         const hidden = ensureHiddenRefUrlInput(module);
         hidden.value = public_url;
 
-        // Also update UI text (upload box) if present, so user sees it “selected”
-        const refBox = module.querySelector(".form-field:has(#refAudio) .upload-box, #refAudio");
-        // safest: try to find label.upload-box under refAudio field
         const refLabel = module.querySelector(".form-field:has(#refAudio) label.upload-box");
         if (refLabel) {
           refLabel.classList.add("has-file");
@@ -367,12 +806,17 @@
         }
 
         toast("Kayıt kaydedildi ✅", "success");
+        publishMusicAssistantContext({
+          actionContext: "music_record_modal_open",
+          uiState: { recordedAudioUrl: public_url }
+        });
         close();
       } catch (e) {
         console.error("[AIVO] record save failed:", e);
         toast("Kayıt kaydedilemedi. (upload/presign)", "error");
         btnSave.disabled = false;
         btnSave.textContent = "Kaydet";
+        publishMusicAssistantContext({ actionContext: "music_record_modal_open" });
       }
     });
   }
@@ -389,7 +833,7 @@
 
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
-        const HARD_BLOCK_TERMS = [
+    const HARD_BLOCK_TERMS = [
       "deepfake",
       "sesini kopyala",
       "voice clone",
@@ -690,7 +1134,7 @@
       generateBtn.style.opacity = blocked ? "0.55" : "";
       generateBtn.style.cursor = blocked ? "not-allowed" : "";
 
-       generateBtn.style.background = blocked
+      generateBtn.style.background = blocked
         ? "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))"
         : "";
       generateBtn.style.borderColor = blocked
@@ -713,7 +1157,7 @@
           policyNote.style.background = "rgba(255,90,120,.10)";
           policyNote.style.border = "1px solid rgba(255,120,150,.24)";
           policyNote.style.color = "rgba(255,210,220,.96)";
-                   policyNote.style.fontSize = "14px";
+          policyNote.style.fontSize = "14px";
           policyNote.style.fontWeight = "700";
           policyNote.style.lineHeight = "1.6";
           policyNote.style.textAlign = "center";
@@ -737,6 +1181,7 @@
 
       return blocked;
     }
+
     function bindMusicPolicyUI() {
       const generateBtn = module.querySelector("#musicGenerateBtn");
       const promptEl = module.querySelector("#prompt");
@@ -746,36 +1191,36 @@
 
       generateBtn.__aivoPolicyClickBound = true;
 
-   const resetPolicyUI = () => {
-  const policyNote = module.querySelector("#musicPolicyNote");
+      const resetPolicyUI = () => {
+        const policyNote = module.querySelector("#musicPolicyNote");
 
-  if (promptEl) {
-    promptEl.style.borderColor = "";
-    promptEl.style.boxShadow = "";
-    promptEl.style.animation = "";
-  }
+        if (promptEl) {
+          promptEl.style.borderColor = "";
+          promptEl.style.boxShadow = "";
+          promptEl.style.animation = "";
+        }
 
-  if (lyricsEl) {
-    lyricsEl.style.borderColor = "";
-    lyricsEl.style.boxShadow = "";
-    lyricsEl.style.animation = "";
-  }
+        if (lyricsEl) {
+          lyricsEl.style.borderColor = "";
+          lyricsEl.style.boxShadow = "";
+          lyricsEl.style.animation = "";
+        }
 
-  generateBtn.style.background = "";
-  generateBtn.style.borderColor = "";
-  generateBtn.style.boxShadow = "";
-  generateBtn.style.opacity = "";
-  generateBtn.style.cursor = "";
-  generateBtn.style.filter = "";
-  generateBtn.style.animation = "";
+        generateBtn.style.background = "";
+        generateBtn.style.borderColor = "";
+        generateBtn.style.boxShadow = "";
+        generateBtn.style.opacity = "";
+        generateBtn.style.cursor = "";
+        generateBtn.style.filter = "";
+        generateBtn.style.animation = "";
 
-  if (policyNote) {
-    policyNote.style.display = "none";
-    policyNote.textContent = "";
-    policyNote.innerHTML = "";
-    policyNote.style.animation = "";
-  }
-};
+        if (policyNote) {
+          policyNote.style.display = "none";
+          policyNote.textContent = "";
+          policyNote.innerHTML = "";
+          policyNote.style.animation = "";
+        }
+      };
 
       if (promptEl && !promptEl.__aivoPolicyResetBound) {
         promptEl.__aivoPolicyResetBound = true;
@@ -805,14 +1250,17 @@
         const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
         const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
 
-        if (!blocked) return;
+        if (!blocked) {
+          publishMusicAssistantContext({ actionContext: "music_main" });
+          return;
+        }
 
         const policyNote = ensureMusicPolicyNote(generateBtn);
 
         e.preventDefault();
         e.stopPropagation();
 
-                 if (promptEl) {
+        if (promptEl) {
           promptEl.style.borderColor = "rgba(255,110,140,.92)";
           promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
           promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
@@ -847,11 +1295,11 @@
           policyNote.style.overflow = "hidden";
           policyNote.style.textAlign = "center";
           policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-              
+
           policyNote.innerHTML = `
             <span style="
-             display:inline-block;
-             white-space:nowrap;
+              display:inline-block;
+              white-space:nowrap;
               width:100%;
               margin:0;
               padding:0;
@@ -870,9 +1318,15 @@
             ">Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.</span>
           `;
         }
+
+        publishMusicAssistantContext({
+          actionContext: "music_main",
+          uiState: { policyBlocked: true }
+        });
       }, true);
     }
-         if (!document.getElementById("aivoPolicyPulseStyle")) {
+
+    if (!document.getElementById("aivoPolicyPulseStyle")) {
       const style = document.createElement("style");
       style.id = "aivoPolicyPulseStyle";
       style.textContent = `
@@ -896,7 +1350,7 @@
               0 8px 24px rgba(255,70,110,.10);
           }
         }
-                @keyframes aivoPolicyTextGlow {
+        @keyframes aivoPolicyTextGlow {
           0% {
             opacity: .88;
             text-shadow: 0 0 8px rgba(255,255,255,.08), 0 0 18px rgba(255,120,150,.12);
@@ -913,7 +1367,8 @@
       `;
       document.head.appendChild(style);
     }
-         function applyMode(mode) {
+
+    function applyMode(mode) {
       const m = (mode === "advanced") ? "advanced" : "basic";
       const viewEl = module.querySelector('.music-view[data-music-view="geleneksel"]');
       const generateBtn = module.querySelector('#musicGenerateBtn');
@@ -979,14 +1434,17 @@
           generateBtn.style.borderRadius = "";
         }
       }
+
+      publishMusicAssistantContext({
+        actionContext: "music_main",
+        uiState: { mode: m }
+      });
     }
 
-    // default
     let saved = "basic";
     try { saved = sessionStorage.getItem(MODE_KEY) || "basic"; } catch(e) {}
     applyMode(saved);
 
-    // bind mode click once
     if (!module.__aivo_mode_bound) {
       module.__aivo_mode_bound = true;
       module.addEventListener("click", (e) => {
@@ -996,11 +1454,10 @@
       });
     }
 
-    // counters
     initMusicCharCounters(module);
-       bindMusicPolicyUI();
-    // Record button -> modal (advanced only)
-    // We bind once and gate by current mode at click time.
+    bindMusicPolicyUI();
+    bindMusicAssistantRuntimeHooks(module);
+
     if (!module.__aivo_record_bound) {
       module.__aivo_record_bound = true;
       module.addEventListener("click", (e) => {
@@ -1014,57 +1471,40 @@
       });
     }
 
-    // backward compat
     window.switchMusicView = function () { return true; };
 
-    console.log("[AIVO] music.module READY (mode toggle ok, counters ok, record modal ok)");
+    publishMusicAssistantContext({ actionContext: "music_main" });
+
+    console.log("[AIVO] music.module READY (mode toggle ok, counters ok, record modal ok, publisher ok)");
     return true;
   }
 
-// Her zaman dene (ilk load)
-tryInit();
+  tryInit();
 
-// 🔥 FIX: Router/partials DOM'u yeniden render ederse init tekrar çalışsın
-const obs = new MutationObserver(() => {
-  tryInit(); // DİKKAT: artık disconnect YOK
-});
+  const obs = new MutationObserver(() => {
+    tryInit();
+  });
 
-// document root'u izle (moduleHost / music section replace edilse bile yakalar)
-obs.observe(document.documentElement, { childList: true, subtree: true });
+  obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
+
 /* ============================================================================
    MUSIC — Reference Audio Upload (R2) ✅ single-bind + single-upload
-   - Fixes: 2x presign-put → 1x (double bind / double upload engeli)
-   - UI: "Hazır ✓" tek satır (fazla .upload-hint varsa boşaltır)
-   - Aynı dosya tekrar seçilirse yeniden upload ETMEZ
-   - Yeni dosya seçilirse eski upload’ı ABORT eder
-   Target: #refAudio
-   Writes: window.__MUSIC_REF_AUDIO_URL__  (generate payload burada okuyacak)
-   Placement: /js/music.module.js içinde, şu blokla komple REPLACE et:
-     // --- guard (double bind engeli)
-     if (window.__MUSIC_REF_AUDIO_UPLOAD_BIND__) return;
-     window.__MUSIC_REF_AUDIO_UPLOAD_BIND__ = true;
-   ile başlayan ref-audio upload kısmının tamamı
    ============================================================================ */
-
 (() => {
-  // --- guard (double bind engeli)
   if (window.__MUSIC_REF_AUDIO_UPLOAD_BIND__) return;
   window.__MUSIC_REF_AUDIO_UPLOAD_BIND__ = true;
 
-  // --- tiny helpers
   const qs  = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   function setHint(text) {
-    // HTML: <label class="upload-box" for="refAudio"> ... <span class="upload-hint">...</span>
     const box = qs('label.upload-box[for="refAudio"]');
     if (!box) return;
 
     const hints = qsa(".upload-hint", box);
     if (!hints.length) return;
 
-    // ✅ tek satır: ilkine yaz, geri kalanları boşalt
     hints[0].textContent = String(text || "");
     for (let i = 1; i < hints.length; i++) hints[i].textContent = "";
   }
@@ -1081,14 +1521,9 @@ obs.observe(document.documentElement, { childList: true, subtree: true });
 
   function fileSig(file) {
     if (!file) return "";
-    // name+size+mtime aynıysa “aynı dosya” say
     return [file.name, file.size, file.lastModified].join("|");
   }
 
-  // ---- Backend contract:
-  // POST /api/r2/presign-put
-  // body: { app:"music", kind:"audio", filename, contentType }
-  // resp: { ok:true, uploadUrl/publicUrl } (snake_case varyantları da kabul)
   async function presignR2({ app, kind, filename, contentType, signal }) {
     const res = await fetch("/api/r2/presign-put", {
       method: "POST",
@@ -1139,52 +1574,53 @@ obs.observe(document.documentElement, { childList: true, subtree: true });
     return { url: publicUrl, name: filename };
   }
 
-  // --- single bind to the INPUT (document-level change yerine)
   let lastSig = "";
-  let inFlight = null; // { controller, sig }
+  let inFlight = null;
 
   function bindOnce() {
     const input = qs("#refAudio");
     if (!input) return false;
 
-    // ✅ input-level guard (tek listener)
     if (input.__aivoRefBound) return true;
     input.__aivoRefBound = true;
 
     input.addEventListener("change", async () => {
       const file = input.files && input.files[0] ? input.files[0] : null;
 
-      // temizle
       if (!file) {
-        // önceki upload varsa iptal
         try { inFlight?.controller?.abort?.(); } catch {}
         inFlight = null;
         lastSig = "";
 
         try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
         setHint("MP3, WAV, M4A — maksimum 10MB");
+        if (typeof window.publishMusicAssistantContext === "function") {
+          window.publishMusicAssistantContext({ actionContext: "music_main" });
+        }
         return;
       }
 
-      // boyut guard (10MB)
       const MAX = 10 * 1024 * 1024;
       if (file.size > MAX) {
         toast("error", "Maksimum 10MB");
         try { input.value = ""; } catch {}
         try { window.__MUSIC_REF_AUDIO_URL__ = ""; } catch {}
         setHint("MP3, WAV, M4A — maksimum 10MB");
+        if (typeof window.publishMusicAssistantContext === "function") {
+          window.publishMusicAssistantContext({ actionContext: "music_main" });
+        }
         return;
       }
 
-      // ✅ aynı dosya tekrar seçildiyse: tekrar upload ETME
       const sig = fileSig(file);
       if (sig && sig === lastSig && window.__MUSIC_REF_AUDIO_URL__) {
-        // UI’yı doğru göster (bazı durumlarda reset olabiliyor)
         setHint("Hazır ✓");
+        if (typeof window.publishMusicAssistantContext === "function") {
+          window.publishMusicAssistantContext({ actionContext: "music_main" });
+        }
         return;
       }
 
-      // ✅ yeni dosya: önceki upload’ı abort et
       try { inFlight?.controller?.abort?.(); } catch {}
       inFlight = null;
 
@@ -1201,17 +1637,20 @@ obs.observe(document.documentElement, { childList: true, subtree: true });
           signal: controller.signal,
         });
 
-        // eğer bu upload artık “en güncel” değilse (araya yeni dosya girdiyse) yazma
         if (!inFlight || inFlight.controller !== controller) return;
 
-        // ✅ single source for generate payload
         window.__MUSIC_REF_AUDIO_URL__ = out.url;
         lastSig = sig;
 
         setHint("Hazır ✓");
         toast("success", "Referans ses yüklendi");
+        if (typeof window.publishMusicAssistantContext === "function") {
+          window.publishMusicAssistantContext({
+            actionContext: "music_main",
+            uiState: { refAudioUrl: out.url }
+          });
+        }
       } catch (err) {
-        // abort ise sessiz geç
         if (err?.name === "AbortError") return;
 
         console.error("[MUSIC][R2] ref audio upload error:", err);
@@ -1219,8 +1658,10 @@ obs.observe(document.documentElement, { childList: true, subtree: true });
         lastSig = "";
         setHint("Yükleme hatası");
         toast("error", "Yükleme hatası");
+        if (typeof window.publishMusicAssistantContext === "function") {
+          window.publishMusicAssistantContext({ actionContext: "music_main" });
+        }
       } finally {
-        // sadece “aktif controller” kapanıyorsa state temizle
         if (inFlight && inFlight.controller === controller) inFlight = null;
         input.disabled = false;
       }
@@ -1229,7 +1670,6 @@ obs.observe(document.documentElement, { childList: true, subtree: true });
     return true;
   }
 
-  // DOM hazır değilse kısa süre dene (tek bind olacak)
   bindOnce();
   setTimeout(bindOnce, 250);
   setTimeout(bindOnce, 800);
