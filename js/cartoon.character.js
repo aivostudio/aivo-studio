@@ -941,6 +941,7 @@ function syncCharacterCreateCredit(root) {
     state.characterReferenceImageUrl = "";
     state.characterReferenceUploadStatus = "idle";
     state.characterReferenceUploadError = "";
+    
 
     if (input) input.value = "";
 
@@ -1739,7 +1740,15 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       state.characterReferenceImageUrl = "";
       state.characterReferenceUploadStatus = "uploading";
       state.characterReferenceUploadError = "";
-
+            syncCartoonCharacterAssistantState({
+        generationState: "idle",
+        policyState: "allow",
+        visibleError: "",
+        character: {
+          referenceUploadState: "uploading",
+          referenceImageUrl: ""
+        }
+      });
       updateCharacterCreateUploadUI(root);
       syncCharacterCreateCredit(root);
 
