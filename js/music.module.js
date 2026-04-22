@@ -228,6 +228,7 @@
 
     const overlay = buildRecordModal();
     document.body.appendChild(overlay);
+   publishMusicAssistantContext({ source: "music_record_modal_open" });
 
     const btnClose = overlay.querySelector(".aivoRecClose");
     const timerEl = overlay.querySelector(".aivoRecTimer");
