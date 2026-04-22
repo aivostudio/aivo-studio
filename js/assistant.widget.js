@@ -492,11 +492,29 @@
   async function sendMessage(text) {
     const content = String(text || "").trim();
     if (!content || state.loading) return;
+      const brain = data?.brain && typeof data.brain === "object" ? data.brain : null;
 
-    state.messages.push({
-      role: "user",
-      content
-    });
+      let assistantText =
+        (brain?.answer && String(brain.answer).trim()) ||
+        (data?.message && String(data.message).trim()) ||
+        "Şu anda cevap üretilemedi.";
+
+      if (brain?.followupAction) {
+        assistantText += `
+
+Sonraki adım: ${brain.followupAction}`;
+      }
+
+      if (brain?.needsConfirmation) {
+        assistantText += `
+
+Bu işlem onay gerektiriyor.`;
+      }
+
+      state.messages.push({
+        role: "assistant",
+        content: assistantText
+      });
     renderMessages();
     inputEl.value = "";
     autoResize();
