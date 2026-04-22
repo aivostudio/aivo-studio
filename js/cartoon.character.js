@@ -8,6 +8,7 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
+
   function getCartoonAssistantState() {
     if (!window.__AIVO_CARTOON_ASSISTANT_STATE__) {
       window.__AIVO_CARTOON_ASSISTANT_STATE__ = {
@@ -128,7 +129,10 @@
     return patchCartoonAssistantState({
       currentFlow: "character_create",
       policyState: String(extra.policyState || "allow"),
-      generationState: String(extra.generationState || (state.characterCreatePending ? "processing" : "idle")),
+      generationState: String(
+        extra.generationState ||
+        (state.characterCreatePending ? "processing" : "idle")
+      ),
       creditsConsumed: typeof extra.creditsConsumed === "boolean" ? extra.creditsConsumed : false,
       refundExpected: typeof extra.refundExpected === "boolean" ? extra.refundExpected : false,
       refundDone: typeof extra.refundDone === "boolean" ? extra.refundDone : false,
@@ -156,6 +160,7 @@
   window.getCartoonAssistantState = getCartoonAssistantState;
   window.patchCartoonAssistantState = patchCartoonAssistantState;
   window.syncCartoonCharacterAssistantState = syncCartoonCharacterAssistantState;
+
   function getState() {
     return (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
       mode: "basic",
@@ -164,7 +169,7 @@
       helpers: [],
       scene: "underwater",
       action: "swimming",
-        duration: "4",
+      duration: "4",
       ratio: "16:9",
       audioEnabled: false,
       characterImage: null,
@@ -172,7 +177,7 @@
       characters: [],
       characterCreatePending: false,
       characterReferenceImageUrl: "",
-     characterReferenceUploadStatus: "idle",
+      characterReferenceUploadStatus: "idle",
       characterReferenceUploadError: "",
       characterImageUrl: "",
       characterImageUploadPromise: null,
@@ -185,115 +190,116 @@
     });
   }
 
-async function presignCartoonReference(file) {
-  const contentType = file?.type || "application/octet-stream";
-  const filename = file?.name || `reference-${Date.now()}.png`;
+  async function presignCartoonReference(file) {
+    const contentType = file?.type || "application/octet-stream";
+    const filename = file?.name || `reference-${Date.now()}.png`;
 
-  const res = await fetch("/api/r2/scan-and-presign", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: "cartoon",
-      kind: "reference",
-      filename,
-      contentType,
-      prompt: "",
-      title: filename,
-      description: filename,
-      personName: "",
-      style: "",
-      source: "cartoon_character_reference_upload"
-    })
-  });
+    const res = await fetch("/api/r2/scan-and-presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "reference",
+        filename,
+        contentType,
+        prompt: "",
+        title: filename,
+        description: filename,
+        personName: "",
+        style: "",
+        source: "cartoon_character_reference_upload"
+      })
+    });
 
-  const data = await res.json().catch(() => null);
+    const data = await res.json().catch(() => null);
 
-  if (!res.ok) {
-    const msg =
-      data?.message ||
-      data?.error ||
-      (res.status === 403 ? "media_policy_blocked" : "cartoon_reference_presign_failed");
-    throw new Error(msg);
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        (res.status === 403 ? "media_policy_blocked" : "cartoon_reference_presign_failed");
+      throw new Error(msg);
+    }
+
+    if (!data || data.ok === false) {
+      throw new Error(data?.message || data?.error || "cartoon_reference_presign_failed");
+    }
+
+    const uploadUrl = data.uploadUrl || data.upload_url;
+    const publicUrl = data.publicUrl || data.public_url || data.url || "";
+    const key = data.key || data.objectKey || "";
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("cartoon_reference_missing_upload_urls");
+    }
+
+    return {
+      uploadUrl,
+      publicUrl,
+      key
+    };
   }
 
-  if (!data || data.ok === false) {
-    throw new Error(data?.message || data?.error || "cartoon_reference_presign_failed");
+  async function uploadCartoonReferenceToR2(file) {
+    if (!file) throw new Error("missing_reference_file");
+
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `reference-${Date.now()}.png`;
+
+    const { uploadUrl, publicUrl, key } = await presignCartoonReference(file);
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": contentType
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("cartoon_reference_r2_put_failed");
+    }
+
+    const scanRes = await fetch("/api/r2/scan-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        key,
+        filename,
+        contentType,
+        public_url: publicUrl,
+        prompt: "",
+        title: filename,
+        description: filename,
+        personName: "",
+        style: "",
+        source: "cartoon_character_reference_upload"
+      })
+    });
+
+    const scanData = await scanRes.json().catch(() => null);
+
+    if (!scanRes.ok) {
+      const msg =
+        scanData?.message ||
+        scanData?.error ||
+        (scanRes.status === 403 ? "media_policy_blocked" : "cartoon_reference_scan_failed");
+      throw new Error(msg);
+    }
+
+    if (!scanData || scanData.ok === false) {
+      throw new Error(scanData?.message || scanData?.error || "cartoon_reference_scan_failed");
+    }
+
+    if (scanData.decision && scanData.decision !== "allow") {
+      throw new Error(`media_policy_${scanData.decision}`);
+    }
+
+    return scanData.public_url || publicUrl;
   }
 
-  const uploadUrl = data.uploadUrl || data.upload_url;
-  const publicUrl = data.publicUrl || data.public_url || data.url || "";
-  const key = data.key || data.objectKey || "";
-
-  if (!uploadUrl || !publicUrl || !key) {
-    throw new Error("cartoon_reference_missing_upload_urls");
-  }
-
-  return {
-    uploadUrl,
-    publicUrl,
-    key
-  };
-}
-
-async function uploadCartoonReferenceToR2(file) {
-  if (!file) throw new Error("missing_reference_file");
-
-  const contentType = file.type || "application/octet-stream";
-  const filename = file.name || `reference-${Date.now()}.png`;
-
-  const { uploadUrl, publicUrl, key } = await presignCartoonReference(file);
-
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": contentType
-    },
-    body: file
-  });
-
-  if (!put.ok) {
-    throw new Error("cartoon_reference_r2_put_failed");
-  }
-
-  const scanRes = await fetch("/api/r2/scan-upload", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      app: "cartoon",
-      key,
-      filename,
-      contentType,
-      public_url: publicUrl,
-      prompt: "",
-      title: filename,
-      description: filename,
-      personName: "",
-      style: "",
-      source: "cartoon_character_reference_upload"
-    })
-  });
-
-  const scanData = await scanRes.json().catch(() => null);
-
-  if (!scanRes.ok) {
-    const msg =
-      scanData?.message ||
-      scanData?.error ||
-      (scanRes.status === 403 ? "media_policy_blocked" : "cartoon_reference_scan_failed");
-    throw new Error(msg);
-  }
-
-  if (!scanData || scanData.ok === false) {
-    throw new Error(scanData?.message || scanData?.error || "cartoon_reference_scan_failed");
-  }
-
-  if (scanData.decision && scanData.decision !== "allow") {
-    throw new Error(`media_policy_${scanData.decision}`);
-  }
-
-  return scanData.public_url || publicUrl;
-}
-   // ------------------------------------------------------------
+  // ------------------------------------------------------------
   // Policy helpers (Character)
   // ------------------------------------------------------------
   const HARD_BLOCK_TERMS = [
@@ -326,360 +332,360 @@ async function uploadCartoonReferenceToR2(file) {
   ];
 
   const PUBLIC_FIGURE_TERMS = [
-  "recep tayyip erdogan",
-  "recep tayyip erdoğan",
-  "erdogan",
-  "erdoğan",
-  "kemal kilicdaroglu",
-  "kemal kılıçdaroğlu",
-  "kilicdaroglu",
-  "kılıçdaroğlu",
-  "ekrem imamoglu",
-  "ekrem imamoğlu",
-  "imamoglu",
-  "imamoğlu",
-  "mansur yavas",
-  "mansur yavaş",
-  "devlet bahceli",
-  "devlet bahçeli",
-  "bahceli",
-  "bahçeli",
-  "meral aksener",
-  "meral akşener",
-  "aksener",
-  "akşener",
-  "ozgur ozel",
-  "özgür özel",
-  "ozel",
-  "özel",
-  "selahattin demirtas",
-  "selahattin demirtaş",
-  "demirtas",
-  "demirtaş",
-  "umit ozdag",
-  "ümit özdağ",
-  "ozdag",
-  "özdağ",
-  "fatih erbakan",
-  "temel karamollaoglu",
-  "temel karamollaoğlu",
-  "muharrem ince",
-  "sinan ogan",
-  "sinan oğan",
-  "ali babacan",
-  "ahmet davutoglu",
-  "ahmet davutoğlu",
-  "davutoglu",
-  "davutoğlu",
-  "hulusi akar",
-  "hakan fidan",
-  "mehmet simsek",
-  "mehmet şimşek",
-  "simsek",
-  "şimşek",
-  "suleyman soylu",
-  "süleyman soylu",
-  "soylu",
-  "bekir bozdag",
-  "bekir bozdağ",
-  "bozdag",
-  "bozdağ",
-  "numan kurtulmus",
-  "numan kurtulmuş",
-  "kurtulmus",
-  "kurtulmuş",
-  "omer celik",
-  "ömer çelik",
-  "celik",
-  "çelik",
-  "binali yildirim",
-  "binali yıldırım",
-  "abdullah gul",
-  "abdullah gül",
-  "gul",
-  "gül",
-  "ahmet necdet sezer",
-  "turgut ozal",
-  "turgut özal",
-  "ismet inonu",
-  "ismet inönü",
-  "inonu",
-  "inönü",
-  "mustafa kemal ataturk",
-  "mustafa kemal atatürk",
-  "ataturk",
-  "atatürk",
-  "kemal ataturk",
-  "cumhurbaskani",
-  "cumhurbaşkanı",
-  "cumhurbaskani yardimcisi",
-  "cumhurbaşkanı yardımcısı",
-  "bakan",
-  "milletvekili",
-  "belediye baskani",
-  "belediye başkanı",
-  "vali",
-  "kaymakam",
-  "siyasetci",
-  "siyasetçi",
-  "politikaci",
-  "politikacı",
-  "kamu figuru",
-  "kamu figürü",
-  "devlet buyugu",
-  "devlet büyüğü",
-  "donald trump",
-  "trump",
-  "jd vance",
-  "j d vance",
-  "vance",
-  "keir starmer",
-  "starmer",
-  "emmanuel macron",
-  "macron",
-  "friedrich merz",
-  "merz",
-  "frank walter steinmeier",
-  "frank-walter steinmeier",
-  "steinmeier",
-  "giorgia meloni",
-  "meloni",
-  "sergio mattarella",
-  "mattarella",
-  "pedro sanchez",
-  "pedro sánchez",
-  "sanchez",
-  "sánchez",
-  "felipe vi",
-  "mark carney",
-  "carney",
-  "claudia sheinbaum",
-  "sheinbaum",
-  "javier milei",
-  "milei",
-  "luiz inacio lula da silva",
-  "luiz inácio lula da silva",
-  "lula",
-  "lula da silva",
-  "vladimir putin",
-  "putin",
-  "mikhail mishustin",
-  "mishustin",
-  "volodymyr zelenskyy",
-  "zelenskyy",
-  "zelensky",
-  "yulia svyrydenko",
-  "svyrydenko",
-  "xi jinping",
-  "jinping",
-  "li qiang",
-  "narendra modi",
-  "modi",
-  "droupadi murmu",
-  "murmu",
-  "benjamin netanyahu",
-  "netanyahu",
-  "isaac herzog",
-  "herzog",
-  "masoud pezeshkian",
-  "pezeshkian",
-  "mojtaba khamenei",
-  "khamenei",
-  "mohammed bin salman",
-  "muhammed bin salman",
-  "mbs",
-  "salman",
-  "king salman",
-  "sheikh mohamed bin zayed al nahyan",
-  "mohamed bin zayed",
-  "mbz",
-  "sheikh mohammed bin rashid al maktoum",
-  "mohammed bin rashid",
-  "bin rashid",
-  "abdullah ii",
-  "king abdullah",
-  "jafar hassan",
-  "abdel fattah el sisi",
-  "abdel fattah al sisi",
-  "sisi",
-  "mostafa madbouly",
-  "madbouly",
-  "abiy ahmed",
-  "abiy",
-  "william ruto",
-  "ruto",
-  "paul kagame",
-  "kagame",
-  "samia suluhu hassan",
-  "samia suluhu",
-  "samia",
-  "cyril ramaphosa",
-  "ramaphosa",
-  "bola tinubu",
-  "tinubu",
-  "bassirou diomaye faye",
-  "diomaye faye",
-  "ousmane sonko",
-  "sonko",
-  "john mahama",
-  "mahama",
-  "netumbo nandi ndaitwah",
-  "netumbo nandi-ndaitwah",
-  "nandi ndaitwah",
-  "hassan sheikh mohamud",
-  "hassan sheikh",
-  "hamza abdi barre",
-  "kais saied",
-  "kais saïed",
-  "saied",
-  "saïed",
-  "mohamed muizzu",
-  "muizzu",
-  "anwar ibrahim",
-  "anwar",
-  "prabowo subianto",
-  "prabowo",
-  "lawrence wong",
-  "wong",
-  "tharman shanmugaratnam",
-  "tharman",
-  "lee jae myung",
-  "lee jae-myung",
-  "shigeru ishiba",
-  "ishiba",
-  "naruhito",
-  "anura kumara dissanayake",
-  "dissanayake",
-  "paetongtarn shinawatra",
-  "shinawatra",
-  "maha vajiralongkorn",
-  "to lam",
-  "tô lâm",
-  "luong cuong",
-  "lương cường",
-  "pham minh chinh",
-  "phạm minh chính",
-  "hun manet",
-  "hun sen",
-  "norodom sihamoni",
-  "thongloun sisoulith",
-  "sisoulith",
-  "sonexay siphandone",
-  "shehbaz sharif",
-  "sharif",
-  "asif ali zardari",
-  "zardari",
-  "muhammad yunus",
-  "yunus",
-  "kassym jomart tokayev",
-  "kassym-jomart tokayev",
-  "tokayev",
-  "shavkat mirziyoyev",
-  "mirziyoyev",
-  "sadyr japarov",
-  "japarov",
-  "emomali rahmon",
-  "rahmon",
-  "nikol pashinyan",
-  "pashinyan",
-  "ilham aliyev",
-  "aliyev",
-  "irakli kobakhidze",
-  "kobakhidze",
-  "mikheil kavelashvili",
-  "kavelashvili",
-  "maia sandu",
-  "sandu",
-  "aleksandar vucic",
-  "aleksandar vučić",
-  "vucic",
-  "vučić",
-  "robert fico",
-  "fico",
-  "peter pellegrini",
-  "pellegrini",
-  "andrej plenkovic",
-  "andrej plenković",
-  "plenkovic",
-  "plenković",
-  "petr pavel",
-  "pavel",
-  "donald tusk",
-  "tusk",
-  "andrzej duda",
-  "duda",
-  "viktor orban",
-  "viktor orbán",
-  "orban",
-  "orbán",
-  "nicusor dan",
-  "nicușor dan",
-  "ilie bolojan",
-  "bolojan",
-  "boyko borisov",
-  "borisov",
-  "rumen radev",
-  "radev",
-  "kyriakos mitsotakis",
-  "mitsotakis",
-  "edi rama",
-  "rama",
-  "zoran milanovic",
-  "zoran milanović",
-  "milanovic",
-  "milanović",
-  "andrej babis",
-  "andrej babiš",
-  "babis",
-  "babiš",
-  "micheal martin",
-  "martin",
-  "rodrigo chaves",
-  "chaves",
-  "gustavo petro",
-  "petro",
-  "daniel noboa",
-  "noboa",
-  "nayib bukele",
-  "bukele",
-  "bernardo arevalo",
-  "bernardo arévalo",
-  "arevalo",
-  "arévalo",
-  "xiomara castro",
-  "castro",
-  "daniel ortega",
-  "ortega",
-  "rosario murillo",
-  "murillo",
-  "laurentino cortizo",
-  "cortizo",
-  "jose raul mulino",
-  "josé raúl mulino",
-  "mulino",
-  "luis abinader",
-  "abinader",
-  "irfaan ali",
-  "ali",
-  "chan santokhi",
-  "santokhi",
-  "nicolas maduro",
-  "nicolás maduro",
-  "maduro",
-  "yamandu orsi",
-  "yamandú orsi",
-  "orsi",
-  "prime minister",
-  "president",
-  "king",
-  "queen",
-  "chancellor",
-  "taoiseach",
-  "premier",
-  "head of state",
-  "head of government",
-  "basbakan",
-  "başbakan"
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "kilicdaroglu",
+    "kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "imamoglu",
+    "imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "bahceli",
+    "bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "aksener",
+    "akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "ozel",
+    "özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "demirtas",
+    "demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "ozdag",
+    "özdağ",
+    "fatih erbakan",
+    "temel karamollaoglu",
+    "temel karamollaoğlu",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "davutoglu",
+    "davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "simsek",
+    "şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "soylu",
+    "bekir bozdag",
+    "bekir bozdağ",
+    "bozdag",
+    "bozdağ",
+    "numan kurtulmus",
+    "numan kurtulmuş",
+    "kurtulmus",
+    "kurtulmuş",
+    "omer celik",
+    "ömer çelik",
+    "celik",
+    "çelik",
+    "binali yildirim",
+    "binali yıldırım",
+    "abdullah gul",
+    "abdullah gül",
+    "gul",
+    "gül",
+    "ahmet necdet sezer",
+    "turgut ozal",
+    "turgut özal",
+    "ismet inonu",
+    "ismet inönü",
+    "inonu",
+    "inönü",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "kemal ataturk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "cumhurbaskani yardimcisi",
+    "cumhurbaşkanı yardımcısı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü",
+    "devlet buyugu",
+    "devlet büyüğü",
+    "donald trump",
+    "trump",
+    "jd vance",
+    "j d vance",
+    "vance",
+    "keir starmer",
+    "starmer",
+    "emmanuel macron",
+    "macron",
+    "friedrich merz",
+    "merz",
+    "frank walter steinmeier",
+    "frank-walter steinmeier",
+    "steinmeier",
+    "giorgia meloni",
+    "meloni",
+    "sergio mattarella",
+    "mattarella",
+    "pedro sanchez",
+    "pedro sánchez",
+    "sanchez",
+    "sánchez",
+    "felipe vi",
+    "mark carney",
+    "carney",
+    "claudia sheinbaum",
+    "sheinbaum",
+    "javier milei",
+    "milei",
+    "luiz inacio lula da silva",
+    "luiz inácio lula da silva",
+    "lula",
+    "lula da silva",
+    "vladimir putin",
+    "putin",
+    "mikhail mishustin",
+    "mishustin",
+    "volodymyr zelenskyy",
+    "zelenskyy",
+    "zelensky",
+    "yulia svyrydenko",
+    "svyrydenko",
+    "xi jinping",
+    "jinping",
+    "li qiang",
+    "narendra modi",
+    "modi",
+    "droupadi murmu",
+    "murmu",
+    "benjamin netanyahu",
+    "netanyahu",
+    "isaac herzog",
+    "herzog",
+    "masoud pezeshkian",
+    "pezeshkian",
+    "mojtaba khamenei",
+    "khamenei",
+    "mohammed bin salman",
+    "muhammed bin salman",
+    "mbs",
+    "salman",
+    "king salman",
+    "sheikh mohamed bin zayed al nahyan",
+    "mohamed bin zayed",
+    "mbz",
+    "sheikh mohammed bin rashid al maktoum",
+    "mohammed bin rashid",
+    "bin rashid",
+    "abdullah ii",
+    "king abdullah",
+    "jafar hassan",
+    "abdel fattah el sisi",
+    "abdel fattah al sisi",
+    "sisi",
+    "mostafa madbouly",
+    "madbouly",
+    "abiy ahmed",
+    "abiy",
+    "william ruto",
+    "ruto",
+    "paul kagame",
+    "kagame",
+    "samia suluhu hassan",
+    "samia suluhu",
+    "samia",
+    "cyril ramaphosa",
+    "ramaphosa",
+    "bola tinubu",
+    "tinubu",
+    "bassirou diomaye faye",
+    "diomaye faye",
+    "ousmane sonko",
+    "sonko",
+    "john mahama",
+    "mahama",
+    "netumbo nandi ndaitwah",
+    "netumbo nandi-ndaitwah",
+    "nandi ndaitwah",
+    "hassan sheikh mohamud",
+    "hassan sheikh",
+    "hamza abdi barre",
+    "kais saied",
+    "kais saïed",
+    "saied",
+    "saïed",
+    "mohamed muizzu",
+    "muizzu",
+    "anwar ibrahim",
+    "anwar",
+    "prabowo subianto",
+    "prabowo",
+    "lawrence wong",
+    "wong",
+    "tharman shanmugaratnam",
+    "tharman",
+    "lee jae myung",
+    "lee jae-myung",
+    "shigeru ishiba",
+    "ishiba",
+    "naruhito",
+    "anura kumara dissanayake",
+    "dissanayake",
+    "paetongtarn shinawatra",
+    "shinawatra",
+    "maha vajiralongkorn",
+    "to lam",
+    "tô lâm",
+    "luong cuong",
+    "lương cường",
+    "pham minh chinh",
+    "phạm minh chính",
+    "hun manet",
+    "hun sen",
+    "norodom sihamoni",
+    "thongloun sisoulith",
+    "sisoulith",
+    "sonexay siphandone",
+    "shehbaz sharif",
+    "sharif",
+    "asif ali zardari",
+    "zardari",
+    "muhammad yunus",
+    "yunus",
+    "kassym jomart tokayev",
+    "kassym-jomart tokayev",
+    "tokayev",
+    "shavkat mirziyoyev",
+    "mirziyoyev",
+    "sadyr japarov",
+    "japarov",
+    "emomali rahmon",
+    "rahmon",
+    "nikol pashinyan",
+    "pashinyan",
+    "ilham aliyev",
+    "aliyev",
+    "irakli kobakhidze",
+    "kobakhidze",
+    "mikheil kavelashvili",
+    "kavelashvili",
+    "maia sandu",
+    "sandu",
+    "aleksandar vucic",
+    "aleksandar vučić",
+    "vucic",
+    "vučić",
+    "robert fico",
+    "fico",
+    "peter pellegrini",
+    "pellegrini",
+    "andrej plenkovic",
+    "andrej plenković",
+    "plenkovic",
+    "plenković",
+    "petr pavel",
+    "pavel",
+    "donald tusk",
+    "tusk",
+    "andrzej duda",
+    "duda",
+    "viktor orban",
+    "viktor orbán",
+    "orban",
+    "orbán",
+    "nicusor dan",
+    "nicușor dan",
+    "ilie bolojan",
+    "bolojan",
+    "boyko borisov",
+    "borisov",
+    "rumen radev",
+    "radev",
+    "kyriakos mitsotakis",
+    "mitsotakis",
+    "edi rama",
+    "rama",
+    "zoran milanovic",
+    "zoran milanović",
+    "milanovic",
+    "milanović",
+    "andrej babis",
+    "andrej babiš",
+    "babis",
+    "babiš",
+    "micheal martin",
+    "martin",
+    "rodrigo chaves",
+    "chaves",
+    "gustavo petro",
+    "petro",
+    "daniel noboa",
+    "noboa",
+    "nayib bukele",
+    "bukele",
+    "bernardo arevalo",
+    "bernardo arévalo",
+    "arevalo",
+    "arévalo",
+    "xiomara castro",
+    "castro",
+    "daniel ortega",
+    "ortega",
+    "rosario murillo",
+    "murillo",
+    "laurentino cortizo",
+    "cortizo",
+    "jose raul mulino",
+    "josé raúl mulino",
+    "mulino",
+    "luis abinader",
+    "abinader",
+    "irfaan ali",
+    "ali",
+    "chan santokhi",
+    "santokhi",
+    "nicolas maduro",
+    "nicolás maduro",
+    "maduro",
+    "yamandu orsi",
+    "yamandú orsi",
+    "orsi",
+    "prime minister",
+    "president",
+    "king",
+    "queen",
+    "chancellor",
+    "taoiseach",
+    "premier",
+    "head of state",
+    "head of government",
+    "basbakan",
+    "başbakan"
   ];
 
   const ARTIST_NAME_TERMS = [
@@ -800,7 +806,8 @@ async function uploadCartoonReferenceToR2(file) {
     const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
     return !!raw && (hasBlockedTerm || hasBlockedPattern);
   }
-    function ensureCharacterPolicyNote(root, createBtn) {
+
+  function ensureCharacterPolicyNote(root, createBtn) {
     if (!root || !createBtn || !createBtn.parentElement) return null;
 
     let policyNote = qs("#cartoonCharacterPolicyNote", root);
@@ -870,7 +877,8 @@ async function uploadCartoonReferenceToR2(file) {
       policyNote.style.display = "block";
     }
   }
-    const CARTOON_VIDEO_BASE_CREDITS = {
+
+  const CARTOON_VIDEO_BASE_CREDITS = {
     "4": 30,
     "6": 35,
     "8": 40,
@@ -911,20 +919,22 @@ async function uploadCartoonReferenceToR2(file) {
     btn.setAttribute("data-credit-cost", String(total));
     btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
   }
-function syncCharacterCreateCredit(root) {
-  if (!root) return;
 
-  const btn = qs("[data-cartoon-character-create]", root);
-  if (!btn) return;
+  function syncCharacterCreateCredit(root) {
+    if (!root) return;
 
-  const hasReferenceImage =
-    !!qs("[data-character-create-upload]", root)?.files?.[0];
+    const btn = qs("[data-cartoon-character-create]", root);
+    if (!btn) return;
 
-  const total = hasReferenceImage ? 30 : 20;
+    const hasReferenceImage =
+      !!qs("[data-character-create-upload]", root)?.files?.[0];
 
-  btn.setAttribute("data-credit-cost", String(total));
-  btn.textContent = `🧩 Karakter Oluştur (${total} Kredi)`;
-}
+    const total = hasReferenceImage ? 30 : 20;
+
+    btn.setAttribute("data-credit-cost", String(total));
+    btn.textContent = `🧩 Karakter Oluştur (${total} Kredi)`;
+  }
+
   function updateCharacterDescCount(root) {
     const input = qs("[data-character-desc]", root);
     const out = qs("[data-character-desc-count]", root);
@@ -941,7 +951,14 @@ function syncCharacterCreateCredit(root) {
     state.characterReferenceImageUrl = "";
     state.characterReferenceUploadStatus = "idle";
     state.characterReferenceUploadError = "";
-    
+
+    syncCartoonCharacterAssistantState({
+      visibleError: "",
+      character: {
+        referenceUploadState: "idle",
+        referenceImageUrl: ""
+      }
+    });
 
     if (input) input.value = "";
 
@@ -949,42 +966,42 @@ function syncCharacterCreateCredit(root) {
     syncCharacterCreateCredit(root);
   }
 
-function ensureCharacterCreateUploadClearButton(root, host) {
-  let clearBtn = qs("[data-character-create-upload-clear]", host);
+  function ensureCharacterCreateUploadClearButton(root, host) {
+    let clearBtn = qs("[data-character-create-upload-clear]", host);
 
-  if (!clearBtn) {
-    clearBtn = document.createElement("button");
-    clearBtn.type = "button";
-    clearBtn.setAttribute("data-character-create-upload-clear", "");
-    clearBtn.setAttribute("aria-label", "Referans görseli kaldır");
-    clearBtn.title = "Resmi kaldır";
-    clearBtn.textContent = "×";
-    clearBtn.style.marginLeft = "8px";
-    clearBtn.style.width = "22px";
-    clearBtn.style.height = "22px";
-    clearBtn.style.borderRadius = "999px";
-    clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
-    clearBtn.style.background = "rgba(255,255,255,.08)";
-    clearBtn.style.color = "#fff";
-    clearBtn.style.cursor = "pointer";
-    clearBtn.style.display = "none";
-    clearBtn.style.verticalAlign = "middle";
-    host.appendChild(clearBtn);
+    if (!clearBtn) {
+      clearBtn = document.createElement("button");
+      clearBtn.type = "button";
+      clearBtn.setAttribute("data-character-create-upload-clear", "");
+      clearBtn.setAttribute("aria-label", "Referans görseli kaldır");
+      clearBtn.title = "Resmi kaldır";
+      clearBtn.textContent = "×";
+      clearBtn.style.marginLeft = "8px";
+      clearBtn.style.width = "22px";
+      clearBtn.style.height = "22px";
+      clearBtn.style.borderRadius = "999px";
+      clearBtn.style.border = "1px solid rgba(255,255,255,.18)";
+      clearBtn.style.background = "rgba(255,255,255,.08)";
+      clearBtn.style.color = "#fff";
+      clearBtn.style.cursor = "pointer";
+      clearBtn.style.display = "none";
+      clearBtn.style.verticalAlign = "middle";
+      host.appendChild(clearBtn);
+    }
+
+    if (clearBtn.dataset.bound !== "1") {
+      clearBtn.dataset.bound = "1";
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const nextRoot = getCartoonRoot();
+        if (!nextRoot) return;
+        clearCharacterCreateReference(nextRoot);
+      });
+    }
+
+    return clearBtn;
   }
-
-  if (clearBtn.dataset.bound !== "1") {
-    clearBtn.dataset.bound = "1";
-    clearBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const nextRoot = getCartoonRoot();
-      if (!nextRoot) return;
-      clearCharacterCreateReference(nextRoot);
-    });
-  }
-
-  return clearBtn;
-}
 
   function updateCharacterCreateUploadUI(root) {
     const state = getState();
@@ -1075,6 +1092,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     nameEl.textContent = file.name || "";
     if (clearBtn) clearBtn.style.display = "none";
   }
+
   function renderCharacterLibrary(root) {
     const state = getState();
 
@@ -1435,6 +1453,24 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           createBtn.textContent = "🧩 Karakter Oluştur";
         }
 
+        syncCartoonCharacterAssistantState({
+          policyState: "allow",
+          generationState: "ready",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost: Number(window.__CARTOON_CHARACTER_LAST_CREDIT_COST__ || 0),
+          lastJobId: String(jobId || ""),
+          lastRequestId: String(window.__CARTOON_CHARACTER_LAST_CONSUME_REQUEST_ID__ || ""),
+          lastOutputUrl: readyImageUrl,
+          visibleError: "",
+          dbSaved: true,
+          character: {
+            characterCreatePending: false,
+            libraryCount: Array.isArray(state.characters) ? state.characters.length : 0
+          }
+        });
+
         if (root) {
           renderCharacterOnly(root);
         }
@@ -1444,7 +1480,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         return;
       }
 
-        if (normalizedStatus === "error") {
+      if (normalizedStatus === "error") {
         console.error("[CARTOON][CHARACTER] job error =", j2);
 
         const root = getCartoonRoot();
@@ -1478,6 +1514,27 @@ function ensureCharacterCreateUploadClearButton(root, host) {
 
           try { window.syncCreditsUI?.({ force: true }); } catch {}
         }
+
+        let refundDone = false;
+
+        syncCartoonCharacterAssistantState({
+          generationState: "failed",
+          creditsConsumed: true,
+          refundExpected: true,
+          refundDone: false,
+          creditCost: Number(window.__CARTOON_CHARACTER_LAST_CREDIT_COST__ || 0),
+          lastJobId: currentJobId,
+          lastRequestId: String(window.__CARTOON_CHARACTER_LAST_CONSUME_REQUEST_ID__ || ""),
+          visibleError: String(
+            j2?.error ||
+            j2?.error_reason ||
+            j2?.reason ||
+            "job_error"
+          ),
+          character: {
+            characterCreatePending: false
+          }
+        });
 
         if (!activeJobId || activeJobId === currentJobId) {
           const refundMeta = {
@@ -1522,6 +1579,27 @@ function ensureCharacterCreateUploadClearButton(root, host) {
 
               if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
                 await refreshCreditsUI();
+                refundDone = true;
+
+                syncCartoonCharacterAssistantState({
+                  generationState: "failed",
+                  creditsConsumed: true,
+                  refundExpected: true,
+                  refundDone: true,
+                  creditCost: Number(window.__CARTOON_CHARACTER_LAST_CREDIT_COST__ || 0),
+                  lastJobId: currentJobId,
+                  lastRequestId: String(window.__CARTOON_CHARACTER_LAST_CONSUME_REQUEST_ID__ || ""),
+                  visibleError: String(
+                    j2?.error ||
+                    j2?.error_reason ||
+                    j2?.reason ||
+                    "job_error"
+                  ),
+                  character: {
+                    characterCreatePending: false
+                  }
+                });
+
                 try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
               } else {
                 try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
@@ -1543,8 +1621,30 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           createBtn.textContent = "🧩 Karakter Oluştur";
         }
 
+        if (!refundDone) {
+          syncCartoonCharacterAssistantState({
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: false,
+            creditCost: Number(window.__CARTOON_CHARACTER_LAST_CREDIT_COST__ || 0),
+            lastJobId: currentJobId,
+            lastRequestId: String(window.__CARTOON_CHARACTER_LAST_CONSUME_REQUEST_ID__ || ""),
+            visibleError: String(
+              j2?.error ||
+              j2?.error_reason ||
+              j2?.reason ||
+              "job_error"
+            ),
+            character: {
+              characterCreatePending: false
+            }
+          });
+        }
+
         return;
       }
+
       if (tries < 60) {
         setTimeout(() => pollCartoonCharacterJob(jobId, tries + 1), 3000);
       }
@@ -1566,6 +1666,20 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         createBtn.disabled = false;
         createBtn.textContent = "🧩 Karakter Oluştur";
       }
+
+      syncCartoonCharacterAssistantState({
+        generationState: "failed",
+        creditsConsumed: true,
+        refundExpected: true,
+        refundDone: false,
+        creditCost: Number(window.__CARTOON_CHARACTER_LAST_CREDIT_COST__ || 0),
+        lastJobId: String(jobId || ""),
+        lastRequestId: String(window.__CARTOON_CHARACTER_LAST_CONSUME_REQUEST_ID__ || ""),
+        visibleError: String(err?.message || err || "character_poll_failed"),
+        character: {
+          characterCreatePending: false
+        }
+      });
     }
   }
 
@@ -1656,7 +1770,8 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       console.error("[CARTOON][CHARACTER_HYDRATE] failed =", err);
     }
   }
-   document.addEventListener("change", (e) => {
+
+  document.addEventListener("change", (e) => {
     const root = getCartoonRoot();
     if (!root) return;
 
@@ -1675,7 +1790,8 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       syncCartoonBasicGenerateCredit(root);
       return;
     }
-         const logoPositionEl = e.target.closest("[data-basic-logo-position]");
+
+    const logoPositionEl = e.target.closest("[data-basic-logo-position]");
     if (logoPositionEl && root.contains(logoPositionEl)) {
       syncCartoonBasicGenerateCredit(root);
       return;
@@ -1687,17 +1803,18 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       return;
     }
   });
+
   document.addEventListener("input", (e) => {
     const root = getCartoonRoot();
     if (!root) return;
 
     const characterDesc = e.target.closest("[data-character-desc]");
-        const policyNote = qs("#cartoonCharacterPolicyNote", root);
+    const policyNote = qs("#cartoonCharacterPolicyNote", root);
 
     if (characterDesc && root.contains(characterDesc)) {
       characterDesc.style.borderColor = "";
       characterDesc.style.boxShadow = "";
-            const createBtn = qs("[data-cartoon-character-create]", root);
+      const createBtn = qs("[data-cartoon-character-create]", root);
       if (createBtn) {
         createBtn.style.background = "";
         createBtn.style.borderColor = "";
@@ -1710,9 +1827,19 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         policyNote.style.display = "none";
         policyNote.textContent = "";
       }
-    }
-    if (characterDesc && root.contains(characterDesc)) {
+
       updateCharacterDescCount(root);
+
+      syncCartoonCharacterAssistantState({
+        policyState: "allow",
+        generationState: getState().characterCreatePending ? "processing" : "idle",
+        visibleError: "",
+        visiblePolicyNote: "",
+        character: {
+          promptText: String(characterDesc.value || "").trim(),
+          promptPresent: !!String(characterDesc.value || "").trim()
+        }
+      });
     }
   });
 
@@ -1745,10 +1872,12 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         syncCharacterCreateCredit(root);
         return;
       }
+
       state.characterReferenceImageUrl = "";
       state.characterReferenceUploadStatus = "uploading";
       state.characterReferenceUploadError = "";
-            syncCartoonCharacterAssistantState({
+
+      syncCartoonCharacterAssistantState({
         generationState: "idle",
         policyState: "allow",
         visibleError: "",
@@ -1757,6 +1886,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           referenceImageUrl: ""
         }
       });
+
       updateCharacterCreateUploadUI(root);
       syncCharacterCreateCredit(root);
 
@@ -1766,11 +1896,11 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceUploadStatus = "ready";
         state.characterReferenceUploadError = "";
 
-         syncCartoonCharacterAssistantState({
+        syncCartoonCharacterAssistantState({
           visibleError: "",
           character: {
-           referenceUploadState: "ready",
-           referenceImageUrl: String(publicUrl || "").trim()
+            referenceUploadState: "ready",
+            referenceImageUrl: String(publicUrl || "").trim()
           }
         });
 
@@ -1784,17 +1914,19 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         syncCharacterCreateCredit(root);
         try { window.toast?.success?.("10 kredi eklendi"); } catch {}
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
-         } catch (err) {
+      } catch (err) {
         state.characterReferenceImageUrl = "";
         state.characterReferenceUploadStatus = "error";
         state.characterReferenceUploadError = String(err?.message || err || "reference_upload_failed");
-         syncCartoonCharacterAssistantState({
+
+        syncCartoonCharacterAssistantState({
           visibleError: String(err?.message || err || "reference_upload_failed"),
           character: {
-         referenceUploadState: "error",
-          referenceImageUrl: ""
+            referenceUploadState: "error",
+            referenceImageUrl: ""
           }
         });
+
         updateCharacterCreateUploadUI(root);
         console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
 
@@ -1858,158 +1990,157 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       );
       if (!selectedItem) return;
 
-   if (act === "open") {
-  if (!selectedItem.imageUrl) return;
+      if (act === "open") {
+        if (!selectedItem.imageUrl) return;
 
-  const existing = document.getElementById("cartoonCharacterPreviewModal");
-  if (existing) existing.remove();
+        const existing = document.getElementById("cartoonCharacterPreviewModal");
+        if (existing) existing.remove();
 
-  const modal = document.createElement("div");
-  modal.id = "cartoonCharacterPreviewModal";
-  modal.innerHTML = `
-    <div
-      data-preview-backdrop
-      style="
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.82);
-        z-index:99999;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding:24px;
-      "
-    >
-      <div
-        style="
-          position:relative;
-          display:inline-block;
-          max-width:min(92vw,1200px);
-          max-height:88vh;
-        "
-      >
-        <button
-          type="button"
-          data-preview-close
-          aria-label="Kapat"
-          title="Kapat"
-          style="
-            position:absolute;
-            top:16px;
-            right:16px;
-            width:44px;
-            height:44px;
-            border:none;
-            border-radius:999px;
-            background:rgba(18,20,30,.58);
-            color:rgba(255,255,255,.96);
-            cursor:pointer;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            z-index:20;
-            box-shadow:0 10px 30px rgba(0,0,0,.30);
-            backdrop-filter:blur(12px);
-            -webkit-backdrop-filter:blur(12px);
-            transition:transform .16s ease, background .16s ease, opacity .16s ease;
-          "
-          onmouseover="this.style.transform='scale(1.06)';this.style.background='rgba(28,30,44,.72)'"
-          onmouseout="this.style.transform='scale(1)';this.style.background='rgba(18,20,30,.58)'"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;display:block;">
-            <path
-              d="M7 7l10 10M17 7 7 17"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
+        const modal = document.createElement("div");
+        modal.id = "cartoonCharacterPreviewModal";
+        modal.innerHTML = `
+          <div
+            data-preview-backdrop
+            style="
+              position:fixed;
+              inset:0;
+              background:rgba(0,0,0,.82);
+              z-index:99999;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              padding:24px;
+            "
+          >
+            <div
+              style="
+                position:relative;
+                display:inline-block;
+                max-width:min(92vw,1200px);
+                max-height:88vh;
+              "
+            >
+              <button
+                type="button"
+                data-preview-close
+                aria-label="Kapat"
+                title="Kapat"
+                style="
+                  position:absolute;
+                  top:16px;
+                  right:16px;
+                  width:44px;
+                  height:44px;
+                  border:none;
+                  border-radius:999px;
+                  background:rgba(18,20,30,.58);
+                  color:rgba(255,255,255,.96);
+                  cursor:pointer;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  z-index:20;
+                  box-shadow:0 10px 30px rgba(0,0,0,.30);
+                  backdrop-filter:blur(12px);
+                  -webkit-backdrop-filter:blur(12px);
+                  transition:transform .16s ease, background .16s ease, opacity .16s ease;
+                "
+                onmouseover="this.style.transform='scale(1.06)';this.style.background='rgba(28,30,44,.72)'"
+                onmouseout="this.style.transform='scale(1)';this.style.background='rgba(18,20,30,.58)'"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;display:block;">
+                  <path
+                    d="M7 7l10 10M17 7 7 17"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
 
-        <img
-          src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
-          alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
-          style="
-            max-width:min(92vw,1200px);
-            max-height:88vh;
-            width:auto;
-            height:auto;
-            display:block;
-            border-radius:18px;
-            box-shadow:0 18px 60px rgba(0,0,0,.45);
-            background:#111;
-          "
-        />
-      </div>
-    </div>
-  `;
+              <img
+                src="${String(selectedItem.imageUrl).replace(/"/g, "&quot;")}"
+                alt="${String(selectedItem.name || "Karakter").replace(/"/g, "&quot;")}"
+                style="
+                  max-width:min(92vw,1200px);
+                  max-height:88vh;
+                  width:auto;
+                  height:auto;
+                  display:block;
+                  border-radius:18px;
+                  box-shadow:0 18px 60px rgba(0,0,0,.45);
+                  background:#111;
+                "
+              />
+            </div>
+          </div>
+        `;
 
-  document.body.appendChild(modal);
+        document.body.appendChild(modal);
 
-  function closeModal() {
-    const node = document.getElementById("cartoonCharacterPreviewModal");
-    if (node) node.remove();
-    document.removeEventListener("keydown", onEsc, true);
-  }
+        function closeModal() {
+          const node = document.getElementById("cartoonCharacterPreviewModal");
+          if (node) node.remove();
+          document.removeEventListener("keydown", onEsc, true);
+        }
 
-  function onEsc(evt) {
-    if (evt.key === "Escape") closeModal();
-  }
+        function onEsc(evt) {
+          if (evt.key === "Escape") closeModal();
+        }
 
-  modal.addEventListener("click", (evt) => {
-    const closeBtn = evt.target.closest("[data-preview-close]");
-    const backdrop = evt.target.closest("[data-preview-backdrop]");
+        modal.addEventListener("click", (evt) => {
+          const closeBtn = evt.target.closest("[data-preview-close]");
+          const backdrop = evt.target.closest("[data-preview-backdrop]");
 
-    if (closeBtn) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      closeModal();
-      return;
-    }
+          if (closeBtn) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            closeModal();
+            return;
+          }
 
-    if (backdrop && evt.target === backdrop) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      closeModal();
-    }
-  });
+          if (backdrop && evt.target === backdrop) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            closeModal();
+          }
+        });
 
-  document.addEventListener("keydown", onEsc, true);
-  return;
-}
+        document.addEventListener("keydown", onEsc, true);
+        return;
+      }
 
-    if (act === "download") {
-  if (!selectedItem.imageUrl) return;
+      if (act === "download") {
+        if (!selectedItem.imageUrl) return;
 
-  const cleanUrl = String(selectedItem.imageUrl || "").trim();
-  const proxied = `/api/media/proxy?url=${encodeURIComponent(cleanUrl)}&filename=${encodeURIComponent(
-    `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`
-  )}`;
+        const cleanUrl = String(selectedItem.imageUrl || "").trim();
+        const proxied = `/api/media/proxy?url=${encodeURIComponent(cleanUrl)}&filename=${encodeURIComponent(
+          `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`
+        )}`;
 
-  const a = document.createElement("a");
-  a.href = proxied;
-  a.download = `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`;
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  return;
-}
+        const a = document.createElement("a");
+        a.href = proxied;
+        a.download = `${(selectedItem.name || "character").replace(/[^\w\-]+/g, "_")}.jpg`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
 
       if (act === "select") {
         state.selectedCreatedCharacterId = selectedId;
 
         const nameInput = qs("#cartoon-character-name", root);
         const descInput = qs("#cartoon-character-desc", root);
-         const styleSelect = qs("#cartoon-character-style", root);
+        const styleSelect = qs("#cartoon-character-style", root);
 
         if (nameInput) nameInput.value = selectedItem.name || "";
         if (descInput) descInput.value = selectedItem.prompt || "";
         if (styleSelect && selectedItem.style) styleSelect.value = selectedItem.style;
 
-        renderCharacterLibrary(root);
-        updateCharacterDescCount(root);
+        renderCharacterOnly(root);
         return;
       }
 
@@ -2022,7 +2153,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           state.selectedCreatedCharacterId = "";
         }
 
-        renderCharacterLibrary(root);
+        renderCharacterOnly(root);
         return;
       }
     }
@@ -2074,10 +2205,10 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       if (accessorySelect && ui.accessory) accessorySelect.value = ui.accessory;
       if (expressionSelect && ui.expression) expressionSelect.value = ui.expression;
 
-      renderCharacterLibrary(root);
-      updateCharacterDescCount(root);
+      renderCharacterOnly(root);
       return;
     }
+
     const characterCreateBtn = e.target.closest("[data-cartoon-character-create]");
     if (!characterCreateBtn || !root.contains(characterCreateBtn)) return;
 
@@ -2086,6 +2217,16 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     const payload = buildCharacterCreatePayload(root);
 
     if (!String(payload.prompt || "").trim()) {
+      syncCartoonCharacterAssistantState({
+        generationState: "idle",
+        policyState: "allow",
+        visibleError: "missing_prompt",
+        character: {
+          promptPresent: false,
+          promptText: ""
+        }
+      });
+
       try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
       const descInput = qs("#cartoon-character-desc", root);
       if (descInput) descInput.focus();
@@ -2096,17 +2237,20 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     const hasReferenceFile = !!(referenceInput?.files?.[0]);
 
     if (hasReferenceFile) {
-      if (
-        state.characterReferenceUploadStatus === "uploading"
-      ) {
+      if (state.characterReferenceUploadStatus === "uploading") {
+        syncCartoonCharacterAssistantState({
+          generationState: "idle",
+          visibleError: "reference_uploading",
+          character: {
+            referenceUploadState: "uploading"
+          }
+        });
+
         try { window.toast?.info?.("Referans görsel henüz yükleniyor"); } catch {}
         return;
       }
 
-      if (
-        !state.characterReferenceImageUrl ||
-        state.characterReferenceUploadStatus !== "ready"
-      ) {
+      if (!state.characterReferenceImageUrl || state.characterReferenceUploadStatus !== "ready") {
         const refErrText = String(state.characterReferenceUploadError || "").toLowerCase();
         const isPolicyBlocked =
           refErrText.includes("media_policy") ||
@@ -2117,6 +2261,16 @@ function ensureCharacterCreateUploadClearButton(root, host) {
           refErrText.includes("gerçek kişi") ||
           refErrText.includes("gercek kisi") ||
           refErrText.includes("impersonation");
+
+        syncCartoonCharacterAssistantState({
+          generationState: "idle",
+          policyState: isPolicyBlocked ? "block" : "allow",
+          visibleError: state.characterReferenceUploadError || "reference_not_ready",
+          character: {
+            referenceUploadState: String(state.characterReferenceUploadStatus || "idle"),
+            referenceImageUrl: String(state.characterReferenceImageUrl || "")
+          }
+        });
 
         try {
           window.toast?.error?.(
@@ -2144,9 +2298,30 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     ].filter(Boolean).join(" ");
 
     resetCharacterPolicyUI(root, qs("#cartoon-character-desc", root), characterCreateBtn);
+
     if (isCharacterPolicyBlocked(policyText)) {
       const descInput = qs("#cartoon-character-desc", root);
       showCharacterPolicyBlockedUI(root, descInput, characterCreateBtn);
+
+      syncCartoonCharacterAssistantState({
+        policyState: "block",
+        generationState: "failed",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost: 0,
+        lastJobId: "",
+        lastRequestId: "",
+        lastOutputUrl: "",
+        visibleError: "policy_blocked",
+        visiblePolicyNote: "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.",
+        character: {
+          promptPresent: !!String(payload.prompt || "").trim(),
+          promptText: String(payload.prompt || "").trim(),
+          characterCreatePending: false
+        }
+      });
+
       return;
     }
 
@@ -2228,6 +2403,22 @@ function ensureCharacterCreateUploadClearButton(root, host) {
 
         if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
           await refreshCreditsUI();
+
+          syncCartoonCharacterAssistantState({
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: true,
+            creditCost,
+            lastJobId: "",
+            lastRequestId: consumeRequestId,
+            lastOutputUrl: "",
+            visibleError: String(extraMeta?.error || reason || "create_failed"),
+            character: {
+              characterCreatePending: false
+            }
+          });
+
           try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
           return true;
         }
@@ -2237,6 +2428,26 @@ function ensureCharacterCreateUploadClearButton(root, host) {
 
       return false;
     }
+
+    syncCartoonCharacterAssistantState({
+      currentFlow: "character_create",
+      policyState: "allow",
+      generationState: "processing",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      creditCost,
+      lastJobId: "",
+      lastRequestId: consumeRequestId,
+      lastOutputUrl: "",
+      visibleError: "",
+      visiblePolicyNote: "",
+      character: {
+        promptPresent: !!String(payload.prompt || "").trim(),
+        promptText: String(payload.prompt || "").trim(),
+        characterCreatePending: true
+      }
+    });
 
     const creditRes = await fetch("/api/credits/consume-ledger", {
       method: "POST",
@@ -2262,6 +2473,22 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     }
 
     if (!creditRes.ok || !creditData?.ok) {
+      syncCartoonCharacterAssistantState({
+        policyState: "allow",
+        generationState: "failed",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost,
+        lastJobId: "",
+        lastRequestId: consumeRequestId,
+        lastOutputUrl: "",
+        visibleError: "insufficient_credit",
+        character: {
+          characterCreatePending: false
+        }
+      });
+
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
@@ -2289,6 +2516,22 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     characterCreateBtn.disabled = true;
     characterCreateBtn.textContent = "Karakter Oluşturuluyor...";
 
+    syncCartoonCharacterAssistantState({
+      policyState: "allow",
+      generationState: "processing",
+      creditsConsumed: true,
+      refundExpected: false,
+      refundDone: false,
+      creditCost,
+      lastJobId: "",
+      lastRequestId: consumeRequestId,
+      lastOutputUrl: "",
+      visibleError: "",
+      character: {
+        characterCreatePending: true
+      }
+    });
+
     try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
     try { window.toast?.success?.("Karakter oluşturuluyor"); } catch {}
 
@@ -2307,7 +2550,25 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       }
 
       if (j?.job_id) {
-        window.__CARTOON_CHARACTER_ACTIVE_JOB_ID__ = String(j.job_id || "");
+        const nextJobId = String(j.job_id || "");
+        window.__CARTOON_CHARACTER_ACTIVE_JOB_ID__ = nextJobId;
+
+        syncCartoonCharacterAssistantState({
+          policyState: "allow",
+          generationState: "processing",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost,
+          lastJobId: nextJobId,
+          lastRequestId: consumeRequestId,
+          lastOutputUrl: "",
+          visibleError: "",
+          character: {
+            characterCreatePending: true
+          }
+        });
+
         pollCartoonCharacterJob(j.job_id, 0);
         return;
       }
@@ -2320,6 +2581,21 @@ function ensureCharacterCreateUploadClearButton(root, host) {
 
       console.error("[CARTOON][CHARACTER] create error:", err);
 
+      syncCartoonCharacterAssistantState({
+        generationState: "failed",
+        creditsConsumed: true,
+        refundExpected: true,
+        refundDone: false,
+        creditCost,
+        lastJobId: "",
+        lastRequestId: consumeRequestId,
+        lastOutputUrl: "",
+        visibleError: String(err?.message || err || "failed"),
+        character: {
+          characterCreatePending: false
+        }
+      });
+
       const refunded = await tryRefund("cartoon_character_create_failed", {
         error: String(err?.message || err || "failed")
       });
@@ -2329,7 +2605,6 @@ function ensureCharacterCreateUploadClearButton(root, host) {
       }
     }
   });
-
 
   function tryInit() {
     const root = getCartoonRoot();
