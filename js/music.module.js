@@ -155,7 +155,7 @@ function getMusicAssistantSelectedCard() {
     status: normalizeMusicStatus(rawStatus),
     rawStatus,
     providerJobId,
-    element: selected
+  
   };
 }
   function getMusicAssistantVisibleOverflowMenu() {
