@@ -391,8 +391,16 @@
     inputEl.style.height = "46px";
     inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
   }
-  function detectModuleFromPath() {
-    const path = String(window.location.pathname || "").toLowerCase();
+  function getBodyText() {
+    return String(document.body?.innerText || "");
+  }
+
+  function getPathname() {
+    return String(window.location.pathname || "");
+  }
+
+  function getPageModuleFromPath(pathname) {
+    const path = String(pathname || "").toLowerCase();
 
     if (path.includes("music")) return "music";
     if (path.includes("cover")) return "cover";
@@ -405,140 +413,224 @@
     return "";
   }
 
-  function getBodyText() {
-    return String(document.body?.innerText || "");
+  function readWindowRuntimeState() {
+    const runtime =
+      window.AIVO_ASSISTANT_CONTEXT ||
+      window.__AIVO_ASSISTANT_CONTEXT__ ||
+      window.AIVO_PAGE_CONTEXT ||
+      window.__AIVO_PAGE_CONTEXT__ ||
+      null;
+
+    return runtime && typeof runtime === "object" ? runtime : null;
   }
 
-  function detectActionContext() {
-    const text = getBodyText();
+  function buildAssistantContext(extraContext = {}) {
+    const pathname = getPathname();
+    const bodyText = getBodyText();
+    const runtime = readWindowRuntimeState();
 
-    if (/kanal ayırma/i.test(text) && /devam edilsin mi/i.test(text)) {
-      return "channel_separation_confirm";
+    const context = {
+      page: pathname,
+      module: "",
+      intent: extraContext.intent || "",
+      action: extraContext.action || "",
+      actionContext: extraContext.actionContext || "",
+      currentPanel: pathname.replace(/\//g, "") || "unknown",
+      currentCardType: "",
+      selectedItemType: "",
+      lastJobStatus: "",
+      userCredits: null,
+      creditsNeeded: null,
+      hasSelection: null,
+      availableActions: [],
+      visibleModals: [],
+      currentProductCards: [],
+      uiState: {
+        title: document.title || "",
+        pathname,
+        bodyText: bodyText.slice(0, 4000),
+        quickAction: extraContext,
+      },
+    };
+
+    if (runtime) {
+      context.module =
+        typeof runtime.module === "string" ? runtime.module : context.module;
+
+      context.actionContext =
+        context.actionContext ||
+        (typeof runtime.actionContext === "string" ? runtime.actionContext : "");
+
+      context.currentPanel =
+        typeof runtime.currentPanel === "string" ? runtime.currentPanel : context.currentPanel;
+
+      context.currentCardType =
+        typeof runtime.currentCardType === "string" ? runtime.currentCardType : "";
+
+      context.selectedItemType =
+        typeof runtime.selectedItemType === "string" ? runtime.selectedItemType : "";
+
+      context.lastJobStatus =
+        typeof runtime.lastJobStatus === "string" ? runtime.lastJobStatus : "";
+
+      context.userCredits =
+        Number.isFinite(Number(runtime.userCredits)) ? Number(runtime.userCredits) : null;
+
+      context.creditsNeeded =
+        Number.isFinite(Number(runtime.creditsNeeded)) ? Number(runtime.creditsNeeded) : null;
+
+      context.hasSelection =
+        typeof runtime.hasSelection === "boolean" ? runtime.hasSelection : null;
+
+      context.availableActions = Array.isArray(runtime.availableActions)
+        ? runtime.availableActions
+            .filter((v) => typeof v === "string" && v.trim())
+            .map((v) => v.trim())
+        : [];
+
+      context.visibleModals = Array.isArray(runtime.visibleModals)
+        ? runtime.visibleModals
+            .filter((v) => typeof v === "string" && v.trim())
+            .map((v) => v.trim())
+        : [];
+
+      context.currentProductCards = Array.isArray(runtime.currentProductCards)
+        ? runtime.currentProductCards
+            .filter((v) => v && typeof v === "object")
+            .map((v) => ({
+              key: typeof v.key === "string" ? v.key : null,
+              label: typeof v.label === "string" ? v.label : null,
+              priceTRY: Number.isFinite(Number(v.priceTRY)) ? Number(v.priceTRY) : null,
+              credits: Number.isFinite(Number(v.credits)) ? Number(v.credits) : null,
+            }))
+        : [];
+
+      context.uiState = {
+        ...context.uiState,
+        ...(runtime.uiState && typeof runtime.uiState === "object" ? runtime.uiState : {}),
+        quickAction: extraContext,
+      };
     }
 
-    if (/paketi seç/i.test(text)) {
-      return "package_selection";
+    if (!context.module) {
+      context.module = getPageModuleFromPath(pathname);
     }
 
-    if (/mastering/i.test(text)) {
-      return "mastering";
+    if (!context.actionContext) {
+      if (/kanal ayırma/i.test(bodyText) && /devam edilsin mi/i.test(bodyText)) {
+        context.actionContext = "channel_separation_confirm";
+      } else if (/paketi seç/i.test(bodyText)) {
+        context.actionContext = "package_selection";
+      } else if (/mastering/i.test(bodyText)) {
+        context.actionContext = "mastering";
+      }
     }
 
-    return "";
-  }
-
-  function detectCurrentPanel() {
-    const path = String(window.location.pathname || "").toLowerCase();
-    return path.replace(/\//g, "") || "unknown";
-  }
-
-  function detectCurrentCardType() {
-    const text = getBodyText();
-
-    if (/kanal ayırma/i.test(text)) return "music_card";
-
-    if (
-      /Yeni Kullanıcı/i.test(text) ||
-      /Standart Paket/i.test(text) ||
-      /Yaratıcı Üretici/i.test(text) ||
-      /Stüdyo \/ Ajans/i.test(text)
-    ) {
-      return "pricing_card";
+    if (!context.currentCardType) {
+      if (/kanal ayırma/i.test(bodyText)) {
+        context.currentCardType = "music_card";
+      } else if (
+        /Yeni Kullanıcı/i.test(bodyText) ||
+        /Standart Paket/i.test(bodyText) ||
+        /Yaratıcı Üretici/i.test(bodyText) ||
+        /Stüdyo \/ Ajans/i.test(bodyText)
+      ) {
+        context.currentCardType = "pricing_card";
+      }
     }
 
-    return "";
-  }
-
-  function detectSelectedItemType() {
-    const text = getBodyText();
-
-    if (/kanal ayırma/i.test(text)) return "music_track";
-    if (/paketi seç/i.test(text)) return "pricing_package";
-
-    return "";
-  }
-
-  function detectLastJobStatus() {
-    const text = getBodyText();
-
-    if (/hazır/i.test(text)) return "ready";
-    if (/processing|hazırlanıyor|işleniyor/i.test(text)) return "processing";
-    if (/hata|başarısız/i.test(text)) return "failed";
-
-    return "";
-  }
-
-  function detectUserCredits() {
-    const text = getBodyText();
-    const match = text.match(/Kredi\s+(\d+)/i);
-    return match ? Number(match[1]) : null;
-  }
-
-  function detectCreditsNeeded() {
-    const text = getBodyText();
-
-    if (/Onayla\s*\(\s*5\s*Kredi\s*\)/i.test(text)) return 5;
-
-    const match = text.match(/(\d+)\s*kredi/i);
-    return match ? Number(match[1]) : null;
-  }
-
-  function detectHasSelection() {
-    const text = getBodyText();
-
-    if (/kanal ayırma/i.test(text)) return true;
-    if (/Onayla\s*\(\s*5\s*Kredi\s*\)/i.test(text)) return true;
-
-    return null;
-  }
-
-  function detectAvailableActions() {
-    const text = getBodyText();
-    const actions = [];
-
-    if (/kanal ayırma/i.test(text)) actions.push("channel_separation");
-    if (/mastering/i.test(text)) actions.push("mastering");
-    if (/paketi seç/i.test(text)) actions.push("package_select");
-    if (/indir/i.test(text)) actions.push("download");
-    if (/dışa aktar|export/i.test(text)) actions.push("export");
-
-    return actions;
-  }
-
-  function detectVisibleModals() {
-    const text = getBodyText();
-    const modals = [];
-
-    if (/kanal ayırma/i.test(text) && /devam edilsin mi/i.test(text)) {
-      modals.push("channel_separation_confirm");
+    if (!context.selectedItemType) {
+      if (/kanal ayırma/i.test(bodyText)) {
+        context.selectedItemType = "music_track";
+      } else if (/paketi seç/i.test(bodyText)) {
+        context.selectedItemType = "pricing_package";
+      }
     }
 
-    return modals;
+    if (!context.lastJobStatus) {
+      if (/hazır/i.test(bodyText)) {
+        context.lastJobStatus = "ready";
+      } else if (/processing|hazırlanıyor|işleniyor/i.test(bodyText)) {
+        context.lastJobStatus = "processing";
+      } else if (/hata|başarısız/i.test(bodyText)) {
+        context.lastJobStatus = "failed";
+      }
+    }
+
+    if (context.userCredits == null) {
+      const creditMatch = bodyText.match(/Kredi\s+(\d+)/i);
+      context.userCredits = creditMatch ? Number(creditMatch[1]) : null;
+    }
+
+    if (context.creditsNeeded == null) {
+      if (/Onayla\s*\(\s*5\s*Kredi\s*\)/i.test(bodyText)) {
+        context.creditsNeeded = 5;
+      } else {
+        const neededMatch = bodyText.match(/(\d+)\s*kredi/i);
+        context.creditsNeeded = neededMatch ? Number(neededMatch[1]) : null;
+      }
+    }
+
+    if (context.hasSelection == null) {
+      if (/kanal ayırma/i.test(bodyText) || /Onayla\s*\(\s*5\s*Kredi\s*\)/i.test(bodyText)) {
+        context.hasSelection = true;
+      }
+    }
+
+    if (!context.availableActions.length) {
+      if (/kanal ayırma/i.test(bodyText)) context.availableActions.push("channel_separation");
+      if (/mastering/i.test(bodyText)) context.availableActions.push("mastering");
+      if (/paketi seç/i.test(bodyText)) context.availableActions.push("package_select");
+      if (/indir/i.test(bodyText)) context.availableActions.push("download");
+      if (/dışa aktar|export/i.test(bodyText)) context.availableActions.push("export");
+    }
+
+    if (!context.visibleModals.length) {
+      if (/kanal ayırma/i.test(bodyText) && /devam edilsin mi/i.test(bodyText)) {
+        context.visibleModals.push("channel_separation_confirm");
+      }
+    }
+
+    if (!context.currentProductCards.length) {
+      if (/Yeni Kullanıcı/i.test(bodyText) && /25 kredi/i.test(bodyText) && /199₺/i.test(bodyText)) {
+        context.currentProductCards.push({
+          key: "starter",
+          label: "Yeni Kullanıcı",
+          priceTRY: 199,
+          credits: 25,
+        });
+      }
+
+      if (/Standart Paket/i.test(bodyText) && /100 kredi/i.test(bodyText) && /699₺/i.test(bodyText)) {
+        context.currentProductCards.push({
+          key: "standard",
+          label: "Standart Paket",
+          priceTRY: 699,
+          credits: 100,
+        });
+      }
+
+      if (/Yaratıcı Üretici/i.test(bodyText) && /200 kredi/i.test(bodyText) && /1\.299₺/i.test(bodyText)) {
+        context.currentProductCards.push({
+          key: "pro",
+          label: "Yaratıcı Üretici",
+          priceTRY: 1299,
+          credits: 200,
+        });
+      }
+
+      if (/Stüdyo \/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\.999₺/i.test(bodyText)) {
+        context.currentProductCards.push({
+          key: "studio",
+          label: "Stüdyo / Ajans",
+          priceTRY: 2999,
+          credits: 500,
+        });
+      }
+    }
+
+    return context;
   }
-
-  function detectCurrentProductCards() {
-    const text = getBodyText();
-    const cards = [];
-
-    if (/Yeni Kullanıcı/i.test(text) && /25 kredi/i.test(text) && /199₺/i.test(text)) {
-      cards.push({ key: "starter", label: "Yeni Kullanıcı", priceTRY: 199, credits: 25 });
-    }
-
-    if (/Standart Paket/i.test(text) && /100 kredi/i.test(text) && /699₺/i.test(text)) {
-      cards.push({ key: "standard", label: "Standart Paket", priceTRY: 699, credits: 100 });
-    }
-
-    if (/Yaratıcı Üretici/i.test(text) && /200 kredi/i.test(text) && /1\.299₺/i.test(text)) {
-      cards.push({ key: "pro", label: "Yaratıcı Üretici", priceTRY: 1299, credits: 200 });
-    }
-
-    if (/Stüdyo \/ Ajans/i.test(text) && /500 kredi/i.test(text) && /2\.999₺/i.test(text)) {
-      cards.push({ key: "studio", label: "Stüdyo / Ajans", priceTRY: 2999, credits: 500 });
-    }
-
-    return cards;
-  }
-
   async function sendMessage(text, extraContext = {}) {
     const content = String(text || "").trim();
     if (!content || state.loading) return;
