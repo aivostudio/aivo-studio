@@ -368,6 +368,7 @@
         }
 
         toast("Kayıt kaydedildi ✅", "success");
+         publishMusicAssistantContext({ source: "music_record_saved", referenceAudioReady: true });
         close();
       } catch (e) {
         console.error("[AIVO] record save failed:", e);
