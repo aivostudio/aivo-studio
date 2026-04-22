@@ -838,12 +838,24 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     if (!promptEl || !gen || promptEl.__aivoCoverPolicyResetBound) return;
     promptEl.__aivoCoverPolicyResetBound = true;
 
-    promptEl.addEventListener("input", () => {
+      promptEl.addEventListener("input", () => {
       resetCoverPolicyUI(root, promptEl, gen);
+      syncCoverAssistantState({
+        lastAction: "prompt_input",
+        policyState: "allow",
+        generationState: "idle",
+        visibleError: ""
+      });
     });
 
     promptEl.addEventListener("change", () => {
       resetCoverPolicyUI(root, promptEl, gen);
+      syncCoverAssistantState({
+        lastAction: "prompt_change",
+        policyState: "allow",
+        generationState: "idle",
+        visibleError: ""
+      });
     });
   }
   // --- COVER PROMPT COMPOSITION: premium title-friendly cover layout ---
