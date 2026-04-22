@@ -14,6 +14,108 @@
   if (window.__ATM_V2_BIND__) return;
   window.__ATM_V2_BIND__ = true;
 
+  function getAtmoAssistantState() {
+    if (!window.__AIVO_ATMO_ASSISTANT_STATE__) {
+      window.__AIVO_ATMO_ASSISTANT_STATE__ = {
+        currentPanel: "atmo",
+        lastAction: "idle",
+        mode: "basic",
+        promptPresent: false,
+        promptText: "",
+        policyState: "allow",
+        generationState: "idle",
+        creditCost: 0,
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        selectedAspect: "16:9",
+        selectedDuration: "4",
+        selectedScene: "",
+        selectedEffects: [],
+        lastJobId: "",
+        lastRequestId: "",
+        lastVideoUrl: "",
+        dbSaved: false,
+        visibleError: "",
+        visiblePolicyNote: "",
+        uploadState: {
+          basicImage: "empty",
+          proImage: "empty",
+          logo: "empty",
+          audio: "empty"
+        },
+        updatedAt: Date.now()
+      };
+    }
+    return window.__AIVO_ATMO_ASSISTANT_STATE__;
+  }
+
+  function patchAtmoAssistantState(patch) {
+    const prev = getAtmoAssistantState();
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "atmo",
+      updatedAt: Date.now()
+    };
+
+    if (patch && typeof patch.uploadState === "object" && patch.uploadState) {
+      next.uploadState = {
+        ...(prev.uploadState || {}),
+        ...patch.uploadState
+      };
+    }
+
+    window.__AIVO_ATMO_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:atmo_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function readAtmoPolicyNote(root) {
+    const panel = getAtmoProPanel(root || getAtmoPanelRoot());
+    const note = panel?.querySelector("#atmPolicyNote");
+    return String(note?.textContent || "").trim();
+  }
+
+  function syncAtmoAssistantState(extra = {}) {
+    const root = getAtmoPanelRoot();
+    const promptEl = root ? (qs("#atmSuperPrompt", root) || document.getElementById("atmSuperPrompt")) : null;
+    const mode = String(state?.mode || "basic").toLowerCase() === "pro" ? "pro" : "basic";
+    const credit = computeAtmoCredit(mode);
+
+    return patchAtmoAssistantState({
+      mode,
+      promptPresent: !!String(promptEl?.value || state?.prompt || "").trim(),
+      promptText: String(promptEl?.value || state?.prompt || "").trim(),
+      selectedAspect: String(state?.aspect || "16:9"),
+      selectedDuration: mode === "pro"
+        ? String(state?.proDuration || "4")
+        : String(state?.duration || "4"),
+      selectedScene: String(state?.scene || ""),
+      selectedEffects: Array.isArray(state?.effects) ? state.effects.slice() : [],
+      creditCost: Number(credit?.total || 0),
+      visiblePolicyNote: readAtmoPolicyNote(root),
+      uploadState: {
+        basicImage: String(state?.uploads?.basicImage?.status || "empty"),
+        proImage: String(state?.uploads?.proImage?.status || "empty"),
+        logo: String(state?.uploads?.logo?.status || "empty"),
+        audio: String(state?.uploads?.audio?.status || "empty")
+      },
+      ...extra
+    });
+  }
+
+  window.getAtmoAssistantState = getAtmoAssistantState;
+  window.syncAtmoAssistantState = syncAtmoAssistantState;
+
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
