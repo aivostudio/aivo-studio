@@ -86,9 +86,9 @@
     const root = getMusicAssistantModuleRoot() || document;
 
     const selected =
-      root.querySelector(".music-card.is-selected, .music-result-card.is-selected, [data-music-card].is-selected") ||
-      root.querySelector('.music-card[aria-selected="true"], .music-result-card[aria-selected="true"], [data-music-card][aria-selected="true"]') ||
-      root.querySelector("[data-selected-music-card='true']") ||
+      root.querySelector(".rp-playerCard[data-selected-music-card='true']") ||
+      root.querySelector(".rp-playerCard.is-selected") ||
+      root.querySelector('.rp-playerCard[aria-selected="true"]') ||
       null;
 
     if (!selected) return null;
@@ -105,14 +105,17 @@
       "";
 
     const titleEl =
-      selected.querySelector(".music-card-title, .track-title, [data-role='title']") ||
+      selected.querySelector(".aivo-player-title, .aivo-player-titleRow strong, .aivo-player-titleRow, [data-role='title']") ||
       null;
 
     const statusEl =
-      selected.querySelector(".music-card-status, .track-status, [data-role='status']") ||
+      selected.querySelector(".aivo-player-status, .aivo-player-meta, [data-role='status']") ||
       null;
 
-    const title = titleEl ? String(titleEl.textContent || "").trim() : "";
+    const title = titleEl
+      ? String(titleEl.textContent || "").trim().split("\n")[0].trim()
+      : "";
+
     const statusFromDom = statusEl ? String(statusEl.textContent || "").trim() : "";
 
     const status =
@@ -129,7 +132,6 @@
       element: selected
     };
   }
-
   function getMusicAssistantVisibleOverflowMenu() {
     const root = getMusicAssistantModuleRoot() || document;
 
