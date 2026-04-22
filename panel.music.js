@@ -1504,10 +1504,9 @@ function onCardClick(e){
   card.setAttribute("aria-selected", "true");
 
   const act = btn?.dataset?.action || null;
-    if (!act) {
-      if (card.classList.contains("is-ready")) togglePlayFromCard(card);
-      return;
-    }
+   if (!act) {
+  return;
+}
 
     e.preventDefault();
     e.stopPropagation();
