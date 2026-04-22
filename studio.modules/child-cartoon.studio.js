@@ -2560,77 +2560,108 @@ if (removeBtn) {
       });
       return true;
     }
+const studioState = createStudioState();
 
-    const studioState = createStudioState();
+ensureStudioPreviewModal(studioRoot);
 
-    ensureStudioPreviewModal(studioRoot);
-    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+studioSceneList.innerHTML = `
+  <div style="
+    padding:18px 20px;
+    border:1px dashed rgba(255,255,255,.14);
+    border-radius:18px;
+    background:rgba(255,255,255,.03);
+    color:rgba(255,255,255,.78);
+    font-weight:600;
+  ">
+    Yükleniyor...
+  </div>
+`;
 
-    loadStudioState()
-      .then((savedState) => {
-        studioState.format = String(savedState?.format || '16:9');
-        studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
+bindStudioVideoUpload(
+  studioState,
+  studioRoot,
+  studioSceneList,
+  studioSceneTemplate
+);
 
-        studioState.voiceFile = null;
-        studioState.voiceFileName = String(savedState?.voice?.fileName || '');
-        studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
-        studioState.voiceFileUploadPromise = null;
-        studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
-        studioState.voiceFileUploadError = '';
+bindStudioVoiceUpload(
+  studioState,
+  studioRoot
+);
 
-        studioState.logoFile = null;
-        studioState.logoFileName = String(savedState?.logo?.fileName || '');
-        studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
-        studioState.logoFileUploadPromise = null;
-        studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
-        studioState.logoFileUploadError = '';
+bindStudioLogoUpload(
+  studioState,
+  studioRoot
+);
 
-        renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-        updateStudioVoiceUploadStatusUI(studioState, studioRoot);
-        updateStudioLogoUploadStatusUI(studioState, studioRoot);
-        updateStudioSummary(studioState, studioRoot);
-        syncCartoonStudioAssistantState(studioState, studioRoot, {
-          dbSaved: true,
-          visibleError: ''
-        });
-      })
-      .catch((err) => {
-        console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
-        syncCartoonStudioAssistantState(studioState, studioRoot, {
-          dbSaved: false,
-          visibleError: String(err?.message || err || 'studio_state_get_failed')
-        });
+bindStudioFormatPills(
+  studioState,
+  studioRoot
+);
+
+bindStudioExportPayloadDebug(
+  studioState,
+  studioRoot
+);
+
+studioRoot.setAttribute('data-studio-bound', 'true');
+window.__CARTOON_STUDIO__ = studioState;
+
+(async () => {
+  const MAX_RETRIES = 3;
+  let loaded = false;
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
+    try {
+      const savedState = await loadStudioState();
+
+      studioState.format = String(savedState?.format || '16:9');
+      studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
+
+      studioState.voiceFile = null;
+      studioState.voiceFileName = String(savedState?.voice?.fileName || '');
+      studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
+      studioState.voiceFileUploadPromise = null;
+      studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
+      studioState.voiceFileUploadError = '';
+
+      studioState.logoFile = null;
+      studioState.logoFileName = String(savedState?.logo?.fileName || '');
+      studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
+      studioState.logoFileUploadPromise = null;
+      studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
+      studioState.logoFileUploadError = '';
+
+      renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+      updateStudioVoiceUploadStatusUI(studioState, studioRoot);
+      updateStudioLogoUploadStatusUI(studioState, studioRoot);
+      updateStudioSummary(studioState, studioRoot);
+
+      loaded = true;
+      break;
+    } catch (err) {
+      lastErr = err;
+      console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_RETRY]', {
+        attempt,
+        error: err
       });
 
-    bindStudioVideoUpload(
-      studioState,
-      studioRoot,
-      studioSceneList,
-      studioSceneTemplate
-    );
+      if (attempt < MAX_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, 700));
+      }
+    }
+  }
 
-    bindStudioVoiceUpload(
-      studioState,
-      studioRoot
-    );
+  if (!loaded) {
+    console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', lastErr);
 
-    bindStudioLogoUpload(
-      studioState,
-      studioRoot
-    );
-
-    bindStudioFormatPills(
-      studioState,
-      studioRoot
-    );
-
-    bindStudioExportPayloadDebug(
-      studioState,
-      studioRoot
-    );
-
-    studioRoot.setAttribute('data-studio-bound', 'true');
-    window.__CARTOON_STUDIO__ = studioState;
+    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+    updateStudioVoiceUploadStatusUI(studioState, studioRoot);
+    updateStudioLogoUploadStatusUI(studioState, studioRoot);
+    updateStudioSummary(studioState, studioRoot);
+  }
+})();
     syncCartoonStudioAssistantState(studioState, studioRoot, {
       visibleError: ''
     });
