@@ -654,57 +654,118 @@
 
     return 'audio/mpeg';
   }
+async function presignStudioVoiceFile(file) {
+  const safeContentType = resolveStudioAudioContentType(file);
+  const filename = file?.name || `studio-voice-${Date.now()}.mp3`;
 
-  async function presignStudioVoiceFile(file) {
-    const safeContentType = resolveStudioAudioContentType(file);
+  const res = await fetch('/api/r2/scan-and-presign', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      app: 'cartoon',
+      kind: 'studio-voice',
+      filename,
+      contentType: safeContentType,
+      prompt: '',
+      title: String(filename || '').trim(),
+      description: String(filename || '').trim(),
+      personName: '',
+      style: '',
+      source: 'cartoon_studio_voice_upload'
+    })
+  });
 
-    const res = await fetch('/api/r2/presign-put', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        app: 'cartoon',
-        kind: 'studio-voice',
-        filename: file?.name || `studio-voice-${Date.now()}.mp3`,
-        contentType: safeContentType
-      })
-    });
+  const data = await res.json().catch(() => null);
 
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || 'studio_voice_presign_failed');
-    }
-
-    return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || '',
-      contentType: safeContentType
-    };
+  if (!res.ok) {
+    const msg =
+      data?.message ||
+      data?.error ||
+      (res.status === 403 ? 'media_policy_blocked' : 'studio_voice_presign_failed');
+    throw new Error(msg);
   }
 
-  async function uploadStudioVoiceFileToR2(file) {
-    if (!file) throw new Error('missing_studio_voice_file');
-
-    const { uploadUrl, publicUrl, contentType } = await presignStudioVoiceFile(file);
-
-    if (!uploadUrl || !publicUrl) {
-      throw new Error('studio_voice_missing_upload_urls');
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': contentType || 'audio/mpeg'
-      },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error('studio_voice_r2_put_failed');
-    }
-
-    return publicUrl;
+  if (!data || data.ok === false) {
+    throw new Error(data?.message || data?.error || 'studio_voice_presign_failed');
   }
+
+  const uploadUrl = data.uploadUrl || data.upload_url;
+  const publicUrl = data.publicUrl || data.public_url || data.url || '';
+  const key = data.key || data.objectKey || '';
+
+  if (!uploadUrl || !publicUrl || !key) {
+    throw new Error('studio_voice_missing_upload_urls');
+  }
+
+  return {
+    uploadUrl,
+    publicUrl,
+    key,
+    contentType: safeContentType,
+    policy: data.policy || null
+  };
+}
+
+async function uploadStudioVoiceFileToR2(file) {
+  if (!file) throw new Error('missing_studio_voice_file');
+
+  const filename = file?.name || `studio-voice-${Date.now()}.mp3`;
+  const { uploadUrl, publicUrl, key, contentType } = await presignStudioVoiceFile(file);
+
+  if (!uploadUrl || !publicUrl || !key) {
+    throw new Error('studio_voice_missing_upload_urls');
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': contentType || 'audio/mpeg'
+    },
+    body: file
+  });
+
+  if (!put.ok) {
+    throw new Error('studio_voice_r2_put_failed');
+  }
+
+  const scanRes = await fetch('/api/r2/scan-upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      app: 'cartoon',
+      key,
+      filename,
+      contentType: contentType || 'audio/mpeg',
+      public_url: publicUrl,
+      prompt: '',
+      title: String(filename || '').trim(),
+      description: String(filename || '').trim(),
+      personName: '',
+      style: '',
+      source: 'cartoon_studio_voice_upload'
+    })
+  });
+
+  const scanData = await scanRes.json().catch(() => null);
+
+  if (!scanRes.ok) {
+    const msg =
+      scanData?.message ||
+      scanData?.error ||
+      (scanRes.status === 403 ? 'media_policy_blocked' : 'studio_voice_scan_upload_failed');
+    throw new Error(msg);
+  }
+
+  if (!scanData || scanData.ok === false) {
+    throw new Error(scanData?.message || scanData?.error || 'studio_voice_scan_upload_failed');
+  }
+
+  if (scanData.decision && scanData.decision !== 'allow') {
+    throw new Error(`media_policy_${scanData.decision}`);
+  }
+
+  return scanData.public_url || publicUrl;
+}
 
   function getStudioLogoExtension(fileName) {
     const name = String(fileName || '').toLowerCase().trim();
