@@ -1365,11 +1365,20 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
       return;
     }
 
-    consumed = true;
+     consumed = true;
     consumeTransactionId =
       creditData?.transaction_id ||
       creditData?.transaction?.id ||
       null;
+
+    syncCoverAssistantState({
+      lastAction: "credit_consumed",
+      policyState: "allow",
+      generationState: "processing",
+      creditCost,
+      visibleError: "",
+      visiblePolicyNote: readCoverPolicyNote(root)
+    });
 
     gen.disabled = true;
     gen.textContent = "Üretiliyor...";
