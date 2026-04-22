@@ -8,7 +8,154 @@
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
+  function getCartoonAssistantState() {
+    if (!window.__AIVO_CARTOON_ASSISTANT_STATE__) {
+      window.__AIVO_CARTOON_ASSISTANT_STATE__ = {
+        currentPanel: "cartoon",
+        currentFlow: "character_create",
+        policyState: "allow",
+        generationState: "idle",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost: 0,
+        lastJobId: "",
+        lastRequestId: "",
+        lastOutputUrl: "",
+        visibleError: "",
+        visiblePolicyNote: "",
+        dbSaved: false,
 
+        character: {
+          promptPresent: false,
+          promptText: "",
+          selectedCreatedCharacterId: "",
+          characterCreatePending: false,
+          referenceUploadState: "idle",
+          referenceImageUrl: "",
+          libraryCount: 0
+        },
+
+        basic: {
+          promptPresent: false,
+          promptText: "",
+          selectedScene: "",
+          selectedEffects: [],
+          uploadState: "idle"
+        },
+
+        story: {
+          storyIdeaPresent: false,
+          selectedSceneCount: 0,
+          readySceneCount: 0,
+          failedSceneCount: 0,
+          lastFailedSceneTitle: ""
+        },
+
+        studio: {
+          selectedExportSceneCount: 0,
+          voiceUploadState: "idle",
+          logoUploadState: "idle",
+          exportReady: false,
+          finalVideoReady: false
+        },
+
+        updatedAt: Date.now()
+      };
+    }
+
+    return window.__AIVO_CARTOON_ASSISTANT_STATE__;
+  }
+
+  function patchCartoonAssistantState(patch) {
+    const prev = getCartoonAssistantState();
+
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "cartoon",
+      updatedAt: Date.now(),
+
+      character: {
+        ...(prev.character || {}),
+        ...((patch && patch.character) || {})
+      },
+
+      basic: {
+        ...(prev.basic || {}),
+        ...((patch && patch.basic) || {})
+      },
+
+      story: {
+        ...(prev.story || {}),
+        ...((patch && patch.story) || {})
+      },
+
+      studio: {
+        ...(prev.studio || {}),
+        ...((patch && patch.studio) || {})
+      }
+    };
+
+    window.__AIVO_CARTOON_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:cartoon_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function syncCartoonCharacterAssistantState(extra = {}) {
+    const state = getState();
+    const root = getCartoonRoot();
+
+    const descInput =
+      qs("#cartoon-character-desc", root) ||
+      qs("[data-character-desc]", root);
+
+    const policyNote = qs("#cartoonCharacterPolicyNote", root);
+
+    const nextLibraryCount = Array.isArray(state.characters) ? state.characters.length : 0;
+    const nextPromptText = String(descInput?.value || "").trim();
+    const nextReferenceState = String(state.characterReferenceUploadStatus || "idle");
+    const nextReferenceUrl = String(state.characterReferenceImageUrl || "").trim();
+
+    return patchCartoonAssistantState({
+      currentFlow: "character_create",
+      policyState: String(extra.policyState || "allow"),
+      generationState: String(extra.generationState || (state.characterCreatePending ? "processing" : "idle")),
+      creditsConsumed: typeof extra.creditsConsumed === "boolean" ? extra.creditsConsumed : false,
+      refundExpected: typeof extra.refundExpected === "boolean" ? extra.refundExpected : false,
+      refundDone: typeof extra.refundDone === "boolean" ? extra.refundDone : false,
+      creditCost: Number(extra.creditCost || 0),
+      lastJobId: String(extra.lastJobId || ""),
+      lastRequestId: String(extra.lastRequestId || ""),
+      lastOutputUrl: String(extra.lastOutputUrl || ""),
+      visibleError: String(extra.visibleError || ""),
+      visiblePolicyNote: String(extra.visiblePolicyNote || policyNote?.textContent || "").trim(),
+      dbSaved: typeof extra.dbSaved === "boolean" ? extra.dbSaved : nextLibraryCount > 0,
+
+      character: {
+        promptPresent: !!nextPromptText,
+        promptText: nextPromptText,
+        selectedCreatedCharacterId: String(state.selectedCreatedCharacterId || ""),
+        characterCreatePending: !!state.characterCreatePending,
+        referenceUploadState: nextReferenceState,
+        referenceImageUrl: nextReferenceUrl,
+        libraryCount: nextLibraryCount,
+        ...((extra && extra.character) || {})
+      }
+    });
+  }
+
+  window.getCartoonAssistantState = getCartoonAssistantState;
+  window.patchCartoonAssistantState = patchCartoonAssistantState;
+  window.syncCartoonCharacterAssistantState = syncCartoonCharacterAssistantState;
   function getState() {
     return (window.__CARTOON_BASIC_STATE__ = window.__CARTOON_BASIC_STATE__ || {
       mode: "basic",
