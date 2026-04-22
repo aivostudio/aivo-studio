@@ -95,7 +95,19 @@ function getMusicAssistantSelectedCard() {
     document.querySelector(".aivo-player-card.is-selected") ||
     document.querySelector('.aivo-player-card[aria-selected="true"]') ||
     null;
+   if (window.selectedJobId) {
+  const bySelectedJobId =
+    document.querySelector(`#rightPanelHost .aivo-player-card[data-job-id="${window.selectedJobId}"]`) ||
+    document.querySelector(`.aivo-player-card[data-job-id="${window.selectedJobId}"]`) ||
+    null;
 
+  if (bySelectedJobId) {
+    bySelectedJobId.setAttribute("data-selected-music-card", "true");
+    bySelectedJobId.classList.add("is-selected");
+    bySelectedJobId.setAttribute("aria-selected", "true");
+    return bySelectedJobId;
+  }
+}
   if (!selected) return null;
 
   const id =
