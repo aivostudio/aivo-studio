@@ -144,6 +144,8 @@ function getMusicAssistantSelectedCard() {
   };
 }
   function getMusicAssistantVisibleOverflowMenu() {
+    const inlineOpen = document.querySelector("#rightPanelHost .aivo-player-card.is-selected .aivo-player-controls");
+if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
     const root = getMusicAssistantModuleRoot() || document;
 
     const selectors = [
