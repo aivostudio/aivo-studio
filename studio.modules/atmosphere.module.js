@@ -2060,7 +2060,22 @@ async function tryRefund(reason, extraMeta = {}) {
       creditData = { ok: false, error: "non_json_response", status: creditRes.status };
     }
 
-    if (!creditRes.ok || !creditData?.ok) {
+       if (!creditRes.ok || !creditData?.ok) {
+      syncAtmoAssistantState({
+        lastAction: "credit_insufficient",
+        mode,
+        generationState: "failed",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        dbSaved: false,
+        lastJobId: "",
+        lastRequestId: "",
+        lastVideoUrl: "",
+        visibleError: "insufficient_credit",
+        visiblePolicyNote: readAtmoPolicyNote(root)
+      });
+
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
