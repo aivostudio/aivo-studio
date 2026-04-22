@@ -253,13 +253,66 @@
       <button type="button" class="aivo-assistant-close" aria-label="Kapat">×</button>
     </div>
 
-    <div class="aivo-assistant-quick">
-      <button type="button" class="aivo-assistant-chip" data-prompt="Hangi modül ne işe yarar?">Modülleri Anlat</button>
-      <button type="button" class="aivo-assistant-chip" data-prompt="Bana uygun paketi öner.">Paket Öner</button>
-      <button type="button" class="aivo-assistant-chip" data-prompt="Kredi sistemi nasıl çalışıyor?">Kredi Sistemi</button>
-      <button type="button" class="aivo-assistant-chip" data-prompt="Promptumu güçlendirmeme yardım et.">Prompt Yardımı</button>
-      <button type="button" class="aivo-assistant-chip" data-prompt="Sorun yaşıyorum, ne yapmalıyım?">Sorun Çöz</button>
-      <button type="button" class="aivo-assistant-chip" data-prompt="İhtiyacıma göre doğru aracı öner.">Doğru Aracı Bul</button>
+      <div class="aivo-assistant-quick">
+      <button
+        type="button"
+        class="aivo-assistant-chip"
+        data-prompt="Hangi modül ne işe yarar?"
+        data-intent="module_selection"
+        data-module=""
+        data-action=""
+        data-action-context="quick_modules_overview"
+      >Modülleri Anlat</button>
+
+      <button
+        type="button"
+        class="aivo-assistant-chip"
+        data-prompt="Bana uygun paketi öner."
+        data-intent="pricing_guidance"
+        data-module="pricing"
+        data-action="package_select"
+        data-action-context="quick_pricing_recommendation"
+      >Paket Öner</button>
+
+      <button
+        type="button"
+        class="aivo-assistant-chip"
+        data-prompt="Kredi sistemi nasıl çalışıyor?"
+        data-intent="pricing_guidance"
+        data-module="pricing"
+        data-action="credit_info"
+        data-action-context="quick_credit_info"
+      >Kredi Sistemi</button>
+
+      <button
+        type="button"
+        class="aivo-assistant-chip"
+        data-prompt="Promptumu güçlendirmeme yardım et."
+        data-intent="prompt_help"
+        data-module=""
+        data-action="prompt_help"
+        data-action-context="quick_prompt_help"
+      >Prompt Yardımı</button>
+
+      <button
+        type="button"
+        class="aivo-assistant-chip"
+        data-prompt="Sorun yaşıyorum, ne yapmalıyım?"
+        data-intent="troubleshooting"
+        data-module=""
+        data-action="troubleshoot"
+        data-action-context="quick_troubleshoot"
+      >Sorun Çöz</button>
+
+      <button
+        type="button"
+        class="aivo-assistant-chip"
+        data-prompt="İhtiyacıma göre doğru aracı öner."
+        data-intent="module_selection"
+        data-module=""
+        data-action="recommend_module"
+        data-action-context="quick_tool_finder"
+      >Doğru Aracı Bul</button>
     </div>
 
     <div class="aivo-assistant-messages" id="aivo-assistant-messages"></div>
