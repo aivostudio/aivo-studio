@@ -174,7 +174,7 @@ export default async function handler(req, res) {
       redis.incr(`stats:cover:daily:${new Date().toISOString().slice(0, 10)}`)
     ]);
 
-    return res.status(200).json({
+     return res.status(200).json({
       ok: true,
       job_id,
       user_uuid: inserted[0].user_uuid,
@@ -182,6 +182,20 @@ export default async function handler(req, res) {
       status: inserted[0].status,
       created_at: inserted[0].created_at,
       imageUrl,
+      diagnostic: {
+        currentPanel: "cover",
+        policy_decision: policy.decision || "allow",
+        original_prompt: prompt,
+        used_prompt: safePrompt,
+        title: title || null,
+        artist: artist || null,
+        style,
+        quality,
+        ratio,
+        image_url_present: !!imageUrl,
+        db_saved: true,
+        generation_state: "ready"
+      }
     });
   } catch (e) {
     console.error("cover generate failed:", e);
