@@ -39,7 +39,7 @@ let onMusicVisibilityChange = null;
  let audioEl = null;
 let rafId = 0;
 let currentJobId = null;
-let selectedJobId = null;
+window.selectedJobId = window.selectedJobId || "";
 
   const qs = (s, r = document) => r.querySelector(s);
 
