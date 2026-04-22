@@ -1732,11 +1732,19 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceImageUrl = "";
         state.characterReferenceUploadStatus = "idle";
         state.characterReferenceUploadError = "";
+
+        syncCartoonCharacterAssistantState({
+          visibleError: "",
+          character: {
+            referenceUploadState: "idle",
+            referenceImageUrl: ""
+          }
+        });
+
         updateCharacterCreateUploadUI(root);
         syncCharacterCreateCredit(root);
         return;
       }
-
       state.characterReferenceImageUrl = "";
       state.characterReferenceUploadStatus = "uploading";
       state.characterReferenceUploadError = "";
