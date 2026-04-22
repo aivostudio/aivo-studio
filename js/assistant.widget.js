@@ -539,35 +539,14 @@
     return cards;
   }
 
-async function sendMessage(text, extraContext = {}) {
+  async function sendMessage(text, extraContext = {}) {
     const content = String(text || "").trim();
     if (!content || state.loading) return;
-  async function sendMessage(text) {
-    const content = String(text || "").trim();
-    if (!content || state.loading) return;
-      const brain = data?.brain && typeof data.brain === "object" ? data.brain : null;
 
-      let assistantText =
-        (brain?.answer && String(brain.answer).trim()) ||
-        (data?.message && String(data.message).trim()) ||
-        "Şu anda cevap üretilemedi.";
-
-      if (brain?.followupAction) {
-        assistantText += `
-
-Sonraki adım: ${brain.followupAction}`;
-      }
-
-      if (brain?.needsConfirmation) {
-        assistantText += `
-
-Bu işlem onay gerektiriyor.`;
-      }
-
-      state.messages.push({
-        role: "assistant",
-        content: assistantText
-      });
+    state.messages.push({
+      role: "user",
+      content
+    });
     renderMessages();
     inputEl.value = "";
     autoResize();
@@ -580,7 +559,7 @@ Bu işlem onay gerektiriyor.`;
         headers: {
           "Content-Type": "application/json"
         },
-          body: JSON.stringify({
+        body: JSON.stringify({
           page: window.location.pathname,
           module: extraContext.module || detectModuleFromPath(),
           intent: extraContext.intent || "",
@@ -613,9 +592,28 @@ Bu işlem onay gerektiriyor.`;
         throw new Error(data?.error || "İstek başarısız oldu.");
       }
 
+      const brain = data?.brain && typeof data.brain === "object" ? data.brain : null;
+
+      let assistantText =
+        (brain?.answer && String(brain.answer).trim()) ||
+        (data?.message && String(data.message).trim()) ||
+        "Şu anda cevap üretilemedi.";
+
+      if (brain?.followupAction) {
+        assistantText += `
+
+Sonraki adım: ${brain.followupAction}`;
+      }
+
+      if (brain?.needsConfirmation) {
+        assistantText += `
+
+Bu işlem onay gerektiriyor.`;
+      }
+
       state.messages.push({
         role: "assistant",
-        content: data?.message || "Şu anda cevap üretilemedi."
+        content: assistantText
       });
     } catch (error) {
       state.messages.push({
