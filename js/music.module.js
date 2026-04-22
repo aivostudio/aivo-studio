@@ -269,6 +269,7 @@
     function close() {
       cleanupMedia();
       overlay.remove();
+      publishMusicAssistantContext({ source: "music_record_modal_close" });
     }
 
     function setTimer() {
