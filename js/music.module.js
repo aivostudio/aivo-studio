@@ -90,9 +90,9 @@
     const root = getMusicAssistantModuleRoot() || document;
 
     const selected =
-      root.querySelector(".rp-playerCard[data-selected-music-card='true']") ||
-      root.querySelector(".rp-playerCard.is-selected") ||
-      root.querySelector('.rp-playerCard[aria-selected="true"]') ||
+      root.querySelector(".aivo-player-card[data-selected-music-card='true']") ||
+      root.querySelector(".aivo-player-card.is-selected") ||
+      root.querySelector('.aivo-player-card[aria-selected="true"]') ||
       null;
 
     if (!selected) return null;
@@ -112,6 +112,10 @@
       selected.querySelector(".aivo-player-title, .aivo-player-titleRow strong, .aivo-player-titleRow, [data-role='title']") ||
       null;
 
+    const statusClass =
+      Array.from(selected.classList).find((cls) => /^is-/.test(cls) && cls !== "is-selected") ||
+      "";
+
     const statusEl =
       selected.querySelector(".aivo-player-status, .aivo-player-meta, [data-role='status']") ||
       null;
@@ -121,9 +125,11 @@
       : "";
 
     const statusFromDom = statusEl ? String(statusEl.textContent || "").trim() : "";
+    const statusFromClass = statusClass ? statusClass.replace(/^is-/, "") : "";
 
     const status =
       selected.getAttribute("data-status") ||
+      statusFromClass ||
       statusFromDom ||
       "";
 
@@ -446,7 +452,7 @@
     module.addEventListener("click", (e) => {
       const selectedCardBefore = getMusicAssistantSelectedCard();
 
-         const card = e.target.closest(".rp-playerCard");
+         const card = e.target.closest(".aivo-player-card");
       const overflowTrigger = e.target.closest(
         ".music-card-more, .music-card-menu-trigger, .card-more-btn, .overflow-btn, [data-overflow-trigger], [aria-haspopup='menu']"
       );
@@ -499,7 +505,7 @@
       }
 
           if (card && !overflowTrigger && !deleteAction && !downloadAction) {
-        module.querySelectorAll(".rp-playerCard[data-selected-music-card='true']").forEach((el) => {
+              document.querySelectorAll(".aivo-player-card[data-selected-music-card='true'], .aivo-player-card.is-selected, .aivo-player-card[aria-selected='true']").forEach((el) => {
           el.removeAttribute("data-selected-music-card");
           el.classList.remove("is-selected");
           el.removeAttribute("aria-selected");
