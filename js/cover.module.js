@@ -1345,6 +1345,16 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
       gen.textContent = "Kredi yetersiz";
       gen.classList.remove("is-loading");
 
+      syncCoverAssistantState({
+        lastAction: "credit_insufficient",
+        generationState: "failed",
+        dbSaved: false,
+        lastImageUrl: "",
+        lastJobId: "",
+        visibleError: "insufficient_credit",
+        visiblePolicyNote: readCoverPolicyNote(root)
+      });
+
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
