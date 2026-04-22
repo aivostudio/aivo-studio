@@ -449,20 +449,21 @@
     if (module.__aivoAssistantRuntimeHooksBound) return;
     module.__aivoAssistantRuntimeHooksBound = true;
 
-    module.addEventListener("click", (e) => {
+    document.addEventListener("click", (e) => {
       const selectedCardBefore = getMusicAssistantSelectedCard();
 
-         const card = e.target.closest(".aivo-player-card");
+      const card = e.target.closest(".aivo-player-card");
+
       const overflowTrigger = e.target.closest(
-        ".music-card-more, .music-card-menu-trigger, .card-more-btn, .overflow-btn, [data-overflow-trigger], [aria-haspopup='menu']"
+        ".music-card-more, .music-card-menu-trigger, .card-more-btn, .overflow-btn, .aivo-player-actions [aria-haspopup='menu'], .aivo-player-actions button[title='Daha Fazla'], .aivo-player-actions button"
       );
 
       const deleteAction = e.target.closest(
-        ".delete-btn, .music-delete, [data-action='delete'], [data-delete-card]"
+        ".delete-btn, .music-delete, [data-action='delete'], [data-delete-card], .aivo-player-actions .trash, .aivo-player-actions button[title='Sil']"
       );
 
       const downloadAction = e.target.closest(
-        ".download-btn, .music-download, [data-action='download']"
+        ".download-btn, .music-download, [data-action='download'], .aivo-player-actions button[title='İndir']"
       );
 
       const generateAction = e.target.closest(
@@ -504,8 +505,8 @@
         return;
       }
 
-          if (card && !overflowTrigger && !deleteAction && !downloadAction) {
-              document.querySelectorAll(".aivo-player-card[data-selected-music-card='true'], .aivo-player-card.is-selected, .aivo-player-card[aria-selected='true']").forEach((el) => {
+      if (card && !overflowTrigger && !deleteAction && !downloadAction) {
+        document.querySelectorAll(".aivo-player-card[data-selected-music-card='true'], .aivo-player-card.is-selected, .aivo-player-card[aria-selected='true']").forEach((el) => {
           el.removeAttribute("data-selected-music-card");
           el.classList.remove("is-selected");
           el.removeAttribute("aria-selected");
@@ -546,8 +547,7 @@
           });
         }, 0);
       }
-    });
-
+    }, true);
     document.addEventListener("click", (e) => {
       const root = getMusicAssistantModuleRoot();
       if (!root) return;
