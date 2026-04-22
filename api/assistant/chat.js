@@ -25,6 +25,8 @@ export default async function handler(req, res) {
 
     const page = typeof body?.page === "string" ? body.page.trim() : "";
     const moduleName = typeof body?.module === "string" ? body.module.trim() : "";
+    const intent = typeof body?.intent === "string" ? body.intent.trim() : "";
+    const action = typeof body?.action === "string" ? body.action.trim() : "";
     const actionContext =
       typeof body?.actionContext === "string" ? body.actionContext.trim() : "";
     const currentPanel =
@@ -97,9 +99,11 @@ export default async function handler(req, res) {
           )
         : null;
 
-    const assistantContext = {
+      const assistantContext = {
       page: page || null,
       module: moduleName || null,
+      intent: intent || null,
+      action: action || null,
       detectedModule: detectedModule
         ? {
             key: detectedModule.key,
