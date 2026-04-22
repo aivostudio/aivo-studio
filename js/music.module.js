@@ -442,10 +442,7 @@
     module.addEventListener("click", (e) => {
       const selectedCardBefore = getMusicAssistantSelectedCard();
 
-      const card = e.target.closest(
-        ".music-card, .music-result-card, [data-music-card]"
-      );
-
+         const card = e.target.closest(".rp-playerCard");
       const overflowTrigger = e.target.closest(
         ".music-card-more, .music-card-menu-trigger, .card-more-btn, .overflow-btn, [data-overflow-trigger], [aria-haspopup='menu']"
       );
@@ -497,7 +494,17 @@
         return;
       }
 
-      if (card && !overflowTrigger && !deleteAction && !downloadAction) {
+          if (card && !overflowTrigger && !deleteAction && !downloadAction) {
+        module.querySelectorAll(".rp-playerCard[data-selected-music-card='true']").forEach((el) => {
+          el.removeAttribute("data-selected-music-card");
+          el.classList.remove("is-selected");
+          el.removeAttribute("aria-selected");
+        });
+
+        card.setAttribute("data-selected-music-card", "true");
+        card.classList.add("is-selected");
+        card.setAttribute("aria-selected", "true");
+
         queueMusicAssistantPublish({ actionContext: "music_card_selected" });
         return;
       }
