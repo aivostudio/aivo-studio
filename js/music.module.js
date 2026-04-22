@@ -341,6 +341,7 @@
 
         recBtn.classList.add("isRecording");
         recorder.start();
+       publishMusicAssistantContext({ source: "music_record_start" });
       } catch (err) {
         console.error("[AIVO] record start failed:", err);
         toast("Mikrofon izni gerekli. Tarayıcıdan izin ver.", "error");
