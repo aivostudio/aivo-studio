@@ -1036,9 +1036,19 @@ function buildCoverPrompt(prompt, quality) {
           imageUrl: originalImageUrl,
         });
 
-        console.log("[cover] db saved ✅", db);
+         console.log("[cover] db saved ✅", db);
 
         if (db?.job_id) {
+          syncCoverAssistantState({
+            lastAction: "db_saved",
+            generationState: "ready",
+            dbSaved: true,
+            lastImageUrl: displayImageUrl || originalImageUrl || "",
+            lastJobId: String(db.job_id || ""),
+            visibleError: "",
+            visiblePolicyNote: readCoverPolicyNote(root)
+          });
+
           window.dispatchEvent(
             new CustomEvent("aivo:cover:job_created", {
               detail: {
