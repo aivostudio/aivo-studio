@@ -580,10 +580,12 @@ Bu işlem onay gerektiriyor.`;
         headers: {
           "Content-Type": "application/json"
         },
-             body: JSON.stringify({
+            body: JSON.stringify({
           page: window.location.pathname,
-          module: detectModuleFromPath(),
-          actionContext: detectActionContext(),
+          module: extraContext.module || detectModuleFromPath(),
+          intent: extraContext.intent || "",
+          action: extraContext.action || "",
+          actionContext: extraContext.actionContext || detectActionContext(),
           currentPanel: detectCurrentPanel(),
           currentCardType: detectCurrentCardType(),
           selectedItemType: detectSelectedItemType(),
@@ -597,7 +599,8 @@ Bu işlem onay gerektiriyor.`;
           uiState: {
             title: document.title || "",
             pathname: window.location.pathname || "",
-            bodyText: getBodyText().slice(0, 4000)
+            bodyText: getBodyText().slice(0, 4000),
+            quickAction: extraContext
           },
           message: content,
           messages: state.messages
