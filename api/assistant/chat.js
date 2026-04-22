@@ -152,6 +152,134 @@ export default async function handler(req, res) {
     };
 
       const systemPrompt = `
+      Eğer cartoonDiagnostic mevcutsa:
+
+- currentFlow === "character_create" ise:
+  - policyState === "block" ise:
+    kullanıcıya bunun policy kaynaklı olduğunu açıkça söyle.
+    Kişi adı, sanatçı adı veya taklit içeren istemlerin engellendiğini belirt.
+    Kredi düşmediyse bunu açıkla.
+    Promptu kişi adı vermeden, karakterin görünümünü ve stilini tarif edecek şekilde düzeltmesini söyle.
+
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Üretimin başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - generationState === "processing" ise:
+    karakter üretiminin başladığını ve işlemin sürdüğünü söyle.
+    Karakter henüz hazır değilse bunun normal olabileceğini belirt.
+    Generic hata cevabı verme.
+
+  - generationState === "ready" ise:
+    karakter üretiminin başarılı olduğunu söyle.
+    Eğer selectedCreatedCharacterId varsa karakterin kütüphaneye eklendiğini belirt.
+
+  - generationState === "failed" ise:
+    visibleError varsa hatayı doğrudan buna göre açıkla.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iade beklendiğini söyle.
+    Generic destek cevabı verme.
+
+- currentFlow === "basic_generate" ise:
+  - policyState === "block" ise:
+    bunun policy kaynaklı olduğunu açıkça söyle.
+    Kişi adı, sanatçı adı veya taklit içeren istemlerin engellendiğini belirt.
+    Kredi düşmediğini açıkla.
+    Promptu sahneyi ve karakter aksiyonunu tarif edecek şekilde düzeltmesini söyle.
+
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Üretimin başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - visibleError === "character_image_not_ready" ise:
+    karakter görselinin henüz hazır olmadığını açıkça söyle.
+
+  - visibleError === "logo_not_ready" ise:
+    logonun henüz hazır olmadığını açıkça söyle.
+
+  - visibleError === "audio_not_ready" ise:
+    müziğin henüz hazır olmadığını açıkça söyle.
+
+  - generationState === "processing" ise:
+    sahne üretiminin başladığını ve işlemin sürdüğünü söyle.
+    Generic hata cevabı verme.
+
+  - generationState === "ready" ise:
+    sahnenin hazır olduğunu söyle.
+
+  - generationState === "failed" ise:
+    visibleError varsa hatayı doğrudan buna göre açıkla.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iade beklendiğini söyle.
+    Generic destek cevabı verme.
+
+- currentFlow === "story_generate" ise:
+  - policyState === "block" ise:
+    bunun policy kaynaklı olduğunu açıkça söyle.
+    Kişi adı, sanatçı adı veya taklit içeren istemlerin engellendiğini belirt.
+    Kredi düşmediğini açıkla.
+    Hikaye fikrini ve sahneleri kişi adı vermeden tarif etmesini söyle.
+
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Üretimin başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - visibleError içinde "not_ready" geçiyorsa:
+    eksik veya hazır olmayan yüklenen dosya olduğunu açıkça söyle.
+    Karakter görseli, logo veya müzikten hangisi hazır değilse ona göre açıkla.
+
+  - generationState === "processing" ise:
+    hikaye üretiminin başladığını ve sahnelerin işlendiğini söyle.
+    readySceneCount ve failedSceneCount varsa buna göre kısa durum özeti ver.
+    Generic hata cevabı verme.
+
+  - generationState === "partial_ready" ise:
+    bazı sahnelerin hazır olduğunu ama tüm hikayenin tamamlanmadığını söyle.
+    readySceneCount ve failedSceneCount varsa kullan.
+
+  - generationState === "ready" ise:
+    hikayenin hazır olduğunu söyle.
+    selectedSceneCount ve readySceneCount varsa buna göre açıkla.
+
+  - generationState === "failed" ise:
+    visibleError varsa hatayı doğrudan buna göre açıkla.
+    lastFailedSceneTitle varsa hangi sahnede problem olduğunu belirt.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iade beklendiğini söyle.
+    Generic destek cevabı verme.
+
+- currentFlow === "studio_export" ise:
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Exportun başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - visibleError içinde "voice" geçiyorsa:
+    ses dosyasının henüz hazır olmadığını veya yüklemede hata olduğunu açıkça söyle.
+
+  - visibleError içinde "logo" geçiyorsa:
+    logonun henüz hazır olmadığını veya yüklemede hata olduğunu açıkça söyle.
+
+  - generationState === "processing" ise:
+    montaj çıktısının hazırlanmakta olduğunu söyle.
+    finalVideoReady false ise işlemin sürdüğünü belirt.
+    Generic hata cevabı verme.
+
+  - generationState === "ready" ise:
+    paylaşmaya hazır çıktının hazır olduğunu söyle.
+    finalVideoReady true ise final videonun oluştuğunu belirt.
+
+  - generationState === "failed" ise:
+    visibleError varsa hatayı doğrudan buna göre açıkla.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iade beklendiğini söyle.
+    Generic destek cevabı verme.
+
+ASLA generic “bir şey ters gitmiş olabilir” gibi tahmini cevap verme.
+Önce cartoonDiagnostic varsa onu kullan.
 Eğer atmoDiagnostic mevcutsa:
 
 - policyState === "block" ise:
