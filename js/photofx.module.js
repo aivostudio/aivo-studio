@@ -11,6 +11,152 @@
   console.log("[PHOTOFX] module script loaded, waiting for root...");
 
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
+
+  function getPhotoFxAssistantState() {
+    if (!window.__AIVO_PHOTOFX_ASSISTANT_STATE__) {
+      window.__AIVO_PHOTOFX_ASSISTANT_STATE__ = {
+        currentPanel: "photofx",
+        currentFlow: "photofx_generate",
+        promptPresent: false,
+        promptText: "",
+        policyState: "allow",
+        generationState: "idle",
+        creditCost: 0,
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        lastJobId: "",
+        lastRequestId: "",
+        lastVideoUrl: "",
+        dbSaved: false,
+        visibleError: "",
+        visiblePolicyNote: "",
+        selectedPresets: [],
+        selectedDuration: "6",
+        selectedAspect: "9:16",
+        uploadState: {
+          image: "empty",
+          endImage: "empty",
+          logo: "empty",
+          audio: "empty"
+        },
+        media: {
+          hasImage: false,
+          hasEndImage: false,
+          hasLogo: false,
+          hasAudio: false
+        },
+        updatedAt: Date.now()
+      };
+    }
+
+    return window.__AIVO_PHOTOFX_ASSISTANT_STATE__;
+  }
+
+  function patchPhotoFxAssistantState(patch) {
+    const prev = getPhotoFxAssistantState();
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "photofx",
+      currentFlow: "photofx_generate",
+      updatedAt: Date.now()
+    };
+
+    if (patch && typeof patch.uploadState === "object" && patch.uploadState) {
+      next.uploadState = {
+        ...(prev.uploadState || {}),
+        ...patch.uploadState
+      };
+    }
+
+    if (patch && typeof patch.media === "object" && patch.media) {
+      next.media = {
+        ...(prev.media || {}),
+        ...patch.media
+      };
+    }
+
+    window.__AIVO_PHOTOFX_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:photofx_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function readPhotoFxPolicyNote(root) {
+    return String(qs("#pfxPolicyNote", root)?.textContent || "").trim();
+  }
+
+  function syncPhotoFxAssistantState(root, extra = {}) {
+    const r = root || getRoot();
+    const state = getState(r);
+    const selectedPresets = Array.isArray(state?.presets) ? state.presets.slice() : [];
+    const creditCost =
+      typeof extra.creditCost === "number"
+        ? Number(extra.creditCost)
+        : (r ? getPhotoFxEstimatedCredits(r) : 0);
+
+    const uploadState = {
+      image: state?.imageFileUrl
+        ? "ready"
+        : state?.imageFile
+          ? "uploading"
+          : "empty",
+      endImage: state?.endImageFile
+        ? "ready"
+        : "empty",
+      logo: state?.logoFileUrl
+        ? "ready"
+        : state?.logoFile
+          ? "uploading"
+          : "empty",
+      audio: String(state?.audioFileUploadStatus || (state?.audioFile ? "uploading" : "idle"))
+    };
+
+    return patchPhotoFxAssistantState({
+      promptPresent: !!String(qs("#pfxPrompt", r)?.value || "").trim(),
+      promptText: String(qs("#pfxPrompt", r)?.value || "").trim(),
+      policyState: String(extra.policyState || "allow"),
+      generationState: String(extra.generationState || "idle"),
+      creditCost,
+      creditsConsumed: typeof extra.creditsConsumed === "boolean" ? extra.creditsConsumed : false,
+      refundExpected: typeof extra.refundExpected === "boolean" ? extra.refundExpected : false,
+      refundDone: typeof extra.refundDone === "boolean" ? extra.refundDone : false,
+      lastJobId: String(extra.lastJobId || ""),
+      lastRequestId: String(extra.lastRequestId || window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+      lastVideoUrl: String(extra.lastVideoUrl || ""),
+      dbSaved: typeof extra.dbSaved === "boolean" ? extra.dbSaved : false,
+      visibleError: String(extra.visibleError || ""),
+      visiblePolicyNote: String(extra.visiblePolicyNote || readPhotoFxPolicyNote(r)),
+      selectedPresets,
+      selectedDuration: String(qs("#pfxDuration", r)?.value || "6"),
+      selectedAspect: String(qs("#pfxAspect", r)?.value || "9:16"),
+      uploadState: {
+        ...uploadState,
+        ...((extra && extra.uploadState) || {})
+      },
+      media: {
+        hasImage: !!(state?.imageFile || state?.imageFileUrl),
+        hasEndImage: !!state?.endImageFile,
+        hasLogo: !!(state?.logoFile || state?.logoFileUrl),
+        hasAudio: !!(state?.audioFile || state?.audioFileUrl),
+        ...((extra && extra.media) || {})
+      }
+    });
+  }
+
+  window.getPhotoFxAssistantState = getPhotoFxAssistantState;
+  window.patchPhotoFxAssistantState = patchPhotoFxAssistantState;
+  window.syncPhotoFxAssistantState = syncPhotoFxAssistantState;
+
+
     // ------------------------------------------------------------
   // Policy helpers (PhotoFX)
   // ------------------------------------------------------------
@@ -749,6 +895,17 @@ const PFX_HARD_BLOCK_PATTERNS = [
     resetPhotoFxPolicyUI(root);
     renderUploads(root);
     syncCreateButton(root);
+    syncPhotoFxAssistantState(root, {
+      generationState: "idle",
+      visibleError: "",
+      policyState: "allow",
+      uploadState: {
+        image: state?.imageFileUrl ? "ready" : (state?.imageFile ? "uploading" : "empty"),
+        endImage: state?.endImageFile ? "ready" : "empty",
+        logo: state?.logoFileUrl ? "ready" : (state?.logoFile ? "uploading" : "empty"),
+        audio: String(state?.audioFileUploadStatus || (state?.audioFile ? "uploading" : "idle"))
+      }
+    });
   }
 
   function getSelectedPresets(root) {
@@ -795,6 +952,12 @@ const PFX_HARD_BLOCK_PATTERNS = [
 
     createBtn.setAttribute("data-credit-cost", String(totalCredits));
     createBtn.textContent = `🎬 Klip Oluştur (${totalCredits} Kredi)`;
+
+    syncPhotoFxAssistantState(root, {
+      generationState: "idle",
+      visibleError: "",
+      creditCost: totalCredits
+    });
   }
   function renderPresets(root) {
     const selected = getSelectedPresets(root);
@@ -1182,8 +1345,26 @@ const PFX_HARD_BLOCK_PATTERNS = [
               } catch (_) {}
 
               try { window.syncCreditsUI?.({ force: true }); } catch {}
+              syncPhotoFxAssistantState(getRoot(), {
+                generationState: "failed",
+                creditsConsumed: true,
+                refundExpected: true,
+                refundDone: true,
+                lastJobId: String(job_id || "").trim(),
+                lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+                visibleError: String(j?.error || "photofx_job_error")
+              });
               try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
             } else {
+              syncPhotoFxAssistantState(getRoot(), {
+                generationState: "failed",
+                creditsConsumed: true,
+                refundExpected: true,
+                refundDone: false,
+                lastJobId: String(job_id || "").trim(),
+                lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+                visibleError: String(j?.error || "photofx_job_error")
+              });
               try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
             }
           } catch (refundErr) {
@@ -1191,6 +1372,15 @@ const PFX_HARD_BLOCK_PATTERNS = [
             try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
           }
         } else {
+          syncPhotoFxAssistantState(getRoot(), {
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: false,
+            lastJobId: String(job_id || "").trim(),
+            lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+            visibleError: String(j?.error || "photofx_job_error")
+          });
           try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
         }
 
@@ -1290,8 +1480,26 @@ const PFX_HARD_BLOCK_PATTERNS = [
           } catch (_) {}
 
           try { window.syncCreditsUI?.({ force: true }); } catch {}
+          syncPhotoFxAssistantState(getRoot(), {
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: true,
+            lastJobId: String(job_id || "").trim(),
+            lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+            visibleError: "photofx_poll_timeout"
+          });
           try { window.toast?.error?.("İşlem zaman aşımına uğradı, kredi iade edildi."); } catch {}
         } else {
+          syncPhotoFxAssistantState(getRoot(), {
+            generationState: "failed",
+            creditsConsumed: true,
+            refundExpected: true,
+            refundDone: false,
+            lastJobId: String(job_id || "").trim(),
+            lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+            visibleError: "photofx_poll_timeout"
+          });
           try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
         }
       } catch (refundErr) {
@@ -1622,6 +1830,17 @@ const builtEffects = {
       throw new Error("photofx_generate_no_job_id");
     }
 
+    syncPhotoFxAssistantState(root, {
+      generationState: "processing",
+      creditsConsumed: true,
+      refundExpected: false,
+      refundDone: false,
+      dbSaved: true,
+      lastJobId: finalJobId,
+      lastRequestId: requestId || window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || "",
+      visibleError: ""
+    });
+
     window.dispatchEvent(
       new CustomEvent("aivo:photofx:job_created", {
         detail: {
@@ -1734,6 +1953,11 @@ const builtEffects = {
     renderUploads(root);
     syncDurationRules(root);
     bindEvents(root);
+    syncPhotoFxAssistantState(root, {
+      generationState: "idle",
+      visibleError: "",
+      policyState: "allow"
+    });
   }
 
   document.addEventListener(
@@ -1745,6 +1969,12 @@ const builtEffects = {
           if (e.target.matches("#pfxPrompt")) {
         resetPhotoFxPolicyUI(root);
         setPromptCounter(root);
+        syncPhotoFxAssistantState(root, {
+          generationState: "idle",
+          policyState: "allow",
+          visibleError: "",
+          promptText: String(e.target.value || "").trim()
+        });
       }
     },
     true
@@ -1775,6 +2005,10 @@ const builtEffects = {
       if (e.target.matches("#pfxDuration")) {
         syncDurationRules(root);
         syncCreateButton(root);
+        syncPhotoFxAssistantState(root, {
+          generationState: "idle",
+          visibleError: ""
+        });
         return;
       }
 
@@ -1832,6 +2066,11 @@ const builtEffects = {
             state.imageFileUrl = String(publicUrl || "").trim();
             renderUploads(root);
             syncCreateButton(root);
+            syncPhotoFxAssistantState(root, {
+              generationState: "idle",
+              visibleError: "",
+              uploadState: { image: "ready" }
+            });
             try { window.toast?.success?.("Resim eklendi"); } catch {}
             console.log("[photofx] image ready =", state.imageFileUrl);
           })
@@ -1877,6 +2116,11 @@ const builtEffects = {
 
             console.error("[photofx] image upload error =", err);
             syncCreateButton(root);
+            syncPhotoFxAssistantState(root, {
+              generationState: "idle",
+              visibleError: String(err?.message || err || "photofx_image_upload_failed"),
+              uploadState: { image: "error" }
+            });
           });
 
         return;
@@ -1928,6 +2172,11 @@ const builtEffects = {
             state.logoFileUrl = String(publicUrl || "").trim();
             renderUploads(root);
             syncCreateButton(root);
+            syncPhotoFxAssistantState(root, {
+              generationState: "idle",
+              visibleError: "",
+              uploadState: { logo: "ready" }
+            });
             try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
             console.log("[photofx] logo ready =", state.logoFileUrl);
           })
@@ -1973,6 +2222,11 @@ const builtEffects = {
 
             console.error("[photofx] logo upload error =", err);
             syncCreateButton(root);
+            syncPhotoFxAssistantState(root, {
+              generationState: "idle",
+              visibleError: String(err?.message || err || "photofx_logo_upload_failed"),
+              uploadState: { logo: "error" }
+            });
           });
 
         return;
@@ -2097,6 +2351,11 @@ const builtEffects = {
 
         if (!file) {
           renderUploads(root);
+          syncPhotoFxAssistantState(root, {
+            generationState: "idle",
+            visibleError: "",
+            uploadState: { audio: "idle" }
+          });
           console.log("[photofx] audio selected =", null);
           return;
         }
@@ -2119,6 +2378,11 @@ const builtEffects = {
         }
 
         console.log("[photofx] audio uploading =", file?.name || null);
+        syncPhotoFxAssistantState(root, {
+          generationState: "idle",
+          visibleError: "",
+          uploadState: { audio: "uploading" }
+        });
 
         state.audioFileUploadPromise = uploadFile(file, "audio")
           .then((publicUrl) => {
@@ -2128,6 +2392,11 @@ const builtEffects = {
             state.audioFileUploadError = "";
             renderUploads(root);
             syncCreateButton(root);
+            syncPhotoFxAssistantState(root, {
+              generationState: "idle",
+              visibleError: "",
+              uploadState: { audio: "ready" }
+            });
             try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
             console.log("[photofx] audio ready =", state.audioFileUrl);
             return state.audioFileUrl;
@@ -2178,6 +2447,11 @@ const builtEffects = {
 
             console.error("[photofx] audio upload error =", err);
             syncCreateButton(root);
+            syncPhotoFxAssistantState(root, {
+              generationState: "idle",
+              visibleError: String(err?.message || err || "photofx_audio_upload_failed"),
+              uploadState: { audio: "error" }
+            });
             throw err;
           });
       });
@@ -2228,6 +2502,11 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         resetPhotoFxPolicyUI(nextRoot);
         renderPresets(nextRoot);
         syncCreateButton(nextRoot);
+        syncPhotoFxAssistantState(nextRoot, {
+          generationState: "idle",
+          visibleError: "",
+          policyState: "allow"
+        });
       }
     },
     true
@@ -2265,12 +2544,23 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             policyNote.style.display = "block";
           }
 
+          syncPhotoFxAssistantState(root, {
+            policyState: "block",
+            generationState: "failed",
+            visibleError: "policy_blocked",
+            visiblePolicyNote: readPhotoFxPolicyNote(root)
+          });
+
           return;
         }
         const form = collectForm(root);
 
         if (!String(form.prompt || "").trim()) {
           try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+          syncPhotoFxAssistantState(root, {
+            generationState: "failed",
+            visibleError: "prompt_required"
+          });
           const promptEl = qs("#pfxPrompt", root);
           if (promptEl) promptEl.focus();
           return;
@@ -2291,11 +2581,19 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         }
 
         if (!form.imageFile) {
+          syncPhotoFxAssistantState(root, {
+            generationState: "failed",
+            visibleError: "image_required"
+          });
           alert("Lütfen bir ana görsel seç.");
           return;
         }
 
         if (!Array.isArray(form.styles) || !form.styles.length) {
+          syncPhotoFxAssistantState(root, {
+            generationState: "failed",
+            visibleError: "style_required"
+          });
           alert("Lütfen en az 1 efekt stili seç.");
           return;
         }
@@ -2319,6 +2617,11 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             currentState?.audioFileUploadStatus !== "ready"
           ) {
             try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
+            syncPhotoFxAssistantState(root, {
+              generationState: "failed",
+              visibleError: "audio_not_ready",
+              uploadState: { audio: String(currentState?.audioFileUploadStatus || "idle") }
+            });
             return;
           }
         }
@@ -2438,6 +2741,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         }
 
         if (!creditRes.ok || !creditData?.ok) {
+          syncPhotoFxAssistantState(root, {
+            generationState: "failed",
+            creditsConsumed: false,
+            refundExpected: false,
+            refundDone: false,
+            visibleError: "insufficient_credit",
+            lastRequestId: consumeRequestId
+          });
+
           const to = encodeURIComponent(
             location.pathname + location.search + location.hash
           );
@@ -2461,6 +2773,17 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
         await refreshTopCredits();
 
+        syncPhotoFxAssistantState(root, {
+          policyState: "allow",
+          generationState: "processing",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost,
+          lastRequestId: consumeRequestId,
+          visibleError: ""
+        });
+
         createBtn.disabled = true;
         createBtn.classList.add("is-loading");
         createBtn.textContent = "Üretiliyor...";
@@ -2471,6 +2794,16 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
             const refunded = await tryRefund("photofx_create_failed", {
               error: String(err?.message || err || "photofx_create_failed")
+            });
+
+            syncPhotoFxAssistantState(root, {
+              generationState: "failed",
+              creditsConsumed: consumed,
+              refundExpected: consumed,
+              refundDone: refunded,
+              creditCost,
+              lastRequestId: consumeRequestId,
+              visibleError: String(err?.message || err || "photofx_create_failed")
             });
 
             if (!refunded) {
@@ -2486,7 +2819,7 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           if (!window.__AIVO_PHOTOFX_READY_BOUND__) {
       window.__AIVO_PHOTOFX_READY_BOUND__ = true;
 
-      window.addEventListener("aivo:photofx:job_ready", () => {
+      window.addEventListener("aivo:photofx:job_ready", (event) => {
         const nextRoot = getRoot();
         if (!nextRoot) return;
 
@@ -2496,6 +2829,27 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           nextCreateBtn.classList.remove("is-loading");
           syncCreateButton(nextRoot);
         }
+
+        const detail = event?.detail || {};
+        const readyUrl = String(
+          detail?.video?.url ||
+          (Array.isArray(detail?.outputs)
+            ? detail.outputs.find((o) => String(o?.url || "").trim())?.url
+            : "") ||
+          ""
+        ).trim();
+
+        syncPhotoFxAssistantState(nextRoot, {
+          generationState: "ready",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          dbSaved: true,
+          lastJobId: String(detail?.job_id || ""),
+          lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
+          lastVideoUrl: readyUrl,
+          visibleError: ""
+        });
 
          try { window.toast?.success?.("Video hazır"); } catch {}
       });
