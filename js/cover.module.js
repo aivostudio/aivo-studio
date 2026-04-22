@@ -1431,6 +1431,16 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
     error: String(err?.message || err || "failed")
   });
 
+  syncCoverAssistantState({
+    lastAction: refunded ? "create_failed_refunded" : "create_failed",
+    generationState: "failed",
+    dbSaved: false,
+    lastImageUrl: "",
+    lastJobId: "",
+    visibleError: String(err?.message || err || "cover_create_failed"),
+    visiblePolicyNote: readCoverPolicyNote(root)
+  });
+
   if (!refunded) {
     alert(String(err));
   }
