@@ -7,48 +7,49 @@
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement("style");
     style.id = STYLE_ID;
-    style.textContent = `
+     style.textContent = `
       .aivo-assistant-launcher {
         position: fixed;
-        right: 22px;
-        bottom: 22px;
+        right: 18px;
+        bottom: 18px;
         z-index: 9999;
-        border: 1px solid rgba(255,255,255,.16);
+        border: 1px solid rgba(255,255,255,.14);
         background: linear-gradient(135deg, #7c4dff 0%, #ff4fa3 100%);
         color: #fff;
         border-radius: 999px;
-        padding: 14px 18px;
-        font: 600 14px/1.1 Inter, Arial, sans-serif;
-        box-shadow: 0 10px 30px rgba(0,0,0,.35);
+        padding: 12px 18px;
+        font: 700 13px/1 Inter, Arial, sans-serif;
+        box-shadow: 0 10px 26px rgba(0,0,0,.30);
         cursor: pointer;
         transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
       }
 
       .aivo-assistant-launcher:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 38px rgba(0,0,0,.42);
+        box-shadow: 0 14px 34px rgba(0,0,0,.36);
       }
 
       .aivo-assistant-panel {
         position: fixed;
-        right: 22px;
-        bottom: 82px;
+        right: 18px;
+        bottom: 74px;
         z-index: 9999;
-        width: 380px;
+        width: 350px;
         max-width: calc(100vw - 24px);
-        height: 580px;
-        max-height: calc(100vh - 120px);
+        height: 520px;
+        max-height: calc(100vh - 110px);
         display: none;
         flex-direction: column;
         overflow: hidden;
-        border-radius: 22px;
+        border-radius: 24px;
         border: 1px solid rgba(255,255,255,.10);
         background:
-          radial-gradient(circle at top left, rgba(124,77,255,.18), transparent 35%),
-          radial-gradient(circle at top right, rgba(255,79,163,.16), transparent 30%),
-          rgba(10,10,18,.96);
-        box-shadow: 0 18px 60px rgba(0,0,0,.45);
-        backdrop-filter: blur(12px);
+          radial-gradient(circle at top left, rgba(124,77,255,.16), transparent 34%),
+          radial-gradient(circle at top right, rgba(255,79,163,.14), transparent 28%),
+          rgba(8,8,16,.97);
+        box-shadow: 0 18px 54px rgba(0,0,0,.44);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
       }
 
       .aivo-assistant-panel.is-open {
@@ -56,12 +57,12 @@
       }
 
       .aivo-assistant-header {
-        padding: 16px 16px 14px;
+        padding: 14px 14px 12px;
         border-bottom: 1px solid rgba(255,255,255,.08);
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
-        gap: 12px;
+        gap: 10px;
       }
 
       .aivo-assistant-title-wrap {
@@ -71,29 +72,31 @@
       .aivo-assistant-title {
         margin: 0;
         color: #fff;
-        font: 700 16px/1.2 Inter, Arial, sans-serif;
+        font: 800 15px/1.2 Inter, Arial, sans-serif;
+        letter-spacing: -.01em;
       }
 
       .aivo-assistant-subtitle {
-        margin: 6px 0 0;
-        color: rgba(255,255,255,.65);
-        font: 400 12px/1.4 Inter, Arial, sans-serif;
+        margin: 5px 0 0;
+        color: rgba(255,255,255,.58);
+        font: 400 11px/1.35 Inter, Arial, sans-serif;
       }
 
       .aivo-assistant-close {
         border: 0;
-        background: rgba(255,255,255,.08);
+        background: rgba(255,255,255,.07);
         color: #fff;
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         border-radius: 10px;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 16px;
         line-height: 1;
+        flex: 0 0 auto;
       }
 
       .aivo-assistant-quick {
-        padding: 12px 14px 0;
+        padding: 10px 12px 0;
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
@@ -101,30 +104,37 @@
 
       .aivo-assistant-chip {
         border: 1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.06);
+        background: rgba(255,255,255,.05);
         color: #fff;
         border-radius: 999px;
-        padding: 8px 10px;
+        padding: 8px 11px;
         cursor: pointer;
-        font: 500 12px/1.1 Inter, Arial, sans-serif;
+        font: 600 11px/1.1 Inter, Arial, sans-serif;
+        transition: background .16s ease, border-color .16s ease, transform .16s ease;
+      }
+
+      .aivo-assistant-chip:hover {
+        background: rgba(255,255,255,.08);
+        border-color: rgba(255,255,255,.14);
+        transform: translateY(-1px);
       }
 
       .aivo-assistant-messages {
         flex: 1;
         overflow: auto;
-        padding: 14px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
       }
 
       .aivo-assistant-message {
-        max-width: 88%;
-        padding: 11px 12px;
-        border-radius: 16px;
+        max-width: 86%;
+        padding: 10px 11px;
+        border-radius: 15px;
         white-space: pre-wrap;
         word-break: break-word;
-        font: 400 14px/1.5 Inter, Arial, sans-serif;
+        font: 400 13px/1.5 Inter, Arial, sans-serif;
       }
 
       .aivo-assistant-message.user {
@@ -136,25 +146,26 @@
 
       .aivo-assistant-message.assistant {
         align-self: flex-start;
-        background: rgba(255,255,255,.08);
+        background: rgba(255,255,255,.07);
         color: #f5f7ff;
-        border: 1px solid rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.05);
         border-bottom-left-radius: 6px;
       }
 
       .aivo-assistant-message.system {
         align-self: center;
         background: transparent;
-        color: rgba(255,255,255,.55);
-        font-size: 12px;
+        color: rgba(255,255,255,.52);
+        font-size: 11px;
         padding: 2px 8px;
       }
 
       .aivo-assistant-form {
-        padding: 14px;
+        padding: 12px;
         border-top: 1px solid rgba(255,255,255,.08);
         display: flex;
-        gap: 10px;
+        align-items: flex-end;
+        gap: 8px;
       }
 
       .aivo-assistant-input {
@@ -162,29 +173,31 @@
         min-width: 0;
         resize: none;
         border: 1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.06);
+        background: rgba(255,255,255,.05);
         color: #fff;
-        border-radius: 14px;
-        padding: 12px 14px;
+        border-radius: 16px;
+        padding: 11px 13px;
         outline: none;
-        min-height: 46px;
-        max-height: 120px;
-        font: 400 14px/1.45 Inter, Arial, sans-serif;
+        min-height: 44px;
+        max-height: 104px;
+        font: 400 13px/1.4 Inter, Arial, sans-serif;
       }
 
       .aivo-assistant-input::placeholder {
-        color: rgba(255,255,255,.40);
+        color: rgba(255,255,255,.36);
       }
 
       .aivo-assistant-send {
         border: 0;
-        min-width: 92px;
-        border-radius: 14px;
+        min-width: 86px;
+        height: 44px;
+        border-radius: 16px;
         background: linear-gradient(135deg, #7c4dff 0%, #ff4fa3 100%);
         color: #fff;
-        padding: 0 16px;
-        font: 700 14px/1 Inter, Arial, sans-serif;
+        padding: 0 15px;
+        font: 800 13px/1 Inter, Arial, sans-serif;
         cursor: pointer;
+        flex: 0 0 auto;
       }
 
       .aivo-assistant-send[disabled],
@@ -197,10 +210,10 @@
         .aivo-assistant-panel {
           right: 12px;
           left: 12px;
-          bottom: 78px;
+          bottom: 74px;
           width: auto;
           max-width: none;
-          height: 70vh;
+          height: 68vh;
         }
 
         .aivo-assistant-launcher {
