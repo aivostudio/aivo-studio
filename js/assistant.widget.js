@@ -539,7 +539,7 @@
     return cards;
   }
 
-  async function sendMessage(text) {
+async function sendMessage(text, extraContext = {}) {
     const content = String(text || "").trim();
     if (!content || state.loading) return;
   async function sendMessage(text) {
