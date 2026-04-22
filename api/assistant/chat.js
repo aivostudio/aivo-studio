@@ -87,15 +87,21 @@ ${page || "Belirtilmedi"}
       });
     }
 
-    const text =
-      data?.output_text ||
-      data?.output
-        ?.flatMap((item) => item?.content || [])
-        ?.filter((item) => item?.type === "output_text")
-        ?.map((item) => item?.text || "")
-        ?.join("\n")
-        ?.trim() ||
-      "Şu anda cevap üretilemedi.";
+   let text =
+  data?.output_text ||
+  data?.output
+    ?.flatMap((item) => item?.content || [])
+    ?.filter((item) => item?.type === "output_text")
+    ?.map((item) => item?.text || "")
+    ?.join("\n")
+    ?.trim() ||
+  "Şu anda cevap üretilemedi.";
+
+text = text
+  .replace(/\*\*(.*?)\*\*/g, "$1")
+  .replace(/^\s*-\s+/gm, "")
+  .replace(/\n{3,}/g, "\n\n")
+  .trim();
 
     return res.status(200).json({
       ok: true,
