@@ -36,9 +36,10 @@ let onMusicVisibilityChange = null;
   const hiddenDeletedBaseIds = new Set();
   const hiddenDeletedDbIds = new Set();
 
-  let audioEl = null;
-  let rafId = 0;
-  let currentJobId = null;
+ let audioEl = null;
+let rafId = 0;
+let currentJobId = null;
+let selectedJobId = null;
 
   const qs = (s, r = document) => r.querySelector(s);
 
