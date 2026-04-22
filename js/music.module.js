@@ -49,8 +49,12 @@
   /* =========================
    * Assistant Runtime Publisher
    * ========================= */
-  function getMusicAssistantModuleRoot() {
-    return document.querySelector("#moduleHost section[data-module='music']");
+   function getMusicAssistantModuleRoot() {
+    return (
+      document.querySelector("#moduleHost section[data-module='music']") ||
+      document.querySelector(".rpShell") ||
+      document.body
+    );
   }
 
   function isElementActuallyVisible(el) {
