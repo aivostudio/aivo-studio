@@ -300,19 +300,36 @@
   }
 
   function getMusicAssistantCredits() {
+    const bodyText = String(document.body?.innerText || "");
+    const bodyMatch = bodyText.match(/kredi\s+(\d+)/i);
+
+    if (bodyMatch && Number.isFinite(Number(bodyMatch[1]))) {
+      return Number(bodyMatch[1]);
+    }
+
+    const topbarCandidates = Array.from(
+      document.querySelectorAll("button, a, div, span")
+    );
+
+    for (const el of topbarCandidates) {
+      const text = String(el.textContent || "").trim();
+      const m = text.match(/^Kredi\s+(\d+)$/i);
+      if (m && Number.isFinite(Number(m[1]))) {
+        return Number(m[1]);
+      }
+    }
+
     const runtimeCredits =
       window.__AIVO_USER_CREDITS__ ??
       window.AIVO_USER_CREDITS ??
       window.__AIVO_CREDITS__ ??
       null;
 
-    if (Number.isFinite(Number(runtimeCredits))) {
+    if (runtimeCredits != null && Number.isFinite(Number(runtimeCredits))) {
       return Number(runtimeCredits);
     }
 
-    const bodyText = String(document.body?.innerText || "");
-    const match = bodyText.match(/kredi\s+(\d+)/i);
-    return match ? Number(match[1]) : null;
+    return null;
   }
 
   function getMusicAssistantCreditsNeeded() {
