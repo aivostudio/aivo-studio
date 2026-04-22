@@ -1223,6 +1223,7 @@ function ensureCharacterCreateUploadClearButton(root, host) {
     updateCharacterCreateUploadUI(root);
     syncCharacterCreateCredit(root);
     renderCharacterLibrary(root);
+    syncCartoonCharacterAssistantState();
   }
 
   function buildCharacterCreatePayload(root) {
