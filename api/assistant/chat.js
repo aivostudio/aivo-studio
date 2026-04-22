@@ -333,15 +333,55 @@ needsConfirmation true ise işlem öncesi onay veya kredi onayı gerekir.`,
       brain = null;
     }
 
-    if (!brain || typeof brain !== "object") {
+      if (!brain || typeof brain !== "object") {
+      const fallbackIntent =
+        intent ||
+        (action ? "product_action" : "") ||
+        (detectedAction?.key ? "product_action" : "") ||
+        (detectedModule?.key ? "module_selection" : "") ||
+        "general_help";
+
+      const fallbackAction =
+        action ||
+        detectedAction?.key ||
+        null;
+
+      const fallbackModule =
+        moduleName ||
+        detectedModule?.key ||
+        (page === "pricing" ? "pricing" : null);
+
+      let fallbackAnswer =
+        "Şu anda net bir yönlendirme üretemedim. Bulunduğun ekrana göre tekrar sorarsan daha doğru yönlendirebilirim.";
+
+      if (fallbackIntent === "pricing_guidance") {
+        fallbackAnswer =
+          "Paket yönlendirmesi yapabilirim. Şu anki kullanım amacını söylersen en uygun kredi paketini daha net önerebilirim.";
+      } else if (fallbackIntent === "troubleshooting") {
+        fallbackAnswer =
+          "Sorunu çözmek için bulunduğun ekrandaki durum, seçim ve işlem bağlamına bakmam gerekiyor. Aynı ekranda tekrar sorarsan daha net yönlendirebilirim.";
+      } else if (fallbackIntent === "prompt_help") {
+        fallbackAnswer =
+          "Promptunu güçlendirmene yardımcı olabilirim. Ne üretmek istediğini kısa yazman yeterli.";
+      } else if (fallbackIntent === "module_selection") {
+        fallbackAnswer =
+          "İhtiyacına göre doğru modülü seçmene yardımcı olabilirim. Ne üretmek istediğini kısa yaz.";
+      } else if (fallbackIntent === "product_action" && fallbackAction) {
+        fallbackAnswer =
+          "Bu işlem için doğru ürün içi adıma yönlendirme yapabilirim. Aynı ekranda tekrar sorarsan daha net ve doğrudan yol tarif ederim.";
+      }
+
       brain = {
-        intent: "general_help",
-        module: detectedModule?.key || null,
-        action: detectedAction?.key || null,
-        answer: "Şu anda net bir yönlendirme üretemedim. Bulunduğun ekrana göre tekrar sorarsan daha doğru yönlendirebilirim.",
-        uiTarget: null,
-        followupAction: null,
-        needsConfirmation: false,
+        intent: fallbackIntent,
+        module: fallbackModule,
+        action: fallbackAction,
+        answer: fallbackAnswer,
+        uiTarget: actionContext || currentPanel || null,
+        followupAction: fallbackAction,
+        needsConfirmation: Boolean(
+          detectedAction?.confirmationRequired ||
+          visibleModals.length
+        ),
         confidence: "low",
       };
     }
