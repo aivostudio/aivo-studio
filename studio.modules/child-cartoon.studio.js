@@ -21,161 +21,6 @@
     return `${minutes} dk ${seconds} sn`;
   }
 
-  function getCartoonAssistantState() {
-    if (!window.__AIVO_CARTOON_ASSISTANT_STATE__) {
-      window.__AIVO_CARTOON_ASSISTANT_STATE__ = {
-        currentPanel: 'cartoon',
-        currentFlow: 'studio_export',
-        policyState: 'allow',
-        generationState: 'idle',
-        creditsConsumed: false,
-        refundExpected: false,
-        refundDone: false,
-        creditCost: 0,
-        lastJobId: '',
-        lastRequestId: '',
-        lastOutputUrl: '',
-        visibleError: '',
-        visiblePolicyNote: '',
-        dbSaved: false,
-        character: {
-          promptPresent: false,
-          promptText: '',
-          selectedCreatedCharacterId: '',
-          characterCreatePending: false,
-          referenceUploadState: 'idle',
-          referenceImageUrl: '',
-          libraryCount: 0
-        },
-        basic: {
-          promptPresent: false,
-          promptText: '',
-          selectedScene: '',
-          selectedEffects: [],
-          uploadState: 'idle',
-          characterUploadState: 'idle',
-          audioUploadState: 'idle',
-          logoUploadState: 'idle',
-          mainCharacter: '',
-          helperCount: 0,
-          duration: '4',
-          ratio: '16:9',
-          style: 'soft-cartoon'
-        },
-        story: {
-          storyIdeaPresent: false,
-          selectedSceneCount: 0,
-          readySceneCount: 0,
-          failedSceneCount: 0,
-          lastFailedSceneTitle: ''
-        },
-        studio: {
-          selectedExportSceneCount: 0,
-          voiceUploadState: 'idle',
-          logoUploadState: 'idle',
-          exportReady: false,
-          finalVideoReady: false,
-          format: '16:9',
-          totalDuration: 0,
-          previewReady: false
-        },
-        updatedAt: Date.now()
-      };
-    }
-
-    return window.__AIVO_CARTOON_ASSISTANT_STATE__;
-  }
-
-  function patchCartoonAssistantState(patch) {
-    const prev = getCartoonAssistantState();
-
-    const next = {
-      ...prev,
-      ...patch,
-      currentPanel: 'cartoon',
-      updatedAt: Date.now(),
-      character: {
-        ...(prev.character || {}),
-        ...((patch && patch.character) || {})
-      },
-      basic: {
-        ...(prev.basic || {}),
-        ...((patch && patch.basic) || {})
-      },
-      story: {
-        ...(prev.story || {}),
-        ...((patch && patch.story) || {})
-      },
-      studio: {
-        ...(prev.studio || {}),
-        ...((patch && patch.studio) || {})
-      }
-    };
-
-    window.__AIVO_CARTOON_ASSISTANT_STATE__ = next;
-
-    try {
-      window.dispatchEvent(
-        new CustomEvent('aivo:assistant:cartoon_context', {
-          detail: { ...next }
-        })
-      );
-    } catch (_) {}
-
-    return next;
-  }
-
-  function syncCartoonStudioAssistantState(rootState, studioRoot, extra = {}) {
-    const selectedScenes = Array.isArray(rootState?.scenes)
-      ? rootState.scenes.filter((scene) => !!scene?.included)
-      : [];
-
-    const totalDuration = selectedScenes.reduce((sum, scene) => {
-      return sum + (Number(scene?.duration) || 0);
-    }, 0);
-
-    const creditCost = typeof extra.creditCost === 'number'
-      ? Number(extra.creditCost)
-      : getStudioExportCreditCost(rootState, studioRoot);
-
-    const exportReady = selectedScenes.length > 0 && !!String(rootState?.previewUrl || '').trim();
-    const finalVideoReady = !!String(extra.lastOutputUrl || rootState?.previewUrl || '').trim();
-
-    return patchCartoonAssistantState({
-      currentFlow: 'studio_export',
-      policyState: String(extra.policyState || 'allow'),
-      generationState: String(
-        extra.generationState ||
-        (window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ ? 'processing' : 'idle')
-      ),
-      creditsConsumed: typeof extra.creditsConsumed === 'boolean' ? extra.creditsConsumed : false,
-      refundExpected: typeof extra.refundExpected === 'boolean' ? extra.refundExpected : false,
-      refundDone: typeof extra.refundDone === 'boolean' ? extra.refundDone : false,
-      creditCost,
-      lastJobId: String(extra.lastJobId || window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ || ''),
-      lastRequestId: String(extra.lastRequestId || window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-      lastOutputUrl: String(extra.lastOutputUrl || rootState?.previewUrl || ''),
-      visibleError: String(extra.visibleError || ''),
-      visiblePolicyNote: String(extra.visiblePolicyNote || ''),
-      dbSaved: typeof extra.dbSaved === 'boolean' ? extra.dbSaved : false,
-      studio: {
-        selectedExportSceneCount: selectedScenes.length,
-        voiceUploadState: String(rootState?.voiceFileUploadStatus || 'idle'),
-        logoUploadState: String(rootState?.logoFileUploadStatus || 'idle'),
-        exportReady: typeof extra.exportReady === 'boolean' ? extra.exportReady : exportReady,
-        finalVideoReady: typeof extra.finalVideoReady === 'boolean' ? extra.finalVideoReady : finalVideoReady,
-        format: String(rootState?.format || '16:9'),
-        totalDuration,
-        previewReady: !!String(rootState?.previewUrl || '').trim(),
-        ...((extra && extra.studio) || {})
-      }
-    });
-  }
-
-  window.getCartoonAssistantState = getCartoonAssistantState;
-  window.patchCartoonAssistantState = patchCartoonAssistantState;
-  window.syncCartoonStudioAssistantState = syncCartoonStudioAssistantState;
-
   function createStudioState() {
     return {
       format: '16:9',
@@ -256,17 +101,9 @@
           }
 
           console.log('[CARTOON][STUDIO_SAVE_OK]', data);
-          syncCartoonStudioAssistantState(rootState, document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'), {
-            dbSaved: true,
-            visibleError: ''
-          });
         })
         .catch((err) => {
           console.error('[CARTOON][STUDIO_SAVE_ERROR]', err);
-          syncCartoonStudioAssistantState(rootState, document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'), {
-            dbSaved: false,
-            visibleError: String(err?.message || err || 'studio_state_save_failed')
-          });
         });
     } catch (err) {
       console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
@@ -484,17 +321,6 @@
       url: scene.videoUrl,
       title: scene.title || 'Video Önizleme'
     });
-
-    const rootState = window.__CARTOON_STUDIO__ || null;
-    if (rootState) {
-      rootState.previewUrl = String(scene.videoUrl || '').trim();
-      rootState.previewTitle = String(scene.title || 'Video Önizleme');
-      syncCartoonStudioAssistantState(rootState, studioRoot, {
-        studio: {
-          previewReady: !!rootState.previewUrl
-        }
-      });
-    }
   }
 
   function getStudioVideoDuration(file) {
@@ -819,13 +645,6 @@ function clearStudioVoiceFile(rootState, studioRoot) {
   if (hadFile) {
     try { window.toast?.success?.('Ses kaldırıldı · -10 kredi'); } catch {}
   }
-
-  syncCartoonStudioAssistantState(rootState, studioRoot, {
-    visibleError: '',
-    studio: {
-      voiceUploadState: 'idle'
-    }
-  });
 }
 function clearStudioLogoFile(rootState, studioRoot) {
   const input = qsAny(studioRoot, [
@@ -858,13 +677,6 @@ function clearStudioLogoFile(rootState, studioRoot) {
   if (hadFile) {
     try { window.toast?.success?.('Logo kaldırıldı · -10 kredi'); } catch {}
   }
-
-  syncCartoonStudioAssistantState(rootState, studioRoot, {
-    visibleError: '',
-    studio: {
-      logoUploadState: 'idle'
-    }
-  });
 }
 
   function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
@@ -1001,13 +813,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     rootState.logoFileUploadError = '';
     rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
 
-    syncCartoonStudioAssistantState(rootState, studioRoot, {
-      visibleError: '',
-      studio: {
-        logoUploadState: file ? 'uploading' : 'idle'
-      }
-    });
-
     updateStudioLogoUploadStatusUI(rootState, studioRoot);
     updateStudioSummary(rootState, studioRoot);
 
@@ -1025,12 +830,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
 
         try { window.toast?.success?.('Logo eklendi · +10 kredi'); } catch {}
         console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
-        syncCartoonStudioAssistantState(rootState, studioRoot, {
-          visibleError: '',
-          studio: {
-            logoUploadState: 'ready'
-          }
-        });
         return rootState.logoFileUrl;
       })
       .catch((err) => {
@@ -1043,12 +842,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         saveStudioState(rootState);
 
         console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
-        syncCartoonStudioAssistantState(rootState, studioRoot, {
-          visibleError: String(rootState.logoFileUploadError || 'studio_logo_upload_failed'),
-          studio: {
-            logoUploadState: 'error'
-          }
-        });
         alert(rootState.logoFileUploadError);
         throw err;
       });
@@ -1189,12 +982,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     rootState.voiceFileUploadPromise = null;
     rootState.voiceFileUploadError = '';
     rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
-    syncCartoonStudioAssistantState(rootState, studioRoot, {
-      visibleError: '',
-      studio: {
-        voiceUploadState: file ? 'uploading' : 'idle'
-      }
-    });
     updateStudioVoiceUploadStatusUI(rootState, studioRoot);
     updateStudioSummary(rootState, studioRoot);
 
@@ -1210,12 +997,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         saveStudioState(rootState);
         try { window.toast?.success?.('Ses eklendi · +10 kredi'); } catch {}
         console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-        syncCartoonStudioAssistantState(rootState, studioRoot, {
-          visibleError: '',
-          studio: {
-            voiceUploadState: 'ready'
-          }
-        });
         return rootState.voiceFileUrl;
       })
       .catch((err) => {
@@ -1226,12 +1007,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         updateStudioSummary(rootState, studioRoot);
         saveStudioState(rootState);
         console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-        syncCartoonStudioAssistantState(rootState, studioRoot, {
-          visibleError: String(rootState.voiceFileUploadError || 'studio_voice_upload_failed'),
-          studio: {
-            voiceUploadState: 'error'
-          }
-        });
         alert(rootState.voiceFileUploadError);
         throw err;
       });
@@ -1272,12 +1047,6 @@ function bindStudioLogoUpload(rootState, studioRoot) {
 
     rootState.scenes.push(...nextScenes);
 saveStudioState(rootState);
-    syncCartoonStudioAssistantState(rootState, studioRoot, {
-      visibleError: '',
-      studio: {
-        selectedExportSceneCount: rootState.scenes.filter((scene) => !!scene?.included).length
-      }
-    });
 renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
 if (nextScenes.length === 1) {
   try { window.toast?.success?.("1 video eklendi"); } catch {}
@@ -1432,16 +1201,6 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         items[2].textContent = `Format: ${rootState.format}`;
       }
     }
-
-    syncCartoonStudioAssistantState(rootState, studioRoot, {
-      visibleError: '',
-      studio: {
-        selectedExportSceneCount: selectedCount,
-        totalDuration,
-        voiceUploadState: String(rootState?.voiceFileUploadStatus || 'idle'),
-        logoUploadState: String(rootState?.logoFileUploadStatus || 'idle')
-      }
-    });
 
     const exportBtn = qsAny(studioRoot, [
       '[data-studio-export]',
@@ -1836,25 +1595,6 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
         window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
 
-        const studioStateReady = window.__CARTOON_STUDIO__ || null;
-        if (studioStateReady) {
-          studioStateReady.previewUrl = String(resolvedFinalVideoUrl || '').trim();
-          studioStateReady.previewTitle = 'Paylaşmaya Hazır Çıktı';
-          syncCartoonStudioAssistantState(studioStateReady, document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'), {
-            generationState: 'ready',
-            creditsConsumed: true,
-            refundExpected: false,
-            refundDone: false,
-            dbSaved: true,
-            lastJobId: String(jobId || '').trim(),
-            lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-            lastOutputUrl: String(resolvedFinalVideoUrl || ''),
-            visibleError: '',
-            exportReady: true,
-            finalVideoReady: true
-          });
-        }
-
         window.dispatchEvent(
           new CustomEvent('aivo:cartoon:job_ready', {
             detail: {
@@ -1916,22 +1656,6 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
           try { window.syncCreditsUI?.({ force: true }); } catch {}
         }
 
-        syncCartoonStudioAssistantState(window.__CARTOON_STUDIO__ || null, document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'), {
-          generationState: 'failed',
-          creditsConsumed: true,
-          refundExpected: true,
-          refundDone: false,
-          dbSaved: false,
-          lastJobId: currentJobId,
-          lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-          lastOutputUrl: '',
-          visibleError: String(j?.error || j?.error_reason || j?.reason || 'studio_export_failed'),
-          studio: {
-            exportReady: false,
-            finalVideoReady: false
-          }
-        });
-
         if (!activeJobId || activeJobId === currentJobId) {
           try {
             const activeRequestId = String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || '').trim();
@@ -1968,17 +1692,6 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
 
               if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
                 await refreshCreditsUI();
-                syncCartoonStudioAssistantState(window.__CARTOON_STUDIO__ || null, document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'), {
-                  generationState: 'failed',
-                  creditsConsumed: true,
-                  refundExpected: true,
-                  refundDone: true,
-                  dbSaved: false,
-                  lastJobId: currentJobId,
-                  lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-                  lastOutputUrl: '',
-                  visibleError: String(j?.error || j?.error_reason || j?.reason || 'studio_export_failed')
-                });
                 try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
               } else {
                 try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
@@ -2082,18 +1795,6 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
       try {
         window.__CARTOON_STUDIO_LOGO_DONE__ = false;
         const payload = collectCartoonStudioPayload(rootState, studioRoot);
-        syncCartoonStudioAssistantState(rootState, studioRoot, {
-          generationState: 'processing',
-          policyState: 'allow',
-          creditsConsumed: false,
-          refundExpected: false,
-          refundDone: false,
-          dbSaved: false,
-          lastJobId: '',
-          lastRequestId: '',
-          lastOutputUrl: '',
-          visibleError: ''
-        });
         window.__CARTOON_STUDIO_EXPORT_PAYLOAD__ = payload;
 
         console.log('[CARTOON][STUDIO_EXPORT_PAYLOAD]', payload);
@@ -2247,17 +1948,6 @@ try {
 }
 
 if (!creditRes.ok || !creditData?.ok) {
-  syncCartoonStudioAssistantState(rootState, studioRoot, {
-    generationState: 'failed',
-    creditsConsumed: false,
-    refundExpected: false,
-    refundDone: false,
-    dbSaved: false,
-    lastJobId: '',
-    lastRequestId: consumeRequestId,
-    lastOutputUrl: '',
-    visibleError: 'insufficient_credit'
-  });
   const to = encodeURIComponent(
     location.pathname + location.search + location.hash
   );
@@ -2279,19 +1969,6 @@ window.__CARTOON_STUDIO_LAST_TRANSACTION_ID__ = consumeTransactionId || '';
 window.__CARTOON_STUDIO_LAST_CREDIT_COST__ = creditCost;
 window.__CARTOON_STUDIO_LAST_CREDIT_REASON__ = creditReason;
 
-syncCartoonStudioAssistantState(rootState, studioRoot, {
-  generationState: 'processing',
-  creditsConsumed: true,
-  refundExpected: false,
-  refundDone: false,
-  creditCost,
-  dbSaved: false,
-  lastJobId: '',
-  lastRequestId: consumeRequestId,
-  lastOutputUrl: '',
-  visibleError: ''
-});
-
 await refreshCreditsUI();
 
 const res = await fetch('/api/cartoon/studio/export-create', {
@@ -2309,18 +1986,6 @@ console.log('[CARTOON][STUDIO_EXPORT_CREATE_RESPONSE]', {
 });
 
 if (!res.ok || !data || data.ok === false) {
-  syncCartoonStudioAssistantState(rootState, studioRoot, {
-    generationState: 'failed',
-    creditsConsumed: true,
-    refundExpected: true,
-    refundDone: false,
-    creditCost,
-    dbSaved: false,
-    lastJobId: '',
-    lastRequestId: consumeRequestId,
-    lastOutputUrl: '',
-    visibleError: String(data?.error || `studio_export_create_failed_${res.status}`)
-  });
   const refunded = await tryRefund('studio_export_create_failed', {
     error: String(data?.error || `studio_export_create_failed_${res.status}`)
   });
@@ -2335,18 +2000,6 @@ if (!res.ok || !data || data.ok === false) {
 window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
 if (data?.job_id) {
   window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = String(data.job_id || '');
-  syncCartoonStudioAssistantState(rootState, studioRoot, {
-    generationState: 'processing',
-    creditsConsumed: true,
-    refundExpected: false,
-    refundDone: false,
-    creditCost,
-    dbSaved: true,
-    lastJobId: String(data.job_id || ''),
-    lastRequestId: consumeRequestId,
-    lastOutputUrl: '',
-    visibleError: ''
-  });
 
   const createdDetail = {
     app: 'cartoon',
@@ -2382,18 +2035,6 @@ if (data?.job_id) {
         alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
       } catch (err) {
         console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
-        syncCartoonStudioAssistantState(rootState, studioRoot, {
-          generationState: 'failed',
-          creditsConsumed: consumed,
-          refundExpected: consumed,
-          refundDone: false,
-          creditCost: Number(window.__CARTOON_STUDIO_LAST_CREDIT_COST__ || 0),
-          dbSaved: false,
-          lastJobId: String(window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ || ''),
-          lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-          lastOutputUrl: '',
-          visibleError: String(err?.message || err || 'studio_export_create_failed')
-        });
         alert(String(err?.message || err || 'studio_export_create_failed'));
       } finally {
         if (!startedPolling) {
@@ -2555,205 +2196,77 @@ if (removeBtn) {
     const alreadyBound = studioRoot.getAttribute('data-studio-bound') === 'true';
     if (alreadyBound) {
       window.__CARTOON_STUDIO__ = window.__CARTOON_STUDIO__ || createStudioState();
-      syncCartoonStudioAssistantState(window.__CARTOON_STUDIO__, studioRoot, {
-        visibleError: ''
-      });
       return true;
     }
-const studioState = createStudioState();
 
-ensureStudioPreviewModal(studioRoot);
+    const studioState = createStudioState();
 
-studioSceneList.innerHTML = `
-  <div style="
-    padding:18px 20px;
-    border:1px dashed rgba(255,255,255,.14);
-    border-radius:18px;
-    background:rgba(255,255,255,.03);
-    color:rgba(255,255,255,.78);
-    font-weight:600;
-  ">
-    Yükleniyor...
-  </div>
-`;
+    ensureStudioPreviewModal(studioRoot);
+    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
 
-bindStudioVideoUpload(
-  studioState,
-  studioRoot,
-  studioSceneList,
-  studioSceneTemplate
-);
+    loadStudioState()
+      .then((savedState) => {
+        studioState.format = String(savedState?.format || '16:9');
+        studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
 
-bindStudioVoiceUpload(
-  studioState,
-  studioRoot
-);
+        studioState.voiceFile = null;
+        studioState.voiceFileName = String(savedState?.voice?.fileName || '');
+        studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
+        studioState.voiceFileUploadPromise = null;
+        studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
+        studioState.voiceFileUploadError = '';
 
-bindStudioLogoUpload(
-  studioState,
-  studioRoot
-);
+        studioState.logoFile = null;
+        studioState.logoFileName = String(savedState?.logo?.fileName || '');
+        studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
+        studioState.logoFileUploadPromise = null;
+        studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
+        studioState.logoFileUploadError = '';
 
-bindStudioFormatPills(
-  studioState,
-  studioRoot
-);
-
-bindStudioExportPayloadDebug(
-  studioState,
-  studioRoot
-);
-
-studioRoot.setAttribute('data-studio-bound', 'true');
-window.__CARTOON_STUDIO__ = studioState;
-
-(async () => {
-  const MAX_RETRIES = 3;
-  let loaded = false;
-  let lastErr = null;
-
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
-    try {
-      const savedState = await loadStudioState();
-
-      studioState.format = String(savedState?.format || '16:9');
-      studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
-
-      studioState.voiceFile = null;
-      studioState.voiceFileName = String(savedState?.voice?.fileName || '');
-      studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
-      studioState.voiceFileUploadPromise = null;
-      studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
-      studioState.voiceFileUploadError = '';
-
-      studioState.logoFile = null;
-      studioState.logoFileName = String(savedState?.logo?.fileName || '');
-      studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
-      studioState.logoFileUploadPromise = null;
-      studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
-      studioState.logoFileUploadError = '';
-
-      renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-      updateStudioVoiceUploadStatusUI(studioState, studioRoot);
-      updateStudioLogoUploadStatusUI(studioState, studioRoot);
-      updateStudioSummary(studioState, studioRoot);
-
-      loaded = true;
-      break;
-    } catch (err) {
-      lastErr = err;
-      console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_RETRY]', {
-        attempt,
-        error: err
+        renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
+        updateStudioVoiceUploadStatusUI(studioState, studioRoot);
+        updateStudioLogoUploadStatusUI(studioState, studioRoot);
+        updateStudioSummary(studioState, studioRoot);
+      })
+      .catch((err) => {
+        console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
       });
 
-      if (attempt < MAX_RETRIES) {
-        await new Promise((resolve) => setTimeout(resolve, 700));
-      }
-    }
-  }
+    bindStudioVideoUpload(
+      studioState,
+      studioRoot,
+      studioSceneList,
+      studioSceneTemplate
+    );
 
-  if (!loaded) {
-    console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', lastErr);
+    bindStudioVoiceUpload(
+      studioState,
+      studioRoot
+    );
 
-    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-    updateStudioVoiceUploadStatusUI(studioState, studioRoot);
-    updateStudioLogoUploadStatusUI(studioState, studioRoot);
-    updateStudioSummary(studioState, studioRoot);
-  }
-})();
-    syncCartoonStudioAssistantState(studioState, studioRoot, {
-      visibleError: ''
-    });
+    bindStudioLogoUpload(
+      studioState,
+      studioRoot
+    );
+
+    bindStudioFormatPills(
+      studioState,
+      studioRoot
+    );
+
+    bindStudioExportPayloadDebug(
+      studioState,
+      studioRoot
+    );
+
+    studioRoot.setAttribute('data-studio-bound', 'true');
+    window.__CARTOON_STUDIO__ = studioState;
 
     return true;
   }
 
-
-  window.addEventListener('aivo:cartoon:job_created', (e) => {
-    const detail = e?.detail || {};
-    if (String(detail?.mode || '').trim() !== 'studio_export') return;
-
-    const studioRoot = document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]');
-    const studioState = window.__CARTOON_STUDIO__ || null;
-    if (!studioState) return;
-
-    syncCartoonStudioAssistantState(studioState, studioRoot, {
-      generationState: 'processing',
-      creditsConsumed: true,
-      refundExpected: false,
-      refundDone: false,
-      dbSaved: true,
-      lastJobId: String(detail?.job_id || ''),
-      lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-      lastOutputUrl: '',
-      visibleError: ''
-    });
-  });
-
-  window.addEventListener('aivo:cartoon:job_ready', (e) => {
-    const detail = e?.detail || {};
-    if (String(detail?.mode || '').trim() !== 'studio_export') return;
-
-    const studioRoot = document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]');
-    const studioState = window.__CARTOON_STUDIO__ || null;
-    if (!studioState) return;
-
-    const finalUrl = String(
-      detail?.video?.url ||
-      detail?.meta?.final_video_url ||
-      ''
-    ).trim();
-
-    if (finalUrl) {
-      studioState.previewUrl = finalUrl;
-      studioState.previewTitle = 'Paylaşmaya Hazır Çıktı';
-    }
-
-    syncCartoonStudioAssistantState(studioState, studioRoot, {
-      generationState: 'ready',
-      creditsConsumed: true,
-      refundExpected: false,
-      refundDone: false,
-      dbSaved: true,
-      lastJobId: String(detail?.job_id || ''),
-      lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-      lastOutputUrl: finalUrl,
-      visibleError: '',
-      studio: {
-        exportReady: true,
-        finalVideoReady: !!finalUrl,
-        previewReady: !!finalUrl
-      }
-    });
-  });
-
-  window.addEventListener('aivo:cartoon:job_failed', (e) => {
-    const detail = e?.detail || {};
-    if (String(detail?.mode || '').trim() !== 'studio_export') return;
-
-    const studioRoot = document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]');
-    const studioState = window.__CARTOON_STUDIO__ || null;
-    if (!studioState) return;
-
-    syncCartoonStudioAssistantState(studioState, studioRoot, {
-      generationState: 'failed',
-      creditsConsumed: true,
-      refundExpected: true,
-      refundDone: false,
-      dbSaved: false,
-      lastJobId: String(detail?.job_id || ''),
-      lastRequestId: String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || ''),
-      lastOutputUrl: '',
-      visibleError: String(detail?.raw?.error || detail?.status || 'studio_export_failed'),
-      studio: {
-        exportReady: false,
-        finalVideoReady: false
-      }
-    });
-  });
-
-  function bootCartoonStudio() {    if (initCartoonStudio()) return;
+  function bootCartoonStudio() {
+    if (initCartoonStudio()) return;
 
     let tries = 0;
     const maxTries = 40;
