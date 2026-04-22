@@ -1853,7 +1853,7 @@ function buildBasicPayload() {
         btn.style.filter = "saturate(1.05)";
         btn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
 
-        if (policyNote) {
+          if (policyNote) {
           policyNote.style.display = "block";
           policyNote.innerHTML = `
           <span style="
@@ -1876,6 +1876,24 @@ function buildBasicPayload() {
           ">Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve video hissini tarif et.</span>
         `;
         }
+
+        syncAtmoAssistantState({
+          lastAction: "policy_blocked",
+          mode,
+          policyState: "block",
+          generationState: "failed",
+          creditsConsumed: false,
+          refundExpected: false,
+          refundDone: false,
+          dbSaved: false,
+          lastJobId: "",
+          lastRequestId: "",
+          lastVideoUrl: "",
+          visibleError: "policy_blocked",
+          visiblePolicyNote:
+            readAtmoPolicyNote(root) ||
+            "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve video hissini tarif et."
+        });
 
         return;
       }
