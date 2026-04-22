@@ -580,7 +580,7 @@ Bu işlem onay gerektiriyor.`;
         headers: {
           "Content-Type": "application/json"
         },
-            body: JSON.stringify({
+          body: JSON.stringify({
           page: window.location.pathname,
           module: extraContext.module || detectModuleFromPath(),
           intent: extraContext.intent || "",
