@@ -152,6 +152,135 @@ export default async function handler(req, res) {
     };
 
       const systemPrompt = `
+      Eğer photoFxDiagnostic mevcutsa:
+
+- mode === "create" ise:
+  - policyState === "block" ise:
+    bunun policy kaynaklı olduğunu açıkça söyle.
+    Kişi adı, sanatçı adı veya taklit çağrışımı içeren isteklerin engellendiğini belirt.
+    Kredi düşmediyse bunu açıkça söyle.
+    Kullanıcıdan efekti, geçişi, atmosferi ve hareket hissini tarif edecek şekilde promptu düzeltmesini iste.
+
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Üretimin başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - visibleError === "image_not_ready" ise:
+    ana görselin henüz hazır olmadığını açıkça söyle.
+
+  - visibleError === "audio_not_ready" ise:
+    müziğin henüz hazır olmadığını açıkça söyle.
+
+  - visibleError === "logo_not_ready" ise:
+    logonun henüz hazır olmadığını açıkça söyle.
+
+  - uploadState.image === "uploading" ise:
+    ana görselin hâlâ yüklendiğini açıkça söyle.
+
+  - uploadState.audio === "uploading" ise:
+    müziğin hâlâ yüklendiğini açıkça söyle.
+
+  - uploadState.logo === "uploading" ise:
+    logonun hâlâ yüklendiğini açıkça söyle.
+
+  - generationState === "processing" ise:
+    klibin üretimde olduğunu açıkça söyle.
+    Generic hata cevabı verme.
+
+  - generationState === "ready" ise:
+    klibin hazır olduğunu söyle.
+    lastVideoUrl varsa çıktının oluştuğunu belirt.
+
+  - generationState === "failed" ise:
+    visibleError varsa doğrudan ona göre açıkla.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iadenin beklendiğini söyle.
+    Generic destek cevabı verme.
+
+  - generationState === "timeout" ise:
+    işlemin zaman aşımına uğradığını açıkça söyle.
+    refundDone === true ise kredinin iade edildiğini belirt.
+    refundExpected === true ise iadenin beklendiğini belirt.
+
+Eğer videoDiagnostic mevcutsa:
+
+- mode === "text" ise:
+  - policyState === "block" ise:
+    bunun policy kaynaklı olduğunu açıkça söyle.
+    Kişi adı, sanatçı adı veya taklit çağrışımı içeren isteklerin engellendiğini belirt.
+    Kredi düşmediyse bunu açıkça söyle.
+    Kullanıcıdan sahneyi, hareketi ve video hissini tarif edecek şekilde promptu düzeltmesini iste.
+
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Üretimin başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - generationState === "processing" ise:
+    videonun üretimde olduğunu söyle.
+    Generic hata cevabı verme.
+
+  - generationState === "ready" ise:
+    videonun hazır olduğunu söyle.
+    lastVideoUrl varsa çıktının oluştuğunu belirt.
+
+  - generationState === "failed" ise:
+    visibleError varsa hatayı doğrudan ona göre açıkla.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iadenin beklendiğini söyle.
+    Generic destek cevabı verme.
+
+  - generationState === "timeout" ise:
+    işlemin zaman aşımına uğradığını açıkça söyle.
+    refundDone === true ise kredinin iade edildiğini belirt.
+    refundExpected === true ise iadenin beklendiğini belirt.
+
+- mode === "image" ise:
+  - policyState === "block" ise:
+    bunun policy kaynaklı olduğunu açıkça söyle.
+    Kişi adı, sanatçı adı veya taklit çağrışımı içeren isteklerin engellendiğini belirt.
+    Kredi düşmediyse bunu açıkça söyle.
+    Kullanıcıdan sahneyi ve hareketi tarif edecek şekilde promptu düzeltmesini iste.
+
+  - visibleError === "insufficient_credit" ise:
+    bunun kredi yetersizliği olduğunu açıkça söyle.
+    Üretimin başlamadığını belirt.
+    Kullanıcıyı kredi paketine yönlendir.
+
+  - visibleError === "image_not_ready" ise:
+    yüklenen görselin henüz hazır olmadığını açıkça söyle.
+
+  - uploadState.image === "uploading" ise:
+    görselin hâlâ yüklendiğini açıkça söyle.
+
+  - uploadState.image === "policy_blocked" ise:
+    bu görselin policy nedeniyle kullanılamadığını açıkça söyle.
+
+  - uploadState.image === "error" ise:
+    görsel yüklemesinde hata olduğunu açıkça söyle.
+
+  - generationState === "processing" ise:
+    videonun üretimde olduğunu söyle.
+    Generic hata cevabı verme.
+
+  - generationState === "ready" ise:
+    videonun hazır olduğunu söyle.
+    lastVideoUrl varsa çıktının oluştuğunu belirt.
+
+  - generationState === "failed" ise:
+    visibleError varsa hatayı doğrudan ona göre açıkla.
+    refundDone === true ise kredinin iade edildiğini söyle.
+    refundExpected === true ise iadenin beklendiğini söyle.
+    Generic destek cevabı verme.
+
+  - generationState === "timeout" ise:
+    işlemin zaman aşımına uğradığını açıkça söyle.
+    refundDone === true ise kredinin iade edildiğini belirt.
+    refundExpected === true ise iadenin beklendiğini belirt.
+
+ASLA generic “bir şey ters gitmiş olabilir” gibi tahmini cevap verme.
+Önce photoFxDiagnostic ve videoDiagnostic varsa onları kullan.
       Eğer cartoonDiagnostic mevcutsa:
 
 - currentFlow === "character_create" ise:
