@@ -203,6 +203,12 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     }
 
     console.log("[cover] quality =", q, "credit =", credit);
+        syncCoverAssistantState({
+      lastAction: "quality_change",
+      selectedQuality: q,
+      creditCost: credit,
+      visibleError: ""
+    });
   }
 
   async function postJSON(url, payload) {
