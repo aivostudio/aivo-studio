@@ -140,9 +140,14 @@ export default async function handler(req, res) {
         app: registry?.app || null,
         moduleKeys: registry?.modules ? Object.keys(registry.modules) : [],
       },
-      coverDiagnostic:
+         coverDiagnostic:
         body?.coverDiagnostic && typeof body.coverDiagnostic === "object"
           ? body.coverDiagnostic
+          : null,
+
+      atmoDiagnostic:
+        body?.atmoDiagnostic && typeof body.atmoDiagnostic === "object"
+          ? body.atmoDiagnostic
           : null,
     };
 
