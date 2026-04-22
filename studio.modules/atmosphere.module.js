@@ -2086,11 +2086,24 @@ async function tryRefund(reason, extraMeta = {}) {
       return;
     }
 
-    consumed = true;
+     consumed = true;
     consumeTransactionId =
       creditData?.transaction_id ||
       creditData?.transaction?.id ||
       null;
+
+    syncAtmoAssistantState({
+      lastAction: "credit_consumed",
+      mode,
+      generationState: "processing",
+      policyState: "allow",
+      creditsConsumed: true,
+      refundExpected: false,
+      refundDone: false,
+      creditCost,
+      visibleError: "",
+      visiblePolicyNote: readAtmoPolicyNote(root)
+    });
 
     await refreshCreditsUI();
 
