@@ -389,6 +389,173 @@
 
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
+    function getMusicAssistantSelectedCard() {
+  const selectedEl =
+    document.querySelector(".music-card.is-selected") ||
+    document.querySelector(".music-card.selected") ||
+    document.querySelector('[data-music-card].is-selected') ||
+    document.querySelector('[data-music-card].selected') ||
+    null;
+
+  if (!selectedEl) return null;
+
+  return {
+    id:
+      selectedEl.getAttribute("data-job-id") ||
+      selectedEl.getAttribute("data-id") ||
+      selectedEl.getAttribute("data-card-id") ||
+      null,
+    type: "music_card",
+    title:
+      selectedEl.getAttribute("data-title") ||
+      selectedEl.querySelector(".music-card-title")?.textContent?.trim() ||
+      selectedEl.querySelector("[data-role='title']")?.textContent?.trim() ||
+      "",
+    status:
+      selectedEl.getAttribute("data-status") ||
+      selectedEl.querySelector("[data-status]")?.getAttribute("data-status") ||
+      "",
+  };
+}
+
+function getMusicAssistantVisibleModals() {
+  const modals = [];
+
+  const modalSelectors = [
+    { key: "channel_separation_confirm", selector: '[data-modal="channel-separation"], .channel-separation-modal, .modal-channel-separation' },
+    { key: "mastering_confirm", selector: '[data-modal="mastering"], .mastering-modal, .modal-mastering' },
+    { key: "delete_confirm", selector: '[data-modal="delete"], .delete-modal, .modal-delete' }
+  ];
+
+  modalSelectors.forEach((item) => {
+    const el = document.querySelector(item.selector);
+    if (!el) return;
+
+    const style = window.getComputedStyle(el);
+    const isVisible =
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.opacity !== "0" &&
+      (el.offsetWidth > 0 || el.offsetHeight > 0);
+
+    if (isVisible) modals.push(item.key);
+  });
+
+  return modals;
+}
+
+function getMusicAssistantAvailableActions(selectedCard, visibleModals) {
+  const actions = ["generate_music"];
+
+  if (selectedCard) {
+    actions.push("download_music");
+    actions.push("mastering");
+    actions.push("channel_separation");
+    actions.push("delete_music");
+  }
+
+  if (visibleModals.includes("channel_separation_confirm")) {
+    actions.push("confirm_channel_separation");
+  }
+
+  if (visibleModals.includes("mastering_confirm")) {
+    actions.push("confirm_mastering");
+  }
+
+  return Array.from(new Set(actions));
+}
+
+function getMusicAssistantCredits() {
+  const creditEl =
+    document.querySelector("[data-user-credits]") ||
+    document.querySelector(".user-credits") ||
+    document.querySelector(".credits-value");
+
+  if (!creditEl) return null;
+
+  const raw =
+    creditEl.getAttribute("data-user-credits") ||
+    creditEl.textContent ||
+    "";
+
+  const match = String(raw).match(/(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
+function getMusicAssistantCreditsNeeded(visibleModals) {
+  if (visibleModals.includes("channel_separation_confirm")) return 5;
+  return null;
+}
+
+function getMusicAssistantLastJobStatus(selectedCard) {
+  if (selectedCard?.status) return String(selectedCard.status).trim();
+
+  const activeStatusEl =
+    document.querySelector(".music-card.is-selected [data-status]") ||
+    document.querySelector(".music-card.selected [data-status]") ||
+    document.querySelector('[data-music-card].is-selected [data-status]') ||
+    document.querySelector('[data-music-card].selected [data-status]');
+
+  if (!activeStatusEl) return "";
+
+  return (
+    activeStatusEl.getAttribute("data-status") ||
+    activeStatusEl.textContent ||
+    ""
+  ).trim();
+}
+
+function getMusicAssistantActionContext(visibleModals, selectedCard) {
+  if (visibleModals.includes("channel_separation_confirm")) {
+    return "channel_separation_confirm";
+  }
+
+  if (visibleModals.includes("mastering_confirm")) {
+    return "mastering_confirm";
+  }
+
+  if (selectedCard) {
+    return "music_card_selected";
+  }
+
+  return "music_main";
+}
+
+function publishMusicAssistantContext(extra = {}) {
+  const selectedCard = getMusicAssistantSelectedCard();
+  const visibleModals = getMusicAssistantVisibleModals();
+  const userCredits = getMusicAssistantCredits();
+  const creditsNeeded = getMusicAssistantCreditsNeeded(visibleModals);
+  const lastJobStatus = getMusicAssistantLastJobStatus(selectedCard);
+  const actionContext = getMusicAssistantActionContext(visibleModals, selectedCard);
+  const availableActions = getMusicAssistantAvailableActions(selectedCard, visibleModals);
+
+  window.__AIVO_ASSISTANT_CONTEXT__ = {
+    page: window.location.pathname || "/music",
+    module: "music",
+    actionContext,
+    currentPanel: "music",
+    currentCardType: selectedCard ? "music_card" : "",
+    selectedItemType: selectedCard ? "music_track" : "",
+    lastJobStatus: lastJobStatus || "",
+    userCredits,
+    creditsNeeded,
+    hasSelection: Boolean(selectedCard),
+    availableActions,
+    visibleModals,
+    selectedCard,
+    uiState: {
+      title: document.title || "",
+      pathname: window.location.pathname || "",
+      selectedCardId: selectedCard?.id || null,
+      selectedCardTitle: selectedCard?.title || "",
+      modalCount: visibleModals.length,
+      ...extra
+    }
+  };
+
+  return window.__AIVO_ASSISTANT_CONTEXT__;
+}
         const HARD_BLOCK_TERMS = [
       "deepfake",
       "sesini kopyala",
