@@ -1780,6 +1780,13 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceImageUrl = "";
         state.characterReferenceUploadStatus = "error";
         state.characterReferenceUploadError = String(err?.message || err || "reference_upload_failed");
+         syncCartoonCharacterAssistantState({
+          visibleError: String(err?.message || err || "reference_upload_failed"),
+          character: {
+         referenceUploadState: "error",
+          referenceImageUrl: ""
+          }
+        });
         updateCharacterCreateUploadUI(root);
         console.error("[CARTOON][REFERENCE_UPLOAD_ERROR]", err);
 
