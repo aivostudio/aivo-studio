@@ -141,6 +141,7 @@
 
   function getMusicAssistantVisibleModals() {
     const modals = [];
+    const root = getMusicAssistantModuleRoot() || document;
 
     const candidates = Array.from(
       document.querySelectorAll(
@@ -151,41 +152,68 @@
           ".sheet",
           ".drawer",
           ".aivoRecOverlay",
-          ".aivoRecModal"
+          ".aivoRecModal",
+          "[data-modal]",
+          "[data-dialog]",
+          "[data-sheet]",
+          "[data-drawer]"
         ].join(",")
       )
     );
 
+    const pushModal = (name) => {
+      if (!name) return;
+      modals.push(name);
+    };
+
     candidates.forEach((el) => {
       if (!isElementActuallyVisible(el)) return;
 
+      const insideMusic =
+        el.closest("#moduleHost section[data-module='music']") ||
+        el.classList.contains("aivoRecOverlay") ||
+        el.classList.contains("aivoRecModal") ||
+        !!document.querySelector(".aivoRecOverlay");
+
+      if (!insideMusic) return;
+
       const text = String(el.innerText || "").toLowerCase();
-      const modalId =
+      const modalId = String(
         el.getAttribute("data-modal") ||
+        el.getAttribute("data-dialog") ||
+        el.getAttribute("data-sheet") ||
+        el.getAttribute("data-drawer") ||
         el.id ||
-        "";
+        ""
+      ).toLowerCase();
 
-      if (el.classList.contains("aivoRecOverlay") || el.classList.contains("aivoRecModal")) {
-        modals.push("music_record_modal_open");
+      const classText = String(el.className || "").toLowerCase();
+      const signature = `${modalId} ${classText} ${text}`;
+
+      if (
+        el.classList.contains("aivoRecOverlay") ||
+        el.classList.contains("aivoRecModal") ||
+        /record|kayit|kayıt/.test(signature)
+      ) {
+        pushModal("music_record_modal_open");
         return;
       }
 
-      if (/kanal ayırma|stem|vokal ayır|enstrüman ayır/.test(text) || /channel|stem/.test(modalId)) {
-        modals.push("channel_separation_confirm");
+      if (
+        /channel|stem|separate|separation/.test(signature) ||
+        /kanal ayırma|kanallara ayır|vokal ayır|enstrüman ayır|stem/.test(signature)
+      ) {
+        pushModal("channel_separation_confirm");
         return;
       }
 
-      if (/mastering/.test(text) || /master/.test(modalId)) {
-        modals.push("mastering_confirm");
+      if (
+        /master|mastering/.test(signature) ||
+        /mastering|master/.test(text)
+      ) {
+        pushModal("mastering_confirm");
         return;
       }
-
-      if (/kayıt|record/.test(text) || /record/.test(modalId)) {
-        modals.push("music_record_modal_open");
-        return;
-      }
-
-      modals.push(modalId || "music_modal");
     });
 
     return Array.from(new Set(modals));
