@@ -136,10 +136,14 @@ export default async function handler(req, res) {
         packages: pricingRegistry?.packages || [],
         recommendationRules: pricingRegistry?.recommendationRules || [],
       },
-      registrySummary: {
+            registrySummary: {
         app: registry?.app || null,
         moduleKeys: registry?.modules ? Object.keys(registry.modules) : [],
       },
+      coverDiagnostic:
+        body?.coverDiagnostic && typeof body.coverDiagnostic === "object"
+          ? body.coverDiagnostic
+          : null,
     };
 
     const systemPrompt = `
