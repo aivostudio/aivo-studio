@@ -1627,6 +1627,15 @@ document.addEventListener(
     );
 
     if (counter) counter.textContent = String(state.prompt.length);
+
+    syncAtmoAssistantState({
+      lastAction: "prompt_input",
+      promptPresent: !!state.prompt,
+      promptText: state.prompt,
+      generationState: "idle",
+      visibleError: "",
+      policyState: "allow"
+    });
   });
 
   // ------------------------------------------------------------
