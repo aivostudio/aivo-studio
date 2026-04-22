@@ -302,6 +302,7 @@
         // STOP
         try { recorder.stop(); } catch(e) {}
         recBtn.classList.remove("isRecording");
+         publishMusicAssistantContext({ source: "music_record_stop" });
         return;
       }
 
