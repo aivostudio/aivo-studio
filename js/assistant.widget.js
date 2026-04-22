@@ -7,7 +7,7 @@
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement("style");
     style.id = STYLE_ID;
-     style.textContent = `
+    style.textContent = `
       .aivo-assistant-launcher {
         position: fixed;
         right: 18px;
@@ -253,7 +253,7 @@
       <button type="button" class="aivo-assistant-close" aria-label="Kapat">×</button>
     </div>
 
-      <div class="aivo-assistant-quick">
+    <div class="aivo-assistant-quick">
       <button
         type="button"
         class="aivo-assistant-chip"
@@ -391,6 +391,7 @@
     inputEl.style.height = "46px";
     inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
   }
+
   function getBodyText() {
     return String(document.body?.innerText || "");
   }
@@ -449,8 +450,8 @@
         title: document.title || "",
         pathname,
         bodyText: bodyText.slice(0, 4000),
-        quickAction: extraContext,
-      },
+        quickAction: extraContext
+      }
     };
 
     if (runtime) {
@@ -462,7 +463,9 @@
         (typeof runtime.actionContext === "string" ? runtime.actionContext : "");
 
       context.currentPanel =
-        typeof runtime.currentPanel === "string" ? runtime.currentPanel : context.currentPanel;
+        typeof runtime.currentPanel === "string"
+          ? runtime.currentPanel
+          : context.currentPanel;
 
       context.currentCardType =
         typeof runtime.currentCardType === "string" ? runtime.currentCardType : "";
@@ -501,14 +504,14 @@
               key: typeof v.key === "string" ? v.key : null,
               label: typeof v.label === "string" ? v.label : null,
               priceTRY: Number.isFinite(Number(v.priceTRY)) ? Number(v.priceTRY) : null,
-              credits: Number.isFinite(Number(v.credits)) ? Number(v.credits) : null,
+              credits: Number.isFinite(Number(v.credits)) ? Number(v.credits) : null
             }))
         : [];
 
       context.uiState = {
         ...context.uiState,
         ...(runtime.uiState && typeof runtime.uiState === "object" ? runtime.uiState : {}),
-        quickAction: extraContext,
+        quickAction: extraContext
       };
     }
 
@@ -597,7 +600,7 @@
           key: "starter",
           label: "Yeni Kullanıcı",
           priceTRY: 199,
-          credits: 25,
+          credits: 25
         });
       }
 
@@ -606,7 +609,7 @@
           key: "standard",
           label: "Standart Paket",
           priceTRY: 699,
-          credits: 100,
+          credits: 100
         });
       }
 
@@ -615,7 +618,7 @@
           key: "pro",
           label: "Yaratıcı Üretici",
           priceTRY: 1299,
-          credits: 200,
+          credits: 200
         });
       }
 
@@ -624,13 +627,14 @@
           key: "studio",
           label: "Stüdyo / Ajans",
           priceTRY: 2999,
-          credits: 500,
+          credits: 500
         });
       }
     }
 
     return context;
   }
+
   async function sendMessage(text, extraContext = {}) {
     const content = String(text || "").trim();
     if (!content || state.loading) return;
@@ -646,12 +650,7 @@
     setLoading(true);
 
     try {
-      const response = await fetch("/api/assistant/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-            const assistantContext = buildAssistantContext(extraContext);
+      const assistantContext = buildAssistantContext(extraContext);
 
       const response = await fetch("/api/assistant/chat", {
         method: "POST",
@@ -663,7 +662,6 @@
           message: content,
           messages: state.messages
         })
-      });
       });
 
       const data = await response.json();
@@ -691,7 +689,7 @@ Sonraki adım: ${brain.followupAction}`;
 Bu işlem onay gerektiriyor.`;
       }
 
-          if (brain?.confidence === "low") {
+      if (brain?.confidence === "low") {
         let hintText =
           "Daha net yönlendirme için bulunduğun ekranı veya yapmak istediğin işlemi biraz daha açık yaz.";
 
