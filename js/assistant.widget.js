@@ -611,10 +611,30 @@ Sonraki adım: ${brain.followupAction}`;
 Bu işlem onay gerektiriyor.`;
       }
 
-      if (brain?.confidence === "low") {
+          if (brain?.confidence === "low") {
+        let hintText =
+          "Daha net yönlendirme için bulunduğun ekranı veya yapmak istediğin işlemi biraz daha açık yaz.";
+
+        if (brain?.intent === "pricing_guidance") {
+          hintText =
+            "Daha net paket önerisi için ne üretmek istediğini ve kullanım sıklığını kısa yaz.";
+        } else if (brain?.intent === "troubleshooting") {
+          hintText =
+            "Daha net çözüm için hangi modülde olduğunu ve ekranda gördüğün durumu kısa yaz.";
+        } else if (brain?.intent === "prompt_help") {
+          hintText =
+            "Daha güçlü prompt desteği için ne üretmek istediğini kısa ve net yaz.";
+        } else if (brain?.intent === "module_selection") {
+          hintText =
+            "Doğru modülü önermem için üretmek istediğin içeriği kısa yaz.";
+        } else if (brain?.intent === "product_action") {
+          hintText =
+            "Doğru aksiyonu söylemem için bulunduğun ekranı, kartı veya menüyü biraz daha net yaz.";
+        }
+
         assistantText += `
 
-Daha net yönlendirme için bulunduğun ekranı veya yapmak istediğin işlemi biraz daha açık yaz.`;
+${hintText}`;
       }
 
       state.messages.push({
