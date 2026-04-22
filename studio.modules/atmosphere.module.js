@@ -1804,8 +1804,24 @@ function buildBasicPayload() {
       return;
     }
 
-    const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
+      const mode = btn.dataset.atmMode || btn.getAttribute("data-atm-mode") || "basic";
     state.mode = mode;
+
+    syncAtmoAssistantState({
+      lastAction: "generate_click",
+      mode,
+      generationState: "processing",
+      policyState: "allow",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      dbSaved: false,
+      lastJobId: "",
+      lastRequestId: "",
+      lastVideoUrl: "",
+      visibleError: "",
+      visiblePolicyNote: readAtmoPolicyNote(root)
+    });
 
     if (mode === "pro") {
       const promptEl = qs("#atmSuperPrompt", root) || document.getElementById("atmSuperPrompt");
