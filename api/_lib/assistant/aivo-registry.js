@@ -4,6 +4,7 @@ const AIVO_REGISTRY = {
     assistantRole: "product_copilot",
     version: 1,
   },
+  
 
   globals: {
     jobStatuses: [
