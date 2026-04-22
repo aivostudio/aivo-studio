@@ -4,7 +4,7 @@ import {
   getPricingRegistry,
   findModuleByAlias,
   findActionInModule,
-} from "../../lib/assistant/aivo-registry.js";
+} from "../lib/assistant/aivo-registry.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
