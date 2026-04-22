@@ -11,6 +11,121 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   const POLL_MS = 2000;
   const POLL_MAX = 120; // 4 dk
 
+
+  function getVideoAssistantState() {
+    if (!window.__AIVO_VIDEO_ASSISTANT_STATE__) {
+      window.__AIVO_VIDEO_ASSISTANT_STATE__ = {
+        currentPanel: "video",
+        currentFlow: "video_text_generate",
+        policyState: "allow",
+        generationState: "idle",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost: 0,
+        lastJobId: "",
+        lastRequestId: "",
+        lastVideoUrl: "",
+        visibleError: "",
+        visiblePolicyNote: "",
+        dbSaved: false,
+        video: {
+          mode: "text",
+          promptPresent: false,
+          promptText: "",
+          imagePromptPresent: false,
+          imagePromptText: "",
+          ratio: "16:9",
+          duration: "5",
+          resolution: "720",
+          audioEnabled: false,
+          imageUploadState: "empty"
+        },
+        updatedAt: Date.now()
+      };
+    }
+
+    return window.__AIVO_VIDEO_ASSISTANT_STATE__;
+  }
+
+  function patchVideoAssistantState(patch) {
+    const prev = getVideoAssistantState();
+
+    const next = {
+      ...prev,
+      ...patch,
+      currentPanel: "video",
+      updatedAt: Date.now(),
+      video: {
+        ...(prev.video || {}),
+        ...((patch && patch.video) || {})
+      }
+    };
+
+    window.__AIVO_VIDEO_ASSISTANT_STATE__ = next;
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:assistant:video_context", {
+          detail: { ...next }
+        })
+      );
+    } catch (_) {}
+
+    return next;
+  }
+
+  function readVideoPolicyNote(root) {
+    return String(qs("#videoPolicyNote", root)?.textContent || "").trim();
+  }
+
+  function syncVideoAssistantState(root, extra = {}) {
+    const r = root || getRoot();
+    const mode = getVideoMode(r);
+    const textPrompt = String(qs("#videoPrompt", r)?.value || "").trim();
+    const imagePrompt = String(qs("#videoImagePrompt", r)?.value || "").trim();
+    const imageInput = qs("#videoImageInput", r);
+    const imageUploadState = String(imageInput?.dataset?.uploadStatus || "empty").trim();
+    const creditCost =
+      typeof extra.creditCost === "number"
+        ? Number(extra.creditCost)
+        : getVideoCredit(r);
+
+    return patchVideoAssistantState({
+      currentFlow: mode === "image" ? "video_image_generate" : "video_text_generate",
+      policyState: String(extra.policyState || "allow"),
+      generationState: String(extra.generationState || "idle"),
+      creditsConsumed: typeof extra.creditsConsumed === "boolean" ? extra.creditsConsumed : false,
+      refundExpected: typeof extra.refundExpected === "boolean" ? extra.refundExpected : false,
+      refundDone: typeof extra.refundDone === "boolean" ? extra.refundDone : false,
+      creditCost,
+      lastJobId: String(extra.lastJobId || ""),
+      lastRequestId: String(extra.lastRequestId || ""),
+      lastVideoUrl: String(extra.lastVideoUrl || ""),
+      visibleError: String(extra.visibleError || ""),
+      visiblePolicyNote: String(extra.visiblePolicyNote || readVideoPolicyNote(r)),
+      dbSaved: typeof extra.dbSaved === "boolean" ? extra.dbSaved : false,
+      video: {
+        mode,
+        promptPresent: !!textPrompt,
+        promptText: textPrompt,
+        imagePromptPresent: !!imagePrompt,
+        imagePromptText: imagePrompt,
+        ratio: String(qs("#videoRatio", r)?.value || "16:9"),
+        duration: String(qs("#videoDuration", r)?.value || "5"),
+        resolution: String(qs("#videoResolution", r)?.value || "720"),
+        audioEnabled: !!qs("#audioEnabled", r)?.checked,
+        imageUploadState,
+        ...((extra && extra.video) || {})
+      }
+    });
+  }
+
+  window.getVideoAssistantState = getVideoAssistantState;
+  window.patchVideoAssistantState = patchVideoAssistantState;
+  window.syncVideoAssistantState = syncVideoAssistantState;
+
+
   // ===============================
   // Policy helpers (Video)
   // ===============================
@@ -788,6 +903,18 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     }
 
     if (!creditRes.ok || !creditData?.ok) {
+      syncVideoAssistantState(getRoot(), {
+        generationState: "failed",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost,
+        lastJobId: "",
+        lastRequestId: consumeRequestId,
+        lastVideoUrl: "",
+        visibleError: "insufficient_credit"
+      });
+
       const to = encodeURIComponent(
         location.pathname + location.search + location.hash
       );
@@ -844,6 +971,17 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
       if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
         await refreshVideoCreditsUI();
+        syncVideoAssistantState(getRoot(), {
+          generationState: "failed",
+          creditsConsumed: true,
+          refundExpected: true,
+          refundDone: true,
+          creditCost,
+          lastJobId: String(meta?.job_id || ""),
+          lastRequestId: consumeRequestId,
+          lastVideoUrl: "",
+          visibleError: String(meta?.error || reason || "video_refund_done")
+        });
         try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
         return true;
       }
@@ -899,13 +1037,32 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
           })
         );
 
+        syncVideoAssistantState(getRoot(), {
+          generationState: "ready",
+          creditsConsumed: true,
+          refundExpected: false,
+          refundDone: false,
+          creditCost: Number(refundCtx?.creditCost || getVideoCredit(getRoot()) || 0),
+          lastJobId: String(job_id || ""),
+          lastRequestId: String(refundCtx?.consumeRequestId || ""),
+          lastVideoUrl: String(
+            normalizedOutputs[0]?.url ||
+            normalizedOutputs[0]?.video_url ||
+            normalizedOutputs[0]?.archive_url ||
+            ""
+          ).trim(),
+          visibleError: "",
+          dbSaved: true
+        });
+
         try { window.toast?.success?.("Video hazır"); } catch {}
         return;
       }
 
       if (String(j.status || "").toLowerCase() === "error") {
+        let refunded = false;
         if (refundCtx) {
-          await refundVideoCredits({
+          refunded = await refundVideoCredits({
             creditCost: refundCtx.creditCost,
             creditReason: refundCtx.creditReason,
             consumeRequestId: refundCtx.consumeRequestId,
@@ -923,6 +1080,18 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
             }
           });
         }
+
+        syncVideoAssistantState(getRoot(), {
+          generationState: "failed",
+          creditsConsumed: true,
+          refundExpected: true,
+          refundDone: refunded,
+          creditCost: Number(refundCtx?.creditCost || getVideoCredit(getRoot()) || 0),
+          lastJobId: String(job_id || ""),
+          lastRequestId: String(refundCtx?.consumeRequestId || ""),
+          lastVideoUrl: "",
+          visibleError: String(j.error || "video_job_error")
+        });
 
         window.dispatchEvent(
           new CustomEvent("aivo:video:job_failed", {
@@ -951,8 +1120,9 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       }
     }
 
+    let timeoutRefunded = false;
     if (refundCtx) {
-      await refundVideoCredits({
+      timeoutRefunded = await refundVideoCredits({
         creditCost: refundCtx.creditCost,
         creditReason: refundCtx.creditReason,
         consumeRequestId: refundCtx.consumeRequestId,
@@ -970,6 +1140,18 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         }
       });
     }
+
+    syncVideoAssistantState(getRoot(), {
+      generationState: "failed",
+      creditsConsumed: true,
+      refundExpected: true,
+      refundDone: timeoutRefunded,
+      creditCost: Number(refundCtx?.creditCost || getVideoCredit(getRoot()) || 0),
+      lastJobId: String(job_id || ""),
+      lastRequestId: String(refundCtx?.consumeRequestId || ""),
+      lastVideoUrl: "",
+      visibleError: "video_poll_timeout"
+    });
 
     window.dispatchEvent(
       new CustomEvent("aivo:video:job_failed", {
@@ -1070,6 +1252,21 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         policyNote.style.display = "block";
       }
 
+      syncVideoAssistantState(root, {
+        currentFlow: "video_text_generate",
+        policyState: "block",
+        generationState: "failed",
+        creditsConsumed: false,
+        refundExpected: false,
+        refundDone: false,
+        creditCost: getVideoCredit(root),
+        lastJobId: "",
+        lastRequestId: "",
+        lastVideoUrl: "",
+        visibleError: "policy_blocked",
+        visiblePolicyNote: readVideoPolicyNote(root)
+      });
+
       return;
     }
 
@@ -1089,8 +1286,35 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
     const creditReason = "studio_video_text_generate";
 
+    syncVideoAssistantState(root, {
+      currentFlow: "video_text_generate",
+      policyState: "allow",
+      generationState: "processing",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      creditCost,
+      lastJobId: "",
+      lastRequestId: "",
+      lastVideoUrl: "",
+      visibleError: ""
+    });
+
     const consumed = await consumeVideoCredits({ creditCost, creditReason });
     if (!consumed) return;
+
+    syncVideoAssistantState(root, {
+      currentFlow: "video_text_generate",
+      generationState: "processing",
+      creditsConsumed: true,
+      refundExpected: false,
+      refundDone: false,
+      creditCost,
+      lastJobId: "",
+      lastRequestId: consumed.consumeRequestId,
+      lastVideoUrl: "",
+      visibleError: ""
+    });
 
     try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
 
@@ -1103,6 +1327,20 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
       const job_id = job.job_id || job.id;
       console.log("[video] created(text)", { job_id, job, creditCost });
+
+      syncVideoAssistantState(root, {
+        currentFlow: "video_text_generate",
+        generationState: "processing",
+        creditsConsumed: true,
+        refundExpected: false,
+        refundDone: false,
+        creditCost,
+        lastJobId: String(job_id || ""),
+        lastRequestId: consumed.consumeRequestId,
+        lastVideoUrl: "",
+        visibleError: "",
+        dbSaved: true
+      });
 
       emitVideoJobCreated({
         app: "video",
@@ -1151,6 +1389,19 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         }
       });
 
+      syncVideoAssistantState(root, {
+        currentFlow: "video_text_generate",
+        generationState: "failed",
+        creditsConsumed: true,
+        refundExpected: true,
+        refundDone: refunded,
+        creditCost,
+        lastJobId: "",
+        lastRequestId: consumed.consumeRequestId,
+        lastVideoUrl: "",
+        visibleError: String(err?.message || err || "video_text_create_failed")
+      });
+
       if (!refunded) {
         throw err;
       }
@@ -1196,6 +1447,21 @@ async function createImage() {
       policyNote.style.display = "block";
     }
 
+    syncVideoAssistantState(root, {
+      currentFlow: "video_image_generate",
+      policyState: "block",
+      generationState: "failed",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      creditCost: getVideoCredit(root),
+      lastJobId: "",
+      lastRequestId: "",
+      lastVideoUrl: "",
+      visibleError: "policy_blocked",
+      visiblePolicyNote: readVideoPolicyNote(root)
+    });
+
     return;
   }
 
@@ -1207,6 +1473,15 @@ async function createImage() {
   }
 
   if (uploadStatus === "uploading") {
+    syncVideoAssistantState(root, {
+      currentFlow: "video_image_generate",
+      generationState: "failed",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      creditCost: getVideoCredit(root),
+      visibleError: "image_not_ready"
+    });
     try {
       window.toast?.info?.("Görsel hâlâ yükleniyor");
     } catch {}
@@ -1214,6 +1489,16 @@ async function createImage() {
   }
 
   if (uploadStatus === "policy_blocked") {
+    syncVideoAssistantState(root, {
+      currentFlow: "video_image_generate",
+      policyState: "block",
+      generationState: "failed",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      creditCost: getVideoCredit(root),
+      visibleError: "policy_blocked"
+    });
     try {
       window.toast?.error?.("Bu görsel kullanılamaz.");
     } catch {}
@@ -1221,6 +1506,15 @@ async function createImage() {
   }
 
   if (uploadStatus !== "ready" || !uploadedImageUrl) {
+    syncVideoAssistantState(root, {
+      currentFlow: "video_image_generate",
+      generationState: "failed",
+      creditsConsumed: false,
+      refundExpected: false,
+      refundDone: false,
+      creditCost: getVideoCredit(root),
+      visibleError: uploadErrorReason || "image_upload_failed"
+    });
     try {
       window.toast?.error?.("Yükleme hatası");
     } catch {}
@@ -1243,8 +1537,35 @@ async function createImage() {
   const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
   const creditReason = "studio_video_image_generate";
 
+  syncVideoAssistantState(root, {
+    currentFlow: "video_image_generate",
+    policyState: "allow",
+    generationState: "processing",
+    creditsConsumed: false,
+    refundExpected: false,
+    refundDone: false,
+    creditCost,
+    lastJobId: "",
+    lastRequestId: "",
+    lastVideoUrl: "",
+    visibleError: ""
+  });
+
   const consumed = await consumeVideoCredits({ creditCost, creditReason });
   if (!consumed) return;
+
+  syncVideoAssistantState(root, {
+    currentFlow: "video_image_generate",
+    generationState: "processing",
+    creditsConsumed: true,
+    refundExpected: false,
+    refundDone: false,
+    creditCost,
+    lastJobId: "",
+    lastRequestId: consumed.consumeRequestId,
+    lastVideoUrl: "",
+    visibleError: ""
+  });
 
   try {
     window.toast?.success?.(`${creditCost} kredi düşüldü`);
@@ -1259,6 +1580,20 @@ async function createImage() {
 
     const job_id = job.job_id || job.id;
     console.log("[video] created(image)", { job_id, job, creditCost, image_url: payload.image_url });
+
+    syncVideoAssistantState(root, {
+      currentFlow: "video_image_generate",
+      generationState: "processing",
+      creditsConsumed: true,
+      refundExpected: false,
+      refundDone: false,
+      creditCost,
+      lastJobId: String(job_id || ""),
+      lastRequestId: consumed.consumeRequestId,
+      lastVideoUrl: "",
+      visibleError: "",
+      dbSaved: true
+    });
 
     emitVideoJobCreated({
       app: "video",
@@ -1309,6 +1644,19 @@ async function createImage() {
         image_url: payload.image_url || "",
         error: String(err?.message || err || "video_image_create_failed")
       }
+    });
+
+    syncVideoAssistantState(root, {
+      currentFlow: "video_image_generate",
+      generationState: "failed",
+      creditsConsumed: true,
+      refundExpected: true,
+      refundDone: refunded,
+      creditCost,
+      lastJobId: "",
+      lastRequestId: consumed.consumeRequestId,
+      lastVideoUrl: "",
+      visibleError: String(err?.message || err || "video_image_create_failed")
     });
 
     if (!refunded) {
@@ -1459,6 +1807,12 @@ async function createImage() {
         resetVideoPolicyUI(root);
         updateText();
         syncVideoCreditUI(root);
+        syncVideoAssistantState(root, {
+          currentFlow: "video_text_generate",
+          generationState: "idle",
+          visibleError: "",
+          policyState: "allow"
+        });
       });
 
       textPromptEl.addEventListener("change", () => {
@@ -1532,6 +1886,12 @@ function bindTabs(root) {
       if (bar) bar.style.width = "0%";
       if (pct) pct.textContent = "0%";
       if (clearBtn) clearBtn.style.display = "none";
+      syncVideoAssistantState(root, {
+        currentFlow: "video_image_generate",
+        generationState: "idle",
+        visibleError: "",
+        video: { imageUploadState: "empty" }
+      });
       return;
     }
 
@@ -1545,6 +1905,12 @@ function bindTabs(root) {
       if (bar) bar.style.width = "35%";
       if (pct) pct.textContent = "35%";
       if (clearBtn) clearBtn.style.display = "none";
+      syncVideoAssistantState(root, {
+        currentFlow: "video_image_generate",
+        generationState: "idle",
+        visibleError: "",
+        video: { imageUploadState: "uploading" }
+      });
       return;
     }
 
@@ -1559,6 +1925,12 @@ function bindTabs(root) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
       }
+      syncVideoAssistantState(root, {
+        currentFlow: "video_image_generate",
+        generationState: "idle",
+        visibleError: "",
+        video: { imageUploadState: "ready" }
+      });
       return;
     }
 
@@ -1573,6 +1945,14 @@ function bindTabs(root) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
       }
+      syncVideoAssistantState(root, {
+        currentFlow: "video_image_generate",
+        policyState: "block",
+        generationState: "failed",
+        visibleError: "policy_blocked",
+        visiblePolicyNote: readVideoPolicyNote(root),
+        video: { imageUploadState: "policy_blocked" }
+      });
       return;
     }
 
@@ -1587,6 +1967,12 @@ function bindTabs(root) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
       }
+      syncVideoAssistantState(root, {
+        currentFlow: "video_image_generate",
+        generationState: "failed",
+        visibleError: errorReason || "image_upload_failed",
+        video: { imageUploadState: "error" }
+      });
       return;
     }
   }
@@ -1781,6 +2167,12 @@ function bindTabs(root) {
 
     root.dataset.videoMode = mode;
     syncVideoCreditUI(root);
+    syncVideoAssistantState(root, {
+      currentFlow: mode === "image" ? "video_image_generate" : "video_text_generate",
+      generationState: "idle",
+      visibleError: "",
+      policyState: "allow"
+    });
     console.log("[video.tabs] mode =", mode);
   }
 
@@ -1808,6 +2200,12 @@ function bindTabs(root) {
     bindTabs(root);
     bindPromptCounter(root);
     bindVideoPricingUI(root);
+    syncVideoAssistantState(root, {
+      currentFlow: getVideoMode(root) === "image" ? "video_image_generate" : "video_text_generate",
+      generationState: "idle",
+      visibleError: "",
+      policyState: "allow"
+    });
   }
 
   // İlk çalıştır
