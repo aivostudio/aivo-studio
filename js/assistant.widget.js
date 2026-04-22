@@ -359,8 +359,25 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
+            body: JSON.stringify({
           page: window.location.pathname,
+          module: "",
+          actionContext: "",
+          currentPanel: "",
+          currentCardType: "",
+          selectedItemType: "",
+          lastJobStatus: "",
+          userCredits: null,
+          creditsNeeded: null,
+          hasSelection: null,
+          availableActions: [],
+          visibleModals: [],
+          currentProductCards: [],
+          uiState: {
+            title: document.title || "",
+            pathname: window.location.pathname || "",
+            bodyText: (document.body?.innerText || "").slice(0, 4000)
+          },
           message: content,
           messages: state.messages
         })
