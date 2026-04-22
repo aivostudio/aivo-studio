@@ -291,6 +291,7 @@
       actions.style.display = "none";
       recBtn.style.display = "";
       timerEl.textContent = "00:00";
+      publishMusicAssistantContext({ source: "music_record_reset" });
     });
 
     recBtn.addEventListener("click", async () => {
