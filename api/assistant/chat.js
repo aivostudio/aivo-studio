@@ -194,10 +194,72 @@ Mevcut AIVO bağlamı:
 ${JSON.stringify(assistantContext, null, 2)}
     `.trim();
 
+    const brainSchema = {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        intent: {
+          type: "string",
+          enum: [
+            "general_help",
+            "module_selection",
+            "product_action",
+            "troubleshooting",
+            "pricing_guidance",
+            "prompt_help",
+          ],
+        },
+        module: {
+          type: ["string", "null"],
+        },
+        action: {
+          type: ["string", "null"],
+        },
+        answer: {
+          type: "string",
+        },
+        uiTarget: {
+          type: ["string", "null"],
+        },
+        followupAction: {
+          type: ["string", "null"],
+        },
+        needsConfirmation: {
+          type: "boolean",
+        },
+        confidence: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+        },
+      },
+      required: [
+        "intent",
+        "module",
+        "action",
+        "answer",
+        "uiTarget",
+        "followupAction",
+        "needsConfirmation",
+        "confidence",
+      ],
+    };
+
     const input = [
       {
         role: "system",
-        content: systemPrompt,
+        content:
+          systemPrompt +
+          `
+
+ÇIKTI KURALI:
+Kullanıcıya serbest metin değil, aşağıdaki şemaya uygun TEK bir JSON nesnesi üret.
+JSON dışında hiçbir şey yazma.
+answer alanı kullanıcıya gösterilecek kısa ve net metindir.
+module alanında mümkünse registry module key kullan.
+action alanında mümkünse gerçek action key kullan.
+uiTarget alanında mümkünse gerçek UI konumu yaz.
+followupAction alanında mümkünse bir sonraki önerilen ürün içi aksiyonu yaz.
+needsConfirmation true ise işlem öncesi onay veya kredi onayı gerekir.`,
       },
       ...messages
         .filter((msg) => msg && typeof msg.content === "string" && msg.content.trim())
@@ -223,6 +285,14 @@ ${JSON.stringify(assistantContext, null, 2)}
       body: JSON.stringify({
         model: "gpt-4.1-mini",
         input,
+        text: {
+          format: {
+            type: "json_schema",
+            name: "aivo_brain_response",
+            schema: brainSchema,
+            strict: true,
+          },
+        },
       }),
     });
 
@@ -235,26 +305,57 @@ ${JSON.stringify(assistantContext, null, 2)}
       });
     }
 
-   let text =
-  data?.output_text ||
-  data?.output
-    ?.flatMap((item) => item?.content || [])
-    ?.filter((item) => item?.type === "output_text")
-    ?.map((item) => item?.text || "")
-    ?.join("\n")
-    ?.trim() ||
-  "Şu anda cevap üretilemedi.";
+    const rawText =
+      data?.output_text ||
+      data?.output
+        ?.flatMap((item) => item?.content || [])
+        ?.filter((item) => item?.type === "output_text")
+        ?.map((item) => item?.text || "")
+        ?.join("\n")
+        ?.trim() ||
+      "";
 
-text = text
-  .replace(/\*\*(.*?)\*\*/g, "$1")
-  .replace(/^\s*-\s+/gm, "")
-  .replace(/\n{3,}/g, "\n\n")
-  .trim();
+    let brain = null;
+
+    try {
+      brain = rawText ? JSON.parse(rawText) : null;
+    } catch (parseError) {
+      brain = null;
+    }
+
+    if (!brain || typeof brain !== "object") {
+      brain = {
+        intent: "general_help",
+        module: detectedModule?.key || null,
+        action: detectedAction?.key || null,
+        answer: "Şu anda net bir yönlendirme üretemedim. Bulunduğun ekrana göre tekrar sorarsan daha doğru yönlendirebilirim.",
+        uiTarget: null,
+        followupAction: null,
+        needsConfirmation: false,
+        confidence: "low",
+      };
+    }
+
+    const safeAnswer = String(brain.answer || "Şu anda cevap üretilemedi.")
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/^\s*-\s+/gm, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
     return res.status(200).json({
       ok: true,
-      message: text,
       id: data?.id || null,
+      message: safeAnswer,
+      brain: {
+        intent: brain.intent || "general_help",
+        module: brain.module || null,
+        action: brain.action || null,
+        answer: safeAnswer,
+        uiTarget: brain.uiTarget || null,
+        followupAction: brain.followupAction || null,
+        needsConfirmation: Boolean(brain.needsConfirmation),
+        confidence: brain.confidence || "low",
+      },
     });
   } catch (error) {
     return res.status(500).json({
