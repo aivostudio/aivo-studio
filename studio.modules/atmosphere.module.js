@@ -1328,8 +1328,17 @@ const isPolicyBlocked =
         p.style.display = on ? "" : "none";
       });
 
-      syncAspectUI(root, shell);
+           syncAspectUI(root, shell);
       console.log("[ATM] mode switch ->", mode);
+
+      syncAtmoAssistantState({
+        lastAction: "mode_change",
+        mode,
+        generationState: "idle",
+        visibleError: "",
+        policyState: "allow"
+      });
+
       syncAtmoGenerateCredits(root);
     },
     true
