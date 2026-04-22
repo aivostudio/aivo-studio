@@ -2128,19 +2128,51 @@ async function tryRefund(reason, extraMeta = {}) {
         credit: creditCalc
       });
 
-      const result = await withGenerateLoading(
-        btn,
-        async () => {
-          return await hook(payload);
-        },
-        root
-      );
+       const result = await withGenerateLoading(
+      btn,
+      async () => {
+        return await hook(payload);
+      },
+      root
+    );
 
-      const hookFailed =
-        !result?.ok ||
-        result?.res?.ok === false ||
-        result?.res?.error ||
-        result?.res?.status >= 400;
+    syncAtmoAssistantState({
+      lastAction: "job_created",
+      mode,
+      generationState: "processing",
+      creditsConsumed: true,
+      refundExpected: false,
+      refundDone: false,
+      dbSaved: !!String(
+        result?.res?.job_id ||
+        result?.evt?.job_id ||
+        result?.evt?.detail?.job_id ||
+        ""
+      ).trim(),
+      lastJobId: String(
+        result?.res?.job_id ||
+        result?.evt?.job_id ||
+        result?.evt?.detail?.job_id ||
+        ""
+      ).trim(),
+      lastRequestId: String(
+        result?.res?.request_id ||
+        result?.res?.requestId ||
+        result?.evt?.request_id ||
+        result?.evt?.requestId ||
+        result?.evt?.detail?.request_id ||
+        result?.evt?.detail?.requestId ||
+        payload?.request_id ||
+        ""
+      ).trim(),
+      visibleError: ""
+    });
+
+    const hookFailed =
+      !result?.ok ||
+      result?.res?.ok === false ||
+      result?.res?.error ||
+      result?.res?.status >= 400;
 
       if (hookFailed) {
         await tryRefund("atmo_generate_failed", {
