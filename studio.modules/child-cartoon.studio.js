@@ -1,1941 +1,2603 @@
 (() => {
-  function formatSceneDuration(seconds) {
-    const value = Number(seconds) || 0;
-    return `${value} sn`;
+  if (window.__CARTOON_STORY_BIND__) return;
+  window.__CARTOON_STORY_BIND__ = true;
+
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const STORY_MAX_POLLS = 240;
+  const STORY_POLL_INTERVAL = 3000;
+  const STORY_READY_RECHECK_LIMIT = 20;
+  const STORY_READY_RECHECK_INTERVAL = 1500;
+
+  const STORY_FLOW_PRESETS = {
+    "3": { intro: 3, setup: 3, adventure: 4, final: 2 },
+    "4": { intro: 4, setup: 4, adventure: 6, final: 4 },
+    "5": { intro: 6, setup: 6, adventure: 8, final: 4 },
+    "6": { intro: 7, setup: 7, adventure: 10, final: 6 }
+  };
+
+  const STORY_SECTION_SCENE_BLUEPRINTS = {
+    intro: [
+      { title: "Dünya Açılışı", description: "Ortam ve genel atmosfer kurulur." },
+      { title: "Ana Karakter Tanıtımı", description: "Ana karakter ilk kez görünür." },
+      { title: "Hedefin Ortaya Çıkışı", description: "Karakterin amacı netleşir." },
+      { title: "İlk Duygusal Bağ", description: "Karakterin iç dünyası görünür olur." },
+      { title: "Merak Kıvılcımı", description: "Yeni bir soru veya merak doğar." },
+      { title: "Dünyanın Kuralı", description: "Hikayenin temel düzeni iyice hissedilir." },
+      { title: "Yola Çağrı", description: "Karakter harekete geçmeye hazırlanır." }
+    ],
+    setup: [
+      { title: "Yardımcı Unsur Gelir", description: "Yardımcı karakter veya unsur hikayeye dahil olur." },
+      { title: "Yolculuk Başlar", description: "Karakterler harekete geçer." },
+      { title: "İlk Engel", description: "İlk zorluk ortaya çıkar." },
+      { title: "Plan Kurulur", description: "Sorunu çözmek için ilk plan yapılır." },
+      { title: "Yeni İpucu", description: "Hedefe giden yolda yeni bir bilgi öğrenilir." },
+      { title: "Denge Bozulur", description: "Karakterlerin düzeni iyice değişir." },
+      { title: "Karar Anı", description: "Geri dönmek yerine devam etme kararı verilir." }
+    ],
+    adventure: [
+      { title: "Macera Derinleşir", description: "Olaylar büyümeye başlar." },
+      { title: "Deneme ve Çaba", description: "Karakterler çözüm için yeni bir yol dener." },
+      { title: "Gerilim Artar", description: "Risk yükselir, baskı artar." },
+      { title: "Doruk Noktası", description: "En kritik karşılaşma yaşanır." },
+      { title: "Beklenmedik Sürpriz", description: "Plan dışı yeni bir gelişme olur." },
+      { title: "Takım Ruhu", description: "Karakterler birlikte hareket etmeyi öğrenir." },
+      { title: "Büyük Engel", description: "Daha güçlü bir zorluk kahramanların önüne çıkar." },
+      { title: "Son Hazırlık", description: "Final öncesi son hazırlıklar yapılır." },
+      { title: "Umut Yeniden Doğar", description: "Karakterler tekrar güç kazanır." },
+      { title: "Büyük Karşılaşma", description: "Hikayenin en yoğun anı yaşanır." }
+    ],
+    final: [
+      { title: "Çözüm", description: "Sorun çözülür." },
+      { title: "Kapanış", description: "Hikaye sıcak bir final ile biter." },
+      { title: "Kutlama", description: "Karakterler başarıyı birlikte yaşar." },
+      { title: "Duygusal Veda", description: "Hikayenin duygusal etkisi tamamlanır." },
+      { title: "Yeni Denge", description: "Dünyada yeni bir düzen kurulmuş olur." },
+      { title: "Son Gülümseme", description: "İzleyiciye sıcak bir son an bırakılır." }
+    ]
+  };
+
+  const STORY_CHARACTER_SLOT_CONFIG = [
+    {
+      slot: "main",
+      stateKey: "mainCharacter",
+      selectSelectors: ['[data-story-main-character]'],
+      uploadInputSelectors: ['[data-story-character-file="main"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="main"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="main"]']
+    },
+    {
+      slot: "helper1",
+      stateKey: "helperCharacter1",
+      selectSelectors: ['[data-story-helper-1]'],
+      uploadInputSelectors: ['[data-story-character-file="helper1"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="helper1"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="helper1"]']
+    },
+    {
+      slot: "helper2",
+      stateKey: "helperCharacter2",
+      selectSelectors: ['[data-story-helper-2]'],
+      uploadInputSelectors: ['[data-story-character-file="helper2"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="helper2"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="helper2"]']
+    },
+    {
+      slot: "extra",
+      stateKey: "extraCharacter",
+      selectSelectors: ['[data-story-helper-3]', '[data-story-extra-character]'],
+      uploadInputSelectors: ['[data-story-character-file="extra"]'],
+      uploadTriggerSelectors: ['[data-story-upload-trigger="extra"]'],
+      uploadRemoveSelectors: ['[data-story-upload-remove="extra"]']
+    }
+  ];
+
+  function getCartoonRoot() {
+    return qs('.main-panel[data-module="cartoon"]');
   }
 
-  function formatSummaryDuration(totalSeconds) {
-    const value = Number(totalSeconds) || 0;
-
-    if (value < 60) {
-      return `${value} sn`;
-    }
-
-    const minutes = Math.floor(value / 60);
-    const seconds = value % 60;
-
-    if (!seconds) {
-      return `${minutes} dk`;
-    }
-
-    return `${minutes} dk ${seconds} sn`;
-  }
-
-  function createStudioState() {
-    return {
-      format: '16:9',
-      scenes: [],
-      previewUrl: '',
-      previewTitle: '',
-
-      voiceFile: null,
-      voiceFileName: '',
-      voiceFileUrl: '',
-      voiceFileUploadPromise: null,
-      voiceFileUploadStatus: 'idle',
-      voiceFileUploadError: '',
-
-      logoFile: null,
-      logoFileName: '',
-      logoFileUrl: '',
-      logoFileUploadPromise: null,
-      logoFileUploadStatus: 'idle',
-      logoFileUploadError: ''
-    };
-  }
-
-  const STUDIO_DB_APP = 'cartoon';
-  const STUDIO_DB_MODE = 'studio';
-
-  function buildStudioPersistPayload(rootState) {
-    return {
-      app: STUDIO_DB_APP,
-      mode: STUDIO_DB_MODE,
-      format: String(rootState?.format || '16:9'),
-
-      scenes: Array.isArray(rootState?.scenes)
-        ? rootState.scenes.map((scene) => ({
-            id: String(scene?.id || ''),
-            title: String(scene?.title || 'Sahne'),
-            duration: Number(scene?.duration) || 0,
-            included: !!scene?.included,
-            videoUrl: String(scene?.videoUrl || ''),
-            fileName: String(scene?.fileName || '')
-          }))
-        : [],
-
-      voice: {
-        fileName: String(rootState?.voiceFileName || ''),
-        fileUrl: String(rootState?.voiceFileUrl || ''),
-        uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
-      },
-
-      logo: {
-        fileName: String(rootState?.logoFileName || ''),
-        fileUrl: String(rootState?.logoFileUrl || ''),
-        uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
-      }
-    };
-  }
-
-  function saveStudioState(rootState) {
-    try {
-      const payload = buildStudioPersistPayload(rootState);
-
-      window.__CARTOON_STUDIO_LAST_SAVE__ = payload;
-
-      fetch('/api/cartoon/studio/state/save', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-        .then(async (res) => {
-          const data = await res.json().catch(() => null);
-
-          if (!res.ok || !data || data.ok === false) {
-            throw new Error(data?.error || 'studio_state_save_failed');
-          }
-
-          console.log('[CARTOON][STUDIO_SAVE_OK]', data);
-        })
-        .catch((err) => {
-          console.error('[CARTOON][STUDIO_SAVE_ERROR]', err);
-        });
-    } catch (err) {
-      console.warn('[CARTOON][STUDIO_SAVE_STATE_ERROR]', err);
-    }
-  }
-
-  async function loadStudioState() {
-    try {
-      const res = await fetch('/api/cartoon/studio/state/get', {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store',
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data || data.ok === false) {
-        throw new Error(data?.error || 'studio_state_get_failed');
-      }
-
-      const parsedScenes = Array.isArray(data?.scenes) ? data.scenes : [];
-      const scenes = parsedScenes.map((scene, index) => ({
-        id: String(scene?.id || `saved-${Date.now()}-${index + 1}`),
-        title: String(scene?.title || 'Sahne'),
-        duration: Number(scene?.duration) || 0,
-        included: !!scene?.included,
-        videoUrl: String(scene?.videoUrl || ''),
-        fileName: String(scene?.fileName || '')
-      }));
-
-      return {
-        format: String(data?.format || '16:9'),
-        scenes,
-
-        voice: {
-          fileName: String(data?.voice?.fileName || ''),
-          fileUrl: String(data?.voice?.fileUrl || ''),
-          uploadStatus: String(data?.voice?.uploadStatus || 'idle')
-        },
-
-        logo: {
-          fileName: String(data?.logo?.fileName || ''),
-          fileUrl: String(data?.logo?.fileUrl || ''),
-          uploadStatus: String(data?.logo?.uploadStatus || 'idle')
-        }
-      };
-    } catch (err) {
-      console.warn('[CARTOON][STUDIO_LOAD_STATE_ERROR]', err);
-      return {
-        format: '16:9',
-        scenes: [],
-        voice: {
-          fileName: '',
-          fileUrl: '',
-          uploadStatus: 'idle'
-        },
-        logo: {
-          fileName: '',
-          fileUrl: '',
-          uploadStatus: 'idle'
-        }
-      };
-    }
-  }
-
-  function ensureStudioPreviewModal(studioRoot) {
-    let modal = document.querySelector('[data-studio-preview-modal]');
-
-    if (modal) return modal;
-
-    modal = document.createElement('div');
-    modal.setAttribute('data-studio-preview-modal', '');
-    modal.hidden = true;
-    modal.innerHTML = `
-      <div data-studio-preview-backdrop
-           style="
-             position:fixed;
-             inset:0;
-             background:rgba(0,0,0,.78);
-             z-index:999999;
-             display:flex;
-             align-items:center;
-             justify-content:center;
-             padding:24px;
-           ">
-        <div data-studio-preview-dialog
-             style="
-               position:relative;
-               width:min(1100px, 92vw);
-               max-height:90vh;
-               border-radius:22px;
-               overflow:hidden;
-               background:#05060f;
-               border:1px solid rgba(255,255,255,.12);
-               box-shadow:0 30px 80px rgba(0,0,0,.55);
-             ">
-          <button type="button"
-                  data-studio-preview-close
-                  aria-label="Önizlemeyi kapat"
-                  title="Kapat"
-                  style="
-                    position:absolute;
-                    top:14px;
-                    right:14px;
-                    width:42px;
-                    height:42px;
-                    border:none;
-                    border-radius:999px;
-                    background:rgba(255,255,255,.14);
-                    color:#fff;
-                    font-size:24px;
-                    line-height:1;
-                    cursor:pointer;
-                    z-index:2;
-                  ">×</button>
-
-          <div style="padding:18px 18px 10px 18px;">
-            <div data-studio-preview-title
-                 style="
-                   color:#fff;
-                   font-weight:800;
-                   font-size:18px;
-                   line-height:1.3;
-                   padding-right:56px;
-                 "></div>
-          </div>
-
-          <div style="padding:0 18px 18px 18px;">
-            <video data-studio-preview-video
-                   controls
-                   playsinline
-                   preload="metadata"
-                   style="
-                     width:100%;
-                     max-height:72vh;
-                     display:block;
-                     background:#000;
-                     border-radius:16px;
-                   "></video>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    const backdrop = modal.querySelector('[data-studio-preview-backdrop]');
-    const dialog = modal.querySelector('[data-studio-preview-dialog]');
-    const closeBtn = modal.querySelector('[data-studio-preview-close]');
-    const video = modal.querySelector('[data-studio-preview-video]');
-
-    function closeStudioPreview() {
-      modal.hidden = true;
-
-      if (video) {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-      }
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeStudioPreview);
-    }
-
-    if (backdrop) {
-      backdrop.addEventListener('click', (event) => {
-        if (!dialog) return;
-        if (!dialog.contains(event.target)) {
-          closeStudioPreview();
-        }
-      });
-    }
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !modal.hidden) {
-        closeStudioPreview();
-      }
-    });
-
-    modal.__openStudioPreview = ({ url, title }) => {
-      const titleEl = modal.querySelector('[data-studio-preview-title]');
-      const videoEl = modal.querySelector('[data-studio-preview-video]');
-
-      if (!videoEl) return;
-
-      if (titleEl) {
-        titleEl.textContent = String(title || 'Video Önizleme');
-      }
-
-      modal.hidden = false;
-      videoEl.src = String(url || '');
-      videoEl.load();
-      videoEl.play().catch(() => {});
-    };
-
-    modal.__closeStudioPreview = closeStudioPreview;
-
-    return modal;
-  }
-
-  function openStudioPreview(studioRoot, scene) {
-    if (!scene?.videoUrl) {
-      alert(`Bu sahne için henüz video yok: ${scene?.title || 'Sahne'}`);
-      return;
-    }
-
-    const modal = ensureStudioPreviewModal(studioRoot);
-    if (!modal || typeof modal.__openStudioPreview !== 'function') return;
-
-    modal.__openStudioPreview({
-      url: scene.videoUrl,
-      title: scene.title || 'Video Önizleme'
-    });
-  }
-
-  function getStudioVideoDuration(file) {
-    return new Promise((resolve) => {
-      if (!file) {
-        resolve(15);
-        return;
-      }
-
-      const objectUrl = URL.createObjectURL(file);
-      const video = document.createElement('video');
-
-      const cleanup = () => {
-        try { URL.revokeObjectURL(objectUrl); } catch {}
-        video.removeAttribute('src');
-        video.load();
-      };
-
-      video.preload = 'metadata';
-
-      video.onloadedmetadata = () => {
-        const seconds = Math.max(1, Math.round(Number(video.duration) || 15));
-        cleanup();
-        resolve(seconds);
-      };
-
-      video.onerror = () => {
-        cleanup();
-        resolve(15);
-      };
-
-      video.src = objectUrl;
-    });
-  }
-
-  function getStudioVideoExtension(fileName) {
-    const name = String(fileName || '').toLowerCase().trim();
-    const match = name.match(/\.([a-z0-9]+)$/i);
-    return match ? match[1] : '';
-  }
-
-  function resolveStudioVideoContentType(file) {
-    const rawType = String(file?.type || '').toLowerCase().trim();
-    const ext = getStudioVideoExtension(file?.name || '');
-
-    const allowedTypes = new Set([
-      'video/mp4',
-      'video/webm',
-      'video/quicktime',
-      'video/x-matroska',
-      'video/mpeg',
-      'video/ogg'
-    ]);
-
-    if (allowedTypes.has(rawType)) {
-      if (rawType === 'video/x-matroska') return 'video/webm';
-      return rawType;
-    }
-
-    if (ext === 'mp4' || ext === 'm4v') return 'video/mp4';
-    if (ext === 'webm') return 'video/webm';
-    if (ext === 'mov' || ext === 'qt') return 'video/quicktime';
-    if (ext === 'mkv') return 'video/webm';
-    if (ext === 'mpeg' || ext === 'mpg') return 'video/mpeg';
-    if (ext === 'ogv') return 'video/ogg';
-
-    return 'video/mp4';
-  }
-
-  async function presignStudioVideo(file) {
-    const safeContentType = resolveStudioVideoContentType(file);
-
-    const res = await fetch('/api/r2/presign-put', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        app: 'cartoon',
-        kind: 'studio-video',
-        filename: file?.name || `studio-video-${Date.now()}.mp4`,
-        contentType: safeContentType
-      })
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || 'studio_video_presign_failed');
-    }
-
-    return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || '',
-      contentType: safeContentType
-    };
-  }
-
-  async function uploadStudioVideoToR2(file) {
-    if (!file) throw new Error('missing_studio_video_file');
-
-    const { uploadUrl, publicUrl, contentType } = await presignStudioVideo(file);
-
-    if (!uploadUrl || !publicUrl) {
-      throw new Error('studio_video_missing_upload_urls');
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': contentType || 'video/mp4'
-      },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error('studio_video_r2_put_failed');
-    }
-
-    return publicUrl;
-  }
-
-  function getStudioAudioExtension(fileName) {
-    const name = String(fileName || '').toLowerCase().trim();
-    const match = name.match(/\.([a-z0-9]+)$/i);
-    return match ? match[1] : '';
-  }
-
-  function resolveStudioAudioContentType(file) {
-    const rawType = String(file?.type || '').toLowerCase().trim();
-    const ext = getStudioAudioExtension(file?.name || '');
-
-    const allowedTypes = new Set([
-      'audio/mpeg',
-      'audio/mp3',
-      'audio/wav',
-      'audio/x-wav',
-      'audio/wave',
-      'audio/aac',
-      'audio/mp4',
-      'audio/x-m4a',
-      'audio/ogg',
-      'audio/webm'
-    ]);
-
-    if (allowedTypes.has(rawType)) {
-      if (rawType === 'audio/mp3') return 'audio/mpeg';
-      if (rawType === 'audio/x-wav' || rawType === 'audio/wave') return 'audio/wav';
-      if (rawType === 'audio/x-m4a') return 'audio/mp4';
-      return rawType;
-    }
-
-    if (ext === 'mp3') return 'audio/mpeg';
-    if (ext === 'wav') return 'audio/wav';
-    if (ext === 'aac') return 'audio/aac';
-    if (ext === 'm4a') return 'audio/mp4';
-    if (ext === 'ogg' || ext === 'oga') return 'audio/ogg';
-    if (ext === 'webm') return 'audio/webm';
-
-    return 'audio/mpeg';
-  }
-
-  async function presignStudioVoiceFile(file) {
-    const safeContentType = resolveStudioAudioContentType(file);
-
-    const res = await fetch('/api/r2/presign-put', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        app: 'cartoon',
-        kind: 'studio-voice',
-        filename: file?.name || `studio-voice-${Date.now()}.mp3`,
-        contentType: safeContentType
-      })
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || 'studio_voice_presign_failed');
-    }
-
-    return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || '',
-      contentType: safeContentType
-    };
-  }
-
-  async function uploadStudioVoiceFileToR2(file) {
-    if (!file) throw new Error('missing_studio_voice_file');
-
-    const { uploadUrl, publicUrl, contentType } = await presignStudioVoiceFile(file);
-
-    if (!uploadUrl || !publicUrl) {
-      throw new Error('studio_voice_missing_upload_urls');
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': contentType || 'audio/mpeg'
-      },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error('studio_voice_r2_put_failed');
-    }
-
-    return publicUrl;
-  }
-
-  function getStudioLogoExtension(fileName) {
-    const name = String(fileName || '').toLowerCase().trim();
-    const match = name.match(/\.([a-z0-9]+)$/i);
-    return match ? match[1] : '';
-  }
-
-  function resolveStudioLogoContentType(file) {
-    const rawType = String(file?.type || '').toLowerCase().trim();
-    const ext = getStudioLogoExtension(file?.name || '');
-
-    const allowedTypes = new Set([
-      'image/png',
-      'image/jpeg',
-      'image/jpg',
-      'image/webp',
-      'image/svg+xml'
-    ]);
-
-    if (allowedTypes.has(rawType)) {
-      if (rawType === 'image/jpg') return 'image/jpeg';
-      return rawType;
-    }
-
-    if (ext === 'png') return 'image/png';
-    if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
-    if (ext === 'webp') return 'image/webp';
-    if (ext === 'svg') return 'image/svg+xml';
-
-    return 'image/png';
-  }
-
-  async function presignStudioLogoFile(file) {
-    const safeContentType = resolveStudioLogoContentType(file);
-
-    const res = await fetch('/api/r2/presign-put', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        app: 'cartoon',
-        kind: 'studio-logo',
-        filename: file?.name || `studio-logo-${Date.now()}.png`,
-        contentType: safeContentType
-      })
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data || data.ok === false) {
-      throw new Error(data?.error || 'studio_logo_presign_failed');
-    }
-
-    return {
-      uploadUrl: data.uploadUrl || data.upload_url,
-      publicUrl: data.publicUrl || data.public_url || data.url || '',
-      contentType: safeContentType
-    };
-  }
-
-  async function uploadStudioLogoFileToR2(file) {
-    if (!file) throw new Error('missing_studio_logo_file');
-
-    const { uploadUrl, publicUrl, contentType } = await presignStudioLogoFile(file);
-
-    if (!uploadUrl || !publicUrl) {
-      throw new Error('studio_logo_missing_upload_urls');
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': contentType || 'image/png'
-      },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error('studio_logo_r2_put_failed');
-    }
-
-    return publicUrl;
-  }
-
-function clearStudioVoiceFile(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
-
-  const hadFile =
-    !!rootState.voiceFile ||
-    !!String(rootState.voiceFileUrl || '').trim();
-
-  rootState.voiceFile = null;
-  rootState.voiceFileName = '';
-  rootState.voiceFileUrl = '';
-  rootState.voiceFileUploadPromise = null;
-  rootState.voiceFileUploadStatus = 'idle';
-  rootState.voiceFileUploadError = '';
-
-  if (input) {
-    input.value = '';
-  }
-
-  updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-  updateStudioSummary(rootState, studioRoot);
-  saveStudioState(rootState);
-
-  if (hadFile) {
-    try { window.toast?.success?.('Ses kaldırıldı · -10 kredi'); } catch {}
-  }
-}
-function clearStudioLogoFile(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonLogoFile',
-    '#studioLogoFile',
-    '[data-studio-logo-upload]',
-    'input[name="logoFile"]',
-    'input[name="logo"]'
-  ]);
-
-  const hadFile =
-    !!rootState.logoFile ||
-    !!String(rootState.logoFileUrl || '').trim();
-
-  rootState.logoFile = null;
-  rootState.logoFileName = '';
-  rootState.logoFileUrl = '';
-  rootState.logoFileUploadPromise = null;
-  rootState.logoFileUploadStatus = 'idle';
-  rootState.logoFileUploadError = '';
-
-  if (input) {
-    input.value = '';
-  }
-
-  updateStudioLogoUploadStatusUI(rootState, studioRoot);
-  updateStudioSummary(rootState, studioRoot);
-  saveStudioState(rootState);
-
-  if (hadFile) {
-    try { window.toast?.success?.('Logo kaldırıldı · -10 kredi'); } catch {}
-  }
-}
-
-  function ensureStudioLogoUploadClearButton(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonLogoFile',
-      '#studioLogoFile',
-      '[data-studio-logo-upload]',
-      'input[name="logoFile"]',
-      'input[name="logo"]'
-    ]);
-
-    if (!input) return null;
-
-    const row = input.closest('.cartoon-upload-row') || input.parentElement;
-    if (!row) return null;
-
-    let clearBtn = row.querySelector('[data-studio-logo-upload-clear]');
-
-    if (!clearBtn) {
-      clearBtn = document.createElement('button');
-      clearBtn.type = 'button';
-      clearBtn.setAttribute('data-studio-logo-upload-clear', '');
-      clearBtn.setAttribute('aria-label', 'Yüklenen logoyu kaldır');
-      clearBtn.title = 'Logoyu kaldır';
-      clearBtn.textContent = '×';
-      clearBtn.style.marginLeft = '8px';
-      clearBtn.style.width = '22px';
-      clearBtn.style.height = '22px';
-      clearBtn.style.borderRadius = '999px';
-      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-      clearBtn.style.background = 'rgba(255,255,255,.08)';
-      clearBtn.style.color = '#fff';
-      clearBtn.style.cursor = 'pointer';
-      clearBtn.style.display = 'none';
-      clearBtn.style.verticalAlign = 'middle';
-      row.appendChild(clearBtn);
-    }
-
-    if (clearBtn.dataset.bound === '1') {
-      return clearBtn;
-    }
-
-    clearBtn.dataset.bound = '1';
-    clearBtn.type = 'button';
-
-    clearBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearStudioLogoFile(rootState, studioRoot);
-    });
-
-    return clearBtn;
-  }
-
-  function updateStudioLogoUploadStatusUI(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonLogoFile',
-      '#studioLogoFile',
-      '[data-studio-logo-upload]',
-      'input[name="logoFile"]',
-      'input[name="logo"]'
-    ]);
-
-    if (!input) return;
-
-    const row = input.closest('.cartoon-upload-row') || input.parentElement;
-    if (!row) return;
-
-    const textEl =
-      row.querySelector('[data-studio-logo-upload-text]') ||
-      row.querySelector('.cartoon-upload-text');
-
-    const clearBtn = ensureStudioLogoUploadClearButton(rootState, studioRoot);
-
-    if (!textEl) return;
-
-    const status = String(rootState?.logoFileUploadStatus || 'idle');
-    const fileName = String(rootState?.logoFileName || '').trim();
-
-    if (!fileName) {
-      textEl.textContent = 'Dosya seçilmedi';
-      if (clearBtn) clearBtn.style.display = 'none';
-      return;
-    }
-
-    if (status === 'uploading') {
-      textEl.textContent = `${fileName} · Yükleniyor...`;
-      if (clearBtn) clearBtn.style.display = 'none';
-      return;
-    }
-
-    if (status === 'ready') {
-      textEl.textContent = `${fileName} · Hazır ✓`;
-      if (clearBtn) {
-        clearBtn.style.display = 'inline-grid';
-        clearBtn.style.placeItems = 'center';
-      }
-      return;
-    }
-
-    if (status === 'error') {
-      textEl.textContent = `${fileName} · Yükleme hatası`;
-      if (clearBtn) {
-        clearBtn.style.display = 'inline-grid';
-        clearBtn.style.placeItems = 'center';
-      }
-      return;
-    }
-
-    textEl.textContent = fileName;
-    if (clearBtn) clearBtn.style.display = 'none';
-  }
-function bindStudioLogoUpload(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonLogoFile',
-    '#studioLogoFile',
-    '[data-studio-logo-upload]',
-    'input[name="logoFile"]',
-    'input[name="logo"]'
-  ]);
-
-  if (!input) return;
-  if (input.getAttribute('data-studio-logo-bound') === 'true') return;
-
-  input.setAttribute('data-studio-logo-bound', 'true');
-
-  input.addEventListener('change', async () => {
-    const file = input.files?.[0] || null;
-
-    rootState.logoFile = file;
-    rootState.logoFileName = file ? String(file.name || '') : '';
-    rootState.logoFileUrl = '';
-    rootState.logoFileUploadPromise = null;
-    rootState.logoFileUploadError = '';
-    rootState.logoFileUploadStatus = file ? 'uploading' : 'idle';
-
-    updateStudioLogoUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-
-    if (!file) return;
-
-    rootState.logoFileUploadPromise = uploadStudioLogoFileToR2(file)
-      .then((publicUrl) => {
-        rootState.logoFileUrl = String(publicUrl || '').trim();
-        rootState.logoFileUploadStatus = 'ready';
-        rootState.logoFileUploadError = '';
-
-        updateStudioLogoUploadStatusUI(rootState, studioRoot);
-        updateStudioSummary(rootState, studioRoot);
-        saveStudioState(rootState);
-
-        try { window.toast?.success?.('Logo eklendi · +10 kredi'); } catch {}
-        console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
-        return rootState.logoFileUrl;
-      })
-      .catch((err) => {
-        rootState.logoFileUrl = '';
-        rootState.logoFileUploadStatus = 'error';
-        rootState.logoFileUploadError = String(err?.message || err || 'studio_logo_upload_failed');
-
-        updateStudioLogoUploadStatusUI(rootState, studioRoot);
-        updateStudioSummary(rootState, studioRoot);
-        saveStudioState(rootState);
-
-        console.error('[CARTOON][STUDIO_LOGO_UPLOAD_ERROR]', err);
-        alert(rootState.logoFileUploadError);
-        throw err;
-      });
-  });
-}
-
-  function ensureStudioVoiceUploadClearButton(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonVoiceFile',
-      '#studioVoiceFile',
-      '[data-studio-voice-upload]',
-      'input[name="voiceFile"]',
-      'input[name="kendiSesin"]'
-    ]);
-
-    if (!input) return null;
-
-    const row = input.closest('.cartoon-upload-row') || input.parentElement;
-    if (!row) return null;
-
-    let clearBtn = row.querySelector('[data-studio-voice-upload-clear]');
-
-    if (!clearBtn) {
-      clearBtn = document.createElement('button');
-      clearBtn.type = 'button';
-      clearBtn.setAttribute('data-studio-voice-upload-clear', '');
-      clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
-      clearBtn.title = 'Sesi kaldır';
-      clearBtn.textContent = '×';
-      clearBtn.style.marginLeft = '8px';
-      clearBtn.style.width = '22px';
-      clearBtn.style.height = '22px';
-      clearBtn.style.borderRadius = '999px';
-      clearBtn.style.border = '1px solid rgba(255,255,255,.18)';
-      clearBtn.style.background = 'rgba(255,255,255,.08)';
-      clearBtn.style.color = '#fff';
-      clearBtn.style.cursor = 'pointer';
-      clearBtn.style.display = 'none';
-      clearBtn.style.verticalAlign = 'middle';
-      row.appendChild(clearBtn);
-    }
-
-    if (clearBtn.dataset.bound === '1') {
-      return clearBtn;
-    }
-
-    clearBtn.dataset.bound = '1';
-    clearBtn.type = 'button';
-
-    clearBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearStudioVoiceFile(rootState, studioRoot);
-    });
-
-    return clearBtn;
-  }
-
-  function updateStudioVoiceUploadStatusUI(rootState, studioRoot) {
-    const input = qsAny(studioRoot, [
-      '#cartoonVoiceFile',
-      '#studioVoiceFile',
-      '[data-studio-voice-upload]',
-      'input[name="voiceFile"]',
-      'input[name="kendiSesin"]'
-    ]);
-
-    if (!input) return;
-
-    const row = input.closest('.cartoon-upload-row') || input.parentElement;
-    if (!row) return;
-
-    const textEl =
-      row.querySelector('[data-studio-voice-upload-text]') ||
-      row.querySelector('.cartoon-upload-text');
-
-    const clearBtn = ensureStudioVoiceUploadClearButton(rootState, studioRoot);
-
-    if (!textEl) return;
-
-    const status = String(rootState?.voiceFileUploadStatus || 'idle');
-    const fileName = String(rootState?.voiceFileName || '').trim();
-
-    if (!fileName) {
-      textEl.textContent = 'Dosya seçilmedi';
-      if (clearBtn) clearBtn.style.display = 'none';
-      return;
-    }
-
-    if (status === 'uploading') {
-      textEl.textContent = `${fileName} · Yükleniyor...`;
-      if (clearBtn) clearBtn.style.display = 'none';
-      return;
-    }
-
-    if (status === 'ready') {
-      textEl.textContent = `${fileName} · Hazır ✓`;
-      if (clearBtn) {
-        clearBtn.style.display = 'inline-grid';
-        clearBtn.style.placeItems = 'center';
-      }
-      return;
-    }
-
-    if (status === 'error') {
-      textEl.textContent = `${fileName} · Yükleme hatası`;
-      if (clearBtn) {
-        clearBtn.style.display = 'inline-grid';
-        clearBtn.style.placeItems = 'center';
-      }
-      return;
-    }
-
-    textEl.textContent = fileName;
-    if (clearBtn) clearBtn.style.display = 'none';
-  }
-
- function bindStudioVoiceUpload(rootState, studioRoot) {
-  const input = qsAny(studioRoot, [
-    '#cartoonVoiceFile',
-    '#studioVoiceFile',
-    '[data-studio-voice-upload]',
-    'input[name="voiceFile"]',
-    'input[name="kendiSesin"]'
-  ]);
-
-  if (!input) return;
-  if (input.getAttribute('data-studio-voice-bound') === 'true') return;
-
-  input.setAttribute('data-studio-voice-bound', 'true');
-
-  input.addEventListener('change', async () => {
-    const file = input.files?.[0] || null;
-
-    rootState.voiceFile = file;
-    rootState.voiceFileName = file ? String(file.name || '') : '';
-    rootState.voiceFileUrl = '';
-    rootState.voiceFileUploadPromise = null;
-    rootState.voiceFileUploadError = '';
-    rootState.voiceFileUploadStatus = file ? 'uploading' : 'idle';
-    updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-    updateStudioSummary(rootState, studioRoot);
-
-    if (!file) return;
-
-    rootState.voiceFileUploadPromise = uploadStudioVoiceFileToR2(file)
-      .then((publicUrl) => {
-        rootState.voiceFileUrl = String(publicUrl || '').trim();
-        rootState.voiceFileUploadStatus = 'ready';
-        rootState.voiceFileUploadError = '';
-        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-        updateStudioSummary(rootState, studioRoot);
-        saveStudioState(rootState);
-        try { window.toast?.success?.('Ses eklendi · +10 kredi'); } catch {}
-        console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
-        return rootState.voiceFileUrl;
-      })
-      .catch((err) => {
-        rootState.voiceFileUrl = '';
-        rootState.voiceFileUploadStatus = 'error';
-        rootState.voiceFileUploadError = String(err?.message || err || 'studio_voice_upload_failed');
-        updateStudioVoiceUploadStatusUI(rootState, studioRoot);
-        updateStudioSummary(rootState, studioRoot);
-        saveStudioState(rootState);
-        console.error('[CARTOON][STUDIO_VOICE_UPLOAD_ERROR]', err);
-        alert(rootState.voiceFileUploadError);
-        throw err;
-      });
-  });
-}
-  async function appendUploadedStudioVideos(rootState, studioRoot, sceneList, sceneTemplate, fileList) {
-    const files = Array.from(fileList || []).filter((file) => {
-      if (!file) return false;
-
-      const type = String(file.type || '').toLowerCase();
-      const ext = getStudioVideoExtension(file.name || '');
-
-      if (type.startsWith('video/')) return true;
-
-      return ['mp4', 'm4v', 'mov', 'webm', 'mkv', 'mpeg', 'mpg', 'ogv'].includes(ext);
-    });
-
-    if (!files.length) return;
-
-    const nextScenes = [];
-
-    for (let i = 0; i < files.length; i += 1) {
-      const file = files[i];
-      const duration = await getStudioVideoDuration(file);
-      const publicUrl = await uploadStudioVideoToR2(file);
-      const fileName = String(file.name || `video-${Date.now()}-${i + 1}`).trim();
-      const title = fileName.replace(/\.[^.]+$/, '');
-
-      nextScenes.push({
-        id: `upload-${Date.now()}-${i + 1}`,
-        title,
-        duration,
-        included: true,
-        videoUrl: publicUrl,
-        fileName
-      });
-    }
-
-    rootState.scenes.push(...nextScenes);
-saveStudioState(rootState);
-renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-if (nextScenes.length === 1) {
-  try { window.toast?.success?.("1 video eklendi"); } catch {}
-} else if (nextScenes.length > 1) {
-  try { window.toast?.success?.(`${nextScenes.length} video eklendi`); } catch {}
-}
-}
-function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
-  const input = studioRoot.querySelector('[data-studio-video-upload]');
-  const text = studioRoot.querySelector('[data-studio-video-upload-text]');
-
-  if (!input) return;
-  if (input.getAttribute('data-studio-upload-bound') === 'true') return;
-
-  input.setAttribute('data-studio-upload-bound', 'true');
-
-  input.addEventListener('change', async () => {
-    const files = Array.from(input.files || []);
-
-    if (text) {
-      text.textContent = files.length > 1
-        ? `${files.length} video hazırlanıyor...`
-        : 'Video hazırlanıyor...';
-    }
-
-    try {
-      await appendUploadedStudioVideos(
-        rootState,
-        studioRoot,
-        sceneList,
-        sceneTemplate,
-        files
-      );
-
-      if (text) {
-        text.textContent = files.length > 1
-          ? `${files.length} video hazır ✓`
-          : 'Video hazır ✓';
-      }
-    } catch (err) {
-      console.error('[CARTOON][STUDIO_UPLOAD_ERROR]', err);
-
-      if (text) {
-        text.textContent = 'Video yükleme hatası';
-      }
-
-      alert(String(err?.message || err || 'studio_video_upload_failed'));
-    } finally {
-      input.value = '';
-    }
-  });
-}
-
-  function bindStudioFormatPills(rootState, studioRoot) {
-    const pills = Array.from(studioRoot.querySelectorAll('[data-studio-format]'));
-    if (!pills.length) return;
-    if (studioRoot.getAttribute('data-studio-format-bound') === 'true') return;
-
-    studioRoot.setAttribute('data-studio-format-bound', 'true');
-
-    function syncActiveFormat() {
-      pills.forEach((btn) => {
-        const value = String(btn.getAttribute('data-studio-format') || '');
-        const isActive = value === String(rootState.format || '16:9');
-
-        btn.classList.toggle('is-active', isActive);
-        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      });
-    }
-
-    pills.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        rootState.format = String(btn.getAttribute('data-studio-format') || '16:9');
-        saveStudioState(rootState);
-        syncActiveFormat();
-        updateStudioSummary(rootState, studioRoot);
-      });
-    });
-
-    syncActiveFormat();
-  }
-
-  function moveScene(array, fromIndex, toIndex) {
-    if (fromIndex === toIndex) return;
-    if (fromIndex < 0 || toIndex < 0) return;
-    if (fromIndex >= array.length || toIndex >= array.length) return;
-
-    const copied = array.slice();
-    const [item] = copied.splice(fromIndex, 1);
-    copied.splice(toIndex, 0, item);
-
-    array.length = 0;
-    copied.forEach((entry) => array.push(entry));
-  }
-
-  function getStudioExportCreditCost(rootState, studioRoot) {
-    const selectedCount = Array.isArray(rootState?.scenes)
-      ? rootState.scenes.filter((scene) => scene?.included).length
-      : 0;
-
-    const hasVoiceFile =
-      !!rootState?.voiceFile ||
-      !!String(rootState?.voiceFileUrl || '').trim();
-
-    const hasLogoFile =
-      !!rootState?.logoFile ||
-      !!String(rootState?.logoFileUrl || '').trim();
-
-    const readyMusicValue = String(
-      getValue(studioRoot, [
-        '#cartoonReadyMusic',
-        '#studioReadyMusic',
-        '[data-studio-ready-music]',
-        'select[name="readyMusic"]',
-        'select[name="hazirMuzik"]'
-      ], '')
-    ).trim().toLowerCase();
-
-    const hasReadyMusic =
-      !!readyMusicValue &&
-      readyMusicValue !== 'none' &&
-      readyMusicValue !== 'off' &&
-      readyMusicValue !== 'no' &&
-      readyMusicValue !== 'hayir' &&
-      readyMusicValue !== 'hayır' &&
-      readyMusicValue !== 'yok' &&
-      readyMusicValue !== '';
-
+  function getStorySceneEditor(root) {
     return (
-      (Math.max(1, selectedCount) * 10) +
-      (hasVoiceFile ? 10 : 0) +
-      (hasLogoFile ? 10 : 0) +
-      (hasReadyMusic ? 10 : 0)
+      qs("[data-story-scene-editor]", root || document) ||
+      qs("[data-story-scene-editor]", document)
     );
   }
 
-  function updateStudioSummary(rootState, studioRoot) {
-    const summary = studioRoot.querySelector('.studio-inline-summary');
-    const selectedCount = rootState.scenes.filter((scene) => scene.included).length;
-    const totalDuration = rootState.scenes
-      .filter((scene) => scene.included)
-      .reduce((sum, scene) => sum + (Number(scene.duration) || 0), 0);
+  function safeText(value) {
+    return String(value || "").trim();
+  }
 
-    const creditCost = getStudioExportCreditCost(rootState, studioRoot);
+  function clampText(value, max) {
+    return String(value || "").slice(0, max);
+  }
 
-    if (summary) {
-      const items = summary.querySelectorAll('span');
+  function normalizeStorySceneDuration(value) {
+    const n = Number(value || 15);
+    if (n <= 5) return "5";
+    if (n <= 10) return "10";
+    return "15";
+  }
 
-      if (items.length >= 3) {
-        items[0].textContent = `Seçilen Sahne: ${selectedCount}`;
-        items[1].textContent = `Toplam Süre: ${formatSummaryDuration(totalDuration)}`;
-        items[2].textContent = `Format: ${rootState.format}`;
+  function formatSecondsLabel(totalSeconds) {
+    const total = Math.max(0, Number(totalSeconds || 0));
+    const minutes = Math.floor(total / 60);
+    const seconds = total % 60;
+    if (minutes > 0 && seconds > 0) return `${minutes} dk ${seconds} sn`;
+    if (minutes > 0) return `${minutes} dk`;
+    return `${seconds} sn`;
+  }
+
+  function toSceneDurationNumber(value) {
+    return Number(normalizeStorySceneDuration(value));
+  }
+
+  function mapLogoPositionToShort(value) {
+    const v = safeText(value || "bottom-right").toLowerCase();
+    if (v === "top-left") return "tl";
+    if (v === "top-right") return "tr";
+    if (v === "bottom-left") return "bl";
+    if (v === "center") return "c";
+    return "br";
+  }
+
+  function getStoryFlowPreset(flowDuration) {
+    return STORY_FLOW_PRESETS[String(flowDuration || "3")] || STORY_FLOW_PRESETS["3"];
+  }
+
+  function buildStoryScenesFromFlowDuration(flowDuration) {
+    const preset = getStoryFlowPreset(flowDuration);
+    const sectionOrder = ["intro", "setup", "adventure", "final"];
+    const scenes = [];
+    let sceneNumber = 1;
+
+    sectionOrder.forEach((section) => {
+      const count = Number(preset[section] || 0);
+      const blueprints = STORY_SECTION_SCENE_BLUEPRINTS[section] || [];
+
+      for (let i = 0; i < count; i += 1) {
+        const blueprint = blueprints[i] || {
+          title: `${sceneNumber}. Sahne`,
+          description: "Bu bölüm için yeni sahne."
+        };
+
+        scenes.push({
+          id: `${section}-${i + 1}`,
+          section,
+          title: `Sahne ${sceneNumber} · ${blueprint.title}`,
+          description: blueprint.description,
+          characters: "",
+          characterSlots: [],
+          selected: false,
+          duration: "15",
+          mood: "",
+          type: "",
+          directorNote: ""
+        });
+
+        sceneNumber += 1;
       }
+    });
+
+    return scenes;
+  }
+
+  async function presignStoryCharacterReference(file, slot) {
+    const safeSlot = String(slot || "main").trim() || "main";
+
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: `story-reference-${safeSlot}`,
+        filename: file?.name || `${safeSlot}-${Date.now()}.png`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "story_reference_presign_failed");
     }
 
-    const exportBtn = qsAny(studioRoot, [
-      '[data-studio-export]',
-      '[data-studio-final-output]',
-      '[data-studio-generate-final]',
-      '#cartoonStudioExportBtn',
-      '#studioExportBtn',
-      'button[type="button"][data-role="studio-export"]'
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ""
+    };
+  }
+
+  async function uploadStoryCharacterReferenceToR2(file, slot) {
+    if (!file) throw new Error("missing_story_reference_file");
+
+    const { uploadUrl, publicUrl } = await presignStoryCharacterReference(file, slot);
+
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("story_reference_missing_upload_urls");
+    }
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("story_reference_r2_put_failed");
+    }
+
+    return publicUrl;
+  }
+
+  async function presignStoryAudio(file) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "story-audio",
+        filename: file?.name || `story-audio-${Date.now()}.mp3`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "story_audio_presign_failed");
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ""
+    };
+  }
+
+  async function uploadStoryAudioToR2(file) {
+    if (!file) throw new Error("missing_story_audio_file");
+
+    const { uploadUrl, publicUrl } = await presignStoryAudio(file);
+
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("story_audio_missing_upload_urls");
+    }
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("story_audio_r2_put_failed");
+    }
+
+    return publicUrl;
+  }
+
+  async function presignStoryLogo(file) {
+    const res = await fetch("/api/r2/presign-put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app: "cartoon",
+        kind: "story-logo",
+        filename: file?.name || `story-logo-${Date.now()}.png`,
+        contentType: file?.type || "application/octet-stream"
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error(data?.error || "story_logo_presign_failed");
+    }
+
+    return {
+      uploadUrl: data.uploadUrl || data.upload_url,
+      publicUrl: data.publicUrl || data.public_url || data.url || ""
+    };
+  }
+
+  async function uploadStoryLogoToR2(file) {
+    if (!file) throw new Error("missing_story_logo_file");
+
+    const { uploadUrl, publicUrl } = await presignStoryLogo(file);
+
+    if (!uploadUrl || !publicUrl) {
+      throw new Error("story_logo_missing_upload_urls");
+    }
+
+    const put = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+
+    if (!put.ok) {
+      throw new Error("story_logo_r2_put_failed");
+    }
+
+    return publicUrl;
+  }
+
+  // ------------------------------------------------------------
+  // Policy helpers (Story)
+  // ------------------------------------------------------------
+  const HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
+
+  const HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
+
+ const PUBLIC_FIGURE_TERMS = [
+  "recep tayyip erdogan",
+  "recep tayyip erdoğan",
+  "erdogan",
+  "erdoğan",
+  "kemal kilicdaroglu",
+  "kemal kılıçdaroğlu",
+  "kilicdaroglu",
+  "kılıçdaroğlu",
+  "ekrem imamoglu",
+  "ekrem imamoğlu",
+  "imamoglu",
+  "imamoğlu",
+  "mansur yavas",
+  "mansur yavaş",
+  "devlet bahceli",
+  "devlet bahçeli",
+  "bahceli",
+  "bahçeli",
+  "meral aksener",
+  "meral akşener",
+  "aksener",
+  "akşener",
+  "ozgur ozel",
+  "özgür özel",
+  "ozel",
+  "özel",
+  "selahattin demirtas",
+  "selahattin demirtaş",
+  "demirtas",
+  "demirtaş",
+  "umit ozdag",
+  "ümit özdağ",
+  "ozdag",
+  "özdağ",
+  "fatih erbakan",
+  "temel karamollaoglu",
+  "temel karamollaoğlu",
+  "muharrem ince",
+  "sinan ogan",
+  "sinan oğan",
+  "ali babacan",
+  "ahmet davutoglu",
+  "ahmet davutoğlu",
+  "davutoglu",
+  "davutoğlu",
+  "hulusi akar",
+  "hakan fidan",
+  "mehmet simsek",
+  "mehmet şimşek",
+  "simsek",
+  "şimşek",
+  "suleyman soylu",
+  "süleyman soylu",
+  "soylu",
+  "bekir bozdag",
+  "bekir bozdağ",
+  "bozdag",
+  "bozdağ",
+  "numan kurtulmus",
+  "numan kurtulmuş",
+  "kurtulmus",
+  "kurtulmuş",
+  "omer celik",
+  "ömer çelik",
+  "celik",
+  "çelik",
+  "binali yildirim",
+  "binali yıldırım",
+  "abdullah gul",
+  "abdullah gül",
+  "gul",
+  "gül",
+  "ahmet necdet sezer",
+  "turgut ozal",
+  "turgut özal",
+  "ismet inonu",
+  "ismet inönü",
+  "inonu",
+  "inönü",
+  "mustafa kemal ataturk",
+  "mustafa kemal atatürk",
+  "ataturk",
+  "atatürk",
+  "kemal ataturk",
+  "cumhurbaskani",
+  "cumhurbaşkanı",
+  "cumhurbaskani yardimcisi",
+  "cumhurbaşkanı yardımcısı",
+  "bakan",
+  "milletvekili",
+  "belediye baskani",
+  "belediye başkanı",
+  "vali",
+  "kaymakam",
+  "siyasetci",
+  "siyasetçi",
+  "politikaci",
+  "politikacı",
+  "kamu figuru",
+  "kamu figürü",
+  "devlet buyugu",
+  "devlet büyüğü",
+  "donald trump",
+  "trump",
+  "jd vance",
+  "j d vance",
+  "vance",
+  "keir starmer",
+  "starmer",
+  "emmanuel macron",
+  "macron",
+  "friedrich merz",
+  "merz",
+  "frank walter steinmeier",
+  "frank-walter steinmeier",
+  "steinmeier",
+  "giorgia meloni",
+  "meloni",
+  "sergio mattarella",
+  "mattarella",
+  "pedro sanchez",
+  "pedro sánchez",
+  "sanchez",
+  "sánchez",
+  "felipe vi",
+  "mark carney",
+  "carney",
+  "claudia sheinbaum",
+  "sheinbaum",
+  "javier milei",
+  "milei",
+  "luiz inacio lula da silva",
+  "luiz inácio lula da silva",
+  "lula",
+  "lula da silva",
+  "vladimir putin",
+  "putin",
+  "mikhail mishustin",
+  "mishustin",
+  "volodymyr zelenskyy",
+  "zelenskyy",
+  "zelensky",
+  "yulia svyrydenko",
+  "svyrydenko",
+  "xi jinping",
+  "jinping",
+  "li qiang",
+  "narendra modi",
+  "modi",
+  "droupadi murmu",
+  "murmu",
+  "benjamin netanyahu",
+  "netanyahu",
+  "isaac herzog",
+  "herzog",
+  "masoud pezeshkian",
+  "pezeshkian",
+  "mojtaba khamenei",
+  "khamenei",
+  "mohammed bin salman",
+  "muhammed bin salman",
+  "mbs",
+  "salman",
+  "king salman",
+  "sheikh mohamed bin zayed al nahyan",
+  "mohamed bin zayed",
+  "mbz",
+  "sheikh mohammed bin rashid al maktoum",
+  "mohammed bin rashid",
+  "bin rashid",
+  "abdullah ii",
+  "king abdullah",
+  "jafar hassan",
+  "abdel fattah el sisi",
+  "abdel fattah al sisi",
+  "sisi",
+  "mostafa madbouly",
+  "madbouly",
+  "abiy ahmed",
+  "abiy",
+  "william ruto",
+  "ruto",
+  "paul kagame",
+  "kagame",
+  "samia suluhu hassan",
+  "samia suluhu",
+  "samia",
+  "cyril ramaphosa",
+  "ramaphosa",
+  "bola tinubu",
+  "tinubu",
+  "bassirou diomaye faye",
+  "diomaye faye",
+  "ousmane sonko",
+  "sonko",
+  "john mahama",
+  "mahama",
+  "netumbo nandi ndaitwah",
+  "netumbo nandi-ndaitwah",
+  "nandi ndaitwah",
+  "hassan sheikh mohamud",
+  "hassan sheikh",
+  "hamza abdi barre",
+  "kais saied",
+  "kais saïed",
+  "saied",
+  "saïed",
+  "mohamed muizzu",
+  "muizzu",
+  "anwar ibrahim",
+  "anwar",
+  "prabowo subianto",
+  "prabowo",
+  "lawrence wong",
+  "wong",
+  "tharman shanmugaratnam",
+  "tharman",
+  "lee jae myung",
+  "lee jae-myung",
+  "shigeru ishiba",
+  "ishiba",
+  "naruhito",
+  "anura kumara dissanayake",
+  "dissanayake",
+  "paetongtarn shinawatra",
+  "shinawatra",
+  "maha vajiralongkorn",
+  "to lam",
+  "tô lâm",
+  "luong cuong",
+  "lương cường",
+  "pham minh chinh",
+  "phạm minh chính",
+  "hun manet",
+  "hun sen",
+  "norodom sihamoni",
+  "thongloun sisoulith",
+  "sisoulith",
+  "sonexay siphandone",
+  "shehbaz sharif",
+  "sharif",
+  "asif ali zardari",
+  "zardari",
+  "muhammad yunus",
+  "yunus",
+  "kassym jomart tokayev",
+  "kassym-jomart tokayev",
+  "tokayev",
+  "shavkat mirziyoyev",
+  "mirziyoyev",
+  "sadyr japarov",
+  "japarov",
+  "emomali rahmon",
+  "rahmon",
+  "nikol pashinyan",
+  "pashinyan",
+  "ilham aliyev",
+  "aliyev",
+  "irakli kobakhidze",
+  "kobakhidze",
+  "mikheil kavelashvili",
+  "kavelashvili",
+  "maia sandu",
+  "sandu",
+  "aleksandar vucic",
+  "aleksandar vučić",
+  "vucic",
+  "vučić",
+  "robert fico",
+  "fico",
+  "peter pellegrini",
+  "pellegrini",
+  "andrej plenkovic",
+  "andrej plenković",
+  "plenkovic",
+  "plenković",
+  "petr pavel",
+  "pavel",
+  "donald tusk",
+  "tusk",
+  "andrzej duda",
+  "duda",
+  "viktor orban",
+  "viktor orbán",
+  "orban",
+  "orbán",
+  "nicusor dan",
+  "nicușor dan",
+  "ilie bolojan",
+  "bolojan",
+  "boyko borisov",
+  "borisov",
+  "rumen radev",
+  "radev",
+  "kyriakos mitsotakis",
+  "mitsotakis",
+  "edi rama",
+  "rama",
+  "zoran milanovic",
+  "zoran milanović",
+  "milanovic",
+  "milanović",
+  "andrej babis",
+  "andrej babiš",
+  "babis",
+  "babiš",
+  "micheal martin",
+  "martin",
+  "rodrigo chaves",
+  "chaves",
+  "gustavo petro",
+  "petro",
+  "daniel noboa",
+  "noboa",
+  "nayib bukele",
+  "bukele",
+  "bernardo arevalo",
+  "bernardo arévalo",
+  "arevalo",
+  "arévalo",
+  "xiomara castro",
+  "castro",
+  "daniel ortega",
+  "ortega",
+  "rosario murillo",
+  "murillo",
+  "laurentino cortizo",
+  "cortizo",
+  "jose raul mulino",
+  "josé raúl mulino",
+  "mulino",
+  "luis abinader",
+  "abinader",
+  "irfaan ali",
+  "ali",
+  "chan santokhi",
+  "santokhi",
+  "nicolas maduro",
+  "nicolás maduro",
+  "maduro",
+  "yamandu orsi",
+  "yamandú orsi",
+  "orsi",
+  "prime minister",
+  "president",
+  "king",
+  "queen",
+  "chancellor",
+  "taoiseach",
+  "premier",
+  "head of state",
+  "head of government",
+  "basbakan",
+  "başbakan"
+  ];
+
+  const ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "hande yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function normalizeStoryPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isStoryPolicyBlocked(raw) {
+    const text = normalizeStoryPolicyText(raw);
+
+    const hasBlockedTerm =
+      HARD_BLOCK_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
+      PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term))) ||
+      ARTIST_NAME_TERMS.some((term) => text.includes(normalizeStoryPolicyText(term)));
+
+    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  }
+
+  function ensureStoryPolicyNote(root, generateBtn) {
+    if (!root || !generateBtn || !generateBtn.parentElement) return null;
+
+    let policyNote = qs("#cartoonStoryPolicyNote", root);
+    if (!policyNote) {
+      policyNote = document.createElement("div");
+      policyNote.id = "cartoonStoryPolicyNote";
+      policyNote.style.display = "none";
+      policyNote.style.marginTop = "14px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.textAlign = "center";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "800";
+      policyNote.style.lineHeight = "1.65";
+      policyNote.style.color = "rgba(255,245,248,.96)";
+      generateBtn.parentElement.appendChild(policyNote);
+    }
+
+    return policyNote;
+  }
+
+  function resetStoryPolicyUI(root) {
+    if (!root) return;
+
+    const storyIdeaEl = qs("[data-story-idea]", root);
+    const extraPromptEl = qs("[data-story-extra-prompt]", root);
+    const generateBtn = qs("[data-story-generate]", root);
+    const policyNote = qs("#cartoonStoryPolicyNote", root);
+
+    if (storyIdeaEl) {
+      storyIdeaEl.style.borderColor = "";
+      storyIdeaEl.style.boxShadow = "";
+    }
+
+    if (extraPromptEl) {
+      extraPromptEl.style.borderColor = "";
+      extraPromptEl.style.boxShadow = "";
+    }
+
+    if (generateBtn) {
+      generateBtn.style.background = "";
+      generateBtn.style.borderColor = "";
+      generateBtn.style.boxShadow = "";
+      generateBtn.style.cursor = "";
+      generateBtn.style.filter = "";
+    }
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+    }
+  }
+
+  function buildStoryPolicyText() {
+    const selectedScenes = getSelectedScenes();
+
+    const sceneText = selectedScenes.flatMap((scene) => [
+      scene?.title,
+      scene?.description,
+      scene?.mood,
+      scene?.type,
+      scene?.directorNote
     ]);
 
-    if (!exportBtn) return;
-
-    exportBtn.setAttribute('data-credit-cost', String(creditCost));
-
-    if (!exportBtn.classList.contains('is-loading')) {
-      exportBtn.textContent = `Paylaşmaya Hazır Çıktı Al (${creditCost} Kredi)`;
-    }
+    return [
+      state.storyIdea,
+      state.theme,
+      state.ageGroup,
+      state.mainCharacter,
+      state.helperCharacter1,
+      state.helperCharacter2,
+      state.extraCharacter,
+      state.style,
+      state.extraPrompt,
+      ...sceneText
+    ].filter(Boolean).join(" ");
   }
 
-  function qsAny(root, selectors) {
-    for (const selector of selectors) {
-      const el = root.querySelector(selector);
-      if (el) return el;
-    }
-    return null;
+  function createEmptyStoryCharacterImageState() {
+    return {
+      file: null,
+      fileName: "",
+      fileUrl: "",
+      uploadPromise: null,
+      uploadStatus: "idle",
+      uploadError: ""
+    };
   }
 
-  function getValue(root, selectors, fallback = '') {
-    const el = qsAny(root, selectors);
-    if (!el) return fallback;
-
-    if (el.type === 'checkbox') {
-      return !!el.checked;
-    }
-
-    return String(el.value ?? fallback).trim();
+  function createEmptyStoryAssetState() {
+    return {
+      file: null,
+      fileName: "",
+      fileUrl: "",
+      uploadPromise: null,
+      uploadStatus: "idle",
+      uploadError: ""
+    };
   }
 
-  function getFileMeta(root, selectors) {
-    const input = qsAny(root, selectors);
-    const file = input?.files?.[0];
+  function createDefaultScenes(flowDuration = "3") {
+    return buildStoryScenesFromFlowDuration(flowDuration);
+  }
 
-    if (!file) {
-      return {
-        hasFile: false,
-        name: '',
-        type: '',
-        size: 0
+  const state = (window.__CARTOON_STORY_STATE__ =
+    window.__CARTOON_STORY_STATE__ || {
+      mode: "story",
+      flowDuration: "3",
+      storyIdea: "",
+      theme: "",
+      ageGroup: "",
+      duration: "180",
+      mainCharacter: "",
+      helperCharacter1: "",
+      helperCharacter2: "",
+      extraCharacter: "",
+      settingsOpen: false,
+      ratio: "16:9",
+      style: "",
+      audio: "none",
+      includeMusic: "no",
+      logoPosition: "bottom-right",
+      extraPrompt: "",
+      openSection: "intro",
+      editingSceneId: "",
+      isGenerating: false,
+      characterImages: {
+        main: createEmptyStoryCharacterImageState(),
+        helper1: createEmptyStoryCharacterImageState(),
+        helper2: createEmptyStoryCharacterImageState(),
+        extra: createEmptyStoryCharacterImageState()
+      },
+      logoAsset: createEmptyStoryAssetState(),
+      audioAsset: createEmptyStoryAssetState(),
+      scenes: createDefaultScenes("3"),
+      characterOptions: []
+    });
+
+  const storyPollState = (window.__CARTOON_STORY_POLL_STATE__ =
+    window.__CARTOON_STORY_POLL_STATE__ || {
+      jobs: {},
+      total: 0,
+      ready: 0,
+      failed: 0
+    });
+
+  function resetStoryPollBatch() {
+    storyPollState.jobs = {};
+    storyPollState.total = 0;
+    storyPollState.ready = 0;
+    storyPollState.failed = 0;
+  }
+
+  function setStoryGenerateButton(root, loading) {
+    const btn = root?.querySelector("[data-story-generate]");
+    if (!btn) return;
+   btn.disabled = !!loading;
+   btn.textContent = loading ? "Üretiliyor..." : `Hikayeyi Oluştur (${getStoryEstimatedCredits()} Kredi)`;
+   btn.classList.toggle("is-loading", !!loading);
+  }
+
+  function completeStoryGenerateIfAllSettled() {
+    const root = getCartoonRoot();
+    const total = Number(storyPollState.total || 0);
+    const ready = Number(storyPollState.ready || 0);
+    const failed = Number(storyPollState.failed || 0);
+
+    if (!total) return;
+    if (ready + failed < total) return;
+
+    state.isGenerating = false;
+    setStoryGenerateButton(root, false);
+
+    console.log("[CARTOON][STORY_ALL_SETTLED]", {
+      total,
+      ready,
+      failed,
+      jobs: storyPollState.jobs
+    });
+  }
+
+  function ensureStoryJobState(jobId, item) {
+    const key = safeText(jobId);
+    if (!key) return null;
+
+    if (!storyPollState.jobs[key]) {
+      storyPollState.jobs[key] = {
+        job_id: key,
+        scene_id: safeText(item?.scene_id),
+        scene_title: safeText(item?.scene_title),
+        tries: 0,
+        readyChecks: 0,
+        done: false,
+        failed: false,
+        timer: null,
+        lastStatus: "",
+        lastResponse: null,
+        startedAt: Date.now()
       };
     }
 
-    return {
-      hasFile: true,
-      name: String(file.name || ''),
-      type: String(file.type || ''),
-      size: Number(file.size || 0)
-    };
+    return storyPollState.jobs[key];
   }
 
-  function collectCartoonStudioPayload(rootState, studioRoot) {
-    const selectedScenes = Array.isArray(rootState?.scenes)
-      ? rootState.scenes
-          .filter((scene) => !!scene?.included)
-          .map((scene, index) => ({
-            order: index + 1,
-            id: String(scene?.id || ''),
-            title: String(scene?.title || 'Sahne'),
-            duration: Number(scene?.duration) || 0,
-            videoUrl: String(scene?.videoUrl || ''),
-            fileName: String(scene?.fileName || '')
-          }))
-      : [];
+  function clearStoryJobTimer(jobId) {
+    const key = safeText(jobId);
+    const entry = storyPollState.jobs?.[key];
+    if (!entry) return;
+    if (entry.timer) {
+      clearTimeout(entry.timer);
+      entry.timer = null;
+    }
+  }
 
-    const totalDuration = selectedScenes.reduce((sum, scene) => {
-      return sum + (Number(scene.duration) || 0);
-    }, 0);
+  function scheduleStoryPoll(jobId, item, tries, delay) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!entry || entry.done || entry.failed) return;
 
-    return {
-      export: {
-        format: String(rootState?.format || '16:9'),
-        sceneCount: selectedScenes.length,
-        totalDuration,
-        scenes: selectedScenes
-      },
+    clearStoryJobTimer(key);
+    entry.timer = setTimeout(() => {
+      pollStorySceneJob(key, item, tries);
+    }, Number(delay || STORY_POLL_INTERVAL));
+  }
 
-      audio: {
-        readyMusic: getValue(studioRoot, [
-          '#cartoonReadyMusic',
-          '#studioReadyMusic',
-          '[data-studio-ready-music]',
-          'select[name="readyMusic"]',
-          'select[name="hazirMuzik"]'
-        ], ''),
+  function markStoryJobReady(jobId, item, payload) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!entry || entry.done) return;
 
-        voiceFile: {
-          hasFile: !!rootState?.voiceFile || !!String(rootState?.voiceFileUrl || '').trim(),
-          name: String(rootState?.voiceFileName || ''),
-          type: String(rootState?.voiceFile?.type || ''),
-          size: Number(rootState?.voiceFile?.size || 0),
-          url: String(rootState?.voiceFileUrl || ''),
-          uploadStatus: String(rootState?.voiceFileUploadStatus || 'idle')
-        },
+    entry.done = true;
+    entry.failed = false;
+    entry.lastResponse = payload?.raw || payload || null;
+    entry.lastStatus = safeText(payload?.status).toLowerCase();
+    clearStoryJobTimer(key);
+    storyPollState.ready += 1;
 
-        mode: getValue(studioRoot, [
-          '[data-studio-voice-enabled]',
-          '#cartoonAudioMode',
-          '#studioAudioMode',
-          '[data-studio-audio-mode]',
-          'select[name="audioMode"]',
-          'select[name="ses"]'
-        ], 'off'),
+    const detail = {
+      app: "cartoon",
+      mode: "story",
+      sceneId: safeText(item?.scene_id),
+      sceneTitle: safeText(item?.scene_title),
+      job_id: key,
+      status: safeText(payload?.status).toLowerCase(),
+      video: payload?.video || null,
+      outputs: Array.isArray(payload?.outputs) ? payload.outputs : [],
+      raw: payload?.raw || null
+    };
 
-        musicLevel: getValue(studioRoot, [
-          '#cartoonMusicLevel',
-          '#studioMusicLevel',
-          '[data-studio-music-level]',
-          'input[name="musicLevel"]',
-          'input[name="muzikSeviyesi"]'
-        ], '')
-      },
+    window.dispatchEvent(
+      new CustomEvent("aivo:cartoon:story_scene_ready", { detail })
+    );
 
-      text: {
-        title: getValue(studioRoot, [
-          '#cartoonVideoTitle',
-          '#studioVideoTitle',
-          '[data-studio-video-title]',
-          'input[name="videoTitle"]',
-          'input[name="baslik"]'
-        ], ''),
+    window.dispatchEvent(
+      new CustomEvent("aivo:cartoon:job_ready", {
+        detail: {
+          ...detail,
+          meta: {
+            app: "cartoon",
+            mode: "story",
+            scene_id: safeText(item?.scene_id),
+            scene_title: safeText(item?.scene_title)
+          }
+        }
+      })
+    );
 
-        subtitleMode: getValue(studioRoot, [
-          '#cartoonSubtitleMode',
-          '#studioSubtitleMode',
-          '[data-studio-subtitle-mode]',
-          'select[name="subtitleMode"]',
-          'select[name="altyazi"]'
-        ], ''),
+    completeStoryGenerateIfAllSettled();
+  }
 
-        description: getValue(studioRoot, [
-          '#cartoonDescription',
-          '#studioDescription',
-          '[data-studio-description]',
-          'textarea[name="description"]',
-          'textarea[name="kisaAciklama"]'
-        ], '')
-      },
+  function markStoryJobFailed(jobId, item, raw) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!entry || entry.done || entry.failed) return;
 
-      branding: {
-        logoFile: {
-          hasFile: !!rootState?.logoFile || !!String(rootState?.logoFileUrl || '').trim(),
-          name: String(rootState?.logoFileName || ''),
-          type: String(rootState?.logoFile?.type || ''),
-          size: Number(rootState?.logoFile?.size || 0),
-          url: String(rootState?.logoFileUrl || ''),
-          uploadStatus: String(rootState?.logoFileUploadStatus || 'idle')
-        },
+    entry.failed = true;
+    entry.done = false;
+    entry.lastResponse = raw || null;
+    entry.lastStatus = safeText(raw?.status || raw?.db_status || raw?.state).toLowerCase();
+    clearStoryJobTimer(key);
+    storyPollState.failed += 1;
 
-        logoPosition: getValue(studioRoot, [
-          '#cartoonLogoPosition',
-          '#studioLogoPosition',
-          '[data-studio-logo-position]',
-          'select[name="logoPosition"]',
-          'select[name="logoYonu"]'
-        ], 'bottom-right'),
+    console.error("[CARTOON][STORY_JOB_FAILED_FINAL]", {
+      jobId: key,
+      sceneTitle: item?.scene_title || "",
+      raw
+    });
 
-        logoPos:
-          getValue(studioRoot, [
-            '#cartoonLogoPosition',
-            '#studioLogoPosition',
-            '[data-studio-logo-position]',
-            'select[name="logoPosition"]',
-            'select[name="logoYonu"]'
-          ], 'bottom-right') === 'top-left'
-            ? 'tl'
-            : getValue(studioRoot, [
-                '#cartoonLogoPosition',
-                '#studioLogoPosition',
-                '[data-studio-logo-position]',
-                'select[name="logoPosition"]',
-                'select[name="logoYonu"]'
-              ], 'bottom-right') === 'top-right'
-              ? 'tr'
-              : getValue(studioRoot, [
-                  '#cartoonLogoPosition',
-                  '#studioLogoPosition',
-                  '[data-studio-logo-position]',
-                  'select[name="logoPosition"]',
-                  'select[name="logoYonu"]'
-                ], 'bottom-right') === 'bottom-left'
-                ? 'bl'
-                : getValue(studioRoot, [
-                    '#cartoonLogoPosition',
-                    '#studioLogoPosition',
-                    '[data-studio-logo-position]',
-                    'select[name="logoPosition"]',
-                    'select[name="logoYonu"]'
-                  ], 'bottom-right') === 'center'
-                  ? 'c'
-                  : 'br',
+    completeStoryGenerateIfAllSettled();
+  }
 
-        watermarkMode: getValue(studioRoot, [
-          '#cartoonWatermarkMode',
-          '#studioWatermarkMode',
-          '[data-studio-watermark-mode]',
-          'select[name="watermarkMode"]',
-          'select[name="filigran"]'
-        ], '')
-      },
+  function getStoryCharacterImage(slot) {
+    const key = String(slot || "").trim();
+    return state.characterImages?.[key] || null;
+  }
 
-      cover: {
-        videoFrame: getValue(studioRoot, [
-          '#cartoonCoverFrame',
-          '#studioCoverFrame',
-          '[data-studio-cover-frame]',
-          'select[name="coverFrame"]',
-          'select[name="videodanKare"]'
-        ], ''),
+  function setStoryCharacterImage(slot, patch) {
+    const key = String(slot || "").trim();
+    if (!key) return;
 
-        customCoverFile: getFileMeta(studioRoot, [
-          '#cartoonCoverFile',
-          '#studioCoverFile',
-          '[data-studio-cover-upload]',
-          'input[name="coverFile"]',
-          'input[name="ayriKapak"]'
-        ])
-      },
+    const prev = getStoryCharacterImage(key) || createEmptyStoryCharacterImageState();
 
-      summary: {
-        sceneCount: selectedScenes.length,
-        totalDuration,
-        format: String(rootState?.format || '16:9'),
-        hasLogo:
-          !!getFileMeta(studioRoot, [
-            '#cartoonLogoFile',
-            '#studioLogoFile',
-            '[data-studio-logo-upload]',
-            'input[name="logoFile"]',
-            'input[name="logo"]'
-          ]).hasFile ||
-          !!String(rootState?.logoFileUrl || '').trim(),
-        hasVoiceFile:
-          !!getFileMeta(studioRoot, [
-            '#cartoonVoiceFile',
-            '#studioVoiceFile',
-            '[data-studio-voice-upload]',
-            'input[name="voiceFile"]',
-            'input[name="kendiSesin"]'
-          ]).hasFile ||
-          !!String(rootState?.voiceFileUrl || '').trim(),
-        hasCustomCover: !!getFileMeta(studioRoot, [
-          '#cartoonCoverFile',
-          '#studioCoverFile',
-          '[data-studio-cover-upload]',
-          'input[name="coverFile"]',
-          'input[name="ayriKapak"]'
-        ]).hasFile
+    state.characterImages = {
+      ...(state.characterImages || {}),
+      [key]: {
+        ...prev,
+        ...patch
       }
     };
   }
 
-  async function pollStudioExportJob(jobId, button, originalText, tries = 0) {
-    try {
-      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1&t=${Date.now()}`, {
-        cache: 'no-store'
+  function getShortFileName(name, max = 28) {
+    const text = String(name || "").trim();
+    if (!text) return "";
+    if (text.length <= max) return text;
+    return `${text.slice(0, max - 3)}...`;
+  }
+
+  function getStoryCharacterLabelBySlot(slot) {
+    const key = safeText(slot);
+    if (!key) return "";
+
+    if (key === "main") return safeText(state.mainCharacter);
+    if (key === "helper1") return safeText(state.helperCharacter1);
+    if (key === "helper2") return safeText(state.helperCharacter2);
+    if (key === "extra") return safeText(state.extraCharacter);
+    return "";
+  }
+
+  function getSceneById(sceneId) {
+    return state.scenes.find((scene) => scene.id === sceneId) || null;
+  }
+
+  function updateSceneById(sceneId, patch) {
+    state.scenes = state.scenes.map((scene) =>
+      scene.id === sceneId ? { ...scene, ...patch } : scene
+    );
+  }
+
+  function getStoryCharacterSlotMap() {
+    return {
+      main: safeText(state.mainCharacter),
+      helper1: safeText(state.helperCharacter1),
+      helper2: safeText(state.helperCharacter2),
+      extra: safeText(state.extraCharacter)
+    };
+  }
+
+  function getSceneCharacterLabels(scene) {
+    const slotMap = getStoryCharacterSlotMap();
+    const slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots : [];
+    const labels = slots
+      .map((slot) => {
+        const label = slotMap[slot];
+        const imageState = getStoryCharacterImage(slot);
+        const fileName = safeText(imageState?.fileName);
+        if (!label) return "";
+        return fileName ? `${label} (${getShortFileName(fileName, 26)})` : label;
+      })
+      .filter(Boolean);
+
+    if (labels.length) return labels;
+    return [];
+  }
+
+  function getStoryLogoAsset() {
+    return state.logoAsset || createEmptyStoryAssetState();
+  }
+
+  function getStoryAudioAsset() {
+    return state.audioAsset || createEmptyStoryAssetState();
+  }
+
+  function setStoryLogoAsset(patch) {
+    state.logoAsset = {
+      ...getStoryLogoAsset(),
+      ...patch
+    };
+  }
+
+  function setStoryAudioAsset(patch) {
+    state.audioAsset = {
+      ...getStoryAudioAsset(),
+      ...patch
+    };
+  }
+
+  function resetStoryLogoAsset(root) {
+    const input = qs("[data-story-logo-upload]", root);
+    if (input) input.value = "";
+
+    state.logoAsset = createEmptyStoryAssetState();
+    updateStoryLogoUploadUI(root);
+  }
+
+  function resetStoryAudioAsset(root) {
+    const input = qs("[data-story-audio-upload]", root);
+    if (input) input.value = "";
+
+    state.audioAsset = createEmptyStoryAssetState();
+    updateStoryAudioUploadUI(root);
+  }
+
+  function resetStoryCharacterImage(root, slot) {
+    const key = String(slot || "").trim();
+    if (!key) return;
+
+    const input = qs(`[data-story-character-file="${key}"]`, root);
+    if (input) input.value = "";
+
+    setStoryCharacterImage(key, createEmptyStoryCharacterImageState());
+
+    updateStoryCharacterUploadUI(root, key);
+
+    const scene = getSceneById(state.editingSceneId);
+    if (scene) {
+      renderSceneCharacterPicker(root, scene);
+      syncSceneRows(root);
+    }
+  }
+
+  function updateStoryLogoUploadUI(root) {
+    const textEl = qs("[data-story-logo-upload-text]", root);
+    const clearBtn = qs("[data-story-logo-upload-clear]", root);
+    const asset = getStoryLogoAsset();
+
+    if (!textEl) return;
+
+    if (!asset.file) {
+      textEl.textContent = "Dosya seçilmedi";
+      if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    if (asset.uploadStatus === "uploading") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    if (asset.uploadStatus === "ready") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    if (asset.uploadStatus === "error") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
+    if (clearBtn) clearBtn.style.display = "none";
+    syncStoryGenerateButtonCredit(root);
+  }
+
+  function updateStoryAudioUploadUI(root) {
+    const textEl = qs("[data-story-audio-upload-text]", root);
+    const clearBtn = qs("[data-story-audio-upload-clear]", root);
+    const asset = getStoryAudioAsset();
+
+    if (!textEl) return;
+
+    if (!asset.file) {
+      textEl.textContent = "Dosya seçilmedi";
+      if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    if (asset.uploadStatus === "uploading") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
+      if (clearBtn) clearBtn.style.display = "none";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    if (asset.uploadStatus === "ready") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    if (asset.uploadStatus === "error") {
+      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
+      if (clearBtn) clearBtn.style.display = "inline-grid";
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
+
+    textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
+    if (clearBtn) clearBtn.style.display = "none";
+    syncStoryGenerateButtonCredit(root);
+  }
+
+  function syncStorySettingsUploadUI(root) {
+    updateStoryLogoUploadUI(root);
+    updateStoryAudioUploadUI(root);
+  }
+
+  function ensureSceneCharacterPicker(editor) {
+    if (!editor) return null;
+
+    let wrap = qs("[data-scene-character-picker]", editor);
+    if (wrap) return wrap;
+
+    const hiddenField =
+      qs("[data-scene-editor-characters]", editor)?.closest(".form-field") ||
+      qs("[data-scene-editor-characters]", editor)?.parentElement ||
+      null;
+
+    if (hiddenField) hiddenField.style.display = "none";
+
+    const descriptionField =
+      qs("[data-scene-editor-description]", editor)?.closest(".form-field") ||
+      qs("[data-scene-editor-description]", editor)?.parentElement ||
+      null;
+
+    if (!descriptionField || !descriptionField.parentElement) return null;
+
+    wrap = document.createElement("div");
+    wrap.className = "form-field";
+    wrap.setAttribute("data-scene-character-picker", "");
+    wrap.style.marginTop = "18px";
+    wrap.innerHTML = `
+      <label
+        style="
+          display:block;
+          font-weight:800;
+          font-size:18px;
+          line-height:1.2;
+          margin-bottom:12px;
+        "
+      >
+        Sahnedeki Karakterler
+      </label>
+
+      <div
+        data-scene-character-picker-options
+        style="
+          display:grid;
+          grid-template-columns:repeat(4,minmax(0,1fr));
+          gap:12px;
+          align-items:stretch;
+        "
+      ></div>
+
+      <div
+        data-scene-character-picker-empty
+        style="
+          display:none;
+          margin-top:8px;
+          opacity:.78;
+          font-size:14px;
+        "
+      >
+        Önce üst bölümden karakter seç.
+      </div>
+    `;
+
+    descriptionField.parentElement.insertBefore(wrap, descriptionField.nextSibling);
+    return wrap;
+  }
+
+  function renderSceneCharacterPicker(root, scene) {
+    const editor = getStorySceneEditor(root);
+    if (!editor || !scene) return;
+
+    const wrap = ensureSceneCharacterPicker(editor);
+    if (!wrap) return;
+
+    const optionsBox = qs("[data-scene-character-picker-options]", wrap);
+    const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
+    if (!optionsBox || !emptyBox) return;
+
+    const selected = Array.isArray(scene?.characterSlots)
+      ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
+      : [];
+
+    const items = qsa(".story-scene-character-item", optionsBox);
+    if (!items.length) return;
+
+    let hasAnySelectedStoryCharacter = false;
+
+    items.forEach((item) => {
+      const slot = safeText(item.dataset.sceneCharacterSlot);
+      const labelEl = qs("[data-scene-character-label]", item);
+      const fileEl = qs("[data-scene-character-file]", item);
+
+      const label = getStoryCharacterLabelBySlot(slot);
+      const image = getStoryCharacterImage(slot) || createEmptyStoryCharacterImageState();
+      const hasCharacter = !!label;
+      const isSelected = hasCharacter && selected.includes(slot);
+
+      if (hasCharacter) hasAnySelectedStoryCharacter = true;
+
+      item.hidden = !hasCharacter;
+      item.dataset.selected = isSelected ? "true" : "false";
+
+      if (labelEl) {
+        labelEl.textContent = label || "Karakter seçilmedi";
+      }
+
+      if (fileEl) {
+        fileEl.textContent = image.fileName
+          ? getShortFileName(image.fileName, 24)
+          : "Görsel yüklenmedi";
+      }
+
+      item.style.border = isSelected
+        ? "1px solid rgba(201,119,255,.55)"
+        : "1px solid rgba(255,255,255,.12)";
+      item.style.background = isSelected
+        ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
+        : "rgba(255,255,255,.04)";
+      item.style.boxShadow = isSelected
+        ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
+        : "none";
+
+      const dot = qs(".story-scene-character-dot", item);
+      if (dot) {
+        dot.style.background = isSelected
+          ? "linear-gradient(135deg,#22c55e,#16a34a)"
+          : "rgba(255,255,255,.18)";
+        dot.style.boxShadow = isSelected
+          ? "0 0 12px rgba(34,197,94,.45)"
+          : "none";
+      }
+    });
+
+    if (hasAnySelectedStoryCharacter) {
+      optionsBox.hidden = false;
+      emptyBox.hidden = true;
+    } else {
+      optionsBox.hidden = true;
+      emptyBox.hidden = false;
+    }
+  }
+
+  function getSceneCharacterPickerValues(root) {
+    const editor = getStorySceneEditor(root);
+    if (!editor) return [];
+
+    return qsa('.story-scene-character-item[data-selected="true"]', editor)
+      .map((el) => safeText(el.dataset.sceneCharacterSlot))
+      .filter(Boolean);
+  }
+
+  function getSelectedScenes() {
+    return state.scenes.filter((scene) => scene && scene.selected === true);
+  }
+
+  function getSelectedTotalSeconds() {
+    return getSelectedScenes().reduce((sum, scene) => {
+      return sum + toSceneDurationNumber(scene?.duration);
+    }, 0);
+  }
+
+  function buildCharacterOptions(root) {
+    const map = new Map();
+
+    qsa('[data-role="main"], [data-role="helper"]', root).forEach((btn) => {
+      const value = safeText(btn.dataset.character);
+      const label =
+        safeText(qs('.cartoon-character-name', btn)?.textContent) ||
+        safeText(btn.textContent) ||
+        value;
+
+      if (value && label) map.set(value, label);
+    });
+
+    const storySelectedValues = [
+      safeText(state.mainCharacter),
+      safeText(state.helperCharacter1),
+      safeText(state.helperCharacter2),
+      safeText(state.extraCharacter)
+    ].filter(Boolean);
+
+    storySelectedValues.forEach((value) => {
+      if (!map.has(value)) {
+        map.set(value, value);
+      }
+    });
+
+    state.characterOptions = Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+  }
+
+  function fillCharacterSelect(selectEl, selectedValue) {
+    if (!selectEl) return;
+
+    const current = String(selectedValue || "");
+    const options = state.characterOptions || [];
+
+    selectEl.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "Seçiniz";
+    selectEl.appendChild(empty);
+
+    options.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.value;
+      opt.textContent = item.label;
+      if (item.value === current) opt.selected = true;
+      selectEl.appendChild(opt);
+    });
+
+    selectEl.value = current;
+  }
+
+  function syncCharacterSelects(root) {
+    STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
+      const selectedValue = safeText(state[config.stateKey]);
+      config.selectSelectors.forEach((selector) => {
+        fillCharacterSelect(qs(selector, root), selectedValue);
+      });
+    });
+  }
+
+  function updateStoryIdeaCount(root) {
+    const input = qs("[data-story-idea]", root);
+    const out = qs("[data-story-idea-count]", root);
+    if (!input || !out) return;
+
+    const len = String(input.value || "").length;
+    out.textContent = String(len);
+  }
+
+  function ensureStoryDurationSummary(root) {
+    const wrap = qs("[data-story-duration-summary-wrap]", root);
+    if (wrap) return wrap;
+
+    const durationField =
+      qs("[data-story-duration]", root)?.closest(".form-field") ||
+      qs("[data-story-duration]", root)?.parentElement ||
+      null;
+
+    if (!durationField || !durationField.parentElement) return null;
+
+    const box = document.createElement("div");
+    box.className = "story-duration-summary";
+    box.setAttribute("data-story-duration-summary-wrap", "");
+
+    box.innerHTML = `
+      <label style="display:block;font-weight:700;margin-bottom:8px;">Toplam Süre</label>
+      <div
+        data-story-duration-summary
+        style="min-height:64px;display:flex;align-items:center;padding:0 18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(5,6,28,.55);font-weight:700;"
+      ></div>
+    `;
+
+    durationField.parentElement.appendChild(box);
+    durationField.style.display = "none";
+    return box;
+  }
+
+  function syncStoryDurationSummary(root) {
+    const box = ensureStoryDurationSummary(root);
+    const out = qs("[data-story-duration-summary]", root);
+    if (!box || !out) return;
+
+    const selectedCount = getSelectedScenes().length;
+    const totalSeconds = getSelectedTotalSeconds();
+    out.textContent =
+      selectedCount > 0
+        ? `${selectedCount} sahne · ${formatSecondsLabel(totalSeconds)}`
+        : "Henüz sahne seçilmedi";
+  }
+
+  function syncModeTabs(root) {
+    qsa("[data-cartoon-mode]", root).forEach((btn) => {
+      const on = btn.dataset.cartoonMode === state.mode;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+
+  function syncModeViews(root) {
+    qsa(".cartoon-mode-view[data-cartoon-view]", root).forEach((el) => {
+      const view = el.dataset.cartoonView || "";
+      const on = view === state.mode;
+      el.hidden = !on;
+      el.classList.toggle("is-active", on);
+    });
+  }
+
+  function syncStoryFlowDuration(root) {
+    const select = qs("[data-story-flow-duration]", root);
+    if (!select) return;
+    if (select.value !== String(state.flowDuration || "3")) {
+      select.value = String(state.flowDuration || "3");
+    }
+  }
+
+  function syncStorySectionCounts(root) {
+    qsa("[data-story-section]", root).forEach((sectionEl) => {
+      const sectionId = safeText(sectionEl.dataset.storySection);
+      if (!sectionId) return;
+
+      const count = state.scenes.filter((scene) => scene.section === sectionId).length;
+      const em = qs(".story-section-meta em", sectionEl);
+      if (em) em.textContent = `${count} Sahne`;
+    });
+  }
+
+  function syncStoryFormValues(root) {
+    const storyIdea = qs("[data-story-idea]", root);
+    const theme = qs("[data-story-theme]", root);
+    const ageGroup = qs("[data-story-age-group]", root);
+    const ratio = qs("[data-story-ratio]", root);
+    const style = qs("[data-story-style]", root);
+    const audio = qs("[data-story-audio]", root);
+    const extraPrompt = qs("[data-story-extra-prompt]", root);
+    const logoPosition = qs("[data-story-logo-position]", root);
+    const includeMusic = qs("[data-story-include-music]", root);
+
+    if (storyIdea && storyIdea.value !== state.storyIdea) storyIdea.value = state.storyIdea;
+    if (theme && theme.value !== state.theme) theme.value = state.theme;
+    if (ageGroup && ageGroup.value !== state.ageGroup) ageGroup.value = state.ageGroup;
+    if (ratio && ratio.value !== state.ratio) ratio.value = state.ratio;
+    if (style && style.value !== state.style) style.value = state.style;
+    if (audio && audio.value !== state.audio) audio.value = state.audio;
+    if (extraPrompt && extraPrompt.value !== state.extraPrompt) extraPrompt.value = state.extraPrompt;
+    if (logoPosition && logoPosition.value !== state.logoPosition) logoPosition.value = state.logoPosition;
+    if (includeMusic && includeMusic.value !== state.includeMusic) includeMusic.value = state.includeMusic;
+  }
+
+  function createSceneRow(scene) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "story-scene-row";
+    btn.setAttribute("data-story-scene-id", scene.id);
+    btn.setAttribute("data-edit-scene", scene.id);
+
+    const selectedBadge = scene.selected
+      ? `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(170,88,255,.18);font-size:12px;font-weight:700;">Seçili</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;">Seçili değil</span>`;
+
+    btn.innerHTML = `
+      <span class="story-scene-copy">
+        <strong data-scene-title></strong>
+        <small data-scene-description></small>
+        <small data-scene-characters style="opacity:.8;"></small>
+      </span>
+      <span class="story-scene-meta" style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+        ${selectedBadge}
+        <span data-scene-duration></span>
+      </span>
+    `;
+
+    qs("[data-scene-title]", btn).textContent = scene.title || "Sahne";
+    qs("[data-scene-description]", btn).textContent = scene.description || "";
+    qs("[data-scene-duration]", btn).textContent = `${normalizeStorySceneDuration(scene.duration)} sn`;
+
+    const charEl = qs("[data-scene-characters]", btn);
+    const labels = getSceneCharacterLabels(scene);
+    charEl.textContent = labels.length ? `Karakterler: ${labels.join(", ")}` : "Karakter seçilmedi";
+
+    return btn;
+  }
+
+  function renderSectionScenes(root) {
+    qsa("[data-story-section]", root).forEach((sectionEl) => {
+      const sectionId = sectionEl.dataset.storySection || "";
+      const body = qs("[data-story-section-body]", sectionEl);
+      if (!body) return;
+
+      let list = qs(".story-scene-list", body);
+      if (!list) {
+        list = document.createElement("div");
+        list.className = "story-scene-list";
+        body.appendChild(list);
+      }
+
+      list.innerHTML = "";
+      state.scenes
+        .filter((scene) => scene.section === sectionId)
+        .forEach((scene) => list.appendChild(createSceneRow(scene)));
+    });
+  }
+
+  function syncStoryAccordion(root) {
+    qsa("[data-story-section]", root).forEach((sectionEl) => {
+      const sectionId = sectionEl.dataset.storySection || "";
+      const isOpen = sectionId === state.openSection;
+
+      sectionEl.classList.toggle("is-open", isOpen);
+
+      const body = qs("[data-story-section-body]", sectionEl);
+      if (body) body.hidden = !isOpen;
+
+      const toggle = qs("[data-story-section-toggle]", sectionEl);
+      if (toggle) toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+  }
+
+  function syncStorySettings(root) {
+    const body = qs("[data-story-settings-body]", root);
+    const toggle = qs("[data-story-settings-toggle]", root);
+    const icon = qs("[data-story-settings-icon]", root);
+
+    if (body) body.hidden = !state.settingsOpen;
+    if (toggle) toggle.setAttribute("aria-expanded", state.settingsOpen ? "true" : "false");
+    if (icon) icon.classList.toggle("is-open", !!state.settingsOpen);
+  }
+
+  function syncSceneRows(root) {
+    qsa("[data-story-scene-id]", root).forEach((row) => {
+      const sceneId = row.dataset.storySceneId || "";
+      const scene = getSceneById(sceneId);
+      if (!scene) return;
+
+      const titleEl = qs("[data-scene-title]", row);
+      const descEl = qs("[data-scene-description]", row);
+      const durationEl = qs("[data-scene-duration]", row);
+      const charsEl = qs("[data-scene-characters]", row);
+
+      if (titleEl) titleEl.textContent = scene.title || "Sahne";
+      if (descEl) descEl.textContent = scene.description || "";
+      if (durationEl) durationEl.textContent = `${normalizeStorySceneDuration(scene.duration)} sn`;
+
+      if (charsEl) {
+        const labels = getSceneCharacterLabels(scene);
+        charsEl.textContent = labels.length ? `Karakterler: ${labels.join(", ")}` : "Karakter seçilmedi";
+      }
+    });
+  }
+
+  function fillSceneEditor(root, sceneId) {
+    const editor = getStorySceneEditor(root);
+    const scene = getSceneById(sceneId);
+    if (!editor || !scene) return;
+
+    const heading = qs("[data-scene-editor-heading]", editor);
+    const title = qs("[data-scene-editor-title]", editor);
+    const description = qs("[data-scene-editor-description]", editor);
+    const duration = qs("[data-scene-editor-duration]", editor);
+    const mood = qs("[data-scene-editor-mood]", editor);
+    const type = qs("[data-scene-editor-type]", editor);
+    const note = qs("[data-scene-editor-note]", editor);
+
+    if (heading) heading.textContent = scene.title || "Sahne Düzenle";
+    if (title) title.value = scene.title || "";
+    if (description) description.value = scene.description || "";
+
+    renderSceneCharacterPicker(root, scene);
+
+    if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
+    if (mood) mood.value = scene.mood || "";
+    if (type) type.value = scene.type || "";
+    if (note) note.value = scene.directorNote || "";
+  }
+
+  function ensureStorySceneEditorPortal(root) {
+    const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
+    if (!editor) return null;
+
+    if (editor.parentElement !== document.body) {
+      document.body.appendChild(editor);
+    }
+
+    return editor;
+  }
+
+  function syncSceneEditor(root) {
+    const editor = ensureStorySceneEditorPortal(root);
+    if (!editor) return;
+
+    const isOpen = !!state.editingSceneId;
+    editor.hidden = !isOpen;
+    editor.classList.toggle("is-open", isOpen);
+
+    if (isOpen) {
+      fillSceneEditor(root, state.editingSceneId);
+
+      const scene = getSceneById(state.editingSceneId);
+      if (scene) {
+        renderSceneCharacterPicker(root, scene);
+      }
+    }
+  }
+
+  function getStoryEstimatedCredits() {
+  const selectedScenes = getSelectedScenes();
+  const totalSeconds = getSelectedTotalSeconds();
+
+  let total = 0;
+
+  if (selectedScenes.length > 0) {
+    if (totalSeconds <= 30) total = 30;
+    else if (totalSeconds <= 60) total = 40;
+    else if (totalSeconds <= 120) total = 50;
+    else if (totalSeconds <= 180) total = 60;
+    else total = 70;
+  }
+
+  const hasAnyCharacterImage = STORY_CHARACTER_SLOT_CONFIG.some((config) => {
+    const imageState = getStoryCharacterImage(config.slot);
+    return !!(imageState && imageState.file);
+  });
+
+  const logoAsset = getStoryLogoAsset();
+  const audioAsset = getStoryAudioAsset();
+  const includeMusic = safeText(state.includeMusic).toLowerCase() === "yes";
+
+  if (hasAnyCharacterImage) total += 10;
+  if (logoAsset.file) total += 10;
+  if (includeMusic && audioAsset.file) total += 10;
+
+  return total;
+  }
+
+  function syncStoryGenerateButtonCredit(root) {
+  const btn = qs("[data-story-generate]", root);
+  if (!btn) return;
+
+  const total = getStoryEstimatedCredits();
+  btn.setAttribute("data-credit-cost", String(total));
+
+  if (!state.isGenerating) {
+    btn.textContent = `Hikayeyi Oluştur (${total} Kredi)`;
+  }
+  }
+
+  function buildStoryPayload() {
+    const selectedScenes = getSelectedScenes();
+    const totalSeconds = getSelectedTotalSeconds();
+    const logoAsset = getStoryLogoAsset();
+    const audioAsset = getStoryAudioAsset();
+
+    return {
+      app: "cartoon",
+      mode: "story",
+      summary: {
+        idea: state.storyIdea,
+        theme: state.theme,
+        ageGroup: state.ageGroup,
+        selectedSceneCount: selectedScenes.length,
+        totalSelectedDurationSeconds: totalSeconds,
+        flowDuration: state.flowDuration
+      },
+      characters: {
+        main: state.mainCharacter,
+        helper1: state.helperCharacter1,
+        helper2: state.helperCharacter2,
+        extra: state.extraCharacter,
+        images: {
+          main: {
+            fileName: state.characterImages?.main?.fileName || "",
+            fileUrl: state.characterImages?.main?.fileUrl || ""
+          },
+          helper1: {
+            fileName: state.characterImages?.helper1?.fileName || "",
+            fileUrl: state.characterImages?.helper1?.fileUrl || ""
+          },
+          helper2: {
+            fileName: state.characterImages?.helper2?.fileName || "",
+            fileUrl: state.characterImages?.helper2?.fileUrl || ""
+          },
+          extra: {
+            fileName: state.characterImages?.extra?.fileName || "",
+            fileUrl: state.characterImages?.extra?.fileUrl || ""
+          }
+        }
+      },
+      settings: {
+        aspectRatio: state.ratio,
+        style: state.style,
+        audio: state.audio,
+        includeMusic: state.includeMusic,
+        logoPosition: state.logoPosition,
+        logoPos: mapLogoPositionToShort(state.logoPosition),
+        logoFileName: logoAsset.fileName || "",
+        logoFileUrl: logoAsset.fileUrl || "",
+        audioFileName: audioAsset.fileName || "",
+        audioFileUrl: audioAsset.fileUrl || "",
+        extraPrompt: state.extraPrompt
+      },
+      scenes: state.scenes.map((scene) => ({ ...scene }))
+    };
+  }
+
+  function resolveSceneCharacters(scene, storyPayload) {
+    const slotValueMap = {
+      main: safeText(storyPayload?.characters?.main),
+      helper1: safeText(storyPayload?.characters?.helper1),
+      helper2: safeText(storyPayload?.characters?.helper2),
+      extra: safeText(storyPayload?.characters?.extra)
+    };
+
+    let slots = Array.isArray(scene?.characterSlots) ? scene.characterSlots.filter(Boolean) : [];
+
+    slots = slots.filter((slot) => !!slotValueMap[slot]);
+
+    if (!slots.length) {
+      if (slotValueMap.main) slots = ["main"];
+      else slots = Object.keys(slotValueMap).filter((slot) => !!slotValueMap[slot]).slice(0, 1);
+    }
+
+    const mainSlot = slots[0] || "main";
+    const sceneMain = slotValueMap[mainSlot] || "";
+    const helperCharacters = slots
+      .slice(1)
+      .map((slot) => slotValueMap[slot])
+      .filter(Boolean);
+
+    const allNames = slots.map((slot) => slotValueMap[slot]).filter(Boolean);
+
+    const imageSlot =
+      slots.find((slot) => safeText(storyPayload?.characters?.images?.[slot]?.fileUrl)) ||
+      mainSlot;
+
+    const characterImageUrl =
+      safeText(storyPayload?.characters?.images?.[imageSlot]?.fileUrl) || "";
+
+    return {
+      slots,
+      sceneMain,
+      helperCharacters,
+      allNames,
+      imageSlot,
+      characterImageUrl
+    };
+  }
+
+  function mapStorySceneToBasicPayload(storyPayload, scene) {
+    const resolved = resolveSceneCharacters(scene, storyPayload);
+
+    const slotLabelMap = {
+      main: safeText(storyPayload?.characters?.main),
+      helper1: safeText(storyPayload?.characters?.helper1),
+      helper2: safeText(storyPayload?.characters?.helper2),
+      extra: safeText(storyPayload?.characters?.extra)
+    };
+
+    const slotImageMap = {
+      main: safeText(storyPayload?.characters?.images?.main?.fileUrl),
+      helper1: safeText(storyPayload?.characters?.images?.helper1?.fileUrl),
+      helper2: safeText(storyPayload?.characters?.images?.helper2?.fileUrl),
+      extra: safeText(storyPayload?.characters?.images?.extra?.fileUrl)
+    };
+
+    const activeSlots = (Array.isArray(resolved?.slots) ? resolved.slots : [])
+      .map((slot) => safeText(slot))
+      .filter(Boolean);
+
+    const validElementSlots = activeSlots.filter((slot) => {
+      const label = slotLabelMap[slot];
+      const imageUrl = slotImageMap[slot];
+      return !!label && !!imageUrl;
+    });
+
+    const elements = validElementSlots.map((slot, index) => {
+      const label = slotLabelMap[slot];
+      const imageUrl = slotImageMap[slot];
+
+      return {
+        token: `@Element${index + 1}`,
+        slot,
+        name: label,
+        frontal_image_url: imageUrl,
+        reference_image_urls: [imageUrl]
+      };
+    });
+
+    const characterPromptLine = elements.length
+      ? `Characters: ${elements.map((el) => `${el.token} = ${el.name}`).join(", ")}.`
+      : (resolved.allNames.length
+          ? `Characters in this scene: ${resolved.allNames.join(", ")}.`
+          : "");
+
+    const promptParts = [
+      "Cute kids cartoon style.",
+      "Bright colorful animated scene.",
+      `Scene title: ${safeText(scene?.title)}.`,
+      `Scene description: ${safeText(scene?.description)}.`,
+      characterPromptLine,
+      scene?.mood ? `Mood: ${safeText(scene.mood)}.` : "",
+      scene?.type ? `Shot type: ${safeText(scene.type)}.` : "",
+      scene?.directorNote ? `Director note: ${safeText(scene.directorNote)}.` : "",
+      storyPayload?.settings?.style ? `Visual style: ${safeText(storyPayload.settings.style)}.` : "",
+      storyPayload?.settings?.extraPrompt ? `Extra prompt: ${safeText(storyPayload.settings.extraPrompt)}.` : "",
+      elements.length ? `Use the provided character references exactly and preserve character identity consistently across the whole shot.` : "",
+      "Friendly, adorable, child-safe, expressive animation.",
+      "Clean frame, no text, no subtitles, no watermark."
+    ].filter(Boolean);
+
+    const includeMusic = safeText(storyPayload?.settings?.includeMusic).toLowerCase() === "yes";
+    const audioFileUrl = safeText(storyPayload?.settings?.audioFileUrl);
+    const logoFileUrl = safeText(storyPayload?.settings?.logoFileUrl);
+    const logoPosition = safeText(storyPayload?.settings?.logoPosition || "bottom-right");
+
+    return {
+      app: "cartoon",
+      mode: "basic",
+      extraPrompt: promptParts.join(" "),
+      mainCharacter: resolved.sceneMain,
+      helperCharacters: resolved.helperCharacters,
+      scene: safeText(scene?.section || "story") || "story",
+      actions: [],
+      action: "acting naturally in the scene",
+      duration: normalizeStorySceneDuration(scene?.duration),
+      aspectRatio: String(storyPayload?.settings?.aspectRatio || "16:9"),
+      audioSource: includeMusic && audioFileUrl ? "upload" : "none",
+      audioMode: includeMusic && audioFileUrl ? "upload" : "none",
+      audioFileName: includeMusic ? safeText(storyPayload?.settings?.audioFileName) : "",
+      audioFileUrl: includeMusic ? audioFileUrl : "",
+      logoFileName: safeText(storyPayload?.settings?.logoFileName),
+      logoFileUrl: logoFileUrl,
+      logoPosition: logoPosition,
+      logoPos: mapLogoPositionToShort(logoPosition),
+      characterImage: null,
+      characterImageName: "",
+      characterImageUrl: resolved.characterImageUrl,
+      elements: elements.map((el) => ({
+      token: el.token,
+      frontal_image_url: el.frontal_image_url,
+      reference_image_urls: el.reference_image_urls
+      })),
+       estimatedCredits: Number(storyPayload?.estimatedCredits || 0),
+        meta: {
+        app: "cartoon",
+        mode: "story",
+        scene_id: String(scene?.id || ""),
+        scene_title: String(scene?.title || ""),
+        scene_duration: normalizeStorySceneDuration(scene?.duration),
+       scene_slots: resolved.slots,
+       story_idea: String(storyPayload?.summary?.idea || ""),
+       story_flow_duration: String(storyPayload?.summary?.flowDuration || ""),
+       credit_cost: Number(storyPayload?.estimatedCredits || 0),
+        logo_url: logoFileUrl || "",
+        logo_pos: mapLogoPositionToShort(logoPosition),
+        include_audio: includeMusic,
+        audio_url: includeMusic ? audioFileUrl : "",
+        fal_elements_debug: elements.map((el) => ({
+          token: el.token,
+          slot: el.slot,
+          name: el.name,
+          frontal_image_url: el.frontal_image_url
+        }))
+      }
+    };
+  }
+
+  async function createStoryScenesFromPayload(storyPayload) {
+    const scenes = (Array.isArray(storyPayload?.scenes) ? storyPayload.scenes : []).filter(
+      (scene) => scene && scene.selected === true
+    );
+
+    if (!scenes.length) {
+      throw new Error("Önce en az 1 sahne seçip kaydetmelisin.");
+    }
+
+    resetStoryPollBatch();
+    storyPollState.total = scenes.length;
+
+    const created = [];
+
+    for (const scene of scenes) {
+      const body = mapStorySceneToBasicPayload(storyPayload, scene);
+
+      console.log("[CARTOON][STORY_SCENE_CREATE_BODY]", {
+        scene_id: scene?.id,
+        scene_title: scene?.title,
+        selected: scene?.selected,
+        duration: scene?.duration,
+        normalized_duration: body?.duration,
+        scene_characterSlots_raw: scene?.characterSlots || [],
+        body_mainCharacter: body?.mainCharacter,
+        body_helperCharacters: body?.helperCharacters || [],
+        body_elements: body?.elements || [],
+        body_meta_scene_slots: body?.meta?.scene_slots || [],
+        body_fal_elements_debug: body?.meta?.fal_elements_debug || [],
+        body_characterImageUrl: body?.characterImageUrl || "",
+        body_logoFileUrl: body?.logoFileUrl || "",
+        body_audioFileUrl: body?.audioFileUrl || "",
+        body_logoPos: body?.logoPos || "",
+        body_extraPrompt: body?.extraPrompt || ""
+      });
+
+      const r = await fetch("/api/providers/fal/cartoon/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
       });
 
       const j = await r.json().catch(() => null);
 
-      console.log('[CARTOON][STUDIO_EXPORT_POLL]', {
-        jobId,
+      if (!r.ok || !j || j.ok === false) {
+        throw new Error(
+          `${String(scene?.title || "scene")} -> ${j?.error || `story_scene_create_failed_${r.status}`}`
+        );
+      }
+
+      const item = {
+        scene_id: String(scene?.id || ""),
+        scene_title: String(scene?.title || ""),
+        job_id: String(j?.job_id || ""),
+        request_id: String(j?.request_id || ""),
+        status_url: String(j?.status_url || "")
+      };
+
+      created.push(item);
+
+      if (!window.__CARTOON_STORY_CREATED_JOBS__) {
+        window.__CARTOON_STORY_CREATED_JOBS__ = [];
+      }
+
+      window.__CARTOON_STORY_CREATED_JOBS__.push(item);
+
+      window.dispatchEvent(
+        new CustomEvent("aivo:cartoon:job_created", {
+          detail: {
+            app: "cartoon",
+            mode: "story",
+            sceneId: item.scene_id,
+            sceneTitle: item.scene_title,
+            job_id: item.job_id,
+            request_id: item.request_id,
+            status_url: item.status_url,
+            createdAt: Date.now(),
+            meta: {
+              app: "cartoon",
+              mode: "story",
+              provider: "fal",
+              scene_id: item.scene_id,
+              scene_title: item.scene_title
+            }
+          }
+        })
+      );
+
+      if (item.job_id) {
+        ensureStoryJobState(item.job_id, item);
+        pollStorySceneJob(item.job_id, item, 0);
+      }
+    }
+
+    return created;
+  }
+
+  async function pollStorySceneJob(jobId, item, tries = 0, readyChecks = 0) {
+    const key = safeText(jobId);
+    const entry = ensureStoryJobState(key, item);
+    if (!key || !entry || entry.done || entry.failed) return;
+
+    entry.tries = Number(tries || 0);
+    entry.readyChecks = Number(readyChecks || 0);
+
+    try {
+      const url = `/api/jobs/status?job_id=${encodeURIComponent(key)}&debug=1&t=${Date.now()}`;
+      const r = await fetch(url, { cache: "no-store" });
+      const j = await r.json().catch(() => null);
+
+      entry.lastResponse = j || null;
+
+      console.log("[CARTOON][STORY] poll =", key, item?.scene_title, {
         tries,
+        readyChecks,
         response: j
       });
 
       if (!j || j.ok === false) {
-        if (tries < 240) {
-          setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
-          return;
+        if (tries < STORY_MAX_POLLS) {
+          scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+        } else {
+          markStoryJobFailed(key, item, j);
         }
-
-        throw new Error(j?.error || 'studio_export_poll_failed');
+        return;
       }
 
-      const status = String(
-        j?.status ||
-        j?.db_status ||
-        j?.state ||
-        ''
-      ).trim().toLowerCase();
+      const normalizedStatus = String(j?.status || j?.db_status || j?.state || "")
+        .trim()
+        .toLowerCase();
 
-      const finalVideoUrl = String(
-        j?.meta?.final_video_url ||
+      const readyVideoUrl = String(
         j?.video?.url ||
-        ''
+        j?.video_url ||
+        j?.output?.url ||
+        ""
       ).trim();
 
-      const previewVideoUrl = String(
-        j?.meta?.preview_video_url ||
-        ''
-      ).trim();
+      const outputs = Array.isArray(j?.outputs) ? j.outputs : [];
 
-      const finalizedOutputUrl = Array.isArray(j?.outputs)
-        ? String(
-            j.outputs.find((o) => {
-              const type = String(o?.type || '').toLowerCase().trim();
-              const variant = String(o?.meta?.variant || '').toLowerCase().trim();
-              const url = String(o?.url || '').trim();
-              return !!url && type === 'video' && variant === 'finalized';
-            })?.url || ''
-          ).trim()
-        : '';
+      const hasReadyOutput = outputs.some((o) => {
+        const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
+        const u = String(o?.url || o?.video_url || "").trim();
+        return !!u && (!t || t === "video");
+      });
 
-      const previewOutputUrl = Array.isArray(j?.outputs)
-        ? String(
-            j.outputs.find((o) => {
-              const type = String(o?.type || '').toLowerCase().trim();
-              const variant = String(o?.meta?.variant || '').toLowerCase().trim();
-              const url = String(o?.url || '').trim();
-              return !!url && type === 'video' && variant === 'preview';
-            })?.url || ''
-          ).trim()
-        : '';
+      const finalVideoUrl =
+        readyVideoUrl ||
+        String(
+          outputs.find((o) => String(o?.url || o?.video_url || "").trim())?.url ||
+          outputs.find((o) => String(o?.url || o?.video_url || "").trim())?.video_url ||
+          ""
+        ).trim();
 
-      const hasReadyVideo =
-        !!finalVideoUrl ||
-        !!finalizedOutputUrl ||
-        !!previewOutputUrl;
+      entry.lastStatus = normalizedStatus;
 
-         if (['ready', 'completed', 'complete', 'succeeded', 'done'].includes(status) && hasReadyVideo) {
-        let resolvedFinalVideoUrl =
-          finalizedOutputUrl ||
-          previewOutputUrl ||
-          finalVideoUrl ||
-          '';
+      console.log("[CARTOON][STORY_READY_CHECK]", {
+        jobId: key,
+        sceneTitle: item?.scene_title || "",
+        tries,
+        readyChecks,
+        normalizedStatus,
+        readyVideoUrl,
+        finalVideoUrl,
+        hasReadyOutput,
+        outputs,
+        raw: j
+      });
 
-        const studioState = window.__CARTOON_STUDIO__ || null;
-        const logoUrl = String(studioState?.logoFileUrl || '').trim();
+      const isReadyLike = ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus);
+      const isFailedLike = ["error", "failed", "cancelled", "canceled"].includes(normalizedStatus);
 
-        if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
-          button.disabled = true;
-          button.textContent = 'Logo işleniyor...';
-          button.classList.add('is-loading');
-
-          const logoPosRaw = String(
-            document
-              .querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"] [data-studio-logo-position]')?.value ||
-            'bottom-right'
-          ).trim().toLowerCase();
-
-          const logoPos =
-            ['top-left', 'sol-ust', 'sol üst', 'solüst'].includes(logoPosRaw) ? 'tl' :
-            ['top-right', 'sag-ust', 'sağ-üst', 'sağ üst', 'sağüst'].includes(logoPosRaw) ? 'tr' :
-            ['bottom-left', 'sol-alt', 'sol alt', 'solalt'].includes(logoPosRaw) ? 'bl' :
-            ['center', 'orta'].includes(logoPosRaw) ? 'c' :
-            'br';
-
-          console.log('[CARTOON][STUDIO_LOGO_OVERLAY_REQUEST]', {
-            jobId,
-            resolvedFinalVideoUrl,
-            logoUrl,
-            logoPos
-          });
-
-          const overlayRes = await fetch('/api/cartoon/overlay-logo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              job_id: String(jobId || ''),
-              video_url: resolvedFinalVideoUrl,
-              logo_url: logoUrl,
-              logo_pos: logoPos,
-              app: 'cartoon'
-            })
-          });
-
-          const overlayData = await overlayRes.json().catch(() => null);
-
-          console.log('[CARTOON][STUDIO_LOGO_OVERLAY_RESPONSE]', {
-            status: overlayRes.status,
-            ok: overlayRes.ok,
-            overlayData
-          });
-
-          if (!overlayRes.ok || !overlayData || overlayData.ok === false) {
-            throw new Error(overlayData?.message || overlayData?.error || 'studio_logo_overlay_failed');
-          }
-
-          resolvedFinalVideoUrl = String(overlayData?.url || resolvedFinalVideoUrl || '').trim();
-          window.__CARTOON_STUDIO_LOGO_DONE__ = true;
-        }
-
-        window.__CARTOON_STUDIO_EXPORT_STATUS__ = j;
-        window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
-
-        window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:job_ready', {
-            detail: {
-              app: 'cartoon',
-              mode: 'studio_export',
-              job_id: String(jobId || ''),
-              status,
-              video: resolvedFinalVideoUrl ? { url: resolvedFinalVideoUrl } : null,
-              outputs: Array.isArray(j?.outputs) ? j.outputs : [],
-              raw: j,
-              meta: {
-                app: 'cartoon',
-                mode: 'studio_export',
-                final_video_url: resolvedFinalVideoUrl,
-                preview_video_url: previewVideoUrl || previewOutputUrl
-              }
-            }
-          })
-        );
-
-        button.disabled = false;
-        button.textContent = originalText;
-        button.classList.remove('is-loading');
-
-        try { window.toast?.success?.('Video hazır'); } catch {}
+      if (isReadyLike && finalVideoUrl) {
+        markStoryJobReady(key, item, {
+          status: normalizedStatus,
+          video: { url: finalVideoUrl },
+          outputs,
+          raw: j
+        });
         return;
       }
 
-          if (status === 'error') {
-        button.disabled = false;
-        button.textContent = originalText;
-        button.classList.remove('is-loading');
-
-        const activeJobId = String(window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ || '').trim();
-        const currentJobId = String(jobId || '').trim();
-
-        async function refreshCreditsUI() {
-          try {
-            const creditGetRes = await fetch('/api/credits/get', {
-              credentials: 'include',
-              cache: 'no-store',
-              headers: { 'accept': 'application/json' }
-            });
-
-            const creditGetData = await creditGetRes.json().catch(() => null);
-
-            if (creditGetData?.ok && typeof creditGetData.credits === 'number') {
-              const topCreditCountEl = document.getElementById('topCreditCount');
-              if (topCreditCountEl) {
-                topCreditCountEl.textContent = String(creditGetData.credits);
-              }
-
-              if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === 'function') {
-                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-              }
-            }
-          } catch (_) {}
-
-          try { window.syncCreditsUI?.({ force: true }); } catch {}
-        }
-
-        if (!activeJobId || activeJobId === currentJobId) {
-          try {
-            const activeRequestId = String(window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ || '').trim();
-            const activeTransactionId = String(window.__CARTOON_STUDIO_LAST_TRANSACTION_ID__ || '').trim();
-            const activeCreditCost = Number(window.__CARTOON_STUDIO_LAST_CREDIT_COST__ || 0);
-            const activeCreditReason = String(window.__CARTOON_STUDIO_LAST_CREDIT_REASON__ || 'studio_cartoon_montage_export').trim();
-
-            if (activeRequestId && activeTransactionId && activeCreditCost > 0) {
-              const refundRes = await fetch('/api/credits/refund', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                  'content-type': 'application/json',
-                  'accept': 'application/json'
-                },
-                body: JSON.stringify({
-                  app: 'cartoon',
-                  action: activeCreditReason,
-                  amount: activeCreditCost,
-                  request_id: activeRequestId,
-                  related_transaction_id: activeTransactionId,
-                  reason: 'studio_export_job_failed',
-                  meta: {
-                    source: 'cartoon.studio.poll',
-                    mode: 'studio_export',
-                    job_id: currentJobId,
-                    status,
-                    error: String(j?.error || j?.error_reason || j?.reason || 'studio_export_failed')
-                  }
-                })
-              });
-
-              const refundData = await refundRes.json().catch(() => null);
-
-              if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
-                await refreshCreditsUI();
-                try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
-              } else {
-                try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
-              }
-            } else {
-              try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
-            }
-          } catch (refundErr) {
-            console.error('[CARTOON][STUDIO] poll refund failed =', refundErr);
-            try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
-          }
-        }
-
-        window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:job_failed', {
-            detail: {
-              app: 'cartoon',
-              mode: 'studio_export',
-              job_id: currentJobId,
-              status,
-              remove_placeholder: true,
-              raw: j
-            }
-          })
-        );
-
-        window.dispatchEvent(
-          new CustomEvent('aivo:cartoon:job_remove', {
-            detail: {
-              app: 'cartoon',
-              mode: 'studio_export',
-              job_id: currentJobId,
-              remove_placeholder: true,
-              raw: j
-            }
-          })
-        );
-
-        window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = '';
-
-        throw new Error(j?.error_reason || j?.error || 'studio_export_failed');
-      }
-
-      if (tries < 240) {
-        setTimeout(() => pollStudioExportJob(jobId, button, originalText, tries + 1), 3000);
-        return;
-      }
-
-      button.disabled = false;
-      button.textContent = originalText;
-      button.classList.remove('is-loading');
-
-      throw new Error('studio_export_timeout');
-    } catch (err) {
-      console.error('[CARTOON][STUDIO_EXPORT_POLL_ERROR]', err);
-
-      button.disabled = false;
-      button.textContent = originalText;
-      button.classList.remove('is-loading');
-
-      try {
-        window.toast?.error?.(
-          String(err?.message || err || 'studio_export_poll_failed')
-        );
-      } catch {}
-    }
-  }
-
-  function bindStudioExportPayloadDebug(rootState, studioRoot) {
-    const button = qsAny(studioRoot, [
-      '[data-studio-export]',
-      '[data-studio-final-output]',
-      '[data-studio-generate-final]',
-      '#cartoonStudioExportBtn',
-      '#studioExportBtn',
-      'button[type="button"][data-role="studio-export"]'
-    ]);
-
-    if (!button) {
-      console.warn('[CARTOON][STUDIO_EXPORT_BUTTON_NOT_FOUND]');
-      return;
-    }
-
-    const initialCreditCost = getStudioExportCreditCost(rootState, studioRoot);
-    button.setAttribute('data-credit-cost', String(initialCreditCost));
-
-    if (!button.disabled) {
-      button.textContent = `Paylaşmaya Hazır Çıktı Al (${initialCreditCost} Kredi)`;
-    }
-
-    if (button.getAttribute('data-studio-export-bound') === 'true') {
-      return;
-    }
-
-    button.setAttribute('data-studio-export-bound', 'true');
-
-    button.addEventListener('click', async () => {
-      const originalText = String(button.textContent || 'Paylaşmaya Hazır Çıktı Al');
-      let startedPolling = false;
-
-      try {
-        window.__CARTOON_STUDIO_LOGO_DONE__ = false;
-        const payload = collectCartoonStudioPayload(rootState, studioRoot);
-        window.__CARTOON_STUDIO_EXPORT_PAYLOAD__ = payload;
-
-        console.log('[CARTOON][STUDIO_EXPORT_PAYLOAD]', payload);
-
-        if (!payload.export.scenes.length) {
-          alert('Export için en az 1 sahne seçmelisin.');
+      if (isReadyLike && !finalVideoUrl) {
+        if (readyChecks < STORY_READY_RECHECK_LIMIT) {
+          scheduleStoryPoll(key, item, tries, STORY_READY_RECHECK_INTERVAL);
+          entry.readyChecks = readyChecks + 1;
           return;
         }
 
-        if (rootState?.voiceFileUploadPromise) {
-          button.disabled = true;
-          button.textContent = 'Ses yükleniyor...';
-          button.classList.add('is-loading');
-
-          try {
-            await rootState.voiceFileUploadPromise;
-          } catch {
-            throw new Error(rootState?.voiceFileUploadError || 'studio_voice_upload_failed');
-          }
+        if (tries < STORY_MAX_POLLS) {
+          scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+          return;
         }
 
-        if (
-          (rootState?.voiceFile || String(rootState?.voiceFileUrl || '').trim()) &&
-          String(rootState?.voiceFileUploadStatus || '') !== 'ready'
-        ) {
-          throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
-        }
-
-        if (rootState?.logoFileUploadPromise) {
-          button.disabled = true;
-          button.textContent = 'Logo yükleniyor...';
-          button.classList.add('is-loading');
-
-          try {
-            await rootState.logoFileUploadPromise;
-          } catch {
-            throw new Error(rootState?.logoFileUploadError || 'studio_logo_upload_failed');
-          }
-        }
-
-        if (
-          (rootState?.logoFile || String(rootState?.logoFileUrl || '').trim()) &&
-          String(rootState?.logoFileUploadStatus || '') !== 'ready'
-        ) {
-          throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
-        }
-
-const creditCost = getStudioExportCreditCost(rootState, studioRoot);
-const creditReason = 'studio_cartoon_montage_export';
-const consumeRequestId = `cartoon-studio-export:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-
-let consumed = false;
-let consumeTransactionId = null;
-
-async function refreshCreditsUI() {
-  try {
-    const creditGetRes = await fetch('/api/credits/get', {
-      credentials: 'include',
-      cache: 'no-store',
-      headers: { 'accept': 'application/json' }
-    });
-
-    const creditGetData = await creditGetRes.json().catch(() => null);
-
-    if (creditGetData?.ok && typeof creditGetData.credits === 'number') {
-      const topCreditCountEl = document.getElementById('topCreditCount');
-      if (topCreditCountEl) {
-        topCreditCountEl.textContent = String(creditGetData.credits);
+        markStoryJobFailed(key, item, j);
+        return;
       }
 
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === 'function') {
-        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+      if (isFailedLike) {
+        console.error("[CARTOON][STORY] job error =", key, item?.scene_title, j);
+        markStoryJobFailed(key, item, j);
+        return;
       }
+
+      if (tries < STORY_MAX_POLLS) {
+        scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+        return;
+      }
+
+      markStoryJobFailed(key, item, j);
+    } catch (err) {
+      console.error("[CARTOON][STORY] poll error =", key, item?.scene_title, err);
+
+      if (tries < STORY_MAX_POLLS) {
+        scheduleStoryPoll(key, item, tries + 1, STORY_POLL_INTERVAL);
+        return;
+      }
+
+      markStoryJobFailed(key, item, { error: String(err?.message || err || "story_poll_failed") });
     }
-  } catch (_) {}
-
-  try { window.syncCreditsUI?.({ force: true }); } catch {}
-}
-
-async function tryRefund(reason, extraMeta = {}) {
-  if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
-
-  try {
-    const refundRes = await fetch('/api/credits/refund', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'content-type': 'application/json',
-        'accept': 'application/json'
-      },
-      body: JSON.stringify({
-        app: 'cartoon',
-        action: creditReason,
-        amount: creditCost,
-        request_id: consumeRequestId,
-        related_transaction_id: consumeTransactionId,
-        reason,
-        meta: {
-          source: 'cartoon.studio.export',
-          mode: 'studio_export',
-          scene_count: Number(payload?.export?.sceneCount || 0),
-          total_duration: Number(payload?.export?.totalDuration || 0),
-          aspect_ratio: String(payload?.export?.format || '16:9'),
-          has_voice: !!payload?.audio?.voiceFile?.url,
-          has_logo: !!payload?.branding?.logoFile?.url,
-          ready_music: String(payload?.audio?.readyMusic || ''),
-          ...extraMeta
-        }
-      })
-    });
-
-    const refundData = await refundRes.json().catch(() => null);
-
-    if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
-      await refreshCreditsUI();
-      try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
-      return true;
-    }
-  } catch (refundErr) {
-    console.error('[CARTOON][STUDIO] refund failed:', refundErr);
   }
 
-  return false;
-}
+  function saveSceneEditor(root) {
+    if (!state.editingSceneId) return;
 
-button.disabled = true;
-button.textContent = 'Çıktı hazırlanıyor...';
-button.classList.add('is-loading');
+    const editor = getStorySceneEditor(root);
+    if (!editor) return;
 
-const creditRes = await fetch('/api/credits/consume-ledger', {
-  method: 'POST',
-  credentials: 'include',
+    const title = safeText(qs("[data-scene-editor-title]", editor)?.value);
+    const description = safeText(qs("[data-scene-editor-description]", editor)?.value);
+    const duration = normalizeStorySceneDuration(qs("[data-scene-editor-duration]", editor)?.value || "15");
+    const characterSlots = getSceneCharacterPickerValues(root);
+    const mood = safeText(qs("[data-scene-editor-mood]", editor)?.value);
+    const type = safeText(qs("[data-scene-editor-type]", editor)?.value);
+    const note = clampText(qs("[data-scene-editor-note]", editor)?.value, 1000);
+
+    if (!title) return alert("Sahne Başlığı zorunlu.");
+    if (!description) return alert("Sahne Açıklaması zorunlu.");
+
+    if (!characterSlots.length) {
+      return alert("Bu sahne için en az 1 karakter seçmelisin.");
+    }
+
+    updateSceneById(state.editingSceneId, {
+      title,
+      description,
+      characters: "",
+      characterSlots,
+      selected: true,
+      duration,
+      mood,
+      type,
+      directorNote: note
+    });
+
+    state.editingSceneId = "";
+    resetStoryPolicyUI(root);
+    render(root);
+  }
+
+  function render(root) {
+    if (!root) return;
+
+    buildCharacterOptions(root);
+    syncModeTabs(root);
+    syncModeViews(root);
+    syncStoryFormValues(root);
+    syncStoryFlowDuration(root);
+    syncCharacterSelects(root);
+    renderSectionScenes(root);
+    syncStorySectionCounts(root);
+    syncStoryAccordion(root);
+    syncStorySettings(root);
+    syncSceneRows(root);
+    syncSceneEditor(root);
+    updateStoryIdeaCount(root);
+    syncAllStoryCharacterUploadUI(root);
+   syncStorySettingsUploadUI(root);
+   syncStoryDurationSummary(root);
+   syncStoryGenerateButtonCredit(root);
+    
+  }
+
+  function bindClicks() {
+    document.addEventListener("click", async (e) => {
+      const root = getCartoonRoot();
+      if (!root) return;
+
+      const modeBtn = e.target.closest("[data-cartoon-mode]");
+      if (modeBtn && root.contains(modeBtn)) {
+        e.preventDefault();
+        state.mode = modeBtn.dataset.cartoonMode || "story";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const sectionToggle = e.target.closest("[data-story-section-toggle]");
+      if (sectionToggle && root.contains(sectionToggle)) {
+        e.preventDefault();
+        const sectionEl = sectionToggle.closest("[data-story-section]");
+        const sectionId = sectionEl?.dataset.storySection || "";
+        if (!sectionId) return;
+        state.openSection = state.openSection === sectionId ? "" : sectionId;
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const settingsToggle = e.target.closest("[data-story-settings-toggle]");
+      if (settingsToggle && root.contains(settingsToggle)) {
+        e.preventDefault();
+        state.settingsOpen = !state.settingsOpen;
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const editSceneBtn = e.target.closest("[data-edit-scene]");
+      if (editSceneBtn && root.contains(editSceneBtn)) {
+        e.preventDefault();
+        const sceneId = editSceneBtn.dataset.editScene || "";
+        if (!sceneId) return;
+        state.editingSceneId = sceneId;
+        render(root);
+        return;
+      }
+
+      const sceneCharacterItem = e.target.closest(".story-scene-character-item");
+      if (sceneCharacterItem && getStorySceneEditor(root)?.contains(sceneCharacterItem)) {
+        e.preventDefault();
+
+        const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
+        if (!slot) return;
+
+        const isSelected = sceneCharacterItem.dataset.selected === "true";
+        sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
+
+        const dot = qs(".story-scene-character-dot", sceneCharacterItem);
+        if (dot) {
+          dot.style.background = isSelected
+            ? "rgba(255,255,255,.18)"
+            : "linear-gradient(135deg,#22c55e,#16a34a)";
+          dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
+        }
+
+        sceneCharacterItem.style.border = isSelected
+          ? "1px solid rgba(255,255,255,.12)"
+          : "1px solid rgba(201,119,255,.55)";
+        sceneCharacterItem.style.background = isSelected
+          ? "rgba(255,255,255,.04)"
+          : "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))";
+        sceneCharacterItem.style.boxShadow = isSelected
+          ? "none"
+          : "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)";
+
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const cancelBtn = e.target.closest("[data-scene-cancel]");
+      if (cancelBtn && getStorySceneEditor(root)?.contains(cancelBtn)) {
+        e.preventDefault();
+        state.editingSceneId = "";
+        render(root);
+        return;
+      }
+
+      const saveBtn = e.target.closest("[data-scene-save]");
+      if (saveBtn && getStorySceneEditor(root)?.contains(saveBtn)) {
+        e.preventDefault();
+        saveSceneEditor(root);
+        return;
+      }
+
+      const uploadTrigger = e.target.closest("[data-story-upload-trigger]");
+      if (uploadTrigger && root.contains(uploadTrigger)) {
+        e.preventDefault();
+        const slot = safeText(uploadTrigger.dataset.storyUploadTrigger);
+        if (!slot) return;
+
+        const input = qs(`[data-story-character-file="${slot}"]`, root);
+        if (input) input.click();
+        return;
+      }
+
+      const uploadRemove = e.target.closest("[data-story-upload-remove]");
+      if (uploadRemove && root.contains(uploadRemove)) {
+        e.preventDefault();
+        const slot = safeText(uploadRemove.dataset.storyUploadRemove);
+        if (!slot) return;
+
+        resetStoryCharacterImage(root, slot);
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const storyLogoClear = e.target.closest("[data-story-logo-upload-clear]");
+      if (storyLogoClear && root.contains(storyLogoClear)) {
+        e.preventDefault();
+        resetStoryLogoAsset(root);
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const storyAudioClear = e.target.closest("[data-story-audio-upload-clear]");
+      if (storyAudioClear && root.contains(storyAudioClear)) {
+        e.preventDefault();
+        resetStoryAudioAsset(root);
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const generateBtn = e.target.closest("[data-story-generate]");
+      if (generateBtn && root.contains(generateBtn)) {
+        e.preventDefault();
+        if (state.mode !== "story") return;
+        if (state.isGenerating) return;
+
+        const selectedScenes = getSelectedScenes();
+        const totalSeconds = getSelectedTotalSeconds();
+
+        if (!selectedScenes.length) {
+          alert("Önce en az 1 sahneyi düzenleyip kaydet. Kaydettiğin sahneler seçili sayılır.");
+          return;
+        }
+
+        const slots = STORY_CHARACTER_SLOT_CONFIG.map((config) => config.slot);
+
+        for (const slot of slots) {
+          const imageState = getStoryCharacterImage(slot);
+          if (!imageState || !imageState.file) continue;
+
+          if (imageState.uploadStatus === "uploading" && imageState.uploadPromise) {
+            try {
+              await imageState.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!imageState.fileUrl || imageState.uploadStatus !== "ready") {
+            alert("Karakter görsellerinden biri henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
+        const logoAsset = getStoryLogoAsset();
+        if (logoAsset.file) {
+          if (logoAsset.uploadStatus === "uploading" && logoAsset.uploadPromise) {
+            try {
+              await logoAsset.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!logoAsset.fileUrl || logoAsset.uploadStatus !== "ready") {
+            alert("Logo henüz yüklenmedi. Lütfen logo yüklemesi tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
+        const audioAsset = getStoryAudioAsset();
+        if (safeText(state.includeMusic).toLowerCase() === "yes") {
+          if (!audioAsset.file) {
+            alert("Müziği videoya dahil etmek için önce bir ses dosyası yüklemelisin.");
+            return;
+          }
+
+          if (audioAsset.uploadStatus === "uploading" && audioAsset.uploadPromise) {
+            try {
+              await audioAsset.uploadPromise;
+            } catch {
+              return;
+            }
+          }
+
+          if (!audioAsset.fileUrl || audioAsset.uploadStatus !== "ready") {
+            alert("Müzik henüz yüklenmedi. Lütfen yükleme tamamlanınca tekrar deneyin.");
+            return;
+          }
+        }
+
+        const policyText = buildStoryPolicyText();
+        if (isStoryPolicyBlocked(policyText)) {
+          const storyIdeaEl = qs("[data-story-idea]", root);
+          const extraPromptEl = qs("[data-story-extra-prompt]", root);
+          const policyNote = ensureStoryPolicyNote(root, generateBtn);
+
+          if (storyIdeaEl) {
+            storyIdeaEl.style.borderColor = "rgba(255,110,140,.92)";
+            storyIdeaEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          }
+
+          if (extraPromptEl) {
+            extraPromptEl.style.borderColor = "rgba(255,110,140,.92)";
+            extraPromptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+          }
+
+          generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+          generateBtn.style.borderColor = "rgba(255,110,140,.95)";
+          generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+          generateBtn.style.cursor = "not-allowed";
+          generateBtn.style.filter = "saturate(1.05)";
+
+          if (policyNote) {
+            policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine hikayeyi, sahneleri ve karakter davranışlarını tarif et.";
+            policyNote.style.display = "block";
+          }
+
+          return;
+        }
+
+        const creditCost = getStoryEstimatedCredits();
+        const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nToplam kredi: ${creditCost}.\nDevam edilsin mi?`;
+        if (!window.confirm(summaryText)) {
+          return;
+        }
+        const creditReason = "studio_cartoon_story_generate";
+
+const creditRes = await fetch("/api/credits/consume", {
+  method: "POST",
+  credentials: "include",
   headers: {
-    'content-type': 'application/json',
-    'accept': 'application/json'
+    "content-type": "application/json",
+    "accept": "application/json"
   },
   body: JSON.stringify({
-    app: 'cartoon',
-    action: creditReason,
     cost: creditCost,
-    request_id: consumeRequestId,
     reason: creditReason
   })
 });
@@ -1944,346 +2606,526 @@ let creditData = null;
 try {
   creditData = await creditRes.json();
 } catch {
-  creditData = { ok: false, error: 'non_json_response', status: creditRes.status };
+  creditData = { ok: false, error: "non_json_response", status: creditRes.status };
 }
 
 if (!creditRes.ok || !creditData?.ok) {
-  const to = encodeURIComponent(
-    location.pathname + location.search + location.hash
-  );
+  const msg =
+    creditData?.error ||
+    creditData?.message ||
+    "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
 
-  location.href =
-    '/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=' + to;
-
+  alert(String(msg));
   return;
 }
 
-consumed = true;
-consumeTransactionId =
-  creditData?.transaction_id ||
-  creditData?.transaction?.id ||
-  null;
-
-window.__CARTOON_STUDIO_LAST_CONSUME_REQUEST_ID__ = consumeRequestId;
-window.__CARTOON_STUDIO_LAST_TRANSACTION_ID__ = consumeTransactionId || '';
-window.__CARTOON_STUDIO_LAST_CREDIT_COST__ = creditCost;
-window.__CARTOON_STUDIO_LAST_CREDIT_REASON__ = creditReason;
-
-await refreshCreditsUI();
-
-const res = await fetch('/api/cartoon/studio/export-create', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
-});
-
-const data = await res.json().catch(() => null);
-
-console.log('[CARTOON][STUDIO_EXPORT_CREATE_RESPONSE]', {
-  status: res.status,
-  ok: res.ok,
-  data
-});
-
-if (!res.ok || !data || data.ok === false) {
-  const refunded = await tryRefund('studio_export_create_failed', {
-    error: String(data?.error || `studio_export_create_failed_${res.status}`)
+try {
+  const creditGetRes = await fetch("/api/credits/get", {
+    credentials: "include",
+    cache: "no-store",
+    headers: { "accept": "application/json" }
   });
 
-  if (!refunded) {
-    throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
+  const creditGetData = await creditGetRes.json().catch(() => null);
+
+  if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+    const topCreditCountEl = document.getElementById("topCreditCount");
+    if (topCreditCountEl) {
+      topCreditCountEl.textContent = String(creditGetData.credits);
+    }
+
+    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+      window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+    }
+  }
+} catch {}
+
+const payload = buildStoryPayload();
+payload.estimatedCredits = creditCost;
+
+window.__LAST_CARTOON_STORY_PAYLOAD__ = payload;
+console.log("[CARTOON][STORY_PAYLOAD_READY]", payload);
+
+state.isGenerating = true;
+setStoryGenerateButton(root, true);
+
+        try {
+          const created = await createStoryScenesFromPayload(payload);
+
+          window.__LAST_CARTOON_STORY_CREATED__ = created;
+          console.log("[CARTOON][STORY_CREATE_OK]", created);
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:cartoon:story_payload_ready", {
+              detail: {
+                payload,
+                created
+              }
+            })
+          );
+        } catch (err) {
+          console.error("[CARTOON][STORY_CREATE_ERROR]", err);
+          alert(String(err?.message || err || "story_scene_create_failed"));
+          state.isGenerating = false;
+          setStoryGenerateButton(root, false);
+        } finally {
+          render(root);
+        }
+
+        return;
+      }
+    });
+
+    window.addEventListener("aivo:cartoon:story_scene_ready", (e) => {
+      const d = e?.detail || {};
+      console.log("[CARTOON][STORY_SCENE_READY]", d);
+
+      const root = getCartoonRoot();
+      if (root) render(root);
+    });
   }
 
-  throw new Error(data?.error || `studio_export_create_failed_${res.status}`);
-}
+  function bindInputs() {
+    document.addEventListener("input", (e) => {
+      const root = getCartoonRoot();
+      if (!root) return;
 
-window.__CARTOON_STUDIO_EXPORT_RESPONSE__ = data;
-if (data?.job_id) {
-  window.__CARTOON_STUDIO_ACTIVE_JOB_ID__ = String(data.job_id || '');
+      const storyIdea = e.target.closest("[data-story-idea]");
+      if (storyIdea && root.contains(storyIdea)) {
+        state.storyIdea = clampText(storyIdea.value, 5000);
+        resetStoryPolicyUI(root);
+        updateStoryIdeaCount(root);
+        return;
+      }
 
-  const createdDetail = {
-    app: 'cartoon',
-    mode: 'studio_export',
-    job_id: String(data.job_id || ''),
-    prompt: payload?.text?.title || payload?.text?.description || 'studio export',
-    createdAt: Date.now(),
-    meta: {
-      app: 'cartoon',
-      mode: 'studio_export',
-      provider: 'studio',
-      prompt: payload?.text?.title || payload?.text?.description || 'studio export',
-      scene_count: Number(payload?.export?.sceneCount || 0),
-      total_duration: Number(payload?.export?.totalDuration || 0),
-      aspect_ratio: String(payload?.export?.format || '16:9'),
-      credit_cost: creditCost
-    }
-  };
-
-  setTimeout(() => {
-    window.dispatchEvent(
-      new CustomEvent('aivo:cartoon:job_created', {
-        detail: createdDetail
-      })
-    );
-    try { window.toast?.success?.('Video hazırlanıyor'); } catch {}
-  }, 3500);
-
-  startedPolling = true;
-  pollStudioExportJob(String(data.job_id), button, originalText, 0);
-  return;
-}
-        alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
-      } catch (err) {
-        console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
-        alert(String(err?.message || err || 'studio_export_create_failed'));
-      } finally {
-        if (!startedPolling) {
-          button.disabled = false;
-          button.textContent = originalText;
-          button.classList.remove('is-loading');
-        }
+      const extraPrompt = e.target.closest("[data-story-extra-prompt]");
+      if (extraPrompt && root.contains(extraPrompt)) {
+        state.extraPrompt = clampText(extraPrompt.value, 5000);
+        resetStoryPolicyUI(root);
       }
     });
   }
 
-  function renderEmptyStudioState(sceneList) {
-    if (!sceneList) return;
+  function bindChanges() {
+    document.addEventListener("change", (e) => {
+      const root = getCartoonRoot();
+      if (!root) return;
 
-    sceneList.innerHTML = `
-      <div style="
-        padding:18px 20px;
-        border:1px dashed rgba(255,255,255,.14);
-        border-radius:18px;
-        background:rgba(255,255,255,.03);
-        color:rgba(255,255,255,.78);
-        font-weight:600;
-      ">
-        Henüz sahne yok. Yukarıdan video yükleyerek listeyi oluştur.
-      </div>
-    `;
+      const theme = e.target.closest("[data-story-theme]");
+      if (theme && root.contains(theme)) {
+        state.theme = theme.value || "";
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const ageGroup = e.target.closest("[data-story-age-group]");
+      if (ageGroup && root.contains(ageGroup)) {
+        state.ageGroup = ageGroup.value || "";
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const flowDuration = e.target.closest("[data-story-flow-duration]");
+      if (flowDuration && root.contains(flowDuration)) {
+        state.flowDuration = flowDuration.value || "3";
+        state.scenes = createDefaultScenes(state.flowDuration);
+        state.openSection = "intro";
+        state.editingSceneId = "";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const duration = e.target.closest("[data-story-duration]");
+      if (duration && root.contains(duration)) {
+        state.duration = duration.value || "180";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const mainCharacter = e.target.closest("[data-story-main-character]");
+      if (mainCharacter && root.contains(mainCharacter)) {
+        state.mainCharacter = mainCharacter.value || "";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const helper1 = e.target.closest("[data-story-helper-1]");
+      if (helper1 && root.contains(helper1)) {
+        state.helperCharacter1 = helper1.value || "";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const helper2 = e.target.closest("[data-story-helper-2]");
+      if (helper2 && root.contains(helper2)) {
+        state.helperCharacter2 = helper2.value || "";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const helper3 = e.target.closest("[data-story-helper-3], [data-story-extra-character]");
+      if (helper3 && root.contains(helper3)) {
+        state.extraCharacter = helper3.value || "";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const ratio = e.target.closest("[data-story-ratio]");
+      if (ratio && root.contains(ratio)) {
+        state.ratio = ratio.value || "16:9";
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const style = e.target.closest("[data-story-style]");
+      if (style && root.contains(style)) {
+        state.style = style.value || "";
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const audio = e.target.closest("[data-story-audio]");
+      if (audio && root.contains(audio)) {
+        state.audio = audio.value || "none";
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const includeMusic = e.target.closest("[data-story-include-music]");
+      if (includeMusic && root.contains(includeMusic)) {
+        state.includeMusic = includeMusic.value || "no";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const logoPosition = e.target.closest("[data-story-logo-position]");
+      if (logoPosition && root.contains(logoPosition)) {
+        state.logoPosition = logoPosition.value || "bottom-right";
+        resetStoryPolicyUI(root);
+        render(root);
+        return;
+      }
+
+      const storyLogoUpload = e.target.closest("[data-story-logo-upload]");
+      if (storyLogoUpload && root.contains(storyLogoUpload)) {
+        const file =
+          storyLogoUpload.files && storyLogoUpload.files[0]
+            ? storyLogoUpload.files[0]
+            : null;
+
+        setStoryLogoAsset({
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
+
+        updateStoryLogoUploadUI(root);
+
+        if (!file) return;
+
+        const uploadPromise = uploadStoryLogoToR2(file)
+          .then((publicUrl) => {
+            setStoryLogoAsset({
+              fileUrl: safeText(publicUrl),
+              uploadStatus: "ready",
+              uploadError: "",
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+
+            console.log("[CARTOON][STORY_LOGO_UPLOAD_OK]", publicUrl);
+            return publicUrl;
+          })
+          .catch((err) => {
+            setStoryLogoAsset({
+              fileUrl: "",
+              uploadStatus: "error",
+              uploadError: String(err?.message || err || "story_logo_upload_failed"),
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryLogoUploadUI(nextRoot);
+
+            console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
+            alert(String(err?.message || err || "story_logo_upload_failed"));
+            throw err;
+          });
+
+        setStoryLogoAsset({ uploadPromise });
+        return;
+      }
+
+      const storyAudioUpload = e.target.closest("[data-story-audio-upload]");
+      if (storyAudioUpload && root.contains(storyAudioUpload)) {
+        const file =
+          storyAudioUpload.files && storyAudioUpload.files[0]
+            ? storyAudioUpload.files[0]
+            : null;
+
+        setStoryAudioAsset({
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
+
+        updateStoryAudioUploadUI(root);
+
+        if (!file) return;
+
+        const uploadPromise = uploadStoryAudioToR2(file)
+          .then((publicUrl) => {
+            setStoryAudioAsset({
+              fileUrl: safeText(publicUrl),
+              uploadStatus: "ready",
+              uploadError: "",
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+
+            console.log("[CARTOON][STORY_AUDIO_UPLOAD_OK]", publicUrl);
+            return publicUrl;
+          })
+          .catch((err) => {
+            setStoryAudioAsset({
+              fileUrl: "",
+              uploadStatus: "error",
+              uploadError: String(err?.message || err || "story_audio_upload_failed"),
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) updateStoryAudioUploadUI(nextRoot);
+
+            console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
+            alert(String(err?.message || err || "story_audio_upload_failed"));
+            throw err;
+          });
+
+        setStoryAudioAsset({ uploadPromise });
+        return;
+      }
+
+      const characterFileInput = e.target.closest("[data-story-character-file]");
+      if (characterFileInput && root.contains(characterFileInput)) {
+        const slot = safeText(characterFileInput.dataset.storyCharacterFile);
+        if (!slot) return;
+
+        const file =
+          characterFileInput.files && characterFileInput.files[0]
+            ? characterFileInput.files[0]
+            : null;
+
+        const slotConfig = STORY_CHARACTER_SLOT_CONFIG.find((config) => config.slot === slot);
+
+        if (file && slotConfig && !safeText(state[slotConfig.stateKey])) {
+          const autoLabel = safeText(file.name)
+            .replace(/\.[^.]+$/, "")
+            .replace(/[_-]+/g, " ")
+            .trim();
+
+          if (autoLabel) {
+            state[slotConfig.stateKey] = autoLabel;
+          }
+        }
+
+        setStoryCharacterImage(slot, {
+          file,
+          fileName: file ? file.name : "",
+          fileUrl: "",
+          uploadPromise: null,
+          uploadStatus: file ? "uploading" : "idle",
+          uploadError: ""
+        });
+
+        updateStoryCharacterUploadUI(root, slot);
+
+        const scene = getSceneById(state.editingSceneId);
+        if (scene) {
+          renderSceneCharacterPicker(root, scene);
+          syncSceneRows(root);
+        }
+
+        if (!file) return;
+
+        const uploadPromise = uploadStoryCharacterReferenceToR2(file, slot)
+          .then((publicUrl) => {
+            setStoryCharacterImage(slot, {
+              fileUrl: safeText(publicUrl),
+              uploadStatus: "ready",
+              uploadError: "",
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) {
+              updateStoryCharacterUploadUI(nextRoot, slot);
+
+              const nextScene = getSceneById(state.editingSceneId);
+              if (nextScene) {
+                renderSceneCharacterPicker(nextRoot, nextScene);
+                syncSceneRows(nextRoot);
+              }
+            }
+
+            console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
+            return publicUrl;
+          })
+          .catch((err) => {
+            setStoryCharacterImage(slot, {
+              fileUrl: "",
+              uploadStatus: "error",
+              uploadError: String(err?.message || err || "story_reference_upload_failed"),
+              uploadPromise: null
+            });
+
+            const nextRoot = getCartoonRoot();
+            if (nextRoot) {
+              updateStoryCharacterUploadUI(nextRoot, slot);
+
+              const nextScene = getSceneById(state.editingSceneId);
+              if (nextScene) {
+                renderSceneCharacterPicker(nextRoot, nextScene);
+                syncSceneRows(nextRoot);
+              }
+            }
+
+            console.error("[CARTOON][STORY_UPLOAD_ERROR]", slot, err);
+            alert(String(err?.message || err || "story_reference_upload_failed"));
+            throw err;
+          });
+
+        setStoryCharacterImage(slot, { uploadPromise });
+        resetStoryPolicyUI(root);
+        return;
+      }
+    });
   }
 
-  function renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate) {
-    if (!sceneList || !sceneTemplate) return;
+  function initFromDOM(root) {
+    if (!root) return;
 
-    sceneList.innerHTML = '';
+    const selectedMode = qs("[data-cartoon-mode].is-active", root);
+    if (selectedMode?.dataset.cartoonMode) state.mode = selectedMode.dataset.cartoonMode;
 
-    if (!Array.isArray(rootState.scenes) || !rootState.scenes.length) {
-      renderEmptyStudioState(sceneList);
-      updateStudioSummary(rootState, studioRoot);
+    state.storyIdea = clampText(qs("[data-story-idea]", root)?.value, 5000);
+    state.theme = qs("[data-story-theme]", root)?.value || "";
+    state.ageGroup = qs("[data-story-age-group]", root)?.value || "";
+    state.flowDuration = qs("[data-story-flow-duration]", root)?.value || "3";
+    state.duration = qs("[data-story-duration]", root)?.value || "180";
+    state.mainCharacter = qs("[data-story-main-character]", root)?.value || "";
+    state.helperCharacter1 = qs("[data-story-helper-1]", root)?.value || "";
+    state.helperCharacter2 = qs("[data-story-helper-2]", root)?.value || "";
+    state.extraCharacter =
+      qs("[data-story-helper-3]", root)?.value ||
+      qs("[data-story-extra-character]", root)?.value ||
+      "";
+    state.ratio = qs("[data-story-ratio]", root)?.value || "16:9";
+    state.style = qs("[data-story-style]", root)?.value || "";
+    state.audio = qs("[data-story-audio]", root)?.value || "none";
+    state.includeMusic = qs("[data-story-include-music]", root)?.value || "no";
+    state.logoPosition = qs("[data-story-logo-position]", root)?.value || "bottom-right";
+    state.extraPrompt = clampText(qs("[data-story-extra-prompt]", root)?.value, 5000);
+
+    state.scenes = createDefaultScenes(state.flowDuration);
+
+    const openSectionEl = qs("[data-story-section].is-open", root) || qs("[data-story-section]", root);
+    if (openSectionEl?.dataset.storySection) {
+      state.openSection = openSectionEl.dataset.storySection;
+    }
+
+    const settingsBody = qs("[data-story-settings-body]", root);
+    state.settingsOpen = settingsBody ? !settingsBody.hidden : false;
+
+    render(root);
+  }
+
+  function syncAllStoryCharacterUploadUI(root) {
+    STORY_CHARACTER_SLOT_CONFIG.forEach((config) => {
+      updateStoryCharacterUploadUI(root, config.slot);
+    });
+  }
+
+  function updateStoryCharacterUploadUI(root, slot) {
+    const key = String(slot || "").trim();
+    if (!key) return;
+
+    const uploadBtn = qs(`[data-story-upload-trigger="${key}"]`, root);
+    const stateBox = qs(`[data-story-upload-state="${key}"]`, root);
+    const nameEl = qs(`[data-story-upload-name="${key}"]`, root);
+    const imageState = getStoryCharacterImage(key);
+
+    if (!uploadBtn || !stateBox || !nameEl || !imageState) return;
+
+    if (!imageState.file) {
+      uploadBtn.hidden = false;
+      stateBox.hidden = true;
+      nameEl.textContent = "Dosya seçilmedi";
+      syncStoryGenerateButtonCredit(root);
       return;
     }
 
-    rootState.scenes.forEach((scene, index) => {
-      const fragment = sceneTemplate.content.cloneNode(true);
-      const row = fragment.querySelector('[data-studio-scene-row]');
-      const includeInput = fragment.querySelector('[data-scene-include]');
-      const titleEl = fragment.querySelector('[data-scene-title]');
-      const durationEl = fragment.querySelector('[data-scene-duration]');
-      const previewBtn = fragment.querySelector('[data-scene-preview]');
-      const moveUpBtn = fragment.querySelector('[data-scene-move="up"]');
-      const moveDownBtn = fragment.querySelector('[data-scene-move="down"]');
-      const editBtn = fragment.querySelector('[data-scene-edit]');
-      const removeBtn = fragment.querySelector('[data-scene-remove]');
+    uploadBtn.hidden = true;
+    stateBox.hidden = false;
 
-      if (row) {
-        row.setAttribute('data-scene-id', scene.id);
-      }
+    if (imageState.uploadStatus === "uploading") {
+      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
 
-      if (includeInput) {
-        includeInput.checked = !!scene.included;
-        includeInput.addEventListener('change', () => {
-          scene.included = !!includeInput.checked;
-          saveStudioState(rootState);
-          updateStudioSummary(rootState, studioRoot);
-        });
-      }
+    if (imageState.uploadStatus === "ready") {
+      nameEl.textContent = getShortFileName(imageState.fileName);
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
 
-      if (titleEl) {
-        titleEl.textContent = scene.title || 'Sahne';
-      }
+    if (imageState.uploadStatus === "error") {
+      nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+      syncStoryGenerateButtonCredit(root);
+      return;
+    }
 
-      if (durationEl) {
-        durationEl.textContent = formatSceneDuration(scene.duration);
-      }
-
-      if (previewBtn) {
-        previewBtn.addEventListener('click', () => {
-          openStudioPreview(studioRoot, scene);
-        });
-      }
-
-      if (moveUpBtn) {
-        if (index === 0) {
-          moveUpBtn.disabled = true;
-        }
-
-        moveUpBtn.addEventListener('click', () => {
-          moveScene(rootState.scenes, index, index - 1);
-          saveStudioState(rootState);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
-
-      if (moveDownBtn) {
-        if (index === rootState.scenes.length - 1) {
-          moveDownBtn.disabled = true;
-        }
-
-        moveDownBtn.addEventListener('click', () => {
-          moveScene(rootState.scenes, index, index + 1);
-          saveStudioState(rootState);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
-
-      if (editBtn) {
-        editBtn.addEventListener('click', () => {
-          const nextTitle = window.prompt(
-            'Yeni sahne başlığını yaz:',
-            String(scene.title || '')
-          );
-
-          if (nextTitle === null) return;
-
-          const cleaned = String(nextTitle || '').trim();
-          if (!cleaned) {
-            alert('Sahne başlığı boş olamaz.');
-            return;
-          }
-
-          scene.title = cleaned;
-          saveStudioState(rootState);
-          renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-        });
-      }
-if (removeBtn) {
-  removeBtn.addEventListener('click', () => {
-    const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
-    if (!ok) return;
-
-    rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
-    saveStudioState(rootState);
-    renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-    try { window.toast?.success?.('Video başarıyla silindi'); } catch {}
-  });
-}
-
-      sceneList.appendChild(fragment);
-    });
-
-    updateStudioSummary(rootState, studioRoot);
+    nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+    syncStoryGenerateButtonCredit(root);
   }
 
-  function initCartoonStudio() {
-    const cartoonPanel = document.querySelector('.main-panel[data-module="cartoon"]');
-    if (!cartoonPanel) {
-      return false;
-    }
-
-    const studioRoot = cartoonPanel.querySelector('[data-cartoon-view="studio"]');
-    if (!studioRoot) {
-      return false;
-    }
-
-    const studioSceneList = studioRoot.querySelector('[data-studio-scene-list]');
-    const studioSceneTemplate = studioRoot.querySelector('#studioSceneRowTemplate');
-
-    if (!studioSceneList || !studioSceneTemplate) {
-      return false;
-    }
-
-    const alreadyBound = studioRoot.getAttribute('data-studio-bound') === 'true';
-    if (alreadyBound) {
-      window.__CARTOON_STUDIO__ = window.__CARTOON_STUDIO__ || createStudioState();
-      return true;
-    }
-
-    const studioState = createStudioState();
-
-    ensureStudioPreviewModal(studioRoot);
-    renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-
-    loadStudioState()
-      .then((savedState) => {
-        studioState.format = String(savedState?.format || '16:9');
-        studioState.scenes = Array.isArray(savedState?.scenes) ? savedState.scenes : [];
-
-        studioState.voiceFile = null;
-        studioState.voiceFileName = String(savedState?.voice?.fileName || '');
-        studioState.voiceFileUrl = String(savedState?.voice?.fileUrl || '');
-        studioState.voiceFileUploadPromise = null;
-        studioState.voiceFileUploadStatus = String(savedState?.voice?.uploadStatus || 'idle');
-        studioState.voiceFileUploadError = '';
-
-        studioState.logoFile = null;
-        studioState.logoFileName = String(savedState?.logo?.fileName || '');
-        studioState.logoFileUrl = String(savedState?.logo?.fileUrl || '');
-        studioState.logoFileUploadPromise = null;
-        studioState.logoFileUploadStatus = String(savedState?.logo?.uploadStatus || 'idle');
-        studioState.logoFileUploadError = '';
-
-        renderStudioScenes(studioState, studioRoot, studioSceneList, studioSceneTemplate);
-        updateStudioVoiceUploadStatusUI(studioState, studioRoot);
-        updateStudioLogoUploadStatusUI(studioState, studioRoot);
-        updateStudioSummary(studioState, studioRoot);
-      })
-      .catch((err) => {
-        console.warn('[CARTOON][STUDIO_INITIAL_DB_LOAD_ERROR]', err);
-      });
-
-    bindStudioVideoUpload(
-      studioState,
-      studioRoot,
-      studioSceneList,
-      studioSceneTemplate
-    );
-
-    bindStudioVoiceUpload(
-      studioState,
-      studioRoot
-    );
-
-    bindStudioLogoUpload(
-      studioState,
-      studioRoot
-    );
-
-    bindStudioFormatPills(
-      studioState,
-      studioRoot
-    );
-
-    bindStudioExportPayloadDebug(
-      studioState,
-      studioRoot
-    );
-
-    studioRoot.setAttribute('data-studio-bound', 'true');
-    window.__CARTOON_STUDIO__ = studioState;
-
+  function tryInit() {
+    const root = getCartoonRoot();
+    if (!root) return false;
+    initFromDOM(root);
     return true;
   }
 
-  function bootCartoonStudio() {
-    if (initCartoonStudio()) return;
+  bindClicks();
+  bindInputs();
+  bindChanges();
 
-    let tries = 0;
-    const maxTries = 40;
+  if (!tryInit()) {
+    const observer = new MutationObserver(() => {
+      if (tryInit()) observer.disconnect();
+    });
 
-    const timer = setInterval(() => {
-      tries += 1;
-
-      const ok = initCartoonStudio();
-      if (ok || tries >= maxTries) {
-        clearInterval(timer);
-      }
-    }, 250);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootCartoonStudio, { once: true });
-  } else {
-    bootCartoonStudio();
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
   }
 })();
