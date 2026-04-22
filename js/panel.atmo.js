@@ -1129,8 +1129,9 @@ const onJobCreated = (e) => {
       });
     }
 
-  async function pollFalOnce(rid, promptMaybe) {
-  return;
+async function pollFalOnce(rid, promptMaybe) {
+  // polling artık atmosphere.module.js içinde yönetiliyor
+  // burada intentionally boş bırakıldı
 }
 
    
