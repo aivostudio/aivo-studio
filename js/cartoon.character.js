@@ -1758,6 +1758,14 @@ function ensureCharacterCreateUploadClearButton(root, host) {
         state.characterReferenceUploadStatus = "ready";
         state.characterReferenceUploadError = "";
 
+         syncCartoonCharacterAssistantState({
+          visibleError: "",
+          character: {
+           referenceUploadState: "ready",
+           referenceImageUrl: String(publicUrl || "").trim()
+          }
+        });
+
         const descInput = qs("#cartoon-character-desc", root) || qs("[data-character-desc]", root);
         if (descInput && !String(descInput.value || "").trim()) {
           descInput.value = "Yüklediğim referans fotoğrafı temel al. Sevimli, temiz, yüksek detaylı bir çizgi film karakteri oluştur. Yüz hatlarını yumuşat, ifadeyi sıcak yap ve çocuk dostu 3D çizgi film stilinde üret.";
