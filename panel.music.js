@@ -656,7 +656,7 @@ window.selectedJobId = window.selectedJobId || "";
 
         <style>
           .aivo-stems-icons{margin-top:8px !important;display:flex !important;flex-wrap:wrap !important;gap:6px !important;align-items:center !important;justify-content:flex-start !important;}
-          .aivo-stems-icons::after{content:"Bu kanallar gecicidir. Sayfayi kapatmadan indir.";display:block;flex-basis:100%;margin-top:6px;font-size:12px;opacity:.7;}
+          .aivo-stems-icons::after{content:"24 saat içinde indirin.";display:block;flex-basis:100%;margin-top:6px;font-size:12px;opacity:.7;}
           .aivo-stems-icons .aivo-stem-ic{display:inline-flex !important;flex:0 0 26px !important;width:26px !important;min-width:26px !important;max-width:26px !important;height:26px !important;min-height:26px !important;max-height:26px !important;padding:0 !important;margin:0 !important;align-items:center !important;justify-content:center !important;border-radius:10px !important;border:1px solid rgba(255,255,255,.12) !important;background:rgba(255,255,255,.06) !important;text-decoration:none !important;user-select:none !important;line-height:1 !important;font-size:13px !important;}
           .aivo-stems-icons .aivo-stem-ic:active{transform:translateY(1px) !important;}
         </style>
@@ -1528,18 +1528,15 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
     e.stopPropagation();
 
     if (act === "stems_5_confirm") {
-      const selectedCardId = String(card.getAttribute("data-job-id") || "").trim();
-      const existing = (jobs || []).find((x) => getJobId(x) === selectedCardId) || {};
-
       const job_id =
-        String(existing.__db_job_id || "").trim() ||
-        selectedCardId ||
+        card.getAttribute("data-job-id") ||
         card.dataset.jobId ||
         card.getAttribute("data-track-id") ||
         card.dataset.trackId ||
         card.getAttribute("data-provider-job-id") ||
         card.dataset.providerJobId ||
         "";
+
       window.openStemConfirmModal?.({
         job_id,
         onConfirm: async ({ job_id: confirmed_job_id, consume_transaction_id, consume_amount, consume_action } = {}) => {
