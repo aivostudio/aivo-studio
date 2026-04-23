@@ -802,14 +802,14 @@
         (brain?.answer && String(brain.answer).trim()) ||
         (data?.message && String(data.message).trim()) ||
         "Şu an net bir cevap oluşturamadım ama istersen fikrini birlikte güçlü ve üretime hazır bir prompta çevirebiliriz.";
-          if (
-        brain?.followupAction &&
-        (brain?.intent === "product_action" || brain?.intent === "troubleshooting")
-      ) {
-        assistantText += `
+        if (
+  brain?.followupAction &&
+  (brain?.intent === "product_action" || brain?.intent === "troubleshooting")
+) {
+  assistantText += `
 
-Sıradaki adım: ${brain.followupAction}`;
-      }
+Buradan devam etmek için en net adım: ${brain.followupAction}`;
+}
 
       if (brain?.needsConfirmation) {
         assistantText += `
