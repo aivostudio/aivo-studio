@@ -164,28 +164,28 @@
         padding: 12px;
         border-top: 1px solid rgba(255,255,255,.08);
         display: flex;
-     align-items: center;
+        align-items: center;
         gap: 8px;
       }
 
-    .aivo-assistant-input {
-  flex: 1;
-  min-width: 0;
-  display: block;
-  resize: none;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  color: #fff;
-  border-radius: 16px;
-  padding: 12px 14px;
-  outline: none;
-  height: 44px;
-  min-height: 44px;
-  max-height: 104px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  font: 400 13px/1.3 Inter, Arial, sans-serif;
-}
+      .aivo-assistant-input {
+        flex: 1;
+        min-width: 0;
+        display: block;
+        resize: none;
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.05);
+        color: #fff;
+        border-radius: 16px;
+        padding: 12px 14px;
+        outline: none;
+        height: 44px;
+        min-height: 44px;
+        max-height: 104px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        font: 400 13px/1.3 Inter, Arial, sans-serif;
+      }
 
       .aivo-assistant-input::placeholder {
         color: rgba(255,255,255,.36);
@@ -322,13 +322,13 @@
     <div class="aivo-assistant-messages" id="aivo-assistant-messages"></div>
 
     <form class="aivo-assistant-form" id="aivo-assistant-form">
-     <textarea
-  class="aivo-assistant-input"
-  id="aivo-assistant-input"
-  placeholder="Sorunu ya da yapmak istediğini yaz..."
-  rows="1"
-  spellcheck="false"
-></textarea>
+      <textarea
+        class="aivo-assistant-input"
+        id="aivo-assistant-input"
+        placeholder="Sorunu ya da yapmak istediğini yaz..."
+        rows="1"
+        spellcheck="false"
+      ></textarea>
       <button type="submit" class="aivo-assistant-send" id="aivo-assistant-send">Gönder</button>
     </form>
   `;
@@ -392,10 +392,10 @@
     else openPanel();
   }
 
- function autoResize() {
-  inputEl.style.height = "44px";
-  inputEl.style.height = Math.min(inputEl.scrollHeight, 104) + "px";
-}
+  function autoResize() {
+    inputEl.style.height = "44px";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 104) + "px";
+  }
 
   function getBodyText() {
     return String(document.body?.innerText || "");
@@ -430,17 +430,104 @@
     return runtime && typeof runtime === "object" ? runtime : null;
   }
 
+  function detectActiveAssistantModuleFromDOM() {
+    const cartoonRoot =
+      document.querySelector('.main-panel[data-module="cartoon"]') ||
+      document.querySelector('[data-module="cartoon"]');
+
+    if (cartoonRoot) {
+      const activeCartoonView =
+        cartoonRoot.querySelector('.cartoon-mode-view.is-active[data-cartoon-view]') ||
+        Array.from(cartoonRoot.querySelectorAll('[data-cartoon-view]')).find((el) => !el.hidden) ||
+        null;
+
+      const cartoonView = String(activeCartoonView?.getAttribute('data-cartoon-view') || '').trim();
+
+      return {
+        module: "cartoon",
+        actionContext:
+          cartoonView === "character" ? "cartoon_character" :
+          cartoonView === "basic" ? "cartoon_basic" :
+          cartoonView === "story" ? "cartoon_story" :
+          cartoonView === "studio" ? "cartoon_studio" :
+          "cartoon"
+      };
+    }
+
+    const photoFxRoot =
+      document.querySelector('.main-panel[data-module="photofx"]') ||
+      document.querySelector('[data-module="photofx"]');
+
+    if (photoFxRoot) {
+      return {
+        module: "photofx",
+        actionContext: "photofx"
+      };
+    }
+
+    const videoRoot =
+      document.querySelector('section[data-module="video"]') ||
+      document.querySelector('.main-panel[data-module="video"]') ||
+      document.querySelector('[data-module="video"]');
+
+    if (videoRoot) {
+      return {
+        module: "video",
+        actionContext: "video"
+      };
+    }
+
+    const atmoRoot =
+      document.querySelector('.main-panel[data-module="atmo"]') ||
+      document.querySelector('[data-module="atmo"]');
+
+    if (atmoRoot) {
+      return {
+        module: "atmo",
+        actionContext: "atmo"
+      };
+    }
+
+    const coverRoot =
+      document.querySelector('.main-panel[data-module="cover"]') ||
+      document.querySelector('[data-module="cover"]');
+
+    if (coverRoot) {
+      return {
+        module: "cover",
+        actionContext: "cover"
+      };
+    }
+
+    const musicRoot =
+      document.querySelector('.main-panel[data-module="music"]') ||
+      document.querySelector('[data-module="music"]');
+
+    if (musicRoot) {
+      return {
+        module: "music",
+        actionContext: "music"
+      };
+    }
+
+    return {
+      module: "",
+      actionContext: ""
+    };
+  }
+
   function buildAssistantContext(extraContext = {}) {
     const pathname = getPathname();
     const bodyText = getBodyText();
     const runtime = readWindowRuntimeState();
+    const domDetected = detectActiveAssistantModuleFromDOM();
 
     const context = {
       page: pathname,
-      module: "",
+      module: domDetected.module || "",
       intent: extraContext.intent || "",
       action: extraContext.action || "",
-      actionContext: extraContext.actionContext || "",
+      actionContext: extraContext.actionContext || domDetected.actionContext || "",
       currentPanel: pathname.replace(/\//g, "") || "unknown",
       currentCardType: "",
       selectedItemType: "",
@@ -461,11 +548,14 @@
 
     if (runtime) {
       context.module =
-        typeof runtime.module === "string" ? runtime.module : context.module;
+        context.module ||
+        (typeof runtime.module === "string" ? runtime.module : context.module);
 
       context.actionContext =
         context.actionContext ||
-        (typeof runtime.actionContext === "string" ? runtime.actionContext : "");
+        (typeof runtime.actionContext === "string" ? runtime.actionContext : "") ||
+        domDetected.actionContext ||
+        "";
 
       context.currentPanel =
         typeof runtime.currentPanel === "string"
@@ -618,7 +708,7 @@
         });
       }
 
-      if (/Yaratıcı Üretici/i.test(bodyText) && /200 kredi/i.test(bodyText) && /1\.299₺/i.test(bodyText)) {
+      if (/Yaratıcı Üretici/i.test(bodyText) && /200 kredi/i.test(bodyText) && /1\\.299₺/i.test(bodyText)) {
         context.currentProductCards.push({
           key: "pro",
           label: "Yaratıcı Üretici",
@@ -627,7 +717,7 @@
         });
       }
 
-      if (/Stüdyo \/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\.999₺/i.test(bodyText)) {
+      if (/Stüdyo \\/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\\.999₺/i.test(bodyText)) {
         context.currentProductCards.push({
           key: "studio",
           label: "Stüdyo / Ajans",
@@ -655,47 +745,47 @@
     setLoading(true);
 
     try {
-          const assistantContext = buildAssistantContext(extraContext);
+      const assistantContext = buildAssistantContext(extraContext);
 
- const atmoDiagnostic =
-  window.__AIVO_ATMO_ASSISTANT_STATE__ &&
-  typeof window.__AIVO_ATMO_ASSISTANT_STATE__ === "object"
-    ? { ...window.__AIVO_ATMO_ASSISTANT_STATE__ }
-    : null;
+      const atmoDiagnostic =
+        window.__AIVO_ATMO_ASSISTANT_STATE__ &&
+        typeof window.__AIVO_ATMO_ASSISTANT_STATE__ === "object"
+          ? { ...window.__AIVO_ATMO_ASSISTANT_STATE__ }
+          : null;
 
-const cartoonDiagnostic =
-  window.__AIVO_CARTOON_ASSISTANT_STATE__ &&
-  typeof window.__AIVO_CARTOON_ASSISTANT_STATE__ === "object"
-    ? { ...window.__AIVO_CARTOON_ASSISTANT_STATE__ }
-    : null;
+      const cartoonDiagnostic =
+        window.__AIVO_CARTOON_ASSISTANT_STATE__ &&
+        typeof window.__AIVO_CARTOON_ASSISTANT_STATE__ === "object"
+          ? { ...window.__AIVO_CARTOON_ASSISTANT_STATE__ }
+          : null;
 
-const photoFxDiagnostic =
-  window.__AIVO_PHOTOFX_ASSISTANT_STATE__ &&
-  typeof window.__AIVO_PHOTOFX_ASSISTANT_STATE__ === "object"
-    ? { ...window.__AIVO_PHOTOFX_ASSISTANT_STATE__ }
-    : null;
+      const photoFxDiagnostic =
+        window.__AIVO_PHOTOFX_ASSISTANT_STATE__ &&
+        typeof window.__AIVO_PHOTOFX_ASSISTANT_STATE__ === "object"
+          ? { ...window.__AIVO_PHOTOFX_ASSISTANT_STATE__ }
+          : null;
 
-const videoDiagnostic =
-  window.__AIVO_VIDEO_ASSISTANT_STATE__ &&
-  typeof window.__AIVO_VIDEO_ASSISTANT_STATE__ === "object"
-    ? { ...window.__AIVO_VIDEO_ASSISTANT_STATE__ }
-    : null;
+      const videoDiagnostic =
+        window.__AIVO_VIDEO_ASSISTANT_STATE__ &&
+        typeof window.__AIVO_VIDEO_ASSISTANT_STATE__ === "object"
+          ? { ...window.__AIVO_VIDEO_ASSISTANT_STATE__ }
+          : null;
 
-const response = await fetch("/api/assistant/chat", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    ...assistantContext,
-    message: content,
-    atmoDiagnostic,
-    cartoonDiagnostic,
-    photoFxDiagnostic,
-    videoDiagnostic,
-    messages: state.messages
-  })
-});
+      const response = await fetch("/api/assistant/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ...assistantContext,
+          message: content,
+          atmoDiagnostic,
+          cartoonDiagnostic,
+          photoFxDiagnostic,
+          videoDiagnostic,
+          messages: state.messages
+        })
+      });
 
       const data = await response.json();
 
