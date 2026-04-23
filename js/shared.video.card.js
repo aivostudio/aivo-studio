@@ -665,15 +665,14 @@
             ready && videoUrl
               ? `
       ${posterUrl ? `<img class="svcPoster" src="${esc(posterUrl)}" alt="${esc(title)}">` : ``}
-          <video
+      <video
         class="svcVideo"
-        preload="metadata"
+        preload="none"
         playsinline
         webkit-playsinline
         muted
-        src="${esc(videoUrl)}"
         data-video-url="${esc(videoUrl)}"
-        style="display:block"
+        style="display:none"
         ${posterUrl ? `poster="${esc(posterUrl)}"` : ""}
       ></video>
 <div class="svcOverlay">
