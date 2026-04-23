@@ -1302,13 +1302,16 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
       const text = normalizePolicyText(raw);
 
-      const hasBlockedTerm =
+       const hasBlockedTerm =
         HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
         PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
         ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
 
       const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+      const hasLongLyrics = String(lyricsEl?.value || "").trim().length >= 350;
+
       const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
+      const warningOnly = !blocked && hasLongLyrics;
 
       generateBtn.disabled = blocked;
       generateBtn.style.opacity = blocked ? "0.55" : "";
