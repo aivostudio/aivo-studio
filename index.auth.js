@@ -168,8 +168,8 @@ function applyModalMode(m, mode) {
   const extra    = document.getElementById("registerExtra");
   const kvkkRow  = document.getElementById("kvkkRow");
 
-  if (google)    google.style.display    = isReg ? "none" : "block";
-  if (footer)    footer.style.display    = isReg ? "none" : "block";
+  if (google)    google.style.display    = "block";
+  if (footer)    footer.style.display    = "block";
   if (loginMeta) loginMeta.style.display = isReg ? "none" : "flex";
   if (regMeta)   regMeta.style.display   = isReg ? "flex" : "none";
   if (extra)     extra.style.display     = isReg ? "flex" : "none";
