@@ -907,10 +907,11 @@ async function togglePlayFromCard(card){
       return;
     }
 
+      const proxied = `/api/media/proxy?url=${encodeURIComponent(src)}&filename=music.mp3`;
+
     const a = document.createElement("a");
-    a.href = src;
-    a.download = "";
-    a.target = "_blank";
+    a.href = proxied;
+    a.download = "music.mp3";
     a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
