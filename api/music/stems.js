@@ -11,8 +11,7 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_REPLICATE_API_TOKEN" });
     }
 
-      const body = req.body || {};
-    const jobId = String(body.job_id || body.jobId || "").trim();
+    const body = req.body || {};
     const predictionId = String(body.prediction_id || body.id || "").trim();
     const audioUrl = String(body.audio_url || body.audio || "").trim();
 
@@ -42,50 +41,9 @@ module.exports = async function handler(req, res) {
         });
       }
 
-          if (jobId && String(j?.status || "").trim().toLowerCase() === "succeeded") {
-        try {
-          const { createClient } = require("@supabase/supabase-js");
-
-          const supabase = createClient(
-            process.env.SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-          );
-
-          const { data: row } = await supabase
-            .from("jobs")
-            .select("id, meta")
-            .eq("id", jobId)
-            .maybeSingle();
-
-          if (row && row.id) {
-            const prevMeta = row.meta && typeof row.meta === "object" ? row.meta : {};
-
-            const nextMeta = {
-              ...prevMeta,
-              stems: {
-                status: String(j?.status || "").trim().toLowerCase(),
-                prediction_id: String(j?.id || "").trim(),
-                output: j?.output || null,
-                error: j?.error || null
-              }
-            };
-
-            await supabase
-              .from("jobs")
-              .update({
-                meta: nextMeta
-              })
-              .eq("id", row.id);
-          }
-        } catch (e) {
-          console.error("[music/stems] db update failed", e);
-        }
-      }
-
       return res.status(200).json({
         ok: true,
         mode: "status",
-        job_id: jobId || null,
         id: j?.id || null,
         status: j?.status || null,
         output: j?.output || null,
