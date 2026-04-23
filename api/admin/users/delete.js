@@ -1,161 +1,147 @@
-// /api/jobs/delete.js
-export const config = { runtime: "nodejs" };
+// /api/admin/users/delete.js
 
-import { neon } from "@neondatabase/serverless";
-import authModule from "../_lib/auth.js";
-const { requireAuth } = authModule;
-
-function normId(x) {
-  return String(x || "").trim();
+function isAdminEmail(email) {
+  const list = (process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return list.includes(String(email || "").trim().toLowerCase());
 }
 
+function toEmail(v) {
+  return String(v || "").trim().toLowerCase();
+}
+
+const BAN_INDEX_KEY = "ban_index";
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "method_not_allowed" });
-  }
-
-  res.setHeader("Cache-Control", "no-store");
-
-  const conn =
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.DATABASE_URL_UNPOOLED;
-
-  if (!conn) {
-    return res.status(500).json({ ok: false, error: "missing_db_env" });
-  }
-
-  // --- auth ---
-  let auth;
   try {
-    auth = await requireAuth(req);
-  } catch (e) {
-    return res.status(401).json({
-      ok: false,
-      error: "unauthorized",
-      message: String(e?.message || e),
-    });
-  }
-
-  const user_id = auth?.user_id ? String(auth.user_id) : null;
-  const email = auth?.email ? String(auth.email) : null;
-  const legacy_user_id = email ? `${email}:jobs` : null;
-
-  if (!user_id && !email) {
-    return res.status(401).json({ ok: false, error: "unauthorized" });
-  }
-
-  // body normalize
-  let body = req.body || {};
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      body = {};
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
-  }
 
-  const job_id = normId(body.job_id || body.id || req.query.job_id || req.query.id);
-  if (!job_id) {
-    return res.status(400).json({ ok: false, error: "missing_job_id" });
-  }
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body || {});
 
-  const sql = neon(conn);
-  const variant = normId(body.variant || req.query.variant).toLowerCase();
-const app = normId(body.app || req.query.app).toLowerCase();
+    const admin = toEmail(body.admin);
+    const email = toEmail(body.email);
+    const mode = String(body.mode || "soft").trim().toLowerCase();
+    const banFlag =
+      body && Object.prototype.hasOwnProperty.call(body, "ban")
+        ? body.ban
+        : undefined;
+    const shouldBan = banFlag === false ? false : true;
 
-if (app === "music" && (variant === "orig" || variant === "rev1")) {
-  try {
-    const rows = await sql`
-      update jobs
-      set
-        meta = coalesce(meta, '{}'::jsonb) || jsonb_build_object(
-          'deleted_variants',
-          (
-            select to_jsonb(array(
-              select distinct v
-              from unnest(
-                array_append(
-                  coalesce(
-                    array(
-                      select jsonb_array_elements_text(
-                        case
-                          when jsonb_typeof(coalesce(meta->'deleted_variants', '[]'::jsonb)) = 'array'
-                            then coalesce(meta->'deleted_variants', '[]'::jsonb)
-                          else '[]'::jsonb
-                        end
-                      )
-                    ),
-                    array[]::text[]
-                  ),
-                  ${variant}
-                )
-              ) as v
-            ))
-          )
-        ),
-        updated_at = now()
-      where id = ${job_id}::uuid
-        and deleted_at is null
-        and app = 'music'
-        and (
-          user_id::text = ${user_id || ""}
-          or user_id::text = ${email || ""}
-          or user_id::text = ${legacy_user_id || ""}
-        )
-      returning id, meta
-    `;
+    if (!admin || !isAdminEmail(admin)) {
+      return res.status(403).json({ ok: false, error: "admin_forbidden" });
+    }
 
-    if (!rows?.length) {
-      return res.status(404).json({ ok: false, error: "not_found_or_not_owned", job_id, variant });
+    if (!email || !email.includes("@")) {
+      return res.status(400).json({ ok: false, error: "email_invalid" });
+    }
+
+    const kvmod = await import("../../_kv.js");
+    const kv = kvmod.default || kvmod;
+
+    if (
+      !kv ||
+      typeof kv.kvGetJson !== "function" ||
+      typeof kv.kvSetJson !== "function" ||
+      typeof kv.kvDel !== "function"
+    ) {
+      return res.status(500).json({ ok: false, error: "kv_helpers_missing" });
+    }
+
+    const USER_KEY = "user:" + email;
+    const user = await kv.kvGetJson(USER_KEY);
+
+    async function loadBanIndex() {
+      const v = await kv.kvGetJson(BAN_INDEX_KEY);
+      if (!v) return [];
+      if (Array.isArray(v)) return v.map(toEmail).filter(Boolean);
+      if (v && Array.isArray(v.items)) return v.items.map(toEmail).filter(Boolean);
+      return [];
+    }
+
+    async function addToBanIndex(targetEmail) {
+      const e = toEmail(targetEmail);
+      if (!e) return [];
+      const list = await loadBanIndex();
+      if (!list.includes(e)) list.unshift(e);
+      const trimmed = list.slice(0, 5000);
+      await kv.kvSetJson(BAN_INDEX_KEY, trimmed);
+      return trimmed;
+    }
+
+    if (mode === "soft") {
+      if (!user) {
+        return res.status(404).json({ ok: false, error: "user_not_found" });
+      }
+
+      const updatedAt = Date.now();
+      await kv.kvSetJson(USER_KEY, { ...user, disabled: true, updatedAt });
+
+      return res.status(200).json({
+        ok: true,
+        mode: "soft",
+        email,
+        updatedAt
+      });
+    }
+
+    const keysToDelete = [
+      USER_KEY,
+      "credits:" + email,
+      "invoices:" + email,
+      "purchases:" + email,
+      "reset:" + email,
+      "verify:" + email,
+      "presence:" + email
+    ];
+
+    const deletedKeys = [];
+
+    for (const key of keysToDelete) {
+      try {
+        await kv.kvDel(key);
+        deletedKeys.push(key);
+      } catch (_) {}
+    }
+
+    const banKey = "ban:" + email;
+
+    if (shouldBan) {
+      try {
+        await kv.kvSetJson(banKey, {
+          email,
+          bannedAt: Date.now(),
+          by: admin,
+          reason: "hard_delete"
+        });
+        deletedKeys.push(banKey);
+      } catch (_) {}
+
+      try {
+        await addToBanIndex(email);
+        deletedKeys.push(BAN_INDEX_KEY);
+      } catch (_) {}
     }
 
     return res.status(200).json({
       ok: true,
-      mode: "variant_hide",
-      job_id: String(rows[0].id),
-      variant,
-      meta: rows[0].meta || {}
+      mode: "hard",
+      email,
+      banned: shouldBan,
+      userFoundBeforeDelete: !!user,
+      deletedKeys
     });
-  } catch (e) {
-    console.error("jobs/delete music variant failed:", e);
-    return res.status(500).json({
-      ok: false,
-      error: "variant_delete_failed",
-      message: String(e?.message || e),
-    });
-  }
-}
-
-  try {
-    // 1) soft delete: sadece bu kullanıcıya aitse
-    const rows = await sql`
-      update jobs
-      set deleted_at = now(),
-          updated_at = now()
-      where id = ${job_id}::uuid
-        and deleted_at is null
-        and (
-          user_id::text = ${user_id || ""}
-          or user_id::text = ${email || ""}
-          or user_id::text = ${legacy_user_id || ""}
-        )
-      returning id
-    `;
-
-    if (!rows?.length) {
-      // job yok ya da kullanıcıya ait değil ya da zaten silinmiş
-      return res.status(404).json({ ok: false, error: "not_found_or_not_owned", job_id });
-    }
-
-    return res.status(200).json({ ok: true, job_id: String(rows[0].id) });
-  } catch (e) {
-    console.error("jobs/delete failed:", e);
+  } catch (err) {
     return res.status(500).json({
       ok: false,
       error: "delete_failed",
-      message: String(e?.message || e),
+      message: err?.message || String(err)
     });
   }
 }
