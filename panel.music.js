@@ -2045,16 +2045,22 @@ function setMusicHostForEvents(el){
       mainAudio.style.display = "none";
     }
 
-    jobs = [];
+  jobs = loadJobs().filter((j) => {
+  const id = getJobId(j);
+  if (!id) return false;
+  if (isHiddenJobId(id)) return false;
 
-    if (listEl) {
-      listEl.innerHTML = `
-        <div class="aivo-empty aivo-empty-loading">
-          <div class="aivo-empty-sub aivo-empty-pulse">Müzikler yükleniyor…</div>
-        </div>`;
-    }
+  const uiState = String(j?.__ui_state || "").trim().toLowerCase();
+  const audioSrc = String(j?.__audio_src || "").trim();
 
-    hydrateFromDBOnce();
+  if (uiState === "ready" && audioSrc) return true;
+  if (audioSrc) return true;
+
+  return false;
+});
+
+render();
+hydrateFromDBOnce();
 
     try { dbCtrl?.destroy?.(); } catch {}
     dbCtrl = null;
