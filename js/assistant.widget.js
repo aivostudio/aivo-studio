@@ -663,12 +663,33 @@
         headers: {
           "Content-Type": "application/json"
         },
-             body: JSON.stringify({
-          ...assistantContext,
-          message: content,
-          atmoDiagnostic,
-          messages: state.messages
-        })
+          const cartoonDiagnostic =
+  window.__AIVO_CARTOON_ASSISTANT_STATE__ &&
+  typeof window.__AIVO_CARTOON_ASSISTANT_STATE__ === "object"
+    ? { ...window.__AIVO_CARTOON_ASSISTANT_STATE__ }
+    : null;
+
+const photoFxDiagnostic =
+  window.__AIVO_PHOTOFX_ASSISTANT_STATE__ &&
+  typeof window.__AIVO_PHOTOFX_ASSISTANT_STATE__ === "object"
+    ? { ...window.__AIVO_PHOTOFX_ASSISTANT_STATE__ }
+    : null;
+
+const videoDiagnostic =
+  window.__AIVO_VIDEO_ASSISTANT_STATE__ &&
+  typeof window.__AIVO_VIDEO_ASSISTANT_STATE__ === "object"
+    ? { ...window.__AIVO_VIDEO_ASSISTANT_STATE__ }
+    : null;
+
+body: JSON.stringify({
+  ...assistantContext,
+  message: content,
+  atmoDiagnostic,
+  cartoonDiagnostic,
+  photoFxDiagnostic,
+  videoDiagnostic,
+  messages: state.messages
+})
       });
 
       const data = await response.json();
