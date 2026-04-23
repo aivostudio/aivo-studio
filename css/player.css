@@ -680,3 +680,18 @@
 #rightPanelHost .aivo-player-card .aivo-player-sub{
   display:none !important;
 }
+/* PREMIUM PROGRESS BAR */
+
+#rightPanelHost .aivo-progress{
+  background: rgba(255,255,255,.08) !important;
+  border: none !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  overflow: hidden;
+}
+
+#rightPanelHost .aivo-progress i{
+  background: linear-gradient(90deg, #6EE7F9, #8B5CF6, #C084FC) !important;
+  box-shadow: 0 0 8px rgba(140,98,255,.6);
+  transition: width .15s linear;
+}
