@@ -1117,7 +1117,10 @@ if (refundRes.ok && refundData?.ok && refundData?.refunded) {
     toast("info", "Kanal ayırma işlemi başladı");
 
     try {
-      const c = await stemsPost({ audio_url: src });
+         const c = await stemsPost({
+        job_id: jobId,
+        audio_url: src
+      });
       const pid = String(c.id || c.prediction_id || "").trim();
       const st = String(c.status || "starting").toLowerCase();
 
