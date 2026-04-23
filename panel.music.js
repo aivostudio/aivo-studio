@@ -1995,12 +1995,28 @@ function setMusicHostForEvents(el){
     alive = true;
     setMusicHostForEvents(hostEl);
 
-    hostEl.innerHTML = `
+       hostEl.innerHTML = `
       <div class="rp-players">
         <div class="rp-playerCard">
           <div class="rp-body" id="musicList"></div>
         </div>
-      </div>`;
+      </div>
+      <style>
+        .aivo-empty-loading{
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          min-height:120px;
+        }
+        .aivo-empty-pulse{
+          animation:aivoMusicPulse 1.15s ease-in-out infinite;
+        }
+        @keyframes aivoMusicPulse{
+          0%{opacity:.38}
+          50%{opacity:1}
+          100%{opacity:.38}
+        }
+      </style>`;
 
     listEl = hostEl.querySelector("#musicList");
     if (listEl) listEl.className = "aivo-player-list";
