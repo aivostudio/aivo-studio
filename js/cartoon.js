@@ -2824,17 +2824,20 @@ if (mainBtn && root.contains(mainBtn)) {
               syncGenerateButtonCredit(nextRoot);
             }
 
-            syncCartoonBasicAssistantState({
-              visibleError: "",
-              basic: {
-                characterUploadState: "ready",
-                uploadState: getBasicCombinedUploadState()
-              }
-            });
+         enforceCustomCharacterOverride(nextRoot, { silent: true });
 
-            try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
+syncCartoonBasicAssistantState({
+  visibleError: "",
+  basic: {
+    characterUploadState: "ready",
+    uploadState: getBasicCombinedUploadState(),
+    mainCharacter: ""
+  }
+});
 
-            return state.characterImageUrl;
+try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
+
+return state.characterImageUrl;
           })
           .catch((err) => {
             state.characterImageUrl = "";
