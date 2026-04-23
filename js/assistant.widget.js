@@ -652,18 +652,13 @@
     try {
           const assistantContext = buildAssistantContext(extraContext);
 
-      const atmoDiagnostic =
-        window.__AIVO_ATMO_ASSISTANT_STATE__ &&
-        typeof window.__AIVO_ATMO_ASSISTANT_STATE__ === "object"
-          ? { ...window.__AIVO_ATMO_ASSISTANT_STATE__ }
-          : null;
+ const atmoDiagnostic =
+  window.__AIVO_ATMO_ASSISTANT_STATE__ &&
+  typeof window.__AIVO_ATMO_ASSISTANT_STATE__ === "object"
+    ? { ...window.__AIVO_ATMO_ASSISTANT_STATE__ }
+    : null;
 
-      const response = await fetch("/api/assistant/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-          const cartoonDiagnostic =
+const cartoonDiagnostic =
   window.__AIVO_CARTOON_ASSISTANT_STATE__ &&
   typeof window.__AIVO_CARTOON_ASSISTANT_STATE__ === "object"
     ? { ...window.__AIVO_CARTOON_ASSISTANT_STATE__ }
@@ -681,16 +676,21 @@ const videoDiagnostic =
     ? { ...window.__AIVO_VIDEO_ASSISTANT_STATE__ }
     : null;
 
-body: JSON.stringify({
-  ...assistantContext,
-  message: content,
-  atmoDiagnostic,
-  cartoonDiagnostic,
-  photoFxDiagnostic,
-  videoDiagnostic,
-  messages: state.messages
-})
-      });
+const response = await fetch("/api/assistant/chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    ...assistantContext,
+    message: content,
+    atmoDiagnostic,
+    cartoonDiagnostic,
+    photoFxDiagnostic,
+    videoDiagnostic,
+    messages: state.messages
+  })
+});
 
       const data = await response.json();
 
