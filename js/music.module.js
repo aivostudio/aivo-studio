@@ -1301,6 +1301,8 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       ].filter(Boolean).join(" ");
 
       const text = normalizePolicyText(raw);
+            const policyMatch = getMusicPolicyMatch(raw);
+      console.log("[MUSIC POLICY MATCH][UI]", policyMatch, raw);
 
       const escapeRegExp = (value) =>
         String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
