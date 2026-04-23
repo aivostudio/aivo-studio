@@ -197,13 +197,20 @@
         <td>${createdAt}</td>
         <td>${updatedAt}</td>
         <td><span class="pill ${pillClass}">${pillText}</span></td>
-        <td style="display:flex; gap:6px; flex-wrap:wrap;">
+         <td style="display:flex; gap:6px; flex-wrap:wrap;">
           <button
             class="btn btn-xs ${disabled ? "" : "btn-danger"}"
             data-act="toggle"
             data-email="${email}"
             data-disabled="${disabled ? "1" : "0"}">
             ${disabled ? "Aktifleştir" : "Pasifleştir"}
+          </button>
+
+          <button
+            class="btn btn-xs"
+            data-act="delete_soft"
+            data-email="${email}">
+            Sadece Sil
           </button>
 
           <button
