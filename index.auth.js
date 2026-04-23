@@ -155,9 +155,9 @@ function applyModalMode(m, mode) {
   // Card titles
   const cardTitle = m.querySelector("#authCardTitle");
   const cardSub   = m.querySelector("#authCardSub");
-  if (cardTitle) cardTitle.textContent = isReg ? "Email ile Kayıt" : "Email ile Giriş";
+  if (cardTitle) cardTitle.textContent = isReg ? "Ücretsiz hesap oluştur" : "Email ile Giriş";
   if (cardSub)   cardSub.textContent   = isReg
-    ? "Ücretsiz hesap oluştur ve 5 kredi kazan."
+    ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
     : "Hesabına email adresinle giriş yap.";
 
   // Blocks (your exact IDs)
