@@ -350,8 +350,14 @@
           return;
         }
 
-        try {
-          if (window.toast) window.toast.success("Kayıt başarılı! Şimdi giriş yapabilirsin.");
+             try {
+          if (window.toast) {
+            if (data?.mailSent) {
+              window.toast.success("Kayıt başarılı! Onay mailini kontrol et.");
+            } else {
+              window.toast.warning("Kayıt başarılı, ama doğrulama maili gönderilemedi.");
+            }
+          }
         } catch (_) {}
 
         try { byId("registerName").value = ""; } catch (_) {}
