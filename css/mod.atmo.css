@@ -387,20 +387,38 @@ section.main-panel[data-module="atmosphere"] textarea{
   background: rgba(0,0,0,.18);
   color: rgba(255,255,255,.92);
   outline: none;
-  font-size: 13px;
+
+  font-family: Inter, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 section.main-panel[data-module="atmosphere"] select{
   padding: 10px 12px;
   height: 40px;
+  line-height: 1.2;
 }
 
 section.main-panel[data-module="atmosphere"] textarea{
-  padding: 12px 12px;
+  padding: 14px 16px;
   min-height: 92px;
   max-height: 180px;
   resize: vertical;
-  line-height: 1.25;
+  line-height: 1.6;
+}
+
+section.main-panel[data-module="atmosphere"] textarea::placeholder,
+section.main-panel[data-module="atmosphere"] select::placeholder{
+  color: rgba(255,255,255,.38);
+  font-family: Inter, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 section.main-panel[data-module="atmosphere"] select:focus,
