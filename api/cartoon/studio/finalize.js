@@ -2,8 +2,8 @@
 // CommonJS
 // Studio finalize:
 // input: jobs.meta.scenes[].videoUrl
-// process: download -> concat -> faststart -> preview encode -> R2 upload
-// output: R2 final mp4 + R2 preview mp4 + DB outputs/meta patch + status=done
+// process: download -> concat -> faststart -> preview encode -> poster frame -> R2 upload
+// output: R2 final mp4 + R2 preview mp4 + R2 poster jpg + DB outputs/meta patch + status=done
 
 const { neon } = require("@neondatabase/serverless");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
@@ -47,9 +47,11 @@ function pickUrl(o) {
     o?.archive_url ||
       o?.url ||
       o?.video_url ||
+      o?.image_url ||
       o?.meta?.archive_url ||
       o?.meta?.url ||
       o?.meta?.video_url ||
+      o?.meta?.image_url ||
       ""
   ).trim();
 }
@@ -60,6 +62,10 @@ function normVariant(o) {
 
 function isVideo(o) {
   return String(o?.type || "").toLowerCase().trim() === "video";
+}
+
+function isImage(o) {
+  return String(o?.type || "").toLowerCase().trim() === "image";
 }
 
 function removeFinalFlags(outputs) {
@@ -88,6 +94,7 @@ function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
     url,
     meta: {
       app: "cartoon",
+      mode: "studio_export",
       variant,
       ...(extraMeta || {}),
     },
@@ -106,7 +113,38 @@ function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
   return arr;
 }
 
-function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
+function upsertImageOutput(outputs, variant, url, extraMeta = {}) {
+  const arr = Array.isArray(outputs) ? outputs.slice() : [];
+
+  const idx = arr.findIndex(
+    (o) => isImage(o) && normVariant(o) === String(variant || "").toLowerCase()
+  );
+
+  const item = {
+    type: "image",
+    url,
+    meta: {
+      app: "cartoon",
+      mode: "studio_export",
+      variant,
+      ...(extraMeta || {}),
+    },
+  };
+
+  if (idx >= 0) {
+    arr[idx] = {
+      ...(arr[idx] || {}),
+      ...item,
+      meta: { ...((arr[idx] || {}).meta || {}), ...(item.meta || {}) },
+    };
+    return arr;
+  }
+
+  arr.unshift(item);
+  return arr;
+}
+
+function upsertFinalizedPreviewPosterOutputs(outputs, finalUrl, previewUrl, posterUrl) {
   let arr = removeFinalFlags(outputs);
 
   arr = upsertVideoOutput(arr, "preview", previewUrl, {
@@ -118,6 +156,12 @@ function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
     is_final: true,
     is_preview: false,
     source_variant: "finalized",
+  });
+
+  arr = upsertImageOutput(arr, "poster", posterUrl, {
+    is_poster: true,
+    is_final: false,
+    thumbnail: true,
   });
 
   return arr;
@@ -266,6 +310,7 @@ function calcPreviewVideoBitrateKbps({ finalBytes, durationSec }) {
     maxPreviewBytes,
   };
 }
+
 async function probeHasAudioStream(inputPath) {
   return await new Promise((resolve, reject) => {
     const args = ["-i", inputPath];
@@ -387,6 +432,7 @@ async function runFfmpegNormalizeScene(inputPath, outputPath) {
     });
   });
 }
+
 async function runFfmpegConcat(listPath, outputPath) {
   await new Promise((resolve, reject) => {
     const args = [
@@ -528,6 +574,40 @@ async function runFfmpegPreview(inputPath, outputPath, bitrateCfg = {}) {
     });
   });
 }
+
+async function runFfmpegPoster(inputPath, outputPath) {
+  await new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-ss",
+      "0.2",
+      "-i",
+      inputPath,
+      "-frames:v",
+      "1",
+      "-vf",
+      "scale='min(640,iw)':-2",
+      "-q:v",
+      "3",
+      outputPath,
+    ];
+
+    const p = spawn(ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    let stderr = "";
+    p.stderr.on("data", (d) => {
+      stderr += String(d || "");
+    });
+
+    p.on("error", reject);
+
+    p.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`ffmpeg_poster_failed:${code}:${stderr.slice(-1500)}`));
+    });
+  });
+}
+
 async function runFfmpegMixVoiceAudio(videoInputPath, audioInputPath, outputPath, musicLevel = "") {
   const levelRaw = String(musicLevel || "").trim().toLowerCase();
 
@@ -583,6 +663,7 @@ async function runFfmpegMixVoiceAudio(videoInputPath, audioInputPath, outputPath
     });
   });
 }
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -627,13 +708,13 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "job_not_cartoon" });
     }
 
- const meta = job.meta || {};
-const voiceFileMeta = meta?.voiceFile || {};
-const voiceFileUrl = safeText(voiceFileMeta?.url);
-const voiceFileUploadStatus = safeText(voiceFileMeta?.uploadStatus).toLowerCase();
-const audioMode = safeText(meta?.audioMode).toLowerCase();
-const musicLevel = safeText(meta?.musicLevel);
-const outputs = Array.isArray(job.outputs) ? job.outputs : [];
+    const meta = job.meta || {};
+    const voiceFileMeta = meta?.voiceFile || {};
+    const voiceFileUrl = safeText(voiceFileMeta?.url);
+    const voiceFileUploadStatus = safeText(voiceFileMeta?.uploadStatus).toLowerCase();
+    const audioMode = safeText(meta?.audioMode).toLowerCase();
+    const musicLevel = safeText(meta?.musicLevel);
+    const outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
     const finalizedOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "finalized"
@@ -641,16 +722,25 @@ const outputs = Array.isArray(job.outputs) ? job.outputs : [];
     const previewOut = outputs.find(
       (o) => isVideo(o) && normVariant(o) === "preview"
     );
+    const posterOut = outputs.find(
+      (o) => isImage(o) && normVariant(o) === "poster"
+    );
 
     const existingFinalized = pickUrl(finalizedOut) || safeText(meta?.final_video_url);
     const existingPreview = pickUrl(previewOut) || safeText(meta?.preview_video_url);
+    const existingPoster =
+      pickUrl(posterOut) ||
+      safeText(meta?.poster_url) ||
+      safeText(meta?.thumbnail_url) ||
+      safeText(meta?.thumb_url);
 
-    if (existingFinalized && existingPreview && !force) {
+    if (existingFinalized && existingPreview && existingPoster && !force) {
       return res.status(200).json({
         ok: true,
         job_id,
         final_url: existingFinalized,
         preview_url: existingPreview,
+        poster_url: existingPoster,
         skipped: true,
         reason: "already_finalized",
       });
@@ -685,44 +775,48 @@ const outputs = Array.isArray(job.outputs) ? job.outputs : [];
 
     tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), "aivo-cartoon-studio-finalize-"));
 
- const normalizedPaths = [];
-for (let i = 0; i < scenes.length; i += 1) {
-  const ext = path.extname(scenes[i].fileName || "").trim() || ".mp4";
-  const sourcePath = path.join(tmpDir, `scene-${String(i + 1).padStart(3, "0")}${ext}`);
-  const normalizedPath = path.join(tmpDir, `scene-${String(i + 1).padStart(3, "0")}-normalized.mp4`);
+    const normalizedPaths = [];
+    for (let i = 0; i < scenes.length; i += 1) {
+      const ext = path.extname(scenes[i].fileName || "").trim() || ".mp4";
+      const sourcePath = path.join(tmpDir, `scene-${String(i + 1).padStart(3, "0")}${ext}`);
+      const normalizedPath = path.join(
+        tmpDir,
+        `scene-${String(i + 1).padStart(3, "0")}-normalized.mp4`
+      );
 
-  await downloadToFile(scenes[i].videoUrl, sourcePath);
-  await runFfmpegNormalizeScene(sourcePath, normalizedPath);
+      await downloadToFile(scenes[i].videoUrl, sourcePath);
+      await runFfmpegNormalizeScene(sourcePath, normalizedPath);
 
-  normalizedPaths.push(normalizedPath);
-}
+      normalizedPaths.push(normalizedPath);
+    }
 
-const concatListPath = path.join(tmpDir, "concat.txt");
-const concatBody = normalizedPaths
-  .map((filePath) => `file '${String(filePath).replace(/'/g, "'\\''")}'`)
-  .join("\n");
+    const concatListPath = path.join(tmpDir, "concat.txt");
+    const concatBody = normalizedPaths
+      .map((filePath) => `file '${String(filePath).replace(/'/g, "'\\''")}'`)
+      .join("\n");
     await fsp.writeFile(concatListPath, concatBody, "utf8");
 
-  const concatOutputPath = path.join(tmpDir, "concat-output.mp4");
-const mixedOutputPath = path.join(tmpDir, "mixed-output.mp4");
-const voiceInputPath = path.join(tmpDir, "voice-input");
-const finalOutputPath = path.join(tmpDir, "finalized.mp4");
-const previewPath = path.join(tmpDir, "preview.mp4");
-    
-  await runFfmpegConcat(concatListPath, concatOutputPath);
+    const concatOutputPath = path.join(tmpDir, "concat-output.mp4");
+    const mixedOutputPath = path.join(tmpDir, "mixed-output.mp4");
+    const voiceInputPath = path.join(tmpDir, "voice-input");
+    const finalOutputPath = path.join(tmpDir, "finalized.mp4");
+    const previewPath = path.join(tmpDir, "preview.mp4");
+    const posterPath = path.join(tmpDir, "poster.jpg");
 
-if (audioMode === "on" && voiceFileUrl && voiceFileUploadStatus === "ready") {
-  await downloadToFile(voiceFileUrl, voiceInputPath);
-  await runFfmpegMixVoiceAudio(
-    concatOutputPath,
-    voiceInputPath,
-    mixedOutputPath,
-    musicLevel
-  );
-  await runFfmpegFaststart(mixedOutputPath, finalOutputPath);
-} else {
-  await runFfmpegFaststart(concatOutputPath, finalOutputPath);
-}
+    await runFfmpegConcat(concatListPath, concatOutputPath);
+
+    if (audioMode === "on" && voiceFileUrl && voiceFileUploadStatus === "ready") {
+      await downloadToFile(voiceFileUrl, voiceInputPath);
+      await runFfmpegMixVoiceAudio(
+        concatOutputPath,
+        voiceInputPath,
+        mixedOutputPath,
+        musicLevel
+      );
+      await runFfmpegFaststart(mixedOutputPath, finalOutputPath);
+    } else {
+      await runFfmpegFaststart(concatOutputPath, finalOutputPath);
+    }
 
     const finalStat = await fsp.stat(finalOutputPath);
     const durationSec = await probeVideoDurationSec(finalOutputPath);
@@ -733,17 +827,18 @@ if (audioMode === "on" && voiceFileUrl && voiceFileUploadStatus === "ready") {
     });
 
     await runFfmpegPreview(finalOutputPath, previewPath, previewBitrateCfg);
+    await runFfmpegPoster(previewPath, posterPath);
 
     const outputId = `studio-finalized-${Date.now()}`;
     const finalKey = `outputs/cartoon/${job_id}/${outputId}.mp4`;
     const previewKey = `outputs/cartoon/${job_id}/${outputId}-preview.mp4`;
+    const posterKey = `outputs/cartoon/${job_id}/${outputId}-poster.jpg`;
 
     const final_url = await uploadFileToR2({
       filePath: finalOutputPath,
       key: finalKey,
       contentType: "video/mp4",
     });
-
     await verifyPublicUrl(final_url, "final");
 
     const preview_url = await uploadFileToR2({
@@ -751,24 +846,40 @@ if (audioMode === "on" && voiceFileUrl && voiceFileUploadStatus === "ready") {
       key: previewKey,
       contentType: "video/mp4",
     });
-
     await verifyPublicUrl(preview_url, "preview");
 
-    const nextOutputs = upsertFinalizedAndPreviewOutputs(outputs, final_url, preview_url);
+    const poster_url = await uploadFileToR2({
+      filePath: posterPath,
+      key: posterKey,
+      contentType: "image/jpeg",
+    });
+    await verifyPublicUrl(poster_url, "poster");
 
-       const existingLogoOverlayUrl = safeText(meta?.logo_overlay_url);
+    const nextOutputs = upsertFinalizedPreviewPosterOutputs(
+      outputs,
+      final_url,
+      preview_url,
+      poster_url
+    );
+
+    const existingLogoOverlayUrl = safeText(meta?.logo_overlay_url);
     const finalVideoUrlToStore = existingLogoOverlayUrl || final_url;
     const finalVariantToStore = existingLogoOverlayUrl ? "logo_overlay" : "finalized";
 
     const patchMeta = {
       final_video_url: finalVideoUrlToStore,
       preview_video_url: preview_url,
+      poster_url: poster_url,
+      thumbnail_url: poster_url,
+      thumb_url: poster_url,
       final_variant: finalVariantToStore,
       finalized_at: new Date().toISOString(),
       finalized_from_scene_count: scenes.length,
-      finalized_total_duration: durationSec || scenes.reduce((sum, scene) => sum + safeNumber(scene.duration, 0), 0),
+      finalized_total_duration:
+        durationSec || scenes.reduce((sum, scene) => sum + safeNumber(scene.duration, 0), 0),
       finalized_key: finalKey,
       preview_key: previewKey,
+      poster_key: posterKey,
       preview_target_ratio: "1/4",
       preview_min_mb: 3,
       preview_max_mb: 5,
@@ -796,6 +907,7 @@ if (audioMode === "on" && voiceFileUrl && voiceFileUploadStatus === "ready") {
       job_id,
       final_url,
       preview_url,
+      poster_url,
       scene_count: scenes.length,
       duration_sec: durationSec || 0,
       step: "studio_finalized",
