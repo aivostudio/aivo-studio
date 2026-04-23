@@ -96,10 +96,10 @@
       }
 
       .aivo-assistant-quick {
-        padding: 10px 12px 0;
+        padding: 8px 12px 0;
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 7px;
       }
 
       .aivo-assistant-chip {
@@ -107,9 +107,9 @@
         background: rgba(255,255,255,.05);
         color: #fff;
         border-radius: 999px;
-        padding: 8px 11px;
+        padding: 7px 10px;
         cursor: pointer;
-        font: 600 11px/1.1 Inter, Arial, sans-serif;
+        font: 600 10px/1.05 Inter, Arial, sans-serif;
         transition: background .16s ease, border-color .16s ease, transform .16s ease;
       }
 
@@ -122,19 +122,19 @@
       .aivo-assistant-messages {
         flex: 1;
         overflow: auto;
-        padding: 12px;
+        padding: 10px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 7px;
       }
 
       .aivo-assistant-message {
         max-width: 86%;
-        padding: 10px 11px;
-        border-radius: 15px;
+        padding: 9px 10px;
+        border-radius: 14px;
         white-space: pre-wrap;
         word-break: break-word;
-        font: 400 13px/1.5 Inter, Arial, sans-serif;
+        font: 400 12px/1.42 Inter, Arial, sans-serif;
       }
 
       .aivo-assistant-message.user {
@@ -156,12 +156,12 @@
         align-self: center;
         background: transparent;
         color: rgba(255,255,255,.52);
-        font-size: 11px;
-        padding: 2px 8px;
+        font-size: 10px;
+        padding: 2px 7px;
       }
 
       .aivo-assistant-form {
-        padding: 12px;
+        padding: 10px;
         border-top: 1px solid rgba(255,255,255,.08);
         display: flex;
         align-items: center;
@@ -176,15 +176,15 @@
         border: 1px solid rgba(255,255,255,.10);
         background: rgba(255,255,255,.05);
         color: #fff;
-        border-radius: 16px;
-        padding: 12px 14px;
+        border-radius: 15px;
+        padding: 11px 13px;
         outline: none;
-        height: 44px;
-        min-height: 44px;
-        max-height: 104px;
+        height: 42px;
+        min-height: 42px;
+        max-height: 96px;
         box-sizing: border-box;
         overflow-y: auto;
-        font: 400 13px/1.3 Inter, Arial, sans-serif;
+        font: 400 12px/1.25 Inter, Arial, sans-serif;
       }
 
       .aivo-assistant-input::placeholder {
@@ -193,13 +193,13 @@
 
       .aivo-assistant-send {
         border: 0;
-        min-width: 86px;
-        height: 44px;
-        border-radius: 16px;
+        min-width: 82px;
+        height: 42px;
+        border-radius: 15px;
         background: linear-gradient(135deg, #7c4dff 0%, #ff4fa3 100%);
         color: #fff;
-        padding: 0 15px;
-        font: 800 13px/1 Inter, Arial, sans-serif;
+        padding: 0 14px;
+        font: 800 12px/1 Inter, Arial, sans-serif;
         cursor: pointer;
         flex: 0 0 auto;
       }
