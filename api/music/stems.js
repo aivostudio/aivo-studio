@@ -45,6 +45,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         ok: true,
         mode: "status",
+        job_id: jobId || null,
         id: j?.id || null,
         status: j?.status || null,
         output: j?.output || null,
