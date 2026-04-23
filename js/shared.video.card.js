@@ -702,8 +702,13 @@
   </div>
 </div>
     `
-              : `
+                          : `
                 <div class="svcSkel"></div>
+
+                <div class="svcQuickActions">
+                  <button class="svcQuickBtn svcQuickBtnDanger" type="button" data-svc-act="delete" data-id="${esc(id)}" ${canDelete ? "" : "disabled"} title="Sil">🗑</button>
+                </div>
+
                 <div class="svcFallback">
                   <div class="svcFallbackIcon">▶</div>
                 </div>
