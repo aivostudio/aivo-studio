@@ -1546,76 +1546,100 @@ document.addEventListener("mouseout", function(e){
     const isValidEmail = (email) =>
       !!email && email.includes("@") && email.includes(".") && email.length >= 6;
 
-    async function doRegister() {
-      const email = v("loginEmail").toLowerCase();
-      const pass  = v("loginPass");
-      const name  = v("registerName");
-      const pass2 = v("registerPass2");
-      const kvkk  = on("kvkkOk");
+async function doRegister() {
+  const nameVal    = v("registerName");
+  const surnameVal = v("registerSurname");
+  const email      = v("registerEmailView").toLowerCase();
+  const pass       = v("registerPassView");
+  const pass2      = v("registerPass2");
+  const kvkk       = on("kvkkCheck");
 
-    if (!isValidEmail(email)) {
-  window.toast.error("Lütfen geçerli bir email gir.");
-  return;
-}
+  const fullName = [nameVal, surnameVal].filter(Boolean).join(" ").trim();
 
-if (!name) {
-  window.toast.error("Lütfen ad soyad gir.");
-  return;
-}
+  if (!isValidEmail(email)) {
+    window.toast.error("Lütfen geçerli bir email gir.");
+    return;
+  }
 
-if (!pass || pass.length < 6) {
-  window.toast.error("Şifre en az 6 karakter olmalı.");
-  return;
-}
+  if (!nameVal) {
+    window.toast.error("Lütfen ad gir.");
+    return;
+  }
 
-if (pass2 && pass2 !== pass) {
-  window.toast.error("Şifreler uyuşmuyor.");
-  return;
-}
+  if (!surnameVal) {
+    window.toast.error("Lütfen soyad gir.");
+    return;
+  }
 
-if (!kvkk) {
-  window.toast.warning("KVKK ve şartları kabul etmelisin.");
-  return;
-}
+  if (!pass || pass.length < 6) {
+    window.toast.error("Şifre en az 6 karakter olmalı.");
+    return;
+  }
 
-      const old = btn.textContent;
-      setBusy(true, "Gönderiliyor...");
+  if (!pass2 || pass2 !== pass) {
+    window.toast.error("Şifreler uyuşmuyor.");
+    return;
+  }
 
-      try {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ email, password: pass, name })
-        });
+  if (!kvkk) {
+    window.toast.warning("KVKK ve şartları kabul etmelisin.");
+    return;
+  }
 
-        const text = await res.text();
-        let data = {};
-        try { data = JSON.parse(text); } catch (_) {}
+  const old = btn.textContent;
+  setBusy(true, "Gönderiliyor...");
 
-        if (!res.ok) {
-          window.toast.error(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
-return;
-      }
-      window.toast.success(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      cache: "no-store",
+      body: JSON.stringify({
+        email,
+        password: pass,
+        name: fullName
+      })
+    });
 
+    const text = await res.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch (_) {}
 
-        modal.setAttribute("data-mode", "login");
-        try { qs("registerPass2").value = ""; } catch(_) {}
-        try { qs("kvkkOk").checked = false; } catch(_) {}
-
-        setBusy(false, "Giriş Yap");
-        setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
-
-      } catch (err) {
-        window.toast.error("Bağlantı hatası. Tekrar dene.");
-
-      } finally {
-        const mode = getMode();
-        setBusy(false, mode === "register" ? "Hesap Oluştur" : "Giriş Yap");
-      }
+    if (!res.ok || data?.ok === false) {
+      window.toast.error(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+      return;
     }
+
+    window.toast.success(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
+
+    modal.setAttribute("data-mode", "login");
+
+    try { qs("registerName").value = ""; } catch (_) {}
+    try { qs("registerSurname").value = ""; } catch (_) {}
+    try { qs("registerEmailView").value = ""; } catch (_) {}
+    try { qs("registerPassView").value = ""; } catch (_) {}
+    try { qs("registerPass2").value = ""; } catch (_) {}
+    try { qs("kvkkCheck").checked = false; } catch (_) {}
+
+    try { qs("loginEmail").value = email; } catch (_) {}
+    try { qs("loginPass").value = ""; } catch (_) {}
+
+    setBusy(false, "Giriş Yap");
+    setTimeout(() => {
+      try { qs("loginPass")?.focus(); } catch (_) {}
+    }, 50);
+
+  } catch (err) {
+    window.toast.error("Bağlantı hatası. Tekrar dene.");
+  } finally {
+    const mode = getMode();
+    setBusy(false, mode === "register" ? "Hesap Oluştur" : "Giriş Yap");
+  }
+}
 
     async function doLogin() {
       const email = v("loginEmail").toLowerCase();
