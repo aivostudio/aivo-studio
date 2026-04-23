@@ -376,11 +376,15 @@
     sendEl.textContent = isLoading ? "Bekle..." : "Gönder";
   }
 
-  function openPanel() {
-    state.open = true;
-    panel.classList.add("is-open");
-    setTimeout(() => inputEl.focus(), 30);
-  }
+function openPanel() {
+  state.open = true;
+  panel.classList.add("is-open");
+
+  requestAnimationFrame(() => {
+    autoResize();
+    inputEl.focus();
+  });
+}
 
   function closePanel() {
     state.open = false;
