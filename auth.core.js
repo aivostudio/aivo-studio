@@ -403,7 +403,7 @@
         try {
           const loginErr =
             data?.error === "email_not_verified"
-              ? "Emailini doğrulamadan giriş yapamazsın. Mailindeki onay linkine önce tıkla."
+            ? "Önce mailindeki onay linkine tıkla."
               : data?.error === "invalid_credentials"
                 ? "Şifre yanlış."
                 : data?.error === "user_not_found"
