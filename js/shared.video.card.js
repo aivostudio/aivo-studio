@@ -188,6 +188,7 @@
   position:absolute;
   right:12px;
   top:12px;
+  z-index:8;
   display:flex;
   gap:8px;
   pointer-events:auto;
