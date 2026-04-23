@@ -1,5 +1,12 @@
 (function () {
   if (window.__AIVO_ASSISTANT_WIDGET__) return;
+    // 🔒 AUTH CHECK – guest ise widget hiç oluşturma
+  const hasSession =
+    localStorage.getItem("aivo_auth_unified_v1") ||
+    localStorage.getItem("aivo_token") ||
+    document.cookie.includes("aivo_session");
+
+  if (!hasSession) return;
   window.__AIVO_ASSISTANT_WIDGET__ = true;
 
   const STYLE_ID = "aivo-assistant-widget-style";
