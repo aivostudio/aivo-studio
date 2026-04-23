@@ -2068,7 +2068,9 @@ if (mainBtn && root.contains(mainBtn)) {
         if (state.mode !== "basic") return;
         if (state.isGenerating) return;
 
-        const payload = buildBasicPayload();
+      enforceCustomCharacterOverride(root, { silent: true });
+
+      const payload = buildBasicPayload();
 
         if (!String(payload.extraPrompt || "").trim()) {
           syncCartoonBasicAssistantState({
