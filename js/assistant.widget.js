@@ -168,20 +168,24 @@
         gap: 8px;
       }
 
-      .aivo-assistant-input {
-        flex: 1;
-        min-width: 0;
-        resize: none;
-        border: 1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.05);
-        color: #fff;
-        border-radius: 16px;
-        padding: 11px 13px;
-        outline: none;
-        min-height: 44px;
-        max-height: 104px;
-        font: 400 13px/1.4 Inter, Arial, sans-serif;
-      }
+    .aivo-assistant-input {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  resize: none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: #fff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  outline: none;
+  height: 44px;
+  min-height: 44px;
+  max-height: 104px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  font: 400 13px/1.3 Inter, Arial, sans-serif;
+}
 
       .aivo-assistant-input::placeholder {
         color: rgba(255,255,255,.36);
@@ -318,12 +322,13 @@
     <div class="aivo-assistant-messages" id="aivo-assistant-messages"></div>
 
     <form class="aivo-assistant-form" id="aivo-assistant-form">
-      <textarea
-        class="aivo-assistant-input"
-        id="aivo-assistant-input"
-        placeholder="Sorunu ya da yapmak istediğini yaz..."
-        rows="1"
-      ></textarea>
+     <textarea
+  class="aivo-assistant-input"
+  id="aivo-assistant-input"
+  placeholder="Sorunu ya da yapmak istediğini yaz..."
+  rows="1"
+  spellcheck="false"
+></textarea>
       <button type="submit" class="aivo-assistant-send" id="aivo-assistant-send">Gönder</button>
     </form>
   `;
@@ -387,10 +392,10 @@
     else openPanel();
   }
 
-  function autoResize() {
-    inputEl.style.height = "46px";
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
-  }
+ function autoResize() {
+  inputEl.style.height = "44px";
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 104) + "px";
+}
 
   function getBodyText() {
     return String(document.body?.innerText || "");
