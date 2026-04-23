@@ -33,12 +33,10 @@ const PUBLIC_FIGURE_TERMS = Array.from(
 const ARTIST_NAME_TERMS = Array.from(new Set([...ARTISTS_TR_SEED]));
 
 const MUSIC_STYLE_TERMS = [
-  'gibi',
   'tarzinda',
   'tarzında',
   'stilinde',
   'soundunda',
-  'sound',
   'vocalinde',
   'vokalinde',
   'sesiyle',
@@ -46,8 +44,6 @@ const MUSIC_STYLE_TERMS = [
   'aynisi',
   'aynısı',
   'birebir',
-  'benziyor',
-  'benzer',
   'same as',
   'in the style of',
   'like',
