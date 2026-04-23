@@ -798,12 +798,10 @@
       }
 
       const brain = data?.brain && typeof data.brain === "object" ? data.brain : null;
-
       let assistantText =
         (brain?.answer && String(brain.answer).trim()) ||
         (data?.message && String(data.message).trim()) ||
-        "Şu an net bir cevap oluşturamadım ama istersen birlikte hızlıca toparlayabiliriz.";
-
+        "Şu an net bir cevap oluşturamadım ama istersen fikrini birlikte güçlü ve üretime hazır bir prompta çevirebiliriz.";
       if (brain?.followupAction) {
         assistantText += `
 
