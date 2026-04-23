@@ -181,12 +181,19 @@ function applyModalMode(m, mode) {
 
   // Login’e dönünce register alanlarını temizle
   if (!isReg) {
-    const name  = document.getElementById("regName");
-    const pass2 = document.getElementById("regPass2");
-    const kvkk  = document.getElementById("kvkkOk");
-    if (name)  name.value = "";
+    const name     = document.getElementById("registerName");
+    const surname  = document.getElementById("registerSurname");
+    const email    = document.getElementById("registerEmailView");
+    const pass     = document.getElementById("registerPassView");
+    const pass2    = document.getElementById("registerPass2");
+    const kvkk     = document.getElementById("kvkkCheck");
+
+    if (name) name.value = "";
+    if (surname) surname.value = "";
+    if (email) email.value = "";
+    if (pass) pass.value = "";
     if (pass2) pass2.value = "";
-    if (kvkk)  kvkk.checked = false;
+    if (kvkk) kvkk.checked = false;
   }
 }
 
