@@ -1310,10 +1310,17 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
   return regex.test(text);
 }
 
-const hasBlockedTerm =
+const hasHardBlock =
   HARD_BLOCK_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term))) ||
-  PUBLIC_FIGURE_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term))) ||
+  PUBLIC_FIGURE_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term)));
+
+const hasArtistReference =
   ARTIST_NAME_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term)));
+
+const hasStylePattern =
+  HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+
+const shouldWarn = hasHardBlock || hasStylePattern || hasArtistReference;
 
       const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
       const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
