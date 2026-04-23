@@ -11,7 +11,8 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_REPLICATE_API_TOKEN" });
     }
 
-    const body = req.body || {};
+      const body = req.body || {};
+    const jobId = String(body.job_id || body.jobId || "").trim();
     const predictionId = String(body.prediction_id || body.id || "").trim();
     const audioUrl = String(body.audio_url || body.audio || "").trim();
 
