@@ -288,15 +288,15 @@
         data-action-context="quick_credit_info"
       >Kredi Sistemi</button>
 
-      <button
+           <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="Promptumu güçlendirmeme yardım et."
+        data-prompt="Fikrimi güçlü, üretime hazır bir prompta çevir. Gerekirse eksikleri tamamla, modüle uygun yaz ve bana direkt kullanabileceğim en güçlü promptu ver."
         data-intent="prompt_help"
         data-module=""
         data-action="prompt_help"
-        data-action-context="quick_prompt_help"
-      >Prompt Yardımı</button>
+        data-action-context="quick_prompt_help_max"
+      >Prompt Güçlendir</button>
 
       <button
         type="button"
