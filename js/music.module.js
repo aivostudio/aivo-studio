@@ -1362,7 +1362,7 @@ if (policyNote) {
 }
 
 return shouldWarn;
-
+}
     function bindMusicPolicyUI() {
       const generateBtn = module.querySelector("#musicGenerateBtn");
       const promptEl = module.querySelector("#prompt");
