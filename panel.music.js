@@ -773,9 +773,11 @@ window.selectedJobId = window.selectedJobId || "";
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
 
-    if (currentJobId && audioEl && !audioEl.paused) {
+     if (currentJobId && audioEl && !audioEl.paused) {
       setCardPlaying(currentJobId, true);
       bindEqBarsForCurrentJob();
+      updateProgressUI();
+      startRaf();
     }
   }
 
