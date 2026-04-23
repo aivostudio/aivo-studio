@@ -1550,6 +1550,7 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
           lastJobStatus: "failed"
         });
       }, true);
+     }
 
     if (!document.getElementById("aivoPolicyPulseStyle")) {
       const style = document.createElement("style");
