@@ -1152,7 +1152,43 @@ async function uploadCartoonAudioToR2(file) {
 
     return total;
   }
+ function hasCustomCharacterImageActive() {
+  return !!(
+    state.characterImage ||
+    String(state.characterImageUrl || "").trim() ||
+    state.characterImageUploadStatus === "uploading" ||
+    state.characterImageUploadStatus === "ready"
+  );
+}
 
+function enforceCustomCharacterOverride(root, options = {}) {
+  const silent = !!options.silent;
+
+  if (!hasCustomCharacterImageActive()) return false;
+  if (!state.mainCharacter) return false;
+
+  state.mainCharacter = "";
+
+  if (root) {
+    syncMainSelection(root);
+    updateSummary(root);
+    syncGenerateButtonCredit(root);
+    syncCartoonBasicAssistantState({
+      visibleError: "",
+      basic: {
+        mainCharacter: ""
+      }
+    });
+  }
+
+  if (!silent) {
+    try {
+      window.toast?.info?.("Fotoğraf yüklendiği için preset ana karakter kapatıldı");
+    } catch {}
+  }
+
+  return true;
+}
   function updatePromptCount(root) {
     const input = qs("[data-cartoon-prompt-input]", root);
     const out = qs("[data-cartoon-prompt-count]", root);
