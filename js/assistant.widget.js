@@ -802,10 +802,13 @@
         (brain?.answer && String(brain.answer).trim()) ||
         (data?.message && String(data.message).trim()) ||
         "Şu an net bir cevap oluşturamadım ama istersen fikrini birlikte güçlü ve üretime hazır bir prompta çevirebiliriz.";
-      if (brain?.followupAction) {
+          if (
+        brain?.followupAction &&
+        (brain?.intent === "product_action" || brain?.intent === "troubleshooting")
+      ) {
         assistantText += `
 
-İstersen sıradaki adım şu olsun: ${brain.followupAction}`;
+Sıradaki adım: ${brain.followupAction}`;
       }
 
       if (brain?.needsConfirmation) {
