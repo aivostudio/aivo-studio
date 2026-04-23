@@ -629,9 +629,9 @@
         context.currentCardType = "music_card";
       } else if (
         /Yeni Kullanıcı/i.test(bodyText) ||
-        /Standart Paket/i.test(bodyText) ||
-        /Yaratıcı Üretici/i.test(bodyText) ||
-        /Stüdyo \/ Ajans/i.test(bodyText)
+       /Standart Paket/i.test(bodyText) ||
+      /Yaratıcı Üretici/i.test(bodyText) ||
+      /Stüdyo \/ Ajans/i.test(bodyText)
       ) {
         context.currentCardType = "pricing_card";
       }
@@ -717,7 +717,7 @@
         });
       }
 
-      if (/Stüdyo \\/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\\.999₺/i.test(bodyText)) {
+    if (/Stüdyo \/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\.999₺/i.test(bodyText)) {
         context.currentProductCards.push({
           key: "studio",
           label: "Stüdyo / Ajans",
