@@ -1312,10 +1312,9 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
       const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
 
-      generateBtn.disabled = blocked;
-      generateBtn.style.opacity = blocked ? "0.55" : "";
-      generateBtn.style.cursor = blocked ? "not-allowed" : "";
-
+   generateBtn.disabled = false;
+generateBtn.style.opacity = "";
+generateBtn.style.cursor = "";
       generateBtn.style.background = blocked
         ? "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))"
         : "";
