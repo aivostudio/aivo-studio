@@ -236,7 +236,7 @@
       {
         role: "assistant",
         content:
-          "Merhaba, modüller, paket seçimi, kredi sistemi, prompt yazımı ve kullanım sorunlarında yardımcı olabilirim. Ne yapmak istiyorsun?"
+          "Merhaba, ben AIVO yardımcı asistanıyım. İstersen modüller, paket seçimi, kredi sistemi, prompt yazımı ya da yaşadığın bir sorunda sana adım adım yardımcı olayım. Ne yapmak istiyorsun?"
       }
     ]
   };
@@ -376,15 +376,15 @@
     sendEl.textContent = isLoading ? "Bekle..." : "Gönder";
   }
 
-function openPanel() {
-  state.open = true;
-  panel.classList.add("is-open");
+  function openPanel() {
+    state.open = true;
+    panel.classList.add("is-open");
 
-  requestAnimationFrame(() => {
-    autoResize();
-    inputEl.focus();
-  });
-}
+    requestAnimationFrame(() => {
+      autoResize();
+      inputEl.focus();
+    });
+  }
 
   function closePanel() {
     state.open = false;
@@ -445,7 +445,7 @@ function openPanel() {
         Array.from(cartoonRoot.querySelectorAll('[data-cartoon-view]')).find((el) => !el.hidden) ||
         null;
 
-      const cartoonView = String(activeCartoonView?.getAttribute('data-cartoon-view') || '').trim();
+      const cartoonView = String(activeCartoonView?.getAttribute("data-cartoon-view") || "").trim();
 
       return {
         module: "cartoon",
@@ -633,9 +633,9 @@ function openPanel() {
         context.currentCardType = "music_card";
       } else if (
         /Yeni Kullanıcı/i.test(bodyText) ||
-       /Standart Paket/i.test(bodyText) ||
-      /Yaratıcı Üretici/i.test(bodyText) ||
-      /Stüdyo \/ Ajans/i.test(bodyText)
+        /Standart Paket/i.test(bodyText) ||
+        /Yaratıcı Üretici/i.test(bodyText) ||
+        /Stüdyo \/ Ajans/i.test(bodyText)
       ) {
         context.currentCardType = "pricing_card";
       }
@@ -721,7 +721,7 @@ function openPanel() {
         });
       }
 
-    if (/Stüdyo \/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\.999₺/i.test(bodyText)) {
+      if (/Stüdyo \/ Ajans/i.test(bodyText) && /500 kredi/i.test(bodyText) && /2\.999₺/i.test(bodyText)) {
         context.currentProductCards.push({
           key: "studio",
           label: "Stüdyo / Ajans",
@@ -802,39 +802,39 @@ function openPanel() {
       let assistantText =
         (brain?.answer && String(brain.answer).trim()) ||
         (data?.message && String(data.message).trim()) ||
-        "Şu anda cevap üretilemedi.";
+        "Şu an net bir cevap oluşturamadım ama istersen birlikte hızlıca toparlayabiliriz.";
 
       if (brain?.followupAction) {
         assistantText += `
 
-Sonraki adım: ${brain.followupAction}`;
+İstersen sıradaki adım şu olsun: ${brain.followupAction}`;
       }
 
       if (brain?.needsConfirmation) {
         assistantText += `
 
-Bu işlem onay gerektiriyor.`;
+Devam etmeden önce bu işlem için onay gerekiyor.`;
       }
 
       if (brain?.confidence === "low") {
         let hintText =
-          "Daha net yönlendirme için bulunduğun ekranı veya yapmak istediğin işlemi biraz daha açık yaz.";
+          "Sana daha net yardımcı olabilmem için bulunduğun ekranı ya da yapmak istediğin şeyi biraz daha açık yazabilir misin?";
 
         if (brain?.intent === "pricing_guidance") {
           hintText =
-            "Daha net paket önerisi için ne üretmek istediğini ve kullanım sıklığını kısa yaz.";
+            "Sana daha doğru paket önerebilmem için ne üretmek istediğini ve ne sıklıkla kullanacağını kısa yazabilir misin?";
         } else if (brain?.intent === "troubleshooting") {
           hintText =
-            "Daha net çözüm için hangi modülde olduğunu ve ekranda gördüğün durumu kısa yaz.";
+            "Bunu birlikte netleştirelim: hangi modüldesin ve ekranda tam olarak ne görüyorsun, kısa yazman yeterli.";
         } else if (brain?.intent === "prompt_help") {
           hintText =
-            "Daha güçlü prompt desteği için ne üretmek istediğini kısa ve net yaz.";
+            "Promptu birlikte güçlendirebiliriz. Ne üretmek istediğini bir cümleyle yazman yeterli.";
         } else if (brain?.intent === "module_selection") {
           hintText =
-            "Doğru modülü önermem için üretmek istediğin içeriği kısa yaz.";
+            "Sana doğru modülü önermem için üretmek istediğin içeriği kısaca yazabilir misin?";
         } else if (brain?.intent === "product_action") {
           hintText =
-            "Doğru aksiyonu söylemem için bulunduğun ekranı, kartı veya menüyü biraz daha net yaz.";
+            "Sana doğru adımı söyleyebilmem için bulunduğun ekranı, kartı ya da menüyü biraz daha net tarif etmen yeterli.";
         }
 
         assistantText += `
@@ -850,7 +850,7 @@ ${hintText}`;
       state.messages.push({
         role: "assistant",
         content:
-          "Şu anda yardımcı asistana bağlanırken bir sorun oluştu. Lütfen biraz sonra tekrar dene."
+          "Şu anda yardımcı asistana bağlanırken küçük bir sorun oluştu. Birkaç saniye sonra tekrar dener misin?"
       });
       console.error("[AIVO Assistant Widget Error]", error);
     } finally {
