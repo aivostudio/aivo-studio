@@ -570,3 +570,113 @@
   0%,100%{ opacity:1 }
   50%{ opacity:.45 }
 }
+/* MUSIC CARD — final right panel override */
+
+#rightPanelHost .aivo-player-card{
+  display:grid !important;
+  grid-template-columns:56px minmax(0,1fr) auto !important;
+  column-gap:12px !important;
+  align-items:center !important;
+  padding:10px 12px !important;
+  border-radius:18px !important;
+}
+
+#rightPanelHost .aivo-player-left{
+  width:56px !important;
+  min-width:56px !important;
+  height:56px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+#rightPanelHost .aivo-player-btn{
+  width:48px !important;
+  height:48px !important;
+  border-radius:14px !important;
+}
+
+#rightPanelHost .aivo-player-mid{
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:6px !important;
+}
+
+#rightPanelHost .aivo-player-titleRow{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  min-width:0 !important;
+}
+
+#rightPanelHost .aivo-player-title{
+  font-size:16px !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  margin:0 !important;
+}
+
+#rightPanelHost .aivo-player-tags{
+  display:flex !important;
+  gap:6px !important;
+  flex-wrap:nowrap !important;
+  justify-content:flex-end !important;
+}
+
+#rightPanelHost .aivo-tag{
+  padding:4px 10px !important;
+  font-size:11px !important;
+  border-radius:999px !important;
+  white-space:nowrap !important;
+}
+
+#rightPanelHost .aivo-player-meta{
+  font-size:12px !important;
+  gap:8px !important;
+  opacity:.9 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+#rightPanelHost .aivo-player-controls{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  width:100% !important;
+  margin-top:2px !important;
+}
+
+#rightPanelHost .aivo-progress{
+  flex:1 !important;
+  width:auto !important;
+  height:8px !important;
+  margin:0 !important;
+}
+
+#rightPanelHost .aivo-player-actions{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:8px !important;
+  padding-left:0 !important;
+}
+
+#rightPanelHost .aivo-action{
+  width:38px !important;
+  height:38px !important;
+  border-radius:12px !important;
+}
+
+#rightPanelHost .aivo-action svg{
+  width:18px !important;
+  height:18px !important;
+}
+
+#rightPanelHost .aivo-player-card .aivo-player-sub{
+  display:none !important;
+}
