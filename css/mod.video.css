@@ -92,21 +92,44 @@
 
 #moduleHost[data-active-module="video"] input,
 #moduleHost[data-active-module="video"] textarea,
-#moduleHost[data-active-module="video"] select{
+#moduleHost[data-active-module="video"] select,
+.main-panel[data-module="video"] input,
+.main-panel[data-module="video"] textarea,
+.main-panel[data-module="video"] select{
   width: 100%;
   background: rgba(7,9,34,0.72);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 12px;
-  padding: 10px 12px;
-  color: #fff;
-  font-size: 14px;
+  padding: 12px 14px;
+  color: rgba(255,255,255,.92);
   box-sizing: border-box;
+
+  font-family: Inter, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-#moduleHost[data-active-module="video"] textarea{
+#moduleHost[data-active-module="video"] textarea,
+.main-panel[data-module="video"] textarea{
   min-height: 120px;
   resize: vertical;
-  line-height: 1.45;
+  line-height: 1.6;
+}
+
+#moduleHost[data-active-module="video"] input::placeholder,
+#moduleHost[data-active-module="video"] textarea::placeholder,
+.main-panel[data-module="video"] input::placeholder,
+.main-panel[data-module="video"] textarea::placeholder{
+  color: rgba(255,255,255,.38);
+  font-family: Inter, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 #moduleHost[data-active-module="video"] input::placeholder,
