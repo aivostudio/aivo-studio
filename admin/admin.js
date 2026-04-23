@@ -5,6 +5,7 @@
   // 1) Sayfa ilk açılışta KİLİTLİ başlasın
   document.body.classList.add("is-locked");
 
+  
   function showLocked(msg) {
     const lock = $("lockScreen");
     const lockMsg = $("lockMsg");
