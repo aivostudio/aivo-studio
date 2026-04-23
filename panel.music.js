@@ -525,20 +525,33 @@ window.selectedJobId = window.selectedJobId || "";
 
     initEqEngine();
 
+     audioEl.onloadedmetadata = () => {
+      updateProgressUI();
+    };
+
+    audioEl.ontimeupdate = () => {
+      updateProgressUI();
+    };
+
     audioEl.onended = () => {
+      updateProgressUI();
       setCardPlaying(currentJobId, false);
       currentJobId = null;
       eqBarsCache.jobId = null;
       eqBarsCache.bars = null;
       stopRaf();
     };
+
     audioEl.onpause = () => {
+      updateProgressUI();
       if (currentJobId) setCardPlaying(currentJobId, false);
       stopRaf();
     };
+
     audioEl.onplay = () => {
       if (currentJobId) setCardPlaying(currentJobId, true);
       bindEqBarsForCurrentJob();
+      updateProgressUI();
       startRaf();
     };
 
