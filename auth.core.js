@@ -399,13 +399,23 @@
     try {
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
 
-      if (!res.ok || data?.ok === false) {
+        if (!res.ok || data?.ok === false) {
         try {
-         if (window.toast) window.toast.error("Şifre yanlış.");
+          const loginErr =
+            data?.error === "email_not_verified"
+              ? "Emailini doğrulamadan giriş yapamazsın. Mailindeki onay linkine önce tıkla."
+              : data?.error === "invalid_credentials"
+                ? "Şifre yanlış."
+                : data?.error === "user_not_found"
+                  ? "Bu email ile kayıtlı kullanıcı bulunamadı."
+                  : data?.error === "user_disabled"
+                    ? "Bu hesap devre dışı bırakılmış."
+                    : safeMsg(data?.error || data?.message || text || "Giriş başarısız.");
+
+          if (window.toast) window.toast.error(loginErr);
         } catch (_) {}
         return;
       }
-
     const resolvedEmail = normalizeEmail(
   firstNonEmpty(
     data?.user?.email,
