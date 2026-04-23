@@ -1011,6 +1011,33 @@
           return;
         }
 
+        if (act === "delete_soft") {
+          const ok = confirm(
+            "DİKKAT!\n\n" +
+              email +
+              " kullanıcısı AIVO kayıtlarından silinecek.\n" +
+              "BAN yazılmayacak.\n" +
+              "İsterse daha sonra tekrar kayıt olabilir.\n\n" +
+              "Devam etmek istiyor musun?"
+          );
+          if (!ok) return;
+
+          try {
+            any.disabled = true;
+            await deleteUser(s.email, email, false);
+            await loadUsers();
+
+            if ($("btnBansRefresh")) {
+              try { await loadBans(); } catch (_) {}
+            }
+          } catch (e) {
+            try { if (window.toast) toast.error("Silme başarısız", String(e?.error || e?.message || "unknown")); } catch (_) {}
+          } finally {
+            any.disabled = false;
+          }
+          return;
+        }
+
         if (act === "delete") {
           const ok = confirm(
             "DİKKAT!\n\n" +
@@ -1023,7 +1050,7 @@
 
           try {
             any.disabled = true;
-            await deleteUser(s.email, email);
+            await deleteUser(s.email, email, true);
             await loadUsers();
 
             if ($("btnBansRefresh")) {
