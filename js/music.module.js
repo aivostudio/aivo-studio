@@ -1259,13 +1259,52 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       "sertab"
     ];
 
-    function normalizePolicyText(value) {
+     function normalizePolicyText(value) {
       return String(value || "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, " ")
         .trim();
+    }
+
+    function getMusicPolicyMatch(raw) {
+      const text = normalizePolicyText(raw);
+
+      const escapeRegExp = (value) =>
+        String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      const hasWholeTerm = (sourceText, term) => {
+        const normalizedTerm = normalizePolicyText(term);
+        if (!normalizedTerm) return false;
+        return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "i").test(sourceText);
+      };
+
+      for (const term of HARD_BLOCK_TERMS) {
+        if (hasWholeTerm(text, term)) {
+          return { type: "hard_term", value: term };
+        }
+      }
+
+      for (const term of PUBLIC_FIGURE_TERMS) {
+        if (hasWholeTerm(text, term)) {
+          return { type: "public_figure_term", value: term };
+        }
+      }
+
+      for (const term of ARTIST_NAME_TERMS) {
+        if (hasWholeTerm(text, term)) {
+          return { type: "artist_term", value: term };
+        }
+      }
+
+      for (const rx of HARD_BLOCK_PATTERNS) {
+        if (rx.test(raw)) {
+          return { type: "pattern", value: String(rx) };
+        }
+      }
+
+      return null;
     }
 
     function ensureMusicPolicyNote(generateBtn) {
