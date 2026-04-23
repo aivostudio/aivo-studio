@@ -2224,10 +2224,9 @@ window.removeEventListener("focus", rehydrateMusicPanel);
         btnOk.textContent = "Yükleniyor...";
 
         try {
-          const consumeAction = "music_stems_split";
-          const consumeAmount = 5;
-          const consumeRequestId = `stems:${job_id}`;
-
+       const consumeAction = "music_stems_split";
+const consumeAmount = 5;
+const consumeRequestId = `stems:${job_id}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
       const creditRes = await fetch("/api/credits/consume-ledger", {
   method: "POST",
   credentials: "include",
