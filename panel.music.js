@@ -764,12 +764,11 @@ window.selectedJobId = window.selectedJobId || "";
           <div class="aivo-empty-sub">${
             q
               ? "Aramana uygun müzik bulunamadı."
-              : "Player kartları hazır olunca burada görünecek."
+              : "Henüz müzik yok."
           }</div>
         </div>`;
       return;
     }
-
     listEl.innerHTML = filteredView.map(renderCard).join("");
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
