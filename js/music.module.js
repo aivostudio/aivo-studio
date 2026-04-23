@@ -1023,11 +1023,13 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       "lip sync"
     ];
 
-      const HARD_BLOCK_PATTERNS = [
+    const HARD_BLOCK_PATTERNS = [
+      /\bgibi\b/i,
       /\btarzında\b/i,
       /\btarzinda\b/i,
       /\bstilinde\b/i,
       /\bin the style of\b/i,
+      /\blike\b/i,
       /\bbirebir\b/i,
       /\baynısı\b/i,
       /\baynisi\b/i,
@@ -1259,52 +1261,13 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       "sertab"
     ];
 
-     function normalizePolicyText(value) {
+    function normalizePolicyText(value) {
       return String(value || "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, " ")
         .trim();
-    }
-
-    function getMusicPolicyMatch(raw) {
-      const text = normalizePolicyText(raw);
-
-      const escapeRegExp = (value) =>
-        String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-      const hasWholeTerm = (sourceText, term) => {
-        const normalizedTerm = normalizePolicyText(term);
-        if (!normalizedTerm) return false;
-        return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "i").test(sourceText);
-      };
-
-      for (const term of HARD_BLOCK_TERMS) {
-        if (hasWholeTerm(text, term)) {
-          return { type: "hard_term", value: term };
-        }
-      }
-
-      for (const term of PUBLIC_FIGURE_TERMS) {
-        if (hasWholeTerm(text, term)) {
-          return { type: "public_figure_term", value: term };
-        }
-      }
-
-      for (const term of ARTIST_NAME_TERMS) {
-        if (hasWholeTerm(text, term)) {
-          return { type: "artist_term", value: term };
-        }
-      }
-
-      for (const rx of HARD_BLOCK_PATTERNS) {
-        if (rx.test(raw)) {
-          return { type: "pattern", value: String(rx) };
-        }
-      }
-
-      return null;
     }
 
     function ensureMusicPolicyNote(generateBtn) {
@@ -1340,24 +1303,14 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       ].filter(Boolean).join(" ");
 
       const text = normalizePolicyText(raw);
-            const policyMatch = getMusicPolicyMatch(raw);
-      console.log("[MUSIC POLICY MATCH][UI]", policyMatch, raw);
 
-      const escapeRegExp = (value) =>
-        String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const hasBlockedTerm =
+        HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+        PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+        ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
 
-      const hasWholeTerm = (sourceText, term) => {
-        const normalizedTerm = normalizePolicyText(term);
-        if (!normalizedTerm) return false;
-        return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "i").test(sourceText);
-      };
-
-           const hasBlockedTerm = !!policyMatch && policyMatch.type !== "pattern";
-      const hasBlockedPattern = !!policyMatch && policyMatch.type === "pattern";
-      const hasLongLyrics = String(lyricsEl?.value || "").trim().length >= 350;
-
+      const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
       const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
-      const warningOnly = !blocked && hasLongLyrics;
 
       generateBtn.disabled = blocked;
       generateBtn.style.opacity = blocked ? "0.55" : "";
@@ -1402,27 +1355,6 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
           policyNote.style.backgroundPosition = "200% 0";
           policyNote.textContent =
             "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
-        } else if (warningOnly) {
-          policyNote.style.display = "block";
-          policyNote.style.marginTop = "12px";
-          policyNote.style.padding = "12px 14px";
-          policyNote.style.borderRadius = "16px";
-          policyNote.style.background = "rgba(255,196,87,.10)";
-          policyNote.style.border = "1px solid rgba(255,210,120,.22)";
-          policyNote.style.color = "rgba(255,238,200,.96)";
-          policyNote.style.fontSize = "13px";
-          policyNote.style.fontWeight = "600";
-          policyNote.style.lineHeight = "1.55";
-          policyNote.style.textAlign = "center";
-          policyNote.style.letterSpacing = ".01em";
-          policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.03)";
-          policyNote.style.backdropFilter = "blur(10px)";
-          policyNote.style.webkitBackdropFilter = "blur(10px)";
-          policyNote.style.position = "relative";
-          policyNote.style.overflow = "hidden";
-          policyNote.style.animation = "";
-          policyNote.textContent =
-            "Uzun şarkı sözleri algılandı. Sistem sözleri yeniden yorumlayarak üretim yapabilir.";
         } else {
           policyNote.style.display = "none";
           policyNote.textContent = "";
@@ -1431,6 +1363,7 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
       return blocked;
     }
+
     function bindMusicPolicyUI() {
       const generateBtn = module.querySelector("#musicGenerateBtn");
       const promptEl = module.querySelector("#prompt");
@@ -1481,7 +1414,7 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
         lyricsEl.addEventListener("input", resetPolicyUI);
       }
 
-       generateBtn.addEventListener("click", (e) => {
+      generateBtn.addEventListener("click", (e) => {
         resetPolicyUI();
 
         const raw = [
@@ -1491,19 +1424,10 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
         const text = normalizePolicyText(raw);
 
-        const escapeRegExp = (value) =>
-          String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-        const hasWholeTerm = (sourceText, term) => {
-          const normalizedTerm = normalizePolicyText(term);
-          if (!normalizedTerm) return false;
-          return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "i").test(sourceText);
-        };
-
         const hasBlockedTerm =
-          HARD_BLOCK_TERMS.some((term) => hasWholeTerm(text, term)) ||
-          PUBLIC_FIGURE_TERMS.some((term) => hasWholeTerm(text, term)) ||
-          ARTIST_NAME_TERMS.some((term) => hasWholeTerm(text, term));
+          HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+          PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
+          ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
 
         const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
         const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
@@ -1587,7 +1511,7 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
           lastJobStatus: "failed"
         });
       }, true);
-     }
+    }
 
     if (!document.getElementById("aivoPolicyPulseStyle")) {
       const style = document.createElement("style");
