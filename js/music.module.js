@@ -1331,7 +1331,7 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       generateBtn.style.transform = "";
       generateBtn.style.filter = blocked ? "saturate(1.05)" : "";
 
-      if (policyNote) {
+       if (policyNote) {
         if (blocked) {
           policyNote.style.display = "block";
           policyNote.style.marginTop = "12px";
@@ -1356,6 +1356,27 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
           policyNote.style.backgroundPosition = "200% 0";
           policyNote.textContent =
             "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
+        } else if (warningOnly) {
+          policyNote.style.display = "block";
+          policyNote.style.marginTop = "12px";
+          policyNote.style.padding = "12px 14px";
+          policyNote.style.borderRadius = "16px";
+          policyNote.style.background = "rgba(255,196,87,.10)";
+          policyNote.style.border = "1px solid rgba(255,210,120,.22)";
+          policyNote.style.color = "rgba(255,238,200,.96)";
+          policyNote.style.fontSize = "13px";
+          policyNote.style.fontWeight = "600";
+          policyNote.style.lineHeight = "1.55";
+          policyNote.style.textAlign = "center";
+          policyNote.style.letterSpacing = ".01em";
+          policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.03)";
+          policyNote.style.backdropFilter = "blur(10px)";
+          policyNote.style.webkitBackdropFilter = "blur(10px)";
+          policyNote.style.position = "relative";
+          policyNote.style.overflow = "hidden";
+          policyNote.style.animation = "";
+          policyNote.textContent =
+            "Uzun şarkı sözleri algılandı. Sistem sözleri yeniden yorumlayarak üretim yapabilir.";
         } else {
           policyNote.style.display = "none";
           policyNote.textContent = "";
