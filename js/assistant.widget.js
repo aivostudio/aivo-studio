@@ -164,7 +164,7 @@
         padding: 12px;
         border-top: 1px solid rgba(255,255,255,.08);
         display: flex;
-        align-items: flex-end;
+      align-items: center;
         gap: 8px;
       }
 
