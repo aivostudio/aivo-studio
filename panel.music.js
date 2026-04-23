@@ -656,7 +656,7 @@ window.selectedJobId = window.selectedJobId || "";
 
         <style>
           .aivo-stems-icons{margin-top:8px !important;display:flex !important;flex-wrap:wrap !important;gap:6px !important;align-items:center !important;justify-content:flex-start !important;}
-          .aivo-stems-icons::after{content:"24 saat içinde indirin.";display:block;flex-basis:100%;margin-top:6px;font-size:12px;opacity:.7;}
+          .aivo-stems-icons::after{content:"Bu kanallar gecicidir. Sayfayi kapatmadan indir.";display:block;flex-basis:100%;margin-top:6px;font-size:12px;opacity:.7;}
           .aivo-stems-icons .aivo-stem-ic{display:inline-flex !important;flex:0 0 26px !important;width:26px !important;min-width:26px !important;max-width:26px !important;height:26px !important;min-height:26px !important;max-height:26px !important;padding:0 !important;margin:0 !important;align-items:center !important;justify-content:center !important;border-radius:10px !important;border:1px solid rgba(255,255,255,.12) !important;background:rgba(255,255,255,.06) !important;text-decoration:none !important;user-select:none !important;line-height:1 !important;font-size:13px !important;}
           .aivo-stems-icons .aivo-stem-ic:active{transform:translateY(1px) !important;}
         </style>
