@@ -33,10 +33,12 @@ const PUBLIC_FIGURE_TERMS = Array.from(
 const ARTIST_NAME_TERMS = Array.from(new Set([...ARTISTS_TR_SEED]));
 
 const MUSIC_STYLE_TERMS = [
+  'gibi',
   'tarzinda',
   'tarzında',
   'stilinde',
   'soundunda',
+  'sound',
   'vocalinde',
   'vokalinde',
   'sesiyle',
@@ -44,6 +46,8 @@ const MUSIC_STYLE_TERMS = [
   'aynisi',
   'aynısı',
   'birebir',
+  'benziyor',
+  'benzer',
   'same as',
   'in the style of',
   'like',
@@ -311,18 +315,10 @@ function enforceMusicPolicy(text) {
     });
   }
 
- if (hasArtistName) {
-  return makeResult({
-    decision: 'rewrite',
-    code: 'ARTIST_NAME_SOFT',
-    severity: 'medium',
-    message:
-      'Sanatçı adı tespit edildi. İstek güvenli ve özgün hale getirildi.',
-    rewrittenPrompt: rewritePrompt('music', text),
-    reasons: ['artist-name-soft'],
-    matchedTerms: hitsArtistNames,
-  });
-}
+  if (hasArtistName) {
+    return makeResult({
+      decision: 'block',
+      code: 'ARTIST_NAME_REAL_PERSON',
       severity: 'high',
       message:
         'Belirli bir sanatçı, ünlü veya tanınan gerçek kişiyi doğrudan hedef alan video, görsel veya benzeri içerik üretilemez.',
