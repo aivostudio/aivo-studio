@@ -281,19 +281,27 @@
     const on = (id) => !!byId(id)?.checked;
 
     if (isReg) {
-      const email = v("loginEmail").toLowerCase();
-      const pass = v("loginPass");
-      const name = v("registerName");
+      const nameVal = v("registerName");
+      const surnameVal = v("registerSurname");
+      const email = v("registerEmailView").toLowerCase();
+      const pass = v("registerPassView");
       const pass2 = v("registerPass2");
       const kvkk = on("kvkkCheck");
+
+      const fullName = [nameVal, surnameVal].filter(Boolean).join(" ").trim();
 
       if (!isValidEmail(email)) {
         window.toast.error("Geçerli bir email gir.");
         return;
       }
 
-      if (!name) {
-        window.toast.error("Ad Soyad gir.");
+      if (!nameVal) {
+        window.toast.error("Ad gir.");
+        return;
+      }
+
+      if (!surnameVal) {
+        window.toast.error("Soyad gir.");
         return;
       }
 
@@ -302,8 +310,8 @@
         return;
       }
 
-      if (pass !== pass2) {
-        window.toast.error("Şifreler aynı değil.");
+      if (!pass2 || pass !== pass2) {
+        window.toast.error("Şifreler uyuşmuyor.");
         return;
       }
 
@@ -316,34 +324,52 @@
       setBusy(btn, true, "Hesap oluşturuluyor...");
 
       try {
-        const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
+        const { res, text, data } = await postJSON("/api/auth/register", {
+          email,
+          password: pass,
+          name: fullName
+        });
 
-            if (!res.ok || data?.ok === false) {
+        if (!res.ok || data?.ok === false) {
+          try {
+            const registerErr =
+              data?.error === "email_already_registered"
+                ? "Bu email ile zaten kayıt var."
+                : data?.error === "email_invalid"
+                  ? "Geçerli bir email gir."
+                  : data?.error === "password_too_short"
+                    ? "Şifre en az 6 karakter olmalı."
+                    : data?.error === "name_required"
+                      ? "Ad soyad gir."
+                      : data?.error === "user_banned"
+                        ? "Bu kullanıcı engellenmiş."
+                        : safeMsg(data?.error || data?.message || text || "Kayıt başarısız.");
+
+            if (window.toast) window.toast.error(registerErr);
+          } catch (_) {}
+          return;
+        }
+
         try {
-          const loginErr =
-            data?.error === "invalid_credentials"
-              ? "Şifre yanlış."
-              : data?.error === "email_not_verified"
-                ? "Email adresini doğrulamadan giriş yapamazsın."
-                : data?.error === "user_not_found"
-                  ? "Bu email ile kayıtlı kullanıcı bulunamadı."
-                  : safeMsg(data?.error || data?.message || text || "Giriş başarısız.");
-
-          if (window.toast) window.toast.error(loginErr);
+          if (window.toast) window.toast.success("Kayıt başarılı! Şimdi giriş yapabilirsin.");
         } catch (_) {}
-        return;
-      }
 
-        try {
-          if (window.toast) toast.success("Kayıt başarılı", "Doğrulama için e-postanı kontrol et. (Spam’i de kontrol et)");
-        } catch (_) {}
+        try { byId("registerName").value = ""; } catch (_) {}
+        try { byId("registerSurname").value = ""; } catch (_) {}
+        try { byId("registerEmailView").value = ""; } catch (_) {}
+        try { byId("registerPassView").value = ""; } catch (_) {}
+        try { byId("registerPass2").value = ""; } catch (_) {}
+        try { byId("kvkkCheck").checked = false; } catch (_) {}
+
+        try { byId("loginEmail").value = email; } catch (_) {}
+        try { byId("loginPass").value = ""; } catch (_) {}
 
         setMode(modal, "login");
         applyModeUI(modal);
       } catch (err) {
-        console.error("AIVO_LOGIN_FETCH_FAIL:", err);
+        console.error("AIVO_REGISTER_FETCH_FAIL:", err);
         try {
-          if (window.toast) toast.error("Bağlantı hatası", "Tekrar dene.");
+          if (window.toast) window.toast.error("Bağlantı hatası. Tekrar dene.");
         } catch (_) {}
       } finally {
         setBusy(btn, false, old || "Hesap Oluştur");
