@@ -1023,29 +1023,25 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       "lip sync"
     ];
 
-    const HARD_BLOCK_PATTERNS = [
-      /\bgibi\b/i,
-      /\btarzında\b/i,
-      /\btarzinda\b/i,
-      /\bstilinde\b/i,
-      /\bin the style of\b/i,
-      /\blike\b/i,
-      /\bbirebir\b/i,
-      /\baynısı\b/i,
-      /\baynisi\b/i,
-      /\bsesini taklit et\b/i,
-      /\bvokalini taklit et\b/i,
-      /\bmelodisini kullan\b/i,
-      /\bnakaratini kullan\b/i,
-      /\bsözlerini kullan\b/i,
-      /\bsozlerini kullan\b/i,
-      /\brezil\b/i,
-      /\bdalga geç\b/i,
-      /\bdalga gec\b/i,
-      /\başağıla\b/i,
-      /\basagila\b/i
-    ];
-
+   const HARD_BLOCK_PATTERNS = [
+  /\btarzında\b/i,
+  /\btarzinda\b/i,
+  /\bstilinde\b/i,
+  /\bin the style of\b/i,
+  /\bbirebir\b/i,
+  /\baynısı\b/i,
+  /\baynisi\b/i,
+  /\bsesini taklit et\b/i,
+  /\bvokalini taklit et\b/i,
+  /\bmelodisini kullan\b/i,
+  /\bnakaratini kullan\b/i,
+  /\bsözlerini kullan\b/i,
+  /\bsozlerini kullan\b/i,
+  /\bdalga geç\b/i,
+  /\bdalga gec\b/i,
+  /\başağıla\b/i,
+  /\basagila\b/i
+];
     const PUBLIC_FIGURE_TERMS = [
       "recep tayyip erdogan",
       "recep tayyip erdoğan",
