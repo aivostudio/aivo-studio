@@ -254,13 +254,18 @@
   }
 
   // ✅ SİL: hard delete + ban (mode:"hard")
-  async function deleteUser(adminEmail, email) {
+  async function deleteUser(adminEmail, email, shouldBan = true) {
     const r = await fetch("/api/admin/users/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       cache: "no-store",
-      body: JSON.stringify({ admin: adminEmail, email, mode: "hard" }),
+      body: JSON.stringify({
+        admin: adminEmail,
+        email,
+        mode: "hard",
+        ban: shouldBan
+      }),
     });
     const text = await r.text();
     let j;
