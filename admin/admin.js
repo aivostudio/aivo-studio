@@ -2,10 +2,8 @@
 (function () {
   const $ = (id) => document.getElementById(id);
 
-  // 1) Sayfa ilk açılışta KİLİTLİ başlasın
   document.body.classList.add("is-locked");
 
-  
   function showLocked(msg) {
     const lock = $("lockScreen");
     const lockMsg = $("lockMsg");
@@ -26,7 +24,6 @@
 
   const norm = (v) => String(v || "").trim().toLowerCase();
 
-  // 2) LocalStorage’dan email bul
   function getEmailFromStorage() {
     const keys = ["aivo_user_email", "user_email", "email", "aivo_email", "auth_email"];
     for (let i = 0; i < keys.length; i++) {
@@ -41,7 +38,6 @@
     return s.includes("@") && s.includes(".");
   }
 
-  // ✅ Quick view (opsiyonel: HTML’de varsa doldur)
   function setQuickView(email, credits) {
     try {
       const e = $("selEmail");
@@ -62,10 +58,8 @@
     return null;
   }
 
-  // 3) Admin AUTH kontrolü (SESSION TABANLI – DOĞRU)
   async function adminAuth() {
     try {
-      // 1) Önce backend session var mı kontrol et
       const r = await fetch("/api/auth/me", {
         credentials: "include",
         cache: "no-store",
@@ -84,7 +78,6 @@
         return { ok: false, reason: "no_email" };
       }
 
-      // 2) Admin allowlist kontrolü (backend)
       const ar = await fetch(
         "/api/admin/auth?email=" + encodeURIComponent(email),
         { cache: "no-store" }
@@ -96,7 +89,6 @@
         return { ok: false, reason: "not_allowed", email };
       }
 
-      // 3) Her şey OK
       showUnlocked();
       return { ok: true, email };
     } catch (err) {
@@ -105,7 +97,6 @@
     }
   }
 
-  // ---------- USERS (Kayıtlar) ----------
   function fmtTs(ts) {
     const n = Number(ts);
     if (!Number.isFinite(n) || n <= 0) return "-";
@@ -152,7 +143,6 @@
     return list.filter((u) => norm(u && u.email).includes(s));
   }
 
-  // ✅ Online set (presence’den gelecek)
   let onlineSet = new Set();
 
   function renderUsers(list) {
@@ -198,7 +188,7 @@
         <td>${createdAt}</td>
         <td>${updatedAt}</td>
         <td><span class="pill ${pillClass}">${pillText}</span></td>
-         <td style="display:flex; gap:6px; flex-wrap:wrap;">
+        <td style="display:flex; gap:6px; flex-wrap:wrap;">
           <button
             class="btn btn-xs ${disabled ? "" : "btn-danger"}"
             data-act="toggle"
@@ -254,7 +244,6 @@
     return j;
   }
 
-  // ✅ SİL: hard delete + ban (mode:"hard")
   async function deleteUser(adminEmail, email, shouldBan = true) {
     const r = await fetch("/api/admin/users/delete", {
       method: "POST",
@@ -279,7 +268,6 @@
     return j;
   }
 
-  // ---------- PRESENCE ----------
   async function fetchOnline(adminEmail) {
     const r = await fetch("/api/admin/presence/online?admin=" + encodeURIComponent(adminEmail), {
       cache: "no-store",
@@ -325,7 +313,6 @@
     };
   }
 
-  // ---------- BANS (ban_index üzerinden) ----------
   async function fetchBans(adminEmail) {
     const r = await fetch("/api/admin/users/bans-list?admin=" + encodeURIComponent(adminEmail), {
       cache: "no-store",
@@ -372,7 +359,6 @@
     if (el) el.textContent = msg || "Hazır.";
   }
 
-  // 4) SAYFA AÇILIŞ GATE
   adminAuth().then(async (state) => {
     if (!state.ok) return;
 
@@ -388,7 +374,6 @@
       });
     }
 
-    // Kredi getir
     const btnGetCredits = $("btnGetCredits");
     if (btnGetCredits) {
       btnGetCredits.addEventListener("click", async () => {
@@ -416,7 +401,6 @@
       });
     }
 
-    // Kredi ayarla
     const btnAdjust = $("btnAdjust");
     if (btnAdjust) {
       btnAdjust.addEventListener("click", async () => {
@@ -449,7 +433,6 @@
       });
     }
 
-    // ✅ BAN UI (index.html’de cardBans varsa)
     const btnBansRefresh = $("btnBansRefresh");
     const btnUnban = $("btnUnban");
     const bansEmail = $("bansEmail");
@@ -508,14 +491,12 @@
       });
     }
 
-    // USERS: ilk yükle
     let usersRaw = [];
     const btnUsersRefresh = $("btnUsersRefresh");
     const usersSearch = $("usersSearch");
     const usersStatus = $("usersStatus");
     const usersTable = $("usersTable");
 
-    // ===== PRODUCTION STATS =====
     const btnProductionStats = $("btnProductionStats");
     const prodStatsStatus = $("prodStatsStatus");
     const prodStatsTbody = $("prodStatsTbody");
@@ -603,7 +584,6 @@
       btnProductionStats.addEventListener("click", loadProductionStats);
     }
 
-    // ===== DAILY CREDIT STATS =====
     const btnDailyCreditStats = $("btnDailyCreditStats");
     const btnDailyCreditStatsPdf = $("btnDailyCreditStatsPdf");
     const dailyCreditStatsDate = $("dailyCreditStatsDate");
@@ -779,7 +759,6 @@
       });
     }
 
-    // ===== SOLD CREDITS =====
     const btnSoldCredits = $("btnSoldCredits");
     const soldCreditsDate = $("soldCreditsDate");
     const soldCreditsStatus = $("soldCreditsStatus");
@@ -968,7 +947,6 @@
     if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
     if (usersSearch) usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
 
-    // ✅ Tablo aksiyonları: pick + toggle + delete
     if (usersTable) {
       usersTable.addEventListener("click", async (ev) => {
         const any = ev.target && ev.target.closest && ev.target.closest("[data-act]");
@@ -977,7 +955,6 @@
         const act = any.getAttribute("data-act");
         const email = any.getAttribute("data-email") || "";
 
-        // ✅ EMAIL PICK: tıklayınca üstte doldur + kredi getir
         if (act === "pick") {
           const e1 = $("qEmail");
           const e2 = $("aEmail");
@@ -1072,18 +1049,15 @@
       });
     }
 
-    // ilk yükleme
     await loadUsers();
     await loadProductionStats();
     await loadDailyCreditStats();
     await loadSoldCredits();
 
-    // presence poll: üst sayacı + tabloda online pill
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
 
-    // ===== BAN PANEL =====
     const btnBanList = $("btnBanList");
     const banOut = $("banOut");
 
@@ -1107,7 +1081,6 @@
       });
     }
 
-    // ===== ADMIN AUDIT LOG (LIST + HOOKS) =====
     const btnAuditList = $("btnAuditList");
     const auditOut = $("auditOut");
 
@@ -1141,7 +1114,6 @@
       return j;
     }
 
-    // ✅ Audit List button
     if (btnAuditList) {
       btnAuditList.addEventListener("click", async () => {
         const s = await adminAuth();
@@ -1172,7 +1144,6 @@
       });
     }
 
-    // ✅ HOOK 1: Kredi Ayarla
     async function auditCreditAdjust(s, email, delta, reason, result) {
       await auditWrite(s, "CREDIT_ADJUST", email, {
         delta,
@@ -1181,15 +1152,16 @@
       });
     }
 
-    // ✅ HOOK 2: Ban Kaldır
     async function auditUnban(s, email, result) {
       await auditWrite(s, "UNBAN", email, { ok: !!(result && result.ok) });
     }
 
-    // ✅ HOOK 3: Hard Delete
     async function auditUserDeleteHard(s, email, result) {
       await auditWrite(s, "USER_DELETE_HARD", email, { ok: !!(result && result.ok) });
     }
-    // ===== /ADMIN AUDIT LOG =====
-  }); // <-- adminAuth().then(...)
-})(); // <-- IIFE KAPANIŞI
+
+    async function auditUserDeleteSoft(s, email, result) {
+      await auditWrite(s, "USER_DELETE_SOFT", email, { ok: !!(result && result.ok) });
+    }
+  });
+})();
