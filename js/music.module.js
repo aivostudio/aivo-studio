@@ -1261,258 +1261,314 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       "sertab"
     ];
 
-    function normalizePolicyText(value) {
-      return String(value || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+  function normalizePolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-    function ensureMusicPolicyNote(generateBtn) {
-      let policyNote = module.querySelector("#musicPolicyNote");
-      if (!policyNote && generateBtn && generateBtn.parentElement) {
-        policyNote = document.createElement("div");
-        policyNote.id = "musicPolicyNote";
-        policyNote.style.display = "none";
-        policyNote.style.marginTop = "10px";
-        policyNote.style.padding = "10px 12px";
-        policyNote.style.borderRadius = "12px";
-        policyNote.style.fontSize = "13px";
-        policyNote.style.lineHeight = "1.4";
-        policyNote.style.background = "rgba(255,77,109,.12)";
-        policyNote.style.border = "1px solid rgba(255,77,109,.35)";
-        policyNote.style.color = "#ff8aa0";
-        generateBtn.parentElement.appendChild(policyNote);
-      }
-      return policyNote;
-    }
+function ensureMusicPolicyNote(generateBtn) {
+  let policyNote = module.querySelector("#musicPolicyNote");
+  if (!policyNote && generateBtn && generateBtn.parentElement) {
+    policyNote = document.createElement("div");
+    policyNote.id = "musicPolicyNote";
+    policyNote.style.display = "none";
+    policyNote.style.marginTop = "10px";
+    policyNote.style.padding = "10px 12px";
+    policyNote.style.borderRadius = "12px";
+    policyNote.style.fontSize = "13px";
+    policyNote.style.lineHeight = "1.4";
+    policyNote.style.background = "rgba(255,77,109,.12)";
+    policyNote.style.border = "1px solid rgba(255,77,109,.35)";
+    policyNote.style.color = "#ff8aa0";
+    generateBtn.parentElement.appendChild(policyNote);
+  }
+  return policyNote;
+}
 
-    function evaluateMusicPolicyUI() {
-      const generateBtn = module.querySelector("#musicGenerateBtn");
-      const promptEl = module.querySelector("#prompt");
-      const lyricsEl = module.querySelector("#lyrics");
-      const policyNote = ensureMusicPolicyNote(generateBtn);
+function makePolicyAnalyzer() {
+  const SAFE_SINGLE_WORD_PUBLIC = new Set([
+    "ozel", "özel", "gul", "gül", "bakan", "vali", "kaymakam", "milletvekili"
+  ]);
 
-      if (!generateBtn) return false;
+  const SAFE_SINGLE_WORD_ARTISTS = new Set([
+    "duman", "mabel", "linet", "manga", "athena"
+  ]);
 
-      const raw = [
-        String(promptEl?.value || "").trim(),
-        String(lyricsEl?.value || "").trim()
-      ].filter(Boolean).join(" ");
+  function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 
-      const text = normalizePolicyText(raw);
+  function matchWholePhrase(text, term) {
+    const normalizedTerm = normalizePolicyText(term);
+    if (!normalizedTerm) return false;
+    const regex = new RegExp(`(^|\\s)${escapeRegex(normalizedTerm)}(?=\\s|$)`, "i");
+    return regex.test(text);
+  }
 
-      const hasBlockedTerm =
-        HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-        PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-        ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+  function shouldCheckTerm(term, type) {
+    const normalizedTerm = normalizePolicyText(term);
+    if (!normalizedTerm) return false;
 
-      const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-      const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
+    const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+    if (wordCount >= 2) return true;
 
-      generateBtn.disabled = blocked;
-      generateBtn.style.opacity = blocked ? "0.55" : "";
-      generateBtn.style.cursor = blocked ? "not-allowed" : "";
+    if (type === "public" && SAFE_SINGLE_WORD_PUBLIC.has(normalizedTerm)) return false;
+    if (type === "artist" && SAFE_SINGLE_WORD_ARTISTS.has(normalizedTerm)) return false;
 
-      generateBtn.style.background = blocked
-        ? "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))"
-        : "";
-      generateBtn.style.borderColor = blocked
-        ? "rgba(255,110,140,.95)"
-        : "";
-      generateBtn.style.boxShadow = blocked
-        ? "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)"
-        : "";
-      generateBtn.style.opacity = "1";
-      generateBtn.style.cursor = blocked ? "not-allowed" : "";
-      generateBtn.style.transform = "";
-      generateBtn.style.filter = blocked ? "saturate(1.05)" : "";
+    return normalizedTerm.length >= 4;
+  }
 
-      if (policyNote) {
-        if (blocked) {
-          policyNote.style.display = "block";
-          policyNote.style.marginTop = "12px";
-          policyNote.style.padding = "12px 14px";
-          policyNote.style.borderRadius = "16px";
-          policyNote.style.background = "rgba(255,90,120,.10)";
-          policyNote.style.border = "1px solid rgba(255,120,150,.24)";
-          policyNote.style.color = "rgba(255,210,220,.96)";
-          policyNote.style.fontSize = "14px";
-          policyNote.style.fontWeight = "700";
-          policyNote.style.lineHeight = "1.6";
-          policyNote.style.textAlign = "center";
-          policyNote.style.letterSpacing = ".01em";
-          policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
-          policyNote.style.backdropFilter = "blur(10px)";
-          policyNote.style.webkitBackdropFilter = "blur(10px)";
-          policyNote.style.position = "relative";
-          policyNote.style.overflow = "hidden";
-          policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-          policyNote.style.backgroundImage = "linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.10) 35%, rgba(255,255,255,0) 70%)";
-          policyNote.style.backgroundSize = "220% 100%";
-          policyNote.style.backgroundPosition = "200% 0";
-          policyNote.textContent =
-            "Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.";
-        } else {
-          policyNote.style.display = "none";
-          policyNote.textContent = "";
-        }
-      }
-
-      return blocked;
-    }
-
-    function bindMusicPolicyUI() {
-      const generateBtn = module.querySelector("#musicGenerateBtn");
-      const promptEl = module.querySelector("#prompt");
-      const lyricsEl = module.querySelector("#lyrics");
-
-      if (!generateBtn || generateBtn.__aivoPolicyClickBound) return;
-
-      generateBtn.__aivoPolicyClickBound = true;
-
-      const resetPolicyUI = () => {
-        const policyNote = module.querySelector("#musicPolicyNote");
-
-        if (promptEl) {
-          promptEl.style.borderColor = "";
-          promptEl.style.boxShadow = "";
-          promptEl.style.animation = "";
-        }
-
-        if (lyricsEl) {
-          lyricsEl.style.borderColor = "";
-          lyricsEl.style.boxShadow = "";
-          lyricsEl.style.animation = "";
-        }
-
-        generateBtn.style.background = "";
-        generateBtn.style.borderColor = "";
-        generateBtn.style.boxShadow = "";
-        generateBtn.style.opacity = "";
-        generateBtn.style.cursor = "";
-        generateBtn.style.filter = "";
-        generateBtn.style.animation = "";
-
-        if (policyNote) {
-          policyNote.style.display = "none";
-          policyNote.textContent = "";
-          policyNote.innerHTML = "";
-          policyNote.style.animation = "";
-        }
+  return function analyze(raw) {
+    const text = normalizePolicyText(raw);
+    if (!text) {
+      return {
+        blocked: false,
+        reason: ""
       };
-
-      if (promptEl && !promptEl.__aivoPolicyResetBound) {
-        promptEl.__aivoPolicyResetBound = true;
-        promptEl.addEventListener("input", resetPolicyUI);
-      }
-
-      if (lyricsEl && !lyricsEl.__aivoPolicyResetBound) {
-        lyricsEl.__aivoPolicyResetBound = true;
-        lyricsEl.addEventListener("input", resetPolicyUI);
-      }
-
-      generateBtn.addEventListener("click", (e) => {
-        resetPolicyUI();
-
-        const raw = [
-          String(promptEl?.value || "").trim(),
-          String(lyricsEl?.value || "").trim()
-        ].filter(Boolean).join(" ");
-
-        const text = normalizePolicyText(raw);
-
-        const hasBlockedTerm =
-          HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-          PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-          ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
-
-        const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-        const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
-
-        if (!blocked) {
-          publishMusicAssistantContext({
-            actionContext: "music_main",
-            lastJobStatus: "processing",
-            uiState: { generatePending: true }
-          });
-          return;
-        }
-
-        const policyNote = ensureMusicPolicyNote(generateBtn);
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (promptEl) {
-          promptEl.style.borderColor = "rgba(255,110,140,.92)";
-          promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-          promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-        }
-
-        if (lyricsEl) {
-          lyricsEl.style.borderColor = "rgba(255,110,140,.92)";
-          lyricsEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-          lyricsEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-        }
-
-        generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-        generateBtn.style.borderColor = "rgba(255,110,140,.95)";
-        generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-        generateBtn.style.opacity = "1";
-        generateBtn.style.cursor = "not-allowed";
-        generateBtn.style.transform = "";
-        generateBtn.style.filter = "saturate(1.05)";
-        generateBtn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-
-        if (policyNote) {
-          policyNote.style.display = "block";
-          policyNote.style.marginTop = "12px";
-          policyNote.style.padding = "14px 16px";
-          policyNote.style.borderRadius = "18px";
-          policyNote.style.background = "rgba(255,90,120,.10)";
-          policyNote.style.border = "1px solid rgba(255,120,150,.24)";
-          policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
-          policyNote.style.backdropFilter = "blur(10px)";
-          policyNote.style.webkitBackdropFilter = "blur(10px)";
-          policyNote.style.position = "relative";
-          policyNote.style.overflow = "hidden";
-          policyNote.style.textAlign = "center";
-          policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
-
-          policyNote.innerHTML = `
-            <span style="
-              display:inline-block;
-              white-space:nowrap;
-              width:100%;
-              margin:0;
-              padding:0;
-              border:none;
-              outline:none;
-              box-shadow:none;
-              background:none;
-              text-align:center;
-              font-size:14px;
-              font-weight:800;
-              line-height:1.65;
-              letter-spacing:.01em;
-              color:rgba(255,245,248,.96);
-              text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
-              animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
-            ">Bu istek bu haliyle üretilemez. Sanatçı adı yerine tür, duygu ve genel vokal karakteri yaz.</span>
-          `;
-        }
-
-        publishMusicAssistantContext({
-          actionContext: "music_main",
-          uiState: { policyBlocked: true },
-          lastJobStatus: "failed"
-        });
-      }, true);
     }
 
+    const hasHardBlockedTerm = HARD_BLOCK_TERMS.some((term) => matchWholePhrase(text, term));
+    const hasHardBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+
+    const hasPublicFigure = PUBLIC_FIGURE_TERMS.some((term) => {
+      if (!shouldCheckTerm(term, "public")) return false;
+      return matchWholePhrase(text, term);
+    });
+
+    const hasArtistReference = ARTIST_NAME_TERMS.some((term) => {
+      if (!shouldCheckTerm(term, "artist")) return false;
+      return matchWholePhrase(text, term);
+    });
+
+    const blocked = hasHardBlockedTerm || hasHardBlockedPattern || hasPublicFigure || hasArtistReference;
+
+    return {
+      blocked,
+      reason: blocked ? "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı." : ""
+    };
+  };
+}
+
+const analyzeMusicPolicy = makePolicyAnalyzer();
+
+function evaluateMusicPolicyUI() {
+  const generateBtn = module.querySelector("#musicGenerateBtn");
+  const promptEl = module.querySelector("#prompt");
+  const lyricsEl = module.querySelector("#lyrics");
+  const policyNote = ensureMusicPolicyNote(generateBtn);
+
+  if (!generateBtn) return false;
+
+  const raw = [
+    String(promptEl?.value || "").trim(),
+    String(lyricsEl?.value || "").trim()
+  ].filter(Boolean).join(" ");
+
+  const result = analyzeMusicPolicy(raw);
+  const blocked = !!result.blocked;
+
+  generateBtn.disabled = blocked;
+  generateBtn.style.opacity = blocked ? "0.55" : "";
+  generateBtn.style.cursor = blocked ? "not-allowed" : "";
+  generateBtn.style.background = blocked
+    ? "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))"
+    : "";
+  generateBtn.style.borderColor = blocked
+    ? "rgba(255,110,140,.95)"
+    : "";
+  generateBtn.style.boxShadow = blocked
+    ? "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)"
+    : "";
+  generateBtn.style.opacity = "1";
+  generateBtn.style.cursor = blocked ? "not-allowed" : "";
+  generateBtn.style.transform = "";
+  generateBtn.style.filter = blocked ? "saturate(1.05)" : "";
+
+  if (policyNote) {
+    if (blocked) {
+      policyNote.style.display = "block";
+      policyNote.style.marginTop = "12px";
+      policyNote.style.padding = "12px 14px";
+      policyNote.style.borderRadius = "16px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.color = "rgba(255,210,220,.96)";
+      policyNote.style.fontSize = "14px";
+      policyNote.style.fontWeight = "700";
+      policyNote.style.lineHeight = "1.6";
+      policyNote.style.textAlign = "center";
+      policyNote.style.letterSpacing = ".01em";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.backdropFilter = "blur(10px)";
+      policyNote.style.webkitBackdropFilter = "blur(10px)";
+      policyNote.style.position = "relative";
+      policyNote.style.overflow = "hidden";
+      policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+      policyNote.style.backgroundImage = "linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.10) 35%, rgba(255,255,255,0) 70%)";
+      policyNote.style.backgroundSize = "220% 100%";
+      policyNote.style.backgroundPosition = "200% 0";
+      policyNote.textContent = result.reason || "Bu istek bu haliyle üretilemez.";
+    } else {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+    }
+  }
+
+  return blocked;
+}
+
+function bindMusicPolicyUI() {
+  const generateBtn = module.querySelector("#musicGenerateBtn");
+  const promptEl = module.querySelector("#prompt");
+  const lyricsEl = module.querySelector("#lyrics");
+
+  if (!generateBtn || generateBtn.__aivoPolicyClickBound) return;
+
+  generateBtn.__aivoPolicyClickBound = true;
+
+  const resetPolicyUI = () => {
+    const policyNote = module.querySelector("#musicPolicyNote");
+
+    if (promptEl) {
+      promptEl.style.borderColor = "";
+      promptEl.style.boxShadow = "";
+      promptEl.style.animation = "";
+    }
+
+    if (lyricsEl) {
+      lyricsEl.style.borderColor = "";
+      lyricsEl.style.boxShadow = "";
+      lyricsEl.style.animation = "";
+    }
+
+    generateBtn.style.background = "";
+    generateBtn.style.borderColor = "";
+    generateBtn.style.boxShadow = "";
+    generateBtn.style.opacity = "";
+    generateBtn.style.cursor = "";
+    generateBtn.style.filter = "";
+    generateBtn.style.animation = "";
+
+    if (policyNote) {
+      policyNote.style.display = "none";
+      policyNote.textContent = "";
+      policyNote.innerHTML = "";
+      policyNote.style.animation = "";
+    }
+  };
+
+  if (promptEl && !promptEl.__aivoPolicyResetBound) {
+    promptEl.__aivoPolicyResetBound = true;
+    promptEl.addEventListener("input", () => {
+      resetPolicyUI();
+      evaluateMusicPolicyUI();
+    });
+  }
+
+  if (lyricsEl && !lyricsEl.__aivoPolicyResetBound) {
+    lyricsEl.__aivoPolicyResetBound = true;
+    lyricsEl.addEventListener("input", () => {
+      resetPolicyUI();
+      evaluateMusicPolicyUI();
+    });
+  }
+
+  generateBtn.addEventListener("click", (e) => {
+    resetPolicyUI();
+
+    const raw = [
+      String(promptEl?.value || "").trim(),
+      String(lyricsEl?.value || "").trim()
+    ].filter(Boolean).join(" ");
+
+    const result = analyzeMusicPolicy(raw);
+    const blocked = !!result.blocked;
+
+    if (!blocked) {
+      publishMusicAssistantContext({
+        actionContext: "music_main",
+        lastJobStatus: "processing",
+        uiState: { generatePending: true }
+      });
+      return;
+    }
+
+    const policyNote = ensureMusicPolicyNote(generateBtn);
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (promptEl) {
+      promptEl.style.borderColor = "rgba(255,110,140,.92)";
+      promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      promptEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+    }
+
+    if (lyricsEl) {
+      lyricsEl.style.borderColor = "rgba(255,110,140,.92)";
+      lyricsEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      lyricsEl.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+    }
+
+    generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+    generateBtn.style.borderColor = "rgba(255,110,140,.95)";
+    generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+    generateBtn.style.opacity = "1";
+    generateBtn.style.cursor = "not-allowed";
+    generateBtn.style.transform = "";
+    generateBtn.style.filter = "saturate(1.05)";
+    generateBtn.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+
+    if (policyNote) {
+      policyNote.style.display = "block";
+      policyNote.style.marginTop = "12px";
+      policyNote.style.padding = "14px 16px";
+      policyNote.style.borderRadius = "18px";
+      policyNote.style.background = "rgba(255,90,120,.10)";
+      policyNote.style.border = "1px solid rgba(255,120,150,.24)";
+      policyNote.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      policyNote.style.backdropFilter = "blur(10px)";
+      policyNote.style.webkitBackdropFilter = "blur(10px)";
+      policyNote.style.position = "relative";
+      policyNote.style.overflow = "hidden";
+      policyNote.style.textAlign = "center";
+      policyNote.style.animation = "aivoPolicyPulse 1.8s ease-in-out infinite";
+
+      policyNote.innerHTML = `
+        <span style="
+          display:inline-block;
+          white-space:nowrap;
+          width:100%;
+          margin:0;
+          padding:0;
+          border:none;
+          outline:none;
+          box-shadow:none;
+          background:none;
+          text-align:center;
+          font-size:14px;
+          font-weight:800;
+          line-height:1.65;
+          letter-spacing:.01em;
+          color:rgba(255,245,248,.96);
+          text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
+          animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
+        ">${result.reason || "Bu istek bu haliyle üretilemez."}</span>
+      `;
+    }
+
+    publishMusicAssistantContext({
+      actionContext: "music_main",
+      uiState: { policyBlocked: true },
+      lastJobStatus: "failed"
+    });
+  }, true);
+}
     if (!document.getElementById("aivoPolicyPulseStyle")) {
       const style = document.createElement("style");
       style.id = "aivoPolicyPulseStyle";
