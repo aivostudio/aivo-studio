@@ -1305,7 +1305,10 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
        const hasBlockedTerm =
         HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
         PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-        ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+       ARTIST_NAME_TERMS.some((term) => {
+      const t = normalizePolicyText(term);
+      return new RegExp(`\\b${t}\\b`, "i").test(text);
+     })
 
       const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
       const hasLongLyrics = String(lyricsEl?.value || "").trim().length >= 350;
