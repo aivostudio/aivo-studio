@@ -1313,12 +1313,8 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
         return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "i").test(sourceText);
       };
 
-      const hasBlockedTerm =
-        HARD_BLOCK_TERMS.some((term) => hasWholeTerm(text, term)) ||
-        PUBLIC_FIGURE_TERMS.some((term) => hasWholeTerm(text, term)) ||
-        ARTIST_NAME_TERMS.some((term) => hasWholeTerm(text, term));
-
-      const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+           const hasBlockedTerm = !!policyMatch && policyMatch.type !== "pattern";
+      const hasBlockedPattern = !!policyMatch && policyMatch.type === "pattern";
       const hasLongLyrics = String(lyricsEl?.value || "").trim().length >= 350;
 
       const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
