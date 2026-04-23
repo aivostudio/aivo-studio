@@ -1831,6 +1831,50 @@ const familyWasAlreadyReady =
     ""
   ).trim();
 
+  const stemsRaw =
+    (meta?.stems && typeof meta.stems === "object" ? meta.stems : null) ||
+    (row?.stems && typeof row.stems === "object" ? row.stems : null) ||
+    (meta?.stems_result && typeof meta.stems_result === "object" ? meta.stems_result : null) ||
+    null;
+
+  const stemsStatus = String(
+    stemsRaw?.status ||
+    meta?.stems_status ||
+    row?.stems_status ||
+    ""
+  ).trim().toLowerCase();
+
+  const stemsPredictionId = String(
+    stemsRaw?.prediction_id ||
+    stemsRaw?.predictionId ||
+    meta?.stems_prediction_id ||
+    row?.stems_prediction_id ||
+    ""
+  ).trim();
+
+  const stemsOutput =
+    (stemsRaw?.output && typeof stemsRaw.output === "object" ? stemsRaw.output : null) ||
+    (meta?.stems_output && typeof meta.stems_output === "object" ? meta.stems_output : null) ||
+    (row?.stems_output && typeof row.stems_output === "object" ? row.stems_output : null) ||
+    null;
+
+  const stemsError = String(
+    stemsRaw?.error ||
+    meta?.stems_error ||
+    row?.stems_error ||
+    ""
+  ).trim();
+
+  const stemsData =
+    stemsStatus || stemsPredictionId || stemsOutput || stemsError
+      ? {
+          status: stemsStatus || "",
+          prediction_id: stemsPredictionId || "",
+          output: stemsOutput || null,
+          error: stemsError || ""
+        }
+      : null;
+
   const baseCommon = {
     type: "music",
     __db_job_id: dbJobId,
@@ -1846,6 +1890,8 @@ const familyWasAlreadyReady =
     prompt: String(meta?.prompt || row?.prompt || "").trim(),
     subtitle: String(meta?.subtitle || "").trim(),
     __duration: duration,
+    stems: stemsData,
+    __stems: stemsData
   };
 
   const cards = [];
