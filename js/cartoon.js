@@ -1987,14 +1987,31 @@ function enforceCustomCharacterOverride(root, options = {}) {
         return;
       }
 
-      const mainBtn = e.target.closest('[data-role="main"]');
-      if (mainBtn && root.contains(mainBtn)) {
-        e.preventDefault();
-        state.mainCharacter = state.mainCharacter === (mainBtn.dataset.character || "") ? "" : (mainBtn.dataset.character || "");
-        resetBasicPolicyUI(root);
-        render(root);
-        return;
-      }
+   const mainBtn = e.target.closest('[data-role="main"]');
+if (mainBtn && root.contains(mainBtn)) {
+  e.preventDefault();
+
+  if (hasCustomCharacterImageActive()) {
+    state.mainCharacter = "";
+    resetBasicPolicyUI(root);
+    render(root);
+
+    try {
+      window.toast?.info?.("Fotoğraf aktifken preset ana karakter seçilemez");
+    } catch {}
+
+    return;
+  }
+
+  state.mainCharacter =
+    state.mainCharacter === (mainBtn.dataset.character || "")
+      ? ""
+      : (mainBtn.dataset.character || "");
+
+  resetBasicPolicyUI(root);
+  render(root);
+  return;
+}
 
       const helperBtn = e.target.closest('[data-role="helper"]');
       if (helperBtn && root.contains(helperBtn)) {
