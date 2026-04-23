@@ -1343,7 +1343,7 @@ generateBtn.style.cursor = "";
       generateBtn.style.filter = blocked ? "saturate(1.05)" : "";
 
       if (policyNote) {
-        if (blocked) {
+      if (shouldWarn) {
           policyNote.style.display = "block";
           policyNote.style.marginTop = "12px";
           policyNote.style.padding = "12px 14px";
@@ -1451,7 +1451,7 @@ publishMusicAssistantContext({
 });
 
 // sadece warning göster, block yok
-if (blocked) {
+if (shouldWarn) {
   const policyNote = ensureMusicPolicyNote(generateBtn);
 
   if (policyNote) {
