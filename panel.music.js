@@ -986,26 +986,16 @@ async function togglePlayFromCard(card){
     if (!pid) return;
 
     try {
-   const dbJobId = String(
-  existing.__db_job_id ||
-  existing.db_job_id ||
-  ""
-).trim();
+      const s = await stemsPost({ prediction_id: pid });
+      const status = String(s.status || "").toLowerCase();
+      if (isHiddenJobId(jobId)) return;
 
-const s = await stemsPost({
-  prediction_id: pid,
-  job_id: dbJobId
-});
-
-const status = String(s.status || "").toLowerCase();
-if (isHiddenJobId(jobId)) return;
-
-if (status === "succeeded") {
-  stemsSet(jobId, { status: "succeeded", output: s.output || null, error: "" });
-  render();
-  toast("success", "Kanal ayırma hazır");
-  return;
-}
+         if (status === "succeeded") {
+        stemsSet(jobId, { status: "succeeded", output: s.output || null, error: "" });
+        render();
+        toast("success", "Kanal ayırma hazır");
+        return;
+      }
 
       if (["failed", "canceled", "cancelled"].includes(status)) {
         stemsSet(jobId, { status: "failed", error: s.error || status });
