@@ -816,7 +816,7 @@
 Devam etmeden önce bu işlem için onay gerekiyor.`;
       }
 
-      if (brain?.confidence === "low") {
+       if (brain?.confidence === "low") {
         let hintText =
           "Sana daha net yardımcı olabilmem için bulunduğun ekranı ya da yapmak istediğin şeyi biraz daha açık yazabilir misin?";
 
@@ -828,7 +828,7 @@ Devam etmeden önce bu işlem için onay gerekiyor.`;
             "Bunu birlikte netleştirelim: hangi modüldesin ve ekranda tam olarak ne görüyorsun, kısa yazman yeterli.";
         } else if (brain?.intent === "prompt_help") {
           hintText =
-            "Promptu birlikte güçlendirebiliriz. Ne üretmek istediğini bir cümleyle yazman yeterli.";
+            "Ne üretmek istediğini tek cümleyle yaz. Ben onu senin için güçlü, detaylı, modüle uygun ve direkt kullanılabilir bir prompta çevireyim. İstersen stil, atmosfer, karakter, renk, kamera açısı, kalite ve duygu tonunu da birlikte kurarım.";
         } else if (brain?.intent === "module_selection") {
           hintText =
             "Sana doğru modülü önermem için üretmek istediğin içeriği kısaca yazabilir misin?";
@@ -841,7 +841,6 @@ Devam etmeden önce bu işlem için onay gerekiyor.`;
 
 ${hintText}`;
       }
-
       state.messages.push({
         role: "assistant",
         content: assistantText
