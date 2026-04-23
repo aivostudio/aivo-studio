@@ -82,7 +82,10 @@
           </div>
         </div>
 
-        <!-- 3) UPLOAD (SOL / HALF) -->
+        <!--
+        3) UPLOAD (SOL / HALF) — geçici olarak kapatıldı
+        Servis destekleyince tekrar açılacak.
+
         <div class="form-field half">
           <label>Referans Ses Yükle (opsiyonel)</label>
 
@@ -95,60 +98,59 @@
             </div>
           </label>
         </div>
+        -->
 
-<!-- 4) RECORD (SAĞ / HALF) - SADECE ADVANCED -->
-<div class="form-field half" data-visible-in="advanced">
-  <label>Record</label>
+        <!--
+        4) RECORD (SAĞ / HALF) - SADECE ADVANCED — geçici olarak kapatıldı
+        Servis destekleyince tekrar açılacak.
 
-  <!-- Record trigger -->
-  <button
-    class="upload-box"
-    type="button"
-    id="musicRecordBtn"
-    aria-haspopup="dialog"
-    aria-controls="musicRecordModal"
-  >
-    <div>
-      <strong>🎙️ Record</strong><br />
-      <span class="upload-hint">Tıkla ve kayda başla</span>
-    </div>
-  </button>
+        <div class="form-field half" data-visible-in="advanced">
+          <label>Record</label>
 
-  <!-- Recorded preview (JS dolduracak) -->
-  <div class="record-preview" id="musicRecordPreview" hidden>
-    <audio id="musicRecordAudio" controls></audio>
-    <input type="hidden" id="musicRecordBlobUrl" value="" />
-  </div>
-</div>
+          <button
+            class="upload-box"
+            type="button"
+            id="musicRecordBtn"
+            aria-haspopup="dialog"
+            aria-controls="musicRecordModal"
+          >
+            <div>
+              <strong>🎙️ Record</strong><br />
+              <span class="upload-hint">Tıkla ve kayda başla</span>
+            </div>
+          </button>
 
-<!-- RECORD MODAL (Suno gibi) - JS aç/kapatacak -->
-<div class="modal" id="musicRecordModal" role="dialog" aria-modal="true" aria-hidden="true" hidden>
-  <div class="modal__backdrop" data-close="musicRecordModal"></div>
+          <div class="record-preview" id="musicRecordPreview" hidden>
+            <audio id="musicRecordAudio" controls></audio>
+            <input type="hidden" id="musicRecordBlobUrl" value="" />
+          </div>
+        </div>
 
-  <div class="modal__panel" role="document">
-    <div class="modal__head">
-      <div class="modal__title" id="musicRecordTitle">Recording</div>
-      <button class="modal__close" type="button" data-close="musicRecordModal" aria-label="Close">✕</button>
-    </div>
+        <div class="modal" id="musicRecordModal" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+          <div class="modal__backdrop" data-close="musicRecordModal"></div>
 
-    <div class="modal__body">
-      <div class="rec-timer" id="musicRecTimer">00:00</div>
+          <div class="modal__panel" role="document">
+            <div class="modal__head">
+              <div class="modal__title" id="musicRecordTitle">Recording</div>
+              <button class="modal__close" type="button" data-close="musicRecordModal" aria-label="Close">✕</button>
+            </div>
 
-      <!-- dalga alanı (JS çizdirir / sonra canvas koyarız) -->
-      <div class="rec-wave" id="musicRecWave"></div>
+            <div class="modal__body">
+              <div class="rec-timer" id="musicRecTimer">00:00</div>
+              <div class="rec-wave" id="musicRecWave"></div>
 
-      <!-- Record button -->
-      <button class="rec-bigbtn" type="button" id="musicRecToggleBtn" aria-pressed="false">
-        ●
-      </button>
-    </div>
+              <button class="rec-bigbtn" type="button" id="musicRecToggleBtn" aria-pressed="false">
+                ●
+              </button>
+            </div>
 
-    <div class="modal__foot">
-      <button class="btn" type="button" id="musicRecStartOverBtn">Start Over</button>
-      <button class="btn btn-primary" type="button" id="musicRecSaveBtn">Save</button>
-    </div>
-  </div>
-</div>
+            <div class="modal__foot">
+              <button class="btn" type="button" id="musicRecStartOverBtn">Start Over</button>
+              <button class="btn btn-primary" type="button" id="musicRecSaveBtn">Save</button>
+            </div>
+          </div>
+        </div>
+        -->
 
         <!-- 5) MOOD + VOCAL (EN ALT / 2 KOLON) -->
         <div class="form-field half" data-visible-in="advanced">
