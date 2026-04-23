@@ -1528,15 +1528,18 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
     e.stopPropagation();
 
     if (act === "stems_5_confirm") {
+      const selectedCardId = String(card.getAttribute("data-job-id") || "").trim();
+      const existing = (jobs || []).find((x) => getJobId(x) === selectedCardId) || {};
+
       const job_id =
-        card.getAttribute("data-job-id") ||
+        String(existing.__db_job_id || "").trim() ||
+        selectedCardId ||
         card.dataset.jobId ||
         card.getAttribute("data-track-id") ||
         card.dataset.trackId ||
         card.getAttribute("data-provider-job-id") ||
         card.dataset.providerJobId ||
         "";
-
       window.openStemConfirmModal?.({
         job_id,
         onConfirm: async ({ job_id: confirmed_job_id, consume_transaction_id, consume_amount, consume_action } = {}) => {
