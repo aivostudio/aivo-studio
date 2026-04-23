@@ -1023,13 +1023,11 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       "lip sync"
     ];
 
-    const HARD_BLOCK_PATTERNS = [
-      /\bgibi\b/i,
+      const HARD_BLOCK_PATTERNS = [
       /\btarzında\b/i,
       /\btarzinda\b/i,
       /\bstilinde\b/i,
       /\bin the style of\b/i,
-      /\blike\b/i,
       /\bbirebir\b/i,
       /\baynısı\b/i,
       /\baynisi\b/i,
