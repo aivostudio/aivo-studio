@@ -41,81 +41,14 @@ module.exports = async function handler(req, res) {
         });
       }
 
-     // =========================
-// (B) STATUS / POLL
-// =========================
-if (predictionId) {
-  const r = await fetch(
-    `https://api.replicate.com/v1/predictions/${encodeURIComponent(predictionId)}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Token ${token}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  const j = await r.json().catch(() => null);
-
-  if (!r.ok) {
-    return res.status(r.status).json({
-      ok: false,
-      error: "replicate_status_failed",
-      status: r.status,
-      detail: j,
-    });
-  }
-
-  // ✅ NEW: SUCCESS OLUNCA DB'YE YAZ
-  try {
-    if (j?.status === "succeeded" && j?.id) {
-      const jobId = String(body.job_id || "").trim();
-
-      if (jobId && process.env.DATABASE_URL) {
-        const { Client } = require("pg");
-        const client = new Client({
-          connectionString: process.env.DATABASE_URL,
-          ssl: { rejectUnauthorized: false },
-        });
-
-        await client.connect();
-
-        await client.query(
-          `
-          update jobs
-          set meta = coalesce(meta, '{}'::jsonb) || $2::jsonb
-          where id = $1::uuid
-          `,
-          [
-            jobId,
-            JSON.stringify({
-              stems: {
-                status: "succeeded",
-                prediction_id: j.id,
-                output: j.output || null,
-                error: j.error || null,
-              },
-            }),
-          ]
-        );
-
-        await client.end();
-      }
-    }
-  } catch (e) {
-    console.error("[stems-db-write-error]", e);
-  }
-
-  return res.status(200).json({
-    ok: true,
-    mode: "status",
-    id: j?.id || null,
-    status: j?.status || null,
-    output: j?.output || null,
-    error: j?.error || null,
-  });
-}
+      return res.status(200).json({
+        ok: true,
+        mode: "status",
+        id: j?.id || null,
+        status: j?.status || null,
+        output: j?.output || null,
+        error: j?.error || null,
+      });
     }
 
     // =========================
