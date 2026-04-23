@@ -994,7 +994,7 @@
           return;
         }
 
-        if (act === "delete_soft") {
+          if (act === "delete_soft") {
           const ok = confirm(
             "DİKKAT!\n\n" +
               email +
@@ -1007,7 +1007,8 @@
 
           try {
             any.disabled = true;
-            await deleteUser(s.email, email, false);
+            const result = await deleteUser(s.email, email, false);
+            await auditUserDeleteSoft(s, email, result);
             await loadUsers();
 
             if ($("btnBansRefresh")) {
