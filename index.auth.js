@@ -417,10 +417,9 @@ window.AIVO_LOGOUT = async function () {
 };
 
 function OPEN_AUTH(mode){
-  if (typeof window.openAuthModal === "function") return window.openAuthModal(mode);
   if (typeof openModal === "function") return openModal(mode);
+  if (typeof window.openAuthModal === "function") return window.openAuthModal(mode);
 }
-
 function CLOSE_AUTH(){
   if (typeof window.closeAuthModal === "function") return window.closeAuthModal();
   if (typeof closeModal === "function") return closeModal();
