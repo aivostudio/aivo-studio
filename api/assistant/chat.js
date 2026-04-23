@@ -136,11 +136,12 @@ export default async function handler(req, res) {
         packages: pricingRegistry?.packages || [],
         recommendationRules: pricingRegistry?.recommendationRules || [],
       },
-            registrySummary: {
+           registrySummary: {
         app: registry?.app || null,
         moduleKeys: registry?.modules ? Object.keys(registry.modules) : [],
       },
-         coverDiagnostic:
+
+      coverDiagnostic:
         body?.coverDiagnostic && typeof body.coverDiagnostic === "object"
           ? body.coverDiagnostic
           : null,
@@ -148,6 +149,21 @@ export default async function handler(req, res) {
       atmoDiagnostic:
         body?.atmoDiagnostic && typeof body.atmoDiagnostic === "object"
           ? body.atmoDiagnostic
+          : null,
+
+      cartoonDiagnostic:
+        body?.cartoonDiagnostic && typeof body.cartoonDiagnostic === "object"
+          ? body.cartoonDiagnostic
+          : null,
+
+      photoFxDiagnostic:
+        body?.photoFxDiagnostic && typeof body.photoFxDiagnostic === "object"
+          ? body.photoFxDiagnostic
+          : null,
+
+      videoDiagnostic:
+        body?.videoDiagnostic && typeof body.videoDiagnostic === "object"
+          ? body.videoDiagnostic
           : null,
     };
 
