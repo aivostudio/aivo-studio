@@ -1304,10 +1304,16 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
       const text = normalizePolicyText(raw);
 
-      const hasBlockedTerm =
-        HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-        PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-        ARTIST_NAME_TERMS.some((term) => text.includes(normalizePolicyText(term)));
+     function matchWholeWord(text, term) {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+  return regex.test(text);
+}
+
+const hasBlockedTerm =
+  HARD_BLOCK_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term))) ||
+  PUBLIC_FIGURE_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term))) ||
+  ARTIST_NAME_TERMS.some((term) => matchWholeWord(text, normalizePolicyText(term)));
 
       const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
       const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
