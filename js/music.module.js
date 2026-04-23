@@ -1431,19 +1431,26 @@ generateBtn.style.cursor = "";
         const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
         const blocked = !!raw && (hasBlockedTerm || hasBlockedPattern);
 
-        if (!blocked) {
-          publishMusicAssistantContext({
-            actionContext: "music_main",
-            lastJobStatus: "processing",
-            uiState: { generatePending: true }
-          });
-          return;
-        }
+publishMusicAssistantContext({
+  actionContext: "music_main",
+  lastJobStatus: "processing",
+  uiState: { generatePending: true }
+});
 
-        const policyNote = ensureMusicPolicyNote(generateBtn);
+// sadece warning göster, block yok
+if (blocked) {
+  const policyNote = ensureMusicPolicyNote(generateBtn);
 
-        e.preventDefault();
-        e.stopPropagation();
+  if (policyNote) {
+    policyNote.style.display = "block";
+    policyNote.textContent =
+      "Uyarı: Sanatçı adı kullanımı önerilmez. Yine de üretim devam ediyor.";
+  }
+}
+
+// ❗ ARTIK preventDefault YOK
+// ❗ stopPropagation YOK
+// ❗ return YOK
 
         if (promptEl) {
           promptEl.style.borderColor = "rgba(255,110,140,.92)";
