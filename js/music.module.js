@@ -1302,13 +1302,19 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
       const text = normalizePolicyText(raw);
 
-       const hasBlockedTerm =
-        HARD_BLOCK_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-        PUBLIC_FIGURE_TERMS.some((term) => text.includes(normalizePolicyText(term))) ||
-       ARTIST_NAME_TERMS.some((term) => {
-      const t = normalizePolicyText(term);
-      return new RegExp(`\\b${t}\\b`, "i").test(text);
-     })
+      const escapeRegExp = (value) =>
+        String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      const hasWholeTerm = (sourceText, term) => {
+        const normalizedTerm = normalizePolicyText(term);
+        if (!normalizedTerm) return false;
+        return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "i").test(sourceText);
+      };
+
+      const hasBlockedTerm =
+        HARD_BLOCK_TERMS.some((term) => hasWholeTerm(text, term)) ||
+        PUBLIC_FIGURE_TERMS.some((term) => hasWholeTerm(text, term)) ||
+        ARTIST_NAME_TERMS.some((term) => hasWholeTerm(text, term));
 
       const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
       const hasLongLyrics = String(lyricsEl?.value || "").trim().length >= 350;
@@ -1334,7 +1340,7 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
       generateBtn.style.transform = "";
       generateBtn.style.filter = blocked ? "saturate(1.05)" : "";
 
-       if (policyNote) {
+      if (policyNote) {
         if (blocked) {
           policyNote.style.display = "block";
           policyNote.style.marginTop = "12px";
@@ -1388,7 +1394,6 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
       return blocked;
     }
-
     function bindMusicPolicyUI() {
       const generateBtn = module.querySelector("#musicGenerateBtn");
       const promptEl = module.querySelector("#prompt");
