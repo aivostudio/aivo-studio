@@ -689,8 +689,8 @@ needsConfirmation true ise işlem öncesi onay veya kredi onayı gerekir.`,
         fallbackAnswer =
           "Sorunu çözmek için bulunduğun ekrandaki durum, seçim ve işlem bağlamına bakmam gerekiyor. Aynı ekranda tekrar sorarsan daha net yönlendirebilirim.";
       } else if (fallbackIntent === "prompt_help") {
-        fallbackAnswer =
-          "Promptunu güçlendirmene yardımcı olabilirim. Ne üretmek istediğini kısa yazman yeterli.";
+  fallbackAnswer =
+    "Ne üretmek istediğini tek cümleyle yaz, ben onu senin için güçlü, detaylı ve direkt kullanılabilir bir prompta çevireyim.";
       } else if (fallbackIntent === "module_selection") {
         fallbackAnswer =
           "İhtiyacına göre doğru modülü seçmene yardımcı olabilirim. Ne üretmek istediğini kısa yaz.";
