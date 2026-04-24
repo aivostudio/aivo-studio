@@ -1088,14 +1088,29 @@ async function loadTrafficStats() {
     if (trafficTodayUnique) trafficTodayUnique.textContent = String(j.today?.unique || 0);
     if (trafficTotal) trafficTotal.textContent = String(j.total || 0);
 
-    if (trafficLast7) {
-      trafficLast7.textContent = JSON.stringify(j.last7Days || [], null, 2);
-    }
+  if (trafficLast7) {
+  const days = Array.isArray(j.last7Days) ? j.last7Days : [];
 
-    if (trafficTopPages) {
-      trafficTopPages.textContent = JSON.stringify(j.topPages || [], null, 2);
-    }
+  trafficLast7.textContent = days.length
+    ? days.map(function(item) {
+        return String(item.day || "-") +
+          "  |  Ziyaret: " + String(item.hits || 0) +
+          "  |  Tekil: " + String(item.unique || 0);
+      }).join("\n")
+    : "Henüz veri yok.";
+}
 
+if (trafficTopPages) {
+  const pages = Array.isArray(j.topPages) ? j.topPages : [];
+
+  trafficTopPages.textContent = pages.length
+    ? pages.map(function(item, index) {
+        return String(index + 1) + ". " +
+          String(item.page || "-") +
+          "  |  Ziyaret: " + String(item.hits || 0);
+      }).join("\n")
+    : "Henüz veri yok.";
+}
     if (trafficStatus) {
       trafficStatus.textContent = "Gün: " + String(j.today?.day || "-");
     }
