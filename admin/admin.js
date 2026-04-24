@@ -1055,7 +1055,63 @@
     await loadProductionStats();
     await loadDailyCreditStats();
     await loadSoldCredits();
+    await loadTrafficStats();
 
+    // TRAFFIC STATS
+const btnTrafficStats = $("btnTrafficStats");
+const trafficStatus = $("trafficStatus");
+const trafficTodayHits = $("trafficTodayHits");
+const trafficTodayUnique = $("trafficTodayUnique");
+const trafficTotal = $("trafficTotal");
+const trafficLast7 = $("trafficLast7");
+const trafficTopPages = $("trafficTopPages");
+
+async function loadTrafficStats() {
+  const s = await adminAuth();
+  if (!s.ok) return;
+
+  if (trafficStatus) trafficStatus.textContent = "Yükleniyor...";
+
+  try {
+    const r = await fetch("/api/admin/traffic-stats", {
+      cache: "no-store",
+      credentials: "include"
+    });
+
+    const j = await r.json().catch(() => null);
+
+    if (!r.ok || !j || !j.ok) {
+      throw new Error((j && (j.error || j.message)) || "traffic_stats_failed");
+    }
+
+    if (trafficTodayHits) trafficTodayHits.textContent = String(j.today?.hits || 0);
+    if (trafficTodayUnique) trafficTodayUnique.textContent = String(j.today?.unique || 0);
+    if (trafficTotal) trafficTotal.textContent = String(j.total || 0);
+
+    if (trafficLast7) {
+      trafficLast7.textContent = JSON.stringify(j.last7Days || [], null, 2);
+    }
+
+    if (trafficTopPages) {
+      trafficTopPages.textContent = JSON.stringify(j.topPages || [], null, 2);
+    }
+
+    if (trafficStatus) {
+      trafficStatus.textContent = "Gün: " + String(j.today?.day || "-");
+    }
+
+  } catch (err) {
+    if (trafficStatus) trafficStatus.textContent = "Hata oluştu.";
+
+    if (trafficLast7) {
+      trafficLast7.textContent = String(err && err.message ? err.message : err);
+    }
+  }
+}
+
+if (btnTrafficStats) {
+  btnTrafficStats.addEventListener("click", loadTrafficStats);
+}
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
