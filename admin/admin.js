@@ -1055,7 +1055,7 @@
     await loadProductionStats();
     await loadDailyCreditStats();
     await loadSoldCredits();
-    await loadTrafficStats();
+ 
 
     // TRAFFIC STATS
 const btnTrafficStats = $("btnTrafficStats");
@@ -1112,6 +1112,7 @@ async function loadTrafficStats() {
 if (btnTrafficStats) {
   btnTrafficStats.addEventListener("click", loadTrafficStats);
 }
+    await loadTrafficStats();
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
