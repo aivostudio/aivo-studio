@@ -1105,9 +1105,13 @@ if (trafficTopPages) {
 
   trafficTopPages.textContent = pages.length
     ? pages.map(function(item, index) {
-        return String(index + 1) + ". " +
-          String(item.page || "-") +
-          "  |  Ziyaret: " + String(item.hits || 0);
+       var rawPage = String(item.page || "-");
+var cleanPage = rawPage.split("?")[0] || "/";
+var label = cleanPage === "/" ? "Ana sayfa" : cleanPage;
+
+return String(index + 1) + ". " +
+  label +
+  "  |  Ziyaret: " + String(item.hits || 0);
       }).join("\n")
     : "Henüz veri yok.";
 }
