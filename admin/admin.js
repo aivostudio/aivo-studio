@@ -1102,16 +1102,33 @@ async function loadTrafficStats() {
 
 if (trafficTopPages) {
   const pages = Array.isArray(j.topPages) ? j.topPages : [];
+  const grouped = {};
 
-  trafficTopPages.textContent = pages.length
-    ? pages.map(function(item, index) {
-       var rawPage = String(item.page || "-");
-var cleanPage = rawPage.split("?")[0] || "/";
-var label = cleanPage === "/" ? "Ana sayfa" : cleanPage;
+  pages.forEach(function(item) {
+    var rawPage = String(item.page || "-");
+    var cleanPage = rawPage.split("?")[0] || "/";
+    var label = cleanPage === "/" ? "Ana sayfa" : cleanPage;
+    var hits = Number(item.hits || 0);
 
-return String(index + 1) + ". " +
-  label +
-  "  |  Ziyaret: " + String(item.hits || 0);
+    grouped[label] = (grouped[label] || 0) + hits;
+  });
+
+  const list = Object.keys(grouped)
+    .map(function(label) {
+      return {
+        label: label,
+        hits: grouped[label]
+      };
+    })
+    .sort(function(a, b) {
+      return b.hits - a.hits;
+    });
+
+  trafficTopPages.textContent = list.length
+    ? list.map(function(item, index) {
+        return String(index + 1) + ". " +
+          item.label +
+          "  |  Ziyaret: " + String(item.hits);
       }).join("\n")
     : "Henüz veri yok.";
 }
