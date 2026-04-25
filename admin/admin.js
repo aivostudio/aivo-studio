@@ -820,23 +820,33 @@
       soldCreditsPackages.innerHTML = html;
     }
 
-    async function loadSoldCredits() {
-      const r2 = await fetch("/api/admin/purchases", {
-        cache: "no-store",
-        credentials: "include"
-      });
+async function loadSoldCredits() {
+  const selectedDate =
+    String(
+      soldCreditsDate && soldCreditsDate.value
+        ? soldCreditsDate.value
+        : todayDateInputValue()
+    ).trim();
 
-      const purchasesData = await r2.json().catch(() => null);
+  if (soldCreditsStatus) soldCreditsStatus.textContent = "Yükleniyor...";
 
-      console.log("PURCHASES DEBUG:", purchasesData);
+  const r2 = await fetch(
+    "/api/admin/purchases?date=" + encodeURIComponent(selectedDate),
+    {
+      cache: "no-store",
+      credentials: "include"
+    }
+  );
 
-      if (soldCreditsStatus) soldCreditsStatus.textContent = "Yükleniyor...";
+  const purchasesData = await r2.json().catch(() => null);
 
-      if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
-        const purchasedItems = purchasesData.items;
-        const purchasedCredits = purchasedItems.reduce((sum, item) => {
-          return sum + Number(item && item.credits ? item.credits : 0);
-        }, 0);
+  console.log("PURCHASES DEBUG:", purchasesData);
+
+  if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
+    const purchasedItems = purchasesData.items;
+    const purchasedCredits = purchasedItems.reduce((sum, item) => {
+      return sum + Number(item && item.credits ? item.credits : 0);
+    }, 0);
 
         setSoldCreditsValues(
           purchasedCredits,
