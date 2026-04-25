@@ -99,8 +99,8 @@ async function generateMusic(payload) {
 
       use_credits: true,
       charge: true,
-      credits: 5,
-      cost: 5,
+    credits: 2,
+     cost: 2,
     };
 
     const res = await fetch("/api/music/generate", {
@@ -163,10 +163,10 @@ async function generateMusic(payload) {
             "content-type": "application/json",
             "accept": "application/json"
           },
-          body: JSON.stringify({
-            cost: 5,
-            reason: "studio_music_generate"
-          })
+        body: JSON.stringify({
+        cost: 2,
+        reason: "studio_music_generate"
+        })
         });
 
         let creditData = null;
@@ -203,7 +203,7 @@ async function generateMusic(payload) {
           }
         } catch (_) {}
 
-        toastSuccess("5 kredi düşüldü");
+        toastSuccess("2 kredi düşüldü");
 
       } catch (creditErr) {
         console.error("[music.generate] credits consume failed:", creditErr);
