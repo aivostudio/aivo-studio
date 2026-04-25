@@ -140,12 +140,14 @@
   margin-bottom: 6px;
 }
 
-.p-amount{
-  font-size: 40px;
-  font-weight: 900;
-  letter-spacing: -.02em;
+.p-alt{
+  font-size: 12px;
+  opacity: .62;
+  margin-top: 2px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
 }
-
 .p-per{
   opacity: .75;
   font-weight: 700;
