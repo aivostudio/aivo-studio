@@ -199,7 +199,9 @@ body{
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1200px){
   #studioRoot.studioShell{
-    min-width: 1480px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
   }
 
   #mainWorkspace{
