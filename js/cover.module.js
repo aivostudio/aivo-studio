@@ -1080,6 +1080,19 @@ function buildCoverPrompt(prompt, quality) {
     toastSuccess("Kapak hazır");
   }
   // --- PROMPT CHAR COUNT (opsiyonel) ---
+    function applyCoverPromptExample() {
+    const root = getRoot();
+    if (!root) return;
+
+    const promptEl = qs("#coverPrompt", root);
+    if (!promptEl) return;
+
+    promptEl.placeholder = `Örnek:
+Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer
+
+Sonra:
+Çölde güçlü kadın lider, arkasında ekip, gün batımı, epik sahne`;
+  }
   function bindPromptCounter() {
     const root = getRoot();
     if (!root) return;
@@ -1470,8 +1483,9 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
     setActiveQuality(root, "artist");
   })();
 
+  applyCoverPromptExample();
   bindPromptCounter();
-
+  
   function ensureDefaultCoverQuality() {
     const root = getRoot();
     if (!root) return;
@@ -1488,8 +1502,9 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
   ensureDefaultCoverQuality();
 
   new MutationObserver(() => {
+    applyCoverPromptExample();
     bindPromptCounter();
-      bindCoverPolicyReset();
+    bindCoverPolicyReset();
     ensureDefaultCoverQuality();
   }).observe(document.documentElement, {
     childList: true,
