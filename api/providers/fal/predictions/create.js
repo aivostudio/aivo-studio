@@ -189,8 +189,8 @@ const falPayload =
   quality === "ultra" && referenceImageUrl
     ? {
         prompt: `same person, preserve facial identity, realistic portrait, ${t.prompt_sent}`,
-             face_image_url: referenceImageUrl,
-        face_id_det_size: 320,
+        face_image_url: referenceImageUrl,
+        face_id_det_size: 160,
         model_type: "1_5-v2-plus",
         num_images: 1,
         guidance_scale: 7.5,
