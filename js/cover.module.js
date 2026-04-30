@@ -202,8 +202,13 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       gen.textContent = `🖼️ Kapak Üret (${credit} Kredi)`;
     }
 
+    const ultraReferenceBox = root.querySelector("#coverUltraReferenceBox");
+    if (ultraReferenceBox) {
+      ultraReferenceBox.style.display = q === "ultra" ? "" : "none";
+    }
+
     console.log("[cover] quality =", q, "credit =", credit);
-        syncCoverAssistantState({
+    syncCoverAssistantState({
       lastAction: "quality_change",
       selectedQuality: q,
       creditCost: credit,
