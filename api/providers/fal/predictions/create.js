@@ -155,9 +155,13 @@ export default async function handler(req, res) {
     const qualityRaw = String(input?.quality || "artist").toLowerCase();
     const quality = qualityRaw === "ultra" ? "ultra" : "artist";
 
+       const referenceImageUrl = String(input?.image_url || input?.imageUrl || "").trim();
+
     const MODEL_MAP = {
       artist: "fal-ai/flux-2-pro",
-      ultra: "fal-ai/flux-pro/v1.1-ultra",
+      ultra: referenceImageUrl
+        ? "fal-ai/ip-adapter-face-id"
+        : "fal-ai/flux-pro/v1.1-ultra",
     };
 
     const CREDIT_MAP = {
@@ -166,7 +170,6 @@ export default async function handler(req, res) {
     };
 
     const model = MODEL_MAP[quality];
-
     // ------------------------------------------------------------
     // Fal payload
     // ------------------------------------------------------------
@@ -182,28 +185,33 @@ const image_size =
     ? "portrait_16_9"
     : String(input?.image_size || "square_hd").trim();
 
-const referenceImageUrl = String(input?.image_url || input?.imageUrl || "").trim();
-
 const falPayload =
-  quality === "ultra"
+  quality === "ultra" && referenceImageUrl
     ? {
-        prompt: referenceImageUrl
-          ? `Referans görseldeki AYNI kişi korunmalı. Yüz yapısı değişmemeli. Kişinin saç yapısı, yüz oranı, ten tonu ve genel görünümü referansla aynı kalmalı. ${t.prompt_sent}`
-          : t.prompt_sent,
-        image_size,
-        image_url: referenceImageUrl || undefined,
-        image_prompt_strength: referenceImageUrl ? 0.95 : undefined,
-        guidance_scale: 7,
+        prompt: `same person, preserve facial identity, realistic portrait, ${t.prompt_sent}`,
+        face_image_url: referenceImageUrl,
+        model_type: "1_5-v2-plus",
         num_images: 1,
+        guidance_scale: 7.5,
+        num_inference_steps: 35,
         output_format: "jpeg",
-        safety_tolerance: "2",
-        enhance_prompt: false,
-        raw: true,
+        negative_prompt: "different person, changed face, distorted face, ugly, low quality, blurry, bad anatomy, deformed, extra fingers, watermark, text"
       }
-    : {
-        prompt: t.prompt_sent,
-        image_size,
-      };
+    : quality === "ultra"
+      ? {
+          prompt: t.prompt_sent,
+          image_size,
+          guidance_scale: 7,
+          num_images: 1,
+          output_format: "jpeg",
+          safety_tolerance: "2",
+          enhance_prompt: false,
+          raw: true,
+        }
+      : {
+          prompt: t.prompt_sent,
+          image_size,
+        };
 
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
