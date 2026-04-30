@@ -1018,7 +1018,7 @@
 
     <button
       type="button"
-      onclick="const v=document.getElementById('imageToVideoHeroDemo'); if(v){ v.muted=false; v.currentTime=0; v.play(); this.textContent='🔊 Ses Açık'; }"
+     onclick="const v=document.getElementById('imageToVideoHeroDemo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.currentTime=0; v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } }"
       style="border:1px solid rgba(255,255,255,.16);background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;white-space:nowrap;"
     >
       🔊 Sesi Aç
@@ -1033,6 +1033,7 @@
     loop
     playsinline
     preload="auto"
+    controls
     style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;"
   ></video>
 </div>
