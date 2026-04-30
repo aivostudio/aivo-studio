@@ -1098,6 +1098,48 @@ Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer
 Sonra:
 Çölde güçlü kadın lider, arkasında ekip, gün batımı, epik sahne`;
   }
+
+    function bindCoverReferenceUploadUI() {
+    const root = getRoot();
+    if (!root) return;
+
+    const input = qs("#coverReferenceUpload", root);
+    const fileName = qs("#coverReferenceFileName", root);
+    const clearBtn = qs("#coverReferenceClear", root);
+
+    if (!input || !fileName || input.__coverReferenceBound) return;
+    input.__coverReferenceBound = true;
+
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0] ? input.files[0] : null;
+
+      if (!file) {
+        fileName.textContent = "Dosya seçilmedi";
+        if (clearBtn) clearBtn.style.display = "none";
+        return;
+      }
+
+      fileName.textContent = `${file.name} · Seçildi ✓`;
+
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+    });
+
+    if (clearBtn && !clearBtn.__coverReferenceClearBound) {
+      clearBtn.__coverReferenceClearBound = true;
+
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        input.value = "";
+        fileName.textContent = "Dosya seçilmedi";
+        clearBtn.style.display = "none";
+      });
+    }
+  }
   function bindPromptCounter() {
     const root = getRoot();
     if (!root) return;
