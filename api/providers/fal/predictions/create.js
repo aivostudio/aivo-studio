@@ -182,11 +182,15 @@ const image_size =
     ? "portrait_16_9"
     : String(input?.image_size || "square_hd").trim();
 
+const referenceImageUrl = String(input?.image_url || input?.imageUrl || "").trim();
+
 const falPayload =
   quality === "ultra"
     ? {
         prompt: t.prompt_sent,
         image_size,
+        image_url: referenceImageUrl || undefined,
+        image_prompt_strength: referenceImageUrl ? 0.45 : undefined,
         guidance_scale: 7,
         num_images: 1,
         output_format: "jpeg",
