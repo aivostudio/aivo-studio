@@ -85,7 +85,48 @@
 
             </div>
           </div>
-          <!-- /KALİTE SEVİYESİ -->
+                   <!-- /KALİTE SEVİYESİ -->
+
+          <!-- ULTRA REFERANS GÖRSEL YÜKLEME -->
+          <div
+            class="form-field full"
+            id="coverUltraReferenceBox"
+            style="display:none;">
+            <label>Referans Görsel Yükle</label>
+
+            <div class="cartoon-credit-inline" style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+              <span class="cartoon-credit-badge cartoon-credit-badge--accent">Cinematic Ultra HD için</span>
+
+              <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  id="coverReferenceUpload"
+                  data-cover-reference-upload>
+                <span class="cartoon-upload-btn">Resim Seç</span>
+                <button
+                  type="button"
+                  class="cartoon-upload-clear"
+                  id="coverReferenceClear"
+                  data-cover-reference-clear
+                  aria-label="Referans görseli kaldır"
+                  title="Resmi kaldır"
+                  style="display:none;">
+                  ×
+                </button>
+              </label>
+
+              <span class="cartoon-upload-text" id="coverReferenceFileName" data-cover-reference-file-name>
+                Dosya seçilmedi
+              </span>
+
+              <small style="color:rgba(255,255,255,.62); line-height:1.5;">
+                Kendi görselini yükleyip prompt ile istediğin ortamda yeniden sahneleyebilirsin.
+              </small>
+            </div>
+          </div>
+          <!-- /ULTRA REFERANS GÖRSEL YÜKLEME -->
 
           <!-- STİL KARTLARI -->
           <div class="form-field full">
