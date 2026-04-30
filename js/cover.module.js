@@ -1532,6 +1532,7 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
 
   applyCoverPromptExample();
   bindPromptCounter();
+  bindCoverReferenceUploadUI();
   
   function ensureDefaultCoverQuality() {
     const root = getRoot();
@@ -1548,9 +1549,10 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
 
   ensureDefaultCoverQuality();
 
-  new MutationObserver(() => {
+   new MutationObserver(() => {
     applyCoverPromptExample();
     bindPromptCounter();
+    bindCoverReferenceUploadUI();
     bindCoverPolicyReset();
     ensureDefaultCoverQuality();
   }).observe(document.documentElement, {
