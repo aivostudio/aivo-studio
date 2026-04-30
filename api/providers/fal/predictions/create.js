@@ -190,7 +190,7 @@ const falPayload =
         prompt: t.prompt_sent,
         image_size,
         image_url: referenceImageUrl || undefined,
-        image_prompt_strength: referenceImageUrl ? 0.45 : undefined,
+      image_prompt_strength: referenceImageUrl ? 0.80 : undefined,
         guidance_scale: 7,
         num_images: 1,
         output_format: "jpeg",
