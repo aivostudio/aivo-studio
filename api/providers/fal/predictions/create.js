@@ -187,10 +187,12 @@ const referenceImageUrl = String(input?.image_url || input?.imageUrl || "").trim
 const falPayload =
   quality === "ultra"
     ? {
-        prompt: t.prompt_sent,
+        prompt: referenceImageUrl
+          ? `Referans görseldeki AYNI kişi korunmalı. Yüz yapısı değişmemeli. Kişinin saç yapısı, yüz oranı, ten tonu ve genel görünümü referansla aynı kalmalı. ${t.prompt_sent}`
+          : t.prompt_sent,
         image_size,
         image_url: referenceImageUrl || undefined,
-      image_prompt_strength: referenceImageUrl ? 0.80 : undefined,
+        image_prompt_strength: referenceImageUrl ? 0.95 : undefined,
         guidance_scale: 7,
         num_images: 1,
         output_format: "jpeg",
