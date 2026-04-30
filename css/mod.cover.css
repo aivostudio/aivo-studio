@@ -1407,3 +1407,97 @@ section[data-module="cover"] .page-title{
 section[data-module="cover"] .page-subtitle{
   margin: 0 !important;
 }
+/* COVER — Ultra Reference Upload Box */
+section[data-module="cover"] #coverUltraReferenceBox{
+  margin-top: -4px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(180, 90, 255, 0.28);
+  background:
+    radial-gradient(900px 220px at 15% 0%, rgba(140, 96, 255, .18), transparent 60%),
+    radial-gradient(700px 220px at 85% 20%, rgba(255, 96, 214, .12), transparent 65%),
+    rgba(255,255,255,.035);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 14px 34px rgba(0,0,0,.24);
+}
+
+section[data-module="cover"] #coverUltraReferenceBox > label{
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.86);
+}
+
+section[data-module="cover"] #coverUltraReferenceBox .cartoon-credit-inline{
+  display: grid !important;
+  grid-template-columns: auto 1fr;
+  gap: 12px 14px !important;
+  align-items: center !important;
+}
+
+section[data-module="cover"] #coverUltraReferenceBox .cartoon-credit-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(124,92,255,.92), rgba(236,91,167,.88));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(124,92,255,.20);
+}
+
+section[data-module="cover"] #coverUltraReferenceBox .cartoon-upload-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+section[data-module="cover"] #coverUltraReferenceBox .cartoon-upload-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+section[data-module="cover"] #coverUltraReferenceBox .cartoon-upload-text{
+  grid-column: 2;
+  min-width: 0;
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+section[data-module="cover"] #coverUltraReferenceBox small{
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: rgba(255,255,255,.58) !important;
+  font-size: 12px;
+  line-height: 1.45 !important;
+}
+
+@media (max-width: 640px){
+  section[data-module="cover"] #coverUltraReferenceBox .cartoon-credit-inline{
+    grid-template-columns: 1fr;
+  }
+
+  section[data-module="cover"] #coverUltraReferenceBox .cartoon-upload-text{
+    grid-column: 1;
+  }
+}
