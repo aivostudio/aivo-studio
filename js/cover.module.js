@@ -952,7 +952,7 @@ function buildCoverPrompt(prompt, quality) {
 }
 
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
-  async function generateImages({ prompt, style, ratio, n, quality }) {
+  async function generateImages({ prompt, style, ratio, n, quality, referenceImageUrl }) {
     const tasks = [];
 
     for (let i = 0; i < n; i++) {
@@ -967,10 +967,11 @@ function buildCoverPrompt(prompt, quality) {
 
       tasks.push(
         postJSON("/api/providers/fal/predictions/create?app=cover", {
-          input: {
+           input: {
             prompt: promptForModel,
             quality,
             ratio,
+            image_url: quality === "ultra" && referenceImageUrl ? referenceImageUrl : undefined,
           },
         }).then((j) => {
           const url =
@@ -1017,7 +1018,19 @@ function buildCoverPrompt(prompt, quality) {
 
     console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-     const imgs = await generateImages({ prompt, style, ratio, n, quality });
+      const referenceImageUrl =
+      quality === "ultra"
+        ? String(window.__AIVO_COVER_REFERENCE_IMAGE_URL__ || "").trim()
+        : "";
+
+    const imgs = await generateImages({
+      prompt,
+      style,
+      ratio,
+      n,
+      quality,
+      referenceImageUrl,
+    });
 
     for (const img of imgs) {
       console.log("[cover overlay start]", img.url);
