@@ -202,13 +202,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       gen.textContent = `🖼️ Kapak Üret (${credit} Kredi)`;
     }
 
-    const ultraReferenceBox = root.querySelector("#coverUltraReferenceBox");
-    if (ultraReferenceBox) {
-      ultraReferenceBox.style.display = q === "ultra" ? "" : "none";
-    }
-
     console.log("[cover] quality =", q, "credit =", credit);
-    syncCoverAssistantState({
+        syncCoverAssistantState({
       lastAction: "quality_change",
       selectedQuality: q,
       creditCost: credit,
@@ -952,7 +947,7 @@ function buildCoverPrompt(prompt, quality) {
 }
 
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
-  async function generateImages({ prompt, style, ratio, n, quality, referenceImageUrl }) {
+  async function generateImages({ prompt, style, ratio, n, quality }) {
     const tasks = [];
 
     for (let i = 0; i < n; i++) {
@@ -967,11 +962,10 @@ function buildCoverPrompt(prompt, quality) {
 
       tasks.push(
         postJSON("/api/providers/fal/predictions/create?app=cover", {
-           input: {
+          input: {
             prompt: promptForModel,
             quality,
             ratio,
-            image_url: quality === "ultra" && referenceImageUrl ? referenceImageUrl : undefined,
           },
         }).then((j) => {
           const url =
@@ -1018,19 +1012,7 @@ function buildCoverPrompt(prompt, quality) {
 
     console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-      const referenceImageUrl =
-      quality === "ultra"
-        ? String(window.__AIVO_COVER_REFERENCE_IMAGE_URL__ || "").trim()
-        : "";
-
-    const imgs = await generateImages({
-      prompt,
-      style,
-      ratio,
-      n,
-      quality,
-      referenceImageUrl,
-    });
+     const imgs = await generateImages({ prompt, style, ratio, n, quality });
 
     for (const img of imgs) {
       console.log("[cover overlay start]", img.url);
@@ -1098,170 +1080,6 @@ function buildCoverPrompt(prompt, quality) {
     toastSuccess("Kapak hazır");
   }
   // --- PROMPT CHAR COUNT (opsiyonel) ---
-    function applyCoverPromptExample() {
-    const root = getRoot();
-    if (!root) return;
-
-    const promptEl = qs("#coverPrompt", root);
-    if (!promptEl) return;
-
-    promptEl.placeholder = `Örnek:
-Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer
-
-Sonra:
-Çölde güçlü kadın lider, arkasında ekip, gün batımı, epik sahne`;
-  }
-
-  async function uploadCoverReferenceToR2(file) {
-    if (!file) throw new Error("missing_cover_reference_file");
-
-    const root = getRoot();
-    const promptText = String(qs("#coverPrompt", root)?.value || "").trim();
-    const contentType = file.type || "application/octet-stream";
-    const filename = file.name || `cover-reference-${Date.now()}.png`;
-    const titleText = String(filename || "").trim();
-    const descriptionText = String(promptText || filename || "").trim();
-
-    const presignRes = await fetch("/api/r2/scan-and-presign", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app: "cover",
-        kind: "reference",
-        filename,
-        contentType,
-        prompt: promptText,
-        title: titleText,
-        description: descriptionText,
-        personName: "",
-        style: String(root?.dataset?.coverStyle || "").trim(),
-        source: "cover_ultra_reference_upload"
-      })
-    });
-
-    const presignData = await presignRes.json().catch(() => null);
-
-    if (!presignRes.ok || !presignData || presignData.ok === false) {
-      throw new Error(
-        presignData?.message ||
-        presignData?.error ||
-        "cover_reference_presign_failed"
-      );
-    }
-
-    const uploadUrl = presignData.uploadUrl || presignData.upload_url;
-    const publicUrl = presignData.publicUrl || presignData.public_url || presignData.url || "";
-    const key = presignData.key || presignData.objectKey || "";
-
-    if (!uploadUrl || !publicUrl || !key) {
-      throw new Error("cover_reference_missing_upload_urls");
-    }
-
-    const put = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": contentType
-      },
-      body: file
-    });
-
-    if (!put.ok) {
-      throw new Error("cover_reference_r2_put_failed");
-    }
-
-    const scanRes = await fetch("/api/r2/scan-upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app: "cover",
-        key,
-        filename,
-        contentType,
-        public_url: publicUrl,
-        prompt: promptText,
-        title: titleText,
-        description: descriptionText,
-        personName: "",
-        style: String(root?.dataset?.coverStyle || "").trim(),
-        source: "cover_ultra_reference_upload"
-      })
-    });
-
-    const scanData = await scanRes.json().catch(() => null);
-
-    if (!scanRes.ok || !scanData || scanData.ok === false) {
-      throw new Error(
-        scanData?.message ||
-        scanData?.error ||
-        "cover_reference_scan_upload_failed"
-      );
-    }
-
-    if (scanData.decision && scanData.decision !== "allow") {
-      throw new Error(`media_policy_${scanData.decision}`);
-    }
-
-    return scanData.public_url || publicUrl;
-  }
-
-  function bindCoverReferenceUploadUI() {
-    const root = getRoot();
-    if (!root) return;
-
-    const input = qs("#coverReferenceUpload", root);
-    const fileName = qs("#coverReferenceFileName", root);
-    const clearBtn = qs("#coverReferenceClear", root);
-
-    if (!input || !fileName || input.__coverReferenceBound) return;
-    input.__coverReferenceBound = true;
-
-    input.addEventListener("change", async () => {
-      const file = input.files && input.files[0] ? input.files[0] : null;
-
-      window.__AIVO_COVER_REFERENCE_IMAGE_URL__ = "";
-
-      if (!file) {
-        fileName.textContent = "Dosya seçilmedi";
-        if (clearBtn) clearBtn.style.display = "none";
-        return;
-      }
-
-      fileName.textContent = `${file.name} · Yükleniyor...`;
-
-      if (clearBtn) {
-        clearBtn.style.display = "inline-grid";
-        clearBtn.style.placeItems = "center";
-      }
-
-      try {
-        const url = await uploadCoverReferenceToR2(file);
-        window.__AIVO_COVER_REFERENCE_IMAGE_URL__ = url;
-        fileName.textContent = `${file.name} · Hazır ✓`;
-        toastSuccess("Referans görsel yüklendi");
-      } catch (err) {
-        console.error("[cover] reference upload failed:", err);
-        window.__AIVO_COVER_REFERENCE_IMAGE_URL__ = "";
-        input.value = "";
-        fileName.textContent = "Yükleme başarısız";
-        if (clearBtn) clearBtn.style.display = "none";
-        toastError("Referans görsel yüklenemedi");
-      }
-    });
-
-    if (clearBtn && !clearBtn.__coverReferenceClearBound) {
-      clearBtn.__coverReferenceClearBound = true;
-
-      clearBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        input.value = "";
-        window.__AIVO_COVER_REFERENCE_IMAGE_URL__ = "";
-        fileName.textContent = "Dosya seçilmedi";
-        clearBtn.style.display = "none";
-      });
-    }
-  }
   function bindPromptCounter() {
     const root = getRoot();
     if (!root) return;
@@ -1652,10 +1470,8 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
     setActiveQuality(root, "artist");
   })();
 
-  applyCoverPromptExample();
   bindPromptCounter();
-  bindCoverReferenceUploadUI();
-  
+
   function ensureDefaultCoverQuality() {
     const root = getRoot();
     if (!root) return;
@@ -1671,11 +1487,9 @@ if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skippe
 
   ensureDefaultCoverQuality();
 
-   new MutationObserver(() => {
-    applyCoverPromptExample();
+  new MutationObserver(() => {
     bindPromptCounter();
-    bindCoverReferenceUploadUI();
-    bindCoverPolicyReset();
+      bindCoverPolicyReset();
     ensureDefaultCoverQuality();
   }).observe(document.documentElement, {
     childList: true,
