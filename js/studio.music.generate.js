@@ -270,11 +270,11 @@ async function generateMusic(payload) {
 
       // ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
       // Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
-      if (!provider_job_id) {
-        console.warn("[music.generate] missing provider_job_id, result:", result);
-        toastError("TopMediai create başarısız (provider_job_id gelmedi). Lütfen tekrar dene.");
-        return;
-      }
+     if (!provider_job_id) {
+  console.warn("[music.generate] missing provider_job_id, result:", result);
+  toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
+  return;
+}
 
           if (!job_id){
         console.warn("[music.generate] generate response:", result);
