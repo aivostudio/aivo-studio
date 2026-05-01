@@ -154,15 +154,35 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
-          // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
-      let consumed = false;
-      let consumeTransactionId = null;
-      const creditCost = 2;
-      const creditReason = "studio_music_generate";
-      const consumeRequestId = `music:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+      // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
+      try {
+        const creditRes = await fetch("/api/credits/consume", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+        body: JSON.stringify({
+        cost: 2,
+        reason: "studio_music_generate"
+        })
+        });
 
-      async function refreshCreditsUI() {
-        try {
+        let creditData = null;
+        try { creditData = await creditRes.json(); }
+        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+
+        if (!creditRes.ok || !creditData?.ok) {
+          const msg =
+            creditData?.error ||
+            creditData?.message ||
+            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+          toastError(msg);
+          return;
+        }
+
+               try {
           const creditGetRes = await fetch("/api/credits/get", {
             credentials: "include",
             cache: "no-store",
@@ -181,94 +201,8 @@ async function generateMusic(payload) {
               window.AIVO_STORE_V1.setCredits(creditGetData.credits);
             }
           }
-
-          try { window.syncCreditsUI?.({ force: true }); } catch (_) {}
         } catch (_) {}
-      }
 
-      async function tryRefund(reason, extraMeta = {}) {
-        if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
-
-        try {
-          const refundRes = await fetch("/api/credits/refund", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "content-type": "application/json",
-              "accept": "application/json"
-            },
-            body: JSON.stringify({
-              app: "music",
-              action: creditReason,
-              amount: creditCost,
-              request_id: consumeRequestId,
-              related_transaction_id: consumeTransactionId,
-              reason,
-              idempotency_key: `${consumeRequestId}:refund`,
-              meta: {
-                source: "studio.music.generate",
-                prompt: uiPrompt,
-                title: uiTitle,
-                ...extraMeta
-              }
-            })
-          });
-
-          const refundData = await refundRes.json().catch(() => null);
-
-          if (refundRes.ok && refundData?.ok) {
-            await refreshCreditsUI();
-
-            if (refundData?.refunded) {
-              toastError("Müzik üretimi başlatılamadı. Kredi iade edildi.");
-            }
-
-            return true;
-          }
-        } catch (refundErr) {
-          console.error("[music.generate] refund failed:", refundErr);
-        }
-
-        return false;
-      }
-
-      try {
-        const creditRes = await fetch("/api/credits/consume", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "content-type": "application/json",
-            "accept": "application/json"
-          },
-          body: JSON.stringify({
-            cost: creditCost,
-            reason: creditReason,
-            request_id: consumeRequestId
-          })
-        });
-
-        let creditData = null;
-        try { creditData = await creditRes.json(); }
-        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
-
-        if (!creditRes.ok || !creditData?.ok) {
-          const msg =
-            creditData?.error ||
-            creditData?.message ||
-            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-          toastError(msg);
-          return;
-        }
-
-        consumed = true;
-        consumeTransactionId =
-          creditData?.transaction_id ||
-          creditData?.transaction?.id ||
-          creditData?.ledger_transaction_id ||
-          creditData?.data?.transaction_id ||
-          null;
-
-        await refreshCreditsUI();
         toastSuccess("2 kredi düşüldü");
 
       } catch (creditErr) {
@@ -282,14 +216,24 @@ async function generateMusic(payload) {
       try {
         result = await callGenerateAPI(prompt);
       } catch (apiErr) {
-        console.warn("[music.generate] /api/music/generate failed:", apiErr);
+        console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
+        // 2) Fallback: eski service
+        const svc =
+          window.StudioServices ||
+          window.AIVO_SERVICES ||
+          window.AIVO_APP ||
+          null;
 
-        await tryRefund("music_generate_failed", {
-          error: String(apiErr?.message || apiErr || "generate_failed")
-        });
-
-        toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
-        return;
+        if (svc?.generateMusic && typeof svc.generateMusic === "function"){
+          result = await svc.generateMusic({ prompt });
+        }
+        else if (window.generateMusic && typeof window.generateMusic === "function"){
+          result = await window.generateMusic({ prompt });
+        }
+        else {
+          toastError("Generate endpoint hata verdi ve fallback generateMusic fonksiyonu bulunamadı.");
+          return;
+        }
       }
 
       // =========================================================
@@ -326,25 +270,15 @@ async function generateMusic(payload) {
 
       // ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
       // Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
-      if (!provider_job_id) {
-        console.warn("[music.generate] missing provider_job_id, result:", result);
+     if (!provider_job_id) {
+  console.warn("[music.generate] missing provider_job_id, result:", result);
+  toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
+  return;
+}
 
-        await tryRefund("music_missing_provider_job_id", {
-          error: "missing_provider_job_id"
-        });
-
-        toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
-        return;
-      }
-
-      if (!job_id){
+          if (!job_id){
         console.warn("[music.generate] generate response:", result);
-
-        await tryRefund("music_missing_job_id", {
-          error: "missing_job_id"
-        });
-
-        toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
+        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
         return;
       }
 
