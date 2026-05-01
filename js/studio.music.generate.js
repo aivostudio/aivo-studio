@@ -429,7 +429,15 @@ async function generateMusic(payload) {
     console.log("[studio.music.generate] bound OK:", BTN_ID);
   }
 
-  setInterval(bind, 500);
+// bind sadece 1 kere
+document.addEventListener("click", function(e){
+  const btn = e.target.closest("#musicGenerateBtn");
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  doGenerate();
+});
 
   window.addEventListener("DOMContentLoaded", bind);
   window.addEventListener("load", bind);
