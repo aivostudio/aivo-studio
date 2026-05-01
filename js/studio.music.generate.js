@@ -211,12 +211,149 @@ async function generateMusic(payload) {
         return;
       }
 
-         // 1) Direkt API
+        let consumed = false;
+      let consumeTransactionId = null;
+      const creditCost = 2;
+      const creditReason = "studio_music_generate";
+      const consumeRequestId = `music:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+      async function refundMusicCredit(reason, extraMeta = {}) {
+        if (!consumed || !consumeTransactionId) return false;
+
+        try {
+          const refundRes = await fetch("/api/credits/refund", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              app: "music",
+              action: creditReason,
+              amount: creditCost,
+              request_id: consumeRequestId,
+              related_transaction_id: consumeTransactionId,
+              reason,
+              meta: {
+                source: "studio.music.generate",
+                prompt,
+                ...extraMeta
+              }
+            })
+          });
+
+          const refundData = await refundRes.json().catch(() => null);
+
+          if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+            try {
+              const creditGetRes = await fetch("/api/credits/get", {
+                credentials: "include",
+                cache: "no-store",
+                headers: { "accept": "application/json" }
+              });
+
+              const creditGetData = await creditGetRes.json().catch(() => null);
+
+              if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+                const topCreditCountEl = document.getElementById("topCreditCount");
+                if (topCreditCountEl) {
+                  topCreditCountEl.textContent = String(creditGetData.credits);
+                }
+
+                if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+                  window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+                }
+              }
+            } catch (_) {}
+
+            try { window.syncCreditsUI?.({ force: true }); } catch (_) {}
+            toastError("Müzik üretimi başarısız oldu, 2 kredi iade edildi.");
+            return true;
+          }
+        } catch (refundErr) {
+          console.error("[music.generate] refund failed:", refundErr);
+        }
+
+        return false;
+      }
+
+      try {
+        const creditRes = await fetch("/api/credits/consume-ledger", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            app: "music",
+            action: creditReason,
+            cost: creditCost,
+            request_id: consumeRequestId,
+            reason: creditReason
+          })
+        });
+
+        let creditData = null;
+        try { creditData = await creditRes.json(); }
+        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+
+        if (!creditRes.ok || !creditData?.ok) {
+          const msg =
+            creditData?.error ||
+            creditData?.message ||
+            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
+          toastError(msg);
+          return;
+        }
+
+        consumed = true;
+        consumeTransactionId =
+          creditData?.transaction_id ||
+          creditData?.transaction?.id ||
+          null;
+
+        try {
+          const creditGetRes = await fetch("/api/credits/get", {
+            credentials: "include",
+            cache: "no-store",
+            headers: { "accept": "application/json" }
+          });
+
+          const creditGetData = await creditGetRes.json().catch(() => null);
+
+          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+            const topCreditCountEl = document.getElementById("topCreditCount");
+            if (topCreditCountEl) {
+              topCreditCountEl.textContent = String(creditGetData.credits);
+            }
+
+            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            }
+          }
+        } catch (_) {}
+
+        toastSuccess("2 kredi düşüldü");
+
+      } catch (creditErr) {
+        console.error("[music.generate] credits consume failed:", creditErr);
+        toastError("Kredi düşümünde bağlantı hatası oluştu.");
+        return;
+      }
+
+      // 1) Direkt API
       let result = null;
       try {
         result = await callGenerateAPI(prompt);
       } catch (apiErr) {
-        console.warn("[music.generate] /api/music/generate failed. Fallback disabled to prevent duplicate credit consume:", apiErr);
+        console.warn("[music.generate] /api/music/generate failed. Credit refund will be attempted:", apiErr);
+
+        await refundMusicCredit("music_generate_failed", {
+          error: String(apiErr?.message || apiErr || "generate_failed")
+        });
+
         toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
         return;
       }
