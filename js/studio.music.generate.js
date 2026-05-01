@@ -154,63 +154,7 @@ async function generateMusic(payload) {
 
       window.__LAST_PROMPT__ = prompt;
 
-      // ✅ Kredi düş: sadece kullanıcı gerçekten Üret'e bastığında
-      try {
-        const creditRes = await fetch("/api/credits/consume", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "content-type": "application/json",
-            "accept": "application/json"
-          },
-        body: JSON.stringify({
-        cost: 2,
-        reason: "studio_music_generate"
-        })
-        });
-
-        let creditData = null;
-        try { creditData = await creditRes.json(); }
-        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
-
-        if (!creditRes.ok || !creditData?.ok) {
-          const msg =
-            creditData?.error ||
-            creditData?.message ||
-            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-          toastError(msg);
-          return;
-        }
-
-               try {
-          const creditGetRes = await fetch("/api/credits/get", {
-            credentials: "include",
-            cache: "no-store",
-            headers: { "accept": "application/json" }
-          });
-
-          const creditGetData = await creditGetRes.json().catch(() => null);
-
-          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-            const topCreditCountEl = document.getElementById("topCreditCount");
-            if (topCreditCountEl) {
-              topCreditCountEl.textContent = String(creditGetData.credits);
-            }
-
-            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-            }
-          }
-        } catch (_) {}
-
-        toastSuccess("2 kredi düşüldü");
-
-      } catch (creditErr) {
-        console.error("[music.generate] credits consume failed:", creditErr);
-        toastError("Kredi düşümünde bağlantı hatası oluştu.");
-        return;
-      }
-
+   
         let consumed = false;
       let consumeTransactionId = null;
       const creditCost = 2;
