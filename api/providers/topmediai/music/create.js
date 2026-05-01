@@ -103,19 +103,17 @@ export default async function handler(req, res) {
         msg.toLowerCase().includes("abort") ||
         msg.toLowerCase().includes("timeout");
 
-      if (isAbort) {
-        return res.status(202).json({
-          ok: true,
-          provider: "topmediai",
-          status: "processing",
-          state: "PROCESSING",
-          note: "submit_timeout",
-          topmediai_url: topmediaiUrl,
-          sent_payload: payload,
-          // debug: ref audio geldi mi (provider'a göndermedik)
-          reference_audio_ignored: reference_audio_url ? true : false,
-        });
-      }
+if (isAbort) {
+  return res.status(504).json({
+    ok: false,
+    error: "topmediai_submit_timeout",
+    provider: "topmediai",
+    message: "TopMediai üretim isteği zaman aşımına uğradı. Lütfen tekrar deneyin.",
+    topmediai_url: topmediaiUrl,
+    sent_payload: payload,
+    reference_audio_ignored: reference_audio_url ? true : false,
+  });
+}
 
       return res.status(500).json({
         ok: false,
