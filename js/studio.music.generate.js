@@ -298,7 +298,7 @@ async function generateMusic(payload) {
           error: String(apiErr?.message || apiErr || "generate_failed")
         });
 
-       toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin. 2 kredi iade edildi.");
+      toastError("Üretim başarısız. Promptu sadeleştir. 2 kredi iade edildi.");
         return;
       }
 
