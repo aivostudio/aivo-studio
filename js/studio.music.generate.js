@@ -211,29 +211,14 @@ async function generateMusic(payload) {
         return;
       }
 
-      // 1) Direkt API
+         // 1) Direkt API
       let result = null;
       try {
         result = await callGenerateAPI(prompt);
       } catch (apiErr) {
-        console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
-        // 2) Fallback: eski service
-        const svc =
-          window.StudioServices ||
-          window.AIVO_SERVICES ||
-          window.AIVO_APP ||
-          null;
-
-        if (svc?.generateMusic && typeof svc.generateMusic === "function"){
-          result = await svc.generateMusic({ prompt });
-        }
-        else if (window.generateMusic && typeof window.generateMusic === "function"){
-          result = await window.generateMusic({ prompt });
-        }
-        else {
-          toastError("Generate endpoint hata verdi ve fallback generateMusic fonksiyonu bulunamadı.");
-          return;
-        }
+        console.warn("[music.generate] /api/music/generate failed. Fallback disabled to prevent duplicate credit consume:", apiErr);
+        toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
+        return;
       }
 
       // =========================================================
