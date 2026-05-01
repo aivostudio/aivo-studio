@@ -13,7 +13,7 @@ import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-const ALLOWED_SLUGS = new Set(["hero", "atmo", "cartoon", "photofx"]);
+const ALLOWED_SLUGS = new Set(["hero", "atmo", "cartoon", "photofx", "image-to-video"]);
 
 async function uploadFileToR2({ filePath, key, contentType }) {
   const body = fs.createReadStream(filePath);
