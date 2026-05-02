@@ -8,6 +8,8 @@ function pickVideoUrl(data) {
     data?.data?.video_url ||
     data?.data?.videoUrl ||
     data?.data?.url ||
+    data?.data?.output?.video_url ||
+    data?.data?.output?.url ||
     null
   );
 }
@@ -61,17 +63,23 @@ export default async function handler(req, res) {
       });
     }
 
-    const videoId = String(req.query.video_id || req.query.videoId || "").trim();
+    const lipsyncId = String(
+      req.query.lipsync_id ||
+      req.query.lipsyncId ||
+      req.query.video_id ||
+      req.query.videoId ||
+      ""
+    ).trim();
 
-    if (!videoId) {
+    if (!lipsyncId) {
       return res.status(400).json({
         ok: false,
-        error: "video_id_required",
+        error: "lipsync_id_required",
       });
     }
 
     const heygenRes = await fetch(
-      `https://api.heygen.com/v3/videos/${encodeURIComponent(videoId)}`,
+      `https://api.heygen.com/v3/lipsyncs/${encodeURIComponent(lipsyncId)}`,
       {
         method: "GET",
         headers: {
@@ -114,7 +122,8 @@ export default async function handler(req, res) {
       ok: true,
       app: "lipsync",
       provider: "heygen",
-      video_id: videoId,
+      lipsync_id: lipsyncId,
+      video_id: lipsyncId,
       status,
       raw_status: rawStatus,
       video_url: videoUrl,
@@ -127,7 +136,7 @@ export default async function handler(req, res) {
             meta: {
               app: "lipsync",
               provider: "heygen",
-              video_id: videoId,
+              lipsync_id: lipsyncId,
             },
           }
         : null,
