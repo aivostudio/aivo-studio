@@ -214,9 +214,7 @@ export default async function handler(req, res) {
         type: "avatar",
         avatar_id: avatarId,
         script,
-       voice: {
-       voice_id: voiceId,
-       },
+        voice_id: voiceId,
         title,
         resolution,
         aspect_ratio: aspectRatio,
