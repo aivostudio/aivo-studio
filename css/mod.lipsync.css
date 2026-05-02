@@ -765,3 +765,27 @@
   color: rgba(255, 255, 255, 0.68);
   white-space: nowrap;
 }
+/* === LIPSYNC MOTION PRESET GRID FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-preset-row {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100%;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-preset-btn {
+  width: 100% !important;
+  min-height: 54px !important;
+  justify-content: center !important;
+  text-align: center !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 720px) {
+  .main-panel[data-module="lipsync"] .lipsync-preset-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
