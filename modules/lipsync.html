@@ -1,8 +1,75 @@
 <div class="module module-lipsync" data-module-root="lipsync">
-  <div class="placeholder" style="padding:28px;text-align:center;">
-    <div class="ph-title">AI Dudak Senkron Video</div>
-    <div class="ph-sub">
-      Bu bölüm hazırlanıyor. Yakında video + ses yükleyerek dudak senkron video oluşturabileceksin.
+  <div style="display:flex;flex-direction:column;gap:18px;padding:28px;height:100%;box-sizing:border-box;">
+
+    <div style="text-align:center;padding:18px 18px 8px;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-size:13px;font-weight:800;margin-bottom:12px;">
+        AI Dudak Senkron Video
+      </div>
+
+      <div style="font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.15;">
+        Fotoğraf + ses ile konuşan video oluştur
+      </div>
+
+      <div style="margin:10px auto 0;max-width:620px;opacity:.72;font-size:14px;line-height:1.55;">
+        Yüzü net görünen bir fotoğraf ve konuşma sesi yükle. AIVO dudak hareketlerini sese göre senkronlar.
+      </div>
     </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <label style="min-height:210px;border-radius:22px;border:1px dashed rgba(255,255,255,.20);background:rgba(255,255,255,.035);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;cursor:pointer;">
+        <input type="file" accept="image/*" data-lipsync-photo hidden>
+        <div style="font-size:34px;margin-bottom:12px;">🖼️</div>
+        <div style="font-size:17px;font-weight:900;margin-bottom:8px;">Fotoğraf yükle</div>
+        <div style="font-size:13px;opacity:.68;line-height:1.45;">
+          Yüzü net görünen JPG / PNG görsel seç.
+        </div>
+        <div data-lipsync-photo-name style="margin-top:14px;font-size:12px;opacity:.75;"></div>
+      </label>
+
+      <label style="min-height:210px;border-radius:22px;border:1px dashed rgba(255,255,255,.20);background:rgba(255,255,255,.035);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;cursor:pointer;">
+        <input type="file" accept="audio/*" data-lipsync-audio hidden>
+        <div style="font-size:34px;margin-bottom:12px;">🎙️</div>
+        <div style="font-size:17px;font-weight:900;margin-bottom:8px;">Ses yükle</div>
+        <div style="font-size:13px;opacity:.68;line-height:1.45;">
+          MP3 / WAV konuşma sesi yükle.
+        </div>
+        <div data-lipsync-audio-name style="margin-top:14px;font-size:12px;opacity:.75;"></div>
+      </label>
+    </div>
+
+    <div style="border-radius:22px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);padding:18px;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
+        <div>
+          <div style="font-weight:900;font-size:15px;">Hareket ayarları</div>
+          <div style="font-size:12px;opacity:.64;margin-top:4px;">İlk sürüm için hazır tutuldu; üretim motoru destekledikçe aktif bağlanacak.</div>
+        </div>
+
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;">
+          <input type="checkbox" data-lipsync-expressive checked>
+          Daha ifadeli hareket
+        </label>
+      </div>
+
+      <textarea data-lipsync-motion-prompt placeholder="İsteğe bağlı hareket tarifi: sıcak ve samimi konuşsun, hafif gülümsesin..." style="width:100%;min-height:92px;resize:vertical;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.22);color:#fff;padding:14px;font:inherit;box-sizing:border-box;outline:none;"></textarea>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <button type="button" data-lipsync-preset="Heyecanlı ve enerjik" style="border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;">Heyecanlı</button>
+        <button type="button" data-lipsync-preset="Sıcak ve samimi, doğal gülümseme" style="border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;">Sıcak & samimi</button>
+        <button type="button" data-lipsync-preset="Sakin ve dengeli konuşma" style="border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;">Sakin</button>
+        <button type="button" data-lipsync-preset="Düşünceli ve içten ifade" style="border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;">Düşünceli</button>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;display:flex;align-items:center;gap:12px;">
+      <select data-lipsync-resolution style="height:46px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;padding:0 16px;font-weight:800;outline:none;">
+        <option value="720p">720p</option>
+        <option value="1080p" selected>1080p</option>
+      </select>
+
+      <button type="button" data-lipsync-generate style="flex:1;height:52px;border:0;border-radius:999px;background:linear-gradient(90deg,#8b5cf6,#ff5ca8);color:#fff;font-size:16px;font-weight:900;cursor:pointer;">
+        Dudak Senkron Video Üret
+      </button>
+    </div>
+
   </div>
 </div>
