@@ -735,3 +735,33 @@
   min-height: 54px !important;
   border-radius: 999px !important;
 }
+/* === LIPSYNC TEXTAREA META ROW FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-meta-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: -2px;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-file-note {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 750;
+  color: rgba(255, 255, 255, 0.56);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-counter {
+  min-width: 58px;
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.1;
+  font-weight: 850;
+  color: rgba(255, 255, 255, 0.68);
+  white-space: nowrap;
+}
