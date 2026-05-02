@@ -259,10 +259,25 @@ mode,
       mode,
     });
   } catch (err) {
+    const providerMessage =
+      err?.payload?.error?.message ||
+      err?.payload?.message ||
+      err?.payload?.data?.failure_message ||
+      "";
+
+    const isDurationMismatch =
+      String(providerMessage).toLowerCase().includes("durations are too different") ||
+      String(providerMessage).toLowerCase().includes("audio and video durations");
+
     return res.status(err?.status || 500).json({
       ok: false,
-      error: "lipsync_generate_error",
-      detail: err && err.message ? String(err.message) : String(err),
+      error: isDurationMismatch ? "lipsync_duration_mismatch" : "lipsync_generate_error",
+      detail: isDurationMismatch
+        ? "Video ve ses süreleri birbirine çok yakın olmalı. HeyGen en fazla yaklaşık %15 süre farkı kabul ediyor."
+        : err && err.message
+          ? String(err.message)
+          : String(err),
+      provider_message: providerMessage || null,
       payload: err?.payload || null,
     });
   }
