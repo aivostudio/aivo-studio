@@ -677,3 +677,16 @@
   color: rgba(255, 255, 255, 0.72);
   font-weight: 650;
 }
+/* === LIPSYNC TOP GAP FIX AFTER HERO REMOVAL === */
+
+.main-panel[data-module="lipsync"] .lipsync-shell {
+  padding-top: 18px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-card {
+  margin-top: 0 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-dev-notice {
+  margin-top: 0 !important;
+}
