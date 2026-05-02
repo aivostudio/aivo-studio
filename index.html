@@ -1075,6 +1075,17 @@
   href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr"
   target="_blank"
   rel="noopener"
+  onclick="
+    try {
+      if (typeof gtag === 'function') {
+        gtag('event', 'youtube_education_click', {
+          event_category: 'engagement',
+          event_label: 'home_hero_youtube_education_button',
+          value: 1
+        });
+      }
+    } catch(e) {}
+  "
 >
   🎬 YouTube’da Tüm Eğitimleri İzle
 </a>
