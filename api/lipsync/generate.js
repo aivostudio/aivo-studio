@@ -1,4 +1,6 @@
-module.exports = async function handler(req, res) {
+export const config = { runtime: "nodejs" };
+
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({
@@ -6,6 +8,8 @@ module.exports = async function handler(req, res) {
         error: "method_not_allowed",
       });
     }
+
+    res.setHeader("Cache-Control", "no-store");
 
     const apiKey = String(process.env.HEYGEN_API_KEY || "").trim();
 
@@ -30,4 +34,4 @@ module.exports = async function handler(req, res) {
       detail: err && err.message ? String(err.message) : String(err),
     });
   }
-};
+}
