@@ -57,7 +57,8 @@
         header: {
           title: "AI Dudak Senkron Video",
           meta: "Hazırlanıyor",
-          searchEnabled: false,
+       searchEnabled: true,
+       searchPlaceholder: "Dudak senkron videolarda ara...",
           resetSearch: true,
         },
 
