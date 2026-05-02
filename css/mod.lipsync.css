@@ -1,6 +1,5 @@
 /* ================================
-   LIPSYNC MODULE
-   Color language: Child Cartoon / AIVO purple-pink
+   LIPSYNC MODULE — PREMIUM CANVAS
 ================================ */
 
 .module-lipsync {
@@ -10,153 +9,188 @@
   color: #fff;
 }
 
+.main-panel[data-module="lipsync"] {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(116, 76, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 74% 18%, rgba(37, 199, 255, 0.10), transparent 28%),
+    #060812;
+}
+
 .lipsync-shell {
   height: 100%;
   box-sizing: border-box;
-  padding: 26px;
+  padding: 34px 34px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+}
+
+.lipsync-hero {
+  width: min(920px, 100%);
+  text-align: center;
+  margin: 0 0 22px;
+  padding: 0;
+}
+
+.lipsync-kicker {
+  display: none;
+}
+
+.lipsync-title {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: -0.055em;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.lipsync-subtitle {
+  margin: 10px auto 0;
+  max-width: 720px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 650;
+}
+
+.lipsync-card {
+  width: min(920px, 100%);
+  box-sizing: border-box;
+  border-radius: 30px;
+  border: 1px solid rgba(48, 177, 255, 0.56);
+  background:
+    radial-gradient(circle at 38% 0%, rgba(92, 255, 219, 0.10), transparent 32%),
+    radial-gradient(circle at 78% 0%, rgba(171, 89, 255, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(29, 31, 39, 0.92), rgba(14, 16, 22, 0.98));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+    0 28px 90px rgba(0, 0, 0, 0.46),
+    0 0 70px rgba(34, 173, 255, 0.08);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.lipsync-hero {
-  text-align: center;
-  padding: 6px 12px 2px;
-}
-
-.lipsync-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(160, 110, 255, 0.22);
-  background: rgba(255, 255, 255, 0.06);
+.lipsync-dev-notice {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 210, 92, 0.16);
+  background: rgba(255, 210, 92, 0.07);
+  color: rgba(255, 244, 206, 0.88);
+  padding: 13px 15px;
   font-size: 13px;
-  font-weight: 900;
-  margin-bottom: 12px;
-}
-
-.lipsync-title {
-  font-size: 26px;
-  font-weight: 950;
-  letter-spacing: -0.04em;
-  line-height: 1.08;
-}
-
-.lipsync-subtitle {
-  margin: 10px auto 0;
-  max-width: 660px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
-  line-height: 1.55;
-  font-weight: 600;
-}
-
-.lipsync-card {
-  border-radius: 28px;
-  border: 1px solid rgba(196, 132, 255, 0.18);
-  background:
-    radial-gradient(120% 140% at 0% 0%, rgba(159, 90, 253, 0.13), transparent 54%),
-    linear-gradient(180deg, rgba(34, 24, 66, 0.96), rgba(9, 10, 34, 0.98));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 18px 44px rgba(0, 0, 0, 0.28);
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  line-height: 1.45;
+  font-weight: 750;
 }
 
 .lipsync-grid {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 16px;
-  min-height: 430px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.85fr);
+  gap: 18px;
+  min-height: 520px;
 }
 
 .lipsync-block {
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.075);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
-    rgba(8, 8, 20, 0.58);
-  padding: 18px;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(10, 11, 17, 0.70);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 18px 34px rgba(0, 0, 0, 0.20);
 }
 
 .lipsync-block--speech {
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .lipsync-block-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .lipsync-block-title {
   font-size: 18px;
   line-height: 1.1;
   font-weight: 950;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .lipsync-block-sub {
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.62);
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.50);
   font-size: 12px;
   line-height: 1.35;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .lipsync-icon-actions {
   display: flex;
-  gap: 8px;
+  gap: 9px;
 }
 
 .lipsync-icon-btn {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   cursor: pointer;
-  font-size: 20px;
   transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 }
 
 .lipsync-icon-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(220, 120, 255, 0.42);
+  border-color: rgba(46, 202, 255, 0.58);
   background: rgba(255, 255, 255, 0.085);
+}
+
+.lipsync-icon-btn svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 2.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .lipsync-textarea {
   flex: 1;
-  min-height: 250px;
+  min-height: 360px;
   width: 100%;
   resize: none;
   border: 0;
   outline: none;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(255, 255, 255, 0.94);
-  padding: 18px;
+  border-radius: 22px;
+  background: rgba(5, 6, 11, 0.74);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 20px;
   font: inherit;
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.6;
   box-sizing: border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.055),
+    inset 0 18px 44px rgba(0, 0, 0, 0.20);
 }
 
 .lipsync-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.38);
+  color: rgba(255, 255, 255, 0.36);
 }
 
 .lipsync-meta-row {
@@ -169,10 +203,12 @@
 .lipsync-file-note,
 .lipsync-counter {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.52);
+  font-weight: 650;
 }
 
 .lipsync-file-note {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -186,12 +222,13 @@
 }
 
 .lipsync-pill-btn {
-  min-height: 40px;
+  min-height: 42px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.055);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025));
   color: #fff;
-  padding: 0 14px;
+  padding: 0 15px;
   font: inherit;
   font-size: 13px;
   font-weight: 900;
@@ -201,51 +238,99 @@
 
 .lipsync-pill-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(220, 120, 255, 0.42);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(46, 202, 255, 0.46);
+  background: rgba(255, 255, 255, 0.085);
 }
 
 .lipsync-photo-zone {
-  border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.16);
+  padding: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border-style: solid;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(11, 12, 18, 0.70);
+}
+
+.lipsync-photo-zone::before {
+  content: "Fotoğraf";
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .lipsync-photo-label {
   flex: 1;
-  min-height: 360px;
+  min-height: 420px;
+  margin: 12px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.025);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(121, 75, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 22px;
+  padding: 24px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.lipsync-photo-label:hover {
+  border-color: rgba(46, 202, 255, 0.60);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(46, 202, 255, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.048), rgba(255, 255, 255, 0.018));
 }
 
 .lipsync-photo-icon {
-  font-size: 42px;
-  margin-bottom: 14px;
+  width: 94px;
+  height: 94px;
+  border-radius: 30px;
+  margin: 0 auto 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.095), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.lipsync-photo-icon svg {
+  width: 38px;
+  height: 38px;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.82);
+  stroke-width: 1.85;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .lipsync-photo-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 950;
+  letter-spacing: -0.025em;
   margin-bottom: 8px;
 }
 
 .lipsync-photo-text {
-  max-width: 330px;
+  max-width: 250px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.5;
-  font-weight: 650;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.45;
+  font-weight: 750;
 }
 
 .lipsync-photo-preview {
@@ -263,44 +348,83 @@
   right: 14px;
   bottom: 14px;
   font-size: 12px;
-  font-weight: 800;
-  padding: 9px 11px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.42);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(10px);
+  font-weight: 850;
+  padding: 10px 12px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.50);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
   display: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.lipsync-photo-controls {
+  padding: 0 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lipsync-select {
+  height: 48px;
+  min-width: 128px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  padding: 0 15px;
+  font: inherit;
+  font-weight: 950;
+  outline: none;
+}
+
+.lipsync-settings-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .lipsync-motion {
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.035);
-  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(10, 11, 17, 0.68);
+  padding: 18px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 34px rgba(0, 0, 0, 0.18);
 }
 
 .lipsync-motion-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
 }
 
 .lipsync-motion-title {
   font-weight: 950;
-  font-size: 15px;
+  font-size: 16px;
+  letter-spacing: -0.02em;
 }
 
 .lipsync-motion-sub {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.52);
   margin-top: 4px;
+  font-weight: 700;
 }
 
 .lipsync-switch-label {
@@ -312,22 +436,28 @@
   white-space: nowrap;
 }
 
+.lipsync-switch-label input {
+  accent-color: #22caff;
+}
+
 .lipsync-motion-textarea {
   width: 100%;
-  min-height: 78px;
+  min-height: 76px;
   resize: vertical;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(0, 0, 0, 0.22);
-  color: #fff;
-  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(5, 6, 11, 0.68);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 15px 16px;
   font: inherit;
   box-sizing: border-box;
   outline: none;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .lipsync-motion-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.38);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .lipsync-preset-row {
@@ -337,11 +467,11 @@
 }
 
 .lipsync-preset-btn {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.055);
   color: #fff;
   border-radius: 999px;
-  padding: 9px 13px;
+  padding: 10px 15px;
   font: inherit;
   font-size: 13px;
   font-weight: 900;
@@ -352,8 +482,9 @@
 .lipsync-preset-btn:hover,
 .lipsync-preset-btn.is-selected {
   transform: translateY(-1px);
-  border-color: rgba(220, 120, 255, 0.72);
-  background: linear-gradient(180deg, rgba(163, 99, 255, 0.18), rgba(255, 92, 168, 0.12));
+  border-color: rgba(46, 202, 255, 0.62);
+  background:
+    linear-gradient(180deg, rgba(46, 202, 255, 0.16), rgba(143, 91, 255, 0.12));
 }
 
 .lipsync-footer {
@@ -362,49 +493,29 @@
   gap: 12px;
 }
 
-.lipsync-select {
-  height: 50px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  padding: 0 16px;
-  font: inherit;
-  font-weight: 950;
-  outline: none;
-}
-
-.lipsync-settings-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  font-size: 20px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
 .lipsync-generate-btn {
-  flex: 1;
-  height: 54px;
+  width: 100%;
+  min-height: 56px;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8b5cf6 0%, #ec5ba7 100%);
+  background: linear-gradient(90deg, #7c5cff 0%, #21c8ff 100%);
   color: #fff;
   font: inherit;
   font-size: 16px;
   font-weight: 950;
   cursor: pointer;
-  box-shadow: 0 18px 46px rgba(255, 92, 168, 0.20);
+  box-shadow:
+    0 18px 42px rgba(33, 200, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
 }
 
 .lipsync-generate-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 22px 54px rgba(255, 92, 168, 0.26);
+  filter: brightness(1.06);
+  box-shadow:
+    0 22px 54px rgba(33, 200, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .lipsync-generate-btn:active {
@@ -412,32 +523,63 @@
 }
 
 @media (max-width: 1180px) {
+  .lipsync-shell {
+    padding: 26px 22px 34px;
+  }
+
   .lipsync-grid {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .lipsync-textarea {
+    min-height: 270px;
   }
 
   .lipsync-photo-label {
-    min-height: 280px;
+    min-height: 300px;
   }
 }
 
 @media (max-width: 720px) {
   .lipsync-shell {
-    padding: 16px;
+    padding: 18px 14px 28px;
+  }
+
+  .lipsync-title {
+    font-size: 26px;
+  }
+
+  .lipsync-subtitle {
+    font-size: 13px;
   }
 
   .lipsync-card {
     padding: 14px;
-    border-radius: 22px;
+    border-radius: 24px;
   }
 
-  .lipsync-grid {
-    gap: 12px;
+  .lipsync-dev-notice {
+    font-size: 12px;
   }
 
+  .lipsync-block--speech {
+    padding: 16px;
+  }
+
+  .lipsync-block-head,
   .lipsync-motion-head,
   .lipsync-meta-row,
   .lipsync-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lipsync-icon-actions {
+    justify-content: flex-start;
+  }
+
+  .lipsync-photo-controls {
     flex-direction: column;
     align-items: stretch;
   }
@@ -447,99 +589,4 @@
   .lipsync-generate-btn {
     width: 100%;
   }
-}
-/* === LIPSYNC HEADER COMPACT LIKE CARTOON === */
-
-.main-panel[data-module="lipsync"] .lipsync-shell {
-  padding: 18px 24px 28px;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-hero {
-  margin-bottom: 12px;
-  padding: 18px;
-  border-radius: 20px;
-  border: 1px solid rgba(160, 110, 255, 0.16);
-  background: linear-gradient(180deg, rgba(28, 18, 55, 0.58), rgba(20, 14, 40, 0.68));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 14px 34px rgba(0, 0, 0, 0.45);
-}
-
-.main-panel[data-module="lipsync"] .lipsync-kicker {
-  display: none;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-title {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.15;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.96);
-  letter-spacing: 0.2px;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-subtitle {
-  margin: 6px 0 0;
-  max-width: none;
-  font-size: 13px;
-  line-height: 1.3;
-  color: rgba(255, 255, 255, 0.72);
-}
-/* === LIPSYNC CTA FULL WIDTH LIKE CARTOON === */
-
-.main-panel[data-module="lipsync"] .lipsync-footer {
-  width: 100%;
-  margin: 18px 0 0;
-  box-sizing: border-box;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-generate-btn {
-  width: 100%;
-  min-width: 0;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-card {
-  padding-bottom: 20px;
-}
-/* === LIPSYNC PROMPT INPUT LIKE CARTOON === */
-
-.main-panel[data-module="lipsync"] .lipsync-textarea,
-.main-panel[data-module="lipsync"] .lipsync-motion-textarea {
-  background: rgba(8, 8, 20, 0.72) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255,255,255,.92) !important;
-  box-shadow: none !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-textarea::placeholder,
-.main-panel[data-module="lipsync"] .lipsync-motion-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.38) !important;
-}
-/* === LIPSYNC FOOTER: CONTROLS TOP, CTA FULL WIDTH === */
-
-.main-panel[data-module="lipsync"] .lipsync-footer {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 12px !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-select,
-.main-panel[data-module="lipsync"] .lipsync-settings-btn {
-  flex: 0 0 auto !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-generate-btn {
-  flex: 0 0 100% !important;
-  width: 100% !important;
-}
-/* === LIPSYNC PREMIUM SVG ICONS === */
-
-.main-panel[data-module="lipsync"] .lipsync-icon-btn svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: rgba(255,255,255,.92);
-  stroke-width: 2.15;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
