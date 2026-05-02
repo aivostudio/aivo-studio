@@ -174,13 +174,15 @@ export default async function handler(req, res) {
     const lipsyncPayload = await heygenJson(
       "/v3/lipsyncs",
       {
-        video: {
-          url: videoUrl,
-        },
-        audio: {
-          url: audioUrl,
-        },
-        mode,
+      video: {
+  type: "url",
+  url: videoUrl,
+},
+audio: {
+  type: "url",
+  url: audioUrl,
+},
+mode,
       },
       apiKey
     );
