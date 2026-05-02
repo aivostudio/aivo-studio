@@ -515,3 +515,20 @@
 .main-panel[data-module="lipsync"] .lipsync-motion-textarea::placeholder {
   color: rgba(255, 255, 255, 0.38) !important;
 }
+/* === LIPSYNC FOOTER: CONTROLS TOP, CTA FULL WIDTH === */
+
+.main-panel[data-module="lipsync"] .lipsync-footer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-select,
+.main-panel[data-module="lipsync"] .lipsync-settings-btn {
+  flex: 0 0 auto !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-generate-btn {
+  flex: 0 0 100% !important;
+  width: 100% !important;
+}
