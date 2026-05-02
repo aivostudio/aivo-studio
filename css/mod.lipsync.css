@@ -590,3 +590,48 @@
     width: 100%;
   }
 }
+/* === LIPSYNC AIVO PURPLE/PINK COLOR SYNC === */
+
+.main-panel[data-module="lipsync"] {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(154, 96, 255, 0.20), transparent 34%),
+    radial-gradient(circle at 76% 18%, rgba(236, 91, 167, 0.11), transparent 30%),
+    #070617;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-card {
+  border-color: rgba(139, 92, 246, 0.42);
+  background:
+    radial-gradient(circle at 28% 0%, rgba(139, 92, 246, 0.22), transparent 38%),
+    radial-gradient(circle at 80% 0%, rgba(236, 91, 167, 0.16), transparent 36%),
+    linear-gradient(180deg, rgba(35, 24, 69, 0.96), rgba(12, 10, 31, 0.98));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 28px 90px rgba(0, 0, 0, 0.46),
+    0 0 70px rgba(139, 92, 246, 0.13);
+}
+
+.main-panel[data-module="lipsync"] .lipsync-photo-label:hover,
+.main-panel[data-module="lipsync"] .lipsync-icon-btn:hover,
+.main-panel[data-module="lipsync"] .lipsync-pill-btn:hover,
+.main-panel[data-module="lipsync"] .lipsync-preset-btn:hover,
+.main-panel[data-module="lipsync"] .lipsync-preset-btn.is-selected {
+  border-color: rgba(236, 91, 167, 0.58);
+}
+
+.main-panel[data-module="lipsync"] .lipsync-switch-label input {
+  accent-color: #ec5ba7;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-generate-btn {
+  background: linear-gradient(90deg, #7c4dff 0%, #ec5ba7 100%);
+  box-shadow:
+    0 18px 42px rgba(236, 91, 167, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.main-panel[data-module="lipsync"] .lipsync-generate-btn:hover {
+  box-shadow:
+    0 22px 54px rgba(236, 91, 167, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
