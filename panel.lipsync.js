@@ -5,14 +5,38 @@
   function createLipSyncPanel(host) {
     host.innerHTML = `
       <div style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
+        padding:16px;
         height:100%;
-        font-size:14px;
-        opacity:.7;
+        box-sizing:border-box;
       ">
-        Lipsync panel hazırlanıyor...
+        <div style="
+          display:flex;
+          flex-direction:column;
+          gap:14px;
+        ">
+          <div style="
+            padding:18px;
+            border-radius:18px;
+            background:rgba(255,255,255,0.035);
+            border:1px solid rgba(255,255,255,0.07);
+          ">
+            <div style="
+              font-weight:800;
+              font-size:15px;
+              margin-bottom:8px;
+            ">
+              Henüz lipsync video yok
+            </div>
+
+            <div style="
+              opacity:.72;
+              font-size:13px;
+              line-height:1.5;
+            ">
+              Bu bölüm hazırlanıyor. Yakında video + ses yükleyerek dudak senkron video oluşturabileceksin.
+            </div>
+          </div>
+        </div>
       </div>
     `;
 
@@ -34,6 +58,7 @@
           title: "AI Dudak Senkron Video",
           meta: "Hazırlanıyor",
           searchEnabled: false,
+          resetSearch: true,
         },
 
         mount(host) {
