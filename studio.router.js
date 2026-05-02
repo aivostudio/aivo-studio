@@ -26,29 +26,31 @@ window.ensureModuleCSS = function () {
     settings: "settings",
   };
 
-  const ROUTES = new Set([
-    "music",
-    "video",
-    "cover",
-    "atmo",
-    "cartoon",
-    "photofx",
-    "invoices",
-    "profile",
-    "settings",
-  ]);
+ const ROUTES = new Set([
+  "music",
+  "video",
+  "lipsync",
+  "cover",
+  "atmo",
+  "cartoon",
+  "photofx",
+  "invoices",
+  "profile",
+  "settings",
+]);
 
-  const MODULE_FILES = {
-    music: "/modules/music.html",
-    video: "/modules/video.html",
-    cover: "/modules/cover.html",
-    atmo: "/modules/atmosphere.html",
-    cartoon: "/modules/child-cartoon.html",
-    photofx: "/modules/photofx.html",
-    invoices: "/modules/invoices.html",
-    profile: "/modules/profile.html",
-    settings: "/modules/settings.html",
-  };
+const MODULE_FILES = {
+  music: "/modules/music.html",
+  video: "/modules/video.html",
+  lipsync: "/modules/lipsync.html",
+  cover: "/modules/cover.html",
+  atmo: "/modules/atmosphere.html",
+  cartoon: "/modules/child-cartoon.html",
+  photofx: "/modules/photofx.html",
+  invoices: "/modules/invoices.html",
+  profile: "/modules/profile.html",
+  settings: "/modules/settings.html",
+};
 
   let __moduleLoadSeq = 0;
   let __moduleLoadCtrl = null;
