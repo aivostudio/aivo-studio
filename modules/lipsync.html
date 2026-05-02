@@ -50,6 +50,15 @@
             <div class="lipsync-counter" data-lipsync-counter>0 / 1200</div>
           </div>
 
+          <div class="lipsync-voice-row">
+            <button type="button" class="lipsync-pill-btn" data-lipsync-voice="tranquil_tulin">
+              🔊 Tranquil Tülin
+            </button>
+
+            <button type="button" class="lipsync-pill-btn" data-lipsync-preview-voice>
+              ▶ Ön Dinle
+            </button>
+          </div>
         </section>
 
         <section class="lipsync-block lipsync-photo-zone">
@@ -76,36 +85,20 @@
             <div class="lipsync-photo-name" data-lipsync-photo-name></div>
           </label>
 
-      
+          <div class="lipsync-photo-controls">
+            <select class="lipsync-select" data-lipsync-resolution>
+              <option value="720p">720p</option>
+              <option value="1080p" selected>1080p</option>
+            </select>
+
+            <button type="button" class="lipsync-settings-btn" data-lipsync-settings>
+              ⚙
+            </button>
+          </div>
         </section>
       </div>
 
-         <footer class="lipsync-footer lipsync-footer--studio">
-        <div class="lipsync-footer-left">
-          <button type="button" class="lipsync-pill-btn" data-lipsync-voice="tranquil_tulin">
-            🔊 Tranquil Tülin
-          </button>
-
-          <button type="button" class="lipsync-pill-btn" data-lipsync-preview-voice>
-            ▶ Ön Dinle
-          </button>
-
-          <select class="lipsync-select" data-lipsync-resolution>
-            <option value="720p">720p</option>
-            <option value="1080p" selected>1080p</option>
-          </select>
-
-          <button type="button" class="lipsync-settings-btn" data-lipsync-settings>
-            ⚙
-          </button>
-        </div>
-
-        <button type="button" class="lipsync-generate-btn" data-lipsync-generate>
-          ↑
-        </button>
-      </footer>
-
-      <section class="lipsync-motion lipsync-motion--compact">
+      <section class="lipsync-motion">
         <div class="lipsync-motion-head">
           <div>
             <div class="lipsync-motion-title">Hareket ayarları</div>
@@ -131,6 +124,12 @@
           <button type="button" class="lipsync-preset-btn" data-lipsync-preset="Düşünceli, içten ve yumuşak ifade kullansın.">Düşünceli</button>
         </div>
       </section>
+
+      <footer class="lipsync-footer">
+        <button type="button" class="lipsync-generate-btn" data-lipsync-generate>
+          Dudak Senkron Video Üret
+        </button>
+      </footer>
     </div>
   </div>
 </section>
