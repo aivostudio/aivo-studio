@@ -16,36 +16,14 @@ function pickConn() {
   );
 }
 
-function pickAvatarId(payload) {
+function pickLipsyncId(payload) {
   return (
-    payload?.data?.avatar_item?.id ||
-    payload?.data?.avatar_id ||
-    payload?.avatar_id ||
-    payload?.id ||
-    null
-  );
-}
-
-function pickVideoId(payload) {
-  return (
-    payload?.data?.video_id ||
+    payload?.data?.lipsync_id ||
     payload?.data?.id ||
-    payload?.video_id ||
+    payload?.lipsync_id ||
     payload?.id ||
     null
   );
-}
-
-function normalizeAspectRatio(value) {
-  const v = String(value || "9:16").trim();
-  return v === "16:9" ? "16:9" : "9:16";
-}
-
-function normalizeResolution(value) {
-  const v = String(value || "1080p").trim().toLowerCase();
-  if (v === "720p") return "720p";
-  if (v === "4k") return "4k";
-  return "1080p";
 }
 
 function calculateCost(durationSeconds) {
@@ -136,33 +114,41 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
 
-    const imageUrl = String(body.imageUrl || body.image_url || "").trim();
-    const script = String(body.script || body.prompt || "").trim();
-    const voiceId = String(body.voiceId || body.voice_id || "").trim();
+    const videoUrl = String(
+      body.videoUrl ||
+      body.video_url ||
+      body.inputVideoUrl ||
+      body.input_video_url ||
+      ""
+    ).trim();
+
+    const audioUrl = String(
+      body.audioUrl ||
+      body.audio_url ||
+      body.inputAudioUrl ||
+      body.input_audio_url ||
+      ""
+    ).trim();
+
     const title = String(body.title || "AIVO Lipsync Video").trim();
-    const aspectRatio = normalizeAspectRatio(body.aspectRatio || body.aspect_ratio);
-    const resolution = normalizeResolution(body.resolution);
-    const durationSeconds = Math.max(10, Math.min(60, Number(body.durationSeconds || body.duration || 10)));
+    const mode = String(body.mode || "speed").trim() || "speed";
+    const durationSeconds = Math.max(
+      10,
+      Math.min(60, Number(body.durationSeconds || body.duration || 10))
+    );
     const cost = calculateCost(durationSeconds);
 
-    if (!imageUrl) {
+    if (!videoUrl) {
       return res.status(400).json({
         ok: false,
-        error: "image_url_required",
+        error: "video_url_required",
       });
     }
 
-    if (!script) {
+    if (!audioUrl) {
       return res.status(400).json({
         ok: false,
-        error: "script_required",
-      });
-    }
-
-    if (!voiceId) {
-      return res.status(400).json({
-        ok: false,
-        error: "voice_id_required",
+        error: "audio_url_required",
       });
     }
 
@@ -185,51 +171,27 @@ export default async function handler(req, res) {
 
     const userUuid = String(userRows[0].id);
 
-    const avatarPayload = await heygenJson(
-      "/v3/avatars",
+    const lipsyncPayload = await heygenJson(
+      "/v3/lipsyncs",
       {
-        type: "photo",
-        name: title,
-        file: {
-          type: "url",
-          url: imageUrl,
+        video: {
+          url: videoUrl,
         },
+        audio: {
+          url: audioUrl,
+        },
+        mode,
       },
       apiKey
     );
 
-    const avatarId = pickAvatarId(avatarPayload);
+    const lipsyncId = pickLipsyncId(lipsyncPayload);
 
-    if (!avatarId) {
+    if (!lipsyncId) {
       return res.status(502).json({
         ok: false,
-        error: "heygen_avatar_id_missing",
-        payload: avatarPayload,
-      });
-    }
-
-    const videoPayload = await heygenJson(
-      "/v3/videos",
-      {
-        type: "avatar",
-        avatar_id: avatarId,
-        script,
-        voice_id: voiceId,
-        title,
-        resolution,
-        aspect_ratio: aspectRatio,
-      },
-      apiKey
-    );
-
-    const videoId = pickVideoId(videoPayload);
-
-    if (!videoId) {
-      return res.status(502).json({
-        ok: false,
-        error: "heygen_video_id_missing",
-        avatar_id: avatarId,
-        payload: videoPayload,
+        error: "heygen_lipsync_id_missing",
+        payload: lipsyncPayload,
       });
     }
 
@@ -237,23 +199,19 @@ export default async function handler(req, res) {
       app: "lipsync",
       kind: "lipsync_video",
       provider: "heygen",
-      providerJobId: videoId,
-      heygen_video_id: videoId,
-      heygen_avatar_id: avatarId,
-      imageUrl,
-      script,
-      voiceId,
+      providerJobId: lipsyncId,
+      heygen_lipsync_id: lipsyncId,
+      videoUrl,
+      audioUrl,
       title,
-      aspectRatio,
-      resolution,
+      mode,
       durationSeconds,
       cost,
       pricing: {
         unit: "aivo_credit",
         per_10_seconds: 15,
       },
-      avatarPayload,
-      videoPayload,
+      lipsyncPayload,
     };
 
     const inserted = await sql`
@@ -275,7 +233,7 @@ export default async function handler(req, res) {
         'lipsync',
         'lipsync',
         'processing',
-        ${script},
+        ${title},
         ${JSON.stringify(metaSafe)}::jsonb,
         '[]'::jsonb,
         now(),
@@ -294,11 +252,9 @@ export default async function handler(req, res) {
       user_uuid: inserted[0].user_uuid,
       status: inserted[0].status,
       created_at: inserted[0].created_at,
-      avatar_id: avatarId,
-      video_id: videoId,
+      lipsync_id: lipsyncId,
       cost,
-      aspect_ratio: aspectRatio,
-      resolution,
+      mode,
     });
   } catch (err) {
     return res.status(err?.status || 500).json({
