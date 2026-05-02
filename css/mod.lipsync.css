@@ -690,3 +690,24 @@
 .main-panel[data-module="lipsync"] .lipsync-dev-notice {
   margin-top: 0 !important;
 }
+/* === LIPSYNC HEIGHT COMPACT FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-grid {
+  min-height: 455px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-textarea {
+  min-height: 285px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-photo-label {
+  min-height: 350px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-block--speech {
+  gap: 12px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-card {
+  gap: 14px !important;
+}
