@@ -14,17 +14,18 @@ window.ensureModuleCSS = function () {
   }
   window.__AIVO_ROUTER_BOOTED__ = true;
 
-  const RIGHT_PANEL_KEY = {
-    music: "music",
-    video: "video",
-    cover: "cover",
-    atmo: "atmo",
-    cartoon: "cartoon",
-    photofx: "photofx",
-    invoices: "invoices",
-    profile: "profile",
-    settings: "settings",
-  };
+ const RIGHT_PANEL_KEY = {
+  music: "music",
+  video: "video",
+  lipsync: "lipsync",
+  cover: "cover",
+  atmo: "atmo",
+  cartoon: "cartoon",
+  photofx: "photofx",
+  invoices: "invoices",
+  profile: "profile",
+  settings: "settings",
+};
 
  const ROUTES = new Set([
   "music",
