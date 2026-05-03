@@ -1309,3 +1309,39 @@
 .main-panel[data-module="lipsync"] .lipsync-preview-voice-btn strong {
   font-size: 11px !important;
 }
+/* === LIPSYNC SETTINGS BUTTON PREMIUM FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-bar {
+  grid-template-columns: minmax(0, 1fr) 46px 148px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-btn {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045)) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 12px 24px rgba(0, 0, 0, 0.22) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-btn:hover {
+  transform: translateY(-1px) !important;
+  background:
+    radial-gradient(circle at 35% 20%, rgba(236, 91, 167, 0.26), transparent 36%),
+    linear-gradient(135deg, rgba(124, 77, 255, 0.72), rgba(236, 91, 167, 0.62)) !important;
+  box-shadow:
+    0 14px 28px rgba(236, 91, 167, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+}
