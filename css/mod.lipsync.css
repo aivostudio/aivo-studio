@@ -858,3 +858,26 @@
   justify-content: flex-end !important;
   white-space: nowrap !important;
 }
+/* === LIPSYNC CTA STICKY FINAL === */
+
+.main-panel[data-module="lipsync"] .lipsync-footer {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 20 !important;
+  margin-top: 10px !important;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom)) !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(28,18,55,.92), rgba(12,10,34,.96)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 -10px 30px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-generate-btn {
+  min-height: 58px !important;
+}
