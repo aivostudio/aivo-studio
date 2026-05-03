@@ -312,7 +312,7 @@
 
       render(currentDbItems);
     };
-         const onJobReady = (e) => {
+      const onJobReady = (e) => {
       const d = e?.detail || {};
       const jobId = safeStr(d.job_id);
 
@@ -328,33 +328,62 @@
         ""
       );
 
-      const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
+      const outputs = Array.isArray(d?.outputs) && d.outputs.length
+        ? d.outputs
+        : videoUrl
+          ? [
+              {
+                type: "video",
+                url: videoUrl,
+                meta: {
+                  app: "lipsync",
+                  variant: "provider",
+                  is_final: true
+                }
+              }
+            ]
+          : [];
+
+      let found = false;
 
       currentDbItems = currentDbItems.map((job) => {
         if (idOf(job) !== jobId) return job;
+
+        found = true;
 
         return {
           ...job,
           status: "ready",
           db_status: "ready",
           state: "COMPLETED",
-          outputs: outputs.length
-            ? outputs
-            : videoUrl
-              ? [
-                  {
-                    type: "video",
-                    url: videoUrl,
-                    meta: {
-                      app: "lipsync",
-                      variant: "provider",
-                      is_final: true
-                    }
-                  }
-                ]
-              : job.outputs || []
+          outputs: outputs.length ? outputs : job.outputs || []
         };
       });
+
+      if (!found) {
+        currentDbItems = [
+          {
+            job_id: jobId,
+            id: jobId,
+            app: "lipsync",
+            status: "ready",
+            db_status: "ready",
+            state: "COMPLETED",
+            createdAt: Date.now(),
+            created_at: Date.now(),
+            meta: {
+              app: "lipsync",
+              script: safeStr(d?.raw?.prompt || d?.raw?.meta?.script || "")
+            },
+            outputs
+          },
+          ...currentDbItems
+        ];
+      }
+
+      try {
+        controller?.upsert?.(currentDbItems.find((x) => idOf(x) === jobId));
+      } catch {}
 
       render(currentDbItems);
     };
