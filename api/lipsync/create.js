@@ -234,9 +234,25 @@ const LIPSYNC_ALLOWED_VOICES = {
     voice_id: "117821d0abb146e89cc2a2e99f65d807",
     voice_name: "Iker"
   },
+  deep_dieter: {
+    voice_id: "118949676b0a46629d1ad52981c3ef84",
+    voice_name: "Deep Dieter"
+  },
   william: {
     voice_id: "13be37a20b2448b7ad9db1a8669e5569",
     voice_name: "William Prescott"
+  },
+  menon: {
+    voice_id: "145980ae9ed74dd880175c44cc08615a",
+    voice_name: "Menon"
+  },
+  knox: {
+    voice_id: "158b76b48ed048d381951887e771e412",
+    voice_name: "Knox"
+  },
+  aaron: {
+    voice_id: "184c9014f94142ae949363089aaf53dd",
+    voice_name: "Aaron"
   },
   lily: {
     voice_id: "14979664b31246cbb735cc86d17b7907",
@@ -245,6 +261,26 @@ const LIPSYNC_ALLOWED_VOICES = {
   april: {
     voice_id: "1508afc3681349ad842f2e7194b7eb22",
     voice_name: "April"
+  },
+  tiffany: {
+    voice_id: "1519fd8fe5d440a2b58770a6762511de",
+    voice_name: "Tiffany"
+  },
+  brianna: {
+    voice_id: "154e13cce06c4452ba3b9865dcdf1434",
+    voice_name: "Brianna"
+  },
+  evelyn: {
+    voice_id: "15c34793e92442388fc489bbcd58992b",
+    voice_name: "Evelyn Harper"
+  },
+  laurel: {
+    voice_id: "162b75e583c465cb9ed047a538d8f6b",
+    voice_name: "Laurel"
+  },
+  seena: {
+    voice_id: "166aa8d7acd1495a83d34024ccb1505",
+    voice_name: "Seena Professional"
   }
 };
 
