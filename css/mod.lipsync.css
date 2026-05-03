@@ -1053,10 +1053,10 @@
 }
 .lipsync-pill-btn.is-active,
 .lipsync-pill-btn[aria-pressed="true"] {
-  border-color: rgba(236, 72, 153, 0.95);
-  background: linear-gradient(135deg, rgba(124, 77, 255, 0.55), rgba(236, 72, 153, 0.5));
-  color: #ffffff;
+  border-color: rgba(190, 140, 255, 0.42);
+  background: rgba(120, 80, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-    0 0 22px rgba(236, 72, 153, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 16px 32px rgba(120, 80, 255, 0.12);
 }
