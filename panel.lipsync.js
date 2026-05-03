@@ -79,9 +79,15 @@
   }
 
   function pickVideoFromJob(job) {
+    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+    const first = outs.find((o) => pickOutputUrl(o));
+
+    const outputUrl = pickOutputUrl(first);
+    if (outputUrl) return outputUrl;
+
     const meta = job?.meta || {};
 
-    const direct =
+    return (
       safeStr(job?.final_url) ||
       safeStr(job?.final_video_url) ||
       safeStr(job?.video_url) ||
@@ -89,14 +95,8 @@
       safeStr(meta?.final_url) ||
       safeStr(meta?.final_video_url) ||
       safeStr(meta?.video_url) ||
-      safeStr(meta?.videoUrl);
-
-    if (direct) return direct;
-
-    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-    const first = outs.find((o) => pickOutputUrl(o));
-
-    return pickOutputUrl(first);
+      safeStr(meta?.videoUrl)
+    );
   }
 
   function createLipsyncPanel(host) {
