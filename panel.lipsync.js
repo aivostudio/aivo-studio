@@ -1,47 +1,282 @@
 // panel.lipsync.js
+// DB source-of-truth lipsync video cards
+
 (function () {
   if (!window.RightPanel) return;
 
-  function createLipSyncPanel(host) {
-    host.innerHTML = `
-      <div style="
-        padding:16px;
-        height:100%;
-        box-sizing:border-box;
-      ">
-        <div style="
-          display:flex;
-          flex-direction:column;
-          gap:14px;
-        ">
-          <div style="
-            padding:18px;
-            border-radius:18px;
-            background:rgba(255,255,255,0.035);
-            border:1px solid rgba(255,255,255,0.07);
-          ">
-            <div style="
-              font-weight:800;
-              font-size:15px;
-              margin-bottom:8px;
-            ">
-              Henüz lipsync video yok
-            </div>
+  if (!window.DBJobs) {
+    console.warn("[LIPSYNC PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
+    return;
+  }
 
-            <div style="
-              opacity:.72;
-              font-size:13px;
-              line-height:1.5;
-            ">
-              Bu bölüm hazırlanıyor. Yakında video + ses yükleyerek dudak senkron video oluşturabileceksin.
-            </div>
-          </div>
-        </div>
+  const safeStr = (v) => String(v == null ? "" : v).trim();
+
+  const esc = (s) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[c]));
+
+  const norm = (s) =>
+    String(s || "")
+      .trim()
+      .toLowerCase()
+      .replaceAll("_", " ")
+      .replace(/\s+/g, " ");
+
+  const idOf = (it) => String(it?.job_id || it?.id || "").trim();
+
+  const getJobApp = (job) =>
+    String(job?.app || job?.meta?.app || job?.meta?.module || "").trim();
+
+  const isLipsyncApp = (x) => norm(x) === "lipsync" || norm(x).includes("lipsync");
+
+  const isJobLipsync = (job) => isLipsyncApp(getJobApp(job));
+
+  const toMaybeProxyUrl = (url) => {
+    const u = safeStr(url);
+    if (!u) return "";
+    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
+    if (u.startsWith("http://") || u.startsWith("https://")) {
+      return "/api/media/proxy?url=" + encodeURIComponent(u);
+    }
+    return u;
+  };
+
+  function mapBadge(job) {
+    const st = norm(job?.db_status || job?.status || job?.state).toUpperCase();
+
+    if (st.includes("FAIL") || st.includes("ERROR")) {
+      return { text: "Hata", kind: "bad" };
+    }
+
+    if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) {
+      return { text: "Hazır", kind: "ok" };
+    }
+
+    return { text: "İşleniyor", kind: "mid" };
+  }
+
+  function pickOutputUrl(o) {
+    return safeStr(
+      o?.archive_url ||
+      o?.archiveUrl ||
+      o?.url ||
+      o?.video_url ||
+      o?.videoUrl ||
+      o?.raw_url ||
+      o?.rawUrl ||
+      o?.meta?.archive_url ||
+      o?.meta?.archiveUrl ||
+      o?.meta?.url ||
+      o?.meta?.video_url ||
+      o?.meta?.videoUrl ||
+      ""
+    );
+  }
+
+  function pickVideoFromJob(job) {
+    const meta = job?.meta || {};
+
+    const direct =
+      safeStr(job?.final_url) ||
+      safeStr(job?.final_video_url) ||
+      safeStr(job?.video_url) ||
+      safeStr(job?.videoUrl) ||
+      safeStr(meta?.final_url) ||
+      safeStr(meta?.final_video_url) ||
+      safeStr(meta?.video_url) ||
+      safeStr(meta?.videoUrl);
+
+    if (direct) return direct;
+
+    const outs = Array.isArray(job?.outputs) ? job.outputs : [];
+    const first = outs.find((o) => pickOutputUrl(o));
+
+    return pickOutputUrl(first);
+  }
+
+  function createLipsyncPanel(host) {
+    let destroyed = false;
+    let currentDbItems = [];
+    const hiddenDeletedIds = new Set();
+
+    host.innerHTML = `
+      <div class="lipsyncPanelWrap">
+        <div class="lipsyncPanelGrid" data-grid></div>
       </div>
     `;
 
+    const grid = host.querySelector("[data-grid]");
+
+    function renderCard(job) {
+      const jid = idOf(job);
+      const badge = mapBadge(job);
+      const videoRaw = pickVideoFromJob(job);
+      const videoUrl = toMaybeProxyUrl(videoRaw);
+      const ready = badge.kind === "ok" && !!videoUrl;
+
+      if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
+        return (
+          '<div class="lipsyncPanelCardInner" data-job="' + esc(jid) + '">' +
+          window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+            id: jid,
+            title: "Dudak Senkron Video",
+            sub: safeStr(job?.meta?.script || job?.prompt || ""),
+            badgeText: badge.text,
+            badgeKind: badge.kind === "ok" ? "ready" : badge.kind === "bad" ? "error" : "loading",
+            videoUrl: ready ? videoUrl + "#t=0.001" : "",
+            posterUrl: "",
+            ratio: "9:16",
+            ready,
+            canDownload: !!videoRaw,
+            canShare: ready,
+            canDelete: true,
+          }) +
+          "</div>"
+        );
+      }
+
+      return `
+        <div class="lipsyncFallbackCard" data-job="${esc(jid)}">
+          <strong>${esc(badge.text)}</strong>
+          <div>${esc(safeStr(job?.meta?.script || job?.prompt || "Dudak senkron video"))}</div>
+        </div>
+      `;
+    }
+
+    function render(items) {
+      if (!grid) return;
+
+      const list = Array.isArray(items) ? items : [];
+
+      if (!list.length) {
+        grid.innerHTML = `
+          <div style="opacity:.75;font-size:13px;padding:12px;">
+            Henüz lipsync video yok.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = list.map(renderCard).join("");
+    }
+
+    async function deleteJob(id) {
+      const res = await fetch("/api/jobs/delete", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          job_id: id,
+          app: "lipsync"
+        })
+      });
+
+      const data = await res.json().catch(() => null);
+      return !!(res.ok && data && data.ok !== false);
+    }
+
+    host.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-svc-act], [data-act]");
+      if (!btn) return;
+
+      const act = btn.dataset.svcAct || btn.dataset.act;
+      const card = btn.closest("[data-job], .svcCard");
+      const id = safeStr(btn.dataset.id || btn.dataset.job || card?.dataset?.job || card?.dataset?.svcId);
+
+      if (!act || !id) return;
+
+      const job = currentDbItems.find((x) => idOf(x) === id);
+      if (!job) return;
+
+      const videoRaw = pickVideoFromJob(job);
+
+      if (act === "play") {
+        const video = card?.querySelector("video");
+        if (!video) return;
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+        return;
+      }
+
+      if (act === "download") {
+        if (!videoRaw) return;
+        const a = document.createElement("a");
+        a.href = toMaybeProxyUrl(videoRaw);
+        a.download = `lipsync-${id}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
+
+      if (act === "share") {
+        if (!videoRaw) return;
+        if (navigator.share) {
+          navigator.share({ url: videoRaw }).catch(() => {});
+        } else {
+          navigator.clipboard?.writeText(videoRaw).catch(() => {});
+        }
+        return;
+      }
+
+      if (act === "delete") {
+        hiddenDeletedIds.add(id);
+        currentDbItems = currentDbItems.filter((x) => idOf(x) !== id);
+        render(currentDbItems);
+
+        const ok = await deleteJob(id);
+        if (!ok) {
+          hiddenDeletedIds.delete(id);
+          controller?.hydrate?.(true);
+        }
+
+        return;
+      }
+    });
+
+    const controller = window.DBJobs.create({
+      app: "lipsync",
+      debug: false,
+      pollIntervalMs: 4000,
+      hydrateEveryMs: 12000,
+
+      acceptJob: (job) => {
+        if (!job) return false;
+        return isJobLipsync(job);
+      },
+
+      acceptOutput: () => true,
+
+      onChange: (items) => {
+        if (destroyed) return;
+
+        currentDbItems = (items || [])
+          .filter(isJobLipsync)
+          .filter((j) => {
+            const id = idOf(j);
+            return id && !hiddenDeletedIds.has(id);
+          });
+
+        render(currentDbItems);
+      },
+    });
+
+    controller.start();
+
     return {
       destroy() {
+        destroyed = true;
+
+        try {
+          controller?.destroy?.();
+        } catch {}
+
         try {
           host.innerHTML = "";
         } catch {}
@@ -57,13 +292,13 @@
         header: {
           title: "AI Dudak Senkron Video",
           meta: "Hazırlanıyor",
-       searchEnabled: true,
-       searchPlaceholder: "Dudak senkron videolarda ara...",
+          searchEnabled: true,
+          searchPlaceholder: "Dudak senkron videolarda ara...",
           resetSearch: true,
         },
 
         mount(host) {
-          const api = createLipSyncPanel(host);
+          const api = createLipsyncPanel(host);
           return () => {
             try {
               api?.destroy?.();
