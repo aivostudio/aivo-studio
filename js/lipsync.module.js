@@ -529,12 +529,31 @@ payload.estimatedCredits = estimatedCreditCost;
                 ""
               ).trim().toLowerCase();
 
-              if (status === "ready" || status === "done") {
-                try {
-                  window.toast?.success?.("Lipsync video hazır");
-                } catch {}
-                return;
-              }
+            if (status === "ready" || status === "done") {
+
+  try {
+    window.toast?.success?.("Lipsync video hazır");
+  } catch {}
+
+  // 🔥 FINALIZE CALL
+  try {
+    await fetch("/api/lipsync/finalize", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        job_id: jobId
+      })
+    });
+
+    console.log("[LIPSYNC][FINALIZE_TRIGGERED]", jobId);
+  } catch (e) {
+    console.error("[LIPSYNC][FINALIZE_ERROR]", e);
+  }
+
+  return;
+}
 
               if (status === "error") {
                 try {
