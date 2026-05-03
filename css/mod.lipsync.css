@@ -1003,18 +1003,18 @@
   justify-content: center;
 }
 .lipsync-estimate-box {
-  margin-top: 14px;
-  padding: 16px 20px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #7c4dff 0%, #ec5aa6 100%);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.72), rgba(236, 90, 166, 0.72));
+  border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 12px 34px rgba(236, 90, 166, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 10px 24px rgba(124, 77, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   color: #ffffff !important;
-  font-size: 21px !important;
-  font-weight: 950 !important;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
   text-align: center;
 }
