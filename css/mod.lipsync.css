@@ -948,3 +948,26 @@
   position: relative;
   z-index: 2;
 }
+/* === LIPSYNC PHOTO PREVIEW FULL WIDTH FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-photo-preview {
+  position: relative !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 72% !important;
+  inset: auto !important;
+  padding: 0 !important;
+  margin: auto !important;
+  border-radius: 18px !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 18px !important;
+}
