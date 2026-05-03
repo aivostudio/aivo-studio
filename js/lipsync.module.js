@@ -343,20 +343,25 @@ document.addEventListener("input", (e) => {
         return;
       }
       
-             const voiceBtn = e.target.closest("[data-lipsync-voice]");
+              const voiceBtn = e.target.closest("[data-lipsync-voice]");
       if (voiceBtn && root.contains(voiceBtn)) {
         e.preventDefault();
 
+        const selectedVoiceKey = String(voiceBtn.dataset.lipsyncVoice || "tranquil_tulin").trim();
+        const voiceSelect = qs("[data-lipsync-voice-select]", root);
+
         root.querySelectorAll("[data-lipsync-voice]").forEach((btn) => {
-          btn.classList.remove("is-active");
-          btn.setAttribute("aria-pressed", "false");
+          const isSelected = String(btn.dataset.lipsyncVoice || "").trim() === selectedVoiceKey;
+          btn.classList.toggle("is-active", isSelected);
+          btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
         });
 
-        voiceBtn.classList.add("is-active");
-        voiceBtn.setAttribute("aria-pressed", "true");
+        if (voiceSelect) {
+          voiceSelect.value = selectedVoiceKey;
+        }
 
         console.log("[LIPSYNC][VOICE_SELECTED]", {
-          voice_key: voiceBtn.dataset.lipsyncVoice || "",
+          voice_key: selectedVoiceKey,
           voice_name: voiceBtn.dataset.lipsyncVoiceName || ""
         });
 
