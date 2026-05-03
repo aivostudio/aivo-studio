@@ -451,26 +451,26 @@ payload.estimatedCredits = estimatedCreditCost;
 
          if (!res.ok || !data || data.ok !== true) {
       if (data?.error === "script_too_long") {
-    const message = String(
+         const message = String(
       data?.message ||
       "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç."
     );
 
-    try {
+        try {
       window.toast?.error?.(message);
-    } catch {}
+          } catch {}
 
-    throw new Error("script_too_long_handled");
-  }
+         throw new Error("script_too_long_handled");
+         }
 
-  throw new Error(data?.error || "lipsync_create_failed");
-}
+         throw new Error(data?.error || "lipsync_create_failed");
+         }
 
           console.log("[LIPSYNC][CREATE_OK]", data);
 
-          try {
-            window.toast?.success?.("Lipsync job oluşturuldu");
-          } catch {}
+         try {
+        window.toast?.success?.("Video oluşturuldu");
+      } catch {}
 
           const jobId = String(data.job_id || "").trim();
 
