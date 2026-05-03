@@ -117,7 +117,7 @@
       syncGenerateButton(root);
     });
 
-    document.addEventListener("click", (e) => {
+     document.addEventListener("click", async (e) => {
       const root = getRoot();
       if (!root) return;
 
