@@ -1270,3 +1270,42 @@
     width: 100% !important;
   }
 }
+/* === LIPSYNC VOICE BAR OVERFLOW FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-toolbar {
+  overflow: hidden !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-bar {
+  max-width: 100% !important;
+  grid-template-columns: 150px minmax(0, 1fr) 78px !important;
+  gap: 6px !important;
+  padding: 6px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-current-voice {
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-preview-voice-btn {
+  width: 78px !important;
+  min-width: 78px !important;
+  padding: 0 8px !important;
+  gap: 5px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-preview-voice-btn strong {
+  font-size: 11px !important;
+}
