@@ -177,7 +177,7 @@ body: JSON.stringify({
 aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
 background: {
   type: "color",
-  color: "#080816"
+  value: "#080816"
 },
 voice_settings: {
   speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
