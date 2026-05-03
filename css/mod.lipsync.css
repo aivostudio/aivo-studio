@@ -937,3 +937,24 @@
   bottom: 14px !important;
   z-index: 5 !important;
 }
+/* === LIPSYNC LANDSCAPE PHOTO MODE === */
+
+.main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg.is-landscape .lipsync-photo-preview {
+  object-fit: contain !important;
+  background: rgba(5, 6, 14, 0.35) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg.is-landscape::before {
+  display: block !important;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(5, 6, 14, 0.30), rgba(5, 6, 14, 0.42)),
+    var(--lipsync-photo-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px);
+  transform: scale(1.12);
+  z-index: 0;
+}
