@@ -76,11 +76,22 @@
 
         const payload = buildPayload(root);
 
-      if (!payload.script) {
+        if (!payload.script) {
         try { window.toast?.info?.("Konuşma metni yazmalısın"); } catch {}
         const scriptInput = qs("[data-lipsync-script]", root);
         if (scriptInput) scriptInput.focus();
         console.log("[LIPSYNC][BLOCKED]", "missing_script");
+        return;
+      }
+
+      const photoInput = qs("[data-lipsync-photo]", root);
+      const hasPhoto = !!(photoInput && photoInput.files && photoInput.files[0]);
+
+      if (!hasPhoto) {
+        try { window.toast?.info?.("Fotoğraf yüklemelisin"); } catch {}
+        const photoLabel = qs(".lipsync-photo-label", root);
+        if (photoLabel) photoLabel.scrollIntoView({ behavior: "smooth", block: "center" });
+        console.log("[LIPSYNC][BLOCKED]", "missing_photo");
         return;
       }
 
