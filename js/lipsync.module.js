@@ -184,7 +184,8 @@ document.addEventListener("input", (e) => {
 
   if (!infoEl) {
     infoEl = document.createElement("div");
-    infoEl.setAttribute("data-lipsync-estimate", "1");
+   infoEl.setAttribute("data-lipsync-estimate", "1");
+   infoEl.className = "lipsync-estimate-box";
     infoEl.style.fontSize = "12px";
     infoEl.style.marginTop = "6px";
     infoEl.style.opacity = "0.8";
