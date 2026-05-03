@@ -181,7 +181,64 @@
         console.log("[LIPSYNC][BLOCKED]", "missing_photo");
         return;
       }
+            const creditCost = Number(payload.estimatedCredits || 15);
+      const creditReason = "studio_lipsync_generate";
+      const consumeRequestId = `lipsync:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
+      const creditRes = await fetch("/api/credits/consume-ledger", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: "lipsync",
+          action: creditReason,
+          cost: creditCost,
+          request_id: consumeRequestId,
+          reason: creditReason
+        })
+      });
+
+      const creditData = await creditRes.json().catch(() => null);
+
+      if (!creditRes.ok || !creditData || creditData.ok !== true) {
+        console.warn("[LIPSYNC][CREDIT_BLOCKED]", creditData);
+
+        try {
+          window.toast?.error?.("Yetersiz kredi");
+        } catch {}
+
+        return;
+      }
+
+      try {
+        const creditGetRes = await fetch("/api/credits/get", {
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "accept": "application/json"
+          }
+        });
+
+        const creditGetData = await creditGetRes.json().catch(() => null);
+
+        if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+          const topCreditCountEl = document.getElementById("topCreditCount");
+          if (topCreditCountEl) {
+            topCreditCountEl.textContent = String(creditGetData.credits);
+          }
+
+          if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+            window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+          }
+        }
+      } catch {}
+
+      try {
+        window.toast?.success?.(`${creditCost} kredi düşüldü`);
+      } catch {}
       generateBtn.disabled = true;
       generateBtn.textContent = "Lipsync job hazırlanıyor...";
 
