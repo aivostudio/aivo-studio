@@ -143,6 +143,37 @@ export default async function handler(req, res) {
 
     const jobId = String(inserted[0].id);
 
+    // HEYGEN VIDEO CREATE
+const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
+  method: "POST",
+  headers: {
+    "x-api-key": process.env.HEYGEN_API_KEY,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    type: "image",
+    image: {
+      type: "url",
+      url: body.image_url || body.imageUrl,
+    },
+    script,
+    voice_id: process.env.HEYGEN_VOICE_ID,
+    resolution,
+    aspect_ratio: "16:9",
+  }),
+});
+
+const heygenJson = await heygenRes.json();
+
+const providerJobId = heygenJson?.data?.video_id;
+
+// DB UPDATE → provider job id kaydet
+await sql`
+  update jobs
+  set meta = jsonb_set(meta, '{provider_job_id}', to_jsonb(${providerJobId}::text), true)
+  where id = ${jobId}
+`;
+
     return res.status(200).json({
       ok: true,
       app: "lipsync",
