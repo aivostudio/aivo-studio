@@ -683,7 +683,7 @@ module.exports = async (req, res) => {
         };
 
         if (dbSt === "done" && videoUrl) {
-          let merged = mergeOutputs(outputs, [
+         let merged = mergeOutputs(Array.isArray(job.outputs) ? job.outputs : [], [
             {
               type: "video",
               url: videoUrl,
