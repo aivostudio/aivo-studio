@@ -61,11 +61,25 @@ function syncGenerateButton(root) {
     ).trim();
 
     const voiceBtn =
+    const voiceSelect = qs("[data-lipsync-voice-select]", root);
+    const selectedOption = voiceSelect?.selectedOptions?.[0] || null;
+
+    const voiceBtn =
       qs("[data-lipsync-voice].is-active", root) ||
       qs("[data-lipsync-voice]", root);
 
-    const voiceKey = String(voiceBtn?.dataset?.lipsyncVoice || "tranquil_tulin").trim();
-    const voiceName = String(voiceBtn?.dataset?.lipsyncVoiceName || voiceBtn?.textContent || "Tranquil Tülin")
+    const voiceKey = String(
+      voiceSelect?.value ||
+      voiceBtn?.dataset?.lipsyncVoice ||
+      "tranquil_tulin"
+    ).trim();
+
+    const voiceName = String(
+      selectedOption?.dataset?.voiceName ||
+      voiceBtn?.dataset?.lipsyncVoiceName ||
+      voiceBtn?.textContent ||
+      "Tranquil Tülin"
+    )
       .replace("🔊", "")
       .trim();
 
