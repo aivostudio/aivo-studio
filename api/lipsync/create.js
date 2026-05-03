@@ -63,14 +63,29 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
 
-    const script = String(body.script || "").trim();
-    const resolution = String(body.resolution || "1080p").trim();
-    const durationSeconds = Math.max(
-      10,
-      Math.min(60, Number(body.durationSeconds || body.duration || 10))
-    );
+const script = String(body.script || "").trim();
+const resolution = String(body.resolution || "1080p").trim();
+const durationSeconds = Math.max(
+  10,
+  Math.min(60, Number(body.durationSeconds || body.duration || 10))
+);
 
-    const cost = calculateCost(durationSeconds);
+const charsPerSecond = 13;
+const estimatedSpeechSeconds = Math.ceil(script.length / charsPerSecond);
+const maxSpeechSeconds = durationSeconds;
+
+if (estimatedSpeechSeconds > maxSpeechSeconds) {
+  return res.status(400).json({
+    ok: false,
+    error: "script_too_long",
+    message: `Bu metin yaklaşık ${estimatedSpeechSeconds} saniye sürer. Seçilen süre ${maxSpeechSeconds} saniye.`,
+    estimatedSpeechSeconds,
+    maxSpeechSeconds,
+    durationSeconds
+  });
+}
+
+const cost = calculateCost(durationSeconds);
 
     if (!script) {
       return res.status(400).json({
