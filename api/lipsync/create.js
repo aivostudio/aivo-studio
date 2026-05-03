@@ -85,7 +85,7 @@ if (estimatedSpeechSeconds > maxSpeechSeconds) {
   });
 }
 
-const cost = calculateCost(durationSeconds);
+const cost = calculateCost(estimatedSpeechSeconds);
 
     if (!script) {
       return res.status(400).json({
