@@ -64,6 +64,7 @@
         const empty = qs("[data-lipsync-photo-empty]", root);
         const preview = qs("[data-lipsync-photo-preview]", root);
         const name = qs("[data-lipsync-photo-name]", root);
+        const photoLabel = qs(".lipsync-photo-label", root);
 
         if (!file) return;
 
@@ -75,6 +76,12 @@
           preview.src = url;
           preview.style.display = "block";
         }
+        if (photoLabel) {
+  photoLabel.style.backgroundImage = `linear-gradient(rgba(5, 6, 14, 0.42), rgba(5, 6, 14, 0.58)), url("${url}")`;
+  photoLabel.style.backgroundSize = "cover";
+  photoLabel.style.backgroundPosition = "center";
+  photoLabel.style.backgroundRepeat = "no-repeat";
+}
 
         if (name) {
           name.textContent = file.name || "Fotoğraf seçildi";
