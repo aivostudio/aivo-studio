@@ -39,6 +39,21 @@
     btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
   }
 
+  function buildPayload(root) {
+    const script = qs("[data-lipsync-script]", root);
+    const resolution = qs("[data-lipsync-resolution]", root);
+    const duration = getSelectedDuration(root);
+    const credit = getCreditCost(duration);
+
+    return {
+      app: "lipsync",
+      script: String(script?.value || "").trim(),
+      resolution: String(resolution?.value || "1080p"),
+      duration,
+      estimatedCredits: credit
+    };
+  }
+
   function bindEvents() {
     document.addEventListener("change", (e) => {
       const root = getRoot();
@@ -48,6 +63,19 @@
       if (!durationSelect || !root.contains(durationSelect)) return;
 
       syncGenerateButton(root);
+    });
+
+    document.addEventListener("click", (e) => {
+      const root = getRoot();
+      if (!root) return;
+
+      const generateBtn = e.target.closest("[data-lipsync-generate]");
+      if (!generateBtn || !root.contains(generateBtn)) return;
+
+      e.preventDefault();
+
+      const payload = buildPayload(root);
+      console.log("[LIPSYNC][PAYLOAD]", payload);
     });
   }
 
