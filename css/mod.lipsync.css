@@ -1345,3 +1345,83 @@
     0 14px 28px rgba(236, 91, 167, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
 }
+/* === LIPSYNC VOICE SELECT — HEYGEN STYLE FINAL === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-toolbar {
+  width: 100% !important;
+  margin-top: 16px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-bar {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: block !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap {
+  position: relative !important;
+  width: 100% !important;
+  height: 58px !important;
+  overflow: visible !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap::before {
+  content: "✦" !important;
+  position: absolute !important;
+  left: 22px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 2 !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+  font-size: 22px !important;
+  pointer-events: none !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap::after {
+  content: "⌃" !important;
+  position: absolute !important;
+  right: 22px !important;
+  top: 50% !important;
+  transform: translateY(-48%) !important;
+  z-index: 2 !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  pointer-events: none !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select {
+  width: 100% !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  border-radius: 22px !important;
+  border: 2px solid rgba(32, 198, 255, 0.95) !important;
+  background:
+    linear-gradient(180deg, rgba(18, 20, 27, 0.98), rgba(15, 16, 22, 0.98)) !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+  padding: 0 58px 0 62px !important;
+  font: inherit !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  outline: none !important;
+  cursor: pointer !important;
+  box-shadow:
+    0 0 0 1px rgba(32, 198, 255, 0.12),
+    0 0 30px rgba(32, 198, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select:focus {
+  border-color: rgba(32, 198, 255, 1) !important;
+  box-shadow:
+    0 0 0 1px rgba(32, 198, 255, 0.24),
+    0 0 34px rgba(32, 198, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
