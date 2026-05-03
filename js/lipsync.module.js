@@ -282,7 +282,23 @@ document.addEventListener("input", (e) => {
 
         return;
       }
+           const voiceSelect = e.target.closest("[data-lipsync-voice-select]");
+      if (voiceSelect && root.contains(voiceSelect)) {
+        const selectedVoiceKey = String(voiceSelect.value || "tranquil_tulin").trim();
 
+        root.querySelectorAll("[data-lipsync-voice]").forEach((btn) => {
+          const isSelected = String(btn.dataset.lipsyncVoice || "").trim() === selectedVoiceKey;
+          btn.classList.toggle("is-active", isSelected);
+          btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        });
+
+        console.log("[LIPSYNC][VOICE_SELECT_CHANGED]", {
+          voice_key: selectedVoiceKey,
+          voice_name: voiceSelect.selectedOptions?.[0]?.dataset?.voiceName || ""
+        });
+
+        return;
+      }
       const durationSelect = e.target.closest("[data-lipsync-duration]");
       if (!durationSelect || !root.contains(durationSelect)) return;
 
