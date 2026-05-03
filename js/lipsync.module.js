@@ -160,19 +160,25 @@ function syncGenerateButton(root) {
 
   function bindEvents() {
     document.addEventListener("change", (e) => {
-      document.addEventListener("input", (e) => {
+document.addEventListener("input", (e) => {
   const root = getRoot();
   if (!root) return;
 
   const scriptInput = e.target.closest("[data-lipsync-script]");
   if (!scriptInput || !root.contains(scriptInput)) return;
 
-  const text = String(scriptInput.value || "").trim();
+  const text = String(scriptInput.value || "");
+  const trimmedText = text.trim();
   const duration = Number(getSelectedDuration(root) || 10);
 
   const charsPerSecond = 13;
-  const seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
+  const seconds = Math.max(1, Math.ceil(trimmedText.length / charsPerSecond));
   const credits = Math.ceil(seconds / 2) * 3;
+
+  const counterEl = qs("[data-lipsync-counter]", root);
+  if (counterEl) {
+    counterEl.textContent = `${text.length} / 1200`;
+  }
 
   let infoEl = qs("[data-lipsync-estimate]", root);
 
@@ -193,6 +199,8 @@ function syncGenerateButton(root) {
   } else {
     infoEl.style.color = "";
   }
+
+  syncGenerateButton(root);
 });
       const root = getRoot();
       if (!root) return;
