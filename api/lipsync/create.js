@@ -159,7 +159,7 @@ const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
     script,
     voice_id: process.env.HEYGEN_VOICE_ID,
     resolution,
-    aspect_ratio: "16:9",
+     aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
   }),
 });
 
