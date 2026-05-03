@@ -271,10 +271,56 @@
       },
     });
 
+      const onJobCreated = (e) => {
+      const d = e?.detail || {};
+      const jobId = safeStr(d.job_id);
+
+      if (!jobId) return;
+      if (hiddenDeletedIds.has(jobId)) return;
+
+      const app = safeStr(d.app || d.meta?.app || "lipsync").toLowerCase();
+      if (!isLipsyncApp(app)) return;
+
+      const exists = currentDbItems.some((j) => idOf(j) === jobId);
+      if (exists) return;
+
+      const meta = d.meta || {};
+      const createdAt = d.createdAt || Date.now();
+
+      currentDbItems = [
+        {
+          job_id: jobId,
+          id: jobId,
+          app: "lipsync",
+          status: "processing",
+          db_status: "processing",
+          state: "processing",
+          createdAt,
+          created_at: createdAt,
+          meta: {
+            ...(meta || {}),
+            app: "lipsync",
+            script: meta.script || "",
+            resolution: meta.resolution || "",
+            duration: meta.duration || "",
+            estimatedCredits: meta.estimatedCredits || "",
+          },
+          outputs: [],
+        },
+        ...currentDbItems,
+      ];
+
+      render(currentDbItems);
+    };
+
     controller.start();
+    window.addEventListener("aivo:lipsync:job_created", onJobCreated);
 
     return {
       destroy() {
+        try {
+          window.removeEventListener("aivo:lipsync:job_created", onJobCreated);
+        } catch {}
         destroyed = true;
 
         try {
