@@ -632,7 +632,7 @@ module.exports = async (req, res) => {
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
     const requestId = pickRequestIdFromJob(job);
     
-       // =========================
+    // =========================
     // 0.5) HEYGEN POLL (LIPSYNC IMAGE TO VIDEO)
     // =========================
     if (provider === "heygen_image_to_video" && appKey === "lipsync") {
@@ -683,7 +683,7 @@ module.exports = async (req, res) => {
         };
 
         if (dbSt === "done" && videoUrl) {
-         let merged = mergeOutputs(Array.isArray(job.outputs) ? job.outputs : [], [
+          let merged = mergeOutputs(Array.isArray(job.outputs) ? job.outputs : [], [
             {
               type: "video",
               url: videoUrl,
@@ -721,7 +721,6 @@ module.exports = async (req, res) => {
             final_video_url: videoUrl,
             final_variant: "provider",
           };
-          outputs = merged;
         } else if (dbSt === "error") {
           await sql`
             update jobs
