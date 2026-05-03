@@ -821,8 +821,12 @@
 .main-panel[data-module="lipsync"] .lipsync-photo-controls .lipsync-select {
   width: 100% !important;
   min-width: 0 !important;
-  height: 56px !important;
+  height: 42px !important;
+  min-height: 42px !important;
   box-sizing: border-box !important;
+  border-radius: 16px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
 }
 
 .main-panel[data-module="lipsync"] .lipsync-voice-row {
