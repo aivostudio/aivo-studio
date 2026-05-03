@@ -21,6 +21,47 @@ function calculateCost(speechSeconds) {
   return Math.ceil(safeSeconds / 2) * 3;
 }
 
+async function prepareLipsyncImageForAspect({ imageUrl, aspectRatio, jobId }) {
+  const safeImageUrl = String(imageUrl || "").trim();
+  const safeAspectRatio = String(aspectRatio || "16:9").trim();
+
+  if (!safeImageUrl) return null;
+
+  if (safeAspectRatio !== "9:16") {
+    return safeImageUrl;
+  }
+
+  const imageRes = await fetch(safeImageUrl);
+
+  if (!imageRes.ok) {
+    throw new Error(`image_fetch_failed:${imageRes.status}`);
+  }
+
+  const inputBuffer = Buffer.from(await imageRes.arrayBuffer());
+
+  const outputBuffer = await sharp(inputBuffer)
+    .rotate()
+    .resize(720, 1280, {
+      fit: "cover",
+      position: "center",
+    })
+    .jpeg({
+      quality: 92,
+      progressive: true,
+    })
+    .toBuffer();
+
+  const key = `lipsync/prepared/${jobId}-9x16.jpg`;
+
+  return await putObject({
+    key,
+    body: outputBuffer,
+    contentType: "image/jpeg",
+    cacheControl: "public, max-age=31536000, immutable",
+    contentDisposition: "inline",
+  });
+}
+
 export default async function handler(req, res) {
   try {
     res.setHeader("Cache-Control", "no-store");
