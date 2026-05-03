@@ -182,7 +182,7 @@
         return;
       }
 
-          generateBtn.disabled = true;
+      generateBtn.disabled = true;
       generateBtn.textContent = "Lipsync job hazırlanıyor...";
 
       fetch("/api/lipsync/create", {
@@ -204,6 +204,119 @@
           try {
             window.toast?.success?.("Lipsync job oluşturuldu");
           } catch {}
+
+          const jobId = String(data.job_id || "").trim();
+
+          if (!jobId) {
+            throw new Error("missing_lipsync_job_id");
+          }
+
+          window.dispatchEvent(
+            new CustomEvent("aivo:lipsync:job_created", {
+              detail: {
+                app: "lipsync",
+                job_id: jobId,
+                status: data.status || "queued",
+                createdAt: Date.now(),
+                meta: {
+                  app: "lipsync",
+                  script: payload.script,
+                  resolution: payload.resolution,
+                  duration: payload.duration,
+                  estimatedCredits: payload.estimatedCredits
+                }
+              }
+            })
+          );
+
+          let tries = 0;
+
+          const poll = async () => {
+            tries += 1;
+
+            try {
+              const statusRes = await fetch(
+                "/api/jobs/status?job_id=" + encodeURIComponent(jobId) + "&debug=1",
+                {
+                  method: "GET",
+                  cache: "no-store"
+                }
+              );
+
+              const statusData = await statusRes.json().catch(() => null);
+
+              console.log("[LIPSYNC][STATUS]", statusData);
+
+              const status = String(
+                statusData?.status ||
+                statusData?.db_status ||
+                statusData?.state ||
+                ""
+              ).trim().toLowerCase();
+
+              const isReady =
+                status === "ready" ||
+                status === "done" ||
+                status === "completed" ||
+                status === "complete" ||
+                status === "succeeded";
+
+              const isFailed =
+                status === "error" ||
+                status === "failed" ||
+                status === "fail";
+
+              if (isReady) {
+                window.dispatchEvent(
+                  new CustomEvent("aivo:lipsync:job_ready", {
+                    detail: {
+                      app: "lipsync",
+                      job_id: jobId,
+                      status,
+                      raw: statusData
+                    }
+                  })
+                );
+
+                try {
+                  window.toast?.success?.("Lipsync video hazır");
+                } catch {}
+
+                return;
+              }
+
+              if (isFailed) {
+                window.dispatchEvent(
+                  new CustomEvent("aivo:lipsync:job_failed", {
+                    detail: {
+                      app: "lipsync",
+                      job_id: jobId,
+                      status,
+                      raw: statusData
+                    }
+                  })
+                );
+
+                try {
+                  window.toast?.error?.("Lipsync üretimi başarısız oldu");
+                } catch {}
+
+                return;
+              }
+
+              if (tries < 60) {
+                setTimeout(poll, 3000);
+              }
+            } catch (pollErr) {
+              console.error("[LIPSYNC][STATUS_ERROR]", pollErr);
+
+              if (tries < 60) {
+                setTimeout(poll, 3000);
+              }
+            }
+          };
+
+          poll();
 
           return data;
         })
