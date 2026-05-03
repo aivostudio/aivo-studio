@@ -327,7 +327,9 @@
         generateBtn.disabled = false;
         return;
       }
-            const creditCost = Number(payload.estimatedCredits || 15);
+           const charsPerSecond = 13;
+       const estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
+      const creditCost = Math.ceil(estimatedSpeechSeconds / 2) * 3;
       const creditReason = "studio_lipsync_generate";
       const consumeRequestId = `lipsync:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
