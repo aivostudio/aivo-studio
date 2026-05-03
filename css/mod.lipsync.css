@@ -813,8 +813,8 @@
 
 .main-panel[data-module="lipsync"] .lipsync-photo-controls {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 12px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
   padding: 0 12px 14px !important;
 }
 
