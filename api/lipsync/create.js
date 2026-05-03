@@ -201,8 +201,22 @@ const cost = calculateCost(estimatedSpeechSeconds);
 
     const jobId = String(inserted[0].id);
 
-    const imageUrl = String(body.image_url || body.imageUrl || "").trim();
-  const aspectRatio = String(body.aspectRatio || body.aspect_ratio || "16:9").trim();
+const imageUrl = String(body.image_url || body.imageUrl || "").trim();
+
+let aspectRatio = String(body.aspectRatio || body.aspect_ratio || "16:9").trim();
+
+if (imageUrl) {
+  const imageCheckRes = await fetch(imageUrl);
+
+  if (imageCheckRes.ok) {
+    const imageCheckBuffer = Buffer.from(await imageCheckRes.arrayBuffer());
+    const imageMeta = await sharp(imageCheckBuffer).metadata();
+
+    if (Number(imageMeta?.height || 0) > Number(imageMeta?.width || 0)) {
+      aspectRatio = "9:16";
+    }
+  }
+}
 
 const preparedImageUrl = await prepareLipsyncImageForAspect({
   imageUrl,
