@@ -74,7 +74,16 @@
 
       e.preventDefault();
 
-      const payload = buildPayload(root);
+        const payload = buildPayload(root);
+
+      if (!payload.script) {
+        try { window.toast?.info?.("Konuşma metni yazmalısın"); } catch {}
+        const scriptInput = qs("[data-lipsync-script]", root);
+        if (scriptInput) scriptInput.focus();
+        console.log("[LIPSYNC][BLOCKED]", "missing_script");
+        return;
+      }
+
       console.log("[LIPSYNC][PAYLOAD]", payload);
     });
   }
