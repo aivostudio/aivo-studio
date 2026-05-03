@@ -270,7 +270,25 @@
         console.log("[LIPSYNC][BLOCKED]", "missing_script");
         return;
       }
+         const charsPerSecond = 13;
+        const estimatedSpeechSeconds = Math.ceil(payload.script.length / charsPerSecond);
+        const maxSpeechSeconds = Number(payload.duration || 10);
 
+       if (estimatedSpeechSeconds > maxSpeechSeconds) {
+        try {
+       window.toast?.error?.(
+      `Bu metin yaklaşık ${estimatedSpeechSeconds} saniye sürer. Seçilen süre ${maxSpeechSeconds} saniye.`
+      );
+       } catch {}
+
+  console.log("[LIPSYNC][BLOCKED]", {
+    reason: "script_too_long",
+    estimatedSpeechSeconds,
+    maxSpeechSeconds
+  });
+
+  return;
+}
          const photoInput = qs("[data-lipsync-photo]", root);
       const photoFile = photoInput && photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
 
