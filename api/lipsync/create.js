@@ -173,11 +173,15 @@ body: JSON.stringify({
   },
   script,
   voice_id: process.env.HEYGEN_VOICE_ID,
-  resolution,
-  aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
-  voice_settings: {
-    speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
-  }
+ resolution,
+aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
+background: {
+  type: "color",
+  color: "#080816"
+},
+voice_settings: {
+  speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
+}
 }),
 });
 
