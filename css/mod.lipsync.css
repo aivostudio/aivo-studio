@@ -1425,3 +1425,50 @@
     0 0 34px rgba(32, 198, 255, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
 }
+/* === LIPSYNC VOICE SELECT — AIVO PREMIUM COLOR/TYPO FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select {
+  height: 54px !important;
+  min-height: 54px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(236, 91, 167, 0.38) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(236, 91, 167, 0.13), transparent 42%),
+    radial-gradient(circle at 86% 100%, rgba(124, 77, 255, 0.16), transparent 45%),
+    linear-gradient(180deg, rgba(19, 17, 30, 0.96), rgba(11, 10, 20, 0.98)) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  padding: 0 54px 0 58px !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.015em !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    0 0 26px rgba(236, 91, 167, 0.08) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap {
+  height: 54px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap::before {
+  left: 21px !important;
+  font-size: 18px !important;
+  color: rgba(236, 91, 167, 0.96) !important;
+  text-shadow: 0 0 16px rgba(236, 91, 167, 0.30) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap::after {
+  right: 21px !important;
+  content: "⌄" !important;
+  font-size: 20px !important;
+  color: rgba(255, 255, 255, 0.56) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-select:focus {
+  border-color: rgba(236, 91, 167, 0.68) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 16px 34px rgba(0, 0, 0, 0.25),
+    0 0 28px rgba(236, 91, 167, 0.18) !important;
+}
