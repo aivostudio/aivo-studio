@@ -686,6 +686,31 @@ payload.estimatedCredits = estimatedCreditCost;
     if (!root) return false;
 
     syncGenerateButton(root);
+    if (!root.dataset.lipsyncVoiceRangeBind) {
+  root.dataset.lipsyncVoiceRangeBind = "1";
+
+  const speedRange = root.querySelector("[data-lipsync-voice-speed]");
+  const volumeRange = root.querySelector("[data-lipsync-voice-volume]");
+  const speedLabel = root.querySelector("[data-lipsync-speed-label]");
+  const volumeLabel = root.querySelector("[data-lipsync-volume-label]");
+
+  if (speedRange && speedLabel) {
+    speedRange.addEventListener("input", () => {
+      const val = Number(speedRange.value || 1);
+
+      if (val < 0.9) speedLabel.textContent = "Yavaş";
+      else if (val > 1.1) speedLabel.textContent = "Hızlı";
+      else speedLabel.textContent = "Normal";
+    });
+  }
+
+  if (volumeRange && volumeLabel) {
+    volumeRange.addEventListener("input", () => {
+      const val = Number(volumeRange.value || 1);
+      volumeLabel.textContent = `${Math.round(val * 100)}%`;
+    });
+  }
+}
     return true;
   }
 
