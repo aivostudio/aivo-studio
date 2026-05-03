@@ -14,9 +14,9 @@ function pickConn() {
   );
 }
 
-function calculateCost(durationSeconds) {
-  const safeDuration = Math.max(10, Math.min(60, Number(durationSeconds || 10)));
-  return Math.ceil(safeDuration / 10) * 15;
+function calculateCost(speechSeconds) {
+  const safeSeconds = Math.max(1, Math.min(60, Number(speechSeconds || 1)));
+  return Math.ceil(safeSeconds / 2) * 3;
 }
 
 export default async function handler(req, res) {
