@@ -380,9 +380,22 @@
         .then(async (res) => {
           const data = await res.json().catch(() => null);
 
-          if (!res.ok || !data || data.ok !== true) {
-            throw new Error(data?.error || "lipsync_create_failed");
-          }
+         if (!res.ok || !data || data.ok !== true) {
+  if (data?.error === "script_too_long") {
+    const message = String(
+      data?.message ||
+      "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç."
+    );
+
+    try {
+      window.toast?.error?.(message);
+    } catch {}
+
+    throw new Error("script_too_long_handled");
+  }
+
+  throw new Error(data?.error || "lipsync_create_failed");
+}
 
           console.log("[LIPSYNC][CREATE_OK]", data);
 
