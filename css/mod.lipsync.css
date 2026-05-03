@@ -835,8 +835,12 @@
 .main-panel[data-module="lipsync"] .lipsync-voice-row .lipsync-pill-btn {
   width: 100% !important;
   min-width: 0 !important;
-  height: 56px !important;
+  height: 42px !important;
+  min-height: 42px !important;
   justify-content: center !important;
+  border-radius: 16px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
 }
 
 .main-panel[data-module="lipsync"] .lipsync-meta-row {
