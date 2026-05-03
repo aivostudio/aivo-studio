@@ -98,10 +98,10 @@ export default async function handler(req, res) {
 
     const userUuid = String(userRows[0].id);
 
-    const metaSafe = {
+      const metaSafe = {
       app: "lipsync",
       kind: "lipsync_video",
-       provider: "heygen_image_to_video"
+      provider: "heygen_image_to_video",
       script,
       resolution,
       durationSeconds,
