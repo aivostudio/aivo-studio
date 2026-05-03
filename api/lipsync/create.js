@@ -202,7 +202,7 @@ const cost = calculateCost(estimatedSpeechSeconds);
     const jobId = String(inserted[0].id);
 
     const imageUrl = String(body.image_url || body.imageUrl || "").trim();
-const aspectRatio = String(body.aspectRatio || body.aspect_ratio || "16:9").trim();
+     const aspectRatio = "9:16";
 
 const preparedImageUrl = await prepareLipsyncImageForAspect({
   imageUrl,
