@@ -631,7 +631,132 @@ module.exports = async (req, res) => {
     const provider = String(job.provider || job.meta?.provider || "").toLowerCase();
     const appKey = String(job.app || job.type || job.meta?.app || "").toLowerCase();
     const requestId = pickRequestIdFromJob(job);
+    
+       // =========================
+    // 0.5) HEYGEN POLL (LIPSYNC IMAGE TO VIDEO)
+    // =========================
+    if (provider === "heygen_image_to_video" && appKey === "lipsync") {
+      const heygenVideoId =
+        job?.meta?.provider_job_id ||
+        job?.meta?.heygen_video_id ||
+        job?.meta?.heygen?.video_id ||
+        null;
 
+      if (heygenVideoId && process.env.HEYGEN_API_KEY) {
+        const hgRes = await fetch(
+          `https://api.heygen.com/v3/videos/${encodeURIComponent(heygenVideoId)}`,
+          {
+            method: "GET",
+            headers: {
+              "X-Api-Key": process.env.HEYGEN_API_KEY,
+            },
+          }
+        );
+
+        const hgJson = await hgRes.json().catch(() => null);
+        const hgData = hgJson?.data || hgJson || {};
+
+        const stRaw = String(hgData?.status || "").trim();
+        const dbSt = toDbStatus(stRaw);
+
+        const videoUrl = String(
+          hgData?.video_url ||
+          hgData?.videoUrl ||
+          hgData?.url ||
+          ""
+        ).trim();
+
+        const failureMessage = String(
+          hgData?.failure_message ||
+          hgData?.error ||
+          hgData?.message ||
+          ""
+        ).trim();
+
+        const patchMeta = {
+          heygen: {
+            video_id: String(heygenVideoId),
+            status: stRaw,
+            updated_at: new Date().toISOString(),
+            failure_message: failureMessage || null,
+          },
+        };
+
+        if (dbSt === "done" && videoUrl) {
+          let merged = mergeOutputs(outputs, [
+            {
+              type: "video",
+              url: videoUrl,
+              output_id: String(heygenVideoId),
+              meta: {
+                app: "lipsync",
+                provider: "heygen",
+                variant: "provider",
+              },
+            },
+          ]);
+
+          merged = upsertFinalOutput(merged, videoUrl, {
+            source_variant: "provider",
+          });
+
+          await sql`
+            update jobs
+            set status = 'done',
+                outputs = ${JSON.stringify(merged)}::jsonb,
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                  ...patchMeta,
+                  final_video_url: videoUrl,
+                  final_variant: "provider",
+                })}::jsonb,
+                updated_at = now()
+            where id = ${job_id}::uuid
+          `;
+
+          job.status = "done";
+          job.outputs = merged;
+          job.meta = {
+            ...(job.meta || {}),
+            ...patchMeta,
+            final_video_url: videoUrl,
+            final_variant: "provider",
+          };
+          outputs = merged;
+        } else if (dbSt === "error") {
+          await sql`
+            update jobs
+            set status = 'error',
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+                  ...patchMeta,
+                  failure: failureMessage || "heygen_failed",
+                })}::jsonb,
+                updated_at = now()
+            where id = ${job_id}::uuid
+          `;
+
+          job.status = "error";
+          job.meta = {
+            ...(job.meta || {}),
+            ...patchMeta,
+            failure: failureMessage || "heygen_failed",
+          };
+        } else if (dbSt === "queued" || dbSt === "processing") {
+          await sql`
+            update jobs
+            set status = ${dbSt},
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                updated_at = now()
+            where id = ${job_id}::uuid
+          `;
+
+          job.status = dbSt;
+          job.meta = {
+            ...(job.meta || {}),
+            ...patchMeta,
+          };
+        }
+      }
+    }
      // =========================
     // 1) FAL POLL (ATMO + CARTOON)
     // =========================
