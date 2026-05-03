@@ -1,6 +1,8 @@
 export const config = { runtime: "nodejs" };
 
 import { neon } from "@neondatabase/serverless";
+import sharp from "sharp";
+import { putObject } from "../_lib/r2.js";
 import authModule from "../_lib/auth.js";
 
 const { requireAuth } = authModule;
