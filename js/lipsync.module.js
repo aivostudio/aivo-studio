@@ -28,16 +28,20 @@
     return CREDIT_BY_DURATION[String(duration || "10")] || 15;
   }
 
-  function syncGenerateButton(root) {
-    const btn = qs("[data-lipsync-generate]", root);
-    if (!btn) return;
+function syncGenerateButton(root) {
+  const btn = qs("[data-lipsync-generate]", root);
+  if (!btn) return;
 
-    const duration = getSelectedDuration(root);
-    const credit = getCreditCost(duration);
+  const scriptInput = qs("[data-lipsync-script]", root);
+  const text = String(scriptInput?.value || "").trim();
 
-    btn.dataset.creditCost = String(credit);
-    btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
-  }
+  const charsPerSecond = 13;
+  const seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
+  const credit = Math.ceil(seconds / 2) * 3;
+
+  btn.dataset.creditCost = String(credit);
+  btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
+}
 
   function buildPayload(root) {
     const script = qs("[data-lipsync-script]", root);
