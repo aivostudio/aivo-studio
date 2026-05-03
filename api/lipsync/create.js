@@ -248,20 +248,25 @@ await sql`
   where id = ${jobId}
 `;
 
-    return res.status(200).json({
-      ok: true,
-      app: "lipsync",
-      job_id: jobId,
-      provider: "heygen_image_to_video",
-      provider_job_id: providerJobId || null,
-      heygen_raw: heygenJson || null,
-      user_uuid: inserted[0].user_uuid,
-      status: inserted[0].status,
-      created_at: inserted[0].created_at,
-      cost,
-      durationSeconds,
-      resolution
-    });
+return res.status(200).json({
+  ok: true,
+  app: "lipsync",
+  job_id: jobId,
+  provider: "heygen_image_to_video",
+  provider_job_id: providerJobId || null,
+  heygen_raw: heygenJson || null,
+  debug_image: {
+    original: imageUrl,
+    prepared: preparedImageUrl,
+    aspectRatio
+  },
+  user_uuid: inserted[0].user_uuid,
+  status: inserted[0].status,
+  created_at: inserted[0].created_at,
+  cost,
+  durationSeconds,
+  resolution
+});
   } catch (err) {
     return res.status(500).json({
       ok: false,
