@@ -904,3 +904,11 @@
       0 0 22px rgba(255, 214, 128, .26);
   }
 }
+/* === LIPSYNC PHOTO PREVIEW CONTAIN MODE === */
+
+.main-panel[data-module="lipsync"] .lipsync-photo-preview {
+  object-fit: contain !important;
+  background: rgba(5, 6, 11, 0.72);
+  padding: 10px;
+  box-sizing: border-box;
+}
