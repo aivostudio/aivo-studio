@@ -512,7 +512,17 @@ payload.estimatedCredits = estimatedCreditCost;
               const statusData = await statusRes.json().catch(() => null);
 
               console.log("[LIPSYNC][STATUS]", statusData);
-
+             if (String(statusData?.status || "").toLowerCase() === "ready") {
+               window.dispatchEvent(new CustomEvent("aivo:lipsync:job_ready", {
+              detail: {
+      job_id: statusData.job_id,
+      app: "lipsync",
+      video: statusData.video || null,
+      outputs: statusData.outputs || [],
+      raw: statusData
+      }
+     }));
+    }
               const status = String(
                 statusData?.status ||
                 statusData?.db_status ||
