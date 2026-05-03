@@ -904,102 +904,36 @@
       0 0 22px rgba(255, 214, 128, .26);
   }
 }
-/* === LIPSYNC PHOTO PREVIEW CONTAIN MODE === */
-
-.main-panel[data-module="lipsync"] .lipsync-photo-preview {
-  object-fit: contain !important;
-  background: rgba(5, 6, 11, 0.72);
-  padding: 10px;
-  box-sizing: border-box;
-}
-/* === LIPSYNC LANDSCAPE PREVIEW SIZE FIX === */
-
-.main-panel[data-module="lipsync"] .lipsync-photo-preview {
-  width: calc(100% - 28px) !important;
-  height: calc(100% - 28px) !important;
-  inset: 14px !important;
-  border-radius: 20px !important;
-  object-fit: contain !important;
-}
-/* === LIPSYNC PHOTO BLUR BACKGROUND FIX === */
+/* === LIPSYNC PHOTO PREVIEW CLEAN FINAL === */
 
 .main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg {
-  position: relative;
-  overflow: hidden;
-  background-image: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+  padding: 0 !important;
 }
 
 .main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(5, 6, 14, 0.48), rgba(5, 6, 14, 0.62)),
-    var(--lipsync-photo-bg);
-  background-size: cover;
-  background-position: center;
-  filter: blur(18px);
-  transform: scale(1.12);
-  z-index: 0;
+  display: none !important;
 }
-
-.main-panel[data-module="lipsync"] .lipsync-photo-preview,
-.main-panel[data-module="lipsync"] .lipsync-photo-name {
-  position: relative;
-  z-index: 2;
-}
-/* === LIPSYNC PHOTO PREVIEW FULL WIDTH FIX === */
 
 .main-panel[data-module="lipsync"] .lipsync-photo-preview {
-  position: relative !important;
-  z-index: 2 !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: 72% !important;
-  inset: auto !important;
-  padding: 0 !important;
-  margin: auto !important;
-  border-radius: 18px !important;
-  object-fit: contain !important;
-  background: transparent !important;
-  box-sizing: border-box !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 18px !important;
-}
-/* === LIPSYNC PHOTO PREVIEW FINAL LAYOUT === */
-
-.main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg {
-  position: relative !important;
   display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  margin: 0 !important;
+  border-radius: 22px !important;
+  object-fit: cover !important;
+  background: transparent !important;
+  z-index: 2 !important;
 }
 
-.main-panel[data-module="lipsync"] .lipsync-photo-preview {
+.main-panel[data-module="lipsync"] .lipsync-photo-name {
   position: absolute !important;
   left: 14px !important;
   right: 14px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  width: calc(100% - 28px) !important;
-  height: auto !important;
-  max-height: calc(100% - 92px) !important;
-  object-fit: contain !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 18px !important;
-  background: transparent !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-photo-name {
-  position: absolute !important;
-  left: 18px !important;
-  right: 18px !important;
-  bottom: 18px !important;
+  bottom: 14px !important;
   z-index: 5 !important;
 }
