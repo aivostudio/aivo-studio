@@ -105,8 +105,12 @@
     const hiddenDeletedIds = new Set();
 
     host.innerHTML = `
-      <div class="lipsyncPanelWrap">
-        <div class="lipsyncPanelGrid" data-grid></div>
+      <div class="lipsyncPanelWrap" style="display:flex;flex-direction:column;gap:12px;">
+        <div
+          class="lipsyncPanelGrid"
+          data-grid
+          style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;"
+        ></div>
       </div>
     `;
 
