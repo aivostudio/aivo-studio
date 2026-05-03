@@ -133,7 +133,15 @@
             badgeText: badge.text,
             badgeKind: badge.kind === "ok" ? "ready" : badge.kind === "bad" ? "error" : "loading",
             videoUrl: ready ? videoUrl + "#t=0.001" : "",
-            posterUrl: "",
+           posterUrl: safeStr(
+           job?.poster_url ||
+           job?.thumbnail_url ||
+         job?.thumb_url ||
+          job?.meta?.poster_url ||
+        job?.meta?.thumbnail_url ||
+        job?.meta?.thumb_url ||
+        ""
+),
             ratio: "9:16",
             ready,
             canDownload: !!videoRaw,
@@ -150,7 +158,7 @@
           <div>${esc(safeStr(job?.meta?.script || job?.prompt || "Dudak senkron video"))}</div>
         </div>
       `;
-    }
+       }
 
     function render(items) {
       if (!grid) return;
