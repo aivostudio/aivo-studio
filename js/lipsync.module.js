@@ -298,9 +298,36 @@ document.addEventListener("input", (e) => {
 
         return;
       }
-      const durationSelect = e.target.closest("[data-lipsync-duration]");
-      if (!durationSelect || !root.contains(durationSelect)) return;
+    const speedRange = e.target.closest('[data-lipsync-voice-speed]');
+const volumeRange = e.target.closest('[data-lipsync-voice-volume]');
+const durationSelect = e.target.closest("[data-lipsync-duration]");
 
+if (speedRange && root.contains(speedRange)) {
+  const val = Number(speedRange.value || 1);
+  const label = root.querySelector('[data-lipsync-speed-label]');
+
+  if (label) {
+    if (val < 0.9) label.textContent = "Yavaş";
+    else if (val > 1.1) label.textContent = "Hızlı";
+    else label.textContent = "Normal";
+  }
+
+  return;
+}
+
+if (volumeRange && root.contains(volumeRange)) {
+  const val = Number(volumeRange.value || 1);
+  const label = root.querySelector('[data-lipsync-volume-label]');
+
+  if (label) {
+    label.textContent = `${Math.round(val * 100)}%`;
+  }
+
+  return;
+}
+
+if (!durationSelect || !root.contains(durationSelect)) return;
+     
       syncGenerateButton(root);
     });
 
