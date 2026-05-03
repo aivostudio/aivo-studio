@@ -975,3 +975,30 @@
   border: 1px solid rgba(255, 255, 255, 0.10) !important;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.20) !important;
 }
+/* === LIPSYNC PHOTO REMOVE BUTTON === */
+
+.main-panel[data-module="lipsync"] .lipsync-photo-remove {
+  display: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 8;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.48);
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg .lipsync-photo-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
