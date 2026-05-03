@@ -45,11 +45,24 @@
     const duration = getSelectedDuration(root);
     const credit = getCreditCost(duration);
 
+    const aspectEl =
+      qs("[data-lipsync-aspect].is-active", root) ||
+      qs("[data-lipsync-aspect][aria-pressed='true']", root) ||
+      qs('input[name="lipsyncAspect"]:checked', root);
+
+    const aspectRatio = String(
+      aspectEl?.dataset?.lipsyncAspect ||
+      aspectEl?.value ||
+      "16:9"
+    ).trim();
+
     return {
       app: "lipsync",
       script: String(script?.value || "").trim(),
       resolution: String(resolution?.value || "1080p"),
       duration,
+      aspectRatio,
+      aspect_ratio: aspectRatio,
       estimatedCredits: credit
     };
   }
