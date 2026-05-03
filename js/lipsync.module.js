@@ -182,7 +182,42 @@
         return;
       }
 
-      console.log("[LIPSYNC][PAYLOAD]", payload);
+          generateBtn.disabled = true;
+      generateBtn.textContent = "Lipsync job hazırlanıyor...";
+
+      fetch("/api/lipsync/create", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => null);
+
+          if (!res.ok || !data || data.ok !== true) {
+            throw new Error(data?.error || "lipsync_create_failed");
+          }
+
+          console.log("[LIPSYNC][CREATE_OK]", data);
+
+          try {
+            window.toast?.success?.("Lipsync job oluşturuldu");
+          } catch {}
+
+          return data;
+        })
+        .catch((err) => {
+          console.error("[LIPSYNC][CREATE_ERROR]", err);
+
+          try {
+            window.toast?.error?.("Lipsync job oluşturulamadı");
+          } catch {}
+        })
+        .finally(() => {
+          syncGenerateButton(root);
+          generateBtn.disabled = false;
+        });
     });
   }
 
