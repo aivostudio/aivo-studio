@@ -912,3 +912,12 @@
   padding: 10px;
   box-sizing: border-box;
 }
+/* === LIPSYNC LANDSCAPE PREVIEW SIZE FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-photo-preview {
+  width: calc(100% - 28px) !important;
+  height: calc(100% - 28px) !important;
+  inset: 14px !important;
+  border-radius: 20px !important;
+  object-fit: contain !important;
+}
