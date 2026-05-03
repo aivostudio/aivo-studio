@@ -165,17 +165,20 @@ const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
     "x-api-key": process.env.HEYGEN_API_KEY,
     "Content-Type": "application/json",
   },
-  body: JSON.stringify({
-    type: "image",
-    image: {
-      type: "url",
-      url: body.image_url || body.imageUrl,
-    },
-    script,
-    voice_id: process.env.HEYGEN_VOICE_ID,
-    resolution,
-     aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
-  }),
+body: JSON.stringify({
+  type: "image",
+  image: {
+    type: "url",
+    url: body.image_url || body.imageUrl,
+  },
+  script,
+  voice_id: process.env.HEYGEN_VOICE_ID,
+  resolution,
+  aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
+  voice_settings: {
+    speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
+  }
+}),
 });
 
 const heygenJson = await heygenRes.json();
