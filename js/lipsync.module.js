@@ -91,7 +91,14 @@
         }
 
         if (name) {
-          name.textContent = file.name || "Fotoğraf seçildi";
+        const rawName = file.name || "Fotoğraf";
+       const shortName =
+       rawName.length > 18
+    ? rawName.slice(0, 10) + "..." + rawName.split('.').pop()
+    : rawName;
+
+      name.textContent = shortName;
+          
           name.style.display = "block";
         }
 
