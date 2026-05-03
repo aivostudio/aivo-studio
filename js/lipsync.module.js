@@ -58,6 +58,37 @@
     document.addEventListener("change", (e) => {
       const root = getRoot();
       if (!root) return;
+            const photoInput = e.target.closest("[data-lipsync-photo]");
+      if (photoInput && root.contains(photoInput)) {
+        const file = photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
+        const empty = qs("[data-lipsync-photo-empty]", root);
+        const preview = qs("[data-lipsync-photo-preview]", root);
+        const name = qs("[data-lipsync-photo-name]", root);
+
+        if (!file) return;
+
+        const url = URL.createObjectURL(file);
+
+        if (empty) empty.style.display = "none";
+
+        if (preview) {
+          preview.src = url;
+          preview.style.display = "block";
+        }
+
+        if (name) {
+          name.textContent = file.name || "Fotoğraf seçildi";
+          name.style.display = "block";
+        }
+
+        console.log("[LIPSYNC][PHOTO_SELECTED]", {
+          name: file.name,
+          type: file.type,
+          size: file.size
+        });
+
+        return;
+      }
 
       const durationSelect = e.target.closest("[data-lipsync-duration]");
       if (!durationSelect || !root.contains(durationSelect)) return;
@@ -68,6 +99,7 @@
     document.addEventListener("click", (e) => {
       const root = getRoot();
       if (!root) return;
+      
 
       const generateBtn = e.target.closest("[data-lipsync-generate]");
       if (!generateBtn || !root.contains(generateBtn)) return;
