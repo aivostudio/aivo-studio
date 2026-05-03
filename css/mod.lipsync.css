@@ -1573,3 +1573,64 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.34);
   cursor: pointer;
 }
+/* === LIPSYNC VOICE SETTINGS — COMPACT MINIMAL FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-panel {
+  margin-top: 14px !important;
+  padding: 16px 18px 18px !important;
+  border-radius: 22px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-title {
+  font-size: 13px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.12em !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-grid {
+  margin-top: 18px !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-range-label {
+  margin-bottom: 10px !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-range-label small {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 20px !important;
+  min-width: 38px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.86) !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-range-label::after {
+  width: 15px !important;
+  height: 15px !important;
+  font-size: 10px !important;
+  border-width: 1.5px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-range-field input[type="range"] {
+  height: 3px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-range-field input[type="range"]::-webkit-slider-thumb {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-range-field input[type="range"]::-moz-range-thumb {
+  width: 16px !important;
+  height: 16px !important;
+}
