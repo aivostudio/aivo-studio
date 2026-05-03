@@ -120,6 +120,40 @@
     document.addEventListener("click", (e) => {
       const root = getRoot();
       if (!root) return;
+
+            const removePhotoBtn = e.target.closest("[data-lipsync-photo-remove]");
+      if (removePhotoBtn && root.contains(removePhotoBtn)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const photoInput = qs("[data-lipsync-photo]", root);
+        const photoLabel = qs(".lipsync-photo-label", root);
+        const empty = qs("[data-lipsync-photo-empty]", root);
+        const preview = qs("[data-lipsync-photo-preview]", root);
+        const name = qs("[data-lipsync-photo-name]", root);
+
+        if (photoInput) photoInput.value = "";
+
+        if (preview) {
+          preview.removeAttribute("src");
+          preview.style.display = "none";
+        }
+
+        if (name) {
+          name.textContent = "";
+          name.style.display = "none";
+        }
+
+        if (empty) empty.style.display = "";
+
+        if (photoLabel) {
+          photoLabel.classList.remove("has-photo-bg", "is-landscape", "is-portrait");
+          photoLabel.style.removeProperty("--lipsync-photo-bg");
+        }
+
+        console.log("[LIPSYNC][PHOTO_REMOVED]");
+        return;
+      }
       
 
       const generateBtn = e.target.closest("[data-lipsync-generate]");
