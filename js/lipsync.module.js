@@ -156,6 +156,40 @@
 
   function bindEvents() {
     document.addEventListener("change", (e) => {
+      document.addEventListener("input", (e) => {
+  const root = getRoot();
+  if (!root) return;
+
+  const scriptInput = e.target.closest("[data-lipsync-script]");
+  if (!scriptInput || !root.contains(scriptInput)) return;
+
+  const text = String(scriptInput.value || "").trim();
+  const duration = Number(getSelectedDuration(root) || 10);
+
+  const charsPerSecond = 13;
+  const seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
+  const credits = Math.ceil(seconds / 2) * 3;
+
+  let infoEl = qs("[data-lipsync-estimate]", root);
+
+  if (!infoEl) {
+    infoEl = document.createElement("div");
+    infoEl.setAttribute("data-lipsync-estimate", "1");
+    infoEl.style.fontSize = "12px";
+    infoEl.style.marginTop = "6px";
+    infoEl.style.opacity = "0.8";
+
+    scriptInput.parentNode.appendChild(infoEl);
+  }
+
+  infoEl.textContent = `Tahmini: ${seconds} sn • ${credits} kredi`;
+
+  if (seconds > duration) {
+    infoEl.style.color = "#ff4d4f";
+  } else {
+    infoEl.style.color = "";
+  }
+});
       const root = getRoot();
       if (!root) return;
             const photoInput = e.target.closest("[data-lipsync-photo]");
