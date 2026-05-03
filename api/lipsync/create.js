@@ -225,6 +225,32 @@ const preparedImageUrl = await prepareLipsyncImageForAspect({
 });
 
     // HEYGEN VIDEO CREATE
+const LIPSYNC_ALLOWED_VOICES = {
+  tranquil_tulin: {
+    voice_id: process.env.HEYGEN_VOICE_ID,
+    voice_name: "Tranquil Tülin"
+  },
+  iker: {
+    voice_id: "117821d0abb146e89cc2a2e99f65d807",
+    voice_name: "Iker"
+  },
+  william: {
+    voice_id: "13be37a20b2448b7ad9db1a8669e5569",
+    voice_name: "William Prescott"
+  },
+  lily: {
+    voice_id: "14979664b31246cbb735cc86d17b7907",
+    voice_name: "Lily"
+  },
+  april: {
+    voice_id: "1508afc3681349ad842f2e7194b7eb22",
+    voice_name: "April"
+  }
+};
+
+const requestedVoiceKey = String(body.voice_key || body.voiceKey || "tranquil_tulin").trim();
+const pickedVoice = LIPSYNC_ALLOWED_VOICES[requestedVoiceKey] || LIPSYNC_ALLOWED_VOICES.tranquil_tulin;
+
 const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
   method: "POST",
   headers: {
@@ -238,7 +264,7 @@ body: JSON.stringify({
   url: preparedImageUrl,
 },
   script,
-  voice_id: process.env.HEYGEN_VOICE_ID,
+  voice_id: pickedVoice.voice_id,
  resolution,
 aspect_ratio: aspectRatio,
 background: {
