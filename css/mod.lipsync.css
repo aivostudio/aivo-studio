@@ -1060,3 +1060,46 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 16px 32px rgba(120, 80, 255, 0.12);
 }
+.lipsync-voice-toolbar {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.lipsync-current-voice,
+.lipsync-voice-select {
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.lipsync-current-voice {
+  padding: 0 14px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lipsync-voice-select {
+  width: 100%;
+  padding: 0 18px;
+  outline: none;
+  cursor: pointer;
+}
+
+.lipsync-voice-select:focus {
+  border-color: rgba(190, 140, 255, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 4px rgba(120, 80, 255, 0.12);
+}
