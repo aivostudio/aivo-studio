@@ -313,7 +313,25 @@ document.addEventListener("input", (e) => {
         return;
       }
       
+             const voiceBtn = e.target.closest("[data-lipsync-voice]");
+      if (voiceBtn && root.contains(voiceBtn)) {
+        e.preventDefault();
 
+        root.querySelectorAll("[data-lipsync-voice]").forEach((btn) => {
+          btn.classList.remove("is-active");
+          btn.setAttribute("aria-pressed", "false");
+        });
+
+        voiceBtn.classList.add("is-active");
+        voiceBtn.setAttribute("aria-pressed", "true");
+
+        console.log("[LIPSYNC][VOICE_SELECTED]", {
+          voice_key: voiceBtn.dataset.lipsyncVoice || "",
+          voice_name: voiceBtn.dataset.lipsyncVoiceName || ""
+        });
+
+        return;
+      }
       const generateBtn = e.target.closest("[data-lipsync-generate]");
       if (!generateBtn || !root.contains(generateBtn)) return;
 
