@@ -436,8 +436,8 @@ payload.estimatedCredits = estimatedCreditCost;
       try {
         window.toast?.success?.(`${creditCost} kredi düşüldü`);
       } catch {}
-      generateBtn.disabled = true;
-      generateBtn.textContent = "Lipsync job hazırlanıyor...";
+     generateBtn.disabled = true;
+     generateBtn.textContent = "Video hazırlanıyor...";
 
       fetch("/api/lipsync/create", {
         method: "POST",
@@ -450,7 +450,7 @@ payload.estimatedCredits = estimatedCreditCost;
           const data = await res.json().catch(() => null);
 
          if (!res.ok || !data || data.ok !== true) {
-  if (data?.error === "script_too_long") {
+      if (data?.error === "script_too_long") {
     const message = String(
       data?.message ||
       "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç."
