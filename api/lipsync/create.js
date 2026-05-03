@@ -201,6 +201,15 @@ const cost = calculateCost(estimatedSpeechSeconds);
 
     const jobId = String(inserted[0].id);
 
+    const imageUrl = String(body.image_url || body.imageUrl || "").trim();
+const aspectRatio = String(body.aspectRatio || body.aspect_ratio || "16:9").trim();
+
+const preparedImageUrl = await prepareLipsyncImageForAspect({
+  imageUrl,
+  aspectRatio,
+  jobId
+});
+
     // HEYGEN VIDEO CREATE
 const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
   method: "POST",
@@ -210,14 +219,14 @@ const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
   },
 body: JSON.stringify({
   type: "image",
-  image: {
-    type: "url",
-    url: body.image_url || body.imageUrl,
-  },
+ image: {
+  type: "url",
+  url: preparedImageUrl,
+},
   script,
   voice_id: process.env.HEYGEN_VOICE_ID,
  resolution,
-aspect_ratio: String(body.aspectRatio || body.aspect_ratio || "16:9"),
+aspect_ratio: aspectRatio,
 background: {
   type: "color",
   value: "#080816"
