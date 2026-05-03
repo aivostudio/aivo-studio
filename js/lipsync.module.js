@@ -60,6 +60,15 @@ function syncGenerateButton(root) {
       "16:9"
     ).trim();
 
+    const voiceBtn =
+      qs("[data-lipsync-voice].is-active", root) ||
+      qs("[data-lipsync-voice]", root);
+
+    const voiceKey = String(voiceBtn?.dataset?.lipsyncVoice || "tranquil_tulin").trim();
+    const voiceName = String(voiceBtn?.dataset?.lipsyncVoiceName || voiceBtn?.textContent || "Tranquil Tülin")
+      .replace("🔊", "")
+      .trim();
+
     return {
       app: "lipsync",
       script: String(script?.value || "").trim(),
@@ -67,6 +76,8 @@ function syncGenerateButton(root) {
       duration,
       aspectRatio,
       aspect_ratio: aspectRatio,
+      voice_key: voiceKey,
+      voice_name: voiceName,
       estimatedCredits: credit
     };
   }
