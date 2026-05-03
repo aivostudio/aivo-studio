@@ -72,10 +72,19 @@
 
         if (empty) empty.style.display = "none";
 
-        if (preview) {
-          preview.src = url;
-          preview.style.display = "block";
-        }
+       if (preview) {
+  preview.onload = function () {
+    const isLandscape = preview.naturalWidth > preview.naturalHeight;
+
+    if (photoLabel) {
+      photoLabel.classList.toggle("is-landscape", isLandscape);
+      photoLabel.classList.toggle("is-portrait", !isLandscape);
+    }
+  };
+
+  preview.src = url;
+  preview.style.display = "block";
+}
         if (photoLabel) {
         photoLabel.style.setProperty("--lipsync-photo-bg", `url("${url}")`);
         photoLabel.classList.add("has-photo-bg");
