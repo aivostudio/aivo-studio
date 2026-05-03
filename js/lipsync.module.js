@@ -270,9 +270,13 @@
         console.log("[LIPSYNC][BLOCKED]", "missing_script");
         return;
       }
-         const charsPerSecond = 13;
-        const estimatedSpeechSeconds = Math.ceil(payload.script.length / charsPerSecond);
-        const maxSpeechSeconds = Number(payload.duration || 10);
+      const charsPerSecond = 13;
+const estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
+const maxSpeechSeconds = Number(payload.duration || 10);
+const estimatedCreditCost = Math.ceil(estimatedSpeechSeconds / 2) * 3;
+
+payload.estimatedSpeechSeconds = estimatedSpeechSeconds;
+payload.estimatedCredits = estimatedCreditCost;
 
        if (estimatedSpeechSeconds > maxSpeechSeconds) {
         try {
@@ -327,9 +331,7 @@
         generateBtn.disabled = false;
         return;
       }
-           const charsPerSecond = 13;
-       const estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
-      const creditCost = Math.ceil(estimatedSpeechSeconds / 2) * 3;
+     const creditCost = Number(payload.estimatedCredits || 3);
       const creditReason = "studio_lipsync_generate";
       const consumeRequestId = `lipsync:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
