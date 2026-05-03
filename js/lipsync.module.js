@@ -54,6 +54,93 @@
     };
   }
 
+  async function uploadLipsyncPhotoToR2(file, payload) {
+    if (!file) {
+      throw new Error("lipsync_missing_photo_file");
+    }
+
+    const filename = file.name || `lipsync-photo-${Date.now()}.jpg`;
+    const contentType = file.type || "application/octet-stream";
+    const promptText = String(payload?.script || "").trim();
+
+    const presignRes = await fetch("/api/r2/scan-and-presign", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        app: "lipsync",
+        kind: "image",
+        filename,
+        contentType,
+        prompt: promptText,
+        title: filename,
+        description: promptText || filename,
+        personName: "",
+        style: "",
+        source: "lipsync_browser_photo_upload"
+      })
+    });
+
+    const presignData = await presignRes.json().catch(() => null);
+
+    if (!presignRes.ok || !presignData || presignData.ok === false) {
+      throw new Error(presignData?.message || presignData?.error || "lipsync_presign_failed");
+    }
+
+    const uploadUrl = presignData.uploadUrl || presignData.upload_url || "";
+    const publicUrl = presignData.publicUrl || presignData.public_url || presignData.url || "";
+    const key = presignData.key || presignData.objectKey || "";
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("lipsync_presign_invalid");
+    }
+
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "content-type": contentType
+      },
+      body: file
+    });
+
+    if (!putRes.ok) {
+      throw new Error(`lipsync_r2_put_failed_${putRes.status}`);
+    }
+
+    const scanRes = await fetch("/api/r2/scan-upload", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        app: "lipsync",
+        key,
+        filename,
+        contentType,
+        public_url: publicUrl,
+        prompt: promptText,
+        title: filename,
+        description: promptText || filename,
+        personName: "",
+        style: "",
+        source: "lipsync_browser_photo_upload"
+      })
+    });
+
+    const scanData = await scanRes.json().catch(() => null);
+
+    if (!scanRes.ok || !scanData || scanData.ok === false) {
+      throw new Error(scanData?.message || scanData?.error || "lipsync_scan_upload_failed");
+    }
+
+    if (scanData.decision && scanData.decision !== "allow") {
+      throw new Error(`media_policy_${scanData.decision}`);
+    }
+
+    return String(scanData.public_url || publicUrl || "").trim();
+  }
+
   function bindEvents() {
     document.addEventListener("change", (e) => {
       const root = getRoot();
@@ -171,14 +258,42 @@
         return;
       }
 
-      const photoInput = qs("[data-lipsync-photo]", root);
-      const hasPhoto = !!(photoInput && photoInput.files && photoInput.files[0]);
+         const photoInput = qs("[data-lipsync-photo]", root);
+      const photoFile = photoInput && photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
 
-      if (!hasPhoto) {
+      if (!photoFile) {
         try { window.toast?.info?.("Fotoğraf yüklemelisin"); } catch {}
         const photoLabel = qs(".lipsync-photo-label", root);
         if (photoLabel) photoLabel.scrollIntoView({ behavior: "smooth", block: "center" });
         console.log("[LIPSYNC][BLOCKED]", "missing_photo");
+        return;
+      }
+
+      let imageUrl = "";
+
+      try {
+        generateBtn.disabled = true;
+        generateBtn.textContent = "Fotoğraf yükleniyor...";
+
+        imageUrl = await uploadLipsyncPhotoToR2(photoFile, payload);
+
+        if (!imageUrl) {
+          throw new Error("lipsync_photo_url_missing");
+        }
+
+        payload.image_url = imageUrl;
+        payload.imageUrl = imageUrl;
+
+        console.log("[LIPSYNC][PHOTO_R2_OK]", imageUrl);
+      } catch (uploadErr) {
+        console.error("[LIPSYNC][PHOTO_R2_ERROR]", uploadErr);
+
+        try {
+          window.toast?.error?.("Fotoğraf yüklenemedi");
+        } catch {}
+
+        syncGenerateButton(root);
+        generateBtn.disabled = false;
         return;
       }
             const creditCost = Number(payload.estimatedCredits || 15);
