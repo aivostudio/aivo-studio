@@ -400,7 +400,57 @@
               }
             })
           );
+                    let tries = 0;
 
+          const poll = async () => {
+            tries += 1;
+
+            try {
+              const statusRes = await fetch(
+                "/api/jobs/status?job_id=" + encodeURIComponent(jobId) + "&debug=1",
+                {
+                  method: "GET",
+                  cache: "no-store"
+                }
+              );
+
+              const statusData = await statusRes.json().catch(() => null);
+
+              console.log("[LIPSYNC][STATUS]", statusData);
+
+              const status = String(
+                statusData?.status ||
+                statusData?.db_status ||
+                ""
+              ).trim().toLowerCase();
+
+              if (status === "ready" || status === "done") {
+                try {
+                  window.toast?.success?.("Lipsync video hazır");
+                } catch {}
+                return;
+              }
+
+              if (status === "error") {
+                try {
+                  window.toast?.error?.("Lipsync üretimi başarısız oldu");
+                } catch {}
+                return;
+              }
+
+              if (tries < 80) {
+                setTimeout(poll, 5000);
+              }
+            } catch (err) {
+              console.error("[LIPSYNC][STATUS_ERROR]", err);
+
+              if (tries < 80) {
+                setTimeout(poll, 5000);
+              }
+            }
+          };
+
+          poll();
           return data;
         })
         .catch((err) => {
