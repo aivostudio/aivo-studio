@@ -60,7 +60,6 @@ function syncGenerateButton(root) {
       "16:9"
     ).trim();
 
-    const voiceBtn =
     const voiceSelect = qs("[data-lipsync-voice-select]", root);
     const selectedOption = voiceSelect?.selectedOptions?.[0] || null;
 
