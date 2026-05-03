@@ -77,11 +77,9 @@
           preview.style.display = "block";
         }
         if (photoLabel) {
-  photoLabel.style.backgroundImage = `linear-gradient(rgba(5, 6, 14, 0.42), rgba(5, 6, 14, 0.58)), url("${url}")`;
-  photoLabel.style.backgroundSize = "cover";
-  photoLabel.style.backgroundPosition = "center";
-  photoLabel.style.backgroundRepeat = "no-repeat";
-}
+        photoLabel.style.setProperty("--lipsync-photo-bg", `url("${url}")`);
+        photoLabel.classList.add("has-photo-bg");
+        }
 
         if (name) {
           name.textContent = file.name || "Fotoğraf seçildi";
