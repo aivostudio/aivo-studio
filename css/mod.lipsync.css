@@ -1726,3 +1726,36 @@
   font-weight: 850 !important;
   letter-spacing: -0.025em !important;
 }
+/* === LIPSYNC TRUE PREMIUM TEXT OVERRIDE === */
+
+.main-panel[data-module="lipsync"] .lipsync-block-title,
+.main-panel[data-module="lipsync"] .lipsync-motion-title {
+  font-size: 24px !important;
+  line-height: 1.05 !important;
+  font-weight: 780 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-block-sub,
+.main-panel[data-module="lipsync"] .lipsync-motion-sub {
+  margin-top: 8px !important;
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+  font-weight: 620 !important;
+  letter-spacing: -0.025em !important;
+  color: rgba(255, 255, 255, 0.58) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-textarea::placeholder,
+.main-panel[data-module="lipsync"] .lipsync-motion-textarea::placeholder {
+  font-size: 18px !important;
+  font-weight: 520 !important;
+  letter-spacing: -0.035em !important;
+  color: rgba(255, 255, 255, 0.30) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-preset-btn {
+  font-size: 17px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.035em !important;
+}
