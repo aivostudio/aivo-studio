@@ -312,9 +312,55 @@
 
       render(currentDbItems);
     };
+         const onJobReady = (e) => {
+      const d = e?.detail || {};
+      const jobId = safeStr(d.job_id);
 
-    controller.start();
+      if (!jobId) return;
+      if (hiddenDeletedIds.has(jobId)) return;
+
+      const videoUrl = safeStr(
+        d?.video?.url ||
+        d?.raw?.video?.url ||
+        d?.raw?.video_url ||
+        d?.videoUrl ||
+        d?.video_url ||
+        ""
+      );
+
+      const outputs = Array.isArray(d?.outputs) ? d.outputs : [];
+
+      currentDbItems = currentDbItems.map((job) => {
+        if (idOf(job) !== jobId) return job;
+
+        return {
+          ...job,
+          status: "ready",
+          db_status: "ready",
+          state: "COMPLETED",
+          outputs: outputs.length
+            ? outputs
+            : videoUrl
+              ? [
+                  {
+                    type: "video",
+                    url: videoUrl,
+                    meta: {
+                      app: "lipsync",
+                      variant: "provider",
+                      is_final: true
+                    }
+                  }
+                ]
+              : job.outputs || []
+        };
+      });
+
+      render(currentDbItems);
+    };
+       controller.start();
     window.addEventListener("aivo:lipsync:job_created", onJobCreated);
+    window.addEventListener("aivo:lipsync:job_ready", onJobReady);
 
     return {
       destroy() {
