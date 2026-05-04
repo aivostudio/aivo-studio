@@ -2277,3 +2277,54 @@
 .main-panel[data-module="lipsync"] .lipsync-inline-audio-remove {
   font-size: 16px !important;
 }
+/* === LIPSYNC UPLOAD TAB UI === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-modal[data-mode="upload"] .lipsync-record-main-btn {
+  display: none !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-modal[data-mode="upload"] .lipsync-record-box {
+  min-height: 260px !important;
+  border: 2px dashed rgba(236, 91, 167, 0.72) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(236, 91, 167, 0.10), transparent 42%),
+    rgba(10, 11, 17, 0.72) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-upload-dropzone {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 210px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  text-align: center !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-upload-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  font-size: 28px !important;
+  font-weight: 900 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-upload-dropzone strong {
+  font-size: 22px !important;
+  font-weight: 850 !important;
+  color: #ffffff !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-upload-dropzone small {
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  color: rgba(255, 255, 255, 0.52) !important;
+}
