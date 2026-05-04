@@ -594,7 +594,37 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
 
   return;
 }
-       const recordedAudioPlayBtn = e.target.closest(".lipsync-record-confirm-play");
+       const removeRecordedAudioBtn = e.target.closest("[data-lipsync-remove-recorded-audio]");
+if (removeRecordedAudioBtn && root.contains(removeRecordedAudioBtn)) {
+  e.preventDefault();
+
+  if (window.__AIVO_LIPSYNC_RECORD_AUDIO__) {
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__.pause();
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__.currentTime = 0;
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__ = null;
+  }
+
+  lipsyncRecordedAudioFile = null;
+  lipsyncRecordedChunks = [];
+
+  const boxEl = qs(".lipsync-record-box", root);
+  const deviceEl = qs(".lipsync-record-device", root);
+
+  if (boxEl) {
+    boxEl.innerHTML = `
+      <p>Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.</p>
+    `;
+  }
+
+  if (deviceEl) {
+    deviceEl.textContent = "🎙 Mikrofon hazır bekleniyor...";
+  }
+
+  try { window.toast?.success?.("Kayıt silindi"); } catch {}
+
+  return;
+}
+ const recordedAudioPlayBtn = e.target.closest(".lipsync-record-confirm-play");
 if (recordedAudioPlayBtn && root.contains(recordedAudioPlayBtn)) {
   e.preventDefault();
 
