@@ -80,25 +80,33 @@
 
   function pickVideoFromJob(job) {
     const outs = Array.isArray(job?.outputs) ? job.outputs : [];
-    const first = outs.find((o) => pickOutputUrl(o));
-
-    const outputUrl = pickOutputUrl(first);
-    if (outputUrl) return outputUrl;
-
     const meta = job?.meta || {};
 
+    const byVariant = (variant) => {
+      const wanted = safeStr(variant).toLowerCase();
+      const hit = outs.find((o) => {
+        const v = safeStr(o?.meta?.variant).toLowerCase();
+        return v === wanted && pickOutputUrl(o);
+      });
+
+      return pickOutputUrl(hit);
+    };
+
     return (
-      safeStr(job?.final_url) ||
+      safeStr(meta?.final_video_url) ||
       safeStr(job?.final_video_url) ||
+      byVariant("provider") ||
+      byVariant("finalized") ||
+      byVariant("preview") ||
+      safeStr(job?.final_url) ||
       safeStr(job?.video_url) ||
       safeStr(job?.videoUrl) ||
       safeStr(meta?.final_url) ||
-      safeStr(meta?.final_video_url) ||
       safeStr(meta?.video_url) ||
-      safeStr(meta?.videoUrl)
+      safeStr(meta?.videoUrl) ||
+      pickOutputUrl(outs.find((o) => pickOutputUrl(o)))
     );
   }
-
   function createLipsyncPanel(host) {
     let destroyed = false;
     let currentDbItems = [];
