@@ -2083,3 +2083,43 @@
   font-weight: 850;
   cursor: pointer;
 }
+/* === LIPSYNC RECORDING SPINNER EFFECT === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-main-btn.is-recording {
+  background: rgba(255, 54, 95, 0.14) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-main-btn.is-recording::before {
+  border-radius: 14px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-box.is-recording {
+  position: relative !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-box.is-recording::before {
+  content: "" !important;
+  width: 118px !important;
+  height: 118px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 50% 0%, #7c4dff 0 8px, transparent 9px),
+    radial-gradient(circle at 85% 15%, #8b5cf6 0 7px, transparent 8px),
+    radial-gradient(circle at 100% 50%, #a855f7 0 9px, transparent 10px),
+    radial-gradient(circle at 85% 85%, #ec5ba7 0 7px, transparent 8px),
+    radial-gradient(circle at 50% 100%, #7c4dff 0 8px, transparent 9px),
+    radial-gradient(circle at 15% 85%, rgba(124, 77, 255, 0.55) 0 7px, transparent 8px),
+    radial-gradient(circle at 0% 50%, rgba(236, 91, 167, 0.55) 0 8px, transparent 9px),
+    radial-gradient(circle at 15% 15%, rgba(124, 77, 255, 0.45) 0 7px, transparent 8px);
+  animation: lipsyncRecordingSpin 1.15s linear infinite !important;
+}
+
+@keyframes lipsyncRecordingSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
