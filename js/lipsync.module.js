@@ -1534,14 +1534,36 @@ try {
                 return;
               }
 
-              if (tries < 80) {
+                          if (tries < 80) {
                 setTimeout(poll, 5000);
+              } else {
+                const refunded = await refundLipsyncCredits("lipsync_poll_timeout", {
+                  job_id: jobId,
+                  status: "timeout"
+                });
+
+                if (!refunded) {
+                  try {
+                    window.toast?.error?.("Lipsync üretimi zaman aşımına uğradı");
+                  } catch {}
+                }
               }
             } catch (err) {
               console.error("[LIPSYNC][STATUS_ERROR]", err);
 
-              if (tries < 80) {
+                         if (tries < 80) {
                 setTimeout(poll, 5000);
+              } else {
+                const refunded = await refundLipsyncCredits("lipsync_poll_timeout", {
+                  job_id: jobId,
+                  status: "timeout"
+                });
+
+                if (!refunded) {
+                  try {
+                    window.toast?.error?.("Lipsync üretimi zaman aşımına uğradı");
+                  } catch {}
+                }
               }
             }
           };
