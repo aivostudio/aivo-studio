@@ -368,16 +368,20 @@ if (recordToggleBtn && root.contains(recordToggleBtn)) {
   const deviceEl = qs(".lipsync-record-device", root);
   const boxEl = qs(".lipsync-record-box", root);
 
-  if (lipsyncRecorder && lipsyncRecorder.state === "recording") {
-    lipsyncRecorder.stop();
-    recordToggleBtn.classList.remove("is-recording");
+if (lipsyncRecorder && lipsyncRecorder.state === "recording") {
+  lipsyncRecorder.stop();
+  recordToggleBtn.classList.remove("is-recording");
 
-    if (deviceEl) {
-      deviceEl.textContent = "⏳ Kayıt hazırlanıyor...";
-    }
-
-    return;
+  if (boxEl) {
+    boxEl.classList.remove("is-recording");
   }
+
+  if (deviceEl) {
+    deviceEl.textContent = "⏳ Kayıt hazırlanıyor...";
+  }
+
+  return;
+}
   const useRecordedAudioBtn = e.target.closest("[data-lipsync-use-recorded-audio]");
 if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
   e.preventDefault();
@@ -464,12 +468,22 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
 }
     };
 
-    lipsyncRecorder.start();
-    recordToggleBtn.classList.add("is-recording");
+ lipsyncRecorder.start();
+recordToggleBtn.classList.add("is-recording");
 
-    if (deviceEl) {
-      deviceEl.textContent = "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.";
-    }
+if (boxEl) {
+  boxEl.classList.add("is-recording");
+  boxEl.innerHTML = `
+    <div class="lipsync-recording-state">
+      <div class="lipsync-recording-text">Kayıt alınıyor</div>
+      <div class="lipsync-recording-time">Durdurmak için tekrar bas</div>
+    </div>
+  `;
+}
+
+if (deviceEl) {
+  deviceEl.textContent = "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.";
+}
   } catch (err) {
     console.error("[LIPSYNC][RECORD_ERROR]", err);
 
