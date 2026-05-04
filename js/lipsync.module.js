@@ -177,10 +177,9 @@ function renderLipsyncAudioEstimate(root) {
       throw new Error("lipsync_missing_photo_file");
     }
 
-    const filename = file.name || `lipsync-photo-${Date.now()}.jpg`;
+     const filename = file.name || `lipsync-photo-${Date.now()}.jpg`;
     const contentType = file.type || "application/octet-stream";
-    const promptText = String(payload?.script || "").trim();
-
+    const promptText = "";
     const presignRes = await fetch("/api/r2/scan-and-presign", {
       method: "POST",
       headers: {
