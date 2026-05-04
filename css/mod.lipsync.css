@@ -2342,8 +2342,8 @@
 /* === LIPSYNC LANDSCAPE PHOTO HEIGHT BALANCE === */
 
 .main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg.is-landscape {
-  min-height: 260px !important;
-  max-height: 320px !important;
+  min-height: 410px !important;
+  max-height: 430px !important;
 }
 
 .main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg.is-landscape .lipsync-photo-preview {
