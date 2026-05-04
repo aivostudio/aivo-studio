@@ -1518,10 +1518,19 @@ try {
   return;
 }
 
-              if (status === "error") {
-                try {
-                  window.toast?.error?.("Lipsync üretimi başarısız oldu");
-                } catch {}
+                   if (status === "error") {
+                const refunded = await refundLipsyncCredits("lipsync_poll_failed", {
+                  job_id: jobId,
+                  status,
+                  error: String(statusData?.error || statusData?.message || "lipsync_job_error")
+                });
+
+                if (!refunded) {
+                  try {
+                    window.toast?.error?.("Lipsync üretimi başarısız oldu");
+                  } catch {}
+                }
+
                 return;
               }
 
