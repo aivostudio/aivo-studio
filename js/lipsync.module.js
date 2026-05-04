@@ -401,9 +401,39 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
     audioInput.files = dt.files;
   }
 
-  if (audioName) {
-    audioName.textContent = `Ses hazır: ${lipsyncRecordedAudioFile.name}`;
-  }
+ if (audioName) {
+  audioName.textContent = "";
+}
+
+const scriptInput = qs("[data-lipsync-script]", root);
+
+if (scriptInput) {
+  scriptInput.value = "";
+  scriptInput.placeholder = "";
+  scriptInput.classList.add("has-lipsync-audio-card");
+
+  const oldAudioCard = qs(".lipsync-inline-audio-card", root);
+  if (oldAudioCard) oldAudioCard.remove();
+
+  const audioCard = document.createElement("div");
+  audioCard.className = "lipsync-inline-audio-card";
+  audioCard.innerHTML = `
+    <button type="button" class="lipsync-inline-audio-play" data-lipsync-inline-audio-play>
+      ▶
+    </button>
+
+    <div class="lipsync-inline-audio-info">
+      <strong>${lipsyncRecordedAudioFile.name}</strong>
+      <span>00:00 / 00:00</span>
+    </div>
+
+    <button type="button" class="lipsync-inline-audio-remove" data-lipsync-inline-audio-remove>
+      🗑
+    </button>
+  `;
+
+  scriptInput.insertAdjacentElement("beforebegin", audioCard);
+}
 
   if (modal) {
     modal.hidden = true;
