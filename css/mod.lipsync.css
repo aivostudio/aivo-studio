@@ -1759,3 +1759,42 @@
   font-weight: 760 !important;
   letter-spacing: -0.035em !important;
 }
+/* === LIPSYNC VOICE PREVIEW PLAY BUTTON PREMIUM === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-panel {
+  position: relative !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-play-btn {
+  position: absolute !important;
+  top: 22px !important;
+  right: 24px !important;
+  width: 46px !important;
+  height: 46px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #20c8ff 0%, #0aa8f5 100%) !important;
+  color: #07101a !important;
+  font-size: 18px !important;
+  font-weight: 950 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-left: 3px !important;
+  cursor: pointer !important;
+  box-shadow:
+    0 16px 34px rgba(32, 200, 255, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-play-btn:hover {
+  transform: translateY(-1px) scale(1.03) !important;
+  filter: brightness(1.06) !important;
+}
