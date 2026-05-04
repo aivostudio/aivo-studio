@@ -19,9 +19,6 @@ const ALLOWED_HOSTS = new Set([
   // ✅ FAL signed media
   "v3b.fal.media",
   "fal.media",
-
-  // ✅ HeyGen signed media
-  "files2.heygen.ai",
 ]);
 function safeFilename(name) {
   const s = String(name || "").trim();
