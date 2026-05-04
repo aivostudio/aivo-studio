@@ -1015,13 +1015,13 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
 
         const payload = buildPayload(root);
 
-        if (!payload.script) {
-        try { window.toast?.info?.("Konuşma metni yazmalısın"); } catch {}
-        const scriptInput = qs("[data-lipsync-script]", root);
-        if (scriptInput) scriptInput.focus();
-        console.log("[LIPSYNC][BLOCKED]", "missing_script");
-        return;
-      }
+      if (!payload.script && !lipsyncRecordedAudioFile) {
+  try { window.toast?.info?.("Konuşma metni yazmalısın veya ses dosyası seçmelisin"); } catch {}
+  const scriptInput = qs("[data-lipsync-script]", root);
+  if (scriptInput) scriptInput.focus();
+  console.log("[LIPSYNC][BLOCKED]", "missing_script_or_audio");
+  return;
+}
      let estimatedSpeechSeconds = 1;
 let estimatedCreditCost = 3;
 
