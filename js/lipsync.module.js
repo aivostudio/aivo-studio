@@ -10,6 +10,9 @@
     "50": 75,
     "60": 90
   };
+  let lipsyncRecorder = null;
+let lipsyncRecordedChunks = [];
+let lipsyncRecordedAudioFile = null;
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
@@ -354,6 +357,83 @@ if (recordCloseBtn && root.contains(recordCloseBtn)) {
   const modal = qs("[data-lipsync-record-modal]", root);
   if (modal) {
     modal.hidden = true;
+  }
+
+  return;
+}
+       const recordToggleBtn = e.target.closest("[data-lipsync-record-toggle]");
+if (recordToggleBtn && root.contains(recordToggleBtn)) {
+  e.preventDefault();
+
+  const deviceEl = qs(".lipsync-record-device", root);
+  const boxEl = qs(".lipsync-record-box", root);
+
+  if (lipsyncRecorder && lipsyncRecorder.state === "recording") {
+    lipsyncRecorder.stop();
+    recordToggleBtn.classList.remove("is-recording");
+
+    if (deviceEl) {
+      deviceEl.textContent = "⏳ Kayıt hazırlanıyor...";
+    }
+
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    lipsyncRecordedChunks = [];
+    lipsyncRecorder = new MediaRecorder(stream);
+
+    lipsyncRecorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        lipsyncRecordedChunks.push(event.data);
+      }
+    };
+
+    lipsyncRecorder.onstop = () => {
+      const blob = new Blob(lipsyncRecordedChunks, { type: "audio/webm" });
+      const filename = `aivo-kayit-${Date.now()}.webm`;
+
+      lipsyncRecordedAudioFile = new File([blob], filename, {
+        type: "audio/webm"
+      });
+
+      stream.getTracks().forEach((track) => track.stop());
+
+      if (deviceEl) {
+        deviceEl.textContent = `🎙 Kayıt hazır: ${filename}`;
+      }
+
+      if (boxEl) {
+        boxEl.innerHTML = `
+          <div class="lipsync-record-result-card">
+            <div>
+              <strong>${filename}</strong>
+              <span>Kaydedilen ses hazır</span>
+            </div>
+            <button type="button" data-lipsync-use-recorded-audio>Kullan</button>
+          </div>
+        `;
+      }
+    };
+
+    lipsyncRecorder.start();
+    recordToggleBtn.classList.add("is-recording");
+
+    if (deviceEl) {
+      deviceEl.textContent = "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.";
+    }
+  } catch (err) {
+    console.error("[LIPSYNC][RECORD_ERROR]", err);
+
+    if (deviceEl) {
+      deviceEl.textContent = "Mikrofon izni alınamadı.";
+    }
+
+    try {
+      window.toast?.error?.("Mikrofon izni alınamadı");
+    } catch {}
   }
 
   return;
