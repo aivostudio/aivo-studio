@@ -137,8 +137,14 @@ function renderLipsyncAudioEstimate(root) {
       "16:9"
     ).trim();
 
-    const voiceSelect = qs("[data-lipsync-voice-select]", root);
+     const voiceSelect = qs("[data-lipsync-voice-select]", root);
     const selectedOption = voiceSelect?.selectedOptions?.[0] || null;
+
+    const speedRange = qs("[data-lipsync-voice-speed]", root);
+    const volumeRange = qs("[data-lipsync-voice-volume]", root);
+
+    const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(speedRange?.value || 1)));
+    const voiceVolume = Math.max(0, Math.min(2, Number(volumeRange?.value || 1)));
 
     const voiceBtn =
       qs("[data-lipsync-voice].is-active", root) ||
@@ -168,6 +174,10 @@ function renderLipsyncAudioEstimate(root) {
       aspect_ratio: aspectRatio,
       voice_key: voiceKey,
       voice_name: voiceName,
+      voiceSpeed,
+      voice_speed: voiceSpeed,
+      voiceVolume,
+      voice_volume: voiceVolume,
       estimatedCredits: credit
     };
   }
