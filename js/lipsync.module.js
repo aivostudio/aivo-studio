@@ -1097,6 +1097,13 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
 
   lipsyncRecordedAudioFile = null;
   lipsyncRecordedChunks = [];
+  lipsyncAudioDurationSeconds = 0;
+  lipsyncAudioCreditCost = 0;
+
+  syncGenerateButton(root);
+
+  const estimateEl = qs("[data-lipsync-estimate]", root);
+  if (estimateEl) estimateEl.remove();
 
   const audioInput = qs("[data-lipsync-audio]", root);
   const audioName = qs("[data-lipsync-audio-name]", root);
