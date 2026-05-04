@@ -1262,8 +1262,15 @@ try {
       let consumeTransactionId = null;
 
       async function refreshLipsyncCreditsUI() {
-        try {
-          const creditGetRes = await fetch("/api/credits/get", {
+            consumed = true;
+      consumeTransactionId =
+        creditData?.transaction_id ||
+        creditData?.transaction?.id ||
+        null;
+
+      await refreshLipsyncCreditsUI();
+
+      try {
             credentials: "include",
             cache: "no-store",
             headers: {
