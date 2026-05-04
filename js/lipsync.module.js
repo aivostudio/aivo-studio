@@ -444,17 +444,24 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
         deviceEl.textContent = `🎙 Kayıt hazır: ${filename}`;
       }
 
-      if (boxEl) {
-        boxEl.innerHTML = `
-          <div class="lipsync-record-result-card">
-            <div>
-              <strong>${filename}</strong>
-              <span>Kaydedilen ses hazır</span>
-            </div>
-            <button type="button" data-lipsync-use-recorded-audio>Kullan</button>
-          </div>
-        `;
-      }
+   if (boxEl) {
+  boxEl.innerHTML = `
+    <div class="lipsync-record-confirm-card">
+      <button type="button" class="lipsync-record-confirm-play" aria-label="Kaydı dinle">
+        ▶
+      </button>
+
+      <div class="lipsync-record-confirm-info">
+        <strong>${filename}</strong>
+        <span>Kaydedilen ses hazır</span>
+      </div>
+
+      <button type="button" class="lipsync-record-confirm-use" data-lipsync-use-recorded-audio>
+        Kullan
+      </button>
+    </div>
+  `;
+}
     };
 
     lipsyncRecorder.start();
