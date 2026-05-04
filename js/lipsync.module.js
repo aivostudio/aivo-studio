@@ -87,7 +87,7 @@ function syncGenerateButton(root) {
     seconds = lipsyncAudioDurationSeconds;
     credit = lipsyncAudioCreditCost || Math.ceil(seconds / 2) * 3;
   } else {
-    const charsPerSecond = 13;
+    const charsPerSecond = 9;
     seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
     credit = Math.ceil(seconds / 2) * 3;
   }
@@ -355,7 +355,7 @@ document.addEventListener("input", (e) => {
   const trimmedText = text.trim();
   const duration = Number(getSelectedDuration(root) || 10);
 
-  const charsPerSecond = 13;
+  const charsPerSecond = 9;
   const seconds = Math.max(1, Math.ceil(trimmedText.length / charsPerSecond));
   const credits = Math.ceil(seconds / 2) * 3;
 
