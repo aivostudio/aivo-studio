@@ -1798,3 +1798,20 @@
   transform: translateY(-1px) scale(1.03) !important;
   filter: brightness(1.06) !important;
 }
+/* === LIPSYNC VOICE PLAY COLOR MATCH FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-play-btn {
+  background: linear-gradient(135deg, #7c4dff 0%, #ec5ba7 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 16px 34px rgba(236, 91, 167, 0.24),
+    0 0 28px rgba(124, 77, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-play-btn:hover {
+  box-shadow:
+    0 18px 38px rgba(236, 91, 167, 0.32),
+    0 0 34px rgba(124, 77, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
+}
