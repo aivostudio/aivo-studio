@@ -343,6 +343,8 @@ const heygenPayload = hasAudioMode
 }
     };
 
+console.log("[LIPSYNC][HEYGEN_PAYLOAD]", JSON.stringify(heygenPayload, null, 2));
+
 const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
   method: "POST",
   headers: {
