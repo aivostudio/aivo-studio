@@ -107,6 +107,9 @@ export default async function handler(req, res) {
     const body = req.body || {};
 
 const script = String(body.script || "").trim();
+const audioUrl = String(body.audio_url || body.audioUrl || "").trim();
+const hasAudioMode = Boolean(audioUrl);
+
 const resolution = String(body.resolution || "1080p").trim();
 const durationSeconds = Math.max(
   10,
@@ -114,10 +117,14 @@ const durationSeconds = Math.max(
 );
 
 const charsPerSecond = 13;
-const estimatedSpeechSeconds = Math.ceil(script.length / charsPerSecond);
+
+const estimatedSpeechSeconds = hasAudioMode
+  ? Math.max(1, Math.ceil(Number(body.audioDurationSeconds || body.audio_duration_seconds || body.estimatedSpeechSeconds || body.estimated_speech_seconds || 1)))
+  : Math.max(1, Math.ceil(script.length / charsPerSecond));
+
 const maxSpeechSeconds = durationSeconds;
 
-if (estimatedSpeechSeconds > maxSpeechSeconds) {
+if (!hasAudioMode && estimatedSpeechSeconds > maxSpeechSeconds) {
   return res.status(400).json({
     ok: false,
     error: "script_too_long",
@@ -130,13 +137,12 @@ if (estimatedSpeechSeconds > maxSpeechSeconds) {
 
 const cost = calculateCost(estimatedSpeechSeconds);
 
-    if (!script) {
-      return res.status(400).json({
-        ok: false,
-        error: "script_required"
-      });
-    }
-
+if (!script && !hasAudioMode) {
+  return res.status(400).json({
+    ok: false,
+    error: "script_or_audio_required"
+  });
+}
     const sql = neon(conn);
 
     const userRows = await sql`
