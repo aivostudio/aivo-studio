@@ -402,6 +402,12 @@ lipsyncAudioDurationSeconds = audioMeta.durationSeconds;
 lipsyncAudioCreditCost = audioMeta.creditCost;
 syncGenerateButton(root);
 renderLipsyncAudioEstimate(root);
+
+const scriptInput = qs("[data-lipsync-script]", root);
+if (scriptInput) {
+  scriptInput.value = "";
+  scriptInput.setAttribute("disabled", "true");
+}
   
 console.log("[LIPSYNC][UPLOADED_AUDIO_META]", {
   durationSeconds: lipsyncAudioDurationSeconds,
