@@ -583,9 +583,95 @@ if (!durationSelect || !root.contains(durationSelect)) return;
       syncGenerateButton(root);
     });
 
-     document.addEventListener("click", async (e) => {
+        document.addEventListener("click", async (e) => {
       const root = getRoot();
       if (!root) return;
+
+      const previewVoiceBtn = e.target.closest("[data-lipsync-preview-voice]");
+      if (previewVoiceBtn && root.contains(previewVoiceBtn)) {
+        e.preventDefault();
+
+        const voiceSelect = qs("[data-lipsync-voice-select]", root);
+        const selectedOption = voiceSelect?.selectedOptions?.[0] || null;
+
+        const voiceKey = String(voiceSelect?.value || "tranquil_tulin").trim();
+        const voiceName = String(selectedOption?.dataset?.voiceName || "Tranquil Tülin").trim();
+
+        const speedRange = qs("[data-lipsync-voice-speed]", root);
+        const volumeRange = qs("[data-lipsync-voice-volume]", root);
+
+        const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(speedRange?.value || 1)));
+        const voiceVolume = Math.max(0.5, Math.min(1.5, Number(volumeRange?.value || 1)));
+
+        try {
+          previewVoiceBtn.disabled = true;
+          previewVoiceBtn.textContent = "…";
+
+          const previewRes = await fetch("/api/lipsync/voice-check", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              voice_key: voiceKey,
+              voice_name: voiceName,
+              voiceSpeed,
+              voice_speed: voiceSpeed,
+              voiceVolume,
+              voice_volume: voiceVolume,
+              text: "Merhaba, ben AIVO ses ön izlemesiyim."
+            })
+          });
+
+          const previewData = await previewRes.json().catch(() => null);
+
+          if (!previewRes.ok || !previewData || previewData.ok === false) {
+            throw new Error(previewData?.error || previewData?.message || "voice_preview_failed");
+          }
+
+          const audioUrl = String(
+            previewData.audio_url ||
+            previewData.audioUrl ||
+            previewData.url ||
+            previewData.preview_url ||
+            previewData.previewUrl ||
+            ""
+          ).trim();
+
+          if (!audioUrl) {
+            throw new Error("voice_preview_url_missing");
+          }
+
+          if (window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__) {
+            window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__.pause();
+            window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__.currentTime = 0;
+          }
+
+          const audio = new Audio(audioUrl);
+          window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = audio;
+
+          audio.addEventListener("ended", () => {
+            previewVoiceBtn.textContent = "▶";
+            previewVoiceBtn.disabled = false;
+          });
+
+          await audio.play();
+          previewVoiceBtn.textContent = "■";
+        } catch (err) {
+          console.error("[LIPSYNC][VOICE_PREVIEW_ERROR]", err);
+
+          try {
+            window.toast?.error?.("Ses ön izlemesi çalınamadı");
+          } catch {}
+
+          previewVoiceBtn.textContent = "▶";
+          previewVoiceBtn.disabled = false;
+        }
+
+        return;
+      }
 
        const recordTabBtn = e.target.closest("[data-lipsync-record-tab]");
 if (recordTabBtn && root.contains(recordTabBtn)) {
