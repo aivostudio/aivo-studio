@@ -232,7 +232,50 @@ document.addEventListener("input", (e) => {
 });
       const root = getRoot();
       if (!root) return;
-            const photoInput = e.target.closest("[data-lipsync-photo]");
+
+      const uploadAudioInput = e.target.closest("[data-lipsync-upload-file]");
+if (uploadAudioInput && root.contains(uploadAudioInput)) {
+  const file = uploadAudioInput.files && uploadAudioInput.files[0] ? uploadAudioInput.files[0] : null;
+  if (!file) return;
+
+  lipsyncRecordedAudioFile = file;
+
+  const boxEl = qs(".lipsync-record-box", root);
+  const deviceEl = qs(".lipsync-record-device", root);
+
+  if (boxEl) {
+    boxEl.innerHTML = `
+      <div class="lipsync-record-confirm-card">
+        <button type="button" class="lipsync-record-confirm-play" aria-label="Sesi dinle">
+          ▶
+        </button>
+
+        <div class="lipsync-record-confirm-info">
+          <strong>${file.name}</strong>
+          <span>Yüklenen ses hazır</span>
+        </div>
+
+        <button type="button" class="lipsync-record-confirm-use" data-lipsync-use-recorded-audio>
+          Kullan
+        </button>
+
+        <button type="button" class="lipsync-record-confirm-remove" data-lipsync-remove-recorded-audio aria-label="Sesi sil">
+          ×
+        </button>
+      </div>
+    `;
+  }
+
+  if (deviceEl) {
+    deviceEl.textContent = `🎧 Ses hazır: ${file.name}`;
+  }
+
+  try { window.toast?.success?.("Ses dosyası seçildi"); } catch {}
+
+  return;
+}
+      
+       const photoInput = e.target.closest("[data-lipsync-photo]");
       if (photoInput && root.contains(photoInput)) {
         const file = photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
         const empty = qs("[data-lipsync-photo-empty]", root);
