@@ -80,11 +80,20 @@ function syncGenerateButton(root) {
   const scriptInput = qs("[data-lipsync-script]", root);
   const text = String(scriptInput?.value || "").trim();
 
-  const charsPerSecond = 13;
-  const seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
-  const credit = Math.ceil(seconds / 2) * 3;
+  let seconds = 1;
+  let credit = 3;
+
+  if (lipsyncRecordedAudioFile && lipsyncAudioDurationSeconds > 0) {
+    seconds = lipsyncAudioDurationSeconds;
+    credit = lipsyncAudioCreditCost || Math.ceil(seconds / 2) * 3;
+  } else {
+    const charsPerSecond = 13;
+    seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
+    credit = Math.ceil(seconds / 2) * 3;
+  }
 
   btn.dataset.creditCost = String(credit);
+  btn.dataset.speechSeconds = String(seconds);
   btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
 }
 
