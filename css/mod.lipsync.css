@@ -2123,3 +2123,43 @@
     transform: rotate(360deg);
   }
 }
+/* === LIPSYNC RECORDING SPINNER CENTER FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-box.is-recording {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 20px !important;
+  text-align: center !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-box.is-recording::before {
+  position: static !important;
+  flex: 0 0 auto !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-recording-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 6px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-recording-text {
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+  font-weight: 850 !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-recording-time {
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  font-weight: 650 !important;
+  color: rgba(255, 255, 255, 0.48) !important;
+}
