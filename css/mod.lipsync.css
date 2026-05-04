@@ -2339,15 +2339,13 @@
   font-weight: 650 !important;
   letter-spacing: -0.015em !important;
 }
-/* === LIPSYNC 16:9 PHOTO AREA FIX === */
+/* === LIPSYNC LANDSCAPE PHOTO HEIGHT BALANCE === */
 
 .main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg.is-landscape {
-  flex: 0 0 auto !important;
-  min-height: 0 !important;
-  aspect-ratio: 16 / 9 !important;
-  height: auto !important;
+  min-height: 260px !important;
+  max-height: 320px !important;
 }
 
 .main-panel[data-module="lipsync"] .lipsync-photo-label.has-photo-bg.is-landscape .lipsync-photo-preview {
-  object-fit: cover !important;
+  object-fit: contain !important;
 }
