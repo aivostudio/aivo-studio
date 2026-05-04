@@ -320,7 +320,7 @@ function syncGenerateButton(root) {
   return String(scanData.public_url || publicUrl || "").trim();
 }
   function bindEvents() {
-    document.addEventListener("change", (e) => {
+   document.addEventListener("change", async (e) => {
 document.addEventListener("input", (e) => {
   const root = getRoot();
   if (!root) return;
