@@ -2328,3 +2328,14 @@
   font-weight: 650 !important;
   color: rgba(255, 255, 255, 0.52) !important;
 }
+/* === LIPSYNC VOICE SETTINGS NOTE === */
+
+.main-panel[data-module="lipsync"] .lipsync-voice-settings-note {
+  margin-top: 10px !important;
+  max-width: 680px !important;
+  color: rgba(255, 255, 255, 0.52) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.015em !important;
+}
