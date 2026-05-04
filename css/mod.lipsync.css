@@ -2163,38 +2163,28 @@
   font-weight: 650 !important;
   color: rgba(255, 255, 255, 0.48) !important;
 }
-/* === LIPSYNC RECORD MAIN BUTTON CENTER FIX === */
+/* === LIPSYNC RECORD STOP ICON HARD CENTER FIX === */
 
 .main-panel[data-module="lipsync"] .lipsync-record-main-btn {
-  margin-left: auto !important;
-  margin-right: auto !important;
-  align-self: center !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-record-dialog {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.main-panel[data-module="lipsync"] .lipsync-record-device {
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-/* === LIPSYNC RECORD DEVICE BAR CENTER FIX === */
-
-.main-panel[data-module="lipsync"] .lipsync-record-device {
-  width: 100% !important;
-  box-sizing: border-box !important;
-  justify-content: center !important;
+  position: relative !important;
+  display: block !important;
+  margin: 24px auto 0 !important;
+  padding: 0 !important;
   text-align: center !important;
-  padding: 0 22px !important;
-  overflow: hidden !important;
-  white-space: nowrap !important;
-  text-overflow: ellipsis !important;
 }
 
-.main-panel[data-module="lipsync"] .lipsync-record-device.is-recording,
-.main-panel[data-module="lipsync"] .lipsync-record-device {
-  margin-left: auto !important;
-  margin-right: auto !important;
+.main-panel[data-module="lipsync"] .lipsync-record-main-btn::before {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-main-btn.is-recording::before {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
 }
