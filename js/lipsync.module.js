@@ -591,6 +591,52 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
 
   return;
 }
+       const recordedAudioPlayBtn = e.target.closest(".lipsync-record-confirm-play");
+if (recordedAudioPlayBtn && root.contains(recordedAudioPlayBtn)) {
+  e.preventDefault();
+
+  if (!lipsyncRecordedAudioFile) {
+    try { window.toast?.error?.("Dinlenecek kayıt bulunamadı"); } catch {}
+    return;
+  }
+
+  if (window.__AIVO_LIPSYNC_RECORD_AUDIO__) {
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__.pause();
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__.currentTime = 0;
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__ = null;
+
+    recordedAudioPlayBtn.textContent = "▶";
+    recordedAudioPlayBtn.classList.remove("is-playing");
+    return;
+  }
+
+  const audioUrl = URL.createObjectURL(lipsyncRecordedAudioFile);
+  const audio = new Audio(audioUrl);
+
+  window.__AIVO_LIPSYNC_RECORD_AUDIO__ = audio;
+  recordedAudioPlayBtn.textContent = "■";
+  recordedAudioPlayBtn.classList.add("is-playing");
+
+  audio.addEventListener("ended", () => {
+    recordedAudioPlayBtn.textContent = "▶";
+    recordedAudioPlayBtn.classList.remove("is-playing");
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__ = null;
+    URL.revokeObjectURL(audioUrl);
+  });
+
+  audio.play().catch((err) => {
+    console.error("[LIPSYNC][RECORDED_AUDIO_PLAY_ERROR]", err);
+
+    recordedAudioPlayBtn.textContent = "▶";
+    recordedAudioPlayBtn.classList.remove("is-playing");
+    window.__AIVO_LIPSYNC_RECORD_AUDIO__ = null;
+    URL.revokeObjectURL(audioUrl);
+
+    try { window.toast?.error?.("Ses çalınamadı"); } catch {}
+  });
+
+  return;
+}
       const generateBtn = e.target.closest("[data-lipsync-generate]");
       if (!generateBtn || !root.contains(generateBtn)) return;
 
