@@ -2022,3 +2022,64 @@
   width: 50px !important;
   height: 50px !important;
 }
+/* === LIPSYNC RECORDED AUDIO CONFIRM CARD === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-card {
+  width: 100%;
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(6, 7, 12, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-play {
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-info {
+  min-width: 0;
+  text-align: left;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-info strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-info span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-use {
+  height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c4dff 0%, #ec5ba7 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+}
