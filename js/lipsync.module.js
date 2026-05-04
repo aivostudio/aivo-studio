@@ -338,6 +338,67 @@ if (!durationSelect || !root.contains(durationSelect)) return;
       const root = getRoot();
       if (!root) return;
 
+       const recordTabBtn = e.target.closest("[data-lipsync-record-tab]");
+if (recordTabBtn && root.contains(recordTabBtn)) {
+  e.preventDefault();
+
+  const mode = String(recordTabBtn.dataset.lipsyncRecordTab || "record");
+  const modal = qs("[data-lipsync-record-modal]", root);
+  const boxEl = qs(".lipsync-record-box", root);
+  const mainBtn = qs("[data-lipsync-record-toggle]", root);
+  const deviceEl = qs(".lipsync-record-device", root);
+
+  root.querySelectorAll("[data-lipsync-record-tab]").forEach((btn) => {
+    const isActive = String(btn.dataset.lipsyncRecordTab || "") === mode;
+    btn.classList.toggle("is-active", isActive);
+  });
+
+  if (mode === "upload") {
+    if (modal) modal.dataset.mode = "upload";
+
+    if (boxEl) {
+      boxEl.classList.remove("is-recording");
+      boxEl.innerHTML = `
+        <label class="lipsync-upload-dropzone">
+          <input type="file" accept="audio/*" data-lipsync-upload-file hidden>
+          <span class="lipsync-upload-icon">↥</span>
+          <strong>Ses dosyası yükle</strong>
+          <small>MP3, WAV veya WEBM dosyası seç</small>
+        </label>
+      `;
+    }
+
+    if (mainBtn) {
+      mainBtn.style.display = "none";
+    }
+
+    if (deviceEl) {
+      deviceEl.textContent = "Hazır ses dosyası bekleniyor...";
+    }
+
+    return;
+  }
+
+  if (modal) modal.dataset.mode = "record";
+
+  if (boxEl) {
+    boxEl.classList.remove("is-recording");
+    boxEl.innerHTML = `
+      <p>Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.</p>
+    `;
+  }
+
+  if (mainBtn) {
+    mainBtn.style.display = "";
+  }
+
+  if (deviceEl) {
+    deviceEl.textContent = "🎙 Mikrofon hazır bekleniyor...";
+  }
+
+  return;
+}
+       
        const recordOpenBtn = e.target.closest("[data-lipsync-record-open]");
 if (recordOpenBtn && root.contains(recordOpenBtn)) {
   e.preventDefault();
