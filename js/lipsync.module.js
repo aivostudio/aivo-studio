@@ -1022,13 +1022,32 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
         console.log("[LIPSYNC][BLOCKED]", "missing_script");
         return;
       }
-      const charsPerSecond = 13;
-const estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
+     let estimatedSpeechSeconds = 1;
+let estimatedCreditCost = 3;
+
+if (lipsyncRecordedAudioFile && lipsyncAudioDurationSeconds > 0) {
+  estimatedSpeechSeconds = lipsyncAudioDurationSeconds;
+  estimatedCreditCost = lipsyncAudioCreditCost || Math.ceil(estimatedSpeechSeconds / 2) * 3;
+
+  payload.audioDurationSeconds = estimatedSpeechSeconds;
+  payload.audio_duration_seconds = estimatedSpeechSeconds;
+  payload.hasAudioFile = true;
+  payload.has_audio_file = true;
+} else {
+  const charsPerSecond = 13;
+  estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
+  estimatedCreditCost = Math.ceil(estimatedSpeechSeconds / 2) * 3;
+
+  payload.hasAudioFile = false;
+  payload.has_audio_file = false;
+}
+
 const maxSpeechSeconds = Number(payload.duration || 10);
-const estimatedCreditCost = Math.ceil(estimatedSpeechSeconds / 2) * 3;
 
 payload.estimatedSpeechSeconds = estimatedSpeechSeconds;
+payload.estimated_speech_seconds = estimatedSpeechSeconds;
 payload.estimatedCredits = estimatedCreditCost;
+payload.estimated_credits = estimatedCreditCost;
 
        if (estimatedSpeechSeconds > maxSpeechSeconds) {
         try {
