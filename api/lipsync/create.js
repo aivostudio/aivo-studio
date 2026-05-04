@@ -293,30 +293,51 @@ const LIPSYNC_ALLOWED_VOICES = {
 const requestedVoiceKey = String(body.voice_key || body.voiceKey || "tranquil_tulin").trim();
 const pickedVoice = LIPSYNC_ALLOWED_VOICES[requestedVoiceKey] || LIPSYNC_ALLOWED_VOICES.tranquil_tulin;
 
+const heygenPayload = hasAudioMode
+  ? {
+      video_inputs: [
+        {
+          character: {
+            type: "image",
+            url: preparedImageUrl
+          },
+          voice: {
+            type: "audio",
+            audio_url: audioUrl
+          }
+        }
+      ],
+      dimension: {
+        width: aspectRatio === "9:16" ? 720 : 1280,
+        height: aspectRatio === "9:16" ? 1280 : 720
+      }
+    }
+  : {
+      type: "image",
+      image: {
+        type: "url",
+        url: preparedImageUrl
+      },
+      script,
+      voice_id: pickedVoice.voice_id,
+      resolution,
+      aspect_ratio: aspectRatio,
+      background: {
+        type: "color",
+        value: "#080816"
+      },
+      voice_settings: {
+        speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
+      }
+    };
+
 const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
   method: "POST",
   headers: {
     "x-api-key": process.env.HEYGEN_API_KEY,
-    "Content-Type": "application/json",
+    "Content-Type": "application/json"
   },
-body: JSON.stringify({
-  type: "image",
- image: {
-  type: "url",
-  url: preparedImageUrl,
-},
-  script,
-  voice_id: pickedVoice.voice_id,
- resolution,
-aspect_ratio: aspectRatio,
-background: {
-  type: "color",
-  value: "#080816"
-},
-voice_settings: {
-  speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
-}
-}),
+  body: JSON.stringify(heygenPayload)
 });
 
 const heygenJson = await heygenRes.json();
