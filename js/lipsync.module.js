@@ -441,8 +441,26 @@ if (recordTabBtn && root.contains(recordTabBtn)) {
 
   return;
 }
+
+       const uploadOpenBtn = e.target.closest("[data-lipsync-upload-open]");
+if (uploadOpenBtn && root.contains(uploadOpenBtn)) {
+  e.preventDefault();
+
+  const modal = qs("[data-lipsync-record-modal]", root);
+  const uploadTab = qs('[data-lipsync-record-tab="upload"]', root);
+
+  if (modal) {
+    modal.hidden = false;
+  }
+
+  if (uploadTab) {
+    uploadTab.click();
+  }
+
+  return;
+}
        
-       const recordOpenBtn = e.target.closest("[data-lipsync-record-open]");
+const recordOpenBtn = e.target.closest("[data-lipsync-record-open]");
 if (recordOpenBtn && root.contains(recordOpenBtn)) {
   e.preventDefault();
 
