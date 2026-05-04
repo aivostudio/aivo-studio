@@ -1982,3 +1982,43 @@
   font-size: 15px !important;
   font-weight: 520 !important;
 }
+/* === LIPSYNC RECORD MODAL SIZE/POSITION FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-modal {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px 420px 24px 24px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-dialog {
+  width: min(560px, 100%) !important;
+  min-height: 480px !important;
+  max-height: calc(100vh - 80px) !important;
+  padding: 28px !important;
+  border-radius: 24px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-close {
+  top: 18px !important;
+  right: 18px !important;
+  z-index: 5 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-box {
+  min-height: 190px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-main-btn {
+  width: 74px !important;
+  height: 74px !important;
+  margin-top: 24px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-main-btn::before {
+  width: 50px !important;
+  height: 50px !important;
+}
