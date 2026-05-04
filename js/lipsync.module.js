@@ -351,11 +351,12 @@ document.addEventListener("input", (e) => {
   const scriptInput = e.target.closest("[data-lipsync-script]");
   if (!scriptInput || !root.contains(scriptInput)) return;
 
-  const text = String(scriptInput.value || "");
+   const text = String(scriptInput.value || "");
   const trimmedText = text.trim();
-} else {
-  const charsPerSecond = 13;
-  estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
+  const duration = Number(getSelectedDuration(root) || 10);
+
+  const charsPerSecond = 9;
+  const seconds = Math.max(1, Math.ceil(trimmedText.length / charsPerSecond));
   const credits = Math.ceil(seconds / 2) * 3;
 
   const counterEl = qs("[data-lipsync-counter]", root);
