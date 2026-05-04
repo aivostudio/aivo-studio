@@ -1245,8 +1245,23 @@ try {
 } catch (uploadErr) {
         console.error("[LIPSYNC][PHOTO_R2_ERROR]", uploadErr);
 
+        const errText = String(uploadErr?.message || uploadErr || "").toLowerCase();
+        const isPolicyBlocked =
+          errText.includes("media_policy") ||
+          errText.includes("kamu figürü") ||
+          errText.includes("kamu figuru") ||
+          errText.includes("tanınmış kişi") ||
+          errText.includes("taninmis kisi") ||
+          errText.includes("gerçek kişi") ||
+          errText.includes("gercek kisi") ||
+          errText.includes("impersonation");
+
         try {
-          window.toast?.error?.("Fotoğraf yüklenemedi");
+          window.toast?.error?.(
+            isPolicyBlocked
+              ? "Bu görsel kullanılamaz."
+              : "Fotoğraf yüklenemedi"
+          );
         } catch {}
 
         syncGenerateButton(root);
