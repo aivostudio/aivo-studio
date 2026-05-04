@@ -236,6 +236,89 @@ function syncGenerateButton(root) {
     return String(scanData.public_url || publicUrl || "").trim();
   }
 
+  async function uploadLipsyncAudioToR2(file, payload) {
+  if (!file) {
+    throw new Error("lipsync_missing_audio_file");
+  }
+
+  const filename = file.name || `lipsync-audio-${Date.now()}.webm`;
+  const contentType = file.type || "audio/webm";
+  const promptText = String(payload?.script || filename || "").trim();
+
+  const presignRes = await fetch("/api/r2/scan-and-presign", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      app: "lipsync",
+      kind: "audio",
+      filename,
+      contentType,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      source: "lipsync_browser_audio_upload"
+    })
+  });
+
+  const presignData = await presignRes.json().catch(() => null);
+
+  if (!presignRes.ok || !presignData || presignData.ok === false) {
+    throw new Error(presignData?.message || presignData?.error || "lipsync_audio_presign_failed");
+  }
+
+  const uploadUrl = presignData.uploadUrl || presignData.upload_url || "";
+  const publicUrl = presignData.publicUrl || presignData.public_url || presignData.url || "";
+  const key = presignData.key || presignData.objectKey || "";
+
+  if (!uploadUrl || !publicUrl || !key) {
+    throw new Error("lipsync_audio_presign_invalid");
+  }
+
+  const putRes = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "content-type": contentType
+    },
+    body: file
+  });
+
+  if (!putRes.ok) {
+    throw new Error(`lipsync_audio_r2_put_failed_${putRes.status}`);
+  }
+
+  const scanRes = await fetch("/api/r2/scan-upload", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      app: "lipsync",
+      kind: "audio",
+      key,
+      filename,
+      contentType,
+      public_url: publicUrl,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      source: "lipsync_browser_audio_upload"
+    })
+  });
+
+  const scanData = await scanRes.json().catch(() => null);
+
+  if (!scanRes.ok || !scanData || scanData.ok === false) {
+    throw new Error(scanData?.message || scanData?.error || "lipsync_audio_scan_upload_failed");
+  }
+
+  if (scanData.decision && scanData.decision !== "allow") {
+    throw new Error(`media_policy_${scanData.decision}`);
+  }
+
+  return String(scanData.public_url || publicUrl || "").trim();
+}
   function bindEvents() {
     document.addEventListener("change", (e) => {
 document.addEventListener("input", (e) => {
