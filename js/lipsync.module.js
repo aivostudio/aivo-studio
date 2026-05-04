@@ -1254,9 +1254,89 @@ try {
         generateBtn.disabled = false;
         return;
       }
-     const creditCost = Number(payload.estimatedCredits || 3);
+       const creditCost = Number(payload.estimatedCredits || 3);
       const creditReason = "studio_lipsync_generate";
       const consumeRequestId = `lipsync:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+      let consumed = false;
+      let consumeTransactionId = null;
+
+      async function refreshLipsyncCreditsUI() {
+        try {
+          const creditGetRes = await fetch("/api/credits/get", {
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "accept": "application/json"
+            }
+          });
+
+          const creditGetData = await creditGetRes.json().catch(() => null);
+
+          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
+            const topCreditCountEl = document.getElementById("topCreditCount");
+            if (topCreditCountEl) {
+              topCreditCountEl.textContent = String(creditGetData.credits);
+            }
+
+            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            }
+          }
+        } catch {}
+
+        try { window.syncCreditsUI?.({ force: true }); } catch {}
+      }
+
+      async function refundLipsyncCredits(reason, extraMeta = {}) {
+        if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+
+        try {
+          const refundRes = await fetch("/api/credits/refund", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              app: "lipsync",
+              action: creditReason,
+              amount: creditCost,
+              request_id: consumeRequestId,
+              related_transaction_id: consumeTransactionId,
+              reason,
+              meta: {
+                source: "lipsync.create",
+                mode: payload.hasAudioFile ? "audio" : "text",
+                duration: payload.duration || "",
+                audio_duration_seconds: payload.audioDurationSeconds || payload.audio_duration_seconds || 0,
+                estimated_speech_seconds: payload.estimatedSpeechSeconds || payload.estimated_speech_seconds || 0,
+                resolution: payload.resolution || "",
+                aspect_ratio: payload.aspectRatio || payload.aspect_ratio || "",
+                has_audio_file: !!payload.hasAudioFile,
+                ...extraMeta
+              }
+            })
+          });
+
+          const refundData = await refundRes.json().catch(() => null);
+
+          if (
+            refundRes.ok &&
+            refundData?.ok &&
+            (refundData?.refunded || refundData?.deduped || refundData?.skipped)
+          ) {
+            await refreshLipsyncCreditsUI();
+            try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+            return true;
+          }
+        } catch (refundErr) {
+          console.error("[LIPSYNC][REFUND_ERROR]", refundErr);
+        }
+
+        return false;
+      }
 
       const creditRes = await fetch("/api/credits/consume-ledger", {
         method: "POST",
