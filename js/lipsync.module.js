@@ -1295,8 +1295,11 @@ try {
         try { window.syncCreditsUI?.({ force: true }); } catch {}
       }
 
-      async function refundLipsyncCredits(reason, extraMeta = {}) {
-        if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
+    let refundedOnce = false;
+
+async function refundLipsyncCredits(reason, extraMeta = {}) {
+  if (refundedOnce) return false;
+  if (!consumed || !consumeTransactionId || creditCost <= 0) return false;
 
         try {
           const refundRes = await fetch("/api/credits/refund", {
@@ -1332,6 +1335,7 @@ try {
           if (
             refundRes.ok &&
             refundData?.ok &&
+            refundedOnce = true;
             (refundData?.refunded || refundData?.deduped || refundData?.skipped)
           ) {
             await refreshLipsyncCreditsUI();
