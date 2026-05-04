@@ -97,6 +97,29 @@ function syncGenerateButton(root) {
   btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
 }
 
+function renderLipsyncAudioEstimate(root) {
+  const scriptInput = qs("[data-lipsync-script]", root);
+  if (!scriptInput) return;
+
+  let infoEl = qs("[data-lipsync-estimate]", root);
+
+  if (!infoEl) {
+    infoEl = document.createElement("div");
+    infoEl.setAttribute("data-lipsync-estimate", "1");
+    infoEl.className = "lipsync-estimate-box";
+    infoEl.style.fontSize = "12px";
+    infoEl.style.marginTop = "6px";
+    infoEl.style.opacity = "0.8";
+    scriptInput.parentNode.appendChild(infoEl);
+  }
+
+  const seconds = Math.max(1, Number(lipsyncAudioDurationSeconds || 1));
+  const credits = Math.max(3, Number(lipsyncAudioCreditCost || Math.ceil(seconds / 2) * 3));
+
+  infoEl.textContent = `Tahmini: ${seconds} sn • ${credits} kredi`;
+  infoEl.style.color = "";
+}
+
   function buildPayload(root) {
     const script = qs("[data-lipsync-script]", root);
     const resolution = qs("[data-lipsync-resolution]", root);
@@ -378,7 +401,8 @@ const audioMeta = await getLipsyncAudioMeta(file);
 lipsyncAudioDurationSeconds = audioMeta.durationSeconds;
 lipsyncAudioCreditCost = audioMeta.creditCost;
 syncGenerateButton(root);
-
+renderLipsyncAudioEstimate(root);
+  
 console.log("[LIPSYNC][UPLOADED_AUDIO_META]", {
   durationSeconds: lipsyncAudioDurationSeconds,
   creditCost: lipsyncAudioCreditCost
@@ -742,13 +766,13 @@ getLipsyncAudioMeta(lipsyncRecordedAudioFile).then((meta) => {
   lipsyncAudioDurationSeconds = meta.durationSeconds;
   lipsyncAudioCreditCost = meta.creditCost;
   syncGenerateButton(root);
+  renderLipsyncAudioEstimate(root);
 
   console.log("[LIPSYNC][RECORDED_AUDIO_META]", {
     durationSeconds: lipsyncAudioDurationSeconds,
     creditCost: lipsyncAudioCreditCost
   });
 });
-
       stream.getTracks().forEach((track) => track.stop());
 
       if (deviceEl) {
