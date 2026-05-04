@@ -223,16 +223,34 @@ function renderLipsyncAudioEstimate(root) {
       throw new Error("lipsync_presign_invalid");
     }
 
-    const putRes = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "content-type": contentType
-      },
-      body: file
-    });
+    let putRes = null;
 
-    if (!putRes.ok) {
-      throw new Error(`lipsync_r2_put_failed_${putRes.status}`);
+    try {
+      putRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "content-type": contentType
+        },
+        body: file
+      });
+    } catch (firstErr) {
+      console.warn("[LIPSYNC][R2_PUT_RETRY]", firstErr);
+
+      try {
+        putRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "content-type": contentType
+          },
+          body: file
+        });
+      } catch (secondErr) {
+        throw new Error("lipsync_r2_upload_connection_failed");
+      }
+    }
+
+    if (!putRes || !putRes.ok) {
+      throw new Error(`lipsync_r2_put_failed_${putRes ? putRes.status : "network"}`);
     }
 
     const scanRes = await fetch("/api/r2/scan-upload", {
