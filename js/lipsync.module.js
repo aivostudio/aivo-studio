@@ -1573,7 +1573,7 @@ const creditData = await creditRes.json().catch(() => null);
               }
 
                           if (tries < 80) {
-                setTimeout(poll, 2500);
+                setTimeout(poll, 5000);
               } else {
                 const refunded = await refundLipsyncCredits("lipsync_poll_timeout", {
                   job_id: jobId,
@@ -1590,7 +1590,7 @@ const creditData = await creditRes.json().catch(() => null);
               console.error("[LIPSYNC][STATUS_ERROR]", err);
 
                          if (tries < 80) {
-              setTimeout(poll, 2500);
+                setTimeout(poll, 5000);
               } else {
                 const refunded = await refundLipsyncCredits("lipsync_poll_timeout", {
                   job_id: jobId,
