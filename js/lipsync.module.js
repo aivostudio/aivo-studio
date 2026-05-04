@@ -10,9 +10,51 @@
     "50": 75,
     "60": 90
   };
-  let lipsyncRecorder = null;
+let lipsyncRecorder = null;
 let lipsyncRecordedChunks = [];
 let lipsyncRecordedAudioFile = null;
+let lipsyncAudioDurationSeconds = 0;
+let lipsyncAudioCreditCost = 0;
+
+function getLipsyncAudioMeta(file) {
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve({
+        durationSeconds: 0,
+        creditCost: 0
+      });
+      return;
+    }
+
+    const audio = document.createElement("audio");
+    const url = URL.createObjectURL(file);
+
+    audio.preload = "metadata";
+
+    audio.onloadedmetadata = () => {
+      const durationSeconds = Math.max(1, Math.ceil(Number(audio.duration || 1)));
+      const creditCost = Math.ceil(durationSeconds / 2) * 3;
+
+      URL.revokeObjectURL(url);
+
+      resolve({
+        durationSeconds,
+        creditCost
+      });
+    };
+
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+
+      resolve({
+        durationSeconds: 0,
+        creditCost: 0
+      });
+    };
+
+    audio.src = url;
+  });
+}
 
   function qs(sel, root = document) {
     return root.querySelector(sel);
