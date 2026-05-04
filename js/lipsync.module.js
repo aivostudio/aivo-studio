@@ -978,10 +978,15 @@ if (removeRecordedAudioBtn && root.contains(removeRecordedAudioBtn)) {
 
   syncGenerateButton(root);
 
-  const estimateEl = qs("[data-lipsync-estimate]", root);
+   const estimateEl = qs("[data-lipsync-estimate]", root);
   if (estimateEl) estimateEl.remove();
 
   const scriptInput = qs("[data-lipsync-script]", root);
+  if (scriptInput) {
+    scriptInput.removeAttribute("disabled");
+  }
+
+  const audioInput = qs("[data-lipsync-audio]", root);
   if (scriptInput) {
     scriptInput.removeAttribute("disabled");
   }
