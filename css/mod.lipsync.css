@@ -2408,15 +2408,22 @@
   color: rgba(255, 255, 255, 0.62) !important;
 }
 }
-.lipsync-voice-settings-panel .lipsync-voice-settings-title,
-.lipsync-voice-settings-panel .lipsync-voice-settings-note {
+.lipsync-credit-info-panel {
   text-align: center;
 }
 
-.lipsync-voice-settings-panel .lipsync-voice-settings-head {
-  justify-content: center;
+.lipsync-credit-info-panel .lipsync-voice-settings-head {
+  display: block;
+  width: 100%;
 }
 
-.lipsync-voice-settings-panel .lipsync-voice-settings-head > div {
+.lipsync-credit-info-panel .lipsync-voice-settings-head > div {
   width: 100%;
+  max-width: 100%;
+  text-align: center;
+}
+
+.lipsync-credit-info-panel .lipsync-voice-settings-title,
+.lipsync-credit-info-panel .lipsync-voice-settings-note {
+  text-align: center;
 }
