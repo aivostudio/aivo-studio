@@ -353,10 +353,9 @@ document.addEventListener("input", (e) => {
 
   const text = String(scriptInput.value || "");
   const trimmedText = text.trim();
-  const duration = Number(getSelectedDuration(root) || 10);
-
-  const charsPerSecond = 9;
-  const seconds = Math.max(1, Math.ceil(trimmedText.length / charsPerSecond));
+} else {
+  const charsPerSecond = 13;
+  estimatedSpeechSeconds = Math.max(1, Math.ceil(payload.script.length / charsPerSecond));
   const credits = Math.ceil(seconds / 2) * 3;
 
   const counterEl = qs("[data-lipsync-counter]", root);
