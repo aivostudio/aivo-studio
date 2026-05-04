@@ -337,9 +337,10 @@ const heygenPayload = hasAudioMode
         type: "color",
         value: "#080816"
       },
-      voice_settings: {
-        speed: estimatedSpeechSeconds <= 4 ? 0.75 : estimatedSpeechSeconds <= 8 ? 0.85 : 1.0
-      }
+     voice_settings: {
+  speed: voiceSpeed,
+  volume: voiceVolume
+}
     };
 
 const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
