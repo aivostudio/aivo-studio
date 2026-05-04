@@ -112,7 +112,7 @@ const hasAudioMode = Boolean(audioUrl);
 
 const script = hasAudioMode ? "" : rawScript;
 
-const rawVoiceSpeed = Math.max(0.7, Math.min(1.3, Number(body.voiceSpeed || body.voice_speed || 1)));
+const voiceSpeed = Math.max(0.7, Math.min(1.3, Number(body.voiceSpeed || body.voice_speed || 1)));
 const voiceVolume = Math.max(0.8, Math.min(1.2, Number(body.voiceVolume || body.voice_volume || 1)));
 const resolution = String(body.resolution || "1080p").trim();
 const durationSeconds = Math.max(
@@ -122,9 +122,9 @@ const durationSeconds = Math.max(
 
 const charsPerSecond = 13;
 
-const voiceSpeed = !hasAudioMode && estimatedSpeechSeconds <= 2
-  ? Math.min(rawVoiceSpeed, 1)
-  : rawVoiceSpeed;
+const estimatedSpeechSeconds = hasAudioMode
+  ? Math.max(1, Math.ceil(Number(body.audioDurationSeconds || body.audio_duration_seconds || body.estimatedSpeechSeconds || body.estimated_speech_seconds || 1)))
+  : Math.max(1, Math.ceil(script.length / charsPerSecond));
 
 const maxSpeechSeconds = durationSeconds;
 
