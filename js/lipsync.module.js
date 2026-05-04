@@ -965,8 +965,15 @@ if (removeRecordedAudioBtn && root.contains(removeRecordedAudioBtn)) {
     window.__AIVO_LIPSYNC_RECORD_AUDIO__ = null;
   }
 
-  lipsyncRecordedAudioFile = null;
+   lipsyncRecordedAudioFile = null;
   lipsyncRecordedChunks = [];
+  lipsyncAudioDurationSeconds = 0;
+  lipsyncAudioCreditCost = 0;
+
+  syncGenerateButton(root);
+
+  const estimateEl = qs("[data-lipsync-estimate]", root);
+  if (estimateEl) estimateEl.remove();
 
   const boxEl = qs(".lipsync-record-box", root);
   const deviceEl = qs(".lipsync-record-device", root);
