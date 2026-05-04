@@ -2188,3 +2188,30 @@
   margin: 0 !important;
   transform: translate(-50%, -50%) !important;
 }
+/* === LIPSYNC RECORD REMOVE BUTTON FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-card {
+  grid-template-columns: 48px minmax(0, 1fr) auto 34px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-remove {
+  width: 32px !important;
+  height: 32px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-confirm-remove:hover {
+  background: rgba(255, 80, 120, 0.18) !important;
+  color: #ffffff !important;
+}
