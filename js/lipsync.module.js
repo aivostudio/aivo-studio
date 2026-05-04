@@ -730,6 +730,90 @@ if (recordedAudioPlayBtn && root.contains(recordedAudioPlayBtn)) {
 
   return;
 }
+       const inlineAudioPlayBtn = e.target.closest("[data-lipsync-inline-audio-play]");
+if (inlineAudioPlayBtn && root.contains(inlineAudioPlayBtn)) {
+  e.preventDefault();
+
+  if (!lipsyncRecordedAudioFile) {
+    try { window.toast?.error?.("Dinlenecek ses bulunamadı"); } catch {}
+    return;
+  }
+
+  if (window.__AIVO_LIPSYNC_INLINE_AUDIO__) {
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__.pause();
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__.currentTime = 0;
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__ = null;
+
+    inlineAudioPlayBtn.textContent = "▶";
+    inlineAudioPlayBtn.classList.remove("is-playing");
+    return;
+  }
+
+  const audioUrl = URL.createObjectURL(lipsyncRecordedAudioFile);
+  const audio = new Audio(audioUrl);
+
+  window.__AIVO_LIPSYNC_INLINE_AUDIO__ = audio;
+  inlineAudioPlayBtn.textContent = "■";
+  inlineAudioPlayBtn.classList.add("is-playing");
+
+  audio.addEventListener("ended", () => {
+    inlineAudioPlayBtn.textContent = "▶";
+    inlineAudioPlayBtn.classList.remove("is-playing");
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__ = null;
+    URL.revokeObjectURL(audioUrl);
+  });
+
+  audio.play().catch((err) => {
+    console.error("[LIPSYNC][INLINE_AUDIO_PLAY_ERROR]", err);
+
+    inlineAudioPlayBtn.textContent = "▶";
+    inlineAudioPlayBtn.classList.remove("is-playing");
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__ = null;
+    URL.revokeObjectURL(audioUrl);
+
+    try { window.toast?.error?.("Ses çalınamadı"); } catch {}
+  });
+
+  return;
+}
+
+const inlineAudioRemoveBtn = e.target.closest("[data-lipsync-inline-audio-remove]");
+if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
+  e.preventDefault();
+
+  if (window.__AIVO_LIPSYNC_INLINE_AUDIO__) {
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__.pause();
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__.currentTime = 0;
+    window.__AIVO_LIPSYNC_INLINE_AUDIO__ = null;
+  }
+
+  lipsyncRecordedAudioFile = null;
+  lipsyncRecordedChunks = [];
+
+  const audioInput = qs("[data-lipsync-audio]", root);
+  const audioName = qs("[data-lipsync-audio-name]", root);
+  const scriptInput = qs("[data-lipsync-script]", root);
+  const audioCard = qs(".lipsync-inline-audio-card", root);
+
+  if (audioInput) audioInput.value = "";
+
+  if (audioName) {
+    audioName.textContent = "Ses yüklenmedi.";
+  }
+
+  if (scriptInput) {
+    scriptInput.classList.remove("has-lipsync-audio-card");
+    scriptInput.placeholder = "Ne konuşturmak istiyorsun? Metni buraya yaz...";
+  }
+
+  if (audioCard) {
+    audioCard.remove();
+  }
+
+  try { window.toast?.success?.("Ses kaldırıldı"); } catch {}
+
+  return;
+}
       const generateBtn = e.target.closest("[data-lipsync-generate]");
       if (!generateBtn || !root.contains(generateBtn)) return;
 
