@@ -536,6 +536,40 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
 
         return;
       }
+
+       const useRecordedAudioBtn = e.target.closest("[data-lipsync-use-recorded-audio]");
+if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
+  e.preventDefault();
+
+  if (!lipsyncRecordedAudioFile) {
+    try { window.toast?.error?.("Kayıt bulunamadı"); } catch {}
+    return;
+  }
+
+  const audioInput = qs("[data-lipsync-audio]", root);
+  const audioName = qs("[data-lipsync-audio-name]", root);
+  const modal = qs("[data-lipsync-record-modal]", root);
+
+  if (audioInput) {
+    const dt = new DataTransfer();
+    dt.items.add(lipsyncRecordedAudioFile);
+    audioInput.files = dt.files;
+  }
+
+  if (audioName) {
+    audioName.textContent = `Ses hazır: ${lipsyncRecordedAudioFile.name}`;
+  }
+
+  if (modal) {
+    modal.hidden = true;
+  }
+
+  try { window.toast?.success?.("Kayıt seçildi"); } catch {}
+
+  console.log("[LIPSYNC][RECORDED_AUDIO_SELECTED]", lipsyncRecordedAudioFile.name);
+
+  return;
+}
       const generateBtn = e.target.closest("[data-lipsync-generate]");
       if (!generateBtn || !root.contains(generateBtn)) return;
 
