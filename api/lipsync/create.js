@@ -295,22 +295,14 @@ const pickedVoice = LIPSYNC_ALLOWED_VOICES[requestedVoiceKey] || LIPSYNC_ALLOWED
 
 const heygenPayload = hasAudioMode
   ? {
-      video_inputs: [
-        {
-          character: {
-            type: "image",
-            url: preparedImageUrl
-          },
-          voice: {
-            type: "audio",
-            audio_url: audioUrl
-          }
-        }
-      ],
-      dimension: {
-        width: aspectRatio === "9:16" ? 720 : 1280,
-        height: aspectRatio === "9:16" ? 1280 : 720
-      }
+      type: "image",
+      image: {
+        type: "url",
+        url: preparedImageUrl
+      },
+      audio_url: audioUrl,
+      resolution,
+      aspect_ratio: aspectRatio
     }
   : {
       type: "image",
