@@ -106,10 +106,11 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
 
-const script = String(body.script || "").trim();
+const rawScript = String(body.script || "").trim();
 const audioUrl = String(body.audio_url || body.audioUrl || "").trim();
 const hasAudioMode = Boolean(audioUrl);
 
+const script = hasAudioMode ? "" : rawScript;
 const resolution = String(body.resolution || "1080p").trim();
 const durationSeconds = Math.max(
   10,
