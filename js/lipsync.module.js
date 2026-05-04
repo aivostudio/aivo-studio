@@ -587,65 +587,80 @@ if (!durationSelect || !root.contains(durationSelect)) return;
       const root = getRoot();
       if (!root) return;
 
-       const previewVoiceBtn = e.target.closest("[data-lipsync-preview-voice]");
+      const previewVoiceBtn = e.target.closest("[data-lipsync-preview-voice]");
       if (previewVoiceBtn && root.contains(previewVoiceBtn)) {
         e.preventDefault();
 
         const voiceSelect = qs("[data-lipsync-voice-select]", root);
+        const selectedOption = voiceSelect?.selectedOptions?.[0] || null;
+
         const voiceKey = String(voiceSelect?.value || "tranquil_tulin").trim();
+        const voiceName = String(selectedOption?.dataset?.voiceName || "Tranquil Tülin").trim();
 
-        const VOICE_PREVIEW_R2_URLS = {
-          tranquil_tulin: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/tranquil-tulin.mp3",
-          iker: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/iker.mp3",
-          deep_dieter: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/deep-dieter.mp3",
-          william: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/william.mp3",
-          menon: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/menon.mp3",
-          knox: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/knox.mp3",
-          aaron: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/aaron.mp3",
-          lily: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/lily.mp3",
-          april: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/april.mp3",
-          tiffany: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/tiffany.mp3",
-          brianna: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/brianna.mp3",
-          evelyn: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/evelyn.mp3",
-          laurel: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/laurel.mp3",
-          seena: "https://BURAYA_R2_PUBLIC_URL/lipsync/voice-previews/seena.mp3"
-        };
+        const speedRange = qs("[data-lipsync-voice-speed]", root);
+        const volumeRange = qs("[data-lipsync-voice-volume]", root);
 
-        const audioUrl = String(VOICE_PREVIEW_R2_URLS[voiceKey] || "").trim();
-
-        if (!audioUrl) {
-          try {
-            window.toast?.error?.("Bu ses için ön izleme bulunamadı");
-          } catch {}
-
-          console.warn("[LIPSYNC][VOICE_PREVIEW_MISSING]", voiceKey);
-          return;
-        }
+        const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(speedRange?.value || 1)));
+        const voiceVolume = Math.max(0.5, Math.min(1.5, Number(volumeRange?.value || 1)));
 
         try {
+          previewVoiceBtn.disabled = true;
+          previewVoiceBtn.textContent = "…";
+
+          const previewRes = await fetch("/api/lipsync/voice-check", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              voice_key: voiceKey,
+              voice_name: voiceName,
+              voiceSpeed,
+              voice_speed: voiceSpeed,
+              voiceVolume,
+              voice_volume: voiceVolume,
+              text: "Merhaba, ben AIVO ses ön izlemesiyim."
+            })
+          });
+
+          const previewData = await previewRes.json().catch(() => null);
+
+          if (!previewRes.ok || !previewData || previewData.ok === false) {
+            throw new Error(previewData?.error || previewData?.message || "voice_preview_failed");
+          }
+
+          const audioUrl = String(
+            previewData.audio_url ||
+            previewData.audioUrl ||
+            previewData.url ||
+            previewData.preview_url ||
+            previewData.previewUrl ||
+            ""
+          ).trim();
+
+          if (!audioUrl) {
+            throw new Error("voice_preview_url_missing");
+          }
+
           if (window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__) {
             window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__.pause();
             window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__.currentTime = 0;
-            window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = null;
-
-            previewVoiceBtn.textContent = "▶";
-            previewVoiceBtn.disabled = false;
-            return;
           }
-
-          previewVoiceBtn.textContent = "■";
 
           const audio = new Audio(audioUrl);
           window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = audio;
 
           audio.addEventListener("ended", () => {
             previewVoiceBtn.textContent = "▶";
-            window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = null;
+            previewVoiceBtn.disabled = false;
           });
 
           await audio.play();
+          previewVoiceBtn.textContent = "■";
         } catch (err) {
-          console.error("[LIPSYNC][VOICE_PREVIEW_R2_ERROR]", err);
+          console.error("[LIPSYNC][VOICE_PREVIEW_ERROR]", err);
 
           try {
             window.toast?.error?.("Ses ön izlemesi çalınamadı");
@@ -653,7 +668,6 @@ if (!durationSelect || !root.contains(durationSelect)) return;
 
           previewVoiceBtn.textContent = "▶";
           previewVoiceBtn.disabled = false;
-          window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = null;
         }
 
         return;
