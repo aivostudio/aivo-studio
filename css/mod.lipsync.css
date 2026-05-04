@@ -2180,3 +2180,21 @@
   width: 100% !important;
   box-sizing: border-box !important;
 }
+/* === LIPSYNC RECORD DEVICE BAR CENTER FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-record-device {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 0 22px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-record-device.is-recording,
+.main-panel[data-module="lipsync"] .lipsync-record-device {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
