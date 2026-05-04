@@ -1257,11 +1257,11 @@ try {
           errText.includes("impersonation");
 
         try {
-          window.toast?.error?.(
-            isPolicyBlocked
-              ? "Bu görsel kullanılamaz."
-              : "Fotoğraf yüklenemedi"
-          );
+        if (isPolicyBlocked) {
+  window.toast?.info?.("Bu görsel kullanılamaz");
+} else {
+  window.toast?.error?.("Fotoğraf yüklenemedi");
+}
         } catch {}
 
         syncGenerateButton(root);
