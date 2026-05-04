@@ -632,9 +632,20 @@ if (scriptInput) {
       const blob = new Blob(lipsyncRecordedChunks, { type: "audio/webm" });
       const filename = `aivo-kayit-${Date.now()}.webm`;
 
-      lipsyncRecordedAudioFile = new File([blob], filename, {
-        type: "audio/webm"
-      });
+     lipsyncRecordedAudioFile = new File([blob], filename, {
+  type: "audio/webm"
+});
+
+getLipsyncAudioMeta(lipsyncRecordedAudioFile).then((meta) => {
+  lipsyncAudioDurationSeconds = meta.durationSeconds;
+  lipsyncAudioCreditCost = meta.creditCost;
+  syncGenerateButton(root);
+
+  console.log("[LIPSYNC][RECORDED_AUDIO_META]", {
+    durationSeconds: lipsyncAudioDurationSeconds,
+    creditCost: lipsyncAudioCreditCost
+  });
+});
 
       stream.getTracks().forEach((track) => track.stop());
 
