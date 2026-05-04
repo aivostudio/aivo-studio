@@ -112,8 +112,8 @@ const hasAudioMode = Boolean(audioUrl);
 
 const script = hasAudioMode ? "" : rawScript;
 
-const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(body.voiceSpeed || body.voice_speed || 1)));
-const voiceVolume = Math.max(0, Math.min(2, Number(body.voiceVolume || body.voice_volume || 1)));
+const voiceSpeed = Math.max(0.7, Math.min(1.3, Number(body.voiceSpeed || body.voice_speed || 1)));
+const voiceVolume = Math.max(0.8, Math.min(1.2, Number(body.voiceVolume || body.voice_volume || 1)));
 const resolution = String(body.resolution || "1080p").trim();
 const durationSeconds = Math.max(
   10,
