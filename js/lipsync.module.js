@@ -335,6 +335,30 @@ if (!durationSelect || !root.contains(durationSelect)) return;
       const root = getRoot();
       if (!root) return;
 
+       const recordOpenBtn = e.target.closest("[data-lipsync-record-open]");
+if (recordOpenBtn && root.contains(recordOpenBtn)) {
+  e.preventDefault();
+
+  const modal = qs("[data-lipsync-record-modal]", root);
+  if (modal) {
+    modal.hidden = false;
+  }
+
+  return;
+}
+
+const recordCloseBtn = e.target.closest("[data-lipsync-record-close]");
+if (recordCloseBtn && root.contains(recordCloseBtn)) {
+  e.preventDefault();
+
+  const modal = qs("[data-lipsync-record-modal]", root);
+  if (modal) {
+    modal.hidden = true;
+  }
+
+  return;
+}
+
             const removePhotoBtn = e.target.closest("[data-lipsync-photo-remove]");
       if (removePhotoBtn && root.contains(removePhotoBtn)) {
         e.preventDefault();
