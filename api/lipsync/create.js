@@ -144,6 +144,21 @@ if (!script && !hasAudioMode) {
     error: "script_or_audio_required"
   });
 }
+    if (hasAudioMode) {
+  const audioSeconds = Number(
+    body.audioDurationSeconds ||
+    body.audio_duration_seconds ||
+    0
+  );
+
+  if (audioSeconds > 60) {
+    return res.status(400).json({
+      ok: false,
+      error: "audio_too_long",
+      message: "Ses dosyası en fazla 60 saniye olabilir."
+    });
+  }
+}
     const sql = neon(conn);
 
     const userRows = await sql`
