@@ -28,14 +28,15 @@
   </svg>
 </button>
 
-           <label class="lipsync-icon-btn" title="Hazır ses dosyası yükle">
-           <input type="file" accept="audio/*" data-lipsync-audio hidden>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-             <path d="M12 16V4"></path>
-           <path d="M7 9l5-5 5 5"></path>
-            <path d="M5 20h14"></path>
-           </svg>
-          </label>
+           <<button type="button" class="lipsync-icon-btn" data-lipsync-upload-open title="Hazır ses dosyası yükle">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 16V4"></path>
+    <path d="M7 9l5-5 5 5"></path>
+    <path d="M5 20h14"></path>
+  </svg>
+</button>
+
+<input type="file" accept="audio/*" data-lipsync-audio hidden>
             </div>
           </div>
 
@@ -185,10 +186,10 @@
     <button type="button" class="lipsync-record-close" data-lipsync-record-close>×</button>
 
     <div class="lipsync-record-title">Ses Kaydet</div>
-    <div class="lipsync-record-tabs">
-      <button type="button" class="is-active">Ses Kaydı</button>
-      <button type="button" disabled>Ses Yükle</button>
-    </div>
+  <div class="lipsync-record-tabs">
+  <button type="button" class="is-active" data-lipsync-record-tab="record">Ses Kaydı</button>
+  <button type="button" data-lipsync-record-tab="upload">Ses Yükle</button>
+</div>
 
     <div class="lipsync-record-box">
       <p>Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.</p>
