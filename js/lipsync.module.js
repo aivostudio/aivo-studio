@@ -463,6 +463,9 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
       <button type="button" class="lipsync-record-confirm-use" data-lipsync-use-recorded-audio>
         Kullan
       </button>
+      <button type="button" class="lipsync-record-confirm-remove" data-lipsync-remove-recorded-audio aria-label="Kaydı sil">
+       ×
+       </button>
     </div>
   `;
 }
