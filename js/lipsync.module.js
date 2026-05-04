@@ -79,14 +79,15 @@ function syncGenerateButton(root) {
 
   const scriptInput = qs("[data-lipsync-script]", root);
   const text = String(scriptInput?.value || "").trim();
+  const hasInput = Boolean(text || lipsyncRecordedAudioFile);
 
-  let seconds = 1;
-  let credit = 3;
+  let seconds = 0;
+  let credit = 0;
 
   if (lipsyncRecordedAudioFile && lipsyncAudioDurationSeconds > 0) {
     seconds = lipsyncAudioDurationSeconds;
     credit = lipsyncAudioCreditCost || Math.ceil(seconds / 2) * 3;
-  } else {
+  } else if (text) {
     const charsPerSecond = 9;
     seconds = Math.max(1, Math.ceil(text.length / charsPerSecond));
     credit = Math.ceil(seconds / 2) * 3;
@@ -94,9 +95,13 @@ function syncGenerateButton(root) {
 
   btn.dataset.creditCost = String(credit);
   btn.dataset.speechSeconds = String(seconds);
-  btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
-}
 
+  if (!hasInput) {
+    btn.textContent = "Dudak Senkron Video Üret";
+  } else {
+    btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
+  }
+}
 function renderLipsyncAudioEstimate(root) {
   const scriptInput = qs("[data-lipsync-script]", root);
   if (!scriptInput) return;
