@@ -1540,12 +1540,18 @@ try {
           poll();
           return data;
         })
-        .catch((err) => {
+                .catch(async (err) => {
           console.error("[LIPSYNC][CREATE_ERROR]", err);
 
-          try {
-            window.toast?.error?.("Lipsync job oluşturulamadı");
-          } catch {}
+          const refunded = await refundLipsyncCredits("lipsync_create_failed", {
+            error: String(err?.message || err || "lipsync_create_failed")
+          });
+
+          if (!refunded) {
+            try {
+              window.toast?.error?.("Lipsync job oluşturulamadı");
+            } catch {}
+          }
         })
         .finally(() => {
           syncGenerateButton(root);
