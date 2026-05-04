@@ -78,8 +78,8 @@ export default async function handler(req, res) {
       });
     }
 
-    const heygenRes = await fetch(
-      `https://api.heygen.com/v3/lipsyncs/${encodeURIComponent(lipsyncId)}`,
+     const heygenRes = await fetch(
+      `https://api.heygen.com/v3/videos/${encodeURIComponent(lipsyncId)}`,
       {
         method: "GET",
         headers: {
