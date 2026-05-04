@@ -107,6 +107,45 @@
       pickOutputUrl(outs.find((o) => pickOutputUrl(o)))
     );
   }
+
+  function shortTitle(text, max = 44) {
+    const s = safeStr(text).replace(/\s+/g, " ");
+    if (!s) return "";
+    return s.length > max ? s.slice(0, max - 1).trim() + "…" : s;
+  }
+
+  function getLipsyncCardTitle(job) {
+    const meta = job?.meta || {};
+
+    const audioName = safeStr(
+      meta.audio_file_name ||
+      meta.audioFileName ||
+      meta.audio_name ||
+      meta.audioName ||
+      meta.file_name ||
+      meta.filename ||
+      meta.original_filename ||
+      meta.originalFilename
+    );
+
+    if (audioName) {
+      return shortTitle("Ses: " + audioName, 46);
+    }
+
+    const script = safeStr(
+      meta.script ||
+      meta.text ||
+      meta.prompt ||
+      job?.prompt ||
+      job?.title
+    );
+
+    if (script) {
+      return shortTitle(script, 46);
+    }
+
+    return "Dudak Senkron Video";
+  }
   function createLipsyncPanel(host) {
     let destroyed = false;
     let currentDbItems = [];
@@ -136,7 +175,7 @@
           '<div class="lipsyncPanelCardInner" data-job="' + esc(jid) + '">' +
           window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
             id: jid,
-            title: "Dudak Senkron Video",
+            title: getLipsyncCardTitle(job),
             sub: safeStr(job?.meta?.script || job?.prompt || ""),
             badgeText: badge.text,
             badgeKind: badge.kind === "ok" ? "ready" : badge.kind === "bad" ? "error" : "loading",
