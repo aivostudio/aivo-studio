@@ -282,6 +282,16 @@ if (uploadAudioInput && root.contains(uploadAudioInput)) {
 
   lipsyncRecordedAudioFile = file;
 
+const audioMeta = await getLipsyncAudioMeta(file);
+lipsyncAudioDurationSeconds = audioMeta.durationSeconds;
+lipsyncAudioCreditCost = audioMeta.creditCost;
+syncGenerateButton(root);
+
+console.log("[LIPSYNC][UPLOADED_AUDIO_META]", {
+  durationSeconds: lipsyncAudioDurationSeconds,
+  creditCost: lipsyncAudioCreditCost
+});
+
   const boxEl = qs(".lipsync-record-box", root);
   const deviceEl = qs(".lipsync-record-device", root);
 
