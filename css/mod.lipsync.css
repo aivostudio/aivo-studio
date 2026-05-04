@@ -2215,3 +2215,65 @@
   background: rgba(255, 80, 120, 0.18) !important;
   color: #ffffff !important;
 }
+/* === LIPSYNC INLINE AUDIO CARD — HEYGEN STYLE === */
+
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-card {
+  width: 100% !important;
+  min-height: 82px !important;
+  margin: 18px 0 12px !important;
+  padding: 14px 16px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: 46px minmax(0, 1fr) 38px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(5, 6, 11, 0.74) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-play,
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-remove {
+  width: 38px !important;
+  height: 38px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-info {
+  min-width: 0 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-info strong {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+  font-weight: 850 !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-info span {
+  display: block !important;
+  margin-top: 5px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  font-weight: 650 !important;
+  color: rgba(255, 255, 255, 0.48) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-inline-audio-remove {
+  font-size: 16px !important;
+}
