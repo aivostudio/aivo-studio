@@ -981,6 +981,11 @@ if (removeRecordedAudioBtn && root.contains(removeRecordedAudioBtn)) {
   const estimateEl = qs("[data-lipsync-estimate]", root);
   if (estimateEl) estimateEl.remove();
 
+  const scriptInput = qs("[data-lipsync-script]", root);
+  if (scriptInput) {
+    scriptInput.removeAttribute("disabled");
+  }
+
   const boxEl = qs(".lipsync-record-box", root);
   const deviceEl = qs(".lipsync-record-device", root);
 
