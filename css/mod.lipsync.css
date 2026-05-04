@@ -2369,3 +2369,40 @@
     0 14px 30px rgba(0, 0, 0, 0.22),
     0 0 26px rgba(236, 91, 167, 0.08) !important;
 }
+/* === LIPSYNC PREMIUM TOP INFO CARD === */
+
+.main-panel[data-module="lipsync"] .lipsync-dev-notice,
+.main-panel[data-module="lipsync"] .lipsync-credit-note {
+  display: none !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-info-card {
+  padding: 22px 26px !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(124, 77, 255, 0.24), transparent 42%),
+    radial-gradient(circle at 86% 18%, rgba(236, 91, 167, 0.18), transparent 44%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 18px 44px rgba(0, 0, 0, 0.24) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-info-title {
+  font-size: 28px !important;
+  line-height: 1.05 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.045em !important;
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-info-text {
+  margin-top: 8px !important;
+  max-width: 760px !important;
+  font-size: 16px !important;
+  line-height: 1.42 !important;
+  font-weight: 620 !important;
+  letter-spacing: -0.025em !important;
+  color: rgba(255, 255, 255, 0.58) !important;
+}
