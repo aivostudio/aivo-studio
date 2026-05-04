@@ -1160,21 +1160,36 @@ payload.estimated_credits = estimatedCreditCost;
 
       let imageUrl = "";
 
-      try {
-        generateBtn.disabled = true;
-        generateBtn.textContent = "Fotoğraf yükleniyor...";
+try {
+  generateBtn.disabled = true;
+  generateBtn.textContent = "Fotoğraf yükleniyor...";
 
-        imageUrl = await uploadLipsyncPhotoToR2(photoFile, payload);
+  imageUrl = await uploadLipsyncPhotoToR2(photoFile, payload);
 
-        if (!imageUrl) {
-          throw new Error("lipsync_photo_url_missing");
-        }
+  if (!imageUrl) {
+    throw new Error("lipsync_photo_url_missing");
+  }
 
-        payload.image_url = imageUrl;
-        payload.imageUrl = imageUrl;
+  payload.image_url = imageUrl;
+  payload.imageUrl = imageUrl;
 
-        console.log("[LIPSYNC][PHOTO_R2_OK]", imageUrl);
-      } catch (uploadErr) {
+  console.log("[LIPSYNC][PHOTO_R2_OK]", imageUrl);
+
+  if (lipsyncRecordedAudioFile) {
+    generateBtn.textContent = "Ses yükleniyor...";
+
+    const audioUrl = await uploadLipsyncAudioToR2(lipsyncRecordedAudioFile, payload);
+
+    if (!audioUrl) {
+      throw new Error("lipsync_audio_url_missing");
+    }
+
+    payload.audio_url = audioUrl;
+    payload.audioUrl = audioUrl;
+
+    console.log("[LIPSYNC][AUDIO_R2_OK]", audioUrl);
+  }
+} catch (uploadErr) {
         console.error("[LIPSYNC][PHOTO_R2_ERROR]", uploadErr);
 
         try {
