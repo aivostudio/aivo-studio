@@ -1750,9 +1750,9 @@ const creditData = await creditRes.json().catch(() => null);
 
           console.log("[LIPSYNC][CREATE_OK]", data);
 
-         try {
-        window.toast?.success?.("Video oluşturuldu");
-      } catch {}
+       try {
+        window.toast?.info?.("Video hazırlanıyor...");
+       } catch {}
 
           const jobId = String(data.job_id || "").trim();
 
