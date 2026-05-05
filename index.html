@@ -2430,8 +2430,363 @@
 </section>
 <!-- ================= /AI FOTO EFFECT CLIP ================= -->
 
+<!-- ================= AI DUDAK SENKRON VIDEO ================= -->
+<section id="lipsync-video" aria-label="AI Dudak Senkron Video">
+  <style>
+    #lipsync-video{
+      position:relative;
+      padding:clamp(32px,5vw,72px) 0;
+      isolation:isolate;
+      overflow:hidden;
+    }
 
+    #lipsync-video::before{
+      content:"";
+      position:absolute;
+      inset:-22%;
+      background:
+        radial-gradient(1200px 700px at 18% 40%, rgba(236,72,153,.20), transparent 62%),
+        radial-gradient(1200px 700px at 82% 38%, rgba(139,92,246,.20), transparent 62%),
+        radial-gradient(900px 600px at 65% 88%, rgba(255,110,200,.14), transparent 66%),
+        linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.60));
+      filter:blur(34px);
+      opacity:.95;
+      pointer-events:none;
+      z-index:0;
+    }
 
+    #lipsync-video .lipsync-wrap{
+      width:min(1148px, calc(100% - 32px));
+      margin:0 auto;
+      position:relative;
+      z-index:1;
+    }
+
+    #lipsync-video .lipsync-head{
+      text-align:center;
+      margin:0;
+      padding:0;
+    }
+
+    #lipsync-video .lipsync-title{
+      margin:0 0 8px;
+      font-size:clamp(36px,4.6vw,60px);
+      line-height:1.05;
+      letter-spacing:-0.02em;
+      font-weight:900;
+      color:rgba(255,255,255,.96);
+      text-shadow:0 0 24px rgba(236,72,153,.16);
+    }
+
+    #lipsync-video .lipsync-sub{
+      margin:0 auto;
+      max-width:85ch;
+      font-weight:700;
+      line-height:1.55;
+      background:linear-gradient(90deg,#fff,#f0abfc,#ec4899,#8b5cf6,#fff);
+      background-size:320% 100%;
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      -webkit-text-fill-color:transparent;
+      animation:lipsyncSubFlow 7.2s linear infinite;
+    }
+
+    @keyframes lipsyncSubFlow{
+      0%{background-position:0% 50%;}
+      100%{background-position:320% 50%;}
+    }
+
+    #lipsync-video .lipsync-bar{
+      margin:22px auto 22px;
+      width:min(1040px,100%);
+      padding:16px 22px;
+      border-radius:999px;
+      text-align:center;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 18px 60px rgba(0,0,0,.35);
+      backdrop-filter:blur(14px) saturate(120%);
+      -webkit-backdrop-filter:blur(14px) saturate(120%);
+      color:rgba(255,255,255,.90);
+    }
+
+    #lipsync-video .lipsync-bar strong{
+      color:#fff;
+      font-weight:800;
+    }
+
+    #lipsync-video .lipsync-card{
+      display:grid;
+      grid-template-columns:1.28fr .72fr;
+      gap:clamp(18px,2.4vw,28px);
+      align-items:stretch;
+      padding:clamp(18px,2.2vw,28px);
+      border-radius:28px;
+      text-decoration:none;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 30px 90px rgba(0,0,0,.55);
+      backdrop-filter:blur(16px) saturate(120%);
+      -webkit-backdrop-filter:blur(16px) saturate(120%);
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(900px 520px at 18% 22%, rgba(236,72,153,.42) 0%, transparent 62%),
+        radial-gradient(900px 520px at 82% 18%, rgba(139,92,246,.34) 0%, transparent 62%),
+        radial-gradient(900px 520px at 78% 78%, rgba(255,110,200,.18) 0%, transparent 62%),
+        linear-gradient(135deg, rgba(236,72,153,.13) 0%, rgba(139,92,246,.12) 55%, transparent 100%),
+        rgba(255,255,255,.03);
+    }
+
+    #lipsync-video .lipsync-preview{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+    }
+
+    #lipsync-video .lipsync-stage{
+      position:relative;
+      width:100%;
+      aspect-ratio:16/9;
+      border-radius:28px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(236,72,153,.34), transparent 30%),
+        radial-gradient(circle at 50% 42%, rgba(139,92,246,.32), transparent 42%),
+        linear-gradient(135deg, rgba(17,24,39,.92), rgba(49,20,64,.88));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 18px 55px rgba(0,0,0,.38);
+    }
+
+    #lipsync-video .lipsync-avatar{
+      position:absolute;
+      left:50%;
+      top:52%;
+      width:190px;
+      height:190px;
+      transform:translate(-50%,-50%);
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255,255,255,.95) 0 9%, transparent 10%),
+        radial-gradient(circle at 38% 38%, rgba(255,255,255,.92) 0 4%, transparent 5%),
+        radial-gradient(circle at 62% 38%, rgba(255,255,255,.92) 0 4%, transparent 5%),
+        linear-gradient(135deg,#8b5cf6,#ec4899);
+      box-shadow:0 0 0 16px rgba(255,255,255,.05), 0 28px 80px rgba(236,72,153,.28);
+    }
+
+    #lipsync-video .lipsync-avatar::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:58%;
+      width:54px;
+      height:14px;
+      transform:translateX(-50%);
+      border-radius:999px;
+      background:rgba(8,12,24,.72);
+      animation:lipsyncMouth 1.1s ease-in-out infinite;
+    }
+
+    @keyframes lipsyncMouth{
+      0%,100%{height:10px;width:44px;}
+      50%{height:24px;width:58px;}
+    }
+
+    #lipsync-video .lipsync-wave{
+      position:absolute;
+      left:50%;
+      bottom:34px;
+      display:flex;
+      gap:7px;
+      transform:translateX(-50%);
+      align-items:end;
+    }
+
+    #lipsync-video .lipsync-wave span{
+      width:7px;
+      height:22px;
+      border-radius:999px;
+      background:linear-gradient(180deg,#fff,#ec4899);
+      animation:lipsyncWave 1s ease-in-out infinite;
+      opacity:.9;
+    }
+
+    #lipsync-video .lipsync-wave span:nth-child(2){animation-delay:.12s;}
+    #lipsync-video .lipsync-wave span:nth-child(3){animation-delay:.24s;}
+    #lipsync-video .lipsync-wave span:nth-child(4){animation-delay:.36s;}
+    #lipsync-video .lipsync-wave span:nth-child(5){animation-delay:.48s;}
+
+    @keyframes lipsyncWave{
+      0%,100%{height:16px;}
+      50%{height:44px;}
+    }
+
+    #lipsync-video .lipsync-tags{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:16px 0 0;
+    }
+
+    #lipsync-video .lipsync-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.14);
+      font-weight:800;
+      font-size:12px;
+      color:rgba(255,255,255,.94);
+    }
+
+    #lipsync-video .lipsync-cta{
+      margin:22px auto 0;
+      width:calc(100% - 8px);
+      min-height:50px;
+      padding:0 20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:linear-gradient(135deg,#8b5cf6 0%,#ec4899 100%);
+      box-shadow:0 18px 40px rgba(236,72,153,.30);
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    #lipsync-video .lipsync-copy h3{
+      margin:0 0 18px;
+      font-size:clamp(26px,2.4vw,38px);
+      line-height:1.08;
+      letter-spacing:-0.02em;
+      color:rgba(255,255,255,.96);
+    }
+
+    #lipsync-video .lipsync-copybox{
+      margin:10px 0 12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.14);
+      color:rgba(255,255,255,.88);
+      line-height:1.55;
+    }
+
+    #lipsync-video .lipsync-bullets{
+      margin:0;
+      padding-left:22px;
+      color:rgba(255,255,255,.88);
+    }
+
+    #lipsync-video .lipsync-bullets li + li{
+      margin-top:10px;
+    }
+
+    #lipsync-video .lipsync-bottom{
+      margin:16px auto 0;
+      padding:14px 18px;
+      border-radius:999px;
+      text-align:center;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 18px 60px rgba(0,0,0,.28);
+      color:rgba(255,255,255,.88);
+    }
+
+    #lipsync-video .lipsync-bottom strong{
+      color:#fff;
+      font-weight:800;
+    }
+
+    @media (max-width:900px){
+      #lipsync-video .lipsync-card{
+        grid-template-columns:1fr;
+      }
+
+      #lipsync-video .lipsync-head,
+      #lipsync-video .lipsync-bar,
+      #lipsync-video .lipsync-bottom{
+        text-align:left;
+      }
+
+      #lipsync-video .lipsync-bar,
+      #lipsync-video .lipsync-bottom{
+        border-radius:22px;
+        width:100%;
+      }
+    }
+  </style>
+
+  <div class="lipsync-wrap">
+    <header class="lipsync-head">
+      <h2 class="lipsync-title">AI Dudak Senkron Video</h2>
+      <p class="lipsync-sub">
+        Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Karakterini konuştur,
+        sosyal medya ve tanıtım için hazır video üret.
+      </p>
+    </header>
+
+    <div class="lipsync-bar">
+      <strong>Fotoğraftan konuşan video.</strong>
+      Metin ya da ses dosyasıyla dudak senkron video üretimi
+    </div>
+
+    <a class="lipsync-card"
+       href="/studio.v2.html#lipsync"
+       data-auth="required"
+       data-mod="lipsync-video">
+
+      <div class="lipsync-preview" aria-hidden="true">
+        <div class="lipsync-stage">
+          <div class="lipsync-avatar"></div>
+          <div class="lipsync-wave">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="lipsync-tags">
+          <span class="lipsync-badge">🗣️ Konuşan Fotoğraf</span>
+          <span class="lipsync-badge">🎙️ Ses / Metin</span>
+          <span class="lipsync-badge">📱 Sosyal Medya</span>
+        </div>
+
+        <div class="lipsync-cta">
+          Dudak Senkron Video Oluştur →
+        </div>
+      </div>
+
+      <div class="lipsync-copy">
+        <h3>AI Dudak Senkron Video Oluştur</h3>
+
+        <div class="lipsync-copybox">
+          Fotoğrafını konuştur, metin ya da sesle dudak senkron video üret.
+          Tanıtım, sosyal medya, karakter sunumu ve hızlı içerik akışları için hazır görünüm al.
+        </div>
+
+        <ul class="lipsync-bullets">
+          <li>🗣️ Fotoğrafını konuşan videoya dönüştür</li>
+          <li>🎙️ Metin, hazır ses dosyası veya ses seçimiyle üret</li>
+          <li>📱 Reels, Shorts, tanıtım ve sosyal medya içerikleri için hazır çıktı al</li>
+          <li>✨ Markan, karakterin veya içerik fikrin için dikkat çekici video oluştur</li>
+          <li>⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan</li>
+        </ul>
+      </div>
+    </a>
+
+    <div class="lipsync-bottom">
+      <strong>Fotoğraftan konuşan videoya.</strong> İlk dudak senkron videonu kısa sürede oluştur.
+    </div>
+  </div>
+</section>
+<!-- ================= /AI DUDAK SENKRON VIDEO ================= -->
 
 
 
