@@ -197,40 +197,13 @@
       border: 1px solid rgba(255,255,255,.12);
     }
 
-    .edu-video-empty {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 28px;
-    }
-
-    .edu-play {
-      width: 86px;
-      height: 86px;
-      border-radius: 999px;
-      margin: 0 auto 18px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #8b5cf6, #ec4899);
-      box-shadow: 0 24px 60px rgba(236,72,153,.26);
-      font-size: 30px;
-    }
-
-    .edu-video-empty strong {
+    .edu-video-frame video {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
       display: block;
-      font-size: 28px;
-      line-height: 1.1;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-
-    .edu-video-empty small {
-      display: block;
-      color: rgba(255,255,255,.66);
-      font-size: 14px;
-      line-height: 1.5;
+      object-fit: cover;
+      background: #070A14;
     }
 
     .edu-feature-copy {
@@ -307,23 +280,19 @@
 
     .edu-thumb {
       height: 160px;
-      display: grid;
-      place-items: center;
+      overflow: hidden;
       background:
         linear-gradient(135deg, rgba(139,92,246,.28), rgba(236,72,153,.22)),
         rgba(255,255,255,.04);
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
 
-    .edu-thumb span {
-      width: 58px;
-      height: 58px;
-      border-radius: 999px;
-      display: grid;
-      place-items: center;
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.16);
-      font-size: 22px;
+    .edu-thumb video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      background: #070A14;
     }
 
     .edu-card-body {
@@ -395,6 +364,10 @@
         min-height: 260px;
       }
 
+      .edu-video-frame video {
+        min-height: 260px;
+      }
+
       .edu-showcase {
         padding: 14px;
         border-radius: 26px;
@@ -435,21 +408,17 @@
       <section class="edu-showcase">
         <div class="edu-feature">
           <div class="edu-video-frame">
-            <div class="edu-video-empty">
-              <div>
-                <div class="edu-play">▶</div>
-                <strong>Başlangıç Eğitimi</strong>
-                <small>Buraya ilk ana eğitim videonu yerleştireceğiz.</small>
-              </div>
-            </div>
+            <video controls preload="metadata" playsinline>
+              <source src="/media/aivo-egitim-muzik-small.mp4" type="video/mp4">
+            </video>
           </div>
 
           <div class="edu-feature-copy">
             <div class="edu-kicker">Öne Çıkan Rehber</div>
             <h2>AIVO Studio ile ilk içeriğini dakikalar içinde üret.</h2>
             <p>
-              Kullanıcıların nereden başlayacağını hızlıca anlaması için bu alanı ana eğitim videosuna ayırıyoruz.
-              Video geldiğinde buraya doğrudan YouTube embed veya kendi video bağlantını koyacağız.
+              Bu bölümde AIVO Studio’nun temel kullanımını gösteren ana eğitim videosu yer alır.
+              Ürünleri tanımak, ilk üretimi başlatmak ve eğitim kartlarına geçmek için en hızlı başlangıç noktasıdır.
             </p>
           </div>
         </div>
@@ -465,56 +434,80 @@
 
         <div class="edu-grid">
           <article class="edu-card">
-            <div class="edu-thumb"><span>🎵</span></div>
+            <div class="edu-thumb">
+              <video muted preload="metadata" playsinline>
+                <source src="/media/aivo-egitim-muzik-small.mp4" type="video/mp4">
+              </video>
+            </div>
             <div class="edu-card-body">
               <h3>AI Müzik Nasıl Üretilir?</h3>
               <p>Prompt, tarz, şarkı sözü ve üretim seçenekleriyle ilk müziğini oluştur.</p>
-              <a href="#">Video eklenecek</a>
+              <a href="/media/aivo-egitim-muzik-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
             </div>
           </article>
 
           <article class="edu-card">
-            <div class="edu-thumb"><span>🖼️</span></div>
+            <div class="edu-thumb">
+              <video muted preload="metadata" playsinline>
+                <source src="/media/aivo-egitim-kapak-small.mp4" type="video/mp4">
+              </video>
+            </div>
             <div class="edu-card-body">
               <h3>AI Kapak Görseli Nasıl Yapılır?</h3>
               <p>Kapak görseli, afiş ve sosyal medya görseli üretimi için kısa rehber.</p>
-              <a href="#">Video eklenecek</a>
+              <a href="/media/aivo-egitim-kapak-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
             </div>
           </article>
 
           <article class="edu-card">
-            <div class="edu-thumb"><span>🎬</span></div>
+            <div class="edu-thumb">
+              <video muted preload="metadata" playsinline>
+                <source src="/media/aivo-egitim-video-small.mp4" type="video/mp4">
+              </video>
+            </div>
             <div class="edu-card-body">
               <h3>AI Resimden Video Üretimi</h3>
               <p>Bir görseli hareketli video sahnesine dönüştürmenin temel adımları.</p>
-              <a href="#">Video eklenecek</a>
+              <a href="/media/aivo-egitim-video-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
             </div>
           </article>
 
           <article class="edu-card">
-            <div class="edu-thumb"><span>🐠</span></div>
+            <div class="edu-thumb">
+              <video muted preload="metadata" playsinline>
+                <source src="/media/aivo-egitim-cizgifilm-small.mp4" type="video/mp4">
+              </video>
+            </div>
             <div class="edu-card-body">
               <h3>AI Çocuk Çizgifilm Rehberi</h3>
               <p>Karakter, sahne ve hikâye akışıyla çizgifilm üretmeye başla.</p>
-              <a href="#">Video eklenecek</a>
+              <a href="/media/aivo-egitim-cizgifilm-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
             </div>
           </article>
 
           <article class="edu-card">
-            <div class="edu-thumb"><span>✨</span></div>
+            <div class="edu-thumb">
+              <video muted preload="metadata" playsinline>
+                <source src="/media/aivo-egitim-photofx-small.mp4" type="video/mp4">
+              </video>
+            </div>
             <div class="edu-card-body">
               <h3>AI Foto Efekt Video Clip</h3>
               <p>Tek fotoğrafı glow, shake ve hareket efektleriyle video klibe çevir.</p>
-              <a href="#">Video eklenecek</a>
+              <a href="/media/aivo-egitim-photofx-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
             </div>
           </article>
 
           <article class="edu-card">
-            <div class="edu-thumb"><span>🗣️</span></div>
+            <div class="edu-thumb">
+              <video muted preload="metadata" playsinline>
+                <source src="/media/aivo-egitim-lipsync-small.mp4" type="video/mp4">
+              </video>
+            </div>
             <div class="edu-card-body">
               <h3>AI Dudak Senkron Video</h3>
               <p>Fotoğraf, metin veya ses dosyasıyla konuşan video oluşturmayı öğren.</p>
-              <a href="#">Video eklenecek</a>
+              <a href="/media/aivo-egitim-lipsync-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
             </div>
           </article>
         </div>
