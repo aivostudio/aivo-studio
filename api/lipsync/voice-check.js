@@ -1,63 +1,61 @@
 export const config = { runtime: "nodejs" };
 
-import { putObject } from "../_lib/r2.js";
-
 const LIPSYNC_ALLOWED_VOICES = {
   tranquil_tulin: {
     voice_id: process.env.HEYGEN_VOICE_ID,
-    file_name: "tranquil-tulin.mp3",
+    voice_name: "Tranquil Tülin",
   },
   iker: {
     voice_id: "117821d0abb146e89cc2a2e99f65d807",
-    file_name: "iker.mp3",
+    voice_name: "Iker",
   },
   deep_dieter: {
     voice_id: "118949676b0a46629d1ad52981c3ef84",
-    file_name: "deep-dieter.mp3",
+    voice_name: "Deep Dieter",
   },
   william: {
     voice_id: "13be37a20b2448b7ad9db1a8669e5569",
-    file_name: "william.mp3",
+    voice_name: "William Prescott",
   },
   menon: {
     voice_id: "145980ae9ed74dd880175c44cc08615a",
-    file_name: "menon.mp3",
+    voice_name: "Menon",
   },
   knox: {
     voice_id: "158b76b48ed048d381951887e771e412",
-    file_name: "knox.mp3",
+    voice_name: "Knox",
   },
   aaron: {
     voice_id: "184c9014f94142ae949363089aaf53dd",
-    file_name: "aaron.mp3",
+    voice_name: "Aaron",
   },
   lily: {
     voice_id: "14979664b31246cbb735cc86d17b7907",
-    file_name: "lily.mp3",
+    voice_name: "Lily",
   },
   april: {
     voice_id: "1508afc3681349ad842f2e7194b7eb22",
-    file_name: "april.mp3",
+    voice_name: "April",
   },
   tiffany: {
     voice_id: "1519fd8fe5d440a2b58770a6762511de",
-    file_name: "tiffany.mp3",
+    voice_name: "Tiffany",
   },
   brianna: {
     voice_id: "154e13cce06c4452ba3b9865dcdf1434",
-    file_name: "brianna.mp3",
+    voice_name: "Brianna",
   },
   evelyn: {
     voice_id: "15c34793e92442388fc489bbcd58992b",
-    file_name: "evelyn.mp3",
+    voice_name: "Evelyn Harper",
   },
   laurel: {
     voice_id: "162b75e583c465cb9ed047a538d8f6b",
-    file_name: "laurel.mp3",
+    voice_name: "Laurel",
   },
   seena: {
     voice_id: "166aa8d7acd1495a83d34024ccb1505",
-    file_name: "seena.mp3",
+    voice_name: "Seena Professional",
   },
 };
 
@@ -82,28 +80,18 @@ export default async function handler(req, res) {
     }
 
     const body = req.body || {};
-    const voiceKey = String(body.voice_key || body.voiceKey || "").trim();
 
-    if (!voiceKey) {
+    const voiceKey = String(body.voice_key || body.voiceKey || "tranquil_tulin").trim();
+    const pickedVoice = LIPSYNC_ALLOWED_VOICES[voiceKey] || LIPSYNC_ALLOWED_VOICES.tranquil_tulin;
+
+    if (!pickedVoice?.voice_id) {
       return res.status(400).json({
         ok: false,
-        error: "voice_key_required",
+        error: "missing_voice_id",
       });
     }
 
-    const pickedVoice = LIPSYNC_ALLOWED_VOICES[voiceKey];
-
-    if (!pickedVoice || !pickedVoice.voice_id) {
-      return res.status(400).json({
-        ok: false,
-        error: "unknown_voice_key",
-        voice_key: voiceKey,
-      });
-    }
-
-    const text = String(
-      body.text || "Merhaba, ben AIVO ses ön izlemesiyim."
-    )
+    const text = String(body.text || "Merhaba, ben AIVO ses ön izlemesiyim.")
       .trim()
       .slice(0, 500);
 
@@ -151,40 +139,19 @@ export default async function handler(req, res) {
       });
     }
 
-    const audioRes = await fetch(audioUrl);
-
-    if (!audioRes.ok) {
-      return res.status(502).json({
-        ok: false,
-        error: "audio_download_failed",
-        provider_status: audioRes.status,
-        audio_url: audioUrl,
-      });
-    }
-
-    const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
-    const key = `lipsync/voice-previews/${pickedVoice.file_name}`;
-
-    const publicUrl = await putObject({
-      key,
-      body: audioBuffer,
-      contentType: "audio/mpeg",
-      cacheControl: "public, max-age=31536000, immutable",
-      contentDisposition: "inline",
-    });
-
     return res.status(200).json({
       ok: true,
+      provider: "heygen",
       voice_key: voiceKey,
-      key,
-      url: publicUrl,
-      audio_url: publicUrl,
-      source_audio_url: audioUrl,
+      voice_name: pickedVoice.voice_name,
+      voice_id: pickedVoice.voice_id,
+      audio_url: audioUrl,
+      payload: heygenData,
     });
   } catch (err) {
     return res.status(500).json({
       ok: false,
-      error: "upload_voice_preview_error",
+      error: "lipsync_voice_check_error",
       detail: err && err.message ? String(err.message) : String(err),
     });
   }
