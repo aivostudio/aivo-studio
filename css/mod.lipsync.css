@@ -2462,18 +2462,18 @@
 .lipsync-voice-select-wrap::after {
   content: "⌄";
   position: absolute;
-  right: 82px;
+  right: 70px; /* play butonuna göre ayarlandı */
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 28px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
   font-weight: 900;
   pointer-events: none;
-  z-index: 3;
+  z-index: 5;
 }
 
 .lipsync-voice-select {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 56px;
+  padding-right: 48px;
 }
