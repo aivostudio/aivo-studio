@@ -294,3 +294,29 @@ body[class*="education"] .dropdown--products .products-menu > a.product-card{
   height: auto !important;
   max-height: 150px !important;
 }
+/* EDUCATION ONLY — compact inner card typography */
+body.page-education .dropdown--products .products-menu > a.product-card,
+body[class*="education"] .dropdown--products .products-menu > a.product-card{
+  padding: 18px !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-ico,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-ico{
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  margin-bottom: 34px !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-title,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-title{
+  font-size: 22px !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.7px !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-sub,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-sub{
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+}
