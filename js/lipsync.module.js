@@ -388,9 +388,20 @@ document.addEventListener("input", (e) => {
   const duration = Number(getSelectedDuration(root) || 10);
 
   const charsPerSecond = 9;
-  const seconds = Math.max(1, Math.ceil(trimmedText.length / charsPerSecond));
-  const credits = Math.ceil(seconds / 2) * 3;
+  const maxSeconds = 60;
+  const maxChars = maxSeconds * charsPerSecond;
 
+  if (trimmedText.length > maxChars) {
+    scriptInput.value = trimmedText.slice(0, maxChars);
+
+    try {
+      window.toast?.info?.("Maksimum konuşma süresi 60 saniye olabilir.");
+    } catch {}
+  }
+
+  const safeText = String(scriptInput.value || "").trim();
+  const seconds = Math.max(1, Math.ceil(safeText.length / charsPerSecond));
+  const credits = Math.ceil(seconds / 2) * 3;
   const counterEl = qs("[data-lipsync-counter]", root);
   if (counterEl) {
     counterEl.textContent = `${text.length} / 1200`;
