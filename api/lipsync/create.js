@@ -213,6 +213,13 @@ if (!script && !hasAudioMode) {
     error: "script_or_audio_required"
   });
 }
+    if (!hasAudioMode && hasLipsyncBadLanguage(script)) {
+  return res.status(400).json({
+    ok: false,
+    error: "bad_language_policy",
+    message: LIPSYNC_BAD_TEXT_MESSAGE
+  });
+}
     if (hasAudioMode) {
   const audioSeconds = Number(
     body.audioDurationSeconds ||
