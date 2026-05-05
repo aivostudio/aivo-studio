@@ -282,12 +282,29 @@
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
 
-  .edu-thumb video {
+ .edu-thumb {
+  position: relative;
+  overflow: hidden;
+  background: #070A14;
+}
+
+.edu-thumb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  filter: blur(40px);
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.edu-thumb video {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: contain;
-  background: #070A14;
+  position: relative;
+  z-index: 1;
 }
 
     .edu-card-body {
