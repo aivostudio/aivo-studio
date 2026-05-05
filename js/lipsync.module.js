@@ -1311,14 +1311,94 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
 
   return;
 }
-      const generateBtn = e.target.closest("[data-lipsync-generate]");
-      if (!generateBtn || !root.contains(generateBtn)) return;
+    const generateBtn = e.target.closest("[data-lipsync-generate]");
+if (!generateBtn || !root.contains(generateBtn)) return;
 
-      e.preventDefault();
+e.preventDefault();
 
-        const payload = buildPayload(root);
+const payload = buildPayload(root);
 
-      if (!payload.script && !lipsyncRecordedAudioFile) {
+const LIPSYNC_BAD_TEXT_MESSAGE =
+  "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
+
+function normalizeLipsyncPolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasLipsyncBadLanguage(value) {
+  const text = normalizeLipsyncPolicyText(value);
+
+  const blockedTerms = [
+    "amk",
+    "aq",
+    "mk",
+    "orospu",
+    "orospu cocugu",
+    "pic",
+    "pezevenk",
+    "got",
+    "gotveren",
+    "siktir",
+    "sik",
+    "sikerim",
+    "sikeyim",
+    "yarrak",
+    "yarak",
+    "tasak",
+    "tassak",
+    "ibne",
+    "top",
+    "puşt",
+    "pust",
+    "kahpe",
+    "kaltak",
+    "aptal",
+    "salak",
+    "gerizekali",
+    "gerizekali",
+    "mal",
+    "ezik",
+    "asagilik",
+    "aşağılık",
+    "nefret",
+    "geber",
+    "ol geber",
+    "oldur",
+    "öldür",
+    "katlet",
+    "yok et"
+  ];
+
+  return blockedTerms.some((term) => {
+    const safeTerm = normalizeLipsyncPolicyText(term);
+    if (!safeTerm) return false;
+    const rx = new RegExp(`(^|\\s)${safeTerm.replace(/\s+/g, "\\s+")}(?=\\s|$)`, "i");
+    return rx.test(text);
+  });
+}
+
+if (payload.script && hasLipsyncBadLanguage(payload.script)) {
+  try {
+    window.toast?.error?.(LIPSYNC_BAD_TEXT_MESSAGE);
+  } catch {}
+
+  console.log("[LIPSYNC][BLOCKED]", {
+    reason: "bad_language_policy",
+    stage: "before_credit_consume"
+  });
+
+  syncGenerateButton(root);
+  generateBtn.disabled = false;
+  return;
+}
+
+if (!payload.script && !lipsyncRecordedAudioFile) {
   try { window.toast?.info?.("Konuşma metni yazmalısın veya ses dosyası seçmelisin"); } catch {}
   const scriptInput = qs("[data-lipsync-script]", root);
   if (scriptInput) scriptInput.focus();
