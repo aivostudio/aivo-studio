@@ -390,9 +390,13 @@ document.addEventListener("input", (e) => {
   const charsPerSecond = 9;
   const maxSeconds = 60;
   const maxChars = maxSeconds * charsPerSecond;
-
   if (trimmedText.length > maxChars) {
     scriptInput.value = trimmedText.slice(0, maxChars);
+    scriptInput.classList.add("is-lipsync-limit-hit");
+
+    setTimeout(() => {
+      scriptInput.classList.remove("is-lipsync-limit-hit");
+    }, 900);
 
     try {
       window.toast?.info?.("Maksimum konuşma süresi 60 saniye olabilir.");
