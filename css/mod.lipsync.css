@@ -2455,3 +2455,44 @@
 .lipsync-voice-play-inline:hover {
   transform: translateY(-1px);
 }
+.lipsync-voice-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lipsync-voice-select {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 72px;
+}
+
+.lipsync-voice-chevron {
+  position: absolute;
+  right: 92px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.lipsync-voice-play-inline {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 92, 190, 0.55);
+  background: linear-gradient(135deg, #7c4dff, #ec4fa3);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 16px 34px rgba(236, 79, 163, 0.22);
+}
