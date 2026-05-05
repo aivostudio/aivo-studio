@@ -375,14 +375,3 @@ body[class*="education"] .dropdown--products .products-menu > a.product-card .pc
   opacity: .78 !important;
   margin: 0 !important;
 }
-/* STUDIO ONLY — products dropdown 7 cards single row */
-body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
-.dropdown--products{
-  width: min(1180px, calc(100vw - 48px)) !important;
-  max-width: 1180px !important;
-}
-
-body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
-.dropdown--products .products-menu{
-  grid-template-columns: repeat(7, minmax(130px, 1fr)) !important;
-}
