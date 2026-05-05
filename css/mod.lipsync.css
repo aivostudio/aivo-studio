@@ -2496,3 +2496,24 @@
   cursor: pointer;
   box-shadow: 0 16px 34px rgba(236, 79, 163, 0.22);
 }
+/* === LIPSYNC INLINE AUDIO CARD INSIDE TEXTAREA FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-script-audio-wrap {
+  position: relative !important;
+  width: 100% !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-inline-audio-card {
+  position: absolute !important;
+  top: 24px !important;
+  left: 24px !important;
+  right: 24px !important;
+  width: auto !important;
+  min-height: 72px !important;
+  margin: 0 !important;
+  z-index: 6 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-textarea.has-lipsync-audio-card {
+  padding-top: 112px !important;
+}
