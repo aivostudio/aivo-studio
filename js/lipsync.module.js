@@ -15,6 +15,76 @@ let lipsyncRecordedChunks = [];
 let lipsyncRecordedAudioFile = null;
 let lipsyncAudioDurationSeconds = 0;
 let lipsyncAudioCreditCost = 0;
+  const LIPSYNC_BAD_TEXT_MESSAGE =
+  "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
+
+function normalizeLipsyncPolicyText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasLipsyncBadLanguage(value) {
+  const text = normalizeLipsyncPolicyText(value);
+
+  const blockedTerms = [
+    "amk",
+    "aq",
+    "mk",
+    "orospu",
+    "orospu cocugu",
+    "pic",
+    "pezevenk",
+    "got",
+    "gotveren",
+    "siktir",
+    "sik",
+    "sikerim",
+    "sikeyim",
+    "yarrak",
+    "yarak",
+    "tasak",
+    "tassak",
+    "ibne",
+    "top",
+    "puşt",
+    "pust",
+    "kahpe",
+    "kaltak",
+    "aptal",
+    "salak",
+    "gerizekali",
+    "mal",
+    "ezik",
+    "asagilik",
+    "aşağılık",
+    "nefret",
+    "geber",
+    "ol geber",
+    "oldur",
+    "öldür",
+    "katlet",
+    "yok et"
+  ];
+
+  return blockedTerms.some((term) => {
+    const safeTerm = normalizeLipsyncPolicyText(term);
+    if (!safeTerm) return false;
+
+    const pattern = safeTerm
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => `${part}[a-z0-9]*`)
+      .join("\\s+");
+
+    const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+    return rx.test(text);
+  });
+}
 
 function getLipsyncAudioMeta(file) {
   return new Promise((resolve) => {
@@ -1338,76 +1408,7 @@ e.preventDefault();
 
 const payload = buildPayload(root);
 
-const LIPSYNC_BAD_TEXT_MESSAGE =
-  "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
 
-function normalizeLipsyncPolicyText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function hasLipsyncBadLanguage(value) {
-  const text = normalizeLipsyncPolicyText(value);
-
-  const blockedTerms = [
-    "amk",
-    "aq",
-    "mk",
-    "orospu",
-    "orospu cocugu",
-    "pic",
-    "pezevenk",
-    "got",
-    "gotveren",
-    "siktir",
-    "sik",
-    "sikerim",
-    "sikeyim",
-    "yarrak",
-    "yarak",
-    "tasak",
-    "tassak",
-    "ibne",
-    "top",
-    "puşt",
-    "pust",
-    "kahpe",
-    "kaltak",
-    "aptal",
-    "salak",
-    "gerizekali",
-    "gerizekali",
-    "mal",
-    "ezik",
-    "asagilik",
-    "aşağılık",
-    "nefret",
-    "geber",
-    "ol geber",
-    "oldur",
-    "öldür",
-    "katlet",
-    "yok et"
-  ];
-
-  return blockedTerms.some((term) => {
-    const safeTerm = normalizeLipsyncPolicyText(term);
-    if (!safeTerm) return false;
-   const pattern = safeTerm
-  .split(/\s+/)
-  .filter(Boolean)
-  .map((part) => `${part}[a-z0-9]*`)
-  .join("\\s+");
-
-const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
-return rx.test(text);
-  });
-}
 
 if (payload.script && hasLipsyncBadLanguage(payload.script)) {
   try {
