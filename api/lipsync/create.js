@@ -75,12 +75,15 @@ function hasLipsyncBadLanguage(value) {
     const safeTerm = normalizeLipsyncPolicyText(term);
     if (!safeTerm) return false;
 
-    const rx = new RegExp(
-      `(^|\\s)${safeTerm.replace(/\s+/g, "\\s+")}(?=\\s|$)`,
-      "i"
-    );
+   const pattern = safeTerm
+  .split(/\s+/)
+  .filter(Boolean)
+  .map((part) => `${part}[a-z0-9]*`)
+  .join("\\s+");
 
-    return rx.test(text);
+const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+
+return rx.test(text);
   });
 }
 async function prepareLipsyncImageForAspect({ imageUrl, aspectRatio, jobId }) {
