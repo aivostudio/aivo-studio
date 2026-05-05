@@ -2749,7 +2749,8 @@
 
       <div class="lipsync-preview" aria-hidden="true">
               <div class="lipsync-stage">
-          <video
+                  <video
+            id="lipsyncPreviewVideo"
             class="lipsync-preview-video"
             src="https://media.aivo.tr/outputs/home/lipsync/aivo-lipsync-preview.mp4"
             autoplay
@@ -2758,6 +2759,14 @@
             playsinline
             preload="auto">
           </video>
+
+          <button
+            type="button"
+            class="lipsync-sound-btn"
+            onclick="const v=document.getElementById('lipsyncPreviewVideo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } }"
+          >
+            🔇 Sesi Aç
+          </button>
         </div>
 
         <div class="lipsync-tags">
