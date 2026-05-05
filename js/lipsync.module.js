@@ -842,7 +842,21 @@ if (scriptInput) {
     </button>
   `;
 
-  scriptInput.insertAdjacentElement("beforebegin", audioCard);
+const wrapper = scriptInput.parentNode;
+
+if (wrapper) {
+  wrapper.style.position = "relative";
+
+  audioCard.style.position = "absolute";
+  audioCard.style.top = "12px";
+  audioCard.style.left = "12px";
+  audioCard.style.right = "12px";
+  audioCard.style.zIndex = "2";
+
+  scriptInput.style.paddingTop = "70px";
+
+  wrapper.appendChild(audioCard);
+}
 }
 
   if (modal) {
