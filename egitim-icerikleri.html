@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="tr" class="aivoAuthPreload">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
+
+  <title>Eğitim İçerikleri • AIVO</title>
+  <meta name="description" content="AIVO Studio eğitim videoları: AI müzik, kapak, video, çizgifilm, foto efekt ve dudak senkron kullanımı için rehber içerikler." />
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <link rel="stylesheet" href="/index.css?v=1002" />
+  <link rel="stylesheet" href="/toast.css?v=2" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=104" />
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
+  <link rel="stylesheet" href="/auth.modal.css?v=101" />
+
+  <script src="/toast.manager.js?v=2" defer></script>
+  <script src="/include.partials.js?v=4" defer></script>
+  <script src="/auth.core.js?v=20260115x" defer></script>
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <script src="/auth.unify.fix.js?v=2" defer></script>
+  <script src="/store.js?v=20260113" defer></script>
+  <script src="/js/assistant.widget.js?v=1" defer></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14;
+      color: #eef2ff;
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .edu-page {
+      position: relative;
+      min-height: 100vh;
+      padding: 118px 0 70px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .edu-page::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(900px 520px at 16% 12%, rgba(139,92,246,.32), transparent 64%),
+        radial-gradient(900px 520px at 86% 16%, rgba(236,72,153,.24), transparent 62%),
+        radial-gradient(760px 520px at 52% 72%, rgba(59,130,246,.18), transparent 66%),
+        linear-gradient(180deg, rgba(7,10,20,0), rgba(7,10,20,.92));
+      filter: blur(28px);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .edu-page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.70), transparent 72%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .edu-wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .edu-hero {
+      text-align: center;
+      margin: 0 auto 34px;
+      max-width: 930px;
+    }
+
+    .edu-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.88);
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 44px rgba(0,0,0,.28);
+    }
+
+    .edu-title {
+      margin: 18px 0 12px;
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: .96;
+      letter-spacing: -0.055em;
+      font-weight: 950;
+      color: #fff;
+    }
+
+    .edu-title span {
+      display: block;
+      background: linear-gradient(90deg, #8b5cf6, #ec4899, #38bdf8, #fff);
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: eduFlow 7s linear infinite;
+    }
+
+    @keyframes eduFlow {
+      from { background-position: 0% 50%; }
+      to { background-position: 260% 50%; }
+    }
+
+    .edu-sub {
+      margin: 0 auto;
+      max-width: 760px;
+      color: rgba(238,242,255,.72);
+      font-size: clamp(16px, 1.5vw, 20px);
+      line-height: 1.65;
+      font-weight: 600;
+    }
+
+    .edu-actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .edu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 900;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+    }
+
+    .edu-btn.primary {
+      border: 0;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      box-shadow: 0 18px 44px rgba(236,72,153,.22);
+    }
+
+    .edu-showcase {
+      margin-top: 38px;
+      padding: 20px;
+      border-radius: 34px;
+      background:
+        radial-gradient(900px 420px at 18% 0%, rgba(139,92,246,.22), transparent 62%),
+        radial-gradient(900px 420px at 86% 8%, rgba(236,72,153,.18), transparent 62%),
+        rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 30px 90px rgba(0,0,0,.48);
+      backdrop-filter: blur(18px) saturate(120%);
+      -webkit-backdrop-filter: blur(18px) saturate(120%);
+    }
+
+    .edu-feature {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .edu-video-frame {
+      position: relative;
+      min-height: 360px;
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(139,92,246,.30), transparent 45%),
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .edu-video-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 28px;
+    }
+
+    .edu-play {
+      width: 86px;
+      height: 86px;
+      border-radius: 999px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      box-shadow: 0 24px 60px rgba(236,72,153,.26);
+      font-size: 30px;
+    }
+
+    .edu-video-empty strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1.1;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .edu-video-empty small {
+      display: block;
+      color: rgba(255,255,255,.66);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .edu-feature-copy {
+      padding: 24px;
+      border-radius: 28px;
+      background: rgba(7,10,20,.48);
+      border: 1px solid rgba(255,255,255,.09);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .edu-kicker {
+      color: #f0abfc;
+      font-size: 13px;
+      letter-spacing: .18em;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .edu-feature-copy h2 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+    }
+
+    .edu-feature-copy p {
+      margin: 0;
+      color: rgba(255,255,255,.72);
+      line-height: 1.65;
+      font-weight: 600;
+    }
+
+    .edu-tabs {
+      margin: 30px 0 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .edu-tab {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .edu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .edu-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 310px;
+      border-radius: 28px;
+      background:
+        radial-gradient(520px 260px at 20% 0%, rgba(139,92,246,.22), transparent 60%),
+        rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 20px 60px rgba(0,0,0,.34);
+    }
+
+    .edu-thumb {
+      height: 160px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(139,92,246,.28), rgba(236,72,153,.22)),
+        rgba(255,255,255,.04);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .edu-thumb span {
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      font-size: 22px;
+    }
+
+    .edu-card-body {
+      padding: 18px;
+    }
+
+    .edu-card h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    .edu-card p {
+      margin: 0 0 16px;
+      color: rgba(255,255,255,.66);
+      line-height: 1.52;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .edu-card a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 13px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .edu-note {
+      margin-top: 24px;
+      padding: 18px 20px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.72);
+      line-height: 1.6;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    @media (max-width: 960px) {
+      .edu-feature {
+        grid-template-columns: 1fr;
+      }
+
+      .edu-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .edu-page {
+        padding-top: 102px;
+      }
+
+      .edu-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .edu-video-frame {
+        min-height: 260px;
+      }
+
+      .edu-showcase {
+        padding: 14px;
+        border-radius: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body class="page-education" style="background:#070A14;">
+  <div data-include="topbar"></div>
+
+  <main class="edu-page">
+    <div class="edu-wrap">
+
+      <section class="edu-hero">
+        <div class="edu-pill">🎬 AIVO Eğitim Merkezi</div>
+
+        <h1 class="edu-title">
+          AIVO’yu öğren.
+          <span>Daha iyi üret.</span>
+        </h1>
+
+        <p class="edu-sub">
+          AI müzik, kapak, video, çocuk çizgi film, foto efekt ve dudak senkron üretimi için
+          kısa, net ve uygulamalı eğitim içerikleri.
+        </p>
+
+        <div class="edu-actions">
+          <a class="edu-btn primary" href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr" target="_blank" rel="noopener">
+            YouTube Eğitimlerini İzle
+          </a>
+          <a class="edu-btn" href="/studio.v2.html" data-auth="required">
+            Studio’ya Git
+          </a>
+        </div>
+      </section>
+
+      <section class="edu-showcase">
+        <div class="edu-feature">
+          <div class="edu-video-frame">
+            <div class="edu-video-empty">
+              <div>
+                <div class="edu-play">▶</div>
+                <strong>Başlangıç Eğitimi</strong>
+                <small>Buraya ilk ana eğitim videonu yerleştireceğiz.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="edu-feature-copy">
+            <div class="edu-kicker">Öne Çıkan Rehber</div>
+            <h2>AIVO Studio ile ilk içeriğini dakikalar içinde üret.</h2>
+            <p>
+              Kullanıcıların nereden başlayacağını hızlıca anlaması için bu alanı ana eğitim videosuna ayırıyoruz.
+              Video geldiğinde buraya doğrudan YouTube embed veya kendi video bağlantını koyacağız.
+            </p>
+          </div>
+        </div>
+
+        <div class="edu-tabs">
+          <div class="edu-tab">Başlangıç</div>
+          <div class="edu-tab">Müzik</div>
+          <div class="edu-tab">Video</div>
+          <div class="edu-tab">Kapak</div>
+          <div class="edu-tab">Çizgifilm</div>
+          <div class="edu-tab">Dudak Senkron</div>
+        </div>
+
+        <div class="edu-grid">
+          <article class="edu-card">
+            <div class="edu-thumb"><span>🎵</span></div>
+            <div class="edu-card-body">
+              <h3>AI Müzik Nasıl Üretilir?</h3>
+              <p>Prompt, tarz, şarkı sözü ve üretim seçenekleriyle ilk müziğini oluştur.</p>
+              <a href="#">Video eklenecek</a>
+            </div>
+          </article>
+
+          <article class="edu-card">
+            <div class="edu-thumb"><span>🖼️</span></div>
+            <div class="edu-card-body">
+              <h3>AI Kapak Görseli Nasıl Yapılır?</h3>
+              <p>Kapak görseli, afiş ve sosyal medya görseli üretimi için kısa rehber.</p>
+              <a href="#">Video eklenecek</a>
+            </div>
+          </article>
+
+          <article class="edu-card">
+            <div class="edu-thumb"><span>🎬</span></div>
+            <div class="edu-card-body">
+              <h3>AI Resimden Video Üretimi</h3>
+              <p>Bir görseli hareketli video sahnesine dönüştürmenin temel adımları.</p>
+              <a href="#">Video eklenecek</a>
+            </div>
+          </article>
+
+          <article class="edu-card">
+            <div class="edu-thumb"><span>🐠</span></div>
+            <div class="edu-card-body">
+              <h3>AI Çocuk Çizgifilm Rehberi</h3>
+              <p>Karakter, sahne ve hikâye akışıyla çizgifilm üretmeye başla.</p>
+              <a href="#">Video eklenecek</a>
+            </div>
+          </article>
+
+          <article class="edu-card">
+            <div class="edu-thumb"><span>✨</span></div>
+            <div class="edu-card-body">
+              <h3>AI Foto Efekt Video Clip</h3>
+              <p>Tek fotoğrafı glow, shake ve hareket efektleriyle video klibe çevir.</p>
+              <a href="#">Video eklenecek</a>
+            </div>
+          </article>
+
+          <article class="edu-card">
+            <div class="edu-thumb"><span>🗣️</span></div>
+            <div class="edu-card-body">
+              <h3>AI Dudak Senkron Video</h3>
+              <p>Fotoğraf, metin veya ses dosyasıyla konuşan video oluşturmayı öğren.</p>
+              <a href="#">Video eklenecek</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="edu-note">
+          Eğitim videolarını ekledikçe bu sayfa AIVO’nun resmi rehber merkezi olacak.
+          Hem kullanıcı deneyimi hem SEO tarafında güçlü bir sayfa haline gelecek.
+        </div>
+      </section>
+
+    </div>
+  </main>
+</body>
+</html>
