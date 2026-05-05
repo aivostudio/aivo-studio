@@ -766,22 +766,3 @@
     display: inline-block;
     border-radius: 14px;
   }
-/* HOME HERO ONLY — demo card compact height fix */
-#topHero .hero-demo-video{
-  margin-top: 14px !important;
-  width: min(420px, 100%) !important;
-  max-height: 245px !important;
-  overflow: hidden !important;
-}
-
-#topHero .hero-demo-video video{
-  height: 145px !important;
-  aspect-ratio: auto !important;
-  object-fit: cover !important;
-  object-position: center 42% !important;
-}
-
-#topHero .hero-demo-video > div:first-child{
-  min-height: 70px !important;
-  padding: 10px 12px !important;
-}
