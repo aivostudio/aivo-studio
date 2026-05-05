@@ -510,13 +510,18 @@ document.addEventListener("input", (e) => {
       "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
     infoEl.style.color = "#ff4d4f";
 
-    const generateBtn = qs("[data-lipsync-generate]", root);
-    if (generateBtn) {
-      generateBtn.disabled = true;
-      generateBtn.classList.add("is-policy-blocked");
-    }
+  const generateBtn = qs("[data-lipsync-generate]", root);
+if (generateBtn) {
+  generateBtn.disabled = true;
+  generateBtn.setAttribute("disabled", "disabled");
+  generateBtn.classList.add("is-policy-blocked");
+  generateBtn.style.opacity = "0.45";
+  generateBtn.style.pointerEvents = "none";
+  generateBtn.style.filter = "grayscale(1)";
+  generateBtn.textContent = "Üretim Engellendi";
+}
 
-    return;
+return;
   }
 
   if (seconds > duration) {
@@ -527,11 +532,15 @@ document.addEventListener("input", (e) => {
 
   syncGenerateButton(root);
 
-  const generateBtn = qs("[data-lipsync-generate]", root);
-  if (generateBtn) {
-    generateBtn.disabled = false;
-    generateBtn.classList.remove("is-policy-blocked");
-  }
+const generateBtn = qs("[data-lipsync-generate]", root);
+if (generateBtn) {
+  generateBtn.disabled = false;
+  generateBtn.removeAttribute("disabled");
+  generateBtn.classList.remove("is-policy-blocked");
+  generateBtn.style.opacity = "";
+  generateBtn.style.pointerEvents = "";
+  generateBtn.style.filter = "";
+}
 });
       const root = getRoot();
       if (!root) return;
