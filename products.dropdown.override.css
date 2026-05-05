@@ -286,3 +286,11 @@ body[class*="education"] .dropdown--products .products-menu{
   background: rgba(9, 13, 28, 0.94) !important;
   border-radius: 24px !important;
 }
+/* EDUCATION ONLY — force product cards back to square */
+body.page-education .dropdown--products .products-menu > a.product-card,
+body[class*="education"] .dropdown--products .products-menu > a.product-card{
+  aspect-ratio: 1 / 1 !important;
+  min-height: 150px !important;
+  height: auto !important;
+  max-height: 150px !important;
+}
