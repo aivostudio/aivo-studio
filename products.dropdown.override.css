@@ -265,3 +265,24 @@ body:has(#moduleHost):not(.page-pricing):not([data-skin="corp"])
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
+/* =========================================================
+   EDUCATION ONLY — PRODUCTS DROPDOWN STRONG LAYER FIX
+   ========================================================= */
+
+body.page-education .dropdown.dropdown--products,
+body[class*="education"] .dropdown.dropdown--products{
+  background: rgba(7, 10, 22, 0.96) !important;
+  backdrop-filter: blur(22px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.28) !important;
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
+  z-index: 99999 !important;
+}
+
+body.page-education .dropdown--products .products-menu,
+body[class*="education"] .dropdown--products .products-menu{
+  background: rgba(9, 13, 28, 0.94) !important;
+  border-radius: 24px !important;
+}
