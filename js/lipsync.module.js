@@ -1828,19 +1828,34 @@ const creditData = await creditRes.json().catch(() => null);
           poll();
           return data;
         })
-                .catch(async (err) => {
-          console.error("[LIPSYNC][CREATE_ERROR]", err);
+        .catch(async (err) => {
+  console.error("[LIPSYNC][CREATE_ERROR]", err);
 
-          const refunded = await refundLipsyncCredits("lipsync_create_failed", {
-            error: String(err?.message || err || "lipsync_create_failed")
-          });
+  const errText = String(err?.message || err || "").toLowerCase();
 
-          if (!refunded) {
-            try {
-              window.toast?.error?.("Lipsync job oluşturulamadı");
-            } catch {}
-          }
-        })
+  const isPolicyBlocked =
+    errText.includes("bad_language_policy") ||
+    errText.includes("policy") ||
+    errText.includes("blocked");
+
+  const refunded = await refundLipsyncCredits("lipsync_create_failed", {
+    error: String(err?.message || err || "lipsync_create_failed")
+  });
+
+  if (!refunded) {
+    try {
+      if (isPolicyBlocked) {
+        window.toast?.error?.(
+          "Bu metin uygunsuz dil içerdiği için video üretilemedi."
+        );
+      } else {
+        window.toast?.error?.(
+          "Video oluşturulamadı. Lütfen metni veya içeriği kontrol edip tekrar deneyin."
+        );
+      }
+    } catch {}
+  }
+})
         .finally(() => {
           syncGenerateButton(root);
           generateBtn.disabled = false;
