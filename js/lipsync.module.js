@@ -1669,8 +1669,19 @@ const creditData = await creditRes.json().catch(() => null);
         .then(async (res) => {
           const data = await res.json().catch(() => null);
 
-         if (!res.ok || !data || data.ok !== true) {
-      if (data?.error === "script_too_long") {
+        if (!res.ok || !data || data.ok !== true) {
+  if (data?.error === "bad_language_policy") {
+    try {
+      window.toast?.error?.(
+        data?.message ||
+        "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin."
+      );
+    } catch {}
+
+    throw new Error("bad_language_policy_handled");
+  }
+
+  if (data?.error === "script_too_long") {
          const message = String(
       data?.message ||
       "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç."
