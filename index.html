@@ -2776,10 +2776,10 @@
             preload="auto">
           </video>
 
-          <button
+                  <button
             type="button"
             class="lipsync-sound-btn"
-            onclick="const v=document.getElementById('lipsyncPreviewVideo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } }"
+            onclick="event.preventDefault(); event.stopPropagation(); const v=document.getElementById('lipsyncPreviewVideo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } } return false;"
           >
             🔇 Sesi Aç
           </button>
