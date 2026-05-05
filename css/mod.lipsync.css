@@ -2505,11 +2505,10 @@
 
 .main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-inline-audio-card {
   position: absolute !important;
-  top: 24px !important;
-  left: 24px !important;
-  right: 24px !important;
-  width: auto !important;
-  min-height: 72px !important;
+  top: 18px !important;
+  left: 18px !important;
+  right: 18px !important;
+  min-height: 62px !important;
   margin: 0 !important;
   z-index: 6 !important;
 }
