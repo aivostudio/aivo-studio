@@ -631,9 +631,19 @@ if (!durationSelect || !root.contains(durationSelect)) return;
             return;
           }
 
-          previewVoiceBtn.textContent = "■";
+                previewVoiceBtn.textContent = "■";
+
+          const speedRange = qs("[data-lipsync-voice-speed]", root);
+          const volumeRange = qs("[data-lipsync-voice-volume]", root);
+
+          const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(speedRange?.value || 1)));
+          const rawVoiceVolume = Math.max(0.5, Math.min(1.5, Number(volumeRange?.value || 1)));
+          const voiceVolume = Math.max(0, Math.min(1, rawVoiceVolume / 1.5));
 
           const audio = new Audio(audioUrl);
+          audio.playbackRate = voiceSpeed;
+          audio.volume = voiceVolume;
+
           window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = audio;
 
           audio.addEventListener("ended", () => {
