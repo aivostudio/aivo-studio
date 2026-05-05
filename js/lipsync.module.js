@@ -636,9 +636,11 @@ if (!durationSelect || !root.contains(durationSelect)) return;
           const speedRange = qs("[data-lipsync-voice-speed]", root);
           const volumeRange = qs("[data-lipsync-voice-volume]", root);
 
-          const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(speedRange?.value || 1)));
-          const rawVoiceVolume = Math.max(0.5, Math.min(1.5, Number(volumeRange?.value || 1)));
-          const voiceVolume = Math.max(0, Math.min(1, rawVoiceVolume / 1.5));
+           const voiceSpeed = Math.max(0.5, Math.min(1.5, Number(speedRange?.value || 1)));
+
+          const volumeRawValue = Number(volumeRange?.value || 1);
+          const volumeNormalized = volumeRawValue > 2 ? volumeRawValue / 100 : volumeRawValue;
+          const voiceVolume = Math.max(0, Math.min(1, volumeNormalized));
 
           const audio = new Audio(audioUrl);
           audio.playbackRate = voiceSpeed;
