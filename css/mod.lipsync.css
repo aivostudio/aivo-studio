@@ -2455,3 +2455,25 @@
 .lipsync-voice-play-inline:hover {
   transform: translateY(-1px);
 }
+.lipsync-voice-select-wrap {
+  position: relative;
+}
+
+.lipsync-voice-select-wrap::after {
+  content: "⌄";
+  position: absolute;
+  right: 82px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 28px;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.lipsync-voice-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 56px;
+}
