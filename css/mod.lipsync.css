@@ -2473,10 +2473,10 @@
 .lipsync-voice-chevron {
   position: absolute;
   right: 92px;
-  top: 50%;
+  top: 46%;
   transform: translateY(-50%);
   color: rgba(255, 255, 255, 0.72);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
   line-height: 1;
   pointer-events: none;
