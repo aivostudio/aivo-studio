@@ -1378,8 +1378,14 @@ function hasLipsyncBadLanguage(value) {
   return blockedTerms.some((term) => {
     const safeTerm = normalizeLipsyncPolicyText(term);
     if (!safeTerm) return false;
-    const rx = new RegExp(`(^|\\s)${safeTerm.replace(/\s+/g, "\\s+")}(?=\\s|$)`, "i");
-    return rx.test(text);
+   const pattern = safeTerm
+  .split(/\s+/)
+  .filter(Boolean)
+  .map((part) => `${part}[a-z0-9]*`)
+  .join("\\s+");
+
+const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+return rx.test(text);
   });
 }
 
