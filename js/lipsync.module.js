@@ -150,6 +150,7 @@ function syncGenerateButton(root) {
   const scriptInput = qs("[data-lipsync-script]", root);
   const text = String(scriptInput?.value || "").trim();
   const hasInput = Boolean(text || lipsyncRecordedAudioFile);
+  const isPolicyBlocked = Boolean(text && hasLipsyncBadLanguage(text));
 
   let seconds = 0;
   let credit = 0;
@@ -170,6 +171,14 @@ function syncGenerateButton(root) {
     btn.textContent = "Dudak Senkron Video Üret";
   } else {
     btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
+  }
+
+  if (isPolicyBlocked) {
+    btn.disabled = true;
+    btn.classList.add("is-policy-blocked");
+  } else {
+    btn.disabled = false;
+    btn.classList.remove("is-policy-blocked");
   }
 }
 function renderLipsyncAudioEstimate(root) {
