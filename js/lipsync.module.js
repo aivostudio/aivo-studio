@@ -591,8 +591,10 @@ if (!durationSelect || !root.contains(durationSelect)) return;
       if (previewVoiceBtn && root.contains(previewVoiceBtn)) {
         e.preventDefault();
 
-        const voiceSelect = qs("[data-lipsync-voice-select]", root);
-         const VOICE_PREVIEW_R2_URLS = {
+             const voiceSelect = qs("[data-lipsync-voice-select]", root);
+        const voiceKey = String(voiceSelect?.value || "tranquil_tulin").trim();
+
+        const VOICE_PREVIEW_R2_URLS = {
           tranquil_tulin: "https://media.aivo.tr/lipsync/voice-previews/tranquil-tulin.mp3",
           iker: "https://media.aivo.tr/lipsync/voice-previews/iker.mp3",
           deep_dieter: "https://media.aivo.tr/lipsync/voice-previews/deep-dieter.mp3",
@@ -652,7 +654,9 @@ if (!durationSelect || !root.contains(durationSelect)) return;
           window.__AIVO_LIPSYNC_VOICE_PREVIEW_AUDIO__ = null;
         }
 
-        return;
+               return;
+      }
+
        const recordTabBtn = e.target.closest("[data-lipsync-record-tab]");
 if (recordTabBtn && root.contains(recordTabBtn)) {
   e.preventDefault();
