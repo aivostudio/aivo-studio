@@ -2462,12 +2462,13 @@
 .lipsync-voice-select-wrap::after {
   content: "⌄";
   position: absolute;
-  right: 70px; /* play butonuna göre ayarlandı */
+  right: 96px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 24px;
   font-weight: 900;
+  line-height: 1;
   pointer-events: none;
   z-index: 5;
 }
@@ -2475,5 +2476,5 @@
 .lipsync-voice-select {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 48px;
+  padding-right: 72px;
 }
