@@ -517,7 +517,10 @@ if (generateBtn) {
   generateBtn.classList.add("is-policy-blocked");
   generateBtn.style.opacity = "0.45";
   generateBtn.style.pointerEvents = "none";
-  generateBtn.style.filter = "grayscale(1)";
+generateBtn.style.filter = "";
+generateBtn.style.background = "linear-gradient(135deg, #7f1d1d, #ef4444)";
+generateBtn.style.color = "#ffffff";
+generateBtn.style.boxShadow = "0 0 0 1px rgba(248, 113, 113, 0.45), 0 14px 34px rgba(239, 68, 68, 0.22)";
   generateBtn.textContent = "Üretim Engellendi";
 }
 
@@ -540,6 +543,9 @@ if (generateBtn) {
   generateBtn.style.opacity = "";
   generateBtn.style.pointerEvents = "";
   generateBtn.style.filter = "";
+  generateBtn.style.background = "";
+generateBtn.style.color = "";
+generateBtn.style.boxShadow = "";
 }
 });
       const root = getRoot();
