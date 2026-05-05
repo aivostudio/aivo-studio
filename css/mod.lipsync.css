@@ -2538,3 +2538,8 @@
 .main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-inline-audio-info strong {
   max-width: 100% !important;
 }
+.lipsync-inline-audio-card {
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
