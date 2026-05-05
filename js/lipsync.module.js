@@ -1345,7 +1345,7 @@ if (lipsyncRecordedAudioFile && lipsyncAudioDurationSeconds > 0) {
   payload.has_audio_file = false;
 }
 
-const maxSpeechSeconds = Number(payload.duration || 10);
+const maxSpeechSeconds = 60;
 
 payload.estimatedSpeechSeconds = estimatedSpeechSeconds;
 payload.estimated_speech_seconds = estimatedSpeechSeconds;
@@ -1355,7 +1355,7 @@ payload.estimated_credits = estimatedCreditCost;
        if (estimatedSpeechSeconds > maxSpeechSeconds) {
         try {
        window.toast?.error?.(
-      `Bu metin yaklaşık ${estimatedSpeechSeconds} saniye sürer. Seçilen süre ${maxSpeechSeconds} saniye.`
+     `Bu içerik yaklaşık ${estimatedSpeechSeconds} saniye sürer. Maksimum süre 60 saniye.`
       );
        } catch {}
 
