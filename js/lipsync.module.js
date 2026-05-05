@@ -1076,7 +1076,27 @@ if (scriptInput) {
     </button>
   `;
 
-  scriptInput.insertAdjacentElement("beforebegin", audioCard);
+let audioWrap = scriptInput.closest(".lipsync-script-audio-wrap");
+
+if (!audioWrap) {
+  audioWrap = document.createElement("div");
+  audioWrap.className = "lipsync-script-audio-wrap";
+  audioWrap.style.position = "relative";
+  audioWrap.style.width = "100%";
+
+  scriptInput.parentNode.insertBefore(audioWrap, scriptInput);
+  audioWrap.appendChild(scriptInput);
+}
+
+audioCard.style.position = "absolute";
+audioCard.style.top = "18px";
+audioCard.style.left = "18px";
+audioCard.style.right = "18px";
+audioCard.style.zIndex = "5";
+
+scriptInput.style.paddingTop = "86px";
+
+audioWrap.appendChild(audioCard);
 }
 
 if (modal) {
