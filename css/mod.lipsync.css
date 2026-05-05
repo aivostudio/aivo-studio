@@ -2516,3 +2516,25 @@
 .main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-textarea.has-lipsync-audio-card {
   padding-top: 112px !important;
 }
+/* === LIPSYNC AUDIO CARD HARD FIT FIX === */
+
+.main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-inline-audio-card {
+  left: 16px !important;
+  right: 16px !important;
+  width: calc(100% - 32px) !important;
+  max-width: calc(100% - 32px) !important;
+  min-width: 0 !important;
+  grid-template-columns: 38px minmax(0, 1fr) 38px !important;
+  gap: 12px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-inline-audio-info {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-script-audio-wrap .lipsync-inline-audio-info strong {
+  max-width: 100% !important;
+}
