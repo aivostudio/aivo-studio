@@ -1235,6 +1235,9 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
   }
 
   if (scriptInput) {
+    scriptInput.removeAttribute("disabled");
+    scriptInput.disabled = false;
+    scriptInput.value = "";
     scriptInput.classList.remove("has-lipsync-audio-card");
     scriptInput.placeholder = "Ne konuşturmak istiyorsun? Metni buraya yaz...";
   }
