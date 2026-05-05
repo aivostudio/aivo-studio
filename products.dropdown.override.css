@@ -320,3 +320,58 @@ body[class*="education"] .dropdown--products .products-menu > a.product-card .pc
   font-size: 15px !important;
   line-height: 1.25 !important;
 }
+/* EDUCATION ONLY — copy working studio/pricing card layout */
+body.page-education .dropdown--products .products-menu,
+body[class*="education"] .dropdown--products .products-menu{
+  grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
+  gap: 12px !important;
+  padding: 12px !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card,
+body[class*="education"] .dropdown--products .products-menu > a.product-card{
+  aspect-ratio: 1 / 1 !important;
+  min-height: 150px !important;
+  max-height: none !important;
+  height: auto !important;
+  padding: 14px !important;
+  border-radius: 22px !important;
+  position: relative !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-ico,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-ico{
+  position: absolute !important;
+  top: 14px !important;
+  left: 14px !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  margin: 0 !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-txt,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-txt{
+  padding-top: 54px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-title,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-title{
+  font-size: 16px !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.2px !important;
+  margin: 0 0 4px 0 !important;
+}
+
+body.page-education .dropdown--products .products-menu > a.product-card .pc-sub,
+body[class*="education"] .dropdown--products .products-menu > a.product-card .pc-sub{
+  font-size: 13px !important;
+  line-height: 1.32 !important;
+  opacity: .78 !important;
+  margin: 0 !important;
+}
