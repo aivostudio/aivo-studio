@@ -409,7 +409,8 @@
     btn.addEventListener("click", async function(){
       const title = (titleEl.value || "").trim();
       const prompt = (promptEl.value || "").trim();
-      const mood = (moodEl.value || "").trim();
+    const mood = (moodEl.value || "").trim();
+   const lyrics = (lyricsEl.value || "").trim();
 
       if (!prompt) {
         statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
