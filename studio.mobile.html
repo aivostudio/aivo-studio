@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIVO Mobile Studio</title>
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <style>
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#070914;
+      color:#fff;
+    }
+
+    body{
+      background:
+        radial-gradient(520px 360px at 20% 0%, rgba(139,92,246,.28), transparent 62%),
+        radial-gradient(520px 360px at 90% 20%, rgba(56,189,248,.18), transparent 62%),
+        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.16), transparent 65%),
+        #070914;
+      overflow-x:hidden;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .mobile-shell{
+      width:min(430px,100%);
+      min-height:100vh;
+      margin:0 auto;
+      padding:18px 16px 96px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:22px;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      letter-spacing:-.04em;
+      font-size:20px;
+    }
+
+    .logo img{
+      width:82px;
+      height:auto;
+      display:block;
+    }
+
+    .credit-pill{
+      min-height:36px;
+      padding:0 13px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.14);
+      color:rgba(255,255,255,.92);
+      font-size:13px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+
+    .hero{
+      padding:18px;
+      border-radius:28px;
+      background:
+        linear-gradient(135deg, rgba(139,92,246,.26), rgba(56,189,248,.10)),
+        rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 24px 70px rgba(0,0,0,.35);
+      margin-bottom:18px;
+    }
+
+    .eyebrow{
+      width:max-content;
+      max-width:100%;
+      padding:8px 11px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.76);
+      font-size:12px;
+      font-weight:850;
+      margin-bottom:14px;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:34px;
+      line-height:1;
+      letter-spacing:-.055em;
+      font-weight:950;
+    }
+
+    .grad{
+      background:linear-gradient(135deg,#38bdf8,#8b5cf6,#ec4899);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .sub{
+      margin:0;
+      color:rgba(255,255,255,.72);
+      font-size:15px;
+      line-height:1.5;
+      font-weight:650;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .module-card{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:16px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 14px 34px rgba(0,0,0,.22);
+    }
+
+    .module-card:active{
+      transform:scale(.985);
+    }
+
+    .ico{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,rgba(139,92,246,.28),rgba(56,189,248,.18));
+      border:1px solid rgba(255,255,255,.14);
+      font-size:21px;
+      flex:0 0 auto;
+    }
+
+    .module-card b{
+      display:block;
+      font-size:16px;
+      margin-bottom:4px;
+    }
+
+    .module-card span{
+      display:block;
+      color:rgba(255,255,255,.64);
+      font-size:13px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
+    .section-title{
+      margin:24px 0 12px;
+      font-size:20px;
+      line-height:1.1;
+      letter-spacing:-.035em;
+    }
+
+    .empty-card{
+      padding:18px;
+      border-radius:22px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.66);
+      font-size:13px;
+      line-height:1.5;
+      font-weight:650;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:12px;
+      right:12px;
+      bottom:12px;
+      z-index:80;
+      width:min(406px,calc(100% - 24px));
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:8px;
+      padding:9px;
+      border-radius:22px;
+      background:rgba(8,10,22,.86);
+      border:1px solid rgba(255,255,255,.13);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .bottom-nav a{
+      min-height:44px;
+      border-radius:15px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .bottom-nav a.active{
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="mobile-shell">
+    <header class="topbar">
+      <a class="logo" href="/index.mobile.html" aria-label="AIVO">
+        <img src="/aivo-logo.png" alt="AIVO">
+      </a>
+
+      <a class="credit-pill" href="/fiyatlandirma.html#packs">Kredi Al</a>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">AIVO Mobile Studio</div>
+
+      <h1>
+        Hızlı üretime <span class="grad">başla.</span>
+      </h1>
+
+      <p class="sub">
+        Mobil studio iskeleti hazır. İlk modül olarak PhotoFX hızlı üretim ekranı burada kurulacak.
+      </p>
+    </section>
+
+    <h2 class="section-title">Mobil modüller</h2>
+
+    <section class="quick-grid">
+      <a class="module-card" href="#photofx">
+        <div class="ico">✨</div>
+        <div>
+          <b>PhotoFX</b>
+          <span>Fotoğraf yükle, kısa video efekt üret.</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="#cover">
+        <div class="ico">🖼️</div>
+        <div>
+          <b>Kapak Üret</b>
+          <span>Mobil uyumlu görsel ve kapak üretimi.</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="#video">
+        <div class="ico">🎬</div>
+        <div>
+          <b>Video</b>
+          <span>Görselden kısa video üretim akışı.</span>
+        </div>
+      </a>
+    </section>
+
+    <h2 class="section-title">Son üretimler</h2>
+
+    <div class="empty-card">
+      Henüz mobil üretim listesi bağlanmadı. Sonraki adımda PhotoFX üretim kartı ve dosya yükleme alanı eklenecek.
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="active" href="#home">Ana Sayfa</a>
+    <a href="#photofx">PhotoFX</a>
+    <a href="/fiyatlandirma.html#packs">Kredi</a>
+  </nav>
+</body>
+</html>
