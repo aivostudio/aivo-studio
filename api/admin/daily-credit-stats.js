@@ -65,6 +65,7 @@ function buildBuckets() {
     music: createBucket("music", "AI Müzik Üret"),
     cover: createBucket("cover", "AI Kapak Üret"),
     atmo: createBucket("atmo", "AI Atmosfer Video"),
+    lipsync: createBucket("lipsync", "AI Dudak Senkron"),
     "cartoon:character": createBucket("cartoon:character", "AI Çocuk Çizgifilm — Karakter Yarat"),
     "cartoon:basic": createBucket("cartoon:basic", "AI Çocuk Çizgifilm — Basit Mod"),
     "cartoon:story": createBucket("cartoon:story", "AI Çocuk Çizgifilm — Hikaye Modu"),
@@ -96,6 +97,9 @@ function resolveModuleKey(appInput, actionInput, reasonInput) {
   if (includesAny(text, ["atmo", "atmosfer", "atmosphere"])) {
     return "atmo";
   }
+  if (includesAny(text, ["lipsync", "lip sync", "dudak", "dudak senkron"])) {
+  return "lipsync";
+}
 
   if (includesAny(text, ["photofx", "photo fx", "foto efekt", "photo_effect", "photo-effect"])) {
     return "photofx";
