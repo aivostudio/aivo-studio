@@ -301,6 +301,14 @@ if (!script && !hasAudioMode) {
     `;
 
     const jobId = String(inserted[0].id);
+    const { getRedis } = await import("../_kv.js");
+const redis = getRedis();
+const dayKey = new Date().toISOString().slice(0, 10);
+
+await Promise.all([
+  redis.incr("stats:lipsync:total"),
+  redis.incr(`stats:lipsync:daily:${dayKey}`)
+]);
 
 const imageUrl = String(body.image_url || body.imageUrl || "").trim();
 
