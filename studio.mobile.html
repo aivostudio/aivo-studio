@@ -252,39 +252,30 @@
       </p>
     </section>
 
-    <h2 class="section-title">Mobil modüller</h2>
+<h2 class="section-title">AI Müzik Üret</h2>
 
-    <section class="quick-grid">
-      <a class="module-card" href="#photofx">
-        <div class="ico">✨</div>
-        <div>
-          <b>PhotoFX</b>
-          <span>Fotoğraf yükle, kısa video efekt üret.</span>
-        </div>
-      </a>
+<section class="mobile-music-card">
+  <label class="field-label" for="musicTitle">Şarkı adı</label>
+  <input id="musicTitle" class="field-input" type="text" placeholder="Örn: Gece Yolu">
 
-      <a class="module-card" href="#cover">
-        <div class="ico">🖼️</div>
-        <div>
-          <b>Kapak Üret</b>
-          <span>Mobil uyumlu görsel ve kapak üretimi.</span>
-        </div>
-      </a>
+  <label class="field-label" for="musicPrompt">Prompt</label>
+  <textarea id="musicPrompt" class="field-textarea" placeholder="Ritim, mood, tür ve vokal detaylarını yaz..."></textarea>
 
-      <a class="module-card" href="#video">
-        <div class="ico">🎬</div>
-        <div>
-          <b>Video</b>
-          <span>Görselden kısa video üretim akışı.</span>
-        </div>
-      </a>
-    </section>
+  <label class="field-label" for="musicMood">Mood / Tür</label>
+  <input id="musicMood" class="field-input" type="text" placeholder="Örn: pop, enerjik, Türkçe vokal">
 
-    <h2 class="section-title">Son üretimler</h2>
+  <button id="mobileMusicGenerateBtn" class="generate-btn" type="button">
+    Müzik Üret
+  </button>
 
-    <div class="empty-card">
-      Henüz mobil üretim listesi bağlanmadı. Sonraki adımda PhotoFX üretim kartı ve dosya yükleme alanı eklenecek.
-    </div>
+  <div id="mobileMusicStatus" class="mobile-status"></div>
+</section>
+
+<h2 class="section-title">Son müzikler</h2>
+
+<div id="mobileMusicResults" class="empty-card">
+  Henüz mobil müzik üretimi başlatılmadı.
+</div>
   </main>
 
   <nav class="bottom-nav">
