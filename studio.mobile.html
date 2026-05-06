@@ -352,5 +352,64 @@
     <a href="#photofx">PhotoFX</a>
     <a href="/fiyatlandirma.html#packs">Kredi</a>
   </nav>
+  <script>
+  (function(){
+    const btn = document.getElementById("mobileMusicGenerateBtn");
+    const titleEl = document.getElementById("musicTitle");
+    const promptEl = document.getElementById("musicPrompt");
+    const moodEl = document.getElementById("musicMood");
+    const statusEl = document.getElementById("mobileMusicStatus");
+    const resultsEl = document.getElementById("mobileMusicResults");
+
+    if (!btn || !promptEl || !statusEl || !resultsEl) return;
+
+    btn.addEventListener("click", async function(){
+      const title = (titleEl.value || "").trim();
+      const prompt = (promptEl.value || "").trim();
+      const mood = (moodEl.value || "").trim();
+
+      if (!prompt) {
+        statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Üretiliyor...";
+      statusEl.textContent = "Müzik üretimi başlatılıyor...";
+
+      try {
+        const res = await fetch("/api/music/generate", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            title,
+            prompt,
+            mood,
+            vocal: "Vokalli",
+            mode: "vocals"
+          })
+        });
+
+        const data = await res.json();
+
+        if (!data || data.ok === false) {
+          statusEl.textContent = "Üretim başlatılamadı: " + (data && data.error ? data.error : "unknown_error");
+          return;
+        }
+
+        statusEl.textContent = "Üretim kuyruğa alındı.";
+        resultsEl.textContent = "Job ID: " + (data.internal_job_id || data.provider_job_id || "oluşturuldu");
+      } catch (err) {
+        statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Müzik Üret";
+      }
+    });
+  })();
+</script>
 </body>
 </html>
