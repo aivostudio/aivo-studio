@@ -8,6 +8,7 @@ module.exports = async (req, res) => {
       { key: "music", label: "AI Müzik Üret", type: "plain" },
       { key: "cover", label: "AI Kapak Üret", type: "plain" },
       { key: "atmo", label: "AI Atmosfer Video", type: "plain" },
+      { key: "lipsync", label: "AI Dudak Senkron", type: "plain" },
 
       { key: "cartoon", mode: "character", label: "AI Çocuk Çizgifilm — Karakter Yarat", type: "cartoon-mode" },
       { key: "cartoon", mode: "basic", label: "AI Çocuk Çizgifilm — Basit Mod", type: "cartoon-mode" },
