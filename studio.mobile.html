@@ -428,18 +428,60 @@
     const btn = document.getElementById("mobileMusicGenerateBtn");
     const titleEl = document.getElementById("musicTitle");
     const promptEl = document.getElementById("musicPrompt");
-   const moodEl = document.getElementById("musicMood");
-   const lyricsEl = document.getElementById("musicLyrics");
-   const statusEl = document.getElementById("mobileMusicStatus");
+    const moodEl = document.getElementById("musicMood");
+    const lyricsEl = document.getElementById("musicLyrics");
+    const statusEl = document.getElementById("mobileMusicStatus");
     const resultsEl = document.getElementById("mobileMusicResults");
 
     if (!btn || !promptEl || !statusEl || !resultsEl) return;
 
+    function escapeHtml(value){
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderQueuedTrackCard(payload){
+      const title = escapeHtml(payload.title || "İsimsiz müzik");
+      const jobId = escapeHtml(payload.jobId || "job oluşturuldu");
+
+      resultsEl.className = "mobile-results-list";
+      resultsEl.innerHTML = `
+        <div class="mobile-track-card" data-job-id="${jobId}">
+          <button class="mobile-track-play" type="button" disabled>
+            …
+          </button>
+
+          <div class="mobile-track-meta">
+            <div class="mobile-track-title">${title}</div>
+            <div class="mobile-track-sub">Kuyruğa alındı • ${jobId}</div>
+          </div>
+
+          <div class="mobile-track-actions">
+            <button class="mobile-track-btn" type="button" disabled>⬇</button>
+            <button class="mobile-track-btn danger" type="button">✕</button>
+          </div>
+        </div>
+      `;
+
+      const deleteBtn = resultsEl.querySelector(".mobile-track-btn.danger");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", function(){
+          resultsEl.className = "empty-card";
+          resultsEl.textContent = "Henüz mobil müzik üretimi başlatılmadı.";
+          statusEl.textContent = "";
+        });
+      }
+    }
+
     btn.addEventListener("click", async function(){
       const title = (titleEl.value || "").trim();
       const prompt = (promptEl.value || "").trim();
-    const mood = (moodEl.value || "").trim();
-   const lyrics = (lyricsEl.value || "").trim();
+      const mood = (moodEl.value || "").trim();
+      const lyrics = (lyricsEl.value || "").trim();
 
       if (!prompt) {
         statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
@@ -457,14 +499,14 @@
             "content-type": "application/json",
             "accept": "application/json"
           },
-         body: JSON.stringify({
-         title,
-         prompt,
-         mood,
-        lyrics,
-        vocal: "Vokalli",
-        mode: "vocals"
-       })
+          body: JSON.stringify({
+            title,
+            prompt,
+            mood,
+            lyrics,
+            vocal: "Vokalli",
+            mode: "vocals"
+          })
         });
 
         const data = await res.json();
@@ -474,8 +516,13 @@
           return;
         }
 
+        const jobId = data.internal_job_id || data.provider_job_id || data.job_id || "";
         statusEl.textContent = "Üretim kuyruğa alındı.";
-        resultsEl.textContent = "Job ID: " + (data.internal_job_id || data.provider_job_id || "oluşturuldu");
+
+        renderQueuedTrackCard({
+          title: title || "Yeni müzik",
+          jobId
+        });
       } catch (err) {
         statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
       } finally {
