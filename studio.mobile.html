@@ -428,13 +428,14 @@
             "content-type": "application/json",
             "accept": "application/json"
           },
-          body: JSON.stringify({
-            title,
-            prompt,
-            mood,
-            vocal: "Vokalli",
-            mode: "vocals"
-          })
+         body: JSON.stringify({
+         title,
+         prompt,
+         mood,
+        lyrics,
+        vocal: "Vokalli",
+        mode: "vocals"
+       })
         });
 
         const data = await res.json();
