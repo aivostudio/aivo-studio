@@ -184,6 +184,7 @@ function aggregateRows(rows) {
     buckets.music,
     buckets.cover,
     buckets.atmo,
+    buckets.lipsync,
     buckets["cartoon:character"],
     buckets["cartoon:basic"],
     buckets["cartoon:story"],
