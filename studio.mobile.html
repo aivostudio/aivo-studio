@@ -423,7 +423,7 @@
     <b>Krediler</b>
   </a>
 </nav>
-  <script>
+<script>
   (function(){
     const btn = document.getElementById("mobileMusicGenerateBtn");
     const titleEl = document.getElementById("musicTitle");
@@ -432,6 +432,9 @@
     const lyricsEl = document.getElementById("musicLyrics");
     const statusEl = document.getElementById("mobileMusicStatus");
     const resultsEl = document.getElementById("mobileMusicResults");
+
+    let activeAudio = null;
+    let activePlayBtn = null;
 
     if (!btn || !promptEl || !statusEl || !resultsEl) return;
 
@@ -444,6 +447,18 @@
         .replace(/'/g, "&#039;");
     }
 
+    function pickAudioUrl(output){
+      return String(
+        output.audio_url ||
+        output.audioUrl ||
+        output.url ||
+        output.archive_url ||
+        output.archiveUrl ||
+        output.audio?.src ||
+        ""
+      ).trim();
+    }
+
     function renderQueuedTrackCard(payload){
       const title = escapeHtml(payload.title || "İsimsiz müzik");
       const jobId = escapeHtml(payload.jobId || "job oluşturuldu");
@@ -451,13 +466,11 @@
       resultsEl.className = "mobile-results-list";
       resultsEl.innerHTML = `
         <div class="mobile-track-card" data-job-id="${jobId}">
-          <button class="mobile-track-play" type="button" disabled>
-            …
-          </button>
+          <button class="mobile-track-play" type="button" disabled>…</button>
 
           <div class="mobile-track-meta">
             <div class="mobile-track-title">${title}</div>
-            <div class="mobile-track-sub">Kuyruğa alındı • ${jobId}</div>
+            <div class="mobile-track-sub">Kuyruğa alındı • hazırlanıyor</div>
           </div>
 
           <div class="mobile-track-actions">
@@ -475,6 +488,163 @@
           statusEl.textContent = "";
         });
       }
+    }
+
+    function renderCompletedTrackCards(payload){
+      const title = payload.title || "Yeni müzik";
+      const outputs = Array.isArray(payload.outputs) ? payload.outputs : [];
+
+      const playableOutputs = outputs
+        .map(function(output, index){
+          return {
+            index,
+            output,
+            audioUrl: pickAudioUrl(output)
+          };
+        })
+        .filter(function(item){
+          return item.audioUrl;
+        });
+
+      if (!playableOutputs.length) {
+        statusEl.textContent = "Müzik hazır ama audio URL bulunamadı.";
+        return;
+      }
+
+      resultsEl.className = "mobile-results-list";
+      resultsEl.innerHTML = playableOutputs.map(function(item, i){
+        const label = i === 0 ? "Original" : "Version " + (i + 1);
+        const audioUrl = escapeHtml(item.audioUrl);
+        const safeTitle = escapeHtml(title);
+        const safeLabel = escapeHtml(label);
+
+        return `
+          <div class="mobile-track-card" data-audio-url="${audioUrl}">
+            <button class="mobile-track-play" type="button">▶</button>
+
+            <div class="mobile-track-meta">
+              <div class="mobile-track-title">${safeTitle}</div>
+              <div class="mobile-track-sub">Hazır • ${safeLabel}</div>
+            </div>
+
+            <div class="mobile-track-actions">
+              <button class="mobile-track-btn" type="button" data-download-url="${audioUrl}">⬇</button>
+              <button class="mobile-track-btn danger" type="button">✕</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      resultsEl.querySelectorAll(".mobile-track-play").forEach(function(playBtn){
+        playBtn.addEventListener("click", function(){
+          const card = playBtn.closest(".mobile-track-card");
+          const audioUrl = card ? card.getAttribute("data-audio-url") : "";
+          if (!audioUrl) return;
+
+          if (activeAudio && activePlayBtn === playBtn) {
+            if (activeAudio.paused) {
+              activeAudio.play().catch(function(){});
+              playBtn.textContent = "Ⅱ";
+            } else {
+              activeAudio.pause();
+              playBtn.textContent = "▶";
+            }
+            return;
+          }
+
+          if (activeAudio) {
+            activeAudio.pause();
+          }
+
+          if (activePlayBtn) {
+            activePlayBtn.textContent = "▶";
+          }
+
+          activeAudio = new Audio(audioUrl);
+          activePlayBtn = playBtn;
+          playBtn.textContent = "Ⅱ";
+
+          activeAudio.addEventListener("ended", function(){
+            playBtn.textContent = "▶";
+          });
+
+          activeAudio.play().catch(function(){
+            playBtn.textContent = "▶";
+          });
+        });
+      });
+
+      resultsEl.querySelectorAll("[data-download-url]").forEach(function(downloadBtn){
+        downloadBtn.addEventListener("click", function(){
+          const url = downloadBtn.getAttribute("data-download-url");
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        });
+      });
+
+      resultsEl.querySelectorAll(".mobile-track-btn.danger").forEach(function(deleteBtn){
+        deleteBtn.addEventListener("click", function(){
+          const card = deleteBtn.closest(".mobile-track-card");
+          if (card) card.remove();
+
+          if (!resultsEl.querySelector(".mobile-track-card")) {
+            resultsEl.className = "empty-card";
+            resultsEl.textContent = "Henüz mobil müzik üretimi başlatılmadı.";
+          }
+        });
+      });
+    }
+
+    async function pollMusicJob(jobId, title){
+      let attempts = 0;
+      const maxAttempts = 40;
+
+      async function tick(){
+        attempts += 1;
+
+        try {
+          const res = await fetch("/api/music/status?job_id=" + encodeURIComponent(jobId), {
+            method: "GET",
+            headers: {
+              "accept": "application/json"
+            }
+          });
+
+          const data = await res.json();
+
+          if (!data || data.ok === false) {
+            statusEl.textContent = "Durum kontrol edilemedi.";
+            return;
+          }
+
+          const state = String(data.state || data.status || "").toLowerCase();
+
+          if (state === "completed" || state === "ready" || state === "succeeded") {
+            statusEl.textContent = "Müzik hazır.";
+            renderCompletedTrackCards({
+              title,
+              outputs: data.outputs || []
+            });
+            return;
+          }
+
+          if (state === "failed" || state === "error") {
+            statusEl.textContent = "Üretim başarısız oldu.";
+            return;
+          }
+
+          statusEl.textContent = "Üretim devam ediyor...";
+
+          if (attempts < maxAttempts) {
+            setTimeout(tick, 5000);
+          } else {
+            statusEl.textContent = "Üretim devam ediyor. Biraz sonra tekrar kontrol et.";
+          }
+        } catch (err) {
+          statusEl.textContent = "Durum kontrol hatası: " + String(err && err.message ? err.message : err);
+        }
+      }
+
+      setTimeout(tick, 3500);
     }
 
     btn.addEventListener("click", async function(){
@@ -517,12 +687,16 @@
         }
 
         const jobId = data.internal_job_id || data.provider_job_id || data.job_id || "";
+        const safeTitle = title || "Yeni müzik";
+
         statusEl.textContent = "Üretim kuyruğa alındı.";
 
         renderQueuedTrackCard({
-          title: title || "Yeni müzik",
+          title: safeTitle,
           jobId
         });
+
+        pollMusicJob(jobId, safeTitle);
       } catch (err) {
         statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
       } finally {
