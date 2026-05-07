@@ -537,6 +537,62 @@
         });
       }
     }
+        function renderReadyTrackCard(payload){
+      const title = safe(payload.title || "Yeni müzik");
+      const audioUrl = safe(payload.audioUrl || "");
+
+      resultsEl.hidden = false;
+      resultsEl.className = "aivo-player-card is-ready";
+      resultsEl.innerHTML = `
+        <div class="aivo-player-left">
+          <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
+        </div>
+
+        <div class="aivo-player-mid">
+          <div class="aivo-player-titleRow">
+            <div class="aivo-player-title">${title}</div>
+            <div class="aivo-player-tags">
+              <span class="aivo-tag is-ready">Hazır</span>
+            </div>
+          </div>
+          <div class="aivo-player-sub">Müzik hazır</div>
+          <audio class="aivo-audio" preload="metadata" src="${audioUrl}"></audio>
+        </div>
+
+        <div class="aivo-player-actions">
+          <a class="aivo-action" href="${audioUrl}" download title="İndir">↓</a>
+          <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil">Sil</button>
+        </div>
+      `;
+
+      const audio = resultsEl.querySelector("audio");
+      const playBtn = resultsEl.querySelector('[data-action="mobile-play"]');
+      const deleteBtn = resultsEl.querySelector('[data-action="mobile-remove"]');
+
+      if (playBtn && audio) {
+        playBtn.addEventListener("click", function(){
+          if (audio.paused) {
+            audio.play();
+            playBtn.textContent = "Ⅱ";
+          } else {
+            audio.pause();
+            playBtn.textContent = "▶";
+          }
+        });
+
+        audio.addEventListener("ended", function(){
+          playBtn.textContent = "▶";
+        });
+      }
+
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", function(){
+          resultsEl.className = "empty-card";
+          resultsEl.innerHTML = "Henüz mobil müzik üretimi başlatılmadı.";
+          statusEl.textContent = "";
+        });
+      }
+    }
        async function pollMobileMusicJob(jobId, title){
       let tries = 0;
 
