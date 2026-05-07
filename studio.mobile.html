@@ -965,6 +965,19 @@ miniAudioEl.addEventListener("timeupdate", function(){
   const percent = Math.max(0, Math.min(100, (miniAudioEl.currentTime / miniAudioEl.duration) * 100));
   miniProgressFill.style.width = percent + "%";
 });
+    const miniProgressEl = miniPlayerEl.querySelector(".mini-progress");
+
+if (miniProgressEl) {
+  miniProgressEl.addEventListener("click", function(e){
+    if (!miniAudioEl.duration || !Number.isFinite(miniAudioEl.duration)) return;
+
+    const rect = miniProgressEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = Math.max(0, Math.min(1, x / rect.width));
+
+    miniAudioEl.currentTime = miniAudioEl.duration * percent;
+  });
+}
 
 miniAudioEl.addEventListener("ended", function(){
   miniPlayBtn.textContent = "▶";
