@@ -830,7 +830,7 @@ const audioUrl = String(payload.audioUrl || "")
             ? (title || "Yeni müzik")
             : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
 
-        card.innerHTML = `
+     card.innerHTML = `
   <div class="aivo-player-left">
     <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
   </div>
@@ -842,12 +842,12 @@ const audioUrl = String(payload.audioUrl || "")
     <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
     <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
   </div>
+
+  <div class="aivo-player-actions" style="display:flex;align-items:center;gap:6px;">
+    <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:13px;">↓</a>
+    <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:14px;">🗑</button>
+  </div>
 `;
-<div class="aivo-player-actions" style="display:flex;align-items:center;gap:6px;">
-  <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:13px;">↓</a>
- <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:14px;">🗑</button>
-</div>
-          `;
 
        const playBtn = card.querySelector('[data-action="mobile-play"]');
 const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
