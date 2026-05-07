@@ -830,19 +830,19 @@ const audioUrl = String(payload.audioUrl || "")
             ? (title || "Yeni müzik")
             : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
 
-          card.innerHTML = `
-            <div class="aivo-player-left">
-              <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
-            </div>
+        card.innerHTML = `
+  <div class="aivo-player-left">
+    <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
+  </div>
 
-            <div class="aivo-player-mid">
-              <div class="aivo-player-titleRow">
-              <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
-                <<div class="aivo-player-tags" hidden></div>
-              </div>
-             <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
-              <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
-            </div>
+  <div class="aivo-player-mid">
+    <div class="aivo-player-titleRow">
+      <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
+    </div>
+    <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
+    <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
+  </div>
+`;
 <div class="aivo-player-actions" style="display:flex;align-items:center;gap:6px;">
   <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:13px;">↓</a>
  <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:14px;">🗑</button>
