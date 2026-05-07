@@ -773,7 +773,8 @@ const audioUrl =
   firstAudioOutput?.raw_url ||
   firstAudioOutput?.src ||
   "";
- const isReady = !!audioUrl;
+let resolvedAudioUrl = audioUrl;
+let isReady = !!resolvedAudioUrl;
 
 const item = document.createElement("div");
 item.className = "mobile-library-row";
@@ -796,7 +797,74 @@ item.innerHTML = `
   </button>
 `;
 
-item.addEventListener("click", function(){
+const subEl = item.querySelector(".mobile-library-sub");
+const playEl = item.querySelector(".mobile-library-play");
+
+function activateLibraryRow(nextAudioUrl){
+  resolvedAudioUrl = String(nextAudioUrl || "");
+  isReady = !!resolvedAudioUrl;
+
+  if (subEl) subEl.textContent = isReady ? "Hazır" : "Hazırlanıyor";
+  if (playEl) playEl.textContent = isReady ? "▶" : "…";
+}
+
+async function wakeLibraryRow(){
+  if (isReady) return;
+
+  const ids = Array.isArray(row.meta?.provider_song_ids)
+    ? row.meta.provider_song_ids
+    : [];
+
+  const statusJobId =
+    ids.length
+      ? ids.join(",")
+      : row.meta?.provider_job_id ||
+        row.meta?.internal_job_id ||
+        row.job_id ||
+        "";
+
+  if (!statusJobId) return;
+
+  try {
+    const res = await fetch("/api/music/status?job_id=" + encodeURIComponent(statusJobId), {
+      headers: { "accept": "application/json" },
+      cache: "no-store"
+    });
+
+    const data = await res.json();
+
+    const statusOutputs = Array.isArray(data?.outputs) ? data.outputs : [];
+    const firstAudio = statusOutputs.find(function(output){
+      return output && (
+        output.url ||
+        output.audio_url ||
+        output.archive_url ||
+        output.raw_url ||
+        output.src
+      );
+    });
+
+    const nextAudioUrl =
+      data?.audio?.src ||
+      data?.audio?.url ||
+      firstAudio?.url ||
+      firstAudio?.audio_url ||
+      firstAudio?.archive_url ||
+      firstAudio?.raw_url ||
+      firstAudio?.src ||
+      "";
+
+    if (nextAudioUrl) {
+      activateLibraryRow(nextAudioUrl);
+    }
+  } catch (err) {}
+}
+
+item.addEventListener("click", async function(){
+  if (!isReady) {
+    await wakeLibraryRow();
+  }
+
   if (!isReady) {
     return;
   }
@@ -804,9 +872,11 @@ item.addEventListener("click", function(){
   loadMiniPlayer({
     title,
     sub:"AIVO Music",
-    audioUrl
+    audioUrl: resolvedAudioUrl
   });
 });
+
+wakeLibraryRow();
 
 mobileMusicLibraryEl.appendChild(item);
     });
