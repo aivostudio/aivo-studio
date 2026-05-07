@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     const keys = [];
 
     do {
-      const resp = await redis.scan(cursor, { match: pattern, count: 200 });
+    const resp = await redis.scan(cursor, { match: pattern, count: 1000 });
       // resp genelde { cursor, keys } veya [cursor, keys] olabilir -> ikisini de handle edelim
       if (Array.isArray(resp)) {
         cursor = Number(resp[0]) || 0;
