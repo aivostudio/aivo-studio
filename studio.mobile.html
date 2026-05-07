@@ -439,6 +439,25 @@
   font-size:16px;
   font-weight:900;
 }
+    .mobile-library-row.is-playing{
+  border-color:rgba(236,72,153,.45);
+  box-shadow:
+    0 0 0 1px rgba(236,72,153,.18),
+    0 0 28px rgba(168,85,247,.22);
+}
+
+.mobile-library-row.is-playing .mobile-library-thumb{
+  animation:mobilePulseBeat 1.1s ease-in-out infinite;
+}
+
+.mobile-library-row.is-playing .mobile-library-play{
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+}
+
+@keyframes mobilePulseBeat{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.08)}
+}
 #mobileMusicResults{
   display:flex;
   flex-direction:column;
@@ -869,11 +888,21 @@ item.addEventListener("click", async function(){
     return;
   }
 
-  loadMiniPlayer({
-    title,
-    sub:"AIVO Music",
-    audioUrl: resolvedAudioUrl
-  });
+document.querySelectorAll(".mobile-library-row.is-playing").forEach(function(rowEl){
+  rowEl.classList.remove("is-playing");
+
+  const btnEl = rowEl.querySelector(".mobile-library-play");
+  if (btnEl) btnEl.textContent = "▶";
+});
+
+item.classList.add("is-playing");
+if (playEl) playEl.textContent = "Ⅱ";
+
+loadMiniPlayer({
+  title,
+  sub:"AIVO Music",
+  audioUrl: resolvedAudioUrl
+});
 });
 
 wakeLibraryRow();
