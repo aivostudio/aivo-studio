@@ -1326,11 +1326,11 @@ if (playBtn) {
 
         statusEl.textContent = "Üretim kuyruğa alındı.";
 
-        renderQueuedTrackCard({
-          title: title || "Yeni müzik",
-          jobId
-        });
-          pollMobileMusicJob(pollJobId, title || "Yeni müzik");
+      resultsEl.hidden = false;
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Müzik hazırlanıyor. Hazır olunca burada görünecek.";
+
+    pollMobileMusicJob(pollJobId, title || "Yeni müzik");
       } catch (err) {
         statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
       } finally {
