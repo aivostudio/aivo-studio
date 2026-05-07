@@ -151,8 +151,9 @@
     const tbody = table ? table.querySelector("tbody") : null;
     const totalEl = $("usersTotal");
 
-   if (totalEl && Array.isArray(list)) {
+ if (totalEl && Array.isArray(list)) {
   totalEl.textContent = String(list.length);
+  totalEl.classList.remove("loading-count");
 }
     if (!tbody) return;
 
