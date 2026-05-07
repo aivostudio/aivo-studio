@@ -748,12 +748,31 @@ productionsNavEl.addEventListener("click", function(e){
         row.prompt ||
         "Yeni müzik";
 
-      const audioUrl =
-        row.audio_url ||
-        row.url ||
-        row.output_url ||
-        "";
+     const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
+const firstAudioOutput = outputs.find(function(output){
+  return output && (
+    output.audio_url ||
+    output.url ||
+    output.archive_url ||
+    output.raw_url ||
+    output.src
+  );
+});
+
+const audioUrl =
+  row.audio_url ||
+  row.url ||
+  row.output_url ||
+  row.meta?.audio_url ||
+  row.meta?.url ||
+  row.meta?.final_audio_url ||
+  firstAudioOutput?.audio_url ||
+  firstAudioOutput?.url ||
+  firstAudioOutput?.archive_url ||
+  firstAudioOutput?.raw_url ||
+  firstAudioOutput?.src ||
+  "";
       if (!audioUrl) return;
 
       const item = document.createElement("div");
