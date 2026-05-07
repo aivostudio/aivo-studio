@@ -603,14 +603,36 @@
     const lyricsEl = document.getElementById("musicLyrics");
     const statusEl = document.getElementById("mobileMusicStatus");
     const resultsEl = document.getElementById("mobileMusicResults");
+    const homeSectionEl = document.getElementById("mobileHomeSection");
+    const productionsSectionEl = document.getElementById("mobileProductionsSection");
+    const productionsNavEl = document.querySelector('.bottom-nav a[href="#productions"]');
+    const homeNavEl = document.querySelector('.bottom-nav a[href="#home"]');
     const miniPlayerEl = document.getElementById("mobileMiniPlayer");
     const miniAudioEl = document.getElementById("mobileMiniAudio");
     const miniPlayBtn = document.getElementById("miniPlayBtn");
     const miniTitleEl = document.getElementById("miniTitle");
     const miniSubEl = document.getElementById("miniSub");
     const miniProgressFill = document.getElementById("miniProgressFill");
-  if (!btn || !promptEl || !statusEl || !resultsEl || !miniPlayerEl || !miniAudioEl || !miniPlayBtn || !miniTitleEl || !miniSubEl || !miniProgressFill) return;
+if (!btn || !promptEl || !statusEl || !resultsEl || !homeSectionEl || !productionsSectionEl || !productionsNavEl || !homeNavEl || !miniPlayerEl || !miniAudioEl || !miniPlayBtn || !miniTitleEl || !miniSubEl || !miniProgressFill) return;
+     function showMobileSection(name){
+  const isProductions = name === "productions";
 
+  homeSectionEl.hidden = isProductions;
+  productionsSectionEl.hidden = !isProductions;
+
+  homeNavEl.classList.toggle("active", !isProductions);
+  productionsNavEl.classList.toggle("active", isProductions);
+}
+
+homeNavEl.addEventListener("click", function(e){
+  e.preventDefault();
+  showMobileSection("home");
+});
+
+productionsNavEl.addEventListener("click", function(e){
+  e.preventDefault();
+  showMobileSection("productions");
+});
     function safe(value){
       return String(value || "")
         .replace(/&/g, "&amp;")
