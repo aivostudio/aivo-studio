@@ -397,7 +397,7 @@
     <b>Krediler</b>
   </a>
 </nav>
- <script>
+<script>
   (function(){
     const btn = document.getElementById("mobileMusicGenerateBtn");
     const titleEl = document.getElementById("musicTitle");
@@ -409,7 +409,7 @@
 
     if (!btn || !promptEl || !statusEl || !resultsEl) return;
 
-    function escapeHtml(value){
+    function safe(value){
       return String(value || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -419,107 +419,35 @@
     }
 
     function renderQueuedTrackCard(payload){
-     const title = String(payload.title || "İsimsiz müzik");
-     const jobId = String(payload.jobId || "job oluşturuldu");
-    const playerHost = resultsEl;
-  resultsEl.className = "empty-card";
-  resultsEl.textContent = "Üretim kuyruğa alındı. Sonuç hazır olduğunda burada müzik kartı olarak görünecek.";
+      const title = safe(payload.title || "Yeni müzik");
+      const jobId = safe(payload.jobId || "job oluşturuldu");
 
-
-
-
-  playerHost.innerHTML = `
-    <div class="aivo-player-card is-loadingState" data-job-id="${jobId}">
-      <div class="aivo-player-left">
-        <div class="aivo-player-spinner" aria-hidden="true"></div>
-      </div>
-
-      <div class="aivo-player-mid">
-        <div class="aivo-player-titleRow">
-          <div class="aivo-player-title">${title}</div>
-
-          <div class="aivo-player-tags">
-            <span class="aivo-tag is-loading">Hazırlanıyor</span>
+      resultsEl.hidden = false;
+      resultsEl.className = "mobile-queue-card";
+      resultsEl.innerHTML = `
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <div>
+            <div style="font-size:15px;font-weight:950;color:#fff;margin-bottom:6px;">${title}</div>
+            <div style="font-size:12px;font-weight:850;color:rgba(255,255,255,.72);margin-bottom:8px;">Hazırlanıyor</div>
+            <div style="font-size:10px;font-weight:750;color:rgba(255,255,255,.48);word-break:break-all;">${jobId}</div>
           </div>
+
+          <button type="button" data-action="mobile-remove" style="width:34px;height:34px;border:0;border-radius:12px;background:rgba(239,68,68,.18);color:#fff;font-size:18px;font-weight:900;">
+            ×
+          </button>
         </div>
+      `;
 
-        <div class="aivo-player-meta">
-          <span>Kuyruğa alındı</span>
-          <span class="aivo-player-dot"></span>
-          <span>${jobId}</span>
-        </div>
-      </div>
+      const deleteBtn = resultsEl.querySelector('[data-action="mobile-remove"]');
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", function(){
+          resultsEl.className = "empty-card";
+          resultsEl.innerHTML = "Henüz mobil müzik üretimi başlatılmadı.";
+          statusEl.textContent = "";
+        });
+      }
+    }
 
-      <div class="aivo-player-actions">
-        <button class="aivo-action is-danger" type="button" data-action="mobile-remove" aria-label="Sil" title="Sil">
-          ✕
-        </button>
-      </div>
-    </div>
-  `;
-
-  const deleteBtn = playerHost.querySelector('[data-action="mobile-remove"]');
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", function(){
-      playerHost.innerHTML = "";
-      playerHost.hidden = true;
-      resultsEl.className = "empty-card";
-      resultsEl.textContent = "Henüz mobil müzik üretimi başlatılmadı.";
-      statusEl.textContent = "";
-    });
-  }
-}
-    function renderQueuedTrackCard(payload){
-  const title = escapeHtml(payload.title || "İsimsiz müzik");
-  const jobId = escapeHtml(payload.jobId || "job oluşturuldu");
- const playerHost = resultsEl;
-
-  resultsEl.className = "empty-card";
-  resultsEl.textContent = "Üretim kuyruğa alındı. Sonuç hazır olduğunda burada müzik kartı olarak görünecek.";
-
-  if (!playerHost) return;
-
- 
-  playerHost.innerHTML = `
-    <div class="aivo-player-card is-loadingState" data-job-id="${jobId}">
-      <div class="aivo-player-left">
-        <div class="aivo-player-spinner" aria-hidden="true"></div>
-      </div>
-
-      <div class="aivo-player-mid">
-        <div class="aivo-player-titleRow">
-          <div class="aivo-player-title">${title}</div>
-          <div class="aivo-player-tags">
-            <span class="aivo-tag is-loading">Hazırlanıyor</span>
-          </div>
-        </div>
-
-        <div class="aivo-player-meta">
-          <span>Kuyruğa alındı</span>
-          <span class="aivo-player-dot"></span>
-          <span>${jobId}</span>
-        </div>
-      </div>
-
-      <div class="aivo-player-actions">
-        <button class="aivo-action is-danger" type="button" data-action="mobile-remove" aria-label="Sil" title="Sil">
-          ✕
-        </button>
-      </div>
-    </div>
-  `;
-
-  const deleteBtn = playerHost.querySelector('[data-action="mobile-remove"]');
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", function(){
-      playerHost.innerHTML = "";
-      playerHost.hidden = true;
-      resultsEl.className = "empty-card";
-      resultsEl.textContent = "Henüz mobil müzik üretimi başlatılmadı.";
-      statusEl.textContent = "";
-    });
-  }
-}
     btn.addEventListener("click", async function(){
       const title = (titleEl.value || "").trim();
       const prompt = (promptEl.value || "").trim();
@@ -559,7 +487,8 @@
           return;
         }
 
-        const jobId = data.internal_job_id || data.provider_job_id || data.job_id || "";
+        const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
+
         statusEl.textContent = "Üretim kuyruğa alındı.";
 
         renderQueuedTrackCard({
