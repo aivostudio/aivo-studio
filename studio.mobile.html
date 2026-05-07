@@ -996,14 +996,36 @@ miniAudioEl.addEventListener("timeupdate", function(){
     const miniProgressEl = miniPlayerEl.querySelector(".mini-progress");
 
 if (miniProgressEl) {
-  miniProgressEl.addEventListener("click", function(e){
+  function seekMiniPlayer(e){
     if (!miniAudioEl.duration || !Number.isFinite(miniAudioEl.duration)) return;
 
+    const point = e.touches && e.touches[0] ? e.touches[0] : e;
     const rect = miniProgressEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const x = point.clientX - rect.left;
     const percent = Math.max(0, Math.min(1, x / rect.width));
 
     miniAudioEl.currentTime = miniAudioEl.duration * percent;
+  }
+
+  miniProgressEl.addEventListener("click", seekMiniPlayer);
+
+  miniProgressEl.addEventListener("pointerdown", function(e){
+    miniProgressEl.setPointerCapture(e.pointerId);
+    seekMiniPlayer(e);
+
+    function onMove(moveEvent){
+      seekMiniPlayer(moveEvent);
+    }
+
+    function onUp(){
+      miniProgressEl.removeEventListener("pointermove", onMove);
+      miniProgressEl.removeEventListener("pointerup", onUp);
+      miniProgressEl.removeEventListener("pointercancel", onUp);
+    }
+
+    miniProgressEl.addEventListener("pointermove", onMove);
+    miniProgressEl.addEventListener("pointerup", onUp);
+    miniProgressEl.addEventListener("pointercancel", onUp);
   });
 }
 
