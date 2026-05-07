@@ -673,6 +673,7 @@
           title: title || "Yeni müzik",
           jobId
         });
+      pollMobileMusicJob(jobId, title || "Yeni müzik");
       } catch (err) {
         statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
       } finally {
