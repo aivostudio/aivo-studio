@@ -596,6 +596,32 @@
   font-size:18px;
   font-weight:950;
 }
+    .mobile-mini-player .mini-btn.is-playing{
+  position:relative;
+  background:rgba(255,255,255,.10);
+  box-shadow:0 0 18px rgba(139,92,246,.28);
+}
+
+.mobile-mini-player .mini-btn.is-playing::before{
+  content:"";
+  position:absolute;
+  inset:-4px;
+  border-radius:999px;
+  background:conic-gradient(
+    from 0deg,
+    #38bdf8,
+    #8b5cf6,
+    #ec4899,
+    #f59e0b,
+    #38bdf8
+  );
+  animation:miniNeonSpin 1.4s linear infinite;
+  z-index:-1;
+}
+
+@keyframes miniNeonSpin{
+  to{transform:rotate(360deg)}
+}
   </style>
 </head>
 
@@ -959,7 +985,7 @@ mobileMusicLibraryEl.appendChild(item);
   miniPlayBtn.textContent = "▶";
 
   miniAudioEl.play().then(function(){
-    miniPlayBtn.textContent = "Ⅱ";
+  miniPlayBtn.classList.add("is-playing");
   }).catch(function(){
     miniPlayBtn.textContent = "▶";
   });
@@ -970,7 +996,7 @@ miniPlayBtn.addEventListener("click", function(){
 
   if (miniAudioEl.paused) {
     miniAudioEl.play();
-    miniPlayBtn.textContent = "Ⅱ";
+   miniPlayBtn.classList.remove("is-playing");
 
     document.querySelectorAll(".mobile-library-row.is-playing").forEach(function(rowEl){
       const btnEl = rowEl.querySelector(".mobile-library-play");
