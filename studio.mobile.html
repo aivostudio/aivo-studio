@@ -469,7 +469,57 @@ function renderQueuedTrackCard(payload){
     });
   }
 }
+    function renderQueuedTrackCard(payload){
+  const title = escapeHtml(payload.title || "İsimsiz müzik");
+  const jobId = escapeHtml(payload.jobId || "job oluşturuldu");
+  const playerHost = document.getElementById("rightPanelHost");
 
+  resultsEl.className = "empty-card";
+  resultsEl.textContent = "Üretim kuyruğa alındı. Sonuç hazır olduğunda burada müzik kartı olarak görünecek.";
+
+  if (!playerHost) return;
+
+  playerHost.hidden = false;
+  playerHost.innerHTML = `
+    <div class="aivo-player-card is-loadingState" data-job-id="${jobId}">
+      <div class="aivo-player-left">
+        <div class="aivo-player-spinner" aria-hidden="true"></div>
+      </div>
+
+      <div class="aivo-player-mid">
+        <div class="aivo-player-titleRow">
+          <div class="aivo-player-title">${title}</div>
+          <div class="aivo-player-tags">
+            <span class="aivo-tag is-loading">Hazırlanıyor</span>
+          </div>
+        </div>
+
+        <div class="aivo-player-meta">
+          <span>Kuyruğa alındı</span>
+          <span class="aivo-player-dot"></span>
+          <span>${jobId}</span>
+        </div>
+      </div>
+
+      <div class="aivo-player-actions">
+        <button class="aivo-action is-danger" type="button" data-action="mobile-remove" aria-label="Sil" title="Sil">
+          ✕
+        </button>
+      </div>
+    </div>
+  `;
+
+  const deleteBtn = playerHost.querySelector('[data-action="mobile-remove"]');
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", function(){
+      playerHost.innerHTML = "";
+      playerHost.hidden = true;
+      resultsEl.className = "empty-card";
+      resultsEl.textContent = "Henüz mobil müzik üretimi başlatılmadı.";
+      statusEl.textContent = "";
+    });
+  }
+}
     btn.addEventListener("click", async function(){
       const title = (titleEl.value || "").trim();
       const prompt = (promptEl.value || "").trim();
