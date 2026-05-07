@@ -814,25 +814,18 @@ const audioUrl = String(payload.audioUrl || "")
             </div>
           `;
 
-          const audio = card.querySelector("audio");
-          const playBtn = card.querySelector('[data-action="mobile-play"]');
-          const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
+       const playBtn = card.querySelector('[data-action="mobile-play"]');
+const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
-          if (playBtn && audio) {
-            playBtn.addEventListener("click", function(){
-              if (audio.paused) {
-                audio.play();
-                playBtn.textContent = "Ⅱ";
-              } else {
-                audio.pause();
-                playBtn.textContent = "▶";
-              }
-            });
-
-            audio.addEventListener("ended", function(){
-              playBtn.textContent = "▶";
-            });
-          }
+if (playBtn) {
+  playBtn.addEventListener("click", function(){
+    loadMiniPlayer({
+      title: cardTitle,
+      sub: index === 0 ? "Orijinal" : "Versiyon " + (index + 1),
+      audioUrl
+    });
+  });
+}
 
           if (deleteBtn) {
             deleteBtn.addEventListener("click", function(){
