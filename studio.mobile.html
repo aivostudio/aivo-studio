@@ -422,19 +422,28 @@
       const title = safe(payload.title || "Yeni müzik");
       const jobId = safe(payload.jobId || "job oluşturuldu");
 
-      resultsEl.hidden = false;
-      resultsEl.className = "mobile-queue-card";
-      resultsEl.innerHTML = `
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-          <div>
-            <div style="font-size:15px;font-weight:950;color:#fff;margin-bottom:6px;">${title}</div>
-            <div style="font-size:12px;font-weight:850;color:rgba(255,255,255,.72);margin-bottom:8px;">Hazırlanıyor</div>
-            <div style="font-size:10px;font-weight:750;color:rgba(255,255,255,.48);word-break:break-all;">${jobId}</div>
-          </div>
+         resultsEl.hidden = false;
+      resultsEl.className = "aivo-player-card is-loadingState";
+      resultsEl.setAttribute("data-track-id", jobId);
+      resultsEl.setAttribute("data-provider-job-id", jobId);
 
-          <button type="button" data-action="mobile-remove" style="width:34px;height:34px;border:0;border-radius:12px;background:rgba(239,68,68,.18);color:#fff;font-size:18px;font-weight:900;">
-            ×
-          </button>
+      resultsEl.innerHTML = `
+        <div class="aivo-player-left">
+          <div class="aivo-player-spinner"></div>
+        </div>
+
+        <div class="aivo-player-mid">
+          <div class="aivo-player-titleRow">
+            <div class="aivo-player-title">${title}</div>
+            <div class="aivo-player-tags">
+              <span class="aivo-tag is-loading">Hazırlanıyor · <span>0</span>%</span>
+            </div>
+          </div>
+          <div class="aivo-player-sub">Kuyruğa alındı</div>
+        </div>
+
+        <div class="aivo-player-actions">
+          <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil">Sil</button>
         </div>
       `;
 
