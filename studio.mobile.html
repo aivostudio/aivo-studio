@@ -820,6 +820,7 @@ const audioUrl = String(payload.audioUrl || "")
        card.style.marginBottom = index === outputs.length - 1 ? "0" : "6px";
        card.style.padding = "8px 0";
         card.style.minHeight = "58px";
+       card.style.alignItems = "center";
        card.style.borderRadius = "0";
       card.style.background = "transparent";
       card.style.border = "0";
@@ -843,7 +844,7 @@ const audioUrl = String(payload.audioUrl || "")
     <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
   </div>
 
-  <div class="aivo-player-actions" style="display:flex;align-items:center;gap:6px;">
+<div class="aivo-player-actions" style="display:flex;align-items:center;justify-content:flex-end;gap:6px;align-self:center;">
     <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:13px;">↓</a>
     <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:14px;">🗑</button>
   </div>
