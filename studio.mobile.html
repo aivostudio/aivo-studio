@@ -699,12 +699,12 @@ if (!btn || !promptEl || !statusEl || !resultsEl || !homeSectionEl || !productio
 homeNavEl.addEventListener("click", function(e){
   e.preventDefault();
   showMobileSection("home");
-  hydrateMusicLibrary();
 });
 
 productionsNavEl.addEventListener("click", function(e){
   e.preventDefault();
   showMobileSection("productions");
+    hydrateMusicLibrary();
 });
     async function hydrateMusicLibrary(){
   if (!mobileMusicLibraryEl) return;
