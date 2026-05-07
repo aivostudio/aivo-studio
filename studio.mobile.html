@@ -1064,27 +1064,29 @@ miniAudioEl.addEventListener("ended", function(){
       const jobId = safe(payload.jobId || "job oluşturuldu");
 
          resultsEl.hidden = false;
-      resultsEl.className = "aivo-player-card is-loadingState";
-      resultsEl.setAttribute("data-track-id", jobId);
-      resultsEl.setAttribute("data-provider-job-id", jobId);
+     resultsEl.className = "";
+resultsEl.setAttribute("data-track-id", jobId);
+resultsEl.setAttribute("data-provider-job-id", jobId);
 
-   resultsEl.innerHTML = `
-  <div class="aivo-player-left" style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#ec4899);box-shadow:0 0 22px rgba(245,158,11,.24);">
-    <div class="aivo-player-spinner" style="width:18px;height:18px;border-width:3px;"></div>
-  </div>
+resultsEl.innerHTML = `
+  <div class="mobile-library-row" style="min-height:74px;border-color:rgba(245,158,11,.28);box-shadow:0 0 24px rgba(245,158,11,.10);">
+    <div class="mobile-library-thumb" style="background:linear-gradient(135deg,#f59e0b,#ec4899);box-shadow:0 0 22px rgba(245,158,11,.20);">
+      <div class="aivo-player-spinner" style="width:18px;height:18px;border-width:3px;"></div>
+    </div>
 
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
-      <div class="aivo-player-tags">
-        <span class="aivo-tag is-loading" style="border-color:rgba(245,158,11,.42);background:rgba(245,158,11,.14);color:#ffd08a;box-shadow:0 0 18px rgba(245,158,11,.16);">Hazırlanıyor</span>
+    <div class="mobile-library-meta">
+      <div class="mobile-library-title">
+        ${title}
+      </div>
+
+      <div class="mobile-library-sub" style="color:#ffd08a;">
+        AI müziği hazırlanıyor...
       </div>
     </div>
-    <div class="aivo-player-sub" style="font-size:11px;margin-top:4px;color:rgba(255,255,255,.58);">AI müziği hazırlanıyor...</div>
-  </div>
 
-  <div class="aivo-player-actions">
-    <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:14px;">×</button>
+    <button class="mobile-library-play" type="button" data-action="mobile-remove" title="Sil" style="background:rgba(239,68,68,.13);color:#fff;">
+      ×
+    </button>
   </div>
 `;
       const deleteBtn = resultsEl.querySelector('[data-action="mobile-remove"]');
