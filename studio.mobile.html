@@ -418,8 +418,8 @@
     }
 
     function renderQueuedTrackCard(payload){
-      const title = escapeHtml(payload.title || "İsimsiz müzik");
-      const jobId = escapeHtml(payload.jobId || "job oluşturuldu");
+     const title = String(payload.title || "İsimsiz müzik");
+     const jobId = String(payload.jobId || "job oluşturuldu");
       const playerHost = document.getElementById("rightPanelHost");
 
   resultsEl.className = "empty-card";
