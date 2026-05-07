@@ -724,12 +724,13 @@ productionsNavEl.addEventListener("click", function(e){
 
     const data = await res.json();
 
-    const rows = Array.isArray(data?.jobs)
-      ? data.jobs
-      : Array.isArray(data)
-        ? data
-        : [];
-
+    const rows = Array.isArray(data?.items)
+  ? data.items
+  : Array.isArray(data?.jobs)
+    ? data.jobs
+    : Array.isArray(data)
+      ? data
+      : [];
     if (!rows.length) {
       mobileMusicLibraryEl.innerHTML = `
         <div class="empty-card">
