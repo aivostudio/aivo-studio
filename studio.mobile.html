@@ -601,43 +601,114 @@ const audioUrl = String(payload.audioUrl || "")
         });
       }
     }
-       async function pollMobileMusicJob(jobId, title){
-      let tries = 0;
+  async function pollMobileMusicJob(jobId, title){
+  let tries = 0;
 
-      async function tick(){
-        tries += 1;
+  async function tick(){
+    tries += 1;
 
-        try {
-          const res = await fetch("/api/music/status?job_id=" + encodeURIComponent(jobId), {
-            headers: { "accept": "application/json" },
-            cache: "no-store"
-          });
+    try {
+      const res = await fetch("/api/music/status?job_id=" + encodeURIComponent(jobId), {
+        headers: { "accept": "application/json" },
+        cache: "no-store"
+      });
 
-          const data = await res.json();
+      const data = await res.json();
 
-          const output = data && data.outputs && data.outputs[0] ? data.outputs[0] : null;
-       const audioUrl = (output && (output.url || output.audio_url)) || (data.audio && data.audio.src) || "";
+      const outputs = Array.isArray(data && data.outputs)
+        ? data.outputs.filter(function(output){
+            return output && (output.url || output.audio_url);
+          })
+        : [];
 
-          if ((data.state === "completed" || data.status === "completed") && audioUrl) {
-             statusEl.textContent = "Müzik hazır, player karta çevriliyor...";
-            renderReadyTrackCard({
-              title: title || "Yeni müzik",
-              audioUrl
+      if ((data.state === "completed" || data.status === "completed") && outputs.length) {
+        statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
+
+        resultsEl.hidden = false;
+        resultsEl.className = "";
+        resultsEl.innerHTML = "";
+
+        outputs.forEach(function(output, index){
+          const card = document.createElement("div");
+          card.className = "aivo-player-card is-ready";
+          card.style.marginBottom = index === outputs.length - 1 ? "0" : "10px";
+
+          const audioUrl = output.url || output.audio_url || "";
+          const cardTitle = index === 0
+            ? (title || "Yeni müzik")
+            : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
+
+          card.innerHTML = `
+            <div class="aivo-player-left">
+              <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
+            </div>
+
+            <div class="aivo-player-mid">
+              <div class="aivo-player-titleRow">
+                <div class="aivo-player-title">${safe(cardTitle)}</div>
+                <div class="aivo-player-tags">
+                  <span class="aivo-tag is-ready">${index === 0 ? "Orijinal" : "Versiyon " + (index + 1)}</span>
+                </div>
+              </div>
+              <div class="aivo-player-sub">Müzik hazır</div>
+              <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
+            </div>
+
+            <div class="aivo-player-actions">
+              <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir">↓</a>
+              <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil">Sil</button>
+            </div>
+          `;
+
+          const audio = card.querySelector("audio");
+          const playBtn = card.querySelector('[data-action="mobile-play"]');
+          const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
+
+          if (playBtn && audio) {
+            playBtn.addEventListener("click", function(){
+              if (audio.paused) {
+                audio.play();
+                playBtn.textContent = "Ⅱ";
+              } else {
+                audio.pause();
+                playBtn.textContent = "▶";
+              }
             });
-            return;
+
+            audio.addEventListener("ended", function(){
+              playBtn.textContent = "▶";
+            });
           }
-          } catch (err) {
-          statusEl.textContent = "Polling hatası: " + String(err && err.message ? err.message : err);
-          return;
-        }
 
-        if (tries < 40) {
-          setTimeout(tick, 3000);
-        }
+          if (deleteBtn) {
+            deleteBtn.addEventListener("click", function(){
+              card.remove();
+
+              if (!resultsEl.querySelector(".aivo-player-card")) {
+                resultsEl.className = "empty-card";
+                resultsEl.innerHTML = "Henüz mobil müzik üretimi başlatılmadı.";
+                statusEl.textContent = "";
+              }
+            });
+          }
+
+          resultsEl.appendChild(card);
+        });
+
+        return;
       }
-
-      tick();
+    } catch (err) {
+      statusEl.textContent = "Polling hatası: " + String(err && err.message ? err.message : err);
+      return;
     }
+
+    if (tries < 40) {
+      setTimeout(tick, 3000);
+    }
+  }
+
+  tick();
+}
     btn.addEventListener("click", async function(){
       const title = (titleEl.value || "").trim();
       const prompt = (promptEl.value || "").trim();
