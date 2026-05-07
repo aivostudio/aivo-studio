@@ -538,8 +538,16 @@
       }
     }
         function renderReadyTrackCard(payload){
-      const title = safe(payload.title || "Yeni müzik");
-      const audioUrl = safe(payload.audioUrl || "");
+ const title = String(payload.title || "Yeni müzik")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#039;");
+
+const audioUrl = String(payload.audioUrl || "")
+  .replace(/&/g, "&amp;")
+  .replace(/"/g, "&quot;");
 
       resultsEl.hidden = false;
       resultsEl.className = "aivo-player-card is-ready";
