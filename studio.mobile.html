@@ -510,15 +510,33 @@
 }
 
 .mobile-mini-player .mini-progress{
+  position:relative;
   width:100%;
-  height:3px;
-  background:rgba(255,255,255,.18);
+  height:14px;
+  background:rgba(255,255,255,.12);
+  cursor:pointer;
+  touch-action:none;
 }
 
 .mobile-mini-player .mini-progress-fill{
+  position:relative;
   width:0%;
-  height:100%;
+  height:4px;
+  top:5px;
   background:linear-gradient(90deg,#8b5cf6,#ec4899);
+}
+
+.mobile-mini-player .mini-progress-fill::after{
+  content:"";
+  position:absolute;
+  right:-8px;
+  top:50%;
+  width:16px;
+  height:16px;
+  border-radius:999px;
+  transform:translateY(-50%);
+  background:#fff;
+  box-shadow:0 0 0 5px rgba(236,72,153,.25);
 }
 
 .mobile-mini-player .mini-inner{
