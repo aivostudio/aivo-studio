@@ -369,7 +369,76 @@
       color:#fff;
       margin-bottom:5px;
     }
+.mobile-library-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding-bottom:120px;
+}
 
+.mobile-library-row{
+  display:grid;
+  grid-template-columns:54px minmax(0,1fr) 38px;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:18px;
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,.08),
+    rgba(255,255,255,.04)
+  );
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 10px 28px rgba(0,0,0,.22);
+}
+
+.mobile-library-thumb{
+  width:54px;
+  height:54px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  font-size:24px;
+  font-weight:900;
+}
+
+.mobile-library-meta{
+  min-width:0;
+}
+
+.mobile-library-title{
+  color:#fff;
+  font-size:14px;
+  line-height:1.15;
+  font-weight:900;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.mobile-library-sub{
+  margin-top:5px;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:750;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.mobile-library-play{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+}
 #mobileMusicResults{
   display:flex;
   flex-direction:column;
@@ -546,10 +615,12 @@
 </section>
 
 <section id="mobileProductionsSection" hidden>
-  <h2 class="section-title">Üretimler</h2>
+  <h2 class="section-title">Müzik Kütüphanem</h2>
 
-  <div id="mobileMusicLibrary" class="empty-card">
-    Henüz kütüphane yüklenmedi.
+  <div id="mobileMusicLibrary" class="mobile-library-list">
+    <div class="empty-card">
+      Kütüphane yükleniyor...
+    </div>
   </div>
 </section>
 
@@ -605,6 +676,7 @@
     const resultsEl = document.getElementById("mobileMusicResults");
     const homeSectionEl = document.getElementById("mobileHomeSection");
     const productionsSectionEl = document.getElementById("mobileProductionsSection");
+    const mobileMusicLibraryEl = document.getElementById("mobileMusicLibrary");
     const productionsNavEl = document.querySelector('.bottom-nav a[href="#productions"]');
     const homeNavEl = document.querySelector('.bottom-nav a[href="#home"]');
     const miniPlayerEl = document.getElementById("mobileMiniPlayer");
@@ -627,12 +699,103 @@ if (!btn || !promptEl || !statusEl || !resultsEl || !homeSectionEl || !productio
 homeNavEl.addEventListener("click", function(e){
   e.preventDefault();
   showMobileSection("home");
+  hydrateMusicLibrary();
 });
 
 productionsNavEl.addEventListener("click", function(e){
   e.preventDefault();
   showMobileSection("productions");
 });
+    async function hydrateMusicLibrary(){
+  if (!mobileMusicLibraryEl) return;
+
+  mobileMusicLibraryEl.innerHTML = `
+    <div class="empty-card">
+      Kütüphane yükleniyor...
+    </div>
+  `;
+
+  try {
+    const res = await fetch("/api/jobs/list?app=music", {
+      headers:{
+        "accept":"application/json"
+      },
+      cache:"no-store"
+    });
+
+    const data = await res.json();
+
+    const rows = Array.isArray(data?.jobs)
+      ? data.jobs
+      : Array.isArray(data)
+        ? data
+        : [];
+
+    if (!rows.length) {
+      mobileMusicLibraryEl.innerHTML = `
+        <div class="empty-card">
+          Henüz müzik bulunamadı.
+        </div>
+      `;
+      return;
+    }
+
+    mobileMusicLibraryEl.innerHTML = "";
+
+    rows.reverse().forEach(function(row){
+      const title =
+        row.title ||
+        row.prompt ||
+        "Yeni müzik";
+
+      const audioUrl =
+        row.audio_url ||
+        row.url ||
+        row.output_url ||
+        "";
+
+      if (!audioUrl) return;
+
+      const item = document.createElement("div");
+      item.className = "mobile-library-row";
+
+      item.innerHTML = `
+        <div class="mobile-library-thumb">♪</div>
+
+        <div class="mobile-library-meta">
+          <div class="mobile-library-title">
+            ${safe(title)}
+          </div>
+
+          <div class="mobile-library-sub">
+            AIVO Music
+          </div>
+        </div>
+
+        <button class="mobile-library-play" type="button">
+          ▶
+        </button>
+      `;
+
+      item.addEventListener("click", function(){
+        loadMiniPlayer({
+          title,
+          sub:"AIVO Music",
+          audioUrl
+        });
+      });
+
+      mobileMusicLibraryEl.appendChild(item);
+    });
+
+  } catch (err) {
+    mobileMusicLibraryEl.innerHTML = `
+      <div class="empty-card">
+        Kütüphane yüklenemedi.
+      </div>
+    `;
+  }
+}
     function safe(value){
       return String(value || "")
         .replace(/&/g, "&amp;")
