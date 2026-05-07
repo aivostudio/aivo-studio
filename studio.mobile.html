@@ -629,9 +629,12 @@ const audioUrl = String(payload.audioUrl || "")
         resultsEl.innerHTML = "";
 
         outputs.forEach(function(output, index){
-          const card = document.createElement("div");
-          card.className = "aivo-player-card is-ready";
-          card.style.marginBottom = index === outputs.length - 1 ? "0" : "10px";
+        const card = document.createElement("div");
+        card.className = "aivo-player-card is-ready";
+        card.style.marginBottom = index === outputs.length - 1 ? "0" : "8px";
+        card.style.padding = "10px 12px";
+        card.style.minHeight = "86px";
+        card.style.borderRadius = "16px";
 
           const audioUrl = output.url || output.audio_url || "";
           const cardTitle = index === 0
