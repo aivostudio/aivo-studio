@@ -773,38 +773,42 @@ const audioUrl =
   firstAudioOutput?.raw_url ||
   firstAudioOutput?.src ||
   "";
-      if (!audioUrl) return;
+ const isReady = !!audioUrl;
 
-      const item = document.createElement("div");
-      item.className = "mobile-library-row";
+const item = document.createElement("div");
+item.className = "mobile-library-row";
 
-      item.innerHTML = `
-        <div class="mobile-library-thumb">♪</div>
+item.innerHTML = `
+  <div class="mobile-library-thumb">♪</div>
 
-        <div class="mobile-library-meta">
-          <div class="mobile-library-title">
-            ${safe(title)}
-          </div>
+  <div class="mobile-library-meta">
+    <div class="mobile-library-title">
+      ${safe(title)}
+    </div>
 
-          <div class="mobile-library-sub">
-            AIVO Music
-          </div>
-        </div>
+    <div class="mobile-library-sub">
+      ${isReady ? "Hazır" : "Hazırlanıyor"}
+    </div>
+  </div>
 
-        <button class="mobile-library-play" type="button">
-          ▶
-        </button>
-      `;
+  <button class="mobile-library-play" type="button">
+    ${isReady ? "▶" : "…"}
+  </button>
+`;
 
-      item.addEventListener("click", function(){
-        loadMiniPlayer({
-          title,
-          sub:"AIVO Music",
-          audioUrl
-        });
-      });
+item.addEventListener("click", function(){
+  if (!isReady) {
+    return;
+  }
 
-      mobileMusicLibraryEl.appendChild(item);
+  loadMiniPlayer({
+    title,
+    sub:"AIVO Music",
+    audioUrl
+  });
+});
+
+mobileMusicLibraryEl.appendChild(item);
     });
 
   } catch (err) {
