@@ -806,9 +806,7 @@ const audioUrl = String(payload.audioUrl || "")
             <div class="aivo-player-mid">
               <div class="aivo-player-titleRow">
               <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
-                <div class="aivo-player-tags">
-                  <span class="aivo-tag is-ready">${index === 0 ? "Orijinal" : "Versiyon " + (index + 1)}</span>
-                </div>
+                <<div class="aivo-player-tags" hidden></div>
               </div>
              <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
               <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
