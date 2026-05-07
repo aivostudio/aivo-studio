@@ -702,9 +702,9 @@ const audioUrl = String(payload.audioUrl || "")
       resultsEl.hidden = false;
       resultsEl.className = "aivo-player-card is-ready";
       resultsEl.innerHTML = `
-        <div class="aivo-player-left">
-          <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
-        </div>
+       <div class="aivo-player-left" style="width:46px;height:46px;border-radius:12px;">
+  <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat" style="width:46px;height:46px;border-radius:12px;">▶</button>
+</div>
 
         <div class="aivo-player-mid">
           <div class="aivo-player-titleRow">
