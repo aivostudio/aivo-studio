@@ -537,7 +537,39 @@
         });
       }
     }
+       async function pollMobileMusicJob(jobId, title){
+      let tries = 0;
 
+      async function tick(){
+        tries += 1;
+
+        try {
+          const res = await fetch("/api/music/status?job_id=" + encodeURIComponent(jobId), {
+            headers: { "accept": "application/json" },
+            cache: "no-store"
+          });
+
+          const data = await res.json();
+
+          const output = data && data.outputs && data.outputs[0] ? data.outputs[0] : null;
+          const audioUrl = output && (output.url || output.audio_url);
+
+          if ((data.state === "completed" || data.status === "completed") && audioUrl) {
+            renderReadyTrackCard({
+              title: title || "Yeni müzik",
+              audioUrl
+            });
+            return;
+          }
+        } catch (err) {}
+
+        if (tries < 40) {
+          setTimeout(tick, 3000);
+        }
+      }
+
+      tick();
+    }
     btn.addEventListener("click", async function(){
       const title = (titleEl.value || "").trim();
       const prompt = (promptEl.value || "").trim();
