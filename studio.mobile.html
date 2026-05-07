@@ -670,6 +670,7 @@
         }
 
         const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
+        const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
 
         statusEl.textContent = "Üretim kuyruğa alındı.";
 
@@ -677,7 +678,7 @@
           title: title || "Yeni müzik",
           jobId
         });
-      pollMobileMusicJob(jobId, title || "Yeni müzik");
+          pollMobileMusicJob(pollJobId, title || "Yeni müzik");
       } catch (err) {
         statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
       } finally {
