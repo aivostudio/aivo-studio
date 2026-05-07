@@ -953,10 +953,15 @@ miniPlayBtn.addEventListener("click", function(){
   if (miniAudioEl.paused) {
     miniAudioEl.play();
     miniPlayBtn.textContent = "Ⅱ";
-  } else {
-    miniAudioEl.pause();
-    miniPlayBtn.textContent = "▶";
-  }
+ } else {
+  miniAudioEl.pause();
+  miniPlayBtn.textContent = "▶";
+
+  document.querySelectorAll(".mobile-library-row.is-playing").forEach(function(rowEl){
+    const btnEl = rowEl.querySelector(".mobile-library-play");
+    if (btnEl) btnEl.textContent = "▶";
+  });
+}
 });
 
 miniAudioEl.addEventListener("timeupdate", function(){
