@@ -611,6 +611,7 @@
           const audioUrl = output && (output.url || output.audio_url);
 
           if ((data.state === "completed" || data.status === "completed") && audioUrl) {
+             statusEl.textContent = "Müzik hazır, player karta çevriliyor...";
             renderReadyTrackCard({
               title: title || "Yeni müzik",
               audioUrl
