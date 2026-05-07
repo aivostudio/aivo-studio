@@ -357,7 +357,10 @@
     @keyframes aivoSpin{
       to{transform:rotate(360deg)}
     }
-
+   @keyframes mobileBlink{
+  0%,100%{opacity:.55}
+  50%{opacity:1}
+}
     #mobileMusicResults .aivo-player-mid{
       min-width:0;
       flex:1;
@@ -1326,11 +1329,45 @@ if (playBtn) {
 
         statusEl.textContent = "Üretim kuyruğa alındı.";
 
-      resultsEl.hidden = false;
-    resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Müzik hazırlanıyor. Hazır olunca burada görünecek.";
+     resultsEl.hidden = false;
+resultsEl.className = "";
+resultsEl.innerHTML = "";
 
-    pollMobileMusicJob(pollJobId, title || "Yeni müzik");
+["Orijinal", "Versiyon 2"].forEach(function(label, index){
+  const cardTitle = index === 0
+    ? (title || "Yeni müzik")
+    : (title || "Yeni müzik") + " · Versiyon 2";
+
+  const card = document.createElement("div");
+  card.className = "aivo-player-card is-ready";
+  card.style.marginBottom = index === 1 ? "0" : "10px";
+  card.style.padding = "10px 12px";
+  card.style.minHeight = "68px";
+  card.style.opacity = ".9";
+
+  card.innerHTML = `
+    <div class="aivo-player-left" style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#8b5cf6,#ec4899);">
+      <div class="aivo-player-spinner" style="width:17px;height:17px;border-width:3px;"></div>
+    </div>
+
+    <div class="aivo-player-mid">
+      <div class="aivo-player-title" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${safe(cardTitle)}
+      </div>
+      <div class="aivo-player-sub" style="font-size:11px;margin-top:4px;color:#ffd08a;animation:mobileBlink 1s ease-in-out infinite;">
+        Hazırlanıyor
+      </div>
+    </div>
+
+    <div class="aivo-player-actions">
+      <button class="aivo-action" type="button" disabled style="opacity:.55;">▶</button>
+    </div>
+  `;
+
+  resultsEl.appendChild(card);
+});
+
+pollMobileMusicJob(pollJobId, title || "Yeni müzik");
       } catch (err) {
         statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
       } finally {
