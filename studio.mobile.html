@@ -618,7 +618,10 @@
             });
             return;
           }
-        } catch (err) {}
+          } catch (err) {
+          statusEl.textContent = "Polling hatası: " + String(err && err.message ? err.message : err);
+          return;
+        }
 
         if (tries < 40) {
           setTimeout(tick, 3000);
