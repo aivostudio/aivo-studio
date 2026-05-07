@@ -322,6 +322,87 @@
       font-weight:750;
       line-height:1.35;
     }
+        #mobileMusicResults.aivo-player-card{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 14px 34px rgba(0,0,0,.22);
+      color:#fff;
+    }
+
+    #mobileMusicResults .aivo-player-left{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#8b5cf6,#6366f1);
+      flex:0 0 auto;
+    }
+
+    #mobileMusicResults .aivo-player-spinner{
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      border:3px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      animation:aivoSpin .85s linear infinite;
+    }
+
+    @keyframes aivoSpin{
+      to{transform:rotate(360deg)}
+    }
+
+    #mobileMusicResults .aivo-player-mid{
+      min-width:0;
+      flex:1;
+    }
+
+    #mobileMusicResults .aivo-player-title{
+      font-size:13px;
+      font-weight:950;
+      color:#fff;
+      margin-bottom:5px;
+    }
+
+    #mobileMusicResults .aivo-tag{
+      display:inline-flex;
+      align-items:center;
+      width:max-content;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(16,185,129,.16);
+      color:#86efac;
+      font-size:10px;
+      font-weight:900;
+    }
+
+    #mobileMusicResults .aivo-player-sub{
+      margin-top:6px;
+      color:rgba(255,255,255,.55);
+      font-size:11px;
+      font-weight:750;
+    }
+
+    #mobileMusicResults .aivo-player-actions{
+      flex:0 0 auto;
+    }
+
+    #mobileMusicResults .aivo-action{
+      min-width:34px;
+      height:34px;
+      border:1px solid rgba(239,68,68,.28);
+      border-radius:12px;
+      background:rgba(239,68,68,.14);
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+    }
   </style>
 </head>
 
