@@ -628,72 +628,82 @@ const audioUrl = String(payload.audioUrl || "")
         resultsEl.className = "";
         resultsEl.innerHTML = "";
 
-        outputs.forEach(function(output, index){
-          const card = document.createElement("div");
-          card.className = "aivo-player-card is-ready";
-          card.style.marginBottom = index === outputs.length - 1 ? "0" : "10px";
+  outputs.forEach(function(output, index){
+  const card = document.createElement("div");
+  card.className = "aivo-player-card is-ready";
+  card.style.display = "grid";
+  card.style.gridTemplateColumns = "54px 1fr auto";
+  card.style.alignItems = "center";
+  card.style.gap = "12px";
+  card.style.minHeight = "74px";
+  card.style.padding = "8px 0";
+  card.style.marginBottom = index === outputs.length - 1 ? "0" : "6px";
+  card.style.border = "0";
+  card.style.borderRadius = "0";
+  card.style.background = "transparent";
+  card.style.boxShadow = "none";
 
-          const audioUrl = output.url || output.audio_url || "";
-          const cardTitle = index === 0
-            ? (title || "Yeni müzik")
-            : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
+  const audioUrl = output.url || output.audio_url || "";
+  const label = index === 0 ? "Orijinal" : "V" + (index + 1);
+  const cardTitle = index === 0
+    ? (title || "Yeni müzik")
+    : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
 
-          card.innerHTML = `
-            <div class="aivo-player-left">
-              <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
-            </div>
+  card.innerHTML = `
+    <div class="aivo-player-left" style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat" style="width:54px;height:54px;border:0;background:transparent;color:#fff;font-size:20px;">▶</button>
+    </div>
 
-            <div class="aivo-player-mid">
-              <div class="aivo-player-titleRow">
-                <div class="aivo-player-title">${safe(cardTitle)}</div>
-                <div class="aivo-player-tags">
-                  <span class="aivo-tag is-ready">${index === 0 ? "Orijinal" : "Versiyon " + (index + 1)}</span>
-                </div>
-              </div>
-              <div class="aivo-player-sub">Müzik hazır</div>
-              <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
-            </div>
+    <div class="aivo-player-mid" style="min-width:0;">
+      <div class="aivo-player-title" style="font-size:15px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 4px;">
+        ${safe(cardTitle)}
+      </div>
+      <div class="aivo-player-sub" style="font-size:12px;color:rgba(255,255,255,.58);font-weight:850;margin:0;">
+        ▶ ${label}
+      </div>
+      <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
+    </div>
 
-            <div class="aivo-player-actions">
-              <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir">↓</a>
-              <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil">Sil</button>
-            </div>
-          `;
+    <div class="aivo-player-actions" style="display:flex;align-items:center;gap:10px;">
+      <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir" style="width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;">↓</a>
+      <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="width:34px;height:34px;border:0;background:transparent;color:rgba(255,255,255,.72);font-size:20px;">⋯</button>
+    </div>
+  `;
 
-          const audio = card.querySelector("audio");
-          const playBtn = card.querySelector('[data-action="mobile-play"]');
-          const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
+  const audio = card.querySelector("audio");
+  const playBtn = card.querySelector('[data-action="mobile-play"]');
+  const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
-          if (playBtn && audio) {
-            playBtn.addEventListener("click", function(){
-              if (audio.paused) {
-                audio.play();
-                playBtn.textContent = "Ⅱ";
-              } else {
-                audio.pause();
-                playBtn.textContent = "▶";
-              }
-            });
+  if (playBtn && audio) {
+    playBtn.addEventListener("click", function(){
+      if (audio.paused) {
+        audio.play();
+        playBtn.textContent = "Ⅱ";
+      } else {
+        audio.pause();
+        playBtn.textContent = "▶";
+      }
+    });
 
-            audio.addEventListener("ended", function(){
-              playBtn.textContent = "▶";
-            });
-          }
+    audio.addEventListener("ended", function(){
+      playBtn.textContent = "▶";
+    });
+  }
 
-          if (deleteBtn) {
-            deleteBtn.addEventListener("click", function(){
-              card.remove();
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", function(){
+      card.remove();
 
-              if (!resultsEl.querySelector(".aivo-player-card")) {
-                resultsEl.className = "empty-card";
-                resultsEl.innerHTML = "Henüz mobil müzik üretimi başlatılmadı.";
-                statusEl.textContent = "";
-              }
-            });
-          }
+      if (!resultsEl.querySelector(".aivo-player-card")) {
+        resultsEl.className = "empty-card";
+        resultsEl.innerHTML = "Henüz mobil müzik üretimi başlatılmadı.";
+        statusEl.textContent = "";
+      }
+    });
+  }
 
-          resultsEl.appendChild(card);
-        });
+  resultsEl.appendChild(card);
+});
 
         return;
       }
