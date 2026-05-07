@@ -151,7 +151,9 @@
     const tbody = table ? table.querySelector("tbody") : null;
     const totalEl = $("usersTotal");
 
-    if (totalEl) totalEl.textContent = Array.isArray(list) ? String(list.length) : "0";
+   if (totalEl && Array.isArray(list)) {
+  totalEl.textContent = String(list.length);
+}
     if (!tbody) return;
 
     tbody.innerHTML = "";
