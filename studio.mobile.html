@@ -370,15 +370,19 @@
       margin-bottom:5px;
     }
 
-  #mobileMusicResults.aivo-player-card{
+#mobileMusicResults{
   display:flex;
   flex-direction:column;
-  gap:6px;
-  padding:0;
-  background:transparent;
-  border:0;
-  box-shadow:none;
-  color:#fff;
+  gap:8px;
+  padding-bottom:76px;
+}
+
+#mobileMusicResults .aivo-player-card{
+  width:100%;
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
 }
 
     #mobileMusicResults .aivo-player-sub{
