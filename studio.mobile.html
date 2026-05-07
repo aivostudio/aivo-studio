@@ -421,14 +421,13 @@
     function renderQueuedTrackCard(payload){
      const title = String(payload.title || "İsimsiz müzik");
      const jobId = String(payload.jobId || "job oluşturuldu");
-      const playerHost = document.getElementById("rightPanelHost");
-
+    const playerHost = resultsEl;
   resultsEl.className = "empty-card";
   resultsEl.textContent = "Üretim kuyruğa alındı. Sonuç hazır olduğunda burada müzik kartı olarak görünecek.";
 
-  if (!playerHost) return;
 
-  playerHost.hidden = false;
+
+
   playerHost.innerHTML = `
     <div class="aivo-player-card is-loadingState" data-job-id="${jobId}">
       <div class="aivo-player-left">
