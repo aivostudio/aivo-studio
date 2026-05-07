@@ -942,25 +942,19 @@ tr:has(.pill-online){
   font-weight:800;
 }
 
-.loading-count::after{
-  content:"";
-  width:4px;
-  height:4px;
-  margin-left:3px;
-  border-radius:999px;
-  background:currentColor;
-  animation:aivoLoadingDots 1s infinite ease-in-out;
-  box-shadow:8px 0 0 currentColor, 16px 0 0 currentColor;
+.loading-count{
+  display:inline-block;
+  min-width:92px;
+  font-weight:800;
+  opacity:.85;
+  animation:aivoCountPulse 1.15s infinite ease-in-out;
 }
 
-@keyframes aivoLoadingDots{
-  0%, 20%{
-    opacity:.25;
+@keyframes aivoCountPulse{
+  0%, 100%{
+    opacity:.45;
   }
   50%{
     opacity:1;
-  }
-  100%{
-    opacity:.25;
   }
 }
