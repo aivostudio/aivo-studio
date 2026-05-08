@@ -556,7 +556,12 @@
     throw new Error("mobile_atmo_html_load_failed");
   }
 
-  atmoMount.innerHTML = await atmoRes.text();
+ atmoMount.innerHTML = await atmoRes.text();
+
+const atmoScript = document.createElement("script");
+atmoScript.src = "/mobile/js/mobile.atmo.js?v=1";
+atmoScript.defer = true;
+document.body.appendChild(atmoScript);
 } catch (err) {
   atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yüklenemedi.</div>';
 }
