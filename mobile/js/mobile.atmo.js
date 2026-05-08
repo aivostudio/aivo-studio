@@ -622,7 +622,7 @@ function bindProControls(){
 
         setStatus("Süper atmosfer video hazırlanıyor...");
 
-        fetch("/api/video/generate", {
+           fetch("/api/jobs/create-atmo", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
