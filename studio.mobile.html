@@ -666,16 +666,26 @@ function showAtmo(){
       return;
     }
 
-    if (tool === "cover") {
-      activeMobileModule = "cover";
-      showCover();
-      setCoverLibraryOnly(false);
-      setActiveNav(toolsNav);
+if (tool === "cover") {
+  activeMobileModule = "cover";
+  showCover();
+  setCoverLibraryOnly(false);
+  setActiveNav(toolsNav);
 
-      if (typeof window.mobileCoverHydrate === "function") {
-        window.mobileCoverHydrate();
-      }
-    }
+  if (typeof window.mobileCoverHydrate === "function") {
+    window.mobileCoverHydrate();
+  }
+
+  return;
+}
+
+if (tool === "atmo") {
+  activeMobileModule = "atmo";
+  showAtmo();
+  setActiveNav(toolsNav);
+
+  return;
+}
   });
 });
   })();
