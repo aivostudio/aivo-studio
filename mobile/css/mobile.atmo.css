@@ -562,6 +562,19 @@
     0 0 22px rgba(96,234,255,.16),
     0 14px 30px rgba(139,92,246,.22) !important;
 }
+.mobile-atmo-upload-btn.has-file .mobile-atmo-upload-icon{
+  border-color:rgba(96,234,255,.34);
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255,255,255,.30), transparent 34%),
+    linear-gradient(135deg, rgba(96,234,255,.20), rgba(255,255,255,.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    0 0 18px rgba(96,234,255,.22);
+}
+
+.mobile-atmo-upload-btn.has-file .mobile-atmo-upload-icon::before{
+  background:linear-gradient(135deg,#fff,#60eaff,#a78bfa);
+}
 .mobile-atmo-upload-icon{
   width:30px;
   height:30px;
