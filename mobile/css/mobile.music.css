@@ -560,3 +560,52 @@
   min-width:34px !important;
   border-radius:12px !important;
 }
+.mobile-status{
+  text-align:center !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-pending{
+  min-height:74px !important;
+  grid-template-columns:50px minmax(0,1fr) !important;
+  padding:12px 14px !important;
+  border-radius:22px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-left{
+  width:50px !important;
+  height:50px !important;
+  border-radius:17px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-actions{
+  display:none !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready{
+  min-height:76px !important;
+  grid-template-columns:52px minmax(0,1fr) 78px !important;
+  padding:12px 14px !important;
+  border-radius:22px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .aivo-player-left{
+  width:52px !important;
+  height:52px !important;
+  border-radius:18px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .mobile-player-actions{
+  position:static !important;
+  transform:none !important;
+  justify-self:end !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:7px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .mobile-player-icon-btn{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+}
