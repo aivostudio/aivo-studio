@@ -272,7 +272,25 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   function safeText(value){
     return String(value || "").trim();
   }
+    function computeMobileAtmoCredit(mode){
+    const target = mode === "pro" ? state.pro : state.basic;
 
+    const baseCredit = mode === "pro" ? 45 : 30;
+    const logoExtra = target.logoUrl ? 10 : 0;
+    const audioExtra = target.audioUrl ? 10 : 0;
+
+    return baseCredit + logoExtra + audioExtra;
+  }
+
+  function syncMobileAtmoCreditButtons(){
+    if (basicGenerateBtn) {
+      basicGenerateBtn.textContent = "🎬 Atmosfer Video Oluştur (" + computeMobileAtmoCredit("basic") + " Kredi)";
+    }
+
+    if (proGenerateBtn) {
+      proGenerateBtn.textContent = "✨ Süper Atmosfer Video Oluştur (" + computeMobileAtmoCredit("pro") + " Kredi)";
+    }
+  }
   function setStatus(message){
     const text = safeText(message);
 
