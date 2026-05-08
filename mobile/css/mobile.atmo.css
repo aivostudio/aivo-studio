@@ -324,3 +324,21 @@
   font-size:10.5px !important;
   line-height:1 !important;
 }
+.mobile-atmo-upload-grid{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  margin:10px 0 14px !important;
+}
+
+.mobile-atmo-upload-btn{
+  min-height:62px !important;
+  padding:8px 6px !important;
+  border-radius:18px !important;
+  font-size:11px !important;
+  line-height:1.15 !important;
+  text-align:center !important;
+  flex-direction:column !important;
+  gap:4px !important;
+  box-shadow:0 10px 22px rgba(139,92,246,.16) !important;
+}
