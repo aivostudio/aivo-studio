@@ -401,28 +401,48 @@ card.innerHTML = `
   </div>
 
   <div class="mobile-ready-actions">
-    <a class="mobile-ready-action" href="${safe(audioUrl)}" download title="İndir" aria-label="İndir">
+  <a class="mobile-ready-action" href="#" data-action="mobile-download" title="İndir" aria-label="İndir">
       ↓
     </a>
     <button class="mobile-ready-action" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil">
       ×
     </button>
   </div>
-`;
-            const playBtn = card.querySelector('[data-action="mobile-play"]');
-            const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
+`;const playBtn = card.querySelector('[data-action="mobile-play"]');
+const downloadBtn = card.querySelector('[data-action="mobile-download"]');
+const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
-            if (playBtn) {
-              playBtn.addEventListener("click", function(){
-                loadMiniPlayer({
-                  title: cardTitle,
-                  sub: index === 0 ? "Orijinal" : "Versiyon " + (index + 1),
-                  audioUrl
-                });
-              });
-            }
+if (playBtn) {
+  playBtn.addEventListener("click", function(){
+    loadMiniPlayer({
+      title: cardTitle,
+      sub: index === 0 ? "Orijinal" : "Versiyon " + (index + 1),
+      audioUrl
+    });
+  });
+}
 
-            if (deleteBtn) {
+if (downloadBtn) {
+  downloadBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!audioUrl) return;
+
+    const filename = (index === 0 ? "aivo-music.mp3" : "aivo-music-version-" + (index + 1) + ".mp3");
+    const proxied = "/api/media/proxy?url=" + encodeURIComponent(audioUrl) + "&filename=" + encodeURIComponent(filename);
+
+    const a = document.createElement("a");
+    a.href = proxied;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+}
+
+if (deleteBtn) {
               deleteBtn.addEventListener("click", function(){
                 card.remove();
 
