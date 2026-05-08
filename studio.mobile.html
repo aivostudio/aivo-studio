@@ -401,11 +401,11 @@
         item.classList.toggle("active", item === activeEl);
       });
     }
-
-    function showMusic(){
-      musicMount.hidden = false;
-      coverMount.hidden = true;
-    }
+function showMusic(){
+  musicMount.hidden = false;
+  coverMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+}
 
   function showCover(){
   musicMount.hidden = true;
