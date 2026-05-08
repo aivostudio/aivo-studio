@@ -600,3 +600,18 @@
     inset 0 1px 0 rgba(255,255,255,.14),
     0 8px 22px rgba(139,92,246,.16);
 }
+.mobile-atmo-upload-grid{
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:14px !important;
+  padding-top:34px !important;
+}
+
+.mobile-atmo-upload-btn{
+  width:100% !important;
+  min-width:0 !important;
+  min-height:58px !important;
+  padding:18px 10px 12px !important;
+  justify-content:center !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+}
