@@ -231,3 +231,8 @@
     grid-template-columns:1fr;
   }
 }
+#mobileCoverResults[hidden],
+#mobileCoverSection .section-title[hidden],
+#mobileCoverSection .mobile-cover-card[hidden]{
+  display:none !important;
+}
