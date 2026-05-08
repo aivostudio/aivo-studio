@@ -616,10 +616,11 @@ function bindProControls(){
 
           if (!job) return;
 
-          job.id = realJobId;
+                 job.id = realJobId;
           job.status = "processing";
 
           renderMobileAtmoResults();
+          pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][PRO ERROR]", err);
