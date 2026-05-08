@@ -259,34 +259,101 @@
     </a>
   </nav>
 
-  <script>
-    (async function(){
-      const mount = document.getElementById("mobileMusicMount");
-      if (!mount) return;
+<script>
+  (async function(){
+    const musicMount = document.getElementById("mobileMusicMount");
+    if (!musicMount) return;
 
-      try {
-        const res = await fetch("/mobile/modules/mobile.music.html?v=1", {
-          cache: "no-store"
-        });
+    let coverMount = document.getElementById("mobileCoverMount");
 
-        if (!res.ok) {
-          throw new Error("mobile_music_html_load_failed");
-        }
+    if (!coverMount) {
+      coverMount = document.createElement("div");
+      coverMount.id = "mobileCoverMount";
+      coverMount.hidden = true;
+      coverMount.innerHTML = '<div class="empty-card">Kapak modülü yükleniyor...</div>';
+      musicMount.insertAdjacentElement("afterend", coverMount);
+    }
 
-        mount.innerHTML = await res.text();
+    try {
+      const musicRes = await fetch("/mobile/modules/mobile.music.html?v=1", {
+        cache: "no-store"
+      });
 
-        const script = document.createElement("script");
-        script.src = "/mobile/js/mobile.music.js?v=1";
-        const coverScript = document.createElement("script");
-        coverScript.src = "/mobile/js/mobile.cover.js?v=1";
-        coverScript.defer = true;
-        document.body.appendChild(coverScript);
-        script.defer = true;
-        document.body.appendChild(script);
-      } catch (err) {
-        mount.innerHTML = '<div class="empty-card">Müzik modülü yüklenemedi.</div>';
+      if (!musicRes.ok) {
+        throw new Error("mobile_music_html_load_failed");
       }
-    })();
-  </script>
+
+      musicMount.innerHTML = await musicRes.text();
+
+      const musicScript = document.createElement("script");
+      musicScript.src = "/mobile/js/mobile.music.js?v=1";
+      musicScript.defer = true;
+      document.body.appendChild(musicScript);
+    } catch (err) {
+      musicMount.innerHTML = '<div class="empty-card">Müzik modülü yüklenemedi.</div>';
+    }
+
+    try {
+      const coverRes = await fetch("/mobile/modules/mobile.cover.html?v=1", {
+        cache: "no-store"
+      });
+
+      if (!coverRes.ok) {
+        throw new Error("mobile_cover_html_load_failed");
+      }
+
+      coverMount.innerHTML = await coverRes.text();
+
+      const coverScript = document.createElement("script");
+      coverScript.src = "/mobile/js/mobile.cover.js?v=1";
+      coverScript.defer = true;
+      document.body.appendChild(coverScript);
+    } catch (err) {
+      coverMount.innerHTML = '<div class="empty-card">Kapak modülü yüklenemedi.</div>';
+    }
+
+    const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
+    const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
+    const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
+
+    function setActiveNav(activeEl){
+      document.querySelectorAll(".bottom-nav a").forEach(function(item){
+        item.classList.toggle("active", item === activeEl);
+      });
+    }
+
+    function showMusic(){
+      musicMount.hidden = false;
+      coverMount.hidden = true;
+    }
+
+    function showCover(){
+      musicMount.hidden = true;
+      coverMount.hidden = false;
+    }
+
+    if (homeNav) {
+      homeNav.addEventListener("click", function(){
+        showMusic();
+        setActiveNav(homeNav);
+      });
+    }
+
+    if (productionsNav) {
+      productionsNav.addEventListener("click", function(){
+        showMusic();
+        setActiveNav(productionsNav);
+      });
+    }
+
+    if (toolsNav) {
+      toolsNav.addEventListener("click", function(e){
+        e.preventDefault();
+        showCover();
+        setActiveNav(toolsNav);
+      });
+    }
+  })();
+</script>
 </body>
 </html>
