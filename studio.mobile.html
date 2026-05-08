@@ -575,7 +575,7 @@ function showMusic(){
   if (toolsMount) toolsMount.hidden = true;
 }
 
- function showCover(){
+function showCover(){
   musicMount.hidden = true;
   coverMount.hidden = false;
   atmoMount.hidden = true;
@@ -585,6 +585,13 @@ function showMusic(){
   if (heroSub) {
     heroSub.textContent = "Kapak fikrini yaz, AIVO mobilde görselini üretsin.";
   }
+}
+
+function showAtmo(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
 }
 
     if (homeNav) {
