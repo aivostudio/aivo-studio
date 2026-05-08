@@ -168,6 +168,9 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         const video = card.querySelector("video");
         if (!video) return;
 
+              video.muted = false;
+        video.volume = 1;
+
         if (video.paused) {
           video.play().catch(function(){});
         } else {
