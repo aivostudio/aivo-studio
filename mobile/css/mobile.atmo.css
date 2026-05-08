@@ -582,9 +582,8 @@
 }
 
 .mobile-atmo-upload-btn.has-file{
-  padding-right:38px;
+  padding-right:8px !important;
 }
-
 .mobile-atmo-file-clear{
   position:absolute;
   right:6px;
