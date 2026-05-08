@@ -180,7 +180,19 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         return;
       }
+            if (act === "sound") {
+        const video = card.querySelector("video");
+        if (!video) return;
 
+        video.muted = !video.muted;
+        btn.textContent = video.muted ? "🔇" : "🔊";
+
+        if (!video.paused) {
+          video.play().catch(function(){});
+        }
+
+        return;
+      }
       if (act === "fullscreen") {
         const video = card.querySelector("video");
         if (!video) return;
