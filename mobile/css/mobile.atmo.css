@@ -783,3 +783,18 @@
 .mobile-atmo-video-title{
   text-align:center;
 }
+#mobileAtmoSection > .section-title{
+  width:max-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+  padding:4px 2px;
+  font-size:24px;
+  font-weight:950;
+  letter-spacing:-.045em;
+  background:linear-gradient(135deg,#fff,#a78bfa,#60eaff,#ec4899);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow:0 0 24px rgba(139,92,246,.18);
+}
