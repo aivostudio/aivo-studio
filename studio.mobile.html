@@ -339,7 +339,18 @@
       });
     }
 
-       let activeMobileModule = "music";
+    let activeMobileModule = "music";
+
+    function setCoverLibraryOnly(isLibraryOnly){
+      const coverSection = document.getElementById("mobileCoverSection");
+      if (!coverSection) return;
+
+      const coverTitle = coverSection.querySelector(".section-title");
+      const coverForm = coverSection.querySelector(".mobile-cover-card");
+
+      if (coverTitle) coverTitle.hidden = !!isLibraryOnly;
+      if (coverForm) coverForm.hidden = !!isLibraryOnly;
+    }
 
     if (productionsNav) {
       productionsNav.addEventListener("click", function(e){
@@ -348,6 +359,7 @@
           e.stopImmediatePropagation();
 
           showCover();
+          setCoverLibraryOnly(true);
           setActiveNav(productionsNav);
 
           if (typeof window.mobileCoverHydrate === "function") {
@@ -369,6 +381,7 @@
         activeMobileModule = "cover";
 
         showCover();
+        setCoverLibraryOnly(false);
         setActiveNav(toolsNav);
 
         if (typeof window.mobileCoverHydrate === "function") {
