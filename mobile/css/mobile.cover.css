@@ -70,14 +70,19 @@
 }
 
 .mobile-quality-credit{
-  padding:8px 10px;
+  min-width:72px;
+  height:40px;
+  padding:0 10px;
   border-radius:999px;
-  background:rgba(255,255,255,.09);
-  border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.94);
-  font-size:12px;
-  font-weight:900;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  color:rgba(255,255,255,.98);
+  font-size:14px;
+  font-weight:950;
   white-space:nowrap;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .mobile-cover-styles{
