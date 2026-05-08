@@ -371,43 +371,30 @@
           resultsEl.innerHTML = "";
 
           outputs.forEach(function(output, index){
-            const card = document.createElement("div");
-            card.className = "aivo-player-card is-ready";
-            card.style.marginBottom = index === outputs.length - 1 ? "0" : "6px";
-            card.style.padding = "8px 0";
-            card.style.minHeight = "58px";
-            card.style.alignItems = "center";
-            card.style.position = "relative";
-            card.style.gridTemplateColumns = "46px minmax(0,1fr)";
-            card.style.paddingRight = "78px";
-            card.style.borderRadius = "18px";
-            card.style.background = "linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035))";
-            card.style.border = "1px solid rgba(255,255,255,.10)";
-            card.style.boxShadow = "none";
+              const card = document.createElement("div");
+        card.className = "aivo-player-card is-pending";
+        card.style.marginBottom = index === 1 ? "0" : "10px";
+        card.style.minHeight = "78px";
+        card.style.padding = "12px";
+        card.style.opacity = ".96";
+        card.style.gridTemplateColumns = "54px minmax(0,1fr)";
+        card.style.gap = "12px";
+        card.style.borderRadius = "18px";
 
-            const audioUrl = output.url || output.audio_url || "";
-            const cardTitle = index === 0
-              ? (title || "Yeni müzik")
-              : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
+        card.innerHTML = `
+          <div class="aivo-player-left mobile-library-thumb">♪</div>
 
-           card.innerHTML = `
-  <div class="aivo-player-left">
-    <button class="aivo-action mobile-player-icon-btn mobile-player-play-btn" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat"></button>
-  </div>
+          <div class="aivo-player-mid">
+            <div class="aivo-player-title" style="font-size:14px;line-height:1.15;margin:0 0 5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${safe(cardTitle)}
+            </div>
+            <div class="aivo-player-sub" style="font-size:11px;margin:0;color:#c084fc;animation:mobileBlink 1s ease-in-out infinite;text-shadow:0 0 12px rgba(192,132,252,.35);">
+              Hazırlanıyor
+            </div>
+          </div>
 
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
-    </div>
-    <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
-    <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
-  </div>
-
-  <div class="aivo-player-actions mobile-player-actions">
-    <a class="aivo-action mobile-player-icon-btn mobile-player-download-btn" href="${safe(audioUrl)}" download title="İndir" aria-label="İndir"></a>
-    <button class="aivo-action mobile-player-icon-btn mobile-player-delete-btn" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil"></button>
-  </div>
-`;
+          <div class="aivo-player-actions mobile-pending-actions" aria-hidden="true"></div>
+        `;
 
             const playBtn = card.querySelector('[data-action="mobile-play"]');
             const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
