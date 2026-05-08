@@ -122,9 +122,24 @@
     <div id="mobileAtmoStatus" class="mobile-status"></div>
   </section>
 
-  <section class="mobile-atmo-panel" data-mobile-atmo-panel="pro" hidden>
-    <h3 class="mobile-atmo-block-title">Süper Mod</h3>
-    <p class="mobile-atmo-block-sub">Sahne, kamera ve atmosferi tek cümlede anlat.</p>
+ <section class="mobile-atmo-panel" data-mobile-atmo-panel="pro" hidden>
+  <div class="mobile-atmo-hero">
+    <div class="mobile-atmo-kicker">AIVO Mobile Studio</div>
+    <h3>Atmosfer videosu üret</h3>
+    <p>Kar, yağmur, sis, ışık ve sinematik sahne hissini mobilde hızlıca oluştur.</p>
+  </div>
+
+  <div class="mobile-atmo-mode-tabs" role="tablist" aria-label="Atmosfer modu">
+    <button class="mobile-atmo-mode" type="button" data-mobile-atmo-mode="basic">
+      Basit Mod
+    </button>
+    <button class="mobile-atmo-mode is-active" type="button" data-mobile-atmo-mode="pro">
+      Süper Mod ✨
+    </button>
+  </div>
+
+  <h3 class="mobile-atmo-block-title">Süper Mod</h3>
+  <p class="mobile-atmo-block-sub">Sahne, kamera ve atmosferi tek cümlede anlat.</p>
 
     <label class="field-label" for="mobileAtmoPrompt">Prompt</label>
     <textarea id="mobileAtmoPrompt" class="field-textarea mobile-atmo-prompt" maxlength="5000" placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."></textarea>
