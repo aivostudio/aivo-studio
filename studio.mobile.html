@@ -207,6 +207,47 @@
       border-color:rgba(255,255,255,.18);
       box-shadow:0 0 22px rgba(139,92,246,.34);
     }
+    .nav-icon{
+  position:relative;
+  overflow:hidden;
+}
+
+.nav-icon::before{
+  content:"";
+  width:18px;
+  height:18px;
+  display:block;
+  background:linear-gradient(135deg,#a78bfa,#60eaff);
+  filter:drop-shadow(0 0 8px rgba(139,92,246,.62));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+.nav-icon-home::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11.5L12 4l9 7.5'/%3E%3Cpath d='M5.5 10.5V20h13v-9.5'/%3E%3Cpath d='M9.5 20v-6h5v6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11.5L12 4l9 7.5'/%3E%3Cpath d='M5.5 10.5V20h13v-9.5'/%3E%3Cpath d='M9.5 20v-6h5v6'/%3E%3C/svg%3E");
+}
+
+.nav-icon-productions::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z'/%3E%3C/svg%3E");
+}
+
+.nav-icon-tools::before{
+  background:linear-gradient(135deg,#ffd36a,#f472ff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+}
+
+.nav-icon-credits::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2.2'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M7 15h4'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2.2'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M7 15h4'/%3E%3C/svg%3E");
+}
+
+.bottom-nav a.active .nav-icon::before{
+  background:linear-gradient(135deg,#fff,#ffd36a,#f472ff);
+  filter:drop-shadow(0 0 10px rgba(244,114,255,.78));
+}
 .mobile-tools-grid{
   display:grid;
   grid-template-columns:1fr;
@@ -420,24 +461,24 @@
 </div>
   </main>
 
-  <nav class="bottom-nav">
-    <a class="active" href="#home">
-      <span>🏠</span>
-      <b>Ana Sayfa</b>
-    </a>
-    <a href="#productions">
-      <span>🎬</span>
-      <b>Üretimler</b>
-    </a>
-    <a href="#tools">
-      <span>✨</span>
-      <b>Araçlar</b>
-    </a>
-    <a href="/fiyatlandirma.html#packs">
-      <span>💳</span>
-      <b>Krediler</b>
-    </a>
-  </nav>
+<nav class="bottom-nav">
+  <a class="active" href="#home">
+    <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+    <b>Ana Sayfa</b>
+  </a>
+  <a href="#productions">
+    <span class="nav-icon nav-icon-productions" aria-hidden="true"></span>
+    <b>Üretimler</b>
+  </a>
+  <a href="#tools">
+    <span class="nav-icon nav-icon-tools" aria-hidden="true"></span>
+    <b>Araçlar</b>
+  </a>
+  <a href="/fiyatlandirma.html#packs">
+    <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
+    <b>Krediler</b>
+  </a>
+</nav>
 
 <script>
   (async function(){
