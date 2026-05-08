@@ -247,7 +247,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       ratio: "1:1",
       imageFile: null,
       logoFile: null,
-      audioFile: null
+      audioFile: null,
+      imageUrl: "",
+      logoUrl: "",
+      audioUrl: ""
     },
 
     pro: {
@@ -259,7 +262,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       ratio: "16:9",
       imageFile: null,
       logoFile: null,
-      audioFile: null
+      audioFile: null,
+      imageUrl: "",
+      logoUrl: "",
+      audioUrl: ""
     }
   };
 
