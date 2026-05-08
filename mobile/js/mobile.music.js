@@ -389,24 +389,26 @@
             const cardTitle = index === 0
               ? (title || "Yeni müzik")
               : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
+card.innerHTML = `
+  <button class="mobile-ready-thumb" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat">
+    ♫
+  </button>
 
-             card.innerHTML = `
-  <button class="aivo-player-left mobile-library-thumb mobile-ready-play-thumb" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat">♪</button>
-
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
-    </div>
-    <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
+  <div class="mobile-ready-meta">
+    <div class="mobile-ready-title">${safe(cardTitle)}</div>
+    <div class="mobile-ready-sub">Müzik hazır</div>
     <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
   </div>
 
-  <div class="aivo-player-actions mobile-player-actions">
-    <a class="aivo-action mobile-player-icon-btn mobile-player-download-btn" href="${safe(audioUrl)}" download title="İndir" aria-label="İndir"></a>
-    <button class="aivo-action mobile-player-icon-btn mobile-player-delete-btn" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil"></button>
+  <div class="mobile-ready-actions">
+    <a class="mobile-ready-action" href="${safe(audioUrl)}" download title="İndir" aria-label="İndir">
+      ↓
+    </a>
+    <button class="mobile-ready-action" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil">
+      ×
+    </button>
   </div>
 `;
-
             const playBtn = card.querySelector('[data-action="mobile-play"]');
             const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
