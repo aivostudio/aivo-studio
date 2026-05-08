@@ -476,29 +476,46 @@ function bindProControls(){
 
   function buildBasicPayload(){
     return {
+      app: "atmo",
       mode: "basic",
       scene: state.basic.scene,
       effects: state.basic.effects.slice(),
       duration: state.basic.duration,
+      aspect: state.basic.ratio,
       ratio: state.basic.ratio,
       has_image: !!state.basic.imageFile,
       has_logo: !!state.basic.logoFile,
-      has_audio: !!state.basic.audioFile
+      has_audio: !!state.basic.audioFile,
+      meta: {
+        app: "atmo",
+        mode: "basic",
+        aspect_ratio: state.basic.ratio,
+        duration: state.basic.duration
+      }
     };
   }
 
   function buildProPayload(){
     return {
+      app: "atmo",
       mode: "pro",
       prompt: state.pro.prompt,
       light: state.pro.light,
       mood: state.pro.mood,
       details: state.pro.details.slice(),
       duration: state.pro.duration,
+      aspect: state.pro.ratio,
       ratio: state.pro.ratio,
       has_image: !!state.pro.imageFile,
       has_logo: !!state.pro.logoFile,
-      has_audio: !!state.pro.audioFile
+      has_audio: !!state.pro.audioFile,
+      meta: {
+        app: "atmo",
+        mode: "pro",
+        prompt: state.pro.prompt,
+        aspect_ratio: state.pro.ratio,
+        duration: state.pro.duration
+      }
     };
   }
 
