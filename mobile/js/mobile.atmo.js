@@ -522,48 +522,40 @@ function bindProControls(){
       });
     });
   }
-  function setFileLabel(input, file){
-    const label = input && input.closest("label");
-    if (!label) return;
+function setFileLabel(input, file){
+  const label = input && input.closest("label");
+  if (!label) return;
 
-    if (!label.dataset.originalText) {
-      label.dataset.originalText = safeText(label.textContent);
-    }
+  const labelMap = {
+    mobileAtmoLogoFile: "Logo Seç",
+    mobileAtmoAudioFile: "Audio Seç",
+    mobileAtmoProImageFile: "Referans",
+    mobileAtmoProLogoFile: "Logo",
+    mobileAtmoProAudioFile: "Audio"
+  };
 
-    const oldClear = label.querySelector(".mobile-atmo-file-clear");
-    if (oldClear) oldClear.remove();
+  const cleanText = labelMap[input.id] || "Dosya Seç";
+  const nextText = file ? cleanText + " ✓" : cleanText;
 
-    if (!file) {
-      label.childNodes.forEach(function(node){
-        if (node.nodeType === Node.TEXT_NODE) {
-          node.textContent = " " + label.dataset.originalText;
-        }
-      });
-      label.classList.remove("has-file");
-      return;
-    }
-    const shortName =
-      input.id.toLowerCase().includes("logo")
-        ? "Logo ✓"
-        : input.id.toLowerCase().includes("audio")
-          ? "Audio ✓"
-          : "Referans ✓";
+  const oldClear = label.querySelector(".mobile-atmo-file-clear");
+  if (oldClear) oldClear.remove();
 
-    label.childNodes.forEach(function(node){
-      if (node.nodeType === Node.TEXT_NODE) {
-        node.textContent = " " + shortName;
-      }
-    });
-
-    label.classList.add("has-file");
-
-    const clearBtn = document.createElement("button");
-    clearBtn.type = "button";
-    clearBtn.className = "mobile-atmo-file-clear";
-    clearBtn.setAttribute("data-mobile-atmo-clear-file", input.id);
-    clearBtn.textContent = "×";
-    label.appendChild(clearBtn);
+  const textEl = label.querySelector("b");
+  if (textEl) {
+    textEl.textContent = nextText;
   }
+
+  label.classList.toggle("has-file", !!file);
+
+  if (!file) return;
+
+  const clearBtn = document.createElement("button");
+  clearBtn.type = "button";
+  clearBtn.className = "mobile-atmo-file-clear";
+  clearBtn.setAttribute("data-mobile-atmo-clear-file", input.id);
+  clearBtn.textContent = "×";
+  label.appendChild(clearBtn);
+}
     function bindFileClearButtons(){
     root.addEventListener("click", function(e){
       const btn = e.target.closest("[data-mobile-atmo-clear-file]");
