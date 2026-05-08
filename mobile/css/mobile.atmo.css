@@ -349,3 +349,25 @@
   border-radius:15px !important;
   font-size:10.5px !important;
 }
+.mobile-atmo-mini-box{
+  width:100%;
+  margin:4px 0 12px !important;
+  padding:12px !important;
+  border-radius:18px !important;
+  background:rgba(0,0,0,.16) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+}
+
+.mobile-atmo-mini-box .field-label{
+  margin-bottom:8px !important;
+}
+
+.mobile-atmo-mini-box .mobile-atmo-ratio-row{
+  margin:0 !important;
+}
+
+.mobile-atmo-mini-box .mobile-atmo-ratio{
+  min-height:34px !important;
+  min-width:66px !important;
+  font-size:11px !important;
+}
