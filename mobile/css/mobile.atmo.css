@@ -299,3 +299,28 @@
   font-size:11px !important;
   line-height:1 !important;
 }
+.mobile-atmo-chip-row{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  gap:7px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  margin-bottom:12px !important;
+  padding-bottom:4px !important;
+  -webkit-overflow-scrolling:touch !important;
+  scrollbar-width:none !important;
+}
+
+.mobile-atmo-chip-row::-webkit-scrollbar{
+  display:none !important;
+}
+
+.mobile-atmo-chip-row .mobile-atmo-chip{
+  width:auto !important;
+  flex:0 0 auto !important;
+  min-height:30px !important;
+  padding:0 11px !important;
+  border-radius:999px !important;
+  font-size:10.5px !important;
+  line-height:1 !important;
+}
