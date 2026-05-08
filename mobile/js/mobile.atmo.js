@@ -256,11 +256,11 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   const state = {
     mode: "basic",
 
-    basic: {
+      basic: {
       scene: "",
       effects: [],
       duration: "4",
-      ratio: "1:1",
+      ratio: "16:9",
       imageFile: null,
       logoFile: null,
       audioFile: null,
@@ -269,13 +269,13 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       audioUrl: ""
     },
 
-    pro: {
+      pro: {
       prompt: "",
       light: "",
       mood: "",
-      details: [],
-      duration: "4",
-      ratio: "16:9",
+     details: [],
+     duration: "4",
+     ratio: "16:9",
       imageFile: null,
       logoFile: null,
       audioFile: null,
