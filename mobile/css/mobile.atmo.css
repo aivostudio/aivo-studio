@@ -522,14 +522,23 @@
   transform:rotate(18deg);
   animation:mobileAtmoShimmer 1.35s linear infinite;
 }
-
 .mobile-atmo-video-loading span{
   position:relative;
   z-index:2;
   padding:8px 13px;
   border-radius:999px;
-  background:rgba(0,0,0,.34);
-  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.08);
+  border:0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 22px rgba(180,120,255,.20);
+  animation:mobileAtmoLoadingTextPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes mobileAtmoLoadingTextPulse{
+  0%{ opacity:.58; transform:scale(.98); }
+  50%{ opacity:1; transform:scale(1); }
+  100%{ opacity:.58; transform:scale(.98); }
 }
 
 @keyframes mobileAtmoShimmer{
