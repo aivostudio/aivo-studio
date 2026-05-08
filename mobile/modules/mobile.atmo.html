@@ -1,0 +1,192 @@
+<section id="mobileAtmoSection">
+  <h2 class="section-title">AI Atmosfer Video</h2>
+
+  <section class="mobile-atmo-card">
+    <div class="mobile-atmo-hero">
+      <div class="mobile-atmo-kicker">AIVO Mobile Studio</div>
+      <h3>Atmosfer videosu üret</h3>
+      <p>Kar, yağmur, sis, ışık ve sinematik sahne hissini mobilde hızlıca oluştur.</p>
+    </div>
+
+    <div class="mobile-atmo-mode-tabs" role="tablist" aria-label="Atmosfer modu">
+      <button class="mobile-atmo-mode is-active" type="button" data-mobile-atmo-mode="basic">
+        Basit Mod
+      </button>
+      <button class="mobile-atmo-mode" type="button" data-mobile-atmo-mode="pro">
+        Süper Mod ✨
+      </button>
+    </div>
+  </section>
+
+  <section class="mobile-atmo-panel is-active" data-mobile-atmo-panel="basic">
+    <h3 class="mobile-atmo-block-title">Arka Mekan</h3>
+    <p class="mobile-atmo-block-sub">Hazır sahne seç veya kendi atmosferini oluştur.</p>
+
+    <div class="mobile-atmo-scene-grid">
+      <button class="mobile-atmo-scene" type="button" data-atmo-scene="winter_cafe">
+        <b>Kış Kafe</b>
+        <span>Neon ışıklar, kar, sıcak vibe.</span>
+      </button>
+
+      <button class="mobile-atmo-scene" type="button" data-atmo-scene="cozy_cabin">
+        <b>Dağ Evi</b>
+        <span>Şömine, ahşap, cozy.</span>
+      </button>
+
+      <button class="mobile-atmo-scene" type="button" data-atmo-scene="lake_cabin">
+        <b>Göl Kenarı</b>
+        <span>Sakin, sinematik yansıma.</span>
+      </button>
+
+      <button class="mobile-atmo-scene" type="button" data-atmo-scene="city_night">
+        <b>Şehir Gecesi</b>
+        <span>Bokeh, sokak lambaları.</span>
+      </button>
+
+      <button class="mobile-atmo-scene" type="button" data-atmo-scene="rainy_window">
+        <b>Yağmurlu Pencere</b>
+        <span>Cam damlaları, loş ışık.</span>
+      </button>
+
+      <button class="mobile-atmo-scene" type="button" data-atmo-scene="old_stone_street">
+        <b>Eski Taş Sokak</b>
+        <span>Islak zemin, klip hissi.</span>
+      </button>
+    </div>
+
+    <h3 class="mobile-atmo-block-title">Atmosfer</h3>
+    <p class="mobile-atmo-block-sub">İstediğin kadar seç.</p>
+
+    <div class="mobile-atmo-chip-row" id="mobileAtmoEffects">
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="snow">❄️ Kar</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="rain">🌧️ Yağmur</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="leaf">🍃 Yaprak</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="fog">🌫️ Sis</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="light">✨ Işık</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="fire">🔥 Ateş</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-eff="wind">🌬️ Rüzgar</button>
+    </div>
+
+    <label class="field-label" for="mobileAtmoDuration">Süre</label>
+    <select id="mobileAtmoDuration" class="field-input">
+      <option value="4" selected>4 sn</option>
+      <option value="6">6 sn</option>
+      <option value="8">8 sn</option>
+      <option value="10">10 sn</option>
+      <option value="12">12 sn</option>
+      <option value="15">15 sn</option>
+    </select>
+
+    <h3 class="mobile-atmo-block-title">Kişiselleştirme</h3>
+
+    <div class="mobile-atmo-ratio-row">
+      <button class="mobile-atmo-ratio is-active" type="button" data-atmo-ratio="16:9">16:9</button>
+      <button class="mobile-atmo-ratio" type="button" data-atmo-ratio="1:1">1:1</button>
+      <button class="mobile-atmo-ratio" type="button" data-atmo-ratio="9:16">9:16</button>
+    </div>
+
+    <div class="mobile-atmo-upload-grid">
+      <label class="mobile-atmo-upload-btn">
+        <input id="mobileAtmoImageFile" type="file" accept="image/*" hidden>
+        🖼️ Resim Seç
+      </label>
+
+      <label class="mobile-atmo-upload-btn">
+        <input id="mobileAtmoLogoFile" type="file" accept="image/*" hidden>
+        🏷️ Logo Seç
+      </label>
+
+      <label class="mobile-atmo-upload-btn">
+        <input id="mobileAtmoAudioFile" type="file" accept="audio/*" hidden>
+        🎵 Audio Seç
+      </label>
+    </div>
+
+    <button id="mobileAtmoGenerateBtn" class="generate-btn" type="button" data-mobile-atmo-generate data-mobile-atmo-mode-value="basic">
+      🎬 Atmosfer Video Oluştur (30 Kredi)
+    </button>
+
+    <div id="mobileAtmoStatus" class="mobile-status"></div>
+  </section>
+
+  <section class="mobile-atmo-panel" data-mobile-atmo-panel="pro" hidden>
+    <h3 class="mobile-atmo-block-title">Süper Mod</h3>
+    <p class="mobile-atmo-block-sub">Sahne, kamera ve atmosferi tek cümlede anlat.</p>
+
+    <label class="field-label" for="mobileAtmoPrompt">Prompt</label>
+    <textarea id="mobileAtmoPrompt" class="field-textarea mobile-atmo-prompt" maxlength="5000" placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."></textarea>
+
+    <div class="mobile-atmo-count">
+      <span id="mobileAtmoPromptCount">0</span> / 5000
+    </div>
+
+    <h3 class="mobile-atmo-block-title">Atmosfer Stili</h3>
+
+    <div class="mobile-atmo-style-grid">
+      <button class="mobile-atmo-chip" type="button" data-atmo-light="warm">💡 Sıcak</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-light="cold">❄️ Soğuk</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-light="golden">🌅 Golden Hour</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-light="neon">🟣 Neon</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-mood="romantic">💜 Romantik</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-mood="cinematic">🎬 Sinematik</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-mood="cozy">🫶 Cozy</button>
+      <button class="mobile-atmo-chip" type="button" data-atmo-mood="mystic">🕯️ Gizemli</button>
+    </div>
+
+    <h3 class="mobile-atmo-block-title">Detay Efektler</h3>
+
+    <div class="mobile-atmo-check-grid">
+      <label><input type="checkbox" data-atmo-detail="grain"> 🎞️ Hafif Film Grain</label>
+      <label><input type="checkbox" data-atmo-detail="glow"> ✨ Bloom / Lens Glow</label>
+      <label><input type="checkbox" data-atmo-detail="vignette"> 🌑 Vignette</label>
+      <label><input type="checkbox" data-atmo-detail="sharpen"> 🔍 Hafif Sharpen</label>
+      <label><input type="checkbox" data-atmo-detail="motionBlur"> 🌀 Motion Blur</label>
+      <label><input type="checkbox" data-atmo-detail="dust"> 🎥 Film Dust</label>
+    </div>
+
+    <label class="field-label" for="mobileAtmoProDuration">Süre</label>
+    <select id="mobileAtmoProDuration" class="field-input">
+      <option value="4" selected>4 sn</option>
+      <option value="6">6 sn</option>
+      <option value="8">8 sn</option>
+      <option value="10">10 sn</option>
+      <option value="12">12 sn</option>
+      <option value="15">15 sn</option>
+    </select>
+
+    <div class="mobile-atmo-ratio-row">
+      <button class="mobile-atmo-ratio is-active" type="button" data-atmo-pro-ratio="16:9">16:9</button>
+      <button class="mobile-atmo-ratio" type="button" data-atmo-pro-ratio="1:1">1:1</button>
+      <button class="mobile-atmo-ratio" type="button" data-atmo-pro-ratio="9:16">9:16</button>
+    </div>
+
+    <div class="mobile-atmo-upload-grid">
+      <label class="mobile-atmo-upload-btn">
+        <input id="mobileAtmoProImageFile" type="file" accept="image/*" hidden>
+        🖼️ Referans
+      </label>
+
+      <label class="mobile-atmo-upload-btn">
+        <input id="mobileAtmoProLogoFile" type="file" accept="image/*" hidden>
+        🏷️ Logo
+      </label>
+
+      <label class="mobile-atmo-upload-btn">
+        <input id="mobileAtmoProAudioFile" type="file" accept="audio/*" hidden>
+        🎵 Audio
+      </label>
+    </div>
+
+    <button id="mobileAtmoProGenerateBtn" class="generate-btn" type="button" data-mobile-atmo-generate data-mobile-atmo-mode-value="pro">
+      ✨ Süper Atmosfer Video Oluştur (45 Kredi)
+    </button>
+
+    <div id="mobileAtmoProStatus" class="mobile-status"></div>
+  </section>
+
+  <h2 class="section-title">Son atmosfer videoları</h2>
+
+  <div id="mobileAtmoResults" class="empty-card">
+    Henüz mobil atmosfer videosu başlatılmadı.
+  </div>
+</section>
