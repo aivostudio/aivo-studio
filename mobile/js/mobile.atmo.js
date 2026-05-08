@@ -632,12 +632,15 @@ function bindProControls(){
         .then(function(data){
           console.log("[MOBILE ATMO][PRO RESPONSE]", data);
 
-          const realJobId =
-            String(
-              data.job_id ||
-              data.id ||
-              tempId
-            );
+                  const realJobId = String(
+            data.job_id ||
+            data.job?.job_id ||
+            data.job?.id ||
+            data.id ||
+            ""
+          ).trim();
+
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(realJobId);
 
           const job = mobileAtmoJobs.find(function(item){
             return item.id === tempId;
@@ -645,7 +648,16 @@ function bindProControls(){
 
           if (!job) return;
 
-                 job.id = realJobId;
+          if (!isUuid) {
+            job.status = "error";
+            job.title = "Job ID alınamadı";
+            renderMobileAtmoResults();
+            setStatus("Üretim başladı ama gerçek job_id alınamadı.");
+            console.warn("[MOBILE ATMO][PRO NO UUID]", data);
+            return;
+          }
+
+          job.id = realJobId;
           job.status = "processing";
 
           renderMobileAtmoResults();
