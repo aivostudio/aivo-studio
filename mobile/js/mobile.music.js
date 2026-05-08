@@ -390,24 +390,24 @@
               ? (title || "Yeni müzik")
               : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
 
-            card.innerHTML = `
-              <div class="aivo-player-left">
-                <button class="aivo-action" type="button" data-action="mobile-play" title="Oynat">▶</button>
-              </div>
+           card.innerHTML = `
+  <div class="aivo-player-left">
+    <button class="aivo-action mobile-player-icon-btn mobile-player-play-btn" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat"></button>
+  </div>
 
-              <div class="aivo-player-mid">
-                <div class="aivo-player-titleRow">
-                  <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
-                </div>
-                <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
-                <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
-              </div>
+  <div class="aivo-player-mid">
+    <div class="aivo-player-titleRow">
+      <div class="aivo-player-title" style="font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe(cardTitle)}</div>
+    </div>
+    <div class="aivo-player-sub" style="font-size:11px;margin-top:2px;">Müzik hazır</div>
+    <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
+  </div>
 
-              <div class="aivo-player-actions" style="position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:6px;">
-                <a class="aivo-action" href="${safe(audioUrl)}" download title="İndir" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:13px;border:1px solid rgba(168,85,247,.42);background:rgba(168,85,247,.16);box-shadow:0 0 18px rgba(168,85,247,.18);">↓</a>
-                <button class="aivo-action is-danger" type="button" data-action="mobile-remove" title="Sil" style="min-width:30px;width:30px;height:30px;border-radius:10px;font-size:14px;border:1px solid rgba(236,72,153,.55);background:rgba(236,72,153,.22);box-shadow:0 0 18px rgba(236,72,153,.22);">🗑</button>
-              </div>
-            `;
+  <div class="aivo-player-actions mobile-player-actions">
+    <a class="aivo-action mobile-player-icon-btn mobile-player-download-btn" href="${safe(audioUrl)}" download title="İndir" aria-label="İndir"></a>
+    <button class="aivo-action mobile-player-icon-btn mobile-player-delete-btn" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil"></button>
+  </div>
+`;
 
             const playBtn = card.querySelector('[data-action="mobile-play"]');
             const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
