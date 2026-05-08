@@ -571,3 +571,20 @@
   align-items:center;
   justify-content:center;
 }
+.mobile-atmo-upload-btn::after{
+  content:"Ücretsiz";
+  position:absolute;
+  left:50%;
+  bottom:4px;
+  transform:translateX(-50%);
+  font-size:8px;
+  font-weight:900;
+  color:rgba(255,255,255,.48);
+  pointer-events:none;
+}
+
+.mobile-atmo-upload-btn:has(input[id*="Logo"])::after,
+.mobile-atmo-upload-btn:has(input[id*="Audio"])::after{
+  content:"+10";
+  color:rgba(216,180,254,.82);
+}
