@@ -526,9 +526,7 @@
             </div>
           </div>
 
-          <div class="aivo-player-actions">
-            <button class="aivo-action" type="button" disabled style="opacity:.55;">▶</button>
-          </div>
+         <div class="aivo-player-actions mobile-pending-actions" aria-hidden="true"></div>
         `;
 
         resultsEl.appendChild(card);
