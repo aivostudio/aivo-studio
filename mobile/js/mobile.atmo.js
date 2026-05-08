@@ -447,7 +447,47 @@ function bindProControls(){
     state.pro.ratio = safeText(proRatioEl.value) || "1:1";
   }
 }
+   function uploadMobileAtmoFile(file, kind){
+    if (!file) return Promise.resolve("");
 
+    return fetch("/api/r2/scan-and-presign", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        app: "atmo",
+        kind: kind,
+        filename: file.name,
+        contentType: file.type,
+        prefix: "uploads/atmo/tmp/"
+      })
+    })
+    .then(function(res){
+      return res.json();
+    })
+    .then(function(data){
+      if (!data || !data.ok || !data.upload_url || !data.public_url) {
+        throw new Error("presign_failed");
+      }
+
+      return fetch(data.upload_url, {
+        method: "PUT",
+        headers: data.required_headers || {
+          "Content-Type": file.type
+        },
+        body: file
+      })
+      .then(function(uploadRes){
+        if (!uploadRes.ok) {
+          throw new Error("r2_upload_failed");
+        }
+
+        return data.public_url;
+      });
+    });
+  }
   function setFileLabel(input, file){
     const label = input && input.closest("label");
     if (!label) return;
