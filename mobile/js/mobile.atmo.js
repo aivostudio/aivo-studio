@@ -63,6 +63,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
             <div class="mobile-atmo-video-actions">
               <button type="button" data-mobile-atmo-act="download" ${ready ? "" : "disabled"}>⬇</button>
               <button type="button" data-mobile-atmo-act="share" ${ready ? "" : "disabled"}>↗</button>
+              <button type="button" data-mobile-atmo-act="sound" ${ready ? "" : "disabled"}>🔇</button>
               <button type="button" data-mobile-atmo-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
               <button type="button" data-mobile-atmo-act="delete">🗑</button>
             </div>
