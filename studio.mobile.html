@@ -9,6 +9,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/css/player.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.music.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.cover.css?v=1">
 
   <style>
     *{box-sizing:border-box}
@@ -234,6 +235,9 @@
     <div id="mobileMusicMount">
       <div class="empty-card">Müzik modülü yükleniyor...</div>
     </div>
+    <div id="mobileCoverMount" hidden>
+  <div class="empty-card">Kapak modülü yükleniyor...</div>
+</div>
   </main>
 
   <nav class="bottom-nav">
@@ -273,6 +277,10 @@
 
         const script = document.createElement("script");
         script.src = "/mobile/js/mobile.music.js?v=1";
+        const coverScript = document.createElement("script");
+        coverScript.src = "/mobile/js/mobile.cover.js?v=1";
+        coverScript.defer = true;
+        document.body.appendChild(coverScript);
         script.defer = true;
         document.body.appendChild(script);
       } catch (err) {
