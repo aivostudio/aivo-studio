@@ -1,0 +1,322 @@
+(function(){
+  const root = document.getElementById("mobileCoverSection");
+  if (!root || root.__mobileCoverBound) return;
+  root.__mobileCoverBound = true;
+
+  const promptEl = root.querySelector("#coverPrompt");
+  const countEl = root.querySelector("#coverPromptCount");
+  const qualityBtns = Array.from(root.querySelectorAll(".mobile-quality-pill"));
+  const styleBtns = Array.from(root.querySelectorAll(".mobile-style-card"));
+  const countSelect = root.querySelector("#coverCount");
+  const ratioSelect = root.querySelector("#coverRatio");
+  const creditEl = root.querySelector("#coverRequiredCredit");
+  const generateBtn = root.querySelector("#coverGenerateBtn");
+  const statusEl = root.querySelector("#mobileCoverStatus");
+  const resultsEl = root.querySelector("#mobileCoverResults");
+
+  if (!promptEl || !generateBtn || !statusEl || !resultsEl) return;
+
+  let selectedQuality = "artist";
+  let selectedCredit = 6;
+  let selectedStyle = "";
+
+  function safe(value){
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function postJSON(url, payload){
+    return fetch(url, {
+      method:"POST",
+      credentials:"include",
+      headers:{
+        "content-type":"application/json",
+        "accept":"application/json"
+      },
+      body:JSON.stringify(payload)
+    }).then(async function(res){
+      const data = await res.json().catch(function(){ return null; });
+
+      if (!res.ok || !data || data.ok === false) {
+        throw new Error(data && data.error ? data.error : "request_failed");
+      }
+
+      return data;
+    });
+  }
+
+  function updatePromptCount(){
+    if (!countEl) return;
+    countEl.textContent = String((promptEl.value || "").length) + " / 1000";
+  }
+
+  function setQuality(btn){
+    const q = String(btn.getAttribute("data-quality") || "artist");
+    const credit = Number(btn.getAttribute("data-credit-cost") || (q === "ultra" ? 9 : 6));
+
+    selectedQuality = q === "ultra" ? "ultra" : "artist";
+    selectedCredit = credit || (selectedQuality === "ultra" ? 9 : 6);
+
+    qualityBtns.forEach(function(item){
+      const on = item === btn;
+      item.classList.toggle("is-active", on);
+      item.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    if (creditEl) creditEl.textContent = String(selectedCredit);
+
+    generateBtn.setAttribute("data-credit-cost", String(selectedCredit));
+    generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
+  }
+
+  function setStyle(btn){
+    selectedStyle = String(btn.getAttribute("data-style") || "");
+
+    styleBtns.forEach(function(item){
+      const on = item === btn;
+      item.classList.toggle("is-active", on);
+      item.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    const stylePrompt = String(btn.getAttribute("data-prompt") || "").trim();
+
+    if (stylePrompt) {
+      promptEl.value = stylePrompt;
+      updatePromptCount();
+    }
+  }
+
+  function withCoverPrompt(raw, quality){
+    const base = String(raw || "").trim();
+
+    const guard = [
+      base,
+      "premium music cover artwork",
+      "spotify and apple music quality album cover",
+      "clean balanced composition",
+      "strong focal subject",
+      "cinematic lighting",
+      "premium color grading",
+      "minimal clutter",
+      "no text",
+      "no typography",
+      "no letters",
+      "no words",
+      "no logo",
+      "no watermark"
+    ].join(", ");
+
+    if (quality !== "ultra") return guard;
+
+    return [
+      "Kullanıcı isteğine sadık kal:",
+      base,
+      "Ana özneyi doğru koru.",
+      "Alakasız insan yüzü, portre, kadın, erkek veya manzara ekleme.",
+      "Temiz, güçlü, premium cover kompozisyonu üret.",
+      "Yazı, harf, logo, watermark, tipografi olmasın.",
+      guard
+    ].join(" ");
+  }
+
+  async function generateOneCover(prompt, ratio, quality, index){
+    const promptForModel = withCoverPrompt(
+      index > 0 ? prompt + " #" + (index + 1) : prompt,
+      quality
+    );
+
+    const falData = await postJSON("/api/providers/fal/predictions/create?app=cover", {
+      input:{
+        prompt: promptForModel,
+        quality,
+        ratio
+      }
+    });
+
+    const imageUrl =
+      falData.output ||
+      falData.imageUrl ||
+      falData.image_url ||
+      falData.url ||
+      falData.fal?.images?.[0]?.url ||
+      "";
+
+    if (!imageUrl) {
+      throw new Error("cover_generate_no_image");
+    }
+
+    const dbData = await postJSON("/api/cover/generate", {
+      prompt,
+      style: selectedStyle || null,
+      quality,
+      ratio,
+      imageUrl
+    });
+
+    return {
+      imageUrl,
+      jobId: dbData.job_id || "",
+      prompt,
+      quality,
+      ratio
+    };
+  }
+
+  function renderLoadingCards(count){
+    resultsEl.className = "";
+    resultsEl.innerHTML = "";
+
+    for (let i = 0; i < count; i += 1) {
+      const card = document.createElement("div");
+      card.className = "mobile-cover-result-card";
+      card.innerHTML = `
+        <div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(236,72,153,.14));">
+          <div style="width:28px;height:28px;border-radius:999px;border:3px solid rgba(255,255,255,.32);border-top-color:#fff;animation:aivoSpin .85s linear infinite;"></div>
+        </div>
+        <div class="mobile-cover-result-meta">
+          <span>Hazırlanıyor</span>
+          <span>${i === 0 ? "Orijinal" : "Versiyon " + (i + 1)}</span>
+        </div>
+      `;
+      resultsEl.appendChild(card);
+    }
+  }
+
+  function renderCoverCard(payload, index){
+    const card = document.createElement("div");
+    card.className = "mobile-cover-result-card";
+
+    card.innerHTML = `
+      <img src="${safe(payload.imageUrl)}" alt="AIVO kapak görseli">
+      <div class="mobile-cover-result-meta">
+        <span>${index === 0 ? "Kapak hazır" : "Versiyon " + (index + 1)}</span>
+        <div class="mobile-cover-result-actions">
+          <a class="mobile-cover-action" href="${safe(payload.imageUrl)}" download title="İndir">↓</a>
+          <button class="mobile-cover-action" type="button" data-action="delete-cover" title="Sil">×</button>
+        </div>
+      </div>
+    `;
+
+    const deleteBtn = card.querySelector('[data-action="delete-cover"]');
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", function(){
+        card.remove();
+
+        if (!resultsEl.querySelector(".mobile-cover-result-card")) {
+          resultsEl.className = "empty-card";
+          resultsEl.innerHTML = "Henüz mobil kapak üretimi başlatılmadı.";
+          statusEl.textContent = "";
+        }
+      });
+    }
+
+    return card;
+  }
+
+  async function consumeCredits(cost){
+    const requestId = "mobile-cover:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
+    const reason = selectedQuality === "ultra"
+      ? "mobile_cover_generate_ultra"
+      : "mobile_cover_generate_artist";
+
+    const res = await fetch("/api/credits/consume-ledger", {
+      method:"POST",
+      credentials:"include",
+      headers:{
+        "content-type":"application/json",
+        "accept":"application/json"
+      },
+      body:JSON.stringify({
+        app:"cover",
+        action:reason,
+        cost,
+        request_id:requestId,
+        reason
+      })
+    });
+
+    const data = await res.json().catch(function(){ return null; });
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error("insufficient_credit");
+    }
+
+    return data;
+  }
+
+  qualityBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      setQuality(btn);
+    });
+  });
+
+  styleBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      setStyle(btn);
+    });
+  });
+
+  promptEl.addEventListener("input", updatePromptCount);
+  promptEl.addEventListener("change", updatePromptCount);
+
+  generateBtn.addEventListener("click", async function(){
+    const prompt = String(promptEl.value || "").trim();
+    const count = Number(countSelect?.value || 1) || 1;
+    const ratio = String(ratioSelect?.value || "1:1");
+
+    if (!prompt) {
+      statusEl.textContent = "Prompt yazmadan kapak üretimi başlatılamaz.";
+      return;
+    }
+
+    generateBtn.disabled = true;
+    generateBtn.textContent = "Üretiliyor...";
+    statusEl.textContent = "Kredi kontrol ediliyor...";
+
+    try {
+      await consumeCredits(selectedCredit);
+
+      statusEl.textContent = "Kapak üretimi başlatıldı...";
+      renderLoadingCards(count);
+
+      const created = [];
+
+      for (let i = 0; i < count; i += 1) {
+        const item = await generateOneCover(prompt, ratio, selectedQuality, i);
+        created.push(item);
+      }
+
+      resultsEl.className = "";
+      resultsEl.innerHTML = "";
+
+      created.forEach(function(item, index){
+        resultsEl.appendChild(renderCoverCard(item, index));
+      });
+
+      statusEl.textContent = "Kapak hazır.";
+    } catch (err) {
+      const msg = String(err && err.message ? err.message : err);
+
+      if (msg === "insufficient_credit") {
+        statusEl.textContent = "Kredi yetersiz. Paket sayfasına yönlendiriliyorsun...";
+        const to = encodeURIComponent(location.pathname + location.search + location.hash);
+        location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+        return;
+      }
+
+      statusEl.textContent = "Kapak üretilemedi: " + msg;
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
+    }
+  });
+
+  updatePromptCount();
+
+  if (qualityBtns[0]) setQuality(qualityBtns[0]);
+  if (styleBtns[0]) setStyle(styleBtns[0]);
+})();
