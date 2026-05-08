@@ -536,13 +536,12 @@ function bindProControls(){
     if (!file) {
       label.childNodes.forEach(function(node){
         if (node.nodeType === Node.TEXT_NODE) {
-          node.textContent = " " + label.dataset.originalText.replace(/^[^\s]+\s*/, "");
+          node.textContent = " " + label.dataset.originalText;
         }
       });
       label.classList.remove("has-file");
       return;
     }
-
     const shortName =
       input.id.toLowerCase().includes("logo")
         ? "Logo ✓"
