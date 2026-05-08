@@ -344,6 +344,7 @@
     if (!musicMount) return;
 
     let coverMount = document.getElementById("mobileCoverMount");
+    let toolsMount = document.getElementById("mobileToolsMount");
 
     if (!coverMount) {
       coverMount = document.createElement("div");
@@ -406,9 +407,10 @@
       coverMount.hidden = true;
     }
 
-   function showCover(){
+  function showCover(){
   musicMount.hidden = true;
   coverMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
 
   const heroSub = document.getElementById("mobileHeroSub");
   if (heroSub) {
@@ -464,21 +466,17 @@
       }, true);
     }
 
-    if (toolsNav) {
-      toolsNav.addEventListener("click", function(e){
-        e.preventDefault();
+   if (toolsNav) {
+  toolsNav.addEventListener("click", function(e){
+    e.preventDefault();
 
-        activeMobileModule = "cover";
+    musicMount.hidden = true;
+    coverMount.hidden = true;
+    if (toolsMount) toolsMount.hidden = false;
 
-        showCover();
-        setCoverLibraryOnly(false);
-        setActiveNav(toolsNav);
-
-        if (typeof window.mobileCoverHydrate === "function") {
-          window.mobileCoverHydrate();
-        }
-      });
-    }
+    setActiveNav(toolsNav);
+  });
+}
   })();
 </script>
 </body>
