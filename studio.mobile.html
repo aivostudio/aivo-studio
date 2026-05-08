@@ -492,6 +492,7 @@
 
     let coverMount = document.getElementById("mobileCoverMount");
     let toolsMount = document.getElementById("mobileToolsMount");
+    let atmoMount = document.getElementById("mobileAtmoMount");
 
     if (!coverMount) {
       coverMount = document.createElement("div");
@@ -500,7 +501,13 @@
       coverMount.innerHTML = '<div class="empty-card">Kapak modülü yükleniyor...</div>';
       musicMount.insertAdjacentElement("afterend", coverMount);
     }
-
+    if (!atmoMount) {
+  atmoMount = document.createElement("div");
+  atmoMount.id = "mobileAtmoMount";
+  atmoMount.hidden = true;
+  atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yükleniyor...</div>';
+  coverMount.insertAdjacentElement("afterend", atmoMount);
+}
     try {
       const musicRes = await fetch("/mobile/modules/mobile.music.html?v=1", {
         cache: "no-store"
@@ -538,6 +545,19 @@
     } catch (err) {
       coverMount.innerHTML = '<div class="empty-card">Kapak modülü yüklenemedi.</div>';
     }
+    try {
+  const atmoRes = await fetch("/mobile/modules/mobile.atmo.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!atmoRes.ok) {
+    throw new Error("mobile_atmo_html_load_failed");
+  }
+
+  atmoMount.innerHTML = await atmoRes.text();
+} catch (err) {
+  atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yüklenemedi.</div>';
+}
 
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
@@ -551,6 +571,7 @@
 function showMusic(){
   musicMount.hidden = false;
   coverMount.hidden = true;
+  atmoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 }
 
