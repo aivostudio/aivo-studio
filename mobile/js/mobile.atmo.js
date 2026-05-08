@@ -207,28 +207,23 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     });
   }
 
-  function bindProControls(){
-    const proRatioButtons = Array.from(root.querySelectorAll("[data-atmo-pro-ratio]"));
-
-    if (proDurationEl) {
-      proDurationEl.addEventListener("change", function(){
-        state.pro.duration = safeText(proDurationEl.value) || "4";
-      });
-
+function bindProControls(){
+  if (proDurationEl) {
+    proDurationEl.addEventListener("change", function(){
       state.pro.duration = safeText(proDurationEl.value) || "4";
-    }
-
-    proRatioButtons.forEach(function(btn){
-      btn.addEventListener("click", function(){
-        const value = safeText(btn.getAttribute("data-atmo-pro-ratio")) || "16:9";
-        state.pro.ratio = value;
-
-        proRatioButtons.forEach(function(item){
-          item.classList.toggle("is-active", item === btn);
-        });
-      });
     });
+
+    state.pro.duration = safeText(proDurationEl.value) || "4";
   }
+
+  if (proRatioEl) {
+    proRatioEl.addEventListener("change", function(){
+      state.pro.ratio = safeText(proRatioEl.value) || "1:1";
+    });
+
+    state.pro.ratio = safeText(proRatioEl.value) || "1:1";
+  }
+}
 
   function setFileLabel(input, file){
     const label = input && input.closest("label");
