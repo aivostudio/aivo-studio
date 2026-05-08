@@ -19,7 +19,140 @@ const proDurationEl = root.querySelector("#mobileAtmoProDuration");
 const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   const basicGenerateBtn = root.querySelector("#mobileAtmoGenerateBtn");
   const proGenerateBtn = root.querySelector("#mobileAtmoProGenerateBtn");
+   const resultsEl = root.querySelector("#mobileAtmoResults");
 
+  const mobileAtmoJobs = [];
+  const mobileAtmoDeletedIds = new Set();
+
+  function esc(value){
+    return String(value == null ? "" : value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function renderMobileAtmoResults(){
+    if (!resultsEl) return;
+
+    const items = mobileAtmoJobs.filter(function(job){
+      return !mobileAtmoDeletedIds.has(job.id);
+    });
+
+    if (!items.length) {
+      resultsEl.className = "empty-card";
+      resultsEl.innerHTML = "Henüz mobil atmosfer videosu başlatılmadı.";
+      return;
+    }
+
+    resultsEl.className = "mobile-atmo-results";
+
+    resultsEl.innerHTML = items.map(function(job){
+      const ready = !!job.videoUrl;
+
+      return `
+        <article class="mobile-atmo-video-card" data-mobile-atmo-job="${esc(job.id)}">
+          <div class="mobile-atmo-video-media">
+            ${
+              ready
+                ? `<video class="mobile-atmo-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
+                : `<div class="mobile-atmo-video-loading"><span>Hazırlanıyor…</span></div>`
+            }
+
+            <div class="mobile-atmo-video-actions">
+              <button type="button" data-mobile-atmo-act="download" ${ready ? "" : "disabled"}>⬇</button>
+              <button type="button" data-mobile-atmo-act="share" ${ready ? "" : "disabled"}>↗</button>
+              <button type="button" data-mobile-atmo-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+              <button type="button" data-mobile-atmo-act="delete">🗑</button>
+            </div>
+
+            <button class="mobile-atmo-video-play" type="button" data-mobile-atmo-act="play" ${ready ? "" : "disabled"}>▶</button>
+          </div>
+
+          <div class="mobile-atmo-video-title">${esc(job.title || "Atmosfer video")}</div>
+        </article>
+      `;
+    }).join("");
+  }
+    function bindMobileAtmoResultActions(){
+    if (!resultsEl || resultsEl.__mobileAtmoActionsBound) return;
+    resultsEl.__mobileAtmoActionsBound = true;
+
+    resultsEl.addEventListener("click", async function(e){
+      const btn = e.target.closest("[data-mobile-atmo-act]");
+      if (!btn) return;
+
+      const card = btn.closest("[data-mobile-atmo-job]");
+      if (!card) return;
+
+      const act = btn.getAttribute("data-mobile-atmo-act");
+      const id = card.getAttribute("data-mobile-atmo-job");
+      const job = mobileAtmoJobs.find(function(item){
+        return item.id === id;
+      });
+
+      if (!job) return;
+
+      if (act === "play") {
+        const video = card.querySelector("video");
+        if (!video) return;
+
+        if (video.paused) {
+          video.play().catch(function(){});
+        } else {
+          video.pause();
+        }
+
+        return;
+      }
+
+      if (act === "fullscreen") {
+        const video = card.querySelector("video");
+        if (!video) return;
+
+        if (video.requestFullscreen) {
+          video.requestFullscreen().catch(function(){});
+        }
+
+        return;
+      }
+
+      if (act === "download") {
+        if (!job.videoUrl) return;
+
+        const a = document.createElement("a");
+        a.href = job.videoUrl;
+        a.download = "aivo-atmosfer-video.mp4";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        return;
+      }
+
+      if (act === "share") {
+        if (!job.videoUrl) return;
+
+        if (navigator.share) {
+          navigator.share({
+            title: "AIVO Atmosfer Video",
+            url: job.videoUrl
+          }).catch(function(){});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(job.videoUrl).catch(function(){});
+        }
+
+        return;
+      }
+
+      if (act === "delete") {
+        mobileAtmoDeletedIds.add(id);
+        renderMobileAtmoResults();
+        return;
+      }
+    });
+  }
   const state = {
     mode: "basic",
 
@@ -313,7 +446,18 @@ function bindProControls(){
           return;
         }
 
-        setStatus("Atmosfer video üretimi bir sonraki adımda backend’e bağlanacak.");
+                const jobId = "mobile-atmo-" + Date.now();
+
+        mobileAtmoJobs.unshift({
+          id: jobId,
+          title: "Atmosfer video hazırlanıyor",
+          videoUrl: "",
+          payload: payload
+        });
+
+        renderMobileAtmoResults();
+
+        setStatus("Atmosfer video hazırlanıyor...");
         console.log("[MOBILE ATMO][BASIC PAYLOAD]", payload);
       });
     }
@@ -327,7 +471,18 @@ function bindProControls(){
           return;
         }
 
-        setStatus("Süper atmosfer üretimi bir sonraki adımda backend’e bağlanacak.");
+            const jobId = "mobile-atmo-" + Date.now();
+
+        mobileAtmoJobs.unshift({
+          id: jobId,
+          title: payload.prompt || "Süper atmosfer video hazırlanıyor",
+          videoUrl: "",
+          payload: payload
+        });
+
+        renderMobileAtmoResults();
+
+        setStatus("Süper atmosfer video hazırlanıyor...");
         console.log("[MOBILE ATMO][PRO PAYLOAD]", payload);
       });
     }
@@ -343,6 +498,7 @@ function bindProControls(){
   bindProControls();
   bindFiles();
   bindGenerateButtons();
+ bindMobileAtmoResultActions();
 
   setMode("basic");
 
