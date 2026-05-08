@@ -315,8 +315,91 @@
     }
   });
 
+  async function hydrateCoverLibrary(){
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Kapaklar yükleniyor...";
+
+    try {
+      const res = await fetch("/api/jobs/list?app=cover", {
+        credentials:"include",
+        headers:{
+          "accept":"application/json"
+        },
+        cache:"no-store"
+      });
+
+      const data = await res.json();
+
+      const rows = Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.jobs)
+          ? data.jobs
+          : Array.isArray(data)
+            ? data
+            : [];
+
+      if (!rows.length) {
+        resultsEl.className = "empty-card";
+        resultsEl.innerHTML = "Henüz mobil kapak üretimi başlatılmadı.";
+        return;
+      }
+
+      resultsEl.className = "";
+      resultsEl.innerHTML = "";
+
+      rows.reverse().forEach(function(row, index){
+        const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+
+        const firstImageOutput = outputs.find(function(output){
+          return output && (
+            output.url ||
+            output.imageUrl ||
+            output.image_url ||
+            output.src
+          );
+        });
+
+        const imageUrl =
+          row.imageUrl ||
+          row.image_url ||
+          row.url ||
+          row.output_url ||
+          row.meta?.imageUrl ||
+          row.meta?.image_url ||
+          row.meta?.url ||
+          firstImageOutput?.url ||
+          firstImageOutput?.imageUrl ||
+          firstImageOutput?.image_url ||
+          firstImageOutput?.src ||
+          "";
+
+        if (!imageUrl) return;
+
+        resultsEl.appendChild(renderCoverCard({
+          imageUrl,
+          jobId: row.id || row.job_id || "",
+          prompt: row.prompt || row.meta?.prompt || "",
+          quality: row.meta?.quality || "artist",
+          ratio: row.meta?.ratio || "1:1"
+        }, index));
+      });
+
+      if (!resultsEl.querySelector(".mobile-cover-result-card")) {
+        resultsEl.className = "empty-card";
+        resultsEl.innerHTML = "Henüz mobil kapak üretimi başlatılmadı.";
+      }
+    } catch (err) {
+      resultsEl.className = "empty-card";
+      resultsEl.innerHTML = "Kapaklar yüklenemedi.";
+    }
+  }
+
+  window.mobileCoverHydrate = hydrateCoverLibrary;
+
   updatePromptCount();
 
   if (qualityBtns[0]) setQuality(qualityBtns[0]);
   if (styleBtns[0]) setStyle(styleBtns[0]);
+
+  hydrateCoverLibrary();
 })();
