@@ -618,11 +618,12 @@
 
 .mobile-atmo-upload-btn b{
   display:block;
-  font-size:11px;
+  font-size:10.8px;
   line-height:1;
   font-weight:950;
+  letter-spacing:-.01em;
+  text-shadow:0 1px 10px rgba(255,255,255,.16);
 }
-
 .mobile-atmo-upload-btn.has-file{
   padding-right:8px !important;
 }
@@ -663,7 +664,7 @@
   content:"Ücretsiz";
   position:absolute;
   left:50%;
-  top:-30px;
+  top:-27px;
   transform:translateX(-50%);
   padding:6px 11px;
   border-radius:999px;
@@ -705,9 +706,18 @@
 
 .mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-upload-grid{
   grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
-  gap:10px !important;
-  padding-top:34px !important;
-  margin-bottom:46px !important;
+  gap:8px !important;
+  padding-top:32px !important;
+  margin-bottom:44px !important;
+}
+
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-upload-btn{
+  min-height:56px !important;
+  padding:16px 5px 10px !important;
+}
+
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-upload-btn b{
+  font-size:10px !important;
 }
 
 .mobile-atmo-upload-btn{
