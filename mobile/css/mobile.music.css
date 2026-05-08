@@ -667,3 +667,90 @@
   height:34px !important;
   display:flex !important;
 }
+#mobileMusicResults .aivo-player-card.is-ready{
+  display:grid !important;
+  grid-template-columns:64px minmax(0,1fr) 84px !important;
+  align-items:center !important;
+  gap:14px !important;
+  min-height:86px !important;
+  padding:14px !important;
+  overflow:hidden !important;
+}
+
+#mobileMusicResults .mobile-ready-thumb{
+  width:58px !important;
+  height:58px !important;
+  border-radius:20px !important;
+  border:1px solid rgba(255,255,255,.15) !important;
+  padding:0 !important;
+  cursor:pointer !important;
+  font-size:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:
+    radial-gradient(circle at 25% 18%, rgba(255,255,255,.20), transparent 34%),
+    linear-gradient(135deg, rgba(139,92,246,.34), rgba(56,189,248,.10)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -16px 30px rgba(0,0,0,.18),
+    0 12px 26px rgba(0,0,0,.28) !important;
+}
+
+#mobileMusicResults .mobile-ready-thumb::before{
+  content:"";
+  width:31px;
+  height:31px;
+  display:block;
+  background:linear-gradient(135deg,#f472ff,#60eaff);
+  filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+#mobileMusicResults .mobile-ready-meta{
+  min-width:0 !important;
+}
+
+#mobileMusicResults .mobile-ready-title{
+  color:#fff !important;
+  font-size:14px !important;
+  line-height:1.15 !important;
+  font-weight:950 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+#mobileMusicResults .mobile-ready-sub{
+  margin-top:5px !important;
+  color:rgba(255,255,255,.58) !important;
+  font-size:11px !important;
+  font-weight:750 !important;
+}
+
+#mobileMusicResults .mobile-ready-actions{
+  width:84px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:8px !important;
+}
+
+#mobileMusicResults .mobile-ready-action{
+  width:36px !important;
+  height:36px !important;
+  min-width:36px !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  border-radius:13px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+  background:rgba(255,255,255,.09) !important;
+  color:#fff !important;
+  font-size:24px !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  text-decoration:none !important;
+}
