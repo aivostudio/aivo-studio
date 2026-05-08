@@ -531,9 +531,34 @@ function bindProControls(){
       if (!input) return;
 
       input.addEventListener("change", function(){
-        const file = input.files && input.files[0] ? input.files[0] : null;
+              const file = input.files && input.files[0] ? input.files[0] : null;
         state[item.target][item.key] = file;
         setFileLabel(input, file);
+
+        const urlKey =
+          item.key === "imageFile"
+            ? "imageUrl"
+            : item.key === "logoFile"
+              ? "logoUrl"
+              : "audioUrl";
+
+        if (!file) {
+          state[item.target][urlKey] = "";
+          return;
+        }
+
+        setStatus("Dosya yükleniyor...");
+
+        uploadMobileAtmoFile(file, item.key)
+          .then(function(publicUrl){
+            state[item.target][urlKey] = publicUrl;
+            setStatus("Dosya yüklendi.");
+          })
+          .catch(function(err){
+            console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
+            state[item.target][urlKey] = "";
+            setStatus("Dosya yüklenemedi.");
+          });
       });
     });
   }
