@@ -506,7 +506,7 @@
           : (title || "Yeni müzik") + " · Versiyon 2";
 
         const card = document.createElement("div");
-        card.className = "aivo-player-card is-ready";
+      card.className = "aivo-player-card is-pending";
         card.style.marginBottom = index === 1 ? "0" : "10px";
         card.style.padding = "10px 12px";
         card.style.minHeight = "68px";
