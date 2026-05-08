@@ -560,11 +560,11 @@ function bindProControls(){
               ? "logoUrl"
               : "audioUrl";
 
-        if (!file) {
+              if (!file) {
           state[item.target][urlKey] = "";
+          syncMobileAtmoCreditButtons();
           return;
         }
-
         setStatus("Dosya yükleniyor...");
 
         uploadMobileAtmoFile(file, item.key)
