@@ -538,3 +538,25 @@
 #mobileMusicResults .mobile-pending-actions{
   display:none !important;
 }
+#mobileMusicResults .aivo-player-card.is-ready{
+  grid-template-columns:58px minmax(0,1fr) auto !important;
+  padding-right:96px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .mobile-player-actions{
+  position:absolute !important;
+  right:14px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:7px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .mobile-player-icon-btn{
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  border-radius:12px !important;
+}
