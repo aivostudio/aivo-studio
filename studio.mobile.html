@@ -611,6 +611,7 @@ function showAtmo(){
     let activeMobileModule = "music";
 
     function setCoverLibraryOnly(isLibraryOnly){
+      
       const coverSection = document.getElementById("mobileCoverSection");
       if (!coverSection) return;
 
@@ -625,6 +626,23 @@ function showAtmo(){
 
       if (coverLibraryTitle) coverLibraryTitle.hidden = !isLibraryOnly;
       if (coverResults) coverResults.hidden = !isLibraryOnly;
+    }
+        function setAtmoLibraryOnly(isLibraryOnly){
+      const atmoSection = document.getElementById("mobileAtmoSection");
+      if (!atmoSection) return;
+
+      const atmoPanels = atmoSection.querySelectorAll(".mobile-atmo-card, .mobile-atmo-panel");
+      const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
+        return title.textContent.includes("Son atmosfer videoları");
+      });
+      const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
+
+      atmoPanels.forEach(function(panel){
+        panel.hidden = !!isLibraryOnly;
+      });
+
+      if (atmoResultsTitle) atmoResultsTitle.hidden = false;
+      if (atmoResults) atmoResults.hidden = false;
     }
 
     if (productionsNav) {
@@ -641,6 +659,12 @@ function showAtmo(){
             window.mobileCoverHydrate();
           }
 
+          return;
+        }
+
+              if (activeMobileModule === "atmo") {
+          showAtmo();
+          setActiveNav(productionsNav);
           return;
         }
 
