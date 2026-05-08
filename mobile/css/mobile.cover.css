@@ -337,3 +337,6 @@
 .mobile-cover-result-meta{
   min-height:58px;
 }
+#mobileCoverSection > .section-title:first-child{
+  text-align:center;
+}
