@@ -345,11 +345,17 @@
       const coverSection = document.getElementById("mobileCoverSection");
       if (!coverSection) return;
 
-      const coverTitle = coverSection.querySelector(".section-title");
+      const sectionTitles = coverSection.querySelectorAll(".section-title");
+      const coverFormTitle = sectionTitles[0] || null;
+      const coverLibraryTitle = sectionTitles[1] || null;
       const coverForm = coverSection.querySelector(".mobile-cover-card");
+      const coverResults = coverSection.querySelector("#mobileCoverResults");
 
-      if (coverTitle) coverTitle.hidden = !!isLibraryOnly;
+      if (coverFormTitle) coverFormTitle.hidden = !!isLibraryOnly;
       if (coverForm) coverForm.hidden = !!isLibraryOnly;
+
+      if (coverLibraryTitle) coverLibraryTitle.hidden = !isLibraryOnly;
+      if (coverResults) coverResults.hidden = !isLibraryOnly;
     }
 
     if (productionsNav) {
