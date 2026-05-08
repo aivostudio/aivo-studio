@@ -555,21 +555,21 @@
 
 .mobile-atmo-file-clear{
   position:absolute;
-  right:10px;
-  top:50%;
-  transform:translateY(-50%);
-  width:24px;
-  height:24px;
+  right:8px;
+  bottom:8px;
+  width:26px;
+  height:26px;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.18);
-  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(10,12,24,.76);
   color:#fff;
-  font-size:17px;
-  line-height:1;
-  font-weight:900;
+  font-size:18px;
+  line-height:0;
+  font-weight:950;
   display:flex;
   align-items:center;
   justify-content:center;
+  box-shadow:0 8px 18px rgba(0,0,0,.22);
 }
 .mobile-atmo-upload-btn::after{
   content:"Ücretsiz";
