@@ -549,6 +549,39 @@ function bindProControls(){
     clearBtn.textContent = "×";
     label.appendChild(clearBtn);
   }
+    function bindFileClearButtons(){
+    root.addEventListener("click", function(e){
+      const btn = e.target.closest("[data-mobile-atmo-clear-file]");
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const inputId = btn.getAttribute("data-mobile-atmo-clear-file");
+      const input = root.querySelector("#" + inputId);
+      if (!input) return;
+
+      input.value = "";
+
+      const fileMapItem = {
+        mobileAtmoImageFile: { target:"basic", key:"imageFile", urlKey:"imageUrl" },
+        mobileAtmoLogoFile: { target:"basic", key:"logoFile", urlKey:"logoUrl" },
+        mobileAtmoAudioFile: { target:"basic", key:"audioFile", urlKey:"audioUrl" },
+        mobileAtmoProImageFile: { target:"pro", key:"imageFile", urlKey:"imageUrl" },
+        mobileAtmoProLogoFile: { target:"pro", key:"logoFile", urlKey:"logoUrl" },
+        mobileAtmoProAudioFile: { target:"pro", key:"audioFile", urlKey:"audioUrl" }
+      }[inputId];
+
+      if (!fileMapItem) return;
+
+      state[fileMapItem.target][fileMapItem.key] = null;
+      state[fileMapItem.target][fileMapItem.urlKey] = "";
+
+      setFileLabel(input, null);
+      syncMobileAtmoCreditButtons();
+      setStatus("Dosya kaldırıldı.");
+    });
+  }
   function bindFiles(){
     const fileMap = [
       { id:"#mobileAtmoImageFile", target:"basic", key:"imageFile" },
@@ -816,6 +849,7 @@ function bindProControls(){
   bindProDetails();
   bindProControls();
   bindFiles();
+    bindFileClearButtons();
   bindGenerateButtons();
    syncMobileAtmoCreditButtons();
  bindMobileAtmoResultActions();
