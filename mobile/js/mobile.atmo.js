@@ -15,8 +15,8 @@
   const basicDurationEl = root.querySelector("#mobileAtmoDuration");
   const basicRatioEl = root.querySelector("#mobileAtmoRatio");
 
-  const proDurationEl = root.querySelector("#mobileAtmoProDuration");
-
+const proDurationEl = root.querySelector("#mobileAtmoProDuration");
+const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   const basicGenerateBtn = root.querySelector("#mobileAtmoGenerateBtn");
   const proGenerateBtn = root.querySelector("#mobileAtmoProGenerateBtn");
 
