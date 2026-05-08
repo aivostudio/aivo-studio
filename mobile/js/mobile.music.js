@@ -390,10 +390,8 @@
               ? (title || "Yeni müzik")
               : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
 
-            card.innerHTML = `
-              <div class="aivo-player-left">
-                <button class="aivo-action mobile-player-icon-btn mobile-player-play-btn" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat"></button>
-              </div>
+               card.innerHTML = `
+              <div class="aivo-player-left mobile-library-thumb">♪</div>
 
               <div class="aivo-player-mid">
                 <div class="aivo-player-titleRow">
@@ -404,6 +402,7 @@
               </div>
 
               <div class="aivo-player-actions mobile-player-actions">
+                <button class="aivo-action mobile-player-icon-btn mobile-player-play-btn" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat"></button>
                 <a class="aivo-action mobile-player-icon-btn mobile-player-download-btn" href="${safe(audioUrl)}" download title="İndir" aria-label="İndir"></a>
                 <button class="aivo-action mobile-player-icon-btn mobile-player-delete-btn" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil"></button>
               </div>
