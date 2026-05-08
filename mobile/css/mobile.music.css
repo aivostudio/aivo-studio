@@ -535,3 +535,49 @@
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
 }
+#mobileMusicResults .aivo-player-card.is-ready{
+  height:78px !important;
+  min-height:78px !important;
+  max-height:78px !important;
+  display:grid !important;
+  grid-template-columns:54px minmax(0,1fr) 78px !important;
+  align-items:center !important;
+  gap:12px !important;
+  padding:12px !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .aivo-player-left{
+  width:54px !important;
+  height:54px !important;
+  border-radius:16px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .aivo-player-mid{
+  align-self:center !important;
+  min-width:0 !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .aivo-player-title{
+  font-size:14px !important;
+  line-height:1.15 !important;
+  margin:0 0 5px 0 !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .aivo-player-sub{
+  font-size:11px !important;
+  margin:0 !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .mobile-player-actions{
+  position:static !important;
+  transform:none !important;
+  width:78px !important;
+  justify-self:end !important;
+  align-self:center !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:7px !important;
+}
