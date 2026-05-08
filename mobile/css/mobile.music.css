@@ -625,30 +625,40 @@
   visibility:visible !important;
 }
 #mobileMusicResults .aivo-player-card.is-ready{
-  position:relative !important;
   display:grid !important;
-  grid-template-columns:54px minmax(0,1fr) !important;
+  grid-template-columns:64px minmax(0,1fr) 82px !important;
+  align-items:center !important;
   min-height:78px !important;
-  padding:12px 142px 12px 12px !important;
+  padding:12px !important;
   gap:12px !important;
   overflow:hidden !important;
 }
 
+#mobileMusicResults .aivo-player-card.is-ready .mobile-ready-play-thumb{
+  border:1px solid rgba(255,255,255,.15) !important;
+  cursor:pointer !important;
+  padding:0 !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready .mobile-ready-play-thumb::after{
+  content:"";
+  position:absolute;
+  width:18px;
+  height:18px;
+  background:rgba(255,255,255,.92);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.5v13l10-6.5-10-6.5z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.5v13l10-6.5-10-6.5z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
 #mobileMusicResults .aivo-player-card.is-ready .mobile-player-actions{
-  position:absolute !important;
-  right:12px !important;
-  top:50% !important;
-  transform:translateY(-50%) !important;
-  width:118px !important;
-  min-width:118px !important;
-  height:38px !important;
+  position:static !important;
+  transform:none !important;
+  width:82px !important;
+  min-width:82px !important;
   display:flex !important;
   align-items:center !important;
   justify-content:flex-end !important;
-  gap:7px !important;
-  opacity:1 !important;
-  visibility:visible !important;
-  z-index:5 !important;
+  gap:8px !important;
 }
 
 #mobileMusicResults .aivo-player-card.is-ready .mobile-player-icon-btn{
@@ -656,9 +666,4 @@
   min-width:34px !important;
   height:34px !important;
   display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  opacity:1 !important;
-  visibility:visible !important;
-  pointer-events:auto !important;
 }
