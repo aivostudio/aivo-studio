@@ -477,6 +477,31 @@
     setActiveNav(toolsNav);
   });
 }
+    document.querySelectorAll("[data-mobile-tool]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    const tool = btn.getAttribute("data-mobile-tool");
+
+    if (tool === "music") {
+      activeMobileModule = "music";
+      musicMount.hidden = false;
+      coverMount.hidden = true;
+      if (toolsMount) toolsMount.hidden = true;
+      setActiveNav(homeNav);
+      return;
+    }
+
+    if (tool === "cover") {
+      activeMobileModule = "cover";
+      showCover();
+      setCoverLibraryOnly(false);
+      setActiveNav(toolsNav);
+
+      if (typeof window.mobileCoverHydrate === "function") {
+        window.mobileCoverHydrate();
+      }
+    }
+  });
+});
   })();
 </script>
 </body>
