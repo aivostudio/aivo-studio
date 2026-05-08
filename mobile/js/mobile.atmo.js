@@ -693,7 +693,10 @@ function bindProControls(){
       has_audio: !!state.pro.audioUrl,
       image_url: state.pro.imageUrl,
       logo_url: state.pro.logoUrl,
-      audio_url: state.pro.audioUrl,
+           audio_url: state.pro.audioUrl,
+      audio_mode: state.pro.audioUrl ? "embed" : "none",
+      audio_trim: state.pro.audioUrl ? "loop_to_fit" : "loop_to_fit",
+      silent_copy: state.pro.audioUrl ? false : true,
       meta: {
         app: "atmo",
         mode: "pro",
