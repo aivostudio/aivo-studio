@@ -662,8 +662,9 @@ function showAtmo(){
           return;
         }
 
-              if (activeMobileModule === "atmo") {
+                 if (activeMobileModule === "atmo") {
           showAtmo();
+          setAtmoLibraryOnly(true);
           setActiveNav(productionsNav);
           return;
         }
@@ -713,6 +714,7 @@ if (tool === "cover") {
 if (tool === "atmo") {
   activeMobileModule = "atmo";
   showAtmo();
+  setAtmoLibraryOnly(false);
   setActiveNav(toolsNav);
 
   return;
