@@ -327,10 +327,15 @@
       coverMount.hidden = true;
     }
 
-    function showCover(){
-      musicMount.hidden = true;
-      coverMount.hidden = false;
-    }
+   function showCover(){
+  musicMount.hidden = true;
+  coverMount.hidden = false;
+
+  const heroSub = document.getElementById("mobileHeroSub");
+  if (heroSub) {
+    heroSub.textContent = "Kapak fikrini yaz, AIVO mobilde görselini üretsin.";
+  }
+}
 
     if (homeNav) {
       homeNav.addEventListener("click", function(){
