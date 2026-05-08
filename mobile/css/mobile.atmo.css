@@ -253,3 +253,16 @@
 #mobileAtmoResults{
   margin-top:8px;
 }
+.mobile-atmo-ratio-row{
+  display:flex !important;
+  gap:8px !important;
+  margin:4px 0 14px !important;
+}
+
+.mobile-atmo-ratio-row .mobile-atmo-ratio{
+  width:auto !important;
+  min-width:64px !important;
+  min-height:38px !important;
+  padding:0 14px !important;
+  border-radius:999px !important;
+}
