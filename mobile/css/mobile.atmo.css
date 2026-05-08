@@ -776,3 +776,10 @@
   margin-left:auto;
   margin-right:auto;
 }
+#mobileAtmoSection > .section-title{
+  text-align:center;
+}
+
+.mobile-atmo-video-title{
+  text-align:center;
+}
