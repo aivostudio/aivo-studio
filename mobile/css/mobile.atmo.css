@@ -138,6 +138,11 @@
   font-size:10.5px;
   line-height:1.22;
   font-weight:750;
+
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
 }
 
 .mobile-atmo-scene.is-active{
