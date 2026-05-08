@@ -188,15 +188,29 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         return;
       }
 
-      if (act === "download") {
+        if (act === "download") {
         if (!job.videoUrl) return;
 
-        const a = document.createElement("a");
-        a.href = job.videoUrl;
-        a.download = "aivo-atmosfer-video.mp4";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        const directUrl = String(job.videoUrl || "").split("#")[0];
+
+        const downloadUrl =
+          "/api/media/proxy?url=" +
+          encodeURIComponent(directUrl) +
+          "&filename=" +
+          encodeURIComponent("aivo-atmosfer-video.mp4");
+
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.src = downloadUrl;
+
+        document.body.appendChild(iframe);
+
+        setTimeout(function(){
+          try {
+            iframe.remove();
+          } catch (err) {}
+        }, 15000);
 
         return;
       }
