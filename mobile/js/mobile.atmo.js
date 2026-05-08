@@ -572,14 +572,20 @@ function bindProControls(){
       duration: state.basic.duration,
       aspect: state.basic.ratio,
       ratio: state.basic.ratio,
-      has_image: !!state.basic.imageFile,
-      has_logo: !!state.basic.logoFile,
-      has_audio: !!state.basic.audioFile,
+        has_image: !!state.basic.imageUrl,
+      has_logo: !!state.basic.logoUrl,
+      has_audio: !!state.basic.audioUrl,
+      image_url: state.basic.imageUrl,
+      logo_url: state.basic.logoUrl,
+      audio_url: state.basic.audioUrl,
       meta: {
         app: "atmo",
         mode: "basic",
         aspect_ratio: state.basic.ratio,
-        duration: state.basic.duration
+        duration: state.basic.duration,
+        image_url: state.basic.imageUrl,
+        logo_url: state.basic.logoUrl,
+        audio_url: state.basic.audioUrl
       }
     };
   }
