@@ -713,14 +713,20 @@ function setFileLabel(input, file){
 
                 const tempId = "mobile-atmo-" + Date.now();
 
-        mobileAtmoJobs.unshift({
-          id: tempId,
-          title: "Atmosfer video hazırlanıyor",
-          videoUrl: "",
-          payload: payload,
-          status: "processing"
-        });
-
+     mobileAtmoJobs.unshift({
+  id: tempId,
+  title:
+    payload.scene === "winter_cafe" ? "Kış Kafe" :
+    payload.scene === "cozy_cabin" ? "Dağ Evi" :
+    payload.scene === "lake_cabin" ? "Göl Kenarı" :
+    payload.scene === "city_night" ? "Şehir Gecesi" :
+    payload.scene === "rainy_window" ? "Yağmurlu Pencere" :
+    payload.scene === "old_stone_street" ? "Eski Taş Sokak" :
+    "Atmosfer video",
+  videoUrl: "",
+  payload: payload,
+  status: "processing"
+});
         renderMobileAtmoResults();
 
         setStatus("Atmosfer video hazırlanıyor...");
