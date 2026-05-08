@@ -523,13 +523,16 @@ function bindProControls(){
       return;
     }
 
-    const name = file.name && file.name.length > 18
-      ? file.name.slice(0, 15) + "..."
-      : file.name;
+      const shortName =
+      input.id.toLowerCase().includes("logo")
+        ? "Logo ✓  ×"
+        : input.id.toLowerCase().includes("audio")
+          ? "Audio ✓  ×"
+          : "Referans ✓  ×";
 
     label.childNodes.forEach(function(node){
       if (node.nodeType === Node.TEXT_NODE) {
-        node.textContent = " " + name;
+        node.textContent = " " + shortName;
       }
     });
   }
