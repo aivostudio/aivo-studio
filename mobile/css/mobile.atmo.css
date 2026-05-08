@@ -16,6 +16,15 @@
     0 18px 42px rgba(0,0,0,.24);
 }
 
+.mobile-atmo-card{
+  display:none !important;
+}
+
+.mobile-atmo-panel{
+  margin-top:0 !important;
+  padding-top:18px !important;
+}
+
 .mobile-atmo-panel{
   margin-top:12px;
 }
