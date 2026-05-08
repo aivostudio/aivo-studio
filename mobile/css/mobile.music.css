@@ -782,3 +782,58 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6l12 12'/%3E%3Cpath d='M18 6L6 18'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6l12 12'/%3E%3Cpath d='M18 6L6 18'/%3E%3C/svg%3E");
 }
+#mobileMusicResults .aivo-player-card.is-ready,
+#mobileMusicResults .aivo-player-card.is-pending{
+  min-height:72px !important;
+  height:72px !important;
+  max-height:72px !important;
+  padding:9px 12px !important;
+  border-radius:18px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready{
+  grid-template-columns:54px minmax(0,1fr) 92px !important;
+  gap:10px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-pending{
+  grid-template-columns:54px minmax(0,1fr) !important;
+  gap:10px !important;
+}
+
+#mobileMusicResults .mobile-ready-thumb,
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-left{
+  width:48px !important;
+  height:48px !important;
+  border-radius:16px !important;
+}
+
+#mobileMusicResults .mobile-ready-thumb::before,
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-left::before{
+  width:27px !important;
+  height:27px !important;
+}
+
+#mobileMusicResults .mobile-ready-title,
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-title{
+  font-size:13px !important;
+  line-height:1.12 !important;
+}
+
+#mobileMusicResults .mobile-ready-sub,
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-sub{
+  font-size:10.5px !important;
+  margin-top:4px !important;
+}
+
+#mobileMusicResults .mobile-ready-action{
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  border-radius:12px !important;
+}
+
+#mobileMusicResults .mobile-ready-action::before{
+  width:18px !important;
+  height:18px !important;
+}
