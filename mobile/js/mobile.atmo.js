@@ -514,29 +514,41 @@ function bindProControls(){
       label.dataset.originalText = safeText(label.textContent);
     }
 
+    const oldClear = label.querySelector(".mobile-atmo-file-clear");
+    if (oldClear) oldClear.remove();
+
     if (!file) {
       label.childNodes.forEach(function(node){
         if (node.nodeType === Node.TEXT_NODE) {
           node.textContent = " " + label.dataset.originalText.replace(/^[^\s]+\s*/, "");
         }
       });
+      label.classList.remove("has-file");
       return;
     }
 
-      const shortName =
+    const shortName =
       input.id.toLowerCase().includes("logo")
-        ? "Logo ✓  ×"
+        ? "Logo ✓"
         : input.id.toLowerCase().includes("audio")
-          ? "Audio ✓  ×"
-          : "Referans ✓  ×";
+          ? "Audio ✓"
+          : "Referans ✓";
 
     label.childNodes.forEach(function(node){
       if (node.nodeType === Node.TEXT_NODE) {
         node.textContent = " " + shortName;
       }
     });
-  }
 
+    label.classList.add("has-file");
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "mobile-atmo-file-clear";
+    clearBtn.setAttribute("data-mobile-atmo-clear-file", input.id);
+    clearBtn.textContent = "×";
+    label.appendChild(clearBtn);
+  }
   function bindFiles(){
     const fileMap = [
       { id:"#mobileAtmoImageFile", target:"basic", key:"imageFile" },
