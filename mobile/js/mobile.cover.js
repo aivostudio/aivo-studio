@@ -185,25 +185,92 @@
       resultsEl.appendChild(card);
     }
   }
-
   function renderCoverCard(payload, index){
     const card = document.createElement("div");
     card.className = "mobile-cover-result-card";
 
+    const imageUrl = String(payload.imageUrl || "");
+    const jobId = String(payload.jobId || "");
+
     card.innerHTML = `
-      <img src="${safe(payload.imageUrl)}" alt="AIVO kapak görseli">
+      <img src="${safe(imageUrl)}" alt="AIVO kapak görseli">
+
       <div class="mobile-cover-result-meta">
         <span>${index === 0 ? "Kapak hazır" : "Versiyon " + (index + 1)}</span>
+
         <div class="mobile-cover-result-actions">
-          <a class="mobile-cover-action" href="${safe(payload.imageUrl)}" download title="İndir">↓</a>
+          <button class="mobile-cover-action" type="button" data-action="open-cover" title="Görüntüle">👁</button>
+          <button class="mobile-cover-action" type="button" data-action="download-cover" title="İndir">↓</button>
+          <button class="mobile-cover-action" type="button" data-action="share-cover" title="Paylaş">↗</button>
           <button class="mobile-cover-action" type="button" data-action="delete-cover" title="Sil">×</button>
         </div>
       </div>
     `;
 
+    const openBtn = card.querySelector('[data-action="open-cover"]');
+    const downloadBtn = card.querySelector('[data-action="download-cover"]');
+    const shareBtn = card.querySelector('[data-action="share-cover"]');
     const deleteBtn = card.querySelector('[data-action="delete-cover"]');
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function(){
+        if (!imageUrl) return;
+        window.open(imageUrl, "_blank", "noopener");
+      });
+    }
+
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", function(){
+        if (!imageUrl) return;
+
+        const proxied = "/api/media/proxy?url=" + encodeURIComponent(imageUrl) + "&filename=cover.jpg";
+
+        const a = document.createElement("a");
+        a.href = proxied;
+        a.download = "cover.jpg";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+    }
+
+    if (shareBtn) {
+      shareBtn.addEventListener("click", async function(){
+        if (!imageUrl) return;
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ url:imageUrl });
+          } catch (err) {}
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(imageUrl);
+          statusEl.textContent = "Kapak linki kopyalandı.";
+        } catch (err) {
+          statusEl.textContent = "Paylaşım desteklenmiyor.";
+        }
+      });
+    }
+
     if (deleteBtn) {
-      deleteBtn.addEventListener("click", function(){
+      deleteBtn.addEventListener("click", async function(){
+        if (jobId) {
+          try {
+            await fetch("/api/jobs/delete", {
+              method:"POST",
+              credentials:"include",
+              headers:{
+                "content-type":"application/json",
+                "accept":"application/json"
+              },
+              body:JSON.stringify({ job_id:jobId })
+            });
+          } catch (err) {}
+        }
+
         card.remove();
 
         if (!resultsEl.querySelector(".mobile-cover-result-card")) {
