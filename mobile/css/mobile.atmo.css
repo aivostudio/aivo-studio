@@ -371,3 +371,35 @@
   min-width:66px !important;
   font-size:11px !important;
 }
+/* ATMO pro compact style */
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-style-grid{
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+  gap:7px !important;
+  margin-bottom:14px !important;
+}
+
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-style-grid .mobile-atmo-chip{
+  width:100% !important;
+  min-height:32px !important;
+  padding:0 6px !important;
+  border-radius:999px !important;
+  font-size:9.6px !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+}
+
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-check-grid{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  margin-bottom:14px !important;
+}
+
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] .mobile-atmo-check-grid label{
+  min-height:38px !important;
+  padding:0 9px !important;
+  border-radius:16px !important;
+  font-size:10px !important;
+  line-height:1.1 !important;
+}
