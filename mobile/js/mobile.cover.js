@@ -193,17 +193,23 @@
     const jobId = String(payload.jobId || "");
 
     card.innerHTML = `
-      <img src="${safe(imageUrl)}" alt="AIVO kapak görseli">
+      <div class="mobile-cover-thumb-wrap">
+        <img src="${safe(imageUrl)}" alt="AIVO kapak görseli">
+
+        <div class="mobile-cover-badge">Hazır</div>
+
+        <div class="mobile-cover-overlay">
+          <div class="mobile-cover-overlay-actions">
+            <button class="mobile-cover-overlay-btn" type="button" data-action="open-cover" title="Görüntüle">👁</button>
+            <button class="mobile-cover-overlay-btn" type="button" data-action="download-cover" title="İndir">↓</button>
+            <button class="mobile-cover-overlay-btn" type="button" data-action="share-cover" title="Paylaş">↗</button>
+            <button class="mobile-cover-overlay-btn is-danger" type="button" data-action="delete-cover" title="Sil">🗑</button>
+          </div>
+        </div>
+      </div>
 
       <div class="mobile-cover-result-meta">
         <span>${index === 0 ? "Kapak hazır" : "Versiyon " + (index + 1)}</span>
-
-        <div class="mobile-cover-result-actions">
-          <button class="mobile-cover-action" type="button" data-action="open-cover" title="Görüntüle">👁</button>
-          <button class="mobile-cover-action" type="button" data-action="download-cover" title="İndir">↓</button>
-          <button class="mobile-cover-action" type="button" data-action="share-cover" title="Paylaş">↗</button>
-          <button class="mobile-cover-action" type="button" data-action="delete-cover" title="Sil">×</button>
-        </div>
       </div>
     `;
 
@@ -283,7 +289,6 @@
 
     return card;
   }
-
   async function consumeCredits(cost){
     const requestId = "mobile-cover:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
     const reason = selectedQuality === "ultra"
