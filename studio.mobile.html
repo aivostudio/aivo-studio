@@ -637,10 +637,19 @@ function showAtmo(){
       });
       const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
 
-      atmoPanels.forEach(function(panel){
-        panel.hidden = !!isLibraryOnly;
-      });
+          atmoPanels.forEach(function(panel){
+        if (isLibraryOnly) {
+          panel.hidden = true;
+          return;
+        }
 
+        if (panel.hasAttribute("data-mobile-atmo-panel")) {
+          panel.hidden = !panel.classList.contains("is-active");
+          return;
+        }
+
+        panel.hidden = false;
+      });
       if (atmoResultsTitle) atmoResultsTitle.hidden = false;
       if (atmoResults) atmoResults.hidden = false;
     }
