@@ -75,6 +75,72 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       `;
     }).join("");
   }
+    function pollMobileAtmoJob(jobId){
+    if (!jobId) return;
+
+    fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store"
+    })
+    .then(function(res){
+      return res.json();
+    })
+    .then(function(data){
+      console.log("[MOBILE ATMO][POLL]", data);
+
+      const status = String(
+        data.status ||
+        data.db_status ||
+        data.state ||
+        ""
+      ).toLowerCase();
+
+      const videoUrl = String(
+        data.video_url ||
+        data.final_url ||
+        data.url ||
+        data.video?.url ||
+        data.output?.video?.url ||
+        data.outputs?.[0]?.url ||
+        ""
+      ).trim();
+
+      const job = mobileAtmoJobs.find(function(item){
+        return item.id === jobId;
+      });
+
+      if (!job) return;
+
+      if (videoUrl) {
+        job.videoUrl = videoUrl;
+        job.status = "ready";
+        job.title = job.title || "Atmosfer video hazır";
+        renderMobileAtmoResults();
+        setStatus("Atmosfer video hazır.");
+        return;
+      }
+
+      if (status.includes("fail") || status.includes("error")) {
+        job.status = "error";
+        job.title = "Atmosfer video oluşturulamadı";
+        renderMobileAtmoResults();
+        setStatus("Atmosfer video oluşturulamadı.");
+        return;
+      }
+
+      setTimeout(function(){
+        pollMobileAtmoJob(jobId);
+      }, 3000);
+    })
+    .catch(function(err){
+      console.error("[MOBILE ATMO][POLL ERROR]", err);
+
+      setTimeout(function(){
+        pollMobileAtmoJob(jobId);
+      }, 4000);
+    });
+  }
     function bindMobileAtmoResultActions(){
     if (!resultsEl || resultsEl.__mobileAtmoActionsBound) return;
     resultsEl.__mobileAtmoActionsBound = true;
