@@ -339,18 +339,41 @@
       });
     }
 
+       let activeMobileModule = "music";
+
     if (productionsNav) {
-      productionsNav.addEventListener("click", function(){
+      productionsNav.addEventListener("click", function(e){
+        if (activeMobileModule === "cover") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showCover();
+          setActiveNav(productionsNav);
+
+          if (typeof window.mobileCoverHydrate === "function") {
+            window.mobileCoverHydrate();
+          }
+
+          return;
+        }
+
         showMusic();
         setActiveNav(productionsNav);
-      });
+      }, true);
     }
 
     if (toolsNav) {
       toolsNav.addEventListener("click", function(e){
         e.preventDefault();
+
+        activeMobileModule = "cover";
+
         showCover();
         setActiveNav(toolsNav);
+
+        if (typeof window.mobileCoverHydrate === "function") {
+          window.mobileCoverHydrate();
+        }
       });
     }
   })();
