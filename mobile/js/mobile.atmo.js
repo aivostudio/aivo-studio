@@ -794,13 +794,19 @@ function setFileLabel(input, file){
 
                    const tempId = "mobile-atmo-" + Date.now();
 
-        mobileAtmoJobs.unshift({
-          id: tempId,
-          title: payload.prompt || "Süper atmosfer video hazırlanıyor",
-          videoUrl: "",
-          payload: payload,
-          status: "processing"
-        });
+      const proTitleWords = String(payload.prompt || "")
+  .trim()
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 4);
+
+mobileAtmoJobs.unshift({
+  id: tempId,
+  title: proTitleWords.length ? proTitleWords.join(" ") + "..." : "Süper atmosfer video",
+  videoUrl: "",
+  payload: payload,
+  status: "processing"
+});
 
         renderMobileAtmoResults();
 
