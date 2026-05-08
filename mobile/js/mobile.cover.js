@@ -280,7 +280,9 @@
     try {
       await consumeCredits(selectedCredit);
 
-      statusEl.textContent = "Kapak üretimi başlatıldı...";
+         statusEl.textContent = "Kapak üretimi başlatıldı...";
+
+      resultsEl.hidden = false;
       renderLoadingCards(count);
 
       const created = [];
