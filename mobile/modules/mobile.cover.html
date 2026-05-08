@@ -1,0 +1,168 @@
+<section id="mobileCoverSection">
+  <h2 class="section-title">AI Kapak Üret</h2>
+
+  <section class="mobile-cover-card">
+    <label class="field-label" for="coverPrompt">Prompt</label>
+    <textarea
+      id="coverPrompt"
+      class="field-textarea mobile-cover-prompt"
+      rows="4"
+      maxlength="1000"
+      placeholder="Örn: Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer"></textarea>
+
+    <div class="mobile-cover-count" id="coverPromptCount">0 / 1000</div>
+
+    <label class="field-label">Kalite Seviyesi</label>
+
+    <div class="mobile-cover-quality" role="radiogroup" aria-label="Kalite Seviyesi">
+      <button
+        class="mobile-quality-pill is-active"
+        type="button"
+        data-quality="artist"
+        data-credit-cost="6"
+        data-model="fal-ai/flux-2-pro">
+        <span class="mobile-quality-left">
+          <span class="mobile-quality-ico">🎨</span>
+          <span class="mobile-quality-title">Artist</span>
+        </span>
+        <span class="mobile-quality-credit">6 Kredi</span>
+      </button>
+
+      <button
+        class="mobile-quality-pill"
+        type="button"
+        data-quality="ultra"
+        data-credit-cost="9"
+        data-model="fal-ai/flux-pro/v1.1-ultra">
+        <span class="mobile-quality-left">
+          <span class="mobile-quality-ico">🚀</span>
+          <span class="mobile-quality-title">Cinematic Ultra HD</span>
+        </span>
+        <span class="mobile-quality-credit">9 Kredi</span>
+      </button>
+    </div>
+
+    <label class="field-label">Stil Seçenekleri</label>
+
+    <div class="mobile-cover-styles">
+      <button
+        class="mobile-style-card"
+        type="button"
+        data-style="Gerçekçi"
+        data-prompt="Spotify albüm kapağı, gerçekçi portre, stüdyo ışığı, premium, keskin detay, 1:1">
+        <span class="mobile-style-ico">📸</span>
+        <span class="mobile-style-text">
+          <span class="mobile-style-title">Gerçekçi</span>
+          <span class="mobile-style-sub">Net, doğal ve yüksek detaylı kapaklar</span>
+        </span>
+      </button>
+
+      <button
+        class="mobile-style-card"
+        type="button"
+        data-style="Sanatsal"
+        data-prompt="Sanatsal albüm kapağı, yağlı boya dokusu, dramatik ışık, derin renkler, 1:1">
+        <span class="mobile-style-ico">🎨</span>
+        <span class="mobile-style-text">
+          <span class="mobile-style-title">Sanatsal</span>
+          <span class="mobile-style-sub">Doku, ışık ve derin renklerle eser hissi</span>
+        </span>
+      </button>
+
+      <button
+        class="mobile-style-card"
+        type="button"
+        data-style="Çizgi Film"
+        data-prompt="Çizgi film albüm kapağı, canlı renkler, kalın kontur, eğlenceli karakter stili, 1:1">
+        <span class="mobile-style-ico">🧸</span>
+        <span class="mobile-style-text">
+          <span class="mobile-style-title">Çizgi Film</span>
+          <span class="mobile-style-sub">Canlı tonlar ve karakter odaklı stil</span>
+        </span>
+      </button>
+
+      <button
+        class="mobile-style-card"
+        type="button"
+        data-style="Soyut"
+        data-prompt="Soyut albüm kapağı, geometrik şekiller, yumuşak geçişler, modern tasarım, 1:1">
+        <span class="mobile-style-ico">🫧</span>
+        <span class="mobile-style-text">
+          <span class="mobile-style-title">Soyut</span>
+          <span class="mobile-style-sub">Geometrik formlar ve modern kompozisyon</span>
+        </span>
+      </button>
+
+      <button
+        class="mobile-style-card"
+        type="button"
+        data-style="Fotoğrafik"
+        data-prompt="Fotoğrafik albüm kapağı, sinematik ışık, alan derinliği, premium fotoğraf estetiği, 1:1">
+        <span class="mobile-style-ico">📷</span>
+        <span class="mobile-style-text">
+          <span class="mobile-style-title">Fotoğrafik</span>
+          <span class="mobile-style-sub">Sinematik ışık ve premium fotoğraf hissi</span>
+        </span>
+      </button>
+
+      <button
+        class="mobile-style-card"
+        type="button"
+        data-style="Anime"
+        data-prompt="Anime albüm kapağı, japon manga stili, yumuşak ışık, temiz hatlar, 1:1">
+        <span class="mobile-style-ico">🌸</span>
+        <span class="mobile-style-text">
+          <span class="mobile-style-title">Anime</span>
+          <span class="mobile-style-sub">Manga dokusu ve temiz çizgiler</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="mobile-cover-two">
+      <div>
+        <label class="field-label" for="coverCount">Görüntü Sayısı</label>
+        <select class="field-input mobile-select" id="coverCount">
+          <option value="1">1 Görüntü</option>
+          <option value="2">2 Görüntü</option>
+          <option value="4">4 Görüntü</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="field-label" for="coverRatio">En / Boy Oranı</label>
+        <select class="field-input mobile-select" id="coverRatio">
+          <option value="1:1">Kare (1:1)</option>
+          <option value="9:16">Dikey (9:16)</option>
+          <option value="16:9">Yatay (16:9)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mobile-cover-engine">
+      <div class="mobile-cover-engine-top">
+        <span>AIVO Kapak Motoru</span>
+        <span>Gerekli Kredi: <strong id="coverRequiredCredit">6</strong></span>
+      </div>
+      <p>
+        6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.
+      </p>
+    </div>
+
+    <button
+      class="generate-btn"
+      id="coverGenerateBtn"
+      type="button"
+      data-generate="cover"
+      data-credit-cost="6">
+      🖼️ Kapak Üret (6 Kredi)
+    </button>
+
+    <div id="mobileCoverStatus" class="mobile-status"></div>
+  </section>
+
+  <h2 class="section-title">Kapaklarım</h2>
+
+  <div id="mobileCoverResults" class="empty-card">
+    Henüz mobil kapak üretimi başlatılmadı.
+  </div>
+</section>
