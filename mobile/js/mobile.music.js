@@ -374,12 +374,12 @@
             const card = document.createElement("div");
             card.className = "aivo-player-card is-ready";
             card.style.marginBottom = index === outputs.length - 1 ? "0" : "6px";
-            card.style.padding = "8px 0";
-            card.style.minHeight = "58px";
             card.style.alignItems = "center";
             card.style.position = "relative";
-            card.style.gridTemplateColumns = "46px minmax(0,1fr)";
-            card.style.paddingRight = "78px";
+           card.style.gridTemplateColumns = "54px minmax(0,1fr) 118px";
+           card.style.paddingRight = "12px";
+            card.style.minHeight = "78px";
+            card.style.padding = "12px";
             card.style.borderRadius = "18px";
             card.style.background = "linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035))";
             card.style.border = "1px solid rgba(255,255,255,.10)";
