@@ -49,8 +49,11 @@
 .mobile-quality-left{
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:10px;
   min-width:0;
+  width:100%;
+  padding-top:12px;
 }
 
 .mobile-quality-ico{
