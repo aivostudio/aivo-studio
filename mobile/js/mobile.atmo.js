@@ -446,19 +446,56 @@ function bindProControls(){
           return;
         }
 
-                const jobId = "mobile-atmo-" + Date.now();
+                const tempId = "mobile-atmo-" + Date.now();
 
         mobileAtmoJobs.unshift({
-          id: jobId,
+          id: tempId,
           title: "Atmosfer video hazırlanıyor",
           videoUrl: "",
-          payload: payload
+          payload: payload,
+          status: "processing"
         });
 
         renderMobileAtmoResults();
 
         setStatus("Atmosfer video hazırlanıyor...");
-        console.log("[MOBILE ATMO][BASIC PAYLOAD]", payload);
+
+        fetch("/api/video/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify(payload)
+        })
+        .then(function(res){
+          return res.json();
+        })
+        .then(function(data){
+          console.log("[MOBILE ATMO][BASIC RESPONSE]", data);
+
+          const realJobId =
+            String(
+              data.job_id ||
+              data.id ||
+              tempId
+            );
+
+          const job = mobileAtmoJobs.find(function(item){
+            return item.id === tempId;
+          });
+
+          if (!job) return;
+
+          job.id = realJobId;
+          job.status = "processing";
+
+          renderMobileAtmoResults();
+        })
+        .catch(function(err){
+          console.error("[MOBILE ATMO][BASIC ERROR]", err);
+          setStatus("Atmosfer üretimi başlatılamadı.");
+        });
       });
     }
 
@@ -471,19 +508,56 @@ function bindProControls(){
           return;
         }
 
-            const jobId = "mobile-atmo-" + Date.now();
+                   const tempId = "mobile-atmo-" + Date.now();
 
         mobileAtmoJobs.unshift({
-          id: jobId,
+          id: tempId,
           title: payload.prompt || "Süper atmosfer video hazırlanıyor",
           videoUrl: "",
-          payload: payload
+          payload: payload,
+          status: "processing"
         });
 
         renderMobileAtmoResults();
 
         setStatus("Süper atmosfer video hazırlanıyor...");
-        console.log("[MOBILE ATMO][PRO PAYLOAD]", payload);
+
+        fetch("/api/video/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify(payload)
+        })
+        .then(function(res){
+          return res.json();
+        })
+        .then(function(data){
+          console.log("[MOBILE ATMO][PRO RESPONSE]", data);
+
+          const realJobId =
+            String(
+              data.job_id ||
+              data.id ||
+              tempId
+            );
+
+          const job = mobileAtmoJobs.find(function(item){
+            return item.id === tempId;
+          });
+
+          if (!job) return;
+
+          job.id = realJobId;
+          job.status = "processing";
+
+          renderMobileAtmoResults();
+        })
+        .catch(function(err){
+          console.error("[MOBILE ATMO][PRO ERROR]", err);
+          setStatus("Süper atmosfer üretimi başlatılamadı.");
+        });
       });
     }
   }
