@@ -67,7 +67,11 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
               <button type="button" data-mobile-atmo-act="delete">🗑</button>
             </div>
 
-            <button class="mobile-atmo-video-play" type="button" data-mobile-atmo-act="play" ${ready ? "" : "disabled"}>▶</button>
+                    ${
+              ready
+                ? `<button class="mobile-atmo-video-play" type="button" data-mobile-atmo-act="play">▶</button>`
+                : ``
+            }
           </div>
 
           <div class="mobile-atmo-video-title">${esc(job.title || "Atmosfer video")}</div>
