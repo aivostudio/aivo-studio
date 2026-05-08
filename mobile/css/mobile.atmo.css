@@ -574,17 +574,23 @@
 .mobile-atmo-upload-btn::after{
   content:"Ücretsiz";
   position:absolute;
-  left:50%;
-  bottom:4px;
-  transform:translateX(-50%);
-  font-size:8px;
-  font-weight:900;
-  color:rgba(255,255,255,.48);
+  right:8px;
+  top:6px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:9px;
+  line-height:1;
+  font-weight:950;
+  color:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
   pointer-events:none;
 }
 
 .mobile-atmo-upload-btn:has(input[id*="Logo"])::after,
 .mobile-atmo-upload-btn:has(input[id*="Audio"])::after{
-  content:"+10";
-  color:rgba(216,180,254,.82);
+  content:"+10 Kredi";
+  color:rgba(255,255,255,.92);
+  background:linear-gradient(135deg, rgba(139,92,246,.55), rgba(236,72,153,.38));
+  border-color:rgba(255,255,255,.16);
 }
