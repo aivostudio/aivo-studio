@@ -569,12 +569,14 @@ function bindProControls(){
 
         uploadMobileAtmoFile(file, item.key)
           .then(function(publicUrl){
-            state[item.target][urlKey] = publicUrl;
+             state[item.target][urlKey] = publicUrl;
+            syncMobileAtmoCreditButtons();
             setStatus("Dosya yüklendi.");
           })
           .catch(function(err){
             console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
-            state[item.target][urlKey] = "";
+                     state[item.target][urlKey] = "";
+            syncMobileAtmoCreditButtons();
             setStatus("Dosya yüklenemedi.");
           });
       });
@@ -800,6 +802,7 @@ function bindProControls(){
   bindProControls();
   bindFiles();
   bindGenerateButtons();
+   syncMobileAtmoCreditButtons();
  bindMobileAtmoResultActions();
 
   setMode("basic");
