@@ -386,28 +386,95 @@
 @keyframes miniNeonSpin{
   to{transform:rotate(360deg)}
 }
-.mobile-player-actions{
-  position:absolute;
-  right:10px;
-  top:50%;
-  transform:translateY(-50%);
-  display:flex;
-  align-items:center;
-  gap:8px;
+.mobile-status{
+  text-align:center !important;
+}
+
+#mobileMusicResults .mobile-pending-actions{
+  display:none !important;
+}
+
+#mobileMusicResults .aivo-player-card{
+  position:relative !important;
+  width:100% !important;
+  display:grid !important;
+  align-items:center !important;
+  gap:14px !important;
+  border-radius:22px !important;
+  background:
+    radial-gradient(180px 90px at 0% 0%, rgba(139,92,246,.18), transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035)) !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 16px 36px rgba(0,0,0,.22) !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-pending{
+  min-height:74px !important;
+  grid-template-columns:52px minmax(0,1fr) !important;
+  padding:12px 14px !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-ready{
+  min-height:86px !important;
+  grid-template-columns:58px minmax(0,1fr) 82px !important;
+  padding:12px 14px !important;
+}
+
+#mobileMusicResults .aivo-player-left{
+  width:58px !important;
+  height:58px !important;
+  border-radius:20px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899) !important;
+  box-shadow:0 12px 26px rgba(139,92,246,.24) !important;
+}
+
+#mobileMusicResults .aivo-player-card.is-pending .aivo-player-left{
+  width:52px !important;
+  height:52px !important;
+  border-radius:18px !important;
+}
+
+#mobileMusicResults .aivo-player-mid{
+  min-width:0 !important;
+  align-self:center !important;
+}
+
+#mobileMusicResults .aivo-player-title{
+  max-width:100% !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+#mobileMusicResults .mobile-player-actions{
+  position:static !important;
+  transform:none !important;
+  justify-self:end !important;
+  align-self:center !important;
+  width:82px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:8px !important;
 }
 
 #mobileMusicResults .mobile-player-icon-btn{
-  position:relative;
-  min-width:34px;
-  width:34px;
-  height:34px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0;
-  font-size:0;
-  color:transparent;
+  position:relative !important;
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  border-radius:12px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+  font-size:0 !important;
+  color:transparent !important;
 }
 
 #mobileMusicResults .mobile-player-icon-btn::before{
@@ -422,23 +489,19 @@
 }
 
 #mobileMusicResults .mobile-player-play-btn{
-  border:1px solid rgba(139,92,246,.45);
-  background:rgba(139,92,246,.18);
-  box-shadow:0 0 18px rgba(139,92,246,.18);
+  border:1px solid rgba(255,255,255,.16) !important;
+  background:rgba(255,255,255,.12) !important;
 }
 
 #mobileMusicResults .mobile-player-play-btn::before{
-  width:16px;
-  height:16px;
   transform:translateX(1px);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.5v13l10-6.5-10-6.5z'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.5v13l10-6.5-10-6.5z'/%3E%3C/svg%3E");
 }
 
 #mobileMusicResults .mobile-player-download-btn{
-  border:1px solid rgba(96,165,250,.45);
-  background:rgba(96,165,250,.16);
-  box-shadow:0 0 18px rgba(96,165,250,.18);
+  border:1px solid rgba(96,165,250,.45) !important;
+  background:rgba(96,165,250,.16) !important;
 }
 
 #mobileMusicResults .mobile-player-download-btn::before{
@@ -447,9 +510,8 @@
 }
 
 #mobileMusicResults .mobile-player-delete-btn{
-  border:1px solid rgba(236,72,153,.48);
-  background:rgba(236,72,153,.17);
-  box-shadow:0 0 18px rgba(236,72,153,.20);
+  border:1px solid rgba(236,72,153,.48) !important;
+  background:rgba(236,72,153,.17) !important;
 }
 
 #mobileMusicResults .mobile-player-delete-btn::before{
@@ -457,69 +519,7 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M6 7l1 14h10l1-14'/%3E%3Cpath d='M9 7V4h6v3'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M6 7l1 14h10l1-14'/%3E%3Cpath d='M9 7V4h6v3'/%3E%3C/svg%3E");
 }
-#mobileMusicResults .aivo-player-card{
-  position:relative !important;
-  width:100% !important;
-  min-height:84px !important;
-  display:grid !important;
-  grid-template-columns:58px minmax(0,1fr) auto !important;
-  align-items:center !important;
-  gap:14px !important;
-  padding:14px 116px 14px 14px !important;
-  border-radius:24px !important;
-  background:
-    radial-gradient(180px 90px at 0% 0%, rgba(139,92,246,.18), transparent 62%),
-    linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035)) !important;
-  border:1px solid rgba(255,255,255,.13) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 16px 36px rgba(0,0,0,.22) !important;
-}
 
-#mobileMusicResults .aivo-player-left{
-  width:58px !important;
-  height:58px !important;
-  border-radius:20px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  background:linear-gradient(135deg,#8b5cf6,#ec4899) !important;
-  box-shadow:0 12px 26px rgba(139,92,246,.24) !important;
-}
-
-#mobileMusicResults .aivo-player-left .aivo-action{
-  width:42px !important;
-  height:42px !important;
-  min-width:42px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(255,255,255,.16) !important;
-  background:rgba(255,255,255,.12) !important;
-  color:#fff !important;
-  font-size:0 !important;
-  position:relative !important;
-}
-
-#mobileMusicResults .aivo-player-left .aivo-action::before{
-  content:"";
-  width:17px;
-  height:17px;
-  display:block;
-  margin:auto;
-  background:#fff;
-  transform:translateX(1px);
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.5v13l10-6.5-10-6.5z'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.5v13l10-6.5-10-6.5z'/%3E%3C/svg%3E") center/contain no-repeat;
-}
-
-#mobileMusicResults .aivo-player-actions{
-  position:absolute !important;
-  right:14px !important;
-  top:50% !important;
-  transform:translateY(-50%) !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:8px !important;
-}
 .mobile-library-thumb{
   font-size:0 !important;
   position:relative !important;
@@ -534,78 +534,4 @@
   filter:drop-shadow(0 0 10px rgba(139,92,246,.72));
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
-}
-#mobileMusicResults .mobile-pending-actions{
-  display:none !important;
-}
-#mobileMusicResults .aivo-player-card.is-ready{
-  grid-template-columns:58px minmax(0,1fr) auto !important;
-  padding-right:96px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-ready .mobile-player-actions{
-  position:absolute !important;
-  right:14px !important;
-  top:50% !important;
-  transform:translateY(-50%) !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:flex-end !important;
-  gap:7px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-ready .mobile-player-icon-btn{
-  width:34px !important;
-  height:34px !important;
-  min-width:34px !important;
-  border-radius:12px !important;
-}
-.mobile-status{
-  text-align:center !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-pending{
-  min-height:74px !important;
-  grid-template-columns:50px minmax(0,1fr) !important;
-  padding:12px 14px !important;
-  border-radius:22px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-pending .aivo-player-left{
-  width:50px !important;
-  height:50px !important;
-  border-radius:17px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-pending .aivo-player-actions{
-  display:none !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-ready{
-  min-height:76px !important;
-  grid-template-columns:52px minmax(0,1fr) 78px !important;
-  padding:12px 14px !important;
-  border-radius:22px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-ready .aivo-player-left{
-  width:52px !important;
-  height:52px !important;
-  border-radius:18px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-ready .mobile-player-actions{
-  position:static !important;
-  transform:none !important;
-  justify-self:end !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:flex-end !important;
-  gap:7px !important;
-}
-
-#mobileMusicResults .aivo-player-card.is-ready .mobile-player-icon-btn{
-  width:32px !important;
-  height:32px !important;
-  min-width:32px !important;
 }
