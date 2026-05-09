@@ -579,6 +579,26 @@ document.body.appendChild(atmoScript);
 } catch (err) {
   atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yüklenemedi.</div>';
 }
+    try {
+  const cartoonRes = await fetch("/mobile/modules/mobile.cartoon.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!cartoonRes.ok) {
+    throw new Error("mobile_cartoon_html_load_failed");
+  }
+
+  cartoonMount.innerHTML = await cartoonRes.text();
+
+  const cartoonScript = document.createElement("script");
+  cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=1";
+  cartoonScript.defer = true;
+  document.body.appendChild(cartoonScript);
+} catch (err) {
+  if (cartoonMount) {
+    cartoonMount.innerHTML = '<div class="empty-card">Çizgifilm modülü yüklenemedi.</div>';
+  }
+}
 
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
@@ -708,15 +728,17 @@ function showAtmo(){
     }
 
    if (toolsNav) {
-  toolsNav.addEventListener("click", function(e){
-    e.preventDefault();
+ toolsNav.addEventListener("click", function(e){
+  e.preventDefault();
 
-    musicMount.hidden = true;
-    coverMount.hidden = true;
-    if (toolsMount) toolsMount.hidden = false;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = false;
 
-    setActiveNav(toolsNav);
-  });
+  setActiveNav(toolsNav);
+});
 }
     document.querySelectorAll("[data-mobile-tool]").forEach(function(btn){
   btn.addEventListener("click", function(){
