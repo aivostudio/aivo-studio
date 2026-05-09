@@ -30,29 +30,31 @@
         maxlength="1000"
         placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"></textarea>
 
-           <div class="mobile-cartoon-count">
+      <div class="mobile-cartoon-count">
         <span id="mobileCartoonCharacterCount">0</span> / 1000
       </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonCharacterType">Tür</label>
-        <select id="mobileCartoonCharacterType" class="field-input">
-          <option value="animal" selected>Hayvan</option>
-          <option value="human">İnsan</option>
-          <option value="fantasy">Fantastik</option>
-          <option value="object">Nesne</option>
-          <option value="custom">Serbest</option>
-        </select>
-      </div>
+      <div class="mobile-cartoon-form-grid mobile-cartoon-form-grid--two">
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonCharacterType">Tür</label>
+          <select id="mobileCartoonCharacterType" class="field-input">
+            <option value="animal" selected>Hayvan</option>
+            <option value="human">İnsan</option>
+            <option value="fantasy">Fantastik</option>
+            <option value="object">Nesne</option>
+            <option value="custom">Serbest</option>
+          </select>
+        </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonCharacterName">Karakter Adı</label>
-        <input
-          id="mobileCartoonCharacterName"
-          class="field-input"
-          type="text"
-          maxlength="80"
-          placeholder="Örn: Mini Tavşan">
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonCharacterName">Karakter Adı</label>
+          <input
+            id="mobileCartoonCharacterName"
+            class="field-input"
+            type="text"
+            maxlength="80"
+            placeholder="Mini Tavşan">
+        </div>
       </div>
 
       <div class="mobile-cartoon-mini-box">
@@ -67,77 +69,79 @@
 
       <h3 class="mobile-cartoon-block-title">Gelişmiş Özelleştirme</h3>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonHairType">Saç Tipi</label>
-        <select id="mobileCartoonHairType" class="field-input">
-          <option value="" selected>Seçiniz</option>
-          <option value="short">Kısa</option>
-          <option value="long">Uzun</option>
-          <option value="curly">Kıvırcık</option>
-          <option value="wavy">Dalgalı</option>
-          <option value="straight">Düz</option>
-        </select>
-      </div>
+      <div class="mobile-cartoon-form-grid mobile-cartoon-form-grid--three">
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonHairType">Saç Tipi</label>
+          <select id="mobileCartoonHairType" class="field-input">
+            <option value="" selected>Seçiniz</option>
+            <option value="short">Kısa</option>
+            <option value="long">Uzun</option>
+            <option value="curly">Kıvırcık</option>
+            <option value="wavy">Dalgalı</option>
+            <option value="straight">Düz</option>
+          </select>
+        </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonHairColor">Saç Rengi</label>
-        <select id="mobileCartoonHairColor" class="field-input">
-          <option value="" selected>Seçiniz</option>
-          <option value="black">Siyah</option>
-          <option value="brown">Kahverengi</option>
-          <option value="blonde">Sarı</option>
-          <option value="red">Kızıl</option>
-          <option value="pink">Pembe</option>
-          <option value="blue">Mavi</option>
-        </select>
-      </div>
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonHairColor">Saç Rengi</label>
+          <select id="mobileCartoonHairColor" class="field-input">
+            <option value="" selected>Seçiniz</option>
+            <option value="black">Siyah</option>
+            <option value="brown">Kahverengi</option>
+            <option value="blonde">Sarı</option>
+            <option value="red">Kızıl</option>
+            <option value="pink">Pembe</option>
+            <option value="blue">Mavi</option>
+          </select>
+        </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonOutfit">Kıyafet</label>
-        <select id="mobileCartoonOutfit" class="field-input">
-          <option value="" selected>Seçiniz</option>
-          <option value="dress">Elbise</option>
-          <option value="tshirt-shorts">Tişört + Şort</option>
-          <option value="hoodie">Kapüşonlu</option>
-          <option value="superhero">Süper Kahraman</option>
-          <option value="princess">Prenses</option>
-          <option value="school">Okul Kıyafeti</option>
-        </select>
-      </div>
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonOutfit">Kıyafet</label>
+          <select id="mobileCartoonOutfit" class="field-input">
+            <option value="" selected>Seçiniz</option>
+            <option value="dress">Elbise</option>
+            <option value="tshirt-shorts">Tişört + Şort</option>
+            <option value="hoodie">Kapüşonlu</option>
+            <option value="superhero">Süper Kahraman</option>
+            <option value="princess">Prenses</option>
+            <option value="school">Okul Kıyafeti</option>
+          </select>
+        </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonGlasses">Gözlük</label>
-        <select id="mobileCartoonGlasses" class="field-input">
-          <option value="" selected>Yok</option>
-          <option value="round">Yuvarlak</option>
-          <option value="square">Kare</option>
-          <option value="star">Yıldız</option>
-          <option value="heart">Kalp</option>
-        </select>
-      </div>
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonGlasses">Gözlük</label>
+          <select id="mobileCartoonGlasses" class="field-input">
+            <option value="" selected>Yok</option>
+            <option value="round">Yuvarlak</option>
+            <option value="square">Kare</option>
+            <option value="star">Yıldız</option>
+            <option value="heart">Kalp</option>
+          </select>
+        </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonAccessory">Aksesuar</label>
-        <select id="mobileCartoonAccessory" class="field-input">
-          <option value="" selected>Yok</option>
-          <option value="hat">Şapka</option>
-          <option value="bow">Fiyonk</option>
-          <option value="bag">Çanta</option>
-          <option value="wand">Sihirli Değnek</option>
-          <option value="crown">Taç</option>
-        </select>
-      </div>
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonAccessory">Aksesuar</label>
+          <select id="mobileCartoonAccessory" class="field-input">
+            <option value="" selected>Yok</option>
+            <option value="hat">Şapka</option>
+            <option value="bow">Fiyonk</option>
+            <option value="bag">Çanta</option>
+            <option value="wand">Sihirli Değnek</option>
+            <option value="crown">Taç</option>
+          </select>
+        </div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonExpression">Yüz İfadesi</label>
-        <select id="mobileCartoonExpression" class="field-input">
-          <option value="" selected>Seçiniz</option>
-          <option value="happy">Mutlu</option>
-          <option value="excited">Heyecanlı</option>
-          <option value="cute">Sevimli</option>
-          <option value="calm">Sakin</option>
-          <option value="funny">Komik</option>
-        </select>
+        <div class="mobile-cartoon-mini-box">
+          <label class="field-label" for="mobileCartoonExpression">Yüz İfadesi</label>
+          <select id="mobileCartoonExpression" class="field-input">
+            <option value="" selected>Seçiniz</option>
+            <option value="happy">Mutlu</option>
+            <option value="excited">Heyecanlı</option>
+            <option value="cute">Sevimli</option>
+            <option value="calm">Sakin</option>
+            <option value="funny">Komik</option>
+          </select>
+        </div>
       </div>
 
       <div class="mobile-cartoon-upload-grid mobile-cartoon-upload-grid--single">
