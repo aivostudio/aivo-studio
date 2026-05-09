@@ -572,3 +572,119 @@ background:
   0%{ transform:translateX(-30%) rotate(18deg); }
   100%{ transform:translateX(30%) rotate(18deg); }
 }
+.mobile-cartoon-character-library-wrap{
+  margin:18px 0 0;
+  padding:14px 0 0;
+  border-top:1px solid rgba(255,255,255,.10);
+}
+
+.mobile-cartoon-character-library{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:10px 2px 4px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+.mobile-cartoon-character-library::-webkit-scrollbar{
+  display:none;
+}
+
+.mobile-cartoon-character-empty{
+  width:100%;
+  padding:14px;
+  border-radius:18px;
+  text-align:center;
+  color:rgba(255,255,255,.68);
+  font-size:12px;
+  font-weight:850;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.mobile-cartoon-character-card{
+  position:relative;
+  flex:0 0 118px;
+  width:118px;
+}
+
+.mobile-cartoon-character-thumb{
+  position:relative;
+  width:118px;
+  height:118px;
+  border-radius:22px;
+  overflow:hidden;
+  background:#070914;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 14px 30px rgba(0,0,0,.24);
+}
+
+.mobile-cartoon-character-thumb img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.mobile-cartoon-character-loading{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:12px;
+  color:#fff;
+  font-size:11px;
+  font-weight:950;
+  background:
+    radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.22), rgba(0,0,0,.76)),
+    #070914;
+}
+
+.mobile-cartoon-character-actions{
+  position:absolute;
+  left:50%;
+  bottom:8px;
+  transform:translateX(-50%);
+  display:flex;
+  gap:5px;
+  padding:5px 6px;
+  border-radius:999px;
+  background:rgba(12,14,24,.62);
+  border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  z-index:3;
+}
+
+.mobile-cartoon-character-actions button{
+  width:24px;
+  height:24px;
+  border:0;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.mobile-cartoon-character-actions button[data-mobile-cartoon-character-act="delete"]{
+  color:#ff8aa8;
+}
+
+.mobile-cartoon-character-name{
+  margin-top:7px;
+  color:#fff;
+  font-size:11px;
+  line-height:1.12;
+  font-weight:950;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
