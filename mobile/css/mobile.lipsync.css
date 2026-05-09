@@ -938,3 +938,112 @@
     transform:rotate(360deg);
   }
 }
+.mobile-lipsync-record-preview{
+  width:100%;
+  min-height:82px;
+  padding:12px;
+  border-radius:20px;
+  display:grid;
+  grid-template-columns:46px minmax(0, 1fr) 82px 38px;
+  gap:10px;
+  align-items:center;
+  background:rgba(3,5,14,.62);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.mobile-lipsync-record-play,
+.mobile-lipsync-record-discard{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.mobile-lipsync-record-info{
+  min-width:0;
+  text-align:left;
+}
+
+.mobile-lipsync-record-info b{
+  display:block;
+  color:#fff;
+  font-size:14px;
+  line-height:1.15;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.mobile-lipsync-record-info span{
+  display:block;
+  margin-top:4px;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  line-height:1.2;
+  font-weight:800;
+}
+
+.mobile-lipsync-record-use{
+  height:42px;
+  border:0;
+  border-radius:16px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.mobile-lipsync-inline-audio{
+  width:100%;
+  min-height:44px;
+  padding:6px 8px;
+  border-radius:16px;
+  display:grid;
+  grid-template-columns:34px minmax(0, 1fr) auto 34px;
+  gap:8px;
+  align-items:center;
+  background:rgba(5,7,16,.58);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.mobile-lipsync-inline-audio button{
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.mobile-lipsync-inline-audio strong{
+  min-width:0;
+  color:#fff;
+  font-size:12px;
+  line-height:1.1;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.mobile-lipsync-inline-audio em{
+  color:rgba(255,255,255,.68);
+  font-size:11px;
+  font-style:normal;
+  font-weight:850;
+  white-space:nowrap;
+}
+
+.mobile-lipsync-textarea.has-audio{
+  opacity:.55;
+}
