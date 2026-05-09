@@ -722,6 +722,16 @@ function showAtmo(){
           return;
         }
 
+              if (activeMobileModule === "cartoon") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showCartoon();
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
         showMusic();
         setActiveNav(productionsNav);
       }, true);
