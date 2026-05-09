@@ -91,6 +91,35 @@ function clearUpload(input, clearBtn, textEl, stateKey){
     clearBtn.hidden = true;
   }
 }
+
+function getCartoonCharacterCredit(){
+  return state.characterImageFile ? 30 : 20;
+}
+
+function getCartoonBasicCredit(){
+  let total = 30;
+
+  if (state.logoFile) total += 10;
+  if (state.audioFile) total += 10;
+  if (state.customCharacterFile) total += 10;
+
+  return total;
+}
+
+function syncCartoonCredits(){
+  const characterCredit = getCartoonCharacterCredit();
+  const basicCredit = getCartoonBasicCredit();
+
+  if (characterBtn) {
+    characterBtn.textContent = "🧩 Karakter Oluştur (" + characterCredit + " Kredi)";
+    characterBtn.setAttribute("data-credit-cost", String(characterCredit));
+  }
+
+  if (generateBtn) {
+    generateBtn.textContent = "🎬 Sahneyi Oluştur (" + basicCredit + " Kredi)";
+    generateBtn.setAttribute("data-credit-cost", String(basicCredit));
+  }
+}
   function setMode(mode){
     const nextMode = mode === "basic" ? "basic" : "character";
     state.mode = nextMode;
@@ -180,21 +209,23 @@ function clearUpload(input, clearBtn, textEl, stateKey){
       state.ratio = safeText(ratioEl.value) || "16:9";
     }
   }
- function bindUploads(){
+function bindUploads(){
   if (characterImageEl) {
     characterImageEl.addEventListener("change", function(){
       setUploadState(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile");
+      syncCartoonCredits();
+
       if (state.characterImageFile) {
         setStatus("Karakter referans görseli seçildi.");
       }
     });
   }
-
   if (characterImageClearEl) {
     characterImageClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
       clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile");
+      syncCartoonCredits();
       setStatus("Karakter referans görseli kaldırıldı.");
     });
   }
@@ -202,6 +233,8 @@ function clearUpload(input, clearBtn, textEl, stateKey){
   if (audioFileEl) {
     audioFileEl.addEventListener("change", function(){
       setUploadState(audioFileEl, audioClearEl, audioTextEl, "audioFile");
+      syncCartoonCredits();
+
       if (state.audioFile) {
         setStatus("Audio seçildi.");
       }
@@ -213,6 +246,7 @@ function clearUpload(input, clearBtn, textEl, stateKey){
       e.preventDefault();
       e.stopPropagation();
       clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile");
+      syncCartoonCredits();
       setStatus("Audio kaldırıldı.");
     });
   }
@@ -220,6 +254,8 @@ function clearUpload(input, clearBtn, textEl, stateKey){
   if (logoFileEl) {
     logoFileEl.addEventListener("change", function(){
       setUploadState(logoFileEl, logoClearEl, logoTextEl, "logoFile");
+      syncCartoonCredits();
+
       if (state.logoFile) {
         setStatus("Logo seçildi.");
       }
@@ -231,6 +267,7 @@ function clearUpload(input, clearBtn, textEl, stateKey){
       e.preventDefault();
       e.stopPropagation();
       clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile");
+      syncCartoonCredits();
       setStatus("Logo kaldırıldı.");
     });
   }
@@ -238,6 +275,8 @@ function clearUpload(input, clearBtn, textEl, stateKey){
   if (customFileEl) {
     customFileEl.addEventListener("change", function(){
       setUploadState(customFileEl, customClearEl, customTextEl, "customCharacterFile");
+      syncCartoonCredits();
+
       if (state.customCharacterFile) {
         setStatus("Kendi karakter görselin seçildi.");
       }
@@ -249,6 +288,7 @@ function clearUpload(input, clearBtn, textEl, stateKey){
       e.preventDefault();
       e.stopPropagation();
       clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile");
+      syncCartoonCredits();
       setStatus("Kendi karakter görselin kaldırıldı.");
     });
   }
@@ -292,6 +332,7 @@ bindCounters();
 bindControls();
 bindUploads();
 bindButtons();
+syncCartoonCredits();
 
 setMode("character");
 
