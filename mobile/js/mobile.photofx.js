@@ -465,10 +465,17 @@
       styles: state.styles.slice(),
       image_url: state.imageUrl,
       imageUrl: state.imageUrl,
-      logo_url: state.logoUrl,
+          logo_url: state.logoUrl,
       logoUrl: state.logoUrl,
       logo_enabled: !!state.logoUrl,
-      logo_pos: state.logoPosition,
+      logo_pos:
+        state.logoPosition === "top-left"
+          ? "tl"
+          : state.logoPosition === "top-right"
+            ? "tr"
+            : state.logoPosition === "bottom-left"
+              ? "bl"
+              : "br",
       audio_url: state.audioUrl,
       audioUrl: state.audioUrl,
       duration: state.duration,
