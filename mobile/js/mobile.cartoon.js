@@ -704,7 +704,7 @@ function bindUploads(){
     }
 
       if (generateBtn) {
-      generateBtn.addEventListener("click", function(){
+      generateBtn.addEventListener("click", async function(){
         const tempJobId = "mobile-cartoon-" + Date.now();
 
         setStatus("Çizgifilm sahnesi hazırlanıyor...");
@@ -718,20 +718,84 @@ function bindUploads(){
 
         renderMobileCartoonResults();
 
-        console.log("[MOBILE CARTOON][BASIC]", {
+        const payload = {
           app: "cartoon",
           mode: "basic",
-          prompt: state.scenePrompt,
-          main_character: state.mainCharacter,
+          extraPrompt: state.scenePrompt,
+          mainCharacter: state.mainCharacter,
+          helperCharacters: state.helpers.slice(),
           scene: state.scene,
-          helpers: state.helpers,
-          actions: state.actions,
+          actions: state.actions.slice(),
+          action: state.actions.join(", "),
           duration: state.duration,
-          ratio: state.ratio,
-          audio_url: state.audioUrl,
-          logo_url: state.logoUrl,
-          custom_character_url: state.customCharacterUrl
-        });
+          aspectRatio: state.ratio,
+          audioMode: state.audioUrl ? "upload" : "none",
+          audioFileUrl: state.audioUrl,
+          logoFileUrl: state.logoUrl,
+          characterImageUrl: state.customCharacterUrl
+        };
+
+        console.log("[MOBILE CARTOON][BASIC PAYLOAD]", payload);
+
+        try {
+          const res = await fetch("/api/providers/fal/cartoon/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(function(){
+            return {};
+          });
+
+          console.log("[MOBILE CARTOON][BASIC CREATE RESPONSE]", data);
+
+          if (!res.ok || !data.ok || !data.job_id) {
+            const job = mobileCartoonJobs.find(function(item){
+              return item.id === tempJobId;
+            });
+
+            if (job) {
+              job.status = "error";
+              job.title = "Çizgifilm video başlatılamadı";
+            }
+
+            renderMobileCartoonResults();
+            setStatus("Çizgifilm video başlatılamadı.");
+            return;
+          }
+
+          const realJobId = String(data.job_id || "").trim();
+
+          const job = mobileCartoonJobs.find(function(item){
+            return item.id === tempJobId;
+          });
+
+          if (job) {
+            job.id = realJobId;
+            job.status = "processing";
+          }
+
+          renderMobileCartoonResults();
+          pollMobileCartoonJob(realJobId);
+        } catch (err) {
+          console.error("[MOBILE CARTOON][BASIC CREATE ERROR]", err);
+
+          const job = mobileCartoonJobs.find(function(item){
+            return item.id === tempJobId;
+          });
+
+          if (job) {
+            job.status = "error";
+            job.title = "Çizgifilm video başlatılamadı";
+          }
+
+          renderMobileCartoonResults();
+          setStatus("Çizgifilm video başlatılamadı.");
+        }
       });
     }
   }
