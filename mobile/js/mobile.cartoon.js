@@ -1004,6 +1004,7 @@ bindControls();
 bindUploads();
 bindButtons();
 syncCartoonCredits();
+bindMobileCartoonCharacterActions();
 bindMobileCartoonResultActions();
 renderMobileCartoonResults();
 
