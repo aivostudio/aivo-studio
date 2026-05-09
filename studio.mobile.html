@@ -797,7 +797,7 @@ function showVideo(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 }
-    function showLipsync(){
+function showLipsync(){
   musicMount.hidden = true;
   coverMount.hidden = true;
   atmoMount.hidden = true;
@@ -806,6 +806,17 @@ function showVideo(){
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = false;
   if (toolsMount) toolsMount.hidden = true;
+
+  const lipsyncSection = document.getElementById("mobileLipsyncSection");
+  if (lipsyncSection) {
+    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");
+    const lipsyncTitle = lipsyncSection.querySelector(".section-title");
+    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");
+
+    if (lipsyncPanel) lipsyncPanel.hidden = false;
+    if (lipsyncTitle) lipsyncTitle.hidden = false;
+    if (lipsyncResults) lipsyncResults.hidden = false;
+  }
 }
     
     if (homeNav) {
