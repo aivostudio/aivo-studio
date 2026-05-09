@@ -389,3 +389,48 @@ background:
     inset 0 1px 0 rgba(255,255,255,.14),
     0 8px 18px rgba(0,0,0,.20);
 }
+.mobile-cartoon-form-grid{
+  display:grid;
+  gap:8px;
+  margin:8px 0 12px;
+}
+
+.mobile-cartoon-form-grid--two{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.mobile-cartoon-form-grid--three{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+
+.mobile-cartoon-form-grid .mobile-cartoon-mini-box{
+  margin:0;
+  padding:8px;
+  border-radius:15px;
+}
+
+.mobile-cartoon-form-grid .field-label{
+  margin-bottom:5px;
+  font-size:10px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+
+.mobile-cartoon-form-grid .field-input{
+  min-height:42px;
+  padding:0 10px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:900;
+}
+
+.mobile-cartoon-view[data-mobile-cartoon-view="character"] .mobile-cartoon-block-title{
+  margin-top:10px;
+  margin-bottom:8px;
+}
+
+.mobile-cartoon-view[data-mobile-cartoon-view="character"] .mobile-cartoon-mini-box:not(.mobile-cartoon-form-grid .mobile-cartoon-mini-box){
+  padding:10px;
+  margin-bottom:10px;
+}
