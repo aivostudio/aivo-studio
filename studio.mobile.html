@@ -435,8 +435,12 @@
 <div id="mobileAtmoMount" hidden>
   <div class="empty-card">Atmosfer modülü yükleniyor...</div>
 </div>
-    <div id="mobileCartoonMount" hidden>
+   <div id="mobileCartoonMount" hidden>
   <div class="empty-card">Çizgifilm modülü yükleniyor...</div>
+</div>
+
+<div id="mobilePhotoFxMount" hidden>
+  <div class="empty-card">PhotoFX modülü yükleniyor...</div>
 </div>
   <div id="mobileToolsMount" hidden>
   <h2 class="section-title">AI Araçlar</h2>
@@ -504,11 +508,11 @@
     const musicMount = document.getElementById("mobileMusicMount");
     if (!musicMount) return;
 
-   let coverMount = document.getElementById("mobileCoverMount");
+let coverMount = document.getElementById("mobileCoverMount");
 let toolsMount = document.getElementById("mobileToolsMount");
 let atmoMount = document.getElementById("mobileAtmoMount");
 let cartoonMount = document.getElementById("mobileCartoonMount");
-    
+let photofxMount = document.getElementById("mobilePhotoFxMount");
 
     if (!coverMount) {
       coverMount = document.createElement("div");
@@ -523,6 +527,18 @@ let cartoonMount = document.getElementById("mobileCartoonMount");
   atmoMount.hidden = true;
   atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yükleniyor...</div>';
   coverMount.insertAdjacentElement("afterend", atmoMount);
+}
+    if (!photofxMount) {
+  photofxMount = document.createElement("div");
+  photofxMount.id = "mobilePhotoFxMount";
+  photofxMount.hidden = true;
+  photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yükleniyor...</div>';
+
+  if (cartoonMount) {
+    cartoonMount.insertAdjacentElement("afterend", photofxMount);
+  } else {
+    atmoMount.insertAdjacentElement("afterend", photofxMount);
+  }
 }
     try {
       const musicRes = await fetch("/mobile/modules/mobile.music.html?v=1", {
@@ -597,6 +613,26 @@ cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
 } catch (err) {
   if (cartoonMount) {
     cartoonMount.innerHTML = '<div class="empty-card">Çizgifilm modülü yüklenemedi.</div>';
+  }
+}
+    try {
+  const photofxRes = await fetch("/mobile/modules/mobile.photofx.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!photofxRes.ok) {
+    throw new Error("mobile_photofx_html_load_failed");
+  }
+
+  photofxMount.innerHTML = await photofxRes.text();
+
+  const photofxScript = document.createElement("script");
+  photofxScript.src = "/mobile/js/mobile.photofx.js?v=1";
+  photofxScript.defer = true;
+  document.body.appendChild(photofxScript);
+} catch (err) {
+  if (photofxMount) {
+    photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yüklenemedi.</div>';
   }
 }
 
