@@ -1,0 +1,270 @@
+#mobileCartoonSection{
+  padding-bottom:18px;
+}
+
+.mobile-cartoon-panel{
+  width:100%;
+  border-radius:26px;
+  padding:14px;
+  background:
+    radial-gradient(240px 120px at 0% 0%, rgba(255,184,108,.18), transparent 62%),
+    radial-gradient(220px 120px at 100% 0%, rgba(236,72,153,.14), transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.24);
+}
+
+.mobile-cartoon-hero{
+  padding:4px 2px 14px;
+  text-align:center;
+}
+
+.mobile-cartoon-kicker{
+  width:max-content;
+  max-width:100%;
+  margin:0 auto 10px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.075);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.74);
+  font-size:10px;
+  font-weight:900;
+}
+
+.mobile-cartoon-hero h3{
+  margin:0;
+  font-size:22px;
+  line-height:1.05;
+  letter-spacing:-.05em;
+  font-weight:950;
+}
+
+.mobile-cartoon-hero p{
+  margin:8px 0 0;
+  color:rgba(255,255,255,.68);
+  font-size:12px;
+  line-height:1.35;
+  font-weight:700;
+}
+
+.mobile-cartoon-info{
+  margin:0 0 14px;
+  padding:12px 13px;
+  border-radius:20px;
+  text-align:center;
+  color:rgba(255,255,255,.82);
+  font-size:11.5px;
+  line-height:1.35;
+  font-weight:850;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255,255,255,.14), transparent 34%),
+    linear-gradient(135deg, rgba(255,184,108,.12), rgba(236,72,153,.10), rgba(96,234,255,.08));
+  border:1px solid rgba(255,255,255,.13);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 12px 26px rgba(0,0,0,.18);
+}
+
+.mobile-cartoon-mode-tabs{
+  height:50px;
+  padding:5px;
+  margin:0 0 16px;
+  border-radius:999px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.mobile-cartoon-mode{
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:rgba(255,255,255,.54);
+  font-size:12px;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.mobile-cartoon-mode.is-active{
+  color:#fff;
+  background:linear-gradient(135deg,#ffb86c,#ec4899);
+  box-shadow:0 0 22px rgba(236,72,153,.26);
+}
+
+.mobile-cartoon-view[hidden]{
+  display:none !important;
+}
+
+.mobile-cartoon-block-title{
+  margin:4px 0 4px;
+  color:#fff;
+  font-size:16px;
+  line-height:1.1;
+  letter-spacing:-.035em;
+  font-weight:950;
+  text-align:center;
+}
+
+.mobile-cartoon-block-sub{
+  margin:0 0 10px;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  line-height:1.35;
+  font-weight:750;
+  text-align:center;
+}
+
+.mobile-cartoon-prompt{
+  min-height:128px;
+}
+
+.mobile-cartoon-count{
+  margin:6px 0 14px;
+  text-align:right;
+  color:rgba(255,255,255,.52);
+  font-size:11px;
+  font-weight:800;
+}
+
+.mobile-cartoon-choice-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:9px;
+  margin:10px 0 16px;
+}
+
+.mobile-cartoon-choice{
+  width:100%;
+  min-height:42px;
+  padding:0 10px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.065);
+  color:rgba(255,255,255,.82);
+  font-size:11.5px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.mobile-cartoon-choice.is-active{
+  color:#fff;
+  border-color:rgba(236,72,153,.45);
+  background:linear-gradient(135deg, rgba(255,184,108,.34), rgba(236,72,153,.32));
+  box-shadow:0 0 18px rgba(236,72,153,.20);
+}
+
+.mobile-cartoon-chip-row{
+  display:flex;
+  flex-wrap:nowrap;
+  gap:7px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  margin:10px 0 14px;
+  padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+.mobile-cartoon-chip-row::-webkit-scrollbar{
+  display:none;
+}
+
+.mobile-cartoon-chip{
+  width:auto;
+  flex:0 0 auto;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.065);
+  color:rgba(255,255,255,.82);
+  font-size:10.8px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.mobile-cartoon-chip.is-active{
+  color:#fff;
+  border-color:rgba(236,72,153,.45);
+  background:linear-gradient(135deg, rgba(255,184,108,.34), rgba(236,72,153,.32));
+  box-shadow:0 0 18px rgba(236,72,153,.20);
+}
+
+.mobile-cartoon-mini-box{
+  width:100%;
+  margin:4px 0 12px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(0,0,0,.16);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+#mobileCartoonCharacterStatus,
+#mobileCartoonStatus{
+  width:max-content;
+  max-width:100%;
+  margin:18px auto 0;
+  padding:9px 14px;
+  border-radius:999px;
+  color:rgba(255,255,255,.88);
+  font-size:12px;
+  line-height:1;
+  font-weight:950;
+  text-align:center;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255,255,255,.18), transparent 34%),
+    linear-gradient(135deg, rgba(255,184,108,.14), rgba(236,72,153,.16), rgba(96,234,255,.10));
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 10px 24px rgba(0,0,0,.18);
+}
+
+#mobileCartoonCharacterStatus:empty,
+#mobileCartoonStatus:empty{
+  display:none;
+}
+
+#mobileCartoonSection > .section-title{
+  width:max-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+  padding:4px 2px;
+  text-align:center;
+  font-size:23px;
+  font-weight:950;
+  letter-spacing:-.045em;
+  background:linear-gradient(135deg,#fff,#ffd36a,#f472ff,#60eaff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow:0 0 24px rgba(236,72,153,.18);
+}
+
+#mobileCartoonResults.empty-card{
+  margin-top:18px;
+  padding:18px 18px;
+  border-radius:24px;
+  text-align:center;
+  color:rgba(255,255,255,.78);
+  font-size:13px;
+  line-height:1.35;
+  font-weight:900;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255,255,255,.12), transparent 34%),
+    linear-gradient(135deg, rgba(255,184,108,.14), rgba(236,72,153,.08), rgba(96,234,255,.08));
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 16px 34px rgba(0,0,0,.22);
+}
