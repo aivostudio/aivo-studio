@@ -245,7 +245,70 @@ function pollMobileCartoonJob(jobId){
     }, 4000);
   });
 }
+function bindMobileCartoonCharacterActions(){
+  const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
+  if (!libraryEl || libraryEl.__mobileCartoonCharacterActionsBound) return;
+  libraryEl.__mobileCartoonCharacterActionsBound = true;
 
+  libraryEl.addEventListener("click", function(e){
+    const btn = e.target.closest("[data-mobile-cartoon-character-act]");
+    if (!btn) return;
+
+    const card = btn.closest("[data-mobile-cartoon-character]");
+    if (!card) return;
+
+    const act = btn.getAttribute("data-mobile-cartoon-character-act");
+    const imageUrl = btn.getAttribute("data-character-url") || "";
+
+    if (act === "preview") {
+      if (!imageUrl) return;
+      window.open(imageUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    if (act === "download") {
+      if (!imageUrl) return;
+
+      const downloadUrl =
+        "/api/media/proxy?url=" +
+        encodeURIComponent(imageUrl) +
+        "&filename=" +
+        encodeURIComponent("aivo-cizgifilm-karakter.jpg");
+
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.setAttribute("aria-hidden", "true");
+      iframe.src = downloadUrl;
+
+      document.body.appendChild(iframe);
+
+      setTimeout(function(){
+        try {
+          iframe.remove();
+        } catch (err) {}
+      }, 15000);
+
+      return;
+    }
+
+    if (act === "select") {
+      state.customCharacterUrl = imageUrl;
+      syncMainCharacterDisabled();
+      setStatus("Karakter Basit Mod için seçildi.");
+      return;
+    }
+
+    if (act === "delete") {
+      card.remove();
+
+      if (!libraryEl.querySelector(".mobile-cartoon-character-card")) {
+        libraryEl.innerHTML = '<div class="mobile-cartoon-character-empty">Henüz mobil karakter oluşturulmadı.</div>';
+      }
+
+      return;
+    }
+  });
+}
 function bindMobileCartoonResultActions(){
   if (!resultsEl || resultsEl.__mobileCartoonActionsBound) return;
   resultsEl.__mobileCartoonActionsBound = true;
