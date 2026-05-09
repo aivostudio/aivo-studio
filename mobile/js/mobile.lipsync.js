@@ -664,7 +664,20 @@
       });
     }
   }
+    function syncAspectPreview(){
+    if (!photoDrop || !aspectEl) return;
 
+    const value = String(aspectEl.value || "16:9").trim();
+    photoDrop.classList.toggle("is-portrait", value === "9:16");
+    photoDrop.classList.toggle("is-landscape", value !== "9:16");
+  }
+
+  function bindAspectPreview(){
+    if (!aspectEl) return;
+
+    aspectEl.addEventListener("change", syncAspectPreview);
+    syncAspectPreview();
+  }
   function bindVoice(){
     if (voiceSelectEl) {
       voiceSelectEl.addEventListener("change", function(){
@@ -903,6 +916,7 @@
   bindScript();
   bindPhoto();
   bindAudio();
+ bindAspectPreview();
   bindVoice();
   bindRecord();
   bindGenerate();
