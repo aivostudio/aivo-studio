@@ -762,3 +762,6 @@
 .mobile-lipsync-photo-drop.has-photo .mobile-lipsync-photo-remove{
   z-index:5;
 }
+.mobile-lipsync-photo-drop.has-photo .mobile-lipsync-photo-preview{
+  background:transparent !important;
+}
