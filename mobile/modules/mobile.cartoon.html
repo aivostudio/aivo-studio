@@ -30,23 +30,23 @@
         maxlength="1000"
         placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"></textarea>
 
-    <div class="mobile-cartoon-count">
-  <span id="mobileCartoonCharacterCount">0</span> / 1000
-</div>
+      <div class="mobile-cartoon-count">
+        <span id="mobileCartoonCharacterCount">0</span> / 1000
+      </div>
 
-<div class="mobile-cartoon-upload-grid mobile-cartoon-upload-grid--single">
-  <label class="mobile-cartoon-upload-card" for="mobileCartoonCharacterImage">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
-    <input id="mobileCartoonCharacterImage" type="file" accept="image/*" hidden>
-  <span class="mobile-cartoon-upload-btn">Resim Seç</span>
-    <button id="mobileCartoonCharacterImageClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonCharacterImageText">Dosya seçilmedi</small>
-  </label>
-</div>
+      <div class="mobile-cartoon-upload-grid mobile-cartoon-upload-grid--single">
+        <label class="mobile-cartoon-upload-card" for="mobileCartoonCharacterImage">
+          <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+          <input id="mobileCartoonCharacterImage" type="file" accept="image/*" hidden>
+          <span class="mobile-cartoon-upload-btn">Resim Seç</span>
+          <button id="mobileCartoonCharacterImageClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
+          <small id="mobileCartoonCharacterImageText">Dosya seçilmedi</small>
+        </label>
+      </div>
 
-<button id="mobileCartoonCharacterBtn" class="generate-btn" type="button">
-  🧩 Karakter Oluştur (20 Kredi)
-</button>
+      <button id="mobileCartoonCharacterBtn" class="generate-btn" type="button">
+        🧩 Karakter Oluştur (20 Kredi)
+      </button>
 
       <div id="mobileCartoonCharacterStatus" class="mobile-status"></div>
     </div>
@@ -104,42 +104,42 @@
         </select>
       </div>
 
-  <div class="mobile-cartoon-mini-box">
-  <label class="field-label" for="mobileCartoonRatio">En / Boy Oranı</label>
-  <select id="mobileCartoonRatio" class="field-input">
-    <option value="16:9" selected>Yatay (16:9)</option>
-    <option value="9:16">Dikey (9:16)</option>
-    <option value="1:1">Kare (1:1)</option>
-  </select>
-</div>
+      <div class="mobile-cartoon-mini-box">
+        <label class="field-label" for="mobileCartoonRatio">En / Boy Oranı</label>
+        <select id="mobileCartoonRatio" class="field-input">
+          <option value="16:9" selected>Yatay (16:9)</option>
+          <option value="9:16">Dikey (9:16)</option>
+          <option value="1:1">Kare (1:1)</option>
+        </select>
+      </div>
 
-<div class="mobile-cartoon-upload-grid">
-  <label class="mobile-cartoon-upload-card" for="mobileCartoonAudioFile">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
-    <input id="mobileCartoonAudioFile" type="file" accept="audio/*" hidden>
-    <span class="mobile-cartoon-upload-btn">🎵 Audio Seç</span>
-    <button id="mobileCartoonAudioClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonAudioText">Dosya seçilmedi</small>
-  </label>
+      <div class="mobile-cartoon-upload-grid">
+        <label class="mobile-cartoon-upload-card" for="mobileCartoonLogoFile">
+          <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+          <input id="mobileCartoonLogoFile" type="file" accept="image/*" hidden>
+          <span class="mobile-cartoon-upload-btn">Logo Seç</span>
+          <button id="mobileCartoonLogoClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
+          <small id="mobileCartoonLogoText">Dosya seçilmedi</small>
+        </label>
 
-  <label class="mobile-cartoon-upload-card" for="mobileCartoonLogoFile">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
-    <input id="mobileCartoonLogoFile" type="file" accept="image/*" hidden>
-    <span class="mobile-cartoon-upload-btn">🏷️ Logo Seç</span>
-    <button id="mobileCartoonLogoClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonLogoText">Dosya seçilmedi</small>
-  </label>
+        <label class="mobile-cartoon-upload-card" for="mobileCartoonAudioFile">
+          <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+          <input id="mobileCartoonAudioFile" type="file" accept="audio/*" hidden>
+          <span class="mobile-cartoon-upload-btn">Audio Seç</span>
+          <button id="mobileCartoonAudioClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
+          <small id="mobileCartoonAudioText">Dosya seçilmedi</small>
+        </label>
 
-  <label class="mobile-cartoon-upload-card" for="mobileCartoonCustomFile">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
-    <input id="mobileCartoonCustomFile" type="file" accept="image/*" hidden>
-    <span class="mobile-cartoon-upload-btn">🖼️ Resim Seç</span>
-    <button id="mobileCartoonCustomClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonCustomText">Dosya seçilmedi</small>
-  </label>
-</div>
+        <label class="mobile-cartoon-upload-card" for="mobileCartoonCustomFile">
+          <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+          <input id="mobileCartoonCustomFile" type="file" accept="image/*" hidden>
+          <span class="mobile-cartoon-upload-btn">Resim Seç</span>
+          <button id="mobileCartoonCustomClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
+          <small id="mobileCartoonCustomText">Dosya seçilmedi</small>
+        </label>
+      </div>
 
-<button id="mobileCartoonGenerateBtn" class="generate-btn" type="button">
+      <button id="mobileCartoonGenerateBtn" class="generate-btn" type="button">
         🎬 Sahneyi Oluştur (30 Kredi)
       </button>
 
