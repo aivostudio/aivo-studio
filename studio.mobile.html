@@ -643,8 +643,18 @@ function showAtmo(){
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = false;
   if (toolsMount) toolsMount.hidden = true;
-}
 
+  const cartoonSection = document.getElementById("mobileCartoonSection");
+  if (cartoonSection) {
+    const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
+    const cartoonTitle = cartoonSection.querySelector(".section-title");
+    const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
+
+    if (cartoonPanel) cartoonPanel.hidden = false;
+    if (cartoonTitle) cartoonTitle.hidden = false;
+    if (cartoonResults) cartoonResults.hidden = false;
+  }
+}
     if (homeNav) {
       homeNav.addEventListener("click", function(){
         showMusic();
