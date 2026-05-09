@@ -460,20 +460,46 @@ async function hydrateMobileCartoonLibrary(){
         );
       });
 
-      const videoUrl = String(
+        const videoUrl = String(
         row.video_url ||
         row.videoUrl ||
         row.final_url ||
+        row.finalVideoUrl ||
         row.output_url ||
+        row.outputUrl ||
         row.url ||
+        row.result_url ||
+        row.resultUrl ||
+        row.preview_url ||
+        row.previewUrl ||
         row.meta?.video_url ||
         row.meta?.videoUrl ||
+        row.meta?.final_video_url ||
+        row.meta?.finalVideoUrl ||
         row.meta?.final_url ||
+        row.meta?.output_url ||
+        row.meta?.outputUrl ||
+        row.meta?.result_url ||
+        row.meta?.resultUrl ||
+        row.meta?.preview_video_url ||
+        row.meta?.previewVideoUrl ||
+        row.data?.video_url ||
+        row.data?.videoUrl ||
+        row.data?.final_url ||
+        row.data?.output_url ||
+        row.data?.result_url ||
         row.outputs?.video_url ||
         row.outputs?.videoUrl ||
+        row.outputs?.final_video_url ||
+        row.outputs?.finalVideoUrl ||
+        row.outputs?.final_url ||
+        row.outputs?.output_url ||
+        row.outputs?.result_url ||
         firstVideoOutput?.url ||
         firstVideoOutput?.video_url ||
         firstVideoOutput?.videoUrl ||
+        firstVideoOutput?.final_video_url ||
+        firstVideoOutput?.finalVideoUrl ||
         firstVideoOutput?.src ||
         ""
       ).trim();
