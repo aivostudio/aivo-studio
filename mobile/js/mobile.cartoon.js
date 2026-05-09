@@ -679,7 +679,8 @@ function bindUploads(){
           prompt: state.scenePrompt,
           main_character: state.mainCharacter,
           scene: state.scene,
-          action: state.action,
+           helpers: state.helpers,
+          actions: state.actions,
           duration: state.duration,
           ratio: state.ratio
         });
