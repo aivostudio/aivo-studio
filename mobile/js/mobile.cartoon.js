@@ -109,7 +109,84 @@ function pickCartoonVideoUrl(data){
     ""
   ).trim();
 }
+function pickCartoonImageUrl(data){
+  return String(
+    data.image_url ||
+    data.final_image_url ||
+    data.url ||
+    data.image?.url ||
+    data.output?.image?.url ||
+    data.meta?.final_image_url ||
+    data.outputs?.[0]?.url ||
+    ""
+  ).trim();
+}
 
+function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
+  if (!jobId) return;
+
+  fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store"
+  })
+  .then(function(res){
+    return res.json();
+  })
+  .then(function(data){
+    console.log("[MOBILE CARTOON][CHARACTER POLL]", data);
+
+    const status = String(
+      data.status ||
+      data.db_status ||
+      data.state ||
+      ""
+    ).toLowerCase();
+
+    const imageUrl = pickCartoonImageUrl(data);
+    const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
+    const card = libraryEl ? libraryEl.querySelector('[data-mobile-cartoon-character="' + tempCharacterId + '"]') : null;
+
+    if (imageUrl && card) {
+      card.setAttribute("data-mobile-cartoon-character", jobId);
+      card.innerHTML = `
+        <div class="mobile-cartoon-character-thumb">
+          <img src="${esc(imageUrl)}" alt="${esc(fallbackName || "Karakter")}">
+          <div class="mobile-cartoon-character-actions">
+            <button type="button" data-mobile-cartoon-character-act="preview" data-character-url="${esc(imageUrl)}">⛶</button>
+            <button type="button" data-mobile-cartoon-character-act="download" data-character-url="${esc(imageUrl)}">⬇</button>
+            <button type="button" data-mobile-cartoon-character-act="select" data-character-url="${esc(imageUrl)}">✓</button>
+            <button type="button" data-mobile-cartoon-character-act="delete">🗑</button>
+          </div>
+        </div>
+        <div class="mobile-cartoon-character-name">${esc(fallbackName || "Karakter")}</div>
+      `;
+
+      setStatus("Karakter hazır.");
+      return;
+    }
+
+    if (status.includes("fail") || status.includes("error")) {
+      if (card) {
+        card.remove();
+      }
+
+      setStatus("Karakter oluşturulamadı.");
+      return;
+    }
+
+    setTimeout(function(){
+      pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName);
+    }, 3000);
+  })
+  .catch(function(err){
+    console.error("[MOBILE CARTOON][CHARACTER POLL ERROR]", err);
+
+    setTimeout(function(){
+      pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName);
+    }, 4000);
+  });
+}
 function pollMobileCartoonJob(jobId){
   if (!jobId) return;
 
