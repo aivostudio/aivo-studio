@@ -244,11 +244,11 @@
   font-size:23px;
   font-weight:950;
   letter-spacing:-.045em;
-  background:linear-gradient(135deg,#fff,#ffd36a,#f472ff,#60eaff);
+  background:linear-gradient(135deg,#fff,#a78bfa,#60eaff,#ec4899);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
-  text-shadow:0 0 24px rgba(236,72,153,.18);
+  text-shadow:0 0 24px rgba(139,92,246,.18);
 }
 
 #mobileCartoonResults.empty-card{
