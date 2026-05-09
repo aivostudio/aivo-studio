@@ -1,5 +1,9 @@
 (function(){
-  const root = document.getElementById("mobilePhotoFxSection");
+  const mount = document.getElementById("mobilePhotoFxMount");
+  const root = mount
+    ? mount.querySelector("#mobilePhotoFxSection")
+    : document.getElementById("mobilePhotoFxSection");
+
   if (!root || root.__mobilePhotoFxBound) return;
   root.__mobilePhotoFxBound = true;
 
