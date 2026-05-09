@@ -503,7 +503,112 @@
       }
     });
   }
+    async function hydrateMobileVideoLibrary(){
+    if (!resultsEl) return;
 
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Videolar yükleniyor...";
+
+    try {
+      const res = await fetch("/api/jobs/list?app=video", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "accept": "application/json"
+        },
+        cache: "no-store"
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      const rows = Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.jobs)
+          ? data.jobs
+          : Array.isArray(data)
+            ? data
+            : [];
+
+      mobileVideoJobs.length = 0;
+
+      rows.reverse().forEach(function(row){
+        const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+
+        const firstVideoOutput = outputs.find(function(output){
+          return output && (
+            output.url ||
+            output.video_url ||
+            output.videoUrl ||
+            output.src
+          );
+        });
+
+        const videoUrl = String(
+          row.video_url ||
+          row.videoUrl ||
+          row.final_url ||
+          row.finalVideoUrl ||
+          row.output_url ||
+          row.outputUrl ||
+          row.url ||
+          row.result_url ||
+          row.resultUrl ||
+          row.preview_url ||
+          row.previewUrl ||
+          row.meta?.video_url ||
+          row.meta?.videoUrl ||
+          row.meta?.final_video_url ||
+          row.meta?.finalVideoUrl ||
+          row.meta?.final_url ||
+          row.meta?.output_url ||
+          row.meta?.outputUrl ||
+          row.meta?.result_url ||
+          row.meta?.resultUrl ||
+          row.meta?.preview_video_url ||
+          row.meta?.previewVideoUrl ||
+          row.data?.video_url ||
+          row.data?.videoUrl ||
+          row.data?.final_url ||
+          row.data?.output_url ||
+          row.data?.result_url ||
+          row.outputs?.video_url ||
+          row.outputs?.videoUrl ||
+          row.outputs?.final_video_url ||
+          row.outputs?.finalVideoUrl ||
+          row.outputs?.final_url ||
+          row.outputs?.output_url ||
+          row.outputs?.result_url ||
+          firstVideoOutput?.url ||
+          firstVideoOutput?.video_url ||
+          firstVideoOutput?.videoUrl ||
+          firstVideoOutput?.final_video_url ||
+          firstVideoOutput?.finalVideoUrl ||
+          firstVideoOutput?.src ||
+          ""
+        ).trim();
+
+        const jobId = String(row.id || row.job_id || row.jobId || "").trim();
+
+        if (!jobId || !videoUrl) return;
+
+        mobileVideoJobs.push({
+          id: jobId,
+          title: row.title || row.prompt || row.meta?.prompt || "Video",
+          videoUrl: videoUrl,
+          status: "ready",
+          payload: row
+        });
+      });
+
+      renderMobileVideoResults();
+    } catch (err) {
+      console.error("[MOBILE VIDEO][HYDRATE ERROR]", err);
+      resultsEl.className = "empty-card";
+      resultsEl.innerHTML = "Videolar yüklenemedi.";
+    }
+  }
   function bindResultActions(){
     if (!resultsEl || resultsEl.__mobileVideoActionsBound) return;
     resultsEl.__mobileVideoActionsBound = true;
@@ -622,7 +727,7 @@
   bindGenerate();
   bindResultActions();
   syncCreditButton();
-  renderMobileVideoResults();
+  hydrateMobileVideoLibrary();
 
   window.mobileVideoState = state;
 })();
