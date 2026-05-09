@@ -1,15 +1,130 @@
 <section id="mobileLipsyncSection" class="mobile-lipsync-section">
-  <div class="mobile-lipsync-panel">
-    <div class="empty-card">
-      AI Dudak Senkron Video modülü hazırlanıyor...
+  <section class="mobile-lipsync-panel">
+    <div class="mobile-lipsync-hero">
+      <div class="mobile-lipsync-kicker">AIVO Mobile Studio</div>
+      <h3>AI Dudak Senkron Video</h3>
+      <p>Fotoğraf yükle, metin yaz veya ses ekle. AIVO konuşan video oluştursun.</p>
     </div>
-  </div>
+
+    <div class="mobile-lipsync-card">
+      <div class="mobile-lipsync-block">
+        <div class="mobile-lipsync-block-head">
+          <div>
+            <h4>Konuşma</h4>
+            <p>Metin yaz veya hazır ses dosyası kullan.</p>
+          </div>
+
+          <div class="mobile-lipsync-actions">
+            <button type="button" class="mobile-lipsync-icon-btn" data-mobile-lipsync-record-open aria-label="Ses kaydet">
+              🎙
+            </button>
+
+            <button type="button" class="mobile-lipsync-icon-btn" data-mobile-lipsync-upload-open aria-label="Ses yükle">
+              ⬆
+            </button>
+
+            <input id="mobileLipsyncAudioFile" type="file" accept="audio/*" data-mobile-lipsync-audio hidden>
+          </div>
+        </div>
+
+        <textarea
+          id="mobileLipsyncScript"
+          class="mobile-lipsync-textarea"
+          data-mobile-lipsync-script
+          maxlength="1200"
+          placeholder="Ne konuşturmak istiyorsun? Metni buraya yaz..."
+        ></textarea>
+
+        <div class="mobile-lipsync-meta">
+          <span id="mobileLipsyncAudioName" data-mobile-lipsync-audio-name>Ses yüklenmedi.</span>
+          <b><span id="mobileLipsyncCounter">0</span> / 1200</b>
+        </div>
+      </div>
+
+      <div class="mobile-lipsync-photo-card">
+        <label class="mobile-lipsync-photo-drop">
+          <input id="mobileLipsyncPhotoFile" type="file" accept="image/*" data-mobile-lipsync-photo hidden>
+
+          <div class="mobile-lipsync-photo-empty" data-mobile-lipsync-photo-empty>
+            <span class="mobile-lipsync-photo-icon">▧</span>
+            <strong>Fotoğraf yükle</strong>
+            <small>Yüz net görünmeli • JPG/PNG • En az 300×300 px</small>
+          </div>
+
+          <img class="mobile-lipsync-photo-preview" data-mobile-lipsync-photo-preview alt="">
+          <button type="button" class="mobile-lipsync-photo-remove" data-mobile-lipsync-photo-remove aria-label="Fotoğrafı kaldır">×</button>
+        </label>
+
+        <div class="mobile-lipsync-select-grid">
+          <select id="mobileLipsyncResolution" class="mobile-lipsync-select" data-mobile-lipsync-resolution>
+            <option value="720p">720p</option>
+            <option value="1080p" selected>1080p</option>
+          </select>
+
+          <select id="mobileLipsyncAspect" class="mobile-lipsync-select" data-mobile-lipsync-aspect>
+            <option value="16:9" selected>16:9</option>
+            <option value="9:16">9:16</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mobile-lipsync-voice-card">
+        <label class="mobile-lipsync-label" for="mobileLipsyncVoice">Ses Seçimi</label>
+
+        <div class="mobile-lipsync-voice-row">
+          <select id="mobileLipsyncVoice" class="mobile-lipsync-voice-select" data-mobile-lipsync-voice-select>
+            <option value="tranquil_tulin" data-voice-name="Tranquil Tülin" selected>Ses: Tranquil Tülin</option>
+            <option value="iker" data-voice-name="Iker">Ses: Iker</option>
+            <option value="deep_dieter" data-voice-name="Deep Dieter">Ses: Deep Dieter</option>
+            <option value="william" data-voice-name="William Prescott">Ses: William Prescott</option>
+            <option value="menon" data-voice-name="Menon">Ses: Menon</option>
+            <option value="knox" data-voice-name="Knox">Ses: Knox</option>
+            <option value="aaron" data-voice-name="Aaron">Ses: Aaron</option>
+            <option value="lily" data-voice-name="Lily">Ses: Lily</option>
+            <option value="april" data-voice-name="April">Ses: April</option>
+            <option value="tiffany" data-voice-name="Tiffany">Ses: Tiffany</option>
+            <option value="brianna" data-voice-name="Brianna">Ses: Brianna</option>
+            <option value="evelyn" data-voice-name="Evelyn Harper">Ses: Evelyn Harper</option>
+            <option value="laurel" data-voice-name="Laurel">Ses: Laurel</option>
+            <option value="seena" data-voice-name="Seena Professional">Ses: Seena Professional</option>
+          </select>
+
+          <button type="button" class="mobile-lipsync-preview-btn" data-mobile-lipsync-preview-voice>
+            ▶
+          </button>
+        </div>
+      </div>
+
+      <div class="mobile-lipsync-settings-card">
+        <div class="mobile-lipsync-settings-title">Ses Ayarları</div>
+        <p>Sadece metin üretiminde geçerlidir.</p>
+
+        <label class="mobile-lipsync-range">
+          <span>Hız <b data-mobile-lipsync-speed-label>Normal</b></span>
+          <input type="range" min="0.5" max="1.5" step="0.05" value="1" data-mobile-lipsync-voice-speed>
+        </label>
+
+        <label class="mobile-lipsync-range">
+          <span>Ses Seviyesi <b data-mobile-lipsync-volume-label>100%</b></span>
+          <input type="range" min="0.5" max="1.5" step="0.05" value="1" data-mobile-lipsync-voice-volume>
+        </label>
+      </div>
+
+      <div class="mobile-lipsync-credit-card">
+        Kredi, konuşma süresine göre hesaplanır. Her başlayan 2 sn = 3 kredi. Tek videoda maksimum 60 sn üretilebilir.
+      </div>
+
+      <button id="mobileLipsyncGenerateBtn" class="generate-btn mobile-lipsync-generate-btn" type="button" data-mobile-lipsync-generate>
+        Dudak Senkron Video Üret
+      </button>
+
+      <div id="mobileLipsyncStatus" class="mobile-status"></div>
+    </div>
+  </section>
 
   <h2 class="section-title">Dudak Senkron Kütüphanem</h2>
 
-  <div id="mobileLipsyncResults">
-    <div class="empty-card">
-      Henüz dudak senkron video üretimi yok.
-    </div>
+  <div id="mobileLipsyncResults" class="empty-card">
+    Henüz dudak senkron video üretimi yok.
   </div>
 </section>
