@@ -523,3 +523,18 @@
 .mobile-photofx-upload-grid-main{
   display:none;
 }
+.mobile-photofx-block-title,
+.mobile-photofx-block-sub{
+  text-align:center;
+}
+
+.mobile-photofx-field .field-label{
+  display:block;
+  width:100%;
+  text-align:center;
+}
+
+.mobile-photofx-field .field-input{
+  text-align:center;
+  text-align-last:center;
+}
