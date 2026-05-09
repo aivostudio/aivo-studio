@@ -418,7 +418,86 @@ function bindMobileCartoonResultActions(){
     }
   });
 }
+async function hydrateMobileCartoonLibrary(){
+  if (!resultsEl) return;
 
+  resultsEl.className = "empty-card";
+  resultsEl.innerHTML = "Çizgifilm videoları yükleniyor...";
+
+  try {
+    const res = await fetch("/api/jobs/list?app=cartoon", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "accept": "application/json"
+      },
+      cache: "no-store"
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    const rows = Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data?.jobs)
+        ? data.jobs
+        : Array.isArray(data)
+          ? data
+          : [];
+
+    mobileCartoonJobs.length = 0;
+
+    rows.reverse().forEach(function(row){
+      const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+
+      const firstVideoOutput = outputs.find(function(output){
+        return output && (
+          output.url ||
+          output.video_url ||
+          output.videoUrl ||
+          output.src
+        );
+      });
+
+      const videoUrl = String(
+        row.video_url ||
+        row.videoUrl ||
+        row.final_url ||
+        row.output_url ||
+        row.url ||
+        row.meta?.video_url ||
+        row.meta?.videoUrl ||
+        row.meta?.final_url ||
+        row.outputs?.video_url ||
+        row.outputs?.videoUrl ||
+        firstVideoOutput?.url ||
+        firstVideoOutput?.video_url ||
+        firstVideoOutput?.videoUrl ||
+        firstVideoOutput?.src ||
+        ""
+      ).trim();
+
+      const jobId = String(row.id || row.job_id || row.jobId || "").trim();
+
+      if (!jobId || !videoUrl) return;
+
+      mobileCartoonJobs.push({
+        id: jobId,
+        title: row.title || row.prompt || row.meta?.prompt || "Çizgifilm video",
+        videoUrl: videoUrl,
+        status: "ready",
+        payload: row
+      });
+    });
+
+    renderMobileCartoonResults();
+  } catch (err) {
+    console.error("[MOBILE CARTOON][HYDRATE ERROR]", err);
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Çizgifilm videoları yüklenemedi.";
+  }
+}
  const state = {
   mode: "character",
   characterPrompt: "",
@@ -1022,7 +1101,7 @@ bindButtons();
 syncCartoonCredits();
 bindMobileCartoonCharacterActions();
 bindMobileCartoonResultActions();
-renderMobileCartoonResults();
+hydrateMobileCartoonLibrary();
 
 setMode("character");
 
