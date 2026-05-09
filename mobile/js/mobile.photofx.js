@@ -406,9 +406,10 @@
   }
 
   function bindControls(){
-    if (durationEl) {
+     if (durationEl) {
       durationEl.addEventListener("change", function(){
         state.duration = safeText(durationEl.value) || "6";
+        syncCreditButton();
       });
       state.duration = safeText(durationEl.value) || "6";
     }
