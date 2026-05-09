@@ -287,12 +287,13 @@ function clearUpload(input, clearBtn, textEl, stateKey){
     }
   }
 
-  bindModeTabs();
-  bindCounters();
-  bindControls();
-  bindButtons();
+ bindModeTabs();
+bindCounters();
+bindControls();
+bindUploads();
+bindButtons();
 
-  setMode("character");
+setMode("character");
 
   window.mobileCartoonState = state;
 })();
