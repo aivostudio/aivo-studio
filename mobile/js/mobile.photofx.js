@@ -709,15 +709,7 @@
         return;
       }
 
-      const uploadLabel = e.target.closest(".mobile-photofx-upload-btn");
-      if (uploadLabel && root.contains(uploadLabel)) {
-        if (e.target.closest(".mobile-photofx-file-clear")) return;
-
-        const input = uploadLabel.querySelector('input[type="file"]');
-        if (input) {
-          input.click();
-        }
-      }
+  
     }, true);
   }
    bindPrompt();
