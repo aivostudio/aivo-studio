@@ -670,19 +670,34 @@ function bindUploads(){
       });
     }
 
-    if (generateBtn) {
+      if (generateBtn) {
       generateBtn.addEventListener("click", function(){
-        setStatus("Çizgifilm sahnesi bağlantısı hazırlanıyor...");
+        const tempJobId = "mobile-cartoon-" + Date.now();
+
+        setStatus("Çizgifilm sahnesi hazırlanıyor...");
+
+        mobileCartoonJobs.unshift({
+          id: tempJobId,
+          status: "processing",
+          title: state.scenePrompt || "Çizgifilm sahnesi",
+          videoUrl: ""
+        });
+
+        renderMobileCartoonResults();
+
         console.log("[MOBILE CARTOON][BASIC]", {
           app: "cartoon",
           mode: "basic",
           prompt: state.scenePrompt,
           main_character: state.mainCharacter,
           scene: state.scene,
-           helpers: state.helpers,
+          helpers: state.helpers,
           actions: state.actions,
           duration: state.duration,
-          ratio: state.ratio
+          ratio: state.ratio,
+          audio_url: state.audioUrl,
+          logo_url: state.logoUrl,
+          custom_character_url: state.customCharacterUrl
         });
       });
     }
