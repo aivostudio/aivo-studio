@@ -835,3 +835,26 @@ background:
     filter:drop-shadow(0 0 13px rgba(255,225,130,.72));
   }
 }
+.mobile-cartoon-info{
+  min-height:76px !important;
+  padding:16px 22px 16px 66px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:14px !important;
+  line-height:1.32 !important;
+}
+
+.mobile-cartoon-info::before{
+  left:22px !important;
+  width:28px !important;
+  height:28px !important;
+  border-radius:11px !important;
+}
+
+.mobile-cartoon-info::after{
+  left:28px !important;
+  width:16px !important;
+  height:16px !important;
+}
