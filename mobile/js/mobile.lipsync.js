@@ -591,8 +591,12 @@
 
       const url = URL.createObjectURL(file);
 
-      if (photoPreview) {
+          if (photoPreview) {
         photoPreview.src = url;
+      }
+
+      if (photoDrop) {
+        photoDrop.style.setProperty("--mobile-lipsync-preview-bg", "url('" + url + "')");
       }
 
       if (photoDrop) {
