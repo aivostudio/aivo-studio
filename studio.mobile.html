@@ -449,6 +449,10 @@
   <div class="empty-card">Resimden Video modülü yükleniyor...</div>
 </div>
 
+<div id="mobileLipsyncMount" hidden>
+  <div class="empty-card">Dudak Senkron Video modülü yükleniyor...</div>
+</div>
+
 <div id="mobileToolsMount" hidden>
   <h2 class="section-title">AI Araçlar</h2>
 
@@ -521,6 +525,7 @@ let atmoMount = document.getElementById("mobileAtmoMount");
 let cartoonMount = document.getElementById("mobileCartoonMount");
 let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
+let lipsyncMount = document.getElementById("mobileLipsyncMount");
     if (!coverMount) {
       coverMount = document.createElement("div");
       coverMount.id = "mobileCoverMount";
