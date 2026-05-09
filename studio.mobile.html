@@ -864,7 +864,7 @@ function showVideo(){
           return;
         }
 
-        if (activeMobileModule === "photofx") {
+           if (activeMobileModule === "photofx") {
           e.preventDefault();
           e.stopImmediatePropagation();
 
@@ -879,6 +879,28 @@ function showVideo(){
             if (photofxPanel) photofxPanel.hidden = true;
             if (photofxTitle) photofxTitle.hidden = false;
             if (photofxResults) photofxResults.hidden = false;
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
+        if (activeMobileModule === "video") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showVideo();
+
+          const videoSection = document.getElementById("mobileVideoSection");
+          if (videoSection) {
+            const videoPanel = videoSection.querySelector(".mobile-video-panel");
+            const videoTitle = videoSection.querySelector(".section-title");
+            const videoResults = videoSection.querySelector("#mobileVideoResults");
+
+            if (videoPanel) videoPanel.hidden = true;
+            if (videoTitle) videoTitle.hidden = false;
+            if (videoResults) videoResults.hidden = false;
           }
 
           setActiveNav(productionsNav);
