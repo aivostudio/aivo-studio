@@ -945,6 +945,7 @@ if (toolsNav) {
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = false;
 
   setActiveNav(toolsNav);
@@ -1020,6 +1021,13 @@ if (tool === "photofx") {
     if (tool === "video") {
   activeMobileModule = "video";
   showVideo();
+  setActiveNav(toolsNav);
+
+  return;
+}
+    if (tool === "lipsync") {
+  activeMobileModule = "lipsync";
+  showLipsync();
   setActiveNav(toolsNav);
 
   return;
