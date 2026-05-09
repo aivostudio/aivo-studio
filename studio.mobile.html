@@ -804,7 +804,7 @@ function showPhotoFx(){
           return;
         }
 
-             if (activeMobileModule === "cartoon") {
+                    if (activeMobileModule === "cartoon") {
           e.preventDefault();
           e.stopImmediatePropagation();
 
@@ -819,6 +819,28 @@ function showPhotoFx(){
             if (cartoonPanel) cartoonPanel.hidden = true;
             if (cartoonTitle) cartoonTitle.hidden = false;
             if (cartoonResults) cartoonResults.hidden = false;
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
+        if (activeMobileModule === "photofx") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showPhotoFx();
+
+          const photofxSection = document.getElementById("mobilePhotoFxSection");
+          if (photofxSection) {
+            const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel");
+            const photofxTitle = photofxSection.querySelector(".section-title");
+            const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
+
+            if (photofxPanel) photofxPanel.hidden = true;
+            if (photofxTitle) photofxTitle.hidden = false;
+            if (photofxResults) photofxResults.hidden = false;
           }
 
           setActiveNav(productionsNav);
