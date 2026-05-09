@@ -439,6 +439,31 @@ function syncCartoonCredits(){
     generateBtn.setAttribute("data-credit-cost", String(basicCredit));
   }
 }
+
+function hasCustomCharacterActive(){
+  return !!(state.customCharacterFile || state.customCharacterUrl);
+}
+
+function syncMainCharacterDisabled(){
+  const mainButtons = Array.from(root.querySelectorAll("[data-cartoon-main]"));
+  const disabled = hasCustomCharacterActive();
+
+  mainButtons.forEach(function(btn){
+    btn.classList.toggle("is-disabled", disabled);
+    btn.setAttribute("aria-disabled", disabled ? "true" : "false");
+
+    if (disabled) {
+      btn.classList.remove("is-active");
+    }
+  });
+
+  if (disabled) {
+    state.mainCharacter = "";
+  } else if (!state.mainCharacter && mainButtons[0]) {
+    state.mainCharacter = safeText(mainButtons[0].getAttribute("data-cartoon-main")) || "red-fish";
+    mainButtons[0].classList.add("is-active");
+  }
+}
   function setMode(mode){
     const nextMode = mode === "basic" ? "basic" : "character";
     state.mode = nextMode;
@@ -497,8 +522,15 @@ function syncCartoonCredits(){
 
     buttons.forEach(function(btn){
       btn.addEventListener("click", function(){
-        const value = safeText(btn.getAttribute(attr));
+               const value = safeText(btn.getAttribute(attr));
         if (!value) return;
+
+        if (key === "mainCharacter" && hasCustomCharacterActive()) {
+          state.mainCharacter = "";
+          syncMainCharacterDisabled();
+          setStatus("Kendi resmin seçiliyken hazır ana karakter seçilemez.");
+          return;
+        }
 
         state[key] = value;
 
@@ -636,9 +668,9 @@ function bindUploads(){
   if (customFileEl) {
     customFileEl.addEventListener("change", async function(){
       await setUploadState(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
-
       if (state.customCharacterUrl) {
-        setStatus("Kendi karakter görselin yüklendi.");
+        syncMainCharacterDisabled();
+        setStatus("Kendi karakter görselin yüklendi. Hazır ana karakter kapatıldı.");
       }
     });
   }
@@ -647,8 +679,9 @@ function bindUploads(){
     customClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
+           clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
       syncCartoonCredits();
+      syncMainCharacterDisabled();
       setStatus("Kendi karakter görselin kaldırıldı.");
     });
   }
