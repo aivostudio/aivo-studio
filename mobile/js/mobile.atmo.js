@@ -253,6 +253,86 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       }
     });
   }
+    async function hydrateMobileAtmoLibrary(){
+    if (!resultsEl) return;
+
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Atmosfer videoları yükleniyor...";
+
+    try {
+      const res = await fetch("/api/jobs/list?app=atmo", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "accept": "application/json"
+        },
+        cache: "no-store"
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      const rows = Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.jobs)
+          ? data.jobs
+          : Array.isArray(data)
+            ? data
+            : [];
+
+      mobileAtmoJobs.length = 0;
+
+      rows.reverse().forEach(function(row){
+        const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+
+        const firstVideoOutput = outputs.find(function(output){
+          return output && (
+            output.url ||
+            output.video_url ||
+            output.videoUrl ||
+            output.src
+          );
+        });
+
+        const videoUrl = String(
+          row.video_url ||
+          row.videoUrl ||
+          row.final_url ||
+          row.output_url ||
+          row.url ||
+          row.meta?.video_url ||
+          row.meta?.videoUrl ||
+          row.meta?.final_url ||
+          row.outputs?.video_url ||
+          row.outputs?.videoUrl ||
+          firstVideoOutput?.url ||
+          firstVideoOutput?.video_url ||
+          firstVideoOutput?.videoUrl ||
+          firstVideoOutput?.src ||
+          ""
+        ).trim();
+
+        const jobId = String(row.id || row.job_id || row.jobId || "").trim();
+
+        if (!jobId || !videoUrl) return;
+
+        mobileAtmoJobs.push({
+          id: jobId,
+          title: row.title || row.prompt || row.meta?.prompt || "Atmosfer video",
+          videoUrl: videoUrl,
+          status: "ready",
+          payload: row
+        });
+      });
+
+      renderMobileAtmoResults();
+    } catch (err) {
+      console.error("[MOBILE ATMO][HYDRATE ERROR]", err);
+      resultsEl.className = "empty-card";
+      resultsEl.innerHTML = "Atmosfer videoları yüklenemedi.";
+    }
+  }
   const state = {
     mode: "basic",
 
@@ -879,7 +959,8 @@ mobileAtmoJobs.unshift({
    syncMobileAtmoCreditButtons();
  bindMobileAtmoResultActions();
 
-  setMode("basic");
+    setMode("basic");
+  hydrateMobileAtmoLibrary();
 
   window.mobileAtmoState = state;
 })();
