@@ -133,7 +133,7 @@ background:
 
 .mobile-cartoon-choice-grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
+  grid-template-columns:repeat(3, minmax(0, 1fr));
   gap:9px;
   margin:10px 0 16px;
 }
@@ -146,7 +146,7 @@ background:
   border:1px solid rgba(255,255,255,.12);
   background:rgba(255,255,255,.065);
   color:rgba(255,255,255,.82);
-  font-size:11.5px;
+font-size:10.5px;
   font-weight:900;
   cursor:pointer;
   display:flex;
