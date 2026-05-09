@@ -47,9 +47,12 @@ const customTextEl = root.querySelector("#mobileCartoonCustomText");
   characterImageFile: null,
   audioFile: null,
   logoFile: null,
-  customCharacterFile: null
+  customCharacterFile: null,
+  characterImageUrl: "",
+  audioUrl: "",
+  logoUrl: "",
+  customCharacterUrl: ""
 };
-
   function safeText(value){
     return String(value || "").trim();
   }
@@ -64,24 +67,76 @@ const customTextEl = root.querySelector("#mobileCartoonCustomText");
 
     if (statusEl) statusEl.textContent = text;
   }
- function setUploadState(input, clearBtn, textEl, stateKey){
+async function uploadCartoonFile(file){
+  const form = new FormData();
+  form.append("file", file);
+  form.append("app", "cartoon");
+
+  const res = await fetch("/api/r2/scan-upload", {
+    method: "POST",
+    body: form
+  });
+
+  const data = await res.json().catch(function(){
+    return {};
+  });
+
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.error || data.message || "upload_failed");
+  }
+
+  return data.url || data.publicUrl || data.public_url || data.fileUrl || data.file_url || "";
+}
+
+async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
   const file = input && input.files && input.files[0] ? input.files[0] : null;
 
   state[stateKey] = file;
+  state[urlKey] = "";
 
   if (textEl) {
-    textEl.textContent = file ? file.name : "Dosya seçilmedi";
+    textEl.textContent = file ? "Yükleniyor..." : "Dosya seçilmedi";
   }
 
   if (clearBtn) {
     clearBtn.hidden = !file;
   }
+
+  syncCartoonCredits();
+
+  if (!file) return;
+
+  try {
+    const url = await uploadCartoonFile(file);
+    state[urlKey] = url;
+
+    if (textEl) {
+      textEl.textContent = file.name + " yüklendi";
+    }
+  } catch (err) {
+    state[stateKey] = null;
+    state[urlKey] = "";
+
+    if (input) input.value = "";
+
+    if (textEl) {
+      textEl.textContent = "Yükleme başarısız";
+    }
+
+    if (clearBtn) {
+      clearBtn.hidden = true;
+    }
+
+    syncCartoonCredits();
+    setStatus("Dosya yüklenemedi. Lütfen tekrar dene.");
+  }
 }
 
-function clearUpload(input, clearBtn, textEl, stateKey){
+function clearUpload(input, clearBtn, textEl, stateKey, urlKey){
   if (input) input.value = "";
 
   state[stateKey] = null;
+  state[urlKey] = "";
 
   if (textEl) {
     textEl.textContent = "Dosya seçilmedi";
@@ -91,7 +146,6 @@ function clearUpload(input, clearBtn, textEl, stateKey){
     clearBtn.hidden = true;
   }
 }
-
 function getCartoonCharacterCredit(){
   return state.characterImageFile ? 30 : 20;
 }
@@ -211,32 +265,31 @@ function syncCartoonCredits(){
   }
 function bindUploads(){
   if (characterImageEl) {
-    characterImageEl.addEventListener("change", function(){
-      setUploadState(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile");
-      syncCartoonCredits();
+    characterImageEl.addEventListener("change", async function(){
+      await setUploadState(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
 
-      if (state.characterImageFile) {
-        setStatus("Karakter referans görseli seçildi.");
+      if (state.characterImageUrl) {
+        setStatus("Karakter referans görseli yüklendi.");
       }
     });
   }
+
   if (characterImageClearEl) {
     characterImageClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile");
+      clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
       syncCartoonCredits();
       setStatus("Karakter referans görseli kaldırıldı.");
     });
   }
 
   if (audioFileEl) {
-    audioFileEl.addEventListener("change", function(){
-      setUploadState(audioFileEl, audioClearEl, audioTextEl, "audioFile");
-      syncCartoonCredits();
+    audioFileEl.addEventListener("change", async function(){
+      await setUploadState(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
 
-      if (state.audioFile) {
-        setStatus("Audio seçildi.");
+      if (state.audioUrl) {
+        setStatus("Audio yüklendi.");
       }
     });
   }
@@ -245,19 +298,18 @@ function bindUploads(){
     audioClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile");
+      clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
       syncCartoonCredits();
       setStatus("Audio kaldırıldı.");
     });
   }
 
   if (logoFileEl) {
-    logoFileEl.addEventListener("change", function(){
-      setUploadState(logoFileEl, logoClearEl, logoTextEl, "logoFile");
-      syncCartoonCredits();
+    logoFileEl.addEventListener("change", async function(){
+      await setUploadState(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
 
-      if (state.logoFile) {
-        setStatus("Logo seçildi.");
+      if (state.logoUrl) {
+        setStatus("Logo yüklendi.");
       }
     });
   }
@@ -266,19 +318,18 @@ function bindUploads(){
     logoClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile");
+      clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
       syncCartoonCredits();
       setStatus("Logo kaldırıldı.");
     });
   }
 
   if (customFileEl) {
-    customFileEl.addEventListener("change", function(){
-      setUploadState(customFileEl, customClearEl, customTextEl, "customCharacterFile");
-      syncCartoonCredits();
+    customFileEl.addEventListener("change", async function(){
+      await setUploadState(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
 
-      if (state.customCharacterFile) {
-        setStatus("Kendi karakter görselin seçildi.");
+      if (state.customCharacterUrl) {
+        setStatus("Kendi karakter görselin yüklendi.");
       }
     });
   }
@@ -287,7 +338,7 @@ function bindUploads(){
     customClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile");
+      clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
       syncCartoonCredits();
       setStatus("Kendi karakter görselin kaldırıldı.");
     });
