@@ -740,3 +740,25 @@
     radial-gradient(circle at 50% 35%, rgba(139,92,246,.18), transparent 55%),
     rgba(5,5,14,.92) !important;
 }
+.mobile-lipsync-photo-drop.has-photo::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  background-image:
+    linear-gradient(rgba(5,5,14,.28), rgba(5,5,14,.28)),
+    var(--mobile-lipsync-preview-bg);
+  background-size:cover;
+  background-position:center;
+  filter:blur(18px) saturate(1.12);
+  transform:scale(1.08);
+  opacity:.82;
+}
+
+.mobile-lipsync-photo-drop.has-photo .mobile-lipsync-photo-preview{
+  z-index:2;
+}
+
+.mobile-lipsync-photo-drop.has-photo .mobile-lipsync-photo-remove{
+  z-index:5;
+}
