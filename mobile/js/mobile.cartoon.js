@@ -449,6 +449,15 @@ async function hydrateMobileCartoonLibrary(){
     mobileCartoonJobs.length = 0;
 
     rows.reverse().forEach(function(row){
+            const mode = String(
+        row.mode ||
+        row.meta?.mode ||
+        row.data?.mode ||
+        row.payload?.mode ||
+        ""
+      ).toLowerCase();
+
+      if (mode === "character") return;
       const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
       const firstVideoOutput = outputs.find(function(output){
