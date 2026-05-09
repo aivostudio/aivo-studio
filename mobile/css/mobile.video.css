@@ -158,28 +158,7 @@
   box-shadow:0 0 14px rgba(96,234,255,.22);
 }
 
-.mobile-video-upload-btn::after{
-  content:"+10 Kredi";
-  position:absolute;
-  top:-15px;
-  left:50%;
-  transform:translateX(-50%);
-  min-height:30px;
-  padding:0 14px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:12px;
-  font-weight:950;
-  white-space:nowrap;
-  background:linear-gradient(135deg,#a78bfa,#ec4899);
-  border:1px solid rgba(255,255,255,.22);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.20),
-    0 0 22px rgba(139,92,246,.30);
-}
+
 
 .mobile-video-upload-btn:active{
   transform:scale(.985);
