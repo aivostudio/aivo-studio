@@ -1116,13 +1116,17 @@
 
       const tempId = "mobile-lipsync-" + Date.now();
 
-      mobileLipsyncJobs.unshift({
+         mobileLipsyncJobs.unshift({
         id: tempId,
         title: "Dudak senkron hazırlanıyor",
         videoUrl: "",
         status: "processing",
         payload: {}
       });
+
+      if (resultsEl) {
+        resultsEl.hidden = false;
+      }
 
       renderMobileLipsyncResults();
 
