@@ -682,13 +682,15 @@ function showAtmo(){
   coverMount.hidden = true;
   atmoMount.hidden = false;
   if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 }
-    function showCartoon(){
+function showCartoon(){
   musicMount.hidden = true;
   coverMount.hidden = true;
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = false;
+  if (photofxMount) photofxMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 
   const cartoonSection = document.getElementById("mobileCartoonSection");
