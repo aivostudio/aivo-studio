@@ -723,3 +723,20 @@
 .mobile-lipsync-generate-btn{
   min-height:50px !important;
 }
+.mobile-lipsync-photo-drop.is-landscape{
+  aspect-ratio:16 / 9 !important;
+  min-height:0 !important;
+}
+
+.mobile-lipsync-photo-drop.is-portrait{
+  aspect-ratio:9 / 16 !important;
+  min-height:0 !important;
+  max-height:430px !important;
+}
+
+.mobile-lipsync-photo-drop.has-photo .mobile-lipsync-photo-preview{
+  object-fit:contain !important;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(139,92,246,.18), transparent 55%),
+    rgba(5,5,14,.92) !important;
+}
