@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="/mobile/css/mobile.atmo.css?v=1">
 <link rel="stylesheet" href="/mobile/css/mobile.cartoon.css?v=2">
 <link rel="stylesheet" href="/mobile/css/mobile.photofx.css?v=1">
+ <link rel="stylesheet" href="/mobile/css/mobile.video.css?v=1">
   
 
   <style>
@@ -641,7 +642,26 @@ document.body.appendChild(photofxScript);
     photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yüklenemedi.</div>';
   }
 }
+try {
+  const videoRes = await fetch("/mobile/modules/mobile.video.html?v=1", {
+    cache: "no-store"
+  });
 
+  if (!videoRes.ok) {
+    throw new Error("mobile_video_html_load_failed");
+  }
+
+  videoMount.innerHTML = await videoRes.text();
+
+  const videoScript = document.createElement("script");
+  videoScript.src = "/mobile/js/mobile.video.js?v=1";
+  videoScript.defer = true;
+  document.body.appendChild(videoScript);
+} catch (err) {
+  if (videoMount) {
+    videoMount.innerHTML = '<div class="empty-card">Resimden Video modülü yüklenemedi.</div>';
+  }
+}
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
     const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
@@ -879,6 +899,7 @@ if (toolsNav) {
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = false;
 
   setActiveNav(toolsNav);
