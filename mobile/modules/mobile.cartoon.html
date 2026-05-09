@@ -1,0 +1,119 @@
+<section id="mobileCartoonSection">
+  <section class="mobile-cartoon-panel">
+    <div class="mobile-cartoon-hero">
+      <div class="mobile-cartoon-kicker">AIVO Mobile Studio</div>
+      <h3>AI Çocuk Çizgifilm</h3>
+      <p>Karakter oluştur veya tek sahnelik kısa çizgifilm videosu üret.</p>
+    </div>
+
+    <div class="mobile-cartoon-info">
+      Hikaye modu ve montaj stüdyosu gelişmiş düzenleme için Desktop Studio’da kullanılabilir.
+    </div>
+
+    <div class="mobile-cartoon-mode-tabs" role="tablist" aria-label="Çizgifilm modu">
+      <button class="mobile-cartoon-mode is-active" type="button" data-mobile-cartoon-mode="character">
+        Karakter
+      </button>
+      <button class="mobile-cartoon-mode" type="button" data-mobile-cartoon-mode="basic">
+        Tek Sahne
+      </button>
+    </div>
+
+    <div class="mobile-cartoon-view is-active" data-mobile-cartoon-view="character">
+      <h3 class="mobile-cartoon-block-title">Karakter Oluştur</h3>
+      <p class="mobile-cartoon-block-sub">Kısa bir tanım yaz, AIVO çizgifilm karakterini oluştursun.</p>
+
+      <label class="field-label" for="mobileCartoonCharacterPrompt">Karakter Tanımı</label>
+      <textarea
+        id="mobileCartoonCharacterPrompt"
+        class="field-textarea mobile-cartoon-prompt"
+        maxlength="1000"
+        placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"></textarea>
+
+      <div class="mobile-cartoon-count">
+        <span id="mobileCartoonCharacterCount">0</span> / 1000
+      </div>
+
+      <button id="mobileCartoonCharacterBtn" class="generate-btn" type="button">
+        🧩 Karakter Oluştur (20 Kredi)
+      </button>
+
+      <div id="mobileCartoonCharacterStatus" class="mobile-status"></div>
+    </div>
+
+    <div class="mobile-cartoon-view" data-mobile-cartoon-view="basic" hidden>
+      <h3 class="mobile-cartoon-block-title">Tek Sahne Üret</h3>
+      <p class="mobile-cartoon-block-sub">Karakter, sahne ve aksiyon seçerek kısa çizgifilm sahnesi oluştur.</p>
+
+      <label class="field-label" for="mobileCartoonScenePrompt">Ek Prompt</label>
+      <textarea
+        id="mobileCartoonScenePrompt"
+        class="field-textarea mobile-cartoon-prompt"
+        maxlength="5000"
+        placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"></textarea>
+
+      <div class="mobile-cartoon-count">
+        <span id="mobileCartoonSceneCount">0</span> / 5000
+      </div>
+
+      <h3 class="mobile-cartoon-block-title">Ana Karakter</h3>
+      <div class="mobile-cartoon-choice-grid">
+        <button class="mobile-cartoon-choice is-active" type="button" data-cartoon-main="red-fish">🐟 Kırmızı Balık</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-main="chick">🐥 Civciv</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-main="duck">🦆 Ördek</button>
+      </div>
+
+      <h3 class="mobile-cartoon-block-title">Sahne</h3>
+      <div class="mobile-cartoon-choice-grid">
+        <button class="mobile-cartoon-choice is-active" type="button" data-cartoon-scene="underwater">Deniz Altı</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-scene="pond">Gölet</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-scene="forest">Orman</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-scene="farm">Çiftlik</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-scene="sky">Gökyüzü</button>
+        <button class="mobile-cartoon-choice" type="button" data-cartoon-scene="beach">Plaj</button>
+      </div>
+
+      <h3 class="mobile-cartoon-block-title">Aksiyon</h3>
+      <div class="mobile-cartoon-chip-row">
+        <button class="mobile-cartoon-chip is-active" type="button" data-cartoon-action="swimming">Yüzüyor</button>
+        <button class="mobile-cartoon-chip" type="button" data-cartoon-action="jumping">Zıplıyor</button>
+        <button class="mobile-cartoon-chip" type="button" data-cartoon-action="playing">Oynuyor</button>
+        <button class="mobile-cartoon-chip" type="button" data-cartoon-action="laughing">Gülüyor</button>
+        <button class="mobile-cartoon-chip" type="button" data-cartoon-action="dancing">Dans Ediyor</button>
+      </div>
+
+      <div class="mobile-cartoon-mini-box">
+        <label class="field-label" for="mobileCartoonDuration">Süre</label>
+        <select id="mobileCartoonDuration" class="field-input">
+          <option value="4" selected>4 sn</option>
+          <option value="6">6 sn</option>
+          <option value="8">8 sn</option>
+          <option value="10">10 sn</option>
+          <option value="12">12 sn</option>
+          <option value="15">15 sn</option>
+        </select>
+      </div>
+
+      <div class="mobile-cartoon-mini-box">
+        <label class="field-label" for="mobileCartoonRatio">En / Boy Oranı</label>
+        <select id="mobileCartoonRatio" class="field-input">
+          <option value="16:9" selected>Yatay (16:9)</option>
+          <option value="9:16">Dikey (9:16)</option>
+          <option value="1:1">Kare (1:1)</option>
+        </select>
+      </div>
+
+      <button id="mobileCartoonGenerateBtn" class="generate-btn" type="button">
+        🎬 Sahneyi Oluştur (30 Kredi)
+      </button>
+
+      <div id="mobileCartoonStatus" class="mobile-status"></div>
+    </div>
+  </section>
+
+  <h2 class="section-title">Son çizgifilm videoları</h2>
+
+  <div id="mobileCartoonResults" class="empty-card">
+    Henüz mobil çizgifilm videosu başlatılmadı.
+  </div>
+</section>
