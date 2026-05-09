@@ -489,11 +489,20 @@
       colorMood: state.colorMood,
       transition_speed: state.transitionSpeed,
       transitionSpeed: state.transitionSpeed,
-      meta: {
+         meta: {
         app: "photofx",
         source: "mobile",
         image_url: state.imageUrl,
         logo_url: state.logoUrl,
+        logo_enabled: !!state.logoUrl,
+        logo_pos:
+          state.logoPosition === "top-left"
+            ? "tl"
+            : state.logoPosition === "top-right"
+              ? "tr"
+              : state.logoPosition === "bottom-left"
+                ? "bl"
+                : "br",
         audio_url: state.audioUrl,
         aspect_ratio: state.ratio,
         duration: state.duration,
