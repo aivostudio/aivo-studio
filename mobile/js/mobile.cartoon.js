@@ -512,7 +512,51 @@ function syncCartoonCredits(){
   function bindControls(){
     bindSingleChoice("[data-cartoon-main]", "mainCharacter", "data-cartoon-main");
     bindSingleChoice("[data-cartoon-scene]", "scene", "data-cartoon-scene");
-    bindSingleChoice("[data-cartoon-action]", "action", "data-cartoon-action");
+
+    Array.from(root.querySelectorAll("[data-cartoon-helper]")).forEach(function(btn){
+      btn.addEventListener("click", function(){
+        const value = safeText(btn.getAttribute("data-cartoon-helper"));
+        if (!value) return;
+
+        const exists = state.helpers.includes(value);
+
+        if (exists) {
+          state.helpers = state.helpers.filter(function(item){
+            return item !== value;
+          });
+          btn.classList.remove("is-active");
+          return;
+        }
+
+        if (state.helpers.length >= 3) {
+          setStatus("En fazla 3 yardımcı karakter seçebilirsin.");
+          return;
+        }
+
+        state.helpers.push(value);
+        btn.classList.add("is-active");
+      });
+    });
+
+    Array.from(root.querySelectorAll("[data-cartoon-action]")).forEach(function(btn){
+      btn.addEventListener("click", function(){
+        const value = safeText(btn.getAttribute("data-cartoon-action"));
+        if (!value) return;
+
+        const exists = state.actions.includes(value);
+
+        if (exists) {
+          state.actions = state.actions.filter(function(item){
+            return item !== value;
+          });
+          btn.classList.remove("is-active");
+          return;
+        }
+
+        state.actions.push(value);
+        btn.classList.add("is-active");
+      });
+    });
 
     if (durationEl) {
       durationEl.addEventListener("change", function(){
