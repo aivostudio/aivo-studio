@@ -256,9 +256,18 @@
 
 .mobile-photofx-style-grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:9px;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px;
   margin-bottom:16px;
+}
+
+.mobile-photofx-style-grid .mobile-photofx-chip{
+  min-height:38px;
+  padding:0 8px;
+  border-radius:999px;
+  font-size:10.5px;
+  line-height:1.05;
+  white-space:nowrap;
 }
 
 .mobile-photofx-chip{
