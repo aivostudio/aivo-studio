@@ -764,8 +764,8 @@ function showCartoon(){
     const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
 
     if (cartoonPanel) cartoonPanel.hidden = false;
-    if (cartoonTitle) cartoonTitle.hidden = false;
-    if (cartoonResults) cartoonResults.hidden = false;
+    if (cartoonTitle) cartoonTitle.hidden = true;
+    if (cartoonResults) cartoonResults.hidden = true;
   }
 }
 
@@ -1052,32 +1052,13 @@ if (tool === "atmo") {
 
   return;
 }
- if (tool === "cartoon") {
+if (tool === "cartoon") {
   activeMobileModule = "cartoon";
-
-  musicMount.hidden = true;
-  coverMount.hidden = true;
-  atmoMount.hidden = true;
-  if (photofxMount) photofxMount.hidden = true;
-  if (toolsMount) toolsMount.hidden = true;
-  if (cartoonMount) cartoonMount.hidden = false;
-
-  const cartoonSection = document.getElementById("mobileCartoonSection");
-  if (cartoonSection) {
-    const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
-    const cartoonTitle = cartoonSection.querySelector(".section-title");
-    const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
-
-    if (cartoonPanel) cartoonPanel.hidden = false;
-    if (cartoonTitle) cartoonTitle.hidden = false;
-    if (cartoonResults) cartoonResults.hidden = false;
-  }
-
+  showCartoon();
   setActiveNav(toolsNav);
 
   return;
 }
-
 if (tool === "photofx") {
   activeMobileModule = "photofx";
   showPhotoFx();
