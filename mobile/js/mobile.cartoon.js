@@ -688,21 +688,79 @@ function bindUploads(){
 }
   function bindButtons(){
     if (characterBtn) {
-      characterBtn.addEventListener("click", function(){
+      characterBtn.addEventListener("click", async function(){
         if (!state.characterPrompt) {
           setStatus("Lütfen karakter tanımı yaz.");
           return;
         }
 
-        setStatus("Karakter oluşturma bağlantısı hazırlanıyor...");
-        console.log("[MOBILE CARTOON][CHARACTER]", {
+        const tempCharacterId = "mobile-cartoon-character-" + Date.now();
+        const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
+
+        function renderCharacterLibraryLoading(){
+          if (!libraryEl) return;
+
+          const emptyEl = libraryEl.querySelector(".mobile-cartoon-character-empty");
+          if (emptyEl) emptyEl.remove();
+
+          libraryEl.insertAdjacentHTML("afterbegin", `
+            <article class="mobile-cartoon-character-card" data-mobile-cartoon-character="${tempCharacterId}">
+              <div class="mobile-cartoon-character-thumb">
+                <div class="mobile-cartoon-character-loading">Karakter hazırlanıyor...</div>
+              </div>
+              <div class="mobile-cartoon-character-name">${esc(state.characterPrompt || "Karakter")}</div>
+            </article>
+          `);
+        }
+
+        renderCharacterLibraryLoading();
+
+        setStatus("Karakter oluşturuluyor...");
+
+        const payload = {
           app: "cartoon",
           mode: "character",
-          prompt: state.characterPrompt
-        });
+          prompt: state.characterPrompt,
+          type: safeText(root.querySelector("#mobileCartoonCharacterType")?.value),
+          name: safeText(root.querySelector("#mobileCartoonCharacterName")?.value),
+          style: safeText(root.querySelector("#mobileCartoonCharacterStyle")?.value),
+          hairType: safeText(root.querySelector("#mobileCartoonHairType")?.value),
+          hairColor: safeText(root.querySelector("#mobileCartoonHairColor")?.value),
+          outfit: safeText(root.querySelector("#mobileCartoonOutfit")?.value),
+          glasses: safeText(root.querySelector("#mobileCartoonGlasses")?.value),
+          accessory: safeText(root.querySelector("#mobileCartoonAccessory")?.value),
+          expression: safeText(root.querySelector("#mobileCartoonExpression")?.value),
+          referenceImageUrl: state.characterImageUrl
+        };
+
+        try {
+          const res = await fetch("/api/providers/fal/cartoon/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(function(){
+            return {};
+          });
+
+          console.log("[MOBILE CARTOON][CHARACTER CREATE RESPONSE]", data);
+
+          if (!res.ok || !data.ok || !data.job_id) {
+            setStatus("Karakter oluşturulamadı.");
+            return;
+          }
+
+          pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter");
+        } catch (err) {
+          console.error("[MOBILE CARTOON][CHARACTER CREATE ERROR]", err);
+          setStatus("Karakter oluşturulamadı.");
+        }
       });
     }
-
       if (generateBtn) {
       generateBtn.addEventListener("click", async function(){
         const tempJobId = "mobile-cartoon-" + Date.now();
