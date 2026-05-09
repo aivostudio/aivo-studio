@@ -738,11 +738,10 @@ background:
 }
 
 @keyframes mobileCartoonCharacterTextPulse{
-  0%{ opacity:.58; transform:scale(.98); }
-  50%{ opacity:1; transform:scale(1); }
-  100%{ opacity:.58; transform:scale(.98); }
+  0%{ opacity:.58; }
+  50%{ opacity:1; }
+  100%{ opacity:.58; }
 }
-
 @keyframes mobileCartoonCharacterShimmer{
   0%{ transform:translateX(-30%) rotate(18deg); }
   100%{ transform:translateX(30%) rotate(18deg); }
