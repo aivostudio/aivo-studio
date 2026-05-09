@@ -615,6 +615,17 @@ function showMusic(){
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
+
+  const musicSection = document.getElementById("mobileMusicSection");
+  if (musicSection) {
+    const musicForm = musicSection.querySelector(".mobile-music-card, .mobile-music-panel, [data-mobile-music-form]");
+    const musicTitle = musicSection.querySelector(".section-title");
+    const musicResults = musicSection.querySelector("#mobileMusicResults");
+
+    if (musicForm) musicForm.hidden = false;
+    if (musicTitle) musicTitle.hidden = false;
+    if (musicResults) musicResults.hidden = false;
+  }
 }
 
 function showCover(){
