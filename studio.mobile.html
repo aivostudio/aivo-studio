@@ -593,6 +593,7 @@ function showMusic(){
   musicMount.hidden = false;
   coverMount.hidden = true;
   atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 }
 
@@ -600,6 +601,7 @@ function showCover(){
   musicMount.hidden = true;
   coverMount.hidden = false;
   atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 
   const heroSub = document.getElementById("mobileHeroSub");
@@ -612,6 +614,14 @@ function showAtmo(){
   musicMount.hidden = true;
   coverMount.hidden = true;
   atmoMount.hidden = false;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+}
+    function showCartoon(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = false;
   if (toolsMount) toolsMount.hidden = true;
 }
 
@@ -738,6 +748,13 @@ if (tool === "atmo") {
   activeMobileModule = "atmo";
   showAtmo();
   setAtmoLibraryOnly(false);
+  setActiveNav(toolsNav);
+
+  return;
+}
+    if (tool === "cartoon") {
+  activeMobileModule = "cartoon";
+  showCartoon();
   setActiveNav(toolsNav);
 
   return;
