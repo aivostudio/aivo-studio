@@ -597,9 +597,9 @@ document.body.appendChild(atmoScript);
   atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yüklenemedi.</div>';
 }
     try {
-  const cartoonRes = await fetch("/mobile/modules/mobile.cartoon.html?v=1", {
-    cache: "no-store"
-  });
+  const cartoonRes = await fetch("/mobile/modules/mobile.cartoon.html?v=2", {
+  cache: "no-store"
+});
 
   if (!cartoonRes.ok) {
     throw new Error("mobile_cartoon_html_load_failed");
