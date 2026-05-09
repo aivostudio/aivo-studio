@@ -1119,7 +1119,7 @@ function bindUploads(){
     }
   }
 
- bindModeTabs();
+bindModeTabs();
 bindCounters();
 bindControls();
 bindUploads();
@@ -1127,9 +1127,9 @@ bindButtons();
 syncCartoonCredits();
 bindMobileCartoonCharacterActions();
 bindMobileCartoonResultActions();
-hydrateMobileCartoonLibrary();
 
 setMode("character");
+hydrateMobileCartoonLibrary();
 
   window.mobileCartoonState = state;
 })();
