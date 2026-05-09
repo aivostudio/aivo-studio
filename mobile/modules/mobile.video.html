@@ -1,5 +1,85 @@
 <section id="mobileVideoSection" class="mobile-video-section">
-  <div class="empty-card">
-    Resimden Video modülü açıldı. Arayüz bir sonraki adımda kurulacak.
+  <section class="mobile-video-panel">
+    <div class="mobile-video-hero">
+      <div class="mobile-video-kicker">AIVO Mobile Studio</div>
+      <h3>AI Resimden Video Üret</h3>
+      <p>Bir görsel yükle, AIVO onu kısa ve sinematik bir videoya dönüştürsün.</p>
+    </div>
+
+    <h3 class="mobile-video-block-title">Referans Görsel</h3>
+    <p class="mobile-video-block-sub">Videoya dönüştürmek istediğin resmi yükle.</p>
+
+    <label class="mobile-video-upload-btn">
+      <input id="mobileVideoImageFile" type="file" accept="image/*" hidden>
+      <span class="mobile-video-upload-icon" aria-hidden="true"></span>
+      <b>Görsel Yükle</b>
+    </label>
+
+    <h3 class="mobile-video-block-title">Prompt</h3>
+    <p class="mobile-video-block-sub">Görselin nasıl canlanacağını kısaca yaz.</p>
+
+    <textarea
+      id="mobileVideoPrompt"
+      class="field-textarea mobile-video-prompt"
+      maxlength="1000"
+      placeholder="Örn: Kamera yavaşça yaklaşsın, hafif parallax, sinematik ışık geçişleri, doğal hareket..."
+    ></textarea>
+
+    <div class="mobile-video-count">
+      <span id="mobileVideoPromptCount">0</span> / 1000
+    </div>
+
+    <h3 class="mobile-video-block-title">Video Ayarları</h3>
+    <p class="mobile-video-block-sub">Süre, oran, hareket ve kaliteyi seç.</p>
+
+    <div class="mobile-video-settings-grid">
+      <label class="mobile-video-field">
+        <span class="field-label">Süre</span>
+        <select id="mobileVideoDuration" class="field-input">
+          <option value="5" selected>5 saniye</option>
+          <option value="8">8 saniye</option>
+          <option value="10">10 saniye</option>
+        </select>
+      </label>
+
+      <label class="mobile-video-field">
+        <span class="field-label">Oran</span>
+        <select id="mobileVideoRatio" class="field-input">
+          <option value="16:9" selected>Yatay (16:9)</option>
+          <option value="9:16">Dikey (9:16)</option>
+          <option value="1:1">Kare (1:1)</option>
+        </select>
+      </label>
+
+      <label class="mobile-video-field">
+        <span class="field-label">Hareket</span>
+        <select id="mobileVideoMotion" class="field-input">
+          <option value="soft">Yumuşak</option>
+          <option value="balanced" selected>Dengeli</option>
+          <option value="cinematic">Sinematik</option>
+          <option value="dynamic">Dinamik</option>
+        </select>
+      </label>
+
+      <label class="mobile-video-field">
+        <span class="field-label">Kalite</span>
+        <select id="mobileVideoQuality" class="field-input">
+          <option value="standard" selected>Standart</option>
+          <option value="high">Yüksek</option>
+        </select>
+      </label>
+    </div>
+
+    <button id="mobileVideoGenerateBtn" class="generate-btn" type="button">
+      🎬 Video Oluştur (20 Kredi)
+    </button>
+
+    <div id="mobileVideoStatus" class="mobile-status"></div>
+  </section>
+
+  <h2 class="section-title">Video Kütüphanem</h2>
+
+  <div id="mobileVideoResults" class="empty-card">
+    Henüz mobil video başlatılmadı.
   </div>
 </section>
