@@ -688,3 +688,53 @@ background:
   overflow:hidden;
   text-overflow:ellipsis;
 }
+.mobile-cartoon-character-loading{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.22), rgba(0,0,0,.76)),
+    #070914 !important;
+}
+
+.mobile-cartoon-character-loading::before{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  background:linear-gradient(
+    90deg,
+    rgba(255,255,255,0),
+    rgba(220,170,255,.16),
+    rgba(255,255,255,0)
+  );
+  transform:rotate(18deg);
+  animation:mobileCartoonCharacterShimmer 1.35s linear infinite;
+}
+
+.mobile-cartoon-character-loading{
+  color:transparent !important;
+}
+
+.mobile-cartoon-character-loading::after{
+  content:"Karakter hazırlanıyor...";
+  position:relative;
+  z-index:2;
+  color:#fff;
+  padding:8px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 22px rgba(180,120,255,.20);
+  animation:mobileCartoonCharacterTextPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes mobileCartoonCharacterTextPulse{
+  0%{ opacity:.58; transform:scale(.98); }
+  50%{ opacity:1; transform:scale(1); }
+  100%{ opacity:.58; transform:scale(.98); }
+}
+
+@keyframes mobileCartoonCharacterShimmer{
+  0%{ transform:translateX(-30%) rotate(18deg); }
+  100%{ transform:translateX(30%) rotate(18deg); }
+}
