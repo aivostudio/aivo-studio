@@ -651,3 +651,75 @@
   0%{ transform:translateX(-30%) rotate(18deg); }
   100%{ transform:translateX(30%) rotate(18deg); }
 }
+.mobile-lipsync-panel{
+  padding:10px !important;
+}
+
+.mobile-lipsync-hero{
+  padding:2px 2px 10px !important;
+}
+
+.mobile-lipsync-hero h3{
+  font-size:19px !important;
+}
+
+.mobile-lipsync-hero p{
+  font-size:11px !important;
+  margin-top:6px !important;
+}
+
+.mobile-lipsync-card{
+  gap:9px !important;
+}
+
+.mobile-lipsync-block,
+.mobile-lipsync-photo-card,
+.mobile-lipsync-voice-card,
+.mobile-lipsync-settings-card,
+.mobile-lipsync-credit-card{
+  padding:11px !important;
+  border-radius:19px !important;
+}
+
+.mobile-lipsync-textarea{
+  min-height:126px !important;
+  padding:13px !important;
+}
+
+.mobile-lipsync-photo-drop{
+  min-height:166px !important;
+}
+
+.mobile-lipsync-photo-icon{
+  width:56px !important;
+  height:56px !important;
+  border-radius:19px !important;
+  font-size:26px !important;
+  margin-bottom:10px !important;
+}
+
+.mobile-lipsync-select,
+.mobile-lipsync-voice-select{
+  height:43px !important;
+}
+
+.mobile-lipsync-preview-btn{
+  height:43px !important;
+}
+
+.mobile-lipsync-settings-card{
+  gap:10px !important;
+}
+
+.mobile-lipsync-range span{
+  margin-bottom:6px !important;
+}
+
+.mobile-lipsync-credit-card{
+  font-size:11px !important;
+  line-height:1.32 !important;
+}
+
+.mobile-lipsync-generate-btn{
+  min-height:50px !important;
+}
