@@ -747,10 +747,26 @@ function syncMainCharacterDisabled(){
 function bindUploads(){
   if (characterImageEl) {
     characterImageEl.addEventListener("change", async function(){
+      if (characterImageEl.files && characterImageEl.files[0]) {
+        const resetIds = [
+          "#mobileCartoonHairType",
+          "#mobileCartoonHairColor",
+          "#mobileCartoonOutfit",
+          "#mobileCartoonGlasses",
+          "#mobileCartoonAccessory",
+          "#mobileCartoonExpression"
+        ];
+
+        resetIds.forEach(function(selector){
+          const el = root.querySelector(selector);
+          if (el) el.value = "";
+        });
+      }
+
       await setUploadState(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
 
       if (state.characterImageUrl) {
-        setStatus("Karakter referans görseli yüklendi.");
+        setStatus("Referans resim yüklendi. Gelişmiş seçenekler sıfırlandı.");
       }
     });
   }
