@@ -667,6 +667,26 @@ try {
     videoMount.innerHTML = '<div class="empty-card">Resimden Video modülü yüklenemedi.</div>';
   }
 }
+    try {
+  const lipsyncRes = await fetch("/mobile/modules/mobile.lipsync.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!lipsyncRes.ok) {
+    throw new Error("mobile_lipsync_html_load_failed");
+  }
+
+  lipsyncMount.innerHTML = await lipsyncRes.text();
+
+  const lipsyncScript = document.createElement("script");
+  lipsyncScript.src = "/mobile/js/mobile.lipsync.js?v=1";
+  lipsyncScript.defer = true;
+  document.body.appendChild(lipsyncScript);
+} catch (err) {
+  if (lipsyncMount) {
+    lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
+  }
+}
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
     const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
