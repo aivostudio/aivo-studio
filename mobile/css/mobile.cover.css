@@ -374,3 +374,32 @@
   line-height:1.35;
   font-weight:700;
 }
+.mobile-cover-styles{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:9px !important;
+}
+
+.mobile-style-card{
+  width:auto !important;
+  min-height:44px !important;
+  flex:1 1 calc(50% - 9px) !important;
+  padding:9px 12px !important;
+  border-radius:999px !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+
+.mobile-style-ico{
+  width:28px !important;
+  height:28px !important;
+  border-radius:999px !important;
+}
+
+.mobile-style-title{
+  font-size:12.5px !important;
+}
+
+.mobile-style-sub{
+  display:none !important;
+}
