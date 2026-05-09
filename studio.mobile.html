@@ -704,6 +704,26 @@ function showCartoon(){
     if (cartoonResults) cartoonResults.hidden = false;
   }
 }
+
+function showPhotoFx(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+
+  const photofxSection = document.getElementById("mobilePhotoFxSection");
+  if (photofxSection) {
+    const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel, .pfxPage");
+    const photofxTitle = photofxSection.querySelector(".section-title");
+    const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
+
+    if (photofxPanel) photofxPanel.hidden = false;
+    if (photofxTitle) photofxTitle.hidden = false;
+    if (photofxResults) photofxResults.hidden = false;
+  }
+}
     if (homeNav) {
       homeNav.addEventListener("click", function(){
         showMusic();
@@ -808,7 +828,7 @@ function showCartoon(){
       }, true);
     }
 
-   if (toolsNav) {
+if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
   e.preventDefault();
 
@@ -816,6 +836,7 @@ function showCartoon(){
   coverMount.hidden = true;
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
   if (toolsMount) toolsMount.hidden = false;
 
   setActiveNav(toolsNav);
@@ -855,9 +876,17 @@ if (tool === "atmo") {
 
   return;
 }
-    if (tool === "cartoon") {
+ if (tool === "cartoon") {
   activeMobileModule = "cartoon";
   showCartoon();
+  setActiveNav(toolsNav);
+
+  return;
+}
+
+if (tool === "photofx") {
+  activeMobileModule = "photofx";
+  showPhotoFx();
   setActiveNav(toolsNav);
 
   return;
