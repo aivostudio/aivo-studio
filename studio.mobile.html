@@ -591,7 +591,7 @@ document.body.appendChild(atmoScript);
   cartoonMount.innerHTML = await cartoonRes.text();
 
   const cartoonScript = document.createElement("script");
-cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=6";
+cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=7";
   cartoonScript.defer = true;
   document.body.appendChild(cartoonScript);
 } catch (err) {
@@ -722,11 +722,23 @@ function showAtmo(){
           return;
         }
 
-              if (activeMobileModule === "cartoon") {
+             if (activeMobileModule === "cartoon") {
           e.preventDefault();
           e.stopImmediatePropagation();
 
           showCartoon();
+
+          const cartoonSection = document.getElementById("mobileCartoonSection");
+          if (cartoonSection) {
+            const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
+            const cartoonTitle = cartoonSection.querySelector(".section-title");
+            const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
+
+            if (cartoonPanel) cartoonPanel.hidden = true;
+            if (cartoonTitle) cartoonTitle.hidden = false;
+            if (cartoonResults) cartoonResults.hidden = false;
+          }
+
           setActiveNav(productionsNav);
 
           return;
