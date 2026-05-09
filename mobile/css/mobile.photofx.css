@@ -388,7 +388,8 @@
 .mobile-photofx-video-media{
   position:relative;
   width:100%;
-  aspect-ratio:9 / 16;
+  aspect-ratio:16 / 10;
+  max-height:360px;
   background:#050510;
   overflow:hidden;
 }
