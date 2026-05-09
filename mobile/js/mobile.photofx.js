@@ -716,8 +716,9 @@
       }
     }, true);
   }
-  bindPrompt();
+   bindPrompt();
   bindStyleButtons();
+  bindTapFallbacks();
   bindControls();
   bindUploads();
   bindFileClearButtons();
