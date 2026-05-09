@@ -35,6 +35,250 @@ const customFileEl = root.querySelector("#mobileCartoonCustomFile");
 const customClearEl = root.querySelector("#mobileCartoonCustomClear");
 const customTextEl = root.querySelector("#mobileCartoonCustomText");
 
+const resultsEl = root.querySelector("#mobileCartoonResults");
+const mobileCartoonJobs = [];
+const mobileCartoonDeletedIds = new Set();
+
+function esc(value){
+  return String(value == null ? "" : value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function renderMobileCartoonResults(){
+  if (!resultsEl) return;
+
+  const items = mobileCartoonJobs.filter(function(job){
+    return !mobileCartoonDeletedIds.has(job.id);
+  });
+
+  if (!items.length) {
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Henüz mobil çizgifilm videosu başlatılmadı.";
+    return;
+  }
+
+  resultsEl.className = "mobile-cartoon-results";
+
+  resultsEl.innerHTML = items.map(function(job){
+    const ready = !!job.videoUrl;
+
+    return `
+      <article class="mobile-cartoon-video-card" data-mobile-cartoon-job="${esc(job.id)}">
+        <div class="mobile-cartoon-video-media">
+          ${
+            ready
+              ? `<video class="mobile-cartoon-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
+              : `<div class="mobile-cartoon-video-loading"><span>Hazırlanıyor…</span></div>`
+          }
+
+          <div class="mobile-cartoon-video-actions">
+            <button type="button" data-mobile-cartoon-act="download" ${ready ? "" : "disabled"}>⬇</button>
+            <button type="button" data-mobile-cartoon-act="share" ${ready ? "" : "disabled"}>↗</button>
+            <button type="button" data-mobile-cartoon-act="sound" ${ready ? "" : "disabled"}>🔇</button>
+            <button type="button" data-mobile-cartoon-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+            <button type="button" data-mobile-cartoon-act="delete">🗑</button>
+          </div>
+
+          ${
+            ready
+              ? `<button class="mobile-cartoon-video-play" type="button" data-mobile-cartoon-act="play">▶</button>`
+              : ``
+          }
+        </div>
+
+        <div class="mobile-cartoon-video-title">${esc(job.title || "Çizgifilm video")}</div>
+      </article>
+    `;
+  }).join("");
+}
+
+function pickCartoonVideoUrl(data){
+  return String(
+    data.video_url ||
+    data.final_url ||
+    data.url ||
+    data.video?.url ||
+    data.output?.video?.url ||
+    data.meta?.final_video_url ||
+    data.meta?.preview_video_url ||
+    data.outputs?.[0]?.url ||
+    ""
+  ).trim();
+}
+
+function pollMobileCartoonJob(jobId){
+  if (!jobId) return;
+
+  fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store"
+  })
+  .then(function(res){
+    return res.json();
+  })
+  .then(function(data){
+    console.log("[MOBILE CARTOON][POLL]", data);
+
+    const status = String(
+      data.status ||
+      data.db_status ||
+      data.state ||
+      ""
+    ).toLowerCase();
+
+    const videoUrl = pickCartoonVideoUrl(data);
+
+    const job = mobileCartoonJobs.find(function(item){
+      return item.id === jobId;
+    });
+
+    if (!job) return;
+
+    if (videoUrl) {
+      job.videoUrl = videoUrl;
+      job.status = "ready";
+      job.title = job.title || "Çizgifilm video hazır";
+      renderMobileCartoonResults();
+      setStatus("Çizgifilm video hazır.");
+      return;
+    }
+
+    if (status.includes("fail") || status.includes("error")) {
+      job.status = "error";
+      job.title = "Çizgifilm video oluşturulamadı";
+      renderMobileCartoonResults();
+      setStatus("Çizgifilm video oluşturulamadı.");
+      return;
+    }
+
+    setTimeout(function(){
+      pollMobileCartoonJob(jobId);
+    }, 3000);
+  })
+  .catch(function(err){
+    console.error("[MOBILE CARTOON][POLL ERROR]", err);
+
+    setTimeout(function(){
+      pollMobileCartoonJob(jobId);
+    }, 4000);
+  });
+}
+
+function bindMobileCartoonResultActions(){
+  if (!resultsEl || resultsEl.__mobileCartoonActionsBound) return;
+  resultsEl.__mobileCartoonActionsBound = true;
+
+  resultsEl.addEventListener("click", async function(e){
+    const btn = e.target.closest("[data-mobile-cartoon-act]");
+    if (!btn) return;
+
+    const card = btn.closest("[data-mobile-cartoon-job]");
+    if (!card) return;
+
+    const act = btn.getAttribute("data-mobile-cartoon-act");
+    const id = card.getAttribute("data-mobile-cartoon-job");
+    const job = mobileCartoonJobs.find(function(item){
+      return item.id === id;
+    });
+
+    if (!job) return;
+
+    if (act === "play") {
+      const video = card.querySelector("video");
+      if (!video) return;
+
+      video.muted = false;
+      video.volume = 1;
+
+      if (video.paused) {
+        video.play().catch(function(){});
+      } else {
+        video.pause();
+      }
+
+      return;
+    }
+
+    if (act === "sound") {
+      const video = card.querySelector("video");
+      if (!video) return;
+
+      video.muted = !video.muted;
+      btn.textContent = video.muted ? "🔇" : "🔊";
+
+      if (!video.paused) {
+        video.play().catch(function(){});
+      }
+
+      return;
+    }
+
+    if (act === "fullscreen") {
+      const video = card.querySelector("video");
+      if (!video) return;
+
+      if (video.requestFullscreen) {
+        video.requestFullscreen().catch(function(){});
+      }
+
+      return;
+    }
+
+    if (act === "download") {
+      if (!job.videoUrl) return;
+
+      const directUrl = String(job.videoUrl || "").split("#")[0];
+
+      const downloadUrl =
+        "/api/media/proxy?url=" +
+        encodeURIComponent(directUrl) +
+        "&filename=" +
+        encodeURIComponent("aivo-cizgifilm-video.mp4");
+
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.setAttribute("aria-hidden", "true");
+      iframe.src = downloadUrl;
+
+      document.body.appendChild(iframe);
+
+      setTimeout(function(){
+        try {
+          iframe.remove();
+        } catch (err) {}
+      }, 15000);
+
+      return;
+    }
+
+    if (act === "share") {
+      if (!job.videoUrl) return;
+
+      if (navigator.share) {
+        navigator.share({
+          title: "AIVO Çizgifilm Video",
+          url: job.videoUrl
+        }).catch(function(){});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(job.videoUrl).catch(function(){});
+      }
+
+      return;
+    }
+
+    if (act === "delete") {
+      mobileCartoonDeletedIds.add(id);
+      renderMobileCartoonResults();
+      return;
+    }
+  });
+}
+
  const state = {
   mode: "character",
   characterPrompt: "",
@@ -404,6 +648,8 @@ bindControls();
 bindUploads();
 bindButtons();
 syncCartoonCredits();
+bindMobileCartoonResultActions();
+renderMobileCartoonResults();
 
 setMode("character");
 
