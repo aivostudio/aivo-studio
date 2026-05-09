@@ -134,19 +134,19 @@ background:
 .mobile-cartoon-choice-grid{
   display:grid;
   grid-template-columns:repeat(3, minmax(0, 1fr));
-  gap:9px;
+  gap:7px;
   margin:10px 0 16px;
 }
 
 .mobile-cartoon-choice{
   width:100%;
-min-height:38px;
-  padding:0 10px;
+  min-height:38px;
+  padding:0 6px;
   border-radius:16px;
   border:1px solid rgba(255,255,255,.12);
   background:rgba(255,255,255,.065);
   color:rgba(255,255,255,.82);
-font-size:10.5px;
+  font-size:10.5px;
   font-weight:900;
   cursor:pointer;
   display:flex;
