@@ -929,6 +929,27 @@ function showVideo(){
 
           return;
         }
+        if (activeMobileModule === "lipsync") {
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  showLipsync();
+
+  const lipsyncSection = document.getElementById("mobileLipsyncSection");
+  if (lipsyncSection) {
+    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");
+    const lipsyncTitle = lipsyncSection.querySelector(".section-title");
+    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");
+
+    if (lipsyncPanel) lipsyncPanel.hidden = true;
+    if (lipsyncTitle) lipsyncTitle.hidden = false;
+    if (lipsyncResults) lipsyncResults.hidden = false;
+  }
+
+  setActiveNav(productionsNav);
+
+  return;
+}
 
         showMusic();
         setActiveNav(productionsNav);
