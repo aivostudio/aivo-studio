@@ -498,3 +498,28 @@
   0%{ transform:translateX(-30%) rotate(18deg); }
   100%{ transform:translateX(30%) rotate(18deg); }
 }
+.mobile-photofx-settings-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin:8px 0 18px;
+}
+
+.mobile-photofx-field{
+  min-width:0;
+}
+
+.mobile-photofx-field-full{
+  grid-column:1 / -1;
+}
+
+.mobile-photofx-upload-grid-extra{
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px;
+  padding-top:32px;
+  margin:10px 0 34px;
+}
+
+.mobile-photofx-upload-grid-main{
+  display:none;
+}
