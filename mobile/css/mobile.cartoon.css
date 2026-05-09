@@ -268,3 +268,16 @@ background:
     inset 0 1px 0 rgba(255,255,255,.12),
     0 16px 34px rgba(0,0,0,.22);
 }
+.mobile-cartoon-view[data-mobile-cartoon-view="basic"] .mobile-cartoon-block-title{
+  width:max-content;
+  max-width:100%;
+  margin:18px auto 10px;
+  padding:2px 0;
+  font-size:18px;
+  letter-spacing:-.045em;
+  background:linear-gradient(135deg,#fff,#a78bfa,#60eaff,#ec4899);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow:0 0 20px rgba(139,92,246,.16);
+}
