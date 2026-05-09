@@ -236,7 +236,7 @@
     return data.public_url;
   }
 
-  function setFileLabel(input, file){
+  function setFileLabel(input, file, statusText){
     const label = input && input.closest("label");
     if (!label) return;
 
@@ -253,7 +253,7 @@
     if (oldClear) oldClear.remove();
 
     if (textEl) {
-      textEl.textContent = file ? cleanText + " ✓" : cleanText;
+      textEl.textContent = statusText || (file ? cleanText + " ✓" : cleanText);
     }
 
     label.classList.toggle("has-file", !!file);
@@ -320,7 +320,7 @@
         state[item.fileKey] = file;
         state[item.urlKey] = "";
 
-        setFileLabel(input, file);
+         setFileLabel(input, file, file ? "Yükleniyor..." : "");
         syncCreditButton();
 
         if (!file) return;
@@ -330,6 +330,7 @@
         try {
           const publicUrl = await uploadMobilePhotoFxFile(file, item.kind);
           state[item.urlKey] = publicUrl;
+          setFileLabel(input, file);
           syncCreditButton();
           setStatus("Dosya yüklendi.");
         } catch (err) {
