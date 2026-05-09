@@ -653,8 +653,15 @@
         counterEl.textContent = "0";
       }
 
-      if (audioNameEl) {
-        audioNameEl.textContent = file.name || "Ses dosyası seçildi";
+          if (audioNameEl) {
+        audioNameEl.innerHTML = `
+          <span class="mobile-lipsync-inline-audio">
+            <button type="button" data-mobile-lipsync-inline-audio-play>▶</button>
+            <strong>${file.name || "Ses dosyası seçildi"}</strong>
+            <em>${state.audioDurationSeconds || 0} sn</em>
+            <button type="button" data-mobile-lipsync-inline-audio-remove>🗑</button>
+          </span>
+        `;
       }
 
       setStatus("Ses dosyası seçildi.");
