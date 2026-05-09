@@ -763,9 +763,168 @@
   function bindRecord(){
     if (!recordOpenBtn) return;
 
-    recordOpenBtn.addEventListener("click", function(e){
+    let recorder = null;
+    let chunks = [];
+    let stream = null;
+    let startedAt = 0;
+    let modal = null;
+
+    function closeModal(){
+      if (recorder && recorder.state === "recording") {
+        recorder.stop();
+      }
+
+      if (stream) {
+        stream.getTracks().forEach(function(track){
+          track.stop();
+        });
+      }
+
+      stream = null;
+      recorder = null;
+      chunks = [];
+      startedAt = 0;
+
+      if (modal) {
+        modal.remove();
+        modal = null;
+      }
+    }
+
+    function createModal(){
+      modal = document.createElement("div");
+      modal.className = "mobile-lipsync-record-modal";
+      modal.innerHTML = `
+        <div class="mobile-lipsync-record-box">
+          <button type="button" class="mobile-lipsync-record-close" data-mobile-lipsync-record-close>×</button>
+
+          <h3>Ses Kaydet</h3>
+
+          <div class="mobile-lipsync-record-tabs">
+            <button type="button" class="is-active">Ses Kaydı</button>
+            <button type="button" data-mobile-lipsync-record-upload>Ses Yükle</button>
+          </div>
+
+          <div class="mobile-lipsync-record-screen">
+            <div class="mobile-lipsync-record-spinner" data-mobile-lipsync-record-spinner></div>
+            <b data-mobile-lipsync-record-title>Mikrofon hazır</b>
+            <span data-mobile-lipsync-record-sub>Başlamak için kayıt butonuna bas.</span>
+          </div>
+
+          <button type="button" class="mobile-lipsync-record-main" data-mobile-lipsync-record-main>
+            ●
+          </button>
+
+          <div class="mobile-lipsync-record-status" data-mobile-lipsync-record-status>
+            Mikrofon hazır bekliyor...
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      modal.querySelector("[data-mobile-lipsync-record-close]").addEventListener("click", closeModal);
+
+      modal.querySelector("[data-mobile-lipsync-record-upload]").addEventListener("click", function(){
+        closeModal();
+        if (audioInput) audioInput.click();
+      });
+
+      return modal;
+    }
+
+    async function startRecording(){
+      const currentModal = modal || createModal();
+      const mainBtn = currentModal.querySelector("[data-mobile-lipsync-record-main]");
+      const titleEl = currentModal.querySelector("[data-mobile-lipsync-record-title]");
+      const subEl = currentModal.querySelector("[data-mobile-lipsync-record-sub]");
+      const statusBox = currentModal.querySelector("[data-mobile-lipsync-record-status]");
+
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recorder = new MediaRecorder(stream);
+      chunks = [];
+      startedAt = Date.now();
+
+      recorder.addEventListener("dataavailable", function(event){
+        if (event.data && event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      });
+
+      recorder.addEventListener("stop", function(){
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const file = new File([blob], "aivo-lipsync-recording.webm", { type: "audio/webm" });
+        const durationSeconds = Math.max(1, Math.ceil((Date.now() - startedAt) / 1000));
+
+        state.audioFile = file;
+        state.audioUrl = "";
+        state.audioDurationSeconds = durationSeconds;
+        state.script = "";
+
+        if (scriptEl) {
+          scriptEl.value = "";
+          scriptEl.disabled = true;
+        }
+
+        if (counterEl) {
+          counterEl.textContent = "0";
+        }
+
+        if (audioNameEl) {
+          audioNameEl.textContent = "Ses kaydı eklendi • " + durationSeconds + " sn";
+        }
+
+        if (stream) {
+          stream.getTracks().forEach(function(track){
+            track.stop();
+          });
+        }
+
+        stream = null;
+        recorder = null;
+        chunks = [];
+        startedAt = 0;
+
+        syncGenerateButton();
+        setStatus("Ses kaydı eklendi.");
+        closeModal();
+      });
+
+      recorder.start();
+
+      if (mainBtn) mainBtn.classList.add("is-recording");
+      if (titleEl) titleEl.textContent = "Kayıt alınıyor";
+      if (subEl) subEl.textContent = "Durdurmak için tekrar bas";
+      if (statusBox) statusBox.textContent = "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.";
+    }
+
+    recordOpenBtn.addEventListener("click", async function(e){
       e.preventDefault();
-      setStatus("Mobil ses kaydı yakında aktif olacak. Şimdilik ses dosyası yükle.");
+
+      try {
+        const currentModal = modal || createModal();
+        const mainBtn = currentModal.querySelector("[data-mobile-lipsync-record-main]");
+
+        if (recorder && recorder.state === "recording") {
+          recorder.stop();
+          return;
+        }
+
+        if (mainBtn && !mainBtn.__mobileLipsyncRecordBound) {
+          mainBtn.__mobileLipsyncRecordBound = true;
+          mainBtn.addEventListener("click", async function(){
+            if (recorder && recorder.state === "recording") {
+              recorder.stop();
+              return;
+            }
+
+            await startRecording();
+          });
+        }
+      } catch (err) {
+        console.error("[MOBILE LIPSYNC][RECORD ERROR]", err);
+        setStatus("Mikrofon izni alınamadı.");
+      }
     });
   }
 
