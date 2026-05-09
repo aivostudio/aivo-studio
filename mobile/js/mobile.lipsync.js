@@ -1035,7 +1035,68 @@
       duration: Math.min(60, Math.max(1, calculateSpeechSeconds()))
     };
   }
+    function bindInlineAudioPlayer(){
+    if (!audioNameEl || audioNameEl.__mobileLipsyncInlineAudioBound) return;
+    audioNameEl.__mobileLipsyncInlineAudioBound = true;
 
+    let inlineAudio = null;
+
+    audioNameEl.addEventListener("click", function(e){
+      const playBtn = e.target.closest("[data-mobile-lipsync-inline-audio-play]");
+      const removeBtn = e.target.closest("[data-mobile-lipsync-inline-audio-remove]");
+
+      if (playBtn) {
+        e.preventDefault();
+
+        if (!state.audioFile) return;
+
+        if (!inlineAudio) {
+          inlineAudio = new Audio(URL.createObjectURL(state.audioFile));
+
+          inlineAudio.addEventListener("ended", function(){
+            playBtn.textContent = "▶";
+          });
+        }
+
+        if (inlineAudio.paused) {
+          inlineAudio.play().catch(function(){});
+          playBtn.textContent = "❚❚";
+        } else {
+          inlineAudio.pause();
+          playBtn.textContent = "▶";
+        }
+
+        return;
+      }
+
+      if (removeBtn) {
+        e.preventDefault();
+
+        if (inlineAudio) {
+          inlineAudio.pause();
+          inlineAudio = null;
+        }
+
+        state.audioFile = null;
+        state.audioUrl = "";
+        state.audioDurationSeconds = 0;
+
+        if (scriptEl) {
+          scriptEl.disabled = false;
+          scriptEl.classList.remove("has-audio");
+        }
+
+        if (audioInput) {
+          audioInput.value = "";
+        }
+
+        audioNameEl.textContent = "Ses yüklenmedi.";
+
+        syncGenerateButton();
+        setStatus("Ses kaldırıldı.");
+      }
+    });
+  }
   function bindGenerate(){
     if (!generateBtn) return;
 
@@ -1157,6 +1218,7 @@
  bindAspectPreview();
   bindVoice();
   bindRecord();
+  bindInlineAudioPlayer();
   bindGenerate();
   bindMobileLipsyncResultActions();
   syncGenerateButton();
