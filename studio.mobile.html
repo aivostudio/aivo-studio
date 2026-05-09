@@ -443,7 +443,12 @@
 <div id="mobilePhotoFxMount" hidden>
   <div class="empty-card">PhotoFX modülü yükleniyor...</div>
 </div>
-  <div id="mobileToolsMount" hidden>
+
+<div id="mobileVideoMount" hidden>
+  <div class="empty-card">Resimden Video modülü yükleniyor...</div>
+</div>
+
+<div id="mobileToolsMount" hidden>
   <h2 class="section-title">AI Araçlar</h2>
 
   <div class="mobile-tools-grid">
@@ -514,7 +519,7 @@ let toolsMount = document.getElementById("mobileToolsMount");
 let atmoMount = document.getElementById("mobileAtmoMount");
 let cartoonMount = document.getElementById("mobileCartoonMount");
 let photofxMount = document.getElementById("mobilePhotoFxMount");
-
+let videoMount = document.getElementById("mobileVideoMount");
     if (!coverMount) {
       coverMount = document.createElement("div");
       coverMount.id = "mobileCoverMount";
@@ -652,8 +657,8 @@ function showMusic(){
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
-
   const musicSection = document.getElementById("mobileMusicSection");
   if (musicSection) {
     const musicForm = musicSection.querySelector(".mobile-music-card, .mobile-music-panel, [data-mobile-music-form]");
@@ -672,6 +677,7 @@ function showCover(){
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 
   const heroSub = document.getElementById("mobileHeroSub");
@@ -686,6 +692,7 @@ function showAtmo(){
   atmoMount.hidden = false;
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 }
 function showCartoon(){
@@ -694,6 +701,7 @@ function showCartoon(){
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = false;
   if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
 
   const cartoonSection = document.getElementById("mobileCartoonSection");
@@ -714,8 +722,8 @@ function showPhotoFx(){
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = false;
+  if (videoMount) videoMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
-
   const photofxSection = document.getElementById("mobilePhotoFxSection");
   if (photofxSection) {
     const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel, .pfxPage");
@@ -726,6 +734,15 @@ function showPhotoFx(){
     if (photofxTitle) photofxTitle.hidden = false;
     if (photofxResults) photofxResults.hidden = false;
   }
+  function showVideo(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+}
 }
     if (homeNav) {
       homeNav.addEventListener("click", function(){
@@ -930,6 +947,13 @@ if (tool === "atmo") {
 if (tool === "photofx") {
   activeMobileModule = "photofx";
   showPhotoFx();
+  setActiveNav(toolsNav);
+
+  return;
+}
+    if (tool === "video") {
+  activeMobileModule = "video";
+  showVideo();
   setActiveNav(toolsNav);
 
   return;
