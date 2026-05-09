@@ -67,25 +67,45 @@ const customTextEl = root.querySelector("#mobileCartoonCustomText");
 
     if (statusEl) statusEl.textContent = text;
   }
-async function uploadCartoonFile(file){
-  const form = new FormData();
-  form.append("file", file);
-  form.append("app", "cartoon");
+async function uploadCartoonFile(file, kind){
+  if (!file) return "";
 
-  const res = await fetch("/api/r2/scan-upload", {
+  const presignRes = await fetch("/api/r2/scan-and-presign", {
     method: "POST",
-    body: form
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      app: "cartoon",
+      kind: kind || "mobile-upload",
+      filename: file.name,
+      contentType: file.type,
+      prefix: "uploads/cartoon/tmp/"
+    })
   });
 
-  const data = await res.json().catch(function(){
+  const data = await presignRes.json().catch(function(){
     return {};
   });
 
-  if (!res.ok || data.ok === false) {
-    throw new Error(data.error || data.message || "upload_failed");
+  if (!presignRes.ok || !data.ok || !data.upload_url || !data.public_url) {
+    throw new Error(data.error || "presign_failed");
   }
 
-  return data.url || data.publicUrl || data.public_url || data.fileUrl || data.file_url || "";
+  const uploadRes = await fetch(data.upload_url, {
+    method: "PUT",
+    headers: data.required_headers || {
+      "Content-Type": file.type
+    },
+    body: file
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("r2_upload_failed");
+  }
+
+  return data.public_url;
 }
 
 async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
