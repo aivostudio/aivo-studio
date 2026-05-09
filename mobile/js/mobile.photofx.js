@@ -65,10 +65,22 @@
   }
 
   function computeCredit(){
+    const duration = String(state.duration || "6");
+
     let total = 30;
+
+    if (duration === "8") total = 35;
+    else if (duration === "10") total = 40;
+    else if (duration === "12") total = 45;
+    else if (duration === "14") total = 50;
+    else if (duration === "16") total = 55;
+    else if (duration === "18") total = 60;
+    else if (duration === "20") total = 65;
+
     total += state.styles.length * 5;
     if (state.logoUrl) total += 10;
     if (state.audioUrl) total += 10;
+
     return total;
   }
 
