@@ -851,28 +851,11 @@
         }
       });
 
-      recorder.addEventListener("stop", function(){
+         recorder.addEventListener("stop", function(){
         const blob = new Blob(chunks, { type: "audio/webm" });
-        const file = new File([blob], "aivo-lipsync-recording.webm", { type: "audio/webm" });
+        const file = new File([blob], "aivo-kayit-" + Date.now() + ".webm", { type: "audio/webm" });
         const durationSeconds = Math.max(1, Math.ceil((Date.now() - startedAt) / 1000));
-
-        state.audioFile = file;
-        state.audioUrl = "";
-        state.audioDurationSeconds = durationSeconds;
-        state.script = "";
-
-        if (scriptEl) {
-          scriptEl.value = "";
-          scriptEl.disabled = true;
-        }
-
-        if (counterEl) {
-          counterEl.textContent = "0";
-        }
-
-        if (audioNameEl) {
-          audioNameEl.textContent = "Ses kaydı eklendi • " + durationSeconds + " sn";
-        }
+        const previewUrl = URL.createObjectURL(blob);
 
         if (stream) {
           stream.getTracks().forEach(function(track){
@@ -885,9 +868,101 @@
         chunks = [];
         startedAt = 0;
 
-        syncGenerateButton();
-        setStatus("Ses kaydı eklendi.");
-        closeModal();
+        const currentModal = modal;
+        if (!currentModal) return;
+
+        const screen = currentModal.querySelector(".mobile-lipsync-record-screen");
+        const statusBox = currentModal.querySelector("[data-mobile-lipsync-record-status]");
+        const mainBtn = currentModal.querySelector("[data-mobile-lipsync-record-main]");
+
+        if (mainBtn) {
+          mainBtn.classList.remove("is-recording");
+        }
+
+        if (screen) {
+          screen.innerHTML = `
+            <div class="mobile-lipsync-record-preview">
+              <button type="button" class="mobile-lipsync-record-play" data-mobile-lipsync-record-play>▶</button>
+
+              <div class="mobile-lipsync-record-info">
+                <b>${file.name}</b>
+                <span>Kaydedilen ses hazır • ${durationSeconds} sn</span>
+              </div>
+
+              <button type="button" class="mobile-lipsync-record-use" data-mobile-lipsync-record-use>Kullan</button>
+              <button type="button" class="mobile-lipsync-record-discard" data-mobile-lipsync-record-discard>×</button>
+
+              <audio src="${previewUrl}" data-mobile-lipsync-record-audio></audio>
+            </div>
+          `;
+        }
+
+        if (statusBox) {
+          statusBox.textContent = "🎙️ Kayıt hazır: " + file.name;
+        }
+
+        const audio = currentModal.querySelector("[data-mobile-lipsync-record-audio]");
+        const playBtn = currentModal.querySelector("[data-mobile-lipsync-record-play]");
+        const useBtn = currentModal.querySelector("[data-mobile-lipsync-record-use]");
+        const discardBtn = currentModal.querySelector("[data-mobile-lipsync-record-discard]");
+
+        if (playBtn && audio) {
+          playBtn.addEventListener("click", function(){
+            if (audio.paused) {
+              audio.play().catch(function(){});
+              playBtn.textContent = "❚❚";
+            } else {
+              audio.pause();
+              playBtn.textContent = "▶";
+            }
+          });
+
+          audio.addEventListener("ended", function(){
+            playBtn.textContent = "▶";
+          });
+        }
+
+        if (discardBtn) {
+          discardBtn.addEventListener("click", function(){
+            URL.revokeObjectURL(previewUrl);
+            closeModal();
+          });
+        }
+
+        if (useBtn) {
+          useBtn.addEventListener("click", function(){
+            state.audioFile = file;
+            state.audioUrl = "";
+            state.audioDurationSeconds = durationSeconds;
+            state.script = "";
+
+            if (scriptEl) {
+              scriptEl.value = "";
+              scriptEl.disabled = true;
+              scriptEl.classList.add("has-audio");
+            }
+
+            if (counterEl) {
+              counterEl.textContent = "0";
+            }
+
+            if (audioNameEl) {
+              audioNameEl.innerHTML = `
+                <span class="mobile-lipsync-inline-audio">
+                  <button type="button" data-mobile-lipsync-inline-audio-play>▶</button>
+                  <strong>${file.name}</strong>
+                  <em>${durationSeconds} sn</em>
+                  <button type="button" data-mobile-lipsync-inline-audio-remove>🗑</button>
+                </span>
+              `;
+            }
+
+            syncGenerateButton();
+            setStatus("Ses kaydı eklendi.");
+            URL.revokeObjectURL(previewUrl);
+            closeModal();
+          });
+        }
       });
 
       recorder.start();
