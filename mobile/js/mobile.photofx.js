@@ -714,7 +714,6 @@
   }
    bindPrompt();
   bindStyleButtons();
-  bindTapFallbacks();
   bindControls();
   bindUploads();
   bindFileClearButtons();
