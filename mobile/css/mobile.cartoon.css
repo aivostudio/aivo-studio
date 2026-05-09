@@ -715,16 +715,25 @@ background:
 }
 
 .mobile-cartoon-character-loading::after{
-  content:"Karakter hazırlanıyor...";
-  position:relative;
+  content:"Hazırlanıyor";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
   z-index:2;
   color:#fff;
-  padding:8px 11px;
+  width:86px;
+  max-width:86px;
+  padding:7px 8px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.16),
     0 0 22px rgba(180,120,255,.20);
+  font-size:10px;
+  line-height:1.1;
+  text-align:center;
+  white-space:nowrap;
   animation:mobileCartoonCharacterTextPulse 1.1s ease-in-out infinite;
 }
 
