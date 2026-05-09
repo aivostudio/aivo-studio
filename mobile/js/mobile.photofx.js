@@ -679,7 +679,43 @@
       }
     });
   }
+  function bindTapFallbacks(){
+    root.addEventListener("click", function(e){
+      const styleBtn = e.target.closest("[data-photofx-style]");
+      if (styleBtn && root.contains(styleBtn)) {
+        const value = safeText(styleBtn.getAttribute("data-photofx-style"));
+        if (value) {
+          const exists = state.styles.includes(value);
 
+          if (exists) {
+            state.styles = state.styles.filter(function(item){
+              return item !== value;
+            });
+            styleBtn.classList.remove("is-active");
+            styleBtn.setAttribute("aria-pressed", "false");
+          } else {
+            state.styles.push(value);
+            styleBtn.classList.add("is-active");
+            styleBtn.setAttribute("aria-pressed", "true");
+          }
+
+          syncCreditButton();
+        }
+
+        return;
+      }
+
+      const uploadLabel = e.target.closest(".mobile-photofx-upload-btn");
+      if (uploadLabel && root.contains(uploadLabel)) {
+        if (e.target.closest(".mobile-photofx-file-clear")) return;
+
+        const input = uploadLabel.querySelector('input[type="file"]');
+        if (input) {
+          input.click();
+        }
+      }
+    }, true);
+  }
   bindPrompt();
   bindStyleButtons();
   bindControls();
