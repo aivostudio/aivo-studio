@@ -11,6 +11,7 @@
  <link rel="stylesheet" href="/mobile/css/mobile.music.css?v=1">
 <link rel="stylesheet" href="/mobile/css/mobile.cover.css?v=1">
 <link rel="stylesheet" href="/mobile/css/mobile.atmo.css?v=1">
+<link rel="stylesheet" href="/mobile/css/mobile.cartoon.css?v=1">
   
 
   <style>
@@ -434,6 +435,9 @@
 <div id="mobileAtmoMount" hidden>
   <div class="empty-card">Atmosfer modülü yükleniyor...</div>
 </div>
+    <div id="mobileCartoonMount" hidden>
+  <div class="empty-card">Çizgifilm modülü yükleniyor...</div>
+</div>
   <div id="mobileToolsMount" hidden>
   <h2 class="section-title">AI Araçlar</h2>
 
@@ -500,9 +504,11 @@
     const musicMount = document.getElementById("mobileMusicMount");
     if (!musicMount) return;
 
-    let coverMount = document.getElementById("mobileCoverMount");
-    let toolsMount = document.getElementById("mobileToolsMount");
-    let atmoMount = document.getElementById("mobileAtmoMount");
+   let coverMount = document.getElementById("mobileCoverMount");
+let toolsMount = document.getElementById("mobileToolsMount");
+let atmoMount = document.getElementById("mobileAtmoMount");
+let cartoonMount = document.getElementById("mobileCartoonMount");
+    
 
     if (!coverMount) {
       coverMount = document.createElement("div");
