@@ -785,8 +785,8 @@ function showPhotoFx(){
     const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
 
     if (photofxPanel) photofxPanel.hidden = false;
-    if (photofxTitle) photofxTitle.hidden = false;
-    if (photofxResults) photofxResults.hidden = false;
+    if (photofxTitle) photofxTitle.hidden = true;
+    if (photofxResults) photofxResults.hidden = true;
   }
 }
 
@@ -799,6 +799,17 @@ function showVideo(){
   if (videoMount) videoMount.hidden = false;
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
+
+  const videoSection = document.getElementById("mobileVideoSection");
+  if (videoSection) {
+    const videoPanel = videoSection.querySelector(".mobile-video-panel");
+    const videoTitle = videoSection.querySelector(".section-title");
+    const videoResults = videoSection.querySelector("#mobileVideoResults");
+
+    if (videoPanel) videoPanel.hidden = false;
+    if (videoTitle) videoTitle.hidden = true;
+    if (videoResults) videoResults.hidden = true;
+  }
 }
 function showLipsync(){
   musicMount.hidden = true;
