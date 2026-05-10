@@ -55,13 +55,20 @@
   padding:12px 14px 84px;
 }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
-    }
+   .topbar{
+  position:sticky;
+  top:0;
+  z-index:70;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:-12px -14px 12px;
+  padding:12px 14px 10px;
+  background:rgba(7,9,20,.86);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
 
     .logo{
       display:flex;
