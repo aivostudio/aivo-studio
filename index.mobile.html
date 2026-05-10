@@ -55,8 +55,22 @@
       white-space:nowrap;
     }
     .wrap{width:min(430px,100%);margin:0 auto;padding:22px 16px 90px}
-    .hero{
-      padding:18px 0 10px;
+       .hero{
+      padding:28px 0 14px;
+      position:relative;
+    }
+        .hero::before{
+      content:"";
+      position:absolute;
+      inset:-40px -20px auto -20px;
+      height:320px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(139,92,246,.24), transparent 42%),
+        radial-gradient(circle at 80% 30%, rgba(56,189,248,.18), transparent 42%),
+        radial-gradient(circle at 50% 100%, rgba(236,72,153,.14), transparent 48%);
+      filter:blur(30px);
+      pointer-events:none;
+      z-index:-1;
     }
     .badge{
       width:max-content;
