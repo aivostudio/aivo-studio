@@ -1281,11 +1281,15 @@ const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]
   return;
 }
 
-  if (backBtn) {
+if (backBtn) {
   e.preventDefault();
+
   if (profilePanel) profilePanel.hidden = true;
   if (invoicesPanel) invoicesPanel.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = true;
+
   if (accountMenu) accountMenu.hidden = false;
+
   return;
 }
   });
