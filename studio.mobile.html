@@ -983,7 +983,9 @@ function showPhotoFx(){
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
+
   const photofxSection = document.getElementById("mobilePhotoFxSection");
   if (photofxSection) {
     const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel, .pfxPage");
@@ -995,7 +997,6 @@ function showPhotoFx(){
     if (photofxResults) photofxResults.hidden = true;
   }
 }
-
 function showVideo(){
   musicMount.hidden = true;
   coverMount.hidden = true;
