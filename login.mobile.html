@@ -221,32 +221,41 @@
       font-size:12px;
       font-weight:900;
     }
+.mobile-login-field input{
+  width:100%;
+  min-height:46px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.085);
+  color:#fff;
+  outline:none;
+  padding:0 14px;
+  font:inherit;
+  font-size:15px;
+  font-weight:750;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  caret-color:#fff;
+}
 
-   .mobile-login-field input{
-     width:100%;
-     min-height:46px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.085);
-      color:#fff;
-      outline:none;
-      padding:0 14px;
-      font:inherit;
-      font-size:15px;
-      font-weight:750;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    }
+.mobile-login-field input:focus{
+  border-color:rgba(139,92,246,.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 0 0 4px rgba(139,92,246,.18);
+}
 
-    .mobile-login-field input:focus{
-      border-color:rgba(139,92,246,.76);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.10),
-        0 0 0 4px rgba(139,92,246,.18);
-    }
+.mobile-login-field input::placeholder{
+  color:rgba(255,255,255,.38);
+}
 
-    .mobile-login-field input::placeholder{
-      color:rgba(255,255,255,.38);
-    }
+.mobile-login-field input:-webkit-autofill,
+.mobile-login-field input:-webkit-autofill:hover,
+.mobile-login-field input:-webkit-autofill:focus,
+.mobile-login-field input:-webkit-autofill:active{
+  -webkit-text-fill-color:#fff;
+  box-shadow:0 0 0 1000px rgba(255,255,255,.085) inset !important;
+  transition:background-color 9999s ease-in-out 0s;
+}
 
     .mobile-login-row{
       display:flex;
