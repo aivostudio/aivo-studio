@@ -670,7 +670,15 @@ function getCartoonCharacterCredit(){
 }
 
 function getCartoonBasicCredit(){
+  const duration = String(state.duration || "4");
+
   let total = 30;
+
+  if (duration === "6") total = 35;
+  else if (duration === "8") total = 40;
+  else if (duration === "10") total = 45;
+  else if (duration === "12") total = 50;
+  else if (duration === "15") total = 55;
 
   if (state.logoFile) total += 10;
   if (state.audioFile) total += 10;
@@ -678,7 +686,6 @@ function getCartoonBasicCredit(){
 
   return total;
 }
-
 function syncCartoonCredits(){
   const characterCredit = getCartoonCharacterCredit();
   const basicCredit = getCartoonBasicCredit();
@@ -844,12 +851,13 @@ function syncMainCharacterDisabled(){
       });
     });
 
-    if (durationEl) {
-      durationEl.addEventListener("change", function(){
-        state.duration = safeText(durationEl.value) || "4";
-      });
-      state.duration = safeText(durationEl.value) || "4";
-    }
+   if (durationEl) {
+  durationEl.addEventListener("change", function(){
+    state.duration = safeText(durationEl.value) || "4";
+    syncCartoonCredits();
+  });
+  state.duration = safeText(durationEl.value) || "4";
+}
 
     if (ratioEl) {
       ratioEl.addEventListener("change", function(){
