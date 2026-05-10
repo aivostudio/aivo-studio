@@ -425,13 +425,6 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
   justify-content:center;
 }
 
-.mobile-credits-pack-card ul{
-  width:max-content;
-  max-width:100%;
-  margin-left:auto;
-  margin-right:auto;
-  text-align:left;
-}
 
 .mobile-credits-pack-card button{
   text-align:center;
