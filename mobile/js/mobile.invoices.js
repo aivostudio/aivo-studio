@@ -248,63 +248,88 @@
     });
   }
 
-  async function mobileInvoicesInit(){
-    const root = qs("#mobileAccountInvoicesSection");
-    if (!root) return;
+async function mobileInvoicesInit(){
+  const root = qs("#mobileAccountInvoicesSection");
+  if (!root) {
+    console.warn("[AIVO_MOBILE_INVOICES] root_not_found");
+    return;
+  }
 
-    const list = qs("[data-mobile-invoices-list]", root);
-    const empty = qs("[data-mobile-invoices-empty]", root);
+  const list = qs("[data-mobile-invoices-list]", root);
+  const empty = qs("[data-mobile-invoices-empty]", root);
 
-    if (!list || !empty) return;
+  if (!list || !empty) {
+    console.warn("[AIVO_MOBILE_INVOICES] list_or_empty_not_found");
+    return;
+  }
 
-    bindFilters(root);
+  bindFilters(root);
 
+  empty.hidden = false;
+  empty.textContent = "Faturalar yükleniyor...";
+
+  const email = await resolveEmail();
+  console.log("[AIVO_MOBILE_INVOICES] resolved_email:", email);
+
+  if (!email) {
     empty.hidden = false;
-    empty.textContent = "Faturalar yükleniyor...";
+    empty.textContent = "Faturaları göstermek için oturum bilgisi bulunamadı.";
+    return;
+  }
 
-    const email = await resolveEmail();
+  try {
+    const url = "/api/invoices/get?email=" + encodeURIComponent(email);
+    console.log("[AIVO_MOBILE_INVOICES] fetch_url:", url);
 
-    if (!email) {
+    const res = await fetch(url, {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    const json = await res.json().catch(function(){
+      return null;
+    });
+
+    console.log("[AIVO_MOBILE_INVOICES] response:", {
+      ok: res.ok,
+      status: res.status,
+      json: json
+    });
+
+    if (!res.ok || !json || json.ok !== true) {
+      throw new Error((json && (json.error || json.message)) || "mobile_invoices_fetch_failed");
+    }
+
+    const invoices = Array.isArray(json.invoices) ? json.invoices : [];
+
+    if (!invoices.length) {
+      list.innerHTML = "";
       empty.hidden = false;
-      empty.textContent = "Faturaları göstermek için oturum bilgisi bulunamadı.";
+      empty.textContent = "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
       return;
     }
 
-    try {
-      const res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
-        method: "GET",
-        credentials: "same-origin",
-        cache: "no-store"
-      });
+    const sorted = invoices.slice().sort(function(a, b){
+      return toTime(getCreatedAt(b)) - toTime(getCreatedAt(a));
+    });
 
-      const json = await res.json().catch(function(){ return null; });
+    list.innerHTML = sorted.map(function(invoice){
+      return invoiceCard(invoice, email);
+    }).join("");
 
-      if (!res.ok || !json || json.ok !== true) {
-        throw new Error("mobile_invoices_fetch_failed");
-      }
-
-      const invoices = Array.isArray(json.invoices) ? json.invoices : [];
-
-      if (!invoices.length) {
-        empty.hidden = false;
-        empty.textContent = "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
-        return;
-      }
-
-      const sorted = invoices.slice().sort(function(a, b){
-        return toTime(getCreatedAt(b)) - toTime(getCreatedAt(a));
-      });
-
-      list.innerHTML = sorted.map(function(invoice){
-        return invoiceCard(invoice, email);
-      }).join("");
-
-      applyFilter(root);
-    } catch (err) {
-      empty.hidden = false;
-      empty.textContent = "Faturalar şu an yüklenemedi.";
-    }
+    empty.hidden = true;
+    applyFilter(root);
+  } catch (err) {
+    console.error("[AIVO_MOBILE_INVOICES] render_failed:", err);
+    list.innerHTML = "";
+    empty.hidden = false;
+    empty.textContent = "Faturalar şu an yüklenemedi.";
   }
+}
 
   window.mobileInvoicesInit = mobileInvoicesInit;
 })();
