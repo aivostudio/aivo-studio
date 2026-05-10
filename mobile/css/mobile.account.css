@@ -36,6 +36,7 @@
 .mobile-profile-kicker{
   width:max-content;
   min-height:34px;
+  margin:0 auto;
   padding:0 16px;
   border-radius:999px;
   display:flex;
@@ -50,11 +51,12 @@
 }
 
 .mobile-profile-hero-main{
-  margin-top:18px;
+  margin-top:20px;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:14px;
+  gap:12px;
 }
 
 .mobile-profile-hero-sub{
@@ -88,19 +90,23 @@
 
 .mobile-profile-head-text{
   min-width:0;
+  text-align:center;
 }
 
+.mobile-profile-head-text h3,
 .mobile-profile-name{
-  font-size:18px;
+  margin:0;
+  font-size:24px;
   line-height:1.15;
   font-weight:950;
   letter-spacing:-.035em;
   color:rgba(255,255,255,.96);
 }
 
+.mobile-profile-head-text p,
 .mobile-profile-mail{
-  margin-top:5px;
-  font-size:12px;
+  margin:7px 0 0;
+  font-size:13px;
   line-height:1.25;
   font-weight:700;
   color:rgba(255,255,255,.58);
