@@ -879,8 +879,9 @@ try {
 }
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
-    const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
-    const accountNav = document.querySelector('.bottom-nav a[href="#account"]');
+ const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
+const creditsNav = document.querySelector('.bottom-nav a[href="#credits"]');
+const accountNav = document.querySelector('.bottom-nav a[href="#account"]');
 
     function setActiveNav(activeEl){
       document.querySelectorAll(".bottom-nav a").forEach(function(item){
@@ -894,9 +895,10 @@ function showMusic(){
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
-  if (lipsyncMount) lipsyncMount.hidden = true;
-  if (toolsMount) toolsMount.hidden = true;
-  if (accountMount) accountMount.hidden = true;
+ if (lipsyncMount) lipsyncMount.hidden = true;
+if (toolsMount) toolsMount.hidden = true;
+if (creditsMount) creditsMount.hidden = true;
+if (accountMount) accountMount.hidden = true;
   const musicSection = document.getElementById("mobileMusicSection");
   if (musicSection) {
     const musicForm = musicSection.querySelector(".mobile-music-card, .mobile-music-panel, [data-mobile-music-form]");
