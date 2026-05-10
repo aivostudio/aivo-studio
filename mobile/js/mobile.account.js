@@ -132,12 +132,19 @@
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
 
-    const saveBtn = qs("[data-mobile-profile-save]", root);
+     const saveBtn = qs("[data-mobile-profile-save]", root);
     if (saveBtn && !saveBtn.__mobileAccountSaveBound) {
       saveBtn.__mobileAccountSaveBound = true;
       saveBtn.addEventListener("click", saveProfile);
     }
 
+    const passwordBtn = qs("[data-mobile-password-open]", root);
+    if (passwordBtn && !passwordBtn.__mobilePasswordBound) {
+      passwordBtn.__mobilePasswordBound = true;
+      passwordBtn.addEventListener("click", function(){
+        alert("Şifre değiştirme ekranı hazırlanıyor.");
+      });
+    }
     try {
       const user = await fetchMe();
       hydrateProfile(user);
