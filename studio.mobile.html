@@ -1220,11 +1220,16 @@ const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]
 
   return;
 }
-    if (invoicesBtn) {
+ if (invoicesBtn) {
   e.preventDefault();
   if (accountMenu) accountMenu.hidden = true;
   if (profilePanel) profilePanel.hidden = true;
   if (invoicesPanel) invoicesPanel.hidden = false;
+
+  if (typeof window.mobileInvoicesInit === "function") {
+    window.mobileInvoicesInit();
+  }
+
   return;
 }
 
