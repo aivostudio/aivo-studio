@@ -704,6 +704,20 @@ let accountMount = document.getElementById("mobileAccountMount");
       }
 
       musicMount.innerHTML = await musicRes.text();
+      setTimeout(function(){
+  const moodInput =
+    document.getElementById("mobileMusicMood") ||
+    document.getElementById("musicMood");
+
+  if (moodInput && String(moodInput.value || "").includes("@")) {
+    moodInput.value = "";
+  }
+
+  if (moodInput) {
+    moodInput.setAttribute("autocomplete", "off");
+    moodInput.setAttribute("name", "aivo_music_mood_" + Date.now());
+  }
+}, 250);
 
       const musicScript = document.createElement("script");
       musicScript.src = "/mobile/js/mobile.music.js?v=1";
