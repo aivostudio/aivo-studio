@@ -1332,6 +1332,13 @@ if (toolsNav) {
     if (creditsNav) {
   creditsNav.addEventListener("click", function(e){
     e.preventDefault();
+        const topbarCreditActions = document.querySelector(".topbar-credit-actions");
+    if (topbarCreditActions) {
+      topbarCreditActions.hidden = false;
+      topbarCreditActions.style.display = "flex";
+      topbarCreditActions.style.visibility = "visible";
+      topbarCreditActions.style.opacity = "1";
+    }
 
     musicMount.hidden = true;
     coverMount.hidden = true;
