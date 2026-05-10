@@ -1237,10 +1237,10 @@ if (toolsNav) {
 }
     if (accountMount) {
   accountMount.addEventListener("click", function(e){
-  const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
+const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
 const invoicesBtn = e.target.closest('[data-mobile-account-panel="invoices"]');
-    const settingsBtn = e.target.closest('[data-mobile-account-panel="settings"]');
-    const logoutBtn = e.target.closest('[data-mobile-account-panel="logout"]');
+const settingsBtn = e.target.closest('[data-mobile-account-panel="settings"]');
+const logoutBtn = e.target.closest('[data-mobile-account-panel="logout"]');
 const backBtn = e.target.closest("[data-mobile-account-back]");
    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
 const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
