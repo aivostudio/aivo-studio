@@ -9,7 +9,231 @@
     <p>Bildirim, müzik, gizlilik ve hesap tercihlerini mobilde yönet.</p>
   </div>
 
-  <div class="mobile-settings-empty">
-    Ayarlar modülü hazırlanıyor.
+  <div class="mobile-settings-tabs" role="tablist" aria-label="Ayar kategorileri">
+    <button class="mobile-settings-tab is-active" type="button" data-mobile-settings-tab="notifications">
+      Bildirimler
+    </button>
+
+    <button class="mobile-settings-tab" type="button" data-mobile-settings-tab="music">
+      Müzik
+    </button>
+
+    <button class="mobile-settings-tab" type="button" data-mobile-settings-tab="privacy">
+      Gizlilik
+    </button>
+
+    <button class="mobile-settings-tab" type="button" data-mobile-settings-tab="security">
+      Güvenlik
+    </button>
+
+    <button class="mobile-settings-tab" type="button" data-mobile-settings-tab="data">
+      Veri
+    </button>
   </div>
+
+  <div class="mobile-settings-pane is-active" data-mobile-settings-pane="notifications">
+    <div class="mobile-settings-card">
+      <div class="mobile-settings-card-head">
+        <div>
+          <h4>Bildirim Ayarları</h4>
+          <p>Hangi bildirimleri almak istediğini seç.</p>
+        </div>
+      </div>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Müzik üretimi tamamlandığında</b>
+          <small>Şarkın hazır olduğunda e-posta al.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="notify_email_done">
+      </label>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Kredi azaldığında</b>
+          <small>Kredin azaldığında uyarı al.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="notify_email_lowcredit">
+      </label>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Haftalık rapor</b>
+          <small>Haftalık aktivite özetini al.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="notify_email_weekly">
+      </label>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Kampanyalar</b>
+          <small>Özel tekliflerden haberdar ol.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="notify_email_promos">
+      </label>
+    </div>
+  </div>
+
+  <div class="mobile-settings-pane" data-mobile-settings-pane="music" hidden>
+    <div class="mobile-settings-card">
+      <div class="mobile-settings-card-head">
+        <div>
+          <h4>Müzik Ayarları</h4>
+          <p>Çalma ve üretim tercihlerini ayarla.</p>
+        </div>
+      </div>
+
+      <label class="mobile-settings-choice">
+        <input type="radio" name="mobile_music_quality" value="low" data-mobile-setting="music_quality">
+        <span>
+          <b>Düşük</b>
+          <small>128 kbps — daha hızlı üretim.</small>
+        </span>
+      </label>
+
+      <label class="mobile-settings-choice">
+        <input type="radio" name="mobile_music_quality" value="high" data-mobile-setting="music_quality">
+        <span>
+          <b>Yüksek</b>
+          <small>256 kbps — dengeli kalite.</small>
+        </span>
+      </label>
+
+      <label class="mobile-settings-choice">
+        <input type="radio" name="mobile_music_quality" value="studio" data-mobile-setting="music_quality">
+        <span>
+          <b>Studio</b>
+          <small>320 kbps — en yüksek kalite.</small>
+        </span>
+      </label>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Otomatik çalma</b>
+          <small>Üretim tamamlanınca müzik otomatik oynatılsın.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="music_autoplay">
+      </label>
+
+      <div class="mobile-settings-field">
+        <label>Varsayılan ses seviyesi</label>
+        <div class="mobile-settings-range-top">
+          <span>Sessiz</span>
+          <b data-mobile-settings-volume-label>%80</b>
+          <span>Maksimum</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="80" data-mobile-setting="music_volume">
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-settings-pane" data-mobile-settings-pane="privacy" hidden>
+    <div class="mobile-settings-card">
+      <div class="mobile-settings-card-head">
+        <div>
+          <h4>Gizlilik Ayarları</h4>
+          <p>Verilerinin nasıl kullanıldığını kontrol et.</p>
+        </div>
+      </div>
+
+      <label class="mobile-settings-choice">
+        <input type="radio" name="mobile_profile_visibility" value="public" data-mobile-setting="profile_visibility">
+        <span>
+          <b>Herkese açık</b>
+          <small>Profilin herkes tarafından görülebilir.</small>
+        </span>
+      </label>
+
+      <label class="mobile-settings-choice">
+        <input type="radio" name="mobile_profile_visibility" value="private" data-mobile-setting="profile_visibility">
+        <span>
+          <b>Özel</b>
+          <small>Profilini sadece sen görebilirsin.</small>
+        </span>
+      </label>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Aktivite paylaşımı</b>
+          <small>Üretim aktiviten profilinde görünebilir.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="privacy_activity_share">
+      </label>
+
+      <label class="mobile-settings-row">
+        <span>
+          <b>Anonim veri toplama</b>
+          <small>Uygulamayı geliştirmek için anonim kullanım verisi.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="privacy_analytics">
+      </label>
+    </div>
+  </div>
+
+  <div class="mobile-settings-pane" data-mobile-settings-pane="security" hidden>
+    <div class="mobile-settings-card">
+      <div class="mobile-settings-card-head">
+        <div>
+          <h4>Hesap & Güvenlik</h4>
+          <p>Oturum süresi ve güvenlik tercihlerini yönet.</p>
+        </div>
+      </div>
+
+      <div class="mobile-settings-field">
+        <label>Otomatik çıkış zamanı</label>
+        <select data-mobile-setting="security_session_timeout">
+          <option value="off">Kapalı</option>
+          <option value="15m">15 dakika</option>
+          <option value="30m">30 dakika</option>
+          <option value="1h">1 saat</option>
+          <option value="6h">6 saat</option>
+          <option value="24h">24 saat</option>
+        </select>
+      </div>
+
+      <div class="mobile-settings-note">
+        Aktif cihazlar ve 2 adımlı doğrulama mobilde yakında açılacak.
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-settings-pane" data-mobile-settings-pane="data" hidden>
+    <div class="mobile-settings-card">
+      <div class="mobile-settings-card-head">
+        <div>
+          <h4>Veri Hakları</h4>
+          <p>Kişisel verilerine erişim ve talep işlemleri.</p>
+        </div>
+      </div>
+
+      <div class="mobile-settings-field">
+        <label>Export formatı</label>
+        <select data-mobile-setting="data_export_format">
+          <option value="json" selected>JSON</option>
+          <option value="zip" disabled>ZIP yakında</option>
+        </select>
+      </div>
+
+      <button class="mobile-settings-primary" type="button" data-mobile-settings-export>
+        Verilerimi İndir
+      </button>
+
+      <div class="mobile-settings-field">
+        <label>Düzeltme talebi</label>
+        <textarea rows="3" placeholder="Düzeltme talebini kısaca yaz..." data-mobile-setting="data_rectification_note"></textarea>
+      </div>
+
+      <label class="mobile-settings-row mobile-settings-row-danger">
+        <span>
+          <b>Silme talebini anladım</b>
+          <small>Bu işlem ileride hesabının kalıcı silinmesini başlatabilir.</small>
+        </span>
+        <input type="checkbox" data-mobile-setting="data_delete_ack">
+      </label>
+    </div>
+  </div>
+
+  <button class="mobile-settings-primary" type="button" data-mobile-settings-save>
+    Ayarları Kaydet
+  </button>
 </section>
