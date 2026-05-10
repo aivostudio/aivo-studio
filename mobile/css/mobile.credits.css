@@ -272,3 +272,81 @@
   font-size:11px;
   font-weight:850;
 }
+.mobile-credits-section{
+  padding-bottom:96px;
+}
+
+.mobile-credits-hero{
+  padding:14px 14px;
+  border-radius:24px;
+}
+
+.mobile-credits-hero h2{
+  font-size:24px;
+}
+
+.mobile-credits-balance-card{
+  padding:13px 14px;
+  border-radius:20px;
+}
+
+.mobile-credits-balance-card strong{
+  font-size:20px;
+}
+
+.mobile-credits-pack-list{
+  gap:10px;
+}
+
+.mobile-credits-pack-card{
+  padding:14px;
+  border-radius:22px;
+}
+
+.mobile-credits-pack-head{
+  padding-bottom:9px;
+}
+
+.mobile-credits-pack-head b{
+  font-size:17px;
+}
+
+.mobile-credits-price{
+  margin-top:10px;
+}
+
+.mobile-credits-price strong{
+  font-size:34px;
+}
+
+.mobile-credits-pack-card ul{
+  margin-top:10px;
+  padding-top:10px;
+  gap:7px;
+}
+
+.mobile-credits-pack-card li{
+  font-size:12px;
+  line-height:1.25;
+  padding-left:25px;
+}
+
+.mobile-credits-pack-card li::before{
+  width:17px;
+  height:17px;
+  border-radius:7px;
+  font-size:10px;
+}
+
+.mobile-credits-pack-card button{
+  min-height:46px;
+  margin-top:12px;
+  border-radius:16px;
+  font-size:14px;
+}
+
+.mobile-credits-kvkk-card{
+  padding:14px;
+  border-radius:22px;
+  margin-bottom:16px;
+}
