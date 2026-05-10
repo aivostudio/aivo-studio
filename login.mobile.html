@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO Mobile Giriş</title>
+  <meta name="robots" content="noindex,nofollow" />
+</head>
+<body>
+<script>
+  const url = new URL(location.href);
+  const returnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
+  location.replace("/index.mobile.html?open=login&returnTo=" + encodeURIComponent(returnTo));
+</script>
+</body>
+</html>
