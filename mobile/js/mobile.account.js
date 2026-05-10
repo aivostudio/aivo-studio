@@ -69,6 +69,80 @@
     setValue("[data-mobile-profile-surname-input]", user.surname || "", root);
     setValue("[data-mobile-profile-email-input]", user.email || "", root);
   }
+    async function savePassword(){
+    const root = document.getElementById("mobileAccountProfilePage");
+    if (!root) return;
+
+    const modal = qs("[data-mobile-password-modal]", root);
+    const currentInput = qs("[data-mobile-password-current]", root);
+    const newInput = qs("[data-mobile-password-new]", root);
+    const new2Input = qs("[data-mobile-password-new2]", root);
+    const submitBtn = qs("[data-mobile-password-submit]", root);
+
+    const currentPassword = String(currentInput && currentInput.value ? currentInput.value : "").trim();
+    const newPassword = String(newInput && newInput.value ? newInput.value : "").trim();
+    const newPassword2 = String(new2Input && new2Input.value ? new2Input.value : "").trim();
+
+    if (!currentPassword || !newPassword || !newPassword2) {
+      alert("Lütfen tüm şifre alanlarını doldurun.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      alert("Yeni şifre en az 8 karakter olmalı.");
+      return;
+    }
+
+    if (newPassword !== newPassword2) {
+      alert("Yeni şifreler eşleşmiyor.");
+      return;
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const res = await fetch("/api/auth/password-update", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+          newPassword2: newPassword2
+        })
+      });
+
+      const json = await res.json().catch(function(){
+        return null;
+      });
+
+      if (!res.ok || !json || json.ok !== true) {
+        throw new Error((json && json.error) || "password_update_failed");
+      }
+
+      if (currentInput) currentInput.value = "";
+      if (newInput) newInput.value = "";
+      if (new2Input) new2Input.value = "";
+      if (modal) modal.hidden = true;
+
+      if (window.toast && typeof window.toast.success === "function") {
+        window.toast.success("Şifre güncellendi.");
+      } else {
+        alert("Şifre güncellendi.");
+      }
+    } catch (err) {
+      if (window.toast && typeof window.toast.error === "function") {
+        window.toast.error("Şifre güncellenemedi.");
+      } else {
+        alert("Şifre güncellenemedi.");
+      }
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  }
   async function saveProfile(){
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
