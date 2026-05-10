@@ -1006,7 +1006,9 @@ function showVideo(){
   if (videoMount) videoMount.hidden = false;
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
+
   const videoSection = document.getElementById("mobileVideoSection");
   if (videoSection) {
     const videoPanel = videoSection.querySelector(".mobile-video-panel");
@@ -1223,10 +1225,32 @@ if (toolsNav) {
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = false;
+  if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   setActiveNav(toolsNav);
 });
+}
+    if (creditsNav) {
+  creditsNav.addEventListener("click", function(e){
+    e.preventDefault();
+
+    musicMount.hidden = true;
+    coverMount.hidden = true;
+    atmoMount.hidden = true;
+
+    if (cartoonMount) cartoonMount.hidden = true;
+    if (photofxMount) photofxMount.hidden = true;
+    if (videoMount) videoMount.hidden = true;
+    if (lipsyncMount) lipsyncMount.hidden = true;
+
+    if (toolsMount) toolsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
+
+    if (creditsMount) creditsMount.hidden = false;
+
+    setActiveNav(creditsNav);
+  });
 }
     if (accountNav) {
   accountNav.addEventListener("click", function(e){
