@@ -1017,26 +1017,26 @@ hydrateTopCreditBalance();
   if (accountMount) accountMount.hidden = true;
 }
 function showMusic(){
+  homeMount.hidden = true;
   musicMount.hidden = false;
   coverMount.hidden = true;
   atmoMount.hidden = true;
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
- if (lipsyncMount) lipsyncMount.hidden = true;
-if (toolsMount) toolsMount.hidden = true;
-if (creditsMount) creditsMount.hidden = true;
-if (accountMount) accountMount.hidden = true;
-  const musicSection = document.getElementById("mobileMusicSection");
-  if (musicSection) {
-    const musicForm = musicSection.querySelector(".mobile-music-card, .mobile-music-panel, [data-mobile-music-form]");
-    const musicTitle = musicSection.querySelector(".section-title");
-    const musicResults = musicSection.querySelector("#mobileMusicResults");
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
 
-    if (musicForm) musicForm.hidden = false;
-    if (musicTitle) musicTitle.hidden = false;
-    if (musicResults) musicResults.hidden = false;
-  }
+  const musicFormSection = document.getElementById("mobileHomeSection");
+  const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+  if (musicFormSection) musicFormSection.hidden = false;
+  if (musicProductionsSection) musicProductionsSection.hidden = true;
+
+  const musicResults = document.getElementById("mobileMusicResults");
+  if (musicResults) musicResults.hidden = false;
 }
 
 function showCover(){
