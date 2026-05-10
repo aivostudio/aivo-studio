@@ -187,7 +187,11 @@ export default async function handler(req, res) {
       paid_at: status === "paid" ? now : existing?.paid_at || null,
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
-      invoice_id: existing?.invoice_id || null,
+     invoice_id: existing?.invoice_id || null,
+     return_path:
+     typeof existing?.return_path === "string" && existing.return_path.startsWith("/")
+      ? existing.return_path
+      : "/studio.v2.html",
       notify_payload: post,
       notify_hash_valid: hashValid,
       notify_proc_return_code: String(
