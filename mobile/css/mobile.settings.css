@@ -1,0 +1,123 @@
+/* =========================================================
+   AIVO MOBILE — SETTINGS
+   File: /mobile/css/mobile.settings.css
+   ========================================================= */
+
+.mobile-account-settings-section{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding-bottom:16px;
+}
+
+.mobile-account-settings-section[hidden]{
+  display:none !important;
+}
+
+.mobile-settings-hero{
+  position:relative;
+  overflow:hidden;
+  padding:22px 18px;
+  border-radius:32px;
+  text-align:center;
+
+  background:
+    radial-gradient(240px 140px at 0% 0%, rgba(139,92,246,.28), transparent 62%),
+    radial-gradient(260px 160px at 100% 0%, rgba(56,189,248,.20), transparent 64%),
+    linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+
+  border:1px solid rgba(255,255,255,.14);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 22px 60px rgba(0,0,0,.28);
+}
+
+.mobile-settings-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.14),
+      transparent 34%,
+      rgba(255,255,255,.05)
+    );
+
+  opacity:.46;
+}
+
+.mobile-settings-hero > *{
+  position:relative;
+  z-index:1;
+}
+
+.mobile-settings-kicker{
+  width:max-content;
+  max-width:100%;
+  margin:0 auto;
+
+  min-height:34px;
+  padding:0 16px;
+  border-radius:999px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+
+  color:rgba(255,255,255,.78);
+
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+
+.mobile-settings-hero h3{
+  margin:14px 0 0;
+
+  color:#fff;
+
+  font-size:28px;
+  line-height:1.02;
+  letter-spacing:-.05em;
+  font-weight:950;
+}
+
+.mobile-settings-hero p{
+  margin:10px auto 0;
+  max-width:280px;
+
+  color:rgba(255,255,255,.70);
+
+  font-size:13px;
+  line-height:1.5;
+  font-weight:700;
+}
+
+.mobile-settings-empty{
+  padding:18px;
+  border-radius:24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.055),
+      rgba(255,255,255,.03)
+    );
+
+  border:1px solid rgba(255,255,255,.10);
+
+  color:rgba(255,255,255,.70);
+
+  font-size:13px;
+  line-height:1.5;
+  font-weight:700;
+
+  text-align:center;
+}
