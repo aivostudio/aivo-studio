@@ -138,11 +138,13 @@
       saveBtn.addEventListener("click", saveProfile);
     }
 
-    const passwordBtn = qs("[data-mobile-password-open]", root);
-    if (passwordBtn && !passwordBtn.__mobilePasswordBound) {
+      const passwordBtn = qs("[data-mobile-password-open]", root);
+    const passwordModal = qs("[data-mobile-password-modal]", root);
+
+    if (passwordBtn && passwordModal && !passwordBtn.__mobilePasswordBound) {
       passwordBtn.__mobilePasswordBound = true;
       passwordBtn.addEventListener("click", function(){
-        alert("Şifre değiştirme ekranı hazırlanıyor.");
+        passwordModal.hidden = false;
       });
     }
     try {
