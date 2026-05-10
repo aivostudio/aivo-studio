@@ -1172,8 +1172,9 @@ if (toolsNav) {
   const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
 const invoicesBtn = e.target.closest('[data-mobile-account-panel="invoices"]');
 const backBtn = e.target.closest("[data-mobile-account-back]");
-    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
-    const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
+   const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
+const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]");
 
    if (profileBtn) {
   e.preventDefault();
