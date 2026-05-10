@@ -13,13 +13,19 @@
 
   <style>
     *{box-sizing:border-box}
-
     html,body{
       margin:0;
+      width:100%;
       min-height:100%;
+      max-width:100%;
+      overflow-x:hidden;
       font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,sans-serif;
       background:#070914;
       color:#fff;
+    }
+
+    html{
+      position:relative;
     }
 
     body{
@@ -91,10 +97,21 @@
       margin:0 auto;
       padding:22px 16px 96px;
     }
-
     .hero{
       position:relative;
       padding:28px 0 14px;
+      text-align:center;
+      overflow:hidden;
+    }
+
+    .hero .badge{
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .hero .sub{
+      margin-left:auto;
+      margin-right:auto;
     }
 
     .hero::before{
