@@ -17,17 +17,16 @@
    <label class="field-label" for="mobileMusicMood">Mood / Tür</label>
 <input
   id="mobileMusicMood"
-  name="aivo_music_style_tags"
+  name="aivo_track_style_vx_48291"
   class="field-input"
   type="search"
-  value=""
   inputmode="text"
-  autocomplete="off"
+  autocomplete="new-password"
   autocapitalize="none"
   autocorrect="off"
   spellcheck="false"
-  data-lpignore="true"
-  data-1p-ignore="true"
+  readonly
+  onfocus="this.removeAttribute('readonly'); this.value = this.value.includes('@') ? '' : this.value;"
   placeholder="Örn: pop, enerjik, Türkçe vokal"
 >
     <button id="mobileMusicGenerateBtn" class="generate-btn" type="button">
