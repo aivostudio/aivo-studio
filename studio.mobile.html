@@ -1376,6 +1376,9 @@ if (backBtn) {
 }
   });
 }
+    if (window.location.hash === "#credits" && creditsNav) {
+  creditsNav.click();
+}
     document.querySelectorAll("[data-mobile-tool]").forEach(function(btn){
   btn.addEventListener("click", function(){
     const tool = btn.getAttribute("data-mobile-tool");
