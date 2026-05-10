@@ -521,7 +521,13 @@
       </p>
     </section>
 
-   <div id="mobileMusicMount">
+  <div id="mobileHomeMount">
+  <div class="empty-card">
+    AIVO Mobile ana sayfası hazırlanıyor...
+  </div>
+</div>
+
+<div id="mobileMusicMount" hidden>
   <div class="empty-card">Müzik modülü yükleniyor...</div>
 </div>
 
@@ -660,9 +666,9 @@
 
 <script>
   (async function(){
-    const musicMount = document.getElementById("mobileMusicMount");
-    if (!musicMount) return;
-
+  const homeMount = document.getElementById("mobileHomeMount");
+const musicMount = document.getElementById("mobileMusicMount");
+if (!homeMount || !musicMount) return;
 let coverMount = document.getElementById("mobileCoverMount");
 let toolsMount = document.getElementById("mobileToolsMount");
 let atmoMount = document.getElementById("mobileAtmoMount");
@@ -997,6 +1003,19 @@ hydrateTopCreditBalance();
         item.classList.toggle("active", item === activeEl);
       });
     }
+    function showHome(){
+  homeMount.hidden = false;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+}
 function showMusic(){
   musicMount.hidden = false;
   coverMount.hidden = true;
@@ -1153,12 +1172,13 @@ function showLipsync(){
   }
 }
     
-    if (homeNav) {
-      homeNav.addEventListener("click", function(){
-        showMusic();
-        setActiveNav(homeNav);
-      });
-    }
+   if (homeNav) {
+  homeNav.addEventListener("click", function(e){
+    e.preventDefault();
+    showHome();
+    setActiveNav(homeNav);
+  });
+}
 
     let activeMobileModule = "music";
 
