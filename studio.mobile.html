@@ -1201,12 +1201,13 @@ const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]
   return;
 }
 
-    if (backBtn) {
-      e.preventDefault();
-      if (profilePanel) profilePanel.hidden = true;
-      if (accountMenu) accountMenu.hidden = false;
-      return;
-    }
+  if (backBtn) {
+  e.preventDefault();
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = true;
+  if (accountMenu) accountMenu.hidden = false;
+  return;
+}
   });
 }
     document.querySelectorAll("[data-mobile-tool]").forEach(function(btn){
