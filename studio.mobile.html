@@ -1270,6 +1270,28 @@ const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]
 
   return;
 }
+    if (logoutBtn) {
+  e.preventDefault();
+
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store"
+    });
+  } catch (err) {}
+
+  try {
+    localStorage.removeItem("aivo_auth_unified_v1");
+    localStorage.removeItem("aivo_profile_name");
+    localStorage.removeItem("aivo_profile_surname");
+    localStorage.removeItem("aivo_mobile_active_tab");
+    localStorage.removeItem("aivo_mobile_account_state");
+  } catch (err) {}
+
+  window.location.replace("/login.html?returnTo=/studio.mobile.html");
+  return;
+}
     if (settingsBtn) {
   e.preventDefault();
 
