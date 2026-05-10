@@ -746,6 +746,17 @@ function showAtmo(){
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
+
+  const atmoSection = document.getElementById("mobileAtmoSection");
+  if (atmoSection) {
+    const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
+      return title.textContent.includes("Son atmosfer videoları");
+    });
+    const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
+
+    if (atmoResultsTitle) atmoResultsTitle.hidden = true;
+    if (atmoResults) atmoResults.hidden = true;
+  }
 }
 function showCartoon(){
   musicMount.hidden = true;
