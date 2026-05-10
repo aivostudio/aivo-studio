@@ -2,15 +2,605 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>AIVO Mobile Giriş</title>
   <meta name="robots" content="noindex,nofollow" />
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <style>
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      width:100%;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#070914;
+      color:#fff;
+      overflow-x:hidden;
+    }
+
+    body{
+      background:
+        radial-gradient(520px 360px at 18% 0%, rgba(139,92,246,.34), transparent 62%),
+        radial-gradient(520px 360px at 92% 18%, rgba(56,189,248,.20), transparent 62%),
+        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.18), transparent 65%),
+        #070914;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .mobile-login-shell{
+      width:min(430px,100%);
+      min-height:100vh;
+      margin:0 auto;
+      padding:18px 16px 26px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .mobile-login-topbar{
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+
+    .mobile-login-logo img{
+      width:82px;
+      height:auto;
+      display:block;
+    }
+
+    .mobile-login-back{
+      min-height:36px;
+      padding:0 13px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.055);
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      font-weight:850;
+    }
+
+    .mobile-login-hero{
+      text-align:center;
+      padding:10px 6px 18px;
+    }
+
+    .mobile-login-badge{
+      width:max-content;
+      max-width:100%;
+      margin:0 auto 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.78);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .mobile-login-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8);
+      box-shadow:0 0 0 4px rgba(56,189,248,.16);
+    }
+
+    .mobile-login-hero h1{
+      margin:0;
+      font-size:34px;
+      line-height:.96;
+      letter-spacing:-.065em;
+      font-weight:950;
+    }
+
+    .mobile-login-grad{
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8,#ec4899);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .mobile-login-hero p{
+      max-width:310px;
+      margin:10px auto 0;
+      color:rgba(255,255,255,.70);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:650;
+    }
+
+    .mobile-login-card{
+      margin-top:4px;
+      padding:16px;
+      border-radius:28px;
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.24), transparent 62%),
+        radial-gradient(220px 120px at 100% 0%, rgba(56,189,248,.14), transparent 62%),
+        rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 22px 60px rgba(0,0,0,.34);
+    }
+
+    .mobile-login-tabs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      padding:5px;
+      border-radius:20px;
+      background:rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:14px;
+    }
+
+    .mobile-login-tab{
+      min-height:42px;
+      border:0;
+      border-radius:16px;
+      background:transparent;
+      color:rgba(255,255,255,.58);
+      font:inherit;
+      font-size:13px;
+      font-weight:950;
+    }
+
+    .mobile-login-tab.is-active{
+      color:#fff;
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      box-shadow:0 12px 26px rgba(139,92,246,.26);
+    }
+
+    .mobile-login-google{
+      width:100%;
+      min-height:50px;
+      border:0;
+      border-radius:18px;
+      background:#fff;
+      color:#10131d;
+      font:inherit;
+      font-size:14px;
+      font-weight:950;
+      margin-bottom:14px;
+    }
+
+    .mobile-login-sep{
+      position:relative;
+      text-align:center;
+      margin:4px 0 14px;
+      color:rgba(255,255,255,.42);
+      font-size:10px;
+      font-weight:950;
+    }
+
+    .mobile-login-sep::before{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:50%;
+      height:1px;
+      background:rgba(255,255,255,.11);
+    }
+
+    .mobile-login-sep span{
+      position:relative;
+      display:inline-block;
+      padding:0 10px;
+      background:#111126;
+    }
+
+    .mobile-login-form{
+      display:grid;
+      gap:12px;
+    }
+
+    .mobile-login-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .mobile-login-field label{
+      display:block;
+      margin:0 0 6px;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .mobile-login-field input{
+      width:100%;
+      min-height:52px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.085);
+      color:#fff;
+      outline:none;
+      padding:0 14px;
+      font:inherit;
+      font-size:15px;
+      font-weight:750;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .mobile-login-field input:focus{
+      border-color:rgba(139,92,246,.76);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 0 4px rgba(139,92,246,.18);
+    }
+
+    .mobile-login-field input::placeholder{
+      color:rgba(255,255,255,.38);
+    }
+
+    .mobile-login-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:2px;
+      color:rgba(255,255,255,.66);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .mobile-login-check{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .mobile-login-check input{
+      width:16px;
+      height:16px;
+      accent-color:#8b5cf6;
+    }
+
+    .mobile-login-link{
+      color:#c4b5fd;
+      font-weight:900;
+    }
+
+    .mobile-login-submit{
+      width:100%;
+      min-height:54px;
+      border:0;
+      border-radius:18px;
+      background:linear-gradient(135deg,#8b5cf6,#4f7cff,#ec4899);
+      color:#fff;
+      font:inherit;
+      font-size:15px;
+      font-weight:950;
+      box-shadow:0 16px 38px rgba(139,92,246,.30);
+    }
+
+    .mobile-login-submit:disabled{
+      opacity:.58;
+    }
+
+    .mobile-login-message{
+      min-height:18px;
+      color:rgba(255,255,255,.70);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:750;
+      text-align:center;
+    }
+
+    .mobile-login-message.is-error{
+      color:#fca5a5;
+    }
+
+    .mobile-login-message.is-ok{
+      color:#86efac;
+    }
+
+    .mobile-login-register-only{
+      display:none;
+    }
+
+    .is-register .mobile-login-register-only{
+      display:block;
+    }
+
+    .is-login .mobile-login-register-only{
+      display:none;
+    }
+
+    .mobile-login-footer{
+      margin-top:12px;
+      padding:14px;
+      border-radius:20px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      font-weight:750;
+    }
+
+    .mobile-login-footer button{
+      border:0;
+      background:transparent;
+      color:#c4b5fd;
+      font:inherit;
+      font-size:13px;
+      font-weight:950;
+      padding:0;
+    }
+  </style>
 </head>
+
 <body>
-<script>
-  const url = new URL(location.href);
-  const returnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
-  location.replace("/index.mobile.html?open=login&returnTo=" + encodeURIComponent(returnTo));
-</script>
+  <main class="mobile-login-shell">
+    <header class="mobile-login-topbar">
+      <a class="mobile-login-logo" href="/index.mobile.html" aria-label="AIVO">
+        <img src="/aivo-logo.png" alt="AIVO">
+      </a>
+
+      <a class="mobile-login-back" href="/index.mobile.html">Geri</a>
+    </header>
+
+    <section class="mobile-login-hero">
+      <div class="mobile-login-badge">
+        <span class="mobile-login-dot"></span>
+        AIVO Mobile Studio
+      </div>
+
+      <h1>
+        Studio’ya <span class="mobile-login-grad">giriş.</span>
+      </h1>
+
+      <p>
+        Mobil üretim alanına devam etmek için giriş yap veya ücretsiz hesabını oluştur.
+      </p>
+    </section>
+
+    <section class="mobile-login-card is-login" id="mobileLoginCard">
+      <div class="mobile-login-tabs">
+        <button class="mobile-login-tab is-active" type="button" data-mode="login">Giriş Yap</button>
+        <button class="mobile-login-tab" type="button" data-mode="register">Kayıt Ol</button>
+      </div>
+
+      <button class="mobile-login-google" type="button" id="mobileGoogleBtn">
+        Google ile devam et
+      </button>
+
+      <div class="mobile-login-sep"><span>VEYA EMAIL İLE DEVAM ET</span></div>
+
+      <form class="mobile-login-form" id="mobileLoginForm">
+        <div class="mobile-login-grid mobile-login-register-only">
+          <div class="mobile-login-field">
+            <label for="mobileFirstName">Ad</label>
+            <input id="mobileFirstName" name="name" type="text" placeholder="Adınız" autocomplete="given-name">
+          </div>
+
+          <div class="mobile-login-field">
+            <label for="mobileLastName">Soyad</label>
+            <input id="mobileLastName" name="surname" type="text" placeholder="Soyadınız" autocomplete="family-name">
+          </div>
+        </div>
+
+        <div class="mobile-login-field">
+          <label for="mobileEmail">E-posta</label>
+          <input id="mobileEmail" name="email" type="email" placeholder="ornek@email.com" autocomplete="email" required>
+        </div>
+
+        <div class="mobile-login-field">
+          <label for="mobilePassword">Şifre</label>
+          <input id="mobilePassword" name="password" type="password" placeholder="Şifreniz" autocomplete="current-password" required>
+        </div>
+
+        <div class="mobile-login-field mobile-login-register-only">
+          <label for="mobilePasswordRepeat">Şifre Tekrar</label>
+          <input id="mobilePasswordRepeat" name="passwordRepeat" type="password" placeholder="Şifrenizi tekrar girin" autocomplete="new-password">
+        </div>
+
+        <div class="mobile-login-row">
+          <label class="mobile-login-check">
+            <input id="mobileRemember" type="checkbox">
+            <span>Beni hatırla</span>
+          </label>
+
+          <a class="mobile-login-link" href="/forgot.html">Şifremi unuttum?</a>
+        </div>
+
+        <label class="mobile-login-check mobile-login-register-only">
+          <input id="mobileTerms" type="checkbox">
+          <span>Kullanım şartlarını kabul ediyorum</span>
+        </label>
+
+        <button class="mobile-login-submit" type="submit" id="mobileSubmitBtn">
+          Giriş Yap
+        </button>
+
+        <div class="mobile-login-message" id="mobileLoginMessage"></div>
+      </form>
+    </section>
+
+    <div class="mobile-login-footer">
+      <span id="mobileFooterText">AIVO’da yeni misin?</span>
+      <button type="button" id="mobileSwitchBtn">Ücretsiz hesap oluştur →</button>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const url = new URL(location.href);
+      const returnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
+
+      const card = document.getElementById("mobileLoginCard");
+      const form = document.getElementById("mobileLoginForm");
+      const tabs = Array.from(document.querySelectorAll(".mobile-login-tab"));
+      const submitBtn = document.getElementById("mobileSubmitBtn");
+      const switchBtn = document.getElementById("mobileSwitchBtn");
+      const footerText = document.getElementById("mobileFooterText");
+      const message = document.getElementById("mobileLoginMessage");
+      const googleBtn = document.getElementById("mobileGoogleBtn");
+
+      const firstName = document.getElementById("mobileFirstName");
+      const lastName = document.getElementById("mobileLastName");
+      const email = document.getElementById("mobileEmail");
+      const password = document.getElementById("mobilePassword");
+      const passwordRepeat = document.getElementById("mobilePasswordRepeat");
+      const terms = document.getElementById("mobileTerms");
+
+      let mode = "login";
+
+      function setMessage(text, type){
+        message.textContent = text || "";
+        message.classList.remove("is-error", "is-ok");
+        if (type) message.classList.add(type);
+      }
+
+      function setMode(nextMode){
+        mode = nextMode === "register" ? "register" : "login";
+
+        card.classList.toggle("is-login", mode === "login");
+        card.classList.toggle("is-register", mode === "register");
+
+        tabs.forEach(function(tab){
+          tab.classList.toggle("is-active", tab.getAttribute("data-mode") === mode);
+        });
+
+        submitBtn.textContent = mode === "login" ? "Giriş Yap" : "Hesap Oluştur";
+        googleBtn.textContent = mode === "login" ? "Google ile Giriş Yap" : "Google ile Kayıt Ol";
+        footerText.textContent = mode === "login" ? "AIVO’da yeni misin?" : "Zaten hesabın var mı?";
+        switchBtn.textContent = mode === "login" ? "Ücretsiz hesap oluştur →" : "Giriş yap →";
+
+        password.setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
+        setMessage("", "");
+      }
+
+      tabs.forEach(function(tab){
+        tab.addEventListener("click", function(){
+          setMode(tab.getAttribute("data-mode"));
+        });
+      });
+
+      switchBtn.addEventListener("click", function(){
+        setMode(mode === "login" ? "register" : "login");
+      });
+
+      googleBtn.addEventListener("click", function(){
+        location.href = "/api/auth/google?returnTo=" + encodeURIComponent(returnTo);
+      });
+
+      form.addEventListener("submit", async function(e){
+        e.preventDefault();
+
+        setMessage("", "");
+
+        const cleanEmail = String(email.value || "").trim().toLowerCase();
+        const cleanPassword = String(password.value || "");
+
+        if (!cleanEmail || !cleanEmail.includes("@") || !cleanPassword) {
+          setMessage("E-posta ve şifre gerekli.", "is-error");
+          return;
+        }
+
+        if (mode === "register") {
+          if (!String(firstName.value || "").trim() || !String(lastName.value || "").trim()) {
+            setMessage("Ad ve soyad gerekli.", "is-error");
+            return;
+          }
+
+          if (cleanPassword.length < 6) {
+            setMessage("Şifre en az 6 karakter olmalı.", "is-error");
+            return;
+          }
+
+          if (cleanPassword !== String(passwordRepeat.value || "")) {
+            setMessage("Şifreler eşleşmiyor.", "is-error");
+            return;
+          }
+
+          if (!terms.checked) {
+            setMessage("Kullanım şartlarını kabul etmelisin.", "is-error");
+            return;
+          }
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = mode === "login" ? "Giriş yapılıyor..." : "Hesap oluşturuluyor...";
+
+        try {
+          const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
+
+          const payload = mode === "login"
+            ? {
+                email: cleanEmail,
+                password: cleanPassword
+              }
+            : {
+                name: String(firstName.value || "").trim(),
+                surname: String(lastName.value || "").trim(),
+                email: cleanEmail,
+                password: cleanPassword
+              };
+
+          const res = await fetch(endpoint, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(function(){
+            return {};
+          });
+
+          if (!res.ok || !data || data.ok === false) {
+            const err = data && data.error ? data.error : "auth_failed";
+
+            if (err === "email_not_verified") {
+              setMessage("E-posta doğrulaması gerekiyor.", "is-error");
+            } else if (err === "invalid_credentials" || err === "user_not_found") {
+              setMessage("E-posta veya şifre hatalı.", "is-error");
+            } else if (err === "user_exists" || err === "email_exists") {
+              setMessage("Bu e-posta ile hesap zaten var.", "is-error");
+            } else {
+              setMessage("İşlem tamamlanamadı. Tekrar dene.", "is-error");
+            }
+
+            return;
+          }
+
+          setMessage(mode === "login" ? "Giriş başarılı." : "Hesap oluşturuldu.", "is-ok");
+
+          setTimeout(function(){
+            location.replace(returnTo);
+          }, 350);
+        } catch (err) {
+          setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = mode === "login" ? "Giriş Yap" : "Hesap Oluştur";
+        }
+      });
+
+      setMode("login");
+    })();
+  </script>
 </body>
 </html>
