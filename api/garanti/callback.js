@@ -145,7 +145,11 @@ export default async function handler(req, res) {
     ? v.return_path
     : "/studio.v2.html";
 
-const successRedirect = `${returnPath}${returnPath.includes("?") ? "&" : "?"}garanti=success&oid=${encodeURIComponent(oid)}`;
+const hashIndex = returnPath.indexOf("#");
+const cleanPath = hashIndex >= 0 ? returnPath.slice(0, hashIndex) : returnPath;
+const hashPart = hashIndex >= 0 ? returnPath.slice(hashIndex) : "";
+
+const successRedirect = `${cleanPath}${cleanPath.includes("?") ? "&" : "?"}garanti=success&oid=${encodeURIComponent(oid)}${hashPart}`;
    // ✅ FORCE APPLY (kritik)
 await fetch(`${base}/api/garanti/apply`, {
   method: "POST",
