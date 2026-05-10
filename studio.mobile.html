@@ -1503,14 +1503,13 @@ if (backBtn) {
   btn.addEventListener("click", function(){
     const tool = btn.getAttribute("data-mobile-tool");
 
-    if (tool === "music") {
-      activeMobileModule = "music";
-      musicMount.hidden = false;
-      coverMount.hidden = true;
-      if (toolsMount) toolsMount.hidden = true;
-      setActiveNav(homeNav);
-      return;
-    }
+   if (tool === "music") {
+  activeMobileModule = "music";
+  homeMount.hidden = true;
+  showMusic();
+  setActiveNav(toolsNav);
+  return;
+}
 
 if (tool === "cover") {
   activeMobileModule = "cover";
