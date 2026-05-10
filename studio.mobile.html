@@ -785,7 +785,7 @@ try {
   }
 }
 
-  try {
+try {
   const accountProfileMount = document.getElementById("mobileAccountProfileMount");
 
   if (accountProfileMount) {
@@ -809,6 +809,33 @@ try {
 
   if (accountProfileMount) {
     accountProfileMount.innerHTML = '<div class="empty-card">Profil modülü yüklenemedi.</div>';
+  }
+}
+
+try {
+  const accountInvoicesMount = document.getElementById("mobileAccountInvoicesMount");
+
+  if (accountInvoicesMount) {
+    const accountInvoicesRes = await fetch("/mobile/modules/account-invoices.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountInvoicesRes.ok) {
+      throw new Error("mobile_account_invoices_html_load_failed");
+    }
+
+    accountInvoicesMount.innerHTML = await accountInvoicesRes.text();
+
+    const invoicesScript = document.createElement("script");
+    invoicesScript.src = "/mobile/js/mobile.invoices.js?v=1";
+    invoicesScript.defer = true;
+    document.body.appendChild(invoicesScript);
+  }
+} catch (err) {
+  const accountInvoicesMount = document.getElementById("mobileAccountInvoicesMount");
+
+  if (accountInvoicesMount) {
+    accountInvoicesMount.innerHTML = '<div class="empty-card">Faturalar modülü yüklenemedi.</div>';
   }
 }
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
