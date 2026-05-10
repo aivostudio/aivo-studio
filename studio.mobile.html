@@ -1193,6 +1193,13 @@ const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]
 
   return;
 }
+    if (invoicesBtn) {
+  e.preventDefault();
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = false;
+  return;
+}
 
     if (backBtn) {
       e.preventDefault();
