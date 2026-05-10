@@ -119,11 +119,14 @@
   font-size:19px;
   font-weight:900;
   cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.14),
     0 10px 22px rgba(0,0,0,.20);
 }
-
 .mobile-lipsync-textarea{
   width:100%;
   min-height:180px;
