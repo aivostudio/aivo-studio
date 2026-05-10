@@ -1252,7 +1252,7 @@ if (toolsNav) {
     setActiveNav(creditsNav);
   });
 }
-    if (accountNav) {
+if (accountNav) {
   accountNav.addEventListener("click", function(e){
     e.preventDefault();
 
@@ -1264,6 +1264,7 @@ if (toolsNav) {
     if (videoMount) videoMount.hidden = true;
     if (lipsyncMount) lipsyncMount.hidden = true;
     if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
     if (accountMount) accountMount.hidden = false;
 
     setActiveNav(accountNav);
