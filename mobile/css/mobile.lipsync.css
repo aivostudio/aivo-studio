@@ -1084,3 +1084,24 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4'/%3E%3Cpath d='M7 9l5-5 5 5'/%3E%3Cpath d='M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4'/%3E%3Cpath d='M7 9l5-5 5 5'/%3E%3Cpath d='M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16'/%3E%3C/svg%3E");
 }
+.mobile-lipsync-upload-box-icon,
+.mobile-lipsync-photo-upload-icon{
+  position:relative;
+  overflow:hidden;
+  font-size:0 !important;
+  color:transparent !important;
+}
+
+.mobile-lipsync-upload-box-icon::before,
+.mobile-lipsync-photo-upload-icon::before{
+  content:"";
+  width:30px;
+  height:30px;
+  display:block;
+  background:linear-gradient(135deg,#fff 0%,#60eaff 52%,#ec4899 100%);
+  filter:drop-shadow(0 0 12px rgba(96,234,255,.42));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='4.5' width='17' height='15' rx='3'/%3E%3Cpath d='M8 14l2.5-2.5 2.2 2.2 2.8-3.5L20.5 16'/%3E%3Cpath d='M8.2 8.5h.1'/%3E%3Cpath d='M12 19.5v-7'/%3E%3Cpath d='M9.2 15.3L12 12.5l2.8 2.8'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='4.5' width='17' height='15' rx='3'/%3E%3Cpath d='M8 14l2.5-2.5 2.2 2.2 2.8-3.5L20.5 16'/%3E%3Cpath d='M8.2 8.5h.1'/%3E%3Cpath d='M12 19.5v-7'/%3E%3Cpath d='M9.2 15.3L12 12.5l2.8 2.8'/%3E%3C/svg%3E");
+}
