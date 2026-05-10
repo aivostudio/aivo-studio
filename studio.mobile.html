@@ -504,8 +504,24 @@
 <div id="mobileAccountMount" hidden>
   <h2 class="section-title">Hesabım</h2>
 
-  <div class="empty-card">
-    Hesabım bölümü hazırlanıyor. Profil, Faturalarım ve Ayarlar burada açılacak.
+  <div class="mobile-account-panel">
+    <h3>Paneller</h3>
+
+    <button class="mobile-account-row" type="button" data-mobile-account-panel="profile">
+      Profil
+    </button>
+
+    <button class="mobile-account-row" type="button" data-mobile-account-panel="invoices">
+      Faturalarım
+    </button>
+
+    <button class="mobile-account-row" type="button" data-mobile-account-panel="settings">
+      Ayarlar
+    </button>
+
+    <button class="mobile-account-row mobile-account-row-danger" type="button" data-mobile-account-panel="logout">
+      Çıkış Yap
+    </button>
   </div>
 </div>
   </main>
