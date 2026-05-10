@@ -133,11 +133,25 @@
       } else {
         alert("Şifre güncellendi.");
       }
-    } catch (err) {
+       } catch (err) {
+      const code = String(err && err.message ? err.message : "");
+
+      let message = "Şifre güncellenemedi.";
+
+      if (code === "current_password_invalid") {
+        message = "Mevcut şifre yanlış.";
+      } else if (code === "password_too_short") {
+        message = "Yeni şifre en az 8 karakter olmalı.";
+      } else if (code === "password_mismatch") {
+        message = "Yeni şifreler eşleşmiyor.";
+      } else if (code === "password_same_as_old") {
+        message = "Yeni şifre mevcut şifreyle aynı olamaz.";
+      }
+
       if (window.toast && typeof window.toast.error === "function") {
-        window.toast.error("Şifre güncellenemedi.");
+        window.toast.error(message);
       } else {
-        alert("Şifre güncellenemedi.");
+        alert(message);
       }
     } finally {
       if (submitBtn) submitBtn.disabled = false;
