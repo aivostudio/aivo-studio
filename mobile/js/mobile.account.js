@@ -132,6 +132,12 @@
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
 
+    const saveBtn = qs("[data-mobile-profile-save]", root);
+    if (saveBtn && !saveBtn.__mobileAccountSaveBound) {
+      saveBtn.__mobileAccountSaveBound = true;
+      saveBtn.addEventListener("click", saveProfile);
+    }
+
     try {
       const user = await fetchMe();
       hydrateProfile(user);
