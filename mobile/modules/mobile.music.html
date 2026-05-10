@@ -15,20 +15,20 @@
     <textarea id="musicLyrics" class="field-textarea lyrics" placeholder="Şarkı sözlerini buraya yaz..."></textarea>
 
    <label class="field-label" for="mobileMusicMood">Mood / Tür</label>
-<input
+<select
   id="mobileMusicMood"
-  name="aivo_track_style_vx_48291"
+  name="mobile_track_style_select"
   class="field-input"
-  type="search"
-  inputmode="text"
-  autocomplete="new-password"
-  autocapitalize="none"
-  autocorrect="off"
-  spellcheck="false"
-  readonly
-  onfocus="this.removeAttribute('readonly'); this.value = this.value.includes('@') ? '' : this.value;"
-  placeholder="Örn: pop, enerjik, Türkçe vokal"
+  autocomplete="off"
 >
+  <option value="">Mood / tür seç</option>
+  <option value="pop, enerjik, Türkçe vokal">Pop, enerjik, Türkçe vokal</option>
+  <option value="rap, trap, güçlü beat">Rap / Trap</option>
+  <option value="arabesk, duygusal, Türkçe vokal">Arabesk / Duygusal</option>
+  <option value="slow, romantik, yumuşak vokal">Slow / Romantik</option>
+  <option value="elektronik, dans, club">Elektronik / Dans</option>
+  <option value="rock, gitar, güçlü vokal">Rock</option>
+</select>
     <button id="mobileMusicGenerateBtn" class="generate-btn" type="button">
       ♪ Müzik Üret (2 Kredi)
     </button>
