@@ -17,15 +17,19 @@ export default async function handler(req, res) {
       });
     }
 
-    const rawReturn =
-      typeof req.query?.return === "string" && req.query.return.trim()
-        ? req.query.return.trim()
-        : "/studio.v2.html";
+  const rawReturn =
+  typeof req.query?.returnTo === "string" && req.query.returnTo.trim()
+    ? req.query.returnTo.trim()
+    : (
+        typeof req.query?.return === "string" && req.query.return.trim()
+          ? req.query.return.trim()
+          : "/studio.v2.html"
+      );
 
-    const returnTo =
-      rawReturn.startsWith("/") && !rawReturn.startsWith("//")
-        ? rawReturn
-        : "/studio.v2.html";
+const returnTo =
+  rawReturn.startsWith("/") && !rawReturn.startsWith("//")
+    ? rawReturn
+    : "/studio.v2.html";
 
     const stateNonce = crypto.randomBytes(16).toString("hex");
 
