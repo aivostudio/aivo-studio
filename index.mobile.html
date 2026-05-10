@@ -434,8 +434,11 @@
       overflow:hidden;
     }
 
-      .tool-icon::before{
+       .tool-icon::before{
       content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
       width:31px;
       height:31px;
       display:block;
@@ -443,6 +446,7 @@
       filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
       -webkit-mask:center / contain no-repeat;
       mask:center / contain no-repeat;
+      transform:translate(-50%,-50%);
     }
 
     .tool-icon-music::before{
