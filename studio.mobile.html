@@ -893,8 +893,8 @@ function showLipsync(){
 
         panel.hidden = false;
       });
-      if (atmoResultsTitle) atmoResultsTitle.hidden = false;
-      if (atmoResults) atmoResults.hidden = false;
+    if (atmoResultsTitle) atmoResultsTitle.hidden = !isLibraryOnly;
+     if (atmoResults) atmoResults.hidden = !isLibraryOnly;
     }
 
     if (productionsNav) {
