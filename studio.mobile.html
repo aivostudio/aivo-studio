@@ -798,7 +798,7 @@ try {
     lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
   }
 }
-    try {
+try {
   const creditsRes = await fetch("/mobile/modules/mobile.credits.html?v=1", {
     cache: "no-store"
   });
@@ -808,6 +808,11 @@ try {
   }
 
   creditsMount.innerHTML = await creditsRes.text();
+
+  const creditsScript = document.createElement("script");
+  creditsScript.src = "/mobile/js/mobile.credits.js?v=1";
+  creditsScript.defer = true;
+  document.body.appendChild(creditsScript);
 } catch (err) {
   if (creditsMount) {
     creditsMount.innerHTML = '<div class="empty-card">Krediler bölümü yüklenemedi.</div>';
