@@ -69,7 +69,8 @@ export default async function handler(req, res) {
   const user_id = String(body.user_id || "").trim();
   const email = normEmail(body.email);
   const plan = String(body.plan || "").trim().toLowerCase();
-
+ const return_path = String(body.return_path || "").trim();
+const safeReturnPath = return_path.startsWith("/") ? return_path : "/studio.v2.html";
   if (!user_id || !email) {
     return json(res, 400, {
       ok: false,
