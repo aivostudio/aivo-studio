@@ -552,7 +552,7 @@
 <div id="mobileAccountMount" hidden>
   <h2 class="section-title">Hesabım</h2>
 
-  <div class="mobile-account-panel">
+  <div class="mobile-account-panel" data-mobile-account-menu>
     <h3>Paneller</h3>
 
     <button class="mobile-account-row" type="button" data-mobile-account-panel="profile">
@@ -570,6 +570,18 @@
     <button class="mobile-account-row mobile-account-row-danger" type="button" data-mobile-account-panel="logout">
       Çıkış Yap
     </button>
+  </div>
+
+  <div class="mobile-account-panel" data-mobile-account-profile hidden>
+    <button class="mobile-account-back" type="button" data-mobile-account-back>
+      ← Hesabım
+    </button>
+
+    <h3>Profil</h3>
+
+    <div class="empty-card">
+      Profil detay ekranı hazırlanıyor.
+    </div>
   </div>
 </div>
   </main>
@@ -1131,6 +1143,29 @@ if (toolsNav) {
     if (accountMount) accountMount.hidden = false;
 
     setActiveNav(accountNav);
+  });
+}
+    if (accountMount) {
+  accountMount.addEventListener("click", function(e){
+    const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
+    const backBtn = e.target.closest("[data-mobile-account-back]");
+
+    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+    const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
+
+    if (profileBtn) {
+      e.preventDefault();
+      if (accountMenu) accountMenu.hidden = true;
+      if (profilePanel) profilePanel.hidden = false;
+      return;
+    }
+
+    if (backBtn) {
+      e.preventDefault();
+      if (profilePanel) profilePanel.hidden = true;
+      if (accountMenu) accountMenu.hidden = false;
+      return;
+    }
   });
 }
     document.querySelectorAll("[data-mobile-tool]").forEach(function(btn){
