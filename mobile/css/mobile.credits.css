@@ -404,3 +404,10 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
   0%,100%{ transform:scale(1); }
   50%{ transform:scale(1.18); }
 }
+.mobile-credits-section{
+  padding-bottom:28px !important;
+}
+
+.mobile-credits-kvkk-card{
+  margin-bottom:0 !important;
+}
