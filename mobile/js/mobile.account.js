@@ -147,6 +147,16 @@
         passwordModal.hidden = false;
       });
     }
+        if (passwordModal && !passwordModal.__mobilePasswordCloseBound) {
+      passwordModal.__mobilePasswordCloseBound = true;
+      passwordModal.addEventListener("click", function(e){
+        const closeBtn = e.target.closest("[data-mobile-password-close]");
+        if (!closeBtn) return;
+
+        e.preventDefault();
+        passwordModal.hidden = true;
+      });
+    }
     try {
       const user = await fetchMe();
       hydrateProfile(user);
