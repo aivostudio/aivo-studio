@@ -949,6 +949,19 @@ async function hydrateTopCreditBalance(){
 }
 
 hydrateTopCreditBalance();
+    
+    if (topCreditsBtn) {
+  topCreditsBtn.addEventListener("click", function(e){
+    e.preventDefault();
+
+    if (creditsNav) {
+      creditsNav.click();
+    }
+
+    window.location.hash = "credits";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
 
     function setActiveNav(activeEl){
       document.querySelectorAll(".bottom-nav a").forEach(function(item){
