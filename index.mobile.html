@@ -13,16 +13,29 @@
 
   <style>
     *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,sans-serif;background:#070914;color:#fff}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+      background:#070914;
+      color:#fff;
+    }
+
     body{
       background:
-        radial-gradient(520px 360px at 20% 10%, rgba(139,92,246,.28), transparent 62%),
-        radial-gradient(520px 360px at 90% 25%, rgba(59,130,246,.18), transparent 62%),
-        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.16), transparent 65%),
+        radial-gradient(520px 360px at 20% 6%, rgba(139,92,246,.34), transparent 62%),
+        radial-gradient(520px 360px at 90% 18%, rgba(56,189,248,.20), transparent 62%),
+        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.18), transparent 65%),
         #070914;
       overflow-x:hidden;
     }
-    a{text-decoration:none;color:inherit}
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
     .topbar{
       position:sticky;
       top:0;
@@ -32,46 +45,72 @@
       align-items:center;
       justify-content:space-between;
       padding:0 18px;
-      background:rgba(8,10,22,.82);
+      background:rgba(8,10,22,.74);
       border-bottom:1px solid rgba(255,255,255,.08);
       backdrop-filter:blur(18px);
       -webkit-backdrop-filter:blur(18px);
     }
-    .logo{display:flex;align-items:center;gap:8px}
-    .logo img{width:92px;height:auto;display:block}
-    .top-actions{display:flex;align-items:center;gap:8px}
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .logo img{
+      width:92px;
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 10px 24px rgba(139,92,246,.20));
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
     .pill{
       min-height:36px;
-      padding:0 13px;
+      padding:0 14px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       border-radius:999px;
       border:1px solid rgba(139,92,246,.48);
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.92);
-      font-weight:800;
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.94);
+      font-weight:900;
       font-size:13px;
       white-space:nowrap;
+      box-shadow:0 10px 26px rgba(0,0,0,.22);
     }
-    .wrap{width:min(430px,100%);margin:0 auto;padding:22px 16px 90px}
-       .hero{
-      padding:28px 0 14px;
+
+    .wrap{
+      width:min(430px,100%);
+      margin:0 auto;
+      padding:22px 16px 96px;
+    }
+
+    .hero{
       position:relative;
+      padding:28px 0 14px;
     }
-        .hero::before{
+
+    .hero::before{
       content:"";
       position:absolute;
-      inset:-40px -20px auto -20px;
-      height:320px;
+      inset:-44px -24px auto -24px;
+      height:340px;
       background:
-        radial-gradient(circle at 20% 20%, rgba(139,92,246,.24), transparent 42%),
-        radial-gradient(circle at 80% 30%, rgba(56,189,248,.18), transparent 42%),
-        radial-gradient(circle at 50% 100%, rgba(236,72,153,.14), transparent 48%);
+        radial-gradient(circle at 20% 20%, rgba(139,92,246,.26), transparent 42%),
+        radial-gradient(circle at 80% 30%, rgba(56,189,248,.20), transparent 42%),
+        radial-gradient(circle at 50% 100%, rgba(236,72,153,.16), transparent 48%);
       filter:blur(30px);
       pointer-events:none;
       z-index:-1;
     }
+
     .badge{
       width:max-content;
       max-width:100%;
@@ -80,68 +119,96 @@
       gap:8px;
       padding:9px 12px;
       border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:rgba(255,255,255,.78);
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.80);
       font-size:12px;
-      font-weight:800;
-    }
-    .dot{width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 0 4px rgba(56,189,248,.16)}
-    h1{
-      margin:16px 0 10px;
-      font-size:42px;
-      line-height:.98;
-      letter-spacing:-.05em;
       font-weight:900;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
     }
+
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8);
+      box-shadow:0 0 0 4px rgba(56,189,248,.16);
+    }
+
+    h1{
+      margin:18px 0 12px;
+      font-size:46px;
+      line-height:.94;
+      letter-spacing:-.065em;
+      font-weight:950;
+    }
+
     .grad{
       background:linear-gradient(135deg,#8b5cf6,#38bdf8,#ec4899);
       -webkit-background-clip:text;
       background-clip:text;
       color:transparent;
     }
+
     .sub{
       margin:0;
-      color:rgba(255,255,255,.72);
-      font-weight:650;
-      line-height:1.55;
-      font-size:15px;
+      color:rgba(255,255,255,.76);
+      font-weight:700;
+      line-height:1.58;
+      font-size:15.5px;
+      max-width:360px;
     }
+
     .cta-row{
       display:grid;
       grid-template-columns:1fr;
       gap:10px;
-      margin-top:18px;
+      margin-top:20px;
     }
+
     .btn{
-      min-height:52px;
+      min-height:54px;
       border:0;
-      border-radius:16px;
+      border-radius:18px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:900;
+      font-weight:950;
       font-size:15px;
       cursor:pointer;
+      transition:transform .16s ease, filter .16s ease, border-color .16s ease;
     }
+
+    .btn:active{
+      transform:scale(.985);
+    }
+
     .btn-primary{
       background:linear-gradient(135deg,#8b5cf6,#ec4899);
       color:#fff;
-      box-shadow:0 18px 42px rgba(139,92,246,.28);
+      box-shadow:0 18px 46px rgba(139,92,246,.32);
     }
+
     .btn-ghost{
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.13);
       color:#fff;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
     }
+
     .video-card{
-      margin-top:22px;
-      border-radius:24px;
+      margin-top:24px;
+      border-radius:26px;
       overflow:hidden;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.045);
-      box-shadow:0 24px 70px rgba(0,0,0,.36);
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(240px 120px at 0% 0%, rgba(139,92,246,.18), transparent 62%),
+        rgba(255,255,255,.05);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 24px 70px rgba(0,0,0,.38);
     }
+
     .video-head{
       padding:14px;
       display:flex;
@@ -149,8 +216,21 @@
       justify-content:space-between;
       gap:10px;
     }
-    .video-title{font-weight:900;font-size:15px}
-    .video-sub{margin-top:4px;color:rgba(255,255,255,.64);font-size:12px;line-height:1.3}
+
+    .video-title{
+      font-weight:950;
+      font-size:15px;
+      letter-spacing:-.02em;
+    }
+
+    .video-sub{
+      margin-top:4px;
+      color:rgba(255,255,255,.66);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
     .sound{
       border:0;
       border-radius:999px;
@@ -159,98 +239,169 @@
       color:#fff;
       font-weight:900;
       white-space:nowrap;
+      box-shadow:0 12px 28px rgba(139,92,246,.24);
     }
-    video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}
+
+    video{
+      display:block;
+      width:100%;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#000;
+    }
+
     .section-title{
-      margin:28px 0 12px;
+      position:relative;
+      margin:30px 0 14px;
       font-size:22px;
       line-height:1.1;
-      letter-spacing:-.03em;
+      letter-spacing:-.04em;
+      text-align:center;
+      font-weight:950;
     }
-    .modules{display:grid;gap:12px}
-     .mod-card{
+
+    .section-title::after{
+      content:"";
+      display:block;
+      width:74px;
+      height:3px;
+      margin:10px auto 0;
+      border-radius:999px;
+      background:linear-gradient(90deg,#8b5cf6,#38bdf8,#ec4899);
+      opacity:.92;
+    }
+
+    .modules{
+      display:grid;
+      gap:12px;
+    }
+
+    .mod-card{
+      position:relative;
+      min-height:86px;
       display:flex;
       align-items:center;
       gap:14px;
-      padding:16px;
-      border-radius:20px;
-      background:linear-gradient(135deg,rgba(139,92,246,.22),rgba(56,189,248,.10)),rgba(255,255,255,.055);
-      border:1px solid rgba(255,255,255,.15);
-      box-shadow:0 14px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+      padding:16px 18px 16px 16px;
+      border-radius:24px;
+      background:
+        radial-gradient(180px 90px at 0% 0%, rgba(139,92,246,.22), transparent 62%),
+        linear-gradient(135deg,rgba(255,255,255,.085),rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.09),
+        0 18px 42px rgba(0,0,0,.25);
       transition:transform .18s ease, background .18s ease, border-color .18s ease;
+      overflow:hidden;
     }
+
+    .mod-card::after{
+      content:"›";
+      position:absolute;
+      right:18px;
+      top:50%;
+      transform:translateY(-50%);
+      color:rgba(255,255,255,.42);
+      font-size:30px;
+      font-weight:400;
+      line-height:1;
+    }
+
     .mod-card:active{
       transform:scale(.985);
-      background:linear-gradient(135deg,rgba(139,92,246,.28),rgba(56,189,248,.14)),rgba(255,255,255,.07);
       border-color:rgba(255,255,255,.22);
     }
+
     .ico{
-      width:44px;height:44px;border-radius:15px;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.13);
-      flex:0 0 auto;
-      font-size:20px;
-    }
-    .mod-card b{display:block;font-size:16px;margin-bottom:4px}
-    .mod-card span{display:block;color:rgba(255,255,255,.64);font-size:13px;line-height:1.35;font-weight:650}
-    .note{
-      margin-top:18px;
-      padding:14px;
+      width:50px;
+      height:50px;
       border-radius:18px;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.10);
-      color:rgba(255,255,255,.68);
-      font-size:13px;
-      line-height:1.5;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.055));
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 10px 24px rgba(0,0,0,.22);
+      flex:0 0 auto;
+      font-size:22px;
+    }
+
+    .mod-card b{
+      display:block;
+      padding-right:24px;
+      font-size:15.5px;
+      margin-bottom:4px;
+      line-height:1.15;
+      font-weight:950;
+      letter-spacing:-.025em;
+    }
+
+    .mod-card span{
+      display:block;
+      padding-right:24px;
+      color:rgba(255,255,255,.66);
+      font-size:12.5px;
+      line-height:1.38;
       font-weight:650;
     }
+
     .bottom-nav{
       position:fixed;
       left:12px;
       right:12px;
       bottom:12px;
       z-index:80;
+      width:min(406px,calc(100% - 24px));
+      margin:0 auto;
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
       padding:10px;
-      border-radius:22px;
-      background:rgba(8,10,22,.82);
-      border:1px solid rgba(255,255,255,.12);
+      border-radius:24px;
+      background:rgba(8,10,22,.84);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 -16px 42px rgba(0,0,0,.34);
       backdrop-filter:blur(18px);
       -webkit-backdrop-filter:blur(18px);
     }
+
     .bottom-nav a{
-      min-height:46px;
-      border-radius:15px;
+      min-height:48px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:900;
+      font-weight:950;
       font-size:13px;
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.08);
     }
+
     .bottom-nav a:first-child{
       background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      box-shadow:0 14px 34px rgba(139,92,246,.30);
+      border-color:rgba(255,255,255,.12);
     }
   </style>
 </head>
 
 <body>
   <header class="topbar">
-       <a class="logo" href="/" aria-label="AIVO">
+    <a class="logo" href="/" aria-label="AIVO">
       <img src="/aivo-logo.png" alt="AIVO">
     </a>
 
-       <div class="top-actions">
+    <div class="top-actions">
       <a class="pill" href="/login.html?returnTo=/studio.mobile.html">Studio’ya Gir</a>
     </div>
   </header>
 
   <main class="wrap">
     <section class="hero">
-       <div class="badge">
+      <div class="badge">
         <span class="dot"></span>
         AIVO Mobile Studio
       </div>
@@ -271,9 +422,10 @@
       <div class="video-card">
         <div class="video-head">
           <div>
-              <div class="video-title">Görselden Video Klip</div>
+            <div class="video-title">Görselden Video Klip</div>
             <div class="video-sub">Görselini hareketli klip sahnesine dönüştür</div>
           </div>
+
           <button class="sound" type="button" id="soundBtn">🔇 Ses</button>
         </div>
 
@@ -292,7 +444,15 @@
     <h2 class="section-title">Mobilde öne çıkanlar</h2>
 
     <section class="modules">
-       <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
+      <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
+        <div class="ico">🎵</div>
+        <div>
+          <b>AI Müzik Üret</b>
+          <span>Şarkı fikrini yaz, mobilde üretimi başlat.</span>
+        </div>
+      </a>
+
+      <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
         <div class="ico">✨</div>
         <div>
           <b>AI Foto Efekt Video Clip</b>
@@ -300,7 +460,7 @@
         </div>
       </a>
 
-        <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
+      <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
         <div class="ico">🖼️</div>
         <div>
           <b>AI Kapak Üret</b>
@@ -308,7 +468,7 @@
         </div>
       </a>
 
-          <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
+      <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
         <div class="ico">🎬</div>
         <div>
           <b>AI Resimden Video Üret</b>
@@ -316,7 +476,7 @@
         </div>
       </a>
 
-          <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
+      <a class="mod-card" href="/login.html?returnTo=/studio.mobile.html#tools">
         <div class="ico">🗣️</div>
         <div>
           <b>AI Dudak Senkron Video</b>
@@ -324,13 +484,11 @@
         </div>
       </a>
     </section>
-
-  
   </main>
 
   <nav class="bottom-nav">
-  <a href="/login.html?returnTo=/studio.mobile.html">Üretime Başla</a>
-  <a href="/login.html?returnTo=/studio.mobile.html#credits">Kredi Al</a>
+    <a href="/login.html?returnTo=/studio.mobile.html">Üretime Başla</a>
+    <a href="/login.html?returnTo=/studio.mobile.html#credits">Kredi Al</a>
   </nav>
 
   <script>
@@ -341,6 +499,7 @@
 
       btn.addEventListener("click", function(){
         video.muted = !video.muted;
+
         if (!video.muted) {
           video.currentTime = 0;
           video.play().catch(function(){});
