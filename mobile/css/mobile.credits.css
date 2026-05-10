@@ -411,3 +411,49 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
 .mobile-credits-kvkk-card{
   margin-bottom:0 !important;
 }
+.mobile-credits-pack-card{
+  text-align:center;
+}
+
+.mobile-credits-pack-head span,
+.mobile-credits-popular{
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.mobile-credits-price{
+  justify-content:center;
+}
+
+.mobile-credits-pack-card ul{
+  width:max-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+  text-align:left;
+}
+
+.mobile-credits-pack-card button{
+  text-align:center;
+}
+
+.mobile-credits-kvkk-card{
+  text-align:center;
+}
+
+.mobile-credits-kvkk-card strong{
+  text-align:center;
+}
+
+.mobile-credits-kvkk-card p{
+  text-align:center;
+}
+
+.mobile-credits-kvkk-row{
+  justify-content:center;
+  text-align:left;
+}
+
+#mobileCreditsKvkkHint{
+  text-align:center;
+}
