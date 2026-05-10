@@ -798,6 +798,21 @@ try {
     lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
   }
 }
+    try {
+  const creditsRes = await fetch("/mobile/modules/mobile.credits.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!creditsRes.ok) {
+    throw new Error("mobile_credits_html_load_failed");
+  }
+
+  creditsMount.innerHTML = await creditsRes.text();
+} catch (err) {
+  if (creditsMount) {
+    creditsMount.innerHTML = '<div class="empty-card">Krediler bölümü yüklenemedi.</div>';
+  }
+}
 
 try {
   const accountProfileMount = document.getElementById("mobileAccountProfileMount");
