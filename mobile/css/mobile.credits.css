@@ -411,3 +411,13 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
 .mobile-credits-kvkk-card{
   margin-bottom:0 !important;
 }
+.mobile-credits-kvkk-card strong,
+.mobile-credits-kvkk-card p,
+#mobileCreditsKvkkHint{
+  text-align:center;
+}
+
+.mobile-credits-kvkk-row{
+  justify-content:center;
+  text-align:left;
+}
