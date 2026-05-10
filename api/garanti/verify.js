@@ -130,9 +130,13 @@ export default async function handler(req, res) {
         o?.credit_balance_after ??
         null,
 
-      invoice_id: applyResult?.invoice_id ?? o?.invoice_id ?? null,
+    invoice_id: applyResult?.invoice_id ?? o?.invoice_id ?? null,
+return_path:
+  typeof o?.return_path === "string" && o.return_path.startsWith("/")
+    ? o.return_path
+    : "/studio.v2.html",
 
-      created_at: o?.created_at ?? null,
+created_at: o?.created_at ?? null,
       updated_at: o?.updated_at ?? null,
       paid_at: o?.paid_at ?? null,
 
