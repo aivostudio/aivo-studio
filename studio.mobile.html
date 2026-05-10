@@ -1236,10 +1236,12 @@ if (toolsNav) {
   accountMount.addEventListener("click", function(e){
   const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
 const invoicesBtn = e.target.closest('[data-mobile-account-panel="invoices"]');
+    const settingsBtn = e.target.closest('[data-mobile-account-panel="settings"]');
 const backBtn = e.target.closest("[data-mobile-account-back]");
    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
 const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
 const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]");
+    const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
 
    if (profileBtn) {
   e.preventDefault();
@@ -1260,6 +1262,20 @@ const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]
 
   if (typeof window.mobileInvoicesInit === "function") {
     window.mobileInvoicesInit();
+  }
+
+  return;
+}
+    if (settingsBtn) {
+  e.preventDefault();
+
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = false;
+
+  if (typeof window.mobileSettingsInit === "function") {
+    window.mobileSettingsInit();
   }
 
   return;
