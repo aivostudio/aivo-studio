@@ -1385,6 +1385,29 @@ if (tool === "photofx") {
   });
 });
   })();
+  window.addEventListener("pageshow", async function(event){
+  if (!event.persisted) return;
+
+  try {
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+      window.location.replace("/login.html?returnTo=/studio.mobile.html");
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data || data.ok === false || !data.user) {
+      window.location.replace("/login.html?returnTo=/studio.mobile.html");
+    }
+  } catch (err) {
+    window.location.replace("/login.html?returnTo=/studio.mobile.html");
+  }
+});
 </script>
 </body>
 </html>
