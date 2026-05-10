@@ -231,6 +231,12 @@
         passwordModal.hidden = true;
       });
     }
+        const passwordSubmitBtn = qs("[data-mobile-password-submit]", root);
+
+    if (passwordSubmitBtn && !passwordSubmitBtn.__mobilePasswordSubmitBound) {
+      passwordSubmitBtn.__mobilePasswordSubmitBound = true;
+      passwordSubmitBtn.addEventListener("click", savePassword);
+    }
     try {
       const user = await fetchMe();
       hydrateProfile(user);
