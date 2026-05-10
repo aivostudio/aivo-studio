@@ -1330,6 +1330,11 @@ if (toolsNav) {
     if (creditsMount) creditsMount.hidden = false;
 
     setActiveNav(creditsNav);
+    hydrateTopCreditBalance();
+
+if (typeof window.mobileCreditsInit === "function") {
+  window.mobileCreditsInit();
+}
   });
 }
 if (accountNav) {
