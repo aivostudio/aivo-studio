@@ -295,3 +295,6 @@
   flex-direction:column;
   gap:13px;
 }
+.mobile-account-back--inside{
+  margin-bottom:18px;
+}
