@@ -68,4 +68,43 @@
       Şifre Değiştir
     </button>
   </div>
+  <div class="mobile-password-modal" data-mobile-password-modal hidden>
+  <div class="mobile-password-backdrop" data-mobile-password-close></div>
+
+  <div class="mobile-password-sheet">
+    <div class="mobile-password-head">
+      <div>
+        <div class="mobile-password-title">Şifre Değiştir</div>
+        <div class="mobile-password-sub">
+          Hesabını güvende tutmak için güçlü bir şifre kullan.
+        </div>
+      </div>
+
+      <button class="mobile-password-x" type="button" data-mobile-password-close>
+        ×
+      </button>
+    </div>
+
+    <div class="mobile-password-form">
+      <div class="mobile-profile-field">
+        <label>Mevcut Şifre</label>
+        <input type="password" autocomplete="current-password" placeholder="Mevcut şifren" data-mobile-password-current>
+      </div>
+
+      <div class="mobile-profile-field">
+        <label>Yeni Şifre</label>
+        <input type="password" autocomplete="new-password" placeholder="Yeni şifre" data-mobile-password-new>
+      </div>
+
+      <div class="mobile-profile-field">
+        <label>Yeni Şifre Tekrar</label>
+        <input type="password" autocomplete="new-password" placeholder="Yeni şifre tekrar" data-mobile-password-new2>
+      </div>
+
+      <button class="mobile-profile-save" type="button" data-mobile-password-submit>
+        Şifreyi Güncelle
+      </button>
+    </div>
+  </div>
+</div>
 </section>
