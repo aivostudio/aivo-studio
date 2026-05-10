@@ -1047,3 +1047,40 @@
 .mobile-lipsync-textarea.has-audio{
   opacity:.55;
 }
+.mobile-lipsync-record-btn,
+.mobile-lipsync-upload-btn{
+  position:relative;
+  overflow:hidden;
+}
+
+.mobile-lipsync-record-btn span,
+.mobile-lipsync-upload-btn span{
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+}
+
+.mobile-lipsync-record-btn::before,
+.mobile-lipsync-upload-btn::before{
+  content:"";
+  width:25px;
+  height:25px;
+  display:block;
+  background:linear-gradient(135deg,#fff 0%,#60eaff 52%,#ec4899 100%);
+  filter:drop-shadow(0 0 10px rgba(96,234,255,.42));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+.mobile-lipsync-record-btn::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5z'/%3E%3Cpath d='M5.5 10.5a6.5 6.5 0 0 0 13 0'/%3E%3Cpath d='M12 17v4'/%3E%3Cpath d='M8.5 21h7'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5z'/%3E%3Cpath d='M5.5 10.5a6.5 6.5 0 0 0 13 0'/%3E%3Cpath d='M12 17v4'/%3E%3Cpath d='M8.5 21h7'/%3E%3C/svg%3E");
+}
+
+.mobile-lipsync-upload-btn::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4'/%3E%3Cpath d='M7 9l5-5 5 5'/%3E%3Cpath d='M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4'/%3E%3Cpath d='M7 9l5-5 5 5'/%3E%3Cpath d='M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16'/%3E%3C/svg%3E");
+}
