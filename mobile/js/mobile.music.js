@@ -262,13 +262,13 @@
     miniPlayBtn.textContent = "▶";
     miniPlayBtn.classList.remove("is-playing");
 
-    miniAudioEl.play().then(function(){
-      miniPlayBtn.textContent = "Ⅱ";
-      miniPlayBtn.classList.add("is-playing");
-    }).catch(function(){
-      miniPlayBtn.textContent = "▶";
-      miniPlayBtn.classList.remove("is-playing");
-    });
+   miniPlayBtn.textContent = "Ⅱ";
+miniPlayBtn.classList.add("is-playing");
+
+miniAudioEl.play().catch(function(){
+  miniPlayBtn.textContent = "▶";
+  miniPlayBtn.classList.remove("is-playing");
+});
   }
 
   miniPlayBtn.addEventListener("click", function(){
