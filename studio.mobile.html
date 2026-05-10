@@ -778,6 +778,33 @@ try {
     lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
   }
 }
+
+  try {
+  const accountProfileMount = document.getElementById("mobileAccountProfileMount");
+
+  if (accountProfileMount) {
+    const accountProfileRes = await fetch("/mobile/modules/account-profile.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountProfileRes.ok) {
+      throw new Error("mobile_account_profile_html_load_failed");
+    }
+
+    accountProfileMount.innerHTML = await accountProfileRes.text();
+
+    const accountScript = document.createElement("script");
+    accountScript.src = "/mobile/js/mobile.account.js?v=1";
+    accountScript.defer = true;
+    document.body.appendChild(accountScript);
+  }
+} catch (err) {
+  const accountProfileMount = document.getElementById("mobileAccountProfileMount");
+
+  if (accountProfileMount) {
+    accountProfileMount.innerHTML = '<div class="empty-card">Profil modülü yüklenemedi.</div>';
+  }
+}
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
     const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
@@ -1148,12 +1175,17 @@ if (toolsNav) {
     const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
     const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
 
-    if (profileBtn) {
-      e.preventDefault();
-      if (accountMenu) accountMenu.hidden = true;
-      if (profilePanel) profilePanel.hidden = false;
-      return;
-    }
+   if (profileBtn) {
+  e.preventDefault();
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = false;
+
+  if (typeof window.mobileAccountInit === "function") {
+    window.mobileAccountInit();
+  }
+
+  return;
+}
 
     if (backBtn) {
       e.preventDefault();
