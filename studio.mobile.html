@@ -715,6 +715,19 @@ let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
 let creditsMount = document.getElementById("mobileCreditsMount");
 let accountMount = document.getElementById("mobileAccountMount");
+    try {
+  const homeRes = await fetch("/mobile/modules/mobile.home.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!homeRes.ok) {
+    throw new Error("mobile_home_html_load_failed");
+  }
+
+  homeMount.innerHTML = await homeRes.text();
+} catch (err) {
+  homeMount.innerHTML = '<div class="empty-card">Ana sayfa yüklenemedi.</div>';
+}
     if (!coverMount) {
       coverMount = document.createElement("div");
       coverMount.id = "mobileCoverMount";
