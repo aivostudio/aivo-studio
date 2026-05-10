@@ -176,3 +176,23 @@
     0 0 28px rgba(139,92,246,.32),
     0 14px 32px rgba(0,0,0,.24);
 }
+.mobile-profile-security-text{
+  margin-top:16px;
+  color:rgba(255,255,255,.68);
+  font-size:13px;
+  line-height:1.45;
+  font-weight:650;
+}
+
+.mobile-profile-secondary-btn{
+  width:100%;
+  min-height:50px;
+  margin-top:15px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:20px;
+  background:rgba(255,255,255,.07);
+  color:#fff;
+  font:inherit;
+  font-size:15px;
+  font-weight:900;
+}
