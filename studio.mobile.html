@@ -1413,6 +1413,7 @@ if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
   e.preventDefault();
 
+  homeMount.hidden = true;
   musicMount.hidden = true;
   coverMount.hidden = true;
   atmoMount.hidden = true;
@@ -1425,6 +1426,7 @@ if (toolsNav) {
   if (accountMount) accountMount.hidden = true;
 
   setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
 }
     if (creditsNav) {
