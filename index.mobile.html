@@ -434,15 +434,20 @@
       overflow:hidden;
     }
 
-    .tool-icon::before{
+      .tool-icon::before{
       content:"";
-      width:31px;
-      height:31px;
+      width:30px;
+      height:30px;
       display:block;
       background:linear-gradient(135deg,#f472ff,#60eaff);
       filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
-      -webkit-mask:center / contain no-repeat;
-      mask:center / contain no-repeat;
+      -webkit-mask-position:center;
+      mask-position:center;
+      -webkit-mask-size:contain;
+      mask-size:contain;
+      -webkit-mask-repeat:no-repeat;
+      mask-repeat:no-repeat;
+      transform:translate(0,0);
     }
 
     .tool-icon-music::before{
