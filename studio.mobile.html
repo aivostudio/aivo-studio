@@ -923,6 +923,32 @@ try {
  const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
 const creditsNav = document.querySelector('.bottom-nav a[href="#credits"]');
 const accountNav = document.querySelector('.bottom-nav a[href="#account"]');
+    const topCreditsBtn = document.querySelector("[data-mobile-top-credits]");
+const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
+
+async function hydrateTopCreditBalance(){
+  if (!topCreditBalance) return;
+
+  try {
+    const res = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+      throw new Error("credit_balance_load_failed");
+    }
+
+    const data = await res.json();
+    const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+    topCreditBalance.textContent = "Kredi " + creditValue;
+  } catch (err) {
+    topCreditBalance.textContent = "Kredi --";
+  }
+}
+
+hydrateTopCreditBalance();
 
     function setActiveNav(activeEl){
       document.querySelectorAll(".bottom-nav a").forEach(function(item){
