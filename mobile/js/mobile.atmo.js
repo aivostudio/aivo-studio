@@ -368,15 +368,24 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   function safeText(value){
     return String(value || "").trim();
   }
-    function computeMobileAtmoCredit(mode){
-    const target = mode === "pro" ? state.pro : state.basic;
+ function computeMobileAtmoCredit(mode){
+  const target = mode === "pro" ? state.pro : state.basic;
 
-    const baseCredit = mode === "pro" ? 45 : 30;
-    const logoExtra = target.logoUrl ? 10 : 0;
-    const audioExtra = target.audioUrl ? 10 : 0;
+  const duration = String(target.duration || "4");
 
-    return baseCredit + logoExtra + audioExtra;
-  }
+  let baseCredit = mode === "pro" ? 45 : 30;
+
+  if (duration === "6") baseCredit += 5;
+  else if (duration === "8") baseCredit += 10;
+  else if (duration === "10") baseCredit += 15;
+  else if (duration === "12") baseCredit += 20;
+  else if (duration === "15") baseCredit += 25;
+
+  const logoExtra = target.logoUrl ? 10 : 0;
+  const audioExtra = target.audioUrl ? 10 : 0;
+
+  return baseCredit + logoExtra + audioExtra;
+}
 
   function syncMobileAtmoCreditButtons(){
     if (basicGenerateBtn) {
@@ -466,9 +475,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
   function bindBasicControls(){
     if (basicDurationEl) {
-      basicDurationEl.addEventListener("change", function(){
-        state.basic.duration = safeText(basicDurationEl.value) || "4";
-      });
+    basicDurationEl.addEventListener("change", function(){
+  state.basic.duration = safeText(basicDurationEl.value) || "4";
+  syncMobileAtmoCreditButtons();
+});
 
       state.basic.duration = safeText(basicDurationEl.value) || "4";
     }
@@ -546,9 +556,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
 function bindProControls(){
   if (proDurationEl) {
-    proDurationEl.addEventListener("change", function(){
-      state.pro.duration = safeText(proDurationEl.value) || "4";
-    });
+  proDurationEl.addEventListener("change", function(){
+  state.pro.duration = safeText(proDurationEl.value) || "4";
+  syncMobileAtmoCreditButtons();
+});
 
     state.pro.duration = safeText(proDurationEl.value) || "4";
   }
