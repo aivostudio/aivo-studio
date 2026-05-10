@@ -971,3 +971,20 @@ filter:drop-shadow(0 0 9px rgba(139,92,246,.58));
 .mobile-mini-player .mini-btn.is-playing::after{
   display:none !important;
 }
+.mobile-mini-player .mini-btn.is-playing::before{
+  animation:none !important;
+  transform:none !important;
+}
+
+.mobile-mini-player .mini-btn.is-playing::after{
+  content:none !important;
+  display:none !important;
+}
+
+.mobile-mini-player .mini-btn.is-playing{
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 24px rgba(236,72,153,.26) !important;
+}
