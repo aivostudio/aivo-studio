@@ -844,6 +844,32 @@ try {
     accountInvoicesMount.innerHTML = '<div class="empty-card">Faturalar modülü yüklenemedi.</div>';
   }
 }
+    try {
+  const accountSettingsMount = document.getElementById("mobileAccountSettingsMount");
+
+  if (accountSettingsMount) {
+    const accountSettingsRes = await fetch("/mobile/modules/account-settings.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountSettingsRes.ok) {
+      throw new Error("mobile_account_settings_html_load_failed");
+    }
+
+    accountSettingsMount.innerHTML = await accountSettingsRes.text();
+
+    const settingsScript = document.createElement("script");
+    settingsScript.src = "/mobile/js/mobile.settings.js?v=1";
+    settingsScript.defer = true;
+    document.body.appendChild(settingsScript);
+  }
+} catch (err) {
+  const accountSettingsMount = document.getElementById("mobileAccountSettingsMount");
+
+  if (accountSettingsMount) {
+    accountSettingsMount.innerHTML = '<div class="empty-card">Ayarlar modülü yüklenemedi.</div>';
+  }
+}
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
     const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
