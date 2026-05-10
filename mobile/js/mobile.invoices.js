@@ -1,0 +1,310 @@
+/* =========================================================
+   AIVO MOBILE — ACCOUNT INVOICES
+   File: /mobile/js/mobile.invoices.js
+   ========================================================= */
+
+(function(){
+  "use strict";
+
+  if (window.__AIVO_MOBILE_INVOICES__) return;
+  window.__AIVO_MOBILE_INVOICES__ = true;
+
+  let activeFilter = "all";
+
+  function qs(sel, root){
+    return (root || document).querySelector(sel);
+  }
+
+  function qsa(sel, root){
+    return Array.from((root || document).querySelectorAll(sel));
+  }
+
+  function escapeHtml(value){
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalizeEmail(value){
+    return String(value || "").trim().toLowerCase();
+  }
+
+  async function resolveEmail(){
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+
+      const json = await res.json().catch(function(){ return null; });
+
+      if (res.ok && json && json.email) {
+        return normalizeEmail(json.email);
+      }
+    } catch (_) {}
+
+    return "";
+  }
+
+  function toTime(value){
+    const date = new Date(value || 0);
+    const time = date.getTime();
+    return Number.isFinite(time) ? time : 0;
+  }
+
+  function formatDate(value){
+    const time = toTime(value);
+    if (!time) return "-";
+
+    return new Date(time).toLocaleDateString("tr-TR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+  }
+
+  function formatMoney(value){
+    const n = Number(value || 0);
+
+    return n.toLocaleString("tr-TR", {
+      style: "currency",
+      currency: "TRY",
+      maximumFractionDigits: 0
+    });
+  }
+
+  function inferType(invoice){
+    const raw = String(
+      invoice.type ||
+      invoice.kind ||
+      invoice.event ||
+      invoice.action ||
+      invoice.status ||
+      ""
+    ).toLowerCase();
+
+    if (
+      raw.includes("refund") ||
+      raw.includes("refunded") ||
+      raw.includes("partial_refund") ||
+      raw.includes("partially_refunded") ||
+      raw.includes("iade")
+    ) {
+      return "refund";
+    }
+
+    return "purchase";
+  }
+
+  function getAmount(invoice){
+    if (invoice.amountTRY != null) return invoice.amountTRY;
+    if (invoice.amount_try != null) return invoice.amount_try;
+    if (invoice.price != null) return invoice.price;
+    if (invoice.amount != null) return invoice.amount;
+    if (invoice.total_amount != null) return invoice.total_amount;
+    if (invoice.total != null) return invoice.total;
+    return 0;
+  }
+
+  function getCredits(invoice){
+    if (invoice.credit_count != null) return Number(invoice.credit_count);
+    if (invoice.credits != null) return Number(invoice.credits);
+    if (invoice.credit_amount != null) return Number(invoice.credit_amount);
+    if (invoice.quantity != null) return Number(invoice.quantity);
+    return 0;
+  }
+
+  function getCreatedAt(invoice){
+    return (
+      invoice.created_at ||
+      invoice.createdAt ||
+      invoice.created ||
+      invoice.date ||
+      invoice.ts ||
+      invoice.time ||
+      ""
+    );
+  }
+
+  function statusLabel(invoice){
+    const status = String(invoice.status || "").toLowerCase();
+
+    if (status === "paid" || status === "succeeded" || status === "success") return "Ödendi";
+    if (status === "refunded" || status === "partial_refund" || status === "partially_refunded") return "İade Edildi";
+    if (status === "pending" || status === "open" || status === "processing") return "Beklemede";
+    if (status === "failed" || status === "error") return "Başarısız";
+    if (status === "canceled" || status === "cancelled") return "İptal";
+
+    return invoice.status || "-";
+  }
+
+  function invoiceCard(invoice, email){
+    const type = inferType(invoice);
+    const id = String(invoice.id || invoice.order_id || invoice.orderId || "").trim();
+    const credits = getCredits(invoice);
+
+    const title = credits > 0
+      ? credits + " Kredilik Paket"
+      : (invoice.pack || invoice.pack_key || invoice.plan || invoice.title || "Kredi Paketi");
+
+    const sub = credits > 0
+      ? "Toplam " + credits + " kredi tanımı"
+      : "Satın alım detayı";
+
+    const amount = formatMoney(getAmount(invoice));
+    const date = formatDate(getCreatedAt(invoice));
+    const status = statusLabel(invoice);
+
+    const openBase = type === "refund" ? "/api/invoices/refund-view" : "/api/invoices/view";
+    const openUrl = id && email
+      ? openBase + "?email=" + encodeURIComponent(email) + "&id=" + encodeURIComponent(id)
+      : "";
+
+    const actionText = type === "refund" ? "İade Belgesini Aç" : "Faturayı Görüntüle";
+    const typeText = type === "refund" ? "İade" : "Satın Alım";
+
+    return `
+      <article class="mobile-invoice-card" data-mobile-invoice-type="${escapeHtml(type)}">
+        <div class="mobile-invoice-top">
+          <div>
+            <small>AIVO FATURA KAYDI</small>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${escapeHtml(sub)}</p>
+          </div>
+
+          <span class="mobile-invoice-type">${escapeHtml(typeText)}</span>
+        </div>
+
+        <div class="mobile-invoice-meta">
+          <div>
+            <small>Tarih</small>
+            <strong>${escapeHtml(date)}</strong>
+          </div>
+
+          <div>
+            <small>Durum</small>
+            <strong>${escapeHtml(status)}</strong>
+          </div>
+
+          <div>
+            <small>Tutar</small>
+            <strong>${escapeHtml(amount)}</strong>
+          </div>
+        </div>
+
+        ${
+          openUrl
+            ? `<a class="mobile-invoice-btn" href="${escapeHtml(openUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(actionText)}</a>`
+            : `<button class="mobile-invoice-btn" type="button" disabled>Belge Hazır Değil</button>`
+        }
+      </article>
+    `;
+  }
+
+  function applyFilter(root){
+    const cards = qsa("[data-mobile-invoice-type]", root);
+    const empty = qs("[data-mobile-invoices-empty]", root);
+
+    let visibleCount = 0;
+
+    cards.forEach(function(card){
+      const type = card.getAttribute("data-mobile-invoice-type");
+      const show = activeFilter === "all" || type === activeFilter;
+
+      card.hidden = !show;
+
+      if (show) {
+        visibleCount += 1;
+      }
+    });
+
+    if (empty && cards.length > 0) {
+      empty.hidden = visibleCount > 0;
+
+      if (visibleCount === 0) {
+        empty.textContent = "Bu filtre için fatura bulunamadı.";
+      }
+    }
+  }
+
+  function bindFilters(root){
+    qsa("[data-mobile-invoices-filter]", root).forEach(function(btn){
+      if (btn.__aivoMobileInvoiceFilterBound) return;
+      btn.__aivoMobileInvoiceFilterBound = true;
+
+      btn.addEventListener("click", function(){
+        activeFilter = btn.getAttribute("data-mobile-invoices-filter") || "all";
+
+        qsa("[data-mobile-invoices-filter]", root).forEach(function(item){
+          item.classList.toggle("is-active", item === btn);
+        });
+
+        applyFilter(root);
+      });
+    });
+  }
+
+  async function mobileInvoicesInit(){
+    const root = qs("#mobileAccountInvoicesSection");
+    if (!root) return;
+
+    const list = qs("[data-mobile-invoices-list]", root);
+    const empty = qs("[data-mobile-invoices-empty]", root);
+
+    if (!list || !empty) return;
+
+    bindFilters(root);
+
+    empty.hidden = false;
+    empty.textContent = "Faturalar yükleniyor...";
+
+    const email = await resolveEmail();
+
+    if (!email) {
+      empty.hidden = false;
+      empty.textContent = "Faturaları göstermek için oturum bilgisi bulunamadı.";
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+
+      const json = await res.json().catch(function(){ return null; });
+
+      if (!res.ok || !json || json.ok !== true) {
+        throw new Error("mobile_invoices_fetch_failed");
+      }
+
+      const invoices = Array.isArray(json.invoices) ? json.invoices : [];
+
+      if (!invoices.length) {
+        empty.hidden = false;
+        empty.textContent = "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
+        return;
+      }
+
+      const sorted = invoices.slice().sort(function(a, b){
+        return toTime(getCreatedAt(b)) - toTime(getCreatedAt(a));
+      });
+
+      list.innerHTML = sorted.map(function(invoice){
+        return invoiceCard(invoice, email);
+      }).join("");
+
+      applyFilter(root);
+    } catch (err) {
+      empty.hidden = false;
+      empty.textContent = "Faturalar şu an yüklenemedi.";
+    }
+  }
+
+  window.mobileInvoicesInit = mobileInvoicesInit;
+})();
