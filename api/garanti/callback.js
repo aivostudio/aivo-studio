@@ -140,6 +140,12 @@ export default async function handler(req, res) {
 
     const verifyResult = await getVerify(base, oid);
     const v = verifyResult.json || null;
+    const returnPath =
+  v && typeof v.return_path === "string" && v.return_path.startsWith("/")
+    ? v.return_path
+    : "/studio.v2.html";
+
+const successRedirect = `${returnPath}${returnPath.includes("?") ? "&" : "?"}garanti=success&oid=${encodeURIComponent(oid)}`;
    // ✅ FORCE APPLY (kritik)
 await fetch(`${base}/api/garanti/apply`, {
   method: "POST",
@@ -156,7 +162,7 @@ await fetch(`${base}/api/garanti/apply`, {
     ) {
       return redirect303(
         res,
-        `/studio.v2.html?garanti=success&oid=${encodeURIComponent(oid)}`
+      successRedirect
       );
     }
 
@@ -168,7 +174,7 @@ await fetch(`${base}/api/garanti/apply`, {
     ) {
       return redirect303(
         res,
-        `/studio.v2.html?garanti=success&oid=${encodeURIComponent(oid)}`
+       successRedirect
       );
     }
 
