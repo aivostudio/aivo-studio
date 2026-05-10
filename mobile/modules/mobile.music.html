@@ -5,8 +5,20 @@
       <h3>AI Müzik Üret</h3>
       <p>Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.</p>
     </div>
-    <label class="field-label" for="musicTitle">Şarkı adı</label>
-    <input id="musicTitle" class="field-input" type="text" placeholder="Örn: Gece Yolu">
+   <label class="field-label" for="musicTitle">Şarkı adı</label>
+<input
+  id="musicTitle"
+  name="aivo_mobile_song_title_x91"
+  class="field-input"
+  type="text"
+  autocomplete="new-password"
+  autocapitalize="none"
+  autocorrect="off"
+  spellcheck="false"
+  readonly
+  onfocus="this.removeAttribute('readonly'); if (this.value.includes('@')) this.value = '';"
+  placeholder="Örn: Gece Yolu"
+>
 
     <label class="field-label" for="musicPrompt">Prompt</label>
     <textarea id="musicPrompt" class="field-textarea" placeholder="Ritim, mood, tür ve vokal detaylarını yaz..."></textarea>
