@@ -69,7 +69,65 @@
     setValue("[data-mobile-profile-surname-input]", user.surname || "", root);
     setValue("[data-mobile-profile-email-input]", user.email || "", root);
   }
+  async function saveProfile(){
+    const root = document.getElementById("mobileAccountProfilePage");
+    if (!root) return;
 
+    const nameInput = qs("[data-mobile-profile-name-input]", root);
+    const surnameInput = qs("[data-mobile-profile-surname-input]", root);
+    const saveBtn = qs("[data-mobile-profile-save]", root);
+
+    const name = String(nameInput && nameInput.value ? nameInput.value : "").trim();
+    const surname = String(surnameInput && surnameInput.value ? surnameInput.value : "").trim();
+
+    if (!name) {
+      alert("Ad alanı boş olamaz.");
+      return;
+    }
+
+    if (saveBtn) saveBtn.disabled = true;
+
+    try {
+      const res = await fetch("/api/auth/profile-update", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          name: name,
+          surname: surname
+        })
+      });
+
+      const json = await res.json().catch(function(){
+        return null;
+      });
+
+      if (!res.ok || !json || json.ok !== true) {
+        throw new Error((json && json.error) || "profile_update_failed");
+      }
+
+      const nextUser = normalizeUser(json);
+
+      hydrateProfile(nextUser);
+
+      if (window.toast && typeof window.toast.success === "function") {
+        window.toast.success("Profil güncellendi.");
+      } else {
+        alert("Profil güncellendi.");
+      }
+    } catch (err) {
+      if (window.toast && typeof window.toast.error === "function") {
+        window.toast.error("Profil güncellenemedi.");
+      } else {
+        alert("Profil güncellenemedi.");
+      }
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  }
   async function initMobileAccount(){
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
