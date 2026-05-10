@@ -357,3 +357,6 @@ body:has(#mobileCreditsMount:not([hidden])) .hero{
 body:has(#mobileCreditsMount:not([hidden])) .mobile-credits-hero{
   margin-top:4px;
 }
+body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
+  display:none;
+}
