@@ -213,3 +213,30 @@
   line-height:1.45;
   font-weight:700;
 }
+.mobile-home-section-head-center{
+  justify-content:center;
+  text-align:center;
+  margin-top:8px;
+}
+
+.mobile-home-section-head-center h3{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding-bottom:10px;
+  font-size:24px;
+}
+
+.mobile-home-section-head-center h3::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:0;
+  width:72px;
+  height:3px;
+  border-radius:999px;
+  transform:translateX(-50%);
+  background:linear-gradient(135deg,#38bdf8,#8b5cf6,#ec4899);
+  box-shadow:0 0 18px rgba(139,92,246,.45);
+}
