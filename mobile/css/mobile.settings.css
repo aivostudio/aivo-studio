@@ -81,13 +81,25 @@
 }
 
 .mobile-settings-tabs{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:2px 2px 8px;
+  margin:0 -2px;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+
+.mobile-settings-tabs::-webkit-scrollbar{
+  display:none;
 }
 
 .mobile-settings-tab{
+  flex:0 0 auto;
+  min-width:124px;
   min-height:44px;
+  padding:0 18px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.12);
   background:rgba(255,255,255,.055);
@@ -95,8 +107,8 @@
   font:inherit;
   font-size:12px;
   font-weight:900;
+  scroll-snap-align:center;
 }
-
 .mobile-settings-tab.is-active{
   color:#fff;
   border-color:rgba(167,139,250,.44);
