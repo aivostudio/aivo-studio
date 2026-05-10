@@ -447,7 +447,14 @@ background:
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+.mobile-cartoon-upload-card small{
+  display:none !important;
+}
 
+.mobile-cartoon-upload-card{
+  min-height:58px !important;
+  padding:18px 8px 12px !important;
+}
 .mobile-cartoon-upload-clear{
   position:absolute;
   right:6px;
