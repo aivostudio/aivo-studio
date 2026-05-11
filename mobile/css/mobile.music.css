@@ -1354,3 +1354,41 @@ body.mobile-sheet-open{
   font-size:11px;
   font-weight:750;
 }
+.mobile-music-confirm-text{
+  margin:2px 0 16px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.76);
+  font-size:13px;
+  line-height:1.45;
+  font-weight:750;
+}
+
+.mobile-music-confirm-actions{
+  display:grid;
+  grid-template-columns:1fr 1.35fr;
+  gap:10px;
+}
+
+.mobile-music-confirm-cancel,
+.mobile-music-confirm-submit{
+  min-height:48px;
+  border-radius:17px;
+  font-size:14px;
+  font-weight:950;
+}
+
+.mobile-music-confirm-cancel{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);
+  color:#fff;
+}
+
+.mobile-music-confirm-submit{
+  border:1px solid rgba(236,72,153,.42);
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  box-shadow:0 12px 28px rgba(236,72,153,.24);
+}
