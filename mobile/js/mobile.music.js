@@ -562,7 +562,40 @@ if (deleteEl) {
         `;
         return;
       }
+           const channelsBtn = e.target.closest('[data-mobile-sheet-action="channels"]');
+      if (channelsBtn) {
+        e.preventDefault();
+        e.stopPropagation();
 
+        sheet.querySelector(".mobile-music-sheet").innerHTML = `
+          <div class="mobile-music-sheet-handle"></div>
+
+          <div class="mobile-music-sheet-head">
+            <div>
+              <div class="mobile-music-sheet-kicker">Kanallar</div>
+              <div class="mobile-music-sheet-title">${safe(title)}</div>
+            </div>
+
+            <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+              ×
+            </button>
+          </div>
+
+          <div class="mobile-channel-grid">
+            <button class="mobile-channel-btn mobile-channel-vocals" type="button" title="Vokal" aria-label="Vokal"></button>
+            <button class="mobile-channel-btn mobile-channel-drums" type="button" title="Davul" aria-label="Davul"></button>
+            <button class="mobile-channel-btn mobile-channel-bass" type="button" title="Bass" aria-label="Bass"></button>
+            <button class="mobile-channel-btn mobile-channel-guitar" type="button" title="Gitar" aria-label="Gitar"></button>
+            <button class="mobile-channel-btn mobile-channel-piano" type="button" title="Piyano" aria-label="Piyano"></button>
+          </div>
+
+          <div class="mobile-music-confirm-text">
+            Hazır kanal dosyalarını indirmek için ikonlara dokun.
+          </div>
+        `;
+
+        return;
+      }
       const cancelBtn = e.target.closest('[data-mobile-sheet-action="cancel"]');
       if (cancelBtn) {
         e.preventDefault();
