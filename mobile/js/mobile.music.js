@@ -516,8 +516,9 @@ if (deleteEl) {
     }
 
      sheet.addEventListener("click", async function(e){
-      if (e.target === sheet) {
-        closeSheet();
+        if (e.target === sheet) {
+        e.preventDefault();
+        e.stopPropagation();
         return;
       }
 
