@@ -755,9 +755,9 @@ let accountMount = document.getElementById("mobileAccountMount");
   }
 }
     try {
-     const musicRes = await fetch("/mobile/modules/mobile.music.html?v=2", {
-  cache: "no-store"
-});
+      const musicRes = await fetch("/mobile/modules/mobile.music.html?v=1", {
+        cache: "no-store"
+      });
 
       if (!musicRes.ok) {
         throw new Error("mobile_music_html_load_failed");
@@ -1387,56 +1387,8 @@ function showLipsync(){
   return;
 }
 
-           e.preventDefault();
-        e.stopImmediatePropagation();
-
-        homeMount.hidden = true;
-        musicMount.hidden = false;
-        coverMount.hidden = true;
-        atmoMount.hidden = true;
-
-        if (cartoonMount) cartoonMount.hidden = true;
-        if (photofxMount) photofxMount.hidden = true;
-        if (videoMount) videoMount.hidden = true;
-        if (lipsyncMount) lipsyncMount.hidden = true;
-        if (toolsMount) toolsMount.hidden = true;
-        if (creditsMount) creditsMount.hidden = true;
-        if (accountMount) accountMount.hidden = true;
-
-        function forceMusicProductionsView(){
-          const musicFormSection = document.getElementById("mobileHomeSection");
-          const musicProductionsSection = document.getElementById("mobileProductionsSection");
-
-          if (musicFormSection) {
-            musicFormSection.hidden = true;
-            musicFormSection.style.display = "none";
-          }
-
-          if (musicProductionsSection) {
-            musicProductionsSection.hidden = false;
-            musicProductionsSection.style.display = "block";
-          }
-        }
-
+        showMusic();
         setActiveNav(productionsNav);
-
-        if (typeof window.mobileMusicHydrate === "function") {
-          window.mobileMusicHydrate();
-        }
-
-        forceMusicProductionsView();
-
-        requestAnimationFrame(function(){
-          forceMusicProductionsView();
-        });
-
-        setTimeout(function(){
-          forceMusicProductionsView();
-        }, 150);
-
-        window.scrollTo({ top: 0, behavior: "smooth" });
-
-        return;
       }, true);
     }
 
