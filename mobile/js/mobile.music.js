@@ -412,9 +412,7 @@ miniAudioEl.play().catch(function(){
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
           statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
 
-             if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
+       
                 if (mobileMusicLibraryEl) {
         mobileMusicLibraryEl.hidden = true;
 
@@ -576,9 +574,7 @@ if (deleteBtn) {
 
       statusEl.textContent = "Üretim kuyruğa alındı.";
 
-         if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
+      
 
      resultsEl.hidden = false;
 resultsEl.removeAttribute("hidden");
