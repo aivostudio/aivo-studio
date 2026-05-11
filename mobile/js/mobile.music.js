@@ -530,10 +530,21 @@ if (deleteBtn) {
       const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
       const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
 
-      statusEl.textContent = "Üretim kuyruğa alındı.";
+           statusEl.textContent = "Üretim kuyruğa alındı.";
 
          if (productionsSectionEl) {
         productionsSectionEl.hidden = false;
+      }
+
+      if (mobileMusicLibraryEl) {
+        mobileMusicLibraryEl.hidden = true;
+        mobileMusicLibraryEl.style.display = "none";
+
+        const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
+        if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
+          libraryTitleEl.hidden = true;
+          libraryTitleEl.style.display = "none";
+        }
       }
 
       resultsEl.hidden = false;
