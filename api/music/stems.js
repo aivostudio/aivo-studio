@@ -26,12 +26,12 @@ async function patchJobStems(jobId, stemsPatch) {
   try {
     const sql = neon(conn);
 
-    await sql`
+      await sql`
       update jobs
       set
-        meta = coalesce(meta, '{}'::jsonb) || ${{
-          stems: stemsPatch,
-        }}::jsonb,
+        meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify({
+          stems: stemsPatch
+        })}::jsonb,
         updated_at = now()
       where id = ${id}::uuid
         and app = ${"music"}
