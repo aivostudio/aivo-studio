@@ -186,6 +186,11 @@ if (moreEl) {
   moreEl.addEventListener("click", function(e){
     e.preventDefault();
     e.stopPropagation();
+
+    openMusicMoreSheet({
+      title,
+      row
+    });
   });
 }
 
@@ -345,6 +350,68 @@ if (deleteEl) {
         </div>
       `;
     }
+  }
+    function openMusicMoreSheet(payload){
+    const oldSheet = document.getElementById("mobileMusicMoreSheet");
+    if (oldSheet) oldSheet.remove();
+
+    const title = String(payload?.title || "Yeni müzik");
+
+    const sheet = document.createElement("div");
+    sheet.id = "mobileMusicMoreSheet";
+    sheet.className = "mobile-music-sheet-backdrop";
+
+    sheet.innerHTML = `
+      <div class="mobile-music-sheet" role="dialog" aria-modal="true">
+        <div class="mobile-music-sheet-handle"></div>
+
+        <div class="mobile-music-sheet-head">
+          <div>
+            <div class="mobile-music-sheet-kicker">Diğer işlemler</div>
+            <div class="mobile-music-sheet-title">${safe(title)}</div>
+          </div>
+
+          <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+            ×
+          </button>
+        </div>
+
+        <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="stems">
+          <span>
+            <strong>Kanal Ayırma</strong>
+            <small>Bu işlem 5 kredi kullanır</small>
+          </span>
+        </button>
+      </div>
+    `;
+
+    function closeSheet(){
+      sheet.remove();
+      document.body.classList.remove("mobile-sheet-open");
+    }
+
+    sheet.addEventListener("click", function(e){
+      if (e.target === sheet) {
+        closeSheet();
+        return;
+      }
+
+      const closeBtn = e.target.closest(".mobile-music-sheet-close");
+      if (closeBtn) {
+        closeSheet();
+        return;
+      }
+
+      const stemsBtn = e.target.closest('[data-mobile-sheet-action="stems"]');
+      if (stemsBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeSheet();
+      }
+    });
+
+    document.body.appendChild(sheet);
+    document.body.classList.add("mobile-sheet-open");
   }
 
   function safe(value){
