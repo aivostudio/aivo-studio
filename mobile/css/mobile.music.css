@@ -1108,3 +1108,6 @@ filter:drop-shadow(0 0 9px rgba(139,92,246,.58));
 #mobileProductionsSection #mobileMusicResults[hidden]{
   display:none !important;
 }
+#mobileProductionsSection #mobileMusicResults{
+  display:none !important;
+}
