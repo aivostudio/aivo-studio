@@ -9,6 +9,7 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   const homeSectionEl = document.getElementById("mobileHomeSection");
   const productionsSectionEl = document.getElementById("mobileProductionsSection");
   const mobileMusicLibraryEl = document.getElementById("mobileMusicLibrary");
+    const mobileMusicJobs = [];
   const productionsNavEl = document.querySelector('.bottom-nav a[href="#productions"]');
   const homeNavEl = document.querySelector('.bottom-nav a[href="#home"]');
   const miniPlayerEl = document.getElementById("mobileMiniPlayer");
