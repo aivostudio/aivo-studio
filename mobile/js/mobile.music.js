@@ -212,12 +212,17 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
         const deleteEl = item.querySelector(".mobile-library-delete");
         const lyricsEl = item.querySelector(".mobile-library-lyrics");
 
-       if (lyricsEl) {
-       lyricsEl.addEventListener("click", function(e){
-       e.preventDefault();
-       e.stopPropagation();
-     });
-    }
+     if (lyricsEl) {
+  lyricsEl.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    openMusicLyricsSheet({
+      title,
+      row
+    });
+  });
+}
       const moreEl = item.querySelector(".mobile-library-more");
 
 if (moreEl) {
@@ -391,6 +396,118 @@ if (deleteEl) {
       `;
     }
   }
+  function openMusicLyricsSheet(payload){
+  const oldSheet = document.getElementById("mobileMusicLyricsSheet");
+  if (oldSheet) oldSheet.remove();
+
+  const title = String(payload?.title || "Yeni müzik");
+
+  const lyrics = String(
+    payload?.row?.lyrics ||
+    payload?.row?.meta?.lyrics ||
+    payload?.row?.meta?.song_lyrics ||
+    payload?.row?.meta?.text ||
+    ""
+  ).trim();
+
+  const sheet = document.createElement("div");
+  sheet.id = "mobileMusicLyricsSheet";
+  sheet.className = "mobile-music-sheet-backdrop";
+
+  sheet.innerHTML = `
+    <div class="mobile-music-sheet" role="dialog" aria-modal="true">
+      <div class="mobile-music-sheet-handle"></div>
+
+      <div class="mobile-music-sheet-head">
+        <div>
+          <div class="mobile-music-sheet-kicker">Şarkı Sözleri</div>
+          <div class="mobile-music-sheet-title">${safe(title)}</div>
+        </div>
+
+        <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+          ×
+        </button>
+      </div>
+
+      <div class="mobile-music-confirm-text" style="max-height:48vh; overflow:auto; text-align:left !important; white-space:pre-wrap;">
+        ${lyrics ? safe(lyrics) : "Bu müzik için kayıtlı şarkı sözü bulunamadı."}
+      </div>
+
+      ${
+        lyrics
+          ? `
+            <div class="mobile-music-confirm-actions">
+              <button class="mobile-music-confirm-cancel" type="button" data-mobile-lyrics-action="share">
+                Paylaş
+              </button>
+
+              <button class="mobile-music-confirm-submit" type="button" data-mobile-lyrics-action="copy">
+                Kopyala
+              </button>
+            </div>
+          `
+          : ""
+      }
+    </div>
+  `;
+
+  function closeSheet(){
+    sheet.remove();
+    document.body.classList.remove("mobile-sheet-open");
+  }
+
+  sheet.addEventListener("click", async function(e){
+    if (e.target === sheet) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    const closeBtn = e.target.closest(".mobile-music-sheet-close");
+    if (closeBtn) {
+      closeSheet();
+      return;
+    }
+
+    const copyBtn = e.target.closest('[data-mobile-lyrics-action="copy"]');
+    if (copyBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        await navigator.clipboard.writeText(lyrics);
+        if (statusEl) statusEl.textContent = "Şarkı sözleri kopyalandı.";
+      } catch (err) {
+        if (statusEl) statusEl.textContent = "Kopyalama başarısız.";
+      }
+
+      return;
+    }
+
+    const shareBtn = e.target.closest('[data-mobile-lyrics-action="share"]');
+    if (shareBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "AIVO Şarkı Sözleri - " + title,
+            text: lyrics
+          });
+        } else {
+          await navigator.clipboard.writeText(lyrics);
+          if (statusEl) statusEl.textContent = "Paylaşım desteklenmiyor, sözler kopyalandı.";
+        }
+      } catch (err) {}
+
+      return;
+    }
+  });
+
+  document.body.appendChild(sheet);
+  document.body.classList.add("mobile-sheet-open");
+}
     function openMusicMoreSheet(payload){
     const oldSheet = document.getElementById("mobileMusicMoreSheet");
     if (oldSheet) oldSheet.remove();
