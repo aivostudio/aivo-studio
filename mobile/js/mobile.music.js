@@ -469,40 +469,87 @@ if (deleteEl) {
       return;
     }
 
-    const copyBtn = e.target.closest('[data-mobile-lyrics-action="copy"]');
-    if (copyBtn) {
-      e.preventDefault();
-      e.stopPropagation();
+const copyBtn = e.target.closest('[data-mobile-lyrics-action="copy"]');
+if (copyBtn) {
+  e.preventDefault();
+  e.stopPropagation();
 
-      try {
-        await navigator.clipboard.writeText(lyrics);
-        if (statusEl) statusEl.textContent = "Şarkı sözleri kopyalandı.";
-      } catch (err) {
-        if (statusEl) statusEl.textContent = "Kopyalama başarısız.";
-      }
-
-      return;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(lyrics);
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = lyrics;
+      ta.setAttribute("readonly", "readonly");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
     }
 
-    const shareBtn = e.target.closest('[data-mobile-lyrics-action="share"]');
-    if (shareBtn) {
-      e.preventDefault();
-      e.stopPropagation();
+    if (statusEl) statusEl.textContent = "Şarkı sözleri kopyalandı.";
+  } catch (err) {
+    if (statusEl) statusEl.textContent = "Kopyalama başarısız.";
+  }
 
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: "AIVO Şarkı Sözleri - " + title,
-            text: lyrics
-          });
-        } else {
-          await navigator.clipboard.writeText(lyrics);
-          if (statusEl) statusEl.textContent = "Paylaşım desteklenmiyor, sözler kopyalandı.";
-        }
-      } catch (err) {}
+  return;
+}
 
-      return;
+const shareBtn = e.target.closest('[data-mobile-lyrics-action="share"]');
+if (shareBtn) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const shareText = "AIVO Şarkı Sözleri - " + title + "\n\n" + lyrics;
+
+  try {
+    if (navigator.share && navigator.canShare) {
+      await navigator.share({
+        text: shareText
+      });
+    } else if (navigator.share) {
+      await navigator.share({
+        text: shareText
+      });
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = shareText;
+      ta.setAttribute("readonly", "readonly");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+
+      if (statusEl) statusEl.textContent = "Paylaşım desteklenmiyor, sözler kopyalandı.";
     }
+  } catch (err) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = shareText;
+      ta.setAttribute("readonly", "readonly");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+
+      if (statusEl) statusEl.textContent = "Paylaşım iptal edildi, sözler kopyalandı.";
+    } catch (copyErr) {}
+  }
+
+  return;
+}
   });
 
   document.body.appendChild(sheet);
