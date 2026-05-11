@@ -370,7 +370,9 @@ miniAudioEl.play().catch(function(){
         productionsSectionEl.hidden = false;
       }
 
-      resultsEl.hidden = false;
+    resultsEl.hidden = false;
+resultsEl.removeAttribute("hidden");
+resultsEl.style.display = "flex";
       resultsEl.className = "";
       resultsEl.innerHTML = "";
 
@@ -524,7 +526,9 @@ if (deleteBtn) {
         productionsSectionEl.hidden = false;
       }
 
-      resultsEl.hidden = false;
+     resultsEl.hidden = false;
+resultsEl.removeAttribute("hidden");
+resultsEl.style.display = "flex";
       resultsEl.className = "";
       resultsEl.innerHTML = "";
       ["Orijinal", "Versiyon 2"].forEach(function(label, index){
