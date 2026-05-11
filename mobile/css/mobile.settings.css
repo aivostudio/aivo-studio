@@ -565,3 +565,31 @@
 .mobile-contact-submit:active{
   transform:scale(.985);
 }
+.mobile-account-contact-section .mobile-settings-hero{
+  padding:16px 16px 18px;
+  border-radius:28px;
+}
+
+.mobile-account-contact-section .mobile-account-back--inside{
+  min-height:38px;
+  margin-bottom:14px;
+  padding:0 15px;
+  font-size:13px;
+}
+
+.mobile-account-contact-section .mobile-settings-kicker{
+  min-height:30px;
+  padding:0 13px;
+  font-size:11px;
+}
+
+.mobile-account-contact-section .mobile-settings-hero h3{
+  margin-top:10px;
+  font-size:24px;
+}
+
+.mobile-account-contact-section .mobile-settings-hero p{
+  margin-top:8px;
+  font-size:12px;
+  line-height:1.42;
+}
