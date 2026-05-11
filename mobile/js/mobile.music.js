@@ -595,9 +595,12 @@ if (deleteEl) {
             </div>
           `;
 
-          if (statusEl) {
+                  if (statusEl) {
             statusEl.textContent = "Kanal ayırma başlatıldı.";
           }
+
+          pollMobileStemsPrediction(stemsPredictionId);
+          return;
 
           return;
         } catch (err) {
