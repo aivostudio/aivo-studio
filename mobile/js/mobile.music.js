@@ -375,11 +375,19 @@ if (deleteEl) {
     function openMusicMoreSheet(payload){
     const oldSheet = document.getElementById("mobileMusicMoreSheet");
     if (oldSheet) oldSheet.remove();
-
-         const title = String(payload?.title || "Yeni müzik");
+    const title = String(payload?.title || "Yeni müzik");
     const audioUrl = String(payload?.audioUrl || "");
     const itemEl = payload?.item || null;
     const currentStemsStatus = String(itemEl?.dataset?.stemsStatus || "");
+
+    const stemsJobId = String(
+      payload?.row?.job_id ||
+      payload?.row?.id ||
+      payload?.row?.db_job_id ||
+      payload?.row?.internal_job_id ||
+      payload?.row?.meta?.internal_job_id ||
+      ""
+    );
 
     const stemsStorageKey = "aivo_mobile_stems_" + String(
       payload?.row?.id ||
@@ -458,8 +466,9 @@ if (deleteEl) {
               "content-type": "application/json",
               "accept": "application/json"
             },
-            body: JSON.stringify({
-              prediction_id: predictionId
+                body: JSON.stringify({
+              prediction_id: predictionId,
+              job_id: stemsJobId
             })
           });
 
@@ -724,8 +733,9 @@ if (deleteEl) {
               "content-type": "application/json",
               "accept": "application/json"
             },
-            body: JSON.stringify({
-              audio_url: audioUrl
+                 body: JSON.stringify({
+              audio_url: audioUrl,
+              job_id: stemsJobId
             })
           });
 
