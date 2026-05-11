@@ -412,9 +412,19 @@ miniAudioEl.play().catch(function(){
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
           statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
 
-             if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
+       if (homeSectionEl) {
+  homeSectionEl.hidden = false;
+}
+
+if (productionsSectionEl) {
+  productionsSectionEl.hidden = true;
+}
+
+hideMusicLibrary();
+
+if (resultsEl.parentElement !== homeSectionEl) {
+  homeSectionEl.appendChild(resultsEl);
+}
                 if (mobileMusicLibraryEl) {
         mobileMusicLibraryEl.hidden = true;
 
@@ -575,11 +585,19 @@ if (deleteBtn) {
       const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
 
       statusEl.textContent = "Üretim kuyruğa alındı.";
+if (homeSectionEl) {
+  homeSectionEl.hidden = false;
+}
 
-         if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
+if (productionsSectionEl) {
+  productionsSectionEl.hidden = true;
+}
 
+hideMusicLibrary();
+
+if (resultsEl.parentElement !== homeSectionEl) {
+  homeSectionEl.appendChild(resultsEl);
+}
      resultsEl.hidden = false;
 resultsEl.removeAttribute("hidden");
 resultsEl.style.display = "flex";
