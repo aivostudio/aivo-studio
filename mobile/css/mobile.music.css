@@ -1247,3 +1247,110 @@ filter:drop-shadow(0 0 9px rgba(139,92,246,.58));
   width:17px !important;
   height:17px !important;
 }
+body.mobile-sheet-open{
+  overflow:hidden !important;
+}
+
+.mobile-music-sheet-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(0,0,0,.52);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+
+.mobile-music-sheet{
+  width:min(430px,100%);
+  padding:10px 14px calc(18px + env(safe-area-inset-bottom));
+  border-radius:28px 28px 0 0;
+  background:
+    radial-gradient(220px 120px at 50% 0%, rgba(236,72,153,.18), transparent 62%),
+    rgba(12,13,24,.96);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 -20px 48px rgba(0,0,0,.42);
+}
+
+.mobile-music-sheet-handle{
+  width:44px;
+  height:5px;
+  margin:0 auto 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.28);
+}
+
+.mobile-music-sheet-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.mobile-music-sheet-kicker{
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:850;
+}
+
+.mobile-music-sheet-title{
+  margin-top:3px;
+  color:#fff;
+  font-size:18px;
+  line-height:1.1;
+  font-weight:950;
+}
+
+.mobile-music-sheet-close{
+  width:40px;
+  height:40px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:15px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:24px;
+  font-weight:800;
+}
+
+.mobile-music-sheet-action{
+  width:100%;
+  min-height:64px;
+  padding:12px 14px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.13);
+  background:rgba(255,255,255,.065);
+  color:#fff;
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  text-align:left;
+}
+
+.mobile-music-sheet-action::before{
+  content:"";
+  width:28px;
+  height:28px;
+  display:block;
+  background:linear-gradient(135deg,#fff,#f472ff,#8b5cf6);
+  filter:drop-shadow(0 0 10px rgba(139,92,246,.65));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+.mobile-music-sheet-action strong{
+  display:block;
+  font-size:15px;
+  font-weight:950;
+}
+
+.mobile-music-sheet-action small{
+  display:block;
+  margin-top:3px;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:750;
+}
