@@ -1387,13 +1387,34 @@ function showLipsync(){
   return;
 }
 
-               showMusic();
+                    e.preventDefault();
+        e.stopImmediatePropagation();
+
+        homeMount.hidden = true;
+        musicMount.hidden = false;
+        coverMount.hidden = true;
+        atmoMount.hidden = true;
+
+        if (cartoonMount) cartoonMount.hidden = true;
+        if (photofxMount) photofxMount.hidden = true;
+        if (videoMount) videoMount.hidden = true;
+        if (lipsyncMount) lipsyncMount.hidden = true;
+        if (toolsMount) toolsMount.hidden = true;
+        if (creditsMount) creditsMount.hidden = true;
+        if (accountMount) accountMount.hidden = true;
 
         const musicFormSection = document.getElementById("mobileHomeSection");
         const musicProductionsSection = document.getElementById("mobileProductionsSection");
 
-        if (musicFormSection) musicFormSection.hidden = true;
-        if (musicProductionsSection) musicProductionsSection.hidden = false;
+        if (musicFormSection) {
+          musicFormSection.hidden = true;
+          musicFormSection.style.display = "none";
+        }
+
+        if (musicProductionsSection) {
+          musicProductionsSection.hidden = false;
+          musicProductionsSection.style.display = "";
+        }
 
         setActiveNav(productionsNav);
 
@@ -1402,6 +1423,8 @@ function showLipsync(){
         }
 
         window.scrollTo({ top: 0, behavior: "smooth" });
+
+        return;
       }, true);
     }
 
