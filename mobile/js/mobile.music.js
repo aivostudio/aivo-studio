@@ -474,7 +474,8 @@ if (deleteEl) {
             })
           });
 
-          const data = await res.json();
+               const data = await res.json();
+          const stemsPredictionId = String(data.id || data.prediction_id || "");
 
           if (!res.ok || !data || data.ok === false) {
             if (statusEl) {
