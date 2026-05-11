@@ -1024,15 +1024,20 @@ try {
   const accountContactMount = document.getElementById("mobileAccountContactMount");
 
   if (accountContactMount) {
-    const accountContactRes = await fetch("/mobile/modules/account-contact.html?v=1", {
-      cache: "no-store"
-    });
+   const accountContactRes = await fetch("/mobile/modules/account-contact.html?v=1", {
+  cache: "no-store"
+});
 
-    if (!accountContactRes.ok) {
-      throw new Error("mobile_account_contact_html_load_failed");
-    }
+if (!accountContactRes.ok) {
+  throw new Error("mobile_account_contact_html_load_failed");
+}
 
-    accountContactMount.innerHTML = await accountContactRes.text();
+accountContactMount.innerHTML = await accountContactRes.text();
+
+const contactScript = document.createElement("script");
+contactScript.src = "/mobile/js/mobile.contact.js?v=1";
+contactScript.defer = true;
+document.body.appendChild(contactScript);
   }
 } catch (err) {
   const accountContactMount = document.getElementById("mobileAccountContactMount");
