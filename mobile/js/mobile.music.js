@@ -154,8 +154,12 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
          ↓
          </button>
 
-        <button class="mobile-library-play mobile-library-delete" type="button" title="Sil" aria-label="Sil">
+               <button class="mobile-library-play mobile-library-delete" type="button" title="Sil" aria-label="Sil">
          ×
+        </button>
+
+        <button class="mobile-library-play mobile-library-more" type="button" title="Diğer işlemler" aria-label="Diğer işlemler">
+         ...
         </button>
           </div>
         `;
