@@ -1394,8 +1394,8 @@ const musicProductionsSection = document.getElementById("mobileProductionsSectio
 if (musicFormSection) musicFormSection.hidden = true;
 if (musicProductionsSection) {
   musicProductionsSection.hidden = false;
-window.scrollTo({
-  top: musicProductionsSection.getBoundingClientRect().top + window.scrollY - 12,
+document.documentElement.scrollTo({
+  top: musicProductionsSection.offsetTop - 12,
   behavior: "smooth"
 });
 }
