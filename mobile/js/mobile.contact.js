@@ -48,10 +48,28 @@
         submitBtn.textContent = "Gönderiliyor...";
       }
 
-      try {
-        await new Promise(function(resolve){
-          setTimeout(resolve, 700);
+         try {
+        const res = await fetch("/api/send-mail", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            message: "Konu: " + subject + "\n\n" + message,
+            source: "studio/contact"
+          })
         });
+
+        const data = await res.json().catch(function(){
+          return {};
+        });
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.message || "contact_submit_failed");
+        }
 
         toast("Mesajın alındı. En kısa sürede dönüş yapacağız.");
         form.reset();
