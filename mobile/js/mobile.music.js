@@ -2,7 +2,7 @@
   const btn = document.getElementById("mobileMusicGenerateBtn");
   const titleEl = document.getElementById("musicTitle");
   const promptEl = document.getElementById("musicPrompt");
-const moodEl = document.getElementById("mobileMusicMood") || document.getElementById("musicMood");
+  const moodEl = document.getElementById("musicMood");
   const lyricsEl = document.getElementById("musicLyrics");
   const statusEl = document.getElementById("mobileMusicStatus");
   const resultsEl = document.getElementById("mobileMusicResults");
@@ -38,16 +38,6 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   productionsNavEl.addEventListener("click", function(e){
     e.preventDefault();
     showMobileSection("productions");
-
-    if (mobileMusicLibraryEl) {
-      mobileMusicLibraryEl.hidden = false;
-
-      const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
-      if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
-        libraryTitleEl.hidden = false;
-      }
-    }
-
     hydrateMusicLibrary();
   });
 
@@ -376,23 +366,9 @@ miniAudioEl.play().catch(function(){
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
           statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
 
-             if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
-                if (mobileMusicLibraryEl) {
-        mobileMusicLibraryEl.hidden = true;
-
-        const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
-        if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
-          libraryTitleEl.hidden = true;
-        }
-      }
-
-    resultsEl.hidden = false;
-resultsEl.removeAttribute("hidden");
-resultsEl.style.display = "flex";
-      resultsEl.className = "";
-      resultsEl.innerHTML = "";
+          resultsEl.hidden = false;
+          resultsEl.className = "";
+          resultsEl.innerHTML = "";
 
           outputs.forEach(function(output, index){
             const card = document.createElement("div");
@@ -540,15 +516,10 @@ if (deleteBtn) {
 
       statusEl.textContent = "Üretim kuyruğa alındı.";
 
-         if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
-
-     resultsEl.hidden = false;
-resultsEl.removeAttribute("hidden");
-resultsEl.style.display = "flex";
+      resultsEl.hidden = false;
       resultsEl.className = "";
       resultsEl.innerHTML = "";
+
       ["Orijinal", "Versiyon 2"].forEach(function(label, index){
         const cardTitle = index === 0
           ? (title || "Yeni müzik")
