@@ -259,6 +259,19 @@
         toast("Export hazırlandı.");
       });
     }
+     const privacyBtn = qs("[data-mobile-policy-privacy]", root);
+if (privacyBtn) {
+  privacyBtn.addEventListener("click", function(){
+    window.location.href = "/mobile/modules/mobile-policy-privacy.html";
+  });
+}
+
+const termsBtn = qs("[data-mobile-policy-terms]", root);
+if (termsBtn) {
+  termsBtn.addEventListener("click", function(){
+    window.location.href = "/mobile/modules/mobile-policy-terms.html";
+  });
+}
   }
 
   function mobileSettingsInit(){
