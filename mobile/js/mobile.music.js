@@ -387,9 +387,100 @@ if (deleteEl) {
       </div>
     `;
 
-    function closeSheet(){
+       function closeSheet(){
       sheet.remove();
       document.body.classList.remove("mobile-sheet-open");
+    }
+
+    function pollMobileStemsPrediction(predictionId){
+      if (!predictionId) return;
+
+      let tries = 0;
+
+      async function tick(){
+        tries += 1;
+
+        try {
+          const res = await fetch("/api/music/stems", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              prediction_id: predictionId
+            })
+          });
+
+          const data = await res.json();
+
+          const status = String(data.status || "").toLowerCase();
+
+          if (status === "succeeded") {
+            sheet.querySelector(".mobile-music-sheet").innerHTML = `
+              <div class="mobile-music-sheet-handle"></div>
+
+              <div class="mobile-music-sheet-head">
+                <div>
+                  <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
+                  <div class="mobile-music-sheet-title">Kanallar hazır</div>
+                </div>
+
+                <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                  ×
+                </button>
+              </div>
+
+              <div class="mobile-music-confirm-text">
+                Kanal ayırma tamamlandı. Bir sonraki adımda bu dosyaları kart içine indirebilir hale getireceğiz.
+              </div>
+            `;
+
+            if (statusEl) {
+              statusEl.textContent = "Kanal ayırma tamamlandı.";
+            }
+
+            return;
+          }
+
+          if (status === "failed" || status === "canceled" || status === "cancelled") {
+            sheet.querySelector(".mobile-music-sheet").innerHTML = `
+              <div class="mobile-music-sheet-handle"></div>
+
+              <div class="mobile-music-sheet-head">
+                <div>
+                  <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
+                  <div class="mobile-music-sheet-title">İşlem başarısız</div>
+                </div>
+
+                <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                  ×
+                </button>
+              </div>
+
+              <div class="mobile-music-confirm-text">
+                Kanal ayırma tamamlanamadı. Lütfen tekrar dene.
+              </div>
+            `;
+
+            if (statusEl) {
+              statusEl.textContent = "Kanal ayırma başarısız.";
+            }
+
+            return;
+          }
+
+          if (tries < 60) {
+            setTimeout(tick, 2500);
+          }
+        } catch (err) {
+          if (tries < 60) {
+            setTimeout(tick, 3000);
+          }
+        }
+      }
+
+      tick();
     }
 
      sheet.addEventListener("click", async function(e){
