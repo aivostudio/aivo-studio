@@ -641,3 +641,8 @@
 .mobile-settings-hero .mobile-account-back--inside::before{
   display:block !important;
 }
+.mobile-settings-hero .mobile-account-back--inside{
+  top:18px;
+  left:18px;
+  transform:translate(-8px,-8px);
+}
