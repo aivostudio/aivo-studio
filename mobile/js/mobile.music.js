@@ -187,10 +187,11 @@ if (moreEl) {
     e.preventDefault();
     e.stopPropagation();
 
-     openMusicMoreSheet({
+        openMusicMoreSheet({
       title,
       row,
-      audioUrl: resolvedAudioUrl
+      audioUrl: resolvedAudioUrl,
+      item
     });
   });
 }
@@ -356,8 +357,9 @@ if (deleteEl) {
     const oldSheet = document.getElementById("mobileMusicMoreSheet");
     if (oldSheet) oldSheet.remove();
 
-    const title = String(payload?.title || "Yeni müzik");
-     const audioUrl = String(payload?.audioUrl || "");
+      const title = String(payload?.title || "Yeni müzik");
+    const audioUrl = String(payload?.audioUrl || "");
+    const itemEl = payload?.item || null;
 
     const sheet = document.createElement("div");
     sheet.id = "mobileMusicMoreSheet";
@@ -594,8 +596,16 @@ if (deleteEl) {
               Kanal ayırma hazırlanıyor. Sonuçlar hazır olunca bu müzik kartında gösterilecek.
             </div>
           `;
+          if (itemEl) {
+            const subTextEl = itemEl.querySelector(".mobile-library-sub");
+            if (subTextEl) {
+              subTextEl.textContent = "Kanal ayırma hazırlanıyor...";
+            }
 
-                  if (statusEl) {
+            itemEl.dataset.stemsStatus = "processing";
+          }
+
+          if (statusEl) {
             statusEl.textContent = "Kanal ayırma başlatıldı.";
           }
 
