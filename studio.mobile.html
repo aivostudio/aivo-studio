@@ -1082,10 +1082,12 @@ function showMusic(){
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
-  const musicFormSection = document.getElementById("mobileHomeSection");
-  const musicProductionsSection = document.getElementById("mobileProductionsSection");
+ const musicFormSection = document.getElementById("mobileHomeSection");
+const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+const musicProductionsSection = document.getElementById("mobileProductionsSection");
 
-  if (musicFormSection) musicFormSection.hidden = false;
+if (musicFormSection) musicFormSection.hidden = false;
+if (musicCard) musicCard.hidden = false;
   if (musicProductionsSection) musicProductionsSection.hidden = true;
 
   const musicResults = document.getElementById("mobileMusicResults");
