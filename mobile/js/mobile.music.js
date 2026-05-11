@@ -357,6 +357,7 @@ if (deleteEl) {
     if (oldSheet) oldSheet.remove();
 
     const title = String(payload?.title || "Yeni müzik");
+     const audioUrl = String(payload?.audioUrl || "");
 
     const sheet = document.createElement("div");
     sheet.id = "mobileMusicMoreSheet";
@@ -447,12 +448,56 @@ if (deleteEl) {
         return;
       }
 
-      const confirmStemsBtn = e.target.closest('[data-mobile-sheet-action="confirm-stems"]');
+          const confirmStemsBtn = e.target.closest('[data-mobile-sheet-action="confirm-stems"]');
       if (confirmStemsBtn) {
         e.preventDefault();
         e.stopPropagation();
-        closeSheet();
-        return;
+
+        if (!audioUrl) {
+          if (statusEl) statusEl.textContent = "Kanal ayırma için ses dosyası bulunamadı.";
+          closeSheet();
+          return;
+        }
+
+        confirmStemsBtn.disabled = true;
+        confirmStemsBtn.textContent = "Başlatılıyor...";
+
+        try {
+          const res = await fetch("/api/music/stems", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              audio_url: audioUrl
+            })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok || !data || data.ok === false) {
+            if (statusEl) {
+              statusEl.textContent = "Kanal ayırma başlatılamadı.";
+            }
+            closeSheet();
+            return;
+          }
+
+          if (statusEl) {
+            statusEl.textContent = "Kanal ayırma başlatıldı.";
+          }
+
+          closeSheet();
+          return;
+        } catch (err) {
+          if (statusEl) {
+            statusEl.textContent = "Kanal ayırma bağlantı hatası.";
+          }
+
+          closeSheet();
+          return;
+        }
       }
     });
 
