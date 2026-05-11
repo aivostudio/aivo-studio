@@ -162,6 +162,65 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
         const subEl = item.querySelector(".mobile-library-sub");
         const playEl = item.querySelector(".mobile-library-play");
+        const downloadEl = item.querySelector(".mobile-library-download");
+const deleteEl = item.querySelector(".mobile-library-delete");
+
+if (downloadEl) {
+  downloadEl.addEventListener("click", async function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isReady) {
+      await wakeLibraryRow();
+    }
+
+    if (!resolvedAudioUrl) return;
+
+    const filename = "aivo-music.mp3";
+    const proxied = "/api/media/proxy?url=" + encodeURIComponent(resolvedAudioUrl) + "&filename=" + encodeURIComponent(filename);
+
+    const a = document.createElement("a");
+    a.href = proxied;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+}
+
+if (deleteEl) {
+  deleteEl.addEventListener("click", async function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    item.remove();
+
+    const deleteJobId =
+      row.id ||
+      row.job_id ||
+      row.db_job_id ||
+      row.internal_job_id ||
+      row.meta?.internal_job_id ||
+      "";
+
+    if (!deleteJobId) return;
+
+    try {
+      await fetch("/api/jobs/delete", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          job_id: deleteJobId,
+          app: "music"
+        })
+      });
+    } catch (err) {}
+  });
+}
 
         function activateLibraryRow(nextAudioUrl){
           resolvedAudioUrl = String(nextAudioUrl || "");
