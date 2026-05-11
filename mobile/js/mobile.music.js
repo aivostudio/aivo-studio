@@ -187,9 +187,10 @@ if (moreEl) {
     e.preventDefault();
     e.stopPropagation();
 
-    openMusicMoreSheet({
+     openMusicMoreSheet({
       title,
-      row
+      row,
+      audioUrl: resolvedAudioUrl
     });
   });
 }
