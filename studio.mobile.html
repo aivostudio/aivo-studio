@@ -1497,11 +1497,52 @@ const invoicesBtn = e.target.closest('[data-mobile-account-panel="invoices"]');
 const settingsBtn = e.target.closest('[data-mobile-account-panel="settings"]');
 const logoutBtn = e.target.closest('[data-mobile-account-panel="logout"]');
 const backBtn = e.target.closest("[data-mobile-account-back]");
+  const policyPrivacyBtn = e.target.closest("[data-mobile-policy-privacy]");
+const policyTermsBtn = e.target.closest("[data-mobile-policy-terms]");
+const policyBackBtn = e.target.closest("[data-mobile-settings-back]");
    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
 const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
 const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]");
     const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
+ if (policyPrivacyBtn || policyTermsBtn) {
+  e.preventDefault();
 
+  const policyUrl = policyPrivacyBtn
+    ? "/mobile/modules/mobile-policy-privacy.html?v=1"
+    : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) {
+    policyMount.hidden = false;
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+  }
+
+  try {
+    const res = await fetch(policyUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("policy_load_failed");
+    policyMount.innerHTML = await res.text();
+  } catch (err) {
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+
+if (policyBackBtn) {
+  e.preventDefault();
+
+  if (policyMount) policyMount.hidden = true;
+  if (accountMount) accountMount.hidden = false;
+
+  const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+  const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
+
+  if (accountMenu) accountMenu.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = false;
+
+  return;
+}
    if (profileBtn) {
   e.preventDefault();
   if (accountMenu) accountMenu.hidden = true;
