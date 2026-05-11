@@ -458,6 +458,16 @@ if (deleteEl) {
               </div>
             `;
 
+                      if (itemEl) {
+              const subTextEl = itemEl.querySelector(".mobile-library-sub");
+              if (subTextEl) {
+                subTextEl.textContent = "Kanallar hazır";
+              }
+
+              itemEl.dataset.stemsStatus = "ready";
+              itemEl.dataset.stemsOutput = JSON.stringify(data.output || {});
+            }
+
             if (statusEl) {
               statusEl.textContent = "Kanal ayırma tamamlandı.";
             }
@@ -616,13 +626,14 @@ if (deleteEl) {
               Kanal ayırma hazırlanıyor. Sonuçlar hazır olunca bu müzik kartında gösterilecek.
             </div>
           `;
-          if (itemEl) {
+            if (itemEl) {
             const subTextEl = itemEl.querySelector(".mobile-library-sub");
             if (subTextEl) {
-            subTextEl.textContent = "Kanallar hazırlanıyor";
+              subTextEl.textContent = "Kanallar hazırlanıyor";
             }
 
             itemEl.dataset.stemsStatus = "processing";
+            itemEl.dataset.stemsPredictionId = stemsPredictionId;
           }
 
           if (statusEl) {
