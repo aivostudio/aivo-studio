@@ -167,7 +167,15 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
         const subEl = item.querySelector(".mobile-library-sub");
         const playEl = item.querySelector(".mobile-library-play");
         const downloadEl = item.querySelector(".mobile-library-download");
-const deleteEl = item.querySelector(".mobile-library-delete");
+        const deleteEl = item.querySelector(".mobile-library-delete");
+        const moreEl = item.querySelector(".mobile-library-more");
+
+if (moreEl) {
+  moreEl.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+  });
+}
 
 if (downloadEl) {
   downloadEl.addEventListener("click", async function(e){
