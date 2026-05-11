@@ -259,17 +259,17 @@
         toast("Export hazırlandı.");
       });
     }
-     const privacyBtn = qs("[data-mobile-policy-privacy]", root);
+const privacyBtn = qs("[data-mobile-policy-privacy]", root);
 if (privacyBtn) {
-  privacyBtn.addEventListener("click", function(){
-    window.location.href = "/mobile/modules/mobile-policy-privacy.html";
+  privacyBtn.addEventListener("click", function(e){
+    e.preventDefault();
   });
 }
 
 const termsBtn = qs("[data-mobile-policy-terms]", root);
 if (termsBtn) {
-  termsBtn.addEventListener("click", function(){
-    window.location.href = "/mobile/modules/mobile-policy-terms.html";
+  termsBtn.addEventListener("click", function(e){
+    e.preventDefault();
   });
 }
   }
