@@ -1111,3 +1111,14 @@ filter:drop-shadow(0 0 9px rgba(139,92,246,.58));
 #mobileProductionsSection #mobileMusicResults{
   display:none !important;
 }
+#mobileMusicResults{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  margin-top:14px !important;
+  margin-bottom:18px !important;
+}
+
+#mobileMusicResults[hidden]{
+  display:none !important;
+}
