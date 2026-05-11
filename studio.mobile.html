@@ -1391,21 +1391,16 @@ function showLipsync(){
 }
 showMusic();
 
-const musicFormSection = document.getElementById("mobileHomeSection");
-const musicPanelSection = document.querySelector("#mobileMusicMount .mobile-music-panel");
-const musicResultsTitle = Array.from(document.querySelectorAll("#mobileMusicMount .section-title")).find(function(title){
-  return title.textContent.includes("Son müzikler");
-});
-const musicResults = document.getElementById("mobileMusicResults");
+const musicHomeSection = document.getElementById("mobileHomeSection");
+const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
 const musicProductionsSection = document.getElementById("mobileProductionsSection");
 
-if (musicFormSection) musicFormSection.hidden = true;
-if (musicPanelSection) musicPanelSection.hidden = true;
-if (musicResultsTitle) musicResultsTitle.hidden = true;
-if (musicResults) musicResults.hidden = true;
+if (musicHomeSection) musicHomeSection.hidden = true;
+if (musicCard) musicCard.hidden = true;
 
 if (musicProductionsSection) {
   musicProductionsSection.hidden = false;
+
   document.documentElement.scrollTo({
     top: musicProductionsSection.offsetTop - 12,
     behavior: "smooth"
