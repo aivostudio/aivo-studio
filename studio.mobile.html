@@ -1020,6 +1020,27 @@ try {
     accountSettingsMount.innerHTML = '<div class="empty-card">Ayarlar modülü yüklenemedi.</div>';
   }
 }
+    try {
+  const accountContactMount = document.getElementById("mobileAccountContactMount");
+
+  if (accountContactMount) {
+    const accountContactRes = await fetch("/mobile/modules/account-contact.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountContactRes.ok) {
+      throw new Error("mobile_account_contact_html_load_failed");
+    }
+
+    accountContactMount.innerHTML = await accountContactRes.text();
+  }
+} catch (err) {
+  const accountContactMount = document.getElementById("mobileAccountContactMount");
+
+  if (accountContactMount) {
+    accountContactMount.innerHTML = '<div class="empty-card">İletişim bölümü yüklenemedi.</div>';
+  }
+}
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
  const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
