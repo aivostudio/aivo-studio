@@ -1176,3 +1176,20 @@ filter:drop-shadow(0 0 9px rgba(139,92,246,.58));
 .mobile-mini-player .mini-btn.is-playing::before{
   text-indent:0 !important;
 }
+.mobile-library-more::before{
+  background:linear-gradient(135deg,#fff,#d8b4fe,#60eaff) !important;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Ccircle cx='5' cy='12' r='2.1'/%3E%3Ccircle cx='12' cy='12' r='2.1'/%3E%3Ccircle cx='19' cy='12' r='2.1'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Ccircle cx='5' cy='12' r='2.1'/%3E%3Ccircle cx='12' cy='12' r='2.1'/%3E%3Ccircle cx='19' cy='12' r='2.1'/%3E%3C/svg%3E") !important;
+}
+
+.mobile-action-lyrics::before{
+  background:linear-gradient(135deg,#fff,#c4b5fd,#60eaff) !important;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3h7l5 5v13H7V3z'/%3E%3Cpath d='M14 3v6h5'/%3E%3Cpath d='M9 13h6'/%3E%3Cpath d='M9 17h6'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3h7l5 5v13H7V3z'/%3E%3Cpath d='M14 3v6h5'/%3E%3Cpath d='M9 13h6'/%3E%3Cpath d='M9 17h6'/%3E%3C/svg%3E") !important;
+}
+
+.mobile-action-stems::before{
+  background:linear-gradient(135deg,#fff,#f472ff,#8b5cf6) !important;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M4 12h16'/%3E%3Cpath d='M4 17h16'/%3E%3Ccircle cx='8' cy='7' r='2' fill='%23000' stroke='none'/%3E%3Ccircle cx='16' cy='12' r='2' fill='%23000' stroke='none'/%3E%3Ccircle cx='10' cy='17' r='2' fill='%23000' stroke='none'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M4 12h16'/%3E%3Cpath d='M4 17h16'/%3E%3Ccircle cx='8' cy='7' r='2' fill='%23000' stroke='none'/%3E%3Ccircle cx='16' cy='12' r='2' fill='%23000' stroke='none'/%3E%3Ccircle cx='10' cy='17' r='2' fill='%23000' stroke='none'/%3E%3C/svg%3E") !important;
+}
