@@ -392,7 +392,7 @@ if (deleteEl) {
       document.body.classList.remove("mobile-sheet-open");
     }
 
-    sheet.addEventListener("click", function(e){
+     sheet.addEventListener("click", async function(e){
       if (e.target === sheet) {
         closeSheet();
         return;
