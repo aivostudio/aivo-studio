@@ -154,8 +154,12 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
          ↓
          </button>
 
-               <button class="mobile-library-play mobile-library-delete" type="button" title="Sil" aria-label="Sil">
+         <button class="mobile-library-play mobile-library-delete" type="button" title="Sil" aria-label="Sil">
          ×
+        </button>
+
+        <button class="mobile-library-play mobile-library-lyrics mobile-action-lyrics" type="button" title="Şarkı Sözleri" aria-label="Şarkı Sözleri">
+         lyrics
         </button>
 
         <button class="mobile-library-play mobile-library-more" type="button" title="Diğer işlemler" aria-label="Diğer işlemler">
@@ -168,7 +172,15 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
         const playEl = item.querySelector(".mobile-library-play");
         const downloadEl = item.querySelector(".mobile-library-download");
         const deleteEl = item.querySelector(".mobile-library-delete");
-        const moreEl = item.querySelector(".mobile-library-more");
+        const lyricsEl = item.querySelector(".mobile-library-lyrics");
+
+       if (lyricsEl) {
+       lyricsEl.addEventListener("click", function(e){
+       e.preventDefault();
+       e.stopPropagation();
+     });
+    }
+      const moreEl = item.querySelector(".mobile-library-more");
 
 if (moreEl) {
   moreEl.addEventListener("click", function(e){
