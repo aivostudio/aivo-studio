@@ -1490,6 +1490,30 @@ if (accountNav) {
     setActiveNav(accountNav);
   });
 }
+    if (policyMount) {
+  policyMount.addEventListener("click", function(e){
+    const policyBackBtn = e.target.closest("[data-mobile-settings-back]");
+    if (!policyBackBtn) return;
+
+    e.preventDefault();
+
+    policyMount.hidden = true;
+
+    if (accountMount) accountMount.hidden = false;
+
+    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+    const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
+    const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]");
+    const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
+
+    if (accountMenu) accountMenu.hidden = true;
+    if (profilePanel) profilePanel.hidden = true;
+    if (invoicesPanel) invoicesPanel.hidden = true;
+    if (settingsPanel) settingsPanel.hidden = false;
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
     if (accountMount) {
 accountMount.addEventListener("click", async function(e){
 const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
