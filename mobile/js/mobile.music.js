@@ -128,9 +128,28 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
         let resolvedAudioUrl = audioUrl;
         let isReady = !!resolvedAudioUrl;
 
-        const item = document.createElement("div");
+           const item = document.createElement("div");
         item.className = "mobile-library-row";
         item.dataset.aivoAudioUrl = String(resolvedAudioUrl || "");
+
+        const stemsStorageKey = "aivo_mobile_stems_" + String(
+          row.id ||
+          row.job_id ||
+          row.db_job_id ||
+          row.internal_job_id ||
+          row.meta?.internal_job_id ||
+          resolvedAudioUrl ||
+          title
+        );
+
+        try {
+          const savedStems = JSON.parse(localStorage.getItem(stemsStorageKey) || "{}");
+
+          if (savedStems.status === "ready" && savedStems.output) {
+            item.dataset.stemsStatus = "ready";
+            item.dataset.stemsOutput = JSON.stringify(savedStems.output);
+          }
+        } catch (err) {}
 
         item.innerHTML = `
           <div class="mobile-library-thumb">♪</div>
@@ -464,8 +483,16 @@ if (deleteEl) {
                 subTextEl.textContent = "Kanallar hazır";
               }
 
-              itemEl.dataset.stemsStatus = "ready";
+                 itemEl.dataset.stemsStatus = "ready";
               itemEl.dataset.stemsOutput = JSON.stringify(data.output || {});
+
+              try {
+                localStorage.setItem(stemsStorageKey, JSON.stringify({
+                  status: "ready",
+                  output: data.output || {},
+                  saved_at: new Date().toISOString()
+                }));
+              } catch (err) {}
             }
 
             if (statusEl) {
