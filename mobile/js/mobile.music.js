@@ -2,7 +2,7 @@
   const btn = document.getElementById("mobileMusicGenerateBtn");
   const titleEl = document.getElementById("musicTitle");
   const promptEl = document.getElementById("musicPrompt");
-const moodEl = document.getElementById("mobileMusicMood") || document.getElementById("musicMood");
+const moodEl = document.getElementById("musicMood");
   const lyricsEl = document.getElementById("musicLyrics");
   const statusEl = document.getElementById("mobileMusicStatus");
   const resultsEl = document.getElementById("mobileMusicResults");
