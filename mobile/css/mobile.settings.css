@@ -633,3 +633,11 @@
   margin:0;
   z-index:3;
 }
+.mobile-settings-hero .mobile-account-back--inside{
+  font-size:0 !important;
+  color:transparent !important;
+}
+
+.mobile-settings-hero .mobile-account-back--inside::before{
+  display:block !important;
+}
