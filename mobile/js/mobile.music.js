@@ -9,7 +9,6 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   const homeSectionEl = document.getElementById("mobileHomeSection");
   const productionsSectionEl = document.getElementById("mobileProductionsSection");
   const mobileMusicLibraryEl = document.getElementById("mobileMusicLibrary");
-    const mobileMusicJobs = [];
   const productionsNavEl = document.querySelector('.bottom-nav a[href="#productions"]');
   const homeNavEl = document.querySelector('.bottom-nav a[href="#home"]');
   const miniPlayerEl = document.getElementById("mobileMiniPlayer");
@@ -39,6 +38,16 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   productionsNavEl.addEventListener("click", function(e){
     e.preventDefault();
     showMobileSection("productions");
+
+    if (mobileMusicLibraryEl) {
+      mobileMusicLibraryEl.hidden = false;
+
+      const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
+      if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
+        libraryTitleEl.hidden = false;
+      }
+    }
+
     hydrateMusicLibrary();
   });
 
@@ -369,6 +378,14 @@ miniAudioEl.play().catch(function(){
 
              if (productionsSectionEl) {
         productionsSectionEl.hidden = false;
+      }
+                if (mobileMusicLibraryEl) {
+        mobileMusicLibraryEl.hidden = true;
+
+        const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
+        if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
+          libraryTitleEl.hidden = true;
+        }
       }
 
     resultsEl.hidden = false;
