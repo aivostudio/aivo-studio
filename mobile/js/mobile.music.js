@@ -402,11 +402,56 @@ if (deleteEl) {
         return;
       }
 
-      const stemsBtn = e.target.closest('[data-mobile-sheet-action="stems"]');
+           const stemsBtn = e.target.closest('[data-mobile-sheet-action="stems"]');
       if (stemsBtn) {
         e.preventDefault();
         e.stopPropagation();
+
+        sheet.querySelector(".mobile-music-sheet").innerHTML = `
+          <div class="mobile-music-sheet-handle"></div>
+
+          <div class="mobile-music-sheet-head">
+            <div>
+              <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
+              <div class="mobile-music-sheet-title">5 kredi kullanılacak</div>
+            </div>
+
+            <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+              ×
+            </button>
+          </div>
+
+          <div class="mobile-music-confirm-text">
+            Bu işlem başlamadan önce 5 kredi kullanır. Devam edilsin mi?
+          </div>
+
+          <div class="mobile-music-confirm-actions">
+            <button class="mobile-music-confirm-cancel" type="button" data-mobile-sheet-action="cancel">
+              İptal
+            </button>
+
+            <button class="mobile-music-confirm-submit" type="button" data-mobile-sheet-action="confirm-stems">
+              Onayla (5 Kredi)
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const cancelBtn = e.target.closest('[data-mobile-sheet-action="cancel"]');
+      if (cancelBtn) {
+        e.preventDefault();
+        e.stopPropagation();
         closeSheet();
+        return;
+      }
+
+      const confirmStemsBtn = e.target.closest('[data-mobile-sheet-action="confirm-stems"]');
+      if (confirmStemsBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeSheet();
+        return;
       }
     });
 
