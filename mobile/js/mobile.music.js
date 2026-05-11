@@ -599,7 +599,7 @@ if (deleteEl) {
           if (itemEl) {
             const subTextEl = itemEl.querySelector(".mobile-library-sub");
             if (subTextEl) {
-              subTextEl.textContent = "Kanal ayırma hazırlanıyor...";
+            subTextEl.textContent = "Kanallar hazırlanıyor";
             }
 
             itemEl.dataset.stemsStatus = "processing";
