@@ -755,9 +755,9 @@ let accountMount = document.getElementById("mobileAccountMount");
   }
 }
     try {
-      const musicRes = await fetch("/mobile/modules/mobile.music.html?v=1", {
-        cache: "no-store"
-      });
+     const musicRes = await fetch("/mobile/modules/mobile.music.html?v=2", {
+  cache: "no-store"
+});
 
       if (!musicRes.ok) {
         throw new Error("mobile_music_html_load_failed");
