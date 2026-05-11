@@ -20,51 +20,15 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
   if (!btn || !promptEl || !statusEl || !resultsEl || !homeSectionEl || !productionsSectionEl || !productionsNavEl || !homeNavEl || !miniPlayerEl || !miniAudioEl || !miniPlayBtn || !miniTitleEl || !miniSubEl || !miniProgressFill) return;
 
-  function hideMusicLibrary(){
-    if (!mobileMusicLibraryEl) return;
-
-    mobileMusicLibraryEl.hidden = true;
-
-    const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
-    if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
-      libraryTitleEl.hidden = true;
-    }
-  }
-
-  function showMusicLibrary(){
-    if (!mobileMusicLibraryEl) return;
-
-    mobileMusicLibraryEl.hidden = false;
-
-    const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
-    if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
-      libraryTitleEl.hidden = false;
-    }
-  }
-
   function showMobileSection(name){
     const isProductions = name === "productions";
 
     homeSectionEl.hidden = isProductions;
     productionsSectionEl.hidden = !isProductions;
 
-    if (isProductions) {
-      resultsEl.hidden = true;
-      showMusicLibrary();
-    } else {
-      resultsEl.hidden = false;
-      hideMusicLibrary();
-    }
-
     homeNavEl.classList.toggle("active", !isProductions);
     productionsNavEl.classList.toggle("active", isProductions);
   }
-
-  if (resultsEl.parentElement !== homeSectionEl) {
-    homeSectionEl.appendChild(resultsEl);
-  }
-
-  hideMusicLibrary();
 
   homeNavEl.addEventListener("click", function(e){
     e.preventDefault();
@@ -74,16 +38,6 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   productionsNavEl.addEventListener("click", function(e){
     e.preventDefault();
     showMobileSection("productions");
-
-    if (mobileMusicLibraryEl) {
-      mobileMusicLibraryEl.hidden = false;
-
-      const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
-      if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
-        libraryTitleEl.hidden = false;
-      }
-    }
-
     hydrateMusicLibrary();
   });
 
@@ -412,31 +366,11 @@ miniAudioEl.play().catch(function(){
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
           statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
 
-       if (homeSectionEl) {
-  homeSectionEl.hidden = false;
-}
-
-if (productionsSectionEl) {
-  productionsSectionEl.hidden = true;
-}
-
-hideMusicLibrary();
-
-if (resultsEl.parentElement !== homeSectionEl) {
-  homeSectionEl.appendChild(resultsEl);
-}
-                if (mobileMusicLibraryEl) {
-        mobileMusicLibraryEl.hidden = true;
-
-        const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
-        if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
-          libraryTitleEl.hidden = true;
-        }
+             if (productionsSectionEl) {
+        productionsSectionEl.hidden = false;
       }
 
-    resultsEl.hidden = false;
-resultsEl.removeAttribute("hidden");
-resultsEl.style.display = "flex";
+      resultsEl.hidden = false;
       resultsEl.className = "";
       resultsEl.innerHTML = "";
 
@@ -585,22 +519,12 @@ if (deleteBtn) {
       const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
 
       statusEl.textContent = "Üretim kuyruğa alındı.";
-if (homeSectionEl) {
-  homeSectionEl.hidden = false;
-}
 
-if (productionsSectionEl) {
-  productionsSectionEl.hidden = true;
-}
+         if (productionsSectionEl) {
+        productionsSectionEl.hidden = false;
+      }
 
-hideMusicLibrary();
-
-if (resultsEl.parentElement !== homeSectionEl) {
-  homeSectionEl.appendChild(resultsEl);
-}
-     resultsEl.hidden = false;
-resultsEl.removeAttribute("hidden");
-resultsEl.style.display = "flex";
+      resultsEl.hidden = false;
       resultsEl.className = "";
       resultsEl.innerHTML = "";
       ["Orijinal", "Versiyon 2"].forEach(function(label, index){
