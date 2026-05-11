@@ -289,9 +289,19 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
    miniPlayBtn.textContent = "Ⅱ";
 miniPlayBtn.classList.add("is-playing");
 
-miniAudioEl.play().catch(function(){
+miniAudioEl.play().then(function(){
+  miniPlayBtn.textContent = "Ⅱ";
+  miniPlayBtn.classList.add("is-playing");
+}).catch(function(){
   miniPlayBtn.textContent = "▶";
   miniPlayBtn.classList.remove("is-playing");
+
+  document.querySelectorAll(".mobile-library-row.is-playing").forEach(function(rowEl){
+    rowEl.classList.remove("is-playing");
+
+    const btnEl = rowEl.querySelector(".mobile-library-play");
+    if (btnEl) btnEl.textContent = "▶";
+  });
 });
   }
 
