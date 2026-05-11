@@ -38,6 +38,18 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   productionsNavEl.addEventListener("click", function(e){
     e.preventDefault();
     showMobileSection("productions");
+
+    resultsEl.hidden = true;
+
+    if (mobileMusicLibraryEl) {
+      mobileMusicLibraryEl.hidden = false;
+
+      const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
+      if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
+        libraryTitleEl.hidden = false;
+      }
+    }
+
     hydrateMusicLibrary();
   });
 
