@@ -130,6 +130,7 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
         const item = document.createElement("div");
         item.className = "mobile-library-row";
+        item.dataset.aivoAudioUrl = String(resolvedAudioUrl || "");
 
         item.innerHTML = `
           <div class="mobile-library-thumb">♪</div>
@@ -165,6 +166,7 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
         function activateLibraryRow(nextAudioUrl){
           resolvedAudioUrl = String(nextAudioUrl || "");
           isReady = !!resolvedAudioUrl;
+          item.dataset.aivoAudioUrl = String(resolvedAudioUrl || "");
 
           if (subEl) subEl.textContent = isReady ? "Hazır" : "Hazırlanıyor";
           if (playEl) playEl.textContent = isReady ? "▶" : "…";
@@ -315,9 +317,15 @@ miniAudioEl.play().then(function(){
       miniPlayBtn.textContent = "Ⅱ";
       miniPlayBtn.classList.add("is-playing");
 
-      document.querySelectorAll(".mobile-library-row.is-playing").forEach(function(rowEl){
+      const activeAudioUrl = miniAudioEl.dataset.aivoAudioUrl || miniPlayerEl.dataset.aivoAudioUrl || "";
+
+      document.querySelectorAll(".mobile-library-row").forEach(function(rowEl){
+        const isActiveRow = rowEl.dataset.aivoAudioUrl === activeAudioUrl;
+
+        rowEl.classList.toggle("is-playing", isActiveRow);
+
         const btnEl = rowEl.querySelector(".mobile-library-play");
-        if (btnEl) btnEl.textContent = "Ⅱ";
+        if (btnEl) btnEl.textContent = isActiveRow ? "Ⅱ" : "▶";
       });
       } else {
       miniAudioEl.pause();
