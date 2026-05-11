@@ -44,6 +44,41 @@
   <div class="mobile-settings-card">
     <div class="mobile-settings-card-head">
       <div>
+        <h4>Mesaj Gönder</h4>
+        <p>Destek ekibimize doğrudan mesaj bırak.</p>
+      </div>
+    </div>
+
+    <form class="mobile-contact-form" data-mobile-contact-form>
+      <label class="mobile-contact-field">
+        <span>Ad Soyad</span>
+        <input type="text" name="name" placeholder="Adını ve soyadını yaz" autocomplete="name">
+      </label>
+
+      <label class="mobile-contact-field">
+        <span>E-posta</span>
+        <input type="email" name="email" placeholder="ornek@mail.com" autocomplete="email">
+      </label>
+
+      <label class="mobile-contact-field">
+        <span>Konu</span>
+        <input type="text" name="subject" placeholder="Kısaca konu başlığı">
+      </label>
+
+      <label class="mobile-contact-field">
+        <span>Mesaj</span>
+        <textarea name="message" rows="5" placeholder="Bize nasıl yardımcı olabileceğimizi yaz"></textarea>
+      </label>
+
+      <button class="mobile-contact-submit" type="submit">
+        Mesaj Gönder
+      </button>
+    </form>
+  </div>
+
+  <div class="mobile-settings-card">
+    <div class="mobile-settings-card-head">
+      <div>
         <h4>Hızlı Yardım</h4>
         <p>En sık gelen destek konuları.</p>
       </div>
