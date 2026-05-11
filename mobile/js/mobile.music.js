@@ -237,7 +237,7 @@
       `;
     }
   }
-
+window.mobileMusicHydrate = hydrateMusicLibrary;
   function safe(value){
     return String(value || "")
       .replace(/&/g, "&amp;")
