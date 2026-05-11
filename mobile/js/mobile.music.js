@@ -562,10 +562,36 @@ if (deleteEl) {
         `;
         return;
       }
-           const channelsBtn = e.target.closest('[data-mobile-sheet-action="channels"]');
+        const channelsBtn = e.target.closest('[data-mobile-sheet-action="channels"]');
       if (channelsBtn) {
         e.preventDefault();
         e.stopPropagation();
+
+        let stemsOutput = {};
+        try {
+          stemsOutput = JSON.parse(itemEl?.dataset?.stemsOutput || "{}");
+        } catch (err) {
+          stemsOutput = {};
+        }
+
+        function pickStemUrl(key){
+          if (!stemsOutput) return "";
+
+          if (typeof stemsOutput[key] === "string") return stemsOutput[key];
+          if (stemsOutput[key]?.url) return stemsOutput[key].url;
+          if (stemsOutput[key]?.audio_url) return stemsOutput[key].audio_url;
+
+          if (Array.isArray(stemsOutput)) {
+            const found = stemsOutput.find(function(item){
+              const text = String(item?.name || item?.key || item?.label || item?.type || "").toLowerCase();
+              return text.includes(key);
+            });
+
+            return String(found?.url || found?.audio_url || found || "");
+          }
+
+          return "";
+        }
 
         sheet.querySelector(".mobile-music-sheet").innerHTML = `
           <div class="mobile-music-sheet-handle"></div>
@@ -582,17 +608,43 @@ if (deleteEl) {
           </div>
 
           <div class="mobile-channel-grid">
-            <button class="mobile-channel-btn mobile-channel-vocals" type="button" title="Vokal" aria-label="Vokal"></button>
-            <button class="mobile-channel-btn mobile-channel-drums" type="button" title="Davul" aria-label="Davul"></button>
-            <button class="mobile-channel-btn mobile-channel-bass" type="button" title="Bass" aria-label="Bass"></button>
-            <button class="mobile-channel-btn mobile-channel-guitar" type="button" title="Gitar" aria-label="Gitar"></button>
-            <button class="mobile-channel-btn mobile-channel-piano" type="button" title="Piyano" aria-label="Piyano"></button>
+            <button class="mobile-channel-btn mobile-channel-vocals" type="button" data-stem-key="vocals" title="Vokal" aria-label="Vokal"></button>
+            <button class="mobile-channel-btn mobile-channel-drums" type="button" data-stem-key="drums" title="Davul" aria-label="Davul"></button>
+            <button class="mobile-channel-btn mobile-channel-bass" type="button" data-stem-key="bass" title="Bass" aria-label="Bass"></button>
+            <button class="mobile-channel-btn mobile-channel-guitar" type="button" data-stem-key="guitar" title="Gitar" aria-label="Gitar"></button>
+            <button class="mobile-channel-btn mobile-channel-piano" type="button" data-stem-key="piano" title="Piyano" aria-label="Piyano"></button>
           </div>
 
           <div class="mobile-music-confirm-text">
-            Hazır kanal dosyalarını indirmek için ikonlara dokun.
+            Hazır kanal dosyalarını indirmek için ikonlara dokun. 24 saat içinde indirin.
           </div>
         `;
+
+        sheet.querySelectorAll(".mobile-channel-btn[data-stem-key]").forEach(function(btn){
+          btn.addEventListener("click", function(ev){
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const key = String(btn.dataset.stemKey || "");
+            const url = pickStemUrl(key);
+
+            if (!url) {
+              if (statusEl) statusEl.textContent = "Bu kanal dosyası henüz bulunamadı.";
+              return;
+            }
+
+            const filename = "aivo-" + key + ".mp3";
+            const proxied = "/api/media/proxy?url=" + encodeURIComponent(url) + "&filename=" + encodeURIComponent(filename);
+
+            const a = document.createElement("a");
+            a.href = proxied;
+            a.download = filename;
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          });
+        });
 
         return;
       }
