@@ -1386,9 +1386,18 @@ function showLipsync(){
 
   return;
 }
+showMusic();
 
-        showMusic();
-        setActiveNav(productionsNav);
+const musicFormSection = document.getElementById("mobileHomeSection");
+const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+if (musicFormSection) musicFormSection.hidden = true;
+if (musicProductionsSection) {
+  musicProductionsSection.hidden = false;
+  musicProductionsSection.scrollIntoView({ block: "start" });
+}
+
+setActiveNav(productionsNav);
       }, true);
     }
 
