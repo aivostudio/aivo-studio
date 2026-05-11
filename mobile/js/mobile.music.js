@@ -376,10 +376,20 @@ if (deleteEl) {
     const oldSheet = document.getElementById("mobileMusicMoreSheet");
     if (oldSheet) oldSheet.remove();
 
-        const title = String(payload?.title || "Yeni müzik");
+         const title = String(payload?.title || "Yeni müzik");
     const audioUrl = String(payload?.audioUrl || "");
     const itemEl = payload?.item || null;
     const currentStemsStatus = String(itemEl?.dataset?.stemsStatus || "");
+
+    const stemsStorageKey = "aivo_mobile_stems_" + String(
+      payload?.row?.id ||
+      payload?.row?.job_id ||
+      payload?.row?.db_job_id ||
+      payload?.row?.internal_job_id ||
+      payload?.row?.meta?.internal_job_id ||
+      audioUrl ||
+      title
+    );
 
     const sheet = document.createElement("div");
     sheet.id = "mobileMusicMoreSheet";
@@ -695,8 +705,17 @@ if (deleteEl) {
           return;
         }
 
-        confirmStemsBtn.disabled = true;
+               confirmStemsBtn.disabled = true;
         confirmStemsBtn.textContent = "Başlatılıyor...";
+
+        if (itemEl) {
+          const subTextEl = itemEl.querySelector(".mobile-library-sub");
+          if (subTextEl) {
+            subTextEl.textContent = "Kanallar hazırlanıyor";
+          }
+
+          itemEl.dataset.stemsStatus = "processing";
+        }
 
         try {
           const res = await fetch("/api/music/stems", {
