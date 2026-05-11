@@ -144,9 +144,19 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
             </div>
           </div>
 
-          <button class="mobile-library-play" type="button">
-            ${isReady ? "▶" : "…"}
-          </button>
+                  <div class="mobile-library-actions">
+            <button class="mobile-library-play" type="button">
+              ${isReady ? "▶" : "…"}
+            </button>
+
+            <button class="mobile-library-download" type="button" title="İndir" aria-label="İndir">
+              ↓
+            </button>
+
+            <button class="mobile-library-delete" type="button" title="Sil" aria-label="Sil">
+              ×
+            </button>
+          </div>
         `;
 
         const subEl = item.querySelector(".mobile-library-sub");
