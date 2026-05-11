@@ -366,9 +366,13 @@ miniAudioEl.play().catch(function(){
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
           statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
 
-          resultsEl.hidden = false;
-          resultsEl.className = "";
-          resultsEl.innerHTML = "";
+             if (productionsSectionEl) {
+        productionsSectionEl.hidden = false;
+      }
+
+      resultsEl.hidden = false;
+      resultsEl.className = "";
+      resultsEl.innerHTML = "";
 
           outputs.forEach(function(output, index){
             const card = document.createElement("div");
@@ -516,10 +520,13 @@ if (deleteBtn) {
 
       statusEl.textContent = "Üretim kuyruğa alındı.";
 
+         if (productionsSectionEl) {
+        productionsSectionEl.hidden = false;
+      }
+
       resultsEl.hidden = false;
       resultsEl.className = "";
       resultsEl.innerHTML = "";
-
       ["Orijinal", "Versiyon 2"].forEach(function(label, index){
         const cardTitle = index === 0
           ? (title || "Yeni müzik")
