@@ -142,10 +142,21 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
           title
         );
 
-        try {
+               try {
+          const dbStems = row?.meta?.stems || null;
+          const dbStemsStatus = String(dbStems?.status || "").toLowerCase();
+
+          if (dbStemsStatus === "succeeded" && dbStems?.output) {
+            item.dataset.stemsStatus = "ready";
+            item.dataset.stemsOutput = JSON.stringify(dbStems.output);
+          } else if (dbStemsStatus === "processing" || dbStemsStatus === "starting") {
+            item.dataset.stemsStatus = "processing";
+            item.dataset.stemsPredictionId = String(dbStems?.prediction_id || "");
+          }
+
           const savedStems = JSON.parse(localStorage.getItem(stemsStorageKey) || "{}");
 
-          if (savedStems.status === "ready" && savedStems.output) {
+          if (!item.dataset.stemsStatus && savedStems.status === "ready" && savedStems.output) {
             item.dataset.stemsStatus = "ready";
             item.dataset.stemsOutput = JSON.stringify(savedStems.output);
           }
@@ -159,8 +170,16 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
               ${safe(title)}
             </div>
 
-            <div class="mobile-library-sub">
-              ${isReady ? "Hazır" : "Hazırlanıyor"}
+                       <div class="mobile-library-sub">
+              ${
+                item.dataset.stemsStatus === "ready"
+                  ? "Kanallar hazır"
+                  : item.dataset.stemsStatus === "processing"
+                    ? "Kanallar hazırlanıyor"
+                    : isReady
+                      ? "Hazır"
+                      : "Hazırlanıyor"
+              }
             </div>
           </div>
 
