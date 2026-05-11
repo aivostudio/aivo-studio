@@ -43,10 +43,12 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
     if (mobileMusicLibraryEl) {
       mobileMusicLibraryEl.hidden = false;
+      mobileMusicLibraryEl.style.display = "";
 
       const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
       if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
         libraryTitleEl.hidden = false;
+        libraryTitleEl.style.display = "";
       }
     }
 
