@@ -484,11 +484,29 @@ if (deleteEl) {
             return;
           }
 
+                  sheet.querySelector(".mobile-music-sheet").innerHTML = `
+            <div class="mobile-music-sheet-handle"></div>
+
+            <div class="mobile-music-sheet-head">
+              <div>
+                <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
+                <div class="mobile-music-sheet-title">İşlem başlatıldı</div>
+              </div>
+
+              <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                ×
+              </button>
+            </div>
+
+            <div class="mobile-music-confirm-text">
+              Kanal ayırma hazırlanıyor. Sonuçlar hazır olunca bu müzik kartında gösterilecek.
+            </div>
+          `;
+
           if (statusEl) {
             statusEl.textContent = "Kanal ayırma başlatıldı.";
           }
 
-          closeSheet();
           return;
         } catch (err) {
           if (statusEl) {
