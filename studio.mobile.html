@@ -1394,7 +1394,10 @@ const musicProductionsSection = document.getElementById("mobileProductionsSectio
 if (musicFormSection) musicFormSection.hidden = true;
 if (musicProductionsSection) {
   musicProductionsSection.hidden = false;
-  musicProductionsSection.scrollIntoView({ block: "start" });
+window.scrollTo({
+  top: musicProductionsSection.getBoundingClientRect().top + window.scrollY - 12,
+  behavior: "smooth"
+});
 }
 
 setActiveNav(productionsNav);
