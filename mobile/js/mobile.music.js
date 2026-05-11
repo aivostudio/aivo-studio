@@ -282,6 +282,8 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
     miniTitleEl.textContent = title;
     miniSubEl.textContent = sub;
     miniAudioEl.src = audioUrl;
+    miniPlayerEl.dataset.aivoAudioUrl = audioUrl;
+miniAudioEl.dataset.aivoAudioUrl = audioUrl;
     miniProgressFill.style.width = "0%";
     miniPlayBtn.textContent = "▶";
     miniPlayBtn.classList.remove("is-playing");
