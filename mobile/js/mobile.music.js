@@ -357,15 +357,16 @@ if (deleteEl) {
     const oldSheet = document.getElementById("mobileMusicMoreSheet");
     if (oldSheet) oldSheet.remove();
 
-      const title = String(payload?.title || "Yeni müzik");
+        const title = String(payload?.title || "Yeni müzik");
     const audioUrl = String(payload?.audioUrl || "");
     const itemEl = payload?.item || null;
+    const currentStemsStatus = String(itemEl?.dataset?.stemsStatus || "");
 
     const sheet = document.createElement("div");
     sheet.id = "mobileMusicMoreSheet";
     sheet.className = "mobile-music-sheet-backdrop";
 
-    sheet.innerHTML = `
+     sheet.innerHTML = `
       <div class="mobile-music-sheet" role="dialog" aria-modal="true">
         <div class="mobile-music-sheet-handle"></div>
 
@@ -380,12 +381,31 @@ if (deleteEl) {
           </button>
         </div>
 
-        <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="stems">
-          <span>
-            <strong>Kanal Ayırma</strong>
-            <small>Bu işlem 5 kredi kullanır</small>
-          </span>
-        </button>
+        ${
+          currentStemsStatus === "processing"
+            ? `
+              <div class="mobile-music-confirm-text">
+                Kanallar hazırlanıyor. Bu işlem zaten başlatıldı.
+              </div>
+            `
+            : currentStemsStatus === "ready"
+              ? `
+                <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="channels">
+                  <span>
+                    <strong>Kanallar</strong>
+                    <small>Hazır dosyaları görüntüle</small>
+                  </span>
+                </button>
+              `
+              : `
+                <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="stems">
+                  <span>
+                    <strong>Kanal Ayırma</strong>
+                    <small>Bu işlem 5 kredi kullanır</small>
+                  </span>
+                </button>
+              `
+        }
       </div>
     `;
 
