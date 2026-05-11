@@ -20,15 +20,51 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
   if (!btn || !promptEl || !statusEl || !resultsEl || !homeSectionEl || !productionsSectionEl || !productionsNavEl || !homeNavEl || !miniPlayerEl || !miniAudioEl || !miniPlayBtn || !miniTitleEl || !miniSubEl || !miniProgressFill) return;
 
+  function hideMusicLibrary(){
+    if (!mobileMusicLibraryEl) return;
+
+    mobileMusicLibraryEl.hidden = true;
+
+    const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
+    if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
+      libraryTitleEl.hidden = true;
+    }
+  }
+
+  function showMusicLibrary(){
+    if (!mobileMusicLibraryEl) return;
+
+    mobileMusicLibraryEl.hidden = false;
+
+    const libraryTitleEl = mobileMusicLibraryEl.previousElementSibling;
+    if (libraryTitleEl && libraryTitleEl.classList.contains("section-title")) {
+      libraryTitleEl.hidden = false;
+    }
+  }
+
   function showMobileSection(name){
     const isProductions = name === "productions";
 
     homeSectionEl.hidden = isProductions;
     productionsSectionEl.hidden = !isProductions;
 
+    if (isProductions) {
+      resultsEl.hidden = true;
+      showMusicLibrary();
+    } else {
+      resultsEl.hidden = false;
+      hideMusicLibrary();
+    }
+
     homeNavEl.classList.toggle("active", !isProductions);
     productionsNavEl.classList.toggle("active", isProductions);
   }
+
+  if (resultsEl.parentElement !== homeSectionEl) {
+    homeSectionEl.appendChild(resultsEl);
+  }
+
+  hideMusicLibrary();
 
   homeNavEl.addEventListener("click", function(e){
     e.preventDefault();
