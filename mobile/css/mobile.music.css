@@ -1416,3 +1416,25 @@ body.mobile-sheet-open{
     transform:scale(1.08);
   }
 }
+.mobile-library-row[data-stems-status="processing"] .mobile-library-more{
+  animation:mobileStemsProcessingPulse 1.15s ease-in-out infinite;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 0 18px rgba(168,85,247,.20) !important;
+}
+
+.mobile-library-row[data-stems-status="processing"] .mobile-library-more::before{
+  background:linear-gradient(135deg,#fff,#c4b5fd,#f472ff) !important;
+  filter:drop-shadow(0 0 8px rgba(168,85,247,.55)) !important;
+}
+
+@keyframes mobileStemsProcessingPulse{
+  0%,100%{
+    transform:scale(1);
+    opacity:.82;
+  }
+  50%{
+    transform:scale(1.06);
+    opacity:1;
+  }
+}
