@@ -530,7 +530,7 @@ async function hydrateMobileCartoonLibrary(){
 
       if (!jobId || !videoUrl) return;
 
-    mobileCartoonJobs.push({
+mobileCartoonJobs.push({
   id: jobId,
   scope: "library",
   title: row.title || row.prompt || row.meta?.prompt || "Çizgifilm video",
@@ -540,6 +540,7 @@ async function hydrateMobileCartoonLibrary(){
 });
     });
 
+    mobileCartoonViewMode = "library";
     renderMobileCartoonResults();
   } catch (err) {
     console.error("[MOBILE CARTOON][HYDRATE ERROR]", err);
@@ -1210,6 +1211,15 @@ bindMobileCartoonResultActions();
 
 setMode("character");
 
+  window.mobileCartoonShowCurrent = function(){
+  mobileCartoonViewMode = "current";
+  renderMobileCartoonResults();
+};
 
+window.mobileCartoonHydrate = async function(){
+  mobileCartoonViewMode = "library";
+  await hydrateMobileCartoonLibrary();
+  renderMobileCartoonResults();
+};
   window.mobileCartoonState = state;
 })();
