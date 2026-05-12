@@ -1677,6 +1677,7 @@ bindButtons();
 syncCartoonCredits();
 bindMobileCartoonCharacterActions();
 bindMobileCartoonResultActions();
+hydrateMobileCartoonCharacterLibrary();
 
 setMode("character");
 
