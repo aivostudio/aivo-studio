@@ -1169,12 +1169,24 @@ function setFileLabel(input, file){
 
   function bindGenerateButtons(){
     if (basicGenerateBtn) {
-      basicGenerateBtn.addEventListener("click", function(){
+        basicGenerateBtn.addEventListener("click", async function(){
         const payload = buildBasicPayload();
 
                if (!payload.scene && !payload.has_image) {
           setStatus("Lütfen bir arka mekan seç veya resim yükle.");
           mobileAtmoToast("warning", "Lütfen bir arka mekan seç veya resim yükle.");
+          return;
+        }
+
+        let creditCtx = null;
+
+        try {
+          creditCtx = await consumeMobileAtmoCredits("basic");
+          mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
+        } catch (creditErr) {
+          console.warn("[MOBILE ATMO][BASIC CREDIT ERROR]", creditErr);
+          setStatus("Yetersiz kredi.");
+          mobileAtmoToast("warning", "Yetersiz kredi.");
           return;
         }
 
