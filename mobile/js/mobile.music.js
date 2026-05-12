@@ -93,7 +93,54 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
       mobileMusicLibraryEl.innerHTML = "";
 
-    rows.forEach(function(row){
+  const libraryRows = [];
+
+rows.forEach(function(row){
+  const baseTitle =
+    row.title ||
+    row.prompt ||
+    row.meta?.title ||
+    "Yeni müzik";
+
+  const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+
+  const audioOutputs = outputs.filter(function(output){
+    return output && (
+      output.audio_url ||
+      output.url ||
+      output.archive_url ||
+      output.raw_url ||
+      output.src
+    );
+  });
+
+  if (audioOutputs.length > 1) {
+    audioOutputs.forEach(function(output, index){
+      const versionTitle = index === 0
+        ? baseTitle
+        : baseTitle + " · Versiyon " + (index + 1);
+
+      libraryRows.push({
+        ...row,
+        title: versionTitle,
+        outputs: [output],
+        audio_url:
+          output.audio_url ||
+          output.url ||
+          output.archive_url ||
+          output.raw_url ||
+          output.src ||
+          ""
+      });
+    });
+
+    return;
+  }
+
+  libraryRows.push(row);
+});
+
+libraryRows.forEach(function(row){
         const title =
           row.title ||
           row.prompt ||
