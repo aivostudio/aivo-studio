@@ -1344,6 +1344,10 @@ renderMobileAtmoResults();
           return;
         }
 
+             proGenerateBtn.disabled = true;
+        proGenerateBtn.classList.add("is-loading", "is-pressed");
+        proGenerateBtn.setAttribute("aria-busy", "true");
+
         mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
 
         const tempId = "mobile-atmo-" + Date.now();
