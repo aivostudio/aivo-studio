@@ -160,14 +160,21 @@ function clearMobileVideoLoading(){
         return null;
       });
 
-      if (creditGetData && creditGetData.ok && typeof creditGetData.credits === "number") {
+      const nextCredits = creditGetData?.credits ?? creditGetData?.balance ?? creditGetData?.credit;
+
+      if (creditGetData && creditGetData.ok && typeof nextCredits === "number") {
         const topCreditCountEl = document.getElementById("topCreditCount");
         if (topCreditCountEl) {
-          topCreditCountEl.textContent = String(creditGetData.credits);
+          topCreditCountEl.textContent = String(nextCredits);
         }
 
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+        mobileCreditEls.forEach(function(el){
+          el.textContent = "Kredi " + nextCredits;
+        });
+
         if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+          window.AIVO_STORE_V1.setCredits(nextCredits);
         }
       }
     } catch (err) {}
@@ -178,7 +185,6 @@ function clearMobileVideoLoading(){
       }
     } catch (err) {}
   }
-
   async function consumeMobileVideoCredits(creditCost){
     const requestId = "mobile-video:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
