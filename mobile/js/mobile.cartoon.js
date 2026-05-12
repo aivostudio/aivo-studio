@@ -588,6 +588,125 @@ mobileCartoonJobs.push({
     resultsEl.innerHTML = "Çizgifilm videoları yüklenemedi.";
   }
 }
+
+async function hydrateMobileCartoonCharacterLibrary(){
+  const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
+  if (!libraryEl) return;
+
+  try {
+    const res = await fetch("/api/jobs/list?app=cartoon", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "accept": "application/json"
+      },
+      cache: "no-store"
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    const rows = Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data?.jobs)
+        ? data.jobs
+        : Array.isArray(data)
+          ? data
+          : [];
+
+    const characterRows = rows.filter(function(row){
+      const mode = String(
+        row.mode ||
+        row.meta?.mode ||
+        row.data?.mode ||
+        row.payload?.mode ||
+        ""
+      ).toLowerCase();
+
+      return mode === "character";
+    });
+
+    if (!characterRows.length) return;
+
+    const emptyEl = libraryEl.querySelector(".mobile-cartoon-character-empty");
+    if (emptyEl) emptyEl.remove();
+
+    characterRows.forEach(function(row){
+      const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+
+      const firstImageOutput = outputs.find(function(output){
+        return output && (
+          output.url ||
+          output.image_url ||
+          output.imageUrl ||
+          output.src
+        );
+      });
+
+      const imageUrl = String(
+        row.image_url ||
+        row.imageUrl ||
+        row.final_image_url ||
+        row.finalImageUrl ||
+        row.output_url ||
+        row.outputUrl ||
+        row.url ||
+        row.result_url ||
+        row.resultUrl ||
+        row.meta?.image_url ||
+        row.meta?.imageUrl ||
+        row.meta?.final_image_url ||
+        row.meta?.finalImageUrl ||
+        row.meta?.output_url ||
+        row.meta?.outputUrl ||
+        row.data?.image_url ||
+        row.data?.imageUrl ||
+        row.data?.final_image_url ||
+        row.data?.output_url ||
+        firstImageOutput?.url ||
+        firstImageOutput?.image_url ||
+        firstImageOutput?.imageUrl ||
+        firstImageOutput?.src ||
+        ""
+      ).trim();
+
+      const jobId = String(row.id || row.job_id || row.jobId || "").trim();
+
+      if (!jobId || !imageUrl) return;
+
+      if (libraryEl.querySelector('[data-mobile-cartoon-character="' + jobId + '"]')) {
+        return;
+      }
+
+      const title = String(
+        row.title ||
+        row.name ||
+        row.prompt ||
+        row.meta?.name ||
+        row.meta?.prompt ||
+        "Karakter"
+      ).trim();
+
+      libraryEl.insertAdjacentHTML("beforeend", `
+        <article class="mobile-cartoon-character-card" data-mobile-cartoon-character="${esc(jobId)}">
+          <div class="mobile-cartoon-character-thumb">
+            <img src="${esc(imageUrl)}" alt="${esc(title)}">
+            <div class="mobile-cartoon-character-actions">
+              <button type="button" data-mobile-cartoon-character-act="preview" data-character-url="${esc(imageUrl)}">⛶</button>
+              <button type="button" data-mobile-cartoon-character-act="download" data-character-url="${esc(imageUrl)}">⬇</button>
+              <button type="button" data-mobile-cartoon-character-act="select" data-character-url="${esc(imageUrl)}">✓</button>
+              <button type="button" data-mobile-cartoon-character-act="delete">🗑</button>
+            </div>
+          </div>
+          <div class="mobile-cartoon-character-name">${esc(title)}</div>
+        </article>
+      `);
+    });
+  } catch (err) {
+    console.error("[MOBILE CARTOON][CHARACTER HYDRATE ERROR]", err);
+  }
+}
  const state = {
   mode: "character",
   characterPrompt: "",
