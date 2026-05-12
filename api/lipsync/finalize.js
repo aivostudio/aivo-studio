@@ -93,7 +93,7 @@ function upsertVideoOutput(outputs, variant, url, extraMeta = {}) {
   return arr;
 }
 
-function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
+function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl, posterUrl) {
   let arr = removeFinalFlags(outputs);
 
   arr = upsertVideoOutput(arr, "preview", previewUrl, {
@@ -105,6 +105,20 @@ function upsertFinalizedAndPreviewOutputs(outputs, finalUrl, previewUrl) {
     is_final: true,
     is_preview: false,
   });
+
+  if (posterUrl) {
+    arr.unshift({
+      type: "image",
+      kind: "poster",
+      url: posterUrl,
+      meta: {
+        app: "lipsync",
+        variant: "poster",
+        is_poster: true,
+        is_thumbnail: true,
+      },
+    });
+  }
 
   return arr;
 }
