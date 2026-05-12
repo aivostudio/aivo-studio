@@ -295,7 +295,7 @@ const items = sourceJobs.filter(function(job){
 
       const videoUrl = pickVideoUrl(data);
 
-      const job = mobileVideoJobs.find(function(item){
+      const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
         return item.id === jobId;
       });
 
@@ -688,7 +688,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
       try {
         consumed = await consumeMobileVideoCredits(creditCost);
         if (!consumed) {
-          const job = mobileVideoJobs.find(function(item){
+          const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
             return item.id === tempJobId;
           });
 
@@ -728,7 +728,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
         ).trim();
 
         if (!res.ok || !data.ok || !realJobId) {
-          const job = mobileVideoJobs.find(function(item){
+          const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
             return item.id === tempJobId;
           });
 
@@ -759,7 +759,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
           return;
         }
 
-        const job = mobileVideoJobs.find(function(item){
+        const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
           return item.id === tempJobId;
         });
 
@@ -784,7 +784,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
       } catch (err) {
         console.error("[MOBILE VIDEO][CREATE ERROR]", err);
 
-        const job = mobileVideoJobs.find(function(item){
+        const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
           return item.id === tempJobId;
         });
 
@@ -939,7 +939,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
       const act = btn.getAttribute("data-mobile-video-act");
       const id = card.getAttribute("data-mobile-video-job");
 
-      const job = mobileVideoJobs.find(function(item){
+      const job =mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
         return item.id === id;
       });
 
