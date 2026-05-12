@@ -1368,7 +1368,11 @@ if (window.toast?.loading) {
       const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
       const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
 
-           statusEl.textContent = "Üretim kuyruğa alındı.";
+          statusEl.textContent = "Üretim kuyruğa alındı.";
+
+         if (window.toast?.success) {
+          window.toast.success("Üretim kuyruğa alındı.");
+          }
 
          if (productionsSectionEl) {
         productionsSectionEl.hidden = false;
