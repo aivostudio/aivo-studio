@@ -117,12 +117,13 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
       if (!job) return;
 
-      if (videoUrl) {
+       if (videoUrl) {
         job.videoUrl = videoUrl;
         job.status = "ready";
         job.title = job.title || "Atmosfer video hazır";
         renderMobileAtmoResults();
         setStatus("Atmosfer video hazır.");
+        mobileAtmoToast("success", "Atmosfer video hazır.");
         return;
       }
 
@@ -131,6 +132,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         job.title = "Atmosfer video oluşturulamadı";
         renderMobileAtmoResults();
         setStatus("Atmosfer video oluşturulamadı.");
+        mobileAtmoToast("error", "Atmosfer video oluşturulamadı.");
         return;
       }
 
