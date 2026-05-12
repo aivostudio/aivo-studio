@@ -526,3 +526,27 @@
   justify-content:center !important;
   max-width:100% !important;
 }
+.mobile-home-edu-thumb::after{
+  right:10px !important;
+  bottom:10px !important;
+  width:44px !important;
+  height:44px !important;
+  border-radius:999px !important;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.26), transparent 34%),
+    linear-gradient(135deg, rgba(124,92,255,.92), rgba(201,87,188,.88)) !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 0 22px rgba(201,87,188,.38),
+    0 10px 24px rgba(0,0,0,.28) !important;
+}
+
+.mobile-home-edu-thumb::before{
+  right:24px !important;
+  bottom:22px !important;
+  width:13px !important;
+  height:15px !important;
+  background:#fff !important;
+  filter:drop-shadow(0 0 8px rgba(255,255,255,.48)) !important;
+}
