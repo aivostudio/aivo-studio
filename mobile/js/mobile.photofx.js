@@ -449,15 +449,23 @@ async function uploadMobilePhotoFxFile(file, kind){
           setStatus("Dosya yüklenemedi.");
 
           const errText = String(err?.message || err || "").toLowerCase();
-          const isPolicyBlocked =
-            errText.includes("media_policy") ||
-            errText.includes("kamu figürü") ||
-            errText.includes("kamu figuru") ||
-            errText.includes("tanınmış kişi") ||
-            errText.includes("taninmis kisi") ||
-            errText.includes("gerçek kişi") ||
-            errText.includes("gercek kisi") ||
-            errText.includes("impersonation");
+        const isPolicyBlocked =
+  errText.includes("media_policy") ||
+  errText.includes("public_figure") ||
+  errText.includes("public figure") ||
+  errText.includes("public_figure_image_blocked") ||
+  errText.includes("figure_image_blocked") ||
+  errText.includes("image_blocked") ||
+  errText.includes("celebrity") ||
+  errText.includes("protected_person") ||
+  errText.includes("kamu figürü") ||
+  errText.includes("kamu figuru") ||
+  errText.includes("tanınmış kişi") ||
+  errText.includes("taninmis kisi") ||
+  errText.includes("gerçek kişi") ||
+  errText.includes("gercek kisi") ||
+  errText.includes("impersonation") ||
+  errText.includes("blocked");
 
           mobilePhotoFxToast("error", isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası");
         }
