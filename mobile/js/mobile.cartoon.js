@@ -1373,8 +1373,24 @@ function bindUploads(){
         }
       });
     }
-      if (generateBtn) {
+         if (generateBtn) {
       generateBtn.addEventListener("click", async function(){
+        let creditCtx = null;
+
+        try {
+          creditCtx = await consumeMobileCartoonCredits("basic");
+          mobileCartoonToast("success", getCartoonBasicCredit() + " kredi kullanıldı.");
+        } catch (creditErr) {
+          console.warn("[MOBILE CARTOON][BASIC CREDIT ERROR]", creditErr);
+          setStatus("Yetersiz kredi.");
+          mobileCartoonToast("warning", "Yetersiz kredi.");
+          return;
+        }
+
+        generateBtn.disabled = true;
+        generateBtn.classList.add("is-loading", "is-pressed");
+        generateBtn.setAttribute("aria-busy", "true");
+
               const tempJobId = "mobile-cartoon-" + Date.now();
 
         setStatus("Çizgifilm sahnesi hazırlanıyor...");
@@ -1431,7 +1447,13 @@ renderMobileCartoonResults();
 
           console.log("[MOBILE CARTOON][BASIC CREATE RESPONSE]", data);
 
-          if (!res.ok || !data.ok || !data.job_id) {
+                 if (!res.ok || !data.ok || !data.job_id) {
+            const refundCtx = {
+              ...creditCtx,
+              job_id: "",
+              provider_job_id: safeText(data.request_id || data.requestId || "")
+            };
+
             const job = mobileCartoonJobs.find(function(item){
               return item.id === tempJobId;
             });
@@ -1445,9 +1467,14 @@ renderMobileCartoonResults();
                       setStatus("Çizgifilm video başlatılamadı.");
             clearMobileCartoonLoading();
             mobileCartoonToast("error", "Çizgifilm video başlatılamadı.");
+
+            refundMobileCartoonCredits(refundCtx, "mobile_cartoon_basic_create_failed", {
+              error: "basic_create_failed",
+              response: data
+            });
+
             return;
           }
-
           const realJobId = String(data.job_id || "").trim();
 
           const job = mobileCartoonJobs.find(function(item){
