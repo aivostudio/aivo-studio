@@ -1763,14 +1763,19 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  if (tool === "video") {
-    activeMobileModule = "video";
-    homeMount.hidden = true;
-    showVideo();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
+ if (tool === "video") {
+  activeMobileModule = "video";
+  homeMount.hidden = true;
+  showVideo();
+
+  if (typeof window.mobileVideoShowCurrent === "function") {
+    window.mobileVideoShowCurrent();
   }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
 
   if (tool === "lipsync") {
     activeMobileModule = "lipsync";
