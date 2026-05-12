@@ -516,5 +516,5 @@ if (window.toast?.error) {
   if (qualityBtns[0]) setQuality(qualityBtns[0]);
   if (styleBtns[0]) setStyle(styleBtns[0]);
 
-  hydrateCoverLibrary();
+ 
 })();
