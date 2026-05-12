@@ -1202,6 +1202,10 @@ miniAudioEl.play().then(function(){
 
        resultsEl.hidden = false;
        resultsEl.className = "";
+          
+        if (resultsEl.textContent.trim() === "Henüz mobil müzik üretimi başlatılmadı.") {
+       resultsEl.textContent = "";
+      }
 
        resultsEl.querySelectorAll(".aivo-player-card.is-pending").forEach(function(card){
          if (card.dataset.mobilePollJobId === String(jobId || "")) {
