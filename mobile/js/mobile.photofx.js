@@ -769,7 +769,7 @@ mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
 
       mobilePhotoFxJobs.length = 0;
 
-      rows.reverse().forEach(function(row){
+        rows.forEach(function(row){
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
         const firstVideoOutput = outputs.find(function(output){
