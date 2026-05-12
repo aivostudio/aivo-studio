@@ -918,12 +918,7 @@ function setFileLabel(input, file){
 
         mobileAtmoToast("loading", "Süper atmosfer video üretimi başlatılıyor...");
 
-                   const tempId = "mobile-atmo-" + Date.now();
-          setStatus("Süper Mod için prompt yazmalısın.");
-          return;
-        }
-
-                   const tempId = "mobile-atmo-" + Date.now();
+        const tempId = "mobile-atmo-" + Date.now();
 
       const proTitleWords = String(payload.prompt || "")
   .trim()
