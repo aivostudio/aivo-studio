@@ -710,10 +710,23 @@ function buildPayload(){
     if (!generateBtn) return;
 
      generateBtn.addEventListener("click", async function(){
-      if (promptEl) {
-        state.prompt = safeText(promptEl.value);
-        if (promptCountEl) {
-          promptCountEl.textContent = String(String(promptEl.value || "").length);
+      if (state.mode === "image") {
+        if (imagePromptEl) {
+          state.imagePrompt = safeText(imagePromptEl.value);
+
+          if (imagePromptCountEl) {
+            imagePromptCountEl.textContent =
+              String(String(imagePromptEl.value || "").length);
+          }
+        }
+      } else {
+        if (promptEl) {
+          state.prompt = safeText(promptEl.value);
+
+          if (promptCountEl) {
+            promptCountEl.textContent =
+              String(String(promptEl.value || "").length);
+          }
         }
       }
 
@@ -721,8 +734,15 @@ function buildPayload(){
 
       if (!safeText(payload.prompt)) {
         setStatus("Lütfen prompt yaz.");
+
         mobileVideoToast("info", "Prompt yazmalısın");
-        if (promptEl) promptEl.focus();
+
+        if (state.mode === "image") {
+          if (imagePromptEl) imagePromptEl.focus();
+        } else {
+          if (promptEl) promptEl.focus();
+        }
+
         return;
       }
 
