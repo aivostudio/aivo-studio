@@ -695,7 +695,7 @@
 
         if (!jobId) return;
 
-        mobileLipsyncLibraryJobs.push({
+              mobileLipsyncLibraryJobs.push({
           id: jobId,
           title: row.title || row.prompt || row.meta?.prompt || "Dudak senkron video",
           videoUrl: videoUrl,
@@ -704,7 +704,8 @@
         });
       });
 
-    renderMobileLipsyncResults("current");
+      mobileLipsyncViewMode = "library";
+      renderMobileLipsyncResults("library");
     } catch (err) {
       console.error("[MOBILE LIPSYNC][HYDRATE ERROR]", err);
       resultsEl.className = "empty-card";
