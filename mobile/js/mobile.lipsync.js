@@ -644,6 +644,7 @@
       });
 
       const rows = Array.isArray(data?.items)
+        window.mobileLipsyncLastRows = rows;
         ? data.items
         : Array.isArray(data?.jobs)
           ? data.jobs
