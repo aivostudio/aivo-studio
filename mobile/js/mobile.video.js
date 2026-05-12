@@ -23,15 +23,16 @@
   const mobileVideoJobs = [];
   const mobileVideoDeletedIds = new Set();
 
-  const state = {
-    prompt: "",
-    imageFile: null,
-    imageUrl: "",
-    duration: "5",
-    ratio: "16:9",
-    motion: "balanced",
-    quality: "standard"
-  };
+const state = {
+  mode: "text",
+  prompt: "",
+  imageFile: null,
+  imageUrl: "",
+  duration: "5",
+  ratio: "16:9",
+  motion: "balanced",
+  quality: "standard"
+};
 
   function esc(value){
     return String(value == null ? "" : value)
@@ -576,31 +577,33 @@ mobileVideoToast(
     }
   }
 
-  function buildPayload(){
-    return {
+function buildPayload(){
+  const mode = state.mode === "image" ? "image" : "text";
+
+  return {
+    app: "video",
+    mode: mode,
+    prompt: state.prompt,
+    image_url: mode === "image" ? state.imageUrl : "",
+    duration: Number(state.duration || 5),
+    ratio: state.ratio || "16:9",
+    resolution: state.quality === "high" ? 1080 : 720,
+    motion: state.motion || "balanced",
+    quality: state.quality || "standard",
+    credit_cost: computeCredit(),
+    meta: {
       app: "video",
-      mode: "image",
-      prompt: state.prompt,
-      image_url: state.imageUrl,
-      duration: Number(state.duration || 5),
+      source: "mobile",
+      mode: mode,
+      image_url: mode === "image" ? state.imageUrl : "",
+      aspect_ratio: state.ratio || "16:9",
       ratio: state.ratio || "16:9",
-      resolution: state.quality === "high" ? 1080 : 720,
+      duration: Number(state.duration || 5),
       motion: state.motion || "balanced",
-      quality: state.quality || "standard",
-      credit_cost: computeCredit(),
-      meta: {
-        app: "video",
-        source: "mobile",
-        mode: "image",
-        image_url: state.imageUrl,
-        aspect_ratio: state.ratio || "16:9",
-        ratio: state.ratio || "16:9",
-        duration: Number(state.duration || 5),
-        motion: state.motion || "balanced",
-        quality: state.quality || "standard"
-      }
-    };
-  }
+      quality: state.quality || "standard"
+    }
+  };
+}
 
   function bindGenerate(){
     if (!generateBtn) return;
@@ -608,18 +611,18 @@ mobileVideoToast(
     generateBtn.addEventListener("click", async function(){
       const payload = buildPayload();
 
-      if (!payload.image_url) {
-        setStatus("Lütfen referans görsel yükle.");
-        mobileVideoToast("warning", "Lütfen referans görsel yükle.");
-        return;
-      }
+   if (!payload.prompt) {
+  setStatus("Lütfen prompt yaz.");
+  mobileVideoToast("info", "Prompt yazmalısın");
+  if (promptEl) promptEl.focus();
+  return;
+}
 
-      if (!payload.prompt) {
-        setStatus("Lütfen prompt yaz.");
-        mobileVideoToast("info", "Prompt yazmalısın");
-        if (promptEl) promptEl.focus();
-        return;
-      }
+if (payload.mode === "image" && !payload.image_url) {
+  setStatus("Lütfen referans görsel yükle.");
+  mobileVideoToast("warning", "Lütfen referans görsel yükle.");
+  return;
+}
 
       const creditCost = Number(payload.credit_cost || computeCredit() || 0);
       const tempJobId = "mobile-video-" + Date.now();
@@ -995,11 +998,12 @@ mobileVideoToast(
     });
   }
 
-  bindPrompt();
-  bindControls();
-  bindUpload();
-  bindFileClearButton();
-  bindGenerate();
+   bindPrompt();
+   bindModeTabs();
+   bindControls();
+   bindUpload();
+   bindFileClearButton();
+   bindGenerate();
   bindResultActions();
   syncCreditButton();
   hydrateMobileVideoLibrary();
