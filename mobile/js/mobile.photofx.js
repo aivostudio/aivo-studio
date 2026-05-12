@@ -770,8 +770,9 @@ mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
             job.title = "PhotoFX klip başlatılamadı";
           }
 
-          renderMobilePhotoFxResults();
+           renderMobilePhotoFxResults();
           setStatus("PhotoFX klip başlatılamadı.");
+          clearMobilePhotoFxLoading();
           mobilePhotoFxToast("error", "Klip oluşturma hatası");
           return;
         }
