@@ -917,9 +917,10 @@ function bindUploads(){
     characterImageClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
+          clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
       syncCartoonCredits();
       setStatus("Karakter referans görseli kaldırıldı.");
+      mobileCartoonToast("success", "Referans resim kaldırıldı · -10 kredi");
     });
   }
 
