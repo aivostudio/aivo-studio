@@ -678,7 +678,7 @@ mobileVideoViewMode = "current";
 if (resultsEl) {
   resultsEl.hidden = false;
 }
-
+mobileVideoViewMode = "current";
 renderMobileVideoResults();
 setStatus("Video hazırlanıyor...");
 mobileVideoToast("loading", "Video hazırlanıyor...");
