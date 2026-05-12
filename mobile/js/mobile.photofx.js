@@ -232,46 +232,88 @@
     });
   }
 
-  async function uploadMobilePhotoFxFile(file, kind){
-    if (!file) return "";
+async function uploadMobilePhotoFxFile(file, kind){
+  if (!file) return "";
 
-    const presignRes = await fetch("/api/r2/scan-and-presign", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        app: "photofx",
-        kind: kind || "mobile-upload",
-        filename: file.name,
-        contentType: file.type,
-        prefix: "uploads/photofx/tmp/"
-      })
-    });
+  const presignRes = await fetch("/api/r2/scan-and-presign", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      app: "photofx",
+      kind: kind || "mobile-upload",
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+      prompt: state.prompt || "",
+      title: file.name,
+      description: state.prompt || file.name,
+      source: "mobile_photofx_upload"
+    })
+  });
 
-    const data = await presignRes.json().catch(function(){
-      return {};
-    });
+  const data = await presignRes.json().catch(function(){
+    return {};
+  });
 
-    if (!presignRes.ok || !data.ok || !data.upload_url || !data.public_url) {
-      throw new Error(data.error || "presign_failed");
-    }
-
-    const uploadRes = await fetch(data.upload_url, {
-      method: "PUT",
-      headers: data.required_headers || {
-        "Content-Type": file.type
-      },
-      body: file
-    });
-
-    if (!uploadRes.ok) {
-      throw new Error("r2_upload_failed");
-    }
-
-    return data.public_url;
+  if (!presignRes.ok || !data.ok || !(data.uploadUrl || data.upload_url) || !(data.publicUrl || data.public_url || data.url)) {
+    throw new Error(data.error || data.message || "presign_failed");
   }
+
+  const uploadUrl = data.uploadUrl || data.upload_url;
+  const publicUrl = data.publicUrl || data.public_url || data.url;
+  const key = data.key || data.objectKey || "";
+
+  if (!key) {
+    throw new Error("missing_upload_key");
+  }
+
+  const uploadRes = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: data.required_headers || {
+      "Content-Type": file.type || "application/octet-stream"
+    },
+    body: file
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("r2_upload_failed");
+  }
+
+  const scanRes = await fetch("/api/r2/scan-upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      app: "photofx",
+      key: key,
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+      public_url: publicUrl,
+      prompt: state.prompt || "",
+      title: file.name,
+      description: state.prompt || file.name,
+      source: "mobile_photofx_upload"
+    })
+  });
+
+  const scanData = await scanRes.json().catch(function(){
+    return {};
+  });
+
+  if (!scanRes.ok) {
+    throw new Error(scanData.error || scanData.message || "media_policy_blocked");
+  }
+
+  if (!scanData.ok || scanData.decision && String(scanData.decision).toLowerCase() !== "allow") {
+    throw new Error(scanData.error || scanData.message || "media_policy_blocked");
+  }
+
+  return scanData.public_url || publicUrl;
+}
 
   function setFileLabel(input, file, statusText){
     const label = input && input.closest("label");
