@@ -1653,7 +1653,7 @@ renderMobileCartoonResults();
           setStatus("Çizgifilm sahnesi hazırlanıyor...");
           mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
           pollMobileCartoonJob(realJobId);
-        } catch (err) {
+             } catch (err) {
           console.error("[MOBILE CARTOON][BASIC CREATE ERROR]", err);
 
           const job = mobileCartoonJobs.find(function(item){
@@ -1669,6 +1669,11 @@ renderMobileCartoonResults();
                    setStatus("Çizgifilm video başlatılamadı.");
           clearMobileCartoonLoading();
           mobileCartoonToast("error", "Çizgifilm video başlatılamadı.");
+
+          refundMobileCartoonCredits(creditCtx, "mobile_cartoon_basic_create_exception", {
+            error: "basic_create_exception",
+            message: String(err && err.message ? err.message : err)
+          });
         }
       });
     }
