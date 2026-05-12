@@ -1027,11 +1027,19 @@ if (shareBtn) {
           }
 
           if (statusEl) {
-            statusEl.textContent = "Kanal ayırma başlatıldı.";
-          }
+  statusEl.textContent = "Kanal ayırma başlatıldı.";
+}
 
-          pollMobileStemsPrediction(stemsPredictionId);
-          return;
+if (window.toast?.success) {
+  window.toast.success("Kanal ayırma başlatıldı.");
+}
+
+if (window.toast?.info) {
+  window.toast.info("5 kredi kullanıldı.");
+}
+
+pollMobileStemsPrediction(stemsPredictionId);
+return;
 
           return;
         } catch (err) {
