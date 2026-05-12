@@ -38,6 +38,7 @@ const customTextEl = root.querySelector("#mobileCartoonCustomText");
 const resultsEl = root.querySelector("#mobileCartoonResults");
 const mobileCartoonJobs = [];
 const mobileCartoonDeletedIds = new Set();
+  let mobileCartoonViewMode = "current";
 
 function esc(value){
   return String(value == null ? "" : value)
@@ -51,9 +52,15 @@ function esc(value){
 function renderMobileCartoonResults(){
   if (!resultsEl) return;
 
-  const items = mobileCartoonJobs.filter(function(job){
-    return !mobileCartoonDeletedIds.has(job.id);
-  });
+ const items = mobileCartoonJobs.filter(function(job){
+  if (mobileCartoonDeletedIds.has(job.id)) return false;
+
+  if (mobileCartoonViewMode === "current") {
+    return job.scope === "current";
+  }
+
+  return job.scope === "library";
+});
 
   if (!items.length) {
     resultsEl.className = "empty-card";
@@ -1089,12 +1096,15 @@ function bindUploads(){
         setStatus("Çizgifilm sahnesi hazırlanıyor...");
         mobileCartoonToast("loading", "Çizgifilm sahnesi hazırlanıyor...");
 
-        mobileCartoonJobs.unshift({
+   mobileCartoonJobs.unshift({
   id: tempJobId,
+  scope: "current",
   status: "processing",
   title: state.scenePrompt || "Çizgifilm sahnesi",
   videoUrl: ""
 });
+
+mobileCartoonViewMode = "current";
 
 if (resultsEl) {
   resultsEl.hidden = false;
