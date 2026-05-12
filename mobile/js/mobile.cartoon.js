@@ -993,10 +993,13 @@ function bindUploads(){
   function bindButtons(){
     if (characterBtn) {
       characterBtn.addEventListener("click", async function(){
-        if (!state.characterPrompt) {
+             if (!state.characterPrompt) {
           setStatus("Lütfen karakter tanımı yaz.");
+          mobileCartoonToast("warning", "Lütfen karakter tanımı yaz.");
           return;
         }
+
+        mobileCartoonToast("loading", "Karakter oluşturma başlatılıyor...");
 
         const tempCharacterId = "mobile-cartoon-character-" + Date.now();
         const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
