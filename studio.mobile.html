@@ -1340,13 +1340,17 @@ function showLipsync(){
 
           return;
         }
+if (activeMobileModule === "atmo") {
+  showAtmo();
+  setAtmoLibraryOnly(true);
 
-                 if (activeMobileModule === "atmo") {
-          showAtmo();
-          setAtmoLibraryOnly(true);
-          setActiveNav(productionsNav);
-          return;
-        }
+  if (typeof window.mobileAtmoHydrate === "function") {
+    window.mobileAtmoHydrate();
+  }
+
+  setActiveNav(productionsNav);
+  return;
+}
 
                     if (activeMobileModule === "cartoon") {
           e.preventDefault();
@@ -1741,15 +1745,19 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  if (tool === "atmo") {
-    activeMobileModule = "atmo";
-    homeMount.hidden = true;
-    showAtmo();
-    setAtmoLibraryOnly(false);
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
+if (tool === "atmo") {
+  activeMobileModule = "atmo";
+  homeMount.hidden = true;
+  showAtmo();
+
+  if (typeof window.mobileAtmoShowCurrent === "function") {
+    window.mobileAtmoShowCurrent();
   }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
 
  if (tool === "cartoon") {
   activeMobileModule = "cartoon";
