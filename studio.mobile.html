@@ -1476,6 +1476,7 @@ if (toolsNav) {
     if (creditsNav) {
   creditsNav.addEventListener("click", function(e){
     e.preventDefault();
+       homeMount.hidden = true;
         const topbarCreditActions = document.querySelector(".topbar-credit-actions");
     if (topbarCreditActions) {
       topbarCreditActions.hidden = false;
