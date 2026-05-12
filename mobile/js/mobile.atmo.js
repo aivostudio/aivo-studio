@@ -738,11 +738,18 @@ function setFileLabel(input, file){
         mobileAtmoToast("loading", "Dosya yükleniyor...");
 
         uploadMobileAtmoFile(file, item.key)
-          .then(function(publicUrl){
+                 .then(function(publicUrl){
              state[item.target][urlKey] = publicUrl;
             syncMobileAtmoCreditButtons();
             setStatus("Dosya yüklendi.");
-            mobileAtmoToast("success", "Dosya yüklendi.");
+
+            if (urlKey === "logoUrl") {
+              mobileAtmoToast("success", "Logo yüklendi · +10 kredi");
+            } else if (urlKey === "audioUrl") {
+              mobileAtmoToast("success", "Audio yüklendi · +10 kredi");
+            } else {
+              mobileAtmoToast("success", "Dosya yüklendi.");
+            }
           })
           .catch(function(err){
             console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
