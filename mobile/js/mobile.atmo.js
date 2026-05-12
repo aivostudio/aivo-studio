@@ -850,7 +850,9 @@ function setFileLabel(input, file){
 
                 const tempId = "mobile-atmo-" + Date.now();
 
-     mobileAtmoJobs.unshift({
+ mobileAtmoJobs.length = 0;
+
+mobileAtmoJobs.unshift({
   id: tempId,
   title:
     payload.scene === "winter_cafe" ? "Kış Kafe" :
@@ -864,7 +866,12 @@ function setFileLabel(input, file){
   payload: payload,
   status: "processing"
 });
-        renderMobileAtmoResults();
+
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
+
+renderMobileAtmoResults();
 
         setStatus("Atmosfer video hazırlanıyor...");
 
