@@ -461,7 +461,7 @@ async function hydrateMobileCartoonLibrary(){
 
     mobileCartoonJobs.length = 0;
 
-    rows.reverse().forEach(function(row){
+   rows.forEach(function(row){
             const mode = String(
         row.mode ||
         row.meta?.mode ||
