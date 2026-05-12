@@ -704,8 +704,9 @@
         });
       });
 
-      mobileLipsyncViewMode = "library";
-      renderMobileLipsyncResults("library");
+         if (mobileLipsyncViewMode === "library") {
+        renderMobileLipsyncResults("library");
+      }
     } catch (err) {
       console.error("[MOBILE LIPSYNC][HYDRATE ERROR]", err);
       resultsEl.className = "empty-card";
