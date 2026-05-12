@@ -1364,9 +1364,8 @@ if (deleteBtn) {
         }
       }
 
-      resultsEl.hidden = false;
-      resultsEl.className = "";
-      resultsEl.innerHTML = "";
+     resultsEl.hidden = false;
+     resultsEl.className = "";
       ["Orijinal", "Versiyon 2"].forEach(function(label, index){
         const cardTitle = index === 0
           ? (title || "Yeni müzik")
