@@ -638,8 +638,12 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
   state[stateKey] = file;
   state[urlKey] = "";
 
-  if (textEl) {
+   if (textEl) {
     textEl.textContent = file ? "Yükleniyor..." : "Dosya seçilmedi";
+  }
+
+  if (file) {
+    mobileCartoonToast("loading", "Dosya yükleniyor...");
   }
 
   if (clearBtn) {
