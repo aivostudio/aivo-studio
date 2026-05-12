@@ -1547,3 +1547,23 @@ body.mobile-sheet-open{
     inset 0 1px 0 rgba(255,255,255,.08),
     0 12px 26px rgba(0,0,0,.18) !important;
 }
+.mobile-music-select-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  align-items:end;
+}
+
+.mobile-music-select-field{
+  min-width:0;
+}
+
+.mobile-music-select-field .field-label{
+  margin-top:0;
+}
+
+@media (max-width:380px){
+  .mobile-music-select-row{
+    grid-template-columns:1fr;
+  }
+}
