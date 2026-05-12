@@ -320,11 +320,19 @@
     return data;
   }
 
-  qualityBtns.forEach(function(btn){
-    btn.addEventListener("click", function(){
-      setQuality(btn);
-    });
+ qualityBtns.forEach(function(btn){
+  btn.addEventListener("click", function(){
+    setQuality(btn);
+
+    if (window.toast?.success) {
+      if (selectedQuality === "ultra") {
+        window.toast.success("Cinematic Ultra HD seçildi · 9 kredi");
+      } else {
+        window.toast.success("Artist seçildi · 6 kredi");
+      }
+    }
   });
+});
 
   styleBtns.forEach(function(btn){
     btn.addEventListener("click", function(){
@@ -340,19 +348,39 @@
     const count = Number(countSelect?.value || 1) || 1;
     const ratio = String(ratioSelect?.value || "1:1");
 
-    if (!prompt) {
-      statusEl.textContent = "Prompt yazmadan kapak üretimi başlatılamaz.";
-      return;
-    }
+  if (!prompt) {
+  statusEl.textContent = "Prompt yazmadan kapak üretimi başlatılamaz.";
+
+  if (window.toast?.warning) {
+    window.toast.warning("Prompt yazmadan kapak üretimi başlatılamaz.");
+  }
+
+  return;
+}
 
     generateBtn.disabled = true;
     generateBtn.textContent = "Üretiliyor...";
     statusEl.textContent = "Kredi kontrol ediliyor...";
+    if (window.toast?.loading) {
+  window.toast.loading("Kapak üretimi başlatılıyor...");
+}
 
     try {
       await consumeCredits(selectedCredit);
 
-         statusEl.textContent = "Kapak üretimi başlatıldı...";
+      statusEl.textContent = "Kapak üretimi başlatıldı...";
+
+if (window.toast?.success) {
+  if (selectedCredit === 9) {
+    window.toast.success("9 kredi düşüldü");
+  } else {
+    window.toast.success("6 kredi düşüldü");
+  }
+}
+
+if (window.toast?.success) {
+  window.toast.success("Kapak üretimi başladı");
+}
 
       resultsEl.hidden = false;
       renderLoadingCards(count);
@@ -371,16 +399,25 @@
         resultsEl.appendChild(renderCoverCard(item, index));
       });
 
-      statusEl.textContent = "Kapak hazır.";
+    statusEl.textContent = "Kapak hazır.";
+
+if (window.toast?.success) {
+  window.toast.success("Kapak hazır");
+}
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
 
-      if (msg === "insufficient_credit") {
-        statusEl.textContent = "Kredi yetersiz. Paket sayfasına yönlendiriliyorsun...";
-        const to = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-        return;
-      }
+     if (msg === "insufficient_credit") {
+  statusEl.textContent = "Kredi yetersiz. Paket sayfasına yönlendiriliyorsun...";
+
+  if (window.toast?.warning) {
+    window.toast.warning("Kredi yetersiz. Paketler açılıyor...");
+  }
+
+  const to = encodeURIComponent(location.pathname + location.search + location.hash);
+  location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+  return;
+}
 
       statusEl.textContent = "Kapak üretilemedi: " + msg;
     } finally {
