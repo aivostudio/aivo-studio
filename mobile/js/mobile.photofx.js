@@ -28,6 +28,7 @@
 
   const mobilePhotoFxJobs = [];
   const mobilePhotoFxDeletedIds = new Set();
+  let mobilePhotoFxViewMode = "current";
 
   const state = {
     prompt: "",
@@ -126,9 +127,15 @@
   function renderMobilePhotoFxResults(){
     if (!resultsEl) return;
 
-    const items = mobilePhotoFxJobs.filter(function(job){
-      return !mobilePhotoFxDeletedIds.has(job.id);
-    });
+  const items = mobilePhotoFxJobs.filter(function(job){
+  if (mobilePhotoFxDeletedIds.has(job.id)) return false;
+
+  if (mobilePhotoFxViewMode === "current") {
+    return job.scope === "current";
+  }
+
+  return job.scope === "library";
+});
 
     if (!items.length) {
       resultsEl.className = "empty-card";
@@ -649,8 +656,9 @@ async function uploadMobilePhotoFxFile(file, kind){
 
       const tempJobId = "mobile-photofx-" + Date.now();
 
-   mobilePhotoFxJobs.unshift({
+  mobilePhotoFxJobs.unshift({
   id: tempJobId,
+  scope: "current",
   status: "processing",
   title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "PhotoFX klip",
   videoUrl: "",
@@ -821,13 +829,14 @@ mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
 
         if (!jobId || !videoUrl) return;
 
-        mobilePhotoFxJobs.push({
-          id: jobId,
-          title: row.title || row.prompt || row.meta?.prompt || "PhotoFX klip",
-          videoUrl: videoUrl,
-          status: "ready",
-          payload: row
-        });
+       mobilePhotoFxJobs.push({
+  id: jobId,
+  scope: "library",
+  title: row.title || row.prompt || row.meta?.prompt || "PhotoFX klip",
+  videoUrl: videoUrl,
+  status: "ready",
+  payload: row
+});
       });
 
       renderMobilePhotoFxResults();
