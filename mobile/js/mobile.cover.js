@@ -462,7 +462,7 @@ if (window.toast?.error) {
       resultsEl.className = "";
       resultsEl.innerHTML = "";
 
-      rows.reverse().forEach(function(row, index){
+    rows.forEach(function(row, index){
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
         const firstImageOutput = outputs.find(function(output){
