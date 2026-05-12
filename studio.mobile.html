@@ -1385,6 +1385,9 @@ function showLipsync(){
             if (photofxPanel) photofxPanel.hidden = true;
             if (photofxTitle) photofxTitle.hidden = false;
             if (photofxResults) photofxResults.hidden = false;
+            if (typeof window.mobilePhotoFxHydrate === "function") {
+            window.mobilePhotoFxHydrate();
+           }
           }
 
           setActiveNav(productionsNav);
