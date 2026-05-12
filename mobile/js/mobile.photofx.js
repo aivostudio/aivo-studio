@@ -381,7 +381,7 @@
     .then(function(res){
       return res.json();
     })
-    .then(function(data){
+    .then(async function(data){
       console.log("[MOBILE PHOTOFX][POLL]", data);
 
       const status = String(
@@ -404,9 +404,31 @@
         job.status = "ready";
         job.title = job.title || "PhotoFX klip hazır";
         renderMobilePhotoFxResults();
-               setStatus("PhotoFX klip hazır.");
+        setStatus("PhotoFX klip hazır.");
         clearMobilePhotoFxLoading();
         mobilePhotoFxToast("success", "Video hazır");
+        return;
+      }
+
+      if (
+        (status.includes("ready") ||
+          status.includes("done") ||
+          status.includes("complete") ||
+          status.includes("success")) &&
+        !videoUrl
+      ) {
+        job.status = "error";
+        job.title = "Video çıktısı alınamadı";
+        renderMobilePhotoFxResults();
+        setStatus("Video çıktısı alınamadı.");
+        clearMobilePhotoFxLoading();
+
+        await refundMobilePhotoFxCredits(job.refundState, "mobile_photofx_ready_no_output", {
+          error: "ready_no_output",
+          status: status,
+          response: data
+        });
+
         return;
       }
 
@@ -414,9 +436,15 @@
         job.status = "error";
         job.title = "PhotoFX klip oluşturulamadı";
         renderMobilePhotoFxResults();
-              setStatus("PhotoFX klip oluşturulamadı.");
+        setStatus("PhotoFX klip oluşturulamadı.");
         clearMobilePhotoFxLoading();
-        mobilePhotoFxToast("error", "Klip oluşturma hatası");
+
+        await refundMobilePhotoFxCredits(job.refundState, "mobile_photofx_poll_failed", {
+          error: "poll_failed",
+          status: status,
+          response: data
+        });
+
         return;
       }
 
@@ -424,12 +452,24 @@
         pollMobilePhotoFxJob(jobId);
       }, 3000);
     })
-    .catch(function(err){
+    .catch(async function(err){
       console.error("[MOBILE PHOTOFX][POLL ERROR]", err);
 
-      setTimeout(function(){
-        pollMobilePhotoFxJob(jobId);
-      }, 4000);
+      const job = mobilePhotoFxJobs.find(function(item){
+        return item.id === jobId;
+      });
+
+      if (job) {
+        job.status = "error";
+        job.title = "PhotoFX klip kontrol edilemedi";
+        renderMobilePhotoFxResults();
+        setStatus("PhotoFX klip kontrol edilemedi.");
+        clearMobilePhotoFxLoading();
+
+        await refundMobilePhotoFxCredits(job.refundState, "mobile_photofx_poll_exception", {
+          error: String(err?.message || err || "poll_exception")
+        });
+      }
     });
   }
 
