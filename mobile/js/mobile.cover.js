@@ -419,7 +419,11 @@ if (window.toast?.success) {
   return;
 }
 
-      statusEl.textContent = "Kapak üretilemedi: " + msg;
+     statusEl.textContent = "Kapak üretilemedi: " + msg;
+
+if (window.toast?.error) {
+  window.toast.error("Kapak üretilemedi.");
+}
     } finally {
       generateBtn.disabled = false;
       generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
