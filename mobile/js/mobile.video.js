@@ -684,15 +684,22 @@ function buildPayload(){
   function bindGenerate(){
     if (!generateBtn) return;
 
-    generateBtn.addEventListener("click", async function(){
+     generateBtn.addEventListener("click", async function(){
+      if (promptEl) {
+        state.prompt = safeText(promptEl.value);
+        if (promptCountEl) {
+          promptCountEl.textContent = String(String(promptEl.value || "").length);
+        }
+      }
+
       const payload = buildPayload();
 
-   if (!payload.prompt) {
-  setStatus("Lütfen prompt yaz.");
-  mobileVideoToast("info", "Prompt yazmalısın");
-  if (promptEl) promptEl.focus();
-  return;
-}
+      if (!safeText(payload.prompt)) {
+        setStatus("Lütfen prompt yaz.");
+        mobileVideoToast("info", "Prompt yazmalısın");
+        if (promptEl) promptEl.focus();
+        return;
+      }
 
 if (payload.mode === "image" && !payload.image_url) {
   setStatus("Lütfen referans görsel yükle.");
