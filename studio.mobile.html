@@ -1754,14 +1754,19 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  if (tool === "photofx") {
-    activeMobileModule = "photofx";
-    homeMount.hidden = true;
-    showPhotoFx();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
+ if (tool === "photofx") {
+  activeMobileModule = "photofx";
+  homeMount.hidden = true;
+  showPhotoFx();
+
+  if (typeof window.mobilePhotoFxShowCurrent === "function") {
+    window.mobilePhotoFxShowCurrent();
   }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
 
  if (tool === "video") {
   activeMobileModule = "video";
