@@ -1750,6 +1750,10 @@ if (tool === "atmo") {
   homeMount.hidden = true;
   showAtmo();
 
+  if (typeof setAtmoLibraryOnly === "function") {
+    setAtmoLibraryOnly(false);
+  }
+
   if (typeof window.mobileAtmoShowCurrent === "function") {
     window.mobileAtmoShowCurrent();
   }
@@ -1758,7 +1762,6 @@ if (tool === "atmo") {
   window.scrollTo({ top: 0, behavior: "smooth" });
   return;
 }
-
  if (tool === "cartoon") {
   activeMobileModule = "cartoon";
   homeMount.hidden = true;
