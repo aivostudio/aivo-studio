@@ -48,25 +48,63 @@ const state = {
     return String(value || "").trim();
   }
 
-  function mobileVideoToast(type, message){
-    const text = safeText(message);
-    if (!text) return;
+const MOBILE_VIDEO_TOAST = {
+  loadingId: null
+};
 
-    try {
-      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-      const fn = api && typeof api[type] === "function" ? api[type] : null;
+function mobileVideoToast(type, message, options){
+  const text = safeText(message);
+  if (!text) return null;
 
-      if (fn) {
-        fn.call(api, text);
-        return;
+  try {
+    const api = window.mobileToast || window.toast || window.AIVO_TOAST;
+    const fn = api && typeof api[type] === "function" ? api[type] : null;
+
+    if (fn) {
+      return fn.call(api, text, options || {});
+    }
+
+    if (api && typeof api.show === "function") {
+      return api.show({
+        type: type || "info",
+        message: text,
+        ...(options || {})
+      });
+    }
+
+    if (window.Toast && typeof window.Toast.show === "function") {
+      return window.Toast.show(text, type || "info");
+    }
+  } catch (err) {}
+
+  return null;
+}
+
+function mobileVideoLoading(message){
+  MOBILE_VIDEO_TOAST.loadingId = mobileVideoToast("loading", message, {
+    persist: true,
+    autoClose: false,
+    source: "mobile_video"
+  });
+
+  return MOBILE_VIDEO_TOAST.loadingId;
+}
+
+function clearMobileVideoLoading(){
+  const api = window.mobileToast || window.toast || window.AIVO_TOAST;
+
+  try {
+    if (MOBILE_VIDEO_TOAST.loadingId && api) {
+      if (typeof api.dismiss === "function") {
+        api.dismiss(MOBILE_VIDEO_TOAST.loadingId);
+      } else if (typeof api.remove === "function") {
+        api.remove(MOBILE_VIDEO_TOAST.loadingId);
       }
+    }
+  } catch (err) {}
 
-      if (window.Toast && typeof window.Toast.show === "function") {
-        window.Toast.show(text, type || "info");
-      }
-    } catch (err) {}
-  }
-
+  MOBILE_VIDEO_TOAST.loadingId = null;
+}
   function setStatus(message){
     if (statusEl) statusEl.textContent = safeText(message);
   }
@@ -482,22 +520,23 @@ const items = sourceJobs.filter(function(job){
       setFileLabel(imageFileEl, file, file ? "Yükleniyor..." : "");
       if (!file) return;
 
-      setStatus("Görsel yükleniyor...");
-      mobileVideoToast("loading", "Görsel yükleniyor...");
+     setStatus("Görsel yükleniyor...");
+mobileVideoLoading("Görsel güvenlik kontrolünden geçiriliyor...");
 
       try {
         const publicUrl = await uploadMobileVideoFile(file);
         state.imageUrl = publicUrl;
         setFileLabel(imageFileEl, file);
-        setStatus("Görsel yüklendi.");
-        mobileVideoToast("success", "Görsel eklendi");
+       clearMobileVideoLoading();
+setStatus("Görsel yüklendi.");
+mobileVideoToast("success", "Görsel eklendi");
       } catch (err) {
         console.error("[MOBILE VIDEO][UPLOAD ERROR]", err);
 
         state.imageFile = null;
         state.imageUrl = "";
         imageFileEl.value = "";
-
+       clearMobileVideoLoading();
         setFileLabel(imageFileEl, null);
         setStatus("Görsel yüklenemedi.");
 
@@ -681,7 +720,7 @@ if (resultsEl) {
 mobileVideoViewMode = "current";
 renderMobileVideoResults();
 setStatus("Video hazırlanıyor...");
-mobileVideoToast("loading", "Video hazırlanıyor...");
+mobileVideoLoading("Video hazırlanıyor...");
 
       let consumed = null;
 
