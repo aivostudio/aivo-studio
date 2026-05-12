@@ -495,6 +495,16 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     return MOBILE_ATMO_TOAST.loadingId;
   }
 
+  function resetMobileAtmoGenerateButtons(){
+    [basicGenerateBtn, proGenerateBtn].forEach(function(btn){
+      if (!btn) return;
+
+      btn.disabled = false;
+      btn.classList.remove("is-loading", "is-pressed");
+      btn.removeAttribute("aria-busy");
+    });
+  }
+
   function clearMobileAtmoLoading(){
     const toastApi = getMobileAtmoToastApi();
 
@@ -509,6 +519,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     } catch {}
 
     MOBILE_ATMO_TOAST.loadingId = null;
+    resetMobileAtmoGenerateButtons();
   }
 
   async function refreshMobileAtmoCredits(){
