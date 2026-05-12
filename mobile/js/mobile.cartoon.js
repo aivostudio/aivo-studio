@@ -216,12 +216,13 @@ function pollMobileCartoonJob(jobId){
 
     if (!job) return;
 
-    if (videoUrl) {
+      if (videoUrl) {
       job.videoUrl = videoUrl;
       job.status = "ready";
       job.title = job.title || "Çizgifilm video hazır";
       renderMobileCartoonResults();
       setStatus("Çizgifilm video hazır.");
+      mobileCartoonToast("success", "Çizgifilm video hazır.");
       return;
     }
 
@@ -230,6 +231,7 @@ function pollMobileCartoonJob(jobId){
       job.title = "Çizgifilm video oluşturulamadı";
       renderMobileCartoonResults();
       setStatus("Çizgifilm video oluşturulamadı.");
+      mobileCartoonToast("error", "Çizgifilm video oluşturulamadı.");
       return;
     }
 
