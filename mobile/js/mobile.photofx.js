@@ -171,6 +171,131 @@
     return total;
   }
 
+  const MOBILE_PHOTOFX_CREDIT_ACTION = "mobile_photofx_generate";
+
+  async function refreshMobilePhotoFxCredits(){
+    try {
+      const res = await fetch("/api/credits/get", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "accept": "application/json"
+        }
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      if (data && data.ok && typeof data.credits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(data.credits);
+        }
+
+        if (
+          window.AIVO_STORE_V1 &&
+          typeof window.AIVO_STORE_V1.setCredits === "function"
+        ) {
+          window.AIVO_STORE_V1.setCredits(data.credits);
+        }
+      }
+    } catch (err) {}
+
+    try {
+      window.syncCreditsUI?.({ force: true });
+    } catch (err) {}
+  }
+
+  async function consumeMobilePhotoFxCredits(creditCost, requestId){
+    const res = await fetch("/api/credits/consume-ledger", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "photofx",
+        action: MOBILE_PHOTOFX_CREDIT_ACTION,
+        cost: creditCost,
+        request_id: requestId,
+        reason: MOBILE_PHOTOFX_CREDIT_ACTION
+      })
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    if (!res.ok || !data.ok) {
+      const err = new Error(data.error || "insufficient_credit");
+      err.data = data;
+      err.status = res.status;
+      throw err;
+    }
+
+    await refreshMobilePhotoFxCredits();
+
+    return {
+      transactionId: data.transaction_id || data.transaction?.id || "",
+      raw: data
+    };
+  }
+
+  async function refundMobilePhotoFxCredits(refundState, reason, meta){
+    if (!refundState || refundState.refunded) return false;
+    if (!refundState.consumed) return false;
+    if (!refundState.transactionId) return false;
+    if (!refundState.requestId) return false;
+    if (!refundState.creditCost || refundState.creditCost <= 0) return false;
+
+    refundState.refunded = true;
+
+    try {
+      const res = await fetch("/api/credits/refund", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: "photofx",
+          action: MOBILE_PHOTOFX_CREDIT_ACTION,
+          amount: refundState.creditCost,
+          request_id: refundState.requestId,
+          related_transaction_id: refundState.transactionId,
+          reason: reason || "mobile_photofx_failed",
+          meta: {
+            source: "mobile.photofx",
+            ...(meta || {})
+          }
+        })
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      if (
+        res.ok &&
+        data &&
+        data.ok &&
+        (data.refunded || data.deduped || data.skipped)
+      ) {
+        await refreshMobilePhotoFxCredits();
+        mobilePhotoFxToast("error", "İşlem başarısız oldu, kredi iade edildi.");
+        return true;
+      }
+    } catch (err) {
+      console.error("[MOBILE PHOTOFX][REFUND ERROR]", err);
+    }
+
+    return false;
+  }
+
   function syncCreditButton(){
     if (!generateBtn) return;
     generateBtn.textContent = "🎬 Klip Oluştur (" + computeCredit() + " Kredi)";
