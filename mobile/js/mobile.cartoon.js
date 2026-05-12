@@ -245,13 +245,21 @@ function pollMobileCartoonJob(jobId){
       return;
     }
 
-    if (status.includes("fail") || status.includes("error")) {
+      if (status.includes("fail") || status.includes("error")) {
       job.status = "error";
       job.title = "Çizgifilm video oluşturulamadı";
       renderMobileCartoonResults();
            setStatus("Çizgifilm video oluşturulamadı.");
       clearMobileCartoonLoading();
       mobileCartoonToast("error", "Çizgifilm video oluşturulamadı.");
+
+      refundMobileCartoonCredits(job.refundCtx, "mobile_cartoon_basic_poll_failed", {
+        error: "basic_poll_failed",
+        status: status,
+        job_id: jobId,
+        response: data
+      });
+
       return;
     }
 
