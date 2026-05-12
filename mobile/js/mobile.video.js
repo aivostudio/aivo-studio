@@ -530,7 +530,38 @@ mobileVideoToast(
     promptEl.addEventListener("change", updatePrompt);
     updatePrompt();
   }
+  function bindModeTabs(){
+  const modeButtons = Array.from(root.querySelectorAll("[data-mobile-video-mode]"));
+  const panels = Array.from(root.querySelectorAll("[data-mobile-video-panel]"));
 
+  if (!modeButtons.length || !panels.length) return;
+
+  function setMode(mode){
+    const nextMode = mode === "image" ? "image" : "text";
+    state.mode = nextMode;
+
+    modeButtons.forEach(function(btn){
+      const active = btn.getAttribute("data-mobile-video-mode") === nextMode;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+
+    panels.forEach(function(panel){
+      const active = panel.getAttribute("data-mobile-video-panel") === nextMode;
+      panel.hidden = !active;
+    });
+
+    setStatus("");
+  }
+
+  modeButtons.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      setMode(btn.getAttribute("data-mobile-video-mode"));
+    });
+  });
+
+  setMode(state.mode || "text");
+}
   function bindControls(){
     if (durationEl) {
       durationEl.addEventListener("change", function(){
