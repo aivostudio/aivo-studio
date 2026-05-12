@@ -788,8 +788,8 @@ mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
           job.status = "processing";
         }
 
-        renderMobilePhotoFxResults();
-        mobilePhotoFxToast("success", "Video hazırlanıyor");
+         renderMobilePhotoFxResults();
+        mobilePhotoFxLoading("Video hazırlanıyor...");
         mobilePhotoFxToast("success", computeCredit() + " kredi kullanıldı.");
         pollMobilePhotoFxJob(realJobId);
       } catch (err) {
