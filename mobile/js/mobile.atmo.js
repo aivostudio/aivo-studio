@@ -738,17 +738,19 @@ function setFileLabel(input, file){
         mobileAtmoToast("loading", "Dosya yükleniyor...");
 
         uploadMobileAtmoFile(file, item.key)
-                 .then(function(publicUrl){
+              .then(function(publicUrl){
              state[item.target][urlKey] = publicUrl;
             syncMobileAtmoCreditButtons();
-            setStatus("Dosya yüklendi.");
 
-            if (urlKey === "logoUrl") {
-              mobileAtmoToast("success", "Logo yüklendi · +10 kredi");
+            if (urlKey === "imageUrl") {
+              setStatus("Resim eklendi.");
+              mobileAtmoToast("success", "Resim eklendi");
+            } else if (urlKey === "logoUrl") {
+              setStatus("Logo eklendi.");
+              mobileAtmoToast("success", "Logo eklendi · +10 kredi");
             } else if (urlKey === "audioUrl") {
-              mobileAtmoToast("success", "Audio yüklendi · +10 kredi");
-            } else {
-              mobileAtmoToast("success", "Dosya yüklendi.");
+              setStatus("Müzik eklendi.");
+              mobileAtmoToast("success", "Müzik eklendi · +10 kredi");
             }
           })
           .catch(function(err){
@@ -761,7 +763,6 @@ function setFileLabel(input, file){
       });
     });
   }
-
   function buildBasicPayload(){
     return {
       app: "atmo",
