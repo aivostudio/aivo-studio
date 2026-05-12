@@ -816,10 +816,13 @@ function setFileLabel(input, file){
       basicGenerateBtn.addEventListener("click", function(){
         const payload = buildBasicPayload();
 
-        if (!payload.scene && !payload.has_image) {
+               if (!payload.scene && !payload.has_image) {
           setStatus("Lütfen bir arka mekan seç veya resim yükle.");
+          mobileAtmoToast("warning", "Lütfen bir arka mekan seç veya resim yükle.");
           return;
         }
+
+        mobileAtmoToast("loading", "Atmosfer video üretimi başlatılıyor...");
 
                 const tempId = "mobile-atmo-" + Date.now();
 
