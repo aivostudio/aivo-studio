@@ -658,17 +658,21 @@ if (payload.mode === "image" && !payload.image_url) {
       const creditCost = Number(payload.credit_cost || computeCredit() || 0);
       const tempJobId = "mobile-video-" + Date.now();
 
-      mobileVideoJobs.unshift({
-        id: tempJobId,
-        status: "processing",
-        title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "Video",
-        videoUrl: "",
-        payload: payload
-      });
+   mobileVideoJobs.unshift({
+  id: tempJobId,
+  status: "processing",
+  title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "Video",
+  videoUrl: "",
+  payload: payload
+});
 
-      renderMobileVideoResults();
-      setStatus("Video hazırlanıyor...");
-      mobileVideoToast("loading", "Video hazırlanıyor...");
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
+
+renderMobileVideoResults();
+setStatus("Video hazırlanıyor...");
+mobileVideoToast("loading", "Video hazırlanıyor...");
 
       let consumed = null;
 
