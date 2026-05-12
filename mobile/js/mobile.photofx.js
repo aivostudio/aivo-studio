@@ -60,6 +60,25 @@
     return String(value || "").trim();
   }
 
+  function mobilePhotoFxToast(type, message){
+    const text = safeText(message);
+    if (!text) return;
+
+    try {
+      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
+      const fn = api && typeof api[type] === "function" ? api[type] : null;
+
+      if (fn) {
+        fn.call(api, text);
+        return;
+      }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        window.Toast.show(text, { type: type });
+      }
+    } catch (err) {}
+  }
+
   function setStatus(message){
     if (statusEl) statusEl.textContent = safeText(message);
   }
@@ -187,6 +206,7 @@
         job.title = job.title || "PhotoFX klip hazır";
         renderMobilePhotoFxResults();
         setStatus("PhotoFX klip hazır.");
+        mobilePhotoFxToast("success", "Video hazır");
         return;
       }
 
@@ -195,6 +215,7 @@
         job.title = "PhotoFX klip oluşturulamadı";
         renderMobilePhotoFxResults();
         setStatus("PhotoFX klip oluşturulamadı.");
+        mobilePhotoFxToast("error", "Klip oluşturma hatası");
         return;
       }
 
@@ -299,31 +320,45 @@
       input.value = "";
 
       if (inputId === "mobilePhotoFxImageFile") {
+        const hadImage = !!state.imageFile || !!state.imageUrl;
         state.imageFile = null;
         state.imageUrl = "";
+        setFileLabel(input, null);
+        syncCreditButton();
+        setStatus("Resim silindi.");
+        if (hadImage) mobilePhotoFxToast("success", "Resim silindi");
+        return;
       }
 
       if (inputId === "mobilePhotoFxLogoFile") {
+        const hadLogo = !!state.logoFile || !!state.logoUrl;
         state.logoFile = null;
         state.logoUrl = "";
+        setFileLabel(input, null);
+        syncCreditButton();
+        setStatus("Logo kaldırıldı.");
+        if (hadLogo) mobilePhotoFxToast("success", "Logo kaldırıldı · -10 kredi");
+        return;
       }
 
       if (inputId === "mobilePhotoFxAudioFile") {
+        const hadAudio = !!state.audioFile || !!state.audioUrl;
         state.audioFile = null;
         state.audioUrl = "";
+        setFileLabel(input, null);
+        syncCreditButton();
+        setStatus("Müzik kaldırıldı.");
+        if (hadAudio) mobilePhotoFxToast("success", "Müzik kaldırıldı · -10 kredi");
+        return;
       }
-
-      setFileLabel(input, null);
-      syncCreditButton();
-      setStatus("Dosya kaldırıldı.");
     });
   }
 
   function bindUploads(){
     const fileMap = [
-      { input:imageFileEl, fileKey:"imageFile", urlKey:"imageUrl", kind:"imageFile" },
-      { input:logoFileEl, fileKey:"logoFile", urlKey:"logoUrl", kind:"logoFile" },
-      { input:audioFileEl, fileKey:"audioFile", urlKey:"audioUrl", kind:"audioFile" }
+      { input:imageFileEl, fileKey:"imageFile", urlKey:"imageUrl", kind:"image" },
+      { input:logoFileEl, fileKey:"logoFile", urlKey:"logoUrl", kind:"logo" },
+      { input:audioFileEl, fileKey:"audioFile", urlKey:"audioUrl", kind:"audio" }
     ];
 
     fileMap.forEach(function(item){
@@ -336,19 +371,30 @@
         state[item.fileKey] = file;
         state[item.urlKey] = "";
 
-         setFileLabel(input, file, file ? "Yükleniyor..." : "");
+        setFileLabel(input, file, file ? "Yükleniyor..." : "");
         syncCreditButton();
 
         if (!file) return;
 
         setStatus("Dosya yükleniyor...");
+        mobilePhotoFxToast("loading", "Dosya yükleniyor...");
 
         try {
           const publicUrl = await uploadMobilePhotoFxFile(file, item.kind);
           state[item.urlKey] = publicUrl;
           setFileLabel(input, file);
           syncCreditButton();
-          setStatus("Dosya yüklendi.");
+
+          if (item.urlKey === "imageUrl") {
+            setStatus("Resim eklendi.");
+            mobilePhotoFxToast("success", "Resim eklendi");
+          } else if (item.urlKey === "logoUrl") {
+            setStatus("Logo eklendi.");
+            mobilePhotoFxToast("success", "Logo eklendi · +10 kredi");
+          } else if (item.urlKey === "audioUrl") {
+            setStatus("Müzik eklendi.");
+            mobilePhotoFxToast("success", "Müzik eklendi · +10 kredi");
+          }
         } catch (err) {
           console.error("[MOBILE PHOTOFX][UPLOAD ERROR]", err);
 
@@ -359,6 +405,19 @@
           setFileLabel(input, null);
           syncCreditButton();
           setStatus("Dosya yüklenemedi.");
+
+          const errText = String(err?.message || err || "").toLowerCase();
+          const isPolicyBlocked =
+            errText.includes("media_policy") ||
+            errText.includes("kamu figürü") ||
+            errText.includes("kamu figuru") ||
+            errText.includes("tanınmış kişi") ||
+            errText.includes("taninmis kisi") ||
+            errText.includes("gerçek kişi") ||
+            errText.includes("gercek kisi") ||
+            errText.includes("impersonation");
+
+          mobilePhotoFxToast("error", isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası");
         }
       });
     });
@@ -394,10 +453,12 @@
           });
           btn.classList.remove("is-active");
           btn.setAttribute("aria-pressed", "false");
+          mobilePhotoFxToast("success", value + " kaldırıldı · -5 kredi");
         } else {
           state.styles.push(value);
           btn.classList.add("is-active");
           btn.setAttribute("aria-pressed", "true");
+          mobilePhotoFxToast("success", value + " seçildi · +5 kredi");
         }
 
         syncCreditButton();
@@ -406,7 +467,7 @@
   }
 
   function bindControls(){
-     if (durationEl) {
+    if (durationEl) {
       durationEl.addEventListener("change", function(){
         state.duration = safeText(durationEl.value) || "6";
         syncCreditButton();
@@ -465,7 +526,7 @@
       styles: state.styles.slice(),
       image_url: state.imageUrl,
       imageUrl: state.imageUrl,
-          logo_url: state.logoUrl,
+      logo_url: state.logoUrl,
       logoUrl: state.logoUrl,
       logo_enabled: !!state.logoUrl,
       logo_pos:
@@ -489,7 +550,7 @@
       colorMood: state.colorMood,
       transition_speed: state.transitionSpeed,
       transitionSpeed: state.transitionSpeed,
-         meta: {
+      meta: {
         app: "photofx",
         source: "mobile",
         image_url: state.imageUrl,
@@ -519,11 +580,20 @@
 
       if (!payload.image_url) {
         setStatus("Lütfen referans görsel yükle.");
+        mobilePhotoFxToast("warning", "Lütfen bir ana görsel seç.");
         return;
       }
 
       if (!payload.prompt) {
         setStatus("Lütfen prompt yaz.");
+        mobilePhotoFxToast("info", "Prompt yazmalısın");
+        if (promptEl) promptEl.focus();
+        return;
+      }
+
+      if (!Array.isArray(payload.styles) || !payload.styles.length) {
+        setStatus("Lütfen en az 1 efekt stili seç.");
+        mobilePhotoFxToast("warning", "Lütfen en az 1 efekt stili seç.");
         return;
       }
 
@@ -539,6 +609,7 @@
 
       renderMobilePhotoFxResults();
       setStatus("PhotoFX klip hazırlanıyor...");
+      mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
 
       try {
         const res = await fetch("/api/providers/fal/photofx/create", {
@@ -568,6 +639,7 @@
 
           renderMobilePhotoFxResults();
           setStatus("PhotoFX klip başlatılamadı.");
+          mobilePhotoFxToast("error", "Klip oluşturma hatası");
           return;
         }
 
@@ -583,6 +655,8 @@
         }
 
         renderMobilePhotoFxResults();
+        mobilePhotoFxToast("success", "Video hazırlanıyor");
+        mobilePhotoFxToast("success", computeCredit() + " kredi kullanıldı.");
         pollMobilePhotoFxJob(realJobId);
       } catch (err) {
         console.error("[MOBILE PHOTOFX][CREATE ERROR]", err);
@@ -598,10 +672,12 @@
 
         renderMobilePhotoFxResults();
         setStatus("PhotoFX klip başlatılamadı.");
+        mobilePhotoFxToast("error", "Klip oluşturma hatası");
       }
     });
   }
-   async function hydrateMobilePhotoFxLibrary(){
+
+  async function hydrateMobilePhotoFxLibrary(){
     if (!resultsEl) return;
 
     resultsEl.className = "empty-card";
@@ -707,6 +783,7 @@
       resultsEl.innerHTML = "PhotoFX klipleri yüklenemedi.";
     }
   }
+
   function bindResultActions(){
     if (!resultsEl || resultsEl.__mobilePhotoFxActionsBound) return;
     resultsEl.__mobilePhotoFxActionsBound = true;
@@ -785,6 +862,7 @@
         iframe.src = downloadUrl;
 
         document.body.appendChild(iframe);
+        mobilePhotoFxToast("success", "İndirme başlatıldı.");
 
         setTimeout(function(){
           try {
@@ -804,7 +882,9 @@
             url: job.videoUrl
           }).catch(function(){});
         } else if (navigator.clipboard) {
-          navigator.clipboard.writeText(job.videoUrl).catch(function(){});
+          navigator.clipboard.writeText(job.videoUrl).then(function(){
+            mobilePhotoFxToast("success", "Link kopyalandı.");
+          }).catch(function(){});
         }
 
         return;
@@ -813,40 +893,13 @@
       if (act === "delete") {
         mobilePhotoFxDeletedIds.add(id);
         renderMobilePhotoFxResults();
+        mobilePhotoFxToast("success", "Video silindi.");
         return;
       }
     });
   }
-  function bindTapFallbacks(){
-    root.addEventListener("click", function(e){
-      const styleBtn = e.target.closest("[data-photofx-style]");
-      if (styleBtn && root.contains(styleBtn)) {
-        const value = safeText(styleBtn.getAttribute("data-photofx-style"));
-        if (value) {
-          const exists = state.styles.includes(value);
 
-          if (exists) {
-            state.styles = state.styles.filter(function(item){
-              return item !== value;
-            });
-            styleBtn.classList.remove("is-active");
-            styleBtn.setAttribute("aria-pressed", "false");
-          } else {
-            state.styles.push(value);
-            styleBtn.classList.add("is-active");
-            styleBtn.setAttribute("aria-pressed", "true");
-          }
-
-          syncCreditButton();
-        }
-
-        return;
-      }
-
-  
-    }, true);
-  }
-   bindPrompt();
+  bindPrompt();
   bindStyleButtons();
   bindControls();
   bindUploads();
