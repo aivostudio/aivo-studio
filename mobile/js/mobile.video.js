@@ -496,14 +496,22 @@
         setStatus("Görsel yüklenemedi.");
 
         const errText = String(err?.message || err || "").toLowerCase();
-        const isPolicyBlocked =
-          errText.includes("media_policy") ||
-          errText.includes("public_figure") ||
-          errText.includes("celebrity") ||
-          errText.includes("protected_person") ||
-          errText.includes("impersonation");
+       const isPolicyBlocked =
+  errText.includes("media_policy") ||
+  errText.includes("public_figure") ||
+  errText.includes("public figure") ||
+  errText.includes("public_figure_image_blocked") ||
+  errText.includes("figure_image_blocked") ||
+  errText.includes("image_blocked") ||
+  errText.includes("celebrity") ||
+  errText.includes("protected_person") ||
+  errText.includes("impersonation") ||
+  errText.includes("blocked");
 
-        mobileVideoToast("error", isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası");
+mobileVideoToast(
+  "error",
+  isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası"
+);
       }
     });
   }
