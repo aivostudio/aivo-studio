@@ -9,6 +9,8 @@
 
   const promptEl = root.querySelector("#mobileVideoPrompt");
   const promptCountEl = root.querySelector("#mobileVideoPromptCount");
+  const imagePromptEl = root.querySelector("#mobileVideoImagePrompt");
+  const imagePromptCountEl = root.querySelector("#mobileVideoImagePromptCount");
   const imageFileEl = root.querySelector("#mobileVideoImageFile");
 
   const durationEl = root.querySelector("#mobileVideoDuration");
