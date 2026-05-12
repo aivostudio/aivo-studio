@@ -93,7 +93,7 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
       mobileMusicLibraryEl.innerHTML = "";
 
-      rows.reverse().forEach(function(row){
+    rows.forEach(function(row){
         const title =
           row.title ||
           row.prompt ||
