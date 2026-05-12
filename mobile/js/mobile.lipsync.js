@@ -1442,7 +1442,8 @@
         resultsEl.hidden = false;
       }
 
-      renderMobileLipsyncResults();
+      mobileLipsyncViewMode = "current";
+      renderMobileLipsyncResults("current");
 
       try {
         if (state.photoFile && !state.photoUrl) {
@@ -1514,7 +1515,8 @@
           job.payload = payload;
         }
 
-        renderMobileLipsyncResults();
+        mobileLipsyncViewMode = "current";
+        renderMobileLipsyncResults("current");
         setStatus("Dudak senkron video hazırlanıyor...");
         showMobileLipsyncLoading("Dudak senkron video hazırlanıyor...");
         pollMobileLipsyncJob(realJobId || tempId, providerJobId);
@@ -1554,7 +1556,8 @@
           }
         }
 
-        renderMobileLipsyncResults();
+        mobileLipsyncViewMode = "current";
+        renderMobileLipsyncResults("current");
 
         const message = mapMobileLipsyncErrorMessage(err?.payload || err);
         setStatus(message);
