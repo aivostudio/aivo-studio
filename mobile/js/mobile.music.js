@@ -1308,8 +1308,15 @@ if (deleteBtn) {
           return;
         }
       } catch (err) {
-        statusEl.textContent = "Polling hatası: " + String(err && err.message ? err.message : err);
-        return;
+       const pollingError = "Polling hatası: " + String(err && err.message ? err.message : err);
+
+       statusEl.textContent = pollingError;
+
+      if (window.toast?.error) {
+       window.toast.error(pollingError);
+     }
+
+     return;
       }
 
       if (tries < 40) {
@@ -1438,7 +1445,13 @@ if (window.toast?.loading) {
 
       pollMobileMusicJob(pollJobId, title || "Yeni müzik");
     } catch (err) {
-      statusEl.textContent = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
+     const connectionError = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
+
+statusEl.textContent = connectionError;
+
+if (window.toast?.error) {
+  window.toast.error(connectionError);
+}
     } finally {
       btn.disabled = false;
       btn.textContent = "Müzik Üret";
