@@ -484,7 +484,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     MOBILE_ATMO_TOAST.loadingId = null;
   }
 
-  function computeMobileAtmoCredit(mode){function computeMobileAtmoCredit(mode){
+  function computeMobileAtmoCredit(mode){
   const target = mode === "pro" ? state.pro : state.basic;
 
   const duration = String(target.duration || "4");
