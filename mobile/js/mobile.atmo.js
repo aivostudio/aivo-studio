@@ -130,6 +130,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         job.title = job.title || "Atmosfer video hazır";
         renderMobileAtmoResults();
         setStatus("Atmosfer video hazır.");
+        clearMobileAtmoLoading();
         mobileAtmoToast("success", "Atmosfer video hazır.");
         return;
       }
@@ -139,6 +140,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         job.title = "Atmosfer video oluşturulamadı";
         renderMobileAtmoResults();
         setStatus("Atmosfer video oluşturulamadı.");
+        clearMobileAtmoLoading();
         mobileAtmoToast("error", "Atmosfer video oluşturulamadı.");
         return;
       }
@@ -381,23 +383,90 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     return String(value || "").trim();
   }
 
-  function mobileAtmoToast(type, message){
+  const MOBILE_ATMO_TOAST = {
+    loadingId: null
+  };
+
+  function getMobileAtmoToastApi(){
+    return (
+      window.mobileToast ||
+      window.MobileToast ||
+      window.AIVO_MOBILE_TOAST ||
+      window.aivoMobileToast ||
+      window.toast ||
+      window.AIVO_TOAST ||
+      null
+    );
+  }
+
+  function mobileAtmoToast(type, message, options){
     const text = safeText(message);
-    if (!text) return;
+    if (!text) return null;
+
+    const normalizedType = type === "danger" ? "error" : type;
+    const toastApi = getMobileAtmoToastApi();
 
     try {
-      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-      const fn = api && typeof api[type] === "function" ? api[type] : null;
+      if (toastApi) {
+        if (typeof toastApi[normalizedType] === "function") {
+          return toastApi[normalizedType](text, options || {});
+        }
 
-      if (fn) {
-        fn.call(api, text);
-        return;
+        if (typeof toastApi.show === "function") {
+          return toastApi.show({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi.push === "function") {
+          return toastApi.push({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi === "function") {
+          return toastApi(text, normalizedType, options || {});
+        }
       }
 
       if (window.Toast && typeof window.Toast.show === "function") {
-        window.Toast.show(text, { type: type });
+        window.Toast.show(text, { type: normalizedType });
       }
     } catch (err) {}
+
+    return null;
+  }
+
+  function mobileAtmoLoading(message){
+    clearMobileAtmoLoading();
+
+    MOBILE_ATMO_TOAST.loadingId = mobileAtmoToast("loading", message, {
+      persist: true,
+      autoClose: false,
+      source: "mobile_atmo"
+    });
+
+    return MOBILE_ATMO_TOAST.loadingId;
+  }
+
+  function clearMobileAtmoLoading(){
+    const toastApi = getMobileAtmoToastApi();
+
+    try {
+      if (MOBILE_ATMO_TOAST.loadingId && toastApi) {
+        if (typeof toastApi.dismiss === "function") {
+          toastApi.dismiss(MOBILE_ATMO_TOAST.loadingId);
+        } else if (typeof toastApi.remove === "function") {
+          toastApi.remove(MOBILE_ATMO_TOAST.loadingId);
+        }
+      }
+    } catch (err) {}
+
+    MOBILE_ATMO_TOAST.loadingId = null;
   }
  function computeMobileAtmoCredit(mode){
   const target = mode === "pro" ? state.pro : state.basic;
@@ -753,10 +822,11 @@ function setFileLabel(input, file){
           return;
         }
              setStatus("Dosya yükleniyor...");
-        mobileAtmoToast("loading", "Dosya yükleniyor...");
+        mobileAtmoLoading("Dosya güvenlik kontrolünden geçiriliyor...");
 
         uploadMobileAtmoFile(file, item.key)
               .then(function(publicUrl){
+             clearMobileAtmoLoading();
              state[item.target][urlKey] = publicUrl;
             syncMobileAtmoCreditButtons();
 
@@ -773,6 +843,7 @@ function setFileLabel(input, file){
           })
           .catch(function(err){
             console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
+            clearMobileAtmoLoading();
                      state[item.target][urlKey] = "";
             syncMobileAtmoCreditButtons();
             setStatus("Dosya yüklenemedi.");
@@ -855,7 +926,7 @@ function setFileLabel(input, file){
           return;
         }
 
-        mobileAtmoToast("loading", "Atmosfer video üretimi başlatılıyor...");
+        mobileAtmoLoading("Atmosfer video hazırlanıyor...");
 
                 const tempId = "mobile-atmo-" + Date.now();
 
@@ -924,6 +995,7 @@ renderMobileAtmoResults();
             job.title = "Job ID alınamadı";
             renderMobileAtmoResults();
             setStatus("Üretim başladı ama gerçek job_id alınamadı.");
+            clearMobileAtmoLoading();
             mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
             console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
             return;
@@ -933,13 +1005,14 @@ renderMobileAtmoResults();
           job.status = "processing";
 
                    renderMobileAtmoResults();
-          mobileAtmoToast("success", "Atmosfer video kuyruğa alındı.");
+          mobileAtmoLoading("Atmosfer video hazırlanıyor...");
           mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][BASIC ERROR]", err);
           setStatus("Atmosfer üretimi başlatılamadı.");
+          clearMobileAtmoLoading();
           mobileAtmoToast("error", "Atmosfer üretimi başlatılamadı.");
         });
       });
@@ -955,7 +1028,7 @@ renderMobileAtmoResults();
           return;
         }
 
-        mobileAtmoToast("loading", "Süper atmosfer video üretimi başlatılıyor...");
+        mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
 
         const tempId = "mobile-atmo-" + Date.now();
 
@@ -1020,6 +1093,7 @@ renderMobileAtmoResults();
             job.title = "Job ID alınamadı";
             renderMobileAtmoResults();
             setStatus("Üretim başladı ama gerçek job_id alınamadı.");
+            clearMobileAtmoLoading();
             mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
             console.warn("[MOBILE ATMO][PRO NO UUID]", data);
             return;
@@ -1029,13 +1103,14 @@ renderMobileAtmoResults();
           job.status = "processing";
 
                    renderMobileAtmoResults();
-          mobileAtmoToast("success", "Süper atmosfer video kuyruğa alındı.");
+          mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
           mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][PRO ERROR]", err);
           setStatus("Süper atmosfer üretimi başlatılamadı.");
+          clearMobileAtmoLoading();
           mobileAtmoToast("error", "Süper atmosfer üretimi başlatılamadı.");
         });
       });
