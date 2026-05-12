@@ -854,7 +854,8 @@ mobileVideoLoading("Video hazırlanıyor...");
           });
         }
 
-        mobileVideoToast("error", "Video oluşturma hatası");
+       clearMobileVideoLoading();
+mobileVideoToast("error", "Video oluşturma hatası");
       }
     });
   }
