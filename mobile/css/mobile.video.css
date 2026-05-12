@@ -269,3 +269,34 @@
     inset 0 1px 0 rgba(255,255,255,.12),
     0 16px 34px rgba(0,0,0,.22);
 }
+.mobile-video-mode-tabs{
+  height:50px;
+  padding:5px;
+  margin:0 0 16px;
+  border-radius:999px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.mobile-video-mode-btn{
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:rgba(255,255,255,.54);
+  font-size:12px;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.mobile-video-mode-btn.is-active{
+  color:#fff;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  box-shadow:0 0 22px rgba(139,92,246,.30);
+}
+
+[data-mobile-video-panel][hidden]{
+  display:none !important;
+}
