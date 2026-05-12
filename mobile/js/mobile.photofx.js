@@ -279,7 +279,8 @@
         job.status = "ready";
         job.title = job.title || "PhotoFX klip hazır";
         renderMobilePhotoFxResults();
-        setStatus("PhotoFX klip hazır.");
+               setStatus("PhotoFX klip hazır.");
+        clearMobilePhotoFxLoading();
         mobilePhotoFxToast("success", "Video hazır");
         return;
       }
@@ -288,7 +289,8 @@
         job.status = "error";
         job.title = "PhotoFX klip oluşturulamadı";
         renderMobilePhotoFxResults();
-        setStatus("PhotoFX klip oluşturulamadı.");
+              setStatus("PhotoFX klip oluşturulamadı.");
+        clearMobilePhotoFxLoading();
         mobilePhotoFxToast("error", "Klip oluşturma hatası");
         return;
       }
@@ -740,7 +742,7 @@ if (resultsEl) {
 
 renderMobilePhotoFxResults();
 setStatus("PhotoFX klip hazırlanıyor...");
-mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
+mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
 
       try {
         const res = await fetch("/api/providers/fal/photofx/create", {
