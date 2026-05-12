@@ -1345,13 +1345,12 @@ function bindUploads(){
             return;
           }
 
-        const refundCtx = {
+            const refundCtx = {
           ...creditCtx,
           job_id: String(data.job_id),
           provider_job_id: safeText(data.request_id || data.requestId || "")
         };
 
-        mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
        setStatus("Karakter oluşturuluyor...");
        mobileCartoonLoading("Karakter oluşturuluyor...");
         pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter", refundCtx);
