@@ -634,3 +634,17 @@
   filter:none !important;
   clip-path:polygon(0 0, 100% 50%, 0 100%) !important;
 }
+.mobile-home-section{
+  position:relative;
+  overflow:hidden;
+  margin-left:-14px;
+  margin-right:-14px;
+  padding-left:14px;
+  padding-right:14px;
+  padding-top:10px;
+  padding-bottom:24px;
+  background:
+    radial-gradient(420px 260px at 12% 4%, rgba(124,92,255,.22), transparent 62%),
+    radial-gradient(420px 280px at 92% 18%, rgba(95,208,255,.14), transparent 64%),
+    radial-gradient(420px 300px at 50% 82%, rgba(201,87,188,.12), transparent 66%);
+}
