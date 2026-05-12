@@ -193,15 +193,15 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
 
       return;
     }
-    setTimeout(function(){
-      pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName);
+       setTimeout(function(){
+      pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, refundCtx);
     }, 3000);
   })
   .catch(function(err){
     console.error("[MOBILE CARTOON][CHARACTER POLL ERROR]", err);
 
     setTimeout(function(){
-      pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName);
+      pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, refundCtx);
     }, 4000);
   });
 }
