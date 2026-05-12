@@ -1318,17 +1318,35 @@ function bindUploads(){
 
           console.log("[MOBILE CARTOON][CHARACTER CREATE RESPONSE]", data);
 
-                 if (!res.ok || !data.ok || !data.job_id) {
-                     setStatus("Karakter oluşturulamadı.");
+                               if (!res.ok || !data.ok || !data.job_id) {
+            const refundCtx = {
+              ...creditCtx,
+              job_id: "",
+              provider_job_id: safeText(data.request_id || data.requestId || "")
+            };
+
+            setStatus("Karakter oluşturulamadı.");
             clearMobileCartoonLoading();
             mobileCartoonToast("error", "Karakter oluşturulamadı.");
+
+            refundMobileCartoonCredits(refundCtx, "mobile_cartoon_character_create_failed", {
+              error: "character_create_failed",
+              response: data
+            });
+
             return;
           }
+
+        const refundCtx = {
+          ...creditCtx,
+          job_id: String(data.job_id),
+          provider_job_id: safeText(data.request_id || data.requestId || "")
+        };
 
         mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
        setStatus("Karakter oluşturuluyor...");
        mobileCartoonLoading("Karakter oluşturuluyor...");
-        pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter");
+        pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter", refundCtx);
         } catch (err) {
           console.error("[MOBILE CARTOON][CHARACTER CREATE ERROR]", err);
                    setStatus("Karakter oluşturulamadı.");
