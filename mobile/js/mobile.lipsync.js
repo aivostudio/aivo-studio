@@ -643,14 +643,15 @@
         return {};
       });
 
-      const rows = Array.isArray(data?.items)
-        window.mobileLipsyncLastRows = rows;
-        ? data.items
-        : Array.isArray(data?.jobs)
-          ? data.jobs
-          : Array.isArray(data)
-            ? data
-            : [];
+     const rows = Array.isArray(data?.items)
+  ? data.items
+  : Array.isArray(data?.jobs)
+    ? data.jobs
+    : Array.isArray(data)
+      ? data
+      : [];
+
+     window.mobileLipsyncLastRows = rows;
 
       mobileLipsyncLibraryJobs.length = 0;
 
