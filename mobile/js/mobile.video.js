@@ -1041,7 +1041,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
    bindGenerate();
   bindResultActions();
   syncCreditButton();
-  hydrateMobileVideoLibrary();
+
 
   window.mobileVideoState = state;
 })();
