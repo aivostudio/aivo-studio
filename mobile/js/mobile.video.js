@@ -29,6 +29,7 @@ let mobileVideoViewMode = "current";
 const state = {
   mode: "text",
   prompt: "",
+  imagePrompt: "",
   imageFile: null,
   imageUrl: "",
   duration: "5",
@@ -36,7 +37,6 @@ const state = {
   motion: "balanced",
   quality: "standard"
 };
-
   function esc(value){
     return String(value == null ? "" : value)
       .replaceAll("&", "&amp;")
