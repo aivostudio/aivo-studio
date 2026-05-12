@@ -1572,31 +1572,16 @@
   }
 
 
-  document.addEventListener("click", function(e){
-   const nav = e.target.closest(".bottom-nav a, .mobile-bottom-nav button, [data-mobile-nav], [data-mobile-tab]");
-    if (!nav) return;
+window.mobileLipsyncShowLibrary = async function(){
+  mobileLipsyncViewMode = "library";
+  await hydrateMobileLipsyncLibrary();
+  renderMobileLipsyncResults("library");
+};
 
-    const navText = String(nav.textContent || "").toLowerCase();
-
-    if (navText.includes("üretimler") || navText.includes("uretimler")) {
-      mobileLipsyncViewMode = "library";
-
-      setTimeout(async function(){
-        await hydrateMobileLipsyncLibrary();
-        renderMobileLipsyncResults("library");
-      }, 120);
-
-      return;
-    }
-
-    if (navText.includes("araçlar") || navText.includes("araclar") || navText.includes("ana sayfa")) {
-      mobileLipsyncViewMode = "current";
-
-      setTimeout(function(){
-        renderMobileLipsyncResults("current");
-      }, 120);
-    }
-  });
+window.mobileLipsyncShowCurrent = function(){
+  mobileLipsyncViewMode = "current";
+  renderMobileLipsyncResults("current");
+};
   bindScript();
   bindPhoto();
   bindAudio();
