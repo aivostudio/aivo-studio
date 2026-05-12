@@ -1428,6 +1428,9 @@ function showLipsync(){
     if (lipsyncPanel) lipsyncPanel.hidden = true;
     if (lipsyncTitle) lipsyncTitle.hidden = false;
     if (lipsyncResults) lipsyncResults.hidden = false;
+    if (typeof window.mobileLipsyncShowLibrary === "function") {
+  window.mobileLipsyncShowLibrary();
+}
   }
 
   setActiveNav(productionsNav);
