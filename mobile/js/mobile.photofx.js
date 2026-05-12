@@ -971,6 +971,15 @@ mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
   bindResultActions();
   syncCreditButton();
 
+window.mobilePhotoFxShowCurrent = function(){
+  mobilePhotoFxViewMode = "current";
+  renderMobilePhotoFxResults();
+};
 
+window.mobilePhotoFxHydrate = async function(){
+  mobilePhotoFxViewMode = "library";
+  await hydrateMobilePhotoFxLibrary();
+  renderMobilePhotoFxResults();
+};
   window.mobilePhotoFxState = state;
 })();
