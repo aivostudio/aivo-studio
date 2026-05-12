@@ -556,6 +556,25 @@ async function hydrateMobileCartoonLibrary(){
     return String(value || "").trim();
   }
 
+  function mobileCartoonToast(type, message){
+    const text = safeText(message);
+    if (!text) return;
+
+    try {
+      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
+      const fn = api && typeof api[type] === "function" ? api[type] : null;
+
+      if (fn) {
+        fn.call(api, text);
+        return;
+      }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        window.Toast.show(text, { type: type });
+      }
+    } catch (err) {}
+  }
+
   function setStatus(message){
     const text = safeText(message);
 
@@ -906,9 +925,9 @@ function bindUploads(){
   if (audioFileEl) {
     audioFileEl.addEventListener("change", async function(){
       await setUploadState(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
-
       if (state.audioUrl) {
-        setStatus("Audio yüklendi.");
+        setStatus("Müzik eklendi.");
+        mobileCartoonToast("success", "Müzik eklendi · +10 kredi");
       }
     });
   }
@@ -926,9 +945,9 @@ function bindUploads(){
   if (logoFileEl) {
     logoFileEl.addEventListener("change", async function(){
       await setUploadState(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
-
       if (state.logoUrl) {
-        setStatus("Logo yüklendi.");
+        setStatus("Logo eklendi.");
+        mobileCartoonToast("success", "Logo eklendi · +10 kredi");
       }
     });
   }
@@ -946,9 +965,11 @@ function bindUploads(){
   if (customFileEl) {
     customFileEl.addEventListener("change", async function(){
       await setUploadState(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
-      if (state.customCharacterUrl) {
+          if (state.customCharacterUrl) {
         syncMainCharacterDisabled();
         setStatus("Kendi karakter görselin yüklendi. Hazır ana karakter kapatıldı.");
+        mobileCartoonToast("success", "Resim eklendi · +10 kredi");
+        mobileCartoonToast("info", "Fotoğraf yüklendiği için preset ana karakter kapatıldı");
       }
     });
   }
