@@ -1250,8 +1250,8 @@ renderMobileCartoonResults();
             job.status = "processing";
           }
 
-           renderMobileCartoonResults();
-          mobileCartoonToast("success", "Çizgifilm video kuyruğa alındı.");
+            renderMobileCartoonResults();
+          mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
           mobileCartoonToast("success", getCartoonBasicCredit() + " kredi kullanıldı.");
           pollMobileCartoonJob(realJobId);
         } catch (err) {
