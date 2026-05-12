@@ -97,14 +97,21 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
 
 rows.forEach(function(row){
   const baseTitle =
-    row.title ||
-    row.prompt ||
     row.meta?.title ||
+    row.title ||
+    row.meta?.song_title ||
     "Yeni müzik";
 
-  const outputs = Array.isArray(row.outputs) ? row.outputs : [];
+  const rawOutputs =
+    Array.isArray(row.outputs) && row.outputs.length
+      ? row.outputs
+      : Array.isArray(row.meta?.outputs) && row.meta.outputs.length
+        ? row.meta.outputs
+        : Array.isArray(row.meta?.music_outputs) && row.meta.music_outputs.length
+          ? row.meta.music_outputs
+          : [];
 
-  const audioOutputs = outputs.filter(function(output){
+  const audioOutputs = rawOutputs.filter(function(output){
     return output && (
       output.audio_url ||
       output.url ||
@@ -114,30 +121,36 @@ rows.forEach(function(row){
     );
   });
 
-  if (audioOutputs.length > 1) {
-    audioOutputs.forEach(function(output, index){
-      const versionTitle = index === 0
-        ? baseTitle
-        : baseTitle + " · Versiyon " + (index + 1);
+  const providerSongIds = Array.isArray(row.meta?.provider_song_ids)
+    ? row.meta.provider_song_ids
+    : [];
 
-      libraryRows.push({
-        ...row,
-        title: versionTitle,
-        outputs: [output],
-        audio_url:
-          output.audio_url ||
-          output.url ||
-          output.archive_url ||
-          output.raw_url ||
-          output.src ||
-          ""
-      });
+  const versionCount = Math.max(audioOutputs.length, providerSongIds.length, 1);
+
+  for (let index = 0; index < versionCount; index += 1) {
+    const output = audioOutputs[index] || null;
+
+    const versionTitle = index === 0
+      ? baseTitle
+      : baseTitle + " · Versiyon " + (index + 1);
+
+    libraryRows.push({
+      ...row,
+      title: versionTitle,
+      outputs: output ? [output] : [],
+      audio_url:
+        output?.audio_url ||
+        output?.url ||
+        output?.archive_url ||
+        output?.raw_url ||
+        output?.src ||
+        "",
+      meta: {
+        ...(row.meta || {}),
+        version_index: index
+      }
     });
-
-    return;
   }
-
-  libraryRows.push(row);
 });
 
 libraryRows.forEach(function(row){
@@ -378,25 +391,29 @@ if (deleteEl) {
             const data = await res.json();
 
             const statusOutputs = Array.isArray(data?.outputs) ? data.outputs : [];
-            const firstAudio = statusOutputs.find(function(output){
-              return output && (
-                output.url ||
-                output.audio_url ||
-                output.archive_url ||
-                output.raw_url ||
-                output.src
-              );
-            });
+           const versionIndex = Number(row.meta?.version_index || 0);
 
-            const nextAudioUrl =
-              data?.audio?.src ||
-              data?.audio?.url ||
-              firstAudio?.url ||
-              firstAudio?.audio_url ||
-              firstAudio?.archive_url ||
-              firstAudio?.raw_url ||
-              firstAudio?.src ||
-              "";
+           const audioCandidates = statusOutputs.filter(function(output){
+            return output && (
+             output.url ||
+            output.audio_url ||
+             output.archive_url ||
+           output.raw_url ||
+          output.src
+           );
+        });
+
+        const pickedAudio = audioCandidates[versionIndex] || audioCandidates[0] || null;
+ 
+         const nextAudioUrl =
+        pickedAudio?.url ||
+        pickedAudio?.audio_url ||
+       pickedAudio?.archive_url ||
+        pickedAudio?.raw_url ||
+        pickedAudio?.src ||
+        data?.audio?.src ||
+       data?.audio?.url ||
+        "";
 
             if (nextAudioUrl) {
               activateLibraryRow(nextAudioUrl);
