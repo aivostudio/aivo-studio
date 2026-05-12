@@ -652,6 +652,16 @@ mobileCartoonJobs.push({
     return MOBILE_CARTOON_TOAST.loadingId;
   }
 
+  function resetMobileCartoonGenerateButtons(){
+    [characterBtn, generateBtn].forEach(function(btn){
+      if (!btn) return;
+
+      btn.disabled = false;
+      btn.classList.remove("is-loading", "is-pressed");
+      btn.removeAttribute("aria-busy");
+    });
+  }
+
   function clearMobileCartoonLoading(){
     const toastApi = getMobileCartoonToastApi();
 
@@ -666,6 +676,7 @@ mobileCartoonJobs.push({
     } catch (err) {}
 
     MOBILE_CARTOON_TOAST.loadingId = null;
+    resetMobileCartoonGenerateButtons();
   }
 
   function setStatus(message){
