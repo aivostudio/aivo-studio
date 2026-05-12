@@ -1212,7 +1212,7 @@ function setFileLabel(input, file){
 
         let creditCtx = null;
 
-        try {
+               try {
           creditCtx = await consumeMobileAtmoCredits("basic");
           mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
         } catch (creditErr) {
@@ -1221,6 +1221,10 @@ function setFileLabel(input, file){
           mobileAtmoToast("warning", "Yetersiz kredi.");
           return;
         }
+
+        basicGenerateBtn.disabled = true;
+        basicGenerateBtn.classList.add("is-loading", "is-pressed");
+        basicGenerateBtn.setAttribute("aria-busy", "true");
 
         mobileAtmoLoading("Atmosfer video hazırlanıyor...");
 
