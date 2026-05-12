@@ -339,35 +339,6 @@
     linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.035)) !important;
 }
 
-.mobile-home-edu-hero-pro::after{
-  content:"";
-  position:absolute;
-  right:18px;
-  bottom:18px;
-  width:86px;
-  height:86px;
-  border-radius:28px;
-  background:
-    radial-gradient(circle at 28% 20%, rgba(255,255,255,.24), transparent 34%),
-    linear-gradient(135deg, rgba(139,92,246,.92), rgba(236,72,153,.78));
-  box-shadow:
-    0 0 42px rgba(236,72,153,.28),
-    inset 0 1px 0 rgba(255,255,255,.18);
-  opacity:.9;
-}
-
-.mobile-home-edu-hero-pro::before{
-  content:"";
-  position:absolute;
-  right:48px;
-  bottom:48px;
-  z-index:2;
-  width:24px;
-  height:28px;
-  background:#fff;
-  clip-path:polygon(0 0, 100% 50%, 0 100%);
-  filter:drop-shadow(0 0 10px rgba(255,255,255,.45));
-}
 
 .mobile-home-edu-hero-pro h2{
   max-width:100%;
