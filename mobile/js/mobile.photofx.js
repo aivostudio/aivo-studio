@@ -850,24 +850,56 @@ async function uploadMobilePhotoFxFile(file, kind){
         return;
       }
 
+      const creditCost = computeCredit();
+      const consumeRequestId = "mobile-photofx:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
+
+      const refundState = {
+        consumed: false,
+        refunded: false,
+        creditCost: creditCost,
+        requestId: consumeRequestId,
+        transactionId: ""
+      };
+
+      try {
+        const consumeResult = await consumeMobilePhotoFxCredits(creditCost, consumeRequestId);
+
+        refundState.consumed = true;
+        refundState.transactionId = consumeResult.transactionId || "";
+
+        mobilePhotoFxToast("success", creditCost + " kredi kullanıldı.");
+      } catch (creditErr) {
+        console.warn("[MOBILE PHOTOFX][CREDIT ERROR]", creditErr);
+        setStatus("Yetersiz kredi.");
+        mobilePhotoFxToast("warning", "Yetersiz kredi.");
+        return;
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.classList.add("is-loading", "is-pressed");
+      generateBtn.setAttribute("aria-busy", "true");
+
       const tempJobId = "mobile-photofx-" + Date.now();
 
-  mobilePhotoFxJobs.unshift({
-  id: tempJobId,
-  scope: "current",
-  status: "processing",
-  title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "PhotoFX klip",
-  videoUrl: "",
-  payload: payload
-});
+      mobilePhotoFxJobs.unshift({
+        id: tempJobId,
+        scope: "current",
+        status: "processing",
+        title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "PhotoFX klip",
+        videoUrl: "",
+        payload: payload,
+        refundState: refundState
+      });
 
-if (resultsEl) {
-  resultsEl.hidden = false;
-}
+      mobilePhotoFxViewMode = "current";
 
-renderMobilePhotoFxResults();
-setStatus("PhotoFX klip hazırlanıyor...");
-mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
+      if (resultsEl) {
+        resultsEl.hidden = false;
+      }
+
+      renderMobilePhotoFxResults();
+      setStatus("PhotoFX klip hazırlanıyor...");
+      mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
 
       try {
         const res = await fetch("/api/providers/fal/photofx/create", {
@@ -895,10 +927,15 @@ mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
             job.title = "PhotoFX klip başlatılamadı";
           }
 
-           renderMobilePhotoFxResults();
+          renderMobilePhotoFxResults();
           setStatus("PhotoFX klip başlatılamadı.");
           clearMobilePhotoFxLoading();
-          mobilePhotoFxToast("error", "Klip oluşturma hatası");
+
+          await refundMobilePhotoFxCredits(refundState, "mobile_photofx_create_failed", {
+            error: data.error || "create_failed",
+            response: data
+          });
+
           return;
         }
 
@@ -911,11 +948,11 @@ mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
         if (job) {
           job.id = realJobId;
           job.status = "processing";
+          job.refundState = refundState;
         }
 
-         renderMobilePhotoFxResults();
+        renderMobilePhotoFxResults();
         mobilePhotoFxLoading("Video hazırlanıyor...");
-        mobilePhotoFxToast("success", computeCredit() + " kredi kullanıldı.");
         pollMobilePhotoFxJob(realJobId);
       } catch (err) {
         console.error("[MOBILE PHOTOFX][CREATE ERROR]", err);
@@ -929,10 +966,18 @@ mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
           job.title = "PhotoFX klip başlatılamadı";
         }
 
-               renderMobilePhotoFxResults();
+        renderMobilePhotoFxResults();
         setStatus("PhotoFX klip başlatılamadı.");
         clearMobilePhotoFxLoading();
-        mobilePhotoFxToast("error", "Klip oluşturma hatası");
+
+        await refundMobilePhotoFxCredits(refundState, "mobile_photofx_create_exception", {
+          error: String(err?.message || err || "create_exception")
+        });
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.classList.remove("is-loading", "is-pressed");
+        generateBtn.removeAttribute("aria-busy");
+        syncCreditButton();
       }
     });
   }
