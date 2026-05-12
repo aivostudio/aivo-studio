@@ -534,13 +534,25 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       source.credits?.transaction ||
       null;
 
-    const relatedTransactionId = safeText(
+      const relatedTransactionId = safeText(
       source.related_transaction_id ||
       source.relatedTransactionId ||
       source.transaction_id ||
       source.transactionId ||
       source.credit_transaction_id ||
       source.creditTransactionId ||
+      source.consume_transaction_id ||
+      source.consumeTransactionId ||
+      source.ledger_transaction_id ||
+      source.ledgerTransactionId ||
+      source.credit?.transaction_id ||
+      source.credit?.transactionId ||
+      source.credits?.transaction_id ||
+      source.credits?.transactionId ||
+      source.ledger?.transaction_id ||
+      source.ledger?.transactionId ||
+      source.consume?.transaction_id ||
+      source.consume?.transactionId ||
       transaction?.id ||
       ""
     );
