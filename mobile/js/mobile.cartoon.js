@@ -571,23 +571,90 @@ mobileCartoonJobs.push({
     return String(value || "").trim();
   }
 
-  function mobileCartoonToast(type, message){
+   const MOBILE_CARTOON_TOAST = {
+    loadingId: null
+  };
+
+  function getMobileCartoonToastApi(){
+    return (
+      window.mobileToast ||
+      window.MobileToast ||
+      window.AIVO_MOBILE_TOAST ||
+      window.aivoMobileToast ||
+      window.toast ||
+      window.AIVO_TOAST ||
+      null
+    );
+  }
+
+  function mobileCartoonToast(type, message, options){
     const text = safeText(message);
-    if (!text) return;
+    if (!text) return null;
+
+    const normalizedType = type === "danger" ? "error" : type;
+    const toastApi = getMobileCartoonToastApi();
 
     try {
-      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-      const fn = api && typeof api[type] === "function" ? api[type] : null;
+      if (toastApi) {
+        if (typeof toastApi[normalizedType] === "function") {
+          return toastApi[normalizedType](text, options || {});
+        }
 
-      if (fn) {
-        fn.call(api, text);
-        return;
+        if (typeof toastApi.show === "function") {
+          return toastApi.show({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi.push === "function") {
+          return toastApi.push({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi === "function") {
+          return toastApi(text, normalizedType, options || {});
+        }
       }
 
       if (window.Toast && typeof window.Toast.show === "function") {
-        window.Toast.show(text, { type: type });
+        window.Toast.show(text, { type: normalizedType });
       }
     } catch (err) {}
+
+    return null;
+  }
+
+  function mobileCartoonLoading(message){
+    clearMobileCartoonLoading();
+
+    MOBILE_CARTOON_TOAST.loadingId = mobileCartoonToast("loading", message, {
+      persist: true,
+      autoClose: false,
+      source: "mobile_cartoon"
+    });
+
+    return MOBILE_CARTOON_TOAST.loadingId;
+  }
+
+  function clearMobileCartoonLoading(){
+    const toastApi = getMobileCartoonToastApi();
+
+    try {
+      if (MOBILE_CARTOON_TOAST.loadingId && toastApi) {
+        if (typeof toastApi.dismiss === "function") {
+          toastApi.dismiss(MOBILE_CARTOON_TOAST.loadingId);
+        } else if (typeof toastApi.remove === "function") {
+          toastApi.remove(MOBILE_CARTOON_TOAST.loadingId);
+        }
+      }
+    } catch (err) {}
+
+    MOBILE_CARTOON_TOAST.loadingId = null;
   }
 
   function setStatus(message){
