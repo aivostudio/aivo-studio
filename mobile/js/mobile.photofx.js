@@ -61,23 +61,90 @@
     return String(value || "").trim();
   }
 
-  function mobilePhotoFxToast(type, message){
+  const MOBILE_PHOTOFX_TOAST = {
+    loadingId: null
+  };
+
+  function getMobilePhotoFxToastApi(){
+    return (
+      window.mobileToast ||
+      window.MobileToast ||
+      window.AIVO_MOBILE_TOAST ||
+      window.aivoMobileToast ||
+      window.toast ||
+      window.AIVO_TOAST ||
+      null
+    );
+  }
+
+  function mobilePhotoFxToast(type, message, options){
     const text = safeText(message);
-    if (!text) return;
+    if (!text) return null;
+
+    const normalizedType = type === "danger" ? "error" : type;
+    const toastApi = getMobilePhotoFxToastApi();
 
     try {
-      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-      const fn = api && typeof api[type] === "function" ? api[type] : null;
+      if (toastApi) {
+        if (typeof toastApi[normalizedType] === "function") {
+          return toastApi[normalizedType](text, options || {});
+        }
 
-      if (fn) {
-        fn.call(api, text);
-        return;
+        if (typeof toastApi.show === "function") {
+          return toastApi.show({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi.push === "function") {
+          return toastApi.push({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi === "function") {
+          return toastApi(text, normalizedType, options || {});
+        }
       }
 
       if (window.Toast && typeof window.Toast.show === "function") {
-        window.Toast.show(text, { type: type });
+        window.Toast.show(text, { type: normalizedType });
       }
     } catch (err) {}
+
+    return null;
+  }
+
+  function mobilePhotoFxLoading(message){
+    clearMobilePhotoFxLoading();
+
+    MOBILE_PHOTOFX_TOAST.loadingId = mobilePhotoFxToast("loading", message, {
+      persist: true,
+      autoClose: false,
+      source: "mobile_photofx"
+    });
+
+    return MOBILE_PHOTOFX_TOAST.loadingId;
+  }
+
+  function clearMobilePhotoFxLoading(){
+    const toastApi = getMobilePhotoFxToastApi();
+
+    try {
+      if (MOBILE_PHOTOFX_TOAST.loadingId && toastApi) {
+        if (typeof toastApi.dismiss === "function") {
+          toastApi.dismiss(MOBILE_PHOTOFX_TOAST.loadingId);
+        } else if (typeof toastApi.remove === "function") {
+          toastApi.remove(MOBILE_PHOTOFX_TOAST.loadingId);
+        }
+      }
+    } catch (err) {}
+
+    MOBILE_PHOTOFX_TOAST.loadingId = null;
   }
 
   function setStatus(message){
@@ -425,11 +492,12 @@ async function uploadMobilePhotoFxFile(file, kind){
 
         if (!file) return;
 
-        setStatus("Dosya yükleniyor...");
-        mobilePhotoFxToast("loading", "Dosya yükleniyor...");
+               setStatus("Dosya yükleniyor...");
+        mobilePhotoFxLoading("Dosya güvenlik kontrolünden geçiriliyor...");
 
         try {
           const publicUrl = await uploadMobilePhotoFxFile(file, item.kind);
+          clearMobilePhotoFxLoading();
           state[item.urlKey] = publicUrl;
           setFileLabel(input, file);
           syncCreditButton();
@@ -446,6 +514,7 @@ async function uploadMobilePhotoFxFile(file, kind){
           }
         } catch (err) {
           console.error("[MOBILE PHOTOFX][UPLOAD ERROR]", err);
+          clearMobilePhotoFxLoading();
 
           state[item.fileKey] = null;
           state[item.urlKey] = "";
