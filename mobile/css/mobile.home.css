@@ -648,3 +648,21 @@
     radial-gradient(420px 280px at 92% 18%, rgba(95,208,255,.14), transparent 64%),
     radial-gradient(420px 300px at 50% 82%, rgba(201,87,188,.12), transparent 66%);
 }
+body{
+  background:
+    radial-gradient(620px 420px at 20% 0%, rgba(124,92,255,.28), transparent 62%),
+    radial-gradient(620px 460px at 92% 22%, rgba(95,208,255,.18), transparent 64%),
+    radial-gradient(680px 520px at 50% 78%, rgba(201,87,188,.14), transparent 68%),
+    linear-gradient(180deg,#080914 0%,#061321 42%,#070914 100%) !important;
+}
+
+.mobile-shell{
+  background:
+    radial-gradient(460px 320px at 12% 18%, rgba(124,92,255,.14), transparent 64%),
+    radial-gradient(460px 360px at 90% 34%, rgba(95,208,255,.12), transparent 66%),
+    radial-gradient(520px 380px at 50% 82%, rgba(201,87,188,.10), transparent 68%) !important;
+}
+
+.mobile-home-section{
+  background:transparent !important;
+}
