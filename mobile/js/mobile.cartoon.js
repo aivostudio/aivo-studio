@@ -162,7 +162,8 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
         <div class="mobile-cartoon-character-name">${esc(fallbackName || "Karakter")}</div>
       `;
 
-      setStatus("Karakter hazır.");
+         setStatus("Karakter hazır.");
+      mobileCartoonToast("success", "Karakter hazır.");
       return;
     }
 
@@ -172,6 +173,7 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
       }
 
       setStatus("Karakter oluşturulamadı.");
+      mobileCartoonToast("error", "Karakter oluşturulamadı.");
       return;
     }
 
