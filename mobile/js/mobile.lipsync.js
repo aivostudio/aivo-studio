@@ -1571,7 +1571,7 @@
 
 
   document.addEventListener("click", function(e){
-    const nav = e.target.closest(".mobile-bottom-nav button, [data-mobile-nav], [data-mobile-tab]");
+   const nav = e.target.closest(".bottom-nav a, .mobile-bottom-nav button, [data-mobile-nav], [data-mobile-tab]");
     if (!nav) return;
 
     const navText = String(nav.textContent || "").toLowerCase();
