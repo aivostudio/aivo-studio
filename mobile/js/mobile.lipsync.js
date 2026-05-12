@@ -28,6 +28,7 @@
   const mobileLipsyncCurrentJobs = [];
   const mobileLipsyncLibraryJobs = [];
   const mobileLipsyncDeletedIds = new Set();
+  let mobileLipsyncViewMode = "current";
 
   const state = {
     photoFile: null,
@@ -358,13 +359,14 @@
     );
   }
 
-  function renderMobileLipsyncResults(){
+  function renderMobileLipsyncResults(forceMode){
     if (!resultsEl) return;
 
-    const sourceJobs = isMobileLipsyncLibraryView()
+    const mode = forceMode || mobileLipsyncViewMode;
+
+    const sourceJobs = mode === "library"
       ? mobileLipsyncLibraryJobs
       : mobileLipsyncCurrentJobs;
-
     const items = sourceJobs.filter(function(job){
       return !mobileLipsyncDeletedIds.has(job.id);
     });
@@ -516,7 +518,7 @@
 
       if (act === "delete") {
         mobileLipsyncDeletedIds.add(id);
-        renderMobileLipsyncResults();
+       renderMobileLipsyncResults("library");
 
         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
           fetch("/api/jobs/delete", {
@@ -591,7 +593,7 @@
         job.videoUrl = videoUrl;
         job.status = "ready";
         job.title = job.title || "Dudak senkron video hazır";
-        renderMobileLipsyncResults();
+       renderMobileLipsyncResults("current");
         setStatus("Dudak senkron video hazır.");
         clearMobileLipsyncLoading();
         showMobileLipsyncToast("success", "Dudak senkron video hazır.");
@@ -601,7 +603,7 @@
       if (status.includes("fail") || status.includes("error") || status.includes("cancel")) {
         job.status = "error";
         job.title = "Dudak senkron video oluşturulamadı";
-        renderMobileLipsyncResults();
+      renderMobileLipsyncResults("current");
         setStatus("Dudak senkron video oluşturulamadı.");
         clearMobileLipsyncLoading();
         showMobileLipsyncToast("error", "Dudak senkron video oluşturulamadı.");
@@ -694,7 +696,7 @@
         });
       });
 
-      renderMobileLipsyncResults();
+    renderMobileLipsyncResults("current");
     } catch (err) {
       console.error("[MOBILE LIPSYNC][HYDRATE ERROR]", err);
       resultsEl.className = "empty-card";
@@ -1555,19 +1557,30 @@
   }
 
 
-   document.addEventListener("click", function(e){
+  document.addEventListener("click", function(e){
     const nav = e.target.closest(".mobile-bottom-nav button, [data-mobile-nav], [data-mobile-tab]");
     if (!nav) return;
 
-    setTimeout(async function(){
+    const navText = String(nav.textContent || "").toLowerCase();
 
-      if (isMobileLipsyncLibraryView()) {
+    if (navText.includes("üretimler") || navText.includes("uretimler")) {
+      mobileLipsyncViewMode = "library";
+
+      setTimeout(async function(){
         await hydrateMobileLipsyncLibrary();
-      }
+        renderMobileLipsyncResults("library");
+      }, 120);
 
-      renderMobileLipsyncResults();
+      return;
+    }
 
-    }, 80);
+    if (navText.includes("araçlar") || navText.includes("araclar") || navText.includes("ana sayfa")) {
+      mobileLipsyncViewMode = "current";
+
+      setTimeout(function(){
+        renderMobileLipsyncResults("current");
+      }, 120);
+    }
   });
   bindScript();
   bindPhoto();
