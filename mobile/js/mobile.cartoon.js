@@ -1481,13 +1481,19 @@ renderMobileCartoonResults();
             return item.id === tempJobId;
           });
 
+                 const refundCtx = {
+            ...creditCtx,
+            job_id: realJobId,
+            provider_job_id: safeText(data.request_id || data.requestId || "")
+          };
+
           if (job) {
             job.id = realJobId;
             job.status = "processing";
+            job.refundCtx = refundCtx;
           }
 
           renderMobileCartoonResults();
-          mobileCartoonToast("success", getCartoonBasicCredit() + " kredi kullanıldı.");
           setStatus("Çizgifilm sahnesi hazırlanıyor...");
           mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
           pollMobileCartoonJob(realJobId);
