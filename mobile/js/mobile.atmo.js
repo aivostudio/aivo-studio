@@ -524,6 +524,71 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       ? "studio_atmo_generate_pro"
       : "studio_atmo_generate_basic";
   }
+    async function consumeMobileAtmoCredits(mode){
+    const amount = computeMobileAtmoCredit(mode);
+    const action = getMobileAtmoCreditAction(mode);
+    const requestId = "mobile-atmo:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
+
+    const res = await fetch("/api/credits/consume-ledger", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "atmo",
+        action: action,
+        cost: amount,
+        request_id: requestId,
+        reason: action
+      })
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    if (!res.ok || !data || !data.ok) {
+      throw {
+        type: "insufficient_credit",
+        data: data
+      };
+    }
+
+    await refreshMobileAtmoCredits();
+
+    return {
+      app: "atmo",
+      action: action,
+      amount: amount,
+      request_id: requestId,
+      related_transaction_id: safeText(
+        data.transaction_id ||
+        data.transaction?.id ||
+        data.related_transaction_id ||
+        data.credit_transaction_id ||
+        ""
+      ),
+      idempotency_key: safeText(
+        data.transaction_id ||
+        data.transaction?.id ||
+        data.related_transaction_id ||
+        data.credit_transaction_id ||
+        ""
+      )
+        ? "mobile-atmo-refund:" + safeText(
+            data.transaction_id ||
+            data.transaction?.id ||
+            data.related_transaction_id ||
+            data.credit_transaction_id ||
+            ""
+          )
+        : "",
+      mode: mode,
+      refunded: false
+    };
+  }
 
   function buildMobileAtmoRefundContext(mode, payload, data, jobId){
     const source = data || {};
