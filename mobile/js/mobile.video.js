@@ -1052,6 +1052,9 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
   bindResultActions();
   syncCreditButton();
 
-
+window.mobileVideoShowCurrent = function(){
+  mobileVideoViewMode = "current";
+  renderMobileVideoResults();
+};
 window.mobileVideoHydrate = hydrateMobileVideoLibrary;
 })();
