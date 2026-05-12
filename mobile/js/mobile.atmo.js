@@ -327,15 +327,17 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         if (!jobId || !videoUrl) return;
 
-        mobileAtmoJobs.push({
-          id: jobId,
-          title: row.title || row.prompt || row.meta?.prompt || "Atmosfer video",
-          videoUrl: videoUrl,
-          status: "ready",
-          payload: row
-        });
+   mobileAtmoJobs.push({
+  id: jobId,
+  scope: "library",
+  title: row.title || row.prompt || row.meta?.prompt || "Atmosfer video",
+  videoUrl: videoUrl,
+  status: "ready",
+  payload: row
+});
       });
 
+      mobileAtmoViewMode = "library";
       renderMobileAtmoResults();
     } catch (err) {
       console.error("[MOBILE ATMO][HYDRATE ERROR]", err);
@@ -1056,6 +1058,15 @@ renderMobileAtmoResults();
 
     setMode("basic");
  
+  window.mobileAtmoShowCurrent = function(){
+  mobileAtmoViewMode = "current";
+  renderMobileAtmoResults();
+};
 
+window.mobileAtmoHydrate = async function(){
+  mobileAtmoViewMode = "library";
+  await hydrateMobileAtmoLibrary();
+  renderMobileAtmoResults();
+};
   window.mobileAtmoState = state;
 })();
