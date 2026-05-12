@@ -245,7 +245,28 @@ function pollMobileCartoonJob(jobId){
       return;
     }
 
-      if (status.includes("fail") || status.includes("error")) {
+    if (
+      (status.includes("ready") || status.includes("done") || status.includes("complete") || status.includes("success")) &&
+      !videoUrl
+    ) {
+      job.status = "error";
+      job.title = "Video çıktısı alınamadı";
+      renderMobileCartoonResults();
+      setStatus("Video çıktısı alınamadı.");
+      clearMobileCartoonLoading();
+      mobileCartoonToast("error", "Video çıktısı alınamadı.");
+
+      refundMobileCartoonCredits(job.refundCtx, "mobile_cartoon_ready_no_output", {
+        error: "ready_no_output",
+        status: status,
+        job_id: jobId,
+        response: data
+      });
+
+      return;
+    }
+
+    if (status.includes("fail") || status.includes("error")) {
       job.status = "error";
       job.title = "Çizgifilm video oluşturulamadı";
       renderMobileCartoonResults();
