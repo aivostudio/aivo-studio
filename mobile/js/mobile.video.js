@@ -908,7 +908,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
 
         if (!jobId || !videoUrl) return;
 
-       mobileVideoLibraryJobs.push({
+     mobileVideoLibraryJobs.push({
   id: jobId,
   title: row.title || row.prompt || row.meta?.prompt || "Video",
   videoUrl: videoUrl,
@@ -917,6 +917,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
 });
       });
 
+      mobileVideoViewMode = "library";
       renderMobileVideoResults();
     } catch (err) {
       console.error("[MOBILE VIDEO][HYDRATE ERROR]", err);
