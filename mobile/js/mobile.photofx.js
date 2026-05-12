@@ -195,17 +195,24 @@
         return {};
       });
 
-      if (data && data.ok && typeof data.credits === "number") {
+      const nextCredits = data.credits ?? data.balance ?? data.credit;
+
+      if (data && data.ok && typeof nextCredits === "number") {
         const topCreditCountEl = document.getElementById("topCreditCount");
         if (topCreditCountEl) {
-          topCreditCountEl.textContent = String(data.credits);
+          topCreditCountEl.textContent = String(nextCredits);
         }
+
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+        mobileCreditEls.forEach(function(el){
+          el.textContent = "Kredi " + nextCredits;
+        });
 
         if (
           window.AIVO_STORE_V1 &&
           typeof window.AIVO_STORE_V1.setCredits === "function"
         ) {
-          window.AIVO_STORE_V1.setCredits(data.credits);
+          window.AIVO_STORE_V1.setCredits(nextCredits);
         }
       }
     } catch (err) {}
