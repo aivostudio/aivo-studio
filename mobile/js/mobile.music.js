@@ -3,6 +3,7 @@
   const titleEl = document.getElementById("musicTitle");
   const promptEl = document.getElementById("musicPrompt");
 const moodEl = document.getElementById("mobileMusicMood") || document.getElementById("musicMood");
+  const vocalEl = document.getElementById("mobileMusicVocal");
   const lyricsEl = document.getElementById("musicLyrics");
   const statusEl = document.getElementById("mobileMusicStatus");
   const resultsEl = document.getElementById("mobileMusicResults");
@@ -1319,6 +1320,7 @@ if (deleteBtn) {
     const title = (titleEl.value || "").trim();
     const prompt = (promptEl.value || "").trim();
     const mood = (moodEl.value || "").trim();
+    const vocal = (vocalEl?.value || "Vokalli").trim();
     const lyrics = (lyricsEl.value || "").trim();
 
     if (!prompt) {
