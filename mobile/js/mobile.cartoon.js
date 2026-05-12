@@ -670,7 +670,7 @@ mobileCartoonJobs.push({
   }
 
   function mobileCartoonLoading(message){
-    clearMobileCartoonLoading();
+    clearMobileCartoonLoading({ keepButtons: true });
 
     MOBILE_CARTOON_TOAST.loadingId = mobileCartoonToast("loading", message, {
       persist: true,
@@ -691,7 +691,8 @@ mobileCartoonJobs.push({
     });
   }
 
-  function clearMobileCartoonLoading(){
+  function clearMobileCartoonLoading(options){
+    const keepButtons = !!(options && options.keepButtons);
     const toastApi = getMobileCartoonToastApi();
 
     try {
@@ -705,9 +706,11 @@ mobileCartoonJobs.push({
     } catch (err) {}
 
     MOBILE_CARTOON_TOAST.loadingId = null;
-    resetMobileCartoonGenerateButtons();
-  }
 
+    if (!keepButtons) {
+      resetMobileCartoonGenerateButtons();
+    }
+  }
   function setStatus(message){
     const text = safeText(message);
 
