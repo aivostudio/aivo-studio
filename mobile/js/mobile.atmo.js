@@ -23,6 +23,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
   const mobileAtmoJobs = [];
   const mobileAtmoDeletedIds = new Set();
+  let mobileAtmoViewMode = "current";
 
   function esc(value){
     return String(value == null ? "" : value)
@@ -36,9 +37,15 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   function renderMobileAtmoResults(){
     if (!resultsEl) return;
 
-    const items = mobileAtmoJobs.filter(function(job){
-      return !mobileAtmoDeletedIds.has(job.id);
-    });
+  const items = mobileAtmoJobs.filter(function(job){
+  if (mobileAtmoDeletedIds.has(job.id)) return false;
+
+  if (mobileAtmoViewMode === "current") {
+    return job.scope === "current";
+  }
+
+  return job.scope === "library";
+});
 
     if (!items.length) {
       resultsEl.className = "empty-card";
