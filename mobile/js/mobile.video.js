@@ -339,8 +339,7 @@ const items = sourceJobs.filter(function(job){
 
       if (!job) return;
 
-      if (videoUrl) {
-     if (videoUrl) {
+ if (videoUrl) {
   job.videoUrl = videoUrl;
   job.status = "ready";
   job.title = job.title || "Video hazır";
