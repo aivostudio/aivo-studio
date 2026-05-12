@@ -1555,15 +1555,20 @@
   }
 
 
-  document.addEventListener("click", function(e){
+   document.addEventListener("click", function(e){
     const nav = e.target.closest(".mobile-bottom-nav button, [data-mobile-nav], [data-mobile-tab]");
     if (!nav) return;
 
-    setTimeout(function(){
+    setTimeout(async function(){
+
+      if (isMobileLipsyncLibraryView()) {
+        await hydrateMobileLipsyncLibrary();
+      }
+
       renderMobileLipsyncResults();
+
     }, 80);
   });
-
   bindScript();
   bindPhoto();
   bindAudio();
