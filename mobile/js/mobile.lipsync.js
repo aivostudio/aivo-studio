@@ -1396,7 +1396,9 @@
       setStatus("Dudak senkron hazırlanıyor...");
       showMobileLipsyncLoading("Dudak senkron hazırlanıyor...");
 
-      const tempId = "mobile-lipsync-" + Date.now();
+          const tempId = "mobile-lipsync-" + Date.now();
+
+      mobileLipsyncJobs.length = 0;
 
       mobileLipsyncJobs.unshift({
         id: tempId,
@@ -1545,7 +1547,7 @@
   bindGenerate();
   bindMobileLipsyncResultActions();
   syncGenerateButton();
-  hydrateMobileLipsyncLibrary();
+  renderMobileLipsyncResults();
 
   window.mobileLipsyncState = state;
 })();
