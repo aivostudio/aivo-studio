@@ -1407,6 +1407,9 @@ function showLipsync(){
             if (videoPanel) videoPanel.hidden = true;
             if (videoTitle) videoTitle.hidden = false;
             if (videoResults) videoResults.hidden = false;
+            if (typeof window.mobileVideoHydrate === "function") {
+           window.mobileVideoHydrate();
+           }
           }
 
           setActiveNav(productionsNav);
