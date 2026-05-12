@@ -1323,14 +1323,23 @@ if (deleteBtn) {
     const vocal = (vocalEl?.value || "Vokalli").trim();
     const lyrics = (lyricsEl.value || "").trim();
 
-    if (!prompt) {
-      statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
-      return;
-    }
+   if (!prompt) {
+  statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
 
-    btn.disabled = true;
-    btn.textContent = "Üretiliyor...";
-    statusEl.textContent = "Müzik üretimi başlatılıyor...";
+  if (window.toast?.warning) {
+    window.toast.warning("Prompt yazmadan üretim başlatılamaz.");
+  }
+
+  return;
+}
+
+btn.disabled = true;
+btn.textContent = "Üretiliyor...";
+statusEl.textContent = "Müzik üretimi başlatılıyor...";
+
+if (window.toast?.loading) {
+  window.toast.loading("Müzik üretimi başlatılıyor...");
+}
 
     try {
       const res = await fetch("/api/music/generate", {
