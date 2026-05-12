@@ -795,8 +795,9 @@ mobileVideoLoading("Video hazırlanıyor...");
             }
           });
 
-          mobileVideoToast("error", "Video başlatılamadı");
-          return;
+         clearMobileVideoLoading();
+        mobileVideoToast("error", "Video başlatılamadı");
+         return;
         }
 
         const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
