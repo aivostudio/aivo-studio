@@ -792,12 +792,15 @@ return;
                 Kanal ayırma tamamlanamadı. Lütfen tekrar dene.
               </div>
             `;
+if (statusEl) {
+  statusEl.textContent = "Kanal ayırma başarısız.";
+}
 
-            if (statusEl) {
-              statusEl.textContent = "Kanal ayırma başarısız.";
-            }
+if (window.toast?.error) {
+  window.toast.error("Kanal ayırma başarısız.");
+}
 
-            return;
+return;
           }
 
           if (tries < 60) {
