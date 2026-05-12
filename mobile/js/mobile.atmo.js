@@ -384,6 +384,8 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   }
 
   const MOBILE_ATMO_TOAST = {
+    lastKey: "",
+    lastAt: 0,
     loadingId: null
   };
 
@@ -394,16 +396,28 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       window.AIVO_MOBILE_TOAST ||
       window.aivoMobileToast ||
       window.toast ||
-      window.AIVO_TOAST ||
       null
     );
   }
 
-  function mobileAtmoToast(type, message, options){
+  function callMobileAtmoToast(type, message, options){
     const text = safeText(message);
     if (!text) return null;
 
     const normalizedType = type === "danger" ? "error" : type;
+    const key = normalizedType + ":" + text;
+    const now = Date.now();
+
+    if (
+      key === MOBILE_ATMO_TOAST.lastKey &&
+      now - MOBILE_ATMO_TOAST.lastAt < 1600
+    ) {
+      return null;
+    }
+
+    MOBILE_ATMO_TOAST.lastKey = key;
+    MOBILE_ATMO_TOAST.lastAt = now;
+
     const toastApi = getMobileAtmoToastApi();
 
     try {
@@ -432,18 +446,19 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           return toastApi(text, normalizedType, options || {});
         }
       }
+    } catch (err) {
+      console.warn("[MOBILE ATMO][TOAST FALLBACK]", err);
+    }
 
-      if (window.Toast && typeof window.Toast.show === "function") {
-        window.Toast.show(text, { type: normalizedType });
-      }
-    } catch (err) {}
-
+    setStatus(text);
     return null;
   }
 
-  function mobileAtmoLoading(message){
-    clearMobileAtmoLoading();
+  function mobileAtmoToast(type, message, options){
+    return callMobileAtmoToast(type || "info", message, options || {});
+  }
 
+  function mobileAtmoLoading(message){
     MOBILE_ATMO_TOAST.loadingId = mobileAtmoToast("loading", message, {
       persist: true,
       autoClose: false,
@@ -464,11 +479,12 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           toastApi.remove(MOBILE_ATMO_TOAST.loadingId);
         }
       }
-    } catch (err) {}
+    } catch {}
 
     MOBILE_ATMO_TOAST.loadingId = null;
   }
- function computeMobileAtmoCredit(mode){
+
+  function computeMobileAtmoCredit(mode){function computeMobileAtmoCredit(mode){
   const target = mode === "pro" ? state.pro : state.basic;
 
   const duration = String(target.duration || "4");
@@ -1005,6 +1021,7 @@ renderMobileAtmoResults();
           job.status = "processing";
 
                    renderMobileAtmoResults();
+          setStatus("Atmosfer video hazırlanıyor...");
           mobileAtmoLoading("Atmosfer video hazırlanıyor...");
           mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
           pollMobileAtmoJob(realJobId);
@@ -1103,6 +1120,7 @@ renderMobileAtmoResults();
           job.status = "processing";
 
                    renderMobileAtmoResults();
+          setStatus("Süper atmosfer video hazırlanıyor...");
           mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
           mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
           pollMobileAtmoJob(realJobId);
