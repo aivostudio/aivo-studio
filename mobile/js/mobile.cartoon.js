@@ -129,7 +129,7 @@ function pickCartoonImageUrl(data){
   ).trim();
 }
 
-function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
+function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, refundCtx){
   if (!jobId) return;
 
   fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
@@ -179,12 +179,20 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
       if (card) {
         card.remove();
       }
+
       setStatus("Karakter oluşturulamadı.");
       clearMobileCartoonLoading();
       mobileCartoonToast("error", "Karakter oluşturulamadı.");
+
+      refundMobileCartoonCredits(refundCtx, "mobile_cartoon_character_poll_failed", {
+        error: "character_poll_failed",
+        status: status,
+        job_id: jobId,
+        response: data
+      });
+
       return;
     }
-
     setTimeout(function(){
       pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName);
     }, 3000);
