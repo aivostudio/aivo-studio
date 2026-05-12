@@ -169,7 +169,8 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
         <div class="mobile-cartoon-character-name">${esc(fallbackName || "Karakter")}</div>
       `;
 
-         setStatus("Karakter hazır.");
+             setStatus("Karakter hazır.");
+      clearMobileCartoonLoading();
       mobileCartoonToast("success", "Karakter hazır.");
       return;
     }
@@ -178,8 +179,8 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName){
       if (card) {
         card.remove();
       }
-
       setStatus("Karakter oluşturulamadı.");
+      clearMobileCartoonLoading();
       mobileCartoonToast("error", "Karakter oluşturulamadı.");
       return;
     }
@@ -230,7 +231,8 @@ function pollMobileCartoonJob(jobId){
       job.status = "ready";
       job.title = job.title || "Çizgifilm video hazır";
       renderMobileCartoonResults();
-      setStatus("Çizgifilm video hazır.");
+           setStatus("Çizgifilm video hazır.");
+      clearMobileCartoonLoading();
       mobileCartoonToast("success", "Çizgifilm video hazır.");
       return;
     }
@@ -239,7 +241,8 @@ function pollMobileCartoonJob(jobId){
       job.status = "error";
       job.title = "Çizgifilm video oluşturulamadı";
       renderMobileCartoonResults();
-      setStatus("Çizgifilm video oluşturulamadı.");
+           setStatus("Çizgifilm video oluşturulamadı.");
+      clearMobileCartoonLoading();
       mobileCartoonToast("error", "Çizgifilm video oluşturulamadı.");
       return;
     }
