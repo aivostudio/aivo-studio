@@ -2,24 +2,47 @@
   <section class="mobile-video-panel">
     <div class="mobile-video-hero">
       <div class="mobile-video-kicker">AIVO Mobile Studio</div>
-      <h3>AI Resimden Video Üret</h3>
-          <p>Görselini kısa bir AI videoya dönüştür.</p>
+      <h3>AI Video Üret</h3>
+      <p>Yazıdan veya görselden kısa AI video oluştur.</p>
     </div>
 
- 
+    <div class="mobile-video-mode-tabs" role="tablist" aria-label="Video üretim modu">
+      <button class="mobile-video-mode-btn is-active" type="button" data-mobile-video-mode="text" aria-selected="true">
+        Yazıdan Video
+      </button>
+      <button class="mobile-video-mode-btn" type="button" data-mobile-video-mode="image" aria-selected="false">
+        Resimden Video
+      </button>
+    </div>
 
-    <h3 class="mobile-video-block-title">Prompt</h3>
-    <p class="mobile-video-block-sub">Görselin nasıl canlanacağını kısaca yaz.</p>
+    <div data-mobile-video-panel="text">
+      <h3 class="mobile-video-block-title">Video Açıklaması</h3>
+      <p class="mobile-video-block-sub">Oluşturmak istediğin videoyu yaz.</p>
 
-    <textarea
-      id="mobileVideoPrompt"
-      class="field-textarea mobile-video-prompt"
-      maxlength="1000"
-      placeholder="Örn: Kamera yavaşça yaklaşsın, hafif parallax, sinematik ışık geçişleri, doğal hareket..."
-    ></textarea>
+      <textarea
+        id="mobileVideoPrompt"
+        class="field-textarea mobile-video-prompt"
+        maxlength="1000"
+        placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik..."
+      ></textarea>
 
-    <div class="mobile-video-count">
-      <span id="mobileVideoPromptCount">0</span> / 1000
+      <div class="mobile-video-count">
+        <span id="mobileVideoPromptCount">0</span> / 1000
+      </div>
+    </div>
+
+    <div data-mobile-video-panel="image" hidden>
+      <h3 class="mobile-video-block-title">Referans Görsel</h3>
+      <p class="mobile-video-block-sub">Videoya dönüştürmek istediğin resmi yükle. PNG / JPG • Maks 10MB</p>
+
+      <label class="mobile-video-upload-btn">
+        <input id="mobileVideoImageFile" type="file" accept="image/*" hidden>
+        <span class="mobile-video-upload-icon" aria-hidden="true"></span>
+        <b>Görsel Yükle</b>
+      </label>
+
+      <h3 class="mobile-video-block-title">Görsel Promptu</h3>
+      <p class="mobile-video-block-sub">Görselin nasıl canlanacağını yaz.</p>
     </div>
 
     <h3 class="mobile-video-block-title">Video Ayarları</h3>
@@ -62,14 +85,7 @@
         </select>
       </label>
     </div>
-        <h3 class="mobile-video-block-title">Referans Görsel</h3>
-    <p class="mobile-video-block-sub">Videoya dönüştürmek istediğin resmi yükle. PNG / JPG • Maks 10MB</p>
 
-    <label class="mobile-video-upload-btn">
-      <input id="mobileVideoImageFile" type="file" accept="image/*" hidden>
-      <span class="mobile-video-upload-icon" aria-hidden="true"></span>
-      <b>Görsel Yükle</b>
-    </label>
     <button id="mobileVideoGenerateBtn" class="generate-btn" type="button">
       🎬 Video Oluştur (20 Kredi)
     </button>
