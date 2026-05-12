@@ -136,5 +136,26 @@
   };
 
   window.toast = window.mobileToast;
+  window.Toast = {
+  show: function(message, type){
+    return window.mobileToast.show(message, type || "info");
+  }
+};
+
+window.toastSafe = function(message, type){
+  return window.mobileToast.show(message, type || "info");
+};
+
+window.legacyToast = function(message, type){
+  return window.mobileToast.show(message, type || "info");
+};
+
+window.showToast = function(message, type){
+  return window.mobileToast.show(message, type || "info");
+};
+
+window.toastMsg = function(message, type){
+  return window.mobileToast.show(message, type || "info");
+};
   window.AIVO_TOAST = window.mobileToast;
 })();
