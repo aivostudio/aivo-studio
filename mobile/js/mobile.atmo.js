@@ -368,6 +368,25 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   function safeText(value){
     return String(value || "").trim();
   }
+
+  function mobileAtmoToast(type, message){
+    const text = safeText(message);
+    if (!text) return;
+
+    try {
+      const api = window.mobileToast || window.toast || window.AIVO_TOAST;
+      const fn = api && typeof api[type] === "function" ? api[type] : null;
+
+      if (fn) {
+        fn.call(api, text);
+        return;
+      }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        window.Toast.show(text, { type: type });
+      }
+    } catch (err) {}
+  }
  function computeMobileAtmoCredit(mode){
   const target = mode === "pro" ? state.pro : state.basic;
 
