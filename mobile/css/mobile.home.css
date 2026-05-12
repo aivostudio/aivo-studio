@@ -405,54 +405,80 @@
 .mobile-home-edu-grid::before{
   content:"";
   position:absolute;
-  inset:18px 14px;
+  inset:24px 50%;
   z-index:-1;
-  pointer-events:none;
+  width:3px;
+  transform:translateX(-50%);
+  border-radius:999px;
   background:
-    linear-gradient(90deg, transparent 0 44%, rgba(168,85,247,.75) 48%, rgba(236,72,153,.85) 52%, transparent 56%),
-    linear-gradient(0deg, transparent 0 31%, rgba(56,189,248,.52) 34%, rgba(168,85,247,.72) 37%, transparent 41%),
-    linear-gradient(0deg, transparent 0 64%, rgba(236,72,153,.58) 67%, rgba(168,85,247,.72) 70%, transparent 74%);
-  filter:blur(10px);
-  opacity:.55;
-  animation:mobileEduSnakeGlow 3.6s ease-in-out infinite;
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(56,189,248,.15) 8%,
+      rgba(139,92,246,.95) 22%,
+      rgba(236,72,153,.95) 38%,
+      rgba(56,189,248,.95) 55%,
+      rgba(139,92,246,.95) 72%,
+      rgba(236,72,153,.15) 92%,
+      transparent 100%
+    );
+  box-shadow:
+    0 0 10px rgba(139,92,246,.75),
+    0 0 24px rgba(236,72,153,.45),
+    0 0 34px rgba(56,189,248,.28);
+  animation:mobileEduSnakeLine 2.8s linear infinite;
 }
 
 .mobile-home-edu-grid::after{
   content:"";
   position:absolute;
-  inset:18px 14px;
-  z-index:-1;
+  left:50%;
+  top:24px;
+  z-index:0;
+  width:10px;
+  height:10px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:#fff;
+  box-shadow:
+    0 0 10px #fff,
+    0 0 22px rgba(236,72,153,.95),
+    0 0 34px rgba(56,189,248,.75);
+  animation:mobileEduSnakeDot 2.8s linear infinite;
   pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 33%, rgba(236,72,153,.85), transparent 8%),
-    radial-gradient(circle at 50% 67%, rgba(56,189,248,.72), transparent 8%);
-  filter:blur(12px);
-  opacity:.45;
-  animation:mobileEduSnakeDot 3.6s ease-in-out infinite;
 }
 
-@keyframes mobileEduSnakeGlow{
-  0%,100%{
-    opacity:.38;
-    transform:translateY(0);
+@keyframes mobileEduSnakeLine{
+  0%{
+    filter:hue-rotate(0deg);
+    opacity:.55;
   }
   50%{
-    opacity:.78;
-    transform:translateY(8px);
+    filter:hue-rotate(90deg);
+    opacity:1;
+  }
+  100%{
+    filter:hue-rotate(180deg);
+    opacity:.55;
   }
 }
 
 @keyframes mobileEduSnakeDot{
   0%{
-    transform:translateY(-18px);
-    opacity:.25;
+    top:24px;
+    opacity:.2;
+  }
+  8%{
+    opacity:1;
   }
   50%{
-    transform:translateY(18px);
-    opacity:.7;
+    opacity:1;
+  }
+  92%{
+    opacity:1;
   }
   100%{
-    transform:translateY(-18px);
-    opacity:.25;
+    top:calc(100% - 34px);
+    opacity:.2;
   }
 }
