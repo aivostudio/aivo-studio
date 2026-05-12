@@ -565,17 +565,40 @@ mobileVideoToast(
   }
 
   function bindPrompt(){
-    if (!promptEl || !promptCountEl) return;
+    function updateTextPrompt(){
+      if (!promptEl) return;
 
-    function updatePrompt(){
       const value = String(promptEl.value || "");
       state.prompt = value.trim();
-      promptCountEl.textContent = String(value.length);
+
+      if (promptCountEl) {
+        promptCountEl.textContent = String(value.length);
+      }
     }
 
-    promptEl.addEventListener("input", updatePrompt);
-    promptEl.addEventListener("change", updatePrompt);
-    updatePrompt();
+    function updateImagePrompt(){
+      if (!imagePromptEl) return;
+
+      const value = String(imagePromptEl.value || "");
+      state.imagePrompt = value.trim();
+
+      if (imagePromptCountEl) {
+        imagePromptCountEl.textContent = String(value.length);
+      }
+    }
+
+    if (promptEl) {
+      promptEl.addEventListener("input", updateTextPrompt);
+      promptEl.addEventListener("change", updateTextPrompt);
+    }
+
+    if (imagePromptEl) {
+      imagePromptEl.addEventListener("input", updateImagePrompt);
+      imagePromptEl.addEventListener("change", updateImagePrompt);
+    }
+
+    updateTextPrompt();
+    updateImagePrompt();
   }
   function bindModeTabs(){
   const modeButtons = Array.from(root.querySelectorAll("[data-mobile-video-mode]"));
