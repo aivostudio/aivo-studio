@@ -55,18 +55,20 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
     resultsEl.className = "mobile-atmo-results";
 
-    resultsEl.innerHTML = items.map(function(job){
+      resultsEl.innerHTML = items.map(function(job){
       const ready = !!job.videoUrl;
+      const failed = String(job.status || "").toLowerCase() === "error";
 
       return `
-        <article class="mobile-atmo-video-card" data-mobile-atmo-job="${esc(job.id)}">
+        <article class="mobile-atmo-video-card ${failed ? "is-error" : ""}" data-mobile-atmo-job="${esc(job.id)}">
           <div class="mobile-atmo-video-media">
             ${
               ready
                 ? `<video class="mobile-atmo-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-                : `<div class="mobile-atmo-video-loading"><span>Hazırlanıyor…</span></div>`
+                : failed
+                  ? `<div class="mobile-atmo-video-loading"><span>Video çıktısı alınamadı</span></div>`
+                  : `<div class="mobile-atmo-video-loading"><span>Hazırlanıyor…</span></div>`
             }
-
             <div class="mobile-atmo-video-actions">
               <button type="button" data-mobile-atmo-act="download" ${ready ? "" : "disabled"}>⬇</button>
               <button type="button" data-mobile-atmo-act="share" ${ready ? "" : "disabled"}>↗</button>
