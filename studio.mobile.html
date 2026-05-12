@@ -1363,6 +1363,9 @@ function showLipsync(){
             if (cartoonPanel) cartoonPanel.hidden = true;
             if (cartoonTitle) cartoonTitle.hidden = false;
             if (cartoonResults) cartoonResults.hidden = false;
+            if (typeof window.mobileCartoonHydrate === "function") {
+            window.mobileCartoonHydrate();
+            }
           }
 
           setActiveNav(productionsNav);
@@ -1748,14 +1751,19 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  if (tool === "cartoon") {
-    activeMobileModule = "cartoon";
-    homeMount.hidden = true;
-    showCartoon();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
+ if (tool === "cartoon") {
+  activeMobileModule = "cartoon";
+  homeMount.hidden = true;
+  showCartoon();
+
+  if (typeof window.mobileCartoonShowCurrent === "function") {
+    window.mobileCartoonShowCurrent();
   }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
 
  if (tool === "photofx") {
   activeMobileModule = "photofx";
