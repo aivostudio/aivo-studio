@@ -301,7 +301,6 @@ function bindMobileCartoonCharacterActions(){
       setStatus("Karakter Basit Mod için seçildi.");
       return;
     }
-
     if (act === "delete") {
       card.remove();
 
@@ -309,6 +308,7 @@ function bindMobileCartoonCharacterActions(){
         libraryEl.innerHTML = '<div class="mobile-cartoon-character-empty">Henüz mobil karakter oluşturulmadı.</div>';
       }
 
+      mobileCartoonToast("success", "Karakter silindi.");
       return;
     }
   });
