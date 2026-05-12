@@ -134,6 +134,25 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         mobileAtmoToast("success", "Atmosfer video hazır.");
         return;
       }
+            if (
+        (status.includes("ready") || status.includes("done") || status.includes("complete") || status.includes("success")) &&
+        !videoUrl
+      ) {
+        job.status = "error";
+        job.title = "Video çıktısı alınamadı";
+        renderMobileAtmoResults();
+        setStatus("Video çıktısı alınamadı.");
+        clearMobileAtmoLoading();
+        mobileAtmoToast("error", "Video çıktısı alınamadı.");
+
+        refundMobileAtmoCredits(job.refundCtx, "mobile_atmo_ready_no_output", {
+          error: "ready_no_output",
+          status: status,
+          response: data
+        });
+
+        return;
+      }
       if (status.includes("fail") || status.includes("error")) {
         job.status = "error";
         job.title = "Atmosfer video oluşturulamadı";
