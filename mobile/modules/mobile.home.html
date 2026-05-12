@@ -22,7 +22,110 @@
     <h3>Öne çıkan eğitimler</h3>
   </div>
 
-  <div class="mobile-home-edu-grid">
+ <div class="mobile-home-edu-grid">
+
+  <svg
+    class="mobile-edu-snake-svg"
+    viewBox="0 0 1000 1400"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+  >
+    <defs>
+
+      <linearGradient id="mobileSnakeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#5fd0ff"/>
+        <stop offset="45%" stop-color="#7c5cff"/>
+        <stop offset="100%" stop-color="#c957bc"/>
+      </linearGradient>
+
+      <filter id="mobileSnakeGlow">
+        <feGaussianBlur stdDeviation="12" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+      <radialGradient id="mobileSnakeOrb" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="30%" stop-color="#c957bc"/>
+        <stop offset="68%" stop-color="#7c5cff"/>
+        <stop offset="100%" stop-color="rgba(95,208,255,0)"/>
+      </radialGradient>
+
+    </defs>
+
+    <!-- glow trail -->
+    <path
+      class="mobile-edu-snake-path mobile-edu-snake-path-glow"
+      d="
+        M 170 90
+        C 360 120, 640 120, 820 190
+
+        C 920 240, 920 330, 780 390
+        C 610 470, 350 430, 190 520
+
+        C 70 590, 90 720, 250 770
+        C 430 830, 650 770, 830 860
+
+        C 930 910, 930 1040, 760 1100
+        C 560 1180, 340 1130, 180 1230
+      "
+    />
+
+    <!-- sharp line -->
+    <path
+      class="mobile-edu-snake-path"
+      d="
+        M 170 90
+        C 360 120, 640 120, 820 190
+
+        C 920 240, 920 330, 780 390
+        C 610 470, 350 430, 190 520
+
+        C 70 590, 90 720, 250 770
+        C 430 830, 650 770, 830 860
+
+        C 930 910, 930 1040, 760 1100
+        C 560 1180, 340 1130, 180 1230
+      "
+      pathLength="1000"
+    />
+
+    <!-- moving orb -->
+    <circle
+      class="mobile-edu-snake-orb"
+      r="22"
+      fill="url(#mobileSnakeOrb)"
+    >
+      <animateMotion
+        dur="7s"
+        repeatCount="indefinite"
+        rotate="auto"
+      >
+        <mpath href="#snakeMotionPath"/>
+      </animateMotion>
+    </circle>
+
+    <!-- hidden motion path -->
+    <path
+      id="snakeMotionPath"
+      fill="none"
+      d="
+        M 170 90
+        C 360 120, 640 120, 820 190
+
+        C 920 240, 920 330, 780 390
+        C 610 470, 350 430, 190 520
+
+        C 70 590, 90 720, 250 770
+        C 430 830, 650 770, 830 860
+
+        C 930 910, 930 1040, 760 1100
+        C 560 1180, 340 1130, 180 1230
+      "
+    />
+  </svg>
     <a class="mobile-home-edu-card" href="/media/aivo-egitim-muzik-small.mp4" target="_blank" rel="noopener">
       <span class="mobile-home-edu-thumb">
         <img src="/media/aivo-egitim-muzik-cover.png" alt="AI Müzik eğitimi">
