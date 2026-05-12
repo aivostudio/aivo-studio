@@ -852,6 +852,8 @@ function setFileLabel(input, file){
 
  mobileAtmoJobs.length = 0;
 
+mobileAtmoJobs.length = 0;
+
 mobileAtmoJobs.unshift({
   id: tempId,
   title:
@@ -950,6 +952,7 @@ renderMobileAtmoResults();
   .split(/\s+/)
   .filter(Boolean)
   .slice(0, 4);
+mobileAtmoJobs.length = 0;
 
 mobileAtmoJobs.unshift({
   id: tempId,
@@ -959,7 +962,11 @@ mobileAtmoJobs.unshift({
   status: "processing"
 });
 
-        renderMobileAtmoResults();
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
+
+renderMobileAtmoResults();
 
         setStatus("Süper atmosfer video hazırlanıyor...");
 
@@ -1035,7 +1042,7 @@ mobileAtmoJobs.unshift({
  bindMobileAtmoResultActions();
 
     setMode("basic");
-  hydrateMobileAtmoLibrary();
+ 
 
   window.mobileAtmoState = state;
 })();
