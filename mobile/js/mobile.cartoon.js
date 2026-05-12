@@ -295,10 +295,11 @@ function bindMobileCartoonCharacterActions(){
       return;
     }
 
-    if (act === "select") {
+       if (act === "select") {
       state.customCharacterUrl = imageUrl;
       syncMainCharacterDisabled();
       setStatus("Karakter Basit Mod için seçildi.");
+      mobileCartoonToast("success", "Karakter Basit Mod için seçildi.");
       return;
     }
     if (act === "delete") {
