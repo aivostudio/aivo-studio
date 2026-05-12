@@ -718,8 +718,8 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
     textEl.textContent = file ? "Yükleniyor..." : "Dosya seçilmedi";
   }
 
-  if (file) {
-    mobileCartoonToast("loading", "Dosya yükleniyor...");
+   if (file) {
+    mobileCartoonLoading("Dosya güvenlik kontrolünden geçiriliyor...");
   }
 
   if (clearBtn) {
@@ -731,13 +731,14 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
   if (!file) return;
 
   try {
-    const url = await uploadCartoonFile(file);
+       const url = await uploadCartoonFile(file);
+    clearMobileCartoonLoading();
     state[urlKey] = url;
-
     if (textEl) {
       textEl.textContent = file.name + " yüklendi";
     }
   } catch (err) {
+    clearMobileCartoonLoading();
     state[stateKey] = null;
     state[urlKey] = "";
 
