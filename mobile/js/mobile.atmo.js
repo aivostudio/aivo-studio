@@ -1020,11 +1020,11 @@ renderMobileAtmoResults();
           job.id = realJobId;
           job.status = "processing";
 
-                   renderMobileAtmoResults();
-          setStatus("Atmosfer video hazırlanıyor...");
-          mobileAtmoLoading("Atmosfer video hazırlanıyor...");
-          mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
-          pollMobileAtmoJob(realJobId);
+                  renderMobileAtmoResults();
+        mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
+       setStatus("Atmosfer video hazırlanıyor...");
+       mobileAtmoLoading("Atmosfer video hazırlanıyor...");
+       pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][BASIC ERROR]", err);
@@ -1119,11 +1119,11 @@ renderMobileAtmoResults();
           job.id = realJobId;
           job.status = "processing";
 
-                   renderMobileAtmoResults();
-          setStatus("Süper atmosfer video hazırlanıyor...");
-          mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
-          mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
-          pollMobileAtmoJob(realJobId);
+        renderMobileAtmoResults();
+        mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
+       setStatus("Süper atmosfer video hazırlanıyor...");
+       mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
+       pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][PRO ERROR]", err);
