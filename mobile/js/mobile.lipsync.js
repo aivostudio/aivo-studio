@@ -1546,8 +1546,8 @@
   bindInlineAudioPlayer();
   bindGenerate();
   bindMobileLipsyncResultActions();
-  syncGenerateButton();
-  renderMobileLipsyncResults();
+   syncGenerateButton();
+  hydrateMobileLipsyncLibrary();
 
   window.mobileLipsyncState = state;
 })();
