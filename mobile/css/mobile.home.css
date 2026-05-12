@@ -462,3 +462,37 @@
   padding:6px 8px !important;
   font-size:9.5px !important;
 }
+.mobile-edu-snake-svg{
+  z-index:0 !important;
+  opacity:.72 !important;
+}
+
+.mobile-home-edu-card{
+  z-index:2 !important;
+  background:
+    radial-gradient(160px 90px at 0% 0%, rgba(139,92,246,.24), transparent 62%),
+    linear-gradient(135deg, rgba(18,20,34,.96), rgba(15,17,30,.92)) !important;
+}
+
+.mobile-home-edu-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:22px;
+  background:rgba(7,9,20,.54);
+  z-index:-1;
+}
+
+.mobile-edu-snake-path{
+  stroke-width:5 !important;
+  opacity:.78 !important;
+}
+
+.mobile-edu-snake-path-glow{
+  stroke-width:14 !important;
+  opacity:.18 !important;
+}
+
+.mobile-edu-snake-orb{
+  opacity:.78 !important;
+}
