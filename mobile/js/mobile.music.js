@@ -1344,8 +1344,8 @@ if (deleteBtn) {
           prompt,
           mood,
           lyrics,
-          vocal: "Vokalli",
-          mode: "vocals"
+         vocal,
+         mode: vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals"
         })
       });
 
