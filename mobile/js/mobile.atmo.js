@@ -134,7 +134,6 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         mobileAtmoToast("success", "Atmosfer video hazır.");
         return;
       }
-
       if (status.includes("fail") || status.includes("error")) {
         job.status = "error";
         job.title = "Atmosfer video oluşturulamadı";
@@ -142,6 +141,13 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         setStatus("Atmosfer video oluşturulamadı.");
         clearMobileAtmoLoading();
         mobileAtmoToast("error", "Atmosfer video oluşturulamadı.");
+
+        refundMobileAtmoCredits(job.refundCtx, "mobile_atmo_poll_failed", {
+          error: "poll_failed",
+          status: status,
+          response: data
+        });
+
         return;
       }
 
