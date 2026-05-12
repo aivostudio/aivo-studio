@@ -1238,14 +1238,30 @@ function bindUploads(){
 }
   function bindButtons(){
     if (characterBtn) {
-      characterBtn.addEventListener("click", async function(){
+         characterBtn.addEventListener("click", async function(){
              if (!state.characterPrompt) {
           setStatus("Lütfen karakter tanımı yaz.");
           mobileCartoonToast("warning", "Lütfen karakter tanımı yaz.");
           return;
         }
 
-             mobileCartoonLoading("Karakter oluşturuluyor...");
+        let creditCtx = null;
+
+        try {
+          creditCtx = await consumeMobileCartoonCredits("character");
+          mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
+        } catch (creditErr) {
+          console.warn("[MOBILE CARTOON][CHARACTER CREDIT ERROR]", creditErr);
+          setStatus("Yetersiz kredi.");
+          mobileCartoonToast("warning", "Yetersiz kredi.");
+          return;
+        }
+
+        characterBtn.disabled = true;
+        characterBtn.classList.add("is-loading", "is-pressed");
+        characterBtn.setAttribute("aria-busy", "true");
+
+        mobileCartoonLoading("Karakter oluşturuluyor...");
 
         const tempCharacterId = "mobile-cartoon-character-" + Date.now();
         const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
