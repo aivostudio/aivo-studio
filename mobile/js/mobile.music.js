@@ -762,11 +762,15 @@ if (shareBtn) {
               } catch (err) {}
             }
 
-            if (statusEl) {
-              statusEl.textContent = "Kanal ayırma tamamlandı.";
-            }
+          if (statusEl) {
+  statusEl.textContent = "Kanal ayırma tamamlandı.";
+}
 
-            return;
+if (window.toast?.success) {
+  window.toast.success("Kanallar hazır.");
+}
+
+return;
           }
 
           if (status === "failed" || status === "canceled" || status === "cancelled") {
