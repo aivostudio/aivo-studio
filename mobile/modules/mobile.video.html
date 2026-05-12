@@ -32,6 +32,20 @@
     </div>
 
     <div data-mobile-video-panel="image" hidden>
+      <h3 class="mobile-video-block-title">Görsel Promptu</h3>
+      <p class="mobile-video-block-sub">Görselin nasıl canlanacağını yaz.</p>
+
+      <textarea
+        id="mobileVideoImagePrompt"
+        class="field-textarea mobile-video-prompt"
+        maxlength="1000"
+        placeholder="Örn: Kamera yavaşça yaklaşsın, hafif parallax, sinematik ışık geçişleri, doğal hareket..."
+      ></textarea>
+
+      <div class="mobile-video-count">
+        <span id="mobileVideoImagePromptCount">0</span> / 1000
+      </div>
+
       <h3 class="mobile-video-block-title">Referans Görsel</h3>
       <p class="mobile-video-block-sub">Videoya dönüştürmek istediğin resmi yükle. PNG / JPG • Maks 10MB</p>
 
@@ -40,9 +54,6 @@
         <span class="mobile-video-upload-icon" aria-hidden="true"></span>
         <b>Görsel Yükle</b>
       </label>
-
-      <h3 class="mobile-video-block-title">Görsel Promptu</h3>
-      <p class="mobile-video-block-sub">Görselin nasıl canlanacağını yaz.</p>
     </div>
 
     <h3 class="mobile-video-block-title">Video Ayarları</h3>
