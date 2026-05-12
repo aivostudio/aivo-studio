@@ -1349,6 +1349,36 @@ if (deleteBtn) {
     const vocal = (vocalEl?.value || "Vokalli").trim();
     const lyrics = (lyricsEl.value || "").trim();
 
+    const blockedTerms = [
+  "tarkan",
+  "sezen aksu",
+  "hadise",
+  "erdogan",
+  "erdoğan",
+  "atatürk",
+  "recep tayyip",
+  "tarzında",
+  "stilinde",
+  "sesini taklit",
+  "birebir"
+];
+
+const normalizedPrompt = (prompt + " " + lyrics).toLowerCase();
+
+const isPolicyBlocked = blockedTerms.some(function(term){
+  return normalizedPrompt.includes(term);
+});
+
+if (isPolicyBlocked) {
+  statusEl.textContent = "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.";
+
+  if (window.toast?.warning) {
+    window.toast.warning("Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.");
+  }
+
+  return;
+}
+
    if (!prompt) {
   statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
 
