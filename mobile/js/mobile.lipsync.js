@@ -25,7 +25,8 @@
   const statusEl = root.querySelector("#mobileLipsyncStatus");
   const resultsEl = root.querySelector("#mobileLipsyncResults");
 
-  const mobileLipsyncJobs = [];
+  const mobileLipsyncCurrentJobs = [];
+  const mobileLipsyncLibraryJobs = [];
   const mobileLipsyncDeletedIds = new Set();
 
   const state = {
@@ -346,10 +347,25 @@
     generateBtn.textContent = "Dudak Senkron Video Üret (" + credits + " Kredi)";
   }
 
+  function isMobileLipsyncLibraryView(){
+    const activeNav = document.querySelector(".mobile-bottom-nav .is-active, [data-mobile-nav].is-active, [data-mobile-tab].is-active");
+    const activeText = String(activeNav?.textContent || "").toLowerCase();
+
+    return (
+      activeText.includes("üretimler") ||
+      activeText.includes("uretimler") ||
+      document.body.classList.contains("is-mobile-productions")
+    );
+  }
+
   function renderMobileLipsyncResults(){
     if (!resultsEl) return;
 
-    const items = mobileLipsyncJobs.filter(function(job){
+    const sourceJobs = isMobileLipsyncLibraryView()
+      ? mobileLipsyncLibraryJobs
+      : mobileLipsyncCurrentJobs;
+
+    const items = sourceJobs.filter(function(job){
       return !mobileLipsyncDeletedIds.has(job.id);
     });
 
@@ -407,7 +423,9 @@
 
       const act = btn.getAttribute("data-mobile-lipsync-act");
       const id = card.getAttribute("data-mobile-lipsync-job");
-      const job = mobileLipsyncJobs.find(function(item){
+      const allJobs = mobileLipsyncCurrentJobs.concat(mobileLipsyncLibraryJobs);
+
+      const job = allJobs.find(function(item){
         return item.id === id;
       });
 
@@ -563,7 +581,7 @@
 
       const videoUrl = pickVideoUrl(data);
 
-      const job = mobileLipsyncJobs.find(function(item){
+      const job = mobileLipsyncCurrentJobs.find(function(item){
         return item.id === jobId || item.providerJobId === providerJobId;
       });
 
@@ -631,7 +649,7 @@
             ? data
             : [];
 
-      mobileLipsyncJobs.length = 0;
+      mobileLipsyncLibraryJobs.length = 0;
 
       rows.reverse().forEach(function(row){
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
@@ -667,7 +685,7 @@
 
         if (!jobId || !videoUrl) return;
 
-        mobileLipsyncJobs.push({
+        mobileLipsyncLibraryJobs.push({
           id: jobId,
           title: row.title || row.prompt || row.meta?.prompt || "Dudak senkron video",
           videoUrl: videoUrl,
@@ -1396,11 +1414,11 @@
       setStatus("Dudak senkron hazırlanıyor...");
       showMobileLipsyncLoading("Dudak senkron hazırlanıyor...");
 
-          const tempId = "mobile-lipsync-" + Date.now();
+      const tempId = "mobile-lipsync-" + Date.now();
 
-      mobileLipsyncJobs.length = 0;
+      mobileLipsyncCurrentJobs.length = 0;
 
-      mobileLipsyncJobs.unshift({
+      mobileLipsyncCurrentJobs.unshift({
         id: tempId,
         title: "Dudak senkron hazırlanıyor",
         videoUrl: "",
@@ -1472,7 +1490,7 @@
           ""
         );
 
-        const job = mobileLipsyncJobs.find(function(item){
+        const job = mobileLipsyncCurrentJobs.find(function(item){
           return item.id === tempId;
         });
 
@@ -1493,7 +1511,7 @@
 
         clearMobileLipsyncLoading();
 
-        const job = mobileLipsyncJobs.find(function(item){
+        const job = mobileLipsyncCurrentJobs.find(function(item){
           return item.id === tempId;
         });
 
@@ -1537,6 +1555,15 @@
   }
 
 
+  document.addEventListener("click", function(e){
+    const nav = e.target.closest(".mobile-bottom-nav button, [data-mobile-nav], [data-mobile-tab]");
+    if (!nav) return;
+
+    setTimeout(function(){
+      renderMobileLipsyncResults();
+    }, 80);
+  });
+
   bindScript();
   bindPhoto();
   bindAudio();
@@ -1546,7 +1573,7 @@
   bindInlineAudioPlayer();
   bindGenerate();
   bindMobileLipsyncResultActions();
-   syncGenerateButton();
+  syncGenerateButton();
   hydrateMobileLipsyncLibrary();
 
   window.mobileLipsyncState = state;
