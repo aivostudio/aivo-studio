@@ -145,6 +145,13 @@
     } catch (err) {}
 
     MOBILE_PHOTOFX_TOAST.loadingId = null;
+
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.classList.remove("is-loading", "is-pressed");
+      generateBtn.removeAttribute("aria-busy");
+      syncCreditButton();
+    }
   }
 
   function setStatus(message){
