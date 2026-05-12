@@ -611,3 +611,26 @@
   margin-left:auto !important;
   margin-right:auto !important;
 }
+.mobile-home-edu-thumb::after{
+  right:8px !important;
+  bottom:8px !important;
+  width:28px !important;
+  height:28px !important;
+  border-radius:999px !important;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.20), transparent 34%),
+    linear-gradient(135deg,#8b5cf6,#ec4899) !important;
+  border:0 !important;
+  box-shadow:0 8px 18px rgba(236,72,153,.24) !important;
+}
+
+.mobile-home-edu-thumb::before{
+  right:17px !important;
+  bottom:15px !important;
+  z-index:2 !important;
+  width:10px !important;
+  height:12px !important;
+  background:#fff !important;
+  filter:none !important;
+  clip-path:polygon(0 0, 100% 50%, 0 100%) !important;
+}
