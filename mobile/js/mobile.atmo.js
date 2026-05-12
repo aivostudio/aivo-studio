@@ -1295,12 +1295,24 @@ renderMobileAtmoResults();
     }
 
     if (proGenerateBtn) {
-      proGenerateBtn.addEventListener("click", function(){
+         proGenerateBtn.addEventListener("click", async function(){
         const payload = buildProPayload();
 
                if (!payload.prompt) {
           setStatus("Süper Mod için prompt yazmalısın.");
           mobileAtmoToast("warning", "Süper Mod için prompt yazmalısın.");
+          return;
+        }
+
+        let creditCtx = null;
+
+        try {
+          creditCtx = await consumeMobileAtmoCredits("pro");
+          mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
+        } catch (creditErr) {
+          console.warn("[MOBILE ATMO][PRO CREDIT ERROR]", creditErr);
+          setStatus("Yetersiz kredi.");
+          mobileAtmoToast("warning", "Yetersiz kredi.");
           return;
         }
 
