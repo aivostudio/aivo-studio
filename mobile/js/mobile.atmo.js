@@ -697,10 +697,19 @@ function setFileLabel(input, file){
       state[fileMapItem.target][fileMapItem.key] = null;
       state[fileMapItem.target][fileMapItem.urlKey] = "";
 
-           setFileLabel(input, null);
+               setFileLabel(input, null);
       syncMobileAtmoCreditButtons();
-      setStatus("Dosya kaldırıldı.");
-      mobileAtmoToast("success", "Dosya kaldırıldı.");
+
+      if (fileMapItem.urlKey === "imageUrl") {
+        setStatus("Görsel kaldırıldı.");
+        mobileAtmoToast("success", "Görsel kaldırıldı");
+      } else if (fileMapItem.urlKey === "logoUrl") {
+        setStatus("Logo kaldırıldı.");
+        mobileAtmoToast("success", "Logo kaldırıldı · -10 kredi");
+      } else if (fileMapItem.urlKey === "audioUrl") {
+        setStatus("Müzik kaldırıldı.");
+        mobileAtmoToast("success", "Müzik kaldırıldı · -10 kredi");
+      }
     });
   }
   function bindFiles(){
