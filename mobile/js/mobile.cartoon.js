@@ -530,13 +530,14 @@ async function hydrateMobileCartoonLibrary(){
 
       if (!jobId || !videoUrl) return;
 
-      mobileCartoonJobs.push({
-        id: jobId,
-        title: row.title || row.prompt || row.meta?.prompt || "Çizgifilm video",
-        videoUrl: videoUrl,
-        status: "ready",
-        payload: row
-      });
+    mobileCartoonJobs.push({
+  id: jobId,
+  scope: "library",
+  title: row.title || row.prompt || row.meta?.prompt || "Çizgifilm video",
+  videoUrl: videoUrl,
+  status: "ready",
+  payload: row
+});
     });
 
     renderMobileCartoonResults();
