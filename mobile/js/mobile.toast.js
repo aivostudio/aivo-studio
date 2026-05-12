@@ -66,6 +66,11 @@
   }
 
   function show(input, type, opts){
+   const CREDIT_FLOW_RE = /(kredi|yetersiz|satın al|satınalma|kredi al|paket|fiyatlandırma|yönlendir|redirect)/i;
+
+    if (type === "error" && CREDIT_FLOW_RE.test(String(input || ""))) {
+      type = "warning";
+    }
     const data = normalize(input, type, opts);
     const mount = ensureRoot();
 
