@@ -1090,13 +1090,17 @@ function bindUploads(){
         mobileCartoonToast("loading", "Çizgifilm sahnesi hazırlanıyor...");
 
         mobileCartoonJobs.unshift({
-          id: tempJobId,
-          status: "processing",
-          title: state.scenePrompt || "Çizgifilm sahnesi",
-          videoUrl: ""
-        });
+  id: tempJobId,
+  status: "processing",
+  title: state.scenePrompt || "Çizgifilm sahnesi",
+  videoUrl: ""
+});
 
-        renderMobileCartoonResults();
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
+
+renderMobileCartoonResults();
 
         const payload = {
           app: "cartoon",
@@ -1194,7 +1198,7 @@ bindMobileCartoonCharacterActions();
 bindMobileCartoonResultActions();
 
 setMode("character");
-hydrateMobileCartoonLibrary();
+
 
   window.mobileCartoonState = state;
 })();
