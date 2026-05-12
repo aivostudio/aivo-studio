@@ -1516,11 +1516,16 @@ function bindUploads(){
        setStatus("Karakter oluşturuluyor...");
        mobileCartoonLoading("Karakter oluşturuluyor...");
         pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter", refundCtx);
-        } catch (err) {
+              } catch (err) {
           console.error("[MOBILE CARTOON][CHARACTER CREATE ERROR]", err);
                    setStatus("Karakter oluşturulamadı.");
           clearMobileCartoonLoading();
           mobileCartoonToast("error", "Karakter oluşturulamadı.");
+
+          refundMobileCartoonCredits(creditCtx, "mobile_cartoon_character_create_exception", {
+            error: "character_create_exception",
+            message: String(err && err.message ? err.message : err)
+          });
         }
       });
     }
