@@ -1195,7 +1195,11 @@ miniAudioEl.play().then(function(){
           : [];
 
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
-        statusEl.textContent = "";
+       statusEl.textContent = "";
+
+      if (window.toast?.success) {
+       window.toast.success("Müzik hazır.");
+      }
 
              if (productionsSectionEl) {
         productionsSectionEl.hidden = false;
