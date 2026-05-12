@@ -592,3 +592,22 @@
   background:linear-gradient(135deg,#5fd0ff,#7c5cff,#c957bc) !important;
   box-shadow:0 0 16px rgba(124,92,255,.42) !important;
 }
+.mobile-home-section-head-center{
+  justify-content:center !important;
+  text-align:center !important;
+}
+
+.mobile-home-section-head-center h3{
+  align-items:center !important;
+  text-align:center !important;
+}
+
+.mobile-home-section-head-center h3::before{
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+.mobile-home-section-head-center h3::after{
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
