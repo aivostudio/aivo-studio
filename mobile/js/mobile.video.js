@@ -663,13 +663,17 @@ if (payload.mode === "image" && !payload.image_url) {
       const creditCost = Number(payload.credit_cost || computeCredit() || 0);
       const tempJobId = "mobile-video-" + Date.now();
 
-   mobileVideoJobs.unshift({
+  mobileVideoCurrentJobs.length = 0;
+
+mobileVideoCurrentJobs.unshift({
   id: tempJobId,
   status: "processing",
   title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "Video",
   videoUrl: "",
   payload: payload
 });
+
+mobileVideoViewMode = "current";
 
 if (resultsEl) {
   resultsEl.hidden = false;
@@ -842,7 +846,7 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
             ? data
             : [];
 
-    mobileVideoJobs.length = 0;
+  mobileVideoLibraryJobs.length = 0;
 
     rows.forEach(function(row){
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
@@ -904,13 +908,13 @@ mobileVideoToast("loading", "Video hazırlanıyor...");
 
         if (!jobId || !videoUrl) return;
 
-        mobileVideoJobs.push({
-          id: jobId,
-          title: row.title || row.prompt || row.meta?.prompt || "Video",
-          videoUrl: videoUrl,
-          status: "ready",
-          payload: row
-        });
+       mobileVideoLibraryJobs.push({
+  id: jobId,
+  title: row.title || row.prompt || row.meta?.prompt || "Video",
+  videoUrl: videoUrl,
+  status: "ready",
+  payload: row
+});
       });
 
       renderMobileVideoResults();
