@@ -1153,9 +1153,10 @@ function bindUploads(){
             return;
           }
 
-          mobileCartoonToast("success", "Karakter üretimi kuyruğa alındı.");
-          mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
-          pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter");
+        mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
+       setStatus("Karakter oluşturuluyor...");
+       mobileCartoonLoading("Karakter oluşturuluyor...");
+        pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter");
         } catch (err) {
           console.error("[MOBILE CARTOON][CHARACTER CREATE ERROR]", err);
                    setStatus("Karakter oluşturulamadı.");
@@ -1250,9 +1251,10 @@ renderMobileCartoonResults();
             job.status = "processing";
           }
 
-            renderMobileCartoonResults();
-          mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
+          renderMobileCartoonResults();
           mobileCartoonToast("success", getCartoonBasicCredit() + " kredi kullanıldı.");
+          setStatus("Çizgifilm sahnesi hazırlanıyor...");
+          mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
           pollMobileCartoonJob(realJobId);
         } catch (err) {
           console.error("[MOBILE CARTOON][BASIC CREATE ERROR]", err);
