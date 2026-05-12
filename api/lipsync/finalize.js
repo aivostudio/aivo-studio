@@ -570,11 +570,12 @@ module.exports = async function handler(req, res) {
 
     await verifyPublicUrl(poster_url, "poster");
 
-    const nextOutputs = upsertFinalizedAndPreviewOutputs(
-      outputs,
-      final_url,
-      preview_url
-    );
+  const nextOutputs = upsertFinalizedAndPreviewOutputs(
+  outputs,
+  final_url,
+  preview_url,
+  poster_url
+);
 
     const patchMeta = {
       final_video_url: final_url,
