@@ -20,9 +20,10 @@
   const statusEl = root.querySelector("#mobileVideoStatus");
   const resultsEl = root.querySelector("#mobileVideoResults");
 
-  const mobileVideoJobs = [];
-  const mobileVideoDeletedIds = new Set();
-
+ const mobileVideoCurrentJobs = [];
+const mobileVideoLibraryJobs = [];
+const mobileVideoDeletedIds = new Set();
+let mobileVideoViewMode = "current";
 const state = {
   mode: "text",
   prompt: "",
@@ -222,9 +223,13 @@ const state = {
   function renderMobileVideoResults(){
     if (!resultsEl) return;
 
-    const items = mobileVideoJobs.filter(function(job){
-      return !mobileVideoDeletedIds.has(job.id);
-    });
+   const sourceJobs = mobileVideoViewMode === "library"
+  ? mobileVideoLibraryJobs
+  : mobileVideoCurrentJobs;
+
+const items = sourceJobs.filter(function(job){
+  return !mobileVideoDeletedIds.has(job.id);
+});
 
     if (!items.length) {
       resultsEl.className = "empty-card";
