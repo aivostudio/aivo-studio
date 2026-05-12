@@ -415,9 +415,10 @@ function bindMobileCartoonResultActions(){
       return;
     }
 
-    if (act === "delete") {
+      if (act === "delete") {
       mobileCartoonDeletedIds.add(id);
       renderMobileCartoonResults();
+      mobileCartoonToast("success", "Video silindi.");
       return;
     }
   });
