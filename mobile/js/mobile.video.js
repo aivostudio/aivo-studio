@@ -727,20 +727,21 @@ mobileVideoLoading("Video hazırlanıyor...");
 
       try {
         consumed = await consumeMobileVideoCredits(creditCost);
-        if (!consumed) {
-          const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-            return item.id === tempJobId;
-          });
+       if (!consumed) {
+  const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
+    return item.id === tempJobId;
+  });
 
-          if (job) {
-            job.status = "error";
-            job.title = "Yetersiz kredi";
-          }
+  if (job) {
+    job.status = "error";
+    job.title = "Yetersiz kredi";
+  }
 
-          renderMobileVideoResults();
-          setStatus("Yetersiz kredi.");
-          return;
-        }
+  renderMobileVideoResults();
+  setStatus("Yetersiz kredi.");
+  clearMobileVideoLoading();
+  return;
+}
 
         mobileVideoToast("success", creditCost + " kredi kullanıldı.");
 
