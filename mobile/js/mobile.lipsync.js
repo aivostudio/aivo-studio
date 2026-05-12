@@ -665,17 +665,25 @@
           );
         });
 
-        const videoUrl = String(
+              const videoUrl = String(
+          row.final_video_url ||
+          row.finalVideoUrl ||
           row.video_url ||
           row.videoUrl ||
           row.final_url ||
           row.output_url ||
           row.url ||
+          row.meta?.final_video_url ||
+          row.meta?.finalVideoUrl ||
           row.meta?.video_url ||
           row.meta?.videoUrl ||
           row.meta?.final_url ||
+          row.meta?.provider_video_url ||
+          row.meta?.providerVideoUrl ||
           row.outputs?.video_url ||
           row.outputs?.videoUrl ||
+          firstVideoOutput?.archive_url ||
+          firstVideoOutput?.archiveUrl ||
           firstVideoOutput?.url ||
           firstVideoOutput?.video_url ||
           firstVideoOutput?.videoUrl ||
@@ -683,9 +691,9 @@
           ""
         ).trim();
 
-        const jobId = String(row.id || row.job_id || row.jobId || "").trim();
+        const jobId = String(row.job_id || row.id || row.jobId || "").trim();
 
-        if (!jobId || !videoUrl) return;
+        if (!jobId) return;
 
         mobileLipsyncLibraryJobs.push({
           id: jobId,
