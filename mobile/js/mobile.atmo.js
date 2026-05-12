@@ -874,11 +874,12 @@ function setFileLabel(input, file){
 
           if (!job) return;
 
-          if (!isUuid) {
+                if (!isUuid) {
             job.status = "error";
             job.title = "Job ID alınamadı";
             renderMobileAtmoResults();
             setStatus("Üretim başladı ama gerçek job_id alınamadı.");
+            mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
             console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
             return;
           }
@@ -887,11 +888,13 @@ function setFileLabel(input, file){
           job.status = "processing";
 
           renderMobileAtmoResults();
+          mobileAtmoToast("success", "Atmosfer video kuyruğa alındı.");
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][BASIC ERROR]", err);
           setStatus("Atmosfer üretimi başlatılamadı.");
+          mobileAtmoToast("error", "Atmosfer üretimi başlatılamadı.");
         });
       });
     }
