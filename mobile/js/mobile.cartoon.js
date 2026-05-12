@@ -1233,7 +1233,8 @@ renderMobileCartoonResults();
             }
 
               renderMobileCartoonResults();
-            setStatus("Çizgifilm video başlatılamadı.");
+                      setStatus("Çizgifilm video başlatılamadı.");
+            clearMobileCartoonLoading();
             mobileCartoonToast("error", "Çizgifilm video başlatılamadı.");
             return;
           }
@@ -1266,7 +1267,8 @@ renderMobileCartoonResults();
           }
 
           renderMobileCartoonResults();
-          setStatus("Çizgifilm video başlatılamadı.");
+                   setStatus("Çizgifilm video başlatılamadı.");
+          clearMobileCartoonLoading();
           mobileCartoonToast("error", "Çizgifilm video başlatılamadı.");
         }
       });
