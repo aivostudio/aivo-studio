@@ -849,8 +849,9 @@ function setFileLabel(input, file){
         mobileAtmoToast("loading", "Atmosfer video üretimi başlatılıyor...");
 
                 const tempId = "mobile-atmo-" + Date.now();
+mobileAtmoJobs.length = 0;
 
-     mobileAtmoJobs.unshift({
+mobileAtmoJobs.unshift({
   id: tempId,
   title:
     payload.scene === "winter_cafe" ? "Kış Kafe" :
@@ -864,7 +865,12 @@ function setFileLabel(input, file){
   payload: payload,
   status: "processing"
 });
-        renderMobileAtmoResults();
+
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
+
+renderMobileAtmoResults();
 
         setStatus("Atmosfer video hazırlanıyor...");
 
@@ -944,6 +950,8 @@ function setFileLabel(input, file){
   .filter(Boolean)
   .slice(0, 4);
 
+mobileAtmoJobs.length = 0;
+
 mobileAtmoJobs.unshift({
   id: tempId,
   title: proTitleWords.length ? proTitleWords.join(" ") + "..." : "Süper atmosfer video",
@@ -952,8 +960,11 @@ mobileAtmoJobs.unshift({
   status: "processing"
 });
 
-        renderMobileAtmoResults();
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
 
+renderMobileAtmoResults();
         setStatus("Süper atmosfer video hazırlanıyor...");
 
            fetch("/api/jobs/create-atmo", {
@@ -1028,7 +1039,7 @@ mobileAtmoJobs.unshift({
  bindMobileAtmoResultActions();
 
     setMode("basic");
-  hydrateMobileAtmoLibrary();
+ 
 
   window.mobileAtmoState = state;
 })();
