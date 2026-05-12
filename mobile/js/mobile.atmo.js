@@ -1159,7 +1159,9 @@ renderMobileAtmoResults();
 
           if (!job) return;
 
-                if (!isUuid) {
+                     if (!isUuid) {
+            const refundCtx = buildMobileAtmoRefundContext("basic", payload, data, "");
+
             job.status = "error";
             job.title = "Job ID alınamadı";
             renderMobileAtmoResults();
@@ -1167,11 +1169,20 @@ renderMobileAtmoResults();
             clearMobileAtmoLoading();
             mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
             console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
+
+            refundMobileAtmoCredits(refundCtx, "mobile_atmo_missing_job_id", {
+              error: "missing_job_id",
+              response: data
+            });
+
             return;
           }
 
+          const refundCtx = buildMobileAtmoRefundContext("basic", payload, data, realJobId);
+
           job.id = realJobId;
           job.status = "processing";
+          job.refundCtx = refundCtx;
 
                   renderMobileAtmoResults();
         mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
