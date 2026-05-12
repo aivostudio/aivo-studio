@@ -248,9 +248,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         return;
       }
 
-      if (act === "delete") {
+          if (act === "delete") {
         mobileAtmoDeletedIds.add(id);
         renderMobileAtmoResults();
+        mobileAtmoToast("success", "Video silindi.");
         return;
       }
     });
@@ -696,9 +697,10 @@ function setFileLabel(input, file){
       state[fileMapItem.target][fileMapItem.key] = null;
       state[fileMapItem.target][fileMapItem.urlKey] = "";
 
-      setFileLabel(input, null);
+           setFileLabel(input, null);
       syncMobileAtmoCreditButtons();
       setStatus("Dosya kaldırıldı.");
+      mobileAtmoToast("success", "Dosya kaldırıldı.");
     });
   }
   function bindFiles(){
@@ -732,19 +734,22 @@ function setFileLabel(input, file){
           syncMobileAtmoCreditButtons();
           return;
         }
-        setStatus("Dosya yükleniyor...");
+             setStatus("Dosya yükleniyor...");
+        mobileAtmoToast("loading", "Dosya yükleniyor...");
 
         uploadMobileAtmoFile(file, item.key)
           .then(function(publicUrl){
              state[item.target][urlKey] = publicUrl;
             syncMobileAtmoCreditButtons();
             setStatus("Dosya yüklendi.");
+            mobileAtmoToast("success", "Dosya yüklendi.");
           })
           .catch(function(err){
             console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
                      state[item.target][urlKey] = "";
             syncMobileAtmoCreditButtons();
             setStatus("Dosya yüklenemedi.");
+            mobileAtmoToast("error", "Dosya yüklenemedi.");
           });
       });
     });
@@ -905,7 +910,15 @@ function setFileLabel(input, file){
       proGenerateBtn.addEventListener("click", function(){
         const payload = buildProPayload();
 
-        if (!payload.prompt) {
+               if (!payload.prompt) {
+          setStatus("Süper Mod için prompt yazmalısın.");
+          mobileAtmoToast("warning", "Süper Mod için prompt yazmalısın.");
+          return;
+        }
+
+        mobileAtmoToast("loading", "Süper atmosfer video üretimi başlatılıyor...");
+
+                   const tempId = "mobile-atmo-" + Date.now();
           setStatus("Süper Mod için prompt yazmalısın.");
           return;
         }
@@ -960,11 +973,12 @@ mobileAtmoJobs.unshift({
 
           if (!job) return;
 
-          if (!isUuid) {
+               if (!isUuid) {
             job.status = "error";
             job.title = "Job ID alınamadı";
             renderMobileAtmoResults();
             setStatus("Üretim başladı ama gerçek job_id alınamadı.");
+            mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
             console.warn("[MOBILE ATMO][PRO NO UUID]", data);
             return;
           }
@@ -973,11 +987,13 @@ mobileAtmoJobs.unshift({
           job.status = "processing";
 
           renderMobileAtmoResults();
+          mobileAtmoToast("success", "Süper atmosfer video kuyruğa alındı.");
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][PRO ERROR]", err);
           setStatus("Süper atmosfer üretimi başlatılamadı.");
+          mobileAtmoToast("error", "Süper atmosfer üretimi başlatılamadı.");
         });
       });
     }
