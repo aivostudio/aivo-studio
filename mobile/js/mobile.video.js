@@ -680,11 +680,12 @@ mobileVideoToast(
 
 function buildPayload(){
   const mode = state.mode === "image" ? "image" : "text";
+  const activePrompt = mode === "image" ? state.imagePrompt : state.prompt;
 
   return {
     app: "video",
     mode: mode,
-    prompt: state.prompt,
+    prompt: activePrompt,
     image_url: mode === "image" ? state.imageUrl : "",
     duration: Number(state.duration || 5),
     ratio: state.ratio || "16:9",
