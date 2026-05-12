@@ -71,6 +71,232 @@
     return String(value || "").trim();
   }
 
+  const LIPSYNC_BAD_TEXT_MESSAGE =
+    "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
+
+  const MOBILE_LIPSYNC_TOAST = {
+    lastKey: "",
+    lastAt: 0,
+    loadingId: null
+  };
+
+  function normalizeLipsyncPolicyText(value){
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function hasLipsyncBadLanguage(value){
+    const text = normalizeLipsyncPolicyText(value);
+
+    const blockedTerms = [
+      "amk",
+      "aq",
+      "mk",
+      "orospu",
+      "orospu cocugu",
+      "pic",
+      "pezevenk",
+      "got",
+      "gotveren",
+      "siktir",
+      "sik",
+      "sikerim",
+      "sikeyim",
+      "yarrak",
+      "yarak",
+      "tasak",
+      "tassak",
+      "ibne",
+      "kahpe",
+      "kaltak",
+      "aptal",
+      "salak",
+      "gerizekali",
+      "mal",
+      "ezik",
+      "asagilik",
+      "aşağılık",
+      "nefret",
+      "geber",
+      "ol geber",
+      "oldur",
+      "öldür",
+      "katlet",
+      "yok et"
+    ];
+
+    return blockedTerms.some(function(term){
+      const safeTerm = normalizeLipsyncPolicyText(term);
+      if (!safeTerm) return false;
+
+      const pattern = safeTerm
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(function(part){
+          return part + "[a-z0-9]*";
+        })
+        .join("\\s+");
+
+      const rx = new RegExp("(^|\\s)" + pattern + "(?=\\s|$)", "i");
+      return rx.test(text);
+    });
+  }
+
+  function getMobileToastApi(){
+    return (
+      window.mobileToast ||
+      window.MobileToast ||
+      window.AIVO_MOBILE_TOAST ||
+      window.aivoMobileToast ||
+      window.toast ||
+      null
+    );
+  }
+
+  function callMobileToast(type, message, options){
+    const text = safeText(message);
+    if (!text) return null;
+
+    const normalizedType = type === "danger" ? "error" : type;
+    const key = normalizedType + ":" + text;
+    const now = Date.now();
+
+    if (
+      key === MOBILE_LIPSYNC_TOAST.lastKey &&
+      now - MOBILE_LIPSYNC_TOAST.lastAt < 1600
+    ) {
+      return null;
+    }
+
+    MOBILE_LIPSYNC_TOAST.lastKey = key;
+    MOBILE_LIPSYNC_TOAST.lastAt = now;
+
+    const toastApi = getMobileToastApi();
+
+    try {
+      if (toastApi) {
+        if (typeof toastApi[normalizedType] === "function") {
+          return toastApi[normalizedType](text, options || {});
+        }
+
+        if (typeof toastApi.show === "function") {
+          return toastApi.show({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi.push === "function") {
+          return toastApi.push({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
+
+        if (typeof toastApi === "function") {
+          return toastApi(text, normalizedType, options || {});
+        }
+      }
+    } catch (err) {
+      console.warn("[MOBILE LIPSYNC][TOAST FALLBACK]", err);
+    }
+
+    setStatus(text);
+    return null;
+  }
+
+  function showMobileLipsyncToast(type, message, options){
+    return callMobileToast(type || "info", message, options || {});
+  }
+
+  function showMobileLipsyncLoading(message){
+    MOBILE_LIPSYNC_TOAST.loadingId = showMobileLipsyncToast("loading", message, {
+      persist: true,
+      autoClose: false,
+      source: "mobile_lipsync"
+    });
+
+    return MOBILE_LIPSYNC_TOAST.loadingId;
+  }
+
+  function clearMobileLipsyncLoading(){
+    const toastApi = getMobileToastApi();
+
+    try {
+      if (MOBILE_LIPSYNC_TOAST.loadingId && toastApi) {
+        if (typeof toastApi.dismiss === "function") {
+          toastApi.dismiss(MOBILE_LIPSYNC_TOAST.loadingId);
+        } else if (typeof toastApi.remove === "function") {
+          toastApi.remove(MOBILE_LIPSYNC_TOAST.loadingId);
+        }
+      }
+    } catch {}
+
+    MOBILE_LIPSYNC_TOAST.loadingId = null;
+  }
+
+  function mapMobileLipsyncErrorMessage(err){
+    const raw = String(
+      err?.message ||
+      err?.error ||
+      err?.detail ||
+      err ||
+      ""
+    ).toLowerCase();
+
+    if (
+      raw.includes("bad_language_policy") ||
+      raw.includes("uygunsuz dil")
+    ) {
+      return LIPSYNC_BAD_TEXT_MESSAGE;
+    }
+
+    if (raw.includes("script_too_long")) {
+      return "Bu metin çok uzun. Lütfen daha kısa bir metin gir.";
+    }
+
+    if (raw.includes("audio_too_long")) {
+      return "Ses dosyası en fazla 60 saniye olabilir.";
+    }
+
+    if (
+      raw.includes("media_policy") ||
+      raw.includes("policy_reject") ||
+      raw.includes("impersonation") ||
+      raw.includes("tanınmış kişi") ||
+      raw.includes("taninmis kisi") ||
+      raw.includes("kamu figürü") ||
+      raw.includes("kamu figuru")
+    ) {
+      return "Bu medya güvenlik politikası nedeniyle kullanılamaz.";
+    }
+
+    if (
+      raw.includes("insufficient") ||
+      raw.includes("yetersiz") ||
+      raw.includes("credit")
+    ) {
+      return "Yetersiz kredi. Devam etmek için kredi yüklemelisin.";
+    }
+
+    if (raw.includes("presign") || raw.includes("scan") || raw.includes("upload")) {
+      return "Yükleme sırasında sorun oluştu. Lütfen dosyayı kontrol edip tekrar dene.";
+    }
+
+    if (raw.includes("network") || raw.includes("failed to fetch")) {
+      return "Bağlantı sorunu oluştu. Lütfen tekrar dene.";
+    }
+
+    return safeText(err?.message || err?.detail || err) || "İşlem tamamlanamadı.";
+  }
+
   function setStatus(message){
     if (!statusEl) return;
     statusEl.textContent = safeText(message);
@@ -100,6 +326,17 @@
 
     const hasSpeech = Boolean(safeText(state.script) || state.audioFile);
     const credits = calculateCredits();
+    const policyBlocked = Boolean(safeText(state.script) && hasLipsyncBadLanguage(state.script));
+
+    if (policyBlocked) {
+      generateBtn.disabled = true;
+      generateBtn.classList.add("is-policy-blocked");
+      generateBtn.textContent = "Üretim Engellendi";
+      return;
+    }
+
+    generateBtn.classList.remove("is-policy-blocked");
+    generateBtn.disabled = false;
 
     if (!hasSpeech) {
       generateBtn.textContent = "Dudak Senkron Video Üret";
@@ -338,6 +575,8 @@
         job.title = job.title || "Dudak senkron video hazır";
         renderMobileLipsyncResults();
         setStatus("Dudak senkron video hazır.");
+        clearMobileLipsyncLoading();
+        showMobileLipsyncToast("success", "Dudak senkron video hazır.");
         return;
       }
 
@@ -346,6 +585,8 @@
         job.title = "Dudak senkron video oluşturulamadı";
         renderMobileLipsyncResults();
         setStatus("Dudak senkron video oluşturulamadı.");
+        clearMobileLipsyncLoading();
+        showMobileLipsyncToast("error", "Dudak senkron video oluşturulamadı.");
         return;
       }
 
@@ -575,6 +816,10 @@
         counterEl.textContent = String(String(scriptEl.value || "").length);
       }
 
+      if (state.script && hasLipsyncBadLanguage(state.script)) {
+        showMobileLipsyncToast("error", LIPSYNC_BAD_TEXT_MESSAGE);
+      }
+
       syncGenerateButton();
     });
   }
@@ -604,6 +849,7 @@
       }
 
       setStatus("Fotoğraf seçildi.");
+      showMobileLipsyncToast("success", "Fotoğraf seçildi.");
     });
 
     if (photoRemoveBtn) {
@@ -625,6 +871,7 @@
         }
 
         setStatus("Fotoğraf kaldırıldı.");
+        showMobileLipsyncToast("info", "Fotoğraf kaldırıldı.");
       });
     }
   }
@@ -665,6 +912,7 @@
       }
 
       setStatus("Ses dosyası seçildi.");
+      showMobileLipsyncToast("success", "Ses dosyası seçildi.");
       syncGenerateButton();
     });
 
@@ -762,6 +1010,7 @@
           previewVoiceBtn.textContent = "▶";
           window.__AIVO_MOBILE_LIPSYNC_VOICE_PREVIEW_AUDIO__ = null;
           setStatus("Ses ön izlemesi çalınamadı.");
+          showMobileLipsyncToast("error", "Ses ön izlemesi çalınamadı.");
         }
       });
     }
@@ -966,6 +1215,7 @@
 
             syncGenerateButton();
             setStatus("Ses kaydı eklendi.");
+            showMobileLipsyncToast("success", "Ses kaydı eklendi.");
             URL.revokeObjectURL(previewUrl);
             closeModal();
           });
@@ -1006,6 +1256,7 @@
       } catch (err) {
         console.error("[MOBILE LIPSYNC][RECORD ERROR]", err);
         setStatus("Mikrofon izni alınamadı.");
+        showMobileLipsyncToast("error", "Mikrofon izni alınamadı.");
       }
     });
   }
@@ -1101,6 +1352,7 @@
 
         syncGenerateButton();
         setStatus("Ses kaldırıldı.");
+        showMobileLipsyncToast("info", "Ses kaldırıldı.");
       }
     });
   }
@@ -1108,22 +1360,45 @@
     if (!generateBtn) return;
 
     generateBtn.addEventListener("click", async function(){
+      clearMobileLipsyncLoading();
+
+      if (safeText(state.script) && hasLipsyncBadLanguage(state.script)) {
+        syncGenerateButton();
+        showMobileLipsyncToast("error", LIPSYNC_BAD_TEXT_MESSAGE);
+        return;
+      }
+
       if (!state.photoFile && !state.photoUrl) {
         setStatus("Lütfen bir fotoğraf yükle.");
+        showMobileLipsyncToast("info", "Lütfen bir fotoğraf yükle.");
         return;
       }
 
       if (!safeText(state.script) && !state.audioFile && !state.audioUrl) {
         setStatus("Lütfen metin yaz veya ses dosyası yükle.");
+        showMobileLipsyncToast("info", "Lütfen metin yaz veya ses dosyası yükle.");
+        return;
+      }
+
+      const estimatedSpeechSeconds = calculateSpeechSeconds();
+
+      if (estimatedSpeechSeconds > 60) {
+        const durationMessage = state.audioFile
+          ? "Ses dosyası en fazla 60 saniye olabilir."
+          : "Bu metin yaklaşık " + estimatedSpeechSeconds + " saniye sürer. Maksimum süre 60 saniye.";
+
+        setStatus(durationMessage);
+        showMobileLipsyncToast("error", durationMessage);
         return;
       }
 
       generateBtn.disabled = true;
       setStatus("Dudak senkron hazırlanıyor...");
+      showMobileLipsyncLoading("Dudak senkron hazırlanıyor...");
 
       const tempId = "mobile-lipsync-" + Date.now();
 
-         mobileLipsyncJobs.unshift({
+      mobileLipsyncJobs.unshift({
         id: tempId,
         title: "Dudak senkron hazırlanıyor",
         videoUrl: "",
@@ -1140,17 +1415,22 @@
       try {
         if (state.photoFile && !state.photoUrl) {
           setStatus("Fotoğraf yükleniyor...");
+          showMobileLipsyncLoading("Fotoğraf güvenlik kontrolünden geçiriliyor...");
           state.photoUrl = await uploadMobileLipsyncFile(state.photoFile, "image");
+          showMobileLipsyncToast("success", "Fotoğraf yüklendi.");
         }
 
         if (state.audioFile && !state.audioUrl) {
           setStatus("Ses yükleniyor...");
+          showMobileLipsyncLoading("Ses güvenlik kontrolünden geçiriliyor...");
           state.audioUrl = await uploadMobileLipsyncFile(state.audioFile, "audio");
+          showMobileLipsyncToast("success", "Ses yüklendi.");
         }
 
         const payload = buildPayload();
 
         setStatus("Üretim başlatılıyor...");
+        showMobileLipsyncLoading("Üretim başlatılıyor...");
 
         const res = await fetch("/api/lipsync/create", {
           method: "POST",
@@ -1168,7 +1448,10 @@
         console.log("[MOBILE LIPSYNC][CREATE RESPONSE]", data);
 
         if (!res.ok || !data || data.ok === false) {
-          throw new Error(data?.message || data?.detail || data?.error || "lipsync_create_failed");
+          const error = new Error(data?.message || data?.detail || data?.error || "lipsync_create_failed");
+          error.payload = data;
+          error.error = data?.error || "";
+          throw error;
         }
 
         const realJobId = safeText(
@@ -1201,9 +1484,12 @@
 
         renderMobileLipsyncResults();
         setStatus("Dudak senkron video hazırlanıyor...");
+        showMobileLipsyncLoading("Dudak senkron video hazırlanıyor...");
         pollMobileLipsyncJob(realJobId || tempId, providerJobId);
       } catch (err) {
         console.error("[MOBILE LIPSYNC][GENERATE ERROR]", err);
+
+        clearMobileLipsyncLoading();
 
         const job = mobileLipsyncJobs.find(function(item){
           return item.id === tempId;
@@ -1214,14 +1500,40 @@
           job.title = "Dudak senkron başlatılamadı";
         }
 
+        if (state.audioFile) {
+          const errText = String(err?.message || err?.error || err || "").toLowerCase();
+
+          if (
+            errText.includes("media_policy") ||
+            errText.includes("audio_too_long") ||
+            errText.includes("lipsync_audio") ||
+            errText.includes("scan")
+          ) {
+            state.audioFile = null;
+            state.audioUrl = "";
+            state.audioDurationSeconds = 0;
+
+            if (audioInput) audioInput.value = "";
+            if (audioNameEl) audioNameEl.textContent = "Ses yüklenmedi.";
+            if (scriptEl) {
+              scriptEl.disabled = false;
+              scriptEl.classList.remove("has-audio");
+            }
+          }
+        }
+
         renderMobileLipsyncResults();
-        setStatus(err && err.message ? String(err.message) : "Dudak senkron başlatılamadı.");
+
+        const message = mapMobileLipsyncErrorMessage(err?.payload || err);
+        setStatus(message);
+        showMobileLipsyncToast("error", message);
       } finally {
         generateBtn.disabled = false;
         syncGenerateButton();
       }
     });
   }
+
 
   bindScript();
   bindPhoto();
