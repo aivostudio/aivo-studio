@@ -72,14 +72,17 @@ function renderMobileCartoonResults(){
 
   resultsEl.innerHTML = items.map(function(job){
     const ready = !!job.videoUrl;
+    const failed = String(job.status || "").toLowerCase() === "error";
 
     return `
-      <article class="mobile-cartoon-video-card" data-mobile-cartoon-job="${esc(job.id)}">
+      <article class="mobile-cartoon-video-card ${failed ? "is-error" : ""}" data-mobile-cartoon-job="${esc(job.id)}">
         <div class="mobile-cartoon-video-media">
           ${
             ready
               ? `<video class="mobile-cartoon-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-              : `<div class="mobile-cartoon-video-loading"><span>Hazırlanıyor…</span></div>`
+              : failed
+                ? `<div class="mobile-cartoon-video-loading"><span>Video çıktısı alınamadı</span></div>`
+                : `<div class="mobile-cartoon-video-loading"><span>Hazırlanıyor…</span></div>`
           }
 
           <div class="mobile-cartoon-video-actions">
