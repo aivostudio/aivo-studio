@@ -649,17 +649,21 @@ async function uploadMobilePhotoFxFile(file, kind){
 
       const tempJobId = "mobile-photofx-" + Date.now();
 
-      mobilePhotoFxJobs.unshift({
-        id: tempJobId,
-        status: "processing",
-        title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "PhotoFX klip",
-        videoUrl: "",
-        payload: payload
-      });
+   mobilePhotoFxJobs.unshift({
+  id: tempJobId,
+  status: "processing",
+  title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "PhotoFX klip",
+  videoUrl: "",
+  payload: payload
+});
 
-      renderMobilePhotoFxResults();
-      setStatus("PhotoFX klip hazırlanıyor...");
-      mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
+if (resultsEl) {
+  resultsEl.hidden = false;
+}
+
+renderMobilePhotoFxResults();
+setStatus("PhotoFX klip hazırlanıyor...");
+mobilePhotoFxToast("loading", "PhotoFX klip hazırlanıyor...");
 
       try {
         const res = await fetch("/api/providers/fal/photofx/create", {
@@ -957,7 +961,7 @@ async function uploadMobilePhotoFxFile(file, kind){
   bindGenerate();
   bindResultActions();
   syncCreditButton();
-  hydrateMobilePhotoFxLibrary();
+
 
   window.mobilePhotoFxState = state;
 })();
