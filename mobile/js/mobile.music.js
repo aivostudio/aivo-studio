@@ -1195,7 +1195,7 @@ miniAudioEl.play().then(function(){
           : [];
 
         if ((data.state === "completed" || data.status === "completed") && outputs.length) {
-          statusEl.textContent = "Müzik hazır, player kartlara çevriliyor...";
+        statusEl.textContent = "";
 
              if (productionsSectionEl) {
         productionsSectionEl.hidden = false;
