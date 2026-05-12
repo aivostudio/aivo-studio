@@ -795,6 +795,162 @@ function getCartoonBasicCredit(){
 
   return total;
 }
+
+function getMobileCartoonCreditAction(mode){
+  return mode === "character"
+    ? "studio_cartoon_character_create"
+    : "studio_cartoon_basic_generate";
+}
+
+function getMobileCartoonCreditAmount(mode){
+  return mode === "character"
+    ? getCartoonCharacterCredit()
+    : getCartoonBasicCredit();
+}
+
+async function refreshMobileCartoonCredits(){
+  try {
+    const res = await fetch("/api/credits/get", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "accept": "application/json"
+      }
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    const nextCredits = data.credits ?? data.balance ?? data.credit;
+
+    if (typeof nextCredits === "number") {
+      const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+
+      mobileCreditEls.forEach(function(el){
+        el.textContent = "Kredi " + nextCredits;
+      });
+    }
+  } catch (err) {
+    console.warn("[MOBILE CARTOON][CREDIT REFRESH FAILED]", err);
+  }
+}
+
+async function consumeMobileCartoonCredits(mode){
+  const amount = getMobileCartoonCreditAmount(mode);
+  const action = getMobileCartoonCreditAction(mode);
+  const requestId = "mobile-cartoon:" + mode + ":" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
+
+  const res = await fetch("/api/credits/consume-ledger", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "content-type": "application/json",
+      "accept": "application/json"
+    },
+    body: JSON.stringify({
+      app: "cartoon",
+      action: action,
+      cost: amount,
+      request_id: requestId,
+      reason: action
+    })
+  });
+
+  const data = await res.json().catch(function(){
+    return {};
+  });
+
+  if (!res.ok || !data || !data.ok) {
+    throw {
+      type: "insufficient_credit",
+      data: data
+    };
+  }
+
+  await refreshMobileCartoonCredits();
+
+  const transactionId = safeText(
+    data.transaction_id ||
+    data.transaction?.id ||
+    data.related_transaction_id ||
+    data.credit_transaction_id ||
+    ""
+  );
+
+  return {
+    app: "cartoon",
+    action: action,
+    amount: amount,
+    request_id: requestId,
+    related_transaction_id: transactionId,
+    idempotency_key: transactionId ? "mobile-cartoon-refund:" + transactionId : "",
+    mode: mode,
+    refunded: false
+  };
+}
+
+async function refundMobileCartoonCredits(refundCtx, reason, extraMeta){
+  if (!refundCtx || refundCtx.refunded) return false;
+
+  if (!refundCtx.related_transaction_id || refundCtx.amount <= 0) {
+    console.warn("[MOBILE CARTOON][REFUND SKIPPED]", {
+      reason: reason,
+      refundCtx: refundCtx
+    });
+    return false;
+  }
+
+  refundCtx.refunded = true;
+
+  try {
+    const res = await fetch("/api/credits/refund", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: refundCtx.app,
+        action: refundCtx.action,
+        amount: refundCtx.amount,
+        request_id: refundCtx.request_id,
+        job_id: refundCtx.job_id || "",
+        provider_job_id: refundCtx.provider_job_id || "",
+        related_transaction_id: refundCtx.related_transaction_id,
+        idempotency_key: refundCtx.idempotency_key,
+        reason: reason || "mobile_cartoon_failed",
+        meta: {
+          source: "mobile.cartoon.js",
+          mode: refundCtx.mode,
+          ...(extraMeta || {})
+        }
+      })
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    if (res.ok && data && data.ok) {
+      await refreshMobileCartoonCredits();
+
+      if (data.refunded) {
+        mobileCartoonToast("success", "Kredi iade edildi.");
+      }
+
+      return true;
+    }
+
+    console.warn("[MOBILE CARTOON][REFUND FAILED]", data);
+  } catch (err) {
+    console.error("[MOBILE CARTOON][REFUND ERROR]", err);
+  }
+
+  return false;
+}
 function syncCartoonCredits(){
   const characterCredit = getCartoonCharacterCredit();
   const basicCredit = getCartoonBasicCredit();
