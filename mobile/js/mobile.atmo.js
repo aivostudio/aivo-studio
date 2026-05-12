@@ -946,7 +946,7 @@ function setFileLabel(input, file){
 
                 const tempId = "mobile-atmo-" + Date.now();
 
- mobileAtmoJobs.length = 0;
+
 
 mobileAtmoJobs.length = 0;
 
