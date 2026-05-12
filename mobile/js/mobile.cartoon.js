@@ -906,8 +906,9 @@ function bindUploads(){
 
       await setUploadState(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
 
-      if (state.characterImageUrl) {
+          if (state.characterImageUrl) {
         setStatus("Referans resim yüklendi. Gelişmiş seçenekler sıfırlandı.");
+        mobileCartoonToast("success", "Referans resim eklendi · +10 kredi");
       }
     });
   }
@@ -936,9 +937,10 @@ function bindUploads(){
     audioClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
+           clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
       syncCartoonCredits();
-      setStatus("Audio kaldırıldı.");
+      setStatus("Müzik kaldırıldı.");
+      mobileCartoonToast("success", "Müzik kaldırıldı · -10 kredi");
     });
   }
 
@@ -956,9 +958,10 @@ function bindUploads(){
     logoClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-      clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
+          clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
       syncCartoonCredits();
       setStatus("Logo kaldırıldı.");
+      mobileCartoonToast("success", "Logo kaldırıldı · -10 kredi");
     });
   }
 
@@ -978,10 +981,11 @@ function bindUploads(){
     customClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-           clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
+       clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
       syncCartoonCredits();
       syncMainCharacterDisabled();
       setStatus("Kendi karakter görselin kaldırıldı.");
+      mobileCartoonToast("success", "Resim kaldırıldı · -10 kredi");
     });
   }
 }
