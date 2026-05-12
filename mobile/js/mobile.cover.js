@@ -28,35 +28,7 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
-   const MOBILE_COVER_TOAST = {
-    loadingId: null
-  };
 
-  function mobileCoverLoading(message){
-    clearMobileCoverLoading();
-
-    if (window.toast?.loading) {
-      MOBILE_COVER_TOAST.loadingId = window.toast.loading(message, {
-        persist: true,
-        autoClose: false,
-        source: "mobile_cover"
-      });
-    }
-
-    return MOBILE_COVER_TOAST.loadingId;
-  }
-
-  function clearMobileCoverLoading(){
-    try {
-      if (MOBILE_COVER_TOAST.loadingId && window.toast?.dismiss) {
-        window.toast.dismiss(MOBILE_COVER_TOAST.loadingId);
-      } else if (MOBILE_COVER_TOAST.loadingId && window.toast?.remove) {
-        window.toast.remove(MOBILE_COVER_TOAST.loadingId);
-      }
-    } catch (err) {}
-
-    MOBILE_COVER_TOAST.loadingId = null;
-  }
   function postJSON(url, payload){
     return fetch(url, {
       method:"POST",
@@ -389,12 +361,14 @@
     generateBtn.disabled = true;
     generateBtn.textContent = "Üretiliyor...";
     statusEl.textContent = "Kredi kontrol ediliyor...";
-   mobileCoverLoading("Kapak üretimi başlatılıyor...");
+    if (window.toast?.loading) {
+  window.toast.loading("Kapak üretimi başlatılıyor...");
+}
 
     try {
       await consumeCredits(selectedCredit);
 
-statusEl.textContent = "Görsel güvenlik kontrolünden geçiriliyor...";
+      statusEl.textContent = "Kapak üretimi başlatıldı...";
 
 if (window.toast?.success) {
   if (selectedCredit === 9) {
@@ -404,7 +378,9 @@ if (window.toast?.success) {
   }
 }
 
-mobileCoverLoading("Görsel güvenlik kontrolünden geçiriliyor...");
+if (window.toast?.success) {
+  window.toast.success("Kapak üretimi başladı");
+}
 
       resultsEl.hidden = false;
       renderLoadingCards(count);
@@ -423,8 +399,7 @@ mobileCoverLoading("Görsel güvenlik kontrolünden geçiriliyor...");
         resultsEl.appendChild(renderCoverCard(item, index));
       });
 
-statusEl.textContent = "Kapak hazır.";
-clearMobileCoverLoading();
+    statusEl.textContent = "Kapak hazır.";
 
 if (window.toast?.success) {
   window.toast.success("Kapak hazır");
@@ -432,8 +407,7 @@ if (window.toast?.success) {
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
 
-   if (msg === "insufficient_credit") {
-  clearMobileCoverLoading();
+     if (msg === "insufficient_credit") {
   statusEl.textContent = "Kredi yetersiz. Paket sayfasına yönlendiriliyorsun...";
 
   if (window.toast?.warning) {
@@ -445,8 +419,7 @@ if (window.toast?.success) {
   return;
 }
 
- statusEl.textContent = "Kapak üretilemedi: " + msg;
-clearMobileCoverLoading();
+     statusEl.textContent = "Kapak üretilemedi: " + msg;
 
 if (window.toast?.error) {
   window.toast.error("Kapak üretilemedi.");
