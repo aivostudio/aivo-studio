@@ -340,14 +340,16 @@ const items = sourceJobs.filter(function(job){
       if (!job) return;
 
       if (videoUrl) {
-        job.videoUrl = videoUrl;
-        job.status = "ready";
-        job.title = job.title || "Video hazır";
-        renderMobileVideoResults();
-        setStatus("Video hazır.");
-        mobileVideoToast("success", "Video hazır");
-        return;
-      }
+     if (videoUrl) {
+  job.videoUrl = videoUrl;
+  job.status = "ready";
+  job.title = job.title || "Video hazır";
+  renderMobileVideoResults();
+  setStatus("Video hazır.");
+  clearMobileVideoLoading();
+  mobileVideoToast("success", "Video hazır");
+  return;
+}
 
       if (status.includes("fail") || status.includes("error")) {
         job.status = "error";
