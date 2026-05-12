@@ -484,6 +484,160 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     MOBILE_ATMO_TOAST.loadingId = null;
   }
 
+  async function refreshMobileAtmoCredits(){
+    try {
+      const res = await fetch("/api/credits/get", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "accept": "application/json"
+        }
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      const nextCredits = data.credits ?? data.balance ?? data.credit;
+
+      if (typeof nextCredits === "number") {
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+
+        mobileCreditEls.forEach(function(el){
+          el.textContent = "Kredi " + nextCredits;
+        });
+      }
+    } catch (err) {
+      console.warn("[MOBILE ATMO][CREDIT REFRESH FAILED]", err);
+    }
+  }
+
+  function getMobileAtmoCreditAction(mode){
+    return mode === "pro"
+      ? "studio_atmo_generate_pro"
+      : "studio_atmo_generate_basic";
+  }
+
+  function buildMobileAtmoRefundContext(mode, payload, data, jobId){
+    const source = data || {};
+    const transaction =
+      source.transaction ||
+      source.credit_transaction ||
+      source.creditTransaction ||
+      source.credits?.transaction ||
+      null;
+
+    const relatedTransactionId = safeText(
+      source.related_transaction_id ||
+      source.relatedTransactionId ||
+      source.transaction_id ||
+      source.transactionId ||
+      source.credit_transaction_id ||
+      source.creditTransactionId ||
+      transaction?.id ||
+      ""
+    );
+
+    const requestId = safeText(
+      source.request_id ||
+      source.requestId ||
+      source.meta?.request_id ||
+      source.meta?.requestId ||
+      payload?.request_id ||
+      payload?.requestId ||
+      ""
+    );
+
+    const providerJobId = safeText(
+      source.provider_job_id ||
+      source.providerJobId ||
+      source.provider_request_id ||
+      source.providerRequestId ||
+      source.fal_request_id ||
+      source.falRequestId ||
+      source.request_id ||
+      source.requestId ||
+      ""
+    );
+
+    return {
+      app: "atmo",
+      action: getMobileAtmoCreditAction(mode),
+      amount: computeMobileAtmoCredit(mode),
+      request_id: requestId,
+      job_id: safeText(jobId),
+      provider_job_id: providerJobId,
+      related_transaction_id: relatedTransactionId,
+      idempotency_key: relatedTransactionId
+        ? "mobile-atmo-refund:" + relatedTransactionId
+        : "",
+      mode: mode,
+      refunded: false
+    };
+  }
+
+  async function refundMobileAtmoCredits(refundCtx, reason, extraMeta){
+    if (!refundCtx || refundCtx.refunded) return false;
+
+    if (!refundCtx.related_transaction_id || refundCtx.amount <= 0) {
+      console.warn("[MOBILE ATMO][REFUND SKIPPED]", {
+        reason: reason,
+        refundCtx: refundCtx
+      });
+      return false;
+    }
+
+    refundCtx.refunded = true;
+
+    try {
+      const res = await fetch("/api/credits/refund", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: refundCtx.app,
+          action: refundCtx.action,
+          amount: refundCtx.amount,
+          request_id: refundCtx.request_id,
+          job_id: refundCtx.job_id,
+          provider_job_id: refundCtx.provider_job_id,
+          related_transaction_id: refundCtx.related_transaction_id,
+          idempotency_key: refundCtx.idempotency_key,
+          reason: reason || "mobile_atmo_failed",
+          meta: {
+            source: "mobile.atmo.js",
+            mode: refundCtx.mode,
+            ...(extraMeta || {})
+          }
+        })
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      if (res.ok && data && data.ok) {
+        await refreshMobileAtmoCredits();
+
+        if (data.refunded) {
+          mobileAtmoToast("success", "Kredi iade edildi.");
+        }
+
+        return true;
+      }
+
+      console.warn("[MOBILE ATMO][REFUND FAILED]", data);
+    } catch (err) {
+      console.error("[MOBILE ATMO][REFUND ERROR]", err);
+    }
+
+    return false;
+  }
+
   function computeMobileAtmoCredit(mode){
   const target = mode === "pro" ? state.pro : state.basic;
 
@@ -502,7 +656,6 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
   return baseCredit + logoExtra + audioExtra;
 }
-
   function syncMobileAtmoCreditButtons(){
     if (basicGenerateBtn) {
       basicGenerateBtn.textContent = "🎬 Atmosfer Video Oluştur (" + computeMobileAtmoCredit("basic") + " Kredi)";
