@@ -894,8 +894,9 @@ function setFileLabel(input, file){
           job.id = realJobId;
           job.status = "processing";
 
-          renderMobileAtmoResults();
+                   renderMobileAtmoResults();
           mobileAtmoToast("success", "Atmosfer video kuyruğa alındı.");
+          mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
@@ -981,8 +982,9 @@ mobileAtmoJobs.unshift({
           job.id = realJobId;
           job.status = "processing";
 
-          renderMobileAtmoResults();
+                   renderMobileAtmoResults();
           mobileAtmoToast("success", "Süper atmosfer video kuyruğa alındı.");
+          mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
