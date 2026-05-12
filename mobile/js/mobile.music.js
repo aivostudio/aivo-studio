@@ -1364,10 +1364,17 @@ if (window.toast?.loading) {
 
       const data = await res.json();
 
-      if (!data || data.ok === false) {
-        statusEl.textContent = "Üretim başlatılamadı: " + (data && data.error ? data.error : "unknown_error");
-        return;
-      }
+     if (!data || data.ok === false) {
+  const errorMessage = "Üretim başlatılamadı: " + (data && data.error ? data.error : "unknown_error");
+
+  statusEl.textContent = errorMessage;
+
+  if (window.toast?.error) {
+    window.toast.error(errorMessage);
+  }
+
+  return;
+}
 
       const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
       const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
