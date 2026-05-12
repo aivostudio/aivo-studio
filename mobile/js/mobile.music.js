@@ -1200,10 +1200,16 @@ miniAudioEl.play().then(function(){
         productionsSectionEl.hidden = false;
       }
 
-     resultsEl.hidden = false;
-     resultsEl.className = "";
+       resultsEl.hidden = false;
+       resultsEl.className = "";
 
-          outputs.forEach(function(output, index){
+       resultsEl.querySelectorAll(".aivo-player-card.is-pending").forEach(function(card){
+         if (card.dataset.mobilePollJobId === String(jobId || "")) {
+        card.remove();
+      }
+      });
+
+            outputs.forEach(function(output, index){
             const card = document.createElement("div");
             card.className = "aivo-player-card is-ready";
             card.style.marginBottom = index === outputs.length - 1 ? "0" : "6px";
