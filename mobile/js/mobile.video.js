@@ -351,28 +351,28 @@ const items = sourceJobs.filter(function(job){
   return;
 }
 
-      if (status.includes("fail") || status.includes("error")) {
-        job.status = "error";
-        job.title = "Video oluşturulamadı";
-        renderMobileVideoResults();
-        setStatus("Video oluşturulamadı.");
+    if (status.includes("fail") || status.includes("error")) {
+  job.status = "error";
+  job.title = "Video oluşturulamadı";
+  renderMobileVideoResults();
+  setStatus("Video oluşturulamadı.");
 
-        await refundMobileVideoCredits({
-          requestId: refundCtx?.requestId,
-          transactionId: refundCtx?.transactionId,
-          creditCost: refundCtx?.creditCost,
-          reason: "mobile_video_job_failed",
-          meta: {
-            source: "mobile.video.poll",
-            job_id: jobId,
-            error: data.error || "mobile_video_job_error"
-          }
-        });
+  await refundMobileVideoCredits({
+    requestId: refundCtx?.requestId,
+    transactionId: refundCtx?.transactionId,
+    creditCost: refundCtx?.creditCost,
+    reason: "mobile_video_job_failed",
+    meta: {
+      source: "mobile.video.poll",
+      job_id: jobId,
+      error: data.error || "mobile_video_job_error"
+    }
+  });
 
-        mobileVideoToast("error", "Video oluşturulamadı");
-        return;
-      }
-
+  clearMobileVideoLoading();
+  mobileVideoToast("error", "Video oluşturulamadı");
+  return;
+}
       setTimeout(function(){
         pollMobileVideoJob(jobId, refundCtx);
       }, 3000);
