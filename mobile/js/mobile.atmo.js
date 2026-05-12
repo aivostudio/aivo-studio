@@ -863,6 +863,7 @@ mobileAtmoJobs.length = 0;
 
 mobileAtmoJobs.unshift({
   id: tempId,
+  scope: "current",
   title:
     payload.scene === "winter_cafe" ? "Kış Kafe" :
     payload.scene === "cozy_cabin" ? "Dağ Evi" :
@@ -875,6 +876,8 @@ mobileAtmoJobs.unshift({
   payload: payload,
   status: "processing"
 });
+
+mobileAtmoViewMode = "current";
 
 if (resultsEl) {
   resultsEl.hidden = false;
@@ -963,11 +966,14 @@ mobileAtmoJobs.length = 0;
 
 mobileAtmoJobs.unshift({
   id: tempId,
+  scope: "current",
   title: proTitleWords.length ? proTitleWords.join(" ") + "..." : "Süper atmosfer video",
   videoUrl: "",
   payload: payload,
   status: "processing"
 });
+
+mobileAtmoViewMode = "current";
 
 if (resultsEl) {
   resultsEl.hidden = false;
