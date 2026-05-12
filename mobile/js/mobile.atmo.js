@@ -1303,7 +1303,7 @@ renderMobileAtmoResults();
             setStatus("Üretim başladı ama gerçek job_id alınamadı.");
             clearMobileAtmoLoading();
             mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
-            console.warn("[MOBILE ATMO][PRO NO UUID]", data);
+             console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
 
             refundMobileAtmoCredits(refundCtx, "mobile_atmo_missing_job_id", {
               error: "missing_job_id",
@@ -1436,7 +1436,7 @@ renderMobileAtmoResults();
             setStatus("Üretim başladı ama gerçek job_id alınamadı.");
             clearMobileAtmoLoading();
             mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
-            console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
+            console.warn("[MOBILE ATMO][PRO NO UUID]", data);
 
             refundMobileAtmoCredits(refundCtx, "mobile_atmo_missing_job_id", {
               error: "missing_job_id",
