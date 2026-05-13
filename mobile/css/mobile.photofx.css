@@ -602,3 +602,6 @@
 .mobile-photofx-upload-btn input[type="file"]{
   display:none !important;
 }
+.mobile-photofx-field .field-input{
+  border:1px solid rgba(236,72,153,.32) !important;
+}
