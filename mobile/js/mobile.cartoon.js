@@ -1430,7 +1430,7 @@ function bindUploads(){
           creditCtx = await consumeMobileCartoonCredits("character");
           mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
         } catch (creditErr) {
-               } catch (creditErr) {
+             
           console.warn("[MOBILE CARTOON][CHARACTER CREDIT ERROR]", creditErr);
           setStatus("Yetersiz kredi.");
           mobileCartoonToast("warning", "Yetersiz kredi.");
