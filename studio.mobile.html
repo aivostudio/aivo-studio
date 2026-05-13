@@ -1901,8 +1901,14 @@ if (tool === "atmo") {
 
     const data = await res.json();
 
-   if (!data || data.ok === false || !data.user) {
+if (!data || data.ok === false || !data.email) {
   window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+  return;
+}
+
+if (data.verified !== true) {
+  window.location.replace("/login.mobile.html?tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.mobile.html");
+  return;
 }
   } catch (err) {
     window.location.replace("/login.html?returnTo=/studio.mobile.html");
