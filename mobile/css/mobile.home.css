@@ -704,3 +704,43 @@ body{
     rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.12);
 }
+.mobile-home-quick-grid{
+  grid-template-columns:1fr 1fr 1fr !important;
+  gap:8px !important;
+}
+
+.mobile-home-quick-card{
+  min-height:98px !important;
+  padding:11px 9px !important;
+  align-items:center !important;
+  text-align:center !important;
+  justify-content:center !important;
+}
+
+.mobile-home-quick-card .tool-icon{
+  width:38px !important;
+  height:38px !important;
+  border-radius:15px !important;
+}
+
+.mobile-home-quick-card .tool-icon::before{
+  width:23px !important;
+  height:23px !important;
+}
+
+.mobile-home-quick-card strong{
+  font-size:12px !important;
+  line-height:1.05 !important;
+}
+
+.mobile-home-quick-card small{
+  display:none !important;
+}
+
+.mobile-home-quick-status{
+  grid-column:1 / -1 !important;
+  min-height:46px !important;
+  padding:10px 14px !important;
+  border-radius:18px !important;
+  font-size:11px !important;
+}
