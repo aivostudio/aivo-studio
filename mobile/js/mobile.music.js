@@ -983,7 +983,7 @@ return;
         } catch (creditErr) {
           console.warn("[MOBILE MUSIC][STEMS CREDIT ERROR]", creditErr);
 
-          if (statusEl) {
+                if (statusEl) {
             statusEl.textContent = "Yetersiz kredi.";
           }
 
@@ -991,8 +991,19 @@ return;
             window.toast.warning("Yetersiz kredi");
           }
 
-          confirmStemsBtn.disabled = false;
-          confirmStemsBtn.textContent = "Onayla (5 Kredi)";
+          closeSheet();
+
+          location.hash = "#credits";
+
+          const creditsNav =
+            document.querySelector('.bottom-nav a[href="#credits"]') ||
+            document.querySelector('[data-mobile-nav="credits"]') ||
+            document.querySelector('[data-mobile-tab="credits"]');
+
+          if (creditsNav) {
+            creditsNav.click();
+          }
+
           return;
         }
 
