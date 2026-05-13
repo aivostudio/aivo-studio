@@ -1132,11 +1132,19 @@ hydrateTopCreditBalance();
   });
 }
 
-    function setActiveNav(activeEl){
-      document.querySelectorAll(".bottom-nav a").forEach(function(item){
-        item.classList.toggle("active", item === activeEl);
-      });
+   function setActiveNav(activeEl){
+  document.querySelectorAll(".bottom-nav a").forEach(function(item){
+    item.classList.toggle("active", item === activeEl);
+  });
+}
+
+document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
+  navItem.addEventListener("click", function(){
+    if (policyMount) {
+      policyMount.hidden = true;
     }
+  }, true);
+});
 function showHome(){
   homeMount.hidden = false;
   musicMount.hidden = true;
