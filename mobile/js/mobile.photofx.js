@@ -929,9 +929,22 @@ async function uploadMobilePhotoFxFile(file, kind){
 
         mobilePhotoFxToast("success", creditCost + " kredi kullanıldı.");
       } catch (creditErr) {
+           } catch (creditErr) {
         console.warn("[MOBILE PHOTOFX][CREDIT ERROR]", creditErr);
         setStatus("Yetersiz kredi.");
         mobilePhotoFxToast("warning", "Yetersiz kredi.");
+
+        location.hash = "#credits";
+
+        const creditsNav =
+          document.querySelector('.bottom-nav a[href="#credits"]') ||
+          document.querySelector('[data-mobile-nav="credits"]') ||
+          document.querySelector('[data-mobile-tab="credits"]');
+
+        if (creditsNav) {
+          creditsNav.click();
+        }
+
         return;
       }
 
