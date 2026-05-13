@@ -1005,11 +1005,16 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
       textEl.textContent = file.name + " yüklendi";
     }
   } catch (err) {
+    console.error("[MOBILE CARTOON][UPLOAD ERROR]", err);
+
     clearMobileCartoonLoading();
+
     state[stateKey] = null;
     state[urlKey] = "";
 
-    if (input) input.value = "";
+    if (input) {
+      input.value = "";
+    }
 
     if (textEl) {
       textEl.textContent = "Yükleme başarısız";
@@ -1020,7 +1025,39 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
     }
 
     syncCartoonCredits();
+
+    const errText = String(
+      err?.message ||
+      err ||
+      ""
+    ).toLowerCase();
+
+    const isPolicyBlocked =
+      errText.includes("media_policy") ||
+      errText.includes("public_figure") ||
+      errText.includes("public figure") ||
+      errText.includes("public_figure_image_blocked") ||
+      errText.includes("figure_image_blocked") ||
+      errText.includes("image_blocked") ||
+      errText.includes("celebrity") ||
+      errText.includes("protected_person") ||
+      errText.includes("kamu figürü") ||
+      errText.includes("kamu figuru") ||
+      errText.includes("tanınmış kişi") ||
+      errText.includes("taninmis kisi") ||
+      errText.includes("gerçek kişi") ||
+      errText.includes("gercek kisi") ||
+      errText.includes("impersonation") ||
+      errText.includes("blocked");
+
+    if (isPolicyBlocked) {
+      setStatus("Bu görsel kullanılamaz.");
+      mobileCartoonToast("error", "Bu görsel kullanılamaz.");
+      return;
+    }
+
     setStatus("Dosya yüklenemedi. Lütfen tekrar dene.");
+    mobileCartoonToast("error", "Yükleme hatası");
   }
 }
 
