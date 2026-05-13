@@ -555,21 +555,25 @@
         return;
       }
 
-      await refundMobileCoverCredits(refundCtx, "mobile_cover_generate_failed", {
+        const refunded = await refundMobileCoverCredits(refundCtx, "mobile_cover_generate_failed", {
         error:msg,
         quality:selectedQuality,
         ratio:ratio,
         count:count
       });
 
-      statusEl.textContent = "Kapak üretilemedi: " + msg;
+      statusEl.textContent = refunded
+        ? "Kapak üretilemedi. Kredi iade edildi."
+        : "Kapak üretilemedi: " + msg;
 
-      if (window.toast?.error) {
+      if (!refunded && window.toast?.error) {
         window.toast.error("Kapak üretilemedi.");
       }
 
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Kapak üretilemedi. Kredi iadesi kontrol edildi.";
+      resultsEl.innerHTML = refunded
+        ? "Kapak üretilemedi. Kredi iade edildi."
+        : "Kapak üretilemedi. Kredi iadesi kontrol edildi.";
     } finally {
       generateBtn.disabled = false;
       generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
