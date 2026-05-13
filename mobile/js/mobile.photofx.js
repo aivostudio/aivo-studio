@@ -899,11 +899,6 @@ async function uploadMobilePhotoFxFile(file, kind){
         return;
       }
 
-      if (!Array.isArray(payload.styles) || !payload.styles.length) {
-        setStatus("Lütfen en az 1 efekt stili seç.");
-        mobilePhotoFxToast("warning", "Lütfen en az 1 efekt stili seç.");
-        return;
-      }
 
       const creditCost = computeCredit();
       const consumeRequestId = "mobile-photofx:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
