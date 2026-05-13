@@ -1593,7 +1593,33 @@
           showMobileLipsyncToast("success", "Ses yüklendi.");
         }
 
-        const payload = buildPayload();
+               const payload = buildPayload();
+
+        const creditCost = calculateCredits();
+        const consumeRequestId = "mobile-lipsync:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
+
+        const refundState = {
+          consumed: false,
+          refunded: false,
+          creditCost: creditCost,
+          requestId: consumeRequestId,
+          transactionId: ""
+        };
+
+        try {
+          const consumeResult = await consumeMobileLipsyncCredits(creditCost, consumeRequestId);
+
+          refundState.consumed = true;
+          refundState.transactionId = consumeResult.transactionId || "";
+
+          showMobileLipsyncToast("success", creditCost + " kredi kullanıldı.");
+        } catch (creditErr) {
+          console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
+          setStatus("Yetersiz kredi.");
+          showMobileLipsyncToast("warning", "Yetersiz kredi.");
+          clearMobileLipsyncLoading();
+          return;
+        }
 
         setStatus("Üretim başlatılıyor...");
         showMobileLipsyncLoading("Üretim başlatılıyor...");
