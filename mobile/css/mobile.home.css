@@ -666,3 +666,41 @@ body{
 .mobile-home-section{
   background:transparent !important;
 }
+.mobile-home-quick-grid{
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:-2px;
+}
+
+.mobile-home-quick-card{
+  min-height:126px !important;
+  border-radius:24px !important;
+  background:
+    radial-gradient(150px 90px at 0% 0%, rgba(95,208,255,.18), transparent 64%),
+    radial-gradient(150px 90px at 100% 100%, rgba(201,87,188,.16), transparent 66%),
+    linear-gradient(135deg, rgba(255,255,255,.085), rgba(255,255,255,.035)) !important;
+}
+
+.mobile-home-quick-card .tool-icon{
+  width:46px !important;
+  height:46px !important;
+  border-radius:18px !important;
+}
+
+.mobile-home-quick-status{
+  min-height:126px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:16px;
+  border-radius:24px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.45;
+  color:rgba(255,255,255,.78);
+  background:
+    radial-gradient(150px 90px at 50% 0%, rgba(139,92,246,.22), transparent 66%),
+    rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.12);
+}
