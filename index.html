@@ -12,6 +12,33 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <meta name="theme-color" content="#0b0b0f">
+    <!-- ================= MOBILE REDIRECT ================= -->
+  <script>
+  (function AIVO_MOBILE_REDIRECT(){
+    try {
+      var path = window.location.pathname || "/";
+      var search = window.location.search || "";
+
+      if (search.indexOf("desktop=1") !== -1) return;
+
+      var isHome =
+        path === "/" ||
+        path === "/index.html";
+
+      if (!isHome) return;
+
+      var ua = navigator.userAgent || "";
+      var isMobile =
+        /Android|iPhone|iPod|IEMobile|Opera Mini/i.test(ua) ||
+        (navigator.maxTouchPoints > 1 && window.innerWidth <= 820);
+
+      if (!isMobile) return;
+
+      window.location.replace("/index.mobile.html");
+    } catch (err) {}
+  })();
+  </script>
+  <!-- ================= /MOBILE REDIRECT ================= -->
   <!-- ================= /AIVO ICONS ================= -->
 
   <!-- ================= OPEN GRAPH ================= -->
