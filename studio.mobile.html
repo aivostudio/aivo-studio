@@ -1137,7 +1137,7 @@ hydrateTopCreditBalance();
         item.classList.toggle("active", item === activeEl);
       });
     }
-    function showHome(){
+function showHome(){
   homeMount.hidden = false;
   musicMount.hidden = true;
   coverMount.hidden = true;
@@ -1149,6 +1149,7 @@ hydrateTopCreditBalance();
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
 }
 function showMusic(){
   homeMount.hidden = true;
