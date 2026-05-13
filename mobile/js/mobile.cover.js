@@ -289,11 +289,54 @@
 
     return card;
   }
+  async function refreshMobileCoverCredits(){
+    try {
+      const res = await fetch("/api/credits/get", {
+        method:"GET",
+        credentials:"include",
+        cache:"no-store",
+        headers:{
+          "accept":"application/json"
+        }
+      });
+
+      const data = await res.json().catch(function(){ return null; });
+      const nextCredits = data?.credits ?? data?.balance ?? data?.credit;
+
+      if (typeof nextCredits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(nextCredits);
+        }
+
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+        mobileCreditEls.forEach(function(el){
+          el.textContent = "Kredi " + nextCredits;
+        });
+
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(nextCredits);
+        }
+
+        try {
+          window.syncCreditsUI?.({ force:true });
+        } catch (err) {}
+      }
+    } catch (err) {
+      console.warn("[MOBILE COVER][CREDIT REFRESH FAILED]", err);
+    }
+  }
+
+  function getMobileCoverCreditAction(){
+    return selectedQuality === "ultra"
+      ? "studio_cover_generate_ultra"
+      : "studio_cover_generate_artist";
+  }
+
   async function consumeCredits(cost){
+    const amount = Number(cost || selectedCredit || 0);
+    const action = getMobileCoverCreditAction();
     const requestId = "mobile-cover:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
-    const reason = selectedQuality === "ultra"
-      ? "mobile_cover_generate_ultra"
-      : "mobile_cover_generate_artist";
 
     const res = await fetch("/api/credits/consume-ledger", {
       method:"POST",
@@ -304,10 +347,10 @@
       },
       body:JSON.stringify({
         app:"cover",
-        action:reason,
-        cost,
+        action:action,
+        cost:amount,
         request_id:requestId,
-        reason
+        reason:action
       })
     });
 
@@ -317,9 +360,97 @@
       throw new Error("insufficient_credit");
     }
 
-    return data;
+    await refreshMobileCoverCredits();
+
+    return {
+      app:"cover",
+      action:action,
+      amount:amount,
+      request_id:requestId,
+      related_transaction_id:String(
+        data?.transaction_id ||
+        data?.transaction?.id ||
+        data?.related_transaction_id ||
+        data?.credit_transaction_id ||
+        ""
+      ),
+      idempotency_key:String(
+        data?.transaction_id ||
+        data?.transaction?.id ||
+        data?.related_transaction_id ||
+        data?.credit_transaction_id ||
+        ""
+      )
+        ? "mobile-cover-refund:" + String(
+            data?.transaction_id ||
+            data?.transaction?.id ||
+            data?.related_transaction_id ||
+            data?.credit_transaction_id ||
+            ""
+          )
+        : "",
+      quality:selectedQuality,
+      refunded:false,
+      raw:data
+    };
   }
 
+  async function refundMobileCoverCredits(refundCtx, reason, extraMeta){
+    if (!refundCtx || refundCtx.refunded) return false;
+
+    if (!refundCtx.related_transaction_id || refundCtx.amount <= 0) {
+      console.warn("[MOBILE COVER][REFUND SKIPPED]", {
+        reason:reason,
+        refundCtx:refundCtx
+      });
+      return false;
+    }
+
+    refundCtx.refunded = true;
+
+    try {
+      const res = await fetch("/api/credits/refund", {
+        method:"POST",
+        credentials:"include",
+        headers:{
+          "content-type":"application/json",
+          "accept":"application/json"
+        },
+        body:JSON.stringify({
+          app:refundCtx.app,
+          action:refundCtx.action,
+          amount:refundCtx.amount,
+          request_id:refundCtx.request_id,
+          related_transaction_id:refundCtx.related_transaction_id,
+          idempotency_key:refundCtx.idempotency_key,
+          reason:reason || "mobile_cover_failed",
+          meta:{
+            source:"mobile.cover.js",
+            quality:refundCtx.quality,
+            ...(extraMeta || {})
+          }
+        })
+      });
+
+      const data = await res.json().catch(function(){ return null; });
+
+      if (res.ok && data && data.ok) {
+        await refreshMobileCoverCredits();
+
+        if (data.refunded && window.toast?.error) {
+          window.toast.error("İşlem başarısız oldu, kredi iade edildi.");
+        }
+
+        return true;
+      }
+
+      console.warn("[MOBILE COVER][REFUND FAILED]", data);
+    } catch (err) {
+      console.error("[MOBILE COVER][REFUND ERROR]", err);
+    }
+
+    return false;
+  }
  qualityBtns.forEach(function(btn){
   btn.addEventListener("click", function(){
     setQuality(btn);
