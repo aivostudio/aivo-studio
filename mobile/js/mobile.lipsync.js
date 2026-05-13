@@ -322,7 +322,138 @@
     const charsPerSecond = 9;
     return Math.max(1, Math.ceil(safeText(state.script).length / charsPerSecond));
   }
+    const MOBILE_LIPSYNC_CREDIT_ACTION = "mobile_lipsync_generate";
 
+  async function refreshMobileLipsyncCredits(){
+    try {
+      const res = await fetch("/api/credits/get", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "accept": "application/json"
+        }
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      const nextCredits = data.credits ?? data.balance ?? data.credit;
+
+      if (data && data.ok && typeof nextCredits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(nextCredits);
+        }
+
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+        mobileCreditEls.forEach(function(el){
+          el.textContent = "Kredi " + nextCredits;
+        });
+
+        if (
+          window.AIVO_STORE_V1 &&
+          typeof window.AIVO_STORE_V1.setCredits === "function"
+        ) {
+          window.AIVO_STORE_V1.setCredits(nextCredits);
+        }
+      }
+    } catch (err) {}
+
+    try {
+      window.syncCreditsUI?.({ force: true });
+    } catch (err) {}
+  }
+
+  async function consumeMobileLipsyncCredits(creditCost, requestId){
+    const res = await fetch("/api/credits/consume-ledger", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "lipsync",
+        action: MOBILE_LIPSYNC_CREDIT_ACTION,
+        cost: creditCost,
+        request_id: requestId,
+        reason: MOBILE_LIPSYNC_CREDIT_ACTION
+      })
+    });
+
+    const data = await res.json().catch(function(){
+      return {};
+    });
+
+    if (!res.ok || !data || !data.ok) {
+      const err = new Error(data.error || "insufficient_credit");
+      err.data = data;
+      err.status = res.status;
+      throw err;
+    }
+
+    await refreshMobileLipsyncCredits();
+
+    return {
+      transactionId: data.transaction_id || data.transaction?.id || "",
+      raw: data
+    };
+  }
+
+  async function refundMobileLipsyncCredits(refundState, reason, meta){
+    if (!refundState || refundState.refunded) return false;
+    if (!refundState.consumed) return false;
+    if (!refundState.transactionId) return false;
+    if (!refundState.requestId) return false;
+    if (!refundState.creditCost || refundState.creditCost <= 0) return false;
+
+    refundState.refunded = true;
+
+    try {
+      const res = await fetch("/api/credits/refund", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: "lipsync",
+          action: MOBILE_LIPSYNC_CREDIT_ACTION,
+          amount: refundState.creditCost,
+          request_id: refundState.requestId,
+          related_transaction_id: refundState.transactionId,
+          reason: reason || "mobile_lipsync_failed",
+          meta: {
+            source: "mobile.lipsync",
+            ...(meta || {})
+          }
+        })
+      });
+
+      const data = await res.json().catch(function(){
+        return {};
+      });
+
+      if (
+        res.ok &&
+        data &&
+        data.ok &&
+        (data.refunded || data.deduped || data.skipped)
+      ) {
+        await refreshMobileLipsyncCredits();
+        showMobileLipsyncToast("error", "İşlem başarısız oldu, kredi iade edildi.");
+        return true;
+      }
+    } catch (err) {
+      console.error("[MOBILE LIPSYNC][REFUND ERROR]", err);
+    }
+
+    return false;
+  }
+  
   function syncGenerateButton(){
     if (!generateBtn) return;
 
