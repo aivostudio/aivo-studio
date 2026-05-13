@@ -326,9 +326,10 @@
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-              email: cleanEmail
-            })
+          body: JSON.stringify({
+          email: cleanEmail,
+          source: "mobile"
+           })
           });
 
           setMessage("Eğer e-posta sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi.", "is-ok");
