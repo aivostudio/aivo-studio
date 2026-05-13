@@ -1568,12 +1568,7 @@
         return;
       }
 
-          generateBtn.disabled = true;
-      generateBtn.textContent = "Üretiliyor...";
-      generateBtn.classList.add("is-loading", "is-pressed");
-      generateBtn.setAttribute("aria-busy", "true");
-
-      setStatus("Dudak senkron hazırlanıyor...");
+              setStatus("Dudak senkron hazırlanıyor...");
       showMobileLipsyncLoading("Dudak senkron hazırlanıyor...");
       const tempId = "mobile-lipsync-" + Date.now();
 
@@ -1638,7 +1633,10 @@
           clearMobileLipsyncLoading();
           return;
         }
-
+                generateBtn.disabled = true;
+        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.classList.add("is-loading", "is-pressed");
+        generateBtn.setAttribute("aria-busy", "true");
         setStatus("Üretim başlatılıyor...");
         showMobileLipsyncLoading("Üretim başlatılıyor...");
 
