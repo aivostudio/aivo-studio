@@ -1031,11 +1031,7 @@ async function uploadMobilePhotoFxFile(file, kind){
         await refundMobilePhotoFxCredits(refundState, "mobile_photofx_create_exception", {
           error: String(err?.message || err || "create_exception")
         });
-      } finally {
-        generateBtn.disabled = false;
-        generateBtn.classList.remove("is-loading", "is-pressed");
-        generateBtn.removeAttribute("aria-busy");
-        syncCreditButton();
+          } finally {
       }
     });
   }
