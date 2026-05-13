@@ -1372,10 +1372,22 @@ renderMobileAtmoResults();
         try {
           creditCtx = await consumeMobileAtmoCredits("pro");
           mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
-        } catch (creditErr) {
+              } catch (creditErr) {
           console.warn("[MOBILE ATMO][PRO CREDIT ERROR]", creditErr);
           setStatus("Yetersiz kredi.");
           mobileAtmoToast("warning", "Yetersiz kredi.");
+
+          location.hash = "#credits";
+
+          const creditsNav =
+            document.querySelector('.bottom-nav a[href="#credits"]') ||
+            document.querySelector('[data-mobile-nav="credits"]') ||
+            document.querySelector('[data-mobile-tab="credits"]');
+
+          if (creditsNav) {
+            creditsNav.click();
+          }
+
           return;
         }
 
