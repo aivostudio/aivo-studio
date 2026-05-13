@@ -1019,29 +1019,71 @@
   function bindPhoto(){
     if (!photoInput) return;
 
-    photoInput.addEventListener("change", function(){
-      const file = photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
+       photoInput.addEventListener("change", async function(){
+      const file = photoInput.files && photoInput.files[0]
+        ? photoInput.files[0]
+        : null;
+
       if (!file) return;
 
       state.photoFile = file;
       state.photoUrl = "";
 
-      const url = URL.createObjectURL(file);
+      const localUrl = URL.createObjectURL(file);
 
-          if (photoPreview) {
-        photoPreview.src = url;
+      if (photoPreview) {
+        photoPreview.src = localUrl;
       }
 
       if (photoDrop) {
-        photoDrop.style.setProperty("--mobile-lipsync-preview-bg", "url('" + url + "')");
+        photoDrop.style.setProperty(
+          "--mobile-lipsync-preview-bg",
+          "url('" + localUrl + "')"
+        );
       }
 
       if (photoDrop) {
         photoDrop.classList.add("has-photo");
       }
 
-      setStatus("Fotoğraf seçildi.");
-      showMobileLipsyncToast("success", "Fotoğraf seçildi.");
+      setStatus("Fotoğraf güvenlik kontrolünden geçiriliyor...");
+      showMobileLipsyncLoading("Fotoğraf güvenlik kontrolünden geçiriliyor...");
+
+      try {
+        const uploadedUrl = await uploadMobileLipsyncFile(file, "image");
+
+        state.photoUrl = uploadedUrl;
+
+        clearMobileLipsyncLoading();
+
+        setStatus("Fotoğraf hazır.");
+        showMobileLipsyncToast("success", "Fotoğraf hazır.");
+      } catch (err) {
+        console.error("[MOBILE LIPSYNC][PHOTO UPLOAD ERROR]", err);
+
+        clearMobileLipsyncLoading();
+
+        state.photoFile = null;
+        state.photoUrl = "";
+
+        if (photoInput) {
+          photoInput.value = "";
+        }
+
+        if (photoPreview) {
+          photoPreview.removeAttribute("src");
+        }
+
+        if (photoDrop) {
+          photoDrop.classList.remove("has-photo");
+          photoDrop.style.removeProperty("--mobile-lipsync-preview-bg");
+        }
+
+        const message = mapMobileLipsyncErrorMessage(err);
+
+        setStatus(message);
+        showMobileLipsyncToast("error", message);
+      }
     });
 
     if (photoRemoveBtn) {
