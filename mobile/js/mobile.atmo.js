@@ -957,47 +957,135 @@ function bindProControls(){
     state.pro.ratio = safeText(proRatioEl.value) || "1:1";
   }
 }
-   function uploadMobileAtmoFile(file, kind){
-    if (!file) return Promise.resolve("");
+  async function uploadMobileAtmoFile(file, kind){
+  if (!file) return "";
 
-    return fetch("/api/r2/scan-and-presign", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        app: "atmo",
-        kind: kind,
-        filename: file.name,
-        contentType: file.type,
-        prefix: "uploads/atmo/tmp/"
-      })
+  const presignRes = await fetch("/api/r2/scan-and-presign", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      app: "atmo",
+      kind: kind || "mobile-upload",
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+      prompt:
+        state.pro.prompt ||
+        state.basic.scene ||
+        "",
+      title: file.name,
+      description:
+        state.pro.prompt ||
+        state.basic.scene ||
+        file.name,
+      source: "mobile_atmo_upload"
     })
-    .then(function(res){
-      return res.json();
-    })
-    .then(function(data){
-      if (!data || !data.ok || !data.upload_url || !data.public_url) {
-        throw new Error("presign_failed");
-      }
+  });
 
-      return fetch(data.upload_url, {
-        method: "PUT",
-        headers: data.required_headers || {
-          "Content-Type": file.type
-        },
-        body: file
-      })
-      .then(function(uploadRes){
-        if (!uploadRes.ok) {
-          throw new Error("r2_upload_failed");
-        }
+  const data = await presignRes.json().catch(function(){
+    return {};
+  });
 
-        return data.public_url;
-      });
-    });
+  if (
+    !presignRes.ok ||
+    !data.ok ||
+    !(data.upload_url || data.uploadUrl) ||
+    !(data.public_url || data.publicUrl || data.url)
+  ) {
+    throw new Error(
+      data.error ||
+      data.message ||
+      "presign_failed"
+    );
   }
+
+  const uploadUrl =
+    data.upload_url ||
+    data.uploadUrl;
+
+  const publicUrl =
+    data.public_url ||
+    data.publicUrl ||
+    data.url;
+
+  const key =
+    data.key ||
+    data.objectKey ||
+    "";
+
+  if (!key) {
+    throw new Error("missing_upload_key");
+  }
+
+  const uploadRes = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: data.required_headers || {
+      "Content-Type":
+        file.type || "application/octet-stream"
+    },
+    body: file
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("r2_upload_failed");
+  }
+
+  const scanRes = await fetch("/api/r2/scan-upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      app: "atmo",
+      key: key,
+      filename: file.name,
+      contentType:
+        file.type || "application/octet-stream",
+      public_url: publicUrl,
+      prompt:
+        state.pro.prompt ||
+        state.basic.scene ||
+        "",
+      title: file.name,
+      description:
+        state.pro.prompt ||
+        state.basic.scene ||
+        file.name,
+      source: "mobile_atmo_upload"
+    })
+  });
+
+  const scanData = await scanRes.json().catch(function(){
+    return {};
+  });
+
+  if (!scanRes.ok) {
+    throw new Error(
+      scanData.error ||
+      scanData.message ||
+      "media_policy_blocked"
+    );
+  }
+
+  if (
+    !scanData.ok ||
+    (
+      scanData.decision &&
+      String(scanData.decision).toLowerCase() !== "allow"
+    )
+  ) {
+    throw new Error(
+      scanData.error ||
+      scanData.message ||
+      "media_policy_blocked"
+    );
+  }
+
+  return scanData.public_url || publicUrl;
+}
 function setFileLabel(input, file){
   const label = input && input.closest("label");
   if (!label) return;
