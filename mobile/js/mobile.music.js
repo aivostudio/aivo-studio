@@ -1552,7 +1552,15 @@ if (window.toast?.loading) {
   window.toast.loading("Müzik üretimi başlatılıyor...");
 }
 
+    let refundCtx = null;
+
     try {
+      refundCtx = await consumeMobileMusicCredits();
+
+      if (window.toast?.success) {
+        window.toast.success("2 kredi düşüldü");
+      }
+
       const res = await fetch("/api/music/generate", {
         method: "POST",
         headers: {
@@ -1564,43 +1572,27 @@ if (window.toast?.loading) {
           prompt,
           mood,
           lyrics,
-         vocal,
-         mode: vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals"
+          vocal,
+          mode: vocal === "Enstrümantal (Vokalsiz)" ? "instrumental" : "vocals"
         })
       });
 
       const data = await res.json();
 
-     if (!data || data.ok === false) {
-  const errorMessage = "Üretim başlatılamadı: " + (data && data.error ? data.error : "unknown_error");
-
-  statusEl.textContent = errorMessage;
-
-  if (window.toast?.error) {
-    window.toast.error(errorMessage);
-  }
-
-  return;
-}
+      if (!data || data.ok === false) {
+        throw new Error(data && data.error ? data.error : "unknown_error");
+      }
 
       const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
       const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
 
- statusEl.textContent = "Üretim kuyruğa alındı.";
+      statusEl.textContent = "Üretim kuyruğa alındı.";
 
-if (window.toast?.success) {
-  window.toast.success("Üretim kuyruğa alındı.");
-}
+      if (window.toast?.success) {
+        window.toast.success("Üretim kuyruğa alındı.");
+      }
 
-if (window.toast?.info) {
-  window.toast.info("2 kredi kullanıldı.");
-}
-
-if (window.toast?.info) {
-  window.toast.info("2 kredi kullanıldı.");
-}
-
-         if (productionsSectionEl) {
+      if (productionsSectionEl) {
         productionsSectionEl.hidden = false;
       }
 
@@ -1615,8 +1607,9 @@ if (window.toast?.info) {
         }
       }
 
-     resultsEl.hidden = false;
-     resultsEl.className = "";
+      resultsEl.hidden = false;
+      resultsEl.className = "";
+
       ["Orijinal", "Versiyon 2"].forEach(function(label, index){
         const cardTitle = index === 0
           ? (title || "Yeni müzik")
@@ -1653,13 +1646,32 @@ if (window.toast?.info) {
 
       pollMobileMusicJob(pollJobId, title || "Yeni müzik");
     } catch (err) {
-     const connectionError = "Bağlantı hatası: " + String(err && err.message ? err.message : err);
+      const msg = String(err && err.message ? err.message : err);
 
-statusEl.textContent = connectionError;
+      if (msg === "insufficient_credit") {
+        statusEl.textContent = "Yetersiz kredi.";
 
-if (window.toast?.error) {
-  window.toast.error(connectionError);
-}
+        if (window.toast?.warning) {
+          window.toast.warning("Yetersiz kredi");
+        }
+
+        const to = encodeURIComponent(location.pathname + location.search + location.hash);
+        location.href = "/fiyatlandirma.html?from=mobile_music&reason=insufficient_credit&to=" + to;
+
+        return;
+      }
+
+      const refunded = await refundMobileMusicCredits(refundCtx, "mobile_music_generate_failed", {
+        error: msg
+      });
+
+      statusEl.textContent = refunded
+        ? "Müzik üretilemedi. Kredi iade edildi."
+        : "Müzik üretilemedi: " + msg;
+
+      if (!refunded && window.toast?.error) {
+        window.toast.error("Müzik üretilemedi.");
+      }
     } finally {
       btn.disabled = false;
       btn.textContent = "Müzik Üret";
