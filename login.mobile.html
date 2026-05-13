@@ -338,53 +338,7 @@
     .mobile-login-message.is-ok{
       color:#86efac;
     }
-    .mobile-login-toast-wrap{
-  position:fixed;
-  left:18px;
-  right:18px;
-  bottom:calc(22px + env(safe-area-inset-bottom));
-  z-index:9999;
-  display:grid;
-  gap:10px;
-  pointer-events:none;
-}
-
-.mobile-login-toast{
-  width:min(390px,100%);
-  margin:0 auto;
-  padding:13px 15px;
-  border-radius:18px;
-  background:
-    radial-gradient(180px 80px at 0% 0%, rgba(139,92,246,.32), transparent 64%),
-    linear-gradient(135deg, rgba(18,22,42,.96), rgba(10,13,28,.94));
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    0 18px 46px rgba(0,0,0,.40);
-  color:#fff;
-  font-size:13px;
-  font-weight:850;
-  line-height:1.35;
-  text-align:center;
-  transform:translateY(14px);
-  opacity:0;
-  transition:opacity .22s ease, transform .22s ease;
-}
-
-.mobile-login-toast.is-show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-.mobile-login-toast.is-error{
-  border-color:rgba(248,113,113,.42);
-  color:#fecaca;
-}
-
-.mobile-login-toast.is-ok{
-  border-color:rgba(134,239,172,.42);
-  color:#bbf7d0;
-}
+  
 
     .mobile-login-register-only{
       display:none;
@@ -576,55 +530,31 @@ const returnTo = rawReturnTo.includes("mobile")
 
       let mode = "login";
 
-     let activeToastTimer = null;
-
-function ensureToastWrap(){
-  let wrap = document.getElementById("mobileLoginToastWrap");
-
-  if (!wrap) {
-    wrap = document.createElement("div");
-    wrap.id = "mobileLoginToastWrap";
-    wrap.className = "mobile-login-toast-wrap";
-    document.body.appendChild(wrap);
-  }
-
-  return wrap;
-}
-
-function showToast(text, type){
-  if (!text) return;
-
-  const wrap = ensureToastWrap();
-  wrap.innerHTML = "";
-
-  const toast = document.createElement("div");
-  toast.className = "mobile-login-toast";
-  toast.textContent = text;
-
-  if (type === "is-error") toast.classList.add("is-error");
-  if (type === "is-ok") toast.classList.add("is-ok");
-
-  wrap.appendChild(toast);
-
-  requestAnimationFrame(function(){
-    toast.classList.add("is-show");
-  });
-
-  if (activeToastTimer) clearTimeout(activeToastTimer);
-
-  activeToastTimer = setTimeout(function(){
-    toast.classList.remove("is-show");
-
-    setTimeout(function(){
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 240);
-  }, 3200);
-}
-
-function setMessage(text, type){
+  function setMessage(text, type){
   message.textContent = "";
   message.classList.remove("is-error", "is-ok");
-  showToast(text, type);
+
+  if (!text) return;
+
+  const toastType = type === "is-error"
+    ? "error"
+    : type === "is-ok"
+      ? "success"
+      : "info";
+
+  if (window.mobileToast && typeof window.mobileToast.show === "function") {
+    window.mobileToast.show(text, toastType);
+    return;
+  }
+
+  if (window.toast && typeof window.toast.show === "function") {
+    window.toast.show(text, toastType);
+    return;
+  }
+
+  message.textContent = text;
+  message.classList.toggle("is-error", type === "is-error");
+  message.classList.toggle("is-ok", type === "is-ok");
 }
 
       function setMode(nextMode){
