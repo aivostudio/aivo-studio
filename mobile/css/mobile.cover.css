@@ -713,3 +713,44 @@
     0 12px 28px rgba(0,0,0,.24),
     0 0 26px rgba(168,85,247,.26) !important;
 }
+/* Mobile Cover style pills - icon/text alignment fix */
+.mobile-style-card{
+  position:relative !important;
+  display:grid !important;
+  grid-template-columns:34px auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+  column-gap:14px !important;
+  min-height:64px !important;
+  padding:0 22px !important;
+}
+
+.mobile-style-ico.mobile-cover-icon{
+  width:34px !important;
+  height:34px !important;
+  flex:none !important;
+  margin:0 !important;
+  justify-self:end !important;
+  align-self:center !important;
+}
+
+.mobile-style-ico.mobile-cover-icon::before{
+  width:18px !important;
+  height:18px !important;
+}
+
+.mobile-style-text{
+  min-width:0 !important;
+  height:34px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  align-self:center !important;
+}
+
+.mobile-style-title{
+  display:block !important;
+  line-height:34px !important;
+  text-align:left !important;
+  white-space:nowrap !important;
+}
