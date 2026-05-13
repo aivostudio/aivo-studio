@@ -570,8 +570,17 @@
           window.toast.warning("Kredi yetersiz. Paketler açılıyor...");
         }
 
-        const to = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+               location.hash = "#credits";
+
+        const creditsNav =
+          document.querySelector('.bottom-nav a[href="#credits"]') ||
+          document.querySelector('[data-mobile-nav="credits"]') ||
+          document.querySelector('[data-mobile-tab="credits"]');
+
+        if (creditsNav) {
+          creditsNav.click();
+        }
+
         return;
       }
 
