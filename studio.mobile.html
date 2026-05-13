@@ -68,17 +68,18 @@
   justify-content:space-between;
   gap:10px;
 
-  margin:-12px -14px 12px;
-  padding:12px 14px;
+  margin:-12px -14px 14px;
+  padding:12px 14px 20px;
 
   background:
-    radial-gradient(240px 90px at 18% 0%, rgba(139,92,246,.18), transparent 70%),
-    radial-gradient(240px 90px at 88% 0%, rgba(56,189,248,.12), transparent 70%),
-    rgba(5,7,16,.50);
-  border-bottom:1px solid rgba(255,255,255,.075);
-  box-shadow:0 12px 34px rgba(0,0,0,.18);
-  backdrop-filter:blur(30px) saturate(155%);
-  -webkit-backdrop-filter:blur(30px) saturate(155%);
+    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
+    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
+    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
+  border-bottom:0;
+  box-shadow:none;
+
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
 }
     .logo{
       display:flex;
