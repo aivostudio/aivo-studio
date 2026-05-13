@@ -218,12 +218,20 @@ function clearMobileVideoLoading(){
       };
     });
 
-    if (!res.ok || !data || !data.ok) {
-      const to = encodeURIComponent(location.pathname + location.search + location.hash);
-      mobileVideoToast("warning", "Yetersiz kredi. Paket sayfasına yönlendiriliyorsun.");
-      setTimeout(function(){
-        location.href = "/fiyatlandirma.html?from=mobile&reason=insufficient_credit&to=" + to;
-      }, 900);
+       if (!res.ok || !data || !data.ok) {
+      mobileVideoToast("warning", "Yetersiz kredi.");
+
+      location.hash = "#credits";
+
+      const creditsNav =
+        document.querySelector('.bottom-nav a[href="#credits"]') ||
+        document.querySelector('[data-mobile-nav="credits"]') ||
+        document.querySelector('[data-mobile-tab="credits"]');
+
+      if (creditsNav) {
+        creditsNav.click();
+      }
+
       return null;
     }
 
