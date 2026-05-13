@@ -92,21 +92,20 @@
       return pickOutputUrl(hit);
     };
 
-    return (
-      safeStr(meta?.final_video_url) ||
-      safeStr(job?.final_video_url) ||
-      byVariant("provider") ||
-      byVariant("finalized") ||
-      byVariant("preview") ||
-      safeStr(job?.final_url) ||
-      safeStr(job?.video_url) ||
-      safeStr(job?.videoUrl) ||
-      safeStr(meta?.final_url) ||
-      safeStr(meta?.video_url) ||
-      safeStr(meta?.videoUrl) ||
-      pickOutputUrl(outs.find((o) => pickOutputUrl(o)))
-    );
-  }
+  return (
+  pickOutputUrl(outs.find((o) => pickOutputUrl(o))) ||
+  byVariant("finalized") ||
+  byVariant("preview") ||
+  byVariant("provider") ||
+  safeStr(job?.final_video_url) ||
+  safeStr(meta?.final_video_url) ||
+  safeStr(job?.final_url) ||
+  safeStr(job?.video_url) ||
+  safeStr(job?.videoUrl) ||
+  safeStr(meta?.final_url) ||
+  safeStr(meta?.video_url) ||
+  safeStr(meta?.videoUrl)
+);
 
   function shortTitle(text, max = 44) {
     const s = safeStr(text).replace(/\s+/g, " ");
