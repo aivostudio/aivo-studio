@@ -648,11 +648,16 @@ const returnTo = rawReturnTo.includes("mobile")
             return;
           }
 
-          setMessage(mode === "login" ? "Giriş başarılı." : "Hesap oluşturuldu.", "is-ok");
+        if (mode === "register") {
+          setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
+          return;
+         }
 
-          setTimeout(function(){
-            location.replace(returnTo);
-          }, 350);
+         setMessage("Giriş başarılı.", "is-ok");
+
+         setTimeout(function(){
+         location.replace(returnTo);
+        }, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
