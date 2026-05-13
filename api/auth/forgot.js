@@ -57,8 +57,12 @@ module.exports = async function handler(req, res) {
     { ex: ttlSeconds }
   );
 
-  const base = getBaseUrl(req);
-  const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
+ const base = getBaseUrl(req);
+const source = String(body.source || body.app || "").trim().toLowerCase();
+const isMobile = source === "mobile";
+
+const resetPath = isMobile ? "/reset.mobile.html" : "/reset.html";
+const resetUrl = `${base}${resetPath}?token=${encodeURIComponent(token)}`;
 
   try {
     const { getMailer } = require("../../lib/mailer.js");
