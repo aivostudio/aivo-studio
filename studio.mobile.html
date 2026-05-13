@@ -71,12 +71,15 @@
   margin:-12px -14px 12px;
   padding:12px 14px;
 
-  background:rgba(5,7,16,.52);
-  border-bottom:1px solid rgba(255,255,255,.045);
-  backdrop-filter:blur(28px) saturate(145%);
-  -webkit-backdrop-filter:blur(28px) saturate(145%);
+  background:
+    radial-gradient(240px 90px at 18% 0%, rgba(139,92,246,.18), transparent 70%),
+    radial-gradient(240px 90px at 88% 0%, rgba(56,189,248,.12), transparent 70%),
+    rgba(5,7,16,.50);
+  border-bottom:1px solid rgba(255,255,255,.075);
+  box-shadow:0 12px 34px rgba(0,0,0,.18);
+  backdrop-filter:blur(30px) saturate(155%);
+  -webkit-backdrop-filter:blur(30px) saturate(155%);
 }
-
     .logo{
       display:flex;
       align-items:center;
