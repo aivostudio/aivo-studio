@@ -1189,6 +1189,161 @@ miniAudioEl.play().then(function(){
     miniProgressFill.style.width = "0%";
   });
 
+   async function refreshMobileMusicCredits(){
+    try {
+      const res = await fetch("/api/credits/get", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "accept": "application/json"
+        }
+      });
+
+      const data = await res.json().catch(function(){ return null; });
+      const nextCredits = data?.credits ?? data?.balance ?? data?.credit;
+
+      if (typeof nextCredits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(nextCredits);
+        }
+
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+        mobileCreditEls.forEach(function(el){
+          el.textContent = "Kredi " + nextCredits;
+        });
+
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(nextCredits);
+        }
+
+        try {
+          window.syncCreditsUI?.({ force:true });
+        } catch (err) {}
+      }
+    } catch (err) {
+      console.warn("[MOBILE MUSIC][CREDIT REFRESH FAILED]", err);
+    }
+  }
+
+  async function consumeMobileMusicCredits(){
+    const amount = 2;
+    const action = "studio_music_generate";
+    const requestId = "mobile-music:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
+
+    const res = await fetch("/api/credits/consume-ledger", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "music",
+        action: action,
+        cost: amount,
+        request_id: requestId,
+        reason: action
+      })
+    });
+
+    const data = await res.json().catch(function(){ return null; });
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error("insufficient_credit");
+    }
+
+    await refreshMobileMusicCredits();
+
+    return {
+      app: "music",
+      action: action,
+      amount: amount,
+      request_id: requestId,
+      related_transaction_id: String(
+        data?.transaction_id ||
+        data?.transaction?.id ||
+        data?.related_transaction_id ||
+        data?.credit_transaction_id ||
+        ""
+      ),
+      idempotency_key: String(
+        data?.transaction_id ||
+        data?.transaction?.id ||
+        data?.related_transaction_id ||
+        data?.credit_transaction_id ||
+        ""
+      )
+        ? "mobile-music-refund:" + String(
+            data?.transaction_id ||
+            data?.transaction?.id ||
+            data?.related_transaction_id ||
+            data?.credit_transaction_id ||
+            ""
+          )
+        : "",
+      refunded: false,
+      raw: data
+    };
+  }
+
+  async function refundMobileMusicCredits(refundCtx, reason, extraMeta){
+    if (!refundCtx || refundCtx.refunded) return false;
+
+    if (!refundCtx.related_transaction_id || refundCtx.amount <= 0) {
+      console.warn("[MOBILE MUSIC][REFUND SKIPPED]", {
+        reason: reason,
+        refundCtx: refundCtx
+      });
+      return false;
+    }
+
+    refundCtx.refunded = true;
+
+    try {
+      const res = await fetch("/api/credits/refund", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({
+          app: refundCtx.app,
+          action: refundCtx.action,
+          amount: refundCtx.amount,
+          request_id: refundCtx.request_id,
+          related_transaction_id: refundCtx.related_transaction_id,
+          idempotency_key: refundCtx.idempotency_key,
+          reason: reason || "mobile_music_failed",
+          meta: {
+            source: "mobile.music.js",
+            ...(extraMeta || {})
+          }
+        })
+      });
+
+      const data = await res.json().catch(function(){ return null; });
+
+      if (res.ok && data && data.ok) {
+        await refreshMobileMusicCredits();
+
+        if (data.refunded && window.toast?.error) {
+          window.toast.error("İşlem başarısız oldu, kredi iade edildi.");
+        }
+
+        return true;
+      }
+
+      console.warn("[MOBILE MUSIC][REFUND FAILED]", data);
+    } catch (err) {
+      console.error("[MOBILE MUSIC][REFUND ERROR]", err);
+    }
+
+    return false;
+  }
+
   async function pollMobileMusicJob(jobId, title){
     let tries = 0;
 
