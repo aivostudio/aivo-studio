@@ -1567,3 +1567,7 @@ body.mobile-sheet-open{
     grid-template-columns:1fr;
   }
 }
+.field-input,
+.field-textarea{
+  border:1px solid rgba(236,72,153,.32) !important;
+}
