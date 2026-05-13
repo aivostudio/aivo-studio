@@ -720,6 +720,44 @@
 <div id="mobileToastRoot" aria-live="polite" aria-atomic="true"></div>
 
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
+
+<script>
+(function AIVO_MOBILE_URL_TOAST_READ(){
+  try {
+    const u = new URL(window.location.href);
+    const tf = String(u.searchParams.get("tf") || "").trim();
+    const tm = String(u.searchParams.get("tm") || "").trim();
+
+    if (!tf || !tm) return;
+
+    const allowed = new Set(["success", "error", "warning", "info"]);
+    const type = allowed.has(tf) ? tf : "info";
+    const message = decodeURIComponent(tm);
+
+    let tries = 0;
+
+    function fire(){
+      tries += 1;
+
+      if (window.mobileToast && typeof window.mobileToast[type] === "function") {
+        window.mobileToast[type](message);
+
+        u.searchParams.delete("tf");
+        u.searchParams.delete("tm");
+        history.replaceState({}, "", u.toString());
+        return;
+      }
+
+      if (tries < 80) {
+        setTimeout(fire, 50);
+      }
+    }
+
+    fire();
+  } catch (err) {}
+})();
+</script>
+
 <script>
   (async function(){
   const homeMount = document.getElementById("mobileHomeMount");
