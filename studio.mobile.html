@@ -1915,10 +1915,36 @@ if (data.verified !== true) {
   }
 });
 </script>
-  <script>
+<script>
 (function AIVO_MOBILE_PRESENCE_PING(){
   try {
-    function ping(){
+    let presenceEmail = "";
+
+    async function getPresenceEmail(){
+      if (presenceEmail) return presenceEmail;
+
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store"
+      });
+
+      if (!res.ok) return "";
+
+      const data = await res.json().catch(function(){
+        return null;
+      });
+
+      const user = data && (data.user || data);
+      presenceEmail = String(user && user.email ? user.email : "").trim().toLowerCase();
+
+      return presenceEmail;
+    }
+
+    async function ping(){
+      const email = await getPresenceEmail();
+
+      if (!email || !email.includes("@")) return;
+
       fetch("/api/presence/ping", {
         method: "POST",
         credentials: "include",
@@ -1927,6 +1953,7 @@ if (data.verified !== true) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
+          email: email,
           source: "mobile",
           page: "/studio.mobile.html"
         })
