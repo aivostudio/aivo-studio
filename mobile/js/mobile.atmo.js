@@ -520,6 +520,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
     MOBILE_ATMO_TOAST.loadingId = null;
     resetMobileAtmoGenerateButtons();
+    syncMobileAtmoCreditButtons();
   }
 
   async function refreshMobileAtmoCredits(){
