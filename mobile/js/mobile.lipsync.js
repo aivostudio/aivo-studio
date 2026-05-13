@@ -242,6 +242,13 @@
     } catch {}
 
     MOBILE_LIPSYNC_TOAST.loadingId = null;
+
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.classList.remove("is-loading", "is-pressed");
+      generateBtn.removeAttribute("aria-busy");
+      syncGenerateButton();
+    }
   }
 
   function mapMobileLipsyncErrorMessage(err){
