@@ -1753,8 +1753,16 @@ if (window.toast?.loading) {
           window.toast.warning("Yetersiz kredi");
         }
 
-        const to = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = "/fiyatlandirma.html?from=mobile_music&reason=insufficient_credit&to=" + to;
+              location.hash = "#credits";
+
+        const creditsNav =
+          document.querySelector('.bottom-nav a[href="#credits"]') ||
+          document.querySelector('[data-mobile-nav="credits"]') ||
+          document.querySelector('[data-mobile-tab="credits"]');
+
+        if (creditsNav) {
+          creditsNav.click();
+        }
 
         return;
       }
