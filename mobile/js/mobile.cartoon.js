@@ -1561,10 +1561,22 @@ function bindUploads(){
         try {
           creditCtx = await consumeMobileCartoonCredits("basic");
           mobileCartoonToast("success", getCartoonBasicCredit() + " kredi kullanıldı.");
-        } catch (creditErr) {
+              } catch (creditErr) {
           console.warn("[MOBILE CARTOON][BASIC CREDIT ERROR]", creditErr);
           setStatus("Yetersiz kredi.");
           mobileCartoonToast("warning", "Yetersiz kredi.");
+
+          location.hash = "#credits";
+
+          const creditsNav =
+            document.querySelector('.bottom-nav a[href="#credits"]') ||
+            document.querySelector('[data-mobile-nav="credits"]') ||
+            document.querySelector('[data-mobile-tab="credits"]');
+
+          if (creditsNav) {
+            creditsNav.click();
+          }
+
           return;
         }
 
