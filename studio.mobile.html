@@ -1678,8 +1678,17 @@ if (policyBackBtn) {
     localStorage.removeItem("aivo_mobile_account_state");
   } catch (err) {}
 
- window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
-  return;
+try {
+  if (window.mobileToast) {
+    window.mobileToast.success("Çıkış yapıldı.");
+  }
+} catch (err) {}
+
+setTimeout(function(){
+  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+}, 650);
+
+return;
 }
     if (settingsBtn) {
   e.preventDefault();
