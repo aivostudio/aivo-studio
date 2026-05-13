@@ -1,17 +1,53 @@
 export const config = { runtime: "nodejs" };
 
 function pickVideoUrl(data) {
-  return (
+  const direct =
     data?.video_url ||
     data?.videoUrl ||
+    data?.final_video_url ||
+    data?.finalVideoUrl ||
+    data?.final_url ||
     data?.url ||
+    data?.output ||
+    data?.output_url ||
     data?.data?.video_url ||
     data?.data?.videoUrl ||
+    data?.data?.final_video_url ||
+    data?.data?.finalVideoUrl ||
+    data?.data?.final_url ||
     data?.data?.url ||
+    data?.data?.output ||
+    data?.data?.output_url ||
     data?.data?.output?.video_url ||
+    data?.data?.output?.videoUrl ||
     data?.data?.output?.url ||
-    null
-  );
+    data?.data?.outputs?.[0]?.video_url ||
+    data?.data?.outputs?.[0]?.videoUrl ||
+    data?.data?.outputs?.[0]?.url ||
+    data?.outputs?.[0]?.video_url ||
+    data?.outputs?.[0]?.videoUrl ||
+    data?.outputs?.[0]?.url ||
+    null;
+
+  if (direct && typeof direct === "string") {
+    return direct;
+  }
+
+  if (Array.isArray(direct)) {
+    const hit = direct.find((item) => {
+      if (typeof item === "string") return item.startsWith("http");
+      return item?.url || item?.video_url || item?.videoUrl;
+    });
+
+    if (typeof hit === "string") return hit;
+    return hit?.url || hit?.video_url || hit?.videoUrl || null;
+  }
+
+  if (direct && typeof direct === "object") {
+    return direct.url || direct.video_url || direct.videoUrl || null;
+  }
+
+  return null;
 }
 
 function pickThumbnailUrl(data) {
