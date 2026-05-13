@@ -947,3 +947,6 @@ background:
   width:16px !important;
   height:16px !important;
 }
+.mobile-cartoon-form-grid .field-input{
+  border:1px solid rgba(236,72,153,.32) !important;
+}
