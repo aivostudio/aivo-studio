@@ -648,10 +648,15 @@ const returnTo = rawReturnTo.includes("mobile")
             return;
           }
 
-        if (mode === "register") {
-          setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
-          return;
-         }
+       if (mode === "register") {
+  if (data && data.mailSent === false) {
+    setMessage("Hesap oluşturuldu fakat doğrulama e-postası gönderilemedi. Lütfen destek ile iletişime geç.", "is-error");
+    return;
+  }
+
+  setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
+  return;
+}
 
          setMessage("Giriş başarılı.", "is-ok");
 
