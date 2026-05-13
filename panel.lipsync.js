@@ -106,6 +106,7 @@
   safeStr(meta?.video_url) ||
   safeStr(meta?.videoUrl)
 );
+   }
 
   function shortTitle(text, max = 44) {
     const s = safeStr(text).replace(/\s+/g, " ");
