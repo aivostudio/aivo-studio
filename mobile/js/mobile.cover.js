@@ -72,24 +72,24 @@
     generateBtn.setAttribute("data-credit-cost", String(selectedCredit));
     generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
 
+     if (selectedQuality === "ultra") {
+      promptEl.value = "";
+      promptEl.placeholder = "Cinematic mod için sahneyi kendin yaz. Örn: gece şehirde yalnız yürüyen karakter, neon ışıklar, sinematik atmosfer";
+      updatePromptCount();
+      return;
+    }
+
     const activeStyleBtn = styleBtns.find(function(item){
       return item.classList.contains("is-active");
     });
 
     const stylePrompt = activeStyleBtn
       ? String(activeStyleBtn.getAttribute("data-prompt") || "").trim()
-      : String(promptEl.value || "").trim();
+      : "";
 
     if (stylePrompt) {
-      if (selectedQuality === "ultra") {
-        promptEl.value = [
-          stylePrompt,
-          "Cinematic Ultra HD, yüksek detay, sinematik ışık, premium renk düzenleme, keskin odak, gerçek albüm kapağı kalitesi, temiz kompozisyon"
-        ].join(", ");
-      } else {
-        promptEl.value = stylePrompt;
-      }
-
+      promptEl.value = stylePrompt;
+      promptEl.placeholder = "";
       updatePromptCount();
     }
   }
