@@ -1227,10 +1227,7 @@ function setFileLabel(input, file){
           return;
         }
 
-              basicGenerateBtn.disabled = true;
-        basicGenerateBtn.textContent = "Üretiliyor...";
-        basicGenerateBtn.classList.add("is-loading", "is-pressed");
-        basicGenerateBtn.setAttribute("aria-busy", "true");
+           
 
         mobileAtmoLoading("Atmosfer video hazırlanıyor...");
 
@@ -1352,8 +1349,12 @@ renderMobileAtmoResults();
           mobileAtmoToast("warning", "Süper Mod için prompt yazmalısın.");
           return;
         }
-
         let creditCtx = null;
+
+        proGenerateBtn.disabled = true;
+        proGenerateBtn.textContent = "Üretiliyor...";
+        proGenerateBtn.classList.add("is-loading", "is-pressed");
+        proGenerateBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileAtmoCredits("pro");
@@ -1365,10 +1366,7 @@ renderMobileAtmoResults();
           return;
         }
 
-                    proGenerateBtn.disabled = true;
-        proGenerateBtn.textContent = "Üretiliyor...";
-        proGenerateBtn.classList.add("is-loading", "is-pressed");
-        proGenerateBtn.setAttribute("aria-busy", "true");
+                    
 
         mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
 
