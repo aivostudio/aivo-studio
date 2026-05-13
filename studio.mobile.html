@@ -1894,16 +1894,16 @@ if (tool === "atmo") {
       cache: "no-store"
     });
 
-    if (!res.ok) {
-      window.location.replace("/login.html?returnTo=/studio.mobile.html");
-      return;
-    }
+   if (!res.ok) {
+  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+  return;
+}
 
     const data = await res.json();
 
-    if (!data || data.ok === false || !data.user) {
-      window.location.replace("/login.html?returnTo=/studio.mobile.html");
-    }
+   if (!data || data.ok === false || !data.user) {
+  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+}
   } catch (err) {
     window.location.replace("/login.html?returnTo=/studio.mobile.html");
   }
