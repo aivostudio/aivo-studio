@@ -574,11 +574,56 @@ const returnTo = rawReturnTo.includes("mobile")
 
       let mode = "login";
 
-      function setMessage(text, type){
-        message.textContent = text || "";
-        message.classList.remove("is-error", "is-ok");
-        if (type) message.classList.add(type);
-      }
+     let activeToastTimer = null;
+
+function ensureToastWrap(){
+  let wrap = document.getElementById("mobileLoginToastWrap");
+
+  if (!wrap) {
+    wrap = document.createElement("div");
+    wrap.id = "mobileLoginToastWrap";
+    wrap.className = "mobile-login-toast-wrap";
+    document.body.appendChild(wrap);
+  }
+
+  return wrap;
+}
+
+function showToast(text, type){
+  if (!text) return;
+
+  const wrap = ensureToastWrap();
+  wrap.innerHTML = "";
+
+  const toast = document.createElement("div");
+  toast.className = "mobile-login-toast";
+  toast.textContent = text;
+
+  if (type === "is-error") toast.classList.add("is-error");
+  if (type === "is-ok") toast.classList.add("is-ok");
+
+  wrap.appendChild(toast);
+
+  requestAnimationFrame(function(){
+    toast.classList.add("is-show");
+  });
+
+  if (activeToastTimer) clearTimeout(activeToastTimer);
+
+  activeToastTimer = setTimeout(function(){
+    toast.classList.remove("is-show");
+
+    setTimeout(function(){
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 240);
+  }, 3200);
+}
+
+function setMessage(text, type){
+  message.textContent = "";
+  message.classList.remove("is-error", "is-ok");
+  showToast(text, type);
+}
 
       function setMode(nextMode){
         mode = nextMode === "register" ? "register" : "login";
