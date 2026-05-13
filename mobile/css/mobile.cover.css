@@ -766,3 +766,19 @@
   line-height:1 !important;
   white-space:nowrap !important;
 }
+/* Mobile Cover quality badge final spacing */
+.mobile-quality-pill .mobile-quality-credit{
+  top:10px !important;
+  right:16px !important;
+
+  height:26px !important;
+  min-width:62px !important;
+  padding:0 10px !important;
+
+  font-size:10px !important;
+  font-weight:900 !important;
+}
+
+.mobile-quality-title{
+  padding-top:10px !important;
+}
