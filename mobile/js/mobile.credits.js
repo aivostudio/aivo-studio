@@ -192,10 +192,11 @@
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify({
+            body: JSON.stringify({
           user_id: me.user_id,
           email: me.email,
           plan: pack.plan,
+          source: "mobile",
           return_path: "/studio.mobile.html#credits"
         })
       });
