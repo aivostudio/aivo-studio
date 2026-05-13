@@ -1642,13 +1642,20 @@
           refundState.transactionId = consumeResult.transactionId || "";
 
            showMobileLipsyncToast("success", creditCost + " kredi düşüldü.");
-        } catch (creditErr) {
-          console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
-          setStatus("Yetersiz kredi.");
-          showMobileLipsyncToast("warning", "Yetersiz kredi.");
-          clearMobileLipsyncLoading();
-          return;
-        }
+     catch (creditErr) {
+  console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
+
+  setStatus("Yetersiz kredi.");
+  showMobileLipsyncToast("warning", "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...");
+
+  clearMobileLipsyncLoading();
+
+  try {
+    window.mobileNavigateTo?.("credits");
+  } catch {}
+
+  return;
+}
                 generateBtn.disabled = true;
         generateBtn.textContent = "Üretiliyor...";
         generateBtn.classList.add("is-loading", "is-pressed");
