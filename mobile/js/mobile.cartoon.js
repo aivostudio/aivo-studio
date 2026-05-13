@@ -831,6 +831,7 @@ async function hydrateMobileCartoonCharacterLibrary(){
 
     if (!keepButtons) {
       resetMobileCartoonGenerateButtons();
+      syncCartoonCredits();
     }
   }
   function setStatus(message){
@@ -1418,7 +1419,12 @@ function bindUploads(){
           return;
         }
 
-        let creditCtx = null;
+             let creditCtx = null;
+
+        characterBtn.disabled = true;
+        characterBtn.textContent = "Üretiliyor...";
+        characterBtn.classList.add("is-loading", "is-pressed");
+        characterBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileCartoonCredits("character");
@@ -1430,10 +1436,7 @@ function bindUploads(){
           return;
         }
 
-               characterBtn.disabled = true;
-        characterBtn.textContent = "Üretiliyor...";
-        characterBtn.classList.add("is-loading", "is-pressed");
-        characterBtn.setAttribute("aria-busy", "true");
+             
 
         mobileCartoonLoading("Karakter oluşturuluyor...");
 
