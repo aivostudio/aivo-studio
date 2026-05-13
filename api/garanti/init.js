@@ -69,8 +69,9 @@ export default async function handler(req, res) {
   const user_id = String(body.user_id || "").trim();
   const email = normEmail(body.email);
   const plan = String(body.plan || "").trim().toLowerCase();
- const return_path = String(body.return_path || "").trim();
-const safeReturnPath = return_path.startsWith("/") ? return_path : "/studio.v2.html";
+  const source = String(body.source || "").trim().toLowerCase() === "mobile" ? "mobile" : "desktop";
+  const return_path = String(body.return_path || "").trim();
+  const safeReturnPath = return_path.startsWith("/") ? return_path : "/studio.v2.html";
   if (!user_id || !email) {
     return json(res, 400, {
       ok: false,
@@ -156,14 +157,15 @@ const safeReturnPath = return_path.startsWith("/") ? return_path : "/studio.v2.h
         plan,
         amount,
         credits,
-        currency: "TRY",
+          currency: "TRY",
         provider: "garanti",
+        source,
         status: "init",
         ok_url: okUrl,
-       fail_url: failUrl,
-       return_path: safeReturnPath,
-      gateway_url: garanti3dUrl || null,
-     created_at: now,
+        fail_url: failUrl,
+        return_path: safeReturnPath,
+        gateway_url: garanti3dUrl || null,
+        created_at: now,
       },
       { ex: 60 * 60 * 24 }
     );
@@ -178,7 +180,8 @@ const safeReturnPath = return_path.startsWith("/") ? return_path : "/studio.v2.h
         amount,
         credits,
         currency: "TRY",
-      provider: "garanti",
+          provider: "garanti",
+      source,
       status: "pending",
       return_path: safeReturnPath,
       created_at: now,
