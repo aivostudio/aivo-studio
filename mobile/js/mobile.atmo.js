@@ -1221,10 +1221,22 @@ function setFileLabel(input, file){
         try {
           creditCtx = await consumeMobileAtmoCredits("basic");
           mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
-        } catch (creditErr) {
+               } catch (creditErr) {
           console.warn("[MOBILE ATMO][BASIC CREDIT ERROR]", creditErr);
           setStatus("Yetersiz kredi.");
           mobileAtmoToast("warning", "Yetersiz kredi.");
+
+          location.hash = "#credits";
+
+          const creditsNav =
+            document.querySelector('.bottom-nav a[href="#credits"]') ||
+            document.querySelector('[data-mobile-nav="credits"]') ||
+            document.querySelector('[data-mobile-tab="credits"]');
+
+          if (creditsNav) {
+            creditsNav.click();
+          }
+
           return;
         }
 
