@@ -72,7 +72,18 @@
     generateBtn.setAttribute("data-credit-cost", String(selectedCredit));
     generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
   }
+     const activeStyleBtn = styleBtns.find(function(item){
+      return item.classList.contains("is-active");
+    });
 
+    if (activeStyleBtn) {
+      const stylePrompt = String(activeStyleBtn.getAttribute("data-prompt") || "").trim();
+
+      if (stylePrompt) {
+        promptEl.value = stylePrompt;
+        updatePromptCount();
+      }
+    }
   function setStyle(btn){
     selectedStyle = String(btn.getAttribute("data-style") || "");
 
