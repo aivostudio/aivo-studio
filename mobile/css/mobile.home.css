@@ -744,3 +744,25 @@ body{
   border-radius:18px !important;
   font-size:11px !important;
 }
+/* Mobile Home - final premium app background flow */
+body{
+  background:
+    linear-gradient(180deg,#070914 0%,#071728 34%,#120f2d 62%,#2a0827 100%) !important;
+}
+
+.mobile-shell{
+  background:
+    radial-gradient(520px 320px at 50% 8%, rgba(95,208,255,.12), transparent 66%),
+    radial-gradient(560px 360px at 16% 34%, rgba(124,92,255,.16), transparent 68%),
+    radial-gradient(620px 420px at 86% 58%, rgba(56,189,248,.10), transparent 70%),
+    radial-gradient(760px 520px at 50% 92%, rgba(201,87,188,.30), transparent 72%),
+    linear-gradient(180deg, rgba(7,9,20,.10) 0%, rgba(7,23,40,.24) 34%, rgba(18,15,45,.30) 62%, rgba(42,8,39,.42) 100%) !important;
+}
+
+.mobile-home-section{
+  background:transparent !important;
+}
+
+.mobile-home-section::before{
+  display:none !important;
+}
