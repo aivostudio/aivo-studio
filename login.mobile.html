@@ -505,8 +505,10 @@
   <script>
     (function(){
       const url = new URL(location.href);
-      const returnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
-
+    const rawReturnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
+const returnTo = rawReturnTo.includes("mobile")
+  ? rawReturnTo
+  : "/studio.mobile.html";
       const card = document.getElementById("mobileLoginCard");
       const form = document.getElementById("mobileLoginForm");
       const tabs = Array.from(document.querySelectorAll(".mobile-login-tab"));
