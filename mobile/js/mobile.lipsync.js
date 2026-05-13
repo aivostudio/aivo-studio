@@ -1650,9 +1650,16 @@
 
   clearMobileLipsyncLoading();
 
-  try {
-    window.mobileNavigateTo?.("credits");
-  } catch {}
+    location.hash = "#credits";
+
+  const creditsNav =
+    document.querySelector('.bottom-nav a[href="#credits"]') ||
+    document.querySelector('[data-mobile-nav="credits"]') ||
+    document.querySelector('[data-mobile-tab="credits"]');
+
+  if (creditsNav) {
+    creditsNav.click();
+  }
 
   return;
 }
