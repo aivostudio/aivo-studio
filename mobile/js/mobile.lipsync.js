@@ -1642,7 +1642,7 @@
           refundState.transactionId = consumeResult.transactionId || "";
 
            showMobileLipsyncToast("success", creditCost + " kredi düşüldü.");
-     catch (creditErr) {
+           } catch (creditErr) {
   console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
 
   setStatus("Yetersiz kredi.");
