@@ -1214,14 +1214,48 @@ function setFileLabel(input, file){
               mobileAtmoToast("success", "Müzik eklendi · +10 kredi");
             }
           })
-          .catch(function(err){
-            console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
-            clearMobileAtmoLoading();
-                     state[item.target][urlKey] = "";
-            syncMobileAtmoCreditButtons();
-            setStatus("Dosya yüklenemedi.");
-            mobileAtmoToast("error", "Dosya yüklenemedi.");
-          });
+     .catch(function(err){
+  console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
+
+  clearMobileAtmoLoading();
+
+  state[item.target][urlKey] = "";
+
+  syncMobileAtmoCreditButtons();
+
+  const errText = String(
+    err?.message ||
+    err ||
+    ""
+  ).toLowerCase();
+
+  const isPolicyBlocked =
+    errText.includes("media_policy") ||
+    errText.includes("public_figure") ||
+    errText.includes("public figure") ||
+    errText.includes("public_figure_image_blocked") ||
+    errText.includes("figure_image_blocked") ||
+    errText.includes("image_blocked") ||
+    errText.includes("celebrity") ||
+    errText.includes("protected_person") ||
+    errText.includes("kamu figürü") ||
+    errText.includes("kamu figuru") ||
+    errText.includes("tanınmış kişi") ||
+    errText.includes("taninmis kisi") ||
+    errText.includes("gerçek kişi") ||
+    errText.includes("gercek kisi") ||
+    errText.includes("impersonation") ||
+    errText.includes("blocked");
+
+  if (isPolicyBlocked) {
+    setStatus("Bu görsel kullanılamaz.");
+    mobileAtmoToast("error", "Bu görsel kullanılamaz.");
+    return;
+  }
+
+  setStatus("Dosya yüklenemedi.");
+  mobileAtmoToast("error", "Dosya yüklenemedi.");
+});
       });
     });
   }
