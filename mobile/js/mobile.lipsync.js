@@ -1666,12 +1666,13 @@
           return item.id === tempId;
         });
 
-        if (job) {
+              if (job) {
           job.id = realJobId || tempId;
           job.providerJobId = providerJobId;
           job.status = "processing";
           job.title = "Dudak senkron video";
           job.payload = payload;
+          job.refundState = refundState;
         }
 
         mobileLipsyncViewMode = "current";
