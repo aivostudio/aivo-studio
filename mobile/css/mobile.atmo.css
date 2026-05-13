@@ -829,14 +829,3 @@
     0 16px 34px rgba(236,72,153,.20) !important;
 }
 
-#mobileAtmoGenerateBtn.is-loading::after,
-#mobileAtmoProGenerateBtn.is-loading::after{
-  content:"";
-  width:16px;
-  height:16px;
-  margin-left:8px;
-  border-radius:999px;
-  border:2px solid rgba(255,255,255,.35);
-  border-top-color:#fff;
-  animation:aivoSpin .85s linear infinite;
-}
