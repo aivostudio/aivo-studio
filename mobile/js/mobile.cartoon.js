@@ -844,7 +844,7 @@ async function hydrateMobileCartoonCharacterLibrary(){
 
     if (statusEl) statusEl.textContent = text;
   }
-async function uploadCartoonFile(file, kind){
+
 async function uploadCartoonFile(file, kind){
   if (!file) return "";
 
