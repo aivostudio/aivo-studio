@@ -632,21 +632,21 @@ const returnTo = rawReturnTo.includes("mobile")
             return {};
           });
 
-          if (!res.ok || !data || data.ok === false) {
-            const err = data && data.error ? data.error : "auth_failed";
-           if (err === "email_not_verified") {
-           setMessage("E-posta doğrulaması gerekiyor. Lütfen e-postandaki doğrulama bağlantısına tıkla.", "is-error");
-           }
-            } else if (err === "invalid_credentials" || err === "user_not_found") {
-              setMessage("E-posta veya şifre hatalı.", "is-error");
-            } else if (err === "user_exists" || err === "email_exists") {
-              setMessage("Bu e-posta ile hesap zaten var.", "is-error");
-            } else {
-              setMessage("İşlem tamamlanamadı. Tekrar dene.", "is-error");
-            }
+        if (!res.ok || !data || data.ok === false) {
+          const err = data && data.error ? data.error : "auth_failed";
 
-            return;
-          }
+          if (err === "email_not_verified") {
+          setMessage("E-posta doğrulaması gerekiyor. Lütfen e-postandaki doğrulama bağlantısına tıkla.", "is-error");
+           } else if (err === "invalid_credentials" || err === "user_not_found") {
+          setMessage("E-posta veya şifre hatalı.", "is-error");
+          } else if (err === "user_exists" || err === "email_exists" || err === "email_already_registered") {
+          setMessage("Bu e-posta ile hesap zaten var.", "is-error");
+            } else {
+           setMessage("İşlem tamamlanamadı. Tekrar dene.", "is-error");
+           }
+
+           return;
+           }
 
        if (mode === "register") {
   if (data && data.mailSent === false) {
