@@ -18,23 +18,22 @@ export default async function handler(req, res) {
       });
     }
 
-    const code = typeof req.query?.code === "string" ? req.query.code.trim() : "";
-    const state = typeof req.query?.state === "string" ? req.query.state.trim() : "";
-    const error = typeof req.query?.error === "string" ? req.query.error.trim() : "";
+const code = typeof req.query?.code === "string" ? req.query.code.trim() : "";
+const state = typeof req.query?.state === "string" ? req.query.state.trim() : "";
+const error = typeof req.query?.error === "string" ? req.query.error.trim() : "";
 
-    if (error) {
-      const msg = encodeURIComponent("Google girişi iptal edildi.");
-      return res.redirect(302, `/?tf=warning&tm=${msg}`);
-    }
+let returnTo = "/studio.v2.html";
+let fallbackLogin = "/?open=login";
 
-    if (!code) {
-      const msg = encodeURIComponent("Google giriş kodu alınamadı.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
-    }
+if (error) {
+  const msg = encodeURIComponent("Google girişi iptal edildi.");
+  return res.redirect(302, `${fallbackLogin}&tf=warning&tm=${msg}`);
+}
 
-    let returnTo = "/studio.v2.html";
-    let fallbackLogin = "/?open=login";
-
+if (!code) {
+  const msg = encodeURIComponent("Google giriş kodu alınamadı.");
+  return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
+}
     const cookieHeader = String(req.headers?.cookie || "");
     const cookiePairs = cookieHeader
       .split(";")
@@ -53,7 +52,7 @@ export default async function handler(req, res) {
 
     if (!state) {
       const msg = encodeURIComponent("Google state bilgisi eksik.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
     }
 
     try {
@@ -65,15 +64,19 @@ export default async function handler(req, res) {
 
       if (!stateNonce || !stateCookie || stateNonce !== stateCookie) {
         const msg = encodeURIComponent("Google doğrulama oturumu eşleşmedi.");
-        return res.redirect(302, `/?tf=error&tm=${msg}`);
+       return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
       }
 
-      if (rawReturnTo && rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")) {
-        returnTo = rawReturnTo;
-      }
+    if (rawReturnTo && rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")) {
+  returnTo = rawReturnTo;
+
+  if (rawReturnTo.includes("mobile")) {
+    fallbackLogin = "/login.mobile.html?returnTo=/studio.mobile.html";
+  }
+}
     } catch (_) {
       const msg = encodeURIComponent("Google state verisi çözülemedi.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
     }
 
        const prevSetCookie = res.getHeader("Set-Cookie");
@@ -105,7 +108,7 @@ export default async function handler(req, res) {
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error("[auth/google-callback] token error:", tokenData);
       const msg = encodeURIComponent("Google token alınamadı.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
     }
 
     const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
@@ -120,7 +123,7 @@ export default async function handler(req, res) {
     if (!userRes.ok || !userData.email) {
       console.error("[auth/google-callback] userinfo error:", userData);
       const msg = encodeURIComponent("Google kullanıcı bilgisi alınamadı.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
+    return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
     }
 
      const authUser = {
@@ -134,7 +137,7 @@ export default async function handler(req, res) {
 
     if (!authUser.email) {
       const msg = encodeURIComponent("Google hesabında email bilgisi bulunamadı.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
+     return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
     }
 
     const kvMod = await import("../_kv.js");
@@ -144,7 +147,7 @@ export default async function handler(req, res) {
 
     if (typeof kvGetJson !== "function" || typeof kvSetJson !== "function") {
       const msg = encodeURIComponent("Kullanıcı verisi servisi hazır değil.");
-      return res.redirect(302, `/?tf=error&tm=${msg}`);
+     return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
     }
 
     const userKey1 = `user:${authUser.email}`;
@@ -178,6 +181,6 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error("[auth/google-callback] fatal error:", err);
     const msg = encodeURIComponent("Google girişinde beklenmeyen hata oluştu.");
-    return res.redirect(302, `/?tf=error&tm=${msg}`);
+   return res.redirect(302, `${fallbackLogin}&tf=error&tm=${msg}`);
   }
 };
