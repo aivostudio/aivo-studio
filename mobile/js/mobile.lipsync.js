@@ -1744,9 +1744,7 @@
         if (!refunded) {
           showMobileLipsyncToast("error", message);
         }
-      } finally {
-        generateBtn.disabled = false;
-        syncGenerateButton();
+           } finally {
       }
     });
   }
