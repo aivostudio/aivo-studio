@@ -1538,7 +1538,12 @@ function bindUploads(){
     }
          if (generateBtn) {
       generateBtn.addEventListener("click", async function(){
-        let creditCtx = null;
+               let creditCtx = null;
+
+        generateBtn.disabled = true;
+        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.classList.add("is-loading", "is-pressed");
+        generateBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileCartoonCredits("basic");
@@ -1550,10 +1555,7 @@ function bindUploads(){
           return;
         }
 
-               generateBtn.disabled = true;
-        generateBtn.textContent = "Üretiliyor...";
-        generateBtn.classList.add("is-loading", "is-pressed");
-        generateBtn.setAttribute("aria-busy", "true");
+           
 
               const tempJobId = "mobile-cartoon-" + Date.now();
 
