@@ -120,7 +120,7 @@
   }
 
   function mobilePhotoFxLoading(message){
-    clearMobilePhotoFxLoading();
+    clearMobilePhotoFxLoading({ keepButton: true });
 
     MOBILE_PHOTOFX_TOAST.loadingId = mobilePhotoFxToast("loading", message, {
       persist: true,
@@ -131,7 +131,8 @@
     return MOBILE_PHOTOFX_TOAST.loadingId;
   }
 
-  function clearMobilePhotoFxLoading(){
+  function clearMobilePhotoFxLoading(options){
+    const keepButton = !!(options && options.keepButton);
     const toastApi = getMobilePhotoFxToastApi();
 
     try {
@@ -146,7 +147,7 @@
 
     MOBILE_PHOTOFX_TOAST.loadingId = null;
 
-    if (generateBtn) {
+    if (!keepButton && generateBtn) {
       generateBtn.disabled = false;
       generateBtn.classList.remove("is-loading", "is-pressed");
       generateBtn.removeAttribute("aria-busy");
